@@ -1,0 +1,66 @@
+/**
+ * Copyright 2001-2003 The eXo Platform SARL         All rights reserved.  *
+ * Please look at license.txt in info directory for more license detail.   *
+ */
+
+package org.exoplatform.services.jcr.usecases.web;
+
+import javax.jcr.Node;
+import com.meterware.httpunit.*;
+
+/**
+ * Created by The eXo Platform SARL        .
+ * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov</a>
+ * @version $Id: JCRPortletTest.java.need_httpunit_deps_fix 11837 2008-03-11 12:48:56Z gazarenkov $
+ *
+ * JCR Use Case test sample
+ */
+
+public class JCRPortletTest {
+  
+  public void testJumpJDevPageExists() throws Exception {
+    WebConversation webConversation = new WebConversation();
+    WebRequest request = new GetMethodWebRequest("http://localhost:7080/portal/");
+    WebResponse resp = webConversation.getResponse(request);
+    System.out.println("{INFO} : response.getResponseCode() : " + resp.getResponseCode());
+    WebForm form = resp.getForms()[0];
+    form.setParameter("n7n","on");
+    form.submit();
+    WebResponse response = webConversation.getResponse(request);
+    WebLink link;// find the link
+    while (true) {
+    //adding 100 nodes to TESTROOT, then deleting this nodes, deleting parent
+    link = response.getLinkWith( "logout Session" );
+    link.click();
+    link = response.getLinkWith( "add nodes to testRoot node (2 clicks: 1st - create node, 2nd - childs)" );
+    link.click();
+    link = response.getLinkWith( "add nodes to testRoot node (2 clicks: 1st - create node, 2nd - childs)" );
+    link.click();
+    link = response.getLinkWith( "delete childs (from testNode)" );
+    link.click();
+    link = response.getLinkWith( "delete parent node (testNode)" );
+    link.click();
+    //adding 100 nodes with properties to TESTROOT, then deleting this nodes, deleting parent
+    link = response.getLinkWith( "logout Session" );
+    link.click();
+    link = response.getLinkWith( "add nodes to testRoot node (2 clicks: 1st - create node, 2nd - childs) - with properties" );
+    link.click();
+    link = response.getLinkWith( "add nodes to testRoot node (2 clicks: 1st - create node, 2nd - childs) - with properties" );
+    link.click();
+    link = response.getLinkWith( "delete childs (from testNode)" );
+    link.click();
+    link = response.getLinkWith( "delete parent node (testNode)" );
+    link.click();
+    //run experiments with versionableNode node
+    link = response.getLinkWith( "logout Session" );
+    link.click();
+    link = response.getLinkWith( "run experiments with versionableNode node (2 clicks: 1st - create node, 2nd - other actions)" );
+    link.click();
+    link = response.getLinkWith( "run experiments with versionableNode node (2 clicks: 1st - create node, 2nd - other actions)" );
+    link.click();
+    //show results
+    link = response.getLinkWith( "show results" );
+    link.click();
+    }//end of while
+  }
+}

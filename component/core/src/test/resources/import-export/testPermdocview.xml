@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<a xmlns:nt="http://www.jcp.org/jcr/nt/1.0"
+   xmlns:mix="http://www.jcp.org/jcr/mix/1.0"
+   xmlns:jcr="http://www.jcp.org/jcr/1.0"
+   xmlns:exo="http://www.exoplatform.com/jcr/exo/1.0"
+   jcr:primaryType="exo:article"
+   jcr:mixinTypes="exo:owneable exo:datetime mix:votable mix:commentable mix:i18n exo:privilegeable"
+   jcr:uuid="c6c14dd37f0000010139358c161a96b4" exo:dateCreated="2009-06-09T22:41:45.688+02:00"
+   exo:dateModified="2009-06-09T22:41:45.690+02:00" exo:language="en" exo:owner="root"
+   exo:permissions="*:/platform/administrators_x0020_read *:/platform/administrators_x0020_add_node *:/platform/administrators_x0020_set_property *:/platform/administrators_x0020_remove root_x0020_read root_x0020_add_node root_x0020_set_property root_x0020_remove validator:/platform/users_x0020_read validator:/platform/users_x0020_set_property"
+   exo:title="test" exo:voteTotal="0" exo:voteTotalOfLang="0" exo:votingRate="0.0"/>

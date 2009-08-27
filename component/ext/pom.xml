@@ -1,0 +1,169 @@
+<!--
+
+    Copyright (C) 2009 eXo Platform SAS.
+
+    This is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as
+    published by the Free Software Foundation; either version 2.1 of
+    the License, or (at your option) any later version.
+
+    This software is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this software; if not, write to the Free
+    Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+    02110-1301 USA, or see the FSF site: http://www.fsf.org.
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+   <modelVersion>4.0.0</modelVersion>
+
+   <parent>
+      <groupId>org.exoplatform.jcr</groupId>
+      <artifactId>config</artifactId>
+      <version>1.12-SNAPSHOT</version>
+   </parent>
+
+   <artifactId>exo.jcr.component.ext</artifactId>
+
+   <name>eXo JCR :: Component :: Extension Service</name>
+   <description>eXo JCR Services extension</description>
+
+   <dependencies>
+      <dependency>
+         <groupId>org.exoplatform.jcr</groupId>
+         <artifactId>exo.jcr.component.core</artifactId>
+         <exclusions>
+            <exclusion>
+               <groupId>xerces</groupId>
+               <artifactId>xerces</artifactId>
+            </exclusion>
+         </exclusions>
+      </dependency>
+      <dependency>
+         <groupId>org.exoplatform.core</groupId>
+         <artifactId>exo.core.component.script.groovy</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.exoplatform.ws</groupId>
+         <artifactId>exo.ws.rest.core</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.exoplatform.ws</groupId>
+         <artifactId>exo.ws.rest.ext</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.exoplatform.ws</groupId>
+         <artifactId>exo.ws.commons</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>commons-chain</groupId>
+         <artifactId>commons-chain</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>jgroups</groupId>
+         <artifactId>jgroups</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>javax.ws.rs</groupId>
+         <artifactId>jsr311-api</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>commons-fileupload</groupId>
+         <artifactId>commons-fileupload</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>hsqldb</groupId>
+         <artifactId>hsqldb</artifactId>
+         <scope>test</scope>
+      </dependency>
+   </dependencies>
+   <build>
+      <resources>
+         <resource>
+            <directory>src/main/java</directory>
+            <includes>
+               <include>**/*.xml</include>
+               <include>**/*.html</include>
+               <include>**/*.vm</include>
+               <include>**/*.css</include>
+               <include>**/*.ion</include>
+               <include>**/*.groovy</include>
+            </includes>
+         </resource>
+      </resources>
+      <testResources>
+         <testResource>
+            <directory>src/test/resources</directory>
+            <includes>
+               <include>**/*.properties</include>
+               <include>**/*.xml</include>
+               <include>**/*.drl</include>
+               <include>**/*.vm</include>
+               <include>**/*.doc</include>
+               <include>**/*.xls</include>
+               <include>**/*.ppt</include>
+               <include>**/*.txt</include>
+               <include>**/*.jar</include>
+               <include>**/*.pom</include>
+               <include>**/*.sha1</include>
+               <include>**/*.conf</include>
+               <include>**/*.groovy</include>
+            </includes>
+         </testResource>
+         <testResource>
+            <directory>src/test/java</directory>
+            <includes>
+               <include>**/*.xml</include>
+            </includes>
+         </testResource>
+      </testResources>
+      <pluginManagement>
+         <plugins>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-jar-plugin</artifactId>
+               <configuration>
+                  <archive>
+                     <manifest>
+                        <addClasspath>true</addClasspath>
+                     </manifest>
+                  </archive>
+               </configuration>
+            </plugin>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-surefire-plugin</artifactId>
+               <configuration>
+                  <includes>
+                     <include>**/actions/*Test.java</include>
+                     <include>**/metadata/*Test.java</include>
+                     <include>**/owner/*Test.java</include>
+                     <include>**/registry/*Test.java</include>
+                     <include>**/app/*Test.java</include>
+                     <include>**/resource/*Test.java</include>
+                     <include>**/groovy/*Test.java</include>
+                     <include>**/replication/*.java</include>
+                     <include>**/replication/external/*.java</include>
+                     <include>**/replication/async/**/*.java</include>
+                  </includes>
+                  <excludes>
+                     <exclude>**/BaseStandaloneTest.java</exclude>
+                     <exclude>**/replication/*.java</exclude>
+                     <exclude>**/replication/external/*.java</exclude>
+                     <exclude>**/replication/external/BaseTestCaseChecker.java</exclude>
+                     <exclude>**/backup/*.java</exclude>
+                     <exclude>**/access/*.java</exclude>   
+                     <exclude>**/LocalStorageMultithreadTest.java</exclude>
+                  </excludes>
+               </configuration>
+            </plugin>
+         </plugins>
+      </pluginManagement>
+   </build>
+
+</project>
