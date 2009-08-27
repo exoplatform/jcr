@@ -1,0 +1,90 @@
+<!--
+
+    Copyright (C) 2009 eXo Platform SAS.
+
+    This is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as
+    published by the Free Software Foundation; either version 2.1 of
+    the License, or (at your option) any later version.
+
+    This software is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this software; if not, write to the Free
+    Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+    02110-1301 USA, or see the FSF site: http://www.fsf.org.
+
+-->
+<assembly>
+   <id>binary</id>
+   <includeBaseDirectory>false</includeBaseDirectory>
+   <fileSets>
+      <fileSet>
+         <directory>bin</directory>
+         <outputDirectory>/</outputDirectory>
+         <includes>
+            <include>**/*.cmd</include>
+            <include>**/*.sh</include>
+         </includes>
+      </fileSet>
+      <fileSet>
+         <outputDirectory>/</outputDirectory>
+         <includes>
+            <include>bin/**/*</include>
+         </includes>
+         <excludes>
+            <exclude>bin/**/*.cmd</exclude>
+            <exclude>bin/**/*.sh</exclude>
+         </excludes>
+      </fileSet>
+      <fileSet>
+         <includes>
+            <include>logs/**/*</include>
+         </includes>
+      </fileSet>
+      <fileSet>
+         <directory>target</directory>
+         <outputDirectory>/</outputDirectory>
+         <includes>
+            <include>*.jar</include>
+         </includes>
+      </fileSet>
+   </fileSets>
+
+   <dependencySets>
+      <dependencySet>
+         <outputDirectory>lib</outputDirectory>
+         <unpack>false</unpack>
+         <scope>compile</scope>
+         <excludes>
+            <exclude>junit:junit</exclude>
+            <exclude>commons-lang:commons-lang</exclude>
+            <exclude>xpp3:xpp3</exclude>
+            <exclude>org.exoplatform.tool:exo.tool.framework.junit</exclude>
+            <exclude>javax.portlet:portlet-api</exclude>
+            <exclude>javax.faces:jsf-api</exclude>
+            <exclude>javax.servlet:servlet-api</exclude>
+            <exclude>picocontainer:picocontainer</exclude>
+            <exclude>jmock:jmock</exclude>
+            <exclude>xstream:xstream</exclude>
+            <exclude>commons-beanutils:commons-beanutils</exclude>
+            <exclude>commons-collections:commons-collections</exclude>
+            <exclude>bcel:bcel</exclude>
+            <exclude>javax.activation:activation</exclude>
+            <exclude>jotm:jotm</exclude>
+            <exclude>jotm:jotm_jrmp_stubs</exclude>
+            <exclude>javax.transaction:jta</exclude>
+            <exclude>org.objectweb.carol:carol</exclude>
+            <exclude>howl:howl-logger</exclude>
+            <exclude>quartz:quartz</exclude>
+            <exclude>javax.mail:mail</exclude>
+            <exclude>javax.transaction:jta</exclude>
+            <exclude>stax:stax-api</exclude>
+         </excludes>
+
+      </dependencySet>
+   </dependencySets>
+</assembly>

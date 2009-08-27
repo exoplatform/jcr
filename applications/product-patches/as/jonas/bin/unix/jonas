@@ -1,0 +1,313 @@
+#!/bin/sh
+# ---------------------------------------------------------------------------
+# JOnAS: Java(TM) Open Application Server
+# Copyright (C) 1999 Bull S.A.
+# Contact: jonas-team@objectweb.org
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License, or any later version.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
+# USA
+#
+# Initial developer(s): Philippe Durieux
+# Contributor(s): Adriana Danes :
+#                    - Change /config en /conf
+#                    - Use JONAS_BASE
+# Florent Benoit & Ludovic Bert
+# ---------------------------------------------------------------------------
+# $Id: jonas.sh 9868 2006-11-24 16:52:00Z coqp $
+# ---------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------
+# Compute JONAS_ROOT in case it has not been set.
+# -----------------------------------------------------------------------
+if [ ! -d $JONAS_ROOT/ejbjars ]
+then
+  savewd=`pwd`
+  cd `dirname $0`
+  zdir=`pwd`
+  cd $savewd
+  zfqn=$zdir/`basename "$0"`
+  JONAS_ROOT=`dirname $zdir`
+  JONAS_ROOT=`dirname $JONAS_ROOT`
+  export JONAS_ROOT
+fi
+
+# -----------------------------------------------------------------------
+# Config execution environment
+# -----------------------------------------------------------------------
+. $JONAS_ROOT/bin/unix/setenv
+. $JONAS_ROOT/bin/unix/config_env
+
+# add ow_jonas_bootstrap.jar to the classpath for the bootstrap class
+CLASSPATH=$JONAS_ROOT/lib/common/ow_jonas_bootstrap.jar$SPS$JONAS_ROOT/lib/commons/jonas/jakarta-commons/commons-logging-api.jar$SPS$CLASSPATH
+
+JROOT=$JONAS_ROOT
+JBASE=$JONAS_BASE
+
+if type readlink >/dev/null 2>&1
+then
+   JROOT=`readlink -f $JONAS_ROOT` 
+   JBASE=`readlink -f $JONAS_BASE`
+fi 
+
+JONAS_OPTS="\
+    -Dinstall.root=$JROOT  \
+    -Djonas.base=$JBASE \
+    -Djava.awt.headless=true \
+    -Djava.security.policy=$JONAS_BASE/conf/java.policy \
+    -Djava.security.auth.login.config=$JONAS_BASE/conf/jaas.config \
+    -Djonas.classpath=$XTRA_CLASSPATH \
+    -Djonas.default.classloader=true \
+    -Dorg.omg.CORBA.ORBClass=org.jacorb.orb.ORB \
+    -Dorg.omg.CORBA.ORBSingletonClass=org.jacorb.orb.ORBSingleton \
+    -Dorg.omg.PortableInterceptor.ORBInitializerClass.standard_init=org.jacorb.orb.standardInterceptors.IORInterceptorInitializer \
+    -Djavax.rmi.CORBA.PortableRemoteObjectClass=org.objectweb.carol.rmi.multi.MultiPRODelegate \
+    -Djava.naming.factory.initial=org.objectweb.carol.jndi.spi.MultiOrbInitialContextFactory \
+    -Djavax.rmi.CORBA.UtilClass=org.objectweb.carol.util.delegate.UtilDelegateImpl \
+    -Djava.endorsed.dirs=$JONAS_ROOT/lib/endorsed "
+
+# ------------------------- Begin eXo configuration ----------------------------
+cd $JONAS_ROOT/bin
+JONAS_OPTS="$JONAS_OPTS -Dorg.exoplatform.services.log.Log=org.apache.commons.logging.impl.SimpleLog -Djava.awt.headless=true"
+JAVA_OPTS="$JAVA_OPTS -Xmx512M"
+# -------------------------- End eXo configuration -----------------------------
+
+# ---------------------------------------------
+# Get args
+# ---------------------------------------------
+PROF_OPTS=
+PROF=
+ARGS=
+MODE=
+JONASNAME=
+PINGTIMEOUT=
+NAME_OPT=
+PINGTIMEOUT_OPT=
+WHERE=background
+while [ "$#" -gt 0 ]
+do	case "$1" in
+  start)
+    MODE=start
+    ;;
+  stop)
+    MODE=stop
+    ;;
+  admin)
+    MODE=admin
+    ;;
+  version)
+    MODE=version
+    ;;
+  check)
+    MODE=check
+    ;;
+  -cp)
+    shift
+    CLASSPATH=$CLASSPATH$SPS$1
+    ;;
+  -debug)
+    shift
+    # $1=-p
+    if [ "$1" != "-p" ]; then
+      echo "-debug mode need a following \"-p <debug-port>\""
+      exit 1
+    fi
+    shift
+    JONAS_DEBUG_PORT=$1
+    JONAS_DEBUG_SUSPEND=n
+    if [ "$2" = "-s" ]; then
+      shift
+      shift
+      JONAS_DEBUG_SUSPEND=$1
+    fi
+    echo "JOnAS Debug Info :"
+    echo " listening on port : $JONAS_DEBUG_PORT"
+    echo " suspend mode : $JONAS_DEBUG_SUSPEND"
+    JONAS_DEBUG_OPTS=" -Xdebug -Xnoagent -Xrunjdwp:transport=dt_socket,server=y,address=$JONAS_DEBUG_PORT,suspend=$JONAS_DEBUG_SUSPEND"
+    ;;
+  -fg)
+    WHERE=foreground
+    ;;
+  -bg)
+    WHERE=background
+    ;;
+  -win)
+    WHERE=window
+    ;;
+  -nojit)
+    JONAS_OPTS="$JONAS_OPTS -Djava.compiler=NONE"
+    ;;
+  -rmi-annotation)
+    ANNOTATE=true
+    export ANNOTATE
+    ;;
+  -n)
+    shift
+    JONASNAME=$1
+    ;;
+  -timeout)
+    shift
+    PINGTIMEOUT=$1
+    ;;
+  -D*)
+    JONAS_OPTS="$JONAS_OPTS $1"
+    ;;
+  -prof)
+    PROF=yes
+    ;;
+  -target)
+    if [ "$MODE" = "start" ]
+    then ARGS="$ARGS -start"
+    fi
+    if [ "$MODE" = "stop" ]
+    then ARGS="$ARGS -stop"
+    fi
+    MODE=admin
+    ARGS="$ARGS -target"
+    ;;
+  *)
+    # all other args are passed "as is" to the java program
+    ARGS="$ARGS $1"
+    ;;
+  esac
+  shift
+done
+
+# ---------------------------------------------
+# Check args
+# ---------------------------------------------
+case "$MODE" in
+start)
+  CLASS_TO_RUN=org.objectweb.jonas.server.Server
+  ;;
+stop)
+  CLASS_TO_RUN="org.objectweb.jonas.adm.JonasAdmin -s"
+  ;;
+admin)
+  CLASS_TO_RUN=org.objectweb.jonas.adm.JonasAdmin
+  ;;
+version)
+  CLASS_TO_RUN=org.objectweb.jonas_lib.version.Version
+  ;;
+check)
+  CLASS_TO_RUN=org.objectweb.jonas.tools.CheckEnv
+  ;;
+*)
+  echo "Usage: jonas start|stop|admin|version|check [options]"
+  echo "Debug mode : jonas start -debug -p <debug-port> [-s <suspend:y/n>]"
+  exit 1
+  ;;
+esac
+
+# ---------------------------------------------
+# PROF_OPT may be used for using profiler tool
+# ---------------------------------------------
+
+case "$PROF" in
+  yes)
+    PROF_OPTS="$PROF_OPT"
+    ;;
+  no)
+  ;;
+esac
+
+# ---------------------------------------------
+# Print out JONAS_BASE
+# ---------------------------------------------
+case "$MODE" in
+  start)
+    echo "JONAS_BASE set to" $JONAS_BASE
+    ;;
+  check)
+    echo "JONAS_BASE set to" $JONAS_BASE
+    ;;
+esac
+
+# ---------------------------------------------
+# Add RMI Annotation
+# ---------------------------------------------
+if [ -z "$ANNOTATE" ]
+then
+  JONAS_OPTS="$JONAS_OPTS -Djava.rmi.server.RMIClassLoaderSpi=org.objectweb.jonas.server.RemoteClassLoaderSpi"
+fi
+
+# ---------------------------------------------
+# Set jonas server name
+# ---------------------------------------------
+if [ ! -z "$JONASNAME" ]
+then
+  NAME_OPT="-n $JONASNAME"
+  JONAS_OPTS="$JONAS_OPTS -Djonas.name=$JONASNAME "
+fi
+
+# ---------------------------------------------
+# Set jonas timeout for ping
+# ---------------------------------------------
+if [ ! -z "$PINGTIMEOUT" ]
+then
+  PINGTIMEOUT_OPT="-timeout $PINGTIMEOUT"
+fi
+
+
+# ---------------------------------------------
+# Set tomcat base directory
+# ---------------------------------------------
+if [ -n "$CATALINA_HOME" ]
+then
+  TOMCAT_OPTS="$TOMCAT_OPTS -Dcatalina.home=$CATALINA_HOME"
+fi
+if [ -n "$CATALINA_BASE" ]
+then
+  TOMCAT_OPTS="$TOMCAT_OPTS -Dcatalina.base=$CATALINA_BASE"
+fi
+
+# ---------------------------------------------
+# Set jetty home directory
+# ---------------------------------------------
+JETTY_OPTS=""
+if [ -n "$JETTY_HOME" ]
+then
+  JETTY_OPTS="-Djetty.home=$JETTY_HOME"
+fi
+
+# ---------------------------------------------
+# Run java command
+# ---------------------------------------------
+
+# Unless we are opening a new window, unset DISPLAY variable
+if [ "$WHERE" != "window" ]
+then
+  # Unset display so that java.awt.headless is effective
+  unset DISPLAY
+fi
+
+BOOT=org.objectweb.jonas.server.Bootstrap
+
+if [ "$MODE" = "start" ]
+then
+  case "$WHERE" in
+    foreground)
+      $JAVA $JAVA_OPTS $JONAS_DEBUG_OPTS $JONAS_OPTS $TOMCAT_OPTS $JETTY_OPTS $PROF_OPTS $ARGS $BOOT $CLASS_TO_RUN
+      ;;
+    background)
+      $JAVA $JAVA_OPTS $JONAS_DEBUG_OPTS $JONAS_OPTS $TOMCAT_OPTS $JETTY_OPTS $PROF_OPTS $ARGS $BOOT $CLASS_TO_RUN &
+      $JAVA                              $JONAS_OPTS $TOMCAT_OPTS $JETTY_OPTS            $BOOT org.objectweb.jonas.adm.JonasAdmin -ping $NAME_OPT $PINGTIMEOUT_OPT
+      ;;
+    window)
+      xterm -title $HOSTNAME:$JONASNAME -geometry 110x16 -sb -e jonas start -fg $JONAS_DEBUG_OPTS $JONAS_OPTS $ARGS&
+      ;;
+  esac
+else
+      $JAVA                              $JONAS_OPTS $TOMCAT_OPTS $JETTY_OPTS            $BOOT $CLASS_TO_RUN $NAME_OPT $PINGTIMEOUT_OPT $ARGS
+fi
