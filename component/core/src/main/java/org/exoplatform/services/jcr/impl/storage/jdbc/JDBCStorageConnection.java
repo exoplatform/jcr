@@ -1619,9 +1619,6 @@ abstract public class JDBCStorageConnection extends DBConstants implements Works
       final ResultSet valueRecords = findValuesStorageDescriptorsByPropertyId(cid);
       try
       {
-         // [PN] 12.07.07 if (... instead while (...
-         // so, we don't need iterate throught each value of the property
-         // IO channel will do this work according the existed files on FS
          if (valueRecords.next())
          {
             // delete all Values in database
