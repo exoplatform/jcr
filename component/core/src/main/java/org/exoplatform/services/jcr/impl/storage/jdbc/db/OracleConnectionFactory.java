@@ -41,8 +41,7 @@ import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: OracleConnectionFactory.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class OracleConnectionFactory
-   extends GenericConnectionFactory
+public class OracleConnectionFactory extends GenericConnectionFactory
 {
 
    public static int CONNCACHE_MAX_LIMIT = 25;
@@ -82,8 +81,8 @@ public class OracleConnectionFactory
     *           if error occurs
     */
    public OracleConnectionFactory(String dbDriver, String dbUrl, String dbUserName, String dbPassword,
-            String containerName, boolean multiDb, ValueStoragePluginProvider valueStorageProvider, int maxBufferSize,
-            File swapDirectory, FileCleaner swapCleaner) throws RepositoryException
+      String containerName, boolean multiDb, ValueStoragePluginProvider valueStorageProvider, int maxBufferSize,
+      File swapDirectory, FileCleaner swapCleaner) throws RepositoryException
    {
 
       // ;D:\Devel\oracle_instantclient_10_2\;C:\oracle\ora92\bin;
@@ -112,16 +111,14 @@ public class OracleConnectionFactory
        */
 
       super(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb, valueStorageProvider, maxBufferSize,
-               swapDirectory, swapCleaner);
+         swapDirectory, swapCleaner);
 
       Object cds = null;
       try
       {
          Class cdsClass = OracleConnectionFactory.class.getClassLoader().loadClass("oracle.jdbc.pool.OracleDataSource");
-         Constructor cdsConstructor = cdsClass.getConstructor(new Class[]
-         {});
-         cds = cdsConstructor.newInstance(new Object[]
-         {});
+         Constructor cdsConstructor = cdsClass.getConstructor(new Class[]{});
+         cds = cdsConstructor.newInstance(new Object[]{});
 
          // set cache properties
          Properties prop = new java.util.Properties();
@@ -131,35 +128,25 @@ public class OracleConnectionFactory
          prop.setProperty("InactivityTimeout", String.valueOf(CONNCACHE_INACTIVITY_TIMEOUT));
          prop.setProperty("AbandonedConnectionTimeout", String.valueOf(CONNCACHE_ABADONDED_TIMEOUT));
 
-         Method setURL = cds.getClass().getMethod("setURL", new Class[]
-         {String.class});
-         setURL.invoke(cds, new Object[]
-         {this.dbUrl});
+         Method setURL = cds.getClass().getMethod("setURL", new Class[]{String.class});
+         setURL.invoke(cds, new Object[]{this.dbUrl});
 
-         Method setUser = cds.getClass().getMethod("setUser", new Class[]
-         {String.class});
-         setUser.invoke(cds, new Object[]
-         {this.dbUserName});
+         Method setUser = cds.getClass().getMethod("setUser", new Class[]{String.class});
+         setUser.invoke(cds, new Object[]{this.dbUserName});
 
-         Method setPassword = cds.getClass().getMethod("setPassword", new Class[]
-         {String.class});
-         setPassword.invoke(cds, new Object[]
-         {this.dbPassword});
+         Method setPassword = cds.getClass().getMethod("setPassword", new Class[]{String.class});
+         setPassword.invoke(cds, new Object[]{this.dbPassword});
 
-         Method setConnectionCachingEnabled = cds.getClass().getMethod("setConnectionCachingEnabled", new Class[]
-         {boolean.class});
-         setConnectionCachingEnabled.invoke(cds, new Object[]
-         {true});
+         Method setConnectionCachingEnabled =
+            cds.getClass().getMethod("setConnectionCachingEnabled", new Class[]{boolean.class});
+         setConnectionCachingEnabled.invoke(cds, new Object[]{true});
 
-         Method setConnectionCacheProperties = cds.getClass().getMethod("setConnectionCacheProperties", new Class[]
-         {Properties.class});
-         setConnectionCacheProperties.invoke(cds, new Object[]
-         {prop});
+         Method setConnectionCacheProperties =
+            cds.getClass().getMethod("setConnectionCacheProperties", new Class[]{Properties.class});
+         setConnectionCacheProperties.invoke(cds, new Object[]{prop});
 
-         Method setConnectionCacheName = cds.getClass().getMethod("setConnectionCacheName", new Class[]
-         {String.class});
-         setConnectionCacheName.invoke(cds, new Object[]
-         {"EXOJCR_OCI__" + containerName});
+         Method setConnectionCacheName = cds.getClass().getMethod("setConnectionCacheName", new Class[]{String.class});
+         setConnectionCacheName.invoke(cds, new Object[]{"EXOJCR_OCI__" + containerName});
 
       }
       catch (Throwable e)
@@ -183,23 +170,28 @@ public class OracleConnectionFactory
     * {@inheritDoc}
     */
    @Override
-   public Connection getJdbcConnection() throws RepositoryException
+   public Connection getJdbcConnection(boolean readOnly) throws RepositoryException
    {
       if (ociDataSource != null)
          try
          {
-            return getCachedConnection();
+            Connection conn = getCachedConnection();
+
+            if (readOnly) // set this feature only if it asked
+               conn.setReadOnly(true);
+
+            return conn;
          }
          catch (Throwable e)
          {
             throw new RepositoryException("Oracle OCI cached connection open error " + e, e);
          }
 
-      return super.getJdbcConnection();
+      return super.getJdbcConnection(readOnly);
    }
 
    /**
-    * getCachedConnection.
+    * Get CachedConnection.
     *
     * @return
     * @throws NoSuchMethodException
@@ -208,14 +200,12 @@ public class OracleConnectionFactory
     * @throws InvocationTargetException
     */
    protected Connection getCachedConnection() throws NoSuchMethodException, IllegalArgumentException,
-            IllegalAccessException, InvocationTargetException
+      IllegalAccessException, InvocationTargetException
    {
 
       // NOTE: ociDataSource - actually instance of javax.sql.DataSource
-      Method getConnection = ociDataSource.getClass().getMethod("getConnection", new Class[]
-      {});
-      Connection conn = (Connection) getConnection.invoke(ociDataSource, new Object[]
-      {});
+      Method getConnection = ociDataSource.getClass().getMethod("getConnection", new Class[]{});
+      Connection conn = (Connection)getConnection.invoke(ociDataSource, new Object[]{});
 
       return conn;
    }

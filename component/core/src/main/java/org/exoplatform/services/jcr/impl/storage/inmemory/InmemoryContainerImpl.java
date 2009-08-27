@@ -35,8 +35,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @version $Id: InmemoryContainerImpl.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class InmemoryContainerImpl
-   extends WorkspaceDataContainerBase
+public class InmemoryContainerImpl extends WorkspaceDataContainerBase
 {
 
    private static Log log = ExoLogger.getLogger("jcr.InmemoryContainerImpl");
@@ -84,6 +83,14 @@ public class InmemoryContainerImpl
    public String getStorageVersion()
    {
       return "1.0";
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public WorkspaceStorageConnection openConnection(boolean readOnly) throws RepositoryException
+   {
+      return new InmemoryStorageConnection(name);
    }
 
    /**

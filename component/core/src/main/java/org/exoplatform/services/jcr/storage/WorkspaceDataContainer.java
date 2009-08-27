@@ -32,8 +32,7 @@ import javax.jcr.RepositoryException;
  * @version $Id: WorkspaceDataContainer.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public interface WorkspaceDataContainer
-   extends DataContainer
+public interface WorkspaceDataContainer extends DataContainer
 {
 
    // configuration params
@@ -70,12 +69,24 @@ public interface WorkspaceDataContainer
    WorkspaceStorageConnection openConnection() throws RepositoryException;
 
    /**
-    * @return the connection to workspace storage, if it possible the connection will use same
-    *         physical resource (already obtained) as original connection, otherwise same behaviour
-    *         will be used as for openConnection().
+    * Open connection and marked it as READ-ONLY if <code>readOnly</code> is true. <br/>
+    * EXPERIMENTAL! Use it with care.
     * 
-    *         normally implementation of this method should be synchronized
+    * @param readOnly
+    *          boolean, if true the Connection will be marked as READ-ONLY
+    * 
+    * @return the new connection to workspace storage normally implementation of this method should
+    *         be synchronized
     */
+   WorkspaceStorageConnection openConnection(boolean readOnly) throws RepositoryException;
+
+   /**
+     * @return the connection to workspace storage, if it possible the connection will use same
+     *         physical resource (already obtained) as original connection, otherwise same behaviour
+     *         will be used as for openConnection().
+     * 
+     *         normally implementation of this method should be synchronized
+     */
    WorkspaceStorageConnection reuseConnection(WorkspaceStorageConnection original) throws RepositoryException;
 
 }

@@ -41,8 +41,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: GenericConnectionFactory.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class GenericConnectionFactory
-   implements WorkspaceStorageConnectionFactory
+public class GenericConnectionFactory implements WorkspaceStorageConnectionFactory
 {
 
    protected final Log log = ExoLogger.getLogger("jcr.GenericConnectionFactory");
@@ -98,8 +97,8 @@ public class GenericConnectionFactory
     *          - Swap cleaner (internal FileCleaner).
     */
    protected GenericConnectionFactory(DataSource dataSource, String dbDriver, String dbUrl, String dbUserName,
-            String dbPassword, String containerName, boolean multiDb, ValueStoragePluginProvider valueStorageProvider,
-            int maxBufferSize, File swapDirectory, FileCleaner swapCleaner)
+      String dbPassword, String containerName, boolean multiDb, ValueStoragePluginProvider valueStorageProvider,
+      int maxBufferSize, File swapDirectory, FileCleaner swapCleaner)
    {
 
       this.containerName = containerName;
@@ -137,12 +136,11 @@ public class GenericConnectionFactory
     *          - Swap cleaner (internal FileCleaner).
     */
    public GenericConnectionFactory(DataSource dataSource, String containerName, boolean multiDb,
-            ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory,
-            FileCleaner swapCleaner)
+      ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory, FileCleaner swapCleaner)
    {
 
       this(dataSource, null, null, null, null, containerName, multiDb, valueStorageProvider, maxBufferSize,
-               swapDirectory, swapCleaner);
+         swapDirectory, swapCleaner);
    }
 
    /**
@@ -170,12 +168,12 @@ public class GenericConnectionFactory
     *          - Swap cleaner (internal FileCleaner).
     */
    public GenericConnectionFactory(String dbDriver, String dbUrl, String dbUserName, String dbPassword,
-            String containerName, boolean multiDb, ValueStoragePluginProvider valueStorageProvider, int maxBufferSize,
-            File swapDirectory, FileCleaner swapCleaner) throws RepositoryException
+      String containerName, boolean multiDb, ValueStoragePluginProvider valueStorageProvider, int maxBufferSize,
+      File swapDirectory, FileCleaner swapCleaner) throws RepositoryException
    {
 
       this(null, dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb, valueStorageProvider, maxBufferSize,
-               swapDirectory, swapCleaner);
+         swapDirectory, swapCleaner);
 
       try
       {
@@ -200,18 +198,25 @@ public class GenericConnectionFactory
     */
    public WorkspaceStorageConnection openConnection() throws RepositoryException
    {
+      return openConnection(false);
+   }
 
+   /**
+    * {@inheritDoc}
+    */
+   public WorkspaceStorageConnection openConnection(boolean readOnly) throws RepositoryException
+   {
       try
       {
 
          if (multiDb)
          {
-            return new MultiDbJDBCConnection(getJdbcConnection(), containerName, valueStorageProvider, maxBufferSize,
-                     swapDirectory, swapCleaner);
+            return new MultiDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerName,
+               valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
          }
 
-         return new SingleDbJDBCConnection(getJdbcConnection(), containerName, valueStorageProvider, maxBufferSize,
-                  swapDirectory, swapCleaner);
+         return new SingleDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerName, valueStorageProvider,
+            maxBufferSize, swapDirectory, swapCleaner);
 
       }
       catch (SQLException e)
@@ -223,29 +228,40 @@ public class GenericConnectionFactory
    /**
     * {@inheritDoc}
     */
-   public Connection getJdbcConnection() throws RepositoryException
+   public Connection getJdbcConnection(boolean readOnly) throws RepositoryException
    {
       try
       {
          final Connection conn =
-                  dbDataSource != null ? dbDataSource.getConnection() : (dbUserName != null ? DriverManager
-                           .getConnection(dbUrl, dbUserName, dbPassword) : DriverManager.getConnection(dbUrl));
+            dbDataSource != null ? dbDataSource.getConnection() : (dbUserName != null ? DriverManager.getConnection(
+               dbUrl, dbUserName, dbPassword) : DriverManager.getConnection(dbUrl));
+
+         if (readOnly) // set this feature only if it asked
+            conn.setReadOnly(readOnly);
 
          return monitorInterest == 0 ? conn : new ManagedConnection(conn, monitorInterest);
       }
       catch (SQLException e)
       {
          String err =
-                  "Error of JDBC connection open. SQLException: " + e.getMessage() + ", SQLState: " + e.getSQLState()
-                           + ", VendorError: " + e.getErrorCode();
+            "Error of JDBC connection open. SQLException: " + e.getMessage() + ", SQLState: " + e.getSQLState()
+               + ", VendorError: " + e.getErrorCode();
          throw new RepositoryException(err, e);
       }
    }
 
    /**
-    * JDBC monitor init procedure.
-    *
+    * {@inheritDoc}
     */
+   public Connection getJdbcConnection() throws RepositoryException
+   {
+      return getJdbcConnection(false);
+   }
+
+   /**
+     * JDBC monitor init procedure.
+     *
+     */
    private void initMonitor()
    {
       String monitor = System.getProperty(ManagedConnection.JCR_JDBC_CONNECTION_MONITOR);

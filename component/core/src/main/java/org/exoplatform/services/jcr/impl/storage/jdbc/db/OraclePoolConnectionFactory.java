@@ -38,8 +38,7 @@ import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: OraclePoolConnectionFactory.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class OraclePoolConnectionFactory
-   extends GenericConnectionFactory
+public class OraclePoolConnectionFactory extends GenericConnectionFactory
 {
 
    public static int CONNPOOL_MAX_LIMIT = 20;
@@ -77,8 +76,8 @@ public class OraclePoolConnectionFactory
     *           if error occurs
     */
    public OraclePoolConnectionFactory(String dbDriver, String dbUrl, String dbUserName, String dbPassword,
-            String containerName, boolean multiDb, ValueStoragePluginProvider valueStorageProvider, int maxBufferSize,
-            File swapDirectory, FileCleaner swapCleaner) throws RepositoryException
+      String containerName, boolean multiDb, ValueStoragePluginProvider valueStorageProvider, int maxBufferSize,
+      File swapDirectory, FileCleaner swapCleaner) throws RepositoryException
    {
 
       // ;D:\Devel\oracle_instantclient_10_2\;C:\oracle\ora92\bin;
@@ -107,23 +106,20 @@ public class OraclePoolConnectionFactory
        */
 
       super(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb, valueStorageProvider, maxBufferSize,
-               swapDirectory, swapCleaner);
+         swapDirectory, swapCleaner);
 
       Object cpool = null;
       try
       {
          Class cpoolClass =
-                  OraclePoolConnectionFactory.class.getClassLoader().loadClass(
-                           "oracle.jdbc.pool.OracleOCIConnectionPool");
-         Constructor cpoolConstructor = cpoolClass.getConstructor(new Class[]
-         {String.class, String.class, String.class, Properties.class});
+            OraclePoolConnectionFactory.class.getClassLoader().loadClass("oracle.jdbc.pool.OracleOCIConnectionPool");
+         Constructor cpoolConstructor =
+            cpoolClass.getConstructor(new Class[]{String.class, String.class, String.class, Properties.class});
 
-         cpool = cpoolConstructor.newInstance(new Object[]
-         {this.dbUserName, this.dbPassword, this.dbUrl, null});
-         Method setConnectionCachingEnabled = cpool.getClass().getMethod("setConnectionCachingEnabled", new Class[]
-         {boolean.class});
-         setConnectionCachingEnabled.invoke(cpool, new Object[]
-         {true});
+         cpool = cpoolConstructor.newInstance(new Object[]{this.dbUserName, this.dbPassword, this.dbUrl, null});
+         Method setConnectionCachingEnabled =
+            cpool.getClass().getMethod("setConnectionCachingEnabled", new Class[]{boolean.class});
+         setConnectionCachingEnabled.invoke(cpool, new Object[]{true});
       }
       catch (Throwable e)
       {
@@ -160,19 +156,24 @@ public class OraclePoolConnectionFactory
     * {@inheritDoc}
     */
    @Override
-   public Connection getJdbcConnection() throws RepositoryException
+   public Connection getJdbcConnection(boolean readOnly) throws RepositoryException
    {
       if (ociPool != null)
          try
          {
-            return getPoolConnection();
+            Connection conn = getPoolConnection();
+
+            if (readOnly) // set this feature only if it asked
+               conn.setReadOnly(true);
+
+            return conn;
          }
          catch (Throwable e)
          {
             throw new RepositoryException("Oracle OCI pool connection open error " + e, e);
          }
 
-      return super.getJdbcConnection();
+      return super.getJdbcConnection(readOnly);
    }
 
    /**
@@ -185,33 +186,29 @@ public class OraclePoolConnectionFactory
     * @throws InvocationTargetException
     */
    protected Connection getPoolConnection() throws NoSuchMethodException, IllegalArgumentException,
-            IllegalAccessException, InvocationTargetException
+      IllegalAccessException, InvocationTargetException
    {
-      Method getConnection = ociPool.getClass().getMethod("getConnection", new Class[]
-      {});
-      return (Connection) getConnection.invoke(ociPool, new Object[]
-      {});
+      Method getConnection = ociPool.getClass().getMethod("getConnection", new Class[]{});
+      return (Connection)getConnection.invoke(ociPool, new Object[]{});
    }
 
    protected void reconfigure() throws NoSuchMethodException, IllegalArgumentException, IllegalAccessException,
-            InvocationTargetException, NoSuchFieldException
+      InvocationTargetException, NoSuchFieldException
    {
       if (ociPool != null)
       {
          // Set up the initial pool configuration
          Properties p1 = new Properties();
-         String minLimitName = (String) ociPool.getClass().getField("CONNPOOL_MIN_LIMIT").get(null);
-         String maxLimitName = (String) ociPool.getClass().getField("CONNPOOL_MAX_LIMIT").get(null);
-         String incrName = (String) ociPool.getClass().getField("CONNPOOL_INCREMENT").get(null);
+         String minLimitName = (String)ociPool.getClass().getField("CONNPOOL_MIN_LIMIT").get(null);
+         String maxLimitName = (String)ociPool.getClass().getField("CONNPOOL_MAX_LIMIT").get(null);
+         String incrName = (String)ociPool.getClass().getField("CONNPOOL_INCREMENT").get(null);
 
          p1.put(minLimitName, Integer.toString(CONNPOOL_MIN_LIMIT));
          p1.put(maxLimitName, Integer.toString(CONNPOOL_MAX_LIMIT));
          p1.put(incrName, Integer.toString(CONNPOOL_INCREMENT));
 
          // Enable the initial configuration
-         ociPool.getClass().getMethod("setPoolConfig", new Class[]
-         {Properties.class}).invoke(ociPool, new Object[]
-         {p1});
+         ociPool.getClass().getMethod("setPoolConfig", new Class[]{Properties.class}).invoke(ociPool, new Object[]{p1});
       }
    }
 
@@ -219,28 +216,24 @@ public class OraclePoolConnectionFactory
     * Display the current status of the OracleOCIConnectionPool.
     */
    protected void displayPoolConfig() throws NoSuchMethodException, IllegalArgumentException, IllegalAccessException,
-            InvocationTargetException
+      InvocationTargetException
    {
       if (ociPool != null)
       {
 
          log.info(" =========== Oracle OCI connection pool config =========== ");
 
-         log.info(" Min poolsize Limit:\t" + ociPool.getClass().getMethod("getMinLimit", new Class[]
-         {}).invoke(ociPool, new Object[]
-         {}));
+         log.info(" Min poolsize Limit:\t"
+            + ociPool.getClass().getMethod("getMinLimit", new Class[]{}).invoke(ociPool, new Object[]{}));
 
-         log.info(" Max poolsize Limit:\t" + ociPool.getClass().getMethod("getMaxLimit", new Class[]
-         {}).invoke(ociPool, new Object[]
-         {}));
+         log.info(" Max poolsize Limit:\t"
+            + ociPool.getClass().getMethod("getMaxLimit", new Class[]{}).invoke(ociPool, new Object[]{}));
 
-         log.info(" PoolSize:\t\t\t" + ociPool.getClass().getMethod("getPoolSize", new Class[]
-         {}).invoke(ociPool, new Object[]
-         {}));
+         log.info(" PoolSize:\t\t\t"
+            + ociPool.getClass().getMethod("getPoolSize", new Class[]{}).invoke(ociPool, new Object[]{}));
 
-         log.info(" ActiveSize:\t\t" + ociPool.getClass().getMethod("getActiveSize", new Class[]
-         {}).invoke(ociPool, new Object[]
-         {}));
+         log.info(" ActiveSize:\t\t"
+            + ociPool.getClass().getMethod("getActiveSize", new Class[]{}).invoke(ociPool, new Object[]{}));
       }
    }
 

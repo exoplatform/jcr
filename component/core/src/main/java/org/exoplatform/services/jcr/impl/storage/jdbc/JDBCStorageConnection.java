@@ -29,9 +29,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.jcr.InvalidItemStateException;
@@ -73,9 +71,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov</a>
  * @version $Id: JDBCStorageConnection.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-abstract public class JDBCStorageConnection
-   extends DBConstants
-   implements WorkspaceStorageConnection
+abstract public class JDBCStorageConnection extends DBConstants implements WorkspaceStorageConnection
 {
 
    /**
@@ -110,26 +106,31 @@ abstract public class JDBCStorageConnection
    protected final List<ValueIOChannel> valueChanges;
 
    /**
-    * JDBCStorageConnection constructor.
-    * 
-    * @param dbConnection
-    *          JDBC connection
-    * @param containerName
-    *          Workspace conatiner name
-    * @param valueStorageProvider
-    *          External Value Storage provider
-    * @param maxBufferSize
-    *          maximum buffer size (config)
-    * @param swapDirectory
-    *          swap directory (config)
-    * @param swapCleaner
-    *          swap cleaner (FileCleaner)
-    * @throws SQLException
-    *           database error
+    * Read-only flag, if true the connection is marked as READ-ONLY.
     */
-   protected JDBCStorageConnection(Connection dbConnection, String containerName,
-            ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory,
-            FileCleaner swapCleaner) throws SQLException
+   protected final boolean readOnly;
+
+   /**
+     * JDBCStorageConnection constructor.
+     * 
+     * @param dbConnection
+     *          JDBC connection
+     * @param containerName
+     *          Workspace conatiner name
+     * @param valueStorageProvider
+     *          External Value Storage provider
+     * @param maxBufferSize
+     *          maximum buffer size (config)
+     * @param swapDirectory
+     *          swap directory (config)
+     * @param swapCleaner
+     *          swap cleaner (FileCleaner)
+     * @throws SQLException
+     *           database error
+     */
+   protected JDBCStorageConnection(Connection dbConnection, boolean readOnly, String containerName,
+      ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory, FileCleaner swapCleaner)
+      throws SQLException
    {
 
       this.valueStorageProvider = valueStorageProvider;
@@ -140,6 +141,7 @@ abstract public class JDBCStorageConnection
       this.containerName = containerName;
 
       this.dbConnection = dbConnection;
+      this.readOnly = readOnly;
 
       // Fix for Sybase jConnect JDBC driver bug.
       // Which throws SQLException(JZ016: The AutoCommit option is already set to
@@ -168,7 +170,7 @@ abstract public class JDBCStorageConnection
 
       if (obj instanceof JDBCStorageConnection)
       {
-         JDBCStorageConnection another = (JDBCStorageConnection) obj;
+         JDBCStorageConnection another = (JDBCStorageConnection)obj;
          return getJdbcConnection() == another.getJdbcConnection();
       }
 
@@ -274,8 +276,11 @@ abstract public class JDBCStorageConnection
       checkIfOpened();
       try
       {
-         dbConnection.close();
+         // If READ-ONLY status back it to READ-WRITE (we assume it was original state)
+         if (readOnly)
+            dbConnection.setReadOnly(true);
 
+         dbConnection.close();
       }
       catch (SQLException e)
       {
@@ -319,7 +324,7 @@ abstract public class JDBCStorageConnection
     * {@inheritDoc}
     */
    public void add(NodeData data) throws RepositoryException, UnsupportedOperationException, InvalidItemStateException,
-            IllegalStateException
+      IllegalStateException
    {
       checkIfOpened();
       try
@@ -327,7 +332,7 @@ abstract public class JDBCStorageConnection
          addNodeRecord(data);
          if (LOG.isDebugEnabled())
             LOG.debug("Node added " + data.getQPath().getAsString() + ", " + data.getIdentifier() + ", "
-                     + data.getPrimaryTypeName().getAsString());
+               + data.getPrimaryTypeName().getAsString());
 
       }
       catch (SQLException e)
@@ -343,7 +348,7 @@ abstract public class JDBCStorageConnection
     * {@inheritDoc}
     */
    public void add(PropertyData data) throws RepositoryException, UnsupportedOperationException,
-            InvalidItemStateException, IllegalStateException
+      InvalidItemStateException, IllegalStateException
    {
       checkIfOpened();
 
@@ -360,7 +365,7 @@ abstract public class JDBCStorageConnection
             catch (IOException e)
             {
                throw new RepositoryException("Can't read REFERENCE property (" + data.getQPath() + " "
-                        + data.getIdentifier() + ") value: " + e.getMessage(), e);
+                  + data.getIdentifier() + ") value: " + e.getMessage(), e);
             }
          }
 
@@ -368,7 +373,7 @@ abstract public class JDBCStorageConnection
 
          if (LOG.isDebugEnabled())
             LOG.debug("Property added " + data.getQPath().getAsString() + ", " + data.getIdentifier()
-                     + (data.getValues() != null ? ", values count: " + data.getValues().size() : ", NULL data"));
+               + (data.getValues() != null ? ", values count: " + data.getValues().size() : ", NULL data"));
 
       }
       catch (IOException e)
@@ -389,7 +394,7 @@ abstract public class JDBCStorageConnection
     * {@inheritDoc}
     */
    public void rename(NodeData data) throws RepositoryException, UnsupportedOperationException,
-            InvalidItemStateException, IllegalStateException
+      InvalidItemStateException, IllegalStateException
    {
 
       checkIfOpened();
@@ -397,8 +402,8 @@ abstract public class JDBCStorageConnection
       {
          if (renameNode(data) <= 0)
             throw new JCRInvalidItemStateException("(rename) Node not found " + data.getQPath().getAsString() + " "
-                     + data.getIdentifier() + ". Probably was deleted by another session ", data.getIdentifier(),
-                     ItemState.RENAMED);
+               + data.getIdentifier() + ". Probably was deleted by another session ", data.getIdentifier(),
+               ItemState.RENAMED);
       }
       catch (SQLException e)
       {
@@ -412,7 +417,7 @@ abstract public class JDBCStorageConnection
     * {@inheritDoc}
     */
    public void delete(NodeData data) throws RepositoryException, UnsupportedOperationException,
-            InvalidItemStateException, IllegalStateException
+      InvalidItemStateException, IllegalStateException
    {
       checkIfOpened();
 
@@ -423,12 +428,12 @@ abstract public class JDBCStorageConnection
          int nc = deleteItemByIdentifier(cid);
          if (nc <= 0)
             throw new JCRInvalidItemStateException("(delete) Node not found " + data.getQPath().getAsString() + " "
-                     + data.getIdentifier() + ". Probably was deleted by another session ", data.getIdentifier(),
-                     ItemState.DELETED);
+               + data.getIdentifier() + ". Probably was deleted by another session ", data.getIdentifier(),
+               ItemState.DELETED);
 
          if (LOG.isDebugEnabled())
             LOG.debug("Node deleted " + data.getQPath().getAsString() + ", " + data.getIdentifier() + ", "
-                     + ((NodeData) data).getPrimaryTypeName().getAsString());
+               + ((NodeData)data).getPrimaryTypeName().getAsString());
 
       }
       catch (SQLException e)
@@ -443,7 +448,7 @@ abstract public class JDBCStorageConnection
     * {@inheritDoc}
     */
    public void delete(PropertyData data) throws RepositoryException, UnsupportedOperationException,
-            InvalidItemStateException, IllegalStateException
+      InvalidItemStateException, IllegalStateException
    {
       checkIfOpened();
 
@@ -460,16 +465,16 @@ abstract public class JDBCStorageConnection
          int nc = deleteItemByIdentifier(cid);
          if (nc <= 0)
             throw new JCRInvalidItemStateException("(delete) Property not found " + data.getQPath().getAsString() + " "
-                     + data.getIdentifier() + ". Probably was deleted by another session ", data.getIdentifier(),
-                     ItemState.DELETED);
+               + data.getIdentifier() + ". Probably was deleted by another session ", data.getIdentifier(),
+               ItemState.DELETED);
 
          if (LOG.isDebugEnabled())
             LOG.debug("Property deleted "
-                     + data.getQPath().getAsString()
-                     + ", "
-                     + data.getIdentifier()
-                     + (((PropertyData) data).getValues() != null ? ", values count: "
-                              + ((PropertyData) data).getValues().size() : ", NULL data"));
+               + data.getQPath().getAsString()
+               + ", "
+               + data.getIdentifier()
+               + (((PropertyData)data).getValues() != null ? ", values count: "
+                  + ((PropertyData)data).getValues().size() : ", NULL data"));
 
       }
       catch (IOException e)
@@ -490,7 +495,7 @@ abstract public class JDBCStorageConnection
     * {@inheritDoc}
     */
    public void update(NodeData data) throws RepositoryException, UnsupportedOperationException,
-            InvalidItemStateException, IllegalStateException
+      InvalidItemStateException, IllegalStateException
    {
       checkIfOpened();
       try
@@ -499,12 +504,12 @@ abstract public class JDBCStorageConnection
          // order numb update
          if (updateNodeByIdentifier(data.getPersistedVersion(), data.getQPath().getIndex(), data.getOrderNumber(), cid) <= 0)
             throw new JCRInvalidItemStateException("(update) Node not found " + data.getQPath().getAsString() + " "
-                     + data.getIdentifier() + ". Probably was deleted by another session ", data.getIdentifier(),
-                     ItemState.UPDATED);
+               + data.getIdentifier() + ". Probably was deleted by another session ", data.getIdentifier(),
+               ItemState.UPDATED);
 
          if (LOG.isDebugEnabled())
             LOG.debug("Node updated " + data.getQPath().getAsString() + ", " + data.getIdentifier() + ", "
-                     + data.getPrimaryTypeName().getAsString());
+               + data.getPrimaryTypeName().getAsString());
 
       }
       catch (SQLException e)
@@ -519,7 +524,7 @@ abstract public class JDBCStorageConnection
     * {@inheritDoc}
     */
    public void update(PropertyData data) throws RepositoryException, UnsupportedOperationException,
-            InvalidItemStateException, IllegalStateException
+      InvalidItemStateException, IllegalStateException
    {
       checkIfOpened();
 
@@ -530,8 +535,8 @@ abstract public class JDBCStorageConnection
          // update type
          if (updatePropertyByIdentifier(data.getPersistedVersion(), data.getType(), cid) <= 0)
             throw new JCRInvalidItemStateException("(update) Property not found " + data.getQPath().getAsString() + " "
-                     + data.getIdentifier() + ". Probably was deleted by another session ", data.getIdentifier(),
-                     ItemState.UPDATED);
+               + data.getIdentifier() + ". Probably was deleted by another session ", data.getIdentifier(),
+               ItemState.UPDATED);
 
          // update reference
          try
@@ -546,7 +551,7 @@ abstract public class JDBCStorageConnection
          catch (IOException e)
          {
             throw new RepositoryException("Can't update REFERENCE property (" + data.getQPath() + " "
-                     + data.getIdentifier() + ") value: " + e.getMessage(), e);
+               + data.getIdentifier() + ") value: " + e.getMessage(), e);
          }
 
          // do Values update: delete all and add all
@@ -555,7 +560,7 @@ abstract public class JDBCStorageConnection
 
          if (LOG.isDebugEnabled())
             LOG.debug("Property updated " + data.getQPath().getAsString() + ", " + data.getIdentifier()
-                     + (data.getValues() != null ? ", values count: " + data.getValues().size() : ", NULL data"));
+               + (data.getValues() != null ? ", values count: " + data.getValues().size() : ", NULL data"));
 
       }
       catch (IOException e)
@@ -583,7 +588,7 @@ abstract public class JDBCStorageConnection
          ResultSet node = findChildNodesByParentIdentifier(getInternalId(parent.getIdentifier()));
          List<NodeData> childrens = new ArrayList<NodeData>();
          while (node.next())
-            childrens.add((NodeData) itemData(parent.getQPath(), node, I_CLASS_NODE, parent.getACL()));
+            childrens.add((NodeData)itemData(parent.getQPath(), node, I_CLASS_NODE, parent.getACL()));
 
          return childrens;
       }
@@ -608,7 +613,7 @@ abstract public class JDBCStorageConnection
          ResultSet prop = findChildPropertiesByParentIdentifier(getInternalId(parent.getIdentifier()));
          List<PropertyData> children = new ArrayList<PropertyData>();
          while (prop.next())
-            children.add((PropertyData) itemData(parent.getQPath(), prop, I_CLASS_PROPERTY, null));
+            children.add((PropertyData)itemData(parent.getQPath(), prop, I_CLASS_PROPERTY, null));
 
          return children;
       }
@@ -679,7 +684,7 @@ abstract public class JDBCStorageConnection
          List<PropertyData> references = new ArrayList<PropertyData>();
          while (refProps.next())
          {
-            references.add((PropertyData) itemData(null, refProps, I_CLASS_PROPERTY, null));
+            references.add((PropertyData)itemData(null, refProps, I_CLASS_PROPERTY, null));
          }
          return references;
       }
@@ -757,7 +762,7 @@ abstract public class JDBCStorageConnection
     *           if connection is closed
     */
    protected ItemData getItemByName(NodeData parent, String parentId, QPathEntry name) throws RepositoryException,
-            IllegalStateException
+      IllegalStateException
    {
       checkIfOpened();
       ResultSet item = null;
@@ -818,7 +823,7 @@ abstract public class JDBCStorageConnection
                throw new InvalidItemStateException("Parent not found, uuid: " + getIdentifier(caid));
 
             QPathEntry qpe =
-                     new QPathEntry(InternalQName.parse(parent.getString(COLUMN_NAME)), parent.getInt(COLUMN_INDEX));
+               new QPathEntry(InternalQName.parse(parent.getString(COLUMN_NAME)), parent.getInt(COLUMN_INDEX));
             qrpath.add(qpe);
             caid = parent.getString(COLUMN_PARENTID);
          }
@@ -893,7 +898,7 @@ abstract public class JDBCStorageConnection
     *           if Repository error
     */
    private List<AccessControlEntry> traverseACLPermissions(String cpid) throws SQLException, IllegalACLException,
-            IllegalNameException, RepositoryException
+      IllegalNameException, RepositoryException
    {
       String caid = cpid;
       while (!caid.equals(Constants.ROOT_PARENT_UUID))
@@ -943,7 +948,7 @@ abstract public class JDBCStorageConnection
     *           if Repository error
     */
    private String traverseACLOwner(String cpid) throws SQLException, IllegalACLException, IllegalNameException,
-            RepositoryException
+      RepositoryException
    {
       String caid = cpid;
 
@@ -978,7 +983,7 @@ abstract public class JDBCStorageConnection
     *           if Repository error
     */
    private AccessControlList traverseACL(String cpid) throws SQLException, IllegalACLException, IllegalNameException,
-            RepositoryException
+      RepositoryException
    {
       String naOwner = null;
       List<AccessControlEntry> naPermissions = null;
@@ -1019,7 +1024,7 @@ abstract public class JDBCStorageConnection
       }
       else
          throw new IllegalACLException("ACL is not found for node with id " + getIdentifier(cpid)
-                  + " or for its ancestors. But repository is ACL enabled.");
+            + " or for its ancestors. But repository is ACL enabled.");
    }
 
    /**
@@ -1040,7 +1045,7 @@ abstract public class JDBCStorageConnection
     *           if invalid QName
     */
    private QPath traverseQPath_SP_PGSQL(String cpid) throws SQLException, InvalidItemStateException,
-            IllegalNameException
+      IllegalNameException
    {
       // get item by Identifier usecase:
       // find parent path in db by cpid
@@ -1056,8 +1061,8 @@ abstract public class JDBCStorageConnection
          try
          {
             cstmt =
-                     dbConnection
-                              .prepareStatement("select * from get_qpath(?) AS (id varchar, name varchar, parent_id varchar, i_index int)");
+               dbConnection
+                  .prepareStatement("select * from get_qpath(?) AS (id varchar, name varchar, parent_id varchar, i_index int)");
             cstmt.setString(1, cpid);
             // cstmt.setString(2, caid);
             ResultSet parent = cstmt.executeQuery();
@@ -1065,7 +1070,7 @@ abstract public class JDBCStorageConnection
             while (parent.next())
             {
                QPathEntry qpe =
-                        new QPathEntry(InternalQName.parse(parent.getString(COLUMN_NAME)), parent.getInt(COLUMN_INDEX));
+                  new QPathEntry(InternalQName.parse(parent.getString(COLUMN_NAME)), parent.getInt(COLUMN_INDEX));
                qrpath.add(qpe);
             }
 
@@ -1109,7 +1114,7 @@ abstract public class JDBCStorageConnection
     *           I/O error
     */
    private ItemData itemData(QPath parentPath, ResultSet item, int itemClass, AccessControlList parentACL)
-            throws RepositoryException, SQLException, IOException
+      throws RepositoryException, SQLException, IOException
    {
       String cid = item.getString(COLUMN_ID);
       String cname = item.getString(COLUMN_NAME);
@@ -1135,7 +1140,7 @@ abstract public class JDBCStorageConnection
       catch (InvalidItemStateException e)
       {
          throw new InvalidItemStateException("FATAL: Can't build item path for name " + cname + " id: "
-                  + getIdentifier(cid) + ". " + e);
+            + getIdentifier(cid) + ". " + e);
       }
    }
 
@@ -1155,7 +1160,7 @@ abstract public class JDBCStorageConnection
     *           I/O error
     */
    private PropertyData propertyData(QPath parentPath, ResultSet item) throws RepositoryException, SQLException,
-            IOException
+      IOException
    {
       String cid = item.getString(COLUMN_ID);
       String cname = item.getString(COLUMN_NAME);
@@ -1171,8 +1176,7 @@ abstract public class JDBCStorageConnection
          QPath qpath = QPath.makeChildPath(parentPath == null ? traverseQPath(cpid) : parentPath, qname);
 
          PersistedPropertyData pdata =
-                  new PersistedPropertyData(getIdentifier(cid), qpath, getIdentifier(cpid), cversion, cptype,
-                           cpmultivalued);
+            new PersistedPropertyData(getIdentifier(cid), qpath, getIdentifier(cpid), cversion, cptype, cpmultivalued);
 
          pdata.setValues(new ArrayList<ValueData>());
          return pdata;
@@ -1180,7 +1184,7 @@ abstract public class JDBCStorageConnection
       catch (InvalidItemStateException e)
       {
          throw new InvalidItemStateException("FATAL: Can't build property path for name " + cname + " id: "
-                  + getIdentifier(cid) + ". " + e);
+            + getIdentifier(cid) + ". " + e);
       }
       catch (IllegalNameException e)
       {
@@ -1355,7 +1359,7 @@ abstract public class JDBCStorageConnection
             do
             {
                StringTokenizer parser =
-                        new StringTokenizer(new String(exoPerm.getBytes(COLUMN_VDATA)), AccessControlEntry.DELIMITER);
+                  new StringTokenizer(new String(exoPerm.getBytes(COLUMN_VDATA)), AccessControlEntry.DELIMITER);
                naPermissions.add(new AccessControlEntry(parser.nextToken(), parser.nextToken()));
             }
             while (exoPerm.next());
@@ -1364,7 +1368,7 @@ abstract public class JDBCStorageConnection
          }
          else
             throw new IllegalACLException("Property exo:permissions is not found for node with id: "
-                     + getIdentifier(cid));
+               + getIdentifier(cid));
       }
       finally
       {
@@ -1425,7 +1429,7 @@ abstract public class JDBCStorageConnection
     *           database error
     */
    protected PersistedNodeData loadNodeRecord(QPath parentPath, String cname, String cid, String cpid, int cindex,
-            int cversion, int cnordernumb, AccessControlList parentACL) throws RepositoryException, SQLException
+      int cversion, int cnordernumb, AccessControlList parentACL) throws RepositoryException, SQLException
    {
 
       try
@@ -1463,11 +1467,10 @@ abstract public class JDBCStorageConnection
 
             if (!ptProp.next())
                throw new PrimaryTypeNotFoundException("FATAL ERROR primary type record not found. Node "
-                        + qpath.getAsString() + ", id " + cid + ", container " + this.containerName, null);
+                  + qpath.getAsString() + ", id " + cid + ", container " + this.containerName, null);
 
             byte[] data = ptProp.getBytes(COLUMN_VDATA);
-            InternalQName ptName = InternalQName.parse(new String((data != null ? data : new byte[]
-            {})));
+            InternalQName ptName = InternalQName.parse(new String((data != null ? data : new byte[]{})));
 
             // MIXIN
             MixinInfo mixins = readMixins(cid);
@@ -1487,8 +1490,8 @@ abstract public class JDBCStorageConnection
                {
                   // use permissions from existed parent
                   acl =
-                           new AccessControlList(readACLOwner(cid), parentACL.hasPermissions() ? parentACL
-                                    .getPermissionEntries() : null);
+                     new AccessControlList(readACLOwner(cid), parentACL.hasPermissions() ? parentACL
+                        .getPermissionEntries() : null);
                }
                else
                {
@@ -1522,8 +1525,8 @@ abstract public class JDBCStorageConnection
                if (parentACL != null)
                   // construct ACL from existed parent ACL
                   acl =
-                           new AccessControlList(parentACL.getOwner(), parentACL.hasPermissions() ? parentACL
-                                    .getPermissionEntries() : null);
+                     new AccessControlList(parentACL.getOwner(), parentACL.hasPermissions() ? parentACL
+                        .getPermissionEntries() : null);
                else
                   // have to search nearest ancestor owner and permissions in ACL manager
                   // acl = traverseACL(cpid);
@@ -1531,12 +1534,12 @@ abstract public class JDBCStorageConnection
             }
 
             return new PersistedNodeData(getIdentifier(cid), qpath, getIdentifier(parentCid), cversion, cnordernumb,
-                     ptName, mixins.mixinNames(), acl);
+               ptName, mixins.mixinNames(), acl);
          }
          catch (IllegalACLException e)
          {
             throw new RepositoryException("FATAL ERROR Node " + getIdentifier(cid) + " " + qpath.getAsString()
-                     + " has wrong formed ACL. ", e);
+               + " has wrong formed ACL. ", e);
          }
       }
       catch (IllegalNameException e)
@@ -1571,7 +1574,7 @@ abstract public class JDBCStorageConnection
     *           I/O error
     */
    protected PersistedPropertyData loadPropertyRecord(QPath parentPath, String cname, String cid, String cpid,
-            int cversion, int cptype, boolean cpmultivalued) throws RepositoryException, SQLException, IOException
+      int cversion, int cptype, boolean cpmultivalued) throws RepositoryException, SQLException, IOException
    {
 
       // NOTE: cpid never should be null or root parent (' ')
@@ -1579,13 +1582,10 @@ abstract public class JDBCStorageConnection
       try
       {
          QPath qpath =
-                  QPath
-                           .makeChildPath(parentPath == null ? traverseQPath(cpid) : parentPath, InternalQName
-                                    .parse(cname));
+            QPath.makeChildPath(parentPath == null ? traverseQPath(cpid) : parentPath, InternalQName.parse(cname));
 
          PersistedPropertyData pdata =
-                  new PersistedPropertyData(getIdentifier(cid), qpath, getIdentifier(cpid), cversion, cptype,
-                           cpmultivalued);
+            new PersistedPropertyData(getIdentifier(cid), qpath, getIdentifier(cpid), cversion, cptype, cpmultivalued);
 
          pdata.setValues(readValues(cid, pdata));
          return pdata;
@@ -1613,10 +1613,10 @@ abstract public class JDBCStorageConnection
     *           if no such storage found with Value storageId
     */
    private void deleteValues(String cid, PropertyData pdata, boolean update) throws IOException, SQLException,
-            ValueStorageNotFoundException
+      ValueStorageNotFoundException
    {
 
-      final ResultSet valueRecords = findValuesByPropertyId(cid);
+      final ResultSet valueRecords = findValuesStorageDescriptorsByPropertyId(cid);
       try
       {
          // [PN] 12.07.07 if (... instead while (...
@@ -1627,22 +1627,25 @@ abstract public class JDBCStorageConnection
             // delete all Values in database
             deleteValueData(cid);
 
-            // delete each VS once per Property
-            // traverse each ValueData record to be sure all Values Storage data deleted
-            Set<String> deletedVS = new HashSet<String>();
-            // do { // TODO we need it for multiple VS
-            final String storageId = valueRecords.getString(COLUMN_VSTORAGE_DESC);
-            if (!valueRecords.wasNull() && !deletedVS.contains(storageId))
+            do
             {
-               final ValueIOChannel channel = valueStorageProvider.getChannel(storageId);
-               // delete all Values data in VS
-               channel.delete(pdata.getIdentifier());
-               deletedVS.add(storageId);
-               valueChanges.add(channel);
+               final String storageId = valueRecords.getString(COLUMN_VSTORAGE_DESC);
+               if (!valueRecords.wasNull())
+               {
+                  final ValueIOChannel channel = valueStorageProvider.getChannel(storageId);
+                  try
+                  {
+                     channel.delete(pdata.getIdentifier());
+                     valueChanges.add(channel);
+                  }
+                  finally
+                  {
+                     channel.close();
+                  }
+               }
             }
-            // } while (valueRecords.next());
-
-         } // else property without Value(s) - it's may means empty Values for multivalued Property
+            while (valueRecords.next());
+         }
       }
       finally
       {
@@ -1666,7 +1669,7 @@ abstract public class JDBCStorageConnection
     *           if no such storage found with Value storageId
     */
    private List<ValueData> readValues(String cid, PropertyData pdata) throws IOException, SQLException,
-            ValueStorageNotFoundException
+      ValueStorageNotFoundException
    {
 
       List<ValueData> data = new ArrayList<ValueData>();
@@ -1679,8 +1682,8 @@ abstract public class JDBCStorageConnection
             final int orderNum = valueRecords.getInt(COLUMN_VORDERNUM);
             final String storageId = valueRecords.getString(COLUMN_VSTORAGE_DESC);
             ValueData vdata =
-                     valueRecords.wasNull() ? readValueData(cid, orderNum, pdata.getPersistedVersion())
-                              : readValueData(pdata, orderNum, storageId);
+               valueRecords.wasNull() ? readValueData(cid, orderNum, pdata.getPersistedVersion(), valueRecords
+                  .getBinaryStream(COLUMN_VDATA)) : readValueData(pdata, orderNum, storageId);
             data.add(vdata);
          }
       }
@@ -1710,7 +1713,7 @@ abstract public class JDBCStorageConnection
     *           if no such storage found with Value storageId
     */
    protected ValueData readValueData(PropertyData pdata, int orderNumber, String storageId) throws SQLException,
-            IOException, ValueStorageNotFoundException
+      IOException, ValueStorageNotFoundException
    {
       ValueIOChannel channel = valueStorageProvider.getChannel(storageId);
       try
@@ -1732,13 +1735,15 @@ abstract public class JDBCStorageConnection
     *          Value order number
     * @param version
     *          persistent version (used for BLOB swapping)
+    * @param content
     * @return ValueData
     * @throws SQLException
     *           database error
     * @throws IOException
     *           I/O error (swap)
     */
-   protected ValueData readValueData(String cid, int orderNumber, int version) throws SQLException, IOException
+   protected ValueData readValueData(String cid, int orderNumber, int version, final InputStream content)
+      throws SQLException, IOException
    {
 
       ResultSet valueResultSet = null;
@@ -1753,47 +1758,42 @@ abstract public class JDBCStorageConnection
       try
       {
          // stream from database
-         valueResultSet = findValueByPropertyIdOrderNumber(cid, orderNumber);
-         if (valueResultSet.next())
-         {
-            final InputStream in = valueResultSet.getBinaryStream(COLUMN_VDATA);
-            if (in != null)
-               while ((read = in.read(spoolBuffer)) >= 0)
+         if (content != null)
+            while ((read = content.read(spoolBuffer)) >= 0)
+            {
+               if (out != null)
                {
-                  if (out != null)
-                  {
-                     // spool to temp file
-                     out.write(spoolBuffer, 0, read);
-                     len += read;
-                  }
-                  else if (len + read > maxBufferSize)
-                  {
-                     // threshold for keeping data in memory exceeded;
-                     // create temp file and spool buffer contents
-                     swapFile = SwapFile.get(swapDirectory, cid + orderNumber + "." + version);
-                     if (swapFile.isSpooled())
-                     {
-                        // break, value already spooled
-                        buffer = null;
-                        break;
-                     }
-                     out = new FileOutputStream(swapFile);
-                     out.write(buffer, 0, len);
-                     out.write(spoolBuffer, 0, read);
-                     buffer = null;
-                     len += read;
-                  }
-                  else
-                  {
-                     // reallocate new buffer and spool old buffer contents
-                     byte[] newBuffer = new byte[len + read];
-                     System.arraycopy(buffer, 0, newBuffer, 0, len);
-                     System.arraycopy(spoolBuffer, 0, newBuffer, len, read);
-                     buffer = newBuffer;
-                     len += read;
-                  }
+                  // spool to temp file
+                  out.write(spoolBuffer, 0, read);
+                  len += read;
                }
-         }
+               else if (len + read > maxBufferSize)
+               {
+                  // threshold for keeping data in memory exceeded;
+                  // create temp file and spool buffer contents
+                  swapFile = SwapFile.get(swapDirectory, cid + orderNumber + "." + version);
+                  if (swapFile.isSpooled())
+                  {
+                     // break, value already spooled
+                     buffer = null;
+                     break;
+                  }
+                  out = new FileOutputStream(swapFile);
+                  out.write(buffer, 0, len);
+                  out.write(spoolBuffer, 0, read);
+                  buffer = null;
+                  len += read;
+               }
+               else
+               {
+                  // reallocate new buffer and spool old buffer contents
+                  byte[] newBuffer = new byte[len + read];
+                  System.arraycopy(buffer, 0, newBuffer, 0, len);
+                  System.arraycopy(spoolBuffer, 0, newBuffer, len, read);
+                  buffer = newBuffer;
+                  len += read;
+               }
+            }
       }
       finally
       {
@@ -1889,17 +1889,20 @@ abstract public class JDBCStorageConnection
    protected abstract int deleteItemByIdentifier(String identifier) throws SQLException;
 
    protected abstract int updateNodeByIdentifier(int version, int index, int orderNumb, String identifier)
-            throws SQLException;
+      throws SQLException;
 
    protected abstract int updatePropertyByIdentifier(int version, int type, String identifier) throws SQLException;
 
    // -------- values processing ------------
    protected abstract int addValueData(String cid, int orderNumber, InputStream stream, int streamLength,
-            String storageId) throws SQLException;
+      String storageId) throws SQLException;
 
    protected abstract int deleteValueData(String cid) throws SQLException;
 
    protected abstract ResultSet findValuesByPropertyId(String cid) throws SQLException;
 
+   protected abstract ResultSet findValuesStorageDescriptorsByPropertyId(String cid) throws SQLException;
+
+   @Deprecated
    protected abstract ResultSet findValueByPropertyIdOrderNumber(String cid, int orderNumb) throws SQLException;
 }

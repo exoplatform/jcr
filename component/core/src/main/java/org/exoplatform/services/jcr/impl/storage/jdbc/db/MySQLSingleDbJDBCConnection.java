@@ -36,8 +36,7 @@ import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: MySQLSingleDbJDBCConnection.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class MySQLSingleDbJDBCConnection
-   extends SingleDbJDBCConnection
+public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
 {
 
    /**
@@ -45,6 +44,8 @@ public class MySQLSingleDbJDBCConnection
     * 
     * @param dbConnection
     *          JDBC connection, shoudl be opened before
+    * @param readOnly
+    *          boolean if true the dbConnection was marked as READ-ONLY.
     * @param containerName
     *          Workspace Storage Container name (see configuration)
     * @param valueStorageProvider
@@ -59,12 +60,12 @@ public class MySQLSingleDbJDBCConnection
     * 
     * @see org.exoplatform.services.jcr.impl.util.io.FileCleaner
     */
-   public MySQLSingleDbJDBCConnection(Connection dbConnection, String containerName,
-            ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory,
-            FileCleaner swapCleaner) throws SQLException
+   public MySQLSingleDbJDBCConnection(Connection dbConnection, boolean readOnly, String containerName,
+      ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory, FileCleaner swapCleaner)
+      throws SQLException
    {
 
-      super(dbConnection, containerName, valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+      super(dbConnection, readOnly, containerName, valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
    }
 
    /**

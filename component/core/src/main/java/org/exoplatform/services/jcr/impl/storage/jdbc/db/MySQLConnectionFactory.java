@@ -36,8 +36,7 @@ import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: MySQLConnectionFactory.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class MySQLConnectionFactory
-   extends GenericConnectionFactory
+public class MySQLConnectionFactory extends GenericConnectionFactory
 {
 
    /**
@@ -69,12 +68,12 @@ public class MySQLConnectionFactory
     *           if error eccurs
     */
    public MySQLConnectionFactory(String dbDriver, String dbUrl, String dbUserName, String dbPassword,
-            String containerName, boolean multiDb, ValueStoragePluginProvider valueStorageProvider, int maxBufferSize,
-            File swapDirectory, FileCleaner swapCleaner) throws RepositoryException
+      String containerName, boolean multiDb, ValueStoragePluginProvider valueStorageProvider, int maxBufferSize,
+      File swapDirectory, FileCleaner swapCleaner) throws RepositoryException
    {
 
       super(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb, valueStorageProvider, maxBufferSize,
-               swapDirectory, swapCleaner);
+         swapDirectory, swapCleaner);
    }
 
    /**
@@ -96,8 +95,7 @@ public class MySQLConnectionFactory
     *          - Swap cleaner (internal FileCleaner).
     */
    public MySQLConnectionFactory(DataSource dbDataSource, String containerName, boolean multiDb,
-            ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory,
-            FileCleaner swapCleaner)
+      ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory, FileCleaner swapCleaner)
    {
 
       super(dbDataSource, containerName, multiDb, valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
@@ -107,19 +105,19 @@ public class MySQLConnectionFactory
     * {@inheritDoc}
     */
    @Override
-   public WorkspaceStorageConnection openConnection() throws RepositoryException
+   public WorkspaceStorageConnection openConnection(boolean readOnly) throws RepositoryException
    {
       try
       {
 
          if (multiDb)
          {
-            return new MySQLMultiDbJDBCConnection(getJdbcConnection(), containerName, valueStorageProvider,
-                     maxBufferSize, swapDirectory, swapCleaner);
+            return new MySQLMultiDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerName,
+               valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
          }
 
-         return new MySQLSingleDbJDBCConnection(getJdbcConnection(), containerName, valueStorageProvider,
-                  maxBufferSize, swapDirectory, swapCleaner);
+         return new MySQLSingleDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerName,
+            valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
 
       }
       catch (SQLException e)
