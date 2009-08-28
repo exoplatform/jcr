@@ -62,7 +62,7 @@ public class JDBCConnectionBaseTest
          st.executeUpdate("insert into JCR_SVALUE values" + "(127,'love',16,'aa74d2','java')");
          st.executeUpdate("insert into JCR_SREF values" + "('45as1','12345',2)");
          st.executeUpdate("insert into JCR_SREF values" + "('78710','5987',2)");
-         sdbc = new SingleDbJDBCConnection(connect, "myContainer", null, 10, null, null);
+         sdbc = new SingleDbJDBCConnection(connect, false, "myContainer", null, 10, null, null);
 
          st.executeUpdate("insert into JCR_MITEM values" + "('12345','123456','Sam',20090525,2,1233,5,10,1)");
          st.executeUpdate("insert into JCR_MITEM values" + "('123','1235','Nick',20090625,1,1233,5,10,1)");
@@ -70,7 +70,7 @@ public class JDBCConnectionBaseTest
          st.executeUpdate("insert into JCR_MVALUE values" + "(45,'winner',15,'1278','beauty')");
          st.executeUpdate("insert into JCR_MREF values" + "('45re1','00214',2)");
          st.executeUpdate("insert into JCR_MREF values" + "('45as1','12345',2)");
-         mdbc = new MultiDbJDBCConnection(connect, "mycontainer", null, 10, null, null);
+         mdbc = new MultiDbJDBCConnection(connect, false, "mycontainer", null, 10, null, null);
       }
       catch (SQLException se)
       {
