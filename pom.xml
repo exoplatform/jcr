@@ -47,9 +47,9 @@
    </properties>
 
    <scm>
-      <connection>scm:svn:http://svn.exoplatform.org/projects/exorh/exo-jcr/jcr/trunk</connection>
-      <developerConnection>scm:svn:http://svn.exoplatform.org/projects/exorh/exo-jcr/jcr/trunk</developerConnection>
-      <url>http://fisheye.exoplatform.org/browse/projects/exorh/exo-jcr/jcr/trunk</url>
+      <connection>scm:svn:http://anonsvn.jboss.org/repos/exo-jcr/jcr/trunk</connection>
+      <developerConnection>scm:svn:https://svn.jboss.org/repos/exo-jcr/jcr/trunk</developerConnection>
+      <url>https://svn.jboss.org/repos/exo-jcr/jcr/trunk</url>
    </scm>
 
    <modules>
