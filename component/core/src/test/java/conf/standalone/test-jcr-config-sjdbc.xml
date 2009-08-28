@@ -169,79 +169,68 @@
                   </properties>
                </query-handler>
             </workspace>
-            
+
             <workspace name="ws3">
-					<!-- for system storage -->
-					<container
-						class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer">
-						<properties>
-							<property name="source-name" value="jdbcjcr3" />
-							<property name="dialect" value="hsqldb" />
-							<property name="multi-db" value="true" />
-							<property name="update-storage" value="false" />
-							<property name="max-buffer-size" value="200k" />
-							<property name="swap-directory" value="target/temp/swap/ws3" />
-						</properties>
-						<value-storages>
-							<!--
-								This storage is used to check whether properties are removed
-								correctly from each value-storage in case of complex value storage.
-								(TestRemoveFromValueStorage.java)
-							-->
-							<value-storage id="ws3_big"
-								class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
-								<properties>
-									<property name="path" value="target/temp/values/ws3_big" />
-								</properties>
-								<filters>
-									<filter property-type="Binary" min-value-size="1024K" />
-								</filters>
-							</value-storage>
-							<value-storage id="ws3"
-								class="org.exoplatform.services.jcr.impl.storage.value.fs.CASableTreeFileValueStorage">
-								<properties>
-									<property name="path" value="target/temp/values/ws3" />
-									<property name="digest-algo" value="MD5" />
-									<property name="vcas-type"
-										value="org.exoplatform.services.jcr.impl.storage.value.cas.JDBCValueContentAddressStorageImpl" />
-									<property name="jdbc-source-name" value="jdbcjcr" />
-									<property name="jdbc-dialect" value="hsqldb" />
-								</properties>
-								<filters>
-									<filter property-type="Binary" />
-								</filters>
-							</value-storage>
-						</value-storages>
-					</container>
-					<initializer
-						class="org.exoplatform.services.jcr.impl.core.ScratchWorkspaceInitializer">
-						<properties>
-							<property name="root-nodetype" value="nt:unstructured" />
-						</properties>
-					</initializer>
-					<cache enabled="true"
-						class="org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl">
-						<properties>
-							<property name="max-size" value="2k" />
-							<property name="live-time" value="20m" />
-						</properties>
-					</cache>
-					<query-handler
-						class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
-						<properties>
-							<property name="index-dir" value="target/temp/index/db1/ws3" />
-							<property name="synonymprovider-class"
-								value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider" />
-							<property name="synonymprovider-config-path" value="../../synonyms.properties" />
-							<property name="support-highlighting" value="true" />
-							<property name="indexing-configuration-path" value="../../indexing-configuration.xml" />
-							<property name="query-class"
-								value="org.exoplatform.services.jcr.impl.core.query.QueryImpl" />
-							<property name="spellchecker-class"
-								value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" />
-						</properties>
-					</query-handler>
-				</workspace>
+               <!-- for system storage -->
+               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer">
+                  <properties>
+                     <property name="source-name" value="jdbcjcr" />
+                     <property name="dialect" value="hsqldb" />
+                     <property name="multi-db" value="false" />
+                     <property name="update-storage" value="false" />
+                     <property name="max-buffer-size" value="200k" />
+                     <property name="swap-directory" value="target/temp/swap/ws3" />
+                  </properties>
+                  <value-storages>
+                     <!--
+                        This storage is used to check whether properties are removed correctly from each value-storage in case of complex value storage.
+                        (TestRemoveFromValueStorage.java)
+                     -->
+                     <value-storage id="ws3_big" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
+                        <properties>
+                           <property name="path" value="target/temp/values/ws3_big" />
+                        </properties>
+                        <filters>
+                           <filter property-type="Binary" min-value-size="1024K" />
+                        </filters>
+                     </value-storage>
+                     <value-storage id="ws3" class="org.exoplatform.services.jcr.impl.storage.value.fs.CASableTreeFileValueStorage">
+                        <properties>
+                           <property name="path" value="target/temp/values/ws3" />
+                           <property name="digest-algo" value="MD5" />
+                           <property name="vcas-type" value="org.exoplatform.services.jcr.impl.storage.value.cas.JDBCValueContentAddressStorageImpl" />
+                           <property name="jdbc-source-name" value="jdbcjcr" />
+                           <property name="jdbc-dialect" value="hsqldb" />
+                        </properties>
+                        <filters>
+                           <filter property-type="Binary" />
+                        </filters>
+                     </value-storage>
+                  </value-storages>
+               </container>
+               <initializer class="org.exoplatform.services.jcr.impl.core.ScratchWorkspaceInitializer">
+                  <properties>
+                     <property name="root-nodetype" value="nt:unstructured" />
+                  </properties>
+               </initializer>
+               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl">
+                  <properties>
+                     <property name="max-size" value="2k" />
+                     <property name="live-time" value="20m" />
+                  </properties>
+               </cache>
+               <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
+                  <properties>
+                     <property name="index-dir" value="target/temp/index/db1/ws3" />
+                     <property name="synonymprovider-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider" />
+                     <property name="synonymprovider-config-path" value="../../synonyms.properties" />
+                     <property name="support-highlighting" value="true" />
+                     <property name="indexing-configuration-path" value="../../indexing-configuration.xml" />
+                     <property name="query-class" value="org.exoplatform.services.jcr.impl.core.query.QueryImpl" />
+                     <property name="spellchecker-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" />
+                  </properties>
+               </query-handler>
+            </workspace>
          </workspaces>
       </repository>
 
@@ -276,7 +265,8 @@
                <initializer class="org.exoplatform.services.jcr.impl.core.ScratchWorkspaceInitializer">
                   <properties>
                      <property name="root-nodetype" value="nt:unstructured" />
-                     <property name="root-permissions" value="any read;*:/platform/administrators read;*:/platform/administrators add_node;*:/platform/administrators set_property;*:/platform/administrators remove" />
+                     <property name="root-permissions"
+                        value="any read;*:/platform/administrators read;*:/platform/administrators add_node;*:/platform/administrators set_property;*:/platform/administrators remove" />
                   </properties>
                </initializer>
                <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl">
@@ -330,7 +320,8 @@
                <initializer class="org.exoplatform.services.jcr.impl.core.ScratchWorkspaceInitializer">
                   <properties>
                      <property name="root-nodetype" value="nt:unstructured" />
-                     <property name="root-permissions" value="any read;*:/platform/administrators read;*:/platform/administrators add_node;*:/platform/administrators set_property;*:/platform/administrators remove" />
+                     <property name="root-permissions"
+                        value="any read;*:/platform/administrators read;*:/platform/administrators add_node;*:/platform/administrators set_property;*:/platform/administrators remove" />
                   </properties>
                </initializer>
                <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl">
@@ -376,7 +367,8 @@
                <initializer class="org.exoplatform.services.jcr.impl.core.ScratchWorkspaceInitializer">
                   <properties>
                      <property name="root-nodetype" value="nt:unstructured" />
-                     <property name="root-permissions" value="any read;*:/platform/administrators read;*:/platform/administrators add_node;*:/platform/administrators set_property;*:/platform/administrators remove" />
+                     <property name="root-permissions"
+                        value="any read;*:/platform/administrators read;*:/platform/administrators add_node;*:/platform/administrators set_property;*:/platform/administrators remove" />
                   </properties>
                </initializer>
                <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl">
