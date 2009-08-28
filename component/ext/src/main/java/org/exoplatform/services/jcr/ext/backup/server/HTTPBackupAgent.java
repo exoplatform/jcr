@@ -59,6 +59,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -73,11 +74,12 @@ import javax.ws.rs.core.Response;
  */
 
 @Path("/jcr-backup/")
-public class HTTPBackupAgent implements ResourceContainer
+public class HTTPBackupAgent
+   implements ResourceContainer
 {
 
    /**
-    * Definition the constants to ReplicationTestService.
+    * Definition the constants.
     */
    public static final class Constants
    {
@@ -184,6 +186,18 @@ public class HTTPBackupAgent implements ResourceContainer
    private static Log log = ExoLogger.getLogger("ext.HTTPBackupAgent");
 
    /**
+    * To disable cache control.
+    */
+   private static final CacheControl noCache;
+
+   static
+   {
+      noCache = new CacheControl();
+      noCache.setNoCache(true);
+      noCache.setNoStore(true);
+   }
+
+   /**
     * The repository service.
     */
    private RepositoryService repositoryService;
@@ -209,7 +223,7 @@ public class HTTPBackupAgent implements ResourceContainer
     *          the ThreadLocalSessionProviderService
     */
    public HTTPBackupAgent(RepositoryService repoService, BackupManager backupManager,
-      ThreadLocalSessionProviderService sessionProviderService)
+            ThreadLocalSessionProviderService sessionProviderService)
    {
       this.repositoryService = repoService;
       this.backupManager = backupManager;
@@ -234,7 +248,7 @@ public class HTTPBackupAgent implements ResourceContainer
    @RolesAllowed("administrators")
    @Path("/start/{repo}/{ws}")
    public Response start(BackupConfigBean bConfigBeen, @PathParam("repo") String repository,
-      @PathParam("ws") String workspace)
+            @PathParam("ws") String workspace)
    {
       String failMessage;
       Response.Status status;
@@ -331,7 +345,7 @@ public class HTTPBackupAgent implements ResourceContainer
    @RolesAllowed("administrators")
    @Path("/drop-workspace/{repo}/{ws}/{force-session-close}")
    public Response dropWorkspace(@PathParam("repo") String repository, @PathParam("ws") String workspace,
-      @PathParam("force-session-close") Boolean forceSessionClose)
+            @PathParam("force-session-close") Boolean forceSessionClose)
    {
 
       String failMessage;
@@ -346,10 +360,10 @@ public class HTTPBackupAgent implements ResourceContainer
          if (forceSessionClose)
             forceCloseSession(repository, workspace);
 
-         RepositoryImpl repositoryImpl = (RepositoryImpl)repositoryService.getRepository(repository);
+         RepositoryImpl repositoryImpl = (RepositoryImpl) repositoryService.getRepository(repository);
          repositoryImpl.removeWorkspace(workspace);
 
-         return Response.ok().build();
+         return Response.ok().cacheControl(noCache).build();
 
       }
       catch (RepositoryException e)
@@ -374,8 +388,9 @@ public class HTTPBackupAgent implements ResourceContainer
       log.error("Can not drop the workspace '" + "/" + repository + "/" + workspace + "'", exception);
 
       return Response.status(status).entity(
-         "Can not drop the workspace '" + "/" + repository + "/" + workspace + "' : " + failMessage).type(
-         MediaType.TEXT_PLAIN).build();
+               "Can not drop the workspace '" + "/" + repository + "/" + workspace + "' : " + failMessage).type(
+               MediaType.TEXT_PLAIN).cacheControl(noCache).build();
+
    }
 
    /**
@@ -418,7 +433,7 @@ public class HTTPBackupAgent implements ResourceContainer
 
          backupManager.restore(backupChainLog, repository, wEntry, true);
 
-         return Response.ok().build();
+         return Response.ok().cacheControl(noCache).build();
       }
       catch (WorkspaceRestoreExeption e)
       {
@@ -452,11 +467,12 @@ public class HTTPBackupAgent implements ResourceContainer
       }
 
       log.error("Can not start restore the workspace '" + "/" + repository + "/" + wEntry.getName()
-         + "' from backup log with id '" + backupId + "'", exception);
+               + "' from backup log with id '" + backupId + "'", exception);
 
       return Response.status(status).entity(
-         "Can not start restore the workspace '" + "/" + repository + "/" + wEntry.getName()
-            + "' from backup log with id '" + backupId + "' : " + failMessage).type(MediaType.TEXT_PLAIN).build();
+               "Can not start restore the workspace '" + "/" + repository + "/" + wEntry.getName()
+                        + "' from backup log with id '" + backupId + "' : " + failMessage).type(MediaType.TEXT_PLAIN)
+               .cacheControl(noCache).build();
    }
 
    /**
@@ -467,6 +483,7 @@ public class HTTPBackupAgent implements ResourceContainer
     * @return Response return the response
     */
    @GET
+   @Produces(MediaType.APPLICATION_JSON)
    @RolesAllowed("administrators")
    @Path("/stop/{id}")
    public Response stop(@PathParam("id") String backupId)
@@ -484,7 +501,19 @@ public class HTTPBackupAgent implements ResourceContainer
          else
             throw new BackupNotFoundException("No active backup with id '" + backupId + "'");
 
-         return Response.ok().build();
+         ShortInfo shortInfo = null;
+         for (BackupChainLog chainLog : backupManager.getBackupsLogs())
+            if (backupId.equals(chainLog.getBackupId()))
+            {
+               shortInfo = new ShortInfo(ShortInfo.COMPLETED, chainLog);
+               System.out.println();
+               break;
+            }
+
+         if (shortInfo == null)
+            throw new BackupNotFoundException("No completed backup with id '" + backupId + "'");
+
+         return Response.ok(shortInfo).cacheControl(noCache).build();
       }
       catch (BackupNotFoundException e)
       {
@@ -501,7 +530,8 @@ public class HTTPBackupAgent implements ResourceContainer
 
       log.error("Can not stop backup", exception);
 
-      return Response.status(status).entity("Can not stop backup : " + failMessage).type(MediaType.TEXT_PLAIN).build();
+      return Response.status(status).entity("Can not stop backup : " + failMessage).type(MediaType.TEXT_PLAIN)
+               .cacheControl(noCache).build();
    }
 
    /**
@@ -518,17 +548,19 @@ public class HTTPBackupAgent implements ResourceContainer
       try
       {
          BackupServiceInfoBean infoBeen =
-            new BackupServiceInfoBean(backupManager.getFullBackupType(), backupManager.getIncrementalBackupType(),
-               backupManager.getBackupDirectory().getAbsolutePath(), backupManager.getDefaultIncrementalJobPeriod());
+                  new BackupServiceInfoBean(backupManager.getFullBackupType(),
+                           backupManager.getIncrementalBackupType(), backupManager.getBackupDirectory()
+                                    .getAbsolutePath(), backupManager.getDefaultIncrementalJobPeriod());
 
-         return Response.ok(infoBeen).build();
+         return Response.ok(infoBeen).cacheControl(noCache).build();
       }
       catch (Throwable e)
       {
          log.error("Can not get information about backup service", e);
 
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
-            "Can not get information about backup service : " + e.getMessage()).type(MediaType.TEXT_PLAIN).build();
+                  "Can not get information about backup service : " + e.getMessage()).type(MediaType.TEXT_PLAIN)
+                  .cacheControl(noCache).build();
       }
    }
 
@@ -556,15 +588,15 @@ public class HTTPBackupAgent implements ResourceContainer
 
          ShortInfoList shortInfoList = new ShortInfoList(list);
 
-         return Response.ok(shortInfoList).build();
+         return Response.ok(shortInfoList).cacheControl(noCache).build();
       }
       catch (Throwable e)
       {
          log.error("Can not get information about current or completed backups", e);
 
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
-            "Can not get information about current or completed backups" + e.getMessage()).type(MediaType.TEXT_PLAIN)
-            .build();
+                  "Can not get information about current or completed backups" + e.getMessage()).type(
+                  MediaType.TEXT_PLAIN).cacheControl(noCache).build();
       }
    }
 
@@ -588,7 +620,7 @@ public class HTTPBackupAgent implements ResourceContainer
          if (current != null)
          {
             DetailedInfo info = new DetailedInfo(DetailedInfo.CURRENT, current);
-            return Response.ok(info).build();
+            return Response.ok(info).cacheControl(noCache).build();
          }
 
          BackupChainLog completed = null;
@@ -600,19 +632,19 @@ public class HTTPBackupAgent implements ResourceContainer
          if (completed != null)
          {
             DetailedInfo info = new DetailedInfo(DetailedInfo.COMPLETED, completed);
-            return Response.ok(info).build();
+            return Response.ok(info).cacheControl(noCache).build();
          }
 
          return Response.status(Response.Status.NOT_FOUND).entity("No current or completed backup with 'id' " + id)
-            .type(MediaType.TEXT_PLAIN).build();
+                  .type(MediaType.TEXT_PLAIN).cacheControl(noCache).build();
       }
       catch (Throwable e)
       {
          log.error("Can not get information about current or completed backup with 'id' " + id, e);
 
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
-            "Can not get information about current or completed backup with 'id' " + id + " : " + e.getMessage()).type(
-            MediaType.TEXT_PLAIN).build();
+                  "Can not get information about current or completed backup with 'id' " + id + " : " + e.getMessage())
+                  .type(MediaType.TEXT_PLAIN).cacheControl(noCache).build();
       }
    }
 
@@ -636,14 +668,15 @@ public class HTTPBackupAgent implements ResourceContainer
 
          ShortInfoList shortInfoList = new ShortInfoList(list);
 
-         return Response.ok(shortInfoList).build();
+         return Response.ok(shortInfoList).cacheControl(noCache).build();
       }
       catch (Throwable e)
       {
          log.error("Can not get information about current backups", e);
 
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
-            "Can not get information about current backups" + e.getMessage()).type(MediaType.TEXT_PLAIN).build();
+                  "Can not get information about current backups" + e.getMessage()).type(MediaType.TEXT_PLAIN)
+                  .cacheControl(noCache).build();
       }
    }
 
@@ -668,14 +701,15 @@ public class HTTPBackupAgent implements ResourceContainer
 
          ShortInfoList list = new ShortInfoList(completedList);
 
-         return Response.ok(list).build();
+         return Response.ok(list).cacheControl(noCache).build();
       }
       catch (Throwable e)
       {
          log.error("Can not get information about completed backups", e);
 
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
-            "Can not get information about completed backups" + e.getMessage()).type(MediaType.TEXT_PLAIN).build();
+                  "Can not get information about completed backups" + e.getMessage()).type(MediaType.TEXT_PLAIN)
+                  .cacheControl(noCache).build();
       }
    }
 
@@ -703,7 +737,7 @@ public class HTTPBackupAgent implements ResourceContainer
          for (BackupChain chain : backupManager.getCurrentBackups())
          {
             if (repository.equals(chain.getBackupConfig().getRepository())
-               && workspace.equals(chain.getBackupConfig().getWorkspace()))
+                     && workspace.equals(chain.getBackupConfig().getWorkspace()))
             {
                list.add(new ShortInfo(ShortInfo.CURRENT, chain));
             }
@@ -712,8 +746,8 @@ public class HTTPBackupAgent implements ResourceContainer
          for (BackupChainLog chainLog : backupManager.getBackupsLogs())
          {
             if (backupManager.findBackup(chainLog.getBackupId()) == null
-               && repository.equals(chainLog.getBackupConfig().getRepository())
-               && workspace.equals(chainLog.getBackupConfig().getWorkspace()))
+                     && repository.equals(chainLog.getBackupConfig().getRepository())
+                     && workspace.equals(chainLog.getBackupConfig().getWorkspace()))
             {
                list.add(new ShortInfo(ShortInfo.COMPLETED, chainLog));
             }
@@ -721,15 +755,15 @@ public class HTTPBackupAgent implements ResourceContainer
 
          ShortInfoList shortInfoList = new ShortInfoList(list);
 
-         return Response.ok(shortInfoList).build();
+         return Response.ok(shortInfoList).cacheControl(noCache).build();
       }
       catch (Throwable e)
       {
          log.error("Can not get information about current or completed backups", e);
 
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
-            "Can not get information about current or completed backups" + e.getMessage()).type(MediaType.TEXT_PLAIN)
-            .build();
+                  "Can not get information about current or completed backups" + e.getMessage()).type(
+                  MediaType.TEXT_PLAIN).cacheControl(noCache).build();
       }
    }
 
@@ -756,30 +790,32 @@ public class HTTPBackupAgent implements ResourceContainer
          if (restoreJob != null)
          {
             DetailedInfoEx info =
-               new DetailedInfoEx(DetailedInfo.RESTORE, restoreJob.getBackupChainLog(), restoreJob.getStartTime(),
-                  restoreJob.getEndTime(), restoreJob.getStateRestore(), restoreJob.getRepositoryName(), restoreJob
-                     .getWorkspaceName(),
+                     new DetailedInfoEx(DetailedInfo.RESTORE, restoreJob.getBackupChainLog(),
+                              restoreJob.getStartTime(), restoreJob.getEndTime(), restoreJob.getStateRestore(),
+                              restoreJob.getRepositoryName(), restoreJob.getWorkspaceName(),
 
-                  restoreJob.getWorkspaceEntry(), restoreJob.getRestoreException() == null ? "" : restoreJob
-                     .getRestoreException().getMessage());
+                              restoreJob.getWorkspaceEntry(), restoreJob.getRestoreException() == null ? ""
+                                       : restoreJob.getRestoreException().getMessage());
 
-            return Response.ok(info).build();
+            return Response.ok(info).cacheControl(noCache).build();
          }
          else
          {
             return Response.status(Response.Status.NOT_FOUND).entity(
-               "No resrore for workspace /" + repository + "/" + workspace + "'").type(MediaType.TEXT_PLAIN).build();
+                     "No resrore for workspace /" + repository + "/" + workspace + "'").type(MediaType.TEXT_PLAIN)
+                     .cacheControl(noCache).build();
          }
 
       }
       catch (Throwable e)
       {
          log.error(
-            "Can not get information about current restore for workspace /" + repository + "/" + workspace + "'", e);
+                  "Can not get information about current restore for workspace /" + repository + "/" + workspace + "'",
+                  e);
 
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
-            "Can not get information about current restore for workspace /" + repository + "/" + workspace + "' : "
-               + e.getMessage()).type(MediaType.TEXT_PLAIN).build();
+                  "Can not get information about current restore for workspace /" + repository + "/" + workspace
+                           + "' : " + e.getMessage()).type(MediaType.TEXT_PLAIN).cacheControl(noCache).build();
       }
 
    }
@@ -808,7 +844,7 @@ public class HTTPBackupAgent implements ResourceContainer
             for (JobWorkspaceRestore unJob : jobs)
             {
                if (unJob.getRepositoryName().equals(job.getRepositoryName())
-                  && unJob.getWorkspaceName().equals(job.getWorkspaceName()))
+                        && unJob.getWorkspaceName().equals(job.getWorkspaceName()))
                   isUnique = false;
             }
 
@@ -821,12 +857,12 @@ public class HTTPBackupAgent implements ResourceContainer
          for (JobWorkspaceRestore job : jobs)
          {
             ShortInfo info =
-               new ShortInfo(ShortInfo.RESTORE, job.getBackupChainLog(), job.getStartTime(), job.getEndTime(), job
-                  .getStateRestore(), job.getRepositoryName(), job.getWorkspaceName());
+                     new ShortInfo(ShortInfo.RESTORE, job.getBackupChainLog(), job.getStartTime(), job.getEndTime(),
+                              job.getStateRestore(), job.getRepositoryName(), job.getWorkspaceName());
             list.add(info);
          }
 
-         return Response.ok(new ShortInfoList(list)).build();
+         return Response.ok(new ShortInfoList(list)).cacheControl(noCache).build();
 
       }
       catch (Throwable e)
@@ -834,7 +870,8 @@ public class HTTPBackupAgent implements ResourceContainer
          log.error("Can not get information about current restores.", e);
 
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
-            "Can not get information about current restores : " + e.getMessage()).type(MediaType.TEXT_PLAIN).build();
+                  "Can not get information about current restores : " + e.getMessage()).type(MediaType.TEXT_PLAIN)
+                  .cacheControl(noCache).build();
       }
    }
 
@@ -852,19 +889,20 @@ public class HTTPBackupAgent implements ResourceContainer
       try
       {
          String defaultWorkspaceName =
-            repositoryService.getDefaultRepository().getConfiguration().getDefaultWorkspaceName();
+                  repositoryService.getDefaultRepository().getConfiguration().getDefaultWorkspaceName();
 
          for (WorkspaceEntry wEntry : repositoryService.getDefaultRepository().getConfiguration().getWorkspaceEntries())
             if (defaultWorkspaceName.equals(wEntry.getName()))
-               return Response.ok(wEntry).build();
+               return Response.ok(wEntry).cacheControl(noCache).build();
 
          return Response.status(Response.Status.NOT_FOUND).entity("Can not get default workspace configuration.").type(
-            MediaType.TEXT_PLAIN).build();
+                  MediaType.TEXT_PLAIN).cacheControl(noCache).build();
       }
       catch (Throwable e)
       {
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
-            "Can not get default workspace configuration.").type(MediaType.TEXT_PLAIN).build();
+                  "Can not get default workspace configuration.").type(MediaType.TEXT_PLAIN).cacheControl(noCache)
+                  .build();
       }
    }
 
@@ -879,7 +917,7 @@ public class HTTPBackupAgent implements ResourceContainer
     *           will be generated the exception RepositoryException
     */
    private void validateRepositoryName(String repositoryName) throws RepositoryException,
-      RepositoryConfigurationException
+            RepositoryConfigurationException
    {
       repositoryService.getRepository(repositoryName);
    }
@@ -901,16 +939,16 @@ public class HTTPBackupAgent implements ResourceContainer
     *           will be generated the exception LoginException
     */
    private void validateWorkspaceName(String repositoryName, String workspaceName) throws LoginException,
-      NoSuchWorkspaceException, RepositoryException, RepositoryConfigurationException
+            NoSuchWorkspaceException, RepositoryException, RepositoryConfigurationException
    {
       Session ses =
-         sessionProviderService.getSessionProvider(null).getSession(workspaceName,
-            repositoryService.getRepository(repositoryName));
+               sessionProviderService.getSessionProvider(null).getSession(workspaceName,
+                        repositoryService.getRepository(repositoryName));
       ses.logout();
    }
 
    private boolean isWorkspaceExist(String repositoryName, String workspaceName) throws RepositoryException,
-      RepositoryConfigurationException
+            RepositoryConfigurationException
    {
       for (String workspace : repositoryService.getRepository(repositoryName).getWorkspaceNames())
       {
@@ -940,7 +978,7 @@ public class HTTPBackupAgent implements ResourceContainer
 
       if (bch != null)
          throw new WorkspaceRestoreExeption("The backup is already working on workspace '" + "/" + repositoryName + "/"
-            + workspaceName + "'");
+                  + workspaceName + "'");
    }
 
    /**
@@ -958,11 +996,11 @@ public class HTTPBackupAgent implements ResourceContainer
 
       for (JobWorkspaceRestore job : backupManager.getRestores())
          if (repositoryName.equals(job.getRepositoryName())
-            && workspaceName.endsWith(job.getWorkspaceName())
-            && (job.getStateRestore() == JobWorkspaceRestore.RESTORE_INITIALIZED || job.getStateRestore() == JobWorkspaceRestore.RESTORE_STARTED))
+                  && workspaceName.endsWith(job.getWorkspaceName())
+                  && (job.getStateRestore() == JobWorkspaceRestore.RESTORE_INITIALIZED || job.getStateRestore() == JobWorkspaceRestore.RESTORE_STARTED))
          {
             throw new WorkspaceRestoreExeption("The workspace '" + "/" + repositoryName + "/" + workspaceName
-               + "' is already restoring.");
+                     + "' is already restoring.");
          }
    }
 
@@ -980,12 +1018,12 @@ public class HTTPBackupAgent implements ResourceContainer
     *           will be generate RepositoryException
     */
    private int forceCloseSession(String repositoryName, String workspaceName) throws RepositoryException,
-      RepositoryConfigurationException
+            RepositoryConfigurationException
    {
       ManageableRepository mr = repositoryService.getRepository(repositoryName);
       WorkspaceContainerFacade wc = mr.getWorkspaceContainer(workspaceName);
 
-      SessionRegistry sessionRegistry = (SessionRegistry)wc.getComponent(SessionRegistry.class);
+      SessionRegistry sessionRegistry = (SessionRegistry) wc.getComponent(SessionRegistry.class);
 
       return sessionRegistry.closeSessions(workspaceName);
    }
