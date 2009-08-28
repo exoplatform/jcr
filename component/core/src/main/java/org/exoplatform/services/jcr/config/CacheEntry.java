@@ -27,8 +27,7 @@ import java.util.ArrayList;
  * @version $Id: CacheEntry.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class CacheEntry
-   extends MappedParametrizedObjectEntry
+public class CacheEntry extends MappedParametrizedObjectEntry
 {
 
    private boolean enabled;

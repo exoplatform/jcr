@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.config;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by The eXo Platform SAS .
@@ -27,33 +28,47 @@ import java.util.ArrayList;
  * @version $
  */
 
-public class RepositoryEntry extends RepositoryInfo
+public abstract class AbstractRepositoryServiceConfiguration
 {
 
-   protected ArrayList<WorkspaceEntry> workspaces;
+   protected List<RepositoryEntry> repositoryConfigurations = new ArrayList<RepositoryEntry>();
 
-   public RepositoryEntry()
-   {
-      workspaces = new ArrayList<WorkspaceEntry>();
-   }
+   protected String defaultRepositoryName;
 
    /**
-    * Get workspaces.
+    * Set default repository name
     * 
-    * @return Returns the workspaces.
+    * @param defaultRepositoryName
     */
-   public ArrayList<WorkspaceEntry> getWorkspaceEntries()
+   public void setDefaultRepositoryName(String defaultRepositoryName)
    {
-      return workspaces;
+      this.defaultRepositoryName = defaultRepositoryName;
    }
 
    /**
-    * adds workspace entry object
-    * @param ws
+    * 
+    * Get default repository name
+    * 
+    * @return
     */
-   public void addWorkspace(WorkspaceEntry ws)
+   public final String getDefaultRepositoryName()
    {
-      workspaces.add(ws);
+      return defaultRepositoryName;
+   }
+
+   public List<RepositoryEntry> getRepositoryConfigurations()
+   {
+      return repositoryConfigurations;
+   }
+
+   /**
+    * Checks if current configuration can be saved.
+    * 
+    * @return
+    */
+   public boolean isRetainable()
+   {
+      return false;
    }
 
 }

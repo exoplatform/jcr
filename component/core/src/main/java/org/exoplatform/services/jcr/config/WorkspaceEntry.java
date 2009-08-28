@@ -19,44 +19,46 @@
 package org.exoplatform.services.jcr.config;
 
 /**
- * Created by The eXo Platform SAS.
+ * Created by The eXo Platform SAS .
  * 
- * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov </a>
- * @version $Id: WorkspaceEntry.java 13991 2008-05-08 11:07:05Z pnedonosko $
+ * @author <a href="mailto:gavrikvetal@gmail.com">Vitaliy Gulyy</a>
+ * @version $
  */
+
 public class WorkspaceEntry
 {
 
-   private String name;
+   protected String name;
 
-   private String autoInitializedRootNt;
+   @Deprecated
+   protected String autoInitializedRootNt;
 
-   private ContainerEntry container;
+   protected ContainerEntry container;
 
-   private QueryHandlerEntry queryHandler;
+   protected QueryHandlerEntry queryHandler;
 
-   private CacheEntry cache;
+   protected CacheEntry cache;
 
-   private String uniqueName;
+   protected transient String uniqueName;
 
-   private AccessManagerEntry accessManager;
+   protected AccessManagerEntry accessManager;
 
-   private LockManagerEntry lockManager;
+   protected LockManagerEntry lockManager;
 
-   private WorkspaceInitializerEntry initializer;
+   protected WorkspaceInitializerEntry initializer;
 
-   private String autoInitPermissions;
+   @Deprecated
+   protected String autoInitPermissions;
 
    public WorkspaceEntry()
    {
-
    }
 
+   @Deprecated
    public WorkspaceEntry(String name, String rootNt)
    {
       this.name = name;
       this.autoInitializedRootNt = rootNt;
-
    }
 
    public String getName()

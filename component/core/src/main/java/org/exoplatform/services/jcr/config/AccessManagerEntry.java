@@ -25,8 +25,7 @@ package org.exoplatform.services.jcr.config;
  * @version $Id: AccessManagerEntry.java 14923 2008-05-29 14:10:41Z pnedonosko $
  */
 
-public class AccessManagerEntry
-   extends MappedParametrizedObjectEntry
+public class AccessManagerEntry extends MappedParametrizedObjectEntry
 {
 
 }

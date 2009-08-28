@@ -48,6 +48,7 @@ import org.apache.lucene.search.SortField;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.document.DocumentReaderService;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
+import org.exoplatform.services.jcr.config.QueryHandlerEntryWrapper;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
@@ -68,8 +69,7 @@ import org.exoplatform.services.log.ExoLogger;
  * Implements a {@link org.apache.jackrabbit.core.query.QueryHandler} using
  * Lucene.
  */
-public class SearchIndex
-   implements QueryHandler
+public class SearchIndex implements QueryHandler
 {
 
    private static final DefaultQueryNodeFactory DEFAULT_QUERY_NODE_FACTORY = new DefaultQueryNodeFactory();
@@ -130,7 +130,7 @@ public class SearchIndex
     */
    private NamespaceMappings nsMappings;
 
-   private final QueryHandlerEntry queryHandlerConfig;
+   private final QueryHandlerEntryWrapper queryHandlerConfig;
 
    /**
     * The spell checker for this query handler or <code>null</code> if none is
@@ -155,7 +155,7 @@ public class SearchIndex
 
    public SearchIndex(QueryHandlerEntry queryHandlerConfig, ConfigurationManager cfm)
    {
-      this.queryHandlerConfig = queryHandlerConfig;
+      this.queryHandlerConfig = new QueryHandlerEntryWrapper(queryHandlerConfig);
       this.cfm = cfm;
    }
 
@@ -203,27 +203,27 @@ public class SearchIndex
     * @return A <code>Query</code> object.
     */
    public ExecutableQuery createExecutableQuery(SessionImpl session, SessionDataManager itemMgr, String statement,
-            String language) throws InvalidQueryException
+      String language) throws InvalidQueryException
    {
       QueryImpl query =
-               new QueryImpl(session, itemMgr, this, getContext().getPropertyTypeRegistry(), statement, language,
-                        getQueryNodeFactory());
+         new QueryImpl(session, itemMgr, this, getContext().getPropertyTypeRegistry(), statement, language,
+            getQueryNodeFactory());
       query.setRespectDocumentOrder(queryHandlerConfig.getDocumentOrder());
       return query;
    }
 
    public org.exoplatform.services.jcr.impl.core.query.AbstractQueryImpl createQueryInstance()
-            throws RepositoryException
+      throws RepositoryException
    {
       try
       {
          Object obj = Class.forName(queryHandlerConfig.getQueryClass()).newInstance();
          if (obj instanceof org.exoplatform.services.jcr.impl.core.query.AbstractQueryImpl)
          {
-            return (org.exoplatform.services.jcr.impl.core.query.AbstractQueryImpl) obj;
+            return (org.exoplatform.services.jcr.impl.core.query.AbstractQueryImpl)obj;
          }
          throw new IllegalArgumentException(queryHandlerConfig.getQueryClass() + " is not of type "
-                  + AbstractQueryImpl.class.getName());
+            + AbstractQueryImpl.class.getName());
 
       }
       catch (Throwable t)
@@ -245,7 +245,7 @@ public class SearchIndex
    }
 
    public QueryHits executeQuery(Query query, boolean needsSystemTree, InternalQName[] orderProps, boolean[] orderSpecs)
-            throws IOException
+      throws IOException
    {
       checkOpen();
       SortField[] sortFields = createSortFields(orderProps, orderSpecs);
@@ -287,7 +287,7 @@ public class SearchIndex
       {
          if (getContext().getParentHandler() instanceof SearchIndex)
          {
-            SearchIndex parent = (SearchIndex) getContext().getParentHandler();
+            SearchIndex parent = (SearchIndex)getContext().getParentHandler();
             if (parent.getIndexFormatVersion().getVersion() < index.getIndexFormatVersion().getVersion())
             {
                indexFormatVersion = parent.getIndexFormatVersion();
@@ -343,14 +343,13 @@ public class SearchIndex
       CachingMultiIndexReader parentReader = null;
       if (parentHandler instanceof SearchIndex && includeSystemIndex)
       {
-         parentReader = ((SearchIndex) parentHandler).index.getIndexReader();
+         parentReader = ((SearchIndex)parentHandler).index.getIndexReader();
       }
 
       CachingMultiIndexReader reader = index.getIndexReader();
       if (parentReader != null)
       {
-         CachingMultiIndexReader[] readers =
-         {reader, parentReader};
+         CachingMultiIndexReader[] readers = {reader, parentReader};
          return new CombinedIndexReader(readers);
       }
       return reader;
@@ -389,7 +388,7 @@ public class SearchIndex
       }
       QueryHandler handler = getContext().getParentHandler();
       if (handler instanceof SearchIndex)
-         return ((SearchIndex) handler).getSynonymProvider();
+         return ((SearchIndex)handler).getSynonymProvider();
       return null;
 
    }
@@ -447,7 +446,7 @@ public class SearchIndex
          if (context.getParentHandler() instanceof SearchIndex)
          {
             // use system namespace mappings
-            SearchIndex sysIndex = (SearchIndex) context.getParentHandler();
+            SearchIndex sysIndex = (SearchIndex)context.getParentHandler();
             nsMappings = sysIndex.getNamespaceMappings();
          }
          else
@@ -480,7 +479,7 @@ public class SearchIndex
             index.createInitialIndex(context.getItemStateManager(), context.getRootNodeIdentifer());
          }
          if (queryHandlerConfig.isConsistencyCheckEnabled()
-                  && (index.getRedoLogApplied() || queryHandlerConfig.isForceConsistencyCheck()))
+            && (index.getRedoLogApplied() || queryHandlerConfig.isForceConsistencyCheck()))
          {
             log.info("Running consistency check... ");
 
@@ -508,7 +507,7 @@ public class SearchIndex
          spellChecker = queryHandlerConfig.createSpellChecker(this);
 
          log.info("Index initialized: " + queryHandlerConfig.getIndexDir() + " Version: "
-                  + index.getIndexFormatVersion() + "");
+            + index.getIndexFormatVersion() + "");
 
          File file = new File(indexDir, ERROR_LOG);
          errorLog = new ErrorLog(file, queryHandlerConfig.getErrorLogSize());
@@ -575,11 +574,11 @@ public class SearchIndex
                   {
                      if (item.isNode())
                      {
-                        return (NodeData) item; // return node here
+                        return (NodeData)item; // return node here
                      }
                      else
                         log.warn("Node expected but property found with id " + id + ". Skipping "
-                                 + item.getQPath().getAsString());
+                           + item.getQPath().getAsString());
                   }
                   else
                   {
@@ -636,7 +635,7 @@ public class SearchIndex
     * @throws IOException if an error occurs while updating the index.
     */
    public void updateNodes(final Iterator<String> remove, final Iterator<NodeData> add) throws RepositoryException,
-            IOException
+      IOException
    {
 
       checkOpen();
@@ -649,7 +648,7 @@ public class SearchIndex
       {
          public Object next()
          {
-            String nodeId = (String) super.next();
+            String nodeId = (String)super.next();
             removedNodeIds.add(nodeId);
             return nodeId;
          }
@@ -657,7 +656,7 @@ public class SearchIndex
       {
          public Object next()
          {
-            NodeData state = (NodeData) super.next();
+            NodeData state = (NodeData)super.next();
             if (state == null)
             {
                return null;
@@ -673,8 +672,7 @@ public class SearchIndex
             catch (RepositoryException e)
             {
                log
-                        .warn("Exception while creating document for node: " + state.getIdentifier() + ": "
-                                 + e.toString(), e);
+                  .warn("Exception while creating document for node: " + state.getIdentifier() + ": " + e.toString(), e);
 
             }
             return doc;
@@ -701,7 +699,7 @@ public class SearchIndex
          {
             public Object next()
             {
-               NodeData state = (NodeData) super.next();
+               NodeData state = (NodeData)super.next();
                try
                {
                   return createDocument(state, getNamespaceMappings(), index.getIndexFormatVersion());
@@ -709,8 +707,7 @@ public class SearchIndex
                catch (RepositoryException e)
                {
                   log
-                           .warn("Exception while creating document for node: " + state.getIdentifier() + ": "
-                                    + e.toString());
+                     .warn("Exception while creating document for node: " + state.getIdentifier() + ": " + e.toString());
                }
                return null;
             }
@@ -733,7 +730,7 @@ public class SearchIndex
     *           <code>node</code>.
     */
    protected Document createDocument(NodeData node, NamespaceMappings nsMappings, IndexFormatVersion indexFormatVersion)
-            throws RepositoryException
+      throws RepositoryException
    {
       NodeIndexer indexer = new NodeIndexer(node, getContext().getItemStateManager(), nsMappings, extractor);
       indexer.setSupportHighlighting(queryHandlerConfig.getSupportHighlighting());
@@ -840,7 +837,7 @@ public class SearchIndex
                         doc.add(fulltextFields[k]);
                      }
                      doc.add(new Field(FieldNames.AGGREGATED_NODE_UUID, aggregates[j].getIdentifier().toString(),
-                              Field.Store.NO, Field.Index.NO_NORMS));
+                        Field.Store.NO, Field.Index.NO_NORMS));
                   }
                }
                // only use first aggregate definition that matches
@@ -851,8 +848,7 @@ public class SearchIndex
          {
             // do not fail if aggregate cannot be created
             log
-                     .warn("Exception while building indexing aggregate for " + "node with UUID: "
-                              + state.getIdentifier(), e);
+               .warn("Exception while building indexing aggregate for " + "node with UUID: " + state.getIdentifier(), e);
          }
       }
    }
@@ -937,7 +933,7 @@ public class SearchIndex
                            continue;
                         if (!itd.isNode())
                            throw new RepositoryException("Item with id:" + uuid + " is not a node");
-                        map.put(uuid, (NodeData) itd);
+                        map.put(uuid, (NodeData)itd);
                         found++;
                      }
                   }
@@ -979,9 +975,7 @@ public class SearchIndex
     * Combines multiple {@link CachingMultiIndexReader} into a
     * <code>MultiReader</code> with {@link HierarchyResolver} support.
     */
-   protected static final class CombinedIndexReader
-      extends MultiReader
-      implements HierarchyResolver, MultiIndexReader
+   protected static final class CombinedIndexReader extends MultiReader implements HierarchyResolver, MultiIndexReader
    {
 
       /**
@@ -1032,7 +1026,7 @@ public class SearchIndex
       {
          if (obj instanceof CombinedIndexReader)
          {
-            CombinedIndexReader other = (CombinedIndexReader) obj;
+            CombinedIndexReader other = (CombinedIndexReader)obj;
             return Arrays.equals(subReaders, other.subReaders);
          }
          return false;
@@ -1125,7 +1119,7 @@ public class SearchIndex
       }
    }
 
-   public QueryHandlerEntry getQueryHandlerConfig()
+   public QueryHandlerEntryWrapper getQueryHandlerConfig()
    {
       return queryHandlerConfig;
    }

@@ -19,7 +19,6 @@
 package org.exoplatform.services.jcr.config;
 
 import java.io.InputStream;
-import java.util.List;
 
 import javax.jcr.RepositoryException;
 
@@ -35,29 +34,14 @@ import org.jibx.runtime.JiBXException;
  * @version $Id: RepositoryServiceConfiguration.java 2038 2005-10-05 16:50:11Z geaz $
  */
 
-public class RepositoryServiceConfiguration
+public class RepositoryServiceConfiguration extends AbstractRepositoryServiceConfiguration
 {
-
-   private List<RepositoryEntry> repositoryConfigurations;
-
-   private String defaultRepositoryName;
-
-   public final String getDefaultRepositoryName()
-   {
-      return defaultRepositoryName;
-   }
-
-   public final List<RepositoryEntry> getRepositoryConfigurations()
-   {
-      return repositoryConfigurations;
-   }
 
    public final RepositoryEntry getRepositoryConfiguration(String name) throws RepositoryConfigurationException
    {
-
-      for (int i = 0; i < repositoryConfigurations.size(); i++)
+      for (int i = 0; i < getRepositoryConfigurations().size(); i++)
       {
-         RepositoryEntry conf = repositoryConfigurations.get(i);
+         RepositoryEntry conf = (RepositoryEntry)getRepositoryConfigurations().get(i);
          if (conf.getName().equals(name))
             return conf;
       }
@@ -70,10 +54,15 @@ public class RepositoryServiceConfiguration
       {
          IBindingFactory factory = BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
          IUnmarshallingContext uctx = factory.createUnmarshallingContext();
-         RepositoryServiceConfiguration conf = (RepositoryServiceConfiguration) uctx.unmarshalDocument(is, null);
+         RepositoryServiceConfiguration conf = (RepositoryServiceConfiguration)uctx.unmarshalDocument(is, null);
 
          this.defaultRepositoryName = conf.getDefaultRepositoryName();
          this.repositoryConfigurations = conf.getRepositoryConfigurations();
+
+         //      setDefaultRepositoryName(conf.getDefaultRepositoryName());
+         //      getRepositoryConfigurations().clear();
+         //      getRepositoryConfigurations().addAll(conf.getRepositoryConfigurations());
+
       }
       catch (JiBXException e)
       {

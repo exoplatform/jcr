@@ -28,8 +28,7 @@ package org.exoplatform.services.jcr.config;
 /**
  * This exception is thrown when condition occurred.
  */
-public class RepositoryConfigurationException
-   extends Exception
+public class RepositoryConfigurationException extends Exception
 {
    /**
     * Constructs an Exception without a message.

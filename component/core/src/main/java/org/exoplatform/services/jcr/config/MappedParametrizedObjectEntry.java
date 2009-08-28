@@ -21,10 +21,7 @@ package org.exoplatform.services.jcr.config;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.jcr.util.StringNumberParser;
-import org.exoplatform.services.log.ExoLogger;
 
 /**
  * Created by The eXo Platform SAS.
@@ -36,21 +33,18 @@ import org.exoplatform.services.log.ExoLogger;
 public abstract class MappedParametrizedObjectEntry
 {
 
-   protected static final Log LOG = ExoLogger.getLogger("jcr.MappedParametrizedObjectEntry");
-
    protected String type;
 
-   protected List<SimpleParameterEntry> parameters;
+   protected List<SimpleParameterEntry> parameters = new ArrayList<SimpleParameterEntry>();
 
    public MappedParametrizedObjectEntry()
    {
-      parameters = new ArrayList<SimpleParameterEntry>();
    }
 
-   public MappedParametrizedObjectEntry(String type, List params)
+   public MappedParametrizedObjectEntry(String type, List parameters)
    {
       this.type = type;
-      this.parameters = params;
+      this.parameters = parameters;
    }
 
    public List<SimpleParameterEntry> getParameters()
@@ -98,6 +92,21 @@ public abstract class MappedParametrizedObjectEntry
       return value;
    }
 
+   public void putParameterValue(String name, String value)
+   {
+      for (SimpleParameterEntry p : parameters)
+      {
+         if (p.getName().equals(name))
+         {
+            p.setValue(value);
+            return;
+         }
+      }
+
+      SimpleParameterEntry newParam = new SimpleParameterEntry(name, value);
+      parameters.add(newParam);
+   }
+
    /**
     * Parse named parameter as Integer.
     * 
@@ -120,11 +129,32 @@ public abstract class MappedParametrizedObjectEntry
             }
             catch (NumberFormatException e)
             {
-               LOG.warn(name + ": unparseable Integer. " + e);
+               //LOG.warn(name + ": unparseable Integer. " + e);
             }
          }
       }
       return defaultValue;
+   }
+
+   /**
+    * Set parameter as integer
+    * 
+    * @param name
+    * @param defaultValue
+    */
+   public void putIntegerParameter(String name, Integer value)
+   {
+      for (SimpleParameterEntry param : parameters)
+      {
+         if (param.getName().equals(name))
+         {
+            param.setValue(value.toString());
+            return;
+         }
+      }
+
+      SimpleParameterEntry newParam = new SimpleParameterEntry(name, value.toString());
+      parameters.add(newParam);
    }
 
    /**
@@ -169,7 +199,7 @@ public abstract class MappedParametrizedObjectEntry
             }
             catch (NumberFormatException e)
             {
-               LOG.warn(name + ": unparseable Long. " + e);
+               //LOG.warn(name + ": unparseable Long. " + e);
             }
          }
       }
@@ -219,7 +249,7 @@ public abstract class MappedParametrizedObjectEntry
             }
             catch (NumberFormatException e)
             {
-               LOG.warn(name + ": unparseable time (as Long). " + e);
+               //LOG.warn(name + ": unparseable time (as Long). " + e);
             }
          }
       }
@@ -267,6 +297,28 @@ public abstract class MappedParametrizedObjectEntry
          }
       }
       return defaultValue;
+   }
+
+   /**
+    * Set parameter as boolean
+    * 
+    * @param name
+    * @param value
+    */
+   public void putBooleanParameter(String name, Boolean value)
+   {
+      for (int i = 0; i < parameters.size(); i++)
+      {
+         SimpleParameterEntry p = parameters.get(i);
+         if (p.getName().equals(name))
+         {
+            p.setValue(value.toString());
+            return;
+         }
+      }
+
+      SimpleParameterEntry newParam = new SimpleParameterEntry(name, value.toString());
+      parameters.add(newParam);
    }
 
    /**

@@ -26,19 +26,16 @@ import java.util.concurrent.Semaphore;
 import org.apache.commons.collections.Buffer;
 import org.apache.commons.collections.BufferUtils;
 import org.apache.commons.collections.buffer.UnboundedFifoBuffer;
-import org.exoplatform.services.log.Log;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
-
-import org.exoplatform.services.jcr.config.QueryHandlerEntry;
+import org.exoplatform.services.jcr.config.QueryHandlerEntryWrapper;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 /**
  * Merges indexes in a separate deamon thread.
  */
-class IndexMerger
-   extends Thread
-   implements IndexListener
+class IndexMerger extends Thread implements IndexListener
 {
 
    /**
@@ -54,17 +51,17 @@ class IndexMerger
    /**
     * minMergeDocs config parameter.
     */
-   private int minMergeDocs = new Integer(QueryHandlerEntry.DEFAULT_MIN_MERGE_DOCS);
+   private int minMergeDocs = new Integer(QueryHandlerEntryWrapper.DEFAULT_MIN_MERGE_DOCS);
 
    /**
     * maxMergeDocs config parameter
     */
-   private int maxMergeDocs = new Integer(QueryHandlerEntry.DEFAULT_MAX_MERGE_DOCS);
+   private int maxMergeDocs = new Integer(QueryHandlerEntryWrapper.DEFAULT_MAX_MERGE_DOCS);
 
    /**
     * mergeFactor config parameter
     */
-   private int mergeFactor = new Integer(QueryHandlerEntry.DEFAULT_MERGE_FACTOR);
+   private int mergeFactor = new Integer(QueryHandlerEntryWrapper.DEFAULT_MERGE_FACTOR);
 
    /**
     * Queue of merge Tasks
@@ -298,7 +295,7 @@ class IndexMerger
             mergerIdle.release();
             isIdle = true;
          }
-         Merge task = (Merge) mergeTasks.remove();
+         Merge task = (Merge)mergeTasks.remove();
          if (task == QUIT)
          {
             mergerIdle.release();
@@ -438,8 +435,7 @@ class IndexMerger
     * Implements a simple struct that holds the name of an index and how many document it contains.
     * <code>Index</code> is comparable using the number of documents it contains.
     */
-   private static final class Index
-      implements Comparable
+   private static final class Index implements Comparable
    {
 
       /**
@@ -476,7 +472,7 @@ class IndexMerger
        */
       public int compareTo(Object o)
       {
-         Index other = (Index) o;
+         Index other = (Index)o;
          int val = numDocs < other.numDocs ? -1 : (numDocs == other.numDocs ? 0 : 1);
          if (val != 0)
          {
@@ -522,8 +518,7 @@ class IndexMerger
     * Implements a <code>List</code> with a document limit value. An <code>IndexBucket</code>
     * contains {@link Index}es with documents less or equal the document limit of the bucket.
     */
-   private static final class IndexBucket
-      extends ArrayList<Index>
+   private static final class IndexBucket extends ArrayList<Index>
    {
 
       /**

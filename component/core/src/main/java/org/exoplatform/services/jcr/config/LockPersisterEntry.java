@@ -22,8 +22,7 @@ package org.exoplatform.services.jcr.config;
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: LockPersisterEntry.java 13891 2008-05-05 16:02:30Z pnedonosko $
  */
-public class LockPersisterEntry
-   extends MappedParametrizedObjectEntry
+public class LockPersisterEntry extends MappedParametrizedObjectEntry
 {
 
 }

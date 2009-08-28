@@ -21,8 +21,6 @@ import java.util.List;
 
 import javax.jcr.RepositoryException;
 
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.document.DocumentReaderService;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
@@ -33,6 +31,7 @@ import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 /**
  * Created by The eXo Platform SAS.
@@ -41,69 +40,67 @@ import org.exoplatform.services.log.ExoLogger;
  * @version $Id: SystemSearchManager.java 13891 2008-05-05 16:02:30Z pnedonosko
  *          $
  */
-public class SystemSearchManager
-   extends SearchManager
-{
+public class SystemSearchManager extends SearchManager {
 
-   /**
-    * Class logger.
-    */
-   private final Log log = ExoLogger.getLogger("jcr.SystemSearchManager");
+  /**
+   * Class logger.
+   */
+  private final Log                 log              = ExoLogger.getLogger("jcr.SystemSearchManager");
 
-   /**
-    * Is started flag.
-    */
-   private boolean isStarted = false;
+  /**
+   * Is started flag.
+   */
+  private boolean                   isStarted        = false;
 
-   /**
-    * ChangesLog Buffer (used for saves before start).
-    */
-   private List<ItemStateChangesLog> changesLogBuffer = new ArrayList<ItemStateChangesLog>();
+  /**
+   * ChangesLog Buffer (used for saves before start).
+   */
+  private List<ItemStateChangesLog> changesLogBuffer = new ArrayList<ItemStateChangesLog>();
 
-   public static final String INDEX_DIR_SUFFIX = "system";
+  public static final String        INDEX_DIR_SUFFIX = "system";
 
-   public SystemSearchManager(QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
-            WorkspacePersistentDataManager itemMgr, DocumentReaderService service, ConfigurationManager cfm)
-            throws RepositoryException, RepositoryConfigurationException
-   {
-      super(config, nsReg, ntReg, itemMgr, null, service, cfm);
-   }
+  public SystemSearchManager(QueryHandlerEntry config,
+                             NamespaceRegistryImpl nsReg,
+                             NodeTypeDataManager ntReg,
+                             WorkspacePersistentDataManager itemMgr,
+                             DocumentReaderService service,
+                             ConfigurationManager cfm) throws RepositoryException,
+      RepositoryConfigurationException {
+    super(config, nsReg, ntReg, itemMgr, null, service, cfm);
+  }
 
-   @Override
-   public void onSaveItems(ItemStateChangesLog changesLog)
-   {
-      if (!isStarted)
-      {
-         changesLogBuffer.add(changesLog);
-      }
-      else
-      {
-         super.onSaveItems(changesLog);
-      }
-   }
+  @Override
+  public void onSaveItems(ItemStateChangesLog changesLog) {
+    if (!isStarted) {
+      changesLogBuffer.add(changesLog);
+    } else {
+      super.onSaveItems(changesLog);
+    }
+  }
 
-   @Override
-   public void start()
-   {
-      indexingRoot = Constants.JCR_SYSTEM_PATH;
-      excludedPaths.remove(Constants.JCR_SYSTEM_PATH);
-      isStarted = true;
-      handler.init();
-      for (ItemStateChangesLog bufferedChangesLog : changesLogBuffer)
-      {
-         super.onSaveItems(bufferedChangesLog);
-      }
-      changesLogBuffer.clear();
-      changesLogBuffer = null;
-   }
+  @Override
+  public void start() {
+    indexingRoot = Constants.JCR_SYSTEM_PATH;
+    excludedPaths.remove(Constants.JCR_SYSTEM_PATH);
+    isStarted = true;
+    handler.init();
+    for (ItemStateChangesLog bufferedChangesLog : changesLogBuffer) {
+      super.onSaveItems(bufferedChangesLog);
+    }
+    changesLogBuffer.clear();
+    changesLogBuffer = null;
+  }
 
-   @Override
-   protected QueryHandlerContext createQueryHandlerContext(QueryHandler parentHandler)
-            throws RepositoryConfigurationException
-   {
-      QueryHandlerContext context =
-               new QueryHandlerContext(itemMgr, Constants.SYSTEM_UUID, nodeTypeDataManager, nsReg, parentHandler,
-                        config.getIndexDir() + "_" + INDEX_DIR_SUFFIX, extractor);
-      return context;
-   }
+  @Override
+  protected QueryHandlerContext createQueryHandlerContext(QueryHandler parentHandler) throws RepositoryConfigurationException {
+    QueryHandlerContext context = new QueryHandlerContext(itemMgr,
+                                                          Constants.SYSTEM_UUID,
+                                                          nodeTypeDataManager,
+                                                          nsReg,
+                                                          parentHandler,
+                                                          config.getIndexDir() + "_"
+                                                              + INDEX_DIR_SUFFIX,
+                                                          extractor);
+    return context;
+  }
 }
