@@ -49,8 +49,7 @@ import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
  * @version $Id: MultiDbJDBCConnection.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
 
-public class MultiDbJDBCConnection
-   extends JDBCStorageConnection
+public class MultiDbJDBCConnection extends JDBCStorageConnection
 {
 
    protected PreparedStatement findItemById;
@@ -73,6 +72,9 @@ public class MultiDbJDBCConnection
 
    protected PreparedStatement findValuesDataByPropertyId;
 
+   protected PreparedStatement findValuesStorageDescriptorsByPropertyId;
+
+   @Deprecated
    protected PreparedStatement findValueByPropertyIdOrderNumber;
 
    protected PreparedStatement findNodesByParentId;
@@ -114,6 +116,8 @@ public class MultiDbJDBCConnection
     * 
     * @param dbConnection
     *          JDBC connection, shoudl be opened before
+    * @param readOnly
+    *          boolean if true the dbConnection was marked as READ-ONLY.
     * @param containerName
     *          Workspace Storage Container name (see configuration)
     * @param valueStorageProvider
@@ -128,12 +132,12 @@ public class MultiDbJDBCConnection
     * 
     * @see org.exoplatform.services.jcr.impl.util.io.FileCleaner
     */
-   public MultiDbJDBCConnection(Connection dbConnection, String containerName,
-            ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory,
-            FileCleaner swapCleaner) throws SQLException
+   public MultiDbJDBCConnection(Connection dbConnection, boolean readOnly, String containerName,
+      ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory, FileCleaner swapCleaner)
+      throws SQLException
    {
 
-      super(dbConnection, containerName, valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+      super(dbConnection, readOnly, containerName, valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
    }
 
    /**
@@ -172,19 +176,21 @@ public class MultiDbJDBCConnection
       FIND_ITEM_BY_ID = "select * from JCR_MITEM where ID=?";
 
       FIND_ITEM_BY_NAME =
-               "select * from JCR_MITEM" + " where PARENT_ID=? and NAME=? and I_INDEX=? order by I_CLASS, VERSION DESC";
+         "select * from JCR_MITEM" + " where PARENT_ID=? and NAME=? and I_INDEX=? order by I_CLASS, VERSION DESC";
 
       FIND_PROPERTY_BY_NAME =
-               "select V.DATA"
-                        + " from JCR_MITEM I, JCR_MVALUE V"
-                        + " where I.I_CLASS=2 and I.PARENT_ID=? and I.NAME=? and I.ID=V.PROPERTY_ID order by V.ORDER_NUM";
+         "select V.DATA" + " from JCR_MITEM I, JCR_MVALUE V"
+            + " where I.I_CLASS=2 and I.PARENT_ID=? and I.NAME=? and I.ID=V.PROPERTY_ID order by V.ORDER_NUM";
 
       FIND_REFERENCES =
-               "select P.ID, P.PARENT_ID, P.VERSION, P.P_TYPE, P.P_MULTIVALUED, P.NAME"
-                        + " from JCR_MREF R, JCR_MITEM P" + " where R.NODE_ID=? and P.ID=R.PROPERTY_ID and P.I_CLASS=2";
+         "select P.ID, P.PARENT_ID, P.VERSION, P.P_TYPE, P.P_MULTIVALUED, P.NAME" + " from JCR_MREF R, JCR_MITEM P"
+            + " where R.NODE_ID=? and P.ID=R.PROPERTY_ID and P.I_CLASS=2";
 
       FIND_VALUES_BY_PROPERTYID =
-               "select PROPERTY_ID, ORDER_NUM, STORAGE_DESC from JCR_MVALUE where PROPERTY_ID=? order by ORDER_NUM";
+         "select PROPERTY_ID, ORDER_NUM, DATA, STORAGE_DESC from JCR_MVALUE where PROPERTY_ID=? order by ORDER_NUM";
+
+      FIND_VALUES_VSTORAGE_DESC_BY_PROPERTYID = "select distinct STORAGE_DESC from JCR_MVALUE where PROPERTY_ID=?";
+
       FIND_VALUE_BY_PROPERTYID_OREDERNUMB = "select DATA from JCR_MVALUE where PROPERTY_ID=? and ORDER_NUM=?";
 
       FIND_NODES_BY_PARENTID = "select * from JCR_MITEM" + " where I_CLASS=1 and PARENT_ID=?" + " order by N_ORDER_NUM";
@@ -192,11 +198,11 @@ public class MultiDbJDBCConnection
       FIND_PROPERTIES_BY_PARENTID = "select * from JCR_MITEM" + " where I_CLASS=2 and PARENT_ID=?" + " order by ID";
 
       INSERT_NODE =
-               "insert into JCR_MITEM(ID, PARENT_ID, NAME, VERSION, I_CLASS, I_INDEX, N_ORDER_NUM) VALUES(?,?,?,?,"
-                        + I_CLASS_NODE + ",?,?)";
+         "insert into JCR_MITEM(ID, PARENT_ID, NAME, VERSION, I_CLASS, I_INDEX, N_ORDER_NUM) VALUES(?,?,?,?,"
+            + I_CLASS_NODE + ",?,?)";
       INSERT_PROPERTY =
-               "insert into JCR_MITEM(ID, PARENT_ID, NAME, VERSION, I_CLASS, I_INDEX, P_TYPE, P_MULTIVALUED) VALUES(?,?,?,?,"
-                        + I_CLASS_PROPERTY + ",?,?,?)";
+         "insert into JCR_MITEM(ID, PARENT_ID, NAME, VERSION, I_CLASS, I_INDEX, P_TYPE, P_MULTIVALUED) VALUES(?,?,?,?,"
+            + I_CLASS_PROPERTY + ",?,?,?)";
 
       INSERT_VALUE = "insert into JCR_MVALUE(DATA, ORDER_NUM, PROPERTY_ID, STORAGE_DESC) VALUES(?,?,?,?)";
       INSERT_REF = "insert into JCR_MREF(NODE_ID, PROPERTY_ID, ORDER_NUM) VALUES(?,?,?)";
@@ -225,7 +231,7 @@ public class MultiDbJDBCConnection
 
       insertNode.setString(1, data.getIdentifier());
       insertNode.setString(2, data.getParentIdentifier() == null ? Constants.ROOT_PARENT_UUID : data
-               .getParentIdentifier());
+         .getParentIdentifier());
       insertNode.setString(3, data.getQPath().getName().getAsString());
       insertNode.setInt(4, data.getPersistedVersion());
       insertNode.setInt(5, data.getQPath().getIndex());
@@ -448,7 +454,7 @@ public class MultiDbJDBCConnection
     * {@inheritDoc}
     */
    protected int addValueData(String cid, int orderNumber, InputStream stream, int streamLength, String storageDesc)
-            throws SQLException
+      throws SQLException
    {
 
       if (insertValue == null)
@@ -528,12 +534,29 @@ public class MultiDbJDBCConnection
          renameNode.clearParameters();
 
       renameNode.setString(1, data.getParentIdentifier() == null ? Constants.ROOT_PARENT_UUID : data
-               .getParentIdentifier());
+         .getParentIdentifier());
+
       renameNode.setString(2, data.getQPath().getName().getAsString());
       renameNode.setInt(3, data.getPersistedVersion());
       renameNode.setInt(4, data.getQPath().getIndex());
       renameNode.setInt(5, data.getOrderNumber());
       renameNode.setString(6, data.getIdentifier());
       return renameNode.executeUpdate();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findValuesStorageDescriptorsByPropertyId(String cid) throws SQLException
+   {
+      if (findValuesStorageDescriptorsByPropertyId == null)
+         findValuesStorageDescriptorsByPropertyId =
+            dbConnection.prepareStatement(FIND_VALUES_VSTORAGE_DESC_BY_PROPERTYID);
+      else
+         findValuesStorageDescriptorsByPropertyId.clearParameters();
+
+      findValuesStorageDescriptorsByPropertyId.setString(1, cid);
+      return findValuesStorageDescriptorsByPropertyId.executeQuery();
    }
 }
