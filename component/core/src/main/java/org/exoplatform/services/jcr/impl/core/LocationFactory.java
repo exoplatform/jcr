@@ -234,7 +234,7 @@ public class LocationFactory
          }
 
          path.addEntry(namespaces.getNamespaceURIByPrefix(prefix), someName, prefix, index);
-         return (JCRPath.PathElement) path.getName();
+         return (JCRPath.PathElement)path.getName();
 
       }
       catch (Exception e)
@@ -246,7 +246,7 @@ public class LocationFactory
    private JCRPath parseNames(String path, boolean absolute) throws RepositoryException
    {
 
-      if (path == null)
+      if ((path == null) || (path.equals("")))
       {
          throw new RepositoryException("Illegal relPath " + path);
       }
@@ -309,7 +309,7 @@ public class LocationFactory
       }
 
       return !((ch == '\t') || (ch == '\n') || (ch == '\f') || (ch == '\r') || (ch == ' ') || (ch == '/')
-               || (ch == ':') || (ch == '[') || (ch == ']') || (ch == '\'') || (ch == '\"') || (ch == '*'));
+         || (ch == ':') || (ch == '[') || (ch == ']') || (ch == '\'') || (ch == '\"') || (ch == '*'));
    }
 
    private boolean isSimpleString(String str)
@@ -343,11 +343,11 @@ public class LocationFactory
             char ch0 = str.charAt(0);
             char ch1 = str.charAt(1);
             return (((ch0 == '.') && (isNonspace(str, ch1) && (ch1 != '.')))
-                     || ((isNonspace(str, ch0) && (ch0 != '.')) && (ch1 == '.')) || ((isNonspace(str, ch0) && (ch0 != '.')) && (isNonspace(
-                     str, ch1) && (ch1 != '.'))));
+               || ((isNonspace(str, ch0) && (ch0 != '.')) && (ch1 == '.')) || ((isNonspace(str, ch0) && (ch0 != '.')) && (isNonspace(
+               str, ch1) && (ch1 != '.'))));
          default :
             return isNonspace(str, str.charAt(0)) && isSimpleString(str.substring(1, strLen - 1))
-                     && isNonspace(str, str.charAt(strLen - 1));
+               && isNonspace(str, str.charAt(strLen - 1));
       }
    }
 
@@ -365,13 +365,13 @@ public class LocationFactory
             return isNonspace(str, str.charAt(0)) && isNonspace(str, str.charAt(1));
          default :
             return isNonspace(str, str.charAt(0)) && isSimpleString(str.substring(1, strLen - 1))
-                     && isNonspace(str, str.charAt(strLen - 1));
+               && isNonspace(str, str.charAt(strLen - 1));
       }
    }
 
    private boolean isValidName(String str, boolean prefixed)
    {
       return (prefixed ? isLocalName(str) : isSimpleName(str) || str.equals(JCRPath.THIS_RELPATH)
-               || str.equals(JCRPath.PARENT_RELPATH) || str.equals("*"));
+         || str.equals(JCRPath.PARENT_RELPATH) || str.equals("*"));
    }
 }

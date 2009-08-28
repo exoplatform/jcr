@@ -48,7 +48,7 @@ public class TestLocationFactory
    {"..", "jcr:ig[2]/aaa", "v/d/...", "/path", "/vv/fff", "ff", "/", "..", "|fff"};
 
    private static String testJCRPathInvalid[] =
-   {"/.:./uuu", "/ ", "/./xml:name[0]", "xxx//fff", "//", " sdfas/"};
+   {"/.:./uuu", "/ ", "/./xml:name[0]", "xxx//fff", "//", " sdfas/", ""};
 
    private LocationFactory factory;
 
