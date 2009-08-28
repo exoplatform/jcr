@@ -25,7 +25,7 @@
    <parent>
       <groupId>org.exoplatform.jcr</groupId>
       <artifactId>jcr-parent</artifactId>
-      <version>1.12.0-Beta01</version>
+      <version>1.12.0-SNAPSHOT</version>
    </parent>
 
    <artifactId>exo.jcr.ear</artifactId>
