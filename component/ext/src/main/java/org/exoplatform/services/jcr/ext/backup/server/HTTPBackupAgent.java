@@ -245,6 +245,7 @@ public class HTTPBackupAgent
     */
    @POST
    @Consumes(MediaType.APPLICATION_JSON)
+   @Produces(MediaType.APPLICATION_JSON)
    @RolesAllowed("administrators")
    @Path("/start/{repo}/{ws}")
    public Response start(BackupConfigBean bConfigBeen, @PathParam("repo") String repository,
@@ -272,9 +273,11 @@ public class HTTPBackupAgent
          validateWorkspaceName(repository, workspace);
          validateOneBackupInstants(repository, workspace);
 
-         backupManager.startBackup(config);
+         BackupChain chain = backupManager.startBackup(config);
 
-         return Response.ok().build();
+         ShortInfo shortInfo = new ShortInfo(ShortInfo.CURRENT, chain);
+
+         return Response.ok(shortInfo).cacheControl(noCache).build();
       }
       catch (NoSuchWorkspaceException e)
       {
@@ -327,7 +330,8 @@ public class HTTPBackupAgent
 
       log.error("Can not start backup", exception);
 
-      return Response.status(status).entity("Can not start backup : " + failMessage).type(MediaType.TEXT_PLAIN).build();
+      return Response.status(status).entity("Can not start backup : " + failMessage).type(MediaType.TEXT_PLAIN)
+               .cacheControl(noCache).build();
    }
 
    /**
