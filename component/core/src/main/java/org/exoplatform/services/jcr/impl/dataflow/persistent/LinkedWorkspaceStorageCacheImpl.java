@@ -1722,15 +1722,59 @@ public class LinkedWorkspaceStorageCacheImpl
             }
             else if (state.isUpdated())
             {
-               // UPDATE occurs on reordered (no subtree!) and merged nodes (for each merged-updated)
-               if (item.isNode() && prevState != null)
+               // UPDATE occurs on reordered (no subtree!) and merged nodes (for each
+               // merged-updated)
+               if (item.isNode())
                {
-                  // play only for reorder, UPDATE goes after DELETE of same path item
-                  // we have to unload node and its parent child nodes to be loaded
-                  // back from the persistence
-                  if (prevState.isDeleted()
-                           && prevState.getData().getParentIdentifier().equals(item.getParentIdentifier()))
-                     removeSiblings((NodeData) item);
+                  if (prevState != null)
+                  {
+                     // play only for reorder, UPDATE goes after DELETE of same path
+                     // item
+                     // we have to unload node and its parent child nodes to be loaded
+                     // back from the persistence
+                     if (prevState.isDeleted()
+                        && prevState.getData().getParentIdentifier().equals(item.getParentIdentifier()))
+                        removeSiblings((NodeData)item);
+                  }
+               }
+               else if (item.getQPath().getName().equals(Constants.EXO_PERMISSIONS))
+               {
+                  // TODO JCR-1117 place to put workaround for JCR cache
+                  // exo:permissions updated
+                  // get parent Node
+
+                  // check if parent is mix:privilegeable
+                  ItemData parent = get(item.getParentIdentifier());
+                  // delete parent
+                  remove(parent);
+                  // traverse itemCache
+
+                  Iterator<CacheValue> cacheIterator = cache.values().iterator();
+                  while (cacheIterator.hasNext())
+                  {
+                     ItemData cachedItem = cacheIterator.next().getItem();
+                     if (cachedItem.isNode())
+                     {
+                        if (cachedItem.getQPath().isDescendantOf(parent.getQPath()))
+                        {
+                           cacheIterator.remove();
+                        }
+                     }
+                  }
+
+                  // traverse child node Cache
+                  Iterator<List<NodeData>> childNodesIterator = nodesCache.values().iterator();
+                  while (childNodesIterator.hasNext())
+                  {
+                     List<NodeData> list = childNodesIterator.next();
+                     if (list != null && list.size() > 0)
+                     {
+                        if (list.get(0).getQPath().isDescendantOf(parent.getQPath()))
+                        {
+                           childNodesIterator.remove();
+                        }
+                     }
+                  }
                }
                put(item);
             }
