@@ -120,6 +120,10 @@
          </value-param>
       </init-params>
    </component>
+   
+   <component>
+    <type>org.exoplatform.services.jcr.ext.repository.RestRepositoryService</type>
+  </component>
 
    <!--  backup -->
    <component>
