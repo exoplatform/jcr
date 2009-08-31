@@ -82,7 +82,7 @@ public class TestEncoding extends BaseStandaloneTest
 
    }
 
-   public void _testNoContentTypeHeader() throws Exception
+   public void testNoContentTypeHeader() throws Exception
    {
 
       // System.out.println("\ttestNoContentTypeHeader:");
