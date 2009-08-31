@@ -45,7 +45,9 @@ import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.RepositoryServiceConfiguration;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
+import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.rest.resource.ResourceContainer;
@@ -94,12 +96,12 @@ public class RestRepositoryService
          /**
           * Create new repository operations.
           */
-         public static final String NEW_REPOSITORY = "/new-repository";
+         public static final String CREATE_REPOSITORY = "/create-repository";
 
          /**
           * Create new workspace.
           */
-         public static final String NEW_WORKSPACE = "/new-workspace";
+         public static final String CREATE_WORKSPACE = "/create-workspace";
 
          /**
           * Remove repository operation.
@@ -239,9 +241,8 @@ public class RestRepositoryService
     */
    @POST
    @Consumes(MediaType.APPLICATION_JSON)
-   @Produces(MediaType.APPLICATION_JSON)
    @RolesAllowed("administrators")
-   @Path("/new-repository")
+   @Path("/create-repository")
    public Response createRepository(@Context UriInfo uriInfo, RepositoryEntry newRepository) throws URISyntaxException
    {
       String errorMessage = new String();
@@ -250,7 +251,7 @@ public class RestRepositoryService
       {
          repositoryService.createRepository(newRepository);
          URI location = new URI(uriInfo.getBaseUri().toString() + uriInfo.getPath() + "/" + newRepository.getName());
-         return Response.created(location).cacheControl(NO_CACHE).build();
+         return Response.ok().cacheControl(NO_CACHE).build();
       }
       catch (RepositoryException e)
       {
@@ -288,7 +289,7 @@ public class RestRepositoryService
    @POST
    @Consumes(MediaType.APPLICATION_JSON)
    @RolesAllowed("administrators")
-   @Path("/new-workspace/{repositoryName}")
+   @Path("/create-workspace/{repositoryName}")
    public Response createWorkspace(@Context UriInfo uriInfo, @PathParam("repositoryName") String repositoryName,
             WorkspaceEntry newWorkspace) throws URISyntaxException
    {
@@ -300,7 +301,7 @@ public class RestRepositoryService
          repository.configWorkspace(newWorkspace);
          repository.createWorkspace(newWorkspace.getName());
          URI location = new URI(uriInfo.getBaseUri().toString() + uriInfo.getPath() + "/" + newWorkspace.getName());
-         return Response.created(location).build();
+         return Response.ok().build();
       }
       catch (RepositoryException e)
       {
@@ -335,14 +336,19 @@ public class RestRepositoryService
     */
    @POST
    @RolesAllowed("administrators")
-   @Path("/remove-repository/{repositoryName}")
-   public Response removeRepository(@Context UriInfo uriInfo, @PathParam("repositoryName") String repositoryName)
+   @Path("/remove-repository/{repositoryName}/{forseSessionClose}")
+   public Response removeRepository(@Context UriInfo uriInfo, @PathParam("repositoryName") String repositoryName, 
+            @PathParam("forseSessionClose") Boolean forseSessionClose)
    {
       String errorMessage = new String();
       Status status;
 
       try
       {
+         if (forseSessionClose)
+            for (WorkspaceEntry wsEntry : repositoryService.getConfig().getRepositoryConfiguration(repositoryName).getWorkspaceEntries())
+            forceCloseSession(repositoryName, wsEntry.getName());
+         
          if (repositoryService.canRemoveRepository(repositoryName))
          {
             repositoryService.removeRepository(repositoryName);
@@ -378,9 +384,9 @@ public class RestRepositoryService
     */
    @POST
    @RolesAllowed("administrators")
-   @Path("/remove-workspace/{repositoryName}/{workspaceName}")
+   @Path("/remove-workspace/{repositoryName}/{workspaceName}/{forseSessionClose}/")
    public Response removeWorkspace(@Context UriInfo uriInfo, @PathParam("repositoryName") String repositoryName,
-            @PathParam("workspaceName") String workspaceName)
+            @PathParam("workspaceName") String workspaceName, @PathParam("forseSessionClose") Boolean forseSessionClose)
    {
       String errorMessage = new String();
       Status status;
@@ -388,8 +394,12 @@ public class RestRepositoryService
       try
       {
          ManageableRepository repository = repositoryService.getRepository(repositoryName);
+         
+         if (forseSessionClose)
+           forceCloseSession(repositoryName, workspaceName);
+         
          if (repository.canRemoveWorkspace(workspaceName))
-         {
+         {  
             repository.removeWorkspace(workspaceName);
             return Response.noContent().build();
          }
@@ -497,5 +507,28 @@ public class RestRepositoryService
       return Response.status(Status.OK).entity("The method /update-workspace-config not implemented.").type(
                MediaType.TEXT_PLAIN_TYPE).cacheControl(NO_CACHE).build();
    }
+   
+   /**
+    * forceCloseSession. Close sessions on specific workspace.
+    * 
+    * @param repositoryName
+    *          repository name
+    * @param workspaceName
+    *          workspace name
+    * @return int return the how many sessions was closed
+    * @throws RepositoryConfigurationException
+    *           will be generate RepositoryConfigurationException
+    * @throws RepositoryException
+    *           will be generate RepositoryException
+    */
+   private int forceCloseSession(String repositoryName, String workspaceName) throws RepositoryException,
+            RepositoryConfigurationException
+   {
+      ManageableRepository mr = repositoryService.getRepository(repositoryName);
+      WorkspaceContainerFacade wc = mr.getWorkspaceContainer(workspaceName);
 
+      SessionRegistry sessionRegistry = (SessionRegistry) wc.getComponent(SessionRegistry.class);
+
+      return sessionRegistry.closeSessions(workspaceName);
+   }
 }
