@@ -199,12 +199,12 @@ public class LocationFactory
          int indexEnd = name.indexOf("]");
          if ((indexEnd <= indexStart + 1) || (indexEnd != name.length() - 1))
          {
-            throw new RepositoryException("Invalid path entry " + name);
+            throw new RepositoryException("Invalid path entry: \"" + name + "\"");
          }
          index = Integer.parseInt(name.substring(indexStart + 1, indexEnd));
          if (index <= 0)
          {
-            throw new RepositoryException("Invalid path entry " + name);
+            throw new RepositoryException("Invalid path entry: \"" + name + "\"");
          }
          endOfName = indexStart;
       }
@@ -222,7 +222,7 @@ public class LocationFactory
             prefix = name.substring(0, delim);
             if (!XMLChar.isValidName(prefix))
             {
-               throw new RepositoryException("Illegal path entry " + name);
+               throw new RepositoryException("Illegal path entry: \"" + name + "\"");
             }
          }
 
@@ -230,7 +230,7 @@ public class LocationFactory
          String someName = name.substring(delim + 1, endOfName);
          if (!isValidName(someName, !prefix.equals("")))
          {
-            throw new RepositoryException("Illegal path entry " + name);
+            throw new RepositoryException("Illegal path entry: \"" + name + "\"");
          }
 
          path.addEntry(namespaces.getNamespaceURIByPrefix(prefix), someName, prefix, index);
@@ -248,7 +248,7 @@ public class LocationFactory
 
       if ((path == null) || (path.equals("")))
       {
-         throw new RepositoryException("Illegal relPath " + path);
+         throw new RepositoryException("Illegal relPath: \"" + path + "\"");
       }
 
       JCRPath jcrPath = new JCRPath();
@@ -261,7 +261,7 @@ public class LocationFactory
       {
          if (!absolute)
          {
-            throw new RepositoryException("Illegal relPath " + path);
+            throw new RepositoryException("Illegal relPath: \"" + path + "\"");
          }
          jcrPath.addEntry(namespaces.getNamespaceURIByPrefix(""), "", "", -1);
       }
@@ -269,7 +269,7 @@ public class LocationFactory
       {
          if (absolute)
          {
-            throw new RepositoryException("Illegal absPath " + path);
+            throw new RepositoryException("Illegal absPath: \"" + path + "\"");
          }
       }
 
@@ -305,7 +305,7 @@ public class LocationFactory
    {
       if (ch == '|')
       {
-         log.warn("Path entry " + str + " contain illegal char " + ch);
+         log.warn("Path entry: \"" + str + "\" contain illegal char: \"" + ch + "\"");
       }
 
       return !((ch == '\t') || (ch == '\n') || (ch == '\f') || (ch == '\r') || (ch == ' ') || (ch == '/')
