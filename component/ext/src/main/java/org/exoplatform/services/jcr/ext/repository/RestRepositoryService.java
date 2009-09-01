@@ -175,9 +175,8 @@ public class RestRepositoryService
    }
 
    /**
-    * @return
-    * @throws RepositoryConfigurationException
-    * @throws RepositoryException
+    * @return Response
+    *           return the Response with RepositoryServiceConf
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -192,6 +191,12 @@ public class RestRepositoryService
       return Response.ok(conf, MediaType.APPLICATION_JSON_TYPE).cacheControl(NO_CACHE).build();
    }
 
+   /**
+    * @param repositoryName
+    *          String, the repository name
+    * @return Response
+    *           return the Response with WorkspaceEntry
+    */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
    @RolesAllowed("administrators")
@@ -235,9 +240,13 @@ public class RestRepositoryService
 
    /**
     * @param uriInfo
+    *          UriInfo, the uri location 
     * @param newRepository
-    * @return
+    *          RepositoryEntry,  the RepositoryEntry to new repository
+    * @return Response
+    *           return the Response
     * @throws URISyntaxException
+    *           will be generated the URISyntaxException  
     */
    @POST
    @Consumes(MediaType.APPLICATION_JSON)
@@ -281,10 +290,15 @@ public class RestRepositoryService
 
    /**
     * @param uriInfo
+    *          UriInfo, the uri location
     * @param repositoryName
+    *          String, the repository name
     * @param newWorkspace
-    * @return
+    *          WorkspaceEntry,  the WorkspaceEntry to new repository
+    * @return Response
+    *           return the Response
     * @throws URISyntaxException
+    *           will be generated the URISyntaxException
     */
    @POST
    @Consumes(MediaType.APPLICATION_JSON)
@@ -330,9 +344,13 @@ public class RestRepositoryService
 
    /**
     * @param uriInfo
+    *          UriInfo, the uri location
     * @param repositoryName
-    * @return
-    * @throws URISyntaxException
+    *          String, the repository name
+    * @param forseSessionClose
+    *          Boolean, flag to force session close
+    * @return Response
+    *           return the Response
     */
    @POST
    @RolesAllowed("administrators")
@@ -378,9 +396,15 @@ public class RestRepositoryService
 
    /**
     * @param uriInfo
+    *          UriInfo, the uri location
     * @param repositoryName
-    * @return
-    * @throws URISyntaxException
+    *          String, the repository name
+    * @param workspaceName
+    *          String, the workspace name
+    * @param forseSessionClose
+    *          Boolean, flag to force session close
+    * @return Response
+    *           return the Response
     */
    @POST
    @RolesAllowed("administrators")
@@ -434,7 +458,8 @@ public class RestRepositoryService
    }
 
    /**
-    * @return
+    * @return Response
+    *           return the Response with list of repository names
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -454,7 +479,9 @@ public class RestRepositoryService
 
    /**
     * @param repositoryName
-    * @return
+    *          String, the repository name
+    * @return Response
+    *           return the Response with list of workspace names
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -497,6 +524,16 @@ public class RestRepositoryService
                .build();
    }
 
+   /**
+    * * @param repositoryName
+    *          String, the repository name
+    * @param workspaceName
+    *          String, the workspace name
+    * @param workspaceEntry
+    *          WorkspaceEntry, the confg to workspace 
+    * @return Response
+    *           return the Response
+    */
    @POST
    @Consumes(MediaType.APPLICATION_JSON)
    @RolesAllowed("administrators")

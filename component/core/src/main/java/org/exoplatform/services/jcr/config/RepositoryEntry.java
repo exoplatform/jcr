@@ -46,10 +46,22 @@ public class RepositoryEntry extends RepositoryInfo
    {
       return workspaces;
    }
+   
+   /**
+    * Set workspaces.
+    * 
+    * @param workspaces
+    *          the list of WorkspaceEntry-s
+    */
+   public void setWorkspaceEntries(ArrayList<WorkspaceEntry> workspaces)
+   {
+      this.workspaces = workspaces;
+   }
 
    /**
     * adds workspace entry object
     * @param ws
+    *          the WorkspaceEntry
     */
    public void addWorkspace(WorkspaceEntry ws)
    {
