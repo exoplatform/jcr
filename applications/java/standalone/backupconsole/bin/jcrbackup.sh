@@ -1,3 +1,3 @@
 #!/bin/sh
 
-java -jar exo.jcr.applications.backupconsole-1.12-SNAPSHOT.jar $*
+java -jar exo.jcr.applications.backupconsole-1.12.0-Beta01.jar $*
