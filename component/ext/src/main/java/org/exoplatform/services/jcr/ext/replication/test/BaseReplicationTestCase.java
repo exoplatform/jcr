@@ -135,10 +135,11 @@ public abstract class BaseReplicationTestCase
       String[] sArray = repoPath.split("[::]");
 
       for (String nodeName : sArray)
-         if (resultNode.hasNode(nodeName))
-            resultNode = resultNode.getNode(nodeName);
-         else
-            resultNode = resultNode.addNode(nodeName, "nt:unstructured");
+         if(!nodeName.equals(""))
+            if (resultNode.hasNode(nodeName))
+               resultNode = resultNode.getNode(nodeName);
+            else
+               resultNode = resultNode.addNode(nodeName, "nt:unstructured");
 
       return resultNode;
    }
