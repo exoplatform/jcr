@@ -135,7 +135,7 @@
             <executions>
                <!-- We manually ask to create the JAR and it is automatically included in the RAR -->
                <execution>
-                  <phase>validate</phase>
+                  <phase>compile</phase>
                   <goals>
                      <goal>jar</goal>
                   </goals>
