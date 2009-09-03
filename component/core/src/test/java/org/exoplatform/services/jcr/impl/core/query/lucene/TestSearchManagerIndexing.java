@@ -17,13 +17,6 @@
 
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import java.util.Properties;
-
-import javax.jcr.NamespaceException;
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.log.Log;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
@@ -32,12 +25,18 @@ import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.BooleanClause.Occur;
-
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.query.SearchManager;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import java.util.Properties;
+
+import javax.jcr.NamespaceException;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS Author : Sergey Karpenko <sergey.karpenko@exoplatform.com.ua>
@@ -45,8 +44,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @version $Id: TestSearchManagerIndexing.java 13111 2008-04-11 08:22:13Z serg $
  */
 
-public class TestSearchManagerIndexing
-   extends JcrImplBaseTest
+public class TestSearchManagerIndexing extends JcrImplBaseTest
 {
    public static final Log logger = ExoLogger.getLogger(TestSearchManagerIndexing.class);
 
@@ -55,7 +53,7 @@ public class TestSearchManagerIndexing
    public void testAdditionNode() throws Exception
    {
       assertNotNull(manager);
-      SearchIndex si = (SearchIndex) manager.getHandler();
+      SearchIndex si = (SearchIndex)manager.getHandler();
       IndexReader ir = si.getIndex().getIndexReader();
       int docnum = ir.numDocs();
       ir.close();
@@ -82,17 +80,16 @@ public class TestSearchManagerIndexing
       // Test is next addings are in index
       TermQuery name = new TermQuery(new Term(FieldNames.LABEL, getIndexPrefix(si, "") + "test"));
       TermQuery prop1 =
-               new TermQuery(new Term(FieldNames.PROPERTIES, getIndexPrefix(si, "") + "prop" + '\uFFFF'
-                        + "string value"));
+         new TermQuery(new Term(FieldNames.PROPERTIES, getIndexPrefix(si, "") + "prop" + '[' + "string value"));
       TermQuery prop2 =
-               new TermQuery(new Term(FieldNames.PROPERTIES, getIndexPrefix(si, "jcr") + "primaryType" + '\uFFFF'
-                        + getIndexPrefix(si, "nt") + "unstructured"));
+         new TermQuery(new Term(FieldNames.PROPERTIES, getIndexPrefix(si, "jcr") + "primaryType" + '['
+            + getIndexPrefix(si, "nt") + "unstructured"));
       TermQuery full1 = new TermQuery(new Term(FieldNames.FULLTEXT, "string"));
       TermQuery full2 = new TermQuery(new Term(FieldNames.FULLTEXT, "value"));
       TermQuery fullprop1 =
-               new TermQuery(new Term(FieldNames.createFullTextFieldName(getIndexPrefix(si, "") + "prop"), "string"));
+         new TermQuery(new Term(FieldNames.createFullTextFieldName(getIndexPrefix(si, "") + "prop"), "string"));
       TermQuery fullprop2 =
-               new TermQuery(new Term(FieldNames.createFullTextFieldName(getIndexPrefix(si, "") + "prop"), "value"));
+         new TermQuery(new Term(FieldNames.createFullTextFieldName(getIndexPrefix(si, "") + "prop"), "value"));
 
       BooleanQuery compl = new BooleanQuery();
       compl.add(name, Occur.MUST);
@@ -114,7 +111,7 @@ public class TestSearchManagerIndexing
    {
       assertNotNull(manager);
 
-      SearchIndex si = (SearchIndex) manager.getHandler();
+      SearchIndex si = (SearchIndex)manager.getHandler();
       IndexReader ir = si.getIndex().getIndexReader();
 
       int docnum = ir.numDocs();
@@ -144,7 +141,7 @@ public class TestSearchManagerIndexing
    public void testMoveNode() throws Exception
    {
       assertNotNull(manager);
-      SearchIndex si = (SearchIndex) manager.getHandler();
+      SearchIndex si = (SearchIndex)manager.getHandler();
       IndexReader ir = si.getIndex().getIndexReader();
       int docnum = ir.numDocs();
       ir.close();
@@ -157,7 +154,7 @@ public class TestSearchManagerIndexing
       assertEquals(docnum + 2, ir.numDocs());
 
       IndexSearcher is = new IndexSearcher(ir);
-      NodeData data = (NodeData) ((NodeImpl) node).getData();
+      NodeData data = (NodeData)((NodeImpl)node).getData();
 
       TermQuery query = new TermQuery(new Term(FieldNames.UUID, data.getIdentifier()));
       Hits hits = is.search(query);
@@ -165,8 +162,7 @@ public class TestSearchManagerIndexing
 
       Document doc = hits.doc(0);
       // check that "node" parent is "mid"
-      assertEquals(((NodeData) ((NodeImpl) mid).getData()).getIdentifier(), doc.getField(FieldNames.PARENT)
-               .stringValue());
+      assertEquals(((NodeData)((NodeImpl)mid).getData()).getIdentifier(), doc.getField(FieldNames.PARENT).stringValue());
 
       ir.close();
       is.close();
@@ -184,8 +180,8 @@ public class TestSearchManagerIndexing
 
       doc = hits.doc(0);
       // check that "node" parent is root-node
-      assertEquals(((NodeData) ((NodeImpl) root).getData()).getIdentifier(), doc.getField(FieldNames.PARENT)
-               .stringValue());
+      assertEquals(((NodeData)((NodeImpl)root).getData()).getIdentifier(), doc.getField(FieldNames.PARENT)
+         .stringValue());
 
       ir.close();
       is.close();
@@ -197,7 +193,7 @@ public class TestSearchManagerIndexing
       final String newNodeName = "newName";
 
       assertNotNull(manager);
-      SearchIndex si = (SearchIndex) manager.getHandler();
+      SearchIndex si = (SearchIndex)manager.getHandler();
       IndexReader ir = si.getIndex().getIndexReader();
       int docnum = ir.numDocs();
       ir.close();
@@ -235,7 +231,7 @@ public class TestSearchManagerIndexing
    public void testSameName() throws Exception
    {
       assertNotNull(manager);
-      SearchIndex si = (SearchIndex) manager.getHandler();
+      SearchIndex si = (SearchIndex)manager.getHandler();
       IndexReader ir = si.getIndex().getIndexReader();
       int docnum = ir.numDocs();
       ir.close();
@@ -259,7 +255,7 @@ public class TestSearchManagerIndexing
    public void testAddMixinType() throws Exception
    {
       assertNotNull(manager);
-      SearchIndex si = (SearchIndex) manager.getHandler();
+      SearchIndex si = (SearchIndex)manager.getHandler();
       IndexReader ir = si.getIndex().getIndexReader();
       int docnum = ir.numDocs();
       ir.close();
@@ -274,8 +270,8 @@ public class TestSearchManagerIndexing
       TermQuery name = new TermQuery(new Term(FieldNames.LABEL, getIndexPrefix(si, "") + nodeName));
 
       TermQuery prop1 =
-               new TermQuery(new Term(FieldNames.PROPERTIES, getIndexPrefix(si, "jcr") + "primaryType" + '\uFFFF'
-                        + getIndexPrefix(si, "nt") + "unstructured"));
+         new TermQuery(new Term(FieldNames.PROPERTIES, getIndexPrefix(si, "jcr") + "primaryType" + '['
+            + getIndexPrefix(si, "nt") + "unstructured"));
       BooleanQuery compl = new BooleanQuery();
       compl.add(name, Occur.MUST);
       compl.add(prop1, Occur.MUST);
@@ -292,8 +288,7 @@ public class TestSearchManagerIndexing
       assertEquals(docnum + 1, ir.numDocs());
 
       TermQuery prop2 =
-               new TermQuery(new Term(FieldNames.PROPERTIES, getIndexPrefix(si, "jcr") + "uuid" + '\uFFFF'
-                        + node.getUUID()));
+         new TermQuery(new Term(FieldNames.PROPERTIES, getIndexPrefix(si, "jcr") + "uuid" + '[' + node.getUUID()));
       compl.add(prop2, Occur.MUST);
 
       is = new IndexSearcher(ir);
@@ -304,7 +299,7 @@ public class TestSearchManagerIndexing
    public void setUp() throws Exception
    {
       super.setUp();
-      manager = (SearchManager) this.session.getContainer().getComponentInstanceOfType(SearchManager.class);
+      manager = (SearchManager)this.session.getContainer().getComponentInstanceOfType(SearchManager.class);
    }
 
    private String getIndexPrefix(SearchIndex si, String stPref) throws RepositoryException, NamespaceException

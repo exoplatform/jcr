@@ -18,21 +18,7 @@
  */
 package org.exoplatform.services.jcr.config;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-
-import javax.jcr.RepositoryException;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.w3c.dom.Element;
-import org.xml.sax.SAXException;
-
-import org.exoplatform.services.log.Log;
 import org.apache.lucene.search.Query;
-
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.impl.Constants;
@@ -52,6 +38,18 @@ import org.exoplatform.services.jcr.impl.core.query.lucene.SpellChecker;
 import org.exoplatform.services.jcr.impl.core.query.lucene.SynonymProvider;
 import org.exoplatform.services.jcr.util.StringNumberParser;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+
+import javax.jcr.RepositoryException;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -144,6 +142,10 @@ public class QueryHandlerEntryWrapper implements QueryHandlerParams
    private final static boolean DEFAULT_USECOMPOUNDFILE = false;
 
    private final static int DEFAULT_VOLATILEIDLETIME = 3;
+
+   //since https://jira.jboss.org/jira/browse/EXOJCR-17
+
+   public static final boolean DEFAULT_UPGRADE_INDEX = false;
 
    private QueryHandlerEntry queryHandlerEntry;
 
@@ -594,6 +596,20 @@ public class QueryHandlerEntryWrapper implements QueryHandlerParams
    public boolean isForceConsistencyCheck()
    {
       return queryHandlerEntry.getParameterBoolean(PARAM_FORCE_CONSISTENCYCHECK, DEFAULT_FORCECONSISTENCYCHECK);
+   }
+
+   /**
+    * 
+    * @return true if index upgrade allowed.
+    */
+   public boolean isUpgradeIndex()
+   {
+      Boolean updateIndex = queryHandlerEntry.getParameterBoolean(PARAM_UPGRADE_INDEX, null);
+      if (updateIndex == null || !updateIndex)
+      {
+         updateIndex = Boolean.valueOf(System.getProperty(PARAM_UPGRADE_INDEX));
+      }
+      return updateIndex;
    }
 
    /**

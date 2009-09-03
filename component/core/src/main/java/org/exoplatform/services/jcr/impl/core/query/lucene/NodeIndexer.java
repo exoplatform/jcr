@@ -16,21 +16,8 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.util.Calendar;
-import java.util.List;
-
-import javax.jcr.NamespaceException;
-import javax.jcr.PropertyType;
-import javax.jcr.RepositoryException;
-import javax.jcr.ValueFormatException;
-
-import org.exoplatform.services.log.Log;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-
 import org.exoplatform.services.document.DocumentReader;
 import org.exoplatform.services.document.DocumentReaderService;
 import org.exoplatform.services.document.HandlerNotFoundException;
@@ -47,6 +34,18 @@ import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.AbstractValueData;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.util.Calendar;
+import java.util.List;
+
+import javax.jcr.NamespaceException;
+import javax.jcr.PropertyType;
+import javax.jcr.RepositoryException;
+import javax.jcr.ValueFormatException;
 
 /**
  * Creates a lucene <code>Document</code> object from a {@link javax.jcr.Node}.
@@ -118,7 +117,7 @@ public class NodeIndexer
     * @param extractor content extractor
     */
    public NodeIndexer(NodeData node, ItemDataConsumer stateProvider, NamespaceMappings mappings,
-            DocumentReaderService extractor)
+      DocumentReaderService extractor)
    {
       this.node = node;
       this.stateProvider = stateProvider;
@@ -184,7 +183,7 @@ public class NodeIndexer
 
       // special fields UUID
       doc.add(new Field(FieldNames.UUID, node.getIdentifier(), Field.Store.YES, Field.Index.NO_NORMS,
-               Field.TermVector.NO));
+         Field.TermVector.NO));
       try
       {
          // parent UUID
@@ -197,7 +196,7 @@ public class NodeIndexer
          else
          {
             doc.add(new Field(FieldNames.PARENT, node.getParentIdentifier(), Field.Store.YES, Field.Index.NO_NORMS,
-                     Field.TermVector.NO));
+               Field.TermVector.NO));
 
             String name = resolver.createJCRName(node.getQPath().getName()).getAsString();
             doc.add(new Field(FieldNames.LABEL, name, Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
@@ -256,27 +255,27 @@ public class NodeIndexer
 
             // seems nt:file found, try for nt:resource props
             PropertyData pmime =
-                     (PropertyData) stateProvider.getItemData(node, new QPathEntry(Constants.JCR_MIMETYPE, 0));
+               (PropertyData)stateProvider.getItemData(node, new QPathEntry(Constants.JCR_MIMETYPE, 0));
             if (pmime != null)
             {
                // index if have jcr:mimeType sibling for this binary property only
                try
                {
                   DocumentReader dreader =
-                           extractor.getDocumentReader(new String(pmime.getValues().get(0).getAsByteArray()));
+                     extractor.getDocumentReader(new String(pmime.getValues().get(0).getAsByteArray()));
 
                   // ok, have a reader
                   // if the prop obtainer from cache it will contains a values,
                   // otherwise read prop with values from DM
                   data =
-                           prop.getValues().size() > 0 ? prop.getValues() : ((PropertyData) stateProvider.getItemData(
-                                    node, new QPathEntry(Constants.JCR_DATA, 0))).getValues();
+                     prop.getValues().size() > 0 ? prop.getValues() : ((PropertyData)stateProvider.getItemData(node,
+                        new QPathEntry(Constants.JCR_DATA, 0))).getValues();
                   if (data == null)
                      log.warn("null value found at property " + prop.getQPath().getAsString());
 
                   // check the jcr:encoding property
                   PropertyData encProp =
-                           (PropertyData) stateProvider.getItemData(node, new QPathEntry(Constants.JCR_ENCODING, 0));
+                     (PropertyData)stateProvider.getItemData(node, new QPathEntry(Constants.JCR_ENCODING, 0));
 
                   if (encProp != null)
                   {
@@ -360,8 +359,8 @@ public class NodeIndexer
             // WARN. DON'T USE access item BY PATH - it's may be a node in case of
             // residual definitions in NT
             List<ValueData> data =
-                     prop.getValues().size() > 0 ? prop.getValues() : ((PropertyData) stateProvider.getItemData(prop
-                              .getIdentifier())).getValues();
+               prop.getValues().size() > 0 ? prop.getValues() : ((PropertyData)stateProvider.getItemData(prop
+                  .getIdentifier())).getValues();
 
             if (data == null)
                log.warn("null value found at property " + prop.getQPath().getAsString());
@@ -371,7 +370,7 @@ public class NodeIndexer
 
             for (ValueData value : data)
             {
-               val = (ExtendedValue) vFactory.loadValue(((AbstractValueData) value).createTransientCopy(), propType);
+               val = (ExtendedValue)vFactory.loadValue(((AbstractValueData)value).createTransientCopy(), propType);
 
                switch (propType)
                {
@@ -422,7 +421,7 @@ public class NodeIndexer
                         else
                         {
                            addStringValue(doc, fieldName, val.getString(), true, isIncludedInNodeIndex(name),
-                                    getPropertyBoost(name));
+                              getPropertyBoost(name));
                         }
                      }
                      break;
@@ -430,7 +429,7 @@ public class NodeIndexer
                      // jcr:primaryType and jcr:mixinTypes are required for correct
                      // node type resolution in queries
                      if (isIndexed(name) || name.equals(Constants.JCR_PRIMARYTYPE)
-                              || name.equals(Constants.JCR_MIXINTYPES))
+                        || name.equals(Constants.JCR_MIXINTYPES))
                      {
                         addNameValue(doc, fieldName, val.getString());
                      }
@@ -440,6 +439,12 @@ public class NodeIndexer
                   default :
                      throw new IllegalArgumentException("illegal internal value type " + propType);
                }
+               // add length
+               // add not planed
+               //               if (indexFormatVersion.getVersion() >= IndexFormatVersion.V3.getVersion())
+               //{
+               // addLength(doc, fieldName, value, propType);
+               //}
             }
             if (data.size() > 1)
                // real multi-valued
@@ -449,7 +454,7 @@ public class NodeIndexer
          {
             e.printStackTrace();
             throw new RepositoryException("Index of property value error. " + prop.getQPath().getAsString() + ". " + e,
-                     e);
+               e);
          }
       }
    }
@@ -467,12 +472,12 @@ public class NodeIndexer
     */
    @Deprecated
    private void addValue(Document doc, ValueData value, InternalQName name, int propertyType)
-            throws ValueFormatException, IllegalStateException, RepositoryException
+      throws ValueFormatException, IllegalStateException, RepositoryException
    {
       String fieldName = resolver.createJCRName(name).getAsString();
       ExtendedValue val = null;
       if (PropertyType.BINARY != propertyType)
-         val = (ExtendedValue) vFactory.loadValue(((AbstractValueData) value).createTransientCopy(), propertyType);
+         val = (ExtendedValue)vFactory.loadValue(((AbstractValueData)value).createTransientCopy(), propertyType);
       switch (propertyType)
       {
          case PropertyType.BINARY :
@@ -529,7 +534,7 @@ public class NodeIndexer
                else
                {
                   addStringValue(doc, fieldName, val.getString(), true, isIncludedInNodeIndex(name),
-                           getPropertyBoost(name));
+                     getPropertyBoost(name));
                }
             }
             break;
@@ -545,7 +550,7 @@ public class NodeIndexer
             break;
          default :
             throw new IllegalArgumentException("illegal internal value type:"
-                     + ExtendedPropertyType.nameFromValue(propertyType));
+               + ExtendedPropertyType.nameFromValue(propertyType));
       }
    }
 
@@ -582,7 +587,7 @@ public class NodeIndexer
          try
          {
             PropertyData prop =
-                     (PropertyData) stateProvider.getItemData(node, new QPathEntry(Constants.JCR_MIMETYPE, 0));
+               (PropertyData)stateProvider.getItemData(node, new QPathEntry(Constants.JCR_MIMETYPE, 0));
             if (prop != null)
             {
                List<ValueData> values = prop.getValues();
@@ -598,7 +603,7 @@ public class NodeIndexer
 
                   // check the jcr:encoding property
                   PropertyData encProp =
-                           (PropertyData) stateProvider.getItemData(node, new QPathEntry(Constants.JCR_ENCODING, 0));
+                     (PropertyData)stateProvider.getItemData(node, new QPathEntry(Constants.JCR_ENCODING, 0));
                   if (encProp != null)
                   {
                      ValueData encValue = encProp.getValues().get(0);
@@ -678,8 +683,8 @@ public class NodeIndexer
    protected Field createFieldWithoutNorms(String fieldName, String internalValue, boolean store)
    {
       Field field =
-               new Field(FieldNames.PROPERTIES, FieldNames.createNamedValue(fieldName, internalValue), true
-                        ? Field.Store.YES : Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO);
+         new Field(FieldNames.PROPERTIES, FieldNames.createNamedValue(fieldName, internalValue), true ? Field.Store.YES
+            : Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO);
       return field;
    }
 
@@ -694,7 +699,7 @@ public class NodeIndexer
     */
    protected void addCalendarValue(Document doc, String fieldName, Object internalValue)
    {
-      Calendar value = (Calendar) internalValue;
+      Calendar value = (Calendar)internalValue;
       long millis = value.getTimeInMillis();
       doc.add(createFieldWithoutNorms(fieldName, DateField.timeToString(millis), false));
    }
@@ -710,7 +715,7 @@ public class NodeIndexer
     */
    protected void addDoubleValue(Document doc, String fieldName, Object internalValue)
    {
-      double doubleVal = ((Double) internalValue).doubleValue();
+      double doubleVal = ((Double)internalValue).doubleValue();
       doc.add(createFieldWithoutNorms(fieldName, DoubleField.doubleToString(doubleVal), false));
    }
 
@@ -724,8 +729,26 @@ public class NodeIndexer
     */
    protected void addLongValue(Document doc, String fieldName, Object internalValue)
    {
-      long longVal = ((Long) internalValue).longValue();
+      long longVal = ((Long)internalValue).longValue();
       doc.add(createFieldWithoutNorms(fieldName, LongField.longToString(longVal), false));
+   }
+
+   /**
+    * Adds a {@link FieldNames#PROPERTY_LENGTHS} field to <code>document</code>
+    * with a named length value.
+    *
+    * @param doc          the lucene document.
+    * @param propertyName the property name.
+    * @param value        the internal value.
+    */
+   protected void addLength(Document doc, String propertyName, ValueData value, int type)
+   {
+      long length = Util.getLength(value, type);
+      if (length != -1)
+      {
+         doc.add(new Field(FieldNames.PROPERTY_LENGTHS, FieldNames.createNamedLength(propertyName, length),
+            Field.Store.NO, Field.Index.NOT_ANALYZED_NO_NORMS));
+      }
    }
 
    /**
@@ -787,10 +810,10 @@ public class NodeIndexer
     * @param boost the boost value for this string field.
     */
    protected void addStringValue(Document doc, String fieldName, Object internalValue, boolean tokenized,
-            boolean includeInNodeIndex, float boost)
+      boolean includeInNodeIndex, float boost)
    {
       // simple String
-      String stringValue = (String) internalValue;
+      String stringValue = (String)internalValue;
       doc.add(createFieldWithoutNorms(fieldName, stringValue, false));
       if (tokenized)
       {
@@ -800,8 +823,8 @@ public class NodeIndexer
          }
          // create fulltext index on property
          Field f =
-                  new Field(FieldNames.createFullTextFieldName(fieldName), stringValue, Field.Store.NO,
-                           Field.Index.TOKENIZED, Field.TermVector.NO);
+            new Field(FieldNames.createFullTextFieldName(fieldName), stringValue, Field.Store.NO,
+               Field.Index.TOKENIZED, Field.TermVector.NO);
          f.setBoost(boost);
          doc.add(f);
 

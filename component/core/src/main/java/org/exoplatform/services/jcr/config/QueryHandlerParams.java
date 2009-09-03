@@ -93,4 +93,8 @@ public interface QueryHandlerParams
 
    public static final String PARAM_VOLATILE_IDLE_TIME = "volatile-idle-time";
 
+   //since https://jira.jboss.org/jira/browse/EXOJCR-17
+
+   public static final String PARAM_UPGRADE_INDEX = "upgrade-index";
+
 }

@@ -16,20 +16,20 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
+import org.apache.lucene.search.Query;
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.impl.core.SessionDataManager;
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.core.query.lucene.QueryHits;
+
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Set;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.query.InvalidQueryException;
-
-import org.apache.lucene.search.Query;
-
-import org.exoplatform.services.jcr.datamodel.InternalQName;
-import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.impl.core.SessionDataManager;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
-import org.exoplatform.services.jcr.impl.core.query.lucene.QueryHits;
 
 /**
  * Defines an interface for the actual node indexing and query execution. The goal is to allow
@@ -90,8 +90,11 @@ public interface QueryHandler
 
    /**
     * Closes this <code>QueryHandler</code> and frees resources attached to this handler.
+    * @throws IOException 
+    * @throws RepositoryException 
+    * @throws RepositoryConfigurationException 
     */
-   void init();
+   void init() throws IOException, RepositoryException, RepositoryConfigurationException;
 
    /**
     * Creates a new query by specifying the query statement itself and the language in which the
@@ -108,7 +111,7 @@ public interface QueryHandler
     * @return A <code>Query</code> object.
     */
    ExecutableQuery createExecutableQuery(SessionImpl session, SessionDataManager itemMgr, String statement,
-            String language) throws InvalidQueryException;
+      String language) throws InvalidQueryException;
 
    /**
     * Creates a new instance of an {@link AbstractQueryImpl} which is not initialized.
@@ -140,6 +143,6 @@ public interface QueryHandler
     * @throws IOException if an error occurs while searching the index.
     */
    public QueryHits executeQuery(Query query, boolean needsSystemTree, InternalQName[] orderProps, boolean[] orderSpecs)
-            throws IOException;
+      throws IOException;
 
 }

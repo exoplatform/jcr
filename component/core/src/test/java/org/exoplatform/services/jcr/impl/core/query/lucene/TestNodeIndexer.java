@@ -17,18 +17,8 @@
 
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import java.io.ByteArrayInputStream;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Vector;
-
-import javax.jcr.Node;
-import javax.jcr.PropertyType;
-
-import org.exoplatform.services.log.Log;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-
 import org.exoplatform.commons.utils.MimeTypeResolver;
 import org.exoplatform.services.document.DocumentReaderService;
 import org.exoplatform.services.document.impl.DocumentReaderServiceImpl;
@@ -38,6 +28,15 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import java.io.ByteArrayInputStream;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Vector;
+
+import javax.jcr.Node;
+import javax.jcr.PropertyType;
 
 /**
  * Created by The eXo Platform SAS Author : Sergey Karpenko <sergey.karpenko@exoplatform.com.ua>
@@ -45,8 +44,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @version $Id: TestNodeIndexer.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class TestNodeIndexer
-   extends JcrImplBaseTest
+public class TestNodeIndexer extends JcrImplBaseTest
 {
    public static final Log logger = ExoLogger.getLogger(TestNodeIndexer.class);
 
@@ -89,16 +87,16 @@ public class TestNodeIndexer
 
       ItemDataConsumer manager = this.session.getTransientNodesManager();
 
-      node = (Node) this.session.getItem("/test");
+      node = (Node)this.session.getItem("/test");
 
-      NodeData data = (NodeData) ((NodeImpl) node).getData();
+      NodeData data = (NodeData)((NodeImpl)node).getData();
       assertNotNull(data);
 
       DocumentReaderService extractor =
-               (DocumentReaderService) container.getComponentInstanceOfType(DocumentReaderServiceImpl.class);
+         (DocumentReaderService)container.getComponentInstanceOfType(DocumentReaderServiceImpl.class);
       NodeIndexer indexer =
-               new NodeIndexer(data, manager, new NSRegistryBasedNamespaceMappings(
-                        (NamespaceRegistryImpl) this.repository.getNamespaceRegistry()), extractor);
+         new NodeIndexer(data, manager, new NSRegistryBasedNamespaceMappings((NamespaceRegistryImpl)this.repository
+            .getNamespaceRegistry()), extractor);
 
       Document doc = indexer.createDoc();
 
@@ -128,12 +126,12 @@ public class TestNodeIndexer
       assertEquals(2, props.size());
 
       // :PROPERTIES jcr:primaryType "jcr:prop" + '\uFFFF' + "prop value"
-      List<Field> prop1 = this.findField(list, FieldNames.PROPERTIES, "jcr:prop" + '\uFFFF' + "prop value");
+      List<Field> prop1 = this.findField(list, FieldNames.PROPERTIES, "jcr:prop" + '[' + "prop value");
       assertNotNull(prop1);
       assertEquals(1, prop1.size());
 
       // :PROPERTIES jcr:primaryType "jcr:prop" + '\uFFFF' + "prop value"
-      List<Field> prop2 = this.findField(list, FieldNames.PROPERTIES, "jcr:primaryType" + '\uFFFF' + "nt:unstructured");
+      List<Field> prop2 = this.findField(list, FieldNames.PROPERTIES, "jcr:primaryType" + '[' + "nt:unstructured");
       assertNotNull(prop2);
       assertEquals(1, prop2.size());
 
@@ -176,14 +174,14 @@ public class TestNodeIndexer
 
       // ((NodeImpl)node).getData();
 
-      NodeData data = (NodeData) ((NodeImpl) root).getData();
+      NodeData data = (NodeData)((NodeImpl)root).getData();
       assertNotNull(data);
 
       DocumentReaderService extractor =
-               (DocumentReaderService) container.getComponentInstanceOfType(DocumentReaderServiceImpl.class);
+         (DocumentReaderService)container.getComponentInstanceOfType(DocumentReaderServiceImpl.class);
       NodeIndexer indexer =
-               new NodeIndexer(data, manager, new NSRegistryBasedNamespaceMappings(
-                        (NamespaceRegistryImpl) this.repository.getNamespaceRegistry()), extractor);
+         new NodeIndexer(data, manager, new NSRegistryBasedNamespaceMappings((NamespaceRegistryImpl)this.repository
+            .getNamespaceRegistry()), extractor);
 
       Document doc = indexer.createDoc();
 
@@ -267,14 +265,14 @@ public class TestNodeIndexer
 
       ItemDataConsumer manager = this.session.getTransientNodesManager();
 
-      NodeData data = (NodeData) ((NodeImpl) node).getData();
+      NodeData data = (NodeData)((NodeImpl)node).getData();
       assertNotNull(data);
 
       DocumentReaderService extractor =
-               (DocumentReaderService) container.getComponentInstanceOfType(DocumentReaderServiceImpl.class);
+         (DocumentReaderService)container.getComponentInstanceOfType(DocumentReaderServiceImpl.class);
       NodeIndexer indexer =
-               new NodeIndexer(data, manager, new NSRegistryBasedNamespaceMappings(
-                        (NamespaceRegistryImpl) this.repository.getNamespaceRegistry()), extractor);
+         new NodeIndexer(data, manager, new NSRegistryBasedNamespaceMappings((NamespaceRegistryImpl)this.repository
+            .getNamespaceRegistry()), extractor);
 
       Document doc = indexer.createDoc();
 
@@ -338,14 +336,14 @@ public class TestNodeIndexer
 
       ItemDataConsumer manager = this.session.getTransientNodesManager();
 
-      NodeData data = (NodeData) ((NodeImpl) node).getData();
+      NodeData data = (NodeData)((NodeImpl)node).getData();
       assertNotNull(data);
 
       DocumentReaderService extractor =
-               (DocumentReaderService) container.getComponentInstanceOfType(DocumentReaderServiceImpl.class);
+         (DocumentReaderService)container.getComponentInstanceOfType(DocumentReaderServiceImpl.class);
       NodeIndexer indexer =
-               new NodeIndexer(data, manager, new NSRegistryBasedNamespaceMappings(
-                        (NamespaceRegistryImpl) this.repository.getNamespaceRegistry()), extractor);
+         new NodeIndexer(data, manager, new NSRegistryBasedNamespaceMappings((NamespaceRegistryImpl)this.repository
+            .getNamespaceRegistry()), extractor);
 
       Document doc = indexer.createDoc();
 
@@ -378,13 +376,13 @@ public class TestNodeIndexer
       assertEquals(2, props.size());
 
       // :PROPERTIES jcr:primaryType "pathprop" + '\uFFFF' + "/wooo"
-      List<Field> prop1 = this.findField(list, FieldNames.PROPERTIES, "pathprop" + '\uFFFF' + "/wooo");
+      List<Field> prop1 = this.findField(list, FieldNames.PROPERTIES, "pathprop" + '[' + "/wooo");
       assertNotNull(prop1);
       assertEquals(1, prop1.size());
 
       // :PROPERTIES jcr:primaryType "jcr:primaryType" + '\uFFFF' + "jcr:primaryType" + '\uFFFF' +
       // "nt:unstructured"
-      List<Field> prop2 = this.findField(list, FieldNames.PROPERTIES, "jcr:primaryType" + '\uFFFF' + "nt:unstructured");
+      List<Field> prop2 = this.findField(list, FieldNames.PROPERTIES, "jcr:primaryType" + '[' + "nt:unstructured");
       assertNotNull(prop2);
       assertEquals(1, prop2.size());
 
@@ -415,7 +413,7 @@ public class TestNodeIndexer
       for (int i = 0; i < list.size(); i++)
       {
          if ((list.get(i).name().equalsIgnoreCase(fieldName)) && (list.get(i).stringValue() != null)
-                  && (list.get(i).stringValue().equals(fieldStringValue)))
+            && (list.get(i).stringValue().equals(fieldStringValue)))
          {
             out.add(list.get(i));
          }

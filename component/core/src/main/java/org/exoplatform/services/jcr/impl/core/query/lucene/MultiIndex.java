@@ -16,6 +16,17 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
+import org.apache.commons.collections.iterators.EmptyIterator;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.Term;
+import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
+import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,18 +44,6 @@ import java.util.TimerTask;
 import javax.jcr.ItemNotFoundException;
 import javax.jcr.RepositoryException;
 
-import org.apache.commons.collections.iterators.EmptyIterator;
-import org.exoplatform.services.log.Log;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.Term;
-
-import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
-import org.exoplatform.services.jcr.datamodel.ItemData;
-import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.log.ExoLogger;
-
 /**
  * A <code>MultiIndex</code> consists of a {@link VolatileIndex} and multiple
  * {@link PersistentIndex}es. The goal is to keep most parts of the index open
@@ -57,16 +56,20 @@ import org.exoplatform.services.log.ExoLogger;
  * then added to the list of already existing persistent indexes. Further
  * operations on the new persistent index will however only require an
  * <code>IndexReader</code> which serves for queries but also for delete
- * operations on the index. <p/> The persistent indexes are merged from time to
- * time. The merge behaviour is configurable using the methods:
- * {@link SearchIndex#setMaxMergeDocs(int)},
+ * operations on the index.
+ * <p/>
+ * The persistent indexes are merged from time to time. The merge behaviour is
+ * configurable using the methods: {@link SearchIndex#setMaxMergeDocs(int)},
  * {@link SearchIndex#setMergeFactor(int)} and
  * {@link SearchIndex#setMinMergeDocs(int)}. For detailed description of the
  * configuration parameters see also the lucene <code>IndexWriter</code> class.
- * <p/> This class is thread-safe. <p/> Note on implementation: Multiple
- * modifying threads are synchronized on a <code>MultiIndex</code> instance
- * itself. Sychronization between a modifying thread and reader threads is done
- * using {@link #updateMonitor} and {@link #updateInProgress}.
+ * <p/>
+ * This class is thread-safe.
+ * <p/>
+ * Note on implementation: Multiple modifying threads are synchronized on a
+ * <code>MultiIndex</code> instance itself. Sychronization between a modifying
+ * thread and reader threads is done using {@link #updateMonitor} and
+ * {@link #updateInProgress}.
  */
 public class MultiIndex
 {
@@ -207,6 +210,11 @@ public class MultiIndex
    private final IndexFormatVersion version;
 
    /**
+    * true if index upgrade allowed.
+    */
+   private final boolean isUpgradeIndex;
+
+   /**
     * Creates a new MultiIndex.
     * 
     * @param indexDir the base file system
@@ -223,6 +231,7 @@ public class MultiIndex
       this.handler = handler;
       this.cache = new DocNumberCache(handler.getQueryHandlerConfig().getCacheSize());
       this.redoLog = new RedoLog(new File(indexDir, REDO_LOG));
+      this.isUpgradeIndex = handler.getQueryHandlerConfig().isUpgradeIndex();
       log.info("Index dir = " + indexDir.getAbsolutePath());
       log.info("Redo log = " + (new File(indexDir, REDO_LOG).getAbsoluteFile()));
 
@@ -265,7 +274,8 @@ public class MultiIndex
             continue;
          }
          PersistentIndex index =
-                  new PersistentIndex(indexNames.getName(i), sub, handler.getTextAnalyzer(), cache, indexingQueue);
+            new PersistentIndex(indexNames.getName(i), sub, handler.getTextAnalyzer(), cache, indexingQueue,
+               isUpgradeIndex);
          index.setMaxMergeDocs(handler.getQueryHandlerConfig().getMaxMergeDocs());
          index.setMergeFactor(handler.getQueryHandlerConfig().getMergeFactor());
          index.setMinMergeDocs(handler.getQueryHandlerConfig().getMinMergeDocs());
@@ -279,7 +289,7 @@ public class MultiIndex
       resetVolatileIndex();
 
       // set index format version
-      IndexReader reader = getIndexReader();
+      CachingMultiIndexReader reader = getIndexReader();
       try
       {
          version = IndexFormatVersion.getVersion(reader);
@@ -287,7 +297,7 @@ public class MultiIndex
       }
       finally
       {
-         reader.close();
+         reader.release();
       }
 
       redoLogApplied = redoLog.hasEntries();
@@ -354,14 +364,14 @@ public class MultiIndex
          return volatileIndex.getNumDocuments();
       }
 
-      IndexReader reader = getIndexReader();
+      CachingMultiIndexReader reader = getIndexReader();
       try
       {
          return reader.numDocs();
       }
       finally
       {
-         reader.close();
+         reader.release();
       }
 
    }
@@ -393,7 +403,7 @@ public class MultiIndex
          {
             // traverse and index workspace
             executeAndLog(new Start(Action.INTERNAL_TRANSACTION));
-            NodeData rootState = (NodeData) stateMgr.getItemData(rootId);
+            NodeData rootState = (NodeData)stateMgr.getItemData(rootId);
             createIndex(rootState, stateMgr);
             executeAndLog(new Commit(getTransactionId()));
             scheduleFlushTask();
@@ -465,11 +475,7 @@ public class MultiIndex
          {
             updateInProgress = false;
             updateMonitor.notifyAll();
-            if (multiReader != null)
-            {
-               multiReader.close();
-               multiReader = null;
-            }
+            releaseMultiReader();
          }
       }
    }
@@ -483,8 +489,7 @@ public class MultiIndex
     */
    void addDocument(Document doc) throws IOException
    {
-      List<Document> add = Arrays.asList(new Document[]
-      {doc});
+      List<Document> add = Arrays.asList(new Document[]{doc});
       update(EmptyIterator.INSTANCE, add.iterator());
    }
 
@@ -496,8 +501,7 @@ public class MultiIndex
     */
    void removeDocument(String uuid) throws IOException
    {
-      List<String> remove = Arrays.asList(new String[]
-      {uuid});
+      List<String> remove = Arrays.asList(new String[]{uuid});
       update(remove.iterator(), EmptyIterator.INSTANCE);
    }
 
@@ -546,11 +550,7 @@ public class MultiIndex
          {
             updateInProgress = false;
             updateMonitor.notifyAll();
-            if (multiReader != null)
-            {
-               multiReader.close();
-               multiReader = null;
-            }
+            releaseMultiReader();
          }
       }
       return num;
@@ -560,10 +560,11 @@ public class MultiIndex
     * Returns <code>IndexReader</code>s for the indexes named
     * <code>indexNames</code>. An <code>IndexListener</code> is registered and
     * notified when documents are deleted from one of the indexes in
-    * <code>indexNames</code>. <p/> Note: the number of <code>IndexReaders</code>
-    * returned by this method is not necessarily the same as the number of index
-    * names passed. An index might have been deleted and is not reachable
-    * anymore.
+    * <code>indexNames</code>.
+    * <p/>
+    * Note: the number of <code>IndexReaders</code> returned by this method is
+    * not necessarily the same as the number of index names passed. An index
+    * might have been deleted and is not reachable anymore.
     * 
     * @param indexNames the names of the indexes for which to obtain readers.
     * @param listener the listener to notify when documents are deleted.
@@ -589,17 +590,17 @@ public class MultiIndex
       }
       catch (IOException e)
       {
-         // close readers obtained so far
+         // releasing readers obtained so far
          for (Iterator<ReadOnlyIndexReader> it = indexReaders.keySet().iterator(); it.hasNext();)
          {
             ReadOnlyIndexReader reader = it.next();
             try
             {
-               reader.close();
+               reader.release();
             }
             catch (IOException ex)
             {
-               log.warn("Exception closing index reader: " + ex);
+               log.warn("Exception releasing index reader: " + ex);
             }
             indexReaders.get(reader).resetListener();
          }
@@ -641,7 +642,8 @@ public class MultiIndex
       {
          sub = new File(indexDir, indexName);
       }
-      PersistentIndex index = new PersistentIndex(indexName, sub, handler.getTextAnalyzer(), cache, indexingQueue);
+      PersistentIndex index =
+         new PersistentIndex(indexName, sub, handler.getTextAnalyzer(), cache, indexingQueue, isUpgradeIndex);
       index.setMaxMergeDocs(handler.getQueryHandlerConfig().getMaxMergeDocs());
       index.setMergeFactor(handler.getQueryHandlerConfig().getMergeFactor());
       index.setMinMergeDocs(handler.getQueryHandlerConfig().getMinMergeDocs());
@@ -743,11 +745,7 @@ public class MultiIndex
             {
                updateInProgress = false;
                updateMonitor.notifyAll();
-               if (multiReader != null)
-               {
-                  multiReader.close();
-                  multiReader = null;
-               }
+               releaseMultiReader();
             }
          }
       }
@@ -772,7 +770,7 @@ public class MultiIndex
       {
          if (multiReader != null)
          {
-            multiReader.incrementRefCount();
+            multiReader.acquire();
             return multiReader;
          }
          // no reader available
@@ -805,7 +803,7 @@ public class MultiIndex
             ReadOnlyIndexReader[] readers = readerList.toArray(new ReadOnlyIndexReader[readerList.size()]);
             multiReader = new CachingMultiIndexReader(readers, cache);
          }
-         multiReader.incrementRefCount();
+         multiReader.acquire();
          return multiReader;
       }
    }
@@ -841,7 +839,7 @@ public class MultiIndex
          {
             try
             {
-               multiReader.close();
+               releaseMultiReader();
             }
             catch (IOException e)
             {
@@ -923,7 +921,7 @@ public class MultiIndex
          throw new ItemNotFoundException("Item id=" + id + " not found");
       if (!data.isNode())
          throw new RepositoryException("Item with id " + id + " is not a node");
-      return createDocument((NodeData) data);
+      return createDocument((NodeData)data);
    }
 
    /**
@@ -940,8 +938,10 @@ public class MultiIndex
    /**
     * Removes the <code>index</code> from the list of active sub indexes. The
     * Index is not acutally deleted right away, but postponed to the transaction
-    * commit. <p/> This method does not close the index, but rather expects that
-    * the index has already been closed.
+    * commit.
+    * <p/>
+    * This method does not close the index, but rather expects that the index has
+    * already been closed.
     * 
     * @param index the index to delete.
     */
@@ -1234,7 +1234,7 @@ public class MultiIndex
       long idleTime = System.currentTimeMillis() - lastFlushTime;
       // do not flush if volatileIdleTime is zero or negative
       if (handler.getQueryHandlerConfig().getVolatileIdleTime() > 0
-               && idleTime > handler.getQueryHandlerConfig().getVolatileIdleTime() * 1000)
+         && idleTime > handler.getQueryHandlerConfig().getVolatileIdleTime() * 1000)
       {
          try
          {
@@ -1255,11 +1255,7 @@ public class MultiIndex
                   {
                      updateInProgress = false;
                      updateMonitor.notifyAll();
-                     if (multiReader != null)
-                     {
-                        multiReader.close();
-                        multiReader = null;
-                     }
+                     releaseMultiReader();
                   }
                }
             }
@@ -1564,8 +1560,7 @@ public class MultiIndex
    /**
     * Adds an index to the MultiIndex's active persistent index list.
     */
-   private static class AddIndex
-      extends Action
+   private static class AddIndex extends Action
    {
 
       /**
@@ -1633,15 +1628,14 @@ public class MultiIndex
    /**
     * Adds a node to the index.
     */
-   private static class AddNode
-      extends Action
+   private static class AddNode extends Action
    {
 
       /**
        * The maximum length of a AddNode String.
        */
       private static final int ENTRY_LENGTH =
-               Long.toString(Long.MAX_VALUE).length() + Action.ADD_NODE.length() + Constants.UUID_FORMATTED_LENGTH + 2;
+         Long.toString(Long.MAX_VALUE).length() + Action.ADD_NODE.length() + Constants.UUID_FORMATTED_LENGTH + 2;
 
       /**
        * The uuid of the node to add.
@@ -1718,8 +1712,7 @@ public class MultiIndex
          }
          if (doc != null)
          {
-            index.volatileIndex.addDocuments(new Document[]
-            {doc});
+            index.volatileIndex.addDocuments(new Document[]{doc});
          }
       }
 
@@ -1741,8 +1734,7 @@ public class MultiIndex
    /**
     * Commits a transaction.
     */
-   private static class Commit
-      extends Action
+   private static class Commit extends Action
    {
 
       /**
@@ -1790,8 +1782,7 @@ public class MultiIndex
     * Creates an new sub index but does not add it to the active persistent index
     * list.
     */
-   private static class CreateIndex
-      extends Action
+   private static class CreateIndex extends Action
    {
 
       /**
@@ -1879,8 +1870,7 @@ public class MultiIndex
    /**
     * Closes and deletes an index that is no longer in use.
     */
-   private static class DeleteIndex
-      extends Action
+   private static class DeleteIndex extends Action
    {
 
       /**
@@ -1951,16 +1941,14 @@ public class MultiIndex
    /**
     * Deletes a node from the index.
     */
-   private static class DeleteNode
-      extends Action
+   private static class DeleteNode extends Action
    {
 
       /**
        * The maximum length of a DeleteNode String.
        */
       private static final int ENTRY_LENGTH =
-               Long.toString(Long.MAX_VALUE).length() + Action.DELETE_NODE.length() + Constants.UUID_FORMATTED_LENGTH
-                        + 2;
+         Long.toString(Long.MAX_VALUE).length() + Action.DELETE_NODE.length() + Constants.UUID_FORMATTED_LENGTH + 2;
 
       /**
        * The uuid of the node to remove.
@@ -2053,8 +2041,7 @@ public class MultiIndex
    /**
     * Starts a transaction.
     */
-   private static class Start
-      extends Action
+   private static class Start extends Action
    {
 
       /**
@@ -2101,8 +2088,7 @@ public class MultiIndex
    /**
     * Commits the volatile index to disk.
     */
-   private static class VolatileCommit
-      extends Action
+   private static class VolatileCommit extends Action
    {
 
       /**
@@ -2165,4 +2151,32 @@ public class MultiIndex
    {
       return indexDir;
    }
+
+   /**
+    * Releases the {@link #multiReader} and sets it <code>null</code>. If the
+    * reader is already <code>null</code> this method does nothing. When this
+    * method returns {@link #multiReader} is guaranteed to be <code>null</code>
+    * even if an exception is thrown.
+    * <p/>
+    * Please note that this method does not take care of any synchronization. A
+    * caller must ensure that it is the only thread operating on this multi
+    * index, or that it holds the {@link #updateMonitor}.
+    * 
+    * @throws IOException if an error occurs while releasing the reader.
+    */
+   void releaseMultiReader() throws IOException
+   {
+      if (multiReader != null)
+      {
+         try
+         {
+            multiReader.release();
+         }
+         finally
+         {
+            multiReader = null;
+         }
+      }
+   }
+
 }

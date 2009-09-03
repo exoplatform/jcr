@@ -19,46 +19,17 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 import java.io.IOException;
 
 /**
- * Common base class for errors detected during the consistency check.
+ * <code>ReleaseableIndexReader</code>...
  */
-abstract class ConsistencyCheckError {
+public interface ReleaseableIndexReader {
 
   /**
-   * Diagnostic message for this error.
-   */
-  protected final String message;
-
-  /**
-   * The UUID of the affected node.
-   */
-  protected final String uuid;
-
-  ConsistencyCheckError(String message, String uuid) {
-    this.message = message;
-    this.uuid = uuid;
-  }
-
-  /**
-   * Returns the diagnostic message.
+   * Releases this index reader and potentially frees resources. In contrast to
+   * {@link org.apache.lucene.index.IndexReader#close()} this method does not
+   * necessarily close the index reader, but gives the implementation the
+   * opportunity to do reference counting.
    * 
-   * @return the diagnostic message.
+   * @throws IOException if an error occurs while releasing the index reader.
    */
-  public String toString() {
-    return message;
-  }
-
-  /**
-   * Returns <code>true</code> if this error can be repaired.
-   * 
-   * @return <code>true</code> if this error can be repaired.
-   */
-  abstract boolean repairable();
-
-  /**
-   * Executes the repair operation.
-   * 
-   * @throws IOException
-   *           if an error occurs while repairing.
-   */
-  abstract void repair() throws IOException;
+  public void release() throws IOException;
 }

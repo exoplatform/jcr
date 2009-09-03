@@ -16,14 +16,17 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.index.IndexReader;
+import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.io.IOException;
 import java.util.Enumeration;
 
-import org.exoplatform.services.log.Log;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-
-import org.exoplatform.services.log.ExoLogger;
+import javax.jcr.PropertyType;
 
 /**
  * <code>Util</code> provides various static utility methods.
@@ -37,17 +40,16 @@ public class Util
    private static final Log log = ExoLogger.getLogger(Util.class);
 
    /**
-    * Disposes the document <code>old</code>. Closes any potentially open readers held by the
-    * document.
+    * Disposes the document <code>old</code>. Closes any potentially open readers
+    * held by the document.
     * 
-    * @param old
-    *          the document to dispose.
+    * @param old the document to dispose.
     */
    public static void disposeDocument(Document old)
    {
       for (Enumeration e = old.fields(); e.hasMoreElements();)
       {
-         Field f = (Field) e.nextElement();
+         Field f = (Field)e.nextElement();
          if (f.readerValue() != null)
          {
             try
@@ -63,15 +65,55 @@ public class Util
    }
 
    /**
-    * Returns <code>true</code> if the document is ready to be added to the index. That is all text
-    * extractors have finished their work.
+    * Returns <code>true</code> if the document is ready to be added to the
+    * index. That is all text extractors have finished their work.
     * 
-    * @param doc
-    *          the document to check.
-    * @return <code>true</code> if the document is ready; <code>false</code> otherwise.
+    * @param doc the document to check.
+    * @return <code>true</code> if the document is ready; <code>false</code>
+    *         otherwise.
     */
    public static boolean isDocumentReady(Document doc)
    {
       return true;
+   }
+
+   /**
+    * Depending on the type of the <code>reader</code> this method either closes
+    * or releases the reader. The reader is released if it implements
+    * {@link ReleaseableIndexReader}.
+    * 
+    * @param reader the index reader to close or release.
+    * @throws IOException if an error occurs while closing or releasing the index
+    *           reader.
+    */
+   public static void closeOrRelease(IndexReader reader) throws IOException
+   {
+      if (reader instanceof ReleaseableIndexReader)
+      {
+         ((ReleaseableIndexReader)reader).release();
+      }
+      else
+      {
+         reader.close();
+      }
+   }
+
+   /**
+    * Returns length of the internal value.
+    *
+    * @param value a value.
+    * @return the length of the internal value or <code>-1</code> if the length
+    *         cannot be determined.
+    */
+   public static long getLength(ValueData value, int propertyType)
+   {
+      if (propertyType == PropertyType.NAME || propertyType == PropertyType.PATH)
+      {
+         return -1;
+      }
+      else
+      {
+         return value.getLength();
+      }
    }
 }

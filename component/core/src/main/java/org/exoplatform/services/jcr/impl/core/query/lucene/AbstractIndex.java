@@ -16,6 +16,19 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.SerialMergeScheduler;
+import org.apache.lucene.index.LogDocMergePolicy;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.store.Directory;
+import org.exoplatform.services.jcr.config.QueryHandlerEntryWrapper;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -23,28 +36,19 @@ import java.io.StringReader;
 import java.util.BitSet;
 import java.util.Iterator;
 
-import org.exoplatform.services.log.Log;
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.store.Directory;
-
-import org.exoplatform.services.jcr.config.QueryHandlerEntry;
-import org.exoplatform.services.jcr.config.QueryHandlerEntryWrapper;
-import org.exoplatform.services.log.ExoLogger;
-
 /**
- * Implements common functionality for a lucene index. <p/> Note on synchronization: This class is
- * not entirely thread-safe. Certain concurrent access is however allowed. Read-only access on this
- * index using {@link #getReadOnlyIndexReader()} is thread-safe. That is, multiple threads my call
- * that method concurrently and use the returned IndexReader at the same time.<br/> Modifying
- * threads must be synchronized externally in a way that only one thread is using the returned
- * IndexReader and IndexWriter instances returned by {@link #getIndexReader()} and
- * {@link #getIndexWriter()} at a time.<br/> Concurrent access by <b>one</b> modifying thread and
- * multiple read-only threads is safe!
+ * Implements common functionality for a lucene index.
+ * <p/>
+ * Note on synchronization: This class is not entirely thread-safe. Certain
+ * concurrent access is however allowed. Read-only access on this index using
+ * {@link #getReadOnlyIndexReader()} is thread-safe. That is, multiple threads
+ * my call that method concurrently and use the returned IndexReader at the same
+ * time.<br/>
+ * Modifying threads must be synchronized externally in a way that only one
+ * thread is using the returned IndexReader and IndexWriter instances returned
+ * by {@link #getIndexReader()} and {@link #getIndexWriter()} at a time.<br/>
+ * Concurrent access by <b>one</b> modifying thread and multiple read-only
+ * threads is safe!
  */
 abstract class AbstractIndex {
 
@@ -98,24 +102,26 @@ abstract class AbstractIndex {
   private ReadOnlyIndexReader                readOnlyReader;
 
   /**
+   * Flag that indicates whether there was an index present in the directory
+   * when this AbstractIndex was created.
+   */
+  private boolean                            isExisting;
+
+  /**
    * The indexing queue.
    */
   private IndexingQueue                      indexingQueue;
 
   /**
-   * Constructs an index with an <code>analyzer</code> and a <code>directory</code>.
+   * Constructs an index with an <code>analyzer</code> and a
+   * <code>directory</code>.
    * 
-   * @param analyzer
-   *          the analyzer for text tokenizing.
-   * @param directory
-   *          the underlying directory.
-   * @param cache
-   *          the document number cache if this index should use one; otherwise <code>cache</code>
-   *          is <code>null</code>.
-   * @param indexingQueue
-   *          the indexing queue.
-   * @throws IOException
-   *           if the index cannot be initialized.
+   * @param analyzer the analyzer for text tokenizing.
+   * @param directory the underlying directory.
+   * @param cache the document number cache if this index should use one;
+   *          otherwise <code>cache</code> is <code>null</code>.
+   * @param indexingQueue the indexing queue.
+   * @throws IOException if the index cannot be initialized.
    */
   AbstractIndex(Analyzer analyzer,
                 Directory directory,
@@ -125,8 +131,9 @@ abstract class AbstractIndex {
     this.directory = directory;
     this.cache = cache;
     this.indexingQueue = indexingQueue;
+    this.isExisting = IndexReader.indexExists(directory);
 
-    if (!IndexReader.indexExists(directory)) {
+    if (!isExisting) {
       indexWriter = new IndexWriter(directory, analyzer);
       // immediately close, now that index has been created
       indexWriter.close();
@@ -135,7 +142,8 @@ abstract class AbstractIndex {
   }
 
   /**
-   * Default implementation returns the same instance as passed in the constructor.
+   * Default implementation returns the same instance as passed in the
+   * constructor.
    * 
    * @return the directory instance passed in the constructor
    * @throws IOException
@@ -145,12 +153,21 @@ abstract class AbstractIndex {
   }
 
   /**
+   * Returns <code>true</code> if this index was openend on a directory with an
+   * existing index in it; <code>false</code> otherwise.
+   * 
+   * @return <code>true</code> if there was an index present when this index was
+   *         created; <code>false</code> otherwise.
+   */
+  boolean isExisting() {
+    return isExisting;
+  }
+
+  /**
    * Adds documents to this index and invalidates the shared reader.
    * 
-   * @param docs
-   *          the documents to add.
-   * @throws IOException
-   *           if an error occurs while writing to the index.
+   * @param docs the documents to add.
+   * @throws IOException if an error occurs while writing to the index.
    */
   void addDocuments(Document[] docs) throws IOException {
     final IndexWriter writer = getIndexWriter();
@@ -196,14 +213,12 @@ abstract class AbstractIndex {
   }
 
   /**
-   * Removes the document from this index. This call will not invalidate the shared reader. If a
-   * subclass whishes to do so, it should overwrite this method and call
-   * {@link #invalidateSharedReader()}.
+   * Removes the document from this index. This call will not invalidate the
+   * shared reader. If a subclass whishes to do so, it should overwrite this
+   * method and call {@link #invalidateSharedReader()}.
    * 
-   * @param idTerm
-   *          the id term of the document to remove.
-   * @throws IOException
-   *           if an error occurs while removing the document.
+   * @param idTerm the id term of the document to remove.
+   * @throws IOException if an error occurs while removing the document.
    * @return number of documents deleted
    */
   int removeDocument(Term idTerm) throws IOException {
@@ -211,12 +226,11 @@ abstract class AbstractIndex {
   }
 
   /**
-   * Returns an <code>IndexReader</code> on this index. This index reader may be used to delete
-   * documents.
+   * Returns an <code>IndexReader</code> on this index. This index reader may be
+   * used to delete documents.
    * 
    * @return an <code>IndexReader</code> on this index.
-   * @throws IOException
-   *           if the reader cannot be obtained.
+   * @throws IOException if the reader cannot be obtained.
    */
   protected synchronized CommittableIndexReader getIndexReader() throws IOException {
     if (indexWriter != null) {
@@ -231,13 +245,13 @@ abstract class AbstractIndex {
   }
 
   /**
-   * Returns a read-only index reader, that can be used concurrently with other threads writing to
-   * this index. The returned index reader is read-only, that is, any attempt to delete a document
-   * from the index will throw an <code>UnsupportedOperationException</code>.
+   * Returns a read-only index reader, that can be used concurrently with other
+   * threads writing to this index. The returned index reader is read-only, that
+   * is, any attempt to delete a document from the index will throw an
+   * <code>UnsupportedOperationException</code>.
    * 
    * @return a read-only index reader.
-   * @throws IOException
-   *           if an error occurs while obtaining the index reader.
+   * @throws IOException if an error occurs while obtaining the index reader.
    */
   synchronized ReadOnlyIndexReader getReadOnlyIndexReader() throws IOException {
     // get current modifiable index reader
@@ -246,7 +260,7 @@ abstract class AbstractIndex {
     if (readOnlyReader != null) {
       if (readOnlyReader.getDeletedDocsVersion() == modCount) {
         // reader up-to-date
-        readOnlyReader.incrementRefCount();
+        readOnlyReader.acquire();
         return readOnlyReader;
       } else {
         // reader outdated
@@ -254,12 +268,12 @@ abstract class AbstractIndex {
           // not in use, except by this index
           // update the reader
           readOnlyReader.updateDeletedDocs(modifiableReader);
-          readOnlyReader.incrementRefCount();
+          readOnlyReader.acquire();
           return readOnlyReader;
         } else {
           // cannot update reader, it is still in use
           // need to create a new instance
-          readOnlyReader.close();
+          readOnlyReader.release();
           readOnlyReader = null;
         }
       }
@@ -278,7 +292,7 @@ abstract class AbstractIndex {
       sharedReader = new SharedIndexReader(cr);
     }
     readOnlyReader = new ReadOnlyIndexReader(sharedReader, deleted, modCount);
-    readOnlyReader.incrementRefCount();
+    readOnlyReader.acquire();
     return readOnlyReader;
   }
 
@@ -286,8 +300,7 @@ abstract class AbstractIndex {
    * Returns an <code>IndexWriter</code> on this index.
    * 
    * @return an <code>IndexWriter</code> on this index.
-   * @throws IOException
-   *           if the writer cannot be obtained.
+   * @throws IOException if the writer cannot be obtained.
    */
   protected synchronized IndexWriter getIndexWriter() throws IOException {
     if (indexReader != null) {
@@ -305,6 +318,10 @@ abstract class AbstractIndex {
       indexWriter.setMaxFieldLength(maxFieldLength);
       indexWriter.setUseCompoundFile(useCompoundFile);
       indexWriter.setInfoStream(STREAM_LOGGER);
+      indexWriter.setRAMBufferSizeMB(IndexWriter.DISABLE_AUTO_FLUSH);
+      indexWriter.setMergeScheduler(new SerialMergeScheduler());
+      indexWriter.setMergePolicy(new LogDocMergePolicy());
+
     }
     return indexWriter;
   }
@@ -312,8 +329,7 @@ abstract class AbstractIndex {
   /**
    * Commits all pending changes to the underlying <code>Directory</code>.
    * 
-   * @throws IOException
-   *           if an error occurs while commiting changes.
+   * @throws IOException if an error occurs while commiting changes.
    */
   protected void commit() throws IOException {
     commit(false);
@@ -322,14 +338,13 @@ abstract class AbstractIndex {
   /**
    * Commits all pending changes to the underlying <code>Directory</code>.
    * 
-   * @param optimize
-   *          if <code>true</code> the index is optimized after the commit.
-   * @throws IOException
-   *           if an error occurs while commiting changes.
+   * @param optimize if <code>true</code> the index is optimized after the
+   *          commit.
+   * @throws IOException if an error occurs while commiting changes.
    */
   protected synchronized void commit(boolean optimize) throws IOException {
     if (indexReader != null) {
-      indexReader.commitDeleted();
+      indexReader.flush();
     }
     if (indexWriter != null) {
       log.debug("committing IndexWriter.");
@@ -349,6 +364,20 @@ abstract class AbstractIndex {
    * Closes this index, releasing all held resources.
    */
   synchronized void close() {
+    releaseWriterAndReaders();
+    if (directory != null) {
+      try {
+        directory.close();
+      } catch (IOException e) {
+        directory = null;
+      }
+    }
+  }
+
+  /**
+   * Releases all potentially held index writer and readers.
+   */
+  protected void releaseWriterAndReaders() {
     if (indexWriter != null) {
       try {
         indexWriter.close();
@@ -367,55 +396,48 @@ abstract class AbstractIndex {
     }
     if (readOnlyReader != null) {
       try {
-        readOnlyReader.close();
+        readOnlyReader.release();
       } catch (IOException e) {
         log.warn("Exception closing index reader: " + e.toString());
       }
+      readOnlyReader = null;
     }
     if (sharedReader != null) {
       try {
-        sharedReader.close();
+        sharedReader.release();
       } catch (IOException e) {
         log.warn("Exception closing index reader: " + e.toString());
       }
-    }
-    if (directory != null) {
-      try {
-        directory.close();
-      } catch (IOException e) {
-        directory = null;
-      }
+      sharedReader = null;
     }
   }
 
   /**
    * Closes the shared reader.
    * 
-   * @throws IOException
-   *           if an error occurs while closing the reader.
+   * @throws IOException if an error occurs while closing the reader.
    */
   protected synchronized void invalidateSharedReader() throws IOException {
     // also close the read-only reader
     if (readOnlyReader != null) {
-      readOnlyReader.close();
+      readOnlyReader.release();
       readOnlyReader = null;
     }
     // invalidate shared reader
     if (sharedReader != null) {
-      sharedReader.close();
+      sharedReader.release();
       sharedReader = null;
     }
   }
 
   /**
-   * Returns a document that is finished with text extraction and is ready to be added to the index.
+   * Returns a document that is finished with text extraction and is ready to be
+   * added to the index.
    * 
-   * @param doc
-   *          the document to check.
-   * @return <code>doc</code> if it is finished already or a stripped down copy of <code>doc</code>
-   *         without text extractors.
-   * @throws IOException
-   *           if the document cannot be added to the indexing queue.
+   * @param doc the document to check.
+   * @return <code>doc</code> if it is finished already or a stripped down copy
+   *         of <code>doc</code> without text extractors.
+   * @throws IOException if the document cannot be added to the indexing queue.
    */
   private Document getFinishedDocument(Document doc) throws IOException {
     if (!Util.isDocumentReady(doc)) {
@@ -511,8 +533,7 @@ abstract class AbstractIndex {
   /**
    * Returns the index parameter set on <code>f</code>.
    * 
-   * @param f
-   *          a lucene field.
+   * @param f a lucene field.
    * @return the index parameter on <code>f</code>.
    */
   private Field.Index getIndexParameter(Field f) {
@@ -528,8 +549,7 @@ abstract class AbstractIndex {
   /**
    * Returns the store parameter set on <code>f</code>.
    * 
-   * @param f
-   *          a lucene field.
+   * @param f a lucene field.
    * @return the store parameter on <code>f</code>.
    */
   private Field.Store getStoreParameter(Field f) {
@@ -545,8 +565,7 @@ abstract class AbstractIndex {
   /**
    * Returns the term vector parameter set on <code>f</code>.
    * 
-   * @param f
-   *          a lucene field.
+   * @param f a lucene field.
    * @return the term vector parameter on <code>f</code>.
    */
   private Field.TermVector getTermVectorParameter(Field f) {
@@ -587,6 +606,6 @@ abstract class AbstractIndex {
       buffer.append(s);
       log.debug(buffer.toString());
       buffer.setLength(0);
-      }
-   }
+    }
+  }
 }
