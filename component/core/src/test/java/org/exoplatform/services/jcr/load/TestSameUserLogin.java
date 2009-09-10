@@ -18,16 +18,16 @@
  */
 package org.exoplatform.services.jcr.load;
 
+import org.exoplatform.services.jcr.core.CredentialsImpl;
+import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import javax.jcr.Credentials;
 import javax.jcr.LoginException;
 import javax.jcr.NoSuchWorkspaceException;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
-
-import org.exoplatform.services.log.Log;
-import org.exoplatform.services.jcr.core.CredentialsImpl;
-import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
-import org.exoplatform.services.log.ExoLogger;
 
 /**
  * Created by The eXo Platform SAS.
@@ -38,14 +38,12 @@ import org.exoplatform.services.log.ExoLogger;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestSameUserLogin.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class TestSameUserLogin
-   extends BaseUsecasesTest
+public class TestSameUserLogin extends BaseUsecasesTest
 {
 
    private final Log TLOG = ExoLogger.getLogger("jcr.LoginThread");
 
-   class LoginThread
-      extends Thread
+   class LoginThread extends Thread
    {
 
       private final Credentials user;
@@ -133,8 +131,7 @@ public class TestSameUserLogin
    /**
     * LoginThread modified by Tomasz Wysocki according to http://jira.exoplatform.org/browse/JCR-875
     */
-   class LoginThread2
-      extends Thread
+   class LoginThread2 extends Thread
    {
 
       private final Credentials user;

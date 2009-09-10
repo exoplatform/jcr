@@ -18,10 +18,10 @@
  */
 package org.exoplatform.services.jcr.access;
 
+import org.exoplatform.services.security.ConversationState;
+
 import javax.jcr.Credentials;
 import javax.jcr.LoginException;
-
-import org.exoplatform.services.security.ConversationState;
 
 /**
  * Created by The eXo Platform SAS.<br/> Authentication policy for

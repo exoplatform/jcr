@@ -118,8 +118,7 @@ public class ErrorLog
 
          out = new FileOutputStream(log).getChannel();
          out.position(1024 * fileSize - 1);
-         out.write(ByteBuffer.wrap(new byte[]
-         {0}));
+         out.write(ByteBuffer.wrap(new byte[]{0}));
          out.position(0);
          out.force(false);
       }
@@ -171,8 +170,7 @@ public class ErrorLog
          out.close();
          out = new FileOutputStream(logFile).getChannel();
          out.position(1024 * fileSize - 1);
-         out.write(ByteBuffer.wrap(new byte[]
-         {0}));
+         out.write(ByteBuffer.wrap(new byte[]{0}));
          out.position(0);
          out.force(false);
       }

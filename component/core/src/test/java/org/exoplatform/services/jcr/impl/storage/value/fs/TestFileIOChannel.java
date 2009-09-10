@@ -18,18 +18,18 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.util.ArrayList;
-import java.util.List;
-
 import junit.framework.TestCase;
 
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TesterTransientValueData;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by The eXo Platform SAS.
@@ -38,8 +38,7 @@ import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
  * @version $Id: TestFileIOChannel.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
 
-public class TestFileIOChannel
-   extends TestCase
+public class TestFileIOChannel extends TestCase
 {
 
    private File rootDir;

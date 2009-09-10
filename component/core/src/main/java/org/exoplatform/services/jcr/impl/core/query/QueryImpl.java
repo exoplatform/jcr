@@ -53,8 +53,7 @@ import org.exoplatform.services.log.ExoLogger;
 /**
  * Provides the default implementation for a JCR query.
  */
-public class QueryImpl
-   extends AbstractQueryImpl
+public class QueryImpl extends AbstractQueryImpl
 {
 
    /**
@@ -115,7 +114,7 @@ public class QueryImpl
     */
    @Override
    public void init(SessionImpl session, SessionDataManager itemMgr, QueryHandler handler, String statement,
-            String language) throws InvalidQueryException
+      String language) throws InvalidQueryException
    {
       checkNotInitialized();
       this.session = session;
@@ -132,14 +131,14 @@ public class QueryImpl
     */
    @Override
    public void init(SessionImpl session, SessionDataManager itemMgr, QueryHandler handler, Node node)
-            throws InvalidQueryException, RepositoryException
+      throws InvalidQueryException, RepositoryException
    {
       checkNotInitialized();
       this.session = session;
       this.node = node;
       this.handler = handler;
       this.sessionLocationFactory = session.getLocationFactory();
-      if (!((ExtendedNode) node).isNodeType(Constants.NT_QUERY))
+      if (!((ExtendedNode)node).isNodeType(Constants.NT_QUERY))
       {
          throw new InvalidQueryException("node is not of type nt:query");
       }
@@ -166,7 +165,7 @@ public class QueryImpl
          NumberFormat format = NumberFormat.getNumberInstance();
          format.setMinimumFractionDigits(2);
          format.setMaximumFractionDigits(2);
-         String seconds = format.format((double) time / 1000);
+         String seconds = format.format((double)time / 1000);
          log.debug("executed in " + seconds + " s. (" + statement + ")");
       }
       return result;
@@ -207,13 +206,13 @@ public class QueryImpl
     * {@inheritDoc}
     */
    public Node storeAsNode(String absPath) throws ItemExistsException, PathNotFoundException, VersionException,
-            ConstraintViolationException, LockException, UnsupportedRepositoryOperationException, RepositoryException
+      ConstraintViolationException, LockException, UnsupportedRepositoryOperationException, RepositoryException
    {
 
       checkInitialized();
       JCRPath path = session.getLocationFactory().parseAbsPath(absPath);
       QPath qpath = path.getInternalPath();
-      NodeImpl parent = (NodeImpl) session.getTransientNodesManager().getItem(qpath.makeParentPath(), false);
+      NodeImpl parent = (NodeImpl)session.getTransientNodesManager().getItem(qpath.makeParentPath(), false);
       if (parent == null)
          throw new PathNotFoundException("Parent not found for " + path.getAsString(false));
 
@@ -221,14 +220,14 @@ public class QueryImpl
       parent.validateChildNode(qpath.getName(), Constants.NT_QUERY);
 
       NodeData queryData =
-               TransientNodeData.createNodeData((NodeData) parent.getData(), qpath.getName(), Constants.NT_QUERY);
+         TransientNodeData.createNodeData((NodeData)parent.getData(), qpath.getName(), Constants.NT_QUERY);
       NodeImpl queryNode =
-               (NodeImpl) session.getTransientNodesManager().update(ItemState.createAddedState(queryData), false);
+         (NodeImpl)session.getTransientNodesManager().update(ItemState.createAddedState(queryData), false);
 
       NodeTypeDataManager ntmanager = session.getWorkspace().getNodeTypesHolder();
       PlainChangesLog changes =
-               ntmanager.makeAutoCreatedItems((NodeData) queryNode.getData(), Constants.NT_QUERY, session
-                        .getTransientNodesManager(), session.getUserID());
+         ntmanager.makeAutoCreatedItems((NodeData)queryNode.getData(), Constants.NT_QUERY, session
+            .getTransientNodesManager(), session.getUserID());
       for (ItemState autoCreatedState : changes.getAllStates())
       {
          session.getTransientNodesManager().update(autoCreatedState, false);
@@ -237,14 +236,13 @@ public class QueryImpl
       // set properties
       TransientValueData value = new TransientValueData(language);
       TransientPropertyData jcrLanguage =
-               TransientPropertyData.createPropertyData(queryData, Constants.JCR_LANGUAGE, PropertyType.STRING, false,
-                        value);
+         TransientPropertyData.createPropertyData(queryData, Constants.JCR_LANGUAGE, PropertyType.STRING, false, value);
       session.getTransientNodesManager().update(ItemState.createAddedState(jcrLanguage), false);
 
       value = new TransientValueData(statement);
       TransientPropertyData jcrStatement =
-               TransientPropertyData.createPropertyData(queryData, Constants.JCR_STATEMENT, PropertyType.STRING, false,
-                        value);
+         TransientPropertyData
+            .createPropertyData(queryData, Constants.JCR_STATEMENT, PropertyType.STRING, false, value);
       session.getTransientNodesManager().update(ItemState.createAddedState(jcrStatement), false);
 
       // NOTE: for save stored node need save() on parent or on session (6.6.10

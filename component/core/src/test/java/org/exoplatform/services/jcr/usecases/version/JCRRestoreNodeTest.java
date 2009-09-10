@@ -18,10 +18,10 @@
  */
 package org.exoplatform.services.jcr.usecases.version;
 
+import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
+
 import javax.jcr.Node;
 import javax.jcr.version.Version;
-
-import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
 
 /**
  * Created by The eXo Platform SAS
@@ -29,8 +29,7 @@ import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
  * @version $Id: JCRRestoreNodeTest.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class JCRRestoreNodeTest
-   extends BaseUsecasesTest
+public class JCRRestoreNodeTest extends BaseUsecasesTest
 {
 
    public void testRestoredNodeExists() throws Exception

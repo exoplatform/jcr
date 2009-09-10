@@ -18,16 +18,15 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
-import java.util.Comparator;
-
 import org.exoplatform.services.jcr.datamodel.NodeData;
+
+import java.util.Comparator;
 
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version
  */
-public class NodeDataOrderComparator
-   implements Comparator<NodeData>
+public class NodeDataOrderComparator implements Comparator<NodeData>
 {
 
    public int compare(NodeData n1, NodeData n2)

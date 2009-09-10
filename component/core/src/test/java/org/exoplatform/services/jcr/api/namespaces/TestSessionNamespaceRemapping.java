@@ -18,10 +18,10 @@
  */
 package org.exoplatform.services.jcr.api.namespaces;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+
 import javax.jcr.NamespaceException;
 import javax.jcr.NamespaceRegistry;
-
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
 
 /**
  * Created by The eXo Platform SAS.
@@ -29,8 +29,7 @@ import org.exoplatform.services.jcr.JcrAPIBaseTest;
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov</a>
  * @version $Id: TestSessionNamespaceRemapping.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class TestSessionNamespaceRemapping
-   extends JcrAPIBaseTest
+public class TestSessionNamespaceRemapping extends JcrAPIBaseTest
 {
 
    private NamespaceRegistry namespaceRegistry;
@@ -70,8 +69,7 @@ public class TestSessionNamespaceRemapping
 
    public void testGetNamespacePrefixes() throws Exception
    {
-      String[] protectedNamespaces =
-      {"jcr", "nt", "mix", "", "sv", "exo2"};
+      String[] protectedNamespaces = {"jcr", "nt", "mix", "", "sv", "exo2"};
       session.setNamespacePrefix("exo2", "http://www.exoplatform.com/jcr/exo/1.0");
       String[] prefixes = session.getNamespacePrefixes();
       assertTrue(protectedNamespaces.length <= prefixes.length);

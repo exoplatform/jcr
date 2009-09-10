@@ -18,6 +18,9 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.db;
 
+import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
+
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -26,9 +29,6 @@ import java.sql.Connection;
 import java.util.Properties;
 
 import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 
 /**
  * Created by The eXo Platform SAS

@@ -27,8 +27,7 @@ import javax.jcr.observation.Event;
  * @version $Id: ExtendedEvent.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public interface ExtendedEvent
-   extends Event
+public interface ExtendedEvent extends Event
 {
 
    public static final int SAVE = 32;

@@ -4,6 +4,9 @@
  **************************************************************************/
 package org.exoplatform.services.jcr.usecases.query;
 
+import org.exoplatform.services.jcr.impl.core.ItemImpl;
+import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
+
 import javax.jcr.Node;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
@@ -11,17 +14,13 @@ import javax.jcr.query.QueryResult;
 import javax.jcr.query.Row;
 import javax.jcr.query.RowIterator;
 
-import org.exoplatform.services.jcr.impl.core.ItemImpl;
-import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
-
 /**
  * Created by The eXo Platform SARL
  * Author : Nhu Dinh Thuan
  *          nhudinhthuan@exoplatform.com
  * Nov 14, 2008  
  */
-public class TestQueryWithRowIterator
-   extends BaseUsecasesTest
+public class TestQueryWithRowIterator extends BaseUsecasesTest
 {
 
    private String s1 = "\u043f\u00bb\u0457C\u0431\u00bb\u00a7a \u0413\u0491ng \u0414\u2018\u0413\u045ey";//"Của ông đây";
@@ -67,7 +66,7 @@ public class TestQueryWithRowIterator
 
          try
          {
-            Node node = (Node) session.getItem(jcrPath);
+            Node node = (Node)session.getItem(jcrPath);
             assertNotNull(node);
          }
          catch (Exception e)

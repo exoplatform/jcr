@@ -32,8 +32,7 @@ import org.exoplatform.services.jcr.impl.core.SessionImpl;
 /**
  * This class implements the {@link QueryManager} interface.
  */
-public class QueryManagerImpl
-   implements QueryManager
+public class QueryManagerImpl implements QueryManager
 {
 
    /**
@@ -98,7 +97,7 @@ public class QueryManagerImpl
     */
    public String[] getSupportedQueryLanguages() throws RepositoryException
    {
-      return (String[]) SUPPORTED_QUERIES_LIST.toArray(new String[SUPPORTED_QUERIES.length]);
+      return (String[])SUPPORTED_QUERIES_LIST.toArray(new String[SUPPORTED_QUERIES.length]);
    }
 
    // ---------------------------< internal >-----------------------------------

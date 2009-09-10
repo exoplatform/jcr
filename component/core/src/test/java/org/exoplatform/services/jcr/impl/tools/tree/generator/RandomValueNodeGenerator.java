@@ -18,6 +18,10 @@
  */
 package org.exoplatform.services.jcr.impl.tools.tree.generator;
 
+import org.exoplatform.services.jcr.util.IdGenerator;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -34,17 +38,11 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 import javax.jcr.ValueFactory;
 
-import org.exoplatform.services.log.Log;
-
-import org.exoplatform.services.jcr.util.IdGenerator;
-import org.exoplatform.services.log.ExoLogger;
-
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: RandomValueNodeGenerator.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class RandomValueNodeGenerator
-   extends WeightNodeGenerator
+public class RandomValueNodeGenerator extends WeightNodeGenerator
 {
    private static final Random random = new Random();
 
@@ -61,7 +59,7 @@ public class RandomValueNodeGenerator
    private final ValueFactory valueFactory;
 
    public RandomValueNodeGenerator(ValueFactory valueFactory, int maxDepth, int maxWidth, int maxPropertiesCount,
-            int maxValuesCount, int maxBinarySize)
+      int maxValuesCount, int maxBinarySize)
    {
       super(maxDepth, maxWidth);
       this.valueFactory = valueFactory;
@@ -73,7 +71,7 @@ public class RandomValueNodeGenerator
    }
 
    private Value getNewValue(int propType) throws FileNotFoundException, IOException, IllegalStateException,
-            RepositoryException
+      RepositoryException
    {
       Value val = null;
       byte[] buffer;

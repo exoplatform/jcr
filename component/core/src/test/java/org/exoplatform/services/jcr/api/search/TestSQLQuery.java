@@ -18,14 +18,14 @@
  */
 package org.exoplatform.services.jcr.api.search;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.query.InvalidQueryException;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryResult;
-
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
 
 /**
  * Created by The eXo Platform SAS.
@@ -35,8 +35,7 @@ import org.exoplatform.services.jcr.JcrAPIBaseTest;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestSQLQuery.java 13418 2008-04-18 14:09:08Z pnedonosko $
  */
-public class TestSQLQuery
-   extends JcrAPIBaseTest
+public class TestSQLQuery extends JcrAPIBaseTest
 {
 
    private Node testRoot;
@@ -150,8 +149,8 @@ public class TestSQLQuery
       try
       {
          Query q =
-                  session.getWorkspace().getQueryManager().createQuery(
-                           "select * from nt:file where jcr:path like '/testSqlQuery/files/%'", Query.SQL);
+            session.getWorkspace().getQueryManager().createQuery(
+               "select * from nt:file where jcr:path like '/testSqlQuery/files/%'", Query.SQL);
 
          QueryResult res = q.execute();
          assertEquals("Wrong nodes count in result set", 4, res.getNodes().getSize());
@@ -176,8 +175,8 @@ public class TestSQLQuery
       try
       {
          Query q =
-                  session.getWorkspace().getQueryManager().createQuery(
-                           "select * from nt:file where jcr:path like '%/files/%'", Query.SQL);
+            session.getWorkspace().getQueryManager().createQuery(
+               "select * from nt:file where jcr:path like '%/files/%'", Query.SQL);
 
          QueryResult res = q.execute();
          assertEquals("Wrong nodes count in result set", 4, res.getNodes().getSize());
@@ -203,8 +202,8 @@ public class TestSQLQuery
    {
 
       Query q =
-               session.getWorkspace().getQueryManager().createQuery(
-                        "select * from nt:unstructured where jcr:path like '%/draft/%'", Query.SQL);
+         session.getWorkspace().getQueryManager().createQuery(
+            "select * from nt:unstructured where jcr:path like '%/draft/%'", Query.SQL);
 
       QueryResult res = q.execute();
       assertEquals("Wrong nodes count in result set", 3, res.getNodes().getSize());
@@ -229,8 +228,8 @@ public class TestSQLQuery
    {
 
       Query q =
-               session.getWorkspace().getQueryManager().createQuery(
-                        "select * from nt:unstructured where jcr:path like '/testSqlQuery/%/draft/%'", Query.SQL);
+         session.getWorkspace().getQueryManager().createQuery(
+            "select * from nt:unstructured where jcr:path like '/testSqlQuery/%/draft/%'", Query.SQL);
 
       QueryResult res = q.execute();
       assertEquals("Wrong nodes count in result set", 3, res.getNodes().getSize());
@@ -255,9 +254,9 @@ public class TestSQLQuery
       try
       {
          Query q =
-                  session.getWorkspace().getQueryManager().createQuery(
-                           "select * from nt:file where jcr:path like '/testSqlQuery/files/%' and not "
-                                    + "jcr:path like '/testSqlQuery/files/%/%'", Query.SQL);
+            session.getWorkspace().getQueryManager().createQuery(
+               "select * from nt:file where jcr:path like '/testSqlQuery/files/%' and not "
+                  + "jcr:path like '/testSqlQuery/files/%/%'", Query.SQL);
 
          QueryResult res = q.execute();
          assertEquals("Wrong nodes count in result set", 2, res.getNodes().getSize());
@@ -283,9 +282,9 @@ public class TestSQLQuery
       try
       {
          Query q =
-                  session.getWorkspace().getQueryManager().createQuery(
-                           "select * from nt:file where jcr:path like '/testSqlQuery/files/%/myFile1' or "
-                                    + " jcr:path = '/testSqlQuery/files/myFile1'", Query.SQL);
+            session.getWorkspace().getQueryManager().createQuery(
+               "select * from nt:file where jcr:path like '/testSqlQuery/files/%/myFile1' or "
+                  + " jcr:path = '/testSqlQuery/files/myFile1'", Query.SQL);
 
          QueryResult res = q.execute();
          assertEquals("Wrong nodes count in result set", 3, res.getNodes().getSize());

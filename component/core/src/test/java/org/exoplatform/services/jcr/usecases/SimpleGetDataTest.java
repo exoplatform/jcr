@@ -31,8 +31,7 @@ import javax.jcr.Node;
  * @version $Id: SimpleGetDataTest.java 11907 2008-03-13 15:36:21Z ksm $ JCR Use Case test sample
  */
 
-public class SimpleGetDataTest
-   extends BaseUsecasesTest
+public class SimpleGetDataTest extends BaseUsecasesTest
 {
 
    /**
@@ -57,10 +56,10 @@ public class SimpleGetDataTest
       contentNode.setProperty("jcr:lastModified", Calendar.getInstance());
       session.save();
       assertNotNull(session.getRootNode().getNode("testLocalSmallFiles").getNode("smallFile").getNode("jcr:content")
-               .getProperty("jcr:data").getValue());
+         .getProperty("jcr:data").getValue());
 
       System.out.println("value === "
-               + session.getRootNode().getNode("testLocalSmallFiles").getNode("smallFile").getNode("jcr:content")
-                        .getProperty("jcr:data").getString());
+         + session.getRootNode().getNode("testLocalSmallFiles").getNode("smallFile").getNode("jcr:content")
+            .getProperty("jcr:data").getString());
    }
 }

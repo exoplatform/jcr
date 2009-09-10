@@ -18,9 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 /**
  * Created by The eXo Platform SAS.
@@ -29,8 +28,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @version $Id: LocalWorkspaceDataManagerStub.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class LocalWorkspaceDataManagerStub
-   extends VersionableWorkspaceDataManager
+public class LocalWorkspaceDataManagerStub extends VersionableWorkspaceDataManager
 {
 
    private static Log log = ExoLogger.getLogger("jcr.LocalWorkspaceDataManagerStub");

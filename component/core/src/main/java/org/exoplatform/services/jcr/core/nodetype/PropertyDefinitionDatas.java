@@ -88,7 +88,7 @@ public class PropertyDefinitionDatas
    public String dump()
    {
       return "Definitions single: " + ((singleDef == null) ? "N/D" : singleDef.getName()) + ", multiple: "
-               + ((multiDef == null) ? "N/D" : multiDef.getName());
+         + ((multiDef == null) ? "N/D" : multiDef.getName());
    }
 
 }

@@ -18,12 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.log.Log;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
@@ -37,15 +31,20 @@ import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.dataflow.version.VersionHistoryDataHelper;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
-public class ItemDataCopyVisitor
-   extends DefaultItemDataCopyVisitor
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.jcr.RepositoryException;
+
+public class ItemDataCopyVisitor extends DefaultItemDataCopyVisitor
 {
 
    private Log log = ExoLogger.getLogger("jcr.ItemDataCopyVisitor");
 
    public ItemDataCopyVisitor(NodeData parent, InternalQName destNodeName, NodeTypeDataManager nodeTypeManager,
-            SessionDataManager dataManager, boolean keepIdentifiers)
+      SessionDataManager dataManager, boolean keepIdentifiers)
    {
       super(parent, destNodeName, nodeTypeManager, dataManager, keepIdentifiers);
    }
@@ -63,7 +62,7 @@ public class ItemDataCopyVisitor
       List<ValueData> values;
 
       if (ntManager.isNodeType(Constants.MIX_VERSIONABLE, curParent().getPrimaryTypeName(), curParent()
-               .getMixinTypeNames()))
+         .getMixinTypeNames()))
       {
          // versionable node copy
          // [mix:versionable] > mix:referenceable
@@ -135,8 +134,8 @@ public class ItemDataCopyVisitor
          }
       }
       else if (ntManager.isNodeType(Constants.MIX_REFERENCEABLE, curParent().getPrimaryTypeName(), curParent()
-               .getMixinTypeNames())
-               && qname.equals(Constants.JCR_UUID))
+         .getMixinTypeNames())
+         && qname.equals(Constants.JCR_UUID))
       {
 
          values = new ArrayList<ValueData>(1);
@@ -157,15 +156,15 @@ public class ItemDataCopyVisitor
       }
 
       TransientPropertyData newProperty =
-               new TransientPropertyData(QPath.makeChildPath(curParent().getQPath(), qname), keepIdentifiers ? property
-                        .getIdentifier() : IdGenerator.generate(), -1, property.getType(), curParent().getIdentifier(),
-                        property.isMultiValued());
+         new TransientPropertyData(QPath.makeChildPath(curParent().getQPath(), qname), keepIdentifiers ? property
+            .getIdentifier() : IdGenerator.generate(), -1, property.getType(), curParent().getIdentifier(), property
+            .isMultiValued());
 
       newProperty.setValues(values);
 
       if (log.isDebugEnabled())
          log.debug("entering COPY " + newProperty.getQPath().getAsString() + "; pidentifier: "
-                  + newProperty.getParentIdentifier() + "; identifier: " + newProperty.getIdentifier());
+            + newProperty.getParentIdentifier() + "; identifier: " + newProperty.getIdentifier());
 
       itemAddStates.add(new ItemState(newProperty, ItemState.ADDED, true, ancestorToSave, level != 0));
    }

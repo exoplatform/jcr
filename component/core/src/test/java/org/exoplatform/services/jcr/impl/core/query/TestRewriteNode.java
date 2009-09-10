@@ -17,16 +17,15 @@
 
 package org.exoplatform.services.jcr.impl.core.query;
 
-import java.util.Calendar;
-
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.TermQuery;
-
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.query.lucene.FieldNames;
+
+import java.util.Calendar;
 
 /**
  * Created by The eXo Platform SAS Author : Sergey Karpenko <sergey.karpenko@exoplatform.com.ua>
@@ -34,8 +33,7 @@ import org.exoplatform.services.jcr.impl.core.query.lucene.FieldNames;
  * @version $Id: $
  */
 
-public class TestRewriteNode
-   extends BaseQueryTest
+public class TestRewriteNode extends BaseQueryTest
 {
 
    private static final String fileName = "FileToRewrite";
@@ -43,8 +41,8 @@ public class TestRewriteNode
    public void testRewriteNode() throws Exception
    {
 
-      NodeImpl node = (NodeImpl) root.addNode(fileName, "nt:file");
-      NodeImpl cont = (NodeImpl) node.addNode("jcr:content", "nt:resource");
+      NodeImpl node = (NodeImpl)root.addNode(fileName, "nt:file");
+      NodeImpl cont = (NodeImpl)node.addNode("jcr:content", "nt:resource");
       cont.setProperty("jcr:mimeType", "text/plain");
       cont.setProperty("jcr:lastModified", Calendar.getInstance());
       // cont.setProperty("jcr:encoding","UTF-8");

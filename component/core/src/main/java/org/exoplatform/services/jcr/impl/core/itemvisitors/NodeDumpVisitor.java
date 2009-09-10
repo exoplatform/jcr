@@ -30,8 +30,7 @@ import javax.jcr.util.TraversingItemVisitor;
  * @version $Id: NodeDumpVisitor.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class NodeDumpVisitor
-   extends TraversingItemVisitor
+public class NodeDumpVisitor extends TraversingItemVisitor
 {
 
    private String dumpStr = "";

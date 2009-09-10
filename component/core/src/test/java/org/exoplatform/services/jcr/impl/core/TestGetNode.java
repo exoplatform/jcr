@@ -18,9 +18,9 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
-import javax.jcr.PathNotFoundException;
-
 import org.exoplatform.services.jcr.JcrImplBaseTest;
+
+import javax.jcr.PathNotFoundException;
 
 /**
  * Created by The eXo Platform SAS.

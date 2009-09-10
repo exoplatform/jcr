@@ -18,26 +18,23 @@
  */
 package org.exoplatform.services.jcr.usecases.nodetypes;
 
-import javax.jcr.Node;
-
 import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
+
+import javax.jcr.Node;
 
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: NtUnstructuredAsSupertypeTest.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class NtUnstructuredAsSupertypeTest
-   extends BaseUsecasesTest
+public class NtUnstructuredAsSupertypeTest extends BaseUsecasesTest
 {
 
    public void testMultiValue() throws Exception
    {
       Node rootNode = session.getRootNode();
       Node tNode = rootNode.addNode("testNode", "exojcrtest:sub1");
-      tNode.setProperty("multi", new String[]
-      {"v1", "v2"});
-      tNode.setProperty("multi", new String[]
-      {"v1"});
+      tNode.setProperty("multi", new String[]{"v1", "v2"});
+      tNode.setProperty("multi", new String[]{"v1"});
       rootNode.save();
 
    }
@@ -55,10 +52,8 @@ public class NtUnstructuredAsSupertypeTest
       Node rootNode = session.getRootNode();
       Node tNode = rootNode.addNode("testNode", "exojcrtest:sub1");
       tNode.setProperty("single", "v1");
-      tNode.setProperty("multi", new String[]
-      {"v1", "v2"});
-      tNode.setProperty("multi", new String[]
-      {"v1"});
+      tNode.setProperty("multi", new String[]{"v1", "v2"});
+      tNode.setProperty("multi", new String[]{"v1"});
       rootNode.save();
    }
 

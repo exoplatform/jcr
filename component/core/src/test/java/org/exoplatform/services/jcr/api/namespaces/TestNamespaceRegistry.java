@@ -18,20 +18,19 @@
  */
 package org.exoplatform.services.jcr.api.namespaces;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.lucene.search.BooleanQuery;
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.impl.core.ExtendedNamespaceRegistry;
+import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
+import org.exoplatform.services.jcr.impl.core.NodeImpl;
+
 import java.util.Set;
 
 import javax.jcr.NamespaceException;
 import javax.jcr.Node;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
-
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.lucene.search.BooleanQuery;
-
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-import org.exoplatform.services.jcr.impl.core.ExtendedNamespaceRegistry;
-import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
-import org.exoplatform.services.jcr.impl.core.NodeImpl;
 
 /**
  * Created by The eXo Platform SAS.
@@ -40,8 +39,7 @@ import org.exoplatform.services.jcr.impl.core.NodeImpl;
  *         Azarenkov</a>
  * @version $Id: TestNamespaceRegistry.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class TestNamespaceRegistry
-   extends JcrAPIBaseTest
+public class TestNamespaceRegistry extends JcrAPIBaseTest
 {
 
    protected ExtendedNamespaceRegistry namespaceRegistry;
@@ -49,7 +47,7 @@ public class TestNamespaceRegistry
    public void initRepository() throws RepositoryException
    {
       workspace = session.getWorkspace();
-      namespaceRegistry = (ExtendedNamespaceRegistry) workspace.getNamespaceRegistry();
+      namespaceRegistry = (ExtendedNamespaceRegistry)workspace.getNamespaceRegistry();
       try
       {
          namespaceRegistry.getURI("newMapping");
@@ -64,8 +62,7 @@ public class TestNamespaceRegistry
    public void testGetPrefixes() throws RepositoryException
    {
       // namespaceRegistry.registerNamespace("newMapping", "http://dumb.uri/jcr");
-      String[] namespaces =
-      {"jcr", "nt", "mix", "", "sv", "exo", "newMapping"};
+      String[] namespaces = {"jcr", "nt", "mix", "", "sv", "exo", "newMapping"};
 
       String[] prefixes = namespaceRegistry.getPrefixes();
 
@@ -83,9 +80,8 @@ public class TestNamespaceRegistry
    {
       // namespaceRegistry.registerNamespace("newMapping", "http://dumb.uri/jcr");
       String[] namespacesURIs =
-               {"http://www.jcp.org/jcr/1.0", "http://www.jcp.org/jcr/nt/1.0", "http://www.jcp.org/jcr/mix/1.0", "",
-                        "http://www.jcp.org/jcr/sv/1.0", "http://www.exoplatform.com/jcr/exo/1.0",
-                        "http://dumb.uri/jcr"};
+         {"http://www.jcp.org/jcr/1.0", "http://www.jcp.org/jcr/nt/1.0", "http://www.jcp.org/jcr/mix/1.0", "",
+            "http://www.jcp.org/jcr/sv/1.0", "http://www.exoplatform.com/jcr/exo/1.0", "http://dumb.uri/jcr"};
 
       String[] uris = namespaceRegistry.getURIs();
       for (int i = 0; i < namespacesURIs.length; i++)
@@ -194,11 +190,11 @@ public class TestNamespaceRegistry
       assertNotNull(namespaceRegistry.getURI("newMapping"));
       assertEquals("http://dumb.uri/jcr", namespaceRegistry.getURI("newMapping"));
 
-      NodeImpl n = (NodeImpl) root.addNode("newMapping:test", "nt:unstructured");
+      NodeImpl n = (NodeImpl)root.addNode("newMapping:test", "nt:unstructured");
       System.out.println("Node before save" + n);
       root.save();
       System.out.println("Node after save" + n);
-      n = (NodeImpl) root.getNode("newMapping:test");
+      n = (NodeImpl)root.getNode("newMapping:test");
       n.remove();
       System.out.println("Node after remove" + n);
       root.save();
@@ -259,11 +255,11 @@ public class TestNamespaceRegistry
       test3.setProperty("blahtesturi", "v2");
       session.save();
 
-      Set<String> nodes = ((NamespaceRegistryImpl) namespaceRegistry).getNodes("testuri");
+      Set<String> nodes = ((NamespaceRegistryImpl)namespaceRegistry).getNodes("testuri");
       assertEquals(1, nodes.size());
-      assertFalse(nodes.contains(((NodeImpl) test1).getData().getIdentifier()));
-      assertFalse(nodes.contains(((NodeImpl) test3).getData().getIdentifier()));
-      assertTrue(nodes.contains(((NodeImpl) test2).getData().getIdentifier()));
+      assertFalse(nodes.contains(((NodeImpl)test1).getData().getIdentifier()));
+      assertFalse(nodes.contains(((NodeImpl)test3).getData().getIdentifier()));
+      assertTrue(nodes.contains(((NodeImpl)test2).getData().getIdentifier()));
    }
 
    public void testQueryNsNodeName() throws Exception
@@ -273,11 +269,11 @@ public class TestNamespaceRegistry
       Node test3 = root.addNode("blahtesturiNodeName1");
       session.save();
 
-      Set<String> nodes = ((NamespaceRegistryImpl) namespaceRegistry).getNodes("testuri");
+      Set<String> nodes = ((NamespaceRegistryImpl)namespaceRegistry).getNodes("testuri");
       assertEquals(1, nodes.size());
-      assertTrue(nodes.contains(((NodeImpl) test1).getData().getIdentifier()));
-      assertFalse(nodes.contains(((NodeImpl) test2).getData().getIdentifier()));
-      assertFalse(nodes.contains(((NodeImpl) test3).getData().getIdentifier()));
+      assertTrue(nodes.contains(((NodeImpl)test1).getData().getIdentifier()));
+      assertFalse(nodes.contains(((NodeImpl)test2).getData().getIdentifier()));
+      assertFalse(nodes.contains(((NodeImpl)test3).getData().getIdentifier()));
 
    }
 
@@ -289,10 +285,10 @@ public class TestNamespaceRegistry
       test2.setProperty("prop", "v2");
       session.save();
 
-      Set<String> nodes = ((NamespaceRegistryImpl) namespaceRegistry).getNodes("testuri");
+      Set<String> nodes = ((NamespaceRegistryImpl)namespaceRegistry).getNodes("testuri");
       assertEquals(1, nodes.size());
-      assertTrue(nodes.contains(((NodeImpl) test1).getData().getIdentifier()));
-      assertFalse(nodes.contains(((NodeImpl) test2).getData().getIdentifier()));
+      assertTrue(nodes.contains(((NodeImpl)test1).getData().getIdentifier()));
+      assertFalse(nodes.contains(((NodeImpl)test2).getData().getIdentifier()));
    }
 
    public void testQueryNsNodeNameValue() throws Exception
@@ -306,11 +302,11 @@ public class TestNamespaceRegistry
       test3.setProperty("prop", "blablatesturi:v2");
       session.save();
 
-      Set<String> nodes = ((NamespaceRegistryImpl) namespaceRegistry).getNodes("testuri");
+      Set<String> nodes = ((NamespaceRegistryImpl)namespaceRegistry).getNodes("testuri");
       assertEquals(1, nodes.size());
-      assertTrue(nodes.contains(((NodeImpl) test1).getData().getIdentifier()));
-      assertFalse(nodes.contains(((NodeImpl) test2).getData().getIdentifier()));
-      assertFalse(nodes.contains(((NodeImpl) test3).getData().getIdentifier()));
+      assertTrue(nodes.contains(((NodeImpl)test1).getData().getIdentifier()));
+      assertFalse(nodes.contains(((NodeImpl)test2).getData().getIdentifier()));
+      assertFalse(nodes.contains(((NodeImpl)test3).getData().getIdentifier()));
    }
 
    public void testTooManyFields()

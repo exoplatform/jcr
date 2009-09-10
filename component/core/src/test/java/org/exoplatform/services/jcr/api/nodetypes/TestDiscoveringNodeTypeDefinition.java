@@ -18,11 +18,11 @@
  */
 package org.exoplatform.services.jcr.api.nodetypes;
 
-import javax.jcr.Node;
-import javax.jcr.nodetype.NodeType;
-
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
 import org.exoplatform.services.jcr.impl.core.value.BinaryValue;
+
+import javax.jcr.Node;
+import javax.jcr.nodetype.NodeType;
 
 /**
  * Created by The eXo Platform SAS.
@@ -31,8 +31,7 @@ import org.exoplatform.services.jcr.impl.core.value.BinaryValue;
  * @version $Id: TestDiscoveringNodeTypeDefinition.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class TestDiscoveringNodeTypeDefinition
-   extends JcrAPIBaseTest
+public class TestDiscoveringNodeTypeDefinition extends JcrAPIBaseTest
 {
 
    public void testPrimaryNodeTypeDefinitionProperties() throws Exception
@@ -79,8 +78,7 @@ public class TestDiscoveringNodeTypeDefinition
       assertFalse(type.canAddChildNode("jcr:anyNode"));
       assertFalse(type.canAddChildNode("jcr:anyNode", "nt:base"));
       // assertTrue(type.canSetProperty("jcr:data", new BinaryValue("test")));
-      assertFalse(type.canSetProperty("jcr:data", new BinaryValue[]
-      {new BinaryValue("test")}));
+      assertFalse(type.canSetProperty("jcr:data", new BinaryValue[]{new BinaryValue("test")}));
       assertFalse(type.canSetProperty("jcr:notFound", new BinaryValue("test")));
       // [PN] 06.03.06 Row below commented
       // assertFalse(type.canSetProperty("jcr:data", new StringValue("test")));

@@ -20,8 +20,7 @@ package org.exoplatform.services.jcr.impl.core.query;
  * <code>TraversingQueryNodeVisitor</code> implements a base class for a traversing query node
  * visitor.
  */
-public class TraversingQueryNodeVisitor
-   extends DefaultQueryNodeVisitor
+public class TraversingQueryNodeVisitor extends DefaultQueryNodeVisitor
 {
 
    @Override

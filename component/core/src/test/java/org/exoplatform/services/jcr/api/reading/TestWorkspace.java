@@ -27,8 +27,7 @@ import org.exoplatform.services.jcr.JcrAPIBaseTest;
  * @version $Id: TestWorkspace.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class TestWorkspace
-   extends JcrAPIBaseTest
+public class TestWorkspace extends JcrAPIBaseTest
 {
 
    public void testGetSession()

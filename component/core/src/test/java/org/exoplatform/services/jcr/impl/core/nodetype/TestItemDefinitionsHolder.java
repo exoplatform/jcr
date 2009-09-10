@@ -18,16 +18,15 @@
  */
 package org.exoplatform.services.jcr.impl.core.nodetype;
 
-import javax.jcr.nodetype.NodeTypeIterator;
-
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.core.nodetype.NodeDefinitionData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.impl.Constants;
 
-public class TestItemDefinitionsHolder
-   extends JcrImplBaseTest
+import javax.jcr.nodetype.NodeTypeIterator;
+
+public class TestItemDefinitionsHolder extends JcrImplBaseTest
 {
    private final boolean isImplemented = false;
 
@@ -45,7 +44,7 @@ public class TestItemDefinitionsHolder
       }
       else if (!isImplemented && !isLoaded)
       {
-         NodeTypeManagerImpl ntManager = ((NodeTypeManagerImpl) repository.getNodeTypeManager());
+         NodeTypeManagerImpl ntManager = ((NodeTypeManagerImpl)repository.getNodeTypeManager());
          NodeTypeIterator nodeTypes = ntManager.getAllNodeTypes();
          holder = session.getWorkspace().getNodeTypesHolder();
          // while (nodeTypes.hasNext()) {
@@ -75,7 +74,7 @@ public class TestItemDefinitionsHolder
          assertEquals(Constants.JCR_CONTENT, def1.getName());
 
          assertNull(holder.findChildNodeDefinition(Constants.JCR_DEFAULTPRIMNARYTYPE, Constants.NT_FILE,
-                  Constants.NT_RESOURCE));
+            Constants.NT_RESOURCE));
       }
    }
 
@@ -88,14 +87,14 @@ public class TestItemDefinitionsHolder
       if (isLoaded)
       {
          NodeDefinitionData def1 =
-                  holder.findChildNodeDefinition(new InternalQName(null, "test"), Constants.NT_UNSTRUCTURED,
+            holder.findChildNodeDefinition(new InternalQName(null, "test"), Constants.NT_UNSTRUCTURED,
 
-                  Constants.NT_UNSTRUCTURED);
+            Constants.NT_UNSTRUCTURED);
          NodeDefinitionData def2 =
-                  holder.findChildNodeDefinition(new InternalQName(Constants.NS_EXO_URI, "test11111"),
-                           Constants.NT_UNSTRUCTURED,
+            holder.findChildNodeDefinition(new InternalQName(Constants.NS_EXO_URI, "test11111"),
+               Constants.NT_UNSTRUCTURED,
 
-                           Constants.NT_FILE);
+               Constants.NT_FILE);
 
          assertNotNull(def1);
          assertNotNull(def2);

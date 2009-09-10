@@ -18,13 +18,13 @@
  */
 package org.exoplatform.services.jcr.storage.value;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Properties;
-
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Created by The eXo Platform SAS.
@@ -53,7 +53,7 @@ public abstract class ValueStoragePlugin
     *           if IO error
     */
    public abstract void init(Properties props, ValueDataResourceHolder resources)
-            throws RepositoryConfigurationException, IOException;
+      throws RepositoryConfigurationException, IOException;
 
    /**
     * Open ValueIOChannel. Used in {@link ValueStoragePluginProvider.getApplicableChannel(PropertyData, int)} 

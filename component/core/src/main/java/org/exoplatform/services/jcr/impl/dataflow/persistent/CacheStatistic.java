@@ -48,7 +48,7 @@ public class CacheStatistic
    protected final long liveTime;
 
    CacheStatistic(long miss, long hits, long size, long nodesSize, long propertiesSize, long maxSize, long liveTime,
-            long totalGetTime)
+      long totalGetTime)
    {
       this.maxSize = maxSize;
       this.liveTime = liveTime;

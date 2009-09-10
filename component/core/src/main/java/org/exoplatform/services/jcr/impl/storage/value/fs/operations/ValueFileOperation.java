@@ -18,20 +18,18 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs.operations;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.nio.channels.FileChannel;
-
-import org.exoplatform.services.log.Log;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.storage.value.ValueOperation;
 import org.exoplatform.services.jcr.impl.storage.value.fs.FileLockException;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -42,9 +40,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: ValueFileOperation.java 111 2008-11-11 11:11:11Z pnedonosko $
  */
-public abstract class ValueFileOperation
-   extends ValueFileIOHelper
-   implements ValueOperation
+public abstract class ValueFileOperation extends ValueFileIOHelper implements ValueOperation
 {
 
    /**
@@ -91,8 +87,7 @@ public abstract class ValueFileOperation
     * Internal ValueLockSupport implementation.
     * 
     */
-   class ValueFileLockHolder
-      implements ValueLockSupport
+   class ValueFileLockHolder implements ValueLockSupport
    {
 
       /**
@@ -143,7 +138,7 @@ public abstract class ValueFileOperation
       {
          if (anotherLock instanceof ValueFileLockHolder)
          {
-            ValueFileLockHolder al = (ValueFileLockHolder) anotherLock;
+            ValueFileLockHolder al = (ValueFileLockHolder)anotherLock;
             lockFile = al.lockFile;
             lockFileStream = al.lockFileStream;
          }

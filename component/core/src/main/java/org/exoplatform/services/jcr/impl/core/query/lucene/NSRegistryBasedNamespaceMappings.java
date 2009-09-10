@@ -28,8 +28,7 @@ import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
  * <code>NSRegistryBasedNamespaceMappings</code> implements a namespace mapping based on the stable
  * index prefix provided by the namespace registry.
  */
-public class NSRegistryBasedNamespaceMappings
-   implements NamespaceMappings
+public class NSRegistryBasedNamespaceMappings implements NamespaceMappings
 {
 
    /**

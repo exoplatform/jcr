@@ -18,6 +18,16 @@
  */
 package org.exoplatform.services.jcr.api.importing;
 
+import org.exoplatform.services.ext.action.InvocationContext;
+import org.exoplatform.services.jcr.core.ExtendedSession;
+import org.exoplatform.services.jcr.impl.xml.importing.ContentImporter;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.XMLReaderFactory;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -37,26 +47,13 @@ import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.ConstraintViolationException;
 
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
-
-import org.exoplatform.services.log.Log;
-
-import org.exoplatform.services.ext.action.InvocationContext;
-import org.exoplatform.services.jcr.core.ExtendedSession;
-import org.exoplatform.services.jcr.impl.xml.importing.ContentImporter;
-import org.exoplatform.services.log.ExoLogger;
-
 /**
  * Created by The eXo Platform SAS
  * 
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: TestSystemViewImport.java 14244 2008-05-14 11:44:54Z ksm $
  */
-public class TestSystemViewImport
-   extends AbstractImportTest
+public class TestSystemViewImport extends AbstractImportTest
 {
    static public final String SOURCE_NAME = "source node";
 
@@ -69,99 +66,99 @@ public class TestSystemViewImport
    private File xmlContent;
 
    public static final String SYSTEM_VIEW_CONTENT =
-            "<sv:node xmlns:nt=\"http://www.jcp.org/jcr/nt/1.0\" "
-                     + "xmlns:jcr=\"http://www.jcp.org/jcr/1.0\" "
-                     + "xmlns:sv=\"http://www.jcp.org/jcr/sv/1.0\" "
-                     + "xmlns:exo=\"http://www.exoplatform.com/jcr/exo/1.0\" "
-                     + "xmlns:mix=\"http://www.jcp.org/jcr/mix/1.0\" sv:name=\"exo:test\">"
-                     + "<sv:property sv:name=\"jcr:primaryType\" sv:type=\"Name\"><sv:value>nt:unstructured</sv:value></sv:property>"
-                     +
+      "<sv:node xmlns:nt=\"http://www.jcp.org/jcr/nt/1.0\" "
+         + "xmlns:jcr=\"http://www.jcp.org/jcr/1.0\" "
+         + "xmlns:sv=\"http://www.jcp.org/jcr/sv/1.0\" "
+         + "xmlns:exo=\"http://www.exoplatform.com/jcr/exo/1.0\" "
+         + "xmlns:mix=\"http://www.jcp.org/jcr/mix/1.0\" sv:name=\"exo:test\">"
+         + "<sv:property sv:name=\"jcr:primaryType\" sv:type=\"Name\"><sv:value>nt:unstructured</sv:value></sv:property>"
+         +
 
-                     "<sv:node sv:name=\"childNode\">"
-                     + "<sv:property sv:name=\"jcr:primaryType\" sv:type=\"Name\"><sv:value>nt:folder</sv:value></sv:property>"
-                     + "<sv:property sv:name=\"jcr:created\" sv:type=\"Date\"><sv:value>2004-08-18T15:17:00.856+01:00</sv:value></sv:property>"
-                     + "<sv:node sv:name=\"childNode3\">"
-                     + "<sv:property sv:name=\"jcr:primaryType\" sv:type=\"Name\"><sv:value>nt:file</sv:value></sv:property>"
-                     + "<sv:property sv:name=\"jcr:created\" sv:type=\"Date\"><sv:value>2004-08-18T15:17:00.856+01:00</sv:value></sv:property>"
-                     + "<sv:node sv:name=\"jcr:content\">"
-                     + "<sv:property sv:name=\"jcr:primaryType\" sv:type=\"Name\"><sv:value>nt:resource</sv:value></sv:property>"
-                     + "<sv:property sv:name=\"jcr:uuid\" sv:type=\"String\"><sv:value>1092835020617_</sv:value></sv:property>"
-                     + "<sv:property sv:name=\"jcr:data\" sv:type=\"Binary\"><sv:value>dGhpcyBpcyB0aGUgYmluYXJ5IGNvbnRlbnQ=</sv:value></sv:property>"
-                     + "<sv:property sv:name=\"jcr:mimeType\" sv:type=\"String\"><sv:value>application/unknown</sv:value></sv:property>"
-                     + "<sv:property sv:name=\"jcr:lastModified\" sv:type=\"Date\"><sv:value>2004-08-18T15:17:00.856+01:00</sv:value></sv:property>"
-                     + "</sv:node>"
-                     + "</sv:node>"
-                     + "<sv:node sv:name=\"childNode2\">"
-                     + "<sv:property sv:name=\"jcr:primaryType\" sv:type=\"Name\"><sv:value>nt:file</sv:value></sv:property>"
-                     + "<sv:property sv:name=\"jcr:created\" sv:type=\"Date\"><sv:value>2004-08-18T15:17:00.856+01:00</sv:value></sv:property>"
-                     + "<sv:node sv:name=\"jcr:content\">"
-                     + "<sv:property sv:name=\"jcr:primaryType\" sv:type=\"Name\"><sv:value>nt:resource</sv:value></sv:property>"
-                     + "<sv:property sv:name=\"jcr:uuid\" sv:type=\"String\"><sv:value>1092835020616_</sv:value></sv:property>"
-                     + "<sv:property sv:name=\"jcr:data\" sv:type=\"Binary\"><sv:value>dGhpcyBpcyB0aGUgYmluYXJ5IGNvbnRlbnQ=</sv:value></sv:property>"
-                     + "<sv:property sv:name=\"jcr:mimeType\" sv:type=\"String\"><sv:value>text/text</sv:value></sv:property>"
-                     + "<sv:property sv:name=\"jcr:lastModified\" sv:type=\"Date\"><sv:value>2004-08-18T15:17:00.856+01:00</sv:value></sv:property>"
-                     + "</sv:node>"
-                     + "</sv:node>"
-                     + "</sv:node>"
-                     +
+         "<sv:node sv:name=\"childNode\">"
+         + "<sv:property sv:name=\"jcr:primaryType\" sv:type=\"Name\"><sv:value>nt:folder</sv:value></sv:property>"
+         + "<sv:property sv:name=\"jcr:created\" sv:type=\"Date\"><sv:value>2004-08-18T15:17:00.856+01:00</sv:value></sv:property>"
+         + "<sv:node sv:name=\"childNode3\">"
+         + "<sv:property sv:name=\"jcr:primaryType\" sv:type=\"Name\"><sv:value>nt:file</sv:value></sv:property>"
+         + "<sv:property sv:name=\"jcr:created\" sv:type=\"Date\"><sv:value>2004-08-18T15:17:00.856+01:00</sv:value></sv:property>"
+         + "<sv:node sv:name=\"jcr:content\">"
+         + "<sv:property sv:name=\"jcr:primaryType\" sv:type=\"Name\"><sv:value>nt:resource</sv:value></sv:property>"
+         + "<sv:property sv:name=\"jcr:uuid\" sv:type=\"String\"><sv:value>1092835020617_</sv:value></sv:property>"
+         + "<sv:property sv:name=\"jcr:data\" sv:type=\"Binary\"><sv:value>dGhpcyBpcyB0aGUgYmluYXJ5IGNvbnRlbnQ=</sv:value></sv:property>"
+         + "<sv:property sv:name=\"jcr:mimeType\" sv:type=\"String\"><sv:value>application/unknown</sv:value></sv:property>"
+         + "<sv:property sv:name=\"jcr:lastModified\" sv:type=\"Date\"><sv:value>2004-08-18T15:17:00.856+01:00</sv:value></sv:property>"
+         + "</sv:node>"
+         + "</sv:node>"
+         + "<sv:node sv:name=\"childNode2\">"
+         + "<sv:property sv:name=\"jcr:primaryType\" sv:type=\"Name\"><sv:value>nt:file</sv:value></sv:property>"
+         + "<sv:property sv:name=\"jcr:created\" sv:type=\"Date\"><sv:value>2004-08-18T15:17:00.856+01:00</sv:value></sv:property>"
+         + "<sv:node sv:name=\"jcr:content\">"
+         + "<sv:property sv:name=\"jcr:primaryType\" sv:type=\"Name\"><sv:value>nt:resource</sv:value></sv:property>"
+         + "<sv:property sv:name=\"jcr:uuid\" sv:type=\"String\"><sv:value>1092835020616_</sv:value></sv:property>"
+         + "<sv:property sv:name=\"jcr:data\" sv:type=\"Binary\"><sv:value>dGhpcyBpcyB0aGUgYmluYXJ5IGNvbnRlbnQ=</sv:value></sv:property>"
+         + "<sv:property sv:name=\"jcr:mimeType\" sv:type=\"String\"><sv:value>text/text</sv:value></sv:property>"
+         + "<sv:property sv:name=\"jcr:lastModified\" sv:type=\"Date\"><sv:value>2004-08-18T15:17:00.856+01:00</sv:value></sv:property>"
+         + "</sv:node>"
+         + "</sv:node>"
+         + "</sv:node>"
+         +
 
-                     "<sv:node sv:name='uuidNode1'>"
-                     + "<sv:property sv:name='jcr:primaryType' sv:type='Name'><sv:value>nt:unstructured</sv:value></sv:property>"
-                     + "<sv:property sv:name='jcr:mixinTypes' sv:type='Name'>"
-                     + "<sv:value>mix:referenceable</sv:value>"
-                     + "<!-- sv:value>exo:accessControllable</sv:value -->"
-                     + "</sv:property>"
-                     + "<sv:property sv:name='jcr:test' sv:type='String'><sv:value>val1</sv:value><sv:value>val1</sv:value></sv:property>"
-                     + "<sv:property sv:name='source' sv:type='String'><sv:value>sysView</sv:value></sv:property>"
-                     + "<sv:property sv:name='jcr:uuid' sv:type='String'><sv:value>id_uuidNode1</sv:value></sv:property>"
-                     + "</sv:node>"
-                     +
+         "<sv:node sv:name='uuidNode1'>"
+         + "<sv:property sv:name='jcr:primaryType' sv:type='Name'><sv:value>nt:unstructured</sv:value></sv:property>"
+         + "<sv:property sv:name='jcr:mixinTypes' sv:type='Name'>"
+         + "<sv:value>mix:referenceable</sv:value>"
+         + "<!-- sv:value>exo:accessControllable</sv:value -->"
+         + "</sv:property>"
+         + "<sv:property sv:name='jcr:test' sv:type='String'><sv:value>val1</sv:value><sv:value>val1</sv:value></sv:property>"
+         + "<sv:property sv:name='source' sv:type='String'><sv:value>sysView</sv:value></sv:property>"
+         + "<sv:property sv:name='jcr:uuid' sv:type='String'><sv:value>id_uuidNode1</sv:value></sv:property>"
+         + "</sv:node>"
+         +
 
-                     "<sv:node sv:name='uuidNode2'>"
-                     + "<sv:property sv:name='jcr:primaryType' sv:type='Name'><sv:value>nt:unstructured</sv:value></sv:property>"
-                     + "<sv:property sv:name='jcr:mixinTypes' sv:type='Name'><sv:value>mix:referenceable</sv:value></sv:property>"
-                     + "<sv:property sv:name='jcr:test' sv:type='String'><sv:value>val2</sv:value><sv:value>val1</sv:value></sv:property>"
-                     + "<sv:property sv:name='jcr:uuid' sv:type='String'><sv:value>uuidNode2</sv:value></sv:property>"
-                     + "<sv:property sv:name='ref_to_1' sv:type='Reference'><sv:value>id_uuidNode1</sv:value></sv:property>"
-                     + "<sv:property sv:name='ref_to_1_and_3' sv:type='Reference'><sv:value>id_uuidNode1</sv:value><sv:value>id_uuidNode3</sv:value></sv:property>"
-                     + "<sv:property sv:name='ref_to_3' sv:type='Reference'><sv:value>id_uuidNode3</sv:value></sv:property>"
-                     + "</sv:node>"
-                     +
+         "<sv:node sv:name='uuidNode2'>"
+         + "<sv:property sv:name='jcr:primaryType' sv:type='Name'><sv:value>nt:unstructured</sv:value></sv:property>"
+         + "<sv:property sv:name='jcr:mixinTypes' sv:type='Name'><sv:value>mix:referenceable</sv:value></sv:property>"
+         + "<sv:property sv:name='jcr:test' sv:type='String'><sv:value>val2</sv:value><sv:value>val1</sv:value></sv:property>"
+         + "<sv:property sv:name='jcr:uuid' sv:type='String'><sv:value>uuidNode2</sv:value></sv:property>"
+         + "<sv:property sv:name='ref_to_1' sv:type='Reference'><sv:value>id_uuidNode1</sv:value></sv:property>"
+         + "<sv:property sv:name='ref_to_1_and_3' sv:type='Reference'><sv:value>id_uuidNode1</sv:value><sv:value>id_uuidNode3</sv:value></sv:property>"
+         + "<sv:property sv:name='ref_to_3' sv:type='Reference'><sv:value>id_uuidNode3</sv:value></sv:property>"
+         + "</sv:node>"
+         +
 
-                     "<sv:node sv:name='uuidNode3'>"
-                     + "<sv:property sv:name='jcr:primaryType' sv:type='Name'><sv:value>nt:unstructured</sv:value></sv:property>"
-                     + "<sv:property sv:name='jcr:mixinTypes' sv:type='Name'><sv:value>mix:referenceable</sv:value></sv:property>"
-                     + "<sv:property sv:name='ref_to_1' sv:type='Reference'><sv:value>id_uuidNode1</sv:value></sv:property>"
-                     + "<sv:property sv:name='jcr:test' sv:type='String'><sv:value>val1</sv:value><sv:value>va31</sv:value></sv:property>"
-                     + "<sv:property sv:name='jcr:uuid' sv:type='String'><sv:value>id_uuidNode3</sv:value></sv:property>"
-                     + "</sv:node>"
-                     +
+         "<sv:node sv:name='uuidNode3'>"
+         + "<sv:property sv:name='jcr:primaryType' sv:type='Name'><sv:value>nt:unstructured</sv:value></sv:property>"
+         + "<sv:property sv:name='jcr:mixinTypes' sv:type='Name'><sv:value>mix:referenceable</sv:value></sv:property>"
+         + "<sv:property sv:name='ref_to_1' sv:type='Reference'><sv:value>id_uuidNode1</sv:value></sv:property>"
+         + "<sv:property sv:name='jcr:test' sv:type='String'><sv:value>val1</sv:value><sv:value>va31</sv:value></sv:property>"
+         + "<sv:property sv:name='jcr:uuid' sv:type='String'><sv:value>id_uuidNode3</sv:value></sv:property>"
+         + "</sv:node>"
+         +
 
-                     "<sv:node sv:name=\"childNode4\">"
-                     + "<sv:property sv:name=\"jcr:primaryType\" sv:type=\"Name\"><sv:value>nt:unstructured</sv:value></sv:property>"
-                     + "<sv:property sv:name=\"jcr:test\" sv:type=\"String\"><sv:value>val1</sv:value><sv:value>val1</sv:value></sv:property>"
-                     + "</sv:node>" +
+         "<sv:node sv:name=\"childNode4\">"
+         + "<sv:property sv:name=\"jcr:primaryType\" sv:type=\"Name\"><sv:value>nt:unstructured</sv:value></sv:property>"
+         + "<sv:property sv:name=\"jcr:test\" sv:type=\"String\"><sv:value>val1</sv:value><sv:value>val1</sv:value></sv:property>"
+         + "</sv:node>" +
 
-                     "</sv:node>";
+         "</sv:node>";
 
    public static final String SYSTEM_VIEW_CONTENT2 =
-            "<sv:node xmlns:nt=\"http://www.jcp.org/jcr/nt/1.0\" "
-                     + "xmlns:jcr=\"http://www.jcp.org/jcr/1.0\" "
-                     + "xmlns:sv=\"http://www.jcp.org/jcr/sv/1.0\" "
-                     + "xmlns:exo=\"http://www.exoplatform.com/jcr/exo/1.0\" "
-                     + "xmlns:mix=\"http://www.jcp.org/jcr/mix/1.0\" sv:name=\"childNode2\">"
-                     + "<sv:property sv:name=\"jcr:primaryType\" sv:type=\"Name\"><sv:value>nt:file</sv:value></sv:property>"
-                     + "<sv:property sv:name=\"jcr:created\" sv:type=\"Date\"><sv:value>2004-08-18T15:17:00.856+01:00</sv:value></sv:property>"
-                     + "<sv:node sv:name=\"jcr:content\">"
-                     + "<sv:property sv:name=\"jcr:primaryType\" sv:type=\"Name\"><sv:value>nt:resource</sv:value></sv:property>"
-                     + "<sv:property sv:name=\"jcr:uuid\" sv:type=\"String\"><sv:value>1092835020616_</sv:value></sv:property>"
-                     + "<sv:property sv:name=\"jcr:data\" sv:type=\"Binary\"><sv:value>dGhpcyBpcyB0aGUgYmluYXJ5IGNvbnRlbnQ=</sv:value></sv:property>"
-                     + "<sv:property sv:name=\"jcr:mimeType\" sv:type=\"String\"><sv:value>text/text</sv:value></sv:property>"
-                     + "<sv:property sv:name=\"jcr:lastModified\" sv:type=\"Date\"><sv:value>2004-08-18T15:17:00.856+01:00</sv:value></sv:property>"
-                     // Special unexisting
-                     // property
-                     + "<sv:property sv:name=\"jcr:lastModified2\" sv:type=\"Date\"><sv:value>2004-08-18T15:17:00.856+01:00</sv:value></sv:property>"
-                     + "</sv:node>" + "</sv:node>";
+      "<sv:node xmlns:nt=\"http://www.jcp.org/jcr/nt/1.0\" "
+         + "xmlns:jcr=\"http://www.jcp.org/jcr/1.0\" "
+         + "xmlns:sv=\"http://www.jcp.org/jcr/sv/1.0\" "
+         + "xmlns:exo=\"http://www.exoplatform.com/jcr/exo/1.0\" "
+         + "xmlns:mix=\"http://www.jcp.org/jcr/mix/1.0\" sv:name=\"childNode2\">"
+         + "<sv:property sv:name=\"jcr:primaryType\" sv:type=\"Name\"><sv:value>nt:file</sv:value></sv:property>"
+         + "<sv:property sv:name=\"jcr:created\" sv:type=\"Date\"><sv:value>2004-08-18T15:17:00.856+01:00</sv:value></sv:property>"
+         + "<sv:node sv:name=\"jcr:content\">"
+         + "<sv:property sv:name=\"jcr:primaryType\" sv:type=\"Name\"><sv:value>nt:resource</sv:value></sv:property>"
+         + "<sv:property sv:name=\"jcr:uuid\" sv:type=\"String\"><sv:value>1092835020616_</sv:value></sv:property>"
+         + "<sv:property sv:name=\"jcr:data\" sv:type=\"Binary\"><sv:value>dGhpcyBpcyB0aGUgYmluYXJ5IGNvbnRlbnQ=</sv:value></sv:property>"
+         + "<sv:property sv:name=\"jcr:mimeType\" sv:type=\"String\"><sv:value>text/text</sv:value></sv:property>"
+         + "<sv:property sv:name=\"jcr:lastModified\" sv:type=\"Date\"><sv:value>2004-08-18T15:17:00.856+01:00</sv:value></sv:property>"
+         // Special unexisting
+         // property
+         + "<sv:property sv:name=\"jcr:lastModified2\" sv:type=\"Date\"><sv:value>2004-08-18T15:17:00.856+01:00</sv:value></sv:property>"
+         + "</sv:node>" + "</sv:node>";
 
    @Override
    public void setUp() throws Exception
@@ -213,7 +210,7 @@ public class TestSystemViewImport
       sysview.save();
 
       sysview.getSession().importXML(importTarget.getPath(), new FileInputStream(xmlContent),
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
 
       sysview.save();
 
@@ -227,7 +224,7 @@ public class TestSystemViewImport
       // try one more (for same-name sibling nodes test), mus replace before
       // imported node
       sysview.getSession().importXML(importTarget.getPath(), new FileInputStream(xmlContent),
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
 
       sysview.save();
 
@@ -252,7 +249,7 @@ public class TestSystemViewImport
       sysview.save();
 
       sysview.getSession().importXML(importTarget.getPath(), new FileInputStream(xmlContent),
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
 
       sysview.save();
 
@@ -264,13 +261,13 @@ public class TestSystemViewImport
       assertTrue("Uuids must be same. " + uuid + " = " + importedUuid, uuid.equals(importedUuid));
 
       assertFalse("A imported node must has no property 'New property 1, boolean' " + target.getPath(), target
-               .hasProperty("jcr:content/New property 1, boolean"));
+         .hasProperty("jcr:content/New property 1, boolean"));
       assertFalse("A imported node must has no property 'New property 2, string' " + target.getPath(), target
-               .hasProperty("jcr:content/New property 2, string"));
+         .hasProperty("jcr:content/New property 2, string"));
 
       // create one more same-name sibling node
       sysview.getSession().importXML(importTarget.getPath(), new FileInputStream(xmlContent),
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
 
       sysview.save();
 
@@ -281,12 +278,12 @@ public class TestSystemViewImport
       assertTrue("Uuids must be same. " + uuid + " = " + importedSNSUuid, uuid.equals(importedSNSUuid));
 
       assertTrue("Uuid of SNS replaced node must be different. " + importedSNSUuid + " != " + importedSNSUuid,
-               importedSNSUuid.equals(importedSNSUuid));
+         importedSNSUuid.equals(importedSNSUuid));
 
       assertFalse("A imported node must has no property 'New property 1, boolean' " + target.getPath(), target
-               .hasProperty("jcr:content/New property 1, boolean"));
+         .hasProperty("jcr:content/New property 1, boolean"));
       assertFalse("A imported node must has no property 'New property 2, string' " + target.getPath(), target
-               .hasProperty("jcr:content/New property 2, string"));
+         .hasProperty("jcr:content/New property 2, string"));
    }
 
    public void testExportUuid_IMPORT_UUID_COLLISION_THROW() throws Exception
@@ -300,7 +297,7 @@ public class TestSystemViewImport
       try
       {
          sysview.getSession().importXML(importTarget.getPath(), new FileInputStream(xmlContent),
-                  ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW);
+            ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW);
 
          fail("An exception ItemExistsException must be throwed. Node with same uuid already exists");
       }
@@ -313,7 +310,7 @@ public class TestSystemViewImport
       try
       {
          sysview.getSession().importXML(importTarget.getPath(), new FileInputStream(xmlContent),
-                  ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW);
+            ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW);
          fail("An exception ItemExistsException must be throwed. Node with same uuid already exists. TEST CYCLE2");
       }
       catch (ItemExistsException e)
@@ -330,7 +327,7 @@ public class TestSystemViewImport
       sysview.save();
 
       sysview.getSession().importXML(importTarget.getPath(), new FileInputStream(xmlContent),
-               ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW);
+         ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW);
 
       sysview.save();
 
@@ -341,7 +338,7 @@ public class TestSystemViewImport
 
       // create one more same-name sibling node
       sysview.getSession().importXML(importTarget.getPath(), new FileInputStream(xmlContent),
-               ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW);
+         ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW);
 
       sysview.save();
 
@@ -349,14 +346,14 @@ public class TestSystemViewImport
       String importedSNSUuid = importTarget.getNode(SOURCE_NAME + "[2]").getProperty("jcr:uuid").getString();
       assertFalse("Uuids must be different. " + uuid + " != " + importedSNSUuid, uuid.equals(importedSNSUuid));
       assertFalse("Uuids must be different. " + importedSNSUuid + " != " + importedUuid, importedSNSUuid
-               .equals(importedUuid));
+         .equals(importedUuid));
 
       // ...temp check
       InputStream anyBinary =
-               importTarget.getNode(SOURCE_NAME + "[2]/jcr:content").getProperty("anyBinary").getStream();
+         importTarget.getNode(SOURCE_NAME + "[2]/jcr:content").getProperty("anyBinary").getStream();
       assertEquals("Stream length must be same", BIN_STRING.length(), anyBinary.available());
       assertEquals("Stream content must be same", BIN_STRING, importTarget.getNode(SOURCE_NAME + "[2]/jcr:content")
-               .getProperty("anyBinary").getString());
+         .getProperty("anyBinary").getString());
    }
 
    public void testImportSystemViewContentHandlerInvalidChildNodeType() throws Exception
@@ -376,7 +373,7 @@ public class TestSystemViewImport
       try
       {
          deserialize(testRoot, XmlSaveType.SESSION, false, ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW,
-                  new ByteArrayInputStream(content));
+            new ByteArrayInputStream(content));
          testRoot.getSession().save();
          fail();
       }
@@ -407,7 +404,7 @@ public class TestSystemViewImport
       try
       {
          deserialize(testRoot, XmlSaveType.SESSION, true, ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW,
-                  new ByteArrayInputStream(content));
+            new ByteArrayInputStream(content));
          testRoot.getSession().save();
          fail();
       }
@@ -417,7 +414,7 @@ public class TestSystemViewImport
    }
 
    public void testImportSysView() throws RepositoryException, InvalidSerializedDataException,
-            ConstraintViolationException, IOException, ItemExistsException
+      ConstraintViolationException, IOException, ItemExistsException
    {
 
       root.addNode("test");
@@ -483,8 +480,8 @@ public class TestSystemViewImport
       context.put(ContentImporter.RESPECT_PROPERTY_DEFINITIONS_CONSTRAINTS, true);
       try
       {
-         ((ExtendedSession) session).importXML(root.getPath(),
-                  new ByteArrayInputStream(SYSTEM_VIEW_CONTENT2.getBytes()), 0, context);
+         ((ExtendedSession)session).importXML(root.getPath(),
+            new ByteArrayInputStream(SYSTEM_VIEW_CONTENT2.getBytes()), 0, context);
          session.save();
          fail();
       }
@@ -495,8 +492,8 @@ public class TestSystemViewImport
       context.put(ContentImporter.RESPECT_PROPERTY_DEFINITIONS_CONSTRAINTS, false);
       try
       {
-         ((ExtendedSession) session).importXML(root.getPath(),
-                  new ByteArrayInputStream(SYSTEM_VIEW_CONTENT2.getBytes()), 0, context);
+         ((ExtendedSession)session).importXML(root.getPath(),
+            new ByteArrayInputStream(SYSTEM_VIEW_CONTENT2.getBytes()), 0, context);
          session.save();
 
       }
@@ -522,7 +519,7 @@ public class TestSystemViewImport
       root.save();
 
       deserialize(root, XmlSaveType.SESSION, true, ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW,
-               new ByteArrayInputStream(buf));
+         new ByteArrayInputStream(buf));
 
       root.save();
 

@@ -25,8 +25,7 @@ package org.exoplatform.services.jcr.impl.core;
  * @version $Id: NoPrefixDeclaredException.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class NoPrefixDeclaredException
-   extends Exception
+public class NoPrefixDeclaredException extends Exception
 {
 
    public NoPrefixDeclaredException()

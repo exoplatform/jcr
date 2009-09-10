@@ -18,12 +18,12 @@
  */
 package org.exoplatform.services.jcr.impl;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.exoplatform.container.component.BaseComponentPlugin;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by The eXo Platform SAS.
@@ -31,8 +31,7 @@ import org.exoplatform.container.xml.PropertiesParam;
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov</a>
  * @version $Id: AddNamespacesPlugin.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class AddNamespacesPlugin
-   extends BaseComponentPlugin
+public class AddNamespacesPlugin extends BaseComponentPlugin
 {
 
    private Map<String, String> namespaces = new HashMap<String, String>();

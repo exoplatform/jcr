@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.core;
 
+import org.exoplatform.services.jcr.impl.core.LocationFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
@@ -29,8 +31,6 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.nodetype.ConstraintViolationException;
 
-import org.exoplatform.services.jcr.impl.core.LocationFactory;
-
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -38,8 +38,7 @@ import org.exoplatform.services.jcr.impl.core.LocationFactory;
  * @version $Id: ExtendedSession.java 12649 2008-04-02 12:46:37Z ksm $
  */
 
-public interface ExtendedSession
-   extends Session
+public interface ExtendedSession extends Session
 {
 
    /**
@@ -71,8 +70,8 @@ public interface ExtendedSession
     * @throws RepositoryException
     */
    void importXML(String parentAbsPath, InputStream in, int uuidBehavior, Map<String, Object> context)
-            throws IOException, PathNotFoundException, ItemExistsException, ConstraintViolationException,
-            InvalidSerializedDataException, RepositoryException;
+      throws IOException, PathNotFoundException, ItemExistsException, ConstraintViolationException,
+      InvalidSerializedDataException, RepositoryException;
 
    /**
     * Registers session listener.

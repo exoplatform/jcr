@@ -18,11 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.xml.importing.dataflow;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
@@ -30,6 +25,10 @@ import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by The eXo Platform SAS
@@ -37,9 +36,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: ImportNodeData.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class ImportNodeData
-   extends TransientNodeData
-   implements ImportItemData
+public class ImportNodeData extends TransientNodeData implements ImportItemData
 {
    /**
     * 
@@ -114,7 +111,7 @@ public class ImportNodeData
     * @param acl
     */
    public ImportNodeData(QPath path, String identifier, int version, InternalQName primaryTypeName,
-            InternalQName[] mixinTypeNames, int orderNum, String parentIdentifier, AccessControlList acl)
+      InternalQName[] mixinTypeNames, int orderNum, String parentIdentifier, AccessControlList acl)
    {
       super(path, identifier, version, primaryTypeName, mixinTypeNames, orderNum, parentIdentifier, acl);
       this.nodeTypes = new ArrayList<NodeTypeData>();
@@ -331,8 +328,8 @@ public class ImportNodeData
    public static ImportNodeData createCopy(TransientNodeData source)
    {
       return new ImportNodeData(source.getQPath(), source.getIdentifier(), source.getPersistedVersion(), source
-               .getPrimaryTypeName(), source.getMixinTypeNames(), source.getOrderNumber(),
-               source.getParentIdentifier(), source.getACL());
+         .getPrimaryTypeName(), source.getMixinTypeNames(), source.getOrderNumber(), source.getParentIdentifier(),
+         source.getACL());
 
    }
 }

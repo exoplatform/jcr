@@ -18,14 +18,14 @@
  */
 package org.exoplatform.services.jcr.lab.java;
 
+import junit.framework.TestCase;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import junit.framework.TestCase;
 
 /**
  * Created by The eXo Platform SAS Author : Peter Nedonosko peter.nedonosko@exoplatform.com.ua
@@ -34,8 +34,7 @@ import junit.framework.TestCase;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestStringLongComparison.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class TestStringLongComparison
-   extends TestCase
+public class TestStringLongComparison extends TestCase
 {
 
    public static final int RECORDS_COUNT = 1000;
@@ -76,7 +75,7 @@ public class TestStringLongComparison
       @Override
       public boolean equals(Object obj)
       {
-         return obj instanceof Id ? id.equals(((Id) obj).id) : false;
+         return obj instanceof Id ? id.equals(((Id)obj).id) : false;
       }
 
       @Override
@@ -98,8 +97,8 @@ public class TestStringLongComparison
 
       String info = "";
       info =
-               "free: " + mb(Runtime.getRuntime().freeMemory()) + "M of " + mb(Runtime.getRuntime().totalMemory())
-                        + "M (max: " + mb(Runtime.getRuntime().maxMemory()) + "M)";
+         "free: " + mb(Runtime.getRuntime().freeMemory()) + "M of " + mb(Runtime.getRuntime().totalMemory())
+            + "M (max: " + mb(Runtime.getRuntime().maxMemory()) + "M)";
       return info;
    }
 
@@ -170,7 +169,7 @@ public class TestStringLongComparison
       long d = (System.currentTimeMillis() - start);
       double avg = Math.round(d * 1000d / RECORDS_COUNT) / 1000d;
       System.out.println("Puts done " + getName() + " items:" + RECORDS_COUNT + ", time:" + d + "ms, avg.time:" + avg
-               + "ms, " + memoryInfo());
+         + "ms, " + memoryInfo());
 
       start = System.currentTimeMillis();
       for (Map.Entry<Id, Integer> ide : select.entrySet())
@@ -183,7 +182,7 @@ public class TestStringLongComparison
       d = (System.currentTimeMillis() - start);
       avg = Math.round(d * 1000d / select.size()) / 1000d;
       System.out.println("Gets done " + getName() + " items:" + select.size() + ", time:" + d + "ms, avg.time:" + avg
-               + "ms, " + memoryInfo() + "\n");
+         + "ms, " + memoryInfo() + "\n");
 
    }
 
@@ -204,7 +203,7 @@ public class TestStringLongComparison
       long d = (System.currentTimeMillis() - start);
       double avg = Math.round(d * 1000d / RECORDS_COUNT) / 1000d;
       System.out.println("Adds done " + getName() + " items:" + RECORDS_COUNT + ", time:" + d + "ms, avg.time:" + avg
-               + "ms, " + memoryInfo());
+         + "ms, " + memoryInfo());
 
       start = System.currentTimeMillis();
       for (Map.Entry<Id, Integer> ide : select.entrySet())
@@ -216,7 +215,7 @@ public class TestStringLongComparison
       d = (System.currentTimeMillis() - start);
       avg = Math.round(d * 1000d / select.size()) / 1000d;
       System.out.println("Gets done " + getName() + " items:" + select.size() + ", time:" + d + "ms, avg.time:" + avg
-               + "ms, " + memoryInfo() + "\n");
+         + "ms, " + memoryInfo() + "\n");
    }
 
    public void testStringInMap() throws Exception
@@ -236,7 +235,7 @@ public class TestStringLongComparison
       long d = (System.currentTimeMillis() - start);
       double avg = Math.round(d * 1000d / RECORDS_COUNT) / 1000d;
       System.out.println("Puts done " + getName() + " items:" + RECORDS_COUNT + ", time:" + d + "ms, avg.time:" + avg
-               + "ms, " + memoryInfo());
+         + "ms, " + memoryInfo());
 
       start = System.currentTimeMillis();
       for (Map.Entry<String, Integer> ide : select.entrySet())
@@ -249,7 +248,7 @@ public class TestStringLongComparison
       d = (System.currentTimeMillis() - start);
       avg = Math.round(d * 1000d / select.size()) / 1000d;
       System.out.println("Gets done " + getName() + " items:" + select.size() + ", time:" + d + "ms, avg.time:" + avg
-               + "ms, " + memoryInfo() + "\n");
+         + "ms, " + memoryInfo() + "\n");
    }
 
    public void testStringInList() throws Exception
@@ -269,7 +268,7 @@ public class TestStringLongComparison
       long d = (System.currentTimeMillis() - start);
       double avg = Math.round(d * 1000d / RECORDS_COUNT) / 1000d;
       System.out.println("Adds done " + getName() + " items:" + RECORDS_COUNT + ", time:" + d + "ms, avg.time:" + avg
-               + "ms, " + memoryInfo());
+         + "ms, " + memoryInfo());
 
       start = System.currentTimeMillis();
       for (Map.Entry<String, Integer> ide : select.entrySet())
@@ -281,7 +280,7 @@ public class TestStringLongComparison
       d = (System.currentTimeMillis() - start);
       avg = Math.round(d * 1000d / select.size()) / 1000d;
       System.out.println("Gets done " + getName() + " items:" + select.size() + ", time:" + d + "ms, avg.time:" + avg
-               + "ms, " + memoryInfo() + "\n");
+         + "ms, " + memoryInfo() + "\n");
    }
 
 }

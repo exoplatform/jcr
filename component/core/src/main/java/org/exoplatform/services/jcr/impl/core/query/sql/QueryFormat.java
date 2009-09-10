@@ -51,8 +51,7 @@ import org.exoplatform.services.jcr.impl.core.query.TextsearchQueryNode;
 /**
  * Implements the query node tree serialization into a String.
  */
-class QueryFormat
-   implements QueryNodeVisitor, QueryConstants
+class QueryFormat implements QueryNodeVisitor, QueryConstants
 {
 
    /**
@@ -81,7 +80,7 @@ class QueryFormat
       statement = root.accept(this, new StringBuffer()).toString();
       if (exceptions.size() > 0)
       {
-         Exception e = (Exception) exceptions.get(0);
+         Exception e = (Exception)exceptions.get(0);
          throw new InvalidQueryException(e.getMessage(), e);
       }
    }
@@ -117,7 +116,7 @@ class QueryFormat
 
    public Object visit(QueryRootNode node, Object data)
    {
-      StringBuffer sb = (StringBuffer) data;
+      StringBuffer sb = (StringBuffer)data;
       try
       {
          sb.append("SELECT");
@@ -170,7 +169,7 @@ class QueryFormat
          int ntCount = 0;
          for (Iterator it = nodeTypes.iterator(); it.hasNext(); ntCount++)
          {
-            InternalQName nt = (InternalQName) it.next();
+            InternalQName nt = (InternalQName)it.next();
             sb.append(comma).append(" ");
             appendName(nt, resolver, sb);
             comma = ",";
@@ -225,10 +224,10 @@ class QueryFormat
 
    public Object visit(OrQueryNode node, Object data)
    {
-      StringBuffer sb = (StringBuffer) data;
+      StringBuffer sb = (StringBuffer)data;
       boolean bracket = false;
       if (node.getParent() instanceof LocationStepQueryNode || node.getParent() instanceof AndQueryNode
-               || node.getParent() instanceof NotQueryNode)
+         || node.getParent() instanceof NotQueryNode)
       {
          bracket = true;
       }
@@ -253,7 +252,7 @@ class QueryFormat
 
    public Object visit(AndQueryNode node, Object data)
    {
-      StringBuffer sb = (StringBuffer) data;
+      StringBuffer sb = (StringBuffer)data;
       boolean bracket = false;
       if (node.getParent() instanceof NotQueryNode)
       {
@@ -290,7 +289,7 @@ class QueryFormat
 
    public Object visit(NotQueryNode node, Object data)
    {
-      StringBuffer sb = (StringBuffer) data;
+      StringBuffer sb = (StringBuffer)data;
       QueryNode[] operands = node.getOperands();
       if (operands.length > 0)
       {
@@ -302,7 +301,7 @@ class QueryFormat
 
    public Object visit(ExactQueryNode node, Object data)
    {
-      StringBuffer sb = (StringBuffer) data;
+      StringBuffer sb = (StringBuffer)data;
       try
       {
          appendName(node.getPropertyName(), resolver, sb);
@@ -323,7 +322,7 @@ class QueryFormat
 
    public Object visit(TextsearchQueryNode node, Object data)
    {
-      StringBuffer sb = (StringBuffer) data;
+      StringBuffer sb = (StringBuffer)data;
       // escape quote
       String query = node.getQuery().replaceAll("'", "''");
       sb.append("CONTAINS(");
@@ -356,7 +355,7 @@ class QueryFormat
 
    public Object visit(PathQueryNode node, Object data)
    {
-      StringBuffer sb = (StringBuffer) data;
+      StringBuffer sb = (StringBuffer)data;
       try
       {
          if (containsDescendantOrSelf(node))
@@ -445,7 +444,7 @@ class QueryFormat
 
    public Object visit(LocationStepQueryNode node, Object data)
    {
-      StringBuffer sb = (StringBuffer) data;
+      StringBuffer sb = (StringBuffer)data;
       if (node.getNameTest() == null)
       {
          sb.append("%");
@@ -495,7 +494,7 @@ class QueryFormat
 
    public Object visit(RelationQueryNode node, Object data)
    {
-      StringBuffer sb = (StringBuffer) data;
+      StringBuffer sb = (StringBuffer)data;
       try
       {
          StringBuffer propName = new StringBuffer();
@@ -601,7 +600,7 @@ class QueryFormat
 
    public Object visit(OrderQueryNode node, Object data)
    {
-      StringBuffer sb = (StringBuffer) data;
+      StringBuffer sb = (StringBuffer)data;
       sb.append(" ORDER BY");
       OrderQueryNode.OrderSpec[] specs = node.getOrderSpecs();
       if (specs.length > 0)
@@ -634,7 +633,7 @@ class QueryFormat
 
    public Object visit(PropertyFunctionQueryNode node, Object data)
    {
-      StringBuffer sb = (StringBuffer) data;
+      StringBuffer sb = (StringBuffer)data;
       String functionName = node.getFunctionName();
       if (functionName.equals(PropertyFunctionQueryNode.LOWER_CASE))
       {
@@ -668,7 +667,7 @@ class QueryFormat
     *           if <code>name</code> contains a uri that is not declared in <code>resolver</code>.
     */
    private static void appendName(InternalQName name, LocationFactory resolver, StringBuffer b)
-            throws NamespaceException
+      throws NamespaceException
    {
       boolean quote = name.getAsString().indexOf(' ') > -1;
       if (quote)

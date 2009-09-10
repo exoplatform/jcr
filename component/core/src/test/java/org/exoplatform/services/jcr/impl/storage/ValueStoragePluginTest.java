@@ -18,6 +18,18 @@
  */
 package org.exoplatform.services.jcr.impl.storage;
 
+import org.exoplatform.services.jcr.BaseStandaloneTest;
+import org.exoplatform.services.jcr.RepositoryService;
+import org.exoplatform.services.jcr.config.ValueStorageEntry;
+import org.exoplatform.services.jcr.config.ValueStorageFilterEntry;
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
+import org.exoplatform.services.jcr.util.ConfigurationHelper;
+import org.exoplatform.services.jcr.util.IdGenerator;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -33,19 +45,6 @@ import javax.jcr.Node;
 import javax.jcr.PropertyType;
 import javax.jcr.Session;
 
-import org.exoplatform.services.log.Log;
-
-import org.exoplatform.services.jcr.BaseStandaloneTest;
-import org.exoplatform.services.jcr.RepositoryService;
-import org.exoplatform.services.jcr.config.ValueStorageEntry;
-import org.exoplatform.services.jcr.config.ValueStorageFilterEntry;
-import org.exoplatform.services.jcr.config.WorkspaceEntry;
-import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
-import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
-import org.exoplatform.services.jcr.util.ConfigurationHelper;
-import org.exoplatform.services.jcr.util.IdGenerator;
-import org.exoplatform.services.log.ExoLogger;
-
 /**
  * Created by The eXo Platform SAS. <br/> Prerequisites: <value-storages> <value-storage
  * class="org.exoplatform.services.jcr.impl.storage.value.fs.SimpleFileValueStorage"> <properties>
@@ -56,8 +55,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @version $Id: ValueStoragePluginTest.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class ValueStoragePluginTest
-   extends BaseStandaloneTest
+public class ValueStoragePluginTest extends BaseStandaloneTest
 {
 
    protected static Log log = ExoLogger.getLogger("jcr.ValueStoragePluginTest");
@@ -148,10 +146,10 @@ public class ValueStoragePluginTest
    {
       int WORKSPACE_COUNT = 3;
       int NODES_COUNT = 5;
-      RepositoryService service = (RepositoryService) container.getComponentInstanceOfType(RepositoryService.class);
+      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
       RepositoryImpl defRep = null;
 
-      defRep = (RepositoryImpl) service.getDefaultRepository();
+      defRep = (RepositoryImpl)service.getDefaultRepository();
       Random random = new Random();
       for (int i = 0; i < WORKSPACE_COUNT; i++)
       {
@@ -197,7 +195,7 @@ public class ValueStoragePluginTest
 
             // comparing with source file
             compareStream(new BufferedInputStream(new FileInputStream(blobFiles.get(j))), content.getProperty(
-                     "jcr:data").getStream());
+               "jcr:data").getStream());
          }
          n1.remove();
          currenSession.save();
@@ -208,16 +206,16 @@ public class ValueStoragePluginTest
    private String createWs() throws Exception
    {
       ConfigurationHelper helper = ConfigurationHelper.getInstence();
-      WorkspaceEntry wsEntry = (WorkspaceEntry) session.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
+      WorkspaceEntry wsEntry = (WorkspaceEntry)session.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
       boolean isDefaultWsMultiDb = false;
       if ("true".equals(wsEntry.getContainer().getParameterValue("multi-db")))
       {
          isDefaultWsMultiDb = true;
       }
       WorkspaceEntry workspaceEntry =
-               helper.getNewWs(IdGenerator.generate(), isDefaultWsMultiDb, wsEntry.getContainer().getParameterValue(
-                        JDBCWorkspaceDataContainer.SOURCE_NAME), "target/temp/values/" + IdGenerator.generate(),
-                        wsEntry.getContainer());
+         helper.getNewWs(IdGenerator.generate(), isDefaultWsMultiDb, wsEntry.getContainer().getParameterValue(
+            JDBCWorkspaceDataContainer.SOURCE_NAME), "target/temp/values/" + IdGenerator.generate(), wsEntry
+            .getContainer());
 
       helper.createWorkspace(workspaceEntry, container);
 

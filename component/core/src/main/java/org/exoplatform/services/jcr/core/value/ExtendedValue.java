@@ -30,8 +30,7 @@ import javax.jcr.ValueFormatException;
  * @version $Id: ExtendedValue.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public interface ExtendedValue
-   extends Value
+public interface ExtendedValue extends Value
 {
    /**
     * Return order value in the list

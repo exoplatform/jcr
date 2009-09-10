@@ -18,16 +18,15 @@
  */
 package org.exoplatform.services.jcr.impl.core.nodetype;
 
+import org.exoplatform.services.jcr.JcrImplBaseTest;
+import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.io.InputStream;
 
 import javax.jcr.Node;
 import javax.jcr.nodetype.ConstraintViolationException;
-
-import org.exoplatform.services.log.Log;
-
-import org.exoplatform.services.jcr.JcrImplBaseTest;
-import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
-import org.exoplatform.services.log.ExoLogger;
 
 /**
  * Created by The eXo Platform SAS.
@@ -35,8 +34,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: $
  */
-public class TestNtAutorcreating
-   extends JcrImplBaseTest
+public class TestNtAutorcreating extends JcrImplBaseTest
 {
    /**
     * Class logger.
@@ -89,10 +87,9 @@ public class TestNtAutorcreating
       if (!registred)
       {
          InputStream xml =
-                  this.getClass().getResourceAsStream(
-                           "/org/exoplatform/services/jcr/impl/core/nodetype/test-nodetypes.xml");
+            this.getClass().getResourceAsStream("/org/exoplatform/services/jcr/impl/core/nodetype/test-nodetypes.xml");
          repositoryService.getCurrentRepository().getNodeTypeManager().registerNodeTypes(xml,
-                  ExtendedNodeTypeManager.FAIL_IF_EXISTS);
+            ExtendedNodeTypeManager.FAIL_IF_EXISTS);
          registred = true;
       }
    }

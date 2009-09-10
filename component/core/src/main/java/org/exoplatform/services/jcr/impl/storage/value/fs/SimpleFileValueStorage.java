@@ -18,9 +18,9 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs;
 
-import java.io.IOException;
-
 import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
+
+import java.io.IOException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -29,8 +29,7 @@ import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
  * @version $Id: SimpleFileValueStorage.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
 
-public class SimpleFileValueStorage
-   extends FileValueStorage
+public class SimpleFileValueStorage extends FileValueStorage
 {
 
    /**

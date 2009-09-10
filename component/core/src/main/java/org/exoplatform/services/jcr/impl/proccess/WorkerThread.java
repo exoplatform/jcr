@@ -25,8 +25,7 @@ package org.exoplatform.services.jcr.impl.proccess;
  * @version $Id: WorkerThread.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public abstract class WorkerThread
-   extends Thread
+public abstract class WorkerThread extends Thread
 {
 
    protected boolean stopped = false;

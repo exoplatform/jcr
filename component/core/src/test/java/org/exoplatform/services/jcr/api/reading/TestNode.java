@@ -18,6 +18,11 @@
  */
 package org.exoplatform.services.jcr.api.reading;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.core.value.BinaryValue;
+import org.exoplatform.services.jcr.impl.core.value.StringValue;
+
 import java.util.Calendar;
 
 import javax.jcr.Item;
@@ -32,19 +37,13 @@ import javax.jcr.Session;
 import javax.jcr.UnsupportedRepositoryOperationException;
 import javax.jcr.Value;
 
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
-import org.exoplatform.services.jcr.impl.core.value.BinaryValue;
-import org.exoplatform.services.jcr.impl.core.value.StringValue;
-
 /**
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov</a>
  * @version $Id: TestNode.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class TestNode
-   extends JcrAPIBaseTest
+public class TestNode extends JcrAPIBaseTest
 {
 
    private Node testRoot;
@@ -56,7 +55,7 @@ public class TestNode
       Node contentNode = file.addNode("jcr:content", "nt:resource");
       contentNode = file.getNode("jcr:content");
       contentNode.setProperty("jcr:data", session.getValueFactory().createValue("this is the content",
-               PropertyType.BINARY));
+         PropertyType.BINARY));
       contentNode.setProperty("jcr:mimeType", session.getValueFactory().createValue("text/html"));
       contentNode.setProperty("jcr:lastModified", session.getValueFactory().createValue(Calendar.getInstance()));
 
@@ -97,7 +96,7 @@ public class TestNode
       node = root.getNode("childNode");
       node.addNode("childNode3", "nt:file");
 
-      session = (SessionImpl) repository.login(credentials, WORKSPACE);
+      session = (SessionImpl)repository.login(credentials, WORKSPACE);
       root = session.getRootNode();
       try
       {
@@ -124,7 +123,7 @@ public class TestNode
 
       assertEquals("this is the NEW content", property.getString());
 
-      session = (SessionImpl) repository.login(credentials, WORKSPACE);
+      session = (SessionImpl)repository.login(credentials, WORKSPACE);
       root = session.getRootNode();
       node = root.getNode("childNode");
       assertEquals(node.toString(), root.getNode("childNode").toString());
@@ -180,16 +179,16 @@ public class TestNode
       assertEquals(1, child1.getIndex());
       assertTrue(child1.hasProperty("prop1"));
       NodeIterator children = subRoot.getNodes();
-      assertEquals(3, (int) children.getSize());
-      child1 = (Node) children.next();
+      assertEquals(3, (int)children.getSize());
+      child1 = (Node)children.next();
       assertEquals(1, child1.getIndex());
       assertTrue(child1.hasProperty("prop1"));
-      child2 = (Node) children.next();
+      child2 = (Node)children.next();
       assertEquals(2, child2.getIndex());
       assertTrue(child2.hasProperty("prop2"));
 
       // read first same name sibling
-      child1 = (Node) session.getItem("/subRoot/child");
+      child1 = (Node)session.getItem("/subRoot/child");
       assertEquals("Not returned first item", 1, child1.getIndex());
 
       subRoot.remove();
@@ -199,7 +198,7 @@ public class TestNode
 
    public void testGetNodes() throws RepositoryException
    {
-      session = (SessionImpl) repository.login(credentials, WORKSPACE);
+      session = (SessionImpl)repository.login(credentials, WORKSPACE);
       Node root = session.getRootNode();
       Node node = root.getNode("childNode");
       log.debug("ChildNode before refresh " + node);
@@ -209,7 +208,7 @@ public class TestNode
       NodeIterator nodeIterator = node.getNodes();
       while (nodeIterator.hasNext())
       {
-         node = (Node) nodeIterator.next();
+         node = (Node)nodeIterator.next();
          assertNotNull(node.getSession());
          if (!("childNode4".equals(node.getName()) || "childNode2".equals(node.getName())))
             fail("returned non expected nodes" + node.getName() + " " + node);
@@ -230,7 +229,7 @@ public class TestNode
 
       while (nodeIterator.hasNext())
       {
-         node = (Node) nodeIterator.next();
+         node = (Node)nodeIterator.next();
          if (!("childNode5".equals(node.getName()) || "childNode2".equals(node.getName())))
             fail("returned non expected nodes " + node.getName() + "  " + node);
       }
@@ -241,14 +240,14 @@ public class TestNode
 
    public void testGetNodesWithNamePattern() throws RepositoryException
    {
-      session = (SessionImpl) repository.login(credentials, WORKSPACE);
+      session = (SessionImpl)repository.login(credentials, WORKSPACE);
       Node root = session.getRootNode();
       Node node = root.getNode("childNode");
       node.addNode("childNode4", "nt:folder");
       node.addNode("otherNode", "nt:folder");
       node.addNode("lastNode", "nt:folder");
 
-      Node result = (Node) node.getNodes("lastNode").next();
+      Node result = (Node)node.getNodes("lastNode").next();
       assertEquals("lastNode", result.getName());
 
       NodeIterator iterator = node.getNodes("otherNode | lastNode");
@@ -295,7 +294,7 @@ public class TestNode
 
       final String valueNew = "this is the NEW value";
 
-      session = (SessionImpl) repository.login(credentials, WORKSPACE);
+      session = (SessionImpl)repository.login(credentials, WORKSPACE);
       Node root = session.getRootNode();
       Node node = root.getNode("childNode/childNode2/jcr:content");
       Property property = node.getProperty("jcr:data");
@@ -312,17 +311,17 @@ public class TestNode
       session2.save();
       // log.debug("Set prop end");
 
-      assertEquals(valueNew.toString(), ((Property) session2.getItem("/childNode/childNode2/jcr:content/jcr:data"))
-               .getString());
+      assertEquals(valueNew.toString(), ((Property)session2.getItem("/childNode/childNode2/jcr:content/jcr:data"))
+         .getString());
 
       assertEquals("this is the NEW value", root2.getNode("childNode/childNode2/jcr:content").getProperty("jcr:data")
-               .getString());
+         .getString());
 
       Session session3 = repository.login(credentials, WORKSPACE);
       Node root3 = session3.getRootNode();
       Node node3 = root3.getNode("childNode/childNode2/jcr:content");
-      assertEquals(valueNew.toString(), ((Property) session3.getItem("/childNode/childNode2/jcr:content/jcr:data"))
-               .getString());
+      assertEquals(valueNew.toString(), ((Property)session3.getItem("/childNode/childNode2/jcr:content/jcr:data"))
+         .getString());
       assertEquals(valueNew.toString(), node3.getProperty("jcr:data").getString());
 
       node.refresh(false);
@@ -335,7 +334,7 @@ public class TestNode
 
    public void testGetProperties() throws RepositoryException
    {
-      session = (SessionImpl) repository.login(credentials, WORKSPACE);
+      session = (SessionImpl)repository.login(credentials, WORKSPACE);
       Node root = session.getRootNode();
       Node node = root.getNode("childNode");
 
@@ -344,7 +343,7 @@ public class TestNode
       {
          Property property = iterator.nextProperty();
          if (!("jcr:primaryType".equals(property.getName()) || "jcr:created".equals(property.getName()) || "jcr:lastModified"
-                  .equals(property.getName())))
+            .equals(property.getName())))
             fail("returned non expected nodes");
       }
 
@@ -367,7 +366,7 @@ public class TestNode
 
    public void testGetPropertiesWithNamePattern() throws RepositoryException
    {
-      session = (SessionImpl) repository.login(credentials, WORKSPACE);
+      session = (SessionImpl)repository.login(credentials, WORKSPACE);
       Node root = session.getRootNode();
       // Node node = root.getNode("/childNode/childNode2/jcr:content");
 
@@ -437,7 +436,7 @@ public class TestNode
       assertNotNull(root.getDefinition());
       assertEquals("*", root.getNode("childNode").getDefinition().getName());
       assertEquals("jcr:content", root.getNode("childNode").getNode("childNode2").getNode("jcr:content")
-               .getDefinition().getName());
+         .getDefinition().getName());
    }
 
    public void testHasNode() throws RepositoryException

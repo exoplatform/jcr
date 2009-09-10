@@ -33,12 +33,11 @@ import java.sql.SQLException;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: PgSQLDBInitializer.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class PgSQLDBInitializer
-   extends DBInitializer
+public class PgSQLDBInitializer extends DBInitializer
 {
 
    public PgSQLDBInitializer(String containerName, Connection connection, String scriptPath, boolean multiDb)
-            throws IOException
+      throws IOException
    {
       super(containerName, connection, scriptPath, multiDb);
    }

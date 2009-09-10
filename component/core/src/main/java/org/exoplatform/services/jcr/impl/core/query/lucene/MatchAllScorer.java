@@ -34,8 +34,7 @@ import org.apache.lucene.search.Similarity;
  * The MatchAllScorer implements a Scorer that scores / collects all documents in the index that
  * match a field.
  */
-class MatchAllScorer
-   extends Scorer
+class MatchAllScorer extends Scorer
 {
 
    /**
@@ -145,14 +144,14 @@ class MatchAllScorer
    private void calculateDocFilter() throws IOException
    {
       PerQueryCache cache = PerQueryCache.getInstance();
-      Map readerCache = (Map) cache.get(MatchAllScorer.class, reader);
+      Map readerCache = (Map)cache.get(MatchAllScorer.class, reader);
       if (readerCache == null)
       {
          readerCache = new HashMap();
          cache.put(MatchAllScorer.class, reader, readerCache);
       }
       // get BitSet for field
-      docFilter = (BitSet) readerCache.get(field);
+      docFilter = (BitSet)readerCache.get(field);
 
       if (docFilter != null)
       {
@@ -171,7 +170,7 @@ class MatchAllScorer
          try
          {
             while (terms.term() != null && terms.term().field() == FieldNames.PROPERTIES
-                     && terms.term().text().startsWith(namedValue))
+               && terms.term().text().startsWith(namedValue))
             {
                docs.seek(terms);
                while (docs.next())

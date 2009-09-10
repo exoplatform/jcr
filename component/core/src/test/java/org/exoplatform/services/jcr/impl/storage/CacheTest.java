@@ -18,10 +18,10 @@
  */
 package org.exoplatform.services.jcr.impl.storage;
 
+import org.exoplatform.services.jcr.BaseStandaloneTest;
+
 import javax.jcr.PathNotFoundException;
 import javax.jcr.Session;
-
-import org.exoplatform.services.jcr.BaseStandaloneTest;
 
 /**
  * Created by The eXo Platform SAS.
@@ -30,8 +30,7 @@ import org.exoplatform.services.jcr.BaseStandaloneTest;
  * @version $Id: CacheTest.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class CacheTest
-   extends BaseStandaloneTest
+public class CacheTest extends BaseStandaloneTest
 {
 
    protected String getRepositoryName()

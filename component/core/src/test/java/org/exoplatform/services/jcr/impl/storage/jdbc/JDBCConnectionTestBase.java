@@ -16,18 +16,19 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc;
 
-import java.io.ByteArrayInputStream;
-import java.sql.*;
-
-import javax.naming.InitialContext;
-import javax.sql.DataSource;
-
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.DBInitializer;
+
+import java.io.ByteArrayInputStream;
+import java.sql.Connection;
+import java.sql.ResultSet;
+
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
 
 /**
  * Created by The eXo Platform SAS
@@ -37,234 +38,239 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.init.DBInitializer;
  * @author <a href="mailto:dezder@bk.ru">Denis Grebenyuk</a>
  * @version $Id:$ 
  */
-abstract public class JDBCConnectionTestBase extends JcrAPIBaseTest {
+abstract public class JDBCConnectionTestBase extends JcrAPIBaseTest
+{
 
-	protected JDBCStorageConnection jdbcConn = null;
-	protected String tableType = null;
-	private Connection connect = null;
+   protected JDBCStorageConnection jdbcConn = null;
 
-	public void setUp(String scriptPath, boolean multiDB) throws Exception {
+   protected String tableType = null;
 
-		super.setUp();
-		new DBInitializer("ws3", getJNDIConnection(), scriptPath, multiDB)
-				.init();
-	}
+   private Connection connect = null;
 
-	protected void tearDown() throws Exception {
+   public void setUp(String scriptPath, boolean multiDB) throws Exception
+   {
 
-		connect.close();
-		super.tearDown();
-	}
+      super.setUp();
+      new DBInitializer("ws3", getJNDIConnection(), scriptPath, multiDB).init();
+   }
 
-	public Connection getJNDIConnection() throws Exception {
+   protected void tearDown() throws Exception
+   {
 
-		DataSource ds = (DataSource) new InitialContext().lookup("jdbcjcrtest");
-		connect = ds.getConnection();
-		return connect;
-	}
+      connect.close();
+      super.tearDown();
+   }
 
-	private NodeData setNode() throws Exception {
-		InternalQName[] iqn = { InternalQName.parse("[]DbJDBCConnectionTest") };
-		TransientNodeData tnd = new TransientNodeData(
-				Constants.JCR_NODETYPES_PATH, "Z", 9, Constants.SV_NODE_NAME,
-				iqn, 8, null, null);
-		return tnd;
-	}
+   public Connection getJNDIConnection() throws Exception
+   {
 
-	private NodeData giveNodeForRename() throws Exception {
+      DataSource ds = (DataSource)new InitialContext().lookup("jdbcjcrtest");
+      connect = ds.getConnection();
+      return connect;
+   }
 
-		InternalQName[] iqn = { InternalQName.parse("[]DbJDBCConnectionTest") };
-		TransientNodeData tnd = new TransientNodeData(
-				Constants.JCR_NODETYPES_PATH, "B", 9, Constants.SV_NODE_NAME,
-				iqn, 8, null, null);
-		return tnd;
-	}
+   private NodeData setNode() throws Exception
+   {
+      InternalQName[] iqn = {InternalQName.parse("[]DbJDBCConnectionTest")};
+      TransientNodeData tnd =
+         new TransientNodeData(Constants.JCR_NODETYPES_PATH, "Z", 9, Constants.SV_NODE_NAME, iqn, 8, null, null);
+      return tnd;
+   }
 
-	public void testAddNode() throws Exception {
+   private NodeData giveNodeForRename() throws Exception
+   {
 
-		jdbcConn.add(setNode());
-		ResultSet rs = connect.createStatement().executeQuery(
-				"select * from " + "JCR_" + tableType + "ITEM"
-						+ " where N_ORDER_NUM=8");
-		rs.next();
-		assertEquals("[http://www.jcp.org/jcr/1.0]nodetypes", rs
-				.getString("NAME"));
-	}
+      InternalQName[] iqn = {InternalQName.parse("[]DbJDBCConnectionTest")};
+      TransientNodeData tnd =
+         new TransientNodeData(Constants.JCR_NODETYPES_PATH, "B", 9, Constants.SV_NODE_NAME, iqn, 8, null, null);
+      return tnd;
+   }
 
-	public void testAddValueData() throws Exception {
+   public void testAddNode() throws Exception
+   {
 
-		byte data[] = { 5 };
-		ByteArrayInputStream bas = new ByteArrayInputStream(data);
-		jdbcConn.addValueData("C", 2, bas, 2, "J");
-		ResultSet rs = connect.createStatement().executeQuery(
-				"select * from " + "JCR_" + tableType + "VALUE"
-						+ " where PROPERTY_ID='C'");
-		rs.next();
-		assertEquals("05", rs.getString("DATA"));
-	}
+      jdbcConn.add(setNode());
+      ResultSet rs =
+         connect.createStatement()
+            .executeQuery("select * from " + "JCR_" + tableType + "ITEM" + " where N_ORDER_NUM=8");
+      rs.next();
+      assertEquals("[http://www.jcp.org/jcr/1.0]nodetypes", rs.getString("NAME"));
+   }
 
-	public void testRenameNode() throws Exception {
+   public void testAddValueData() throws Exception
+   {
 
-		jdbcConn.renameNode(giveNodeForRename());
-		ResultSet rs = connect.createStatement().executeQuery(
-				"select * from " + "JCR_" + tableType + "ITEM"
-						+ " where N_ORDER_NUM=8");
-		rs.next();
-		assertEquals("[http://www.jcp.org/jcr/1.0]nodetypes", rs
-				.getString("NAME"));
-	}
+      byte data[] = {5};
+      ByteArrayInputStream bas = new ByteArrayInputStream(data);
+      jdbcConn.addValueData("C", 2, bas, 2, "J");
+      ResultSet rs =
+         connect.createStatement().executeQuery(
+            "select * from " + "JCR_" + tableType + "VALUE" + " where PROPERTY_ID='C'");
+      rs.next();
+      assertEquals("05", rs.getString("DATA"));
+   }
 
-	public void testUpdateNodeByIdentifier() throws Exception {
+   public void testRenameNode() throws Exception
+   {
 
-		jdbcConn.updateNodeByIdentifier(200923, 4512, 20, "B");
-		ResultSet rs = connect.createStatement().executeQuery(
-				"select * from " + "JCR_" + tableType + "ITEM"
-						+ " where ID='B'");
-		rs.next();
-		assertEquals(20, rs.getInt("N_ORDER_NUM"));
-	}
+      jdbcConn.renameNode(giveNodeForRename());
+      ResultSet rs =
+         connect.createStatement()
+            .executeQuery("select * from " + "JCR_" + tableType + "ITEM" + " where N_ORDER_NUM=8");
+      rs.next();
+      assertEquals("[http://www.jcp.org/jcr/1.0]nodetypes", rs.getString("NAME"));
+   }
 
-	public void testUpdatePropertyByIdentifier() throws Exception {
+   public void testUpdateNodeByIdentifier() throws Exception
+   {
 
-		jdbcConn.updatePropertyByIdentifier(200923, 4512, "C");
-		ResultSet rs = connect.createStatement().executeQuery(
-				"select * from " + "JCR_" + tableType + "ITEM"
-						+ " where ID='C'");
-		rs.next();
-		assertEquals(4512, rs.getInt("P_TYPE"));
-	}
+      jdbcConn.updateNodeByIdentifier(200923, 4512, 20, "B");
+      ResultSet rs =
+         connect.createStatement().executeQuery("select * from " + "JCR_" + tableType + "ITEM" + " where ID='B'");
+      rs.next();
+      assertEquals(20, rs.getInt("N_ORDER_NUM"));
+   }
 
-	public void testDeleteReference() throws Exception {
+   public void testUpdatePropertyByIdentifier() throws Exception
+   {
 
-		jdbcConn.deleteReference("A");
-		ResultSet rs = connect.createStatement().executeQuery(
-				"select * from " + "JCR_" + tableType + "REF"
-						+ " where PROPERTY_ID='A'");
-		assertEquals(false, rs.next());
-	}
+      jdbcConn.updatePropertyByIdentifier(200923, 4512, "C");
+      ResultSet rs =
+         connect.createStatement().executeQuery("select * from " + "JCR_" + tableType + "ITEM" + " where ID='C'");
+      rs.next();
+      assertEquals(4512, rs.getInt("P_TYPE"));
+   }
 
-	public void testDeleteItemByIdentifier() throws Exception {
+   public void testDeleteReference() throws Exception
+   {
 
-		jdbcConn.deleteItemByIdentifier("C");
-		ResultSet rs = connect.createStatement().executeQuery(
-				"select * from " + "JCR_" + tableType + "ITEM"
-						+ " where ID='C'");
-		assertEquals(false, rs.next());
-	}
+      jdbcConn.deleteReference("A");
+      ResultSet rs =
+         connect.createStatement().executeQuery(
+            "select * from " + "JCR_" + tableType + "REF" + " where PROPERTY_ID='A'");
+      assertEquals(false, rs.next());
+   }
 
-	public void testDeleteValueData() throws Exception {
+   public void testDeleteItemByIdentifier() throws Exception
+   {
 
-		jdbcConn.deleteValueData("A");
-		ResultSet rs = connect.createStatement().executeQuery(
-				"select * from " + "JCR_" + tableType + "VALUE"
-						+ " where PROPERTY_ID='A'");
-		assertEquals(false, rs.next());
-	}
+      jdbcConn.deleteItemByIdentifier("C");
+      ResultSet rs =
+         connect.createStatement().executeQuery("select * from " + "JCR_" + tableType + "ITEM" + " where ID='C'");
+      assertEquals(false, rs.next());
+   }
 
-	public void testFindItemByIdentifier() throws Exception {
+   public void testDeleteValueData() throws Exception
+   {
 
-		ResultSet rsRemote = jdbcConn.findItemByIdentifier("A");
-		rsRemote.next();
-		ResultSet rs = connect.createStatement().executeQuery(
-				"select * from " + "JCR_" + tableType + "ITEM"
-						+ " where ID='A'");
-		rs.next();
-		assertEquals(rsRemote.getString("PARENT_ID"), rs.getString("PARENT_ID"));
-	}
+      jdbcConn.deleteValueData("A");
+      ResultSet rs =
+         connect.createStatement().executeQuery(
+            "select * from " + "JCR_" + tableType + "VALUE" + " where PROPERTY_ID='A'");
+      assertEquals(false, rs.next());
+   }
 
-	public void testFindPropertyByName() throws Exception {
+   public void testFindItemByIdentifier() throws Exception
+   {
 
-		ResultSet rsRemote = jdbcConn.findPropertyByName("A", "test1");
-		rsRemote.next();
-		ResultSet rs = connect
-				.createStatement()
-				.executeQuery(
-						"select V.DATA from JCR_"
-								+ tableType
-								+ "ITEM I, JCR_"
-								+ tableType
-								+ "VALUE V "
-								+ "where I.I_CLASS=2 and I.PARENT_ID='A' and I.NAME='test1' and I.ID=V.PROPERTY_ID order by V.ORDER_NUM");
-		rs.next();
-		assertEquals(rsRemote.getString("DATA"), rs.getString("DATA"));
-	}
+      ResultSet rsRemote = jdbcConn.findItemByIdentifier("A");
+      rsRemote.next();
+      ResultSet rs =
+         connect.createStatement().executeQuery("select * from " + "JCR_" + tableType + "ITEM" + " where ID='A'");
+      rs.next();
+      assertEquals(rsRemote.getString("PARENT_ID"), rs.getString("PARENT_ID"));
+   }
 
-	public void testFindItemByName() throws Exception {
+   public void testFindPropertyByName() throws Exception
+   {
 
-		ResultSet rsRemote = jdbcConn.findItemByName("A", "test1", 1233);
-		rsRemote.next();
-		ResultSet rs = connect
-				.createStatement()
-				.executeQuery(
-						"select * from JCR_"
-								+ tableType
-								+ "ITEM"
-								+ " where PARENT_ID='A' and NAME='test1' and I_INDEX=1233 order by I_CLASS, VERSION DESC");
-		rs.next();
-		assertEquals(rsRemote.getString("ID"), rs.getString("ID"));
-	}
+      ResultSet rsRemote = jdbcConn.findPropertyByName("A", "test1");
+      rsRemote.next();
+      ResultSet rs =
+         connect
+            .createStatement()
+            .executeQuery(
+               "select V.DATA from JCR_"
+                  + tableType
+                  + "ITEM I, JCR_"
+                  + tableType
+                  + "VALUE V "
+                  + "where I.I_CLASS=2 and I.PARENT_ID='A' and I.NAME='test1' and I.ID=V.PROPERTY_ID order by V.ORDER_NUM");
+      rs.next();
+      assertEquals(rsRemote.getString("DATA"), rs.getString("DATA"));
+   }
 
-	public void testFindChildNodesByParentIdentifier() throws Exception {
+   public void testFindItemByName() throws Exception
+   {
 
-		ResultSet rsRemote = jdbcConn.findChildNodesByParentIdentifier("A");
-		rsRemote.next();
-		ResultSet rs = connect.createStatement().executeQuery(
-				"select * from " + "JCR_" + tableType + "ITEM"
-						+ " where I_CLASS=1 and PARENT_ID='A'");
-		rs.next();
-		assertEquals(rsRemote.getString("NAME"), rs.getString("NAME"));
-	}
+      ResultSet rsRemote = jdbcConn.findItemByName("A", "test1", 1233);
+      rsRemote.next();
+      ResultSet rs =
+         connect.createStatement().executeQuery(
+            "select * from JCR_" + tableType + "ITEM"
+               + " where PARENT_ID='A' and NAME='test1' and I_INDEX=1233 order by I_CLASS, VERSION DESC");
+      rs.next();
+      assertEquals(rsRemote.getString("ID"), rs.getString("ID"));
+   }
 
-	public void testFindChildPropertiesByParentIdentifier() throws Exception {
-		ResultSet rsRemote = jdbcConn
-				.findChildPropertiesByParentIdentifier("A");
-		rsRemote.next();
-		ResultSet rs = connect.createStatement().executeQuery(
-				"select * from JCR_" + tableType + "ITEM"
-						+ " where I_CLASS=2 and PARENT_ID='A' order by ID");
-		rs.next();
-		assertEquals(rsRemote.getString("NAME"), rs.getString("NAME"));
-	}
+   public void testFindChildNodesByParentIdentifier() throws Exception
+   {
 
-	public void testFindReferences() throws Exception {
+      ResultSet rsRemote = jdbcConn.findChildNodesByParentIdentifier("A");
+      rsRemote.next();
+      ResultSet rs =
+         connect.createStatement().executeQuery(
+            "select * from " + "JCR_" + tableType + "ITEM" + " where I_CLASS=1 and PARENT_ID='A'");
+      rs.next();
+      assertEquals(rsRemote.getString("NAME"), rs.getString("NAME"));
+   }
 
-		ResultSet rsRemote = jdbcConn.findReferences("D");
-		rsRemote.next();
-		ResultSet rs = connect
-				.createStatement()
-				.executeQuery(
-						"select P.ID, P.PARENT_ID, P.VERSION, P.P_TYPE, P.P_MULTIVALUED, P.NAME"
-								+ " from JCR_"
-								+ tableType
-								+ "REF R, JCR_"
-								+ tableType
-								+ "ITEM P"
-								+ " where R.NODE_ID='D' and P.ID=R.PROPERTY_ID and P.I_CLASS=2");
-		rs.next();
-		assertEquals(rsRemote.getString("ID"), rs.getString("ID"));
-	}
+   public void testFindChildPropertiesByParentIdentifier() throws Exception
+   {
+      ResultSet rsRemote = jdbcConn.findChildPropertiesByParentIdentifier("A");
+      rsRemote.next();
+      ResultSet rs =
+         connect.createStatement().executeQuery(
+            "select * from JCR_" + tableType + "ITEM" + " where I_CLASS=2 and PARENT_ID='A' order by ID");
+      rs.next();
+      assertEquals(rsRemote.getString("NAME"), rs.getString("NAME"));
+   }
 
-	public void testFindValuesByPropertyId() throws Exception {
+   public void testFindReferences() throws Exception
+   {
 
-		ResultSet rsRemote = jdbcConn.findValuesByPropertyId("A");
-		rsRemote.next();
-		ResultSet rs = connect.createStatement().executeQuery(
-				"select PROPERTY_ID, ORDER_NUM, STORAGE_DESC from " + "JCR_"
-						+ tableType + "VALUE"
-						+ " where PROPERTY_ID='A' order by ORDER_NUM");
-		rs.next();
-		assertEquals(rsRemote.getString("STORAGE_DESC"), rs
-				.getString("STORAGE_DESC"));
-	}
+      ResultSet rsRemote = jdbcConn.findReferences("D");
+      rsRemote.next();
+      ResultSet rs =
+         connect.createStatement().executeQuery(
+            "select P.ID, P.PARENT_ID, P.VERSION, P.P_TYPE, P.P_MULTIVALUED, P.NAME" + " from JCR_" + tableType
+               + "REF R, JCR_" + tableType + "ITEM P" + " where R.NODE_ID='D' and P.ID=R.PROPERTY_ID and P.I_CLASS=2");
+      rs.next();
+      assertEquals(rsRemote.getString("ID"), rs.getString("ID"));
+   }
 
-	public void testFindValueByPropertyIdOrderNumber() throws Exception {
+   public void testFindValuesByPropertyId() throws Exception
+   {
 
-		ResultSet rsRemote = jdbcConn.findValueByPropertyIdOrderNumber("A", 16);
-		rsRemote.next();
-		ResultSet rs = connect.createStatement().executeQuery(
-				"select DATA from " + "JCR_" + tableType + "VALUE"
-						+ " where PROPERTY_ID='A' and ORDER_NUM=16");
-		rs.next();
-		assertEquals(rsRemote.getString("DATA"), rs.getString("DATA"));
-	}
+      ResultSet rsRemote = jdbcConn.findValuesByPropertyId("A");
+      rsRemote.next();
+      ResultSet rs =
+         connect.createStatement().executeQuery(
+            "select PROPERTY_ID, ORDER_NUM, STORAGE_DESC from " + "JCR_" + tableType + "VALUE"
+               + " where PROPERTY_ID='A' order by ORDER_NUM");
+      rs.next();
+      assertEquals(rsRemote.getString("STORAGE_DESC"), rs.getString("STORAGE_DESC"));
+   }
+
+   public void testFindValueByPropertyIdOrderNumber() throws Exception
+   {
+
+      ResultSet rsRemote = jdbcConn.findValueByPropertyIdOrderNumber("A", 16);
+      rsRemote.next();
+      ResultSet rs =
+         connect.createStatement().executeQuery(
+            "select DATA from " + "JCR_" + tableType + "VALUE" + " where PROPERTY_ID='A' and ORDER_NUM=16");
+      rs.next();
+      assertEquals(rsRemote.getString("DATA"), rs.getString("DATA"));
+   }
 }

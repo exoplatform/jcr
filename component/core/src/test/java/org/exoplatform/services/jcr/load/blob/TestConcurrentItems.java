@@ -18,6 +18,14 @@
  */
 package org.exoplatform.services.jcr.load.blob;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.impl.core.PropertyImpl;
+import org.exoplatform.services.jcr.load.blob.thread.CreateThread;
+import org.exoplatform.services.jcr.load.blob.thread.DeleteThread;
+import org.exoplatform.services.jcr.load.blob.thread.NtFileCreatorThread;
+import org.exoplatform.services.jcr.load.blob.thread.ReadThread;
+import org.exoplatform.services.jcr.util.IdGenerator;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -32,14 +40,6 @@ import java.util.Set;
 import javax.jcr.Node;
 import javax.jcr.Session;
 
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-import org.exoplatform.services.jcr.impl.core.PropertyImpl;
-import org.exoplatform.services.jcr.load.blob.thread.CreateThread;
-import org.exoplatform.services.jcr.load.blob.thread.DeleteThread;
-import org.exoplatform.services.jcr.load.blob.thread.NtFileCreatorThread;
-import org.exoplatform.services.jcr.load.blob.thread.ReadThread;
-import org.exoplatform.services.jcr.util.IdGenerator;
-
 /**
  * Created by The eXo Platform SAS Author : Peter Nedonosko peter.nedonosko@exoplatform.com.ua
  * 19.10.2006 Subjetc of the test it's to test BLOB data storing in eXo JCR with/without
@@ -49,8 +49,7 @@ import org.exoplatform.services.jcr.util.IdGenerator;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestConcurrentItems.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class TestConcurrentItems
-   extends JcrAPIBaseTest
+public class TestConcurrentItems extends JcrAPIBaseTest
 {
 
    private Node testBinaryValue = null;
@@ -87,7 +86,7 @@ public class TestConcurrentItems
       {
          // create test file
          testFile = createBLOBTempFile(1024);
-         dataSize = (int) testFile.length();
+         dataSize = (int)testFile.length();
          TEST_FILE = testFile.getAbsolutePath();
       }
       else
@@ -142,7 +141,7 @@ public class TestConcurrentItems
          Node ntFile = testRoot.addNode(nodeName, "nt:file");
          Node contentNode = ntFile.addNode("jcr:content", "nt:resource");
          dataStream = new FileInputStream(TestConcurrentItems.TEST_FILE);
-         PropertyImpl data = (PropertyImpl) contentNode.setProperty("jcr:data", dataStream);
+         PropertyImpl data = (PropertyImpl)contentNode.setProperty("jcr:data", dataStream);
          contentNode.setProperty("jcr:mimeType", "video/avi");
          contentNode.setProperty("jcr:lastModified", Calendar.getInstance());
          csession.save();
@@ -249,14 +248,12 @@ public class TestConcurrentItems
       for (int i = 0; i < 5; i++)
       {
          ReadThread readed =
-                  new ReadThread(
-                           repository
-                                    .login(
-                                             this.credentials /*
-                                                                                                                                                  * session.getCredentials(
-                                                                                                                                                  * )
-                                                                                                                                                  */,
-                                             "ws1"));
+            new ReadThread(repository.login(
+               this.credentials /*
+                                                                                                                    * session.getCredentials(
+                                                                                                                    * )
+                                                                                                                    */,
+               "ws1"));
          readed.start();
          readers.add(readed);
          try
@@ -452,7 +449,7 @@ public class TestConcurrentItems
          Node ntFile = testRoot.addNode(nodeName, "nt:file");
          Node contentNode = ntFile.addNode("jcr:content", "nt:resource");
          dataStream = new FileInputStream(TEST_FILE);
-         PropertyImpl data = (PropertyImpl) contentNode.setProperty("jcr:data", dataStream);
+         PropertyImpl data = (PropertyImpl)contentNode.setProperty("jcr:data", dataStream);
          contentNode.setProperty("jcr:mimeType", "video/avi");
          contentNode.setProperty("jcr:lastModified", Calendar.getInstance());
          csession.save();

@@ -18,12 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-
 import junit.framework.TestCase;
 
 import org.exoplatform.services.jcr.datamodel.ValueData;
@@ -32,6 +26,12 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.ByteArrayPersistedV
 import org.exoplatform.services.jcr.impl.dataflow.persistent.FileStreamPersistedValueData;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -39,12 +39,10 @@ import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
  * @version $Id: TestFileValueIO.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class TestFileValueIO
-   extends TestCase
+public class TestFileValueIO extends TestCase
 {
 
-   static class FileValueIOUtil
-      extends FileIOChannel
+   static class FileValueIOUtil extends FileIOChannel
    {
 
       FileValueIOUtil()

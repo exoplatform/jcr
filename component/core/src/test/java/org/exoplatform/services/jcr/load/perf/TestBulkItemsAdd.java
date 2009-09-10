@@ -18,12 +18,12 @@
  */
 package org.exoplatform.services.jcr.load.perf;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+
 import java.io.ByteArrayInputStream;
 import java.util.Calendar;
 
 import javax.jcr.Node;
-
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
 
 /**
  * Created by The eXo Platform SAS Author : Peter Nedonosko peter.nedonosko@exoplatform.com.ua
@@ -31,8 +31,7 @@ import org.exoplatform.services.jcr.JcrAPIBaseTest;
  * 
  * @version $Id: TestBulkItemsAdd.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class TestBulkItemsAdd
-   extends JcrAPIBaseTest
+public class TestBulkItemsAdd extends JcrAPIBaseTest
 {
 
    public void testNodeAdd() throws Exception
@@ -48,7 +47,7 @@ public class TestBulkItemsAdd
          Node n = testRoot.addNode(nodeName);
          long finishTime = System.currentTimeMillis();
          log.info("add node " + nodeName + ", " + (System.currentTimeMillis() - addTime) + "ms, "
-                  + (finishTime - startTime) + "ms");
+            + (finishTime - startTime) + "ms");
       }
       log.info("Nodes added " + nodesCount + ", " + (System.currentTimeMillis() - startTime) + "ms");
       startTime = System.currentTimeMillis();
@@ -78,7 +77,7 @@ public class TestBulkItemsAdd
          resource.setProperty("jcr:data", new ByteArrayInputStream("Some bin data;asdasdasdasdeqecvsdfvdf".getBytes()));
 
          log.info("add node " + nodeName + ", " + (System.currentTimeMillis() - addTime) + "ms, "
-                  + (System.currentTimeMillis() - startTime) + "ms");
+            + (System.currentTimeMillis() - startTime) + "ms");
       }
       log.info("Nodes (nt:file) added " + nodesCount + ", " + (System.currentTimeMillis() - startTime) + "ms");
       startTime = System.currentTimeMillis();

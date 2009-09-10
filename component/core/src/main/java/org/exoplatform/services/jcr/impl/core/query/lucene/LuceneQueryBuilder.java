@@ -80,8 +80,7 @@ import org.exoplatform.services.log.ExoLogger;
  * index. todo introduce a node type hierarchy for efficient translation of
  * NodeTypeQueryNode
  */
-public class LuceneQueryBuilder
-   implements QueryNodeVisitor
+public class LuceneQueryBuilder implements QueryNodeVisitor
 {
    /**
     * Namespace URI for xpath functions
@@ -176,8 +175,8 @@ public class LuceneQueryBuilder
     * @param indexFormatVersion the index format version for the lucene query.
     */
    private LuceneQueryBuilder(QueryRootNode root, SessionImpl session, ItemDataConsumer sharedItemMgr,
-            NamespaceMappings nsMappings, NodeTypeDataManager nodeTypeDataManager, Analyzer analyzer,
-            PropertyTypeRegistry propReg, SynonymProvider synonymProvider, IndexFormatVersion indexFormatVersion)
+      NamespaceMappings nsMappings, NodeTypeDataManager nodeTypeDataManager, Analyzer analyzer,
+      PropertyTypeRegistry propReg, SynonymProvider synonymProvider, IndexFormatVersion indexFormatVersion)
    {
       this.root = root;
       this.session = session;
@@ -208,14 +207,14 @@ public class LuceneQueryBuilder
     * @throws RepositoryException if an error occurs during the translation.
     */
    public static Query createQuery(QueryRootNode root, SessionImpl session, ItemDataConsumer sharedItemMgr,
-            NamespaceMappings nsMappings, NodeTypeDataManager nodeTypeDataManager, Analyzer analyzer,
-            PropertyTypeRegistry propReg, SynonymProvider synonymProvider, IndexFormatVersion indexFormatVersion)
-            throws RepositoryException
+      NamespaceMappings nsMappings, NodeTypeDataManager nodeTypeDataManager, Analyzer analyzer,
+      PropertyTypeRegistry propReg, SynonymProvider synonymProvider, IndexFormatVersion indexFormatVersion)
+      throws RepositoryException
    {
 
       LuceneQueryBuilder builder =
-               new LuceneQueryBuilder(root, session, sharedItemMgr, nsMappings, nodeTypeDataManager, analyzer, propReg,
-                        synonymProvider, indexFormatVersion);
+         new LuceneQueryBuilder(root, session, sharedItemMgr, nsMappings, nodeTypeDataManager, analyzer, propReg,
+            synonymProvider, indexFormatVersion);
 
       Query q = builder.createLuceneQuery();
       if (builder.exceptions.size() > 0)
@@ -238,7 +237,7 @@ public class LuceneQueryBuilder
     */
    private Query createLuceneQuery()
    {
-      return (Query) root.accept(this, null);
+      return (Query)root.accept(this, null);
    }
 
    // ---------------------< QueryNodeVisitor interface >-----------------------
@@ -250,7 +249,7 @@ public class LuceneQueryBuilder
       Query wrapped = root;
       if (node.getLocationNode() != null)
       {
-         wrapped = (Query) node.getLocationNode().accept(this, root);
+         wrapped = (Query)node.getLocationNode().accept(this, root);
       }
 
       return wrapped;
@@ -262,7 +261,7 @@ public class LuceneQueryBuilder
       Object[] result = node.acceptOperands(this, null);
       for (int i = 0; i < result.length; i++)
       {
-         Query operand = (Query) result[i];
+         Query operand = (Query)result[i];
          orQuery.add(operand, Occur.SHOULD);
       }
       return orQuery;
@@ -278,7 +277,7 @@ public class LuceneQueryBuilder
       BooleanQuery andQuery = new BooleanQuery();
       for (int i = 0; i < result.length; i++)
       {
-         Query operand = (Query) result[i];
+         Query operand = (Query)result[i];
          andQuery.add(operand, Occur.MUST);
       }
       return andQuery;
@@ -295,7 +294,7 @@ public class LuceneQueryBuilder
       BooleanQuery b = new BooleanQuery();
       for (int i = 0; i < result.length; i++)
       {
-         b.add((Query) result[i], Occur.SHOULD);
+         b.add((Query)result[i], Occur.SHOULD);
       }
       // negate
       return new NotQuery(b);
@@ -335,16 +334,16 @@ public class LuceneQueryBuilder
          {
             // search for nodes where jcr:mixinTypes is set to this mixin
             Term t =
-                     new Term(FieldNames.PROPERTIES, FieldNames.createNamedValue(mixinTypesField, resolver
-                              .createJCRName(node.getValue()).getAsString()));
+               new Term(FieldNames.PROPERTIES, FieldNames.createNamedValue(mixinTypesField, resolver.createJCRName(
+                  node.getValue()).getAsString()));
             terms.add(t);
          }
          else
          {
             // search for nodes where jcr:primaryType is set to this type
             Term t =
-                     new Term(FieldNames.PROPERTIES, FieldNames.createNamedValue(primaryTypeField, resolver
-                              .createJCRName(node.getValue()).getAsString()));
+               new Term(FieldNames.PROPERTIES, FieldNames.createNamedValue(primaryTypeField, resolver.createJCRName(
+                  node.getValue()).getAsString()));
             terms.add(t);
          }
 
@@ -387,14 +386,14 @@ public class LuceneQueryBuilder
       }
       else if (terms.size() == 1)
       {
-         return new TermQuery((Term) terms.get(0));
+         return new TermQuery((Term)terms.get(0));
       }
       else
       {
          BooleanQuery b = new BooleanQuery();
          for (Iterator it = terms.iterator(); it.hasNext();)
          {
-            b.add(new TermQuery((Term) it.next()), Occur.SHOULD);
+            b.add(new TermQuery((Term)it.next()), Occur.SHOULD);
          }
          return b;
       }
@@ -478,8 +477,7 @@ public class LuceneQueryBuilder
                // if path references property that's elements.length - 2
                // if path references node that's elements.length - 1
                if (name != null
-                        && ((node.getReferencesProperty() && i == elements.length - 2) || (!node
-                                 .getReferencesProperty() && i == elements.length - 1)))
+                  && ((node.getReferencesProperty() && i == elements.length - 2) || (!node.getReferencesProperty() && i == elements.length - 1)))
                {
                   Query q = new TermQuery(new Term(FieldNames.LABEL, name));
                   BooleanQuery and = new BooleanQuery();
@@ -488,7 +486,7 @@ public class LuceneQueryBuilder
                   context = and;
                }
                else if ((node.getReferencesProperty() && i < elements.length - 2)
-                        || (!node.getReferencesProperty() && i < elements.length - 1))
+                  || (!node.getReferencesProperty() && i < elements.length - 1))
                {
                   // otherwise do a parent axis step
                   context = new ParentAxisQuery(context, name);
@@ -573,11 +571,11 @@ public class LuceneQueryBuilder
       // loop over steps
       for (int i = 0; i < steps.length; i++)
       {
-         context = (Query) steps[i].accept(this, context);
+         context = (Query)steps[i].accept(this, context);
       }
       if (data instanceof BooleanQuery)
       {
-         BooleanQuery constraint = (BooleanQuery) data;
+         BooleanQuery constraint = (BooleanQuery)data;
          if (constraint.getClauses().length > 0)
          {
             constraint.add(context, Occur.MUST);
@@ -589,7 +587,7 @@ public class LuceneQueryBuilder
 
    public Object visit(LocationStepQueryNode node, Object data)
    {
-      Query context = (Query) data;
+      Query context = (Query)data;
       BooleanQuery andQuery = new BooleanQuery();
 
       if (context == null)
@@ -601,7 +599,7 @@ public class LuceneQueryBuilder
       Object[] predicates = node.acceptOperands(this, data);
       for (int i = 0; i < predicates.length; i++)
       {
-         andQuery.add((Query) predicates[i], Occur.MUST);
+         andQuery.add((Query)predicates[i], Occur.MUST);
       }
 
       // check for position predicate
@@ -610,7 +608,7 @@ public class LuceneQueryBuilder
       {
          if (pred[i].getType() == QueryNode.TYPE_RELATION)
          {
-            RelationQueryNode pos = (RelationQueryNode) pred[i];
+            RelationQueryNode pos = (RelationQueryNode)pred[i];
             if (pos.getValueType() == QueryConstants.TYPE_POSITION)
             {
                node.setIndex(pos.getPositionValue());
@@ -649,7 +647,7 @@ public class LuceneQueryBuilder
 
                // only use descendant axis if path is not //*
                // otherwise the query for the predicate can be used itself
-               PathQueryNode pathNode = (PathQueryNode) node.getParent();
+               PathQueryNode pathNode = (PathQueryNode)node.getParent();
                if (pathNode.getPathSteps()[0] != node)
                {
                   Query subQuery = new DescendantSelfAxisQuery(context, andQuery, false);
@@ -670,7 +668,7 @@ public class LuceneQueryBuilder
                   // will never happen, prefixes are created when unknown
                }
                // only use descendant axis if path is not //*
-               PathQueryNode pathNode = (PathQueryNode) node.getParent();
+               PathQueryNode pathNode = (PathQueryNode)node.getParent();
                if (pathNode.getPathSteps()[0] != node)
                {
                   context = new DescendantSelfAxisQuery(context, subQuery);
@@ -689,7 +687,7 @@ public class LuceneQueryBuilder
          if (nameTest != null)
          {
             andQuery.add(new ChildAxisQuery(sharedItemMgr, context, nameTest.getTerm().text(), node.getIndex()),
-                     Occur.MUST);
+               Occur.MUST);
          }
          else
          {
@@ -703,7 +701,7 @@ public class LuceneQueryBuilder
 
    public Object visit(DerefQueryNode node, Object data)
    {
-      Query context = (Query) data;
+      Query context = (Query)data;
       if (context == null)
       {
          exceptions.add(new IllegalArgumentException("Unsupported query"));
@@ -733,7 +731,7 @@ public class LuceneQueryBuilder
             BooleanQuery andQuery = new BooleanQuery();
             for (int i = 0; i < predicates.length; i++)
             {
-               andQuery.add((Query) predicates[i], Occur.MUST);
+               andQuery.add((Query)predicates[i], Occur.MUST);
             }
             andQuery.add(context, Occur.MUST);
             context = andQuery;
@@ -769,9 +767,9 @@ public class LuceneQueryBuilder
             break;
          case QueryConstants.TYPE_STRING :
             if (node.getOperation() == QueryConstants.OPERATION_EQ_GENERAL
-                     || node.getOperation() == QueryConstants.OPERATION_EQ_VALUE
-                     || node.getOperation() == QueryConstants.OPERATION_NE_GENERAL
-                     || node.getOperation() == QueryConstants.OPERATION_NE_VALUE)
+               || node.getOperation() == QueryConstants.OPERATION_EQ_VALUE
+               || node.getOperation() == QueryConstants.OPERATION_NE_GENERAL
+               || node.getOperation() == QueryConstants.OPERATION_NE_VALUE)
             {
                // only use coercing on non-range operations
                InternalQName propertyName = node.getRelativePath().getName();
@@ -790,15 +788,14 @@ public class LuceneQueryBuilder
       }
 
       if (node.getRelativePath() == null && node.getOperation() != QueryConstants.OPERATION_SIMILAR
-               && node.getOperation() != QueryConstants.OPERATION_SPELLCHECK)
+         && node.getOperation() != QueryConstants.OPERATION_SPELLCHECK)
       {
          exceptions.add(new InvalidQueryException("@* not supported in predicate"));
          return data;
       }
 
       // get property transformation
-      final int[] transform = new int[]
-      {TransformConstants.TRANSFORM_NONE};
+      final int[] transform = new int[]{TransformConstants.TRANSFORM_NONE};
       node.acceptOperands(new DefaultQueryNodeVisitor()
       {
          public Object visit(PropertyFunctionQueryNode node, Object data)
@@ -842,14 +839,14 @@ public class LuceneQueryBuilder
          if (node.getValueType() != QueryConstants.TYPE_STRING)
          {
             exceptions.add(new InvalidQueryException("Name function can "
-                     + "only be used in conjunction with a string literal"));
+               + "only be used in conjunction with a string literal"));
             return data;
          }
          if (node.getOperation() != QueryConstants.OPERATION_EQ_VALUE
-                  && node.getOperation() != QueryConstants.OPERATION_EQ_GENERAL)
+            && node.getOperation() != QueryConstants.OPERATION_EQ_GENERAL)
          {
             exceptions.add(new InvalidQueryException("Name function can "
-                     + "only be used in conjunction with an equals operator"));
+               + "only be used in conjunction with an equals operator"));
             return data;
          }
          // check if string literal is a valid XML Name
@@ -859,8 +856,7 @@ public class LuceneQueryBuilder
             try
             {
                InternalQName n =
-                        session.getLocationFactory().parseJCRName(ISO9075.decode(node.getStringValue()))
-                                 .getInternalName();
+                  session.getLocationFactory().parseJCRName(ISO9075.decode(node.getStringValue())).getInternalName();
                String translatedQName = nsMappings.translatePropertyName(n);
                Term t = new Term(FieldNames.LABEL, translatedQName);
                query = new TermQuery(t);
@@ -1057,7 +1053,7 @@ public class LuceneQueryBuilder
                {
                   // throw new UnsupportedOperationException();
                   QPath path = resolver.parseJCRPath(node.getStringValue()).getInternalPath();
-                  NodeData parent = (NodeData) sharedItemMgr.getItemData(Constants.ROOT_UUID);
+                  NodeData parent = (NodeData)sharedItemMgr.getItemData(Constants.ROOT_UUID);
 
                   if (path.equals(Constants.ROOT_PATH))
                   {
@@ -1075,10 +1071,10 @@ public class LuceneQueryBuilder
                            break;
 
                         if (item.isNode())
-                           parent = (NodeData) item;
+                           parent = (NodeData)item;
                         else if (i < relPathEntries.length - 1)
                            throw new IllegalPathException(
-                                    "Path can not contains a property as the intermediate element");
+                              "Path can not contains a property as the intermediate element");
                      }
                      uuid = item.getIdentifier();
                   }
@@ -1356,7 +1352,7 @@ public class LuceneQueryBuilder
          values.add(literal);
          log.debug("Using literal " + literal + " as is.");
       }
-      return (String[]) values.toArray(new String[values.size()]);
+      return (String[])values.toArray(new String[values.size()]);
    }
 
    /**

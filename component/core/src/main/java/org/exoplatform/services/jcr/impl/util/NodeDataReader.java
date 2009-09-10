@@ -18,6 +18,11 @@
  */
 package org.exoplatform.services.jcr.impl.util;
 
+import org.exoplatform.services.jcr.dataflow.DataManager;
+import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.ValueData;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,11 +32,6 @@ import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 import javax.jcr.ValueFormatException;
 
-import org.exoplatform.services.jcr.dataflow.DataManager;
-import org.exoplatform.services.jcr.datamodel.InternalQName;
-import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.datamodel.ValueData;
-
 /**
  * Created by The eXo Platform SAS 15.05.2006 NodeData bulk reader.
  * 
@@ -39,8 +39,7 @@ import org.exoplatform.services.jcr.datamodel.ValueData;
  *         Nedonosko</a>
  * @version $Id: NodeDataReader.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class NodeDataReader
-   extends ItemDataReader
+public class NodeDataReader extends ItemDataReader
 {
 
    private final HashMap<InternalQName, NodeInfo> nodes = new HashMap<InternalQName, NodeInfo>();
@@ -99,7 +98,7 @@ public class NodeDataReader
       if (nr.size() > 0)
          return nr;
       throw new PathNotFoundException("Node with name " + parent.getQPath().getAsString() + name.getAsString()
-               + " not found");
+         + " not found");
    }
 
    public List<NodeDataReader> getNodesByType(InternalQName typeName) throws PathNotFoundException
@@ -108,17 +107,17 @@ public class NodeDataReader
       if (nr.size() > 0)
          return nr;
       throw new PathNotFoundException("Nodes with type " + typeName.getAsString() + " not found. Parent "
-               + parent.getQPath().getAsString());
+         + parent.getQPath().getAsString());
    }
 
    public ValueData getPropertyValue(InternalQName name) throws ValueFormatException, PathNotFoundException,
-            RepositoryException
+      RepositoryException
    {
       return nodePropertyReader.getPropertyValue(name);
    }
 
    public List<ValueData> getPropertyValues(InternalQName name) throws ValueFormatException, PathNotFoundException,
-            RepositoryException
+      RepositoryException
    {
       return nodePropertyReader.getPropertyValues(name);
    }

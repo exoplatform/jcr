@@ -18,16 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.xml.exporting;
 
-import java.io.IOException;
-import java.util.List;
-
-import javax.jcr.NamespaceException;
-import javax.jcr.NamespaceRegistry;
-import javax.jcr.PropertyType;
-import javax.jcr.RepositoryException;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
@@ -38,17 +28,26 @@ import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.util.StringConverter;
 
+import java.io.IOException;
+import java.util.List;
+
+import javax.jcr.NamespaceException;
+import javax.jcr.NamespaceRegistry;
+import javax.jcr.PropertyType;
+import javax.jcr.RepositoryException;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: DocumentViewStreamExporter.java 14244 2008-05-14 11:44:54Z ksm $
  */
-public class DocumentViewStreamExporter
-   extends StreamExporter
+public class DocumentViewStreamExporter extends StreamExporter
 {
 
    public DocumentViewStreamExporter(XMLStreamWriter writer, ItemDataConsumer dataManager,
-            NamespaceRegistry namespaceRegistry, ValueFactoryImpl systemValueFactory, boolean skipBinary,
-            boolean noRecurse) throws NamespaceException, RepositoryException
+      NamespaceRegistry namespaceRegistry, ValueFactoryImpl systemValueFactory, boolean skipBinary, boolean noRecurse)
+      throws NamespaceException, RepositoryException
    {
       super(writer, dataManager, namespaceRegistry, systemValueFactory, skipBinary, noRecurse);
    }
@@ -98,8 +97,7 @@ public class DocumentViewStreamExporter
          if (propName.equals(Constants.JCR_XMLCHARACTERS))
          {
             writer
-                     .writeCharacters(new String(property.getValues().get(0).getAsByteArray(),
-                              Constants.DEFAULT_ENCODING));
+               .writeCharacters(new String(property.getValues().get(0).getAsByteArray(), Constants.DEFAULT_ENCODING));
          }
          else
          {
@@ -120,13 +118,13 @@ public class DocumentViewStreamExporter
                   continue;
                }
                strValue +=
-                        MULTI_VALUE_DELIMITER
-                                 + (property.getType() == PropertyType.BINARY ? strVal : StringConverter
-                                          .normalizeString(strVal, true));
+                  MULTI_VALUE_DELIMITER
+                     + (property.getType() == PropertyType.BINARY ? strVal : StringConverter.normalizeString(strVal,
+                        true));
             }
 
             writer.writeAttribute(getExportName(property, true), strValue.length() > 0 ? strValue.substring(1)
-                     : strValue);
+               : strValue);
 
          }
       }

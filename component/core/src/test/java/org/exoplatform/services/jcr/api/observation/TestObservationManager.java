@@ -18,6 +18,9 @@
  */
 package org.exoplatform.services.jcr.api.observation;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.log.Log;
+
 import java.util.Calendar;
 
 import javax.jcr.Node;
@@ -30,10 +33,6 @@ import javax.jcr.observation.EventListener;
 import javax.jcr.observation.EventListenerIterator;
 import javax.jcr.observation.ObservationManager;
 
-import org.exoplatform.services.log.Log;
-
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -41,8 +40,7 @@ import org.exoplatform.services.jcr.JcrAPIBaseTest;
  * @version $Id: TestObservationManager.java 15053 2008-06-02 10:31:38Z
  *          andrew00x $
  */
-public class TestObservationManager
-   extends JcrAPIBaseTest
+public class TestObservationManager extends JcrAPIBaseTest
 {
 
    private static int counter;
@@ -92,9 +90,8 @@ public class TestObservationManager
       ObservationManager observationManager = this.workspace.getObservationManager();
       assertEquals(0, observationManager.getRegisteredEventListeners().getSize());
       EventListener listener = new DummyListener(this.log);
-      observationManager.addEventListener(listener, Event.PROPERTY_ADDED | Event.NODE_ADDED, "/", true, new String[]
-      {"0"}, new String[]
-      {"nt:base"}, false);
+      observationManager.addEventListener(listener, Event.PROPERTY_ADDED | Event.NODE_ADDED, "/", true,
+         new String[]{"0"}, new String[]{"nt:base"}, false);
       assertEquals(1, observationManager.getRegisteredEventListeners().getSize());
 
       // [PN] 16.06.07
@@ -126,7 +123,7 @@ public class TestObservationManager
 
       // Add/remove node by explicit path
       observationManager.addEventListener(listener, Event.NODE_ADDED | Event.NODE_REMOVED, "/childNode", false, null,
-               null, false);
+         null, false);
       testRoot.addNode("childNode", "nt:unstructured");
       testRoot.addNode("childNode1", "nt:unstructured");
       root.save();
@@ -150,8 +147,8 @@ public class TestObservationManager
       observationManager.removeEventListener(listener);
 
       // Add node by node type
-      observationManager.addEventListener(listener, Event.NODE_ADDED, "/", true, null, new String[]
-      {"nt:unstructured"}, false);
+      observationManager.addEventListener(listener, Event.NODE_ADDED, "/", true, null, new String[]{"nt:unstructured"},
+         false);
       Node cn = testRoot.addNode("childNode", "nt:folder");
       // associated parent is not 'nt:unstructured' - no event will be generated
       cn.addNode("childNode1", "nt:hierarchyNode");
@@ -160,9 +157,8 @@ public class TestObservationManager
       observationManager.removeEventListener(listener);
 
       // Add node by UUID (never knows the UUID before adding :) )
-      observationManager.addEventListener(listener, Event.NODE_ADDED, "/", true, new String[]
-      {"0"}, new String[]
-      {"nt:unstructured"}, false);
+      observationManager.addEventListener(listener, Event.NODE_ADDED, "/", true, new String[]{"0"},
+         new String[]{"nt:unstructured"}, false);
       testRoot.addNode("childNode", "nt:unstructured");
       testRoot.save();
       checkEventNumAndCleanCounter(0);
@@ -172,8 +168,7 @@ public class TestObservationManager
    public void testRemoveNodeEvents() throws Exception
    {
       session.getWorkspace().getObservationManager().addEventListener(new DummyListener(log),
-               Event.NODE_ADDED | Event.NODE_REMOVED, "/", true, null, new String[]
-               {"nt:file"}, false);
+         Event.NODE_ADDED | Event.NODE_REMOVED, "/", true, null, new String[]{"nt:file"}, false);
 
       Node file = testRoot.addNode("test", "nt:file");
       Node d = file.addNode("jcr:content", "nt:resource");
@@ -198,7 +193,7 @@ public class TestObservationManager
          log.debug("SET PROP>>");
       // Add/remove node by explicit path
       observationManager.addEventListener(listener, Event.PROPERTY_ADDED | Event.PROPERTY_CHANGED
-               | Event.PROPERTY_REMOVED, "/", true, null, null, false);
+         | Event.PROPERTY_REMOVED, "/", true, null, null, false);
       Node node = testRoot.addNode("childNode", "nt:unstructured");
       Property prop = node.setProperty("prop", "prop");
       root.save();
@@ -240,9 +235,9 @@ public class TestObservationManager
       EventListener listener1 = new DummyListener1(this.log);
 
       observationManager.addEventListener(listener, Event.NODE_ADDED | Event.PROPERTY_ADDED | Event.PROPERTY_REMOVED
-               | Event.NODE_REMOVED | Event.PROPERTY_CHANGED, "/testRoot", true, null, null, false);
+         | Event.NODE_REMOVED | Event.PROPERTY_CHANGED, "/testRoot", true, null, null, false);
       observationManager.addEventListener(listener1, Event.NODE_ADDED | Event.PROPERTY_ADDED | Event.PROPERTY_REMOVED
-               | Event.NODE_REMOVED | Event.PROPERTY_CHANGED, "/testRoot", false, null, null, false);
+         | Event.NODE_REMOVED | Event.PROPERTY_CHANGED, "/testRoot", false, null, null, false);
 
       Node node = testRoot.addNode("childNode", "nt:unstructured");
       root.save();
@@ -272,7 +267,7 @@ public class TestObservationManager
 
       EventListener listener = new DummyListener(this.log);
       observationManager.addEventListener(listener, Event.NODE_ADDED | Event.PROPERTY_ADDED | Event.PROPERTY_REMOVED
-               | Event.NODE_REMOVED | Event.PROPERTY_CHANGED, "/", true, null, null, false);
+         | Event.NODE_REMOVED | Event.PROPERTY_CHANGED, "/", true, null, null, false);
 
       session.getWorkspace().clone("ws2", "/testCloneEvents", "/testRoot/testCloneEvents", true);
 
@@ -288,8 +283,7 @@ public class TestObservationManager
       counter = 0;
    }
 
-   private static class DummyListener
-      implements EventListener
+   private static class DummyListener implements EventListener
    {
       private Log log;
 
@@ -317,8 +311,7 @@ public class TestObservationManager
       }
    }
 
-   private static class DummyListener1
-      implements EventListener
+   private static class DummyListener1 implements EventListener
    {
       private Log log;
 

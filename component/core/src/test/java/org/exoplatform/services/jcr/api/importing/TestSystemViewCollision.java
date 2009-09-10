@@ -18,21 +18,6 @@
  */
 package org.exoplatform.services.jcr.api.importing;
 
-import java.io.ByteArrayInputStream;
-
-import javax.jcr.ImportUUIDBehavior;
-import javax.jcr.ItemNotFoundException;
-import javax.jcr.Node;
-import javax.jcr.PropertyType;
-import javax.jcr.Value;
-
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
-
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
@@ -44,6 +29,19 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.XMLReaderFactory;
+
+import java.io.ByteArrayInputStream;
+
+import javax.jcr.ImportUUIDBehavior;
+import javax.jcr.ItemNotFoundException;
+import javax.jcr.Node;
+import javax.jcr.PropertyType;
+import javax.jcr.Value;
 
 /**
  * Created by The eXo Platform SAS.
@@ -51,8 +49,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: $
  */
-public class TestSystemViewCollision
-   extends AbstractCollisionTest
+public class TestSystemViewCollision extends AbstractCollisionTest
 {
    /**
     * Class logger.
@@ -66,10 +63,10 @@ public class TestSystemViewCollision
       root.addNode("testCollision");
       session.save();
       reader.setContentHandler(session.getImportContentHandler("/testCollision",
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW));
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW));
 
       InputSource inputSource =
-               new InputSource(new ByteArrayInputStream(TestSystemViewImport.SYSTEM_VIEW_CONTENT.getBytes()));
+         new InputSource(new ByteArrayInputStream(TestSystemViewImport.SYSTEM_VIEW_CONTENT.getBytes()));
       reader.parse(inputSource);
 
       session.save();
@@ -97,7 +94,7 @@ public class TestSystemViewCollision
       root.addNode("test2");
       // part 2
       reader.setContentHandler(session
-               .getImportContentHandler("/test2", ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW));
+         .getImportContentHandler("/test2", ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW));
 
       inputSource = new InputSource(new ByteArrayInputStream(TestSystemViewImport.SYSTEM_VIEW_CONTENT.getBytes()));
       try
@@ -118,12 +115,11 @@ public class TestSystemViewCollision
       PlainChangesLog changesLog = new PlainChangesLogImpl();
 
       TransientNodeData testNodeData =
-               TransientNodeData.createNodeData((NodeData) ((NodeImpl) root).getData(), new InternalQName("",
-                        "nodeWithPredefUuid"), Constants.NT_UNSTRUCTURED, "id_uuidNode1");
+         TransientNodeData.createNodeData((NodeData)((NodeImpl)root).getData(), new InternalQName("",
+            "nodeWithPredefUuid"), Constants.NT_UNSTRUCTURED, "id_uuidNode1");
       changesLog.add(ItemState.createAddedState(testNodeData));
       TransientPropertyData primaryType =
-               TransientPropertyData.createPropertyData(testNodeData, Constants.JCR_PRIMARYTYPE, PropertyType.NAME,
-                        false);
+         TransientPropertyData.createPropertyData(testNodeData, Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false);
       primaryType.setValue(new TransientValueData(testNodeData.getPrimaryTypeName()));
       changesLog.add(ItemState.createAddedState(primaryType));
 
@@ -136,7 +132,7 @@ public class TestSystemViewCollision
       reader.setContentHandler(session.getImportContentHandler("/test", ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW));
 
       InputSource inputSource =
-               new InputSource(new ByteArrayInputStream(TestSystemViewImport.SYSTEM_VIEW_CONTENT.getBytes()));
+         new InputSource(new ByteArrayInputStream(TestSystemViewImport.SYSTEM_VIEW_CONTENT.getBytes()));
       reader.parse(inputSource);
 
       session.save();
@@ -145,7 +141,7 @@ public class TestSystemViewCollision
       Value valueUuidNode1 = nodeUuidNode1.getProperty("jcr:uuid").getValue();
 
       assertTrue("Uuid must be new [" + valueUuidNode1.getString() + "]", !"id_uuidNode1".equals(valueUuidNode1
-               .getString()));
+         .getString()));
 
       assertFalse(session.getNodeByUUID("id_uuidNode1").getName().equals("uuidNode1"));
 
@@ -165,13 +161,13 @@ public class TestSystemViewCollision
    public void testUuidCollision_IContentHandler_EContentHandler_Session_REMOVE_EXISTING() throws Exception
    {
       importUuidCollisionTest(true, false, false, XmlSaveType.SESSION,
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
    }
 
    public void testUuidCollision_IContentHandler_EContentHandler_Session_REPLACE_EXISTING() throws Exception
    {
       importUuidCollisionTest(true, false, false, XmlSaveType.SESSION,
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
    }
 
    public void testUuidCollision_IContentHandler_EContentHandler_Workspace_COLLISION_THROW() throws Exception
@@ -187,13 +183,13 @@ public class TestSystemViewCollision
    public void testUuidCollision_IContentHandler_EContentHandler_Workspace_REMOVE_EXISTING() throws Exception
    {
       importUuidCollisionTest(true, false, false, XmlSaveType.WORKSPACE,
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
    }
 
    public void testUuidCollision_IContentHandler_EContentHandler_Workspace_REPLACE_EXISTING() throws Exception
    {
       importUuidCollisionTest(true, false, false, XmlSaveType.WORKSPACE,
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
    }
 
    public void testUuidCollision_IContentHandler_EStream_Session_COLLISION_THROW() throws Exception
@@ -209,13 +205,13 @@ public class TestSystemViewCollision
    public void testUuidCollision_IContentHandler_EStream_Session_REMOVE_EXISTING() throws Exception
    {
       importUuidCollisionTest(true, false, true, XmlSaveType.SESSION,
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
    }
 
    public void testUuidCollision_IContentHandler_EStream_Session_REPLACE_EXISTING() throws Exception
    {
       importUuidCollisionTest(true, false, true, XmlSaveType.SESSION,
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
    }
 
    public void testUuidCollision_IContentHandler_EStream_Workspace_COLLISION_THROW() throws Exception
@@ -231,13 +227,13 @@ public class TestSystemViewCollision
    public void testUuidCollision_IContentHandler_EStream_Workspace_REMOVE_EXISTING() throws Exception
    {
       importUuidCollisionTest(true, false, true, XmlSaveType.WORKSPACE,
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
    }
 
    public void testUuidCollision_IContentHandler_EStream_Workspace_REPLACE_EXISTING() throws Exception
    {
       importUuidCollisionTest(true, true, true, XmlSaveType.WORKSPACE,
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
    }
 
    public void testUuidCollision_IStream_EContentHandler_Session_COLLISION_THROW() throws Exception
@@ -253,13 +249,13 @@ public class TestSystemViewCollision
    public void testUuidCollision_IStream_EContentHandler_Session_REMOVE_EXISTING() throws Exception
    {
       importUuidCollisionTest(true, true, false, XmlSaveType.SESSION,
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
    }
 
    public void testUuidCollision_IStream_EContentHandler_Session_REPLACE_EXISTING() throws Exception
    {
       importUuidCollisionTest(true, true, false, XmlSaveType.SESSION,
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
    }
 
    public void testUuidCollision_IStream_EContentHandler_Workspace_COLLISION_THROW() throws Exception
@@ -275,13 +271,13 @@ public class TestSystemViewCollision
    public void testUuidCollision_IStream_EContentHandler_Workspace_REMOVE_EXISTING() throws Exception
    {
       importUuidCollisionTest(true, true, false, XmlSaveType.WORKSPACE,
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
    }
 
    public void testUuidCollision_IStream_EContentHandler_Workspace_REPLACE_EXISTING() throws Exception
    {
       importUuidCollisionTest(true, true, false, XmlSaveType.WORKSPACE,
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
    }
 
    public void testUuidCollision_IStream_EStream_Session_COLLISION_THROW() throws Exception
@@ -297,13 +293,13 @@ public class TestSystemViewCollision
    public void testUuidCollision_IStream_EStream_Session_REMOVE_EXISTING() throws Exception
    {
       importUuidCollisionTest(true, true, true, XmlSaveType.SESSION,
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
    }
 
    public void testUuidCollision_IStream_EStream_Session_REPLACE_EXISTING() throws Exception
    {
       importUuidCollisionTest(true, true, true, XmlSaveType.SESSION,
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
    }
 
    public void testUuidCollision_IStream_EStream_Workspace_COLLISION_THROW() throws Exception
@@ -319,12 +315,12 @@ public class TestSystemViewCollision
    public void testUuidCollision_IStream_EStream_Workspace_REMOVE_EXISTING() throws Exception
    {
       importUuidCollisionTest(true, true, true, XmlSaveType.WORKSPACE,
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
    }
 
    public void testUuidCollision_IStream_EStream_Workspace_REPLACE_EXISTING() throws Exception
    {
       importUuidCollisionTest(true, true, true, XmlSaveType.WORKSPACE,
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
    }
 }

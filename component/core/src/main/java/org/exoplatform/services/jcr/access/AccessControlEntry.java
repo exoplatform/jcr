@@ -60,7 +60,7 @@ public class AccessControlEntry
          return true;
       if (obj instanceof AccessControlEntry)
       {
-         AccessControlEntry another = (AccessControlEntry) obj;
+         AccessControlEntry another = (AccessControlEntry)obj;
          return getAsString().equals(another.getAsString());
       }
       return false;

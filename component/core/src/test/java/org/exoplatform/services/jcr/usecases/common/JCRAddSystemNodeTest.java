@@ -18,14 +18,13 @@
  */
 package org.exoplatform.services.jcr.usecases.common;
 
+import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
+
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
-import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
-
-public class JCRAddSystemNodeTest
-   extends BaseUsecasesTest
+public class JCRAddSystemNodeTest extends BaseUsecasesTest
 {
 
    protected void tearDown() throws Exception
@@ -59,17 +58,17 @@ public class JCRAddSystemNodeTest
       session2.save();
       session2 = repositoryService.getRepository().getSystemSession(repository.getSystemWorkspaceName());
       assertTrue(session2.getRootNode().getNode("jcr:system").hasNodes());
-      Node node1 = (Node) session2.getItem("/jcr:system/Node1");
+      Node node1 = (Node)session2.getItem("/jcr:system/Node1");
       jcrSystem.save();
       session2.save();
       jcrSystem.addNode("Node1/testNode");
-      node1 = (Node) session2.getItem("/jcr:system/Node1");
+      node1 = (Node)session2.getItem("/jcr:system/Node1");
       node1.save();
       jcrSystem.save();
       session2.save();
-      Node testNode = (Node) session2.getItem("/jcr:system/Node1/testNode");
+      Node testNode = (Node)session2.getItem("/jcr:system/Node1/testNode");
       assertNotNull(testNode);
-      node1 = (Node) session2.getItem("/jcr:system/Node1");
+      node1 = (Node)session2.getItem("/jcr:system/Node1");
       assertTrue(node1.hasNodes());
 
    }

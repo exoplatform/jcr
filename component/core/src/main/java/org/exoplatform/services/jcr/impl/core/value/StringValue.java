@@ -18,19 +18,18 @@
  */
 package org.exoplatform.services.jcr.impl.core.value;
 
+import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+
 import java.io.IOException;
 
 import javax.jcr.PropertyType;
-
-import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 
 /**
  * a string value implementation
  * 
  * @author Gennady Azarenkov
  */
-public class StringValue
-   extends BaseValue
+public class StringValue extends BaseValue
 {
 
    public static final int TYPE = PropertyType.STRING;

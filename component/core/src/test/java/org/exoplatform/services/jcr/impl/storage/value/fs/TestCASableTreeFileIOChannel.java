@@ -18,12 +18,12 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs;
 
-import java.util.Properties;
-
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.storage.value.cas.JDBCValueContentAddressStorageImpl;
+
+import java.util.Properties;
 
 /**
  * Created by The eXo Platform SAS
@@ -33,8 +33,7 @@ import org.exoplatform.services.jcr.impl.storage.value.cas.JDBCValueContentAddre
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestCASableTreeFileIOChannel.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class TestCASableTreeFileIOChannel
-   extends CASableFileIOChannelTestBase
+public class TestCASableTreeFileIOChannel extends CASableFileIOChannelTestBase
 {
 
    private ValueDataResourceHolder resources = new ValueDataResourceHolder();
@@ -62,7 +61,7 @@ public class TestCASableTreeFileIOChannel
       props.put(JDBCValueContentAddressStorageImpl.JDBC_SOURCE_NAME_PARAM, jdbcSourceName);
       props.put(JDBCValueContentAddressStorageImpl.JDBC_DIALECT_PARAM, jdbcDialect);
       props.put(JDBCValueContentAddressStorageImpl.TABLE_NAME_PARAM,
-               JDBCValueContentAddressStorageImpl.DEFAULT_TABLE_NAME + "_TEST");
+         JDBCValueContentAddressStorageImpl.DEFAULT_TABLE_NAME + "_TEST");
 
       vcas = new JDBCValueContentAddressStorageImpl();
       vcas.init(props);

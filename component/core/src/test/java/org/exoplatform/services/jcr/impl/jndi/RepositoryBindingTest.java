@@ -18,10 +18,10 @@
  */
 package org.exoplatform.services.jcr.impl.jndi;
 
+import org.exoplatform.services.jcr.JcrImplBaseTest;
+
 import javax.jcr.Repository;
 import javax.naming.InitialContext;
-
-import org.exoplatform.services.jcr.JcrImplBaseTest;
 
 /**
  * Created by The eXo Platform SAS.
@@ -30,8 +30,7 @@ import org.exoplatform.services.jcr.JcrImplBaseTest;
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov</a>
  * @version $Id: RepositoryBindingTest.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class RepositoryBindingTest
-   extends JcrImplBaseTest
+public class RepositoryBindingTest extends JcrImplBaseTest
 {
 
    public void setUp() throws Exception
@@ -57,7 +56,7 @@ public class RepositoryBindingTest
    {
 
       InitialContext ctx = new InitialContext();
-      Repository rep = (Repository) ctx.lookup("repo");
+      Repository rep = (Repository)ctx.lookup("repo");
       assertNotNull(rep);
    }
 }

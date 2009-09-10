@@ -18,6 +18,15 @@
  */
 package org.exoplatform.services.jcr.api.exporting;
 
+import org.apache.ws.commons.util.Base64;
+import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.value.BinaryValue;
+import org.exoplatform.services.jcr.impl.util.StringConverter;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -44,17 +53,6 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPathExpressionException;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
-
-import org.apache.ws.commons.util.Base64;
-
-import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.core.value.BinaryValue;
-import org.exoplatform.services.jcr.impl.util.StringConverter;
-
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -63,8 +61,7 @@ import org.exoplatform.services.jcr.impl.util.StringConverter;
  * @version $Id: TestExportDocView.java 11962 2008-03-16 16:31:14Z gazarenkov $
  */
 
-public class TestExportDocView
-   extends ExportBase
+public class TestExportDocView extends ExportBase
 {
 
    public TestExportDocView() throws ParserConfigurationException
@@ -171,8 +168,8 @@ public class TestExportDocView
    }
 
    public void testMultyValueExportStream() throws ItemExistsException, PathNotFoundException, VersionException,
-            ConstraintViolationException, LockException, RepositoryException, IOException, SAXException,
-            XPathExpressionException
+      ConstraintViolationException, LockException, RepositoryException, IOException, SAXException,
+      XPathExpressionException
    {
       Node testNode = root.addNode("MultyValueExportStream");
 
@@ -232,7 +229,7 @@ public class TestExportDocView
                else if ("binary".equals(type))
                {
                   assertEquals(pureValues[index],
-                           new String(Base64.decode(exportedContent), Constants.DEFAULT_ENCODING));
+                     new String(Base64.decode(exportedContent), Constants.DEFAULT_ENCODING));
 
                }
                index++;
@@ -242,8 +239,8 @@ public class TestExportDocView
    }
 
    public void testMultyValueExportCH() throws ItemExistsException, PathNotFoundException, VersionException,
-            ConstraintViolationException, LockException, RepositoryException, IOException, SAXException,
-            TransformerConfigurationException
+      ConstraintViolationException, LockException, RepositoryException, IOException, SAXException,
+      TransformerConfigurationException
    {
       Node testNode = root.addNode("MultyValueExportStream");
 
@@ -258,7 +255,7 @@ public class TestExportDocView
       destFile.deleteOnExit();
       OutputStream outStream = new FileOutputStream(destFile);
 
-      SAXTransformerFactory saxFact = (SAXTransformerFactory) SAXTransformerFactory.newInstance();
+      SAXTransformerFactory saxFact = (SAXTransformerFactory)SAXTransformerFactory.newInstance();
       TransformerHandler handler = saxFact.newTransformerHandler();
       handler.setResult(new StreamResult(outStream));
 
@@ -316,7 +313,7 @@ public class TestExportDocView
                   else if ("binary".equals(type))
                   {
                      assertEquals(pureValues[index], new String(Base64.decode(exportedContent),
-                              Constants.DEFAULT_ENCODING));
+                        Constants.DEFAULT_ENCODING));
 
                   }
                   index++;
@@ -402,7 +399,7 @@ public class TestExportDocView
 
       // session.exportDocumentView(testNode.getPath(), bos, false, false);
 
-      SAXTransformerFactory saxFact = (SAXTransformerFactory) SAXTransformerFactory.newInstance();
+      SAXTransformerFactory saxFact = (SAXTransformerFactory)SAXTransformerFactory.newInstance();
       TransformerHandler handler = saxFact.newTransformerHandler();
       handler.setResult(new StreamResult(bos));
 

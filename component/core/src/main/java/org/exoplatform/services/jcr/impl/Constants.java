@@ -258,7 +258,7 @@ public class Constants
     * jcr:hasOrderableChildNodes internal name.
     */
    public static final InternalQName JCR_HASORDERABLECHILDNODES =
-            new InternalQName(NS_JCR_URI, "hasOrderableChildNodes");
+      new InternalQName(NS_JCR_URI, "hasOrderableChildNodes");
 
    /**
     * jcr:primaryItemName internal name.
@@ -535,10 +535,10 @@ public class Constants
    public static final String PRIVILEGABLE_TYPE_URI = "[http://www.exoplatform.com/jcr/exo/1.0]privilegeable";
 
    public static final String JCR_VERSION_STORAGE_URI =
-            "[]:1[http://www.jcp.org/jcr/1.0]system:1[http://www.jcp.org/jcr/1.0]versionStorage:1";
+      "[]:1[http://www.jcp.org/jcr/1.0]system:1[http://www.jcp.org/jcr/1.0]versionStorage:1";
 
    public static final String JCR_NODETYPES_URI =
-            "[]:1[http://www.jcp.org/jcr/1.0]system:1[http://www.jcp.org/jcr/1.0]nodetypes:1";
+      "[]:1[http://www.jcp.org/jcr/1.0]system:1[http://www.jcp.org/jcr/1.0]nodetypes:1";
 
    public static final String JCR_SYSTEM_URI = "[]:1[http://www.jcp.org/jcr/1.0]system:1";
 
@@ -672,7 +672,7 @@ public class Constants
     * System identifier for remote workspace initializer changes.
     */
    public static final String JCR_CORE_RESTORE_WORKSPACE_INITIALIZER_SYSTEM_ID =
-            "JCR_CORE_RESOTRE_WORKSPACE_INITIALIZER_SYSTEM_ID";
+      "JCR_CORE_RESOTRE_WORKSPACE_INITIALIZER_SYSTEM_ID";
 
    static
    {
@@ -695,7 +695,7 @@ public class Constants
       {
          e.printStackTrace();
          System.err.println("ERROR: Can't parse JCR_VERSION_STORAGE_URI for constant JCR_VERSION_STORAGE_PATH ("
-                  + JCR_VERSION_STORAGE_URI + "): " + e);
+            + JCR_VERSION_STORAGE_URI + "): " + e);
       }
 
       try
@@ -706,7 +706,7 @@ public class Constants
       {
          e.printStackTrace();
          System.err.println("ERROR: Can't parse JCR_NODETYPES_URI for constant JCR_NODETYPES_PATH ("
-                  + JCR_NODETYPES_URI + "): " + e);
+            + JCR_NODETYPES_URI + "): " + e);
       }
 
       String nsUri = JCR_SYSTEM_URI + EXO_NAMESPACES.getAsString() + ":1";

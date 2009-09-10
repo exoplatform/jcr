@@ -27,89 +27,98 @@ import java.io.IOException;
  * a client calls {@link #close()} on this reader. This allows reusing of the
  * underlying index reader instance.
  */
-public final class JackrabbitIndexReader extends FilterIndexReader implements HierarchyResolver,
-    MultiIndexReader {
+public final class JackrabbitIndexReader extends FilterIndexReader implements HierarchyResolver, MultiIndexReader
+{
 
-  /**
-   * The hierarchy resolver.
-   */
-  private final HierarchyResolver resolver;
+   /**
+    * The hierarchy resolver.
+    */
+   private final HierarchyResolver resolver;
 
-  /**
-   * The underlying index reader exposed as a {@link MultiIndexReader}.
-   */
-  private final MultiIndexReader  reader;
+   /**
+    * The underlying index reader exposed as a {@link MultiIndexReader}.
+    */
+   private final MultiIndexReader reader;
 
-  /**
-   * Creates a new <code>JackrabbitIndexReader</code>. The passed index reader
-   * must also implement the interfaces {@link HierarchyResolver} and
-   * {@link MultiIndexReader}.
-   * 
-   * @param in the underlying index reader.
-   * @throws IllegalArgumentException if <code>in</code> does not implement
-   *           {@link HierarchyResolver} and {@link MultiIndexReader}.
-   */
-  public JackrabbitIndexReader(IndexReader in) {
-    super(in);
-    if (!(in instanceof MultiIndexReader)) {
-      throw new IllegalArgumentException("IndexReader must also implement MultiIndexReader");
-    }
-    if (!(in instanceof HierarchyResolver)) {
-      throw new IllegalArgumentException("IndexReader must also implement HierarchyResolver");
-    }
-    this.resolver = (HierarchyResolver) in;
-    this.reader = (MultiIndexReader) in;
-  }
+   /**
+    * Creates a new <code>JackrabbitIndexReader</code>. The passed index reader
+    * must also implement the interfaces {@link HierarchyResolver} and
+    * {@link MultiIndexReader}.
+    * 
+    * @param in the underlying index reader.
+    * @throws IllegalArgumentException if <code>in</code> does not implement
+    *           {@link HierarchyResolver} and {@link MultiIndexReader}.
+    */
+   public JackrabbitIndexReader(IndexReader in)
+   {
+      super(in);
+      if (!(in instanceof MultiIndexReader))
+      {
+         throw new IllegalArgumentException("IndexReader must also implement MultiIndexReader");
+      }
+      if (!(in instanceof HierarchyResolver))
+      {
+         throw new IllegalArgumentException("IndexReader must also implement HierarchyResolver");
+      }
+      this.resolver = (HierarchyResolver)in;
+      this.reader = (MultiIndexReader)in;
+   }
 
-  // --------------------------< FilterIndexReader >---------------------------
+   // --------------------------< FilterIndexReader >---------------------------
 
-  /**
-   * Calls release on the underlying {@link MultiIndexReader} instead of closing
-   * it.
-   * 
-   * @throws IOException if an error occurs while releaseing the underlying
-   *           index reader.
-   */
-  protected void doClose() throws IOException {
-    reader.release();
-  }
+   /**
+    * Calls release on the underlying {@link MultiIndexReader} instead of closing
+    * it.
+    * 
+    * @throws IOException if an error occurs while releaseing the underlying
+    *           index reader.
+    */
+   protected void doClose() throws IOException
+   {
+      reader.release();
+   }
 
-  // ------------------------< HierarchyResolver >-----------------------------
+   // ------------------------< HierarchyResolver >-----------------------------
 
-  /**
-   * {@inheritDoc}
-   */
-  public int getParent(int n) throws IOException {
-    return resolver.getParent(n);
-  }
+   /**
+    * {@inheritDoc}
+    */
+   public int getParent(int n) throws IOException
+   {
+      return resolver.getParent(n);
+   }
 
-  // -------------------------< MultiIndexReader >-----------------------------
+   // -------------------------< MultiIndexReader >-----------------------------
 
-  /**
-   * {@inheritDoc}
-   */
-  public IndexReader[] getIndexReaders() {
-    return reader.getIndexReaders();
-  }
+   /**
+    * {@inheritDoc}
+    */
+   public IndexReader[] getIndexReaders()
+   {
+      return reader.getIndexReaders();
+   }
 
-  /**
-   * {@inheritDoc}
-   */
-  public ForeignSegmentDocId createDocId(String uuid) throws IOException {
-    return reader.createDocId(uuid);
-  }
+   /**
+    * {@inheritDoc}
+    */
+   public ForeignSegmentDocId createDocId(String uuid) throws IOException
+   {
+      return reader.createDocId(uuid);
+   }
 
-  /**
-   * {@inheritDoc}
-   */
-  public int getDocumentNumber(ForeignSegmentDocId docId) throws IOException {
-    return reader.getDocumentNumber(docId);
-  }
+   /**
+    * {@inheritDoc}
+    */
+   public int getDocumentNumber(ForeignSegmentDocId docId) throws IOException
+   {
+      return reader.getDocumentNumber(docId);
+   }
 
-  /**
-   * {@inheritDoc}
-   */
-  public void release() throws IOException {
-    reader.release();
-  }
+   /**
+    * {@inheritDoc}
+    */
+   public void release() throws IOException
+   {
+      reader.release();
+   }
 }

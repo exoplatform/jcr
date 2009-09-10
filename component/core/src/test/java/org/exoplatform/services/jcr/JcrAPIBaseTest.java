@@ -25,8 +25,7 @@ package org.exoplatform.services.jcr;
  * @version $Id: JcrAPIBaseTest.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class JcrAPIBaseTest
-   extends BaseStandaloneTest
+public class JcrAPIBaseTest extends BaseStandaloneTest
 {
 
    protected String getRepositoryName()
@@ -34,8 +33,8 @@ public class JcrAPIBaseTest
       String repName = System.getProperty("test.repository");
       if (repName == null)
          throw new RuntimeException(
-                  "Test repository is undefined. Set test.repository system property "
-                           + "(For maven: in project.properties: maven.junit.sysproperties=test.repository\ntest.repository=<rep-name>)");
+            "Test repository is undefined. Set test.repository system property "
+               + "(For maven: in project.properties: maven.junit.sysproperties=test.repository\ntest.repository=<rep-name>)");
       return repName;
 
    }

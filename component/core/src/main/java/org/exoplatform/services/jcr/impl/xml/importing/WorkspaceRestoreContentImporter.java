@@ -18,13 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.xml.importing;
 
-import java.util.Map;
-
-import javax.jcr.ImportUUIDBehavior;
-import javax.jcr.NamespaceRegistry;
-
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.access.AccessManager;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
@@ -38,7 +31,13 @@ import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.xml.importing.dataflow.ImportNodeData;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.ConversationState;
+
+import java.util.Map;
+
+import javax.jcr.ImportUUIDBehavior;
+import javax.jcr.NamespaceRegistry;
 
 /**
  * Created by The eXo Platform SAS.
@@ -48,8 +47,7 @@ import org.exoplatform.services.security.ConversationState;
  * @version $Id: WorkspaceRestoreContentImporter.java 14100 2008-05-12 10:53:47Z
  *          gazarenkov $
  */
-public class WorkspaceRestoreContentImporter
-   extends WorkspaceContentImporter
+public class WorkspaceRestoreContentImporter extends WorkspaceContentImporter
 {
 
    protected final Log log = ExoLogger.getLogger("jcr.WorkspaceRestoreContentImporter");
@@ -69,13 +67,13 @@ public class WorkspaceRestoreContentImporter
     * @param context
     */
    public WorkspaceRestoreContentImporter(ItemDataConsumer dataConsumer, NodeTypeDataManager ntManager,
-            LocationFactory locationFactory, ValueFactoryImpl valueFactory, NamespaceRegistry namespaceRegistry,
-            AccessManager accessManager, ConversationState userState, Map<String, Object> context,
-            RepositoryImpl repository, String currentWorkspaceName)
+      LocationFactory locationFactory, ValueFactoryImpl valueFactory, NamespaceRegistry namespaceRegistry,
+      AccessManager accessManager, ConversationState userState, Map<String, Object> context, RepositoryImpl repository,
+      String currentWorkspaceName)
    {
       super(null, Constants.ROOT_PATH, ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW, dataConsumer, ntManager,
-               locationFactory, valueFactory, namespaceRegistry, accessManager, userState, context, repository,
-               currentWorkspaceName);
+         locationFactory, valueFactory, namespaceRegistry, accessManager, userState, context, repository,
+         currentWorkspaceName);
 
    }
 
@@ -86,8 +84,8 @@ public class WorkspaceRestoreContentImporter
       tree.pop();
 
       ImportNodeData newNodeData =
-               new ImportNodeData(Constants.ROOT_PATH, Constants.ROOT_UUID, -1, Constants.NT_UNSTRUCTURED,
-                        new InternalQName[0], 0, null, new AccessControlList());
+         new ImportNodeData(Constants.ROOT_PATH, Constants.ROOT_UUID, -1, Constants.NT_UNSTRUCTURED,
+            new InternalQName[0], 0, null, new AccessControlList());
 
       // persisted.
       changesLog.add(new ItemState(newNodeData, ItemState.ADDED, true, parentPath, false, true));

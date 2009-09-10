@@ -18,6 +18,11 @@
  */
 package org.exoplatform.services.jcr.impl.core.nodetype;
 
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
+import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -27,12 +32,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.log.Log;
-
-import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
-import org.exoplatform.services.jcr.datamodel.InternalQName;
-import org.exoplatform.services.log.ExoLogger;
 
 /**
  * Created by The eXo Platform SAS.
@@ -165,7 +164,7 @@ public class NodeTypeDataHierarchyHolder
     * @throws RepositoryException
     */
    public Set<InternalQName> getSupertypes(final InternalQName nodeTypeName,
-            Map<InternalQName, NodeTypeData> volatileNodeTypes) throws RepositoryException
+      Map<InternalQName, NodeTypeData> volatileNodeTypes) throws RepositoryException
    {
       final NodeTypeHolder nt = nodeTypes.get(nodeTypeName);
       if (nt == null)
@@ -211,7 +210,7 @@ public class NodeTypeDataHierarchyHolder
    }
 
    void addNodeType(final NodeTypeData nodeType, Map<InternalQName, NodeTypeData> volatileNodeTypes)
-            throws RepositoryException
+      throws RepositoryException
    {
       final Set<InternalQName> supers = new HashSet<InternalQName>();
       mergeAllSupertypes(supers, nodeType.getDeclaredSupertypeNames(), volatileNodeTypes);
@@ -224,7 +223,7 @@ public class NodeTypeDataHierarchyHolder
    }
 
    protected synchronized void mergeAllSupertypes(Set<InternalQName> list, final InternalQName[] supers,
-            Map<InternalQName, NodeTypeData> volatileNodeTypes) throws RepositoryException
+      Map<InternalQName, NodeTypeData> volatileNodeTypes) throws RepositoryException
    {
 
       if (supers != null)
@@ -250,7 +249,7 @@ public class NodeTypeDataHierarchyHolder
             else
             {
                mergeAllSupertypes(list, ntSuper.superTypes.toArray(new InternalQName[ntSuper.superTypes.size()]),
-                        volatileNodeTypes);
+                  volatileNodeTypes);
             }
          }
       }

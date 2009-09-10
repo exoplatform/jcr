@@ -34,9 +34,7 @@ import org.apache.lucene.search.FilteredTermEnum;
  * Implements a wildcard term enum that optionally supports embedded property names in lucene term
  * texts.
  */
-class WildcardTermEnum
-   extends FilteredTermEnum
-   implements TransformConstants
+class WildcardTermEnum extends FilteredTermEnum implements TransformConstants
 {
 
    /**
@@ -89,7 +87,7 @@ class WildcardTermEnum
     *           if <code>transform</code> is not a valid value.
     */
    public WildcardTermEnum(IndexReader reader, String field, String propName, String pattern, int transform)
-            throws IOException
+      throws IOException
    {
       if (transform < TRANSFORM_NONE || transform > TRANSFORM_UPPER_CASE)
       {
@@ -240,8 +238,7 @@ class WildcardTermEnum
     * Implements a term enum which respects the transformation flag and matches a pattern on the
     * enumerated terms.
     */
-   private class LowerUpperCaseTermEnum
-      extends TermEnum
+   private class LowerUpperCaseTermEnum extends TermEnum
    {
 
       /**
@@ -255,7 +252,7 @@ class WildcardTermEnum
       private final Iterator it;
 
       public LowerUpperCaseTermEnum(IndexReader reader, String field, String propName, String pattern, int transform)
-               throws IOException
+         throws IOException
       {
          if (transform != TRANSFORM_LOWER_CASE && transform != TRANSFORM_UPPER_CASE)
          {
@@ -324,7 +321,7 @@ class WildcardTermEnum
                // do range scans with patter matcher
                for (Iterator it = rangeScans.iterator(); it.hasNext();)
                {
-                  RangeScan scan = (RangeScan) it.next();
+                  RangeScan scan = (RangeScan)it.next();
                   do
                   {
                      Term t = scan.term();
@@ -346,7 +343,7 @@ class WildcardTermEnum
                // close range scans
                for (Iterator it = rangeScans.iterator(); it.hasNext();)
                {
-                  RangeScan scan = (RangeScan) it.next();
+                  RangeScan scan = (RangeScan)it.next();
                   try
                   {
                      scan.close();
@@ -390,7 +387,7 @@ class WildcardTermEnum
        */
       public int docFreq()
       {
-         Integer docFreq = (Integer) orderedTerms.get(current);
+         Integer docFreq = (Integer)orderedTerms.get(current);
          return docFreq != null ? docFreq.intValue() : 0;
       }
 
@@ -408,7 +405,7 @@ class WildcardTermEnum
        */
       private void getNext()
       {
-         current = it.hasNext() ? (Term) it.next() : null;
+         current = it.hasNext() ? (Term)it.next() : null;
       }
    }
 }

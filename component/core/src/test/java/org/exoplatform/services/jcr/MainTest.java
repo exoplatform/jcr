@@ -23,15 +23,13 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 /**
  * An example of testing servlets using httpunit and JUnit.
  **/
-public class MainTest
-   extends TestCase
+public class MainTest extends TestCase
 {
 
    private Log log = ExoLogger.getLogger("jcr.Test");

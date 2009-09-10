@@ -34,8 +34,7 @@ import javax.jcr.nodetype.PropertyDefinition;
  * @version $Id: PropertyDefinitionValue.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public final class PropertyDefinitionValue
-   extends ItemDefinitionValue
+public final class PropertyDefinitionValue extends ItemDefinitionValue
 {
    private int requiredType;
 
@@ -61,7 +60,7 @@ public final class PropertyDefinitionValue
     * @param valueConstraints
     */
    public PropertyDefinitionValue(String name, boolean autoCreate, boolean mandatory, int onVersion, boolean readOnly,
-            List<String> defaultValueStrings, boolean multiple, int requiredType, List<String> valueConstraints)
+      List<String> defaultValueStrings, boolean multiple, int requiredType, List<String> valueConstraints)
    {
       super(name, autoCreate, mandatory, onVersion, readOnly);
       this.defaultValueStrings = defaultValueStrings;
@@ -77,8 +76,8 @@ public final class PropertyDefinitionValue
       this.multiple = propertyDefinition.isMultiple();
       this.requiredType = propertyDefinition.getRequiredType();
       this.valueConstraints =
-               propertyDefinition.getValueConstraints() != null ? Arrays.asList(propertyDefinition
-                        .getValueConstraints()) : new ArrayList<String>();;
+         propertyDefinition.getValueConstraints() != null ? Arrays.asList(propertyDefinition.getValueConstraints())
+            : new ArrayList<String>();;
    }
 
    /**

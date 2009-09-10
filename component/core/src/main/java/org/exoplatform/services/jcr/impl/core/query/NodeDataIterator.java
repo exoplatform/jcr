@@ -24,7 +24,6 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
  * <code>NodeStateIterator</code> extends the Iterator interface by the respective NodeState
  * methods.
  */
-public interface NodeDataIterator
-   extends Iterator<NodeData>
+public interface NodeDataIterator extends Iterator<NodeData>
 {
 }

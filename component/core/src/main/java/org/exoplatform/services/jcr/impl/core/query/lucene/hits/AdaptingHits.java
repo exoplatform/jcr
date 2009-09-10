@@ -27,8 +27,7 @@ import org.exoplatform.services.log.ExoLogger;
  * switches to a BitSetHits instance if at least the threshold of 8kb for the ArrayHits is reached
  * and a BitSetHits instance would consume less memory.
  */
-public class AdaptingHits
-   implements Hits
+public class AdaptingHits implements Hits
 {
 
    /**

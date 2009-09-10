@@ -18,13 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
-import javax.jcr.NamespaceException;
-import javax.jcr.Node;
-import javax.jcr.PathNotFoundException;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.nodetype.NoSuchNodeTypeException;
-
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
@@ -34,12 +27,18 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer
 import org.exoplatform.services.jcr.util.ConfigurationHelper;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
+import javax.jcr.NamespaceException;
+import javax.jcr.Node;
+import javax.jcr.PathNotFoundException;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.nodetype.NoSuchNodeTypeException;
+
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: TestRepositoryManagement.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class TestRepositoryManagement
-   extends JcrImplBaseTest
+public class TestRepositoryManagement extends JcrImplBaseTest
 {
 
    public static int BINDED_DS_COUNT = 100;
@@ -74,19 +73,19 @@ public class TestRepositoryManagement
       repositoryEntry.setDefaultWorkspaceName(defaultWs);
 
       WorkspaceEntry workspaceEntry =
-               helper.getNewWs(defaultWs, isDefaultWsMultiDb, null, "target/temp/values/" + IdGenerator.generate(),
-                        wsEntry.getContainer());
+         helper.getNewWs(defaultWs, isDefaultWsMultiDb, null, "target/temp/values/" + IdGenerator.generate(), wsEntry
+            .getContainer());
 
       repositoryEntry.addWorkspace(workspaceEntry);
 
       WorkspaceEntry secondWs =
-               helper.getNewWs(defaultWs + IdGenerator.generate(), isDefaultWsMultiDb, isDefaultWsMultiDb ? null
-                        : workspaceEntry.getContainer().getParameterValue("sourceName"), "target/temp/values/"
-                        + IdGenerator.generate(), wsEntry.getContainer());
+         helper.getNewWs(defaultWs + IdGenerator.generate(), isDefaultWsMultiDb, isDefaultWsMultiDb ? null
+            : workspaceEntry.getContainer().getParameterValue("sourceName"), "target/temp/values/"
+            + IdGenerator.generate(), wsEntry.getContainer());
 
       repositoryEntry.addWorkspace(secondWs);
 
-      RepositoryService service = (RepositoryService) container.getComponentInstanceOfType(RepositoryService.class);
+      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
 
       service.createRepository(repositoryEntry);
    }
@@ -96,7 +95,7 @@ public class TestRepositoryManagement
    {
       // bindDs();
       super.setUp();
-      wsEntry = (WorkspaceEntry) session.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
+      wsEntry = (WorkspaceEntry)session.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
       if ("true".equals(wsEntry.getContainer().getParameterValue("multi-db")))
       {
          isDefaultWsMultiDb = true;
@@ -134,17 +133,17 @@ public class TestRepositoryManagement
       //    
 
       WorkspaceEntry workspaceEntry =
-               helper.getNewWs("ws4TestCreateRepository", isDefaultWsMultiDb, wsEntry.getContainer().getParameterValue(
-                        JDBCWorkspaceDataContainer.SOURCE_NAME), "target/temp/values/" + IdGenerator.generate(),
-                        wsEntry.getContainer());
+         helper.getNewWs("ws4TestCreateRepository", isDefaultWsMultiDb, wsEntry.getContainer().getParameterValue(
+            JDBCWorkspaceDataContainer.SOURCE_NAME), "target/temp/values/" + IdGenerator.generate(), wsEntry
+            .getContainer());
 
       repositoryEntry.addWorkspace(workspaceEntry);
 
-      RepositoryService service = (RepositoryService) container.getComponentInstanceOfType(RepositoryService.class);
+      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
 
       service.createRepository(repositoryEntry);
 
-      RepositoryImpl newRtepository = (RepositoryImpl) service.getRepository("repo4TestCreateRepository");
+      RepositoryImpl newRtepository = (RepositoryImpl)service.getRepository("repo4TestCreateRepository");
       try
       {
 
@@ -166,7 +165,7 @@ public class TestRepositoryManagement
       {
          fail();
       }
-      RepositoryImpl defRep = (RepositoryImpl) service.getDefaultRepository();
+      RepositoryImpl defRep = (RepositoryImpl)service.getDefaultRepository();
       Session sess = null;
       try
       {
@@ -199,7 +198,7 @@ public class TestRepositoryManagement
    public void testAddNewRepositoryWithSameName() throws Exception
    {
 
-      RepositoryService service = (RepositoryService) container.getComponentInstanceOfType(RepositoryService.class);
+      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
 
       RepositoryEntry repositoryEntry = new RepositoryEntry();
 
@@ -229,8 +228,8 @@ public class TestRepositoryManagement
       // workspaceEntry.setContainer(containerEntry);
 
       WorkspaceEntry workspaceEntry =
-               helper.getNewWs("ws4testAddNewRepositoryWithSameName", isDefaultWsMultiDb, null, "target/temp/values/"
-                        + IdGenerator.generate(), wsEntry.getContainer());
+         helper.getNewWs("ws4testAddNewRepositoryWithSameName", isDefaultWsMultiDb, null, "target/temp/values/"
+            + IdGenerator.generate(), wsEntry.getContainer());
       repositoryEntry.addWorkspace(workspaceEntry);
 
       try
@@ -257,24 +256,24 @@ public class TestRepositoryManagement
       repositoryEntry.setDefaultWorkspaceName("ws4testCanRemove");
 
       WorkspaceEntry workspaceEntry =
-               helper.getNewWs("ws4testCanRemove", isDefaultWsMultiDb, null, "target/temp/values/"
-                        + IdGenerator.generate(), wsEntry.getContainer());
+         helper.getNewWs("ws4testCanRemove", isDefaultWsMultiDb, null, "target/temp/values/" + IdGenerator.generate(),
+            wsEntry.getContainer());
 
       repositoryEntry.addWorkspace(workspaceEntry);
 
       WorkspaceEntry secondWs =
-               helper.getNewWs("ws4testCanRemove2", isDefaultWsMultiDb, isDefaultWsMultiDb ? null : wsEntry
-                        .getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME),
-                        "target/temp/values/" + IdGenerator.generate(), wsEntry.getContainer());
+         helper.getNewWs("ws4testCanRemove2", isDefaultWsMultiDb, isDefaultWsMultiDb ? null : wsEntry.getContainer()
+            .getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME), "target/temp/values/" + IdGenerator.generate(),
+            wsEntry.getContainer());
       // WorkspaceEntry secondWs = TestWorkspaceManagement.getNewWs(null, false,
       // dsName,null);
       repositoryEntry.addWorkspace(secondWs);
 
-      RepositoryService service = (RepositoryService) container.getComponentInstanceOfType(RepositoryService.class);
+      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
 
       service.createRepository(repositoryEntry);
 
-      RepositoryImpl newRtepository = (RepositoryImpl) service.getRepository("repo4testCanRemove");
+      RepositoryImpl newRtepository = (RepositoryImpl)service.getRepository("repo4testCanRemove");
       try
       {
 
@@ -308,9 +307,9 @@ public class TestRepositoryManagement
       String WSNAME = "ws4" + REPONAME;
 
       createDafaultRepository(REPONAME, WSNAME);
-      RepositoryService service = (RepositoryService) container.getComponentInstanceOfType(RepositoryService.class);
+      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
 
-      RepositoryImpl newRepository = (RepositoryImpl) service.getRepository(REPONAME);
+      RepositoryImpl newRepository = (RepositoryImpl)service.getRepository(REPONAME);
       Session sess = newRepository.getSystemSession(WSNAME);
 
       assertEquals("http://www.apache.org/jackrabbit/test", sess.getNamespaceURI("test"));
@@ -336,9 +335,9 @@ public class TestRepositoryManagement
       String WSNAME = "ws4testInitNodeTypes";
 
       createDafaultRepository(REPONAME, WSNAME);
-      RepositoryService service = (RepositoryService) container.getComponentInstanceOfType(RepositoryService.class);
+      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
 
-      RepositoryImpl newRepository = (RepositoryImpl) service.getRepository(REPONAME);
+      RepositoryImpl newRepository = (RepositoryImpl)service.getRepository(REPONAME);
       Session sess = newRepository.getSystemSession(WSNAME);
       Node newRoot = sess.getRootNode();
       try
@@ -387,7 +386,7 @@ public class TestRepositoryManagement
       REPONAME = "testInitNodeTypesRepository";
       createDafaultRepository(REPONAME, WSNAME);
 
-      newRepository = (RepositoryImpl) service.getRepository(REPONAME);
+      newRepository = (RepositoryImpl)service.getRepository(REPONAME);
       sess = newRepository.getSystemSession(WSNAME);
       newRoot = sess.getRootNode();
 
@@ -428,7 +427,7 @@ public class TestRepositoryManagement
       REPONAME = "testInitNodeTypesRepositoryTest2";
       createDafaultRepository(REPONAME, WSNAME);
 
-      newRepository = (RepositoryImpl) service.getRepository(REPONAME);
+      newRepository = (RepositoryImpl)service.getRepository(REPONAME);
       sess = newRepository.getSystemSession(WSNAME);
       newRoot = sess.getRootNode();
 
@@ -478,22 +477,22 @@ public class TestRepositoryManagement
       repositoryEntry.setDefaultWorkspaceName("ws4testRemove");
 
       WorkspaceEntry workspaceEntry =
-               helper.getNewWs("ws4testRemove", isDefaultWsMultiDb, null, "target/temp/values/"
-                        + IdGenerator.generate(), wsEntry.getContainer());
+         helper.getNewWs("ws4testRemove", isDefaultWsMultiDb, null, "target/temp/values/" + IdGenerator.generate(),
+            wsEntry.getContainer());
 
       repositoryEntry.addWorkspace(workspaceEntry);
 
       WorkspaceEntry secondWs =
-               helper.getNewWs("ws4testRemove2", isDefaultWsMultiDb, isDefaultWsMultiDb ? null : wsEntry.getContainer()
-                        .getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME), "target/temp/values/"
-                        + IdGenerator.generate(), wsEntry.getContainer());
+         helper.getNewWs("ws4testRemove2", isDefaultWsMultiDb, isDefaultWsMultiDb ? null : wsEntry.getContainer()
+            .getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME), "target/temp/values/" + IdGenerator.generate(),
+            wsEntry.getContainer());
       repositoryEntry.addWorkspace(secondWs);
 
-      RepositoryService service = (RepositoryService) container.getComponentInstanceOfType(RepositoryService.class);
+      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
 
       service.createRepository(repositoryEntry);
 
-      RepositoryImpl newRtepository = (RepositoryImpl) service.getRepository("repo4testRemove");
+      RepositoryImpl newRtepository = (RepositoryImpl)service.getRepository("repo4testRemove");
       assertTrue(service.canRemoveRepository("repo4testRemove"));
 
       service.removeRepository("repo4testRemove");
@@ -511,19 +510,19 @@ public class TestRepositoryManagement
       repositoryEntry.setDefaultWorkspaceName("ws4RemoveOtherThread");
 
       WorkspaceEntry workspaceEntry =
-               helper.getNewWs("ws4RemoveOtherThread", isDefaultWsMultiDb, null, "target/temp/values/"
-                        + IdGenerator.generate(), wsEntry.getContainer());
+         helper.getNewWs("ws4RemoveOtherThread", isDefaultWsMultiDb, null, "target/temp/values/"
+            + IdGenerator.generate(), wsEntry.getContainer());
 
       repositoryEntry.addWorkspace(workspaceEntry);
 
       WorkspaceEntry secondWs =
-               helper.getNewWs("ws4RemoveOtherThread2", isDefaultWsMultiDb, isDefaultWsMultiDb ? null : wsEntry
-                        .getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME),
-                        "target/temp/values/" + IdGenerator.generate(), wsEntry.getContainer());
+         helper.getNewWs("ws4RemoveOtherThread2", isDefaultWsMultiDb, isDefaultWsMultiDb ? null : wsEntry
+            .getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME), "target/temp/values/"
+            + IdGenerator.generate(), wsEntry.getContainer());
 
       repositoryEntry.addWorkspace(secondWs);
 
-      RepositoryService service = (RepositoryService) container.getComponentInstanceOfType(RepositoryService.class);
+      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
 
       service.createRepository(repositoryEntry);
 
@@ -545,8 +544,7 @@ public class TestRepositoryManagement
       }
    }
 
-   private class RepositoryRemover
-      extends Thread
+   private class RepositoryRemover extends Thread
    {
       private final String repoName;
 

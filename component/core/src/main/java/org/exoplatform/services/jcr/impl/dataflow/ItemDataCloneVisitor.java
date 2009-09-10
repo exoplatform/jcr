@@ -18,13 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import javax.jcr.ItemExistsException;
-import javax.jcr.RepositoryException;
-
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
@@ -37,6 +30,13 @@ import org.exoplatform.services.jcr.impl.core.ItemImpl;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.dataflow.session.SessionChangesLog;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import javax.jcr.ItemExistsException;
+import javax.jcr.RepositoryException;
+
 /**
  * The class visits each node, all subnodes and all of them properties. It transfer as parameter of
  * a method <code>ItemData.visits()</code>. During visiting the class forms the <b>itemAddStates</b>
@@ -46,8 +46,7 @@ import org.exoplatform.services.jcr.impl.dataflow.session.SessionChangesLog;
  * 
  * @version $Id: ItemDataCloneVisitor.java 12306 2008-03-24 10:25:55Z ksm $
  */
-public class ItemDataCloneVisitor
-   extends DefaultItemDataCopyVisitor
+public class ItemDataCloneVisitor extends DefaultItemDataCopyVisitor
 {
 
    /**
@@ -85,8 +84,8 @@ public class ItemDataCloneVisitor
     *          made.
     */
    public ItemDataCloneVisitor(NodeData parent, InternalQName dstNodeName, NodeTypeDataManager nodeTypeManager,
-            SessionDataManager srcDataManager, SessionDataManager dstDataManager, boolean removeExisting,
-            SessionChangesLog changes)
+      SessionDataManager srcDataManager, SessionDataManager dstDataManager, boolean removeExisting,
+      SessionChangesLog changes)
    {
       super(parent, dstNodeName, nodeTypeManager, srcDataManager, false);
 
@@ -154,7 +153,7 @@ public class ItemDataCloneVisitor
    {
 
       boolean isMixReferenceable =
-               ntManager.isNodeType(Constants.MIX_REFERENCEABLE, node.getPrimaryTypeName(), node.getMixinTypeNames());
+         ntManager.isNodeType(Constants.MIX_REFERENCEABLE, node.getPrimaryTypeName(), node.getMixinTypeNames());
       deletedExistingPropery = false;
       if (isMixReferenceable)
       {
@@ -173,7 +172,7 @@ public class ItemDataCloneVisitor
             {
                deletedExistingPropery = true;
                itemDeletedExistingStates.add(new ItemState(relItem.getData(), ItemState.DELETED, true, dstDataManager
-                        .getItemByIdentifier(relItem.getParentIdentifier(), false).getInternalPath(), level != 0));
+                  .getItemByIdentifier(relItem.getParentIdentifier(), false).getInternalPath(), level != 0));
             }
             else
             {
@@ -199,8 +198,8 @@ public class ItemDataCloneVisitor
          {
             // search destination propery
             ItemData dstParentNodeData =
-                     dstDataManager.getItemByIdentifier(property.getParentIdentifier(), false).getData();
-            List<PropertyData> dstChildProperties = dstDataManager.getChildPropertiesData((NodeData) dstParentNodeData);
+               dstDataManager.getItemByIdentifier(property.getParentIdentifier(), false).getData();
+            List<PropertyData> dstChildProperties = dstDataManager.getChildPropertiesData((NodeData)dstParentNodeData);
             PropertyData dstProperty = null;
 
             for (PropertyData propertyData : dstChildProperties)
@@ -214,12 +213,12 @@ public class ItemDataCloneVisitor
             if (dstProperty != null)
             {
                itemDeletedExistingStates.add(new ItemState(dstProperty, ItemState.DELETED, true, dstDataManager
-                        .getItemByIdentifier(dstProperty.getParentIdentifier(), false).getInternalPath(), level != 0));
+                  .getItemByIdentifier(dstProperty.getParentIdentifier(), false).getInternalPath(), level != 0));
             }
             else
             {
                throw new RepositoryException("Destination propery " + property.getQPath().getAsString()
-                        + " not found. ");
+                  + " not found. ");
             }
          }
       }

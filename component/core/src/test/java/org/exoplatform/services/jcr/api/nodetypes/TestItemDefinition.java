@@ -27,8 +27,7 @@ import org.exoplatform.services.jcr.JcrAPIBaseTest;
  * @version $Id: TestItemDefinition.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class TestItemDefinition
-   extends JcrAPIBaseTest
+public class TestItemDefinition extends JcrAPIBaseTest
 {
 
    public void testItemDefinitionProperties() throws Exception

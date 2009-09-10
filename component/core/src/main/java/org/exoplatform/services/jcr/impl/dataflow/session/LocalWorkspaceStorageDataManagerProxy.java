@@ -18,14 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.session;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.LinkedList;
-import java.util.List;
-
-import javax.jcr.InvalidItemStateException;
-import javax.jcr.RepositoryException;
-
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.dataflow.ChangesLogIterator;
 import org.exoplatform.services.jcr.dataflow.CompositeChangesLog;
@@ -46,6 +38,14 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.LocalWorkspaceDataManagerStub;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.LinkedList;
+import java.util.List;
+
+import javax.jcr.InvalidItemStateException;
+import javax.jcr.RepositoryException;
+
 /**
  * Created by The eXo Platform SAS.<br/> proxy of local workspace storage. "local" means that
  * backended workspace data manager is located on the same JVM as session layer.
@@ -57,8 +57,7 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.LocalWorkspaceDataM
  * @version $Id: LocalWorkspaceStorageDataManagerProxy.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class LocalWorkspaceStorageDataManagerProxy
-   implements WorkspaceStorageDataManagerProxy
+public class LocalWorkspaceStorageDataManagerProxy implements WorkspaceStorageDataManagerProxy
 {
 
    protected final LocalWorkspaceDataManagerStub storageDataManager;
@@ -66,7 +65,7 @@ public class LocalWorkspaceStorageDataManagerProxy
    protected final ValueFactoryImpl valueFactory;
 
    public LocalWorkspaceStorageDataManagerProxy(LocalWorkspaceDataManagerStub storageDataManager,
-            ValueFactoryImpl valueFactory)
+      ValueFactoryImpl valueFactory)
    {
       this.storageDataManager = storageDataManager;
       this.valueFactory = valueFactory;
@@ -76,10 +75,10 @@ public class LocalWorkspaceStorageDataManagerProxy
     * {@inheritDoc}
     */
    public void save(ItemStateChangesLog changesLog) throws InvalidItemStateException, UnsupportedOperationException,
-            RepositoryException
+      RepositoryException
    {
 
-      ChangesLogIterator logIterator = ((CompositeChangesLog) changesLog).getLogIterator();
+      ChangesLogIterator logIterator = ((CompositeChangesLog)changesLog).getLogIterator();
       TransactionChangesLog newLog = new TransactionChangesLog();
 
       while (logIterator.hasNextLog())
@@ -89,7 +88,7 @@ public class LocalWorkspaceStorageDataManagerProxy
          for (ItemState change : changes.getAllStates())
          {
             states.add(new ItemState(copyItemData(change.getData()), change.getState(), change.isEventFire(), change
-                     .getAncestorToSave(), change.isInternallyCreated(), change.isPersisted()));
+               .getAncestorToSave(), change.isInternallyCreated(), change.isPersisted()));
          }
 
          newLog.addLog(new PlainChangesLogImpl(states, changes.getSessionId(), changes.getEventType()));
@@ -136,7 +135,7 @@ public class LocalWorkspaceStorageDataManagerProxy
     * {@inheritDoc}
     */
    public List<PropertyData> getReferencesData(String identifier, boolean skipVersionStorage)
-            throws RepositoryException
+      throws RepositoryException
    {
       return copyProperties(storageDataManager.getReferencesData(identifier, skipVersionStorage));
    }
@@ -159,26 +158,25 @@ public class LocalWorkspaceStorageDataManagerProxy
       if (item.isNode())
       {
 
-         final NodeData node = (NodeData) item;
+         final NodeData node = (NodeData)item;
 
          // the node ACL can't be are null as ACL manager does care about this
          final AccessControlList acl = node.getACL();
          if (acl == null)
          {
             throw new RepositoryException("Node ACL is null. " + node.getQPath().getAsString() + " "
-                     + node.getIdentifier());
+               + node.getIdentifier());
          }
          return new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(), node
-                  .getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(), node.getParentIdentifier(),
-                  acl);
+            .getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(), node.getParentIdentifier(), acl);
       }
 
       // else - property
-      final PropertyData prop = (PropertyData) item;
+      final PropertyData prop = (PropertyData)item;
       // make a copy
       TransientPropertyData newData =
-               new TransientPropertyData(prop.getQPath(), prop.getIdentifier(), prop.getPersistedVersion(), prop
-                        .getType(), prop.getParentIdentifier(), prop.isMultiValued());
+         new TransientPropertyData(prop.getQPath(), prop.getIdentifier(), prop.getPersistedVersion(), prop.getType(),
+            prop.getParentIdentifier(), prop.isMultiValued());
 
       List<ValueData> values = null;
       // null is possible for deleting items
@@ -187,7 +185,7 @@ public class LocalWorkspaceStorageDataManagerProxy
          values = new ArrayList<ValueData>();
          for (ValueData val : prop.getValues())
          {
-            values.add(((AbstractValueData) val).createTransientCopy());
+            values.add(((AbstractValueData)val).createTransientCopy());
          }
       }
       newData.setValues(values);
@@ -202,8 +200,8 @@ public class LocalWorkspaceStorageDataManagerProxy
 
       // make a copy
       TransientPropertyData newData =
-               new TransientPropertyData(property.getQPath(), property.getIdentifier(), property.getPersistedVersion(),
-                        property.getType(), property.getParentIdentifier(), property.isMultiValued());
+         new TransientPropertyData(property.getQPath(), property.getIdentifier(), property.getPersistedVersion(),
+            property.getType(), property.getParentIdentifier(), property.isMultiValued());
 
       newData.setValues(new ArrayList<ValueData>());
       return newData;
@@ -216,7 +214,7 @@ public class LocalWorkspaceStorageDataManagerProxy
       {
          for (NodeData nodeData : childNodes)
          {
-            copyOfChildsNodes.add((NodeData) copyItemData(nodeData));
+            copyOfChildsNodes.add((NodeData)copyItemData(nodeData));
          }
       }
       return copyOfChildsNodes;
@@ -229,21 +227,21 @@ public class LocalWorkspaceStorageDataManagerProxy
       {
          for (PropertyData nodeProperty : traverseProperties)
          {
-            copyOfChildsProperties.add((PropertyData) copyItemData(nodeProperty));
+            copyOfChildsProperties.add((PropertyData)copyItemData(nodeProperty));
          }
       }
       return copyOfChildsProperties;
    }
 
    private List<PropertyData> copyPropertiesWithoutValues(final List<PropertyData> traverseProperties)
-            throws RepositoryException
+      throws RepositoryException
    {
       final List<PropertyData> copyOfChildsProperties = new LinkedList<PropertyData>();
       synchronized (traverseProperties)
       {
          for (PropertyData nodeProperty : traverseProperties)
          {
-            copyOfChildsProperties.add((PropertyData) copyPropertyDataWithoutValue(nodeProperty));
+            copyOfChildsProperties.add((PropertyData)copyPropertyDataWithoutValue(nodeProperty));
          }
       }
       return copyOfChildsProperties;

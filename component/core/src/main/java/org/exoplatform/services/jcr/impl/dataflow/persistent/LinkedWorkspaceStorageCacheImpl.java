@@ -18,6 +18,21 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
+import org.exoplatform.services.jcr.config.CacheEntry;
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.dataflow.ItemState;
+import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
+import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
+import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.PropertyData;
+import org.exoplatform.services.jcr.datamodel.QPath;
+import org.exoplatform.services.jcr.datamodel.QPathEntry;
+import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -33,21 +48,6 @@ import java.util.Map.Entry;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.exoplatform.services.log.Log;
-import org.exoplatform.services.jcr.config.CacheEntry;
-import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
-import org.exoplatform.services.jcr.config.WorkspaceEntry;
-import org.exoplatform.services.jcr.dataflow.ItemState;
-import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
-import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
-import org.exoplatform.services.jcr.datamodel.ItemData;
-import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.datamodel.PropertyData;
-import org.exoplatform.services.jcr.datamodel.QPath;
-import org.exoplatform.services.jcr.datamodel.QPathEntry;
-import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.log.ExoLogger;
-
 /**
  * Created by The eXo Platform SAS.<br/>
  * 
@@ -58,8 +58,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: LinkedWorkspaceStorageCacheImpl.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class LinkedWorkspaceStorageCacheImpl
-   implements WorkspaceStorageCache
+public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
 {
 
    /**
@@ -211,8 +210,7 @@ public class LinkedWorkspaceStorageCacheImpl
    /**
     * Cache C lock class.
     */
-   class CacheLock
-      extends ReentrantLock
+   class CacheLock extends ReentrantLock
    {
 
       Collection<Thread> getLockThreads()
@@ -229,8 +227,7 @@ public class LinkedWorkspaceStorageCacheImpl
    /**
     * Cache C map impl.
     */
-   class CacheMap<K extends CacheKey, V extends CacheValue>
-      extends LinkedHashMap<K, V>
+   class CacheMap<K extends CacheKey, V extends CacheValue> extends LinkedHashMap<K, V>
    {
 
       CacheMap(long maxSize, float loadFactor)
@@ -266,8 +263,7 @@ public class LinkedWorkspaceStorageCacheImpl
    /**
     * Cache C map uses blocking on get operation.
     */
-   class BlockingCacheMap<K extends CacheKey, V extends CacheValue>
-      extends CacheMap<K, V>
+   class BlockingCacheMap<K extends CacheKey, V extends CacheValue> extends CacheMap<K, V>
    {
 
       private final CacheLock userLock = new CacheLock();
@@ -321,8 +317,7 @@ public class LinkedWorkspaceStorageCacheImpl
    /**
     * Cache C map uses blocking on get operation.
     */
-   class GroupBlockingCacheMap<K extends CacheKey, V extends CacheValue>
-      extends CacheMap<K, V>
+   class GroupBlockingCacheMap<K extends CacheKey, V extends CacheValue> extends CacheMap<K, V>
    {
 
       private final Semaphore usersLock;
@@ -396,8 +391,7 @@ public class LinkedWorkspaceStorageCacheImpl
    /**
     * Cache worker base class.
     */
-   abstract class Worker
-      extends Thread
+   abstract class Worker extends Thread
    {
       protected volatile boolean done = false;
 
@@ -410,8 +404,7 @@ public class LinkedWorkspaceStorageCacheImpl
    /**
     * Cache cleaner.
     */
-   class Cleaner
-      extends Worker
+   class Cleaner extends Worker
    {
       private final Log log;
 
@@ -470,7 +463,7 @@ public class LinkedWorkspaceStorageCacheImpl
 
                if (log.isDebugEnabled())
                   log.debug("Cleaner task done in " + (System.currentTimeMillis() - start) + "ms. Size " + sizeBefore
-                           + " -> " + cache.size() + ", " + expiredCount + " processed.");
+                     + " -> " + cache.size() + ", " + expiredCount + " processed.");
             }
             catch (ConcurrentModificationException e)
             {
@@ -483,7 +476,7 @@ public class LinkedWorkspaceStorageCacheImpl
                      lockUsers.append(',');
                   }
                   log.error("Cleaner task error, cache in use. On-write owner [" + lockOwnerId + "], users ["
-                           + lockUsers.toString() + "], error " + e, e);
+                     + lockUsers.toString() + "], error " + e, e);
                } // else it's not matter for work, the task will try next time
             }
             catch (Throwable e)
@@ -501,7 +494,7 @@ public class LinkedWorkspaceStorageCacheImpl
          else // skip if lock is used by another process
          if (log.isDebugEnabled())
             log.debug("Cleaner task skipped. Ceche in use by another process ["
-                     + String.valueOf(writeLock.getLockOwner()) + "]. Will try next time.");
+               + String.valueOf(writeLock.getLockOwner()) + "]. Will try next time.");
       }
 
       /**
@@ -535,8 +528,7 @@ public class LinkedWorkspaceStorageCacheImpl
    /**
     * Statistics collector.
     */
-   class StatisticCollector
-      extends Worker
+   class StatisticCollector extends Worker
    {
       /*
        * (non-Javadoc)
@@ -559,8 +551,7 @@ public class LinkedWorkspaceStorageCacheImpl
    /**
     * Base worker task calss.
     */
-   abstract class WorkerTask
-      extends TimerTask
+   abstract class WorkerTask extends TimerTask
    {
       protected Log log = ExoLogger.getLogger("jcr.LinkedWorkspaceStorageCacheImpl_Worker");
 
@@ -570,8 +561,7 @@ public class LinkedWorkspaceStorageCacheImpl
    /**
     * Cleaner task class.
     */
-   class CleanerTask
-      extends WorkerTask
+   class CleanerTask extends WorkerTask
    {
       public void run()
       {
@@ -590,8 +580,7 @@ public class LinkedWorkspaceStorageCacheImpl
    /**
     * Gathering statistic task.
     */
-   class StatisticTask
-      extends WorkerTask
+   class StatisticTask extends WorkerTask
    {
       public void run()
       {
@@ -620,8 +609,8 @@ public class LinkedWorkspaceStorageCacheImpl
     * @throws RepositoryConfigurationException
     */
    public LinkedWorkspaceStorageCacheImpl(String name, boolean enabled, int maxSize, long liveTimeSec,
-            long cleanerPeriodMillis, long statisticPeriodMillis, boolean deepDelete, boolean cleanStatistics,
-            int blockingUsers, boolean showStatistic) throws RepositoryConfigurationException
+      long cleanerPeriodMillis, long statisticPeriodMillis, boolean deepDelete, boolean cleanStatistics,
+      int blockingUsers, boolean showStatistic) throws RepositoryConfigurationException
    {
       this.name = name;
 
@@ -738,13 +727,13 @@ public class LinkedWorkspaceStorageCacheImpl
       this.workerTimer = new Timer(this.name + "_CacheWorker", true);
 
       // cleaner
-      int start = ((int) cleanerPeriod) / 2; // half or period
+      int start = ((int)cleanerPeriod) / 2; // half or period
       start = start > 60000 ? start : 60000; // don't start now
       scheduleTask(new CleanerTask(), start, cleanerPeriod);
 
       // statistic collector
       gatherStatistic();
-      start = ((int) statisticPeriod) / 2; // half or period
+      start = ((int)statisticPeriod) / 2; // half or period
       start = start > 15000 ? start : 15000; // don't start now
       scheduleTask(new StatisticTask(), start, statisticPeriod);
    }
@@ -811,28 +800,27 @@ public class LinkedWorkspaceStorageCacheImpl
    private void gatherStatistic()
    {
       final CacheStatistic st =
-               new CacheStatistic(miss, hits, cache.size(), nodesCache.size(), propertiesCache.size(), maxSize,
-                        liveTime, totalGetTime);
+         new CacheStatistic(miss, hits, cache.size(), nodesCache.size(), propertiesCache.size(), maxSize, liveTime,
+            totalGetTime);
 
       if (showStatistic)
          try
          {
             double rel =
-                     st.getMiss() > 0 && st.getHits() > 0
-                              ? (Math.round((10000d * st.getHits()) / st.getMiss())) / 10000d : 0;
+               st.getMiss() > 0 && st.getHits() > 0 ? (Math.round((10000d * st.getHits()) / st.getMiss())) / 10000d : 0;
             LOG.info("Cache "
-                     + name
-                     + ": relevancy "
-                     + rel
-                     + " (hits:"
-                     + st.getHits()
-                     + ", miss:"
-                     + st.getMiss()
-                     + "), get:"
-                     + Math.round((st.getHits() + st.getMiss())
-                              / (st.getTotalGetTime() > 0 ? st.getTotalGetTime() / 1000d : 1)) + "oper/sec ("
-                     + (st.getTotalGetTime() / 1000d) + "sec)" + ", size:" + st.getSize() + " (max " + st.getMaxSize()
-                     + ")" + ", childs(nodes:" + st.getNodesSize() + ", properties:" + st.getPropertiesSize() + ")");
+               + name
+               + ": relevancy "
+               + rel
+               + " (hits:"
+               + st.getHits()
+               + ", miss:"
+               + st.getMiss()
+               + "), get:"
+               + Math.round((st.getHits() + st.getMiss())
+                  / (st.getTotalGetTime() > 0 ? st.getTotalGetTime() / 1000d : 1)) + "oper/sec ("
+               + (st.getTotalGetTime() / 1000d) + "sec)" + ", size:" + st.getSize() + " (max " + st.getMaxSize() + ")"
+               + ", childs(nodes:" + st.getNodesSize() + ", properties:" + st.getPropertiesSize() + ")");
          }
          catch (Throwable e)
          {
@@ -901,7 +889,7 @@ public class LinkedWorkspaceStorageCacheImpl
          catch (Exception e)
          {
             LOG.error("GET operation fails. Parent ID=" + parentId + " name "
-                     + (name != null ? name.getAsString() : name) + ". Error " + e + ". NULL returned.", e);
+               + (name != null ? name.getAsString() : name) + ". Error " + e + ". NULL returned.", e);
          }
       }
 
@@ -917,8 +905,8 @@ public class LinkedWorkspaceStorageCacheImpl
    {
       cache.put(new CacheId(data.getIdentifier()), new CacheValue(data, System.currentTimeMillis() + liveTime));
       cache.put(new CacheQPath(data.getParentIdentifier(), data.getQPath()), new CacheValue(data, System
-               .currentTimeMillis()
-               + liveTime));
+         .currentTimeMillis()
+         + liveTime));
    }
 
    /**
@@ -934,7 +922,7 @@ public class LinkedWorkspaceStorageCacheImpl
          {
             if (LOG.isDebugEnabled())
                LOG.debug(name + ", put()    " + item.getQPath().getAsString() + "    " + item.getIdentifier()
-                        + "  --  " + item);
+                  + "  --  " + item);
 
             putItem(item);
 
@@ -946,7 +934,7 @@ public class LinkedWorkspaceStorageCacheImpl
                if (cachedParentChilds != null)
                {
                   // Playing for orderable work
-                  NodeData nodeData = (NodeData) item;
+                  NodeData nodeData = (NodeData)item;
                   int orderNumber = nodeData.getOrderNumber();
 
                   synchronized (cachedParentChilds)
@@ -972,7 +960,7 @@ public class LinkedWorkspaceStorageCacheImpl
                            // list
                            if (LOG.isDebugEnabled())
                               LOG.debug(name + ", put()    update child node  " + nodeData.getIdentifier()
-                                       + "  order #" + orderNumber);
+                                 + "  order #" + orderNumber);
                         }
                         else
                         {
@@ -981,7 +969,7 @@ public class LinkedWorkspaceStorageCacheImpl
                            // current position
                            if (LOG.isDebugEnabled())
                               LOG.debug(name + ", put()    update child node  " + nodeData.getIdentifier()
-                                       + "  at index #" + index);
+                                 + "  at index #" + index);
                         }
 
                      }
@@ -1017,10 +1005,10 @@ public class LinkedWorkspaceStorageCacheImpl
                         if (index >= 0)
                         {
                            // update already cached in list
-                           cachedParentChilds.set(index, (PropertyData) item); // replace at current position
+                           cachedParentChilds.set(index, (PropertyData)item); // replace at current position
                            if (LOG.isDebugEnabled())
                               LOG.debug(name + ", put()    update child property  " + item.getIdentifier()
-                                       + "  at index #" + index);
+                                 + "  at index #" + index);
 
                         }
                         else if (index == -1)
@@ -1030,7 +1018,7 @@ public class LinkedWorkspaceStorageCacheImpl
                            for (int ci = 0; ci < cachedParentChilds.size(); ci++)
                               newChilds.add(cachedParentChilds.get(ci));
 
-                           newChilds.add((PropertyData) item);
+                           newChilds.add((PropertyData)item);
                            propertiesCache.put(item.getParentIdentifier(), newChilds); // cache new list
                            if (LOG.isDebugEnabled())
                               LOG.debug(name + ", put()    add child property  " + item.getIdentifier());
@@ -1046,7 +1034,7 @@ public class LinkedWorkspaceStorageCacheImpl
          catch (Exception e)
          {
             LOG.error(name + ", Error put item data in cache: "
-                     + (item != null ? item.getQPath().getAsString() : "[null]"), e);
+               + (item != null ? item.getQPath().getAsString() : "[null]"), e);
          }
          finally
          {
@@ -1068,8 +1056,8 @@ public class LinkedWorkspaceStorageCacheImpl
          if (LOG.isDebugEnabled())
          {
             logInfo =
-                     "parent:   " + parentData.getQPath().getAsString() + "    " + parentData.getIdentifier() + " "
-                              + childItems.size();
+               "parent:   " + parentData.getQPath().getAsString() + "    " + parentData.getIdentifier() + " "
+                  + childItems.size();
             LOG.debug(name + ", addChildProperties() >>> " + logInfo);
          }
 
@@ -1096,7 +1084,7 @@ public class LinkedWorkspaceStorageCacheImpl
                {
                   if (LOG.isDebugEnabled())
                      LOG.debug(name + ", addChildProperties()    " + p.getQPath().getAsString() + "    "
-                              + p.getIdentifier() + "  --  " + p);
+                        + p.getIdentifier() + "  --  " + p);
 
                   putItem(p);
                }
@@ -1105,7 +1093,7 @@ public class LinkedWorkspaceStorageCacheImpl
          catch (Exception e)
          {
             LOG.error(name + ", Error in addChildProperties() " + operName + ": parent "
-                     + (parentData != null ? parentData.getQPath().getAsString() : "[null]"), e);
+               + (parentData != null ? parentData.getQPath().getAsString() : "[null]"), e);
          }
          finally
          {
@@ -1130,8 +1118,8 @@ public class LinkedWorkspaceStorageCacheImpl
          if (LOG.isDebugEnabled())
          {
             logInfo =
-                     "parent:   " + parentData.getQPath().getAsString() + "    " + parentData.getIdentifier() + " "
-                              + childItems.size();
+               "parent:   " + parentData.getQPath().getAsString() + "    " + parentData.getIdentifier() + " "
+                  + childItems.size();
             LOG.debug(name + ", addChildPropertiesList() >>> " + logInfo);
          }
 
@@ -1156,7 +1144,7 @@ public class LinkedWorkspaceStorageCacheImpl
          catch (Exception e)
          {
             LOG.error(name + ", Error in addChildPropertiesList() " + operName + ": parent "
-                     + (parentData != null ? parentData.getQPath().getAsString() : "[null]"), e);
+               + (parentData != null ? parentData.getQPath().getAsString() : "[null]"), e);
          }
          finally
          {
@@ -1181,8 +1169,8 @@ public class LinkedWorkspaceStorageCacheImpl
          if (LOG.isDebugEnabled())
          {
             logInfo =
-                     "parent:   " + parentData.getQPath().getAsString() + "    " + parentData.getIdentifier() + " "
-                              + childItems.size();
+               "parent:   " + parentData.getQPath().getAsString() + "    " + parentData.getIdentifier() + " "
+                  + childItems.size();
             LOG.debug(name + ", addChildNodes() >>> " + logInfo);
          }
 
@@ -1210,7 +1198,7 @@ public class LinkedWorkspaceStorageCacheImpl
                {
                   if (LOG.isDebugEnabled())
                      LOG.debug(name + ", addChildNodes()    " + n.getQPath().getAsString() + "    " + n.getIdentifier()
-                              + "  --  " + n);
+                        + "  --  " + n);
 
                   putItem(n);
                }
@@ -1219,7 +1207,7 @@ public class LinkedWorkspaceStorageCacheImpl
          catch (Exception e)
          {
             LOG.error(name + ", Error in addChildNodes() " + operName + ": parent "
-                     + (parentData != null ? parentData.getQPath().getAsString() : "[null]"), e);
+               + (parentData != null ? parentData.getQPath().getAsString() : "[null]"), e);
          }
          finally
          {
@@ -1299,13 +1287,8 @@ public class LinkedWorkspaceStorageCacheImpl
             {
                // check if wasn't removed
                if (LOG.isDebugEnabled())
-                  LOG
-                           .debug(name
-                                    + ", getItem() "
-                                    + identifier
-                                    + " --> "
-                                    + (c != null ? c.getQPath().getAsString() + " parent:" + c.getParentIdentifier()
-                                             : "[null]"));
+                  LOG.debug(name + ", getItem() " + identifier + " --> "
+                     + (c != null ? c.getQPath().getAsString() + " parent:" + c.getParentIdentifier() : "[null]"));
 
                hits++;
                return c;
@@ -1363,7 +1346,7 @@ public class LinkedWorkspaceStorageCacheImpl
             {
                if (LOG.isDebugEnabled())
                   LOG.debug(name + ", getItem() " + (c != null ? c.getQPath().getAsString() : "[null]") + " --> "
-                           + (c != null ? c.getIdentifier() + " parent:" + c.getParentIdentifier() : "[null]"));
+                     + (c != null ? c.getIdentifier() + " parent:" + c.getParentIdentifier() : "[null]"));
 
                hits++;
                return c;
@@ -1416,7 +1399,7 @@ public class LinkedWorkspaceStorageCacheImpl
             if (LOG.isDebugEnabled())
             {
                LOG.debug(name + ", getChildNodes() " + parentData.getQPath().getAsString() + " "
-                        + parentData.getIdentifier());
+                  + parentData.getIdentifier());
                final StringBuffer blog = new StringBuffer();
                if (cn != null)
                {
@@ -1442,7 +1425,7 @@ public class LinkedWorkspaceStorageCacheImpl
          catch (Exception e)
          {
             LOG.error(name + ", Error in getChildNodes() parentData: "
-                     + (parentData != null ? parentData.getQPath().getAsString() : "[null]"), e);
+               + (parentData != null ? parentData.getQPath().getAsString() : "[null]"), e);
          }
          finally
          {
@@ -1469,7 +1452,7 @@ public class LinkedWorkspaceStorageCacheImpl
             if (LOG.isDebugEnabled())
             {
                LOG.debug(name + ", getChildProperties() " + parentData.getQPath().getAsString() + " "
-                        + parentData.getIdentifier());
+                  + parentData.getIdentifier());
                final StringBuffer blog = new StringBuffer();
                if (cp != null)
                {
@@ -1498,7 +1481,7 @@ public class LinkedWorkspaceStorageCacheImpl
          catch (Exception e)
          {
             LOG.error(name + ", Error in getChildProperties() parentData: "
-                     + (parentData != null ? parentData.getQPath().getAsString() : "[null]"), e);
+               + (parentData != null ? parentData.getQPath().getAsString() : "[null]"), e);
          }
          finally
          {
@@ -1524,7 +1507,7 @@ public class LinkedWorkspaceStorageCacheImpl
             if (LOG.isDebugEnabled())
             {
                LOG.debug(name + ", listChildProperties() " + parentData.getQPath().getAsString() + " "
-                        + parentData.getIdentifier());
+                  + parentData.getIdentifier());
                final StringBuffer blog = new StringBuffer();
                if (cp != null)
                {
@@ -1550,7 +1533,7 @@ public class LinkedWorkspaceStorageCacheImpl
          catch (Exception e)
          {
             LOG.error(name + ", Error in listChildProperties() parentData: "
-                     + (parentData != null ? parentData.getQPath().getAsString() : "[null]"), e);
+               + (parentData != null ? parentData.getQPath().getAsString() : "[null]"), e);
          }
       }
 
@@ -1606,8 +1589,7 @@ public class LinkedWorkspaceStorageCacheImpl
          writeLock.unlock();
       }
       LOG
-               .info(name + " : set liveTime=" + liveTime
-                        + "ms. New value will be applied to items cached from this moment.");
+         .info(name + " : set liveTime=" + liveTime + "ms. New value will be applied to items cached from this moment.");
    }
 
    /**
@@ -1701,8 +1683,7 @@ public class LinkedWorkspaceStorageCacheImpl
          ItemData item = state.getData();
          if (LOG.isDebugEnabled())
             LOG.debug(name + ", onSaveItems() " + ItemState.nameFromValue(state.getState()) + " "
-                     + item.getQPath().getAsString() + " " + item.getIdentifier() + " parent:"
-                     + item.getParentIdentifier());
+               + item.getQPath().getAsString() + " " + item.getIdentifier() + " parent:" + item.getParentIdentifier());
 
          try
          {
@@ -1787,7 +1768,7 @@ public class LinkedWorkspaceStorageCacheImpl
          catch (Exception e)
          {
             LOG.error(name + ", Error process onSaveItems action for item data: "
-                     + (item != null ? item.getQPath().getAsString() : "[null]"), e);
+               + (item != null ? item.getQPath().getAsString() : "[null]"), e);
          }
 
          prevState = state;

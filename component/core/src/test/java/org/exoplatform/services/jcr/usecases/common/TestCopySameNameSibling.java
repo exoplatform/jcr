@@ -18,16 +18,15 @@
  */
 package org.exoplatform.services.jcr.usecases.common;
 
+import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
+
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
 import javax.jcr.Workspace;
 
-import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
-
-public class TestCopySameNameSibling
-   extends BaseUsecasesTest
+public class TestCopySameNameSibling extends BaseUsecasesTest
 {
 
    public void testCopySameNameSibling() throws RepositoryException

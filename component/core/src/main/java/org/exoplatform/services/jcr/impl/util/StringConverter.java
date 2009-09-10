@@ -18,12 +18,11 @@
  */
 package org.exoplatform.services.jcr.impl.util;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import org.exoplatform.services.log.ExoLogger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by The eXo Platform SAS.

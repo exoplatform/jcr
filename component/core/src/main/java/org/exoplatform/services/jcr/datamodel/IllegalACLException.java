@@ -25,8 +25,7 @@ package org.exoplatform.services.jcr.datamodel;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: IllegalACLException.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class IllegalACLException
-   extends Exception
+public class IllegalACLException extends Exception
 {
 
    /**

@@ -28,8 +28,7 @@ import javax.jcr.version.Version;
  * @version $Id: TestMixRestore.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class TestMixRestore
-   extends BaseVersionTest
+public class TestMixRestore extends BaseVersionTest
 {
 
    private Node testVersionable = null;

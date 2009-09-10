@@ -22,15 +22,13 @@ import javax.jcr.query.QueryResult;
 
 /**
  */
-public class SQLTest
-   extends AbstractQueryTest
+public class SQLTest extends AbstractQueryTest
 {
 
    public void testSimpleQuery1() throws Exception
    {
       Node foo = testRootNode.addNode("foo");
-      foo.setProperty("bla", new String[]
-      {"bla"});
+      foo.setProperty("bla", new String[]{"bla"});
 
       testRootNode.save();
 
@@ -43,8 +41,7 @@ public class SQLTest
    public void testFulltextSimple() throws Exception
    {
       Node foo = testRootNode.addNode("foo");
-      foo.setProperty("mytext", new String[]
-      {"the quick brown fox jumps over the lazy dog."});
+      foo.setProperty("mytext", new String[]{"the quick brown fox jumps over the lazy dog."});
 
       testRootNode.save();
 
@@ -57,14 +54,13 @@ public class SQLTest
    public void testFulltextComplex() throws Exception
    {
       Node foo = testRootNode.addNode("foo");
-      foo.setProperty("mytext", new String[]
-      {"the quick brown fox jumps over the lazy dog."});
+      foo.setProperty("mytext", new String[]{"the quick brown fox jumps over the lazy dog."});
 
       testRootNode.save();
 
       String sql =
-               "SELECT foo.mytext, bla.foo FROM nt:unstructured WHERE "
-                        + "contains(., 'fox') AND NOT contains(., 'bla') " + "AND jcr:path LIKE '" + testRoot + "/%'";
+         "SELECT foo.mytext, bla.foo FROM nt:unstructured WHERE " + "contains(., 'fox') AND NOT contains(., 'bla') "
+            + "AND jcr:path LIKE '" + testRoot + "/%'";
       Query q = superuser.getWorkspace().getQueryManager().createQuery(sql, Query.SQL);
       QueryResult result = q.execute();
       checkResult(result, 1);

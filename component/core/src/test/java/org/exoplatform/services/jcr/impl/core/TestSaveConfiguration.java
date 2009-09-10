@@ -18,21 +18,19 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.RepositoryServiceConfiguration;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: TestSaveConfiguration.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class TestSaveConfiguration
-   extends JcrImplBaseTest
+public class TestSaveConfiguration extends JcrImplBaseTest
 {
    protected static Log log = ExoLogger.getLogger("jcr.SessionDataManager");
 
@@ -40,7 +38,7 @@ public class TestSaveConfiguration
 
    public void testSaveConfiguration() throws Exception
    {
-      RepositoryService service = (RepositoryService) container.getComponentInstanceOfType(RepositoryService.class);
+      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
 
       for (RepositoryEntry rEntry : service.getConfig().getRepositoryConfigurations())
       {
@@ -58,8 +56,7 @@ public class TestSaveConfiguration
       rpm.createDafaultRepository("repository4TestRepositoryManagement3", "wsTestRepositoryManagement3");
 
       RepositoryServiceConfiguration repoConfig =
-               (RepositoryServiceConfiguration) container
-                        .getComponentInstanceOfType(RepositoryServiceConfiguration.class);
+         (RepositoryServiceConfiguration)container.getComponentInstanceOfType(RepositoryServiceConfiguration.class);
 
       assertTrue(repoConfig.isRetainable());
       repoConfig.retain();

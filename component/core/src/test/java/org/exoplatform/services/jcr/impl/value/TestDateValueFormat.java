@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.value;
 
+import org.exoplatform.services.jcr.JcrImplBaseTest;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -27,16 +29,13 @@ import java.util.Locale;
 import javax.jcr.Node;
 import javax.jcr.PropertyType;
 
-import org.exoplatform.services.jcr.JcrImplBaseTest;
-
 /**
  * Created by The eXo Platform SAS 22.01.2007
  * 
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestDateValueFormat.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class TestDateValueFormat
-   extends JcrImplBaseTest
+public class TestDateValueFormat extends JcrImplBaseTest
 {
 
    private Node testRoot = null;

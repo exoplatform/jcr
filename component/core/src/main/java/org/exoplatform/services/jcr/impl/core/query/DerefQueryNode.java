@@ -22,8 +22,7 @@ import org.exoplatform.services.jcr.datamodel.InternalQName;
  * Represents query node that dereferences a reference property into a node and does an optional
  * name test on the target node.
  */
-public class DerefQueryNode
-   extends LocationStepQueryNode
+public class DerefQueryNode extends LocationStepQueryNode
 {
 
    /** The name of the reference property */
@@ -95,9 +94,9 @@ public class DerefQueryNode
    {
       if (obj instanceof DerefQueryNode)
       {
-         DerefQueryNode other = (DerefQueryNode) obj;
+         DerefQueryNode other = (DerefQueryNode)obj;
          return super.equals(obj) && refProperty == null ? other.refProperty == null : refProperty
-                  .equals(other.refProperty);
+            .equals(other.refProperty);
       }
       return false;
    }

@@ -18,11 +18,10 @@
  */
 package org.exoplatform.services.jcr.observation;
 
-import javax.jcr.observation.Event;
-
+import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import org.exoplatform.services.log.ExoLogger;
+import javax.jcr.observation.Event;
 
 /**
  * Created by The eXo Platform SAS.

@@ -189,8 +189,7 @@ public final class MoreLikeThis
     * Default field names. Null is used to specify that the field names should be looked up at
     * runtime from the provided reader.
     */
-   public static final String[] DEFAULT_FIELD_NAMES = new String[]
-   {"contents"};
+   public static final String[] DEFAULT_FIELD_NAMES = new String[]{"contents"};
 
    /**
     * Ignore words less than this length or if 0 then this has no effect.
@@ -539,7 +538,7 @@ public final class MoreLikeThis
       {
          // gather list of valid fields from lucene
          Collection fields = ir.getFieldNames(IndexReader.FieldOption.INDEXED);
-         fieldNames = (String[]) fields.toArray(new String[fields.size()]);
+         fieldNames = (String[])fields.toArray(new String[fields.size()]);
       }
 
       return createQuery(retrieveTerms(docNum));
@@ -556,7 +555,7 @@ public final class MoreLikeThis
       {
          // gather list of valid fields from lucene
          Collection fields = ir.getFieldNames(IndexReader.FieldOption.INDEXED);
-         fieldNames = (String[]) fields.toArray(new String[fields.size()]);
+         fieldNames = (String[])fields.toArray(new String[fields.size()]);
       }
 
       return like(new FileReader(f));
@@ -604,16 +603,16 @@ public final class MoreLikeThis
 
       while (((cur = q.pop()) != null))
       {
-         Object[] ar = (Object[]) cur;
-         TermQuery tq = new TermQuery(new Term((String) ar[1], (String) ar[0]));
+         Object[] ar = (Object[])cur;
+         TermQuery tq = new TermQuery(new Term((String)ar[1], (String)ar[0]));
 
          if (boost)
          {
             if (qterms == 0)
             {
-               bestScore = ((Float) ar[2]).floatValue();
+               bestScore = ((Float)ar[2]).floatValue();
             }
-            float myScore = ((Float) ar[2]).floatValue();
+            float myScore = ((Float)ar[2]).floatValue();
 
             tq.setBoost(myScore / bestScore);
          }
@@ -652,9 +651,9 @@ public final class MoreLikeThis
       Iterator it = words.keySet().iterator();
       while (it.hasNext())
       { // for every word
-         String word = (String) it.next();
+         String word = (String)it.next();
 
-         int tf = ((Int) words.get(word)).x; // term freq in the source doc
+         int tf = ((Int)words.get(word)).x; // term freq in the source doc
          if (minTermFreq > 0 && tf < minTermFreq)
          {
             continue; // filter out words that don't occur enough times in the source
@@ -684,13 +683,12 @@ public final class MoreLikeThis
          float score = tf * idf;
 
          // only really need 1st 3 entries, other ones are for troubleshooting
-         res.insert(new Object[]
-         {word, // the word
-                  topField, // the top field
-                  new Float(score), // overall score
-                  new Float(idf), // idf
-                  new Integer(docFreq), // freq in all docs
-                  new Integer(tf)});
+         res.insert(new Object[]{word, // the word
+            topField, // the top field
+            new Float(score), // overall score
+            new Float(idf), // idf
+            new Integer(docFreq), // freq in all docs
+            new Integer(tf)});
       }
       return res;
    }
@@ -844,7 +842,7 @@ public final class MoreLikeThis
             continue;
          }
          // increment frequency
-         Int cnt = (Int) termFreqMap.get(term);
+         Int cnt = (Int)termFreqMap.get(term);
          if (cnt == null)
          {
             cnt = new Int();
@@ -887,7 +885,7 @@ public final class MoreLikeThis
          }
 
          // increment frequency
-         Int cnt = (Int) termFreqMap.get(word);
+         Int cnt = (Int)termFreqMap.get(word);
          if (cnt == null)
          {
             termFreqMap.put(word, new Int());
@@ -976,18 +974,17 @@ public final class MoreLikeThis
       // we just want to return the top words
       while (((cur = pq.pop()) != null) && lim-- > 0)
       {
-         Object[] ar = (Object[]) cur;
+         Object[] ar = (Object[])cur;
          al.add(ar[0]); // the 1st entry is the interesting word
       }
       String[] res = new String[al.size()];
-      return (String[]) al.toArray(res);
+      return (String[])al.toArray(res);
    }
 
    /**
     * PriorityQueue that orders words by score.
     */
-   private static class FreqQ
-      extends PriorityQueue
+   private static class FreqQ extends PriorityQueue
    {
       FreqQ(int s)
       {
@@ -996,10 +993,10 @@ public final class MoreLikeThis
 
       protected boolean lessThan(Object a, Object b)
       {
-         Object[] aa = (Object[]) a;
-         Object[] bb = (Object[]) b;
-         Float fa = (Float) aa[2];
-         Float fb = (Float) bb[2];
+         Object[] aa = (Object[])a;
+         Object[] bb = (Object[])b;
+         Float fa = (Float)aa[2];
+         Float fb = (Float)bb[2];
          return fa.floatValue() > fb.floatValue();
       }
    }

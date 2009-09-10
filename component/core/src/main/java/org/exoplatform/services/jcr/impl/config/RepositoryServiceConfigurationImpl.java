@@ -18,6 +18,18 @@
  */
 package org.exoplatform.services.jcr.impl.config;
 
+import org.exoplatform.container.configuration.ConfigurationManager;
+import org.exoplatform.container.xml.InitParams;
+import org.exoplatform.container.xml.ValueParam;
+import org.exoplatform.services.jcr.config.ConfigurationPersister;
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.config.RepositoryServiceConfiguration;
+import org.exoplatform.services.naming.InitialContextInitializer;
+import org.jibx.runtime.BindingDirectory;
+import org.jibx.runtime.IBindingFactory;
+import org.jibx.runtime.IMarshallingContext;
+import org.jibx.runtime.JiBXException;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -32,19 +44,6 @@ import java.util.Date;
 
 import javax.jcr.RepositoryException;
 
-import org.jibx.runtime.BindingDirectory;
-import org.jibx.runtime.IBindingFactory;
-import org.jibx.runtime.IMarshallingContext;
-import org.jibx.runtime.JiBXException;
-
-import org.exoplatform.container.configuration.ConfigurationManager;
-import org.exoplatform.container.xml.InitParams;
-import org.exoplatform.container.xml.ValueParam;
-import org.exoplatform.services.jcr.config.ConfigurationPersister;
-import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
-import org.exoplatform.services.jcr.config.RepositoryServiceConfiguration;
-import org.exoplatform.services.naming.InitialContextInitializer;
-
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -52,8 +51,7 @@ import org.exoplatform.services.naming.InitialContextInitializer;
  * @version $Id: RepositoryServiceConfigurationImpl.java 12841 2007-02-16 08:58:38Z peterit $
  */
 
-public class RepositoryServiceConfigurationImpl
-   extends RepositoryServiceConfiguration
+public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfiguration
 {
 
    private ValueParam param;
@@ -63,7 +61,7 @@ public class RepositoryServiceConfigurationImpl
    private ConfigurationPersister configurationPersister;
 
    public RepositoryServiceConfigurationImpl(InitParams params, ConfigurationManager configurationService,
-            InitialContextInitializer initialContextInitializer) throws RepositoryConfigurationException
+      InitialContextInitializer initialContextInitializer) throws RepositoryConfigurationException
    {
 
       param = params.getValueParam("conf-path");
@@ -80,7 +78,7 @@ public class RepositoryServiceConfigurationImpl
             try
             {
                Class<ConfigurationPersister> configurationPersisterClass =
-                        (Class<ConfigurationPersister>) Class.forName(cn);
+                  (Class<ConfigurationPersister>)Class.forName(cn);
                configurationPersister = configurationPersisterClass.newInstance();
                configurationPersister.init(params.getPropertiesParam("working-conf"));
             }
@@ -166,9 +164,9 @@ public class RepositoryServiceConfigurationImpl
 
          if (!isRetainable())
             throw new RepositoryException("Unsupported  configuration place "
-                     + configurationService.getURL(param.getValue())
-                     + " If you want to save configuration, start repository from standalone file."
-                     + " Or persisterClassName not configured");
+               + configurationService.getURL(param.getValue())
+               + " If you want to save configuration, start repository from standalone file."
+               + " Or persisterClassName not configured");
 
          OutputStream saveStream = null;
 
@@ -196,7 +194,7 @@ public class RepositoryServiceConfigurationImpl
          // writing configuration in to the persister
          if (configurationPersister != null)
          {
-            configurationPersister.write(new ByteArrayInputStream(((ByteArrayOutputStream) saveStream).toByteArray()));
+            configurationPersister.write(new ByteArrayInputStream(((ByteArrayOutputStream)saveStream).toByteArray()));
          }
 
       }

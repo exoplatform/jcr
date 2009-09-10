@@ -32,16 +32,14 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
  * searchtext for this property.
  */
 
-public class JcrStandartAnalyzer
-   extends Analyzer
+public class JcrStandartAnalyzer extends Analyzer
 {
 
    /**
     * The default JcrStandartAnalyzer analyzer if none is configured in <code><SearchIndex></code>
     * configuration.
     */
-   private Analyzer defaultAnalyzer = new StandardAnalyzer(new String[]
-   {});
+   private Analyzer defaultAnalyzer = new StandardAnalyzer(new String[]{});
 
    /**
     * The indexing configuration.

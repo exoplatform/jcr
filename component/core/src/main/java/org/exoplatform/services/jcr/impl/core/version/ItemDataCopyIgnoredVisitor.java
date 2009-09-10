@@ -18,11 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.version;
 
-import javax.jcr.RepositoryException;
-import javax.jcr.version.OnParentVersionAction;
-
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.jcr.core.nodetype.NodeDefinitionData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionData;
@@ -35,6 +30,10 @@ import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.dataflow.DefaultItemDataCopyVisitor;
 import org.exoplatform.services.jcr.impl.dataflow.session.SessionChangesLog;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import javax.jcr.RepositoryException;
+import javax.jcr.version.OnParentVersionAction;
 
 /**
  * Created by The eXo Platform SAS 14.12.2006
@@ -44,8 +43,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @version $Id: ItemDataCopyIgnoredVisitor.java 12306 2008-03-24 10:25:55Z ksm
  *          $
  */
-public class ItemDataCopyIgnoredVisitor
-   extends DefaultItemDataCopyVisitor
+public class ItemDataCopyIgnoredVisitor extends DefaultItemDataCopyVisitor
 {
 
    private static Log log = ExoLogger.getLogger("jcr.ItemDataCopyIgnoredVisitor");
@@ -53,7 +51,7 @@ public class ItemDataCopyIgnoredVisitor
    protected final SessionChangesLog restoredChanges;
 
    public ItemDataCopyIgnoredVisitor(NodeData context, InternalQName destNodeName, NodeTypeDataManager nodeTypeManager,
-            SessionDataManager dataManager, SessionChangesLog changes)
+      SessionDataManager dataManager, SessionChangesLog changes)
    {
       super(context, destNodeName, nodeTypeManager, dataManager, true);
       this.restoredChanges = changes;
@@ -63,18 +61,18 @@ public class ItemDataCopyIgnoredVisitor
    {
 
       if (level == 1
-               && (property.getQPath().getName().equals(Constants.JCR_BASEVERSION) || property.getQPath().getName()
-                        .equals(Constants.JCR_ISCHECKEDOUT)))
+         && (property.getQPath().getName().equals(Constants.JCR_BASEVERSION) || property.getQPath().getName().equals(
+            Constants.JCR_ISCHECKEDOUT)))
          // skip versionable specific props
          return;
 
       if (curParent() == null)
       {
-         NodeData existedParent = (NodeData) dataManager.getItemData(property.getParentIdentifier());
+         NodeData existedParent = (NodeData)dataManager.getItemData(property.getParentIdentifier());
 
          PropertyDefinitionData pdef =
-                  ntManager.findPropertyDefinitions(property.getQPath().getName(), existedParent.getPrimaryTypeName(),
-                           existedParent.getMixinTypeNames()).getAnyDefinition();
+            ntManager.findPropertyDefinitions(property.getQPath().getName(), existedParent.getPrimaryTypeName(),
+               existedParent.getMixinTypeNames()).getAnyDefinition();
 
          if (pdef.getOnParentVersion() == OnParentVersionAction.IGNORE)
          {
@@ -91,7 +89,7 @@ public class ItemDataCopyIgnoredVisitor
                   log.debug("A property " + property.getQPath().getAsString() + " is IGNOREd");
 
                // set context current parent to existed in restore set
-               parents.push((NodeData) contextState.getData());
+               parents.push((NodeData)contextState.getData());
                super.entering(property, level);
                parents.pop();
             }
@@ -118,10 +116,10 @@ public class ItemDataCopyIgnoredVisitor
       {
          if (curParent() == null)
          {
-            NodeData existedParent = (NodeData) dataManager.getItemData(node.getParentIdentifier());
+            NodeData existedParent = (NodeData)dataManager.getItemData(node.getParentIdentifier());
             NodeDefinitionData ndef =
-                     ntManager.findChildNodeDefinition(node.getQPath().getName(), existedParent.getPrimaryTypeName(),
-                              existedParent.getMixinTypeNames());
+               ntManager.findChildNodeDefinition(node.getQPath().getName(), existedParent.getPrimaryTypeName(),
+                  existedParent.getMixinTypeNames());
 
             // the node can be stored as IGNOREd in restore set, check an action
             if (ndef.getOnParentVersion() == OnParentVersionAction.IGNORE)
@@ -137,7 +135,7 @@ public class ItemDataCopyIgnoredVisitor
                      log.debug("A node " + node.getQPath().getAsString() + " is IGNOREd");
 
                   // set context current parent to existed in restore set
-                  parents.push((NodeData) contextState.getData());
+                  parents.push((NodeData)contextState.getData());
                   super.entering(node, level);
                   NodeData thisNode = parents.pop(); // copied
                   parents.pop(); // contextParent

@@ -22,8 +22,7 @@ import java.util.NoSuchElementException;
 /**
  * <code>NodeIdIterator</code> extends the Iterator iterface by the NodeId specific methods.
  */
-public interface NodeIdIterator
-   extends Iterator
+public interface NodeIdIterator extends Iterator
 {
 
    /**

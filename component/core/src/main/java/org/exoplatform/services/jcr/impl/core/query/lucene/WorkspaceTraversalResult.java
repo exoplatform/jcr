@@ -40,8 +40,7 @@ import org.exoplatform.services.jcr.impl.core.NodeImpl;
  * Implements a query result that traverses the whole workspace and returns the nodes in document
  * order.
  */
-public class WorkspaceTraversalResult
-   implements QueryResult
+public class WorkspaceTraversalResult implements QueryResult
 {
 
    /**
@@ -129,8 +128,7 @@ public class WorkspaceTraversalResult
    /**
     * Implements a node iterator that traverses the workspace in document order.
     */
-   private class TraversingNodeIterator
-      implements ScoreNodeIterator, Offset
+   private class TraversingNodeIterator implements ScoreNodeIterator, Offset
    {
 
       /**
@@ -183,7 +181,7 @@ public class WorkspaceTraversalResult
       public NodeImpl nextNodeImpl()
       {
          init();
-         NodeImpl n = (NodeImpl) selfAndChildren.next();
+         NodeImpl n = (NodeImpl)selfAndChildren.next();
          position++;
          return n;
       }
@@ -276,8 +274,7 @@ public class WorkspaceTraversalResult
       {
          if (selfAndChildren == null)
          {
-            Iterator current = Arrays.asList(new Node[]
-            {currentNode}).iterator();
+            Iterator current = Arrays.asList(new Node[]{currentNode}).iterator();
             List allIterators = new ArrayList();
             allIterators.add(current);
             Offset offset = new Offset()

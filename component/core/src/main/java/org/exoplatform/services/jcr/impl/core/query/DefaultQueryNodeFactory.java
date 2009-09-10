@@ -26,17 +26,15 @@ import org.exoplatform.services.jcr.impl.Constants;
 /**
  * Default implementetation of a {@link QueryNodeFactory}.
  */
-public class DefaultQueryNodeFactory
-   implements QueryNodeFactory
+public class DefaultQueryNodeFactory implements QueryNodeFactory
 {
    public static final List<InternalQName> VALID_SYSTEM_INDEX_NODE_TYPE_NAMES =
-            Collections.unmodifiableList(Arrays.asList(new InternalQName[]
-            {Constants.NT_CHILDNODEDEFINITION, Constants.NT_FROZENNODE, Constants.NT_NODETYPE,
-                     Constants.NT_PROPERTYDEFINITION, Constants.NT_VERSION, Constants.NT_VERSIONEDCHILD,
-                     Constants.NT_VERSIONHISTORY, Constants.NT_VERSIONLABELS, Constants.JCR_NODETYPES,
-                     Constants.JCR_SYSTEM, Constants.JCR_VERSIONSTORAGE,
-                     // Supertypes
-                     Constants.NT_BASE, Constants.MIX_REFERENCEABLE}));
+      Collections.unmodifiableList(Arrays.asList(new InternalQName[]{Constants.NT_CHILDNODEDEFINITION,
+         Constants.NT_FROZENNODE, Constants.NT_NODETYPE, Constants.NT_PROPERTYDEFINITION, Constants.NT_VERSION,
+         Constants.NT_VERSIONEDCHILD, Constants.NT_VERSIONHISTORY, Constants.NT_VERSIONLABELS, Constants.JCR_NODETYPES,
+         Constants.JCR_SYSTEM, Constants.JCR_VERSIONSTORAGE,
+         // Supertypes
+         Constants.NT_BASE, Constants.MIX_REFERENCEABLE}));
 
    /**
     * List of valid node type names under /jcr:system

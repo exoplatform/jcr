@@ -18,6 +18,13 @@
  */
 package org.exoplatform.services.jcr.load;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.util.IdGenerator;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -29,22 +36,13 @@ import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 
-import org.exoplatform.services.log.Log;
-
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-import org.exoplatform.services.jcr.impl.core.NodeImpl;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
-import org.exoplatform.services.jcr.util.IdGenerator;
-import org.exoplatform.services.log.ExoLogger;
-
 /**
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: TestJira282.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class TestJira282
-   extends JcrAPIBaseTest
+public class TestJira282 extends JcrAPIBaseTest
 {
    private final static int ADD_THREAD_COUNT = 1;
 
@@ -88,21 +86,21 @@ public class TestJira282
       for (int i = 0; i < ADD_THREAD_COUNT; i++)
       {
          AddAgent agent =
-                  new AddAgent((SessionImpl) repository.login(this.credentials, session.getWorkspace().getName()));
+            new AddAgent((SessionImpl)repository.login(this.credentials, session.getWorkspace().getName()));
          agent.start();
          agents.add(agent);
       }
       for (int i = 0; i < GET_THREAD_COUNT; i++)
       {
          GetAgent agent =
-                  new GetAgent((SessionImpl) repository.login(this.credentials, session.getWorkspace().getName()));
+            new GetAgent((SessionImpl)repository.login(this.credentials, session.getWorkspace().getName()));
          agent.start();
          agents.add(agent);
       }
       for (int i = 0; i < SET_THREAD_COUNT; i++)
       {
          SetAgent agent =
-                  new SetAgent((SessionImpl) repository.login(this.credentials, session.getWorkspace().getName()));
+            new SetAgent((SessionImpl)repository.login(this.credentials, session.getWorkspace().getName()));
          agent.start();
          agents.add(agent);
       }
@@ -135,8 +133,7 @@ public class TestJira282
       }
    }
 
-   private class AddAgent
-      extends Agent
+   private class AddAgent extends Agent
    {
       private final SessionImpl agentSession;
 
@@ -172,7 +169,7 @@ public class TestJira282
             {
                for (int i = 0; i < LEVELE2_NODES_COUNT; i++)
                {
-                  Node node = (Node) agentSession.getItem(validName);
+                  Node node = (Node)agentSession.getItem(validName);
                   Node newNode = node.addNode(IdGenerator.generate());
                   agentSession.save();
 
@@ -200,14 +197,12 @@ public class TestJira282
 
    }
 
-   private abstract class Agent
-      extends Thread
+   private abstract class Agent extends Thread
    {
       public abstract SessionImpl getAgentSession();
    }
 
-   private class GetAgent
-      extends Agent
+   private class GetAgent extends Agent
    {
       private final SessionImpl agentSession;
 
@@ -238,7 +233,7 @@ public class TestJira282
             String validName = validNames.get(random.nextInt(validNames.size()));
             try
             {
-               NodeImpl node = (NodeImpl) agentSession.getItem(validName);
+               NodeImpl node = (NodeImpl)agentSession.getItem(validName);
                List<NodeImpl> list = node.childNodes();
                // log.info("Node:" + node.getPath() + " child count" + list.size());
                for (NodeImpl nodeImpl : list)
@@ -259,8 +254,7 @@ public class TestJira282
       }
    }
 
-   private class SetAgent
-      extends Agent
+   private class SetAgent extends Agent
    {
       private final SessionImpl agentSession;
 
@@ -294,7 +288,7 @@ public class TestJira282
             try
             {
                hotNodes.add(validName);
-               NodeImpl node = (NodeImpl) agentSession.getItem(validName);
+               NodeImpl node = (NodeImpl)agentSession.getItem(validName);
                node.setProperty("testField", IdGenerator.generate());
                agentSession.save();
                hotNodes.remove(validName);

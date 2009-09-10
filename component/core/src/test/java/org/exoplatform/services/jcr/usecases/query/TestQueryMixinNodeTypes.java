@@ -17,6 +17,9 @@
 
 package org.exoplatform.services.jcr.usecases.query;
 
+import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
+import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -30,14 +33,10 @@ import javax.jcr.Session;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryResult;
 
-import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
-import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
-
 /**
  * Created by The eXo Platform SARL Author : Pham Xuan Hoa hoa.pham@exoplatform.com Jan 16, 2008
  */
-public class TestQueryMixinNodeTypes
-   extends BaseUsecasesTest
+public class TestQueryMixinNodeTypes extends BaseUsecasesTest
 {
 
    public void testQueryMixinNodeTypes() throws Exception
@@ -61,7 +60,7 @@ public class TestQueryMixinNodeTypes
       article.addMixin("mix:votable");
       session.save();
       Session systemSession = repositoryService.getCurrentRepository().getSystemSession(WORKSPACE);
-      Node articleNode = (Node) systemSession.getItem("/testFolder/myArticle");
+      Node articleNode = (Node)systemSession.getItem("/testFolder/myArticle");
       articleNode.addMixin("exo:publishingState");
       articleNode.setProperty("exo:currentState", "Validating");
       articleNode.addMixin("exo:validationRequest");
@@ -69,7 +68,7 @@ public class TestQueryMixinNodeTypes
       systemSession.logout();
 
       Session session1 = repositoryService.getCurrentRepository().getSystemSession(WORKSPACE);
-      Node testArticle = (Node) session1.getItem("/testFolder/myArticle");
+      Node testArticle = (Node)session1.getItem("/testFolder/myArticle");
       assertTrue(testArticle.isNodeType("exo:datetime"));
       assertTrue(testArticle.isNodeType("exo:publishingState"));
       assertTrue(testArticle.getProperty("exo:currentState").getString().equals("Validating"));
@@ -83,11 +82,10 @@ public class TestQueryMixinNodeTypes
       {
          nodesFound++;
          log
-                  .info("The query '" + datetimeStatement + "' found node: " + resNodes.nextNode() + ", total: "
-                           + nodesFound);
+            .info("The query '" + datetimeStatement + "' found node: " + resNodes.nextNode() + ", total: " + nodesFound);
       }
       assertEquals("The search should find one node. Result size = " + resNodes.getSize() + ", actual = " + nodesFound,
-               1, nodesFound);
+         1, nodesFound);
 
       // Please try with both statements
       // String stateStatement =
@@ -105,28 +103,27 @@ public class TestQueryMixinNodeTypes
       registerNamespace("dc", "http://purl.org/dc/elements/1.1/");
 
       InputStream xml =
-               this.getClass().getResourceAsStream(
-                        "/org/exoplatform/services/jcr/usecases/query/ext-nodetypes-config.xml");
+         this.getClass().getResourceAsStream("/org/exoplatform/services/jcr/usecases/query/ext-nodetypes-config.xml");
       repositoryService.getCurrentRepository().getNodeTypeManager().registerNodeTypes(xml,
-               ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
+         ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
       InputStream xml1 =
-               this.getClass().getResourceAsStream("/org/exoplatform/services/jcr/usecases/query/nodetypes-config.xml");
+         this.getClass().getResourceAsStream("/org/exoplatform/services/jcr/usecases/query/nodetypes-config.xml");
       repositoryService.getCurrentRepository().getNodeTypeManager().registerNodeTypes(xml1,
-               ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
+         ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
       InputStream xml2 =
-               this.getClass().getResourceAsStream(
-                        "/org/exoplatform/services/jcr/usecases/query/nodetypes-config-extended.xml");
+         this.getClass().getResourceAsStream(
+            "/org/exoplatform/services/jcr/usecases/query/nodetypes-config-extended.xml");
       repositoryService.getCurrentRepository().getNodeTypeManager().registerNodeTypes(xml2,
-               ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
+         ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
       InputStream xml3 =
-               this.getClass().getResourceAsStream("/org/exoplatform/services/jcr/usecases/query/nodetypes-ecm.xml");
+         this.getClass().getResourceAsStream("/org/exoplatform/services/jcr/usecases/query/nodetypes-ecm.xml");
       repositoryService.getCurrentRepository().getNodeTypeManager().registerNodeTypes(xml3,
-               ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
+         ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
       InputStream xml4 =
-               this.getClass().getResourceAsStream(
-                        "/org/exoplatform/services/jcr/usecases/query/business-process-nodetypes.xml");
+         this.getClass().getResourceAsStream(
+            "/org/exoplatform/services/jcr/usecases/query/business-process-nodetypes.xml");
       repositoryService.getCurrentRepository().getNodeTypeManager().registerNodeTypes(xml4,
-               ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
+         ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
    }
 
    public void registerNamespace(String prefix, String uri)

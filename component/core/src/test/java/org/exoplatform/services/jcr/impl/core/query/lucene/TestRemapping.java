@@ -17,6 +17,11 @@
 
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
+import org.exoplatform.services.jcr.JcrImplBaseTest;
+import org.exoplatform.services.jcr.core.CredentialsImpl;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import javax.jcr.Credentials;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
@@ -25,20 +30,13 @@ import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
 
-import org.exoplatform.services.log.Log;
-
-import org.exoplatform.services.jcr.JcrImplBaseTest;
-import org.exoplatform.services.jcr.core.CredentialsImpl;
-import org.exoplatform.services.log.ExoLogger;
-
 /**
  * Created by The eXo Platform SAS Author : Sergey Karpenko <sergey.karpenko@exoplatform.com.ua>
  * 
  * @version $Id: TestRemapping.java 11908 2008-03-13 16:00:12Z ksm $
  */
 
-public class TestRemapping
-   extends JcrImplBaseTest
+public class TestRemapping extends JcrImplBaseTest
 {
 
    public static final Log logger = ExoLogger.getLogger(TestRemapping.class);
@@ -86,7 +84,7 @@ public class TestRemapping
 
    public void tearDown() throws Exception
    {
-      Node node = (Node) session.getItem("/" + ORIGINAL_PREFIX + ":" + TEST_NAME);
+      Node node = (Node)session.getItem("/" + ORIGINAL_PREFIX + ":" + TEST_NAME);
       node.remove();
       session.save();
 
@@ -108,7 +106,7 @@ public class TestRemapping
       // Check hits
 
       NodeIterator nIt = res.getNodes();
-      Node n = (Node) nIt.next();
+      Node n = (Node)nIt.next();
       assertEquals(NEW_PREFIX + ":" + TEST_NAME, n.getName());
 
       // Search in other jcr - session
@@ -138,21 +136,22 @@ public class TestRemapping
       QueryManager qManager = session.getWorkspace().getQueryManager();
 
       QueryResult res =
-               qManager.createQuery(
-                        "SELECT * FROM nt:unstructured WHERE jcr:path LIKE '/" + ORIGINAL_PREFIX + ":" + TEST_NAME
-                                 + "'", Query.SQL).execute();
+         qManager
+            .createQuery(
+               "SELECT * FROM nt:unstructured WHERE jcr:path LIKE '/" + ORIGINAL_PREFIX + ":" + TEST_NAME + "'",
+               Query.SQL).execute();
 
       assertEquals(1, res.getNodes().getSize());
       res =
-               qManager.createQuery(
-                        "SELECT * FROM nt:unstructured WHERE jcr:path LIKE '/" + NEW_PREFIX + ":" + TEST_NAME + "'",
-                        Query.SQL).execute();
+         qManager.createQuery(
+            "SELECT * FROM nt:unstructured WHERE jcr:path LIKE '/" + NEW_PREFIX + ":" + TEST_NAME + "'", Query.SQL)
+            .execute();
       assertEquals(1, res.getNodes().getSize());
 
       // Check hits
 
       NodeIterator nIt = res.getNodes();
-      Node n = (Node) nIt.next();
+      Node n = (Node)nIt.next();
       assertEquals(NEW_PREFIX + ":" + TEST_NAME, n.getName());
 
       // Search in other jcr - session
@@ -160,9 +159,10 @@ public class TestRemapping
       Session sess = repository.login(cred, "ws");
       qManager = sess.getWorkspace().getQueryManager();
       res =
-               qManager.createQuery(
-                        "SELECT * FROM nt:unstructured WHERE jcr:path LIKE '/" + ORIGINAL_PREFIX + ":" + TEST_NAME
-                                 + "'", Query.SQL).execute();
+         qManager
+            .createQuery(
+               "SELECT * FROM nt:unstructured WHERE jcr:path LIKE '/" + ORIGINAL_PREFIX + ":" + TEST_NAME + "'",
+               Query.SQL).execute();
 
       assertEquals(1, res.getNodes().getSize());
 
@@ -170,9 +170,9 @@ public class TestRemapping
       try
       {
          res =
-                  qManager.createQuery(
-                           "SELECT * FROM nt:unstructured WHERE jcr:path LIKE '/" + NEW_PREFIX + ":" + TEST_NAME + "'",
-                           Query.SQL).execute();
+            qManager.createQuery(
+               "SELECT * FROM nt:unstructured WHERE jcr:path LIKE '/" + NEW_PREFIX + ":" + TEST_NAME + "'", Query.SQL)
+               .execute();
       }
       catch (javax.jcr.query.InvalidQueryException e)
       {

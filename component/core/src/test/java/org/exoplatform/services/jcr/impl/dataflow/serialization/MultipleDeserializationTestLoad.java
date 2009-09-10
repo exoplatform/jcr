@@ -18,6 +18,14 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
+import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
+import org.exoplatform.services.jcr.dataflow.PersistentDataManager;
+import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
+import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
+import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,30 +36,20 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
 
-import org.exoplatform.services.jcr.core.ManageableRepository;
-import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
-import org.exoplatform.services.jcr.dataflow.PersistentDataManager;
-import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
-import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
-import org.exoplatform.services.jcr.impl.core.NodeImpl;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
-
 /**
  * Created by The eXo Platform SAS. <br/>Date:
  * 
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a>
  * @version $Id: TestMultipleDeserialization.java 111 2008-11-11 11:11:11Z serg $
  */
-public class MultipleDeserializationTestLoad
-   extends JcrImplSerializationBaseTest
+public class MultipleDeserializationTestLoad extends JcrImplSerializationBaseTest
 {
 
    private final static int nodes = 50;
 
    private final static int iterations = 50;
 
-   public class TesterItemsPersistenceListener
-      implements ItemsPersistenceListener
+   public class TesterItemsPersistenceListener implements ItemsPersistenceListener
    {
 
       private final List<TransactionChangesLog> logsList = new ArrayList<TransactionChangesLog>();
@@ -61,8 +59,8 @@ public class MultipleDeserializationTestLoad
       public TesterItemsPersistenceListener(SessionImpl session)
       {
          this.dataManager =
-                  (PersistentDataManager) ((ManageableRepository) session.getRepository()).getWorkspaceContainer(
-                           session.getWorkspace().getName()).getComponent(PersistentDataManager.class);
+            (PersistentDataManager)((ManageableRepository)session.getRepository()).getWorkspaceContainer(
+               session.getWorkspace().getName()).getComponent(PersistentDataManager.class);
          this.dataManager.addItemPersistenceListener(this);
       }
 
@@ -71,7 +69,7 @@ public class MultipleDeserializationTestLoad
        */
       public void onSaveItems(ItemStateChangesLog itemStates)
       {
-         logsList.add((TransactionChangesLog) itemStates);
+         logsList.add((TransactionChangesLog)itemStates);
       }
 
       /**
@@ -104,15 +102,15 @@ public class MultipleDeserializationTestLoad
    {
 
       PersistentDataManager dataManager =
-               (PersistentDataManager) ((ManageableRepository) session.getRepository()).getWorkspaceContainer(
-                        session.getWorkspace().getName()).getComponent(PersistentDataManager.class);
+         (PersistentDataManager)((ManageableRepository)session.getRepository()).getWorkspaceContainer(
+            session.getWorkspace().getName()).getComponent(PersistentDataManager.class);
 
       TesterItemsPersistenceListener pl = new TesterItemsPersistenceListener(this.session);
 
       for (int i = 0; i < nodes; i++)
       {
-         NodeImpl node = (NodeImpl) root.addNode("fileName" + i, "nt:file");
-         NodeImpl cont = (NodeImpl) node.addNode("jcr:content", "nt:resource");
+         NodeImpl node = (NodeImpl)root.addNode("fileName" + i, "nt:file");
+         NodeImpl cont = (NodeImpl)node.addNode("jcr:content", "nt:resource");
          cont.setProperty("jcr:mimeType", "text/plain");
          cont.setProperty("jcr:lastModified", Calendar.getInstance());
          cont.setProperty("jcr:encoding", "UTF-8");
@@ -133,8 +131,7 @@ public class MultipleDeserializationTestLoad
       ObjectReaderImpl jcrin = new ObjectReaderImpl(new FileInputStream(jcrfile));
       long jcrfread = System.currentTimeMillis();
       TransactionChangesLog mlog =
-               (TransactionChangesLog) (new TransactionChangesLogReader(fileCleaner, maxBufferSize, holder))
-                        .read(jcrin);
+         (TransactionChangesLog)(new TransactionChangesLogReader(fileCleaner, maxBufferSize, holder)).read(jcrin);
       //TransactionChangesLog mlog = new TransactionChangesLog();
       //mlog.readObject(jcrin);
       jcrfread = System.currentTimeMillis() - jcrfread;
@@ -149,7 +146,7 @@ public class MultipleDeserializationTestLoad
          // deserialize
          jcrin = new ObjectReaderImpl(new FileInputStream(jcrfile));
          long t3 = System.currentTimeMillis();
-         TransactionChangesLog log = (TransactionChangesLog) rdr.read(jcrin);
+         TransactionChangesLog log = (TransactionChangesLog)rdr.read(jcrin);
 
          t3 = System.currentTimeMillis() - t3;
          jcrread += t3;

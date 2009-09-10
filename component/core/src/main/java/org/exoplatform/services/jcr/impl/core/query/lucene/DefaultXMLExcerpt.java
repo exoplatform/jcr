@@ -31,17 +31,16 @@ import org.apache.lucene.index.TermPositionVector;
  * &lt;/excerpt&gt;
  * </pre>
  */
-public class DefaultXMLExcerpt
-   extends AbstractExcerpt
+public class DefaultXMLExcerpt extends AbstractExcerpt
 {
 
    /**
     * {@inheritDoc}
     */
    protected String createExcerpt(TermPositionVector tpv, String text, int maxFragments, int maxFragmentSize)
-            throws IOException
+      throws IOException
    {
       return DefaultHighlighter.highlight(tpv, getQueryTerms(), text, "<highlight>", "</highlight>", maxFragments,
-               maxFragmentSize / 2);
+         maxFragmentSize / 2);
    }
 }

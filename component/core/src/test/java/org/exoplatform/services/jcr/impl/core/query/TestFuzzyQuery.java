@@ -16,16 +16,15 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
+import org.exoplatform.services.jcr.JcrImplBaseTest;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
-
-import org.exoplatform.services.log.Log;
-
-import org.exoplatform.services.jcr.JcrImplBaseTest;
-import org.exoplatform.services.log.ExoLogger;
 
 /**
  * Created by The eXo Platform SAS.
@@ -33,8 +32,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: $
  */
-public class TestFuzzyQuery
-   extends JcrImplBaseTest
+public class TestFuzzyQuery extends JcrImplBaseTest
 {
    /**
     * Class logger.

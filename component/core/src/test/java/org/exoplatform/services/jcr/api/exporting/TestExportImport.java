@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.api.exporting;
 
+import org.xml.sax.SAXException;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -39,14 +41,11 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
-import org.xml.sax.SAXException;
-
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: TestExportImport.java 13888 2008-05-05 13:47:27Z ksm $
  */
-public class TestExportImport
-   extends ExportBase
+public class TestExportImport extends ExportBase
 {
    private final int SNS_NODES_COUNT = 10;
 
@@ -112,7 +111,7 @@ public class TestExportImport
 
       Node contentNode = file.addNode("jcr:content", "nt:resource");
       contentNode.setProperty("jcr:data", session.getValueFactory().createValue("this is the content",
-               PropertyType.BINARY));
+         PropertyType.BINARY));
       contentNode.setProperty("jcr:mimeType", "application/octet-stream");
       contentNode.setProperty("jcr:lastModified", session.getValueFactory().createValue(Calendar.getInstance()));
 
@@ -354,8 +353,7 @@ public class TestExportImport
    }
 
    private void doExportImport(Node parentNode, String nodeName, boolean isSystemView, boolean isContentHandler,
-            Node destParentNode) throws RepositoryException, IOException, TransformerConfigurationException,
-            SAXException
+      Node destParentNode) throws RepositoryException, IOException, TransformerConfigurationException, SAXException
    {
       Node exportNode = parentNode.getNode(nodeName);
       File destFile = File.createTempFile("testExportImport", ".xml");
@@ -366,7 +364,7 @@ public class TestExportImport
       {
          if (isContentHandler)
          {
-            SAXTransformerFactory saxFact = (SAXTransformerFactory) TransformerFactory.newInstance();
+            SAXTransformerFactory saxFact = (SAXTransformerFactory)TransformerFactory.newInstance();
             TransformerHandler handler = saxFact.newTransformerHandler();
             handler.setResult(new StreamResult(outStream));
             session.exportSystemView(exportNode.getPath(), handler, false, false);
@@ -380,7 +378,7 @@ public class TestExportImport
       {
          if (isContentHandler)
          {
-            SAXTransformerFactory saxFact = (SAXTransformerFactory) TransformerFactory.newInstance();
+            SAXTransformerFactory saxFact = (SAXTransformerFactory)TransformerFactory.newInstance();
             TransformerHandler handler = saxFact.newTransformerHandler();
             handler.setResult(new StreamResult(outStream));
             session.exportDocumentView(exportNode.getPath(), handler, false, false);
@@ -399,7 +397,7 @@ public class TestExportImport
       }
 
       session.importXML(destParentNode != null ? destParentNode.getPath() : root.getPath(), new FileInputStream(
-               destFile), ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW);
+         destFile), ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW);
 
       session.save();
       assertTrue(parentNode.hasNode(nodeName));

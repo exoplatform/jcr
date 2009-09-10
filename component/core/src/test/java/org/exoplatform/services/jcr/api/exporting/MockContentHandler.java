@@ -26,8 +26,7 @@ import org.xml.sax.SAXException;
 /**
  * Created y the eXo platform team User: Benjamin Mestrallet Date: 18 ao�t 2004
  */
-public class MockContentHandler
-   implements ContentHandler
+public class MockContentHandler implements ContentHandler
 {
    public boolean reached;
 

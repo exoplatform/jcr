@@ -18,6 +18,15 @@
  */
 package org.exoplatform.services.jcr.impl.xml.exporting;
 
+import org.apache.ws.commons.util.Base64;
+import org.exoplatform.services.jcr.core.ExtendedPropertyType;
+import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
+import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.PropertyData;
+import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -29,22 +38,11 @@ import javax.jcr.RepositoryException;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.apache.ws.commons.util.Base64;
-
-import org.exoplatform.services.jcr.core.ExtendedPropertyType;
-import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
-import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.datamodel.PropertyData;
-import org.exoplatform.services.jcr.datamodel.ValueData;
-import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
-
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: SystemViewStreamExporter.java 14244 2008-05-14 11:44:54Z ksm $
  */
-public class SystemViewStreamExporter
-   extends StreamExporter
+public class SystemViewStreamExporter extends StreamExporter
 {
 
    private static final int BUFFER_SIZE = 3 * 1024 * 3;
@@ -58,8 +56,8 @@ public class SystemViewStreamExporter
     * @throws NamespaceException
     */
    public SystemViewStreamExporter(XMLStreamWriter writer, ItemDataConsumer dataManager,
-            NamespaceRegistry namespaceRegistry, ValueFactoryImpl systemValueFactory, boolean skipBinary,
-            boolean noRecurse) throws NamespaceException, RepositoryException
+      NamespaceRegistry namespaceRegistry, ValueFactoryImpl systemValueFactory, boolean skipBinary, boolean noRecurse)
+      throws NamespaceException, RepositoryException
    {
       super(writer, dataManager, namespaceRegistry, systemValueFactory, skipBinary, noRecurse);
    }
@@ -82,7 +80,7 @@ public class SystemViewStreamExporter
          }
 
          writer.writeAttribute(Constants.NS_SV_PREFIX, getSvNamespaceUri(), Constants.SV_NAME, getExportName(node,
-                  false));
+            false));
       }
       catch (XMLStreamException e)
       {
@@ -105,10 +103,10 @@ public class SystemViewStreamExporter
          writer.writeStartElement(Constants.NS_SV_PREFIX, Constants.SV_PROPERTY, getSvNamespaceUri());
 
          writer.writeAttribute(Constants.NS_SV_PREFIX, getSvNamespaceUri(), Constants.SV_NAME, getExportName(property,
-                  false));
+            false));
 
          writer.writeAttribute(Constants.NS_SV_PREFIX, getSvNamespaceUri(), Constants.SV_TYPE, ExtendedPropertyType
-                  .nameFromValue(property.getType()));
+            .nameFromValue(property.getType()));
 
          List<ValueData> values = property.getValues();
          for (ValueData valueData : values)
@@ -177,7 +175,7 @@ public class SystemViewStreamExporter
    }
 
    protected void writeValueData(ValueData data, int type) throws RepositoryException, IllegalStateException,
-            XMLStreamException, IOException
+      XMLStreamException, IOException
    {
 
       if (PropertyType.BINARY == type)

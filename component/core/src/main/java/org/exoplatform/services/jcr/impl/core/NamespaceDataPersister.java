@@ -18,18 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import javax.jcr.InvalidItemStateException;
-import javax.jcr.PropertyType;
-import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.core.ExtendedPropertyType;
@@ -53,6 +41,17 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.dataflow.ValueDataConvertor;
 import org.exoplatform.services.jcr.impl.util.NodeDataReader;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import javax.jcr.InvalidItemStateException;
+import javax.jcr.PropertyType;
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -78,9 +77,9 @@ public class NamespaceDataPersister
       this.changesLog = new PlainChangesLogImpl();
       try
       {
-         NodeData jcrSystem = (NodeData) dataManager.getItemData(Constants.SYSTEM_UUID);
+         NodeData jcrSystem = (NodeData)dataManager.getItemData(Constants.SYSTEM_UUID);
          if (jcrSystem != null)
-            this.nsRoot = (NodeData) dataManager.getItemData(jcrSystem, new QPathEntry(Constants.EXO_NAMESPACES, 1));
+            this.nsRoot = (NodeData)dataManager.getItemData(jcrSystem, new QPathEntry(Constants.EXO_NAMESPACES, 1));
       }
       catch (RepositoryException e)
       {
@@ -102,15 +101,14 @@ public class NamespaceDataPersister
     * @throws RepositoryException
     */
    public void initStorage(NodeData nsSystem, boolean addACL, Map<String, String> namespaces)
-            throws RepositoryException
+      throws RepositoryException
    {
 
       TransientNodeData exoNamespaces =
-               TransientNodeData.createNodeData(nsSystem, Constants.EXO_NAMESPACES, Constants.NT_UNSTRUCTURED);
+         TransientNodeData.createNodeData(nsSystem, Constants.EXO_NAMESPACES, Constants.NT_UNSTRUCTURED);
 
       TransientPropertyData primaryType =
-               TransientPropertyData.createPropertyData(exoNamespaces, Constants.JCR_PRIMARYTYPE, PropertyType.NAME,
-                        false);
+         TransientPropertyData.createPropertyData(exoNamespaces, Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false);
       primaryType.setValue(new TransientValueData(exoNamespaces.getPrimaryTypeName()));
 
       changesLog.add(ItemState.createAddedState(exoNamespaces)).add(ItemState.createAddedState(primaryType));
@@ -119,8 +117,7 @@ public class NamespaceDataPersister
       {
          AccessControlList acl = new AccessControlList();
 
-         InternalQName[] mixins = new InternalQName[]
-         {Constants.EXO_OWNEABLE, Constants.EXO_PRIVILEGEABLE};
+         InternalQName[] mixins = new InternalQName[]{Constants.EXO_OWNEABLE, Constants.EXO_PRIVILEGEABLE};
          exoNamespaces.setMixinTypeNames(mixins);
 
          // jcr:mixinTypes
@@ -130,12 +127,12 @@ public class NamespaceDataPersister
             mixValues.add(new TransientValueData(mixin));
          }
          TransientPropertyData exoMixinTypes =
-                  TransientPropertyData.createPropertyData(exoNamespaces, Constants.JCR_MIXINTYPES, PropertyType.NAME,
-                           true, mixValues);
+            TransientPropertyData.createPropertyData(exoNamespaces, Constants.JCR_MIXINTYPES, PropertyType.NAME, true,
+               mixValues);
 
          TransientPropertyData exoOwner =
-                  TransientPropertyData.createPropertyData(exoNamespaces, Constants.EXO_OWNER, PropertyType.STRING,
-                           false, new TransientValueData(acl.getOwner()));
+            TransientPropertyData.createPropertyData(exoNamespaces, Constants.EXO_OWNER, PropertyType.STRING, false,
+               new TransientValueData(acl.getOwner()));
 
          List<ValueData> permsValues = new ArrayList<ValueData>();
          for (int i = 0; i < acl.getPermissionEntries().size(); i++)
@@ -144,11 +141,11 @@ public class NamespaceDataPersister
             permsValues.add(new TransientValueData(entry));
          }
          TransientPropertyData exoPerms =
-                  TransientPropertyData.createPropertyData(exoNamespaces, Constants.EXO_PERMISSIONS,
-                           ExtendedPropertyType.PERMISSION, true, permsValues);
+            TransientPropertyData.createPropertyData(exoNamespaces, Constants.EXO_PERMISSIONS,
+               ExtendedPropertyType.PERMISSION, true, permsValues);
 
          changesLog.add(ItemState.createAddedState(exoMixinTypes)).add(ItemState.createAddedState(exoOwner)).add(
-                  ItemState.createAddedState(exoPerms));
+            ItemState.createAddedState(exoPerms));
          changesLog.add(new ItemState(exoNamespaces, ItemState.MIXIN_CHANGED, false, null));
       }
 
@@ -194,22 +191,22 @@ public class NamespaceDataPersister
       }
 
       TransientNodeData nsNode =
-               TransientNodeData.createNodeData(nsRoot, new InternalQName("", prefix), Constants.EXO_NAMESPACE);
+         TransientNodeData.createNodeData(nsRoot, new InternalQName("", prefix), Constants.EXO_NAMESPACE);
 
       TransientPropertyData primaryType =
-               TransientPropertyData.createPropertyData(nsNode, Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false);
+         TransientPropertyData.createPropertyData(nsNode, Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false);
       primaryType.setValue(new TransientValueData(nsNode.getPrimaryTypeName()));
 
       TransientPropertyData exoUri =
-               TransientPropertyData.createPropertyData(nsNode, Constants.EXO_URI_NAME, PropertyType.STRING, false);
+         TransientPropertyData.createPropertyData(nsNode, Constants.EXO_URI_NAME, PropertyType.STRING, false);
       exoUri.setValue(new TransientValueData(uri));
 
       TransientPropertyData exoPrefix =
-               TransientPropertyData.createPropertyData(nsNode, Constants.EXO_PREFIX, PropertyType.STRING, false);
+         TransientPropertyData.createPropertyData(nsNode, Constants.EXO_PREFIX, PropertyType.STRING, false);
       exoPrefix.setValue(new TransientValueData(prefix));
 
       changesLog.add(ItemState.createAddedState(nsNode)).add(ItemState.createAddedState(primaryType)).add(
-               ItemState.createAddedState(exoUri)).add(ItemState.createAddedState(exoPrefix));
+         ItemState.createAddedState(exoUri)).add(ItemState.createAddedState(exoPrefix));
 
    }
 
@@ -226,16 +223,16 @@ public class NamespaceDataPersister
 
       if (prefData != null && prefData.isNode())
       {
-         List<PropertyData> childs = dataManager.getChildPropertiesData((NodeData) prefData);
+         List<PropertyData> childs = dataManager.getChildPropertiesData((NodeData)prefData);
          for (PropertyData propertyData : childs)
          {
             plainChangesLogImpl.add(ItemState.createDeletedState(copyPropertyData(propertyData), true));
          }
          prefData =
-                  new TransientNodeData(prefData.getQPath(), prefData.getIdentifier(), prefData.getPersistedVersion(),
-                           ((NodeData) prefData).getPrimaryTypeName(), ((NodeData) prefData).getMixinTypeNames(),
-                           ((NodeData) prefData).getOrderNumber(), ((NodeData) prefData).getParentIdentifier(),
-                           ((NodeData) prefData).getACL());
+            new TransientNodeData(prefData.getQPath(), prefData.getIdentifier(), prefData.getPersistedVersion(),
+               ((NodeData)prefData).getPrimaryTypeName(), ((NodeData)prefData).getMixinTypeNames(),
+               ((NodeData)prefData).getOrderNumber(), ((NodeData)prefData).getParentIdentifier(), ((NodeData)prefData)
+                  .getACL());
          plainChangesLogImpl.add(ItemState.createDeletedState(prefData, true));
 
       }
@@ -248,12 +245,12 @@ public class NamespaceDataPersister
 
       if (!isInialized())
       {
-         NodeData jcrSystem = (NodeData) dataManager.getItemData(Constants.SYSTEM_UUID);
+         NodeData jcrSystem = (NodeData)dataManager.getItemData(Constants.SYSTEM_UUID);
          if (jcrSystem != null)
-            this.nsRoot = (NodeData) dataManager.getItemData(jcrSystem, new QPathEntry(Constants.EXO_NAMESPACES, 1));
+            this.nsRoot = (NodeData)dataManager.getItemData(jcrSystem, new QPathEntry(Constants.EXO_NAMESPACES, 1));
          else
             throw new RepositoryException(
-                     "/jcr:system is not found. Possible the workspace is not initialized properly");
+               "/jcr:system is not found. Possible the workspace is not initialized properly");
       }
 
       if (isInialized())
@@ -267,7 +264,7 @@ public class NamespaceDataPersister
          for (NodeDataReader nsr : nsData)
          {
             nsr.forProperty(Constants.EXO_URI_NAME, PropertyType.STRING).forProperty(Constants.EXO_PREFIX,
-                     PropertyType.STRING);
+               PropertyType.STRING);
             nsr.read();
 
             try
@@ -289,8 +286,8 @@ public class NamespaceDataPersister
          for (NodeData skipedNs : nsReader.getSkiped())
          {
             log.warn("Namespace node " + skipedNs.getQPath().getName().getAsString() + " (primary type '"
-                     + skipedNs.getPrimaryTypeName().getAsString()
-                     + "') is not supported for loading. Nodes with 'exo:namespace' node type is supported only now.");
+               + skipedNs.getPrimaryTypeName().getAsString()
+               + "') is not supported for loading. Nodes with 'exo:namespace' node type is supported only now.");
          }
       }
       else
@@ -323,8 +320,8 @@ public class NamespaceDataPersister
 
       // make a copy
       TransientPropertyData newData =
-               new TransientPropertyData(prop.getQPath(), prop.getIdentifier(), prop.getPersistedVersion(), prop
-                        .getType(), prop.getParentIdentifier(), prop.isMultiValued());
+         new TransientPropertyData(prop.getQPath(), prop.getIdentifier(), prop.getPersistedVersion(), prop.getType(),
+            prop.getParentIdentifier(), prop.isMultiValued());
 
       List<ValueData> values = null;
       // null is possible for deleting items
@@ -333,7 +330,7 @@ public class NamespaceDataPersister
          values = new ArrayList<ValueData>();
          for (ValueData val : prop.getValues())
          {
-            values.add(((AbstractValueData) val).createTransientCopy());
+            values.add(((AbstractValueData)val).createTransientCopy());
          }
       }
       newData.setValues(values);

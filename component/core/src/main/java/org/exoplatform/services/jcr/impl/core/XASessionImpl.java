@@ -18,6 +18,16 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
+import org.exoplatform.container.ExoContainer;
+import org.exoplatform.services.jcr.core.XASession;
+import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableResourceManager;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+import org.exoplatform.services.security.ConversationState;
+import org.exoplatform.services.transaction.ExoResource;
+import org.exoplatform.services.transaction.TransactionException;
+import org.exoplatform.services.transaction.TransactionService;
+
 import javax.jcr.RepositoryException;
 import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
@@ -25,26 +35,13 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import org.exoplatform.services.log.Log;
-
-import org.exoplatform.container.ExoContainer;
-import org.exoplatform.services.jcr.core.XASession;
-import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableResourceManager;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.security.ConversationState;
-import org.exoplatform.services.transaction.TransactionException;
-import org.exoplatform.services.transaction.TransactionService;
-import org.exoplatform.services.transaction.ExoResource;
-
 /**
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov</a>
  * @version $Id: XASessionImpl.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class XASessionImpl
-   extends SessionImpl
-   implements XASession, XAResource, ExoResource
+public class XASessionImpl extends SessionImpl implements XASession, XAResource, ExoResource
 {
 
    /**
@@ -94,7 +91,7 @@ public class XASessionImpl
     *           Repository error
     */
    XASessionImpl(String workspaceName, ConversationState userState, ExoContainer container,
-            TransactionService tService, TransactionableResourceManager txResourceManager) throws RepositoryException
+      TransactionService tService, TransactionableResourceManager txResourceManager) throws RepositoryException
    {
       super(workspaceName, userState, container);
       this.txTimeout = tService.getDefaultTimeout();
@@ -203,11 +200,11 @@ public class XASessionImpl
    {
       if (resource instanceof XASessionImpl)
       {
-         XASessionImpl session = (XASessionImpl) resource;
+         XASessionImpl session = (XASessionImpl)resource;
          boolean isSame = getUserID().equals(session.getUserID());
          if (LOG.isDebugEnabled())
             LOG.debug("isSameRM: " + getSessionInfo() + " -- " + session.getSessionInfo() + " : " + isSame + ", "
-                     + this + " -- " + session + ", Flags:" + startFlags);
+               + this + " -- " + session + ", Flags:" + startFlags);
          return isSame;
       }
       return false;

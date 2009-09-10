@@ -18,10 +18,10 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
+import org.exoplatform.container.ExoContainer;
+import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableResourceManager;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.transaction.TransactionService;
-import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableResourceManager;
-import org.exoplatform.container.ExoContainer;
 
 import javax.jcr.RepositoryException;
 
@@ -29,14 +29,13 @@ import javax.jcr.RepositoryException;
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
  */
-public class TrackedXASession
-   extends XASessionImpl
+public class TrackedXASession extends XASessionImpl
 {
 
    private final SessionReference ref = new SessionReference(this);
 
    public TrackedXASession(String workspaceName, ConversationState userState, ExoContainer container,
-            TransactionService tService, TransactionableResourceManager txResourceManager) throws RepositoryException
+      TransactionService tService, TransactionableResourceManager txResourceManager) throws RepositoryException
    {
       super(workspaceName, userState, container, tService, txResourceManager);
    }

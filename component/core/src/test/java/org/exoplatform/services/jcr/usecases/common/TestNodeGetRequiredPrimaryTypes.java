@@ -18,11 +18,11 @@
  */
 package org.exoplatform.services.jcr.usecases.common;
 
+import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
+
 import javax.jcr.Node;
 import javax.jcr.nodetype.NodeDefinition;
 import javax.jcr.nodetype.NodeType;
-
-import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
 
 /**
  * Created by The eXo Platform SAS Author : Peter Nedonosko peter.nedonosko@exoplatform.com.ua
@@ -31,8 +31,7 @@ import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestNodeGetRequiredPrimaryTypes.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class TestNodeGetRequiredPrimaryTypes
-   extends BaseUsecasesTest
+public class TestNodeGetRequiredPrimaryTypes extends BaseUsecasesTest
 {
 
    public void testRootNode() throws Exception

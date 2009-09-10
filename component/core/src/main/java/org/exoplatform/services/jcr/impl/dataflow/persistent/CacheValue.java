@@ -18,9 +18,9 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
-import java.io.Serializable;
-
 import org.exoplatform.services.jcr.datamodel.ItemData;
+
+import java.io.Serializable;
 
 /**
  * Created by The eXo Platform SAS
@@ -30,8 +30,7 @@ import org.exoplatform.services.jcr.datamodel.ItemData;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: CacheValue.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class CacheValue
-   implements Serializable
+public class CacheValue implements Serializable
 {
 
    private final ItemData item;

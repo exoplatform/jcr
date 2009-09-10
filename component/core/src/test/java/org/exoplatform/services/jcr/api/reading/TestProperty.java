@@ -18,6 +18,9 @@
  */
 package org.exoplatform.services.jcr.api.reading;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.impl.core.value.BinaryValue;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,17 +34,13 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 import javax.jcr.ValueFormatException;
 
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-import org.exoplatform.services.jcr.impl.core.value.BinaryValue;
-
 /**
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov</a>
  * @version $Id: TestProperty.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class TestProperty
-   extends JcrAPIBaseTest
+public class TestProperty extends JcrAPIBaseTest
 {
 
    private Node node;
@@ -56,8 +55,8 @@ public class TestProperty
       values[1] = valueFactory.createValue("true");
       values[2] = valueFactory.createValue("121");
       node.setProperty("multi", values, PropertyType.STRING);
-      node.setProperty("multi-boolean", new Value[]
-      {session.getValueFactory().createValue(true), session.getValueFactory().createValue(true)});
+      node.setProperty("multi-boolean", new Value[]{session.getValueFactory().createValue(true),
+         session.getValueFactory().createValue(true)});
 
       node.setProperty("single", session.getValueFactory().createValue("this is the content"));
 
@@ -106,7 +105,7 @@ public class TestProperty
       {
          Value value = values[i];
          if (!("stringValue".equals(value.getString()) || "true".equals(value.getString()) || "121".equals(value
-                  .getString())))
+            .getString())))
          {
             fail("returned non expected value");
          }
@@ -173,8 +172,8 @@ public class TestProperty
    public void testGetDouble() throws RepositoryException
    {
       node.setProperty("double", session.getValueFactory().createValue(15));
-      assertEquals(15, (int) node.getProperty("double").getDouble());
-      assertEquals(15, (int) node.getProperty("double").getValue().getDouble());
+      assertEquals(15, (int)node.getProperty("double").getDouble());
+      assertEquals(15, (int)node.getProperty("double").getValue().getDouble());
       try
       {
          node.getProperty("multi").getDouble();
@@ -280,8 +279,7 @@ public class TestProperty
 
       Node refNode = node1.addNode("refNode", "nt:resource");
       refNode
-               .setProperty("jcr:data", session.getValueFactory().createValue("this is the content",
-                        PropertyType.BINARY));
+         .setProperty("jcr:data", session.getValueFactory().createValue("this is the content", PropertyType.BINARY));
       refNode.setProperty("jcr:mimeType", session.getValueFactory().createValue("text/html"));
       refNode.setProperty("jcr:lastModified", session.getValueFactory().createValue(Calendar.getInstance()));
 

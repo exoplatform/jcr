@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.api.search;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Calendar;
@@ -28,8 +30,6 @@ import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
 
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-
 /**
  * Created by The eXo Platform SAS Author : Peter Nedonosko peter.nedonosko@exoplatform.com.ua
  * 25.12.2007
@@ -37,8 +37,7 @@ import org.exoplatform.services.jcr.JcrAPIBaseTest;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestSearch.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class TestSearch
-   extends JcrAPIBaseTest
+public class TestSearch extends JcrAPIBaseTest
 {
 
    private Node testNode;
@@ -107,8 +106,7 @@ public class TestSearch
       session.save();
 
       String sqlQuery =
-               "SELECT * FROM exojcrtest:type1 WHERE jcr:path LIKE '" + testNode.getPath()
-                        + "/%' order by jcr:primaryType";
+         "SELECT * FROM exojcrtest:type1 WHERE jcr:path LIKE '" + testNode.getPath() + "/%' order by jcr:primaryType";
       QueryManager manager = session.getWorkspace().getQueryManager();
       Query query = manager.createQuery(sqlQuery, Query.SQL);
 

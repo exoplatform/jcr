@@ -18,10 +18,9 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock;
 
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.jcr.impl.proccess.WorkerThread;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 /**
  * Created by The eXo Platform SAS.
@@ -29,8 +28,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: LockRemover.java 11987 2008-03-17 09:06:06Z ksm $
  */
-public class LockRemover
-   extends WorkerThread
+public class LockRemover extends WorkerThread
 {
 
    private final Log log = ExoLogger.getLogger("jcr.lock.LockRemover");

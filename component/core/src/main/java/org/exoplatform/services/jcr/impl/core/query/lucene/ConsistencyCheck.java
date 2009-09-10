@@ -120,7 +120,7 @@ class ConsistencyCheck
       int notRepairable = 0;
       for (Iterator it = errors.iterator(); it.hasNext();)
       {
-         ConsistencyCheckError error = (ConsistencyCheckError) it.next();
+         ConsistencyCheckError error = (ConsistencyCheckError)it.next();
          try
          {
             if (error.repairable())
@@ -145,7 +145,7 @@ class ConsistencyCheck
                {
                   e = new IOException(e.getMessage());
                }
-               throw (IOException) e;
+               throw (IOException)e;
             }
          }
       }
@@ -186,7 +186,7 @@ class ConsistencyCheck
          {
             if (i > 10 && i % (reader.maxDoc() / 5) == 0)
             {
-               long progress = Math.round((100.0 * (float) i) / ((float) reader.maxDoc() * 2f));
+               long progress = Math.round((100.0 * (float)i) / ((float)reader.maxDoc() * 2f));
                log.info("progress: " + progress + "%");
             }
             if (reader.isDeleted(i))
@@ -228,7 +228,7 @@ class ConsistencyCheck
          {
             if (i > 10 && i % (reader.maxDoc() / 5) == 0)
             {
-               long progress = Math.round((100.0 * (float) i) / ((float) reader.maxDoc() * 2f));
+               long progress = Math.round((100.0 * (float)i) / ((float)reader.maxDoc() * 2f));
                log.info("progress: " + (progress + 50) + "%");
             }
             if (reader.isDeleted(i))
@@ -277,8 +277,7 @@ class ConsistencyCheck
    /**
     * One or more ancestors of an indexed node are not available in the index.
     */
-   private class MissingAncestor
-      extends ConsistencyCheckError
+   private class MissingAncestor extends ConsistencyCheckError
    {
 
       private final String parentUUID;
@@ -312,7 +311,7 @@ class ConsistencyCheck
          {
             try
             {
-               NodeData n = (NodeData) stateMgr.getItemData(parentId);
+               NodeData n = (NodeData)stateMgr.getItemData(parentId);
                log.info("Reparing missing node " + getPath(n));
                Document d = index.createDocument(n);
                index.addDocument(d);
@@ -330,8 +329,7 @@ class ConsistencyCheck
    /**
     * The parent of a node is not available through the ItemStateManager.
     */
-   private class UnknownParent
-      extends ConsistencyCheckError
+   private class UnknownParent extends ConsistencyCheckError
    {
 
       private UnknownParent(String uuid, String parentUUID)
@@ -361,8 +359,7 @@ class ConsistencyCheck
    /**
     * A node is present multiple times in the index.
     */
-   private class MultipleEntries
-      extends ConsistencyCheckError
+   private class MultipleEntries extends ConsistencyCheckError
    {
 
       MultipleEntries(String uuid)
@@ -393,7 +390,7 @@ class ConsistencyCheck
          // then re-index the node
          try
          {
-            NodeData node = (NodeData) stateMgr.getItemData(uuid);
+            NodeData node = (NodeData)stateMgr.getItemData(uuid);
             log.info("Re-indexing duplicate node occurrences in index: " + getPath(node));
             Document d = index.createDocument(node);
             index.addDocument(d);
@@ -409,8 +406,7 @@ class ConsistencyCheck
    /**
     * Indicates that a node has been deleted but is still in the index.
     */
-   private class NodeDeleted
-      extends ConsistencyCheckError
+   private class NodeDeleted extends ConsistencyCheckError
    {
 
       NodeDeleted(String uuid)

@@ -18,15 +18,15 @@
  */
 package org.exoplatform.services.jcr.api.accessing;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.core.CredentialsImpl;
+
 import javax.jcr.Credentials;
 import javax.jcr.LoginException;
 import javax.jcr.NoSuchWorkspaceException;
 import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
-
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-import org.exoplatform.services.jcr.core.CredentialsImpl;
 
 /**
  * Created y the eXo platform team
@@ -35,8 +35,7 @@ import org.exoplatform.services.jcr.core.CredentialsImpl;
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov</a>
  * @version $Id: TestAccessRepository.java 12049 2008-03-18 12:22:03Z gazarenkov $ See 6.1.1
  */
-public class TestAccessRepository
-   extends JcrAPIBaseTest
+public class TestAccessRepository extends JcrAPIBaseTest
 {
 
    public void testLogin() throws NoSuchWorkspaceException, LoginException, RepositoryException
@@ -84,7 +83,7 @@ public class TestAccessRepository
    }
 
    public void testExternalLoginToDefaultWorkspace() throws NoSuchWorkspaceException, LoginException,
-            RepositoryException
+      RepositoryException
    {
 
       // PortalContainer.getInstance().

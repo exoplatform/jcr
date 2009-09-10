@@ -18,15 +18,15 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.session;
 
+import org.exoplatform.services.jcr.impl.core.XASessionImpl;
+import org.exoplatform.services.transaction.TransactionException;
+
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import org.exoplatform.services.jcr.impl.core.XASessionImpl;
-import org.exoplatform.services.transaction.TransactionException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -51,7 +51,7 @@ public class TransactionableResourceManager
     * XASessions involved in transaction. Sessions stored by userId.
     */
    private Map<String, List<SoftReference<XASessionImpl>>> txManagers =
-            new HashMap<String, List<SoftReference<XASessionImpl>>>();
+      new HashMap<String, List<SoftReference<XASessionImpl>>>();
 
    /**
     * TransactionableResourceManager constructor.

@@ -18,11 +18,11 @@
  */
 package org.exoplatform.services.jcr.storage.value;
 
-import java.io.IOException;
-
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.impl.storage.value.ValueStorageNotFoundException;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
+
+import java.io.IOException;
 
 /**
  * Created by The eXo Platform SAS 04.09.2006

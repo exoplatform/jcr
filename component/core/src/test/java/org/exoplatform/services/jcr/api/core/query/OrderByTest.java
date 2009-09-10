@@ -24,8 +24,7 @@ import javax.jcr.query.QueryResult;
 /**
  * Tests queries with order by.
  */
-public class OrderByTest
-   extends AbstractQueryTest
+public class OrderByTest extends AbstractQueryTest
 {
 
    public void testOrderByScore() throws RepositoryException
@@ -44,8 +43,7 @@ public class OrderByTest
       testRootNode.save();
 
       String sql =
-               "SELECT value FROM nt:unstructured WHERE " + "jcr:path LIKE '" + testRoot
-                        + "/%' ORDER BY jcr:score, value";
+         "SELECT value FROM nt:unstructured WHERE " + "jcr:path LIKE '" + testRoot + "/%' ORDER BY jcr:score, value";
       Query q = superuser.getWorkspace().getQueryManager().createQuery(sql, Query.SQL);
       QueryResult result = q.execute();
       checkResult(result, 3);

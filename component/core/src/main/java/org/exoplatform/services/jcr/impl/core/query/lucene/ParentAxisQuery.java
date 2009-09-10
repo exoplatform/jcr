@@ -36,8 +36,7 @@ import org.apache.lucene.search.Weight;
 /**
  * <code>ParentAxisQuery</code> selects the parent nodes of a context query.
  */
-class ParentAxisQuery
-   extends Query
+class ParentAxisQuery extends Query
 {
 
    /**
@@ -128,8 +127,7 @@ class ParentAxisQuery
    /**
     * The <code>Weight</code> implementation for this <code>ParentAxisQuery</code>.
     */
-   private class ParentAxisWeight
-      implements Weight
+   private class ParentAxisWeight implements Weight
    {
 
       /**
@@ -193,7 +191,7 @@ class ParentAxisQuery
       public Scorer scorer(IndexReader reader) throws IOException
       {
          contextScorer = contextQuery.weight(searcher).scorer(reader);
-         HierarchyResolver resolver = (HierarchyResolver) reader;
+         HierarchyResolver resolver = (HierarchyResolver)reader;
          return new ParentAxisScorer(searcher.getSimilarity(), reader, resolver);
       }
 
@@ -211,8 +209,7 @@ class ParentAxisQuery
    /**
     * Implements a <code>Scorer</code> for this <code>ParentAxisQuery</code>.
     */
-   private class ParentAxisScorer
-      extends Scorer
+   private class ParentAxisScorer extends Scorer
    {
 
       /**
@@ -281,7 +278,7 @@ class ParentAxisQuery
        */
       public float score() throws IOException
       {
-         Float score = (Float) scores.get(new Integer(nextDoc));
+         Float score = (Float)scores.get(new Integer(nextDoc));
          if (score == null)
          {
             score = DEFAULT_SCORE;

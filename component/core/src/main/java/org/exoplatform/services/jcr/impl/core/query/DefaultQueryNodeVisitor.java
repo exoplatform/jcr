@@ -20,8 +20,7 @@ package org.exoplatform.services.jcr.impl.core.query;
  * Implements the <code>QueryNodeVisitor</code> interface with default behaviour. All methods are
  * no-ops and return the <code>data</code> argument.
  */
-public class DefaultQueryNodeVisitor
-   implements QueryNodeVisitor
+public class DefaultQueryNodeVisitor implements QueryNodeVisitor
 {
 
    public Object visit(QueryRootNode node, Object data)

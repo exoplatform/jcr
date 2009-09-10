@@ -42,8 +42,7 @@ import org.exoplatform.services.log.ExoLogger;
  * This synonym provider will return B as a synonym for A and vice versa. The same applies to B and
  * C. However A is not considered a synonym for C, nor C a synonym for A.
  */
-public class PropertiesSynonymProvider
-   implements SynonymProvider
+public class PropertiesSynonymProvider implements SynonymProvider
 {
 
    /**
@@ -107,7 +106,7 @@ public class PropertiesSynonymProvider
       String[] syns;
       synchronized (this)
       {
-         syns = (String[]) synonyms.get(term);
+         syns = (String[])synonyms.get(term);
       }
       if (syns == null)
       {
@@ -151,9 +150,9 @@ public class PropertiesSynonymProvider
       props.load(new BufferedInputStream(in));
       for (Iterator it = props.entrySet().iterator(); it.hasNext();)
       {
-         Map.Entry e = (Map.Entry) it.next();
-         String key = (String) e.getKey();
-         String value = (String) e.getValue();
+         Map.Entry e = (Map.Entry)it.next();
+         String key = (String)e.getKey();
+         String value = (String)e.getValue();
          addSynonym(key, value, synonyms);
          addSynonym(value, key, synonyms);
       }
@@ -173,11 +172,10 @@ public class PropertiesSynonymProvider
    private static void addSynonym(String term, String synonym, Map synonyms)
    {
       term = term.toLowerCase();
-      String[] syns = (String[]) synonyms.get(term);
+      String[] syns = (String[])synonyms.get(term);
       if (syns == null)
       {
-         syns = new String[]
-         {synonym};
+         syns = new String[]{synonym};
       }
       else
       {

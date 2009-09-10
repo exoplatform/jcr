@@ -18,13 +18,14 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
-import javax.jcr.Session;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.ArrayList;
+
+import javax.jcr.Session;
 
 /**
  * A framework for detecting JCR session leaks.
@@ -32,8 +33,7 @@ import java.util.ArrayList;
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
  */
-public class SessionReference
-   extends WeakReference<Session>
+public class SessionReference extends WeakReference<Session>
 {
 
    //

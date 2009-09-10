@@ -25,8 +25,7 @@ import org.exoplatform.services.jcr.datamodel.InternalQName;
  * search index. Storing paths with the full uri of a namespace would require too much space in the
  * search index.
  */
-public interface NamespaceMappings
-   extends NamespaceAccessor
+public interface NamespaceMappings extends NamespaceAccessor
 {
 
    /**

@@ -26,15 +26,13 @@ import javax.jcr.query.QueryResult;
 /**
  * Performs various query test cases.
  */
-public class SimpleQueryTest
-   extends AbstractQueryTest
+public class SimpleQueryTest extends AbstractQueryTest
 {
 
    public void testSimpleQuerySQL1() throws Exception
    {
       Node foo = testRootNode.addNode("foo");
-      foo.setProperty("bla", new String[]
-      {"bla"});
+      foo.setProperty("bla", new String[]{"bla"});
 
       testRootNode.save();
 
@@ -47,11 +45,9 @@ public class SimpleQueryTest
    public void testSimpleQuerySQL2() throws Exception
    {
       Node foo = testRootNode.addNode("foo");
-      foo.setProperty("bla", new String[]
-      {"bla"});
+      foo.setProperty("bla", new String[]{"bla"});
       Node bla = testRootNode.addNode("bla");
-      bla.setProperty("bla", new String[]
-      {"bla"});
+      bla.setProperty("bla", new String[]{"bla"});
 
       superuser.getRootNode().save();
 
@@ -64,11 +60,9 @@ public class SimpleQueryTest
    public void testSimpleQuerySQL3() throws Exception
    {
       Node foo = testRootNode.addNode("foo");
-      foo.setProperty("bla", new String[]
-      {"bla"});
+      foo.setProperty("bla", new String[]{"bla"});
       Node bla = testRootNode.addNode("bla");
-      bla.setProperty("bla", new String[]
-      {"bla"});
+      bla.setProperty("bla", new String[]{"bla"});
 
       testRootNode.save();
 
@@ -81,11 +75,9 @@ public class SimpleQueryTest
    public void testSimpleQuerySQL4() throws Exception
    {
       Node foo = testRootNode.addNode("foo");
-      foo.setProperty("bla", new String[]
-      {"bla"});
+      foo.setProperty("bla", new String[]{"bla"});
       Node bla = testRootNode.addNode("bla");
-      bla.setProperty("bla", new String[]
-      {"bla"});
+      bla.setProperty("bla", new String[]{"bla"});
 
       testRootNode.save();
 
@@ -100,27 +92,25 @@ public class SimpleQueryTest
       Node n = testRootNode.addNode("marcel");
       Calendar marcel = Calendar.getInstance();
       marcel.set(1976, 4, 20, 15, 40);
-      n.setProperty("birth", new Value[]
-      {superuser.getValueFactory().createValue(marcel)});
+      n.setProperty("birth", new Value[]{superuser.getValueFactory().createValue(marcel)});
 
       n = testRootNode.addNode("vanessa");
       Calendar vanessa = Calendar.getInstance();
       vanessa.set(1975, 4, 10, 13, 30);
-      n.setProperty("birth", new Value[]
-      {superuser.getValueFactory().createValue(vanessa)});
+      n.setProperty("birth", new Value[]{superuser.getValueFactory().createValue(vanessa)});
 
       testRootNode.save();
 
       String sql =
-               "SELECT * FROM nt:base WHERE jcr:path LIKE '" + testRoot
-                        + "/%' AND birth > TIMESTAMP '1976-01-01T00:00:00.000+01:00'";
+         "SELECT * FROM nt:base WHERE jcr:path LIKE '" + testRoot
+            + "/%' AND birth > TIMESTAMP '1976-01-01T00:00:00.000+01:00'";
       Query q = superuser.getWorkspace().getQueryManager().createQuery(sql, Query.SQL);
       QueryResult result = q.execute();
       checkResult(result, 1);
 
       sql =
-               "SELECT * FROM nt:base WHERE jcr:path LIKE '" + testRoot
-                        + "/%' AND birth > TIMESTAMP '1975-01-01T00:00:00.000+01:00'";
+         "SELECT * FROM nt:base WHERE jcr:path LIKE '" + testRoot
+            + "/%' AND birth > TIMESTAMP '1975-01-01T00:00:00.000+01:00'";
       q = superuser.getWorkspace().getQueryManager().createQuery(sql, Query.SQL);
       result = q.execute();
       checkResult(result, 2);
@@ -129,14 +119,11 @@ public class SimpleQueryTest
    public void testDoubleField() throws Exception
    {
       Node n = testRootNode.addNode("node1");
-      n.setProperty("value", new Value[]
-      {superuser.getValueFactory().createValue(1.9928375d)});
+      n.setProperty("value", new Value[]{superuser.getValueFactory().createValue(1.9928375d)});
       n = testRootNode.addNode("node2");
-      n.setProperty("value", new Value[]
-      {superuser.getValueFactory().createValue(0.0d)});
+      n.setProperty("value", new Value[]{superuser.getValueFactory().createValue(0.0d)});
       n = testRootNode.addNode("node3");
-      n.setProperty("value", new Value[]
-      {superuser.getValueFactory().createValue(-1.42982475d)});
+      n.setProperty("value", new Value[]{superuser.getValueFactory().createValue(-1.42982475d)});
 
       testRootNode.save();
 
@@ -159,14 +146,11 @@ public class SimpleQueryTest
    public void testLongField() throws Exception
    {
       Node n = testRootNode.addNode("node1");
-      n.setProperty("value", new Value[]
-      {superuser.getValueFactory().createValue(1)});
+      n.setProperty("value", new Value[]{superuser.getValueFactory().createValue(1)});
       n = testRootNode.addNode("node2");
-      n.setProperty("value", new Value[]
-      {superuser.getValueFactory().createValue(0)});
+      n.setProperty("value", new Value[]{superuser.getValueFactory().createValue(0)});
       n = testRootNode.addNode("node3");
-      n.setProperty("value", new Value[]
-      {superuser.getValueFactory().createValue(-1)});
+      n.setProperty("value", new Value[]{superuser.getValueFactory().createValue(-1)});
 
       testRootNode.save();
 
@@ -189,14 +173,11 @@ public class SimpleQueryTest
    public void testLikePattern() throws Exception
    {
       Node n = testRootNode.addNode("node1");
-      n.setProperty("value", new String[]
-      {"king"});
+      n.setProperty("value", new String[]{"king"});
       n = testRootNode.addNode("node2");
-      n.setProperty("value", new String[]
-      {"ping"});
+      n.setProperty("value", new String[]{"ping"});
       n = testRootNode.addNode("node3");
-      n.setProperty("value", new String[]
-      {"ching"});
+      n.setProperty("value", new String[]{"ching"});
 
       testRootNode.save();
 
@@ -219,14 +200,11 @@ public class SimpleQueryTest
    public void testLikePatternBetween() throws Exception
    {
       Node n = testRootNode.addNode("node1");
-      n.setProperty("value", new String[]
-      {"ping"});
+      n.setProperty("value", new String[]{"ping"});
       n = testRootNode.addNode("node2");
-      n.setProperty("value", new String[]
-      {"pong"});
+      n.setProperty("value", new String[]{"pong"});
       n = testRootNode.addNode("node3");
-      n.setProperty("value", new String[]
-      {"puung"});
+      n.setProperty("value", new String[]{"puung"});
 
       testRootNode.save();
 
@@ -249,14 +227,11 @@ public class SimpleQueryTest
    public void testLikePatternEnd() throws Exception
    {
       Node n = testRootNode.addNode("node1");
-      n.setProperty("value", new String[]
-      {"bli"});
+      n.setProperty("value", new String[]{"bli"});
       n = testRootNode.addNode("node2");
-      n.setProperty("value", new String[]
-      {"bla"});
+      n.setProperty("value", new String[]{"bla"});
       n = testRootNode.addNode("node3");
-      n.setProperty("value", new String[]
-      {"blub"});
+      n.setProperty("value", new String[]{"blub"});
 
       testRootNode.save();
 
@@ -279,22 +254,18 @@ public class SimpleQueryTest
    public void testLikePatternEscaped() throws Exception
    {
       Node n = testRootNode.addNode("node1");
-      n.setProperty("value", new String[]
-      {"foo\\_bar"});
+      n.setProperty("value", new String[]{"foo\\_bar"});
       n = testRootNode.addNode("node2");
-      n.setProperty("value", new String[]
-      {"foobar"});
+      n.setProperty("value", new String[]{"foobar"});
       n = testRootNode.addNode("node3");
-      n.setProperty("value", new String[]
-      {"foo_bar"});
+      n.setProperty("value", new String[]{"foo_bar"});
       n = testRootNode.addNode("node4");
-      n.setProperty("value", new String[]
-      {"foolbar"});
+      n.setProperty("value", new String[]{"foolbar"});
 
       testRootNode.save();
 
       String sql =
-               "SELECT * FROM nt:base WHERE jcr:path LIKE '" + testRoot + "/%' AND value LIKE 'foo\\_bar' ESCAPE '\\'"; // matches node3
+         "SELECT * FROM nt:base WHERE jcr:path LIKE '" + testRoot + "/%' AND value LIKE 'foo\\_bar' ESCAPE '\\'"; // matches node3
       Query q = superuser.getWorkspace().getQueryManager().createQuery(sql, Query.SQL);
       QueryResult result = q.execute();
       checkResult(result, 1);
@@ -328,8 +299,7 @@ public class SimpleQueryTest
    public void testLikeWithLineTerminator() throws Exception
    {
       Node n = testRootNode.addNode("node1");
-      n.setProperty("value", new String[]
-      {"foo\nbar"});
+      n.setProperty("value", new String[]{"foo\nbar"});
 
       testRootNode.save();
 
@@ -347,14 +317,11 @@ public class SimpleQueryTest
    public void testNotEqual() throws Exception
    {
       Node n = testRootNode.addNode("node1");
-      n.setProperty("value", new String[]
-      {"foo"});
+      n.setProperty("value", new String[]{"foo"});
       n = testRootNode.addNode("node2");
-      n.setProperty("value", new String[]
-      {"bar"});
+      n.setProperty("value", new String[]{"bar"});
       n = testRootNode.addNode("node3");
-      n.setProperty("value", new String[]
-      {"foobar"});
+      n.setProperty("value", new String[]{"foobar"});
 
       testRootNode.save();
 
@@ -473,11 +440,9 @@ public class SimpleQueryTest
    public void testGeneralComparison() throws Exception
    {
       Node foo = testRootNode.addNode("foo");
-      foo.setProperty("text", new String[]
-      {"foo", "bar"}); // mvp
+      foo.setProperty("text", new String[]{"foo", "bar"}); // mvp
       Node bar = testRootNode.addNode("bar");
-      bar.setProperty("text", new String[]
-      {"foo"}); // mvp with one value
+      bar.setProperty("text", new String[]{"foo"}); // mvp with one value
       Node bla = testRootNode.addNode("bla");
       bla.setProperty("text", "foo"); // svp
       Node blu = testRootNode.addNode("blu");
@@ -488,20 +453,17 @@ public class SimpleQueryTest
       String sql = "SELECT * FROM nt:unstructured WHERE 'foo' IN text " + "and jcr:path LIKE '" + testRoot + "/%'";
       Query q = superuser.getWorkspace().getQueryManager().createQuery(sql, Query.SQL);
       QueryResult result = q.execute();
-      checkResult(result, new Node[]
-      {foo, bar, bla});
+      checkResult(result, new Node[]{foo, bar, bla});
 
       String xpath = "/" + testRoot + "/*[@jcr:primaryType='nt:unstructured' and @text = 'foo']";
       q = superuser.getWorkspace().getQueryManager().createQuery(xpath, Query.XPATH);
       result = q.execute();
-      checkResult(result, new Node[]
-      {foo, bar, bla});
+      checkResult(result, new Node[]{foo, bar, bla});
 
       xpath = "/jcr:root" + testRoot + "/*[@jcr:primaryType='nt:unstructured' and @text = 'foo']";
       q = superuser.getWorkspace().getQueryManager().createQuery(xpath, Query.XPATH);
       result = q.execute();
-      checkResult(result, new Node[]
-      {foo, bar, bla});
+      checkResult(result, new Node[]{foo, bar, bla});
 
       // ----------------------------------------------------------------------
 
@@ -509,60 +471,51 @@ public class SimpleQueryTest
       sql = "SELECT * FROM nt:unstructured WHERE text = 'foo' " + "and jcr:path LIKE '" + testRoot + "/%'";
       q = superuser.getWorkspace().getQueryManager().createQuery(sql, Query.SQL);
       result = q.execute();
-      checkResult(result, new Node[]
-      {foo, bar, bla});
+      checkResult(result, new Node[]{foo, bar, bla});
 
       xpath = "/" + testRoot + "/*[@jcr:primaryType='nt:unstructured' and @text eq 'foo']";
       q = superuser.getWorkspace().getQueryManager().createQuery(xpath, Query.XPATH);
       result = q.execute();
-      checkResult(result, new Node[]
-      {bar, bla});
+      checkResult(result, new Node[]{bar, bla});
 
       xpath = "/jcr:root" + testRoot + "/*[@jcr:primaryType='nt:unstructured' and @text eq 'foo']";
       q = superuser.getWorkspace().getQueryManager().createQuery(xpath, Query.XPATH);
       result = q.execute();
-      checkResult(result, new Node[]
-      {bar, bla});
+      checkResult(result, new Node[]{bar, bla});
 
       // ----------------------------------------------------------------------
 
       sql = "SELECT * FROM nt:unstructured WHERE 'bar' NOT IN text " + "and jcr:path LIKE '" + testRoot + "/%'";
       q = superuser.getWorkspace().getQueryManager().createQuery(sql, Query.SQL);
       result = q.execute();
-      checkResult(result, new Node[]
-      {foo, bar, bla});
+      checkResult(result, new Node[]{foo, bar, bla});
 
       xpath = "/" + testRoot + "/*[@jcr:primaryType='nt:unstructured' and @text != 'bar']";
       q = superuser.getWorkspace().getQueryManager().createQuery(xpath, Query.XPATH);
       result = q.execute();
-      checkResult(result, new Node[]
-      {foo, bar, bla});
+      checkResult(result, new Node[]{foo, bar, bla});
 
       xpath = "/jcr:root" + testRoot + "/*[@jcr:primaryType='nt:unstructured' and @text != 'bar']";
       q = superuser.getWorkspace().getQueryManager().createQuery(xpath, Query.XPATH);
       result = q.execute();
-      checkResult(result, new Node[]
-      {foo, bar, bla});
+      checkResult(result, new Node[]{foo, bar, bla});
 
       // ----------------------------------------------------------------------
 
       sql = "SELECT * FROM nt:unstructured WHERE 'foo' NOT IN text " + "and jcr:path LIKE '" + testRoot + "/%'";
       q = superuser.getWorkspace().getQueryManager().createQuery(sql, Query.SQL);
       result = q.execute();
-      checkResult(result, new Node[]
-      {foo, blu});
+      checkResult(result, new Node[]{foo, blu});
 
       xpath = "/" + testRoot + "/*[@jcr:primaryType='nt:unstructured' and @text != 'foo']";
       q = superuser.getWorkspace().getQueryManager().createQuery(xpath, Query.XPATH);
       result = q.execute();
-      checkResult(result, new Node[]
-      {foo, blu});
+      checkResult(result, new Node[]{foo, blu});
 
       xpath = "/jcr:root" + testRoot + "/*[@jcr:primaryType='nt:unstructured' and @text != 'foo']";
       q = superuser.getWorkspace().getQueryManager().createQuery(xpath, Query.XPATH);
       result = q.execute();
-      checkResult(result, new Node[]
-      {foo, blu});
+      checkResult(result, new Node[]{foo, blu});
    }
 
    public void testLogicalExpression() throws Exception
@@ -584,13 +537,11 @@ public class SimpleQueryTest
       String sql = "SELECT * FROM nt:unstructured WHERE a=1 and b=2 or c=3";
       Query q = superuser.getWorkspace().getQueryManager().createQuery(sql, Query.SQL);
       QueryResult result = q.execute();
-      checkResult(result, new Node[]
-      {foo, bla});
+      checkResult(result, new Node[]{foo, bla});
 
       String xpath = "//*[@a=1 and @b=2 or @c=3] ";
       q = superuser.getWorkspace().getQueryManager().createQuery(xpath, Query.XPATH);
       result = q.execute();
-      checkResult(result, new Node[]
-      {foo, bla});
+      checkResult(result, new Node[]{foo, bla});
    }
 }

@@ -18,18 +18,18 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc;
 
+import org.exoplatform.services.jcr.dataflow.ItemState;
+import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.QPathEntry;
+import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
+
 import java.io.IOException;
 import java.sql.SQLException;
 
 import javax.jcr.InvalidItemStateException;
 import javax.jcr.ItemExistsException;
 import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.jcr.dataflow.ItemState;
-import org.exoplatform.services.jcr.datamodel.ItemData;
-import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.datamodel.QPathEntry;
-import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -98,13 +98,13 @@ public class SQLExceptionHandler
     *           if <code>InvalidItemStateException</code> should be thrown
     */
    protected String handleAddException(SQLException e, ItemData item) throws RepositoryException,
-            InvalidItemStateException
+      InvalidItemStateException
    {
       String message = "[" + containerName + "] ADD " + (item.isNode() ? "NODE. " : "PROPERTY. ");
       String errMessage = e.getMessage();
       String itemInfo =
-               item.getQPath().getAsString() + ", ID: " + item.getIdentifier() + ", ParentID: "
-                        + item.getParentIdentifier() + (errMessage != null ? ". Cause >>>> " + errMessage : "");
+         item.getQPath().getAsString() + ", ID: " + item.getIdentifier() + ", ParentID: " + item.getParentIdentifier()
+            + (errMessage != null ? ". Cause >>>> " + errMessage : "");
 
       if (errMessage != null)
       {
@@ -144,8 +144,8 @@ public class SQLExceptionHandler
          else if (umsg.indexOf(conn.JCR_PK_VALUE) >= 0)
          {
             message +=
-                     "[FATAL] Value already exists with the ValueID. Impossible state, check is ValueID is autoincremented. "
-                              + itemInfo;
+               "[FATAL] Value already exists with the ValueID. Impossible state, check is ValueID is autoincremented. "
+                  + itemInfo;
             throw new RepositoryException(message, e);
          }
          else if (umsg.indexOf(conn.JCR_PK_REF) >= 0)
@@ -164,7 +164,7 @@ public class SQLExceptionHandler
       RepositoryException ownException = null;
       try
       {
-         NodeData parent = (NodeData) conn.getItemData(item.getParentIdentifier());
+         NodeData parent = (NodeData)conn.getItemData(item.getParentIdentifier());
          if (parent != null)
          {
             // have a parent
@@ -197,7 +197,7 @@ public class SQLExceptionHandler
 
             // MySQL violation
             if (e.getClass().getName().indexOf("MySQLIntegrityConstraintViolationException") >= 0
-                     && errMessage.indexOf(item.getIdentifier()) >= 0)
+               && errMessage.indexOf(item.getIdentifier()) >= 0)
             {
                // it's JCR_PK_ITEM violation 
                message += "Item already exists. Condition: ID. " + itemInfo;
@@ -233,19 +233,19 @@ public class SQLExceptionHandler
     *           if <code>InvalidItemStateException</code> should be thrown
     */
    protected String handleAddException(IOException e, ItemData item) throws RepositoryException,
-            InvalidItemStateException
+      InvalidItemStateException
    {
       String message = "[" + containerName + "] ADD " + (item.isNode() ? "NODE. " : "PROPERTY. ");
       String errMessage = e.getMessage();
       String itemInfo =
-               item.getQPath().getAsString() + ", ID: " + item.getIdentifier() + ", ParentID: "
-                        + item.getParentIdentifier() + (errMessage != null ? ". Cause >>>> " + errMessage : "");
+         item.getQPath().getAsString() + ", ID: " + item.getIdentifier() + ", ParentID: " + item.getParentIdentifier()
+            + (errMessage != null ? ". Cause >>>> " + errMessage : "");
 
       // try detect integrity violation
       RepositoryException ownException = null;
       try
       {
-         NodeData parent = (NodeData) conn.getItemData(item.getParentIdentifier());
+         NodeData parent = (NodeData)conn.getItemData(item.getParentIdentifier());
          if (parent != null)
          {
             // have a parent
@@ -304,13 +304,13 @@ public class SQLExceptionHandler
     *           if <code>InvalidItemStateException</code> should be thrown
     */
    protected String handleDeleteException(SQLException e, ItemData item) throws RepositoryException,
-            InvalidItemStateException
+      InvalidItemStateException
    {
       String message = "[" + containerName + "] DELETE " + (item.isNode() ? "NODE. " : "PROPERTY. ");
       String errMessage = e.getMessage();
       String itemInfo =
-               item.getQPath().getAsString() + " " + item.getIdentifier()
-                        + (errMessage != null ? ". Cause >>>> " + errMessage : "");
+         item.getQPath().getAsString() + " " + item.getIdentifier()
+            + (errMessage != null ? ". Cause >>>> " + errMessage : "");
 
       if (errMessage != null)
       {
@@ -324,8 +324,7 @@ public class SQLExceptionHandler
          else if (umsg.indexOf(conn.JCR_FK_VALUE_PROPERTY) >= 0)
          {
             message +=
-                     "[FATAL] Can not delete property item till it contains values. Condition: property ID. "
-                              + itemInfo;
+               "[FATAL] Can not delete property item till it contains values. Condition: property ID. " + itemInfo;
             throw new RepositoryException(message, e);
          }
       }
@@ -348,13 +347,13 @@ public class SQLExceptionHandler
     *           if <code>InvalidItemStateException</code> should be thrown
     */
    protected String handleUpdateException(SQLException e, ItemData item) throws RepositoryException,
-            InvalidItemStateException
+      InvalidItemStateException
    {
       String message = "[" + containerName + "] EDIT " + (item.isNode() ? "NODE. " : "PROPERTY. ");
       String errMessage = e.getMessage();
       String itemInfo =
-               item.getQPath().getAsString() + " " + item.getIdentifier()
-                        + (errMessage != null ? ". Cause >>>> " + errMessage : "");
+         item.getQPath().getAsString() + " " + item.getIdentifier()
+            + (errMessage != null ? ". Cause >>>> " + errMessage : "");
 
       if (errMessage != null)
          // try detect error by foreign key names

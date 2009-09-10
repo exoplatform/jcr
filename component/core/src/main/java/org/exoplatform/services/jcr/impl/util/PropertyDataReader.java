@@ -18,6 +18,12 @@
  */
 package org.exoplatform.services.jcr.impl.util;
 
+import org.exoplatform.services.jcr.dataflow.DataManager;
+import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.PropertyData;
+import org.exoplatform.services.jcr.datamodel.ValueData;
+
 import java.util.HashMap;
 import java.util.List;
 
@@ -27,12 +33,6 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 import javax.jcr.ValueFormatException;
 
-import org.exoplatform.services.jcr.dataflow.DataManager;
-import org.exoplatform.services.jcr.datamodel.InternalQName;
-import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.datamodel.PropertyData;
-import org.exoplatform.services.jcr.datamodel.ValueData;
-
 /**
  * Created by The eXo Platform SAS 15.05.2006
  * 
@@ -41,8 +41,7 @@ import org.exoplatform.services.jcr.datamodel.ValueData;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: PropertyDataReader.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class PropertyDataReader
-   extends ItemDataReader
+public class PropertyDataReader extends ItemDataReader
 {
 
    private HashMap<InternalQName, PropertyInfo> propeties = new HashMap<InternalQName, PropertyInfo>();
@@ -94,10 +93,10 @@ public class PropertyDataReader
          else if (valueData != null)
          {
             throw new ValueFormatException("Property " + parent.getQPath().getAsString() + propertyName.getAsString()
-                     + " is multi-valued");
+               + " is multi-valued");
          }
          throw new PathNotFoundException("Property " + parent.getQPath().getAsString() + propertyName.getAsString()
-                  + " not found (multi-valued)");
+            + " not found (multi-valued)");
       }
 
       public void setValueDatas(List<ValueData> mValue)
@@ -118,10 +117,10 @@ public class PropertyDataReader
          else if (mValueData != null)
          {
             throw new ValueFormatException("Property " + parent.getQPath().getAsString() + propertyName.getAsString()
-                     + " is single-valued");
+               + " is single-valued");
          }
          throw new PathNotFoundException("Property " + parent.getQPath().getAsString() + propertyName.getAsString()
-                  + " not found (single-valued)");
+            + " not found (single-valued)");
       }
 
       public void setValueData(ValueData value)

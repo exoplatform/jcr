@@ -18,26 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import javax.jcr.Credentials;
-import javax.jcr.ImportUUIDBehavior;
-import javax.jcr.LoginException;
-import javax.jcr.NamespaceRegistry;
-import javax.jcr.NoSuchWorkspaceException;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-
-import org.picocontainer.ComponentAdapter;
-
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.jcr.access.AuthenticationPolicy;
 import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
@@ -57,7 +37,25 @@ import org.exoplatform.services.jcr.impl.xml.ExportImportFactory;
 import org.exoplatform.services.jcr.impl.xml.importing.ContentImporter;
 import org.exoplatform.services.jcr.impl.xml.importing.StreamImporter;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.ConversationState;
+import org.picocontainer.ComponentAdapter;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import javax.jcr.Credentials;
+import javax.jcr.ImportUUIDBehavior;
+import javax.jcr.LoginException;
+import javax.jcr.NamespaceRegistry;
+import javax.jcr.NoSuchWorkspaceException;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 
 /**
  * Created by The eXo Platform SAS.<br/>
@@ -66,8 +64,7 @@ import org.exoplatform.services.security.ConversationState;
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov </a>
  * @version $Id: RepositoryImpl.java 14487 2008-05-20 07:08:40Z gazarenkov $
  */
-public class RepositoryImpl
-   implements ManageableRepository
+public class RepositoryImpl implements ManageableRepository
 {
 
    /**
@@ -79,7 +76,7 @@ public class RepositoryImpl
     * SYSTEM credentials.
     */
    private static final CredentialsImpl SYSTEM_CREDENTIALS =
-            new CredentialsImpl(SystemIdentity.SYSTEM, "".toCharArray());
+      new CredentialsImpl(SystemIdentity.SYSTEM, "".toCharArray());
 
    /**
     * Logger.
@@ -145,9 +142,9 @@ public class RepositoryImpl
    public RepositoryImpl(RepositoryContainer container) throws RepositoryException, RepositoryConfigurationException
    {
 
-      config = (RepositoryEntry) container.getComponentInstanceOfType(RepositoryEntry.class);
+      config = (RepositoryEntry)container.getComponentInstanceOfType(RepositoryEntry.class);
 
-      authenticationPolicy = (AuthenticationPolicy) container.getComponentInstanceOfType(AuthenticationPolicy.class);
+      authenticationPolicy = (AuthenticationPolicy)container.getComponentInstanceOfType(AuthenticationPolicy.class);
 
       this.name = config.getName();
       this.systemWorkspaceName = config.getSystemWorkspaceName();
@@ -160,8 +157,8 @@ public class RepositoryImpl
    public void addItemPersistenceListener(String workspaceName, ItemsPersistenceListener listener)
    {
       PersistentDataManager pmanager =
-               (PersistentDataManager) repositoryContainer.getWorkspaceContainer(workspaceName)
-                        .getComponentInstanceOfType(PersistentDataManager.class);
+         (PersistentDataManager)repositoryContainer.getWorkspaceContainer(workspaceName).getComponentInstanceOfType(
+            PersistentDataManager.class);
 
       pmanager.addItemPersistenceListener(listener);
    }
@@ -178,7 +175,7 @@ public class RepositoryImpl
          return false;
 
       SessionRegistry sessionRegistry =
-               (SessionRegistry) repositoryContainer.getComponentInstance(SessionRegistry.class);
+         (SessionRegistry)repositoryContainer.getComponentInstance(SessionRegistry.class);
 
       return sessionRegistry != null && !sessionRegistry.isInUse(workspaceName);
 
@@ -192,7 +189,7 @@ public class RepositoryImpl
       if (isWorkspaceInitialized(wsConfig.getName()))
       {
          throw new RepositoryConfigurationException("Workspace '" + wsConfig.getName()
-                  + "' is presumably initialized. config canceled");
+            + "' is presumably initialized. config canceled");
       }
 
       try
@@ -244,7 +241,7 @@ public class RepositoryImpl
 
       if (wsContainer == null)
          throw new RepositoryException("Workspace " + workspaceName
-                  + " is not configured. Use RepositoryImpl.configWorkspace() method");
+            + " is not configured. Use RepositoryImpl.configWorkspace() method");
 
       repositoryContainer.getWorkspaceContainer(workspaceName).getWorkspaceInitializer().initWorkspace();
 
@@ -362,13 +359,13 @@ public class RepositoryImpl
       List<String> workspaceNames = new ArrayList<String>();
       for (int i = 0; i < adapters.size(); i++)
       {
-         ComponentAdapter adapter = (ComponentAdapter) adapters.get(i);
-         String workspaceName = new String((String) adapter.getComponentKey());
+         ComponentAdapter adapter = (ComponentAdapter)adapters.get(i);
+         String workspaceName = new String((String)adapter.getComponentKey());
 
          try
          {
             if (repositoryContainer.getWorkspaceContainer(workspaceName).getWorkspaceInitializer()
-                     .isWorkspaceInitialized())
+               .isWorkspaceInitialized())
                workspaceNames.add(workspaceName);
          }
          catch (RuntimeException e)
@@ -394,15 +391,15 @@ public class RepositoryImpl
          Map<String, Object> context = new HashMap<String, Object>();
          context.put(ContentImporter.RESPECT_PROPERTY_DEFINITIONS_CONSTRAINTS, true);
 
-         NodeData rootData = ((NodeData) ((NodeImpl) sysSession.getRootNode()).getData());
+         NodeData rootData = ((NodeData)((NodeImpl)sysSession.getRootNode()).getData());
          TransactionableDataManager dataManager = sysSession.getTransientNodesManager().getTransactManager();
          ExportImportFactory eiFactory = new ExportImportFactory();
 
          StreamImporter importer =
-                  eiFactory.getWorkspaceImporter(rootData, ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW, dataManager,
-                           dataManager, sysSession.getWorkspace().getNodeTypesHolder(),
-                           sysSession.getLocationFactory(), sysSession.getValueFactory(), getNamespaceRegistry(),
-                           sysSession.getAccessManager(), sysSession.getUserState(), context, this, wsName);
+            eiFactory.getWorkspaceImporter(rootData, ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW, dataManager,
+               dataManager, sysSession.getWorkspace().getNodeTypesHolder(), sysSession.getLocationFactory(), sysSession
+                  .getValueFactory(), getNamespaceRegistry(), sysSession.getAccessManager(), sysSession.getUserState(),
+               context, this, wsName);
          importer.importStream(xmlStream);
       }
       finally
@@ -445,7 +442,7 @@ public class RepositoryImpl
       try
       {
          return repositoryContainer.getWorkspaceContainer(workspaceName).getWorkspaceInitializer()
-                  .isWorkspaceInitialized();
+            .isWorkspaceInitialized();
       }
       catch (Exception e)
       {
@@ -483,7 +480,7 @@ public class RepositoryImpl
     * {@inheritDoc}
     */
    public Session login(Credentials credentials, String workspaceName) throws LoginException, NoSuchWorkspaceException,
-            RepositoryException
+      RepositoryException
    {
 
       if (getState() == OFFLINE)
@@ -511,7 +508,7 @@ public class RepositoryImpl
     * @throws RepositoryException Repository error
     */
    SessionImpl internalLogin(ConversationState state, String workspaceName) throws LoginException,
-            NoSuchWorkspaceException, RepositoryException
+      NoSuchWorkspaceException, RepositoryException
    {
 
       if (workspaceName == null)
@@ -522,11 +519,8 @@ public class RepositoryImpl
       }
 
       if (!isWorkspaceInitialized(workspaceName))
-         throw new NoSuchWorkspaceException(
-                  "Workspace '"
-                           + workspaceName
-                           + "' not found. "
-                           + "Probably is not initialized. If so either Initialize it manually or turn on the RepositoryInitializer");
+         throw new NoSuchWorkspaceException("Workspace '" + workspaceName + "' not found. "
+            + "Probably is not initialized. If so either Initialize it manually or turn on the RepositoryInitializer");
 
       SessionFactory sessionFactory = repositoryContainer.getWorkspaceContainer(workspaceName).getSessionFactory();
       return sessionFactory.createSession(state);
@@ -540,7 +534,7 @@ public class RepositoryImpl
       if (!canRemoveWorkspace(workspaceName))
 
          throw new RepositoryException("Workspace " + workspaceName + " in use. If you want to "
-                  + " remove workspace close all open sessions");
+            + " remove workspace close all open sessions");
 
       internalRemoveWorkspace(workspaceName);
       config.getWorkspaceEntries().remove(repositoryContainer.getWorkspaceEntry(workspaceName));
@@ -596,7 +590,7 @@ public class RepositoryImpl
       for (String workspaceName : getWorkspaceNames())
       {
          wsFacade = getWorkspaceContainer(workspaceName);
-         PersistentDataManager dataManager = (PersistentDataManager) wsFacade.getComponent(PersistentDataManager.class);
+         PersistentDataManager dataManager = (PersistentDataManager)wsFacade.getComponent(PersistentDataManager.class);
          dataManager.setReadOnly(wsStatus);
       }
    }

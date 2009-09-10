@@ -84,7 +84,7 @@ final class ScoreNode
       {
          return false;
       }
-      ScoreNode other = (ScoreNode) obj;
+      ScoreNode other = (ScoreNode)obj;
       if (id == null)
       {
          if (other.id != null)

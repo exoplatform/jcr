@@ -18,6 +18,12 @@
  */
 package org.exoplatform.services.jcr.api.writing;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeValue;
+import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionValue;
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -29,20 +35,13 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.version.OnParentVersionAction;
 
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-import org.exoplatform.services.jcr.core.nodetype.NodeTypeValue;
-import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionValue;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
-import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
-
 /**
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov</a>
  * @version $Id: TestCopyNode.java 13891 2008-05-05 16:02:30Z pnedonosko $
  */
-public class TestCopyNode
-   extends JcrAPIBaseTest
+public class TestCopyNode extends JcrAPIBaseTest
 {
 
    public void setUp() throws Exception
@@ -70,7 +69,7 @@ public class TestCopyNode
       Node file = root.addNode("testSessionMove", "nt:folder").addNode("childNode2", "nt:file");
       Node contentNode = file.addNode("jcr:content", "nt:resource");
       contentNode.setProperty("jcr:data", session.getValueFactory().createValue("this is the content",
-               PropertyType.BINARY));
+         PropertyType.BINARY));
       contentNode.setProperty("jcr:mimeType", session.getValueFactory().createValue("text/html"));
       contentNode.setProperty("jcr:lastModified", session.getValueFactory().createValue(Calendar.getInstance()));
 
@@ -91,7 +90,7 @@ public class TestCopyNode
       // log.debug("System DataManager: \n"+((RepositoryImpl)session.getRepository()).
       // getSystemSession().getTransientNodesManager().dump());
 
-      session = (SessionImpl) repository.login(credentials, WORKSPACE);
+      session = (SessionImpl)repository.login(credentials, WORKSPACE);
 
       log.debug(" root's nodes >>>> " + session.getRootNode().getNodes().getSize());
 
@@ -142,7 +141,7 @@ public class TestCopyNode
       Node file = root.addNode("testCopy", "nt:folder").addNode("childNode2", "nt:file");
       Node contentNode = file.addNode("jcr:content", "nt:resource");
       contentNode.setProperty("jcr:data", session.getValueFactory().createValue("this is the content",
-               PropertyType.BINARY));
+         PropertyType.BINARY));
       contentNode.setProperty("jcr:mimeType", session.getValueFactory().createValue("text/html"));
       contentNode.setProperty("jcr:lastModified", session.getValueFactory().createValue(Calendar.getInstance()));
 
@@ -152,7 +151,7 @@ public class TestCopyNode
 
       workspace.copy("/testCopy", "/testCopy1");
 
-      session = (SessionImpl) repository.login(credentials, WORKSPACE);
+      session = (SessionImpl)repository.login(credentials, WORKSPACE);
       assertNotNull(session.getItem("/testCopy1"));
       assertNotNull(session.getItem("/testCopy1/childNode2"));
       assertNotNull(session.getItem("/testCopy1/childNode2/jcr:content"));
@@ -191,7 +190,7 @@ public class TestCopyNode
       Node file = root.addNode("testMove", "nt:folder").addNode("childNode2", "nt:file");
       Node contentNode = file.addNode("jcr:content", "nt:resource");
       contentNode.setProperty("jcr:data", session.getValueFactory().createValue("this is the content",
-               PropertyType.BINARY));
+         PropertyType.BINARY));
       contentNode.setProperty("jcr:mimeType", session.getValueFactory().createValue("text/html"));
       contentNode.setProperty("jcr:lastModified", session.getValueFactory().createValue(Calendar.getInstance()));
 
@@ -201,7 +200,7 @@ public class TestCopyNode
 
       workspace.move("/testMove", "/testMove1");
 
-      session = (SessionImpl) repository.login(credentials, WORKSPACE);
+      session = (SessionImpl)repository.login(credentials, WORKSPACE);
       assertNotNull(session.getItem("/testMove1"));
       assertNotNull(session.getItem("/testMove1/childNode2"));
       assertNotNull(session.getItem("/testMove1/childNode2/jcr:content"));
@@ -304,7 +303,7 @@ public class TestCopyNode
       try
       {
          assertEquals("Referenceable node has different UUID after the move operation", source.getUUID(), testRoot
-                  .getNode("Destenation node").getUUID());
+            .getNode("Destenation node").getUUID());
       }
       catch (RepositoryException e)
       {
@@ -333,7 +332,7 @@ public class TestCopyNode
       Node file = root.addNode("testCopyFromDifferentWS", "nt:folder").addNode("childNode2", "nt:file");
       Node contentNode = file.addNode("jcr:content", "nt:resource");
       contentNode.setProperty("jcr:data", session.getValueFactory().createValue("this is the content",
-               PropertyType.BINARY));
+         PropertyType.BINARY));
       contentNode.setProperty("jcr:mimeType", session.getValueFactory().createValue("text/html"));
       contentNode.setProperty("jcr:lastModified", session.getValueFactory().createValue(Calendar.getInstance()));
 
@@ -346,7 +345,7 @@ public class TestCopyNode
 
       workspace.copy("ws2", "/testCopyFromDifferentWS", "/testCopyFromDifferentWS1");
 
-      session = (SessionImpl) repository.login(credentials, WORKSPACE);
+      session = (SessionImpl)repository.login(credentials, WORKSPACE);
       assertNotNull(session.getItem("/testCopyFromDifferentWS1"));
       assertNotNull(session.getItem("/testCopyFromDifferentWS1/childNode2"));
       assertNotNull(session.getItem("/testCopyFromDifferentWS1/childNode2/jcr:content"));
@@ -387,7 +386,7 @@ public class TestCopyNode
       Node file = root.addNode("testClone", "nt:folder").addNode("childNode2", "nt:file");
       Node contentNode = file.addNode("jcr:content", "nt:resource");
       contentNode.setProperty("jcr:data", session.getValueFactory().createValue("this is the content",
-               PropertyType.BINARY));
+         PropertyType.BINARY));
       contentNode.setProperty("jcr:mimeType", session.getValueFactory().createValue("text/html"));
       contentNode.setProperty("jcr:lastModified", session.getValueFactory().createValue(Calendar.getInstance()));
 
@@ -403,14 +402,14 @@ public class TestCopyNode
       log.debug("CLONE >>");
       workspace.clone("ws2", "/testClone", "/testClone1", false);
 
-      session = (SessionImpl) repository.login(credentials, WORKSPACE);
+      session = (SessionImpl)repository.login(credentials, WORKSPACE);
       assertNotNull(session.getItem("/testClone1"));
       assertNotNull(session.getItem("/testClone1/childNode2"));
       assertNotNull(session.getItem("/testClone1/childNode2/jcr:content"));
 
       session2 = repository.login(credentials, "ws2");
-      assertEquals(((Node) session.getItem("/testClone1/childNode2/jcr:content")).getUUID(), ((Node) session2
-               .getItem("/testClone/childNode2/jcr:content")).getUUID());
+      assertEquals(((Node)session.getItem("/testClone1/childNode2/jcr:content")).getUUID(), ((Node)session2
+         .getItem("/testClone/childNode2/jcr:content")).getUUID());
 
       session.getRootNode().addNode("toCorrupt", "nt:unstructured");
       session.save();
@@ -434,7 +433,7 @@ public class TestCopyNode
    public void testCloneWithMixin() throws RepositoryException
    {
       Session session2 = repository.login(credentials, "ws2");
-      NodeTypeManagerImpl ntManager = (NodeTypeManagerImpl) session2.getWorkspace().getNodeTypeManager();
+      NodeTypeManagerImpl ntManager = (NodeTypeManagerImpl)session2.getWorkspace().getNodeTypeManager();
       ntManager.registerNodeType(createTestMixinValue(), 0);
 
       Node root = session2.getRootNode();
@@ -454,14 +453,14 @@ public class TestCopyNode
 
       // log.debug("CLONE W/ MIXIN>> "+);
 
-      assertEquals(((Node) session2.getItem("/clonedNode")).getUUID(), ((Node) session.getItem("/test1")).getUUID());
+      assertEquals(((Node)session2.getItem("/clonedNode")).getUUID(), ((Node)session.getItem("/test1")).getUUID());
 
    }
 
    public void testCloneWithMixinAndRemoveExisting() throws RepositoryException
    {
       Session session2 = repository.login(credentials, "ws2");
-      NodeTypeManagerImpl ntManager = (NodeTypeManagerImpl) session2.getWorkspace().getNodeTypeManager();
+      NodeTypeManagerImpl ntManager = (NodeTypeManagerImpl)session2.getWorkspace().getNodeTypeManager();
       ntManager.registerNodeType(createTestMixinValue(), 0);
 
       Node root = session2.getRootNode();
@@ -476,7 +475,7 @@ public class TestCopyNode
       root = session.getRootNode();
       workspace.clone("ws2", "/clonedNode1", "/xx3", true);
 
-      assertNotNull(((Node) session.getItem("/xx3")).getUUID());
+      assertNotNull(((Node)session.getItem("/xx3")).getUUID());
    }
 
    private NodeTypeValue createTestMixinValue()

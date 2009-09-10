@@ -18,16 +18,15 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
-import java.util.ArrayList;
-
-import javax.jcr.PathNotFoundException;
-
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import java.util.ArrayList;
+
+import javax.jcr.PathNotFoundException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -243,7 +242,7 @@ public class JCRPath
             return false;
       }
       return getName().getName().equals(anotherPath.getName().getName())
-               && this.getName().getPrefix().equals(anotherPath.getName().getPrefix());
+         && this.getName().getPrefix().equals(anotherPath.getName().getPrefix());
    }
 
    public boolean equals(Object obj)
@@ -254,7 +253,7 @@ public class JCRPath
       }
       if (obj instanceof JCRPath)
       {
-         JCRPath other = (JCRPath) obj;
+         JCRPath other = (JCRPath)obj;
          return this.getInternalPath().equals(other.getInternalPath());
       }
       return false;
@@ -265,8 +264,7 @@ public class JCRPath
       return names;
    }
 
-   public class ThisElement
-      extends PathElement
+   public class ThisElement extends PathElement
    {
 
       ThisElement()
@@ -275,8 +273,7 @@ public class JCRPath
       }
    }
 
-   public class MoveUpElement
-      extends PathElement
+   public class MoveUpElement extends PathElement
    {
 
       MoveUpElement()
@@ -285,8 +282,7 @@ public class JCRPath
       }
    }
 
-   public class PathElement
-      extends JCRName
+   public class PathElement extends JCRName
    {
 
       private final int index;
@@ -323,7 +319,7 @@ public class JCRPath
          if (!(obj instanceof PathElement))
             return false;
 
-         return super.equals(obj) && index == ((PathElement) obj).getIndex();
+         return super.equals(obj) && index == ((PathElement)obj).getIndex();
       }
 
       public String getAsString(boolean showIndex)

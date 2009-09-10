@@ -42,8 +42,7 @@ import org.exoplatform.services.log.ExoLogger;
 /**
  * Implements the <code>javax.jcr.query.QueryResult</code> interface.
  */
-public class QueryResultImpl
-   implements QueryResult
+public class QueryResultImpl implements QueryResult
 {
 
    /**
@@ -164,9 +163,9 @@ public class QueryResultImpl
     * @param offset the offset in the total result set
     */
    public QueryResultImpl(SearchIndex index, SessionDataManager itemMgr, LocationFactory resolver,
-            ValueFactory vFactory, AccessManager accessMgr, String userId, AbstractQueryImpl queryImpl, Query query,
-            SpellSuggestion spellSuggestion, InternalQName[] selectProps, InternalQName[] orderProps,
-            boolean[] orderSpecs, boolean documentOrder, long offset, long limit) throws RepositoryException
+      ValueFactory vFactory, AccessManager accessMgr, String userId, AbstractQueryImpl queryImpl, Query query,
+      SpellSuggestion spellSuggestion, InternalQName[] selectProps, InternalQName[] orderProps, boolean[] orderSpecs,
+      boolean documentOrder, long offset, long limit) throws RepositoryException
    {
 
       this.index = index;
@@ -308,7 +307,7 @@ public class QueryResultImpl
             numResults = result.length();
          }
 
-         int start = resultNodes.size() + invalid + (int) offset;
+         int start = resultNodes.size() + invalid + (int)offset;
          int max = Math.min(result.length(), numResults);
          for (int i = start; i < max && resultNodes.size() < maxResultSize; i++)
          {
@@ -349,8 +348,7 @@ public class QueryResultImpl
       return numResults - invalid;
    }
 
-   private final class LazyScoreNodeIterator
-      implements TwoWayRangeIterator, ScoreNodeIterator
+   private final class LazyScoreNodeIterator implements TwoWayRangeIterator, ScoreNodeIterator
    {
 
       private int position = -1;
@@ -418,7 +416,7 @@ public class QueryResultImpl
             // attempt to get enough results
             try
             {
-               getResults(position + invalid + (int) skipNum);
+               getResults(position + invalid + (int)skipNum);
                if (resultNodes.size() >= position + skipNum)
                {
                   // skip within already fetched results
@@ -563,7 +561,7 @@ public class QueryResultImpl
             ScoreNode sn = resultNodes.get(nextPos);
             try
             {
-               next = (NodeImpl) itemMgr.getItemByIdentifier(sn.getNodeId(), true);
+               next = (NodeImpl)itemMgr.getItemByIdentifier(sn.getNodeId(), true);
                if (next == null)
                {
                   resultNodes.remove(nextPos);

@@ -18,13 +18,13 @@
  */
 package org.exoplatform.services.jcr.api.writing;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+
 import javax.jcr.LoginException;
 import javax.jcr.NoSuchWorkspaceException;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
 
 /**
  * Created by The eXo Platform SAS.
@@ -34,8 +34,7 @@ import org.exoplatform.services.jcr.JcrAPIBaseTest;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestSameNameSiblingsMove.java 12992 2008-04-09 14:52:34Z pnedonosko $
  */
-public class TestSameNameSiblingsMove
-   extends JcrAPIBaseTest
+public class TestSameNameSiblingsMove extends JcrAPIBaseTest
 {
 
    private Node testRoot;

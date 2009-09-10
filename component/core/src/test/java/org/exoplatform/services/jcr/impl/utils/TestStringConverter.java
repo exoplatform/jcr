@@ -20,10 +20,9 @@ package org.exoplatform.services.jcr.impl.utils;
 
 import junit.framework.TestCase;
 
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.jcr.impl.util.StringConverter;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 /**
  * Created by The eXo Platform SAS.
@@ -31,8 +30,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: $
  */
-public class TestStringConverter
-   extends TestCase
+public class TestStringConverter extends TestCase
 {
    /**
     * Class logger.

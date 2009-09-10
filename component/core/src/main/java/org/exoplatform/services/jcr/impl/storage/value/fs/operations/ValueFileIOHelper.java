@@ -18,6 +18,13 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs.operations;
 
+import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.ByteArrayPersistedValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.FileStreamPersistedValueData;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -29,14 +36,6 @@ import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-
-import org.exoplatform.services.log.Log;
-import org.exoplatform.services.jcr.datamodel.ValueData;
-import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.ByteArrayPersistedValueData;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.FileStreamPersistedValueData;
-import org.exoplatform.services.jcr.impl.storage.value.fs.FileIOChannel;
-import org.exoplatform.services.log.ExoLogger;
 
 /**
  * Created by The eXo Platform SAS.
@@ -87,7 +86,7 @@ public class ValueFileIOHelper
          }
          else
          {
-            int buffSize = (int) fileSize;
+            int buffSize = (int)fileSize;
             byte[] res = new byte[buffSize];
             int rpos = 0;
             int r = -1;
@@ -119,7 +118,7 @@ public class ValueFileIOHelper
     */
    protected void writeValue(File file, ValueData value) throws IOException
    {
-      TransientValueData tvalue = (TransientValueData) value;
+      TransientValueData tvalue = (TransientValueData)value;
 
       if (tvalue.isByteArray())
       {
@@ -147,8 +146,8 @@ public class ValueFileIOHelper
                   // not succeeded - copy bytes
                   if (LOG.isDebugEnabled())
                      LOG
-                              .debug("Value spool file move (rename) to Values Storage is not succeeded. Trying bytes copy. Spool file: "
-                                       + spoolFile.getAbsolutePath() + ". Destination: " + file.getAbsolutePath());
+                        .debug("Value spool file move (rename) to Values Storage is not succeeded. Trying bytes copy. Spool file: "
+                           + spoolFile.getAbsolutePath() + ". Destination: " + file.getAbsolutePath());
 
                   copyClose(new FileInputStream(spoolFile), new FileOutputStream(file));
                }
@@ -158,7 +157,7 @@ public class ValueFileIOHelper
                copyClose(tvalue.getAsStream(false), new FileOutputStream(file));
 
             // map this transient Value to file in VS
-            ((TransientValueData) value).setPersistedFile(file);
+            ((TransientValueData)value).setPersistedFile(file);
          }
          else
             // persisted Value returned from Session, use InputStream on file from VS
@@ -185,7 +184,7 @@ public class ValueFileIOHelper
       }
       else
       {
-         InputStream in = ((TransientValueData) value).getAsStream(false);
+         InputStream in = ((TransientValueData)value).getAsStream(false);
          try
          {
             copy(in, out);
@@ -216,8 +215,8 @@ public class ValueFileIOHelper
       if (inFile && outFile)
       {
          // it's user file
-         FileChannel infch = ((FileInputStream) in).getChannel();
-         FileChannel outfch = ((FileOutputStream) out).getChannel();
+         FileChannel infch = ((FileInputStream)in).getChannel();
+         FileChannel outfch = ((FileOutputStream)out).getChannel();
 
          long size = 0;
          long r = 0;
@@ -232,8 +231,8 @@ public class ValueFileIOHelper
       else
       {
          // it's user stream (not a file)
-         ReadableByteChannel inch = inFile ? ((FileInputStream) in).getChannel() : Channels.newChannel(in);
-         WritableByteChannel outch = outFile ? ((FileOutputStream) out).getChannel() : Channels.newChannel(out);
+         ReadableByteChannel inch = inFile ? ((FileInputStream)in).getChannel() : Channels.newChannel(in);
+         WritableByteChannel outch = outFile ? ((FileOutputStream)out).getChannel() : Channels.newChannel(out);
 
          // TODO buffers show same perfomance as bytes copy via Input/Output streams
          // NIO buffers article http://www.odi.ch/weblog/posting.php?posting=371
@@ -257,7 +256,7 @@ public class ValueFileIOHelper
          }
 
          if (outFile)
-            ((FileChannel) outch).force(true); // force all data to FS
+            ((FileChannel)outch).force(true); // force all data to FS
 
          return size;
       }

@@ -18,16 +18,15 @@
  */
 package org.exoplatform.services.jcr.impl.util;
 
+import org.exoplatform.commons.utils.ISO8601;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.TimeZone;
 
 import javax.jcr.ValueFormatException;
-
-import org.exoplatform.services.log.Log;
-
-import org.exoplatform.commons.utils.ISO8601;
-import org.exoplatform.services.log.ExoLogger;
 
 /**
  * Created by The eXo Platform SAS Author : Peter Nedonosko peter.nedonosko@exoplatform.com.ua
@@ -77,7 +76,7 @@ public class JCRDateFormat
     * ISO 8601, RFC822 formats for JCR datas deserialization in order of priority of parse
     */
    protected static final String[] JCR_FORMATS =
-   {ISO8601.COMPLETE_DATETIMEMSZ_FORMAT, ISO8601.COMPLETE_DATETIMEMSZRFC822_FORMAT,};
+      {ISO8601.COMPLETE_DATETIMEMSZ_FORMAT, ISO8601.COMPLETE_DATETIMEMSZRFC822_FORMAT,};
 
    protected static final String CALENDAR_FIELDS_DELIMITER = ";"; // hope
 
@@ -165,13 +164,13 @@ public class JCRDateFormat
                catch (Exception e)
                {
                   log.warn("Can't parse serialized fields for the calendar [" + parts[1] + "] but calendar has ["
-                           + isoCalendar.getTime() + "]", e);
+                     + isoCalendar.getTime() + "]", e);
                }
             }
             else
             {
                log.warn("Fields of the calendar is not serialized properly [" + parts[1] + "] but calendar has ["
-                        + isoCalendar.getTime() + "]");
+                  + isoCalendar.getTime() + "]");
             }
          }
          catch (ParseException e)
@@ -194,9 +193,9 @@ public class JCRDateFormat
    {
 
       final String calendarString =
-               CALENDAR_FIELDS_SEPARATOR + date.isLenient() + CALENDAR_FIELDS_DELIMITER + date.getFirstDayOfWeek()
-                        + CALENDAR_FIELDS_DELIMITER + date.getMinimalDaysInFirstWeek() + CALENDAR_FIELDS_DELIMITER
-                        + date.getTimeZone().getID();
+         CALENDAR_FIELDS_SEPARATOR + date.isLenient() + CALENDAR_FIELDS_DELIMITER + date.getFirstDayOfWeek()
+            + CALENDAR_FIELDS_DELIMITER + date.getMinimalDaysInFirstWeek() + CALENDAR_FIELDS_DELIMITER
+            + date.getTimeZone().getID();
 
       return (format(date) + calendarString).getBytes();
    }

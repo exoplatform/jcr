@@ -18,14 +18,6 @@
  */
 package org.exoplatform.services.jcr.util;
 
-import java.io.IOException;
-import java.io.InputStream;
-
-import javax.jcr.PropertyType;
-import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
@@ -41,6 +33,13 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.xml.ItemDataKeeperAdapter;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import java.io.IOException;
+import java.io.InputStream;
+
+import javax.jcr.PropertyType;
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -107,7 +106,7 @@ public class VersionHistoryImporter
     *           NodeTypesHolder.
     */
    public VersionHistoryImporter(NodeImpl versionableNode, InputStream versionHistoryStream, String baseVersionUuid,
-            String[] predecessors, String versionHistory) throws RepositoryException
+      String[] predecessors, String versionHistory) throws RepositoryException
    {
       super();
       this.versionableNode = versionableNode;
@@ -130,24 +129,24 @@ public class VersionHistoryImporter
    {
       String path = versionableNode.getVersionHistory().getParent().getPath();
 
-      NodeData versionable = (NodeData) versionableNode.getData();
+      NodeData versionable = (NodeData)versionableNode.getData();
       // ----- VERSIONABLE properties -----
       // jcr:versionHistory
       TransientPropertyData vh =
-               TransientPropertyData.createPropertyData(versionable, Constants.JCR_VERSIONHISTORY,
-                        PropertyType.REFERENCE, false);
+         TransientPropertyData.createPropertyData(versionable, Constants.JCR_VERSIONHISTORY, PropertyType.REFERENCE,
+            false);
       vh.setValue(new TransientValueData(new Identifier(versionHistory)));
 
       // jcr:baseVersion
       TransientPropertyData bv =
-               TransientPropertyData.createPropertyData(versionable, Constants.JCR_BASEVERSION, PropertyType.REFERENCE,
-                        false);
+         TransientPropertyData
+            .createPropertyData(versionable, Constants.JCR_BASEVERSION, PropertyType.REFERENCE, false);
       bv.setValue(new TransientValueData(new Identifier(baseVersionUuid)));
 
       // jcr:predecessors
       TransientPropertyData pd =
-               TransientPropertyData.createPropertyData(versionable, Constants.JCR_PREDECESSORS,
-                        PropertyType.REFERENCE, true);
+         TransientPropertyData
+            .createPropertyData(versionable, Constants.JCR_PREDECESSORS, PropertyType.REFERENCE, true);
       for (int i = 0; i < predecessors.length; i++)
       {
          pd.setValue(new TransientValueData(new Identifier(predecessors[i])));
@@ -155,7 +154,7 @@ public class VersionHistoryImporter
 
       PlainChangesLog changesLog = new PlainChangesLogImpl();
       RemoveVisitor rv = new RemoveVisitor();
-      rv.visit((NodeData) ((NodeImpl) versionableNode.getVersionHistory()).getData());
+      rv.visit((NodeData)((NodeImpl)versionableNode.getVersionHistory()).getData());
       changesLog.addAll(rv.getRemovedStates());
       changesLog.add(ItemState.createAddedState(vh));
       changesLog.add(ItemState.createAddedState(bv));
@@ -163,12 +162,12 @@ public class VersionHistoryImporter
       // remove version properties to avoid referential integrety check
       PlainChangesLog changesLogDeltete = new PlainChangesLogImpl();
 
-      changesLogDeltete.add(ItemState.createDeletedState(((PropertyImpl) versionableNode
-               .getProperty("jcr:versionHistory")).getData()));
+      changesLogDeltete.add(ItemState.createDeletedState(((PropertyImpl)versionableNode
+         .getProperty("jcr:versionHistory")).getData()));
+      changesLogDeltete.add(ItemState.createDeletedState(((PropertyImpl)versionableNode.getProperty("jcr:baseVersion"))
+         .getData()));
       changesLogDeltete.add(ItemState
-               .createDeletedState(((PropertyImpl) versionableNode.getProperty("jcr:baseVersion")).getData()));
-      changesLogDeltete.add(ItemState.createDeletedState(((PropertyImpl) versionableNode
-               .getProperty("jcr:predecessors")).getData()));
+         .createDeletedState(((PropertyImpl)versionableNode.getProperty("jcr:predecessors")).getData()));
       dataKeeper.save(changesLogDeltete);
       userSession.save();
       // remove version history
@@ -183,8 +182,7 @@ public class VersionHistoryImporter
     * 
     * @author sj
     */
-   protected class RemoveVisitor
-      extends ItemDataRemoveVisitor
+   protected class RemoveVisitor extends ItemDataRemoveVisitor
    {
       /**
        * Default constructor.
@@ -195,7 +193,7 @@ public class VersionHistoryImporter
       {
          super(userSession.getTransientNodesManager(), null,
          // userSession.getWorkspace().getNodeTypeManager(),
-                  nodeTypeDataManager, userSession.getAccessManager(), userSession.getUserState());
+            nodeTypeDataManager, userSession.getAccessManager(), userSession.getUserState());
       }
 
       /**

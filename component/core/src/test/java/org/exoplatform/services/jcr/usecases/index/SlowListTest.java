@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.usecases.index;
 
+import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
+
 import java.io.InputStream;
 import java.util.Calendar;
 
@@ -25,8 +27,6 @@ import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryResult;
-
-import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
 
 /**
  * Created by The eXo Platform SAS.
@@ -36,8 +36,7 @@ import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
  *          .xls file which contained within jcr:data property
  */
 
-public class SlowListTest
-   extends BaseUsecasesTest
+public class SlowListTest extends BaseUsecasesTest
 {
 
    /**

@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.api.writing;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
@@ -26,16 +28,13 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 import javax.jcr.ValueFactory;
 
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-
 /**
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov</a>
  * @version $Id: TestNodeReference.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class TestNodeReference
-   extends JcrAPIBaseTest
+public class TestNodeReference extends JcrAPIBaseTest
 {
 
    public void testGetReferences() throws RepositoryException
@@ -128,11 +127,11 @@ public class TestNodeReference
 
          ValueFactory vFactory = n2.getSession().getValueFactory();
 
-         n2.setProperty("p2_multiple", new Value[]
-         {vFactory.createValue(testNode), vFactory.createValue(testNode1), vFactory.createValue(testNode2)});
+         n2.setProperty("p2_multiple", new Value[]{vFactory.createValue(testNode), vFactory.createValue(testNode1),
+            vFactory.createValue(testNode2)});
 
-         n4.setProperty("p1_multiple", new Value[]
-         {vFactory.createValue(testNode1), vFactory.createValue(testNode1), vFactory.createValue(testNode)});
+         n4.setProperty("p1_multiple", new Value[]{vFactory.createValue(testNode1), vFactory.createValue(testNode1),
+            vFactory.createValue(testNode)});
 
          // i.e. REFERENCEs
          // n1/p1 -> testNode
@@ -212,11 +211,9 @@ public class TestNodeReference
 
          n3.getProperty("p0").remove();
 
-         n2.setProperty("p2_multiple", new Value[]
-         {vFactory.createValue(testNode1), vFactory.createValue(testNode2)});
+         n2.setProperty("p2_multiple", new Value[]{vFactory.createValue(testNode1), vFactory.createValue(testNode2)});
 
-         n4.setProperty("p1_multiple", new Value[]
-         {vFactory.createValue(testNode1), vFactory.createValue(testNode1)});
+         n4.setProperty("p1_multiple", new Value[]{vFactory.createValue(testNode1), vFactory.createValue(testNode1)});
 
          // i.e. REFERENCEs
          // ....n1/p1 -> testNode (Removed)

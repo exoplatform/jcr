@@ -101,7 +101,7 @@ public class Text
     *           if the encoding is not supported
     */
    public static String digest(String algorithm, String data, String enc) throws NoSuchAlgorithmException,
-            UnsupportedEncodingException
+      UnsupportedEncodingException
    {
 
       return digest(algorithm, data.getBytes(enc));
@@ -193,7 +193,7 @@ public class Text
       }
 
       // return stringarray
-      return (String[]) strings.toArray(new String[strings.size()]);
+      return (String[])strings.toArray(new String[strings.size()]);
    }
 
    /**
@@ -373,7 +373,7 @@ public class Text
       URISave.set('(');
       URISave.set(')');
 
-      URISaveEx = (BitSet) URISave.clone();
+      URISaveEx = (BitSet)URISave.clone();
       URISaveEx.set('/');
    }
 
@@ -423,7 +423,7 @@ public class Text
             int c = bytes[i] & 0xff;
             if (validChars.get(c) && c != escape)
             {
-               out.append((char) c);
+               out.append((char)c);
             }
             else
             {
@@ -566,8 +566,8 @@ public class Text
       {
          char ch = name.charAt(i);
          if (ch == '%' || ch == '/' || ch == ':' || ch == '[' || ch == ']' || ch == '*' || ch == '\'' || ch == '"'
-                  || ch == '|' || (ch == '.' && name.length() < 3) || (ch == ' ' && (i == 0 || i == name.length() - 1))
-                  || ch == '\t' || ch == '\r' || ch == '\n')
+            || ch == '|' || (ch == '.' && name.length() < 3) || (ch == ' ' && (i == 0 || i == name.length() - 1))
+            || ch == '\t' || ch == '\r' || ch == '\n')
          {
             buffer.append('%');
             buffer.append(Character.toUpperCase(Character.forDigit(ch / 16, 16)));
@@ -600,7 +600,7 @@ public class Text
          int b = Character.digit(name.charAt(i + 2), 16);
          if (a > -1 && b > -1)
          {
-            buffer.append((char) (a * 16 + b));
+            buffer.append((char)(a * 16 + b));
             name = name.substring(i + 3);
          }
          else
@@ -847,7 +847,7 @@ public class Text
     *           if the replacement of a referenced variable is not found
     */
    public static String replaceVariables(Properties variables, String value, boolean ignoreMissing)
-            throws IllegalArgumentException
+      throws IllegalArgumentException
    {
       StringBuffer result = new StringBuffer();
 

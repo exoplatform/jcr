@@ -28,8 +28,7 @@ import javax.jcr.query.QueryResult;
  * @version $Id: $
  */
 
-public class TestBrokenQuery
-   extends BaseQueryTest
+public class TestBrokenQuery extends BaseQueryTest
 {
 
    public void testSQLQueryCorrect() throws Exception

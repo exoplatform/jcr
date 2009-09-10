@@ -18,6 +18,13 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs;
 
+import org.exoplatform.services.jcr.BaseStandaloneTest;
+import org.exoplatform.services.jcr.datamodel.PropertyData;
+import org.exoplatform.services.jcr.impl.core.PropertyImpl;
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
+import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.HashMap;
@@ -27,13 +34,6 @@ import java.util.Random;
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.Value;
-
-import org.exoplatform.services.jcr.BaseStandaloneTest;
-import org.exoplatform.services.jcr.datamodel.PropertyData;
-import org.exoplatform.services.jcr.impl.core.PropertyImpl;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
-import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
-import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 
 /**
  * Created by The eXo Platform SAS. <br/>

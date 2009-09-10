@@ -17,18 +17,17 @@
 
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import java.io.ByteArrayInputStream;
-
-import javax.jcr.Node;
-
-import org.exoplatform.services.log.Log;
 import org.apache.lucene.index.IndexReader;
-
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
 import org.exoplatform.services.jcr.impl.core.query.SearchManager;
 import org.exoplatform.services.jcr.impl.core.query.SystemSearchManager;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import java.io.ByteArrayInputStream;
+
+import javax.jcr.Node;
 
 /**
  * Created by The eXo Platform SAS Author : Sergey Karpenko <sergey.karpenko@exoplatform.com.ua>
@@ -37,8 +36,7 @@ import org.exoplatform.services.log.ExoLogger;
  * 
  *          There is test of system Search Manager
  */
-public class TestSystemSearchManager
-   extends JcrImplBaseTest
+public class TestSystemSearchManager extends JcrImplBaseTest
 {
 
    public static final Log logger = ExoLogger.getLogger(TestSearchManagerIndexing.class);
@@ -48,13 +46,13 @@ public class TestSystemSearchManager
    public void testRegisterNamespace() throws Exception
    {
       assertNotNull(manager);
-      SearchIndex si = (SearchIndex) manager.getHandler();
+      SearchIndex si = (SearchIndex)manager.getHandler();
 
       IndexReader ir = si.getIndex().getIndexReader();
 
       SearchManager sManager =
-               (SearchManager) this.session.getContainer().getComponentInstanceOfType(SearchManager.class);
-      SearchIndex ssi = (SearchIndex) sManager.getHandler();
+         (SearchManager)this.session.getContainer().getComponentInstanceOfType(SearchManager.class);
+      SearchIndex ssi = (SearchIndex)sManager.getHandler();
       IndexReader sir = ssi.getIndex().getIndexReader();
 
       // remember document number, before any test
@@ -85,7 +83,7 @@ public class TestSystemSearchManager
 
       final String nodename = "test_node";
 
-      SearchIndex si = (SearchIndex) manager.getHandler();
+      SearchIndex si = (SearchIndex)manager.getHandler();
 
       IndexReader ir = si.getIndex().getIndexReader();
       // remeber document number, before any test
@@ -112,19 +110,19 @@ public class TestSystemSearchManager
 
    public void testAddNodeType() throws Exception
    {
-      SearchIndex si = (SearchIndex) manager.getHandler();
+      SearchIndex si = (SearchIndex)manager.getHandler();
       IndexReader ir = si.getIndex().getIndexReader();
 
       // remeber document number, before any test
       int docnum = ir.numDocs();
       logger.info("  DOCNUM [" + docnum + "]");
 
-      ExtendedNodeTypeManager typeManager = (ExtendedNodeTypeManager) session.getWorkspace().getNodeTypeManager();
+      ExtendedNodeTypeManager typeManager = (ExtendedNodeTypeManager)session.getWorkspace().getNodeTypeManager();
 
       String cnd =
-               "<nodeTypes><nodeType name='test_my:referenceable' isMixin='true' hasOrderableChildNodes='false' primaryItemName=''>"
-                        + "<supertypes>" + "     <supertype>mix:referenceable</supertype>" + "</supertypes>"
-                        + "</nodeType>" + "</nodeTypes>";
+         "<nodeTypes><nodeType name='test_my:referenceable' isMixin='true' hasOrderableChildNodes='false' primaryItemName=''>"
+            + "<supertypes>" + "     <supertype>mix:referenceable</supertype>" + "</supertypes>" + "</nodeType>"
+            + "</nodeTypes>";
 
       typeManager.registerNodeTypes(new ByteArrayInputStream(cnd.getBytes()), ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
       session.save();
@@ -138,7 +136,7 @@ public class TestSystemSearchManager
    public void setUp() throws Exception
    {
       super.setUp();
-      manager = (SystemSearchManager) this.session.getContainer().getComponentInstanceOfType(SystemSearchManager.class);
+      manager = (SystemSearchManager)this.session.getContainer().getComponentInstanceOfType(SystemSearchManager.class);
    }
 
 }

@@ -25,8 +25,7 @@ import javax.jcr.RangeIterator;
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: $
  */
-public interface TwoWayRangeIterator
-   extends RangeIterator
+public interface TwoWayRangeIterator extends RangeIterator
 {
    /**
     * Skip a number of elements in the iterator.

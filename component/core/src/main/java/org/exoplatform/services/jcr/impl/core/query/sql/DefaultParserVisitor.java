@@ -20,8 +20,7 @@ package org.exoplatform.services.jcr.impl.core.query.sql;
  * Implements a {@link JCRSQLParserVisitor} with default method implementations. All visit method
  * simply return the <code>data</code> parameter.
  */
-class DefaultParserVisitor
-   implements JCRSQLParserVisitor
+class DefaultParserVisitor implements JCRSQLParserVisitor
 {
 
    public Object visit(SimpleNode node, Object data)

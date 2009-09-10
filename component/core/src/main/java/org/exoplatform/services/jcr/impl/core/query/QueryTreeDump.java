@@ -25,8 +25,7 @@ import org.exoplatform.services.jcr.datamodel.QPathEntry;
 /**
  * Utility class to dump a {@link QueryNode} tree to a StringBuffer.
  */
-public class QueryTreeDump
-   implements QueryNodeVisitor
+public class QueryTreeDump implements QueryNodeVisitor
 {
 
    /**
@@ -77,7 +76,7 @@ public class QueryTreeDump
 
    public Object visit(QueryRootNode node, Object data)
    {
-      StringBuffer buffer = (StringBuffer) data;
+      StringBuffer buffer = (StringBuffer)data;
       buffer.append("+ Root node");
       buffer.append("\n");
       // select properties
@@ -99,21 +98,19 @@ public class QueryTreeDump
       }
       buffer.append("\n");
       // path
-      traverse(new QueryNode[]
-      {node.getLocationNode()}, buffer);
+      traverse(new QueryNode[]{node.getLocationNode()}, buffer);
       // order by
       OrderQueryNode order = node.getOrderNode();
       if (order != null)
       {
-         traverse(new QueryNode[]
-         {order}, buffer);
+         traverse(new QueryNode[]{order}, buffer);
       }
       return buffer;
    }
 
    public Object visit(OrQueryNode node, Object data)
    {
-      StringBuffer buffer = (StringBuffer) data;
+      StringBuffer buffer = (StringBuffer)data;
       buffer.append(PADDING, 0, indent);
       buffer.append("+ OrQueryNode");
       buffer.append("\n");
@@ -123,7 +120,7 @@ public class QueryTreeDump
 
    public Object visit(AndQueryNode node, Object data)
    {
-      StringBuffer buffer = (StringBuffer) data;
+      StringBuffer buffer = (StringBuffer)data;
       buffer.append(PADDING, 0, indent);
       buffer.append("+ AndQueryNode");
       buffer.append("\n");
@@ -133,7 +130,7 @@ public class QueryTreeDump
 
    public Object visit(NotQueryNode node, Object data)
    {
-      StringBuffer buffer = (StringBuffer) data;
+      StringBuffer buffer = (StringBuffer)data;
       buffer.append(PADDING, 0, indent);
       buffer.append("+ NotQueryNode");
       buffer.append("\n");
@@ -143,7 +140,7 @@ public class QueryTreeDump
 
    public Object visit(ExactQueryNode node, Object data)
    {
-      StringBuffer buffer = (StringBuffer) data;
+      StringBuffer buffer = (StringBuffer)data;
       buffer.append(PADDING, 0, indent);
       buffer.append("+ ExactQueryNode: ");
       buffer.append(" Prop=").append(node.getPropertyName().getAsString());
@@ -154,7 +151,7 @@ public class QueryTreeDump
 
    public Object visit(NodeTypeQueryNode node, Object data)
    {
-      StringBuffer buffer = (StringBuffer) data;
+      StringBuffer buffer = (StringBuffer)data;
       buffer.append(PADDING, 0, indent);
       buffer.append("+ NodeTypeQueryNode: ");
       buffer.append(" Prop=").append(node.getPropertyName().getAsString());
@@ -165,7 +162,7 @@ public class QueryTreeDump
 
    public Object visit(TextsearchQueryNode node, Object data)
    {
-      StringBuffer buffer = (StringBuffer) data;
+      StringBuffer buffer = (StringBuffer)data;
       buffer.append(PADDING, 0, indent);
       buffer.append("+ TextsearchQueryNode: ");
       buffer.append(" Path=");
@@ -196,7 +193,7 @@ public class QueryTreeDump
 
    public Object visit(PathQueryNode node, Object data)
    {
-      StringBuffer buffer = (StringBuffer) data;
+      StringBuffer buffer = (StringBuffer)data;
       buffer.append(PADDING, 0, indent);
       buffer.append("+ PathQueryNode");
       buffer.append("\n");
@@ -206,7 +203,7 @@ public class QueryTreeDump
 
    public Object visit(LocationStepQueryNode node, Object data)
    {
-      StringBuffer buffer = (StringBuffer) data;
+      StringBuffer buffer = (StringBuffer)data;
       buffer.append(PADDING, 0, indent);
       buffer.append("+ LocationStepQueryNode: ");
       buffer.append(" NodeTest=");
@@ -239,7 +236,7 @@ public class QueryTreeDump
 
    public Object visit(RelationQueryNode node, Object data)
    {
-      StringBuffer buffer = (StringBuffer) data;
+      StringBuffer buffer = (StringBuffer)data;
       buffer.append(PADDING, 0, indent);
       buffer.append("+ RelationQueryNode: Op: ");
       if (node.getOperation() == QueryConstants.OPERATION_BETWEEN)
@@ -374,7 +371,7 @@ public class QueryTreeDump
 
    public Object visit(OrderQueryNode node, Object data)
    {
-      StringBuffer buffer = (StringBuffer) data;
+      StringBuffer buffer = (StringBuffer)data;
       buffer.append(PADDING, 0, indent);
       buffer.append("+ OrderQueryNode");
       buffer.append("\n");
@@ -391,7 +388,7 @@ public class QueryTreeDump
 
    public Object visit(DerefQueryNode node, Object data)
    {
-      StringBuffer buffer = (StringBuffer) data;
+      StringBuffer buffer = (StringBuffer)data;
       buffer.append(PADDING, 0, indent);
       buffer.append("+ DerefQueryNode: ");
       buffer.append(" NodeTest=");
@@ -424,7 +421,7 @@ public class QueryTreeDump
 
    public Object visit(PropertyFunctionQueryNode node, Object data)
    {
-      StringBuffer buffer = (StringBuffer) data;
+      StringBuffer buffer = (StringBuffer)data;
       buffer.append(PADDING, 0, indent);
       buffer.append("+ PropertyFunctionQueryNode: ");
       buffer.append(node.getFunctionName());

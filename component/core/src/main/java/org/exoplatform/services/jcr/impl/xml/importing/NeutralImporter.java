@@ -18,11 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.xml.importing;
 
-import java.util.Map;
-
-import javax.jcr.NamespaceRegistry;
-import javax.jcr.RepositoryException;
-
 import org.exoplatform.services.jcr.access.AccessManager;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
@@ -35,25 +30,29 @@ import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.util.NodeTypeRecognizer;
 import org.exoplatform.services.security.ConversationState;
 
+import java.util.Map;
+
+import javax.jcr.NamespaceRegistry;
+import javax.jcr.RepositoryException;
+
 /**
  * The main purpose of class is determinate of import document type
  * 
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: NeutralImporter.java 14100 2008-05-12 10:53:47Z gazarenkov $
  */
-public class NeutralImporter
-   extends BaseXmlImporter
+public class NeutralImporter extends BaseXmlImporter
 {
 
    private ContentImporter contentImporter = null;
 
    public NeutralImporter(NodeData parent, QPath ancestorToSave, int uuidBehavior, ItemDataConsumer dataConsumer,
-            NodeTypeDataManager ntManager, LocationFactory locationFactory, ValueFactoryImpl valueFactory,
-            NamespaceRegistry namespaceRegistry, AccessManager accessManager, ConversationState userState,
-            Map<String, Object> context, RepositoryImpl repository, String currentWorkspaceName)
+      NodeTypeDataManager ntManager, LocationFactory locationFactory, ValueFactoryImpl valueFactory,
+      NamespaceRegistry namespaceRegistry, AccessManager accessManager, ConversationState userState,
+      Map<String, Object> context, RepositoryImpl repository, String currentWorkspaceName)
    {
       super(parent, ancestorToSave, uuidBehavior, dataConsumer, ntManager, locationFactory, valueFactory,
-               namespaceRegistry, accessManager, userState, context, repository, currentWorkspaceName);
+         namespaceRegistry, accessManager, userState, context, repository, currentWorkspaceName);
    }
 
    /**
@@ -95,7 +94,7 @@ public class NeutralImporter
     * {@inheritDoc}
     */
    public void startElement(String namespaceURI, String localName, String name, Map<String, String> atts)
-            throws RepositoryException
+      throws RepositoryException
    {
       if (contentImporter == null)
       {
@@ -103,19 +102,19 @@ public class NeutralImporter
          {
             case DOCVIEW :
                contentImporter =
-                        new DocumentViewImporter(getParent(), ancestorToSave, uuidBehavior, dataConsumer,
-                                 nodeTypeDataManager, locationFactory, valueFactory, namespaceRegistry, accessManager,
-                                 userState, context, repository, currentWorkspaceName);
+                  new DocumentViewImporter(getParent(), ancestorToSave, uuidBehavior, dataConsumer,
+                     nodeTypeDataManager, locationFactory, valueFactory, namespaceRegistry, accessManager, userState,
+                     context, repository, currentWorkspaceName);
                break;
             case SYSVIEW :
                contentImporter =
-                        new SystemViewImporter(getParent(), ancestorToSave, uuidBehavior, dataConsumer,
-                                 nodeTypeDataManager, locationFactory, valueFactory, namespaceRegistry, accessManager,
-                                 userState, context, repository, currentWorkspaceName);
+                  new SystemViewImporter(getParent(), ancestorToSave, uuidBehavior, dataConsumer, nodeTypeDataManager,
+                     locationFactory, valueFactory, namespaceRegistry, accessManager, userState, context, repository,
+                     currentWorkspaceName);
                break;
             default :
                throw new IllegalStateException("There was an error during ascertaining the "
-                        + "type of document. First element " + namespaceURI + ":" + name);
+                  + "type of document. First element " + namespaceURI + ":" + name);
          }
       }
       contentImporter.startElement(namespaceURI, localName, name, atts);

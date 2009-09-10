@@ -18,16 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.nodetype.registration;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-
-import javax.jcr.RepositoryException;
-import javax.jcr.nodetype.ConstraintViolationException;
-
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.jcr.core.nodetype.NodeDefinitionData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
@@ -40,6 +30,15 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+
+import javax.jcr.RepositoryException;
+import javax.jcr.nodetype.ConstraintViolationException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -47,8 +46,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: $
  */
-public class NodeDefinitionComparator
-   extends AbstractDefinitionComparator<NodeDefinitionData>
+public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeDefinitionData>
 {
 
    /**
@@ -66,16 +64,16 @@ public class NodeDefinitionComparator
    }
 
    public PlainChangesLog compare(NodeTypeData registeredNodeType, NodeDefinitionData[] ancestorDefinition,
-            NodeDefinitionData[] recipientDefinition) throws ConstraintViolationException, RepositoryException
+      NodeDefinitionData[] recipientDefinition) throws ConstraintViolationException, RepositoryException
    {
 
       List<NodeDefinitionData> sameDefinitionData = new ArrayList<NodeDefinitionData>();
       List<RelatedDefinition<NodeDefinitionData>> changedDefinitionData =
-               new ArrayList<RelatedDefinition<NodeDefinitionData>>();
+         new ArrayList<RelatedDefinition<NodeDefinitionData>>();
       List<NodeDefinitionData> newDefinitionData = new ArrayList<NodeDefinitionData>();
       List<NodeDefinitionData> removedDefinitionData = new ArrayList<NodeDefinitionData>();
       init(ancestorDefinition, recipientDefinition, sameDefinitionData, changedDefinitionData, newDefinitionData,
-               removedDefinitionData);
+         removedDefinitionData);
       // create changes log
       PlainChangesLog changesLog = new PlainChangesLogImpl();
       // check removed
@@ -102,19 +100,19 @@ public class NodeDefinitionComparator
     * @throws ConstraintViolationException
     */
    private void checkMandatoryItems(Set<String> nodes, NodeDefinitionData nodeDefinitionData)
-            throws RepositoryException, ConstraintViolationException
+      throws RepositoryException, ConstraintViolationException
    {
       for (String uuid : nodes)
       {
-         NodeData nodeData = (NodeData) persister.getItemData(uuid);
+         NodeData nodeData = (NodeData)persister.getItemData(uuid);
          ItemData child = persister.getItemData(nodeData, new QPathEntry(nodeDefinitionData.getName(), 0));
          if (child == null || !child.isNode())
          {
             throw new ConstraintViolationException("Fail to  add mandatory and not auto-created "
-                     + "child node definition " + nodeDefinitionData.getName().getAsString() + " for "
-                     + nodeDefinitionData.getDeclaringNodeType().getAsString() + " because node "
-                     + nodeData.getQPath().getAsString() + " doesn't contains child node with name "
-                     + nodeDefinitionData.getName().getAsString());
+               + "child node definition " + nodeDefinitionData.getName().getAsString() + " for "
+               + nodeDefinitionData.getDeclaringNodeType().getAsString() + " because node "
+               + nodeData.getQPath().getAsString() + " doesn't contains child node with name "
+               + nodeDefinitionData.getName().getAsString());
 
          }
       }
@@ -128,15 +126,15 @@ public class NodeDefinitionComparator
     * @throws RepositoryException
     */
    private void checkRequiredPrimaryType(InternalQName registeredNodeType, Set<String> nodes,
-            InternalQName[] ancestorRequiredPrimaryTypes, NodeDefinitionData recipientDefinitionData,
-            NodeDefinitionData[] allRecipientDefinition) throws RepositoryException
+      InternalQName[] ancestorRequiredPrimaryTypes, NodeDefinitionData recipientDefinitionData,
+      NodeDefinitionData[] allRecipientDefinition) throws RepositoryException
    {
       // Required type change
       InternalQName[] requiredPrimaryTypes = recipientDefinitionData.getRequiredPrimaryTypes();
 
       for (String uuid : nodes)
       {
-         NodeData nodeData = (NodeData) persister.getItemData(uuid);
+         NodeData nodeData = (NodeData)persister.getItemData(uuid);
          if (recipientDefinitionData.getName().equals(Constants.JCR_ANY_NAME))
          {
             List<NodeData> childs = persister.getChildNodesData(nodeData);
@@ -147,7 +145,7 @@ public class NodeDefinitionComparator
                   for (int i = 0; i < requiredPrimaryTypes.length; i++)
                   {
                      if (!nodeTypeDataManager.isNodeType(requiredPrimaryTypes[i], child.getPrimaryTypeName(), child
-                              .getMixinTypeNames()))
+                        .getMixinTypeNames()))
                      {
                         StringBuffer buffer = new StringBuffer();
                         buffer.append("Fail to change ");
@@ -183,7 +181,7 @@ public class NodeDefinitionComparator
                   for (int i = 0; i < requiredPrimaryTypes.length; i++)
                   {
                      if (!nodeTypeDataManager.isNodeType(requiredPrimaryTypes[i], child.getPrimaryTypeName(), child
-                              .getMixinTypeNames()))
+                        .getMixinTypeNames()))
                      {
                         StringBuffer buffer = new StringBuffer();
                         buffer.append("Fail to change ");
@@ -220,12 +218,12 @@ public class NodeDefinitionComparator
     * @throws RepositoryException
     */
    private void checkSameNameSibling(InternalQName registeredNodeType, Set<String> nodes, InternalQName recipientName,
-            NodeDefinitionData[] allRecipientDefinition) throws RepositoryException
+      NodeDefinitionData[] allRecipientDefinition) throws RepositoryException
    {
 
       for (String uuid : nodes)
       {
-         NodeData nodeData = (NodeData) persister.getItemData(uuid);
+         NodeData nodeData = (NodeData)persister.getItemData(uuid);
 
          if (recipientName.equals(Constants.JCR_ANY_NAME))
          {
@@ -302,21 +300,21 @@ public class NodeDefinitionComparator
     * @throws RepositoryException
     */
    private void doAdd(List<NodeDefinitionData> toAddList, PlainChangesLog changesLog, Set<String> nodes,
-            NodeTypeData registeredNodeType) throws RepositoryException
+      NodeTypeData registeredNodeType) throws RepositoryException
    {
 
       for (String uuid : nodes)
       {
-         NodeData nodeData = (NodeData) persister.getItemData(uuid);
+         NodeData nodeData = (NodeData)persister.getItemData(uuid);
 
          // added properties
          for (NodeDefinitionData newNodeDefinitionData : toAddList)
          {
             if (!newNodeDefinitionData.getName().equals(Constants.JCR_ANY_NAME)
-                     && newNodeDefinitionData.isAutoCreated())
+               && newNodeDefinitionData.isAutoCreated())
                changesLog.addAll(nodeTypeDataManager.makeAutoCreatedNodes(nodeData, registeredNodeType.getName(),
-                        new NodeDefinitionData[]
-                        {newNodeDefinitionData}, persister, nodeData.getACL().getOwner()).getAllStates());
+                  new NodeDefinitionData[]{newNodeDefinitionData}, persister, nodeData.getACL().getOwner())
+                  .getAllStates());
          }
       }
    }
@@ -329,7 +327,7 @@ public class NodeDefinitionComparator
     * @throws RepositoryException
     */
    private void validateAdded(InternalQName nodeTypeName, List<NodeDefinitionData> newDefinitionData,
-            Set<String> nodes, NodeDefinitionData[] recipientDefinition) throws RepositoryException
+      Set<String> nodes, NodeDefinitionData[] recipientDefinition) throws RepositoryException
    {
 
       for (NodeDefinitionData nodeDefinitionData : newDefinitionData)
@@ -368,8 +366,8 @@ public class NodeDefinitionComparator
     * @throws RepositoryException
     */
    private void validateChanged(InternalQName registeredNodeType,
-            List<RelatedDefinition<NodeDefinitionData>> changedDefinitionData, Set<String> nodes,
-            NodeDefinitionData[] allRecipientDefinition) throws RepositoryException
+      List<RelatedDefinition<NodeDefinitionData>> changedDefinitionData, Set<String> nodes,
+      NodeDefinitionData[] allRecipientDefinition) throws RepositoryException
    {
       for (RelatedDefinition<NodeDefinitionData> changedDefinitions : changedDefinitionData)
       {
@@ -381,16 +379,16 @@ public class NodeDefinitionComparator
          {
             for (String uuid : nodes)
             {
-               NodeData nodeData = (NodeData) persister.getItemData(uuid);
+               NodeData nodeData = (NodeData)persister.getItemData(uuid);
                ItemData child = persister.getItemData(nodeData, new QPathEntry(recipientDefinitionData.getName(), 0));
                if (child == null || !child.isNode())
                {
                   String message =
-                           "Can not change " + recipientDefinitionData.getName().getAsString()
-                                    + " node definition for " + registeredNodeType.getAsString() + " node type "
-                                    + " from mandatory=false to mandatory = true , because " + " node "
-                                    + nodeData.getQPath().getAsString() + " doesn't have child node with name "
-                                    + recipientDefinitionData.getName().getAsString();
+                     "Can not change " + recipientDefinitionData.getName().getAsString() + " node definition for "
+                        + registeredNodeType.getAsString() + " node type "
+                        + " from mandatory=false to mandatory = true , because " + " node "
+                        + nodeData.getQPath().getAsString() + " doesn't have child node with name "
+                        + recipientDefinitionData.getName().getAsString();
                   throw new RepositoryException(message);
                }
             }
@@ -402,25 +400,25 @@ public class NodeDefinitionComparator
             // TODO residual
             for (String uuid : nodes)
             {
-               NodeData nodeData = (NodeData) persister.getItemData(uuid);
+               NodeData nodeData = (NodeData)persister.getItemData(uuid);
                ItemData child = persister.getItemData(nodeData, new QPathEntry(recipientDefinitionData.getName(), 0));
                if (child == null || !child.isNode())
                {
                   String message =
-                           "Fail to  change " + recipientDefinitionData.getName().getAsString()
-                                    + " node definition for " + registeredNodeType.getAsString()
-                                    + " node type  from rotected=false to Protected = true , because " + " node "
-                                    + nodeData.getQPath().getAsString() + " doesn't have child node with name "
-                                    + recipientDefinitionData.getName().getAsString();
+                     "Fail to  change " + recipientDefinitionData.getName().getAsString() + " node definition for "
+                        + registeredNodeType.getAsString()
+                        + " node type  from rotected=false to Protected = true , because " + " node "
+                        + nodeData.getQPath().getAsString() + " doesn't have child node with name "
+                        + recipientDefinitionData.getName().getAsString();
                   throw new RepositoryException(message);
                }
             }
          }
          if (!Arrays.deepEquals(ancestorDefinitionData.getRequiredPrimaryTypes(), recipientDefinitionData
-                  .getRequiredPrimaryTypes()))
+            .getRequiredPrimaryTypes()))
          {
             checkRequiredPrimaryType(registeredNodeType, nodes, ancestorDefinitionData.getRequiredPrimaryTypes(),
-                     recipientDefinitionData, allRecipientDefinition);
+               recipientDefinitionData, allRecipientDefinition);
          }
          // check sibling
          if (ancestorDefinitionData.isAllowsSameNameSiblings() && !recipientDefinitionData.isAllowsSameNameSiblings())
@@ -438,7 +436,7 @@ public class NodeDefinitionComparator
     * @throws RepositoryException
     */
    private void validateRemoved(NodeTypeData registeredNodeType, List<NodeDefinitionData> removedDefinitionData,
-            NodeDefinitionData[] recipientDefinition) throws ConstraintViolationException, RepositoryException
+      NodeDefinitionData[] recipientDefinition) throws ConstraintViolationException, RepositoryException
    {
 
       for (NodeDefinitionData removeNodeDefinitionData : removedDefinitionData)
@@ -449,7 +447,7 @@ public class NodeDefinitionComparator
             nodes = nodeTypeDataManager.getNodes(registeredNodeType.getName());
             for (String uuid : nodes)
             {
-               NodeData nodeData = (NodeData) persister.getItemData(uuid);
+               NodeData nodeData = (NodeData)persister.getItemData(uuid);
                List<NodeData> childs = persister.getChildNodesData(nodeData);
                // more then mixin and primary type
                // TODO it could be possible, check add definitions
@@ -460,11 +458,10 @@ public class NodeDefinitionComparator
                      if (!isNonResidualMatch(nodeData2.getQPath().getName(), recipientDefinition))
                      {
                         String msg =
-                                 "Can't remove node definition " + removeNodeDefinitionData.getName().getAsString()
-                                          + "  for " + registeredNodeType.getName().getAsString()
-                                          + " node type because node " + nodeData.getQPath().getAsString() + " "
-                                          + " countains child nodes with name "
-                                          + nodeData2.getQPath().getName().getAsString();
+                           "Can't remove node definition " + removeNodeDefinitionData.getName().getAsString()
+                              + "  for " + registeredNodeType.getName().getAsString() + " node type because node "
+                              + nodeData.getQPath().getAsString() + " " + " countains child nodes with name "
+                              + nodeData2.getQPath().getName().getAsString();
                         throw new ConstraintViolationException(msg);
                      }
                   }
@@ -478,16 +475,16 @@ public class NodeDefinitionComparator
                nodes = nodeTypeDataManager.getNodes(registeredNodeType.getName());
                for (String uuid : nodes)
                {
-                  NodeData nodeData = (NodeData) persister.getItemData(uuid);
+                  NodeData nodeData = (NodeData)persister.getItemData(uuid);
                   ItemData child =
-                           persister.getItemData(nodeData, new QPathEntry(removeNodeDefinitionData.getName(), 0));
+                     persister.getItemData(nodeData, new QPathEntry(removeNodeDefinitionData.getName(), 0));
                   if (child != null && child.isNode())
                   {
                      throw new ConstraintViolationException("Can't remove node definition "
-                              + removeNodeDefinitionData.getName().getAsString() + "  for "
-                              + registeredNodeType.getName().getAsString() + " node type because node "
-                              + nodeData.getQPath().getAsString() + " " + " countains child node with name "
-                              + child.getQPath().getName().getAsString());
+                        + removeNodeDefinitionData.getName().getAsString() + "  for "
+                        + registeredNodeType.getName().getAsString() + " node type because node "
+                        + nodeData.getQPath().getAsString() + " " + " countains child node with name "
+                        + child.getQPath().getName().getAsString());
 
                   }
                }

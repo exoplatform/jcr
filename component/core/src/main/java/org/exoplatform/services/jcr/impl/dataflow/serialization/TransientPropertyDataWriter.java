@@ -18,14 +18,14 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
-import java.io.IOException;
-import java.util.List;
-
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectWriter;
 import org.exoplatform.services.jcr.dataflow.serialization.SerializationConstants;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+
+import java.io.IOException;
+import java.util.List;
 
 /**
  * Created by The eXo Platform SAS. <br/>Date:
@@ -74,7 +74,7 @@ public class TransientPropertyDataWriter
          TransientValueDataWriter wr = new TransientValueDataWriter();
          for (int i = 0; i < listSize; i++)
          {
-            wr.write(out, (TransientValueData) values.get(i));
+            wr.write(out, (TransientValueData)values.get(i));
          }
       }
       else

@@ -18,6 +18,10 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
+import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
+import org.exoplatform.services.jcr.dataflow.serialization.SerializationConstants;
+import org.exoplatform.services.jcr.impl.Constants;
+
 import java.io.BufferedInputStream;
 import java.io.EOFException;
 import java.io.FileInputStream;
@@ -27,10 +31,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StreamCorruptedException;
 
-import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
-import org.exoplatform.services.jcr.dataflow.serialization.SerializationConstants;
-import org.exoplatform.services.jcr.impl.Constants;
-
 /**
  * Created by The eXo Platform SAS. <br/>
  * Date: 13.02.2009
@@ -38,8 +38,7 @@ import org.exoplatform.services.jcr.impl.Constants;
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a>
  * @version $Id: JCRObjectInputImpl.java 111 2008-11-11 11:11:11Z rainf0x $
  */
-public class ObjectReaderImpl
-   implements ObjectReader
+public class ObjectReaderImpl implements ObjectReader
 {
 
    /**
@@ -63,7 +62,7 @@ public class ObjectReaderImpl
       this.in = new BufferedInputStream(in, SerializationConstants.INTERNAL_BUFFER_SIZE);
 
       if (in instanceof FileInputStream)
-         this.fileIn = (FileInputStream) in;
+         this.fileIn = (FileInputStream)in;
       else
          this.fileIn = null;
    }
@@ -97,7 +96,7 @@ public class ObjectReaderImpl
       if (v < 0)
          throw new EOFException();
 
-      return (byte) v;
+      return (byte)v;
    }
 
    /**
@@ -130,7 +129,7 @@ public class ObjectReaderImpl
          {
             // use NIO
 
-            return fileIn.getChannel().transferTo(0, length, ((FileOutputStream) stream).getChannel());
+            return fileIn.getChannel().transferTo(0, length, ((FileOutputStream)stream).getChannel());
          }
          else
          {
@@ -185,7 +184,7 @@ public class ObjectReaderImpl
       byte[] readBuffer = new byte[4];
       readFully(readBuffer);
       return ((readBuffer[0] & 255) << 24) + ((readBuffer[1] & 255) << 16) + ((readBuffer[2] & 255) << 8)
-               + ((readBuffer[3] & 255));
+         + ((readBuffer[3] & 255));
    }
 
    /**
@@ -196,9 +195,9 @@ public class ObjectReaderImpl
       byte[] readBuffer = new byte[8];
 
       readFully(readBuffer);
-      return (((long) readBuffer[0] << 56) + ((long) (readBuffer[1] & 255) << 48)
-               + ((long) (readBuffer[2] & 255) << 40) + ((long) (readBuffer[3] & 255) << 32)
-               + ((long) (readBuffer[4] & 255) << 24) + ((readBuffer[5] & 255) << 16) + ((readBuffer[6] & 255) << 8) + ((readBuffer[7] & 255) << 0));
+      return (((long)readBuffer[0] << 56) + ((long)(readBuffer[1] & 255) << 48) + ((long)(readBuffer[2] & 255) << 40)
+         + ((long)(readBuffer[3] & 255) << 32) + ((long)(readBuffer[4] & 255) << 24) + ((readBuffer[5] & 255) << 16)
+         + ((readBuffer[6] & 255) << 8) + ((readBuffer[7] & 255) << 0));
    }
 
    /**
@@ -214,7 +213,7 @@ public class ObjectReaderImpl
       byte[] skipBuffer = new byte[SerializationConstants.INTERNAL_BUFFER_SIZE];
       while (remaining > 0)
       {
-         nr = in.read(skipBuffer, 0, (int) Math.min(SerializationConstants.INTERNAL_BUFFER_SIZE, remaining));
+         nr = in.read(skipBuffer, 0, (int)Math.min(SerializationConstants.INTERNAL_BUFFER_SIZE, remaining));
          if (nr < 0)
          {
             break;

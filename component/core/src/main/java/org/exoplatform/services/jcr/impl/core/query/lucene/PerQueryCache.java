@@ -49,7 +49,7 @@ class PerQueryCache
     */
    static PerQueryCache getInstance()
    {
-      PerQueryCache cache = (PerQueryCache) CACHE.get();
+      PerQueryCache cache = (PerQueryCache)CACHE.get();
       if (cache == null)
       {
          cache = new PerQueryCache();
@@ -144,7 +144,7 @@ class PerQueryCache
       {
          if (obj instanceof Key)
          {
-            Key other = (Key) obj;
+            Key other = (Key)obj;
             return type == other.type && key.equals(other.key);
          }
          return false;

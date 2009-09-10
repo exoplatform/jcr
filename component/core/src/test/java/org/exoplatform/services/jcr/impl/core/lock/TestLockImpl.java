@@ -18,18 +18,17 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock;
 
-import javax.jcr.RepositoryException;
-
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.core.ExtendedNode;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
+
+import javax.jcr.RepositoryException;
 
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: TestLockImpl.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class TestLockImpl
-   extends JcrImplBaseTest
+public class TestLockImpl extends JcrImplBaseTest
 {
    private ExtendedNode lockedNode = null;
 
@@ -46,12 +45,12 @@ public class TestLockImpl
 
       super.setUp();
 
-      service = (LockManagerImpl) container.getComponentInstanceOfType(LockManagerImpl.class);
+      service = (LockManagerImpl)container.getComponentInstanceOfType(LockManagerImpl.class);
 
       if (lockedNode == null)
          try
          {
-            lockedNode = (ExtendedNode) root.addNode("locked node");
+            lockedNode = (ExtendedNode)root.addNode("locked node");
             if (lockedNode.canAddMixin("mix:lockable"))
                lockedNode.addMixin("mix:lockable");
             root.save();
@@ -66,13 +65,13 @@ public class TestLockImpl
    {
       try
       {
-         LockImpl lock = (LockImpl) lockedNode.lock(true, false);
+         LockImpl lock = (LockImpl)lockedNode.lock(true, false);
 
          assertTrue(lockedNode.isLocked());
          lock.setTimeOut(LOCK_TIMEOUT);// 5 sec
          if (log.isDebugEnabled())
             log.debug("Stoping thread. Wait for removing lock for node "
-                     + ((NodeImpl) lockedNode).getData().getIdentifier() + "by LockRemover");
+               + ((NodeImpl)lockedNode).getData().getIdentifier() + "by LockRemover");
          Thread.sleep(LOCK_REMOVER_WAIT);
          assertFalse(lockedNode.isLocked());
 
@@ -91,7 +90,7 @@ public class TestLockImpl
    {
       try
       {
-         LockImpl lock = (LockImpl) lockedNode.lock(true, true);
+         LockImpl lock = (LockImpl)lockedNode.lock(true, true);
          assertTrue(lockedNode.isLocked());
          lock.setTimeOut(LOCK_TIMEOUT); // sec
          if (log.isDebugEnabled())

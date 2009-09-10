@@ -18,6 +18,12 @@
  */
 package org.exoplatform.services.jcr.load.perf;
 
+import org.exoplatform.services.jcr.BaseStandaloneTest;
+import org.exoplatform.services.jcr.impl.core.query.QueryImpl;
+import org.exoplatform.services.jcr.impl.core.query.lucene.QueryResultImpl;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
@@ -26,21 +32,13 @@ import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
 
-import org.exoplatform.services.log.Log;
-
-import org.exoplatform.services.jcr.BaseStandaloneTest;
-import org.exoplatform.services.jcr.impl.core.query.QueryImpl;
-import org.exoplatform.services.jcr.impl.core.query.lucene.QueryResultImpl;
-import org.exoplatform.services.log.ExoLogger;
-
 /**
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: TestLimitAndOffset.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class TestLimitAndOffset
-   extends BaseStandaloneTest
+public class TestLimitAndOffset extends BaseStandaloneTest
 {
    /**
     * Class logger.
@@ -79,7 +77,7 @@ public class TestLimitAndOffset
    private QueryImpl createXPathQuery(String xpath) throws InvalidQueryException, RepositoryException
    {
       QueryManager queryManager = session.getWorkspace().getQueryManager();
-      return (QueryImpl) queryManager.createQuery(xpath, Query.XPATH);
+      return (QueryImpl)queryManager.createQuery(xpath, Query.XPATH);
    }
 
    protected void checkResult(QueryResult result, Node[] expectedNodes) throws RepositoryException
@@ -110,7 +108,7 @@ public class TestLimitAndOffset
       long time = System.currentTimeMillis();
       NodeIterator nodeIterartor = result.getNodes();
       long size = nodeIterartor.getSize();
-      assertEquals(NODES_COUNT, ((QueryResultImpl) result).getTotalSize());
+      assertEquals(NODES_COUNT, ((QueryResultImpl)result).getTotalSize());
 
       for (int i = 0; i < NEED_NODES; i++)
       {
@@ -128,7 +126,7 @@ public class TestLimitAndOffset
       long time = System.currentTimeMillis();
       NodeIterator nodeIterartor = result.getNodes();
       long size = nodeIterartor.getSize();
-      assertEquals(NODES_COUNT, ((QueryResultImpl) result).getTotalSize());
+      assertEquals(NODES_COUNT, ((QueryResultImpl)result).getTotalSize());
       assertEquals(NEED_NODES, size);
 
       for (int i = 0; i < NEED_NODES; i++)

@@ -18,15 +18,15 @@
  */
 package org.exoplatform.services.jcr.datamodel;
 
+import org.exoplatform.commons.utils.QName;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.log.Log;
-import org.exoplatform.commons.utils.QName;
-import org.exoplatform.services.log.ExoLogger;
 
 /**
  * Created by The eXo Platform SAS.
@@ -35,8 +35,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @version $Id: QPath.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class QPath
-   implements Comparable<QPath>
+public class QPath implements Comparable<QPath>
 {
 
    /**
@@ -140,7 +139,7 @@ public class QPath
       int len = getLength() - relativeDegree;
       if (len < 0)
          throw new IllegalPathException("Relative degree " + relativeDegree + " is more than depth for "
-                  + getAsString());
+            + getAsString());
 
       QPathEntry[] relPath = new QPathEntry[relativeDegree];
       System.arraycopy(names, len, relPath, 0, relPath.length);
@@ -396,7 +395,7 @@ public class QPath
          {
             if (uriStart > -1)
                throw new IllegalPathException("Bad internal path '" + qPath
-                        + "' each intermediate name should have index");
+                  + "' each intermediate name should have index");
          }
 
          entries.add(new QPathEntry(uri, localName, index));

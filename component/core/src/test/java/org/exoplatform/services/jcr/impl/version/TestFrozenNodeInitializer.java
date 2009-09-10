@@ -18,10 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.version;
 
-import java.util.List;
-
-import javax.jcr.version.VersionException;
-
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.persistent.PersistedNodeData;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
@@ -33,14 +29,17 @@ import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 
+import java.util.List;
+
+import javax.jcr.version.VersionException;
+
 /**
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestFrozenNodeInitializer.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class TestFrozenNodeInitializer
-   extends BaseVersionImplTest
+public class TestFrozenNodeInitializer extends BaseVersionImplTest
 {
 
    public void testFrozenCreated() throws Exception
@@ -61,7 +60,7 @@ public class TestFrozenNodeInitializer
             continue next; // we have no interest for this item
 
          log.info("versionable change " + state.getData().getQPath().getAsString() + ", "
-                  + state.getData().getIdentifier() + "... ");
+            + state.getData().getIdentifier() + "... ");
          for (ItemState result : testChanges)
          {
             ItemData resultData = result.getData();
@@ -95,7 +94,7 @@ public class TestFrozenNodeInitializer
             continue next; // we have no interest for this item
 
          log.info("versionable change " + state.getData().getQPath().getAsString() + ", "
-                  + state.getData().getIdentifier() + "... ");
+            + state.getData().getIdentifier() + "... ");
          for (ItemState result : testChanges)
          {
             ItemData resultData = result.getData();
@@ -144,7 +143,7 @@ public class TestFrozenNodeInitializer
             continue next; // we have no interest for this item
 
          log.info("versionable change " + state.getData().getQPath().getAsString() + ", "
-                  + state.getData().getIdentifier() + "... ");
+            + state.getData().getIdentifier() + "... ");
          for (ItemState result : testChanges)
          {
             ItemData resultData = result.getData();
@@ -161,7 +160,7 @@ public class TestFrozenNodeInitializer
             }
          }
          if (!(state.getData().getQPath().getName().equals(PROPERTY_IGNORED) || state.getData().getQPath().getName()
-                  .equals(NODE_IGNORED)))
+            .equals(NODE_IGNORED)))
             fail("Change is not stored in frozen state: " + state.getData().getQPath().getAsString());
       }
    }
@@ -186,7 +185,7 @@ public class TestFrozenNodeInitializer
          // saved as jcr:childVersionHistory)
 
          log.info("versionable change " + state.getData().getQPath().getAsString() + ", "
-                  + state.getData().getIdentifier() + "... ");
+            + state.getData().getIdentifier() + "... ");
          for (ItemState result : testChanges)
          {
             ItemData resultData = result.getData();
@@ -197,11 +196,11 @@ public class TestFrozenNodeInitializer
                   InternalQName ntName = null;
                   if (resultData instanceof TransientNodeData)
                   {
-                     ntName = ((TransientNodeData) resultData).getPrimaryTypeName();
+                     ntName = ((TransientNodeData)resultData).getPrimaryTypeName();
                   }
                   else if (resultData instanceof PersistedNodeData)
                   {
-                     ntName = ((PersistedNodeData) resultData).getPrimaryTypeName();
+                     ntName = ((PersistedNodeData)resultData).getPrimaryTypeName();
                   }
                   else
                   {
@@ -209,7 +208,7 @@ public class TestFrozenNodeInitializer
                   }
 
                   assertEquals("Versioned node must be stored in frozen state as node of type nt:versionedChild: "
-                           + resultData.getQPath().getAsString(), Constants.NT_VERSIONEDCHILD, ntName);
+                     + resultData.getQPath().getAsString(), Constants.NT_VERSIONEDCHILD, ntName);
 
                   // QPath versionHistoryPropertyPath = QPath.makeChildPath(state.getData().getQPath(),
                   // Constants.JCR_VERSIONHISTORY);
@@ -217,19 +216,19 @@ public class TestFrozenNodeInitializer
                   // session.getTransientNodesManager().getItemData(versionHistoryPropertyPath);
 
                   PropertyData vh =
-                           (PropertyData) session.getTransientNodesManager().getItemData((NodeData) state.getData(),
-                                    new QPathEntry(Constants.JCR_VERSIONHISTORY, 0));
+                     (PropertyData)session.getTransientNodesManager().getItemData((NodeData)state.getData(),
+                        new QPathEntry(Constants.JCR_VERSIONHISTORY, 0));
 
                   String vhUuid = new String(vh.getValues().get(0).getAsByteArray());
 
                   QPath childVersionHistoryPropertyPath =
-                           QPath.makeChildPath(resultData.getQPath(), Constants.JCR_CHILDVERSIONHISTORY);
+                     QPath.makeChildPath(resultData.getQPath(), Constants.JCR_CHILDVERSIONHISTORY);
                   ItemState cvhState = changesLog.getItemState(childVersionHistoryPropertyPath);
                   assertNotNull(
-                           "Frozen state of node of type nt:versionedChild hasn't jcr:childVersionHistory property: "
-                                    + resultData.getQPath().getAsString(), cvhState);
+                     "Frozen state of node of type nt:versionedChild hasn't jcr:childVersionHistory property: "
+                        + resultData.getQPath().getAsString(), cvhState);
 
-                  String cvhUuid = new String(((PropertyData) cvhState.getData()).getValues().get(0).getAsByteArray());
+                  String cvhUuid = new String(((PropertyData)cvhState.getData()).getValues().get(0).getAsByteArray());
                   assertEquals("jcr:childVersionHistory property in frozen state contains wrong uuid", vhUuid, cvhUuid);
 
                }

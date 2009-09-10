@@ -18,13 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.storage;
 
-import java.sql.Statement;
-import java.util.Calendar;
-
-import javax.jcr.Node;
-import javax.jcr.PropertyType;
-import javax.jcr.version.Version;
-
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
@@ -39,6 +32,13 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 
+import java.sql.Statement;
+import java.util.Calendar;
+
+import javax.jcr.Node;
+import javax.jcr.PropertyType;
+import javax.jcr.version.Version;
+
 /**
  * Created by The eXo Platform SAS Author : Peter Nedonosko peter.nedonosko@exoplatform.com.ua
  * 26.09.2006 VARNING! This test change data container database data directly in tables
@@ -48,8 +48,7 @@ import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: StorageUpdateTest.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class StorageUpdateTest
-   extends JcrImplBaseTest
+public class StorageUpdateTest extends JcrImplBaseTest
 {
 
    protected static final String REFERENCEABLE_NAME = "node_R__nt_file";
@@ -80,12 +79,11 @@ public class StorageUpdateTest
       if (exoContainer == null)
          fail("This test can be executed by user with ADMIN rights only");
 
-      dataContainer =
-               (JDBCWorkspaceDataContainer) exoContainer.getComponentInstanceOfType(WorkspaceDataContainer.class);
+      dataContainer = (JDBCWorkspaceDataContainer)exoContainer.getComponentInstanceOfType(WorkspaceDataContainer.class);
       if (dataContainer == null)
          fail("This test can be executed on JDBCWorkspaceDataContainer instance only");
 
-      WorkspaceEntry wsEntry = (WorkspaceEntry) session.getContainer()
+      WorkspaceEntry wsEntry = (WorkspaceEntry)session.getContainer()
 
       .getComponentInstanceOfType(WorkspaceEntry.class);
 
@@ -137,36 +135,34 @@ public class StorageUpdateTest
       // =============================================================
       // !!!!!!!!!!! add bug from Workspace.copy() ver.1.0 !!!!!!!!!!!
       // =============================================================
-      PropertyData jcrUuid = (PropertyData) ((PropertyImpl) node_V.getProperty("jcr:uuid")).getData();
+      PropertyData jcrUuid = (PropertyData)((PropertyImpl)node_V.getProperty("jcr:uuid")).getData();
 
       TransientPropertyData bugData =
-               new TransientPropertyData(jcrUuid.getQPath(), jcrUuid.getIdentifier(), jcrUuid.getPersistedVersion(),
-                        jcrUuid.getType(), jcrUuid.getParentIdentifier(), jcrUuid.isMultiValued());
+         new TransientPropertyData(jcrUuid.getQPath(), jcrUuid.getIdentifier(), jcrUuid.getPersistedVersion(), jcrUuid
+            .getType(), jcrUuid.getParentIdentifier(), jcrUuid.isMultiValued());
       // Set a uuid of source node in Workspace.copy()
       bugData.setValue(new TransientValueData(node_R.getProperty("jcr:uuid").getString()));
 
       WorkspaceStorageConnection conn = dataContainer.openConnection();
       if (conn instanceof JDBCStorageConnection)
       {
-         JDBCStorageConnection jdbcConn = (JDBCStorageConnection) conn;
+         JDBCStorageConnection jdbcConn = (JDBCStorageConnection)conn;
 
          conn.update(bugData);
          jdbcConn.getJdbcConnection().commit();
 
          NodeData parent =
-                  (NodeData) session.getTransientNodesManager().getTransactManager().getItemData(
-                           jcrUuid.getParentIdentifier());
+            (NodeData)session.getTransientNodesManager().getTransactManager()
+               .getItemData(jcrUuid.getParentIdentifier());
          QPathEntry[] qentry = bugData.getQPath().getEntries();
-         PropertyData persistedBugData = (PropertyData) conn.getItemData(parent, qentry[qentry.length - 1]);
+         PropertyData persistedBugData = (PropertyData)conn.getItemData(parent, qentry[qentry.length - 1]);
          log.info("node_V node BUG uuid: " + node_V.getUUID() + ", jcr:uuid: "
-                  + new String(persistedBugData.getValues().get(0).getAsByteArray()));
+            + new String(persistedBugData.getValues().get(0).getAsByteArray()));
 
          // =================== remove version record ===================
          Statement smnt = jdbcConn.getJdbcConnection().createStatement();
          log.info("Update container version records: "
-                  + smnt
-                           .executeUpdate("update JCR_" + (isDefaultWsMultiDb ? "M" : "S")
-                                    + "CONTAINER set VERSION='1.0'"));
+            + smnt.executeUpdate("update JCR_" + (isDefaultWsMultiDb ? "M" : "S") + "CONTAINER set VERSION='1.0'"));
          jdbcConn.getJdbcConnection().commit();
 
          conn.commit();

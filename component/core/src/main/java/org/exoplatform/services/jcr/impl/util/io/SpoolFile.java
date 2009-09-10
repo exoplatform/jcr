@@ -18,15 +18,14 @@
  */
 package org.exoplatform.services.jcr.impl.util.io;
 
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Map;
 import java.util.WeakHashMap;
-
-import org.exoplatform.services.log.Log;
-
-import org.exoplatform.services.log.ExoLogger;
 
 /**
  * Created by The eXo Platform SAS Author : Peter Nedonosko peter.nedonosko@exoplatform.com.ua
@@ -49,8 +48,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: SpoolFile.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class SpoolFile
-   extends File
+public class SpoolFile extends File
 {
 
    private static Log log = ExoLogger.getLogger("jcr.SpoolFile");

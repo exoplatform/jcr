@@ -32,8 +32,7 @@ import org.exoplatform.services.jcr.impl.Constants;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: CacheQPath.java 13869 2008-05-05 08:40:10Z pnedonosko $
  */
-class CacheQPath
-   extends CacheKey
+class CacheQPath extends CacheKey
 {
 
    // private static final String BASE = String.valueOf(UUID.randomUUID().hashCode()) + "-";
@@ -107,7 +106,7 @@ class CacheQPath
    public boolean equals(Object obj)
    {
       if (key.hashCode() == obj.hashCode() && obj instanceof CacheQPath)
-         return key.equals(((CacheQPath) obj).key);
+         return key.equals(((CacheQPath)obj).key);
       return false;
    }
 

@@ -29,8 +29,7 @@ import javax.jcr.query.QueryResult;
  * @version $Id: $
  */
 
-public class TestStoredQuery
-   extends BaseQueryTest
+public class TestStoredQuery extends BaseQueryTest
 {
 
    public void setUp() throws Exception

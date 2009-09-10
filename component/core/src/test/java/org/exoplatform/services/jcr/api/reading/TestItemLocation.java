@@ -18,10 +18,10 @@
  */
 package org.exoplatform.services.jcr.api.reading;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
 
 /**
  * Created by The eXo Platform SAS
@@ -32,8 +32,7 @@ import org.exoplatform.services.jcr.JcrAPIBaseTest;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestItemLocation.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class TestItemLocation
-   extends JcrAPIBaseTest
+public class TestItemLocation extends JcrAPIBaseTest
 {
 
    private Node testNode;
@@ -107,7 +106,7 @@ public class TestItemLocation
       try
       {
          assertEquals("Property values must be equals", DOUBLE_VALUE1, testNode.getProperty(
-                  "n1/n1-n1/n1-n1-n1/n1-n1-n1-p1").getDouble());
+            "n1/n1-n1/n1-n1-n1/n1-n1-n1-p1").getDouble());
       }
       catch (RepositoryException e)
       {
@@ -117,7 +116,7 @@ public class TestItemLocation
       try
       {
          assertEquals("Property values must be equals", STRING_VALUE1, testNode.getProperty(
-                  "n1/n1-n1/n1-n1-n1/n1-n1-n1-p2").getString());
+            "n1/n1-n1/n1-n1-n1/n1-n1-n1-p2").getString());
       }
       catch (RepositoryException e)
       {
@@ -145,7 +144,7 @@ public class TestItemLocation
       try
       {
          assertEquals("Property values must be equals", DOUBLE_VALUE2, testNode.getProperty(
-                  "n1/n1-n2/n1-n2-n1/n1-n2-n1-p1").getDouble());
+            "n1/n1-n2/n1-n2-n1/n1-n2-n1-p1").getDouble());
       }
       catch (RepositoryException e)
       {
@@ -155,7 +154,7 @@ public class TestItemLocation
       try
       {
          assertEquals("Property values must be equals", STRING_VALUE2, testNode.getProperty(
-                  "n1/n1-n2/n1-n2-n1/n1-n2-n1-p2").getString());
+            "n1/n1-n2/n1-n2-n1/n1-n2-n1-p2").getString());
       }
       catch (RepositoryException e)
       {
@@ -233,7 +232,7 @@ public class TestItemLocation
       try
       {
          assertEquals("Property values must be equals", DOUBLE_VALUE1, n1_1
-                  .getProperty("../n1-n1/n1-n1-n1/n1-n1-n1-p1").getDouble());
+            .getProperty("../n1-n1/n1-n1-n1/n1-n1-n1-p1").getDouble());
       }
       catch (RepositoryException e)
       {
@@ -272,7 +271,7 @@ public class TestItemLocation
       try
       {
          assertEquals("Property values must be equals", DOUBLE_VALUE2, n1_1
-                  .getProperty("../n1-n2/n1-n2-n1/n1-n2-n1-p1").getDouble());
+            .getProperty("../n1-n2/n1-n2-n1/n1-n2-n1-p1").getDouble());
       }
       catch (RepositoryException e)
       {
@@ -282,7 +281,7 @@ public class TestItemLocation
       try
       {
          assertEquals("Property values must be equals", STRING_VALUE2, n1_1
-                  .getProperty("../n1-n2/n1-n2-n1/n1-n2-n1-p2").getString());
+            .getProperty("../n1-n2/n1-n2-n1/n1-n2-n1-p2").getString());
       }
       catch (RepositoryException e)
       {
@@ -321,7 +320,7 @@ public class TestItemLocation
       try
       {
          assertEquals("Property values must be equals", DOUBLE_VALUE2, n1_1_1.getProperty(
-                  "../../n1-n2/n1-n2-n1/n1-n2-n1-p1").getDouble());
+            "../../n1-n2/n1-n2-n1/n1-n2-n1-p1").getDouble());
       }
       catch (RepositoryException e)
       {
@@ -331,7 +330,7 @@ public class TestItemLocation
       try
       {
          assertEquals("Property values must be equals", STRING_VALUE2, n1_1_1.getProperty(
-                  "../../n1-n2/n1-n2-n1/n1-n2-n1-p2").getString());
+            "../../n1-n2/n1-n2-n1/n1-n2-n1-p2").getString());
       }
       catch (RepositoryException e)
       {

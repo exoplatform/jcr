@@ -18,26 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.xml.importing;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
-
-import javax.jcr.NamespaceRegistry;
-import javax.jcr.PathNotFoundException;
-import javax.jcr.PropertyType;
-import javax.jcr.RepositoryException;
-import javax.jcr.UnsupportedRepositoryOperationException;
-import javax.jcr.Value;
-import javax.jcr.ValueFormatException;
-import javax.jcr.nodetype.ConstraintViolationException;
-
 import org.apache.ws.commons.util.Base64;
 import org.apache.ws.commons.util.Base64.DecodingException;
-
 import org.exoplatform.services.jcr.access.AccessManager;
 import org.exoplatform.services.jcr.core.ExtendedPropertyType;
 import org.exoplatform.services.jcr.core.nodetype.NodeDefinitionData;
@@ -70,14 +52,30 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.ConversationState;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
+
+import javax.jcr.NamespaceRegistry;
+import javax.jcr.PathNotFoundException;
+import javax.jcr.PropertyType;
+import javax.jcr.RepositoryException;
+import javax.jcr.UnsupportedRepositoryOperationException;
+import javax.jcr.Value;
+import javax.jcr.ValueFormatException;
+import javax.jcr.nodetype.ConstraintViolationException;
+
 /**
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: DocumentViewImporter.java 14221 2008-05-14 08:27:41Z ksm $
  */
-public class DocumentViewImporter
-   extends BaseXmlImporter
+public class DocumentViewImporter extends BaseXmlImporter
 {
    /**
     * 
@@ -112,12 +110,12 @@ public class DocumentViewImporter
     * @param currentWorkspaceName String
     */
    public DocumentViewImporter(NodeData parent, QPath ancestorToSave, int uuidBehavior, ItemDataConsumer dataConsumer,
-            NodeTypeDataManager ntManager, LocationFactory locationFactory, ValueFactoryImpl valueFactory,
-            NamespaceRegistry namespaceRegistry, AccessManager accessManager, ConversationState userState,
-            Map<String, Object> context, RepositoryImpl repository, String currentWorkspaceName)
+      NodeTypeDataManager ntManager, LocationFactory locationFactory, ValueFactoryImpl valueFactory,
+      NamespaceRegistry namespaceRegistry, AccessManager accessManager, ConversationState userState,
+      Map<String, Object> context, RepositoryImpl repository, String currentWorkspaceName)
    {
       super(parent, ancestorToSave, uuidBehavior, dataConsumer, ntManager, locationFactory, valueFactory,
-               namespaceRegistry, accessManager, userState, context, repository, currentWorkspaceName);
+         namespaceRegistry, accessManager, userState, context, repository, currentWorkspaceName);
       xmlCharactersProperty = null;
       xmlCharactersPropertyValue = null;
    }
@@ -143,8 +141,8 @@ public class DocumentViewImporter
       else
       {
          TransientNodeData nodeData =
-                  TransientNodeData.createNodeData(getParent(), Constants.JCR_XMLTEXT, Constants.NT_UNSTRUCTURED,
-                           getNodeIndex(getParent(), Constants.JCR_XMLTEXT, null));
+            TransientNodeData.createNodeData(getParent(), Constants.JCR_XMLTEXT, Constants.NT_UNSTRUCTURED,
+               getNodeIndex(getParent(), Constants.JCR_XMLTEXT, null));
          nodeData.setOrderNumber(getNextChildOrderNum(getParent()));
 
          changesLog.add(new ItemState(nodeData, ItemState.ADDED, true, getAncestorToSave()));
@@ -154,14 +152,14 @@ public class DocumentViewImporter
          }
 
          ImportPropertyData newProperty =
-                  new ImportPropertyData(QPath.makeChildPath(nodeData.getQPath(), Constants.JCR_PRIMARYTYPE),
-                           IdGenerator.generate(), 0, PropertyType.NAME, nodeData.getIdentifier(), false);
+            new ImportPropertyData(QPath.makeChildPath(nodeData.getQPath(), Constants.JCR_PRIMARYTYPE), IdGenerator
+               .generate(), 0, PropertyType.NAME, nodeData.getIdentifier(), false);
 
          newProperty.setValue(new TransientValueData(Constants.NT_UNSTRUCTURED));
          changesLog.add(new ItemState(newProperty, ItemState.ADDED, true, getAncestorToSave()));
          newProperty =
-                  new ImportPropertyData(QPath.makeChildPath(nodeData.getQPath(), Constants.JCR_XMLCHARACTERS),
-                           IdGenerator.generate(), 0, PropertyType.STRING, nodeData.getIdentifier(), false);
+            new ImportPropertyData(QPath.makeChildPath(nodeData.getQPath(), Constants.JCR_XMLCHARACTERS), IdGenerator
+               .generate(), 0, PropertyType.STRING, nodeData.getIdentifier(), false);
          newProperty.setValue(new TransientValueData(text.toString()));
 
          changesLog.add(new ItemState(newProperty, ItemState.ADDED, true, getAncestorToSave()));
@@ -181,7 +179,7 @@ public class DocumentViewImporter
    }
 
    public void startElement(String namespaceURI, String localName, String qName, Map<String, String> atts)
-            throws RepositoryException
+      throws RepositoryException
    {
 
       String nodeName = ISO9075.decode(qName);
@@ -230,15 +228,15 @@ public class DocumentViewImporter
          if (propName.equals(Constants.JCR_PRIMARYTYPE))
          {
             InternalQName childName =
-                     locationFactory.parseJCRName(propertiesMap.get(Constants.JCR_PRIMARYTYPE)).getInternalName();
+               locationFactory.parseJCRName(propertiesMap.get(Constants.JCR_PRIMARYTYPE)).getInternalName();
             if (!nodeTypeDataManager.isChildNodePrimaryTypeAllowed(childName, parentNodeData.getPrimaryTypeName(),
-                     parentNodeData.getMixinTypeNames()))
+               parentNodeData.getMixinTypeNames()))
             {
                throw new ConstraintViolationException("Can't add node " + nodeData.getQName().getAsString() + " to "
-                        + parentNodeData.getQPath().getAsString() + " node type "
-                        + propertiesMap.get(Constants.JCR_PRIMARYTYPE)
-                        + " is not allowed as child's node type for parent node type "
-                        + parentNodeData.getPrimaryTypeName().getAsString());
+                  + parentNodeData.getQPath().getAsString() + " node type "
+                  + propertiesMap.get(Constants.JCR_PRIMARYTYPE)
+                  + " is not allowed as child's node type for parent node type "
+                  + parentNodeData.getPrimaryTypeName().getAsString());
 
             }
             newProperty = endPrimaryType(nodeData.getPrimaryTypeName());
@@ -264,7 +262,7 @@ public class DocumentViewImporter
             defs = nodeTypeDataManager.getPropertyDefinitions(propName, nTypes);
             if (defs == null || defs.getAnyDefinition() == null)
             {
-               if (!((Boolean) context.get(ContentImporter.RESPECT_PROPERTY_DEFINITIONS_CONSTRAINTS)))
+               if (!((Boolean)context.get(ContentImporter.RESPECT_PROPERTY_DEFINITIONS_CONSTRAINTS)))
                {
                   log.warn("Property definition not found for " + propName.getAsString());
                   continue;
@@ -303,7 +301,7 @@ public class DocumentViewImporter
 
                   String denormalizeString = StringConverter.denormalizeString(propertiesMap.get(propName));
                   Value value = valueFactory.createValue(denormalizeString, pType);
-                  values.add(((BaseValue) value).getInternalData());
+                  values.add(((BaseValue)value).getInternalData());
                   if (Constants.EXO_OWNER.equals(propName))
                   {
                      nodeData.setExoOwner(denormalizeString);
@@ -332,9 +330,9 @@ public class DocumentViewImporter
                            valueAsString = "[Can't present value as string]";
                         }
                         log.debug("Property " + ExtendedPropertyType.nameFromValue(pType) + ": " + propName + "="
-                                 + valueAsString);
+                           + valueAsString);
                      }
-                     values.add(((BaseValue) value).getInternalData());
+                     values.add(((BaseValue)value).getInternalData());
 
                   }
                   if (pType == ExtendedPropertyType.PERMISSION)
@@ -363,12 +361,12 @@ public class DocumentViewImporter
                   if ((defs.getDefinition(true) == null) && (defs.getDefinition(false) != null))
                   {
                      throw new ValueFormatException("Can not assign multiple-values Value"
-                              + " to a single-valued property " + propName.getAsString() + " node " + jcrName.getName());
+                        + " to a single-valued property " + propName.getAsString() + " node " + jcrName.getName());
                   }
                }
 
                newProperty =
-                        TransientPropertyData.createPropertyData(getParent(), propName, pType, isMultivalue, values);
+                  TransientPropertyData.createPropertyData(getParent(), propName, pType, isMultivalue, values);
 
                if (nodeData.isMixVersionable())
                {
@@ -379,8 +377,8 @@ public class DocumentViewImporter
          // skip versionable
 
          if ((newProperty.getQPath().isDescendantOf(Constants.JCR_VERSION_STORAGE_PATH) || (!Constants.JCR_VERSIONHISTORY
-                  .equals(propName)
-                  && !Constants.JCR_BASEVERSION.equals(propName) && !Constants.JCR_PREDECESSORS.equals(propName))))
+            .equals(propName)
+            && !Constants.JCR_BASEVERSION.equals(propName) && !Constants.JCR_PREDECESSORS.equals(propName))))
          {
             changesLog.add(new ItemState(newProperty, ItemState.ADDED, true, getAncestorToSave()));
          }
@@ -388,7 +386,7 @@ public class DocumentViewImporter
       }
 
       nodeData.setACL(initAcl(parentNodeData.getACL(), nodeData.isExoOwneable(), nodeData.isExoPrivilegeable(),
-               nodeData.getExoOwner(), nodeData.getExoPrivileges()));
+         nodeData.getExoOwner(), nodeData.getExoPrivileges()));
 
       if (nodeData.isMixVersionable())
       {
@@ -397,8 +395,8 @@ public class DocumentViewImporter
    }
 
    private ImportNodeData createNode(List<NodeTypeData> nodeTypes, HashMap<InternalQName, String> propertiesMap,
-            List<InternalQName> mixinNodeTypes, InternalQName jcrName) throws PathNotFoundException,
-            IllegalPathException, RepositoryException
+      List<InternalQName> mixinNodeTypes, InternalQName jcrName) throws PathNotFoundException, IllegalPathException,
+      RepositoryException
    {
       ImportNodeData nodeData = new ImportNodeData(getParent(), jcrName, getNodeIndex(getParent(), jcrName, null));
       InternalQName[] allNodeTypes = new InternalQName[nodeTypes.size() + mixinNodeTypes.size()];
@@ -411,7 +409,7 @@ public class DocumentViewImporter
          allNodeTypes[nodeTypes.size() + i] = mixinNodeTypes.get(i);
       }
       nodeData.setPrimaryTypeName(locationFactory.parseJCRName(propertiesMap.get(Constants.JCR_PRIMARYTYPE))
-               .getInternalName());
+         .getInternalName());
 
       nodeData.setOrderNumber(getNextChildOrderNum(getParent()));
       nodeData.setMixinTypeNames(mixinNodeTypes.toArray(new InternalQName[mixinNodeTypes.size()]));
@@ -427,13 +425,13 @@ public class DocumentViewImporter
    }
 
    private PropertyData endBinary(HashMap<InternalQName, String> propertiesMap, PropertyData newProperty,
-            InternalQName propName) throws RepositoryException
+      InternalQName propName) throws RepositoryException
    {
       try
       {
          newProperty =
-                  TransientPropertyData.createPropertyData(getParent(), propName, PropertyType.BINARY, false,
-                           new TransientValueData(Base64.decode(propertiesMap.get(propName)), 0));
+            TransientPropertyData.createPropertyData(getParent(), propName, PropertyType.BINARY, false,
+               new TransientValueData(Base64.decode(propertiesMap.get(propName)), 0));
       }
       catch (DecodingException e)
       {
@@ -464,13 +462,13 @@ public class DocumentViewImporter
          log.debug("Property NAME: " + primaryTypeName);
       }
       newProperty =
-               TransientPropertyData.createPropertyData(getParent(), Constants.JCR_PRIMARYTYPE, PropertyType.NAME,
-                        false, new TransientValueData(primaryTypeName));
+         TransientPropertyData.createPropertyData(getParent(), Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false,
+            new TransientValueData(primaryTypeName));
       return newProperty;
    }
 
    private PropertyData endUuid(ImportNodeData nodeData, InternalQName key) throws ValueFormatException,
-            UnsupportedRepositoryOperationException, RepositoryException, IllegalStateException
+      UnsupportedRepositoryOperationException, RepositoryException, IllegalStateException
    {
       PropertyData newProperty;
       Value value = valueFactory.createValue(nodeData.getIdentifier(), PropertyType.STRING);
@@ -480,13 +478,13 @@ public class DocumentViewImporter
       }
 
       newProperty =
-               TransientPropertyData.createPropertyData(getParent(), Constants.JCR_UUID, PropertyType.STRING, false,
-                        new TransientValueData(nodeData.getIdentifier()));
+         TransientPropertyData.createPropertyData(getParent(), Constants.JCR_UUID, PropertyType.STRING, false,
+            new TransientValueData(nodeData.getIdentifier()));
       return newProperty;
    }
 
    private void endVersionable(ImportNodeData nodeData, List<ValueData> values, InternalQName propName)
-            throws RepositoryException
+      throws RepositoryException
    {
       {
          if (propName.equals(Constants.JCR_VERSIONHISTORY))
@@ -494,7 +492,7 @@ public class DocumentViewImporter
             try
             {
 
-               nodeData.setVersionHistoryIdentifier(((TransientValueData) values.get(0)).getString());
+               nodeData.setVersionHistoryIdentifier(((TransientValueData)values.get(0)).getString());
             }
             catch (IOException e)
             {
@@ -502,13 +500,13 @@ public class DocumentViewImporter
             }
 
             nodeData
-                     .setContainsVersionhistory(dataConsumer.getItemData(nodeData.getVersionHistoryIdentifier()) != null);
+               .setContainsVersionhistory(dataConsumer.getItemData(nodeData.getVersionHistoryIdentifier()) != null);
          }
          else if (propName.equals(Constants.JCR_BASEVERSION))
          {
             try
             {
-               nodeData.setBaseVersionIdentifier(((TransientValueData) values.get(0)).getString());
+               nodeData.setBaseVersionIdentifier(((TransientValueData)values.get(0)).getString());
             }
             catch (IOException e)
             {
@@ -519,8 +517,7 @@ public class DocumentViewImporter
    }
 
    private void parseAttr(Map<String, String> atts, List<NodeTypeData> nodeTypes, List<InternalQName> mixinNodeTypes,
-            HashMap<InternalQName, String> props, InternalQName nodeName) throws PathNotFoundException,
-            RepositoryException
+      HashMap<InternalQName, String> props, InternalQName nodeName) throws PathNotFoundException, RepositoryException
    {
       // default primary type
       if (!atts.containsKey("jcr:primaryType"))
@@ -528,8 +525,8 @@ public class DocumentViewImporter
          NodeData parent = getParent();
 
          NodeDefinitionData nodeNt =
-                  nodeTypeDataManager.findChildNodeDefinition(nodeName, parent.getPrimaryTypeName(), parent
-                           .getMixinTypeNames());
+            nodeTypeDataManager.findChildNodeDefinition(nodeName, parent.getPrimaryTypeName(), parent
+               .getMixinTypeNames());
          NodeTypeData nodeType;
          if (nodeNt.getName().equals(Constants.JCR_ANY_NAME) && nodeNt.getDefaultPrimaryType() != null)
          {
@@ -542,7 +539,7 @@ public class DocumentViewImporter
 
          if (nodeType == null)
             throw new ConstraintViolationException("Can not define node-type for node " + nodeName.getAsString()
-                     + ", parent node type " + parent.getPrimaryTypeName().getAsString());
+               + ", parent node type " + parent.getPrimaryTypeName().getAsString());
 
          nodeTypes.add(nodeType);
          props.put(Constants.JCR_PRIMARYTYPE, locationFactory.createJCRName(nodeType.getName()).getAsString());

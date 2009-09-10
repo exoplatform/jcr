@@ -18,6 +18,9 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
+import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
+import org.exoplatform.services.jcr.dataflow.serialization.ObjectWriter;
+
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -25,17 +28,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Random;
 
-import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
-import org.exoplatform.services.jcr.dataflow.serialization.ObjectWriter;
-
 /**
  * Created by The eXo Platform SAS. <br/>Date:
  * 
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a>
  * @version $Id: TestEOFException.java 111 2008-11-11 11:11:11Z serg $
  */
-public class TestEOFException
-   extends JcrImplSerializationBaseTest
+public class TestEOFException extends JcrImplSerializationBaseTest
 {
 
    public void testReadFully() throws Exception

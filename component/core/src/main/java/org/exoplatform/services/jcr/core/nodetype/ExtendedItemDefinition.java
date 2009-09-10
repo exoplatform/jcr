@@ -27,8 +27,7 @@ import javax.jcr.nodetype.ItemDefinition;
  * @version $Id: ExtendedItemDefinition.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public interface ExtendedItemDefinition
-   extends ItemDefinition
+public interface ExtendedItemDefinition extends ItemDefinition
 {
 
    /**

@@ -18,6 +18,14 @@
  */
 package org.exoplatform.services.jcr.impl.jndi;
 
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.config.RepositoryEntry;
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
+import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
+import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -33,15 +41,6 @@ import javax.naming.Reference;
 import javax.naming.Referenceable;
 import javax.naming.StringRefAddr;
 
-import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
-import org.exoplatform.services.jcr.config.RepositoryEntry;
-import org.exoplatform.services.jcr.config.WorkspaceEntry;
-import org.exoplatform.services.jcr.core.ManageableRepository;
-import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
-import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
-import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
-import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
-
 /**
  * Created by The eXo Platform SAS.<br/> Bindable implementation of Repository -
  * ready to bind to Naming Context
@@ -52,8 +51,7 @@ import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener
  *          pnedonosko $
  */
 
-public class BindableRepositoryImpl
-   implements Serializable, Referenceable, ManageableRepository
+public class BindableRepositoryImpl implements Serializable, Referenceable, ManageableRepository
 {
 
    private transient ManageableRepository delegatee = null;
@@ -116,7 +114,7 @@ public class BindableRepositoryImpl
     * @see javax.jcr.Repository#login(javax.jcr.Credentials, java.lang.String)
     */
    public Session login(Credentials credentials, String workspaceName) throws LoginException, NoSuchWorkspaceException,
-            RepositoryException
+      RepositoryException
    {
       return delegatee.login(credentials, workspaceName);
    }
@@ -191,9 +189,9 @@ public class BindableRepositoryImpl
    public Reference getReference() throws NamingException
    {
       Reference ref =
-               new Reference(BindableRepositoryImpl.class.getName(), BindableRepositoryFactory.class.getName(), null);
+         new Reference(BindableRepositoryImpl.class.getName(), BindableRepositoryFactory.class.getName(), null);
       ref.add(new StringRefAddr(BindableRepositoryFactory.REPOSITORYNAME_ADDRTYPE, delegatee.getConfiguration()
-               .getName()));
+         .getName()));
       return ref;
    }
 

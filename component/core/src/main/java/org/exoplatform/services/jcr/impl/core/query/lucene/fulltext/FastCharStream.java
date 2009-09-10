@@ -26,8 +26,7 @@ import java.io.IOException;
  * position of the token in the input, as required by Lucene's
  * {@link org.apache.lucene.analysis.Token} API.
  */
-public final class FastCharStream
-   implements CharStream
+public final class FastCharStream implements CharStream
 {
 
    /**

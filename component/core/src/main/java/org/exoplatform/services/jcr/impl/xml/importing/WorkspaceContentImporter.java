@@ -18,13 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.xml.importing;
 
-import java.util.Map;
-
-import javax.jcr.NamespaceRegistry;
-import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.access.AccessManager;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
@@ -39,7 +32,13 @@ import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.xml.importing.dataflow.ImportNodeData;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.ConversationState;
+
+import java.util.Map;
+
+import javax.jcr.NamespaceRegistry;
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -48,8 +47,7 @@ import org.exoplatform.services.security.ConversationState;
  * @version $Id: WorkspaceContentImporter.java 14100 2008-05-12 10:53:47Z
  *          gazarenkov $
  */
-public class WorkspaceContentImporter
-   extends SystemViewImporter
+public class WorkspaceContentImporter extends SystemViewImporter
 {
    /**
     * Class logger.
@@ -74,13 +72,12 @@ public class WorkspaceContentImporter
     * @param context
     */
    public WorkspaceContentImporter(NodeData parent, QPath ancestorToSave, int uuidBehavior,
-            ItemDataConsumer dataConsumer, NodeTypeDataManager ntManager, LocationFactory locationFactory,
-            ValueFactoryImpl valueFactory, NamespaceRegistry namespaceRegistry, AccessManager accessManager,
-            ConversationState userState, Map<String, Object> context, RepositoryImpl repository,
-            String currentWorkspaceName)
+      ItemDataConsumer dataConsumer, NodeTypeDataManager ntManager, LocationFactory locationFactory,
+      ValueFactoryImpl valueFactory, NamespaceRegistry namespaceRegistry, AccessManager accessManager,
+      ConversationState userState, Map<String, Object> context, RepositoryImpl repository, String currentWorkspaceName)
    {
       super(parent, ancestorToSave, uuidBehavior, dataConsumer, ntManager, locationFactory, valueFactory,
-               namespaceRegistry, accessManager, userState, context, repository, currentWorkspaceName);
+         namespaceRegistry, accessManager, userState, context, repository, currentWorkspaceName);
    }
 
    /*
@@ -91,7 +88,7 @@ public class WorkspaceContentImporter
     */
    @Override
    public void startElement(String namespaceURI, String localName, String name, Map<String, String> atts)
-            throws RepositoryException
+      throws RepositoryException
    {
       InternalQName elementName = locationFactory.parseJCRName(name).getInternalName();
 
@@ -161,8 +158,8 @@ public class WorkspaceContentImporter
       tree.pop();
 
       ImportNodeData newNodeData =
-               new ImportNodeData(Constants.ROOT_PATH, Constants.ROOT_UUID, -1, Constants.NT_UNSTRUCTURED,
-                        new InternalQName[0], 0, null, new AccessControlList());
+         new ImportNodeData(Constants.ROOT_PATH, Constants.ROOT_UUID, -1, Constants.NT_UNSTRUCTURED,
+            new InternalQName[0], 0, null, new AccessControlList());
 
       // Not persistent state. Root created during the creation workspace.
       changesLog.add(new ItemState(newNodeData, ItemState.ADDED, true, parentPath, false, false));

@@ -28,8 +28,7 @@ import org.apache.lucene.search.Similarity;
 /**
  * This class implements the Weight calculation for the MatchAllQuery.
  */
-class MatchAllWeight
-   extends AbstractWeight
+class MatchAllWeight extends AbstractWeight
 {
 
    /**

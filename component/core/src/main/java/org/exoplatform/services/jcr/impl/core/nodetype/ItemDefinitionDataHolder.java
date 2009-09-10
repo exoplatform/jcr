@@ -18,10 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.nodetype;
 
-import java.util.HashMap;
-
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.jcr.core.nodetype.NodeDefinitionData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
 import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionData;
@@ -29,6 +25,9 @@ import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionDatas;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import java.util.HashMap;
 
 /**
  * Created by The eXo Platform SAS. <br/>
@@ -66,7 +65,7 @@ public class ItemDefinitionDataHolder
     * @return Child NodeDefinition or null if not found
     */
    public NodeDefinitionData getChildNodeDefinition(InternalQName parentNodeType, InternalQName childName,
-            InternalQName childNodeType)
+      InternalQName childNodeType)
    {
 
       NodeDefinitionData def = getNodeDefinitionFromThisOrSupertypes(parentNodeType, childName, childNodeType);
@@ -107,7 +106,7 @@ public class ItemDefinitionDataHolder
     * @return Child PropertyDefinition or null if not found
     */
    public PropertyDefinitionData getPropertyDefinition(InternalQName childName, boolean multiValued,
-            InternalQName parentNodeType)
+      InternalQName parentNodeType)
    {
 
       PropertyDefKey key = new PropertyDefKey(parentNodeType, childName, multiValued);
@@ -129,7 +128,7 @@ public class ItemDefinitionDataHolder
     * @return Child PropertyDefinition or null if not found
     */
    public PropertyDefinitionDatas getPropertyDefinitions(final InternalQName propertyName,
-            final InternalQName... nodeTypes)
+      final InternalQName... nodeTypes)
    {
 
       PropertyDefinitionDatas pdefs = new PropertyDefinitionDatas();
@@ -175,8 +174,8 @@ public class ItemDefinitionDataHolder
             if (LOG.isDebugEnabled())
             {
                LOG.debug("NodeDef added: parent NT: " + name.getAsString() + " child nodeName: "
-                        + nodeDef.getName().getAsString() + " childNT: " + rnt.getAsString() + " hash: "
-                        + nodeDefKey.hashCode());
+                  + nodeDef.getName().getAsString() + " childNT: " + rnt.getAsString() + " hash: "
+                  + nodeDefKey.hashCode());
             }
          }
 
@@ -187,7 +186,7 @@ public class ItemDefinitionDataHolder
          if (LOG.isDebugEnabled())
          {
             LOG.debug("Default NodeDef added: parent NT: " + name.getAsString() + " child nodeName: "
-                     + nodeDef.getName() + " hash: " + defNodeDefKey.hashCode());
+               + nodeDef.getName() + " hash: " + defNodeDefKey.hashCode());
          }
       }
 
@@ -201,8 +200,8 @@ public class ItemDefinitionDataHolder
          if (LOG.isDebugEnabled())
          {
             LOG.debug("PropDef added: parent NT: " + name.getAsString() + " child propName: "
-                     + propDef.getName().getAsString() + " isMultiple: " + propDef.isMultiple() + " hash: "
-                     + propDefKey.hashCode());
+               + propDef.getName().getAsString() + " isMultiple: " + propDef.isMultiple() + " hash: "
+               + propDefKey.hashCode());
          }
       }
 
@@ -223,8 +222,8 @@ public class ItemDefinitionDataHolder
             if (LOG.isDebugEnabled())
             {
                LOG.debug("NodeDef removed: parent NT: " + name.getAsString() + " child nodeName: "
-                        + nodeDef.getName().getAsString() + " childNT: " + rnt.getAsString() + " hash: "
-                        + nodeDefKey.hashCode());
+                  + nodeDef.getName().getAsString() + " childNT: " + rnt.getAsString() + " hash: "
+                  + nodeDefKey.hashCode());
             }
          }
 
@@ -235,7 +234,7 @@ public class ItemDefinitionDataHolder
          if (LOG.isDebugEnabled())
          {
             LOG.debug("Default NodeDef removed: parent NT: " + name.getAsString() + " child nodeName: "
-                     + nodeDef.getName() + " hash: " + defNodeDefKey.hashCode());
+               + nodeDef.getName() + " hash: " + defNodeDefKey.hashCode());
          }
       }
 
@@ -249,14 +248,14 @@ public class ItemDefinitionDataHolder
          if (LOG.isDebugEnabled())
          {
             LOG.debug("PropDef remode: parent NT: " + name.getAsString() + " child propName: "
-                     + propDef.getName().getAsString() + " isMultiple: " + propDef.isMultiple() + " hash: "
-                     + propDefKey.hashCode());
+               + propDef.getName().getAsString() + " isMultiple: " + propDef.isMultiple() + " hash: "
+               + propDefKey.hashCode());
          }
       }
    }
 
    private NodeDefinitionData getNodeDefinitionFromThisOrSupertypes(InternalQName parentNodeType,
-            InternalQName childName, InternalQName childNodeType)
+      InternalQName childName, InternalQName childNodeType)
    {
 
       NodeDefinitionData def = nodeDefinitions.get(new ChildNodeDefKey(parentNodeType, childName, childNodeType));
@@ -266,8 +265,7 @@ public class ItemDefinitionDataHolder
       return def;
    }
 
-   private class ChildNodeDefKey
-      extends ItemDefKey
+   private class ChildNodeDefKey extends ItemDefKey
    {
 
       private final InternalQName childNodeType;
@@ -296,7 +294,7 @@ public class ItemDefinitionDataHolder
          {
             return false;
          }
-         ChildNodeDefKey other = (ChildNodeDefKey) obj;
+         ChildNodeDefKey other = (ChildNodeDefKey)obj;
          if (!getOuterType().equals(other.getOuterType()))
          {
             return false;
@@ -347,8 +345,7 @@ public class ItemDefinitionDataHolder
 
    }
 
-   private class DefaultNodeDefKey
-      extends ItemDefKey
+   private class DefaultNodeDefKey extends ItemDefKey
    {
 
       private DefaultNodeDefKey(InternalQName parentNodeType, InternalQName childName)
@@ -392,7 +389,7 @@ public class ItemDefinitionDataHolder
          {
             return false;
          }
-         ItemDefKey other = (ItemDefKey) obj;
+         ItemDefKey other = (ItemDefKey)obj;
          if (!getOuterType().equals(other.getOuterType()))
          {
             return false;
@@ -454,8 +451,7 @@ public class ItemDefinitionDataHolder
       }
    }
 
-   private class PropertyDefKey
-      extends ItemDefKey
+   private class PropertyDefKey extends ItemDefKey
    {
 
       private final boolean multiValued;
@@ -484,7 +480,7 @@ public class ItemDefinitionDataHolder
          {
             return false;
          }
-         PropertyDefKey other = (PropertyDefKey) obj;
+         PropertyDefKey other = (PropertyDefKey)obj;
          if (!getOuterType().equals(other.getOuterType()))
          {
             return false;

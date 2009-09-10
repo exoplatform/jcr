@@ -30,8 +30,7 @@ import javax.jcr.RepositoryException;
  * @version $Id: MockVisitor.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class MockVisitor
-   implements ItemVisitor
+public class MockVisitor implements ItemVisitor
 {
 
    private String str;

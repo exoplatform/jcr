@@ -18,19 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.xml;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.Map;
-
-import javax.jcr.NamespaceException;
-import javax.jcr.NamespaceRegistry;
-import javax.jcr.RepositoryException;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
-import org.xml.sax.ContentHandler;
-
 import org.exoplatform.services.jcr.access.AccessManager;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
@@ -50,6 +37,18 @@ import org.exoplatform.services.jcr.impl.xml.importing.ContentHandlerImporter;
 import org.exoplatform.services.jcr.impl.xml.importing.StreamImporter;
 import org.exoplatform.services.jcr.impl.xml.importing.WorkspaceDataImporter;
 import org.exoplatform.services.security.ConversationState;
+import org.xml.sax.ContentHandler;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Map;
+
+import javax.jcr.NamespaceException;
+import javax.jcr.NamespaceRegistry;
+import javax.jcr.RepositoryException;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 /**
  * Created by The eXo Platform SAS.
@@ -76,19 +75,19 @@ public class ExportImportFactory
     * @throws RepositoryException
     */
    public BaseXmlExporter getExportVisitor(XmlMapping type, ContentHandler contentHandler, boolean skipBinary,
-            boolean noRecurse, ItemDataConsumer dataManager, NamespaceRegistry namespaceRegistry,
-            ValueFactoryImpl systemValueFactory) throws NamespaceException, RepositoryException
+      boolean noRecurse, ItemDataConsumer dataManager, NamespaceRegistry namespaceRegistry,
+      ValueFactoryImpl systemValueFactory) throws NamespaceException, RepositoryException
    {
 
       if (type == XmlMapping.SYSVIEW)
       {
          return new SystemViewContentExporter(contentHandler, dataManager, namespaceRegistry, systemValueFactory,
-                  skipBinary, noRecurse);
+            skipBinary, noRecurse);
       }
       else if (type == XmlMapping.DOCVIEW)
       {
          return new DocumentViewContentExporter(contentHandler, dataManager, namespaceRegistry, systemValueFactory,
-                  skipBinary, noRecurse);
+            skipBinary, noRecurse);
       }
       return null;
    }
@@ -110,8 +109,8 @@ public class ExportImportFactory
     * @throws IOException
     */
    public BaseXmlExporter getExportVisitor(XmlMapping type, OutputStream stream, boolean skipBinary, boolean noRecurse,
-            ItemDataConsumer dataManager, NamespaceRegistry namespaceRegistry, ValueFactoryImpl systemValueFactory)
-            throws NamespaceException, RepositoryException, IOException
+      ItemDataConsumer dataManager, NamespaceRegistry namespaceRegistry, ValueFactoryImpl systemValueFactory)
+      throws NamespaceException, RepositoryException, IOException
    {
 
       XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
@@ -128,18 +127,18 @@ public class ExportImportFactory
       if (type == XmlMapping.SYSVIEW)
       {
          return new SystemViewStreamExporter(streamWriter, dataManager, namespaceRegistry, systemValueFactory,
-                  skipBinary, noRecurse);
+            skipBinary, noRecurse);
       }
       else if (type == XmlMapping.DOCVIEW)
       {
          return new DocumentViewStreamExporter(streamWriter, dataManager, namespaceRegistry, systemValueFactory,
-                  skipBinary, noRecurse);
+            skipBinary, noRecurse);
 
       }
       else if (type == XmlMapping.BACKUP)
       {
          return new WorkspaceSystemViewStreamExporter(streamWriter, dataManager, namespaceRegistry, systemValueFactory,
-                  skipBinary, noRecurse);
+            skipBinary, noRecurse);
       }
       return null;
    }
@@ -152,14 +151,13 @@ public class ExportImportFactory
     * @return
     */
    public ContentHandler getImportHandler(NodeData parent, int uuidBehavior, ItemDataKeeper dataKeeper,
-            ItemDataConsumer dataConsumer, NodeTypeDataManager ntManager, LocationFactory locationFactory,
-            ValueFactoryImpl valueFactory, NamespaceRegistry namespaceRegistry, AccessManager accessManager,
-            ConversationState userState, Map<String, Object> context, RepositoryImpl repository,
-            String currentWorkspaceName)
+      ItemDataConsumer dataConsumer, NodeTypeDataManager ntManager, LocationFactory locationFactory,
+      ValueFactoryImpl valueFactory, NamespaceRegistry namespaceRegistry, AccessManager accessManager,
+      ConversationState userState, Map<String, Object> context, RepositoryImpl repository, String currentWorkspaceName)
    {
 
       return new ContentHandlerImporter(parent, uuidBehavior, dataKeeper, dataConsumer, ntManager, locationFactory,
-               valueFactory, namespaceRegistry, accessManager, userState, context, repository, currentWorkspaceName);
+         valueFactory, namespaceRegistry, accessManager, userState, context, repository, currentWorkspaceName);
    }
 
    /**
@@ -170,23 +168,21 @@ public class ExportImportFactory
     * @return
     */
    public StreamImporter getStreamImporter(NodeData parent, int uuidBehavior, ItemDataKeeper dataKeeper,
-            ItemDataConsumer dataConsumer, NodeTypeDataManager ntManager, LocationFactory locationFactory,
-            ValueFactoryImpl valueFactory, NamespaceRegistry namespaceRegistry, AccessManager accessManager,
-            ConversationState userState, Map<String, Object> context, RepositoryImpl repository,
-            String currentWorkspaceName)
+      ItemDataConsumer dataConsumer, NodeTypeDataManager ntManager, LocationFactory locationFactory,
+      ValueFactoryImpl valueFactory, NamespaceRegistry namespaceRegistry, AccessManager accessManager,
+      ConversationState userState, Map<String, Object> context, RepositoryImpl repository, String currentWorkspaceName)
    {
 
       return new StreamImporter(parent, uuidBehavior, dataKeeper, dataConsumer, ntManager, locationFactory,
-               valueFactory, namespaceRegistry, accessManager, userState, context, repository, currentWorkspaceName);
+         valueFactory, namespaceRegistry, accessManager, userState, context, repository, currentWorkspaceName);
    }
 
    public StreamImporter getWorkspaceImporter(NodeData parent, int uuidBehavior, ItemDataKeeper dataKeeper,
-            ItemDataConsumer dataConsumer, NodeTypeDataManager ntManager, LocationFactory locationFactory,
-            ValueFactoryImpl valueFactory, NamespaceRegistry namespaceRegistry, AccessManager accessManager,
-            ConversationState userState, Map<String, Object> context, RepositoryImpl repository,
-            String currentWorkspaceName)
+      ItemDataConsumer dataConsumer, NodeTypeDataManager ntManager, LocationFactory locationFactory,
+      ValueFactoryImpl valueFactory, NamespaceRegistry namespaceRegistry, AccessManager accessManager,
+      ConversationState userState, Map<String, Object> context, RepositoryImpl repository, String currentWorkspaceName)
    {
       return new WorkspaceDataImporter(parent, uuidBehavior, dataKeeper, dataConsumer, ntManager, locationFactory,
-               valueFactory, namespaceRegistry, accessManager, userState, context, repository, currentWorkspaceName);
+         valueFactory, namespaceRegistry, accessManager, userState, context, repository, currentWorkspaceName);
    }
 }

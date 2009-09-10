@@ -18,10 +18,10 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock;
 
+import org.exoplatform.services.jcr.access.SystemIdentity;
+
 import java.util.HashSet;
 import java.util.Set;
-
-import org.exoplatform.services.jcr.access.SystemIdentity;
 
 /**
  * Created by The eXo Platform SAS.
@@ -92,7 +92,7 @@ public class LockData
     * @param timeOut
     */
    public LockData(String nodeIdentifier, String lockToken, boolean deep, boolean sessionScoped, String owner,
-            long timeOut)
+      long timeOut)
    {
       this.nodeIdentifier = nodeIdentifier;
       this.lockToken = lockToken;

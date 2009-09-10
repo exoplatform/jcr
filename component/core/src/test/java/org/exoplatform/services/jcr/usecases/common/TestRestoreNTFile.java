@@ -18,18 +18,17 @@
  */
 package org.exoplatform.services.jcr.usecases.common;
 
+import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
+
 import javax.jcr.Node;
 import javax.jcr.Session;
 import javax.jcr.version.Version;
-
-import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
 
 /**
  * Created by The eXo Platform SAS Author : Hoa Pham hoa.pham@exoplatform.com
  * phamvuxuanhoa@yahoo.com Jul 3, 2006
  */
-public class TestRestoreNTFile
-   extends BaseUsecasesTest
+public class TestRestoreNTFile extends BaseUsecasesTest
 {
 
    public void testRestoreNTFile() throws Exception

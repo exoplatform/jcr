@@ -26,8 +26,7 @@ import javax.jcr.ImportUUIDBehavior;
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: $
  */
-public class TestDocumentViewCollision
-   extends AbstractCollisionTest
+public class TestDocumentViewCollision extends AbstractCollisionTest
 {
 
    public TestDocumentViewCollision()
@@ -52,19 +51,19 @@ public class TestDocumentViewCollision
    public void testUuidCollision_IContentHandler_EContentHandler_Session_REMOVE_EXISTING() throws Exception
    {
       importUuidCollisionTest(false, false, false, XmlSaveType.SESSION,
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
    }
 
    public void testUuidCollision_IContentHandler_EContentHandler_Session_REPLACE_EXISTING() throws Exception
    {
       importUuidCollisionTest(false, false, false, XmlSaveType.SESSION,
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
    }
 
    public void testUuidCollision_IContentHandler_EContentHandler_Workspace_COLLISION_THROW() throws Exception
    {
       importUuidCollisionTest(false, false, false, XmlSaveType.WORKSPACE,
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW);
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW);
    }
 
    public void testUuidCollision_IContentHandler_EContentHandler_Workspace_CREATE_NEW() throws Exception
@@ -75,13 +74,13 @@ public class TestDocumentViewCollision
    public void testUuidCollision_IContentHandler_EContentHandler_Workspace_REMOVE_EXISTING() throws Exception
    {
       importUuidCollisionTest(false, false, false, XmlSaveType.WORKSPACE,
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
    }
 
    public void testUuidCollision_IContentHandler_EContentHandler_Workspace_REPLACE_EXISTING() throws Exception
    {
       importUuidCollisionTest(false, false, false, XmlSaveType.WORKSPACE,
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
    }
 
    public void testUuidCollision_IContentHandler_EStream_Session_COLLISION_THROW() throws Exception
@@ -97,13 +96,13 @@ public class TestDocumentViewCollision
    public void testUuidCollision_IContentHandler_EStream_Session_REMOVE_EXISTING() throws Exception
    {
       importUuidCollisionTest(false, false, true, XmlSaveType.SESSION,
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
    }
 
    public void testUuidCollision_IContentHandler_EStream_Session_REPLACE_EXISTING() throws Exception
    {
       importUuidCollisionTest(false, false, true, XmlSaveType.SESSION,
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
    }
 
    public void testUuidCollision_IContentHandler_EStream_Workspace_COLLISION_THROW() throws Exception
@@ -119,13 +118,13 @@ public class TestDocumentViewCollision
    public void testUuidCollision_IContentHandler_EStream_Workspace_REMOVE_EXISTING() throws Exception
    {
       importUuidCollisionTest(false, false, true, XmlSaveType.WORKSPACE,
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
    }
 
    public void testUuidCollision_IContentHandler_EStream_Workspace_REPLACE_EXISTING() throws Exception
    {
       importUuidCollisionTest(false, true, true, XmlSaveType.WORKSPACE,
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
    }
 
    public void testUuidCollision_IStream_EContentHandler_Session_COLLISION_THROW() throws Exception
@@ -141,13 +140,13 @@ public class TestDocumentViewCollision
    public void testUuidCollision_IStream_EContentHandler_Session_REMOVE_EXISTING() throws Exception
    {
       importUuidCollisionTest(false, true, false, XmlSaveType.SESSION,
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
    }
 
    public void testUuidCollision_IStream_EContentHandler_Session_REPLACE_EXISTING() throws Exception
    {
       importUuidCollisionTest(false, true, false, XmlSaveType.SESSION,
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
    }
 
    public void testUuidCollision_IStream_EContentHandler_Workspace_COLLISION_THROW() throws Exception
@@ -163,13 +162,13 @@ public class TestDocumentViewCollision
    public void testUuidCollision_IStream_EContentHandler_Workspace_REMOVE_EXISTING() throws Exception
    {
       importUuidCollisionTest(false, true, false, XmlSaveType.WORKSPACE,
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
    }
 
    public void testUuidCollision_IStream_EContentHandler_Workspace_REPLACE_EXISTING() throws Exception
    {
       importUuidCollisionTest(false, true, false, XmlSaveType.WORKSPACE,
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
    }
 
    public void testUuidCollision_IStream_EStream_Session_COLLISION_THROW() throws Exception
@@ -185,13 +184,13 @@ public class TestDocumentViewCollision
    public void testUuidCollision_IStream_EStream_Session_REMOVE_EXISTING() throws Exception
    {
       importUuidCollisionTest(false, true, true, XmlSaveType.SESSION,
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
    }
 
    public void testUuidCollision_IStream_EStream_Session_REPLACE_EXISTING() throws Exception
    {
       importUuidCollisionTest(false, true, true, XmlSaveType.SESSION,
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
    }
 
    public void testUuidCollision_IStream_EStream_Workspace_COLLISION_THROW() throws Exception
@@ -207,13 +206,13 @@ public class TestDocumentViewCollision
    public void testUuidCollision_IStream_EStream_Workspace_REMOVE_EXISTING() throws Exception
    {
       importUuidCollisionTest(false, true, true, XmlSaveType.WORKSPACE,
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
    }
 
    public void testUuidCollision_IStream_EStream_Workspace_REPLACE_EXISTING() throws Exception
    {
       importUuidCollisionTest(false, true, true, XmlSaveType.WORKSPACE,
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
    }
 
 }

@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.core.value;
 
+import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
@@ -27,15 +29,12 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 import javax.jcr.ValueFormatException;
 
-import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
-
 /**
  * a double value impl.
  * 
  * @author Gennady Azarenkov
  */
-public class DoubleValue
-   extends BaseValue
+public class DoubleValue extends BaseValue
 {
 
    public static final int TYPE = PropertyType.DOUBLE;

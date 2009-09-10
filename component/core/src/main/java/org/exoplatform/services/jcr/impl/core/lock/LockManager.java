@@ -18,12 +18,12 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock;
 
+import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.impl.core.NodeImpl;
+
 import javax.jcr.RepositoryException;
 import javax.jcr.lock.Lock;
 import javax.jcr.lock.LockException;
-
-import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.impl.core.NodeImpl;
 
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
@@ -42,7 +42,7 @@ public interface LockManager
    public void addLockToken(String sessionId, String lt);
 
    public Lock addPendingLock(NodeImpl node, boolean isDeep, boolean isSessionScoped, long timeOut)
-            throws LockException, RepositoryException;
+      throws LockException, RepositoryException;
 
    /**
     * Returns the Lock object that applies to a node. This may be either a lock on this node itself

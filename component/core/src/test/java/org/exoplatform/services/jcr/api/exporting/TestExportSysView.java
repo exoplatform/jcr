@@ -18,6 +18,13 @@
  */
 package org.exoplatform.services.jcr.api.exporting;
 
+import org.apache.ws.commons.util.Base64;
+import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.util.StringConverter;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -46,15 +53,6 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
-
-import org.apache.ws.commons.util.Base64;
-
-import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.util.StringConverter;
-
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -62,8 +60,7 @@ import org.exoplatform.services.jcr.impl.util.StringConverter;
  * @version $Id: TestExportSysView.java 11962 2008-03-16 16:31:14Z gazarenkov $
  */
 
-public class TestExportSysView
-   extends ExportBase
+public class TestExportSysView extends ExportBase
 {
 
    public TestExportSysView() throws ParserConfigurationException
@@ -80,7 +77,7 @@ public class TestExportSysView
 
       Node contentNode = file.addNode("jcr:content", "nt:resource");
       contentNode.setProperty("jcr:data", session.getValueFactory().createValue("this is the content",
-               PropertyType.BINARY));
+         PropertyType.BINARY));
       contentNode.setProperty("jcr:mimeType", "application/octet-stream");
       contentNode.setProperty("jcr:lastModified", session.getValueFactory().createValue(Calendar.getInstance()));
 
@@ -117,7 +114,7 @@ public class TestExportSysView
 
       // session.exportDocumentView(testNode.getPath(), bos, false, false);
 
-      SAXTransformerFactory saxFact = (SAXTransformerFactory) TransformerFactory.newInstance();
+      SAXTransformerFactory saxFact = (SAXTransformerFactory)TransformerFactory.newInstance();
       TransformerHandler handler = saxFact.newTransformerHandler();
       handler.setResult(new StreamResult(bos));
 
@@ -182,7 +179,7 @@ public class TestExportSysView
       assertEquals(1, nodes.getLength());
       assertEquals(3, nodes.item(0).getChildNodes().getLength());
       assertEquals("jcr:uuid", nodes.item(0).getChildNodes().item(2).getAttributes().getNamedItem("sv:name")
-               .getNodeValue());
+         .getNodeValue());
       assertEquals(testNode.getUUID(), nodes.item(0).getChildNodes().item(2).getChildNodes().item(0).getTextContent());
    }
 
@@ -244,8 +241,8 @@ public class TestExportSysView
    }
 
    public void testMultyValueExportCh() throws ItemExistsException, PathNotFoundException, VersionException,
-            ConstraintViolationException, LockException, RepositoryException, IOException, SAXException,
-            XPathExpressionException, TransformerConfigurationException
+      ConstraintViolationException, LockException, RepositoryException, IOException, SAXException,
+      XPathExpressionException, TransformerConfigurationException
    {
       Node testNode = root.addNode("syschMultyValueExportStream");
 
@@ -259,7 +256,7 @@ public class TestExportSysView
       File destFile = File.createTempFile("xmlTest", ".xml");
       OutputStream outputStream2 = new FileOutputStream(destFile);
 
-      SAXTransformerFactory saxFact = (SAXTransformerFactory) TransformerFactory.newInstance();
+      SAXTransformerFactory saxFact = (SAXTransformerFactory)TransformerFactory.newInstance();
       TransformerHandler handler = saxFact.newTransformerHandler();
       handler.setResult(new StreamResult(outputStream2));
 
@@ -273,7 +270,7 @@ public class TestExportSysView
       XPathExpression expr = xpath.compile("//sv:property");
       Object result = expr.evaluate(doc, XPathConstants.NODESET);
       // System.out.println(result);
-      NodeList nodes = (NodeList) result;
+      NodeList nodes = (NodeList)result;
       for (int i = 1; i < nodes.getLength(); i++)
       {
          String propertyName = nodes.item(i).getAttributes().getNamedItem("sv:name").getNodeValue();
@@ -304,8 +301,8 @@ public class TestExportSysView
    }
 
    public void testMultyValueExportStream() throws ItemExistsException, PathNotFoundException, VersionException,
-            ConstraintViolationException, LockException, RepositoryException, IOException, SAXException,
-            XPathExpressionException
+      ConstraintViolationException, LockException, RepositoryException, IOException, SAXException,
+      XPathExpressionException
    {
       Node testNode = root.addNode("MultyValueExportStream");
 
@@ -328,7 +325,7 @@ public class TestExportSysView
 
       Object result = expr.evaluate(doc, XPathConstants.NODESET);
       // System.out.println(result);
-      NodeList nodes = (NodeList) result;
+      NodeList nodes = (NodeList)result;
 
       for (int i = 1; i < nodes.getLength(); i++)
       {
@@ -358,8 +355,8 @@ public class TestExportSysView
    }
 
    public void testMultyValueExportStreamSkipBinary() throws ItemExistsException, PathNotFoundException,
-            VersionException, ConstraintViolationException, LockException, RepositoryException, IOException,
-            SAXException, XPathExpressionException
+      VersionException, ConstraintViolationException, LockException, RepositoryException, IOException, SAXException,
+      XPathExpressionException
    {
       Node testNode = root.addNode("MultyValueExportStream");
 
@@ -381,7 +378,7 @@ public class TestExportSysView
       XPathExpression expr = xpath.compile("//sv:property");
       Object result = expr.evaluate(doc, XPathConstants.NODESET);
       // System.out.println(result);
-      NodeList nodes = (NodeList) result;
+      NodeList nodes = (NodeList)result;
       for (int i = 1; i < nodes.getLength(); i++)
       {
          String propertyName = nodes.item(i).getAttributes().getNamedItem("sv:name").getNodeValue();

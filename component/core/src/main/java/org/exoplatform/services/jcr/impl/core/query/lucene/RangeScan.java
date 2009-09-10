@@ -25,8 +25,7 @@ import org.apache.lucene.search.FilteredTermEnum;
 /**
  * <code>RangeScan</code> implements a range scan on terms.
  */
-class RangeScan
-   extends FilteredTermEnum
+class RangeScan extends FilteredTermEnum
 {
 
    private final Term upper;

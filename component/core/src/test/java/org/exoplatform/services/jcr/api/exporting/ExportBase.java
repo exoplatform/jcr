@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.api.exporting;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+
 import java.util.LinkedList;
 import java.util.List;
 
@@ -27,14 +29,11 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathFactory;
 
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: ExportBase.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class ExportBase
-   extends JcrAPIBaseTest
+public class ExportBase extends JcrAPIBaseTest
 {
    protected DocumentBuilder builder;
 
@@ -55,36 +54,25 @@ public class ExportBase
       xpath = xPathFactory.newXPath();
 
       valList = new LinkedList<String[]>();
-      valList.add(new String[]
-      {""});
-      valList.add(new String[]
-      {"1"});
-      valList.add(new String[]
-      {"1", "2"});
-      valList.add(new String[]
-      {"\">", "\"<"});
-      valList.add(new String[]
-      {"</sv:value>"});
-      valList.add(new String[]
-      {"</sv:value>", "</sv:value>"});
-      valList.add(new String[]
-      {"<sv:value>nt:unstructured</sv:value>"});
-      valList.add(new String[]
-      {"<sv:value>nt:unstructured</sv:value>", "<sv:value>nt:unstructured</sv:value>"});
+      valList.add(new String[]{""});
+      valList.add(new String[]{"1"});
+      valList.add(new String[]{"1", "2"});
+      valList.add(new String[]{"\">", "\"<"});
+      valList.add(new String[]{"</sv:value>"});
+      valList.add(new String[]{"</sv:value>", "</sv:value>"});
+      valList.add(new String[]{"<sv:value>nt:unstructured</sv:value>"});
+      valList.add(new String[]{"<sv:value>nt:unstructured</sv:value>", "<sv:value>nt:unstructured</sv:value>"});
       // !!!! /r http://www.w3.org/TR/2000/REC-xml-20001006#sec-line-ends
-      valList.add(new String[]
-      {"anvwiuehovi", "akf\"123\401/.m4gjsdlfg", "qp_f i\tsdfh\npihqebpf"});
-      valList.add(new String[]
-      {"bejhryi&oph<nb >3  'o[..=123-"});
-      valList.add(new String[]
-      {
-               "\u043c\u0430\u043c\u0430 \u043c\u044b\u043b\u0430 \u0440\u0430\u043c\u0443.",
-               "xin ch\u0413\u00a0o b\u0431\u0454\u040en ch\u0413\u0454ng "
-                        + "t\u0413\u0491i \u0414\u2018\u0431\u0454\u0457n t\u0431\u00bb\u00ab "
-                        + "ecm vi\u0431\u00bb\u2021t nam, ch\u0413\u0454ng t\u0413\u0491i "
-                        + "c\u0413\u0456 th\u0431\u00bb\u0453 gi\u0413\u0454p g\u0413\u00ac cho "
-                        + "b\u0431\u0454\u040en \u0414\u2018\u0416\u00b0\u0431\u00bb\u0408c kh\u0413\u0491ng "
-                        + "v\u0431\u0454\u00ady ?"});
+      valList.add(new String[]{"anvwiuehovi", "akf\"123\401/.m4gjsdlfg", "qp_f i\tsdfh\npihqebpf"});
+      valList.add(new String[]{"bejhryi&oph<nb >3  'o[..=123-"});
+      valList.add(new String[]{
+         "\u043c\u0430\u043c\u0430 \u043c\u044b\u043b\u0430 \u0440\u0430\u043c\u0443.",
+         "xin ch\u0413\u00a0o b\u0431\u0454\u040en ch\u0413\u0454ng "
+            + "t\u0413\u0491i \u0414\u2018\u0431\u0454\u0457n t\u0431\u00bb\u00ab "
+            + "ecm vi\u0431\u00bb\u2021t nam, ch\u0413\u0454ng t\u0413\u0491i "
+            + "c\u0413\u0456 th\u0431\u00bb\u0453 gi\u0413\u0454p g\u0413\u00ac cho "
+            + "b\u0431\u0454\u040en \u0414\u2018\u0416\u00b0\u0431\u00bb\u0408c kh\u0413\u0491ng "
+            + "v\u0431\u0454\u00ady ?"});
 
    }
 

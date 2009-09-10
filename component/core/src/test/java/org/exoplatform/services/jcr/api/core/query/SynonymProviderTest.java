@@ -29,8 +29,7 @@ import javax.jcr.RepositoryException;
  * <li>ASF &lt;-> Apache Software Foundation</li>
  * </ul>
  */
-public class SynonymProviderTest
-   extends AbstractQueryTest
+public class SynonymProviderTest extends AbstractQueryTest
 {
 
    public void testSynonyms() throws RepositoryException
@@ -38,21 +37,14 @@ public class SynonymProviderTest
       Node n = testRootNode.addNode(nodeName1);
       n.setProperty(propertyName1, "The quick brown fox jumps over the lazy dog.");
       testRootNode.save();
-      executeXPathQuery(testPath + "//*[jcr:contains(., '~fast')]", new Node[]
-      {n});
-      executeXPathQuery(testPath + "//*[jcr:contains(., '~Fast')]", new Node[]
-      {n});
-      executeXPathQuery(testPath + "//*[jcr:contains(., '~quick')]", new Node[]
-      {n});
-      executeXPathQuery(testPath + "//*[jcr:contains(., '~sluggish')]", new Node[]
-      {n});
-      executeXPathQuery(testPath + "//*[jcr:contains(., '~sluGGish')]", new Node[]
-      {n});
-      executeXPathQuery(testPath + "//*[jcr:contains(., '~lazy')]", new Node[]
-      {n});
+      executeXPathQuery(testPath + "//*[jcr:contains(., '~fast')]", new Node[]{n});
+      executeXPathQuery(testPath + "//*[jcr:contains(., '~Fast')]", new Node[]{n});
+      executeXPathQuery(testPath + "//*[jcr:contains(., '~quick')]", new Node[]{n});
+      executeXPathQuery(testPath + "//*[jcr:contains(., '~sluggish')]", new Node[]{n});
+      executeXPathQuery(testPath + "//*[jcr:contains(., '~sluGGish')]", new Node[]{n});
+      executeXPathQuery(testPath + "//*[jcr:contains(., '~lazy')]", new Node[]{n});
       // check term which is not in the synonym provider
-      executeXPathQuery(testPath + "//*[jcr:contains(., '~brown')]", new Node[]
-      {n});
+      executeXPathQuery(testPath + "//*[jcr:contains(., '~brown')]", new Node[]{n});
    }
 
    public void testPhrase() throws RepositoryException
@@ -60,12 +52,9 @@ public class SynonymProviderTest
       Node n = testRootNode.addNode(nodeName1);
       n.setProperty(propertyName1, "Licensed to the Apache Software Foundation ...");
       testRootNode.save();
-      executeXPathQuery(testPath + "//*[jcr:contains(., '~ASF')]", new Node[]
-      {n});
-      executeXPathQuery(testPath + "//*[jcr:contains(., '~asf')]", new Node[]
-      {n});
-      executeXPathQuery(testPath + "//*[jcr:contains(., 'asf')]", new Node[]
-      {});
+      executeXPathQuery(testPath + "//*[jcr:contains(., '~ASF')]", new Node[]{n});
+      executeXPathQuery(testPath + "//*[jcr:contains(., '~asf')]", new Node[]{n});
+      executeXPathQuery(testPath + "//*[jcr:contains(., 'asf')]", new Node[]{});
    }
 
    public void disabled_testReload() throws RepositoryException, InterruptedException
@@ -73,8 +62,7 @@ public class SynonymProviderTest
       for (int i = 0; i < 60; i++)
       {
          Thread.sleep(1 * 1000);
-         executeXPathQuery(testPath + "//*[jcr:contains(., '~asf')]", new Node[]
-         {});
+         executeXPathQuery(testPath + "//*[jcr:contains(., '~asf')]", new Node[]{});
       }
    }
 }

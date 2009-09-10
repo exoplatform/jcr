@@ -18,15 +18,15 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.dataflow.PersistentDataManager;
 import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by The eXo Platform SAS.
@@ -36,8 +36,7 @@ import org.exoplatform.services.jcr.impl.core.SessionImpl;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TesterItemsPersistenceListener.java 26880 2009-01-15 08:25:32Z serg $
  */
-public class TesterItemsPersistenceListener
-   implements ItemsPersistenceListener
+public class TesterItemsPersistenceListener implements ItemsPersistenceListener
 {
 
    private final List<TransactionChangesLog> logsList = new ArrayList<TransactionChangesLog>();
@@ -47,8 +46,8 @@ public class TesterItemsPersistenceListener
    public TesterItemsPersistenceListener(SessionImpl session)
    {
       this.dataManager =
-               (PersistentDataManager) ((ManageableRepository) session.getRepository()).getWorkspaceContainer(
-                        session.getWorkspace().getName()).getComponent(PersistentDataManager.class);
+         (PersistentDataManager)((ManageableRepository)session.getRepository()).getWorkspaceContainer(
+            session.getWorkspace().getName()).getComponent(PersistentDataManager.class);
       this.dataManager.addItemPersistenceListener(this);
    }
 
@@ -57,7 +56,7 @@ public class TesterItemsPersistenceListener
     */
    public void onSaveItems(ItemStateChangesLog itemStates)
    {
-      logsList.add((TransactionChangesLog) itemStates);
+      logsList.add((TransactionChangesLog)itemStates);
    }
 
    /**

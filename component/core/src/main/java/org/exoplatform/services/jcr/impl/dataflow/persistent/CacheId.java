@@ -30,8 +30,7 @@ import org.exoplatform.services.jcr.datamodel.QPath;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: CacheId.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class CacheId
-   extends CacheKey
+public class CacheId extends CacheKey
 {
 
    /**
@@ -49,7 +48,7 @@ public class CacheId
    public boolean equals(Object obj)
    {
       if (id.hashCode() == obj.hashCode() && obj instanceof CacheId)
-         return id.equals(((CacheId) obj).id);
+         return id.equals(((CacheId)obj).id);
       return false;
    }
 

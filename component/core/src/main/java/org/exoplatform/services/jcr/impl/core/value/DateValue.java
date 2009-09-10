@@ -18,6 +18,10 @@
  */
 package org.exoplatform.services.jcr.impl.core.value;
 
+import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,17 +33,12 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 import javax.jcr.ValueFormatException;
 
-import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
-import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
-
 /**
  * a date value implementation.
  * 
  * @author Gennady Azarenkov
  */
-public class DateValue
-   extends BaseValue
+public class DateValue extends BaseValue
 {
 
    public static final int TYPE = PropertyType.DATE;

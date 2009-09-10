@@ -18,6 +18,11 @@
  */
 package org.exoplatform.services.jcr.load.dataflow.persistent;
 
+import org.exoplatform.commons.utils.MimeTypeResolver;
+import org.exoplatform.services.jcr.JcrImplBaseTest;
+import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,11 +35,6 @@ import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
 
-import org.exoplatform.commons.utils.MimeTypeResolver;
-import org.exoplatform.services.jcr.JcrImplBaseTest;
-import org.exoplatform.services.jcr.impl.core.NodeImpl;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
-
 /**
  * Created by The eXo Platform SAS
  * 
@@ -43,8 +43,7 @@ import org.exoplatform.services.jcr.impl.core.SessionImpl;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * 
  */
-public class TestGetNodesConcurrentModification
-   extends JcrImplBaseTest
+public class TestGetNodesConcurrentModification extends JcrImplBaseTest
 {
 
    public final String DATA_STRING = "DATA STRING";
@@ -63,8 +62,7 @@ public class TestGetNodesConcurrentModification
 
    private URL contentFile = null;
 
-   class NodesReader
-      extends Thread
+   class NodesReader extends Thread
    {
 
       private final SessionImpl mySession;
@@ -90,13 +88,13 @@ public class TestGetNodesConcurrentModification
             String nodePath = "";
             try
             {
-               NodeImpl content = (NodeImpl) mySession.getItem("/concurrent_node/jcr:content");
+               NodeImpl content = (NodeImpl)mySession.getItem("/concurrent_node/jcr:content");
 
                // do test, request nodes
                NodeIterator contentIter = content.getNodes();
                while (progress && contentIter.hasNext())
                {
-                  NodeImpl node = (NodeImpl) contentIter.nextNode();
+                  NodeImpl node = (NodeImpl)contentIter.nextNode();
                   nodePath = node.getPath();
 
                   if (node.getName().equals(FILE_DATA))
@@ -112,13 +110,13 @@ public class TestGetNodesConcurrentModification
                      while (progress && librIter.hasNext())
                      {
 
-                        NodeImpl libr = (NodeImpl) librIter.nextNode();
+                        NodeImpl libr = (NodeImpl)librIter.nextNode();
                         NodeIterator filesIter = libr.getNodes();
                         while (progress && filesIter.hasNext())
                         {
 
-                           NodeImpl file = (NodeImpl) filesIter.nextNode();
-                           NodeImpl dataNode = (NodeImpl) file.getNode("jcr:content/fileData");
+                           NodeImpl file = (NodeImpl)filesIter.nextNode();
+                           NodeImpl dataNode = (NodeImpl)file.getNode("jcr:content/fileData");
                            InputStream dataStream = dataNode.getProperty("jcr:data").getStream();
                            byte[] buff = new byte[4096];
                            try
@@ -135,8 +133,8 @@ public class TestGetNodesConcurrentModification
                            catch (IOException e)
                            {
                               String msg =
-                                       getName() + " >>> library jcr:content/fileData/jcr:data read error " + e
-                                                + ". Last node " + nodePath;
+                                 getName() + " >>> library jcr:content/fileData/jcr:data read error " + e
+                                    + ". Last node " + nodePath;
                               log.error(msg, e);
                               addFail(msg);
                            }
@@ -180,23 +178,23 @@ public class TestGetNodesConcurrentModification
          long startTime = System.currentTimeMillis();
          int itemsCount = 0;
 
-         testRoot = (NodeImpl) session.getRootNode().addNode("concurrent_node", "nt:file");
+         testRoot = (NodeImpl)session.getRootNode().addNode("concurrent_node", "nt:file");
 
-         NodeImpl content = (NodeImpl) testRoot.addNode("jcr:content", "nt:unstructured");
-         NodeImpl data = (NodeImpl) content.addNode(FILE_DATA);
+         NodeImpl content = (NodeImpl)testRoot.addNode("jcr:content", "nt:unstructured");
+         NodeImpl data = (NodeImpl)content.addNode(FILE_DATA);
          data.setProperty(DATA_PROPERTY, DATA_STRING);
          itemsCount = itemsCount + 3;
          // add some SNSes
          for (int i = 0; i < 500; i++)
          {
-            data = (NodeImpl) content.addNode(FILE_DATA);
+            data = (NodeImpl)content.addNode(FILE_DATA);
             data.setProperty(DATA_PROPERTY, DATA_STRING + i);
             data.addNode("empty node");
             itemsCount = itemsCount + 3;
          }
          session.save();
 
-         NodeImpl childData = (NodeImpl) content.addNode(CHILDS_DATA);
+         NodeImpl childData = (NodeImpl)content.addNode(CHILDS_DATA);
 
          for (int l = 1; l <= 4; l++)
          {
@@ -220,7 +218,7 @@ public class TestGetNodesConcurrentModification
                itemsCount = itemsCount + 8;
 
                log.info("add node " + nodeName + ", " + (System.currentTimeMillis() - addTime) + "ms, "
-                        + (System.currentTimeMillis() - startTime) + "ms");
+                  + (System.currentTimeMillis() - startTime) + "ms");
             }
             log.info(subChild.getPath() + " childs added " + (System.currentTimeMillis() - startLibrary) + "ms");
             startLibrary = System.currentTimeMillis();
@@ -231,7 +229,7 @@ public class TestGetNodesConcurrentModification
             itemsCount++;
          }
 
-         data = (NodeImpl) content.addNode("description data");
+         data = (NodeImpl)content.addNode("description data");
          data.setProperty(DATA_PROPERTY, "Description record");
          itemsCount = itemsCount + 2;
 
@@ -259,8 +257,8 @@ public class TestGetNodesConcurrentModification
       for (int i = 0; i < readersCount; i++)
       {
          NodesReader reader =
-                  new NodesReader("NR-" + i, (SessionImpl) repository.login(this.credentials, session.getWorkspace()
-                           .getName()));
+            new NodesReader("NR-" + i, (SessionImpl)repository
+               .login(this.credentials, session.getWorkspace().getName()));
          readers.add(reader);
          reader.start();
       }

@@ -18,14 +18,14 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
+import org.exoplatform.services.jcr.impl.dataflow.AbstractValueData;
+import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.jcr.impl.dataflow.AbstractValueData;
-import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 
 /**
  * Created by The eXo Platform SAS.
@@ -33,8 +33,7 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
  * @author Gennady Azarenkov
  * @version $Id: ByteArrayPersistedValueData.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class ByteArrayPersistedValueData
-   extends AbstractValueData
+public class ByteArrayPersistedValueData extends AbstractValueData
 {
 
    protected byte[] data;

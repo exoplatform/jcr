@@ -18,6 +18,9 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
+import org.exoplatform.services.jcr.JcrImplBaseTest;
+import org.exoplatform.services.jcr.core.CredentialsImpl;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -30,9 +33,6 @@ import javax.jcr.Session;
 import javax.jcr.Value;
 import javax.jcr.ValueFormatException;
 
-import org.exoplatform.services.jcr.JcrImplBaseTest;
-import org.exoplatform.services.jcr.core.CredentialsImpl;
-
 /**
  * Created by The eXo Platform SAS. <br/>
  * 
@@ -41,8 +41,7 @@ import org.exoplatform.services.jcr.core.CredentialsImpl;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestRestoreWorkspaceInitializer.java 13986 2008-05-08 10:48:43Z pnedonosko $
  */
-public class TestRestoreWorkspaceInitializer
-   extends JcrImplBaseTest
+public class TestRestoreWorkspaceInitializer extends JcrImplBaseTest
 {
 
    /**
@@ -54,17 +53,14 @@ public class TestRestoreWorkspaceInitializer
    {
 
       Node multiv = root.addNode("multivaluedProperty", "exojcrtest:multiValued");
-      multiv.setProperty("exojcrtest:multiValuedString", new String[]
-      {"value1"});
+      multiv.setProperty("exojcrtest:multiValuedString", new String[]{"value1"});
 
       Value v1 = session.getValueFactory().createValue(Calendar.getInstance());
-      multiv.setProperty("exojcrtest:multiValuedDate", new Value[]
-      {v1});
+      multiv.setProperty("exojcrtest:multiValuedDate", new Value[]{v1});
 
       JCRName jcrName = session.getLocationFactory().parseJCRName("exojcrtest:dummyName");
       v1 = session.getValueFactory().createValue(jcrName);
-      multiv.setProperty("exojcrtest:multiValuedName", new Value[]
-      {v1});
+      multiv.setProperty("exojcrtest:multiValuedName", new Value[]{v1});
 
       Node blob = root.addNode("binaryTest");
       File f;
@@ -100,7 +96,7 @@ public class TestRestoreWorkspaceInitializer
       if (ws1root.hasProperty("1_common/cargo/cargo/0.5/cargo-0.5.jar/jcr:content/jcr:data"))
       {
          InputStream is =
-                  ws1root.getProperty("1_common/cargo/cargo/0.5/cargo-0.5.jar/jcr:content/jcr:data").getStream();
+            ws1root.getProperty("1_common/cargo/cargo/0.5/cargo-0.5.jar/jcr:content/jcr:data").getStream();
          FileOutputStream fout = new FileOutputStream("./cargo-0.5.jar");
          int r = -1;
          byte[] b = new byte[1024];
@@ -124,7 +120,7 @@ public class TestRestoreWorkspaceInitializer
             p.getValues();
 
             compareStream(new FileInputStream("./sv_export_binary.bin"), root.getNode("binaryTest").getProperty("blob")
-                     .getStream());
+               .getStream());
          }
          catch (ValueFormatException e)
          {

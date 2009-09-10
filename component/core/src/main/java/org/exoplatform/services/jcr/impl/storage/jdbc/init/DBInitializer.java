@@ -18,6 +18,10 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.init;
 
+import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -27,11 +31,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.exoplatform.services.log.Log;
-
-import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.log.ExoLogger;
 
 /**
  * Created by The eXo Platform SAS 12.03.2007 Generic db initializer.
@@ -89,7 +88,7 @@ public class DBInitializer
    protected final Pattern dbTriggerNamePattern;
 
    public DBInitializer(String containerName, Connection connection, String scriptPath, boolean multiDb)
-            throws IOException
+      throws IOException
    {
       this.connection = connection;
       this.containerName = containerName;
@@ -174,7 +173,7 @@ public class DBInitializer
       while (irs.next())
       {
          if (irs.getShort("TYPE") != DatabaseMetaData.tableIndexStatistic
-                  && irs.getString("INDEX_NAME").equalsIgnoreCase(indexName))
+            && irs.getString("INDEX_NAME").equalsIgnoreCase(indexName))
             res = true; // check for index params matching etc.
       }
       return res;
@@ -317,9 +316,8 @@ public class DBInitializer
          catch (IndexOutOfBoundsException e)
          {
             log.warn("Error of parse SQL-script file. Invalid DELIMITER configuration. Valid format is '"
-                     + SQL_DELIMITER_COMMENT_PREFIX
-                     + "XXX*/' at begin of the SQL-script file, where XXX - DELIMITER string."
-                     + " Spaces will be trimed. ", e);
+               + SQL_DELIMITER_COMMENT_PREFIX + "XXX*/' at begin of the SQL-script file, where XXX - DELIMITER string."
+               + " Spaces will be trimed. ", e);
             log.info("Using DELIMITER:[" + SQL_DELIMITER + "]");
             scripts = script.split(SQL_DELIMITER);
          }
@@ -376,9 +374,8 @@ public class DBInitializer
          }
          Throwable cause = e.getCause();
          String msg =
-                  "Could not create db schema of DataSource: '" + containerName + "'. Reason: " + e.getMessage() + "; "
-                           + errorTrace + (cause != null ? " (Cause: " + cause.getMessage() + ")" : "")
-                           + ". Last command: " + sql;
+            "Could not create db schema of DataSource: '" + containerName + "'. Reason: " + e.getMessage() + "; "
+               + errorTrace + (cause != null ? " (Cause: " + cause.getMessage() + ")" : "") + ". Last command: " + sql;
 
          throw new DBInitializerException(msg, e);
       }
@@ -410,16 +407,16 @@ public class DBInitializer
    {
       final String MDB = (multiDb ? "M" : "S");
       String select =
-               "select * from JCR_" + MDB + "ITEM where ID='" + Constants.ROOT_PARENT_UUID + "' and PARENT_ID='"
-                        + Constants.ROOT_PARENT_UUID + "'";
+         "select * from JCR_" + MDB + "ITEM where ID='" + Constants.ROOT_PARENT_UUID + "' and PARENT_ID='"
+            + Constants.ROOT_PARENT_UUID + "'";
 
       if (!connection.createStatement().executeQuery(select).next())
       {
          String insert =
-                  "insert into JCR_" + MDB + "ITEM(ID, PARENT_ID, NAME, " + (multiDb ? "" : "CONTAINER_NAME, ")
-                           + "VERSION, I_CLASS, I_INDEX, N_ORDER_NUM)" + " VALUES('" + Constants.ROOT_PARENT_UUID
-                           + "', '" + Constants.ROOT_PARENT_UUID + "', '__root_parent', "
-                           + (multiDb ? "" : "'__root_parent_container', ") + "0, 0, 0, 0)";
+            "insert into JCR_" + MDB + "ITEM(ID, PARENT_ID, NAME, " + (multiDb ? "" : "CONTAINER_NAME, ")
+               + "VERSION, I_CLASS, I_INDEX, N_ORDER_NUM)" + " VALUES('" + Constants.ROOT_PARENT_UUID + "', '"
+               + Constants.ROOT_PARENT_UUID + "', '__root_parent', " + (multiDb ? "" : "'__root_parent_container', ")
+               + "0, 0, 0, 0)";
 
          connection.createStatement().executeUpdate(insert);
       }

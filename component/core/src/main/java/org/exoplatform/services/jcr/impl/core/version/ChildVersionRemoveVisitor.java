@@ -18,13 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.version;
 
-import java.io.IOException;
-import java.util.Stack;
-
-import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.dataflow.ItemDataTraversingVisitor;
@@ -34,6 +27,12 @@ import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import java.io.IOException;
+import java.util.Stack;
+
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS 22.06.2007 Traverse through all versions in
@@ -44,8 +43,7 @@ import org.exoplatform.services.log.ExoLogger;
  *         Nedonosko</a>
  * @version $Id: ChildVersionRemoveVisitor.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class ChildVersionRemoveVisitor
-   extends ItemDataTraversingVisitor
+public class ChildVersionRemoveVisitor extends ItemDataTraversingVisitor
 {
 
    private final Log log = ExoLogger.getLogger("jcr.ChildVersionRemoveVisitor");
@@ -59,7 +57,7 @@ public class ChildVersionRemoveVisitor
    protected final QPath containingHistory;
 
    public ChildVersionRemoveVisitor(ItemDataConsumer dataManager, NodeTypeDataManager nodeTypeDataManager,
-            QPath containingHistory, QPath ancestorToSave)
+      QPath containingHistory, QPath ancestorToSave)
    {
       super(dataManager);
 
@@ -70,15 +68,15 @@ public class ChildVersionRemoveVisitor
 
    protected SessionDataManager dataManager()
    {
-      return (SessionDataManager) dataManager;
+      return (SessionDataManager)dataManager;
    }
 
    @Override
    protected void entering(PropertyData property, int level) throws RepositoryException
    {
       if (property.getQPath().getName().equals(Constants.JCR_CHILDVERSIONHISTORY)
-               && nodeTypeDataManager.isNodeType(Constants.NT_VERSIONEDCHILD, parents.peek().getPrimaryTypeName(),
-                        parents.peek().getMixinTypeNames()))
+         && nodeTypeDataManager.isNodeType(Constants.NT_VERSIONEDCHILD, parents.peek().getPrimaryTypeName(), parents
+            .peek().getMixinTypeNames()))
       {
 
          // check and remove child VH

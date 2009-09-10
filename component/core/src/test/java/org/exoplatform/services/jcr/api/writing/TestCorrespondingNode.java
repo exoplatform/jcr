@@ -18,6 +18,9 @@
  */
 package org.exoplatform.services.jcr.api.writing;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
+
 import java.util.Calendar;
 
 import javax.jcr.Node;
@@ -26,9 +29,6 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Value;
 
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
-
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -36,8 +36,7 @@ import org.exoplatform.services.jcr.impl.core.SessionImpl;
  * @version $Id: TestCorrespondingNode.java 13891 2008-05-05 16:02:30Z
  *          pnedonosko $
  */
-public class TestCorrespondingNode
-   extends JcrAPIBaseTest
+public class TestCorrespondingNode extends JcrAPIBaseTest
 {
 
    public void setUp() throws Exception
@@ -62,7 +61,7 @@ public class TestCorrespondingNode
       Node file = root.addNode("testCorrespondingPath", "nt:folder").addNode("childNode2", "nt:file");
       Node contentNode = file.addNode("jcr:content", "nt:resource");
       contentNode.setProperty("jcr:data", session.getValueFactory().createValue("this is the content",
-               PropertyType.BINARY));
+         PropertyType.BINARY));
       contentNode.setProperty("jcr:mimeType", session.getValueFactory().createValue("text/html"));
       contentNode.setProperty("jcr:lastModified", session.getValueFactory().createValue(Calendar.getInstance()));
 
@@ -74,8 +73,8 @@ public class TestCorrespondingNode
 
       workspace.clone("ws2", "/testCorrespondingPath", "/testCorrespondingPath1", false);
 
-      session = (SessionImpl) repository.login(credentials, WORKSPACE);
-      Node node1 = (Node) session.getItem("/testCorrespondingPath1/childNode2/jcr:content");
+      session = (SessionImpl)repository.login(credentials, WORKSPACE);
+      Node node1 = (Node)session.getItem("/testCorrespondingPath1/childNode2/jcr:content");
       //System.out.println(">> "+((SessionImpl)session2).getWorkspaceDataContainer
       // ());
       assertEquals("/testCorrespondingPath/childNode2/jcr:content", node1.getCorrespondingNodePath("ws2"));
@@ -95,7 +94,7 @@ public class TestCorrespondingNode
       Node file = root.addNode("testNodeUpdate", "nt:folder").addNode("childNode2", "nt:file");
       Node contentNode = file.addNode("jcr:content", "nt:resource");
       contentNode.setProperty("jcr:data", session.getValueFactory().createValue("this is the content",
-               PropertyType.BINARY));
+         PropertyType.BINARY));
       contentNode.setProperty("jcr:mimeType", session.getValueFactory().createValue("text/html"));
       contentNode.setProperty("jcr:lastModified", session.getValueFactory().createValue(Calendar.getInstance()));
 
@@ -103,12 +102,12 @@ public class TestCorrespondingNode
 
       workspace.clone("ws2", "/testNodeUpdate", "/testNodeUpdate1", false);
 
-      session = (SessionImpl) repository.login(credentials, WORKSPACE);
+      session = (SessionImpl)repository.login(credentials, WORKSPACE);
 
-      assertEquals(((Node) session.getItem("/testNodeUpdate1/childNode2/jcr:content")).getUUID(), ((Node) session2
-               .getItem("/testNodeUpdate/childNode2/jcr:content")).getUUID());
+      assertEquals(((Node)session.getItem("/testNodeUpdate1/childNode2/jcr:content")).getUUID(), ((Node)session2
+         .getItem("/testNodeUpdate/childNode2/jcr:content")).getUUID());
 
-      Node node2 = (Node) session2.getItem("/testNodeUpdate/childNode2/jcr:content");
+      Node node2 = (Node)session2.getItem("/testNodeUpdate/childNode2/jcr:content");
       Value bv = session.getValueFactory().createValue("this is the NEW content", PropertyType.BINARY);
       // log.debug("BV >>>>>> "+bv.getString());
       node2.setProperty("jcr:data", bv);
@@ -116,11 +115,11 @@ public class TestCorrespondingNode
       // node2.setProperty("jcr:data", new
       // BinaryValue("this is the NEW content"));
       assertEquals("this is the NEW content", node2.getProperty("jcr:data").getString());
-      node2 = (Node) session2.getItem("/testNodeUpdate");
+      node2 = (Node)session2.getItem("/testNodeUpdate");
 
       node2.save();
 
-      Node node1 = (Node) session.getItem("/testNodeUpdate1/childNode2/jcr:content");
+      Node node1 = (Node)session.getItem("/testNodeUpdate1/childNode2/jcr:content");
       // log.debug(">>> DATA "+node1.getProperty("jcr:data"));
 
       assertEquals("this is the content", node1.getProperty("jcr:data").getString());
@@ -128,13 +127,13 @@ public class TestCorrespondingNode
       node1.update("ws2");
 
       // because of bug
-      node1 = (Node) session.getItem("/testNodeUpdate1/childNode2/jcr:content");
+      node1 = (Node)session.getItem("/testNodeUpdate1/childNode2/jcr:content");
 
       assertEquals("this is the NEW content", node1.getProperty("jcr:data").getString());
       // No needs in save()
 
       Session session = repository.login(credentials, "ws");
-      node1 = (Node) session.getItem("/testNodeUpdate1/childNode2/jcr:content");
+      node1 = (Node)session.getItem("/testNodeUpdate1/childNode2/jcr:content");
       assertEquals("this is the NEW content", node1.getProperty("jcr:data").getString());
 
       session.getRootNode().getNode("testNodeUpdate1").remove();

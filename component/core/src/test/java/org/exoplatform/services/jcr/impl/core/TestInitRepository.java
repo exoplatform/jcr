@@ -18,14 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
-import javax.jcr.NamespaceRegistry;
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.nodetype.NodeTypeManager;
-
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.access.AccessControlList;
@@ -33,6 +25,13 @@ import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ExtendedNode;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import javax.jcr.NamespaceRegistry;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.nodetype.NodeTypeManager;
 
 /**
  * Created by The eXo Platform SAS.
@@ -40,17 +39,16 @@ import org.exoplatform.services.log.ExoLogger;
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov</a>
  * @version $Id: TestInitRepository.java 13891 2008-05-05 16:02:30Z pnedonosko $
  */
-public class TestInitRepository
-   extends JcrImplBaseTest
+public class TestInitRepository extends JcrImplBaseTest
 {
 
    protected static Log log = ExoLogger.getLogger("jcr.JCRTest");
 
    public void _testRepositoryServiceRegistration() throws Exception
    {
-      RepositoryService service = (RepositoryService) container.getComponentInstanceOfType(RepositoryService.class);
+      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
       assertNotNull(service);
-      RepositoryImpl defRep = (RepositoryImpl) service.getRepository();
+      RepositoryImpl defRep = (RepositoryImpl)service.getRepository();
       assertNotNull(defRep);
       String sysWs = defRep.getSystemWorkspaceName();
       assertFalse("Sys ws should not be    initialized for this test!!", defRep.isWorkspaceInitialized(sysWs)); // Default Namespaces
@@ -66,8 +64,8 @@ public class TestInitRepository
    public void _testInitSystemWorkspace() throws Exception
    {
 
-      RepositoryService service = (RepositoryService) container.getComponentInstanceOfType(RepositoryService.class);
-      RepositoryImpl defRep = (RepositoryImpl) service.getRepository();
+      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
+      RepositoryImpl defRep = (RepositoryImpl)service.getRepository();
       String sysWs = defRep.getSystemWorkspaceName();
       assertFalse("Sys ws should not be initialized for this test!!", defRep.isWorkspaceInitialized(sysWs));
 
@@ -89,8 +87,8 @@ public class TestInitRepository
    public void testInitRegularWorkspace() throws Exception
    {
 
-      RepositoryService service = (RepositoryService) container.getComponentInstanceOfType(RepositoryService.class);
-      RepositoryImpl defRep = (RepositoryImpl) service.getDefaultRepository();
+      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
+      RepositoryImpl defRep = (RepositoryImpl)service.getDefaultRepository();
       String sysWs = defRep.getSystemWorkspaceName();
 
       String[] names = defRep.getWorkspaceNames();
@@ -126,7 +124,7 @@ public class TestInitRepository
    public void testAutoInitRootPermition()
    {
 
-      WorkspaceEntry wsEntry = (WorkspaceEntry) session.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
+      WorkspaceEntry wsEntry = (WorkspaceEntry)session.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
 
       AccessControlList expectedAcl = new AccessControlList();
       try
@@ -136,7 +134,7 @@ public class TestInitRepository
             expectedAcl.removePermissions(SystemIdentity.ANY);
             expectedAcl.addPermissions(wsEntry.getAutoInitPermissions());
          }
-         AccessControlList acl = ((ExtendedNode) session.getRootNode()).getACL();
+         AccessControlList acl = ((ExtendedNode)session.getRootNode()).getACL();
          assertTrue(expectedAcl.equals(acl));
 
       }

@@ -279,7 +279,7 @@ public final class NodeTypeValue
          }
          else
          {
-            NodeDefinitionValue p = (NodeDefinitionValue) ndvList.get(i++);
+            NodeDefinitionValue p = (NodeDefinitionValue)ndvList.get(i++);
             if (p.getRequiredNodeTypeNames() != null)
             {
                fixStringsList(p.getRequiredNodeTypeNames());

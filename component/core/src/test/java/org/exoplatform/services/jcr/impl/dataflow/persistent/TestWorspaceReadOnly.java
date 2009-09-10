@@ -22,7 +22,6 @@ import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.dataflow.PersistentDataManager;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
-import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 
 /**
  * Created by The eXo Platform SAS.
@@ -32,8 +31,7 @@ import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestWorspaceReadOnly.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class TestWorspaceReadOnly
-   extends JcrImplBaseTest
+public class TestWorspaceReadOnly extends JcrImplBaseTest
 {
 
    private WorkspaceContainerFacade wsFacade;
@@ -46,7 +44,7 @@ public class TestWorspaceReadOnly
       super.setUp();
 
       wsFacade = repository.getWorkspaceContainer(session.getWorkspace().getName());
-      dataManager = (PersistentDataManager) wsFacade.getComponent(PersistentDataManager.class);
+      dataManager = (PersistentDataManager)wsFacade.getComponent(PersistentDataManager.class);
    }
 
    @Override
@@ -70,7 +68,7 @@ public class TestWorspaceReadOnly
       dataManager.setReadOnly(true);
 
       WorkspacePersistentDataManager dm =
-               (WorkspacePersistentDataManager) wsFacade.getComponent(WorkspacePersistentDataManager.class);
+         (WorkspacePersistentDataManager)wsFacade.getComponent(WorkspacePersistentDataManager.class);
 
       try
       {

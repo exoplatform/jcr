@@ -6,17 +6,16 @@
 
 package org.exoplatform.services.jcr.usecases.query;
 
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
+
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
 
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
-import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
-
-public class TestNodeMove
-   extends BaseUsecasesTest
+public class TestNodeMove extends BaseUsecasesTest
 {
 
    public void testSingleSession() throws Exception
@@ -49,7 +48,7 @@ public class TestNodeMove
       // move procedure
       session.getWorkspace().move(srcNode.getPath(), dest_path);
 
-      Node test_node = (Node) session.getItem("/fakeroot/subnode2/target");
+      Node test_node = (Node)session.getItem("/fakeroot/subnode2/target");
 
       sqlQuery = "SELECT * FROM nt:folder WHERE jcr:path LIKE '/fakeroot/subnode2/%' ";
       QueryManager manager2 = session.getWorkspace().getQueryManager();
@@ -77,7 +76,7 @@ public class TestNodeMove
       session.save();
       session.logout();
 
-      session = (SessionImpl) repository.login(credentials, "ws");
+      session = (SessionImpl)repository.login(credentials, "ws");
 
       String src_path = "/fakeroot/subnode1/target";
       String dest_path = "/fakeroot/subnode2/target";
@@ -96,7 +95,7 @@ public class TestNodeMove
 
       session.getWorkspace().move(srcNode.getPath(), dest_path);
 
-      Node test_node = (Node) session.getItem("/fakeroot/subnode2/target");
+      Node test_node = (Node)session.getItem("/fakeroot/subnode2/target");
 
       sqlQuery = "SELECT * FROM nt:folder WHERE jcr:path LIKE '/fakeroot/subnode2/%' ";
       QueryManager manager2 = session.getWorkspace().getQueryManager();

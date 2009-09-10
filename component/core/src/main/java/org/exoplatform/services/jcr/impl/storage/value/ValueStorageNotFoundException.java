@@ -24,8 +24,7 @@ import javax.jcr.RepositoryException;
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: ValueStorageNotFoundException.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class ValueStorageNotFoundException
-   extends RepositoryException
+public class ValueStorageNotFoundException extends RepositoryException
 {
 
    /**

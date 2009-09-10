@@ -27,8 +27,7 @@ import org.exoplatform.commons.utils.QName;
  * @version $Id: InternalQName.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class InternalQName
-   extends QName
+public class InternalQName extends QName
 {
 
    /**
@@ -83,6 +82,6 @@ public class InternalQName
       if (!(o instanceof InternalQName))
          return false;
 
-      return hashCode == o.hashCode() && getAsString().equals(((QName) o).getAsString());
+      return hashCode == o.hashCode() && getAsString().equals(((QName)o).getAsString());
    }
 }

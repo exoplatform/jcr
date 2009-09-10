@@ -26,8 +26,7 @@ import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov</a>
  * @version $Id: WorkspaceStorageDataManager.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public abstract interface WorkspaceStorageDataManager
-   extends ItemDataConsumer
+public abstract interface WorkspaceStorageDataManager extends ItemDataConsumer
 {
 
 }

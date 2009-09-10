@@ -33,8 +33,7 @@ import org.apache.lucene.search.Weight;
  * Implements a lucene <code>Query</code> which filters a sub query by checking whether the nodes
  * selected by that sub query are descendants or self of nodes selected by a context query.
  */
-class DescendantSelfAxisQuery
-   extends Query
+class DescendantSelfAxisQuery extends Query
 {
 
    /**
@@ -151,8 +150,7 @@ class DescendantSelfAxisQuery
    /**
     * The <code>Weight</code> implementation for this <code>DescendantSelfAxisWeight</code>.
     */
-   private class DescendantSelfAxisWeight
-      implements Weight
+   private class DescendantSelfAxisWeight implements Weight
    {
 
       /**
@@ -217,7 +215,7 @@ class DescendantSelfAxisQuery
       {
          contextScorer = contextQuery.weight(searcher).scorer(reader);
          subScorer = subQuery.weight(searcher).scorer(reader);
-         HierarchyResolver resolver = (HierarchyResolver) reader;
+         HierarchyResolver resolver = (HierarchyResolver)reader;
          return new DescendantSelfAxisScorer(searcher.getSimilarity(), reader, resolver);
       }
 
@@ -234,8 +232,7 @@ class DescendantSelfAxisQuery
    /**
     * Implements a <code>Scorer</code> for this <code>DescendantSelfAxisQuery</code>.
     */
-   private class DescendantSelfAxisScorer
-      extends Scorer
+   private class DescendantSelfAxisScorer extends Scorer
    {
 
       /**

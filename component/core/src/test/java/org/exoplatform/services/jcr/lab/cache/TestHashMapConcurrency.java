@@ -18,10 +18,10 @@
  */
 package org.exoplatform.services.jcr.lab.cache;
 
+import junit.framework.TestCase;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import junit.framework.TestCase;
 
 /**
  * Created by The eXo Platform SAS.
@@ -31,8 +31,7 @@ import junit.framework.TestCase;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestHashMapConcurrency.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class TestHashMapConcurrency
-   extends TestCase
+public class TestHashMapConcurrency extends TestCase
 {
 
    public void testHashMap() throws InterruptedException

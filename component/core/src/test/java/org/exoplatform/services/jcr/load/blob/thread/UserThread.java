@@ -18,11 +18,10 @@
  */
 package org.exoplatform.services.jcr.load.blob.thread;
 
-import javax.jcr.Session;
-
+import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import org.exoplatform.services.log.ExoLogger;
+import javax.jcr.Session;
 
 /**
  * Created by The eXo Platform SAS Author : Peter Nedonosko peter.nedonosko@exoplatform.com.ua
@@ -32,8 +31,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @version $Id: UserThread.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
 
-public abstract class UserThread
-   extends Thread
+public abstract class UserThread extends Thread
 {
 
    protected final Session threadSession;

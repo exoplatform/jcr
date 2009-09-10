@@ -18,10 +18,19 @@
  */
 package org.exoplatform.services.jcr.api.writing;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
+import org.exoplatform.services.jcr.dataflow.ItemState;
+import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
+import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
+import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.core.value.NameValue;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.util.GregorianCalendar;
 
 import javax.jcr.ItemExistsException;
@@ -34,29 +43,13 @@ import javax.jcr.Value;
 import javax.jcr.ValueFormatException;
 import javax.jcr.version.OnParentVersionAction;
 
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
-import org.exoplatform.services.jcr.dataflow.ItemState;
-import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
-import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
-import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
-import org.exoplatform.services.jcr.dataflow.serialization.ObjectWriter;
-import org.exoplatform.services.jcr.datamodel.PropertyData;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
-import org.exoplatform.services.jcr.impl.core.value.NameValue;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
-import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectWriterImpl;
-import org.exoplatform.services.jcr.impl.dataflow.serialization.TransactionChangesLogWriter;
-
 /**
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov</a>
  * @version $Id: TestSetProperty.java 14508 2008-05-20 10:07:45Z ksm $
  */
-public class TestSetProperty
-   extends JcrAPIBaseTest
-   implements ItemsPersistenceListener
+public class TestSetProperty extends JcrAPIBaseTest implements ItemsPersistenceListener
 {
 
    static protected String TEST_MULTIVALUED = "testMultivalued";
@@ -71,7 +64,7 @@ public class TestSetProperty
 
       WorkspaceContainerFacade wsc = repository.getWorkspaceContainer(session.getWorkspace().getName());
       CacheableWorkspaceDataManager dm =
-               (CacheableWorkspaceDataManager) wsc.getComponent(CacheableWorkspaceDataManager.class);
+         (CacheableWorkspaceDataManager)wsc.getComponent(CacheableWorkspaceDataManager.class);
       dm.addItemPersistenceListener(this);
    }
 
@@ -88,8 +81,7 @@ public class TestSetProperty
       propDef.setProperty("jcr:requiredType", PropertyType.TYPENAME_STRING.toUpperCase());
       propDef.setProperty("jcr:multiple", false);
       // Unknown Property Type. Should set something!
-      Value[] defVals =
-      {session.getValueFactory().createValue("testString")};
+      Value[] defVals = {session.getValueFactory().createValue("testString")};
       propDef.setProperty("jcr:defaultValues", defVals);
 
       Node childNodeDefNode = root.addNode("childNodeDefNode", "nt:childNodeDefinition");
@@ -98,8 +90,8 @@ public class TestSetProperty
       childNodeDefNode.setProperty("jcr:mandatory", false);
       childNodeDefNode.setProperty("jcr:onParentVersion", OnParentVersionAction.ACTIONNAME_COPY);
       childNodeDefNode.setProperty("jcr:protected", false);
-      childNodeDefNode.setProperty("jcr:requiredPrimaryTypes", new NameValue[]
-      {(NameValue) valueFactory.createValue("nt:base", PropertyType.NAME)});
+      childNodeDefNode.setProperty("jcr:requiredPrimaryTypes", new NameValue[]{(NameValue)valueFactory.createValue(
+         "nt:base", PropertyType.NAME)});
       childNodeDefNode.setProperty("jcr:sameNameSiblings", false);
 
       root.addNode("unstructured", "nt:unstructured");
@@ -123,7 +115,7 @@ public class TestSetProperty
          log.error("Error delete '" + TEST_MULTIVALUED + "' node", e);
       }
 
-      session = (SessionImpl) repository.login(credentials, WORKSPACE);
+      session = (SessionImpl)repository.login(credentials, WORKSPACE);
       Node root = session.getRootNode();
       root.getNode("unstructured").remove();
 
@@ -158,14 +150,13 @@ public class TestSetProperty
       Node node = root.getNode("propertyDefNode");
 
       session.refresh(false);
-      node.setProperty("jcr:defaultValues", new Value[]
-      {valueFactory.createValue(10l)}); // ,
+      node.setProperty("jcr:defaultValues", new Value[]{valueFactory.createValue(10l)}); // ,
       // PropertyType
       // .LONG
       assertEquals(PropertyType.LONG, node.getProperty("jcr:defaultValues").getValues()[0].getType());
       assertEquals(10, node.getProperty("jcr:defaultValues").getValues()[0].getLong());
       node.save();
-      session = (SessionImpl) repository.login(credentials, WORKSPACE);
+      session = (SessionImpl)repository.login(credentials, WORKSPACE);
       node = session.getRootNode().getNode("propertyDefNode");
       assertEquals(10, node.getProperty("jcr:defaultValues").getValues()[0].getLong());
    }
@@ -174,8 +165,7 @@ public class TestSetProperty
    {
       Node root = session.getRootNode();
       Node node = root.getNode("childNodeDefNode");
-      Value[] values =
-      {session.getValueFactory().createValue("not"), session.getValueFactory().createValue("in")};
+      Value[] values = {session.getValueFactory().createValue("not"), session.getValueFactory().createValue("in")};
 
       // it converts to required !
       // node.setProperty("jcr:requiredPrimaryTypes", values, PropertyType.LONG);
@@ -191,12 +181,12 @@ public class TestSetProperty
       }
 
       Value[] nameValues =
-               {valueFactory.createValue("jcr:unstructured", PropertyType.NAME),
-                        valueFactory.createValue("jcr:base", PropertyType.NAME)};
+         {valueFactory.createValue("jcr:unstructured", PropertyType.NAME),
+            valueFactory.createValue("jcr:base", PropertyType.NAME)};
       node.setProperty("jcr:requiredPrimaryTypes", nameValues, PropertyType.NAME);
       node.save();
 
-      session = (SessionImpl) repository.login(credentials, WORKSPACE);
+      session = (SessionImpl)repository.login(credentials, WORKSPACE);
       node = session.getRootNode().getNode("childNodeDefNode");
       assertEquals(2, node.getProperty("jcr:requiredPrimaryTypes").getValues().length);
    }
@@ -208,12 +198,11 @@ public class TestSetProperty
 
       session.refresh(false);
 
-      node.setProperty("jcr:defaultValues", new Value[]
-      {valueFactory.createValue((long) 10)});
+      node.setProperty("jcr:defaultValues", new Value[]{valueFactory.createValue((long)10)});
       assertEquals(PropertyType.LONG, node.getProperty("jcr:defaultValues").getValues()[0].getType());
       assertEquals(10, node.getProperty("jcr:defaultValues").getValues()[0].getLong());
       node.save();
-      session = (SessionImpl) repository.login(credentials, WORKSPACE);
+      session = (SessionImpl)repository.login(credentials, WORKSPACE);
       node = session.getRootNode().getNode("propertyDefNode");
       assertEquals(10, node.getProperty("jcr:defaultValues").getValues()[0].getLong());
    }
@@ -222,8 +211,7 @@ public class TestSetProperty
    {
       Node root = session.getRootNode();
       Node node = root.getNode("childNodeDefNode");
-      String[] values =
-      {"not", "in"};
+      String[] values = {"not", "in"};
       try
       {
          // it converts to required !
@@ -242,20 +230,19 @@ public class TestSetProperty
       }
 
       Value[] nameValues =
-               {valueFactory.createValue("jcr:unstructured", PropertyType.NAME),
-                        valueFactory.createValue("jcr:base", PropertyType.NAME)};
+         {valueFactory.createValue("jcr:unstructured", PropertyType.NAME),
+            valueFactory.createValue("jcr:base", PropertyType.NAME)};
       node.setProperty("jcr:requiredPrimaryTypes", nameValues, PropertyType.NAME);
       node.save();
 
-      session = (SessionImpl) repository.login(credentials, WORKSPACE);
+      session = (SessionImpl)repository.login(credentials, WORKSPACE);
       node = session.getRootNode().getNode("childNodeDefNode");
       assertEquals(2, node.getProperty("jcr:requiredPrimaryTypes").getValues().length);
    }
 
    public void testSetPropertyMultivaluedString() throws RepositoryException
    {
-      String[] values =
-      {"binary string 1", "binary string 2"};
+      String[] values = {"binary string 1", "binary string 2"};
       Property mvp1 = null;
       try
       {
@@ -275,20 +262,20 @@ public class TestSetProperty
          fail("Error of 'Multivalued Property' length reading. Error: " + e.getMessage());
       }
 
-      SessionImpl newSession = (SessionImpl) repository.login(credentials, WORKSPACE);
-      Node test = (Node) newSession.getItem(testMultivalued.getPath());
+      SessionImpl newSession = (SessionImpl)repository.login(credentials, WORKSPACE);
+      Node test = (Node)newSession.getItem(testMultivalued.getPath());
       assertEquals("Node '" + TEST_MULTIVALUED + "' must have values length 2", 2, test.getProperty(
-               "Multivalued Property").getValues().length);
+         "Multivalued Property").getValues().length);
       test = newSession.getRootNode().getNode(TEST_MULTIVALUED);
       assertEquals("Node '" + TEST_MULTIVALUED + "' must have values length 2", 2, test.getProperty(
-               "Multivalued Property").getValues().length);
+         "Multivalued Property").getValues().length);
    }
 
    public void testSetPropertyMultivaluedBinary() throws RepositoryException
    {
       Value[] values =
-               {valueFactory.createValue(new ByteArrayInputStream("binary string 1".getBytes())),
-                        valueFactory.createValue(new ByteArrayInputStream("binary string 2".getBytes()))};
+         {valueFactory.createValue(new ByteArrayInputStream("binary string 1".getBytes())),
+            valueFactory.createValue(new ByteArrayInputStream("binary string 2".getBytes()))};
       Property mvp1 = null;
       try
       {
@@ -308,13 +295,13 @@ public class TestSetProperty
          fail("Error of 'Multivalued Property' length reading. Error: " + e.getMessage());
       }
 
-      SessionImpl newSession = (SessionImpl) repository.login(credentials, WORKSPACE);
-      Node test = (Node) newSession.getItem(testMultivalued.getPath());
+      SessionImpl newSession = (SessionImpl)repository.login(credentials, WORKSPACE);
+      Node test = (Node)newSession.getItem(testMultivalued.getPath());
       assertEquals("Node '" + TEST_MULTIVALUED + "' must have values length 2", 2, test.getProperty(
-               "Multivalued Property").getValues().length);
+         "Multivalued Property").getValues().length);
       test = newSession.getRootNode().getNode(TEST_MULTIVALUED);
       assertEquals("Node '" + TEST_MULTIVALUED + "' must have values length 2", 2, test.getProperty(
-               "Multivalued Property").getValues().length);
+         "Multivalued Property").getValues().length);
    }
 
    public void testSetPropertyNameTypedValue() throws RepositoryException
@@ -322,18 +309,13 @@ public class TestSetProperty
       Node root = session.getRootNode();
       Node node = root.getNode("propertyDefNode");
 
-      node.setProperty("jcr:defaultValues", new Value[]
-      {valueFactory.createValue("default")});
-      node.setProperty("jcr:defaultValues", new Value[]
-      {valueFactory.createValue(new ByteArrayInputStream(new String("default").getBytes()))});
-      node.setProperty("jcr:defaultValues", new Value[]
-      {valueFactory.createValue(true)});
-      node.setProperty("jcr:defaultValues", new Value[]
-      {valueFactory.createValue(new GregorianCalendar())});
-      node.setProperty("jcr:defaultValues", new Value[]
-      {valueFactory.createValue(20D)});
-      node.setProperty("jcr:defaultValues", new Value[]
-      {valueFactory.createValue(20L)});
+      node.setProperty("jcr:defaultValues", new Value[]{valueFactory.createValue("default")});
+      node.setProperty("jcr:defaultValues", new Value[]{valueFactory.createValue(new ByteArrayInputStream(new String(
+         "default").getBytes()))});
+      node.setProperty("jcr:defaultValues", new Value[]{valueFactory.createValue(true)});
+      node.setProperty("jcr:defaultValues", new Value[]{valueFactory.createValue(new GregorianCalendar())});
+      node.setProperty("jcr:defaultValues", new Value[]{valueFactory.createValue(20D)});
+      node.setProperty("jcr:defaultValues", new Value[]{valueFactory.createValue(20L)});
 
       try
       {
@@ -351,10 +333,10 @@ public class TestSetProperty
       Node node1 = root.addNode("node1", "nt:unstructured");
       node1.setProperty("pathValue", valueFactory.createValue("/root-node/node_1", PropertyType.PATH));
       assertNotNull(session.getItem("/node1/pathValue"));
-      assertEquals("/root-node/node_1", ((Property) session.getItem("/node1/pathValue")).getString());
+      assertEquals("/root-node/node_1", ((Property)session.getItem("/node1/pathValue")).getString());
       root.save();
       assertNotNull(session.getItem("/node1/pathValue"));
-      assertEquals("/root-node/node_1", ((Property) session.getItem("/node1/pathValue")).getString());
+      assertEquals("/root-node/node_1", ((Property)session.getItem("/node1/pathValue")).getString());
       node1.remove();
       root.save();
       // node1.save();//impossible
@@ -411,6 +393,6 @@ public class TestSetProperty
 
    public void onSaveItems(ItemStateChangesLog itemStates)
    {
-      cLog = (TransactionChangesLog) itemStates;
+      cLog = (TransactionChangesLog)itemStates;
    }
 }

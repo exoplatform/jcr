@@ -18,12 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.xml.importing;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.jcr.NamespaceRegistry;
-import javax.jcr.RepositoryException;
-
 import org.exoplatform.services.jcr.access.AccessManager;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
@@ -31,7 +25,6 @@ import org.exoplatform.services.jcr.dataflow.ItemDataKeeper;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
-import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.security.ConversationState;
 import org.xml.sax.Attributes;
@@ -41,12 +34,17 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.jcr.NamespaceRegistry;
+import javax.jcr.RepositoryException;
+
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: ContentHandlerImporter.java 14100 2008-05-12 10:53:47Z gazarenkov $
  */
-public class ContentHandlerImporter
-   implements ContentHandler, ErrorHandler, RawDataImporter
+public class ContentHandlerImporter implements ContentHandler, ErrorHandler, RawDataImporter
 {
 
    private final ContentImporter importer;
@@ -54,15 +52,14 @@ public class ContentHandlerImporter
    private final ItemDataKeeper dataKeeper;
 
    public ContentHandlerImporter(NodeData parent, int uuidBehavior, ItemDataKeeper dataKeeper,
-            ItemDataConsumer dataConsumer, NodeTypeDataManager ntManager, LocationFactory locationFactory,
-            ValueFactoryImpl valueFactory, NamespaceRegistry namespaceRegistry, AccessManager accessManager,
-            ConversationState userState, Map<String, Object> context, RepositoryImpl repository,
-            String currentWorkspaceName)
+      ItemDataConsumer dataConsumer, NodeTypeDataManager ntManager, LocationFactory locationFactory,
+      ValueFactoryImpl valueFactory, NamespaceRegistry namespaceRegistry, AccessManager accessManager,
+      ConversationState userState, Map<String, Object> context, RepositoryImpl repository, String currentWorkspaceName)
    {
       this.dataKeeper = dataKeeper;
       this.importer =
-               createContentImporter(parent, uuidBehavior, dataConsumer, ntManager, locationFactory, valueFactory,
-                        namespaceRegistry, accessManager, userState, context, repository, currentWorkspaceName);
+         createContentImporter(parent, uuidBehavior, dataConsumer, ntManager, locationFactory, valueFactory,
+            namespaceRegistry, accessManager, userState, context, repository, currentWorkspaceName);
 
    }
 
@@ -101,12 +98,12 @@ public class ContentHandlerImporter
     * @return
     */
    public ContentImporter createContentImporter(NodeData parent, int uuidBehavior, ItemDataConsumer dataConsumer,
-            NodeTypeDataManager ntManager, LocationFactory locationFactory, ValueFactoryImpl valueFactory,
-            NamespaceRegistry namespaceRegistry, AccessManager accessManager, ConversationState userState,
-            Map<String, Object> context, RepositoryImpl repository, String currentWorkspaceName)
+      NodeTypeDataManager ntManager, LocationFactory locationFactory, ValueFactoryImpl valueFactory,
+      NamespaceRegistry namespaceRegistry, AccessManager accessManager, ConversationState userState,
+      Map<String, Object> context, RepositoryImpl repository, String currentWorkspaceName)
    {
       return new NeutralImporter(parent, parent.getQPath(), uuidBehavior, dataConsumer, ntManager, locationFactory,
-               valueFactory, namespaceRegistry, accessManager, userState, context, repository, currentWorkspaceName);
+         valueFactory, namespaceRegistry, accessManager, userState, context, repository, currentWorkspaceName);
 
    }
 

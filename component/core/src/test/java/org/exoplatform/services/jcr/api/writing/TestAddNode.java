@@ -18,6 +18,9 @@
  */
 package org.exoplatform.services.jcr.api.writing;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
+
 import java.util.Calendar;
 
 import javax.jcr.ItemExistsException;
@@ -30,17 +33,13 @@ import javax.jcr.Session;
 import javax.jcr.nodetype.ConstraintViolationException;
 import javax.jcr.nodetype.NoSuchNodeTypeException;
 
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
-
 /**
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov</a>
  * @version $Id: TestAddNode.java 12651 2008-04-02 15:26:26Z ksm $
  */
-public class TestAddNode
-   extends JcrAPIBaseTest
+public class TestAddNode extends JcrAPIBaseTest
 {
 
    public void initRepository() throws RepositoryException
@@ -50,7 +49,7 @@ public class TestAddNode
       Node contentNode = file.addNode("jcr:content", "nt:resource");
       contentNode = file.getNode("jcr:content");
       contentNode.setProperty("jcr:data", session.getValueFactory().createValue("this is the content",
-               PropertyType.BINARY));
+         PropertyType.BINARY));
       contentNode.setProperty("jcr:mimeType", session.getValueFactory().createValue("text/html"));
       contentNode.setProperty("jcr:lastModified", session.getValueFactory().createValue(Calendar.getInstance()));
 
@@ -59,7 +58,7 @@ public class TestAddNode
 
    public void tearDown() throws Exception
    {
-      session = (SessionImpl) repository.login(credentials, WORKSPACE);
+      session = (SessionImpl)repository.login(credentials, WORKSPACE);
       Node root = session.getRootNode();
       Node node = root.getNode("TestNodesTree");
       node.remove();
@@ -132,7 +131,7 @@ public class TestAddNode
       {
       }
 
-      session = (SessionImpl) repository.login(credentials, WORKSPACE);
+      session = (SessionImpl)repository.login(credentials, WORKSPACE);
       root = session.getRootNode();
       node = root.getNode("TestNodesTree");
       try
@@ -167,7 +166,7 @@ public class TestAddNode
       Node node2 = subRoot.addNode("TestNodesTree", "nt:unstructured");
       assertNotNull(node1);
       NodeIterator nodes = subRoot.getNodes();
-      assertEquals(2, (int) nodes.getSize());
+      assertEquals(2, (int)nodes.getSize());
       try
       {
          subRoot.addNode("TestNodesTree[3]", "nt:unstructured");

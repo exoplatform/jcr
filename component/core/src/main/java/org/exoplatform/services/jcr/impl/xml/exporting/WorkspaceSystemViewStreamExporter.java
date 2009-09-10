@@ -18,6 +18,16 @@
  */
 package org.exoplatform.services.jcr.impl.xml.exporting;
 
+import org.exoplatform.services.jcr.core.ExtendedPropertyType;
+import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
+import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.PropertyData;
+import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -27,25 +37,13 @@ import javax.jcr.RepositoryException;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.exoplatform.services.log.Log;
-
-import org.exoplatform.services.jcr.core.ExtendedPropertyType;
-import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
-import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.datamodel.PropertyData;
-import org.exoplatform.services.jcr.datamodel.ValueData;
-import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
-import org.exoplatform.services.log.ExoLogger;
-
 /**
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: WorkspaceSystemViewStreamExporter.java 13986 2008-05-08 10:48:43Z pnedonosko $
  */
-public class WorkspaceSystemViewStreamExporter
-   extends SystemViewStreamExporter
+public class WorkspaceSystemViewStreamExporter extends SystemViewStreamExporter
 {
    /**
     * Class logger.
@@ -53,8 +51,8 @@ public class WorkspaceSystemViewStreamExporter
    private final Log log = ExoLogger.getLogger("jcr.WorkspaceSystemViewStreamExporter");
 
    public WorkspaceSystemViewStreamExporter(XMLStreamWriter writer, ItemDataConsumer dataManager,
-            NamespaceRegistry namespaceRegistry, ValueFactoryImpl systemValueFactory, boolean skipBinary,
-            boolean noRecurse) throws NamespaceException, RepositoryException
+      NamespaceRegistry namespaceRegistry, ValueFactoryImpl systemValueFactory, boolean skipBinary, boolean noRecurse)
+      throws NamespaceException, RepositoryException
    {
       super(writer, dataManager, namespaceRegistry, systemValueFactory, skipBinary, noRecurse);
    }
@@ -94,13 +92,13 @@ public class WorkspaceSystemViewStreamExporter
          writer.writeStartElement(Constants.NS_SV_PREFIX, Constants.SV_PROPERTY, getSvNamespaceUri());
 
          writer.writeAttribute(Constants.NS_SV_PREFIX, getSvNamespaceUri(), Constants.SV_NAME, getExportName(property,
-                  false));
+            false));
 
          writer.writeAttribute(Constants.NS_SV_PREFIX, getSvNamespaceUri(), Constants.SV_TYPE, ExtendedPropertyType
-                  .nameFromValue(property.getType()));
+            .nameFromValue(property.getType()));
 
          writer.writeAttribute(Constants.NS_EXO_PREFIX, Constants.NS_EXO_URI, Constants.EXO_ID, property
-                  .getIdentifier());
+            .getIdentifier());
 
          if (property.isMultiValued())
          {

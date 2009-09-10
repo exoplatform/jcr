@@ -104,13 +104,13 @@ class IndexingQueue
 
       for (Iterator it = finished.iterator(); it.hasNext();)
       {
-         Document doc = (Document) it.next();
+         Document doc = (Document)it.next();
          if (!Util.isDocumentReady(doc))
          {
             it.remove();
          }
       }
-      return (Document[]) finished.toArray(new Document[finished.size()]);
+      return (Document[])finished.toArray(new Document[finished.size()]);
    }
 
    /**
@@ -125,7 +125,7 @@ class IndexingQueue
     */
    public synchronized Document removeDocument(String uuid) throws IOException
    {
-      Document doc = (Document) pendingDocuments.remove(uuid);
+      Document doc = (Document)pendingDocuments.remove(uuid);
       if (doc != null)
       {
          queueStore.removeUUID(uuid);
@@ -147,7 +147,7 @@ class IndexingQueue
    public synchronized Document addDocument(Document doc) throws IOException
    {
       String uuid = doc.get(FieldNames.UUID);
-      Document existing = (Document) pendingDocuments.put(uuid, doc);
+      Document existing = (Document)pendingDocuments.put(uuid, doc);
       log.debug("added node " + uuid + ". New size of indexing queue: " + pendingDocuments.size());
       if (existing == null)
       {
@@ -169,7 +169,7 @@ class IndexingQueue
       // go through pending documents and close readers
       for (Iterator it = pendingDocuments.values().iterator(); it.hasNext();)
       {
-         Document doc = (Document) it.next();
+         Document doc = (Document)it.next();
          Util.disposeDocument(doc);
          it.remove();
       }

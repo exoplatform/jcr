@@ -52,8 +52,7 @@ import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
 /**
  * Implements the query node tree serialization into a String.
  */
-class QueryFormat
-   implements QueryNodeVisitor, QueryConstants
+class QueryFormat implements QueryNodeVisitor, QueryConstants
 {
 
    /**
@@ -77,7 +76,7 @@ class QueryFormat
       statement = root.accept(this, new StringBuffer()).toString();
       if (exceptions.size() > 0)
       {
-         Exception e = (Exception) exceptions.get(0);
+         Exception e = (Exception)exceptions.get(0);
          throw new InvalidQueryException(e.getMessage(), e);
       }
    }
@@ -113,7 +112,7 @@ class QueryFormat
 
    public Object visit(QueryRootNode node, Object data)
    {
-      StringBuffer sb = (StringBuffer) data;
+      StringBuffer sb = (StringBuffer)data;
       node.getLocationNode().accept(this, data);
       if (node.getOrderNode() != null)
       {
@@ -157,7 +156,7 @@ class QueryFormat
 
    public Object visit(OrQueryNode node, Object data)
    {
-      StringBuffer sb = (StringBuffer) data;
+      StringBuffer sb = (StringBuffer)data;
       boolean bracket = false;
       if (node.getParent() instanceof AndQueryNode)
       {
@@ -184,7 +183,7 @@ class QueryFormat
 
    public Object visit(AndQueryNode node, Object data)
    {
-      StringBuffer sb = (StringBuffer) data;
+      StringBuffer sb = (StringBuffer)data;
       String and = "";
       QueryNode[] operands = node.getOperands();
       for (int i = 0; i < operands.length; i++)
@@ -198,7 +197,7 @@ class QueryFormat
 
    public Object visit(NotQueryNode node, Object data)
    {
-      StringBuffer sb = (StringBuffer) data;
+      StringBuffer sb = (StringBuffer)data;
       QueryNode[] operands = node.getOperands();
       if (operands.length > 0)
       {
@@ -223,7 +222,7 @@ class QueryFormat
 
    public Object visit(ExactQueryNode node, Object data)
    {
-      StringBuffer sb = (StringBuffer) data;
+      StringBuffer sb = (StringBuffer)data;
       sb.append("@");
       try
       {
@@ -252,7 +251,7 @@ class QueryFormat
 
    public Object visit(TextsearchQueryNode node, Object data)
    {
-      StringBuffer sb = (StringBuffer) data;
+      StringBuffer sb = (StringBuffer)data;
       try
       {
          sb.append(resolver.createJCRName(XPathQueryBuilder.JCR_CONTAINS).getAsString());
@@ -306,7 +305,7 @@ class QueryFormat
 
    public Object visit(PathQueryNode node, Object data)
    {
-      StringBuffer sb = (StringBuffer) data;
+      StringBuffer sb = (StringBuffer)data;
       if (node.isAbsolute())
       {
          sb.append("/");
@@ -324,7 +323,7 @@ class QueryFormat
 
    public Object visit(LocationStepQueryNode node, Object data)
    {
-      StringBuffer sb = (StringBuffer) data;
+      StringBuffer sb = (StringBuffer)data;
       if (node.getIncludeDescendants())
       {
          sb.append('/');
@@ -410,7 +409,7 @@ class QueryFormat
 
    public Object visit(DerefQueryNode node, Object data)
    {
-      StringBuffer sb = (StringBuffer) data;
+      StringBuffer sb = (StringBuffer)data;
       try
       {
          sb.append(resolver.createJCRName(XPathQueryBuilder.JCR_DEREF).getAsString());
@@ -440,7 +439,7 @@ class QueryFormat
 
    public Object visit(RelationQueryNode node, Object data)
    {
-      StringBuffer sb = (StringBuffer) data;
+      StringBuffer sb = (StringBuffer)data;
       try
       {
 
@@ -592,7 +591,7 @@ class QueryFormat
 
    public Object visit(OrderQueryNode node, Object data)
    {
-      StringBuffer sb = (StringBuffer) data;
+      StringBuffer sb = (StringBuffer)data;
       sb.append(" order by");
       OrderQueryNode.OrderSpec[] specs = node.getOrderSpecs();
       String comma = "";
@@ -624,7 +623,7 @@ class QueryFormat
 
    public Object visit(PropertyFunctionQueryNode node, Object data)
    {
-      StringBuffer sb = (StringBuffer) data;
+      StringBuffer sb = (StringBuffer)data;
       String functionName = node.getFunctionName();
       try
       {

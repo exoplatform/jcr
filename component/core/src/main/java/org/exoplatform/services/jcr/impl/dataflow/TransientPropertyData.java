@@ -18,6 +18,14 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
+import org.exoplatform.services.jcr.dataflow.ItemDataVisitor;
+import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.datamodel.MutablePropertyData;
+import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.QPath;
+import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.util.IdGenerator;
+
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -27,14 +35,6 @@ import java.util.List;
 
 import javax.jcr.RepositoryException;
 
-import org.exoplatform.services.jcr.dataflow.ItemDataVisitor;
-import org.exoplatform.services.jcr.datamodel.InternalQName;
-import org.exoplatform.services.jcr.datamodel.MutablePropertyData;
-import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.datamodel.QPath;
-import org.exoplatform.services.jcr.datamodel.ValueData;
-import org.exoplatform.services.jcr.util.IdGenerator;
-
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -43,9 +43,7 @@ import org.exoplatform.services.jcr.util.IdGenerator;
  *          pnedonosko $
  */
 
-public class TransientPropertyData
-   extends TransientItemData
-   implements MutablePropertyData, Externalizable
+public class TransientPropertyData extends TransientItemData implements MutablePropertyData, Externalizable
 {
 
    private static final long serialVersionUID = -8224902483861330191L;
@@ -67,7 +65,7 @@ public class TransientPropertyData
     * @param multiValued multi-valued state
     */
    public TransientPropertyData(QPath path, String identifier, int version, int type, String parentIdentifier,
-            boolean multiValued)
+      boolean multiValued)
    {
       super(path, identifier, version, parentIdentifier);
       this.type = type;
@@ -146,7 +144,7 @@ public class TransientPropertyData
    }
 
    public static TransientPropertyData createPropertyData(NodeData parent, InternalQName name, int type,
-            boolean multiValued)
+      boolean multiValued)
    {
       TransientPropertyData propData = null;
       QPath path = QPath.makeChildPath(parent.getQPath(), name);
@@ -156,7 +154,7 @@ public class TransientPropertyData
    }
 
    public static TransientPropertyData createPropertyData(NodeData parent, InternalQName name, int type,
-            boolean multiValued, ValueData value)
+      boolean multiValued, ValueData value)
    {
       TransientPropertyData propData = createPropertyData(parent, name, type, multiValued);
       propData.setValue(value);
@@ -164,7 +162,7 @@ public class TransientPropertyData
    }
 
    public static TransientPropertyData createPropertyData(NodeData parent, InternalQName name, int type,
-            boolean multiValued, List<ValueData> values)
+      boolean multiValued, List<ValueData> values)
    {
       TransientPropertyData propData = createPropertyData(parent, name, type, multiValued);
       propData.setValues(values);
@@ -185,15 +183,15 @@ public class TransientPropertyData
    public TransientPropertyData clone()
    {
       TransientPropertyData dataCopy =
-               new TransientPropertyData(getQPath(), getIdentifier(), getPersistedVersion(), getType(),
-                        getParentIdentifier(), isMultiValued());
+         new TransientPropertyData(getQPath(), getIdentifier(), getPersistedVersion(), getType(),
+            getParentIdentifier(), isMultiValued());
 
       List<ValueData> copyValues = new ArrayList<ValueData>();
       try
       {
          for (ValueData vdata : getValues())
          {
-            copyValues.add(((TransientValueData) vdata).createTransientCopy());
+            copyValues.add(((TransientValueData)vdata).createTransientCopy());
          }
       }
       catch (RepositoryException e)
@@ -244,7 +242,7 @@ public class TransientPropertyData
       {
          values = new ArrayList<ValueData>();
          for (int i = 0; i < listSize; i++)
-            values.add((ValueData) in.readObject());
+            values.add((ValueData)in.readObject());
       }
    }
 

@@ -28,8 +28,7 @@ package org.exoplatform.services.jcr.impl.storage.value.cas;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: RecordNotFoundException.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class RecordNotFoundException
-   extends VCASException
+public class RecordNotFoundException extends VCASException
 {
 
    public RecordNotFoundException(String message, Throwable cause)

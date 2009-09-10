@@ -18,9 +18,9 @@
  */
 package org.exoplatform.services.jcr.core.nodetype;
 
-import java.util.Arrays;
-
 import org.exoplatform.services.jcr.datamodel.InternalQName;
+
+import java.util.Arrays;
 
 /**
  * Created by The eXo Platform SAS. <br/>Date: 25.11.2008
@@ -30,8 +30,7 @@ import org.exoplatform.services.jcr.datamodel.InternalQName;
  * @version $Id: PropertyDefinitionData.java 23992 2008-11-27 16:58:34Z
  *          pnedonosko $
  */
-public class PropertyDefinitionData
-   extends ItemDefinitionData
+public class PropertyDefinitionData extends ItemDefinitionData
 {
 
    protected final int requiredType;
@@ -43,8 +42,8 @@ public class PropertyDefinitionData
    protected final boolean multiple;
 
    public PropertyDefinitionData(InternalQName name, InternalQName declaringNodeType, boolean autoCreated,
-            boolean mandatory, int onParentVersion, boolean protectedItem, int requiredType, String[] valueConstraints,
-            String[] defaultValues, boolean multiple)
+      boolean mandatory, int onParentVersion, boolean protectedItem, int requiredType, String[] valueConstraints,
+      String[] defaultValues, boolean multiple)
    {
       super(name, declaringNodeType, autoCreated, mandatory, onParentVersion, protectedItem);
       this.requiredType = requiredType;
@@ -80,9 +79,9 @@ public class PropertyDefinitionData
          return true;
       if ((obj == null) || (obj.getClass() != this.getClass()))
          return false;
-      PropertyDefinitionData test = (PropertyDefinitionData) obj;
+      PropertyDefinitionData test = (PropertyDefinitionData)obj;
       return requiredType == test.requiredType && multiple == test.multiple && super.equals(test)
-               && Arrays.equals(this.valueConstraints, test.valueConstraints)
-               && Arrays.equals(this.defaultValues, test.defaultValues);
+         && Arrays.equals(this.valueConstraints, test.valueConstraints)
+         && Arrays.equals(this.defaultValues, test.defaultValues);
    }
 }

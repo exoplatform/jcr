@@ -18,14 +18,13 @@
  */
 package org.exoplatform.services.jcr.usecases.common;
 
+import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
+
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
-import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
-
-public class TestAddNodeBySystemSession
-   extends BaseUsecasesTest
+public class TestAddNodeBySystemSession extends BaseUsecasesTest
 {
 
    protected void tearDown() throws Exception
@@ -64,7 +63,7 @@ public class TestAddNodeBySystemSession
          jcrSystem.save();
          session2.save();
       }
-      Node node1 = (Node) session2.getItem("/jcr:system/Node1");
+      Node node1 = (Node)session2.getItem("/jcr:system/Node1");
       assertFalse("Node1 hasn't got childnode", node1.hasNodes());
       // add Node/testNode on jcr:system
       try
@@ -79,10 +78,10 @@ public class TestAddNodeBySystemSession
          session2.save();
       }
       // we can get testNode directly
-      Node testNode = (Node) session2.getItem("/jcr:system/Node1/testNode");
+      Node testNode = (Node)session2.getItem("/jcr:system/Node1/testNode");
       assertNotNull("testNode is found", testNode);
       // but we can't get testNode by Node1.getNode()
-      node1 = (Node) session2.getItem("/jcr:system/Node1");
+      node1 = (Node)session2.getItem("/jcr:system/Node1");
       assertTrue("==========> Node1 has got childNode", node1.hasNodes());
    }
 }

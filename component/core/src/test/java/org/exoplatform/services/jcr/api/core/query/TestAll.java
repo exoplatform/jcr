@@ -27,8 +27,7 @@ import org.exoplatform.services.jcr.api.core.query.lucene.hits.ArrayHitsTest;
 /**
  * Test suite that includes all testcases for the Search module.
  */
-public class TestAll
-   extends TestCase
+public class TestAll extends TestCase
 {
 
    /**

@@ -18,6 +18,9 @@
  */
 package org.exoplatform.services.jcr.api.reading;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.core.CredentialsImpl;
+
 import java.util.Calendar;
 
 import javax.jcr.LoginException;
@@ -28,17 +31,13 @@ import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-import org.exoplatform.services.jcr.core.CredentialsImpl;
-
 /**
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov</a>
  * @version $Id: TestSession.java 12108 2008-03-19 14:26:36Z gazarenkov $
  */
-public class TestSession
-   extends JcrAPIBaseTest
+public class TestSession extends JcrAPIBaseTest
 {
 
    public void testGetRepository()
@@ -130,7 +129,7 @@ public class TestSession
 
       Node contentNode = folder.addNode("jcr:content", "nt:resource");
       contentNode.setProperty("jcr:data", session.getValueFactory().createValue("this is the content",
-               PropertyType.BINARY));
+         PropertyType.BINARY));
       contentNode.setProperty("jcr:mimeType", session.getValueFactory().createValue("text/html"));
       contentNode.setProperty("jcr:lastModified", session.getValueFactory().createValue(Calendar.getInstance()));
 

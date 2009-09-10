@@ -18,12 +18,8 @@
  */
 package org.exoplatform.services.jcr.usecases.action;
 
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-
 import org.apache.commons.chain.Context;
 import org.apache.commons.chain.impl.ContextBase;
-
 import org.exoplatform.services.command.action.Action;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
@@ -38,12 +34,14 @@ import org.exoplatform.services.jcr.usecases.action.info.CheckoutActionInfo;
 import org.exoplatform.services.jcr.usecases.action.info.LockActionInfo;
 import org.exoplatform.services.jcr.usecases.action.info.UnLockActionInfo;
 
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: TestAllActions.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class TestAllActions
-   extends BaseUsecasesTest
+public class TestAllActions extends BaseUsecasesTest
 {
 
    SessionActionCatalog catalog = null;
@@ -71,8 +69,8 @@ public class TestAllActions
          Node otherNode = prepareNode(root, "Other", null, null);
          DummyAction daction = new DummyAction();
          // test by path
-         prepareActionCatalog(daction, actionInfo.getEventType(), new QPath[]
-         {((NodeImpl) node).getInternalPath()}, true, null, null, null);
+         prepareActionCatalog(daction, actionInfo.getEventType(), new QPath[]{((NodeImpl)node).getInternalPath()},
+            true, null, null, null);
          assertEquals(0, daction.getActionExecuterCount());
          Context ctx = new ContextBase();
          ctx.put("node", otherNode);
@@ -87,8 +85,8 @@ public class TestAllActions
 
          // Not deep
          daction = new DummyAction();
-         prepareActionCatalog(daction, actionInfo.getEventType(), new QPath[]
-         {((NodeImpl) node).getInternalPath()}, false, null, null, null);
+         prepareActionCatalog(daction, actionInfo.getEventType(), new QPath[]{((NodeImpl)node).getInternalPath()},
+            false, null, null, null);
 
          assertEquals(0, daction.getActionExecuterCount());
 
@@ -153,8 +151,8 @@ public class TestAllActions
          DummyAction daction = new DummyAction();
          // test by path
          SessionEventMatcher matcher =
-                  prepareActionCatalog(daction, actionInfo.getEventType(), null, true, new InternalQName[]
-                  {session.getLocationFactory().parseJCRName("nt:folder").getInternalName()}, null, null);
+            prepareActionCatalog(daction, actionInfo.getEventType(), null, true, new InternalQName[]{session
+               .getLocationFactory().parseJCRName("nt:folder").getInternalName()}, null, null);
 
          assertEquals(0, daction.getActionExecuterCount());
          Context ctx = new ContextBase();
@@ -164,8 +162,9 @@ public class TestAllActions
          actionInfo.tearDown(ctx);
 
          daction = new DummyAction();
-         matcher = prepareActionCatalog(daction, actionInfo.getEventType(), null, true, new InternalQName[]
-         {session.getLocationFactory().parseJCRName("nt:folder").getInternalName()}, null, null);
+         matcher =
+            prepareActionCatalog(daction, actionInfo.getEventType(), null, true, new InternalQName[]{session
+               .getLocationFactory().parseJCRName("nt:folder").getInternalName()}, null, null);
 
          assertEquals(0, daction.getActionExecuterCount());
 
@@ -196,10 +195,10 @@ public class TestAllActions
          DummyAction daction = new DummyAction();
          // test by path
          SessionEventMatcher matcher =
-                  prepareActionCatalog(daction, actionInfo.getEventType(), null, true, null, new InternalQName[]
-                  {session.getLocationFactory().parseJCRName("nt:folder").getInternalName()},
+            prepareActionCatalog(daction, actionInfo.getEventType(), null, true, null, new InternalQName[]{session
+               .getLocationFactory().parseJCRName("nt:folder").getInternalName()},
 
-                  null);
+            null);
 
          assertEquals(0, daction.getActionExecuterCount());
          Context ctx = new ContextBase();
@@ -226,7 +225,7 @@ public class TestAllActions
    }
 
    public SessionEventMatcher prepareActionCatalog(Action action, int event, QPath[] paths, boolean isDeep,
-            InternalQName[] nodeTypeNames, InternalQName[] parentNodeTypeNames, String[] workspaces)
+      InternalQName[] nodeTypeNames, InternalQName[] parentNodeTypeNames, String[] workspaces)
    {
 
       catalog.clear();
@@ -239,7 +238,7 @@ public class TestAllActions
    }
 
    public Node prepareNode(Node rootNode, String name, String nodeType, String parentNodeType)
-            throws RepositoryException
+      throws RepositoryException
    {
       Node currentRoot = rootNode;
       if (parentNodeType != null)
@@ -254,7 +253,7 @@ public class TestAllActions
    public void setUp() throws Exception
    {
       super.setUp();
-      catalog = (SessionActionCatalog) container.getComponentInstanceOfType(SessionActionCatalog.class);
+      catalog = (SessionActionCatalog)container.getComponentInstanceOfType(SessionActionCatalog.class);
       ntHolder = session.getWorkspace().getNodeTypesHolder();
    }
 

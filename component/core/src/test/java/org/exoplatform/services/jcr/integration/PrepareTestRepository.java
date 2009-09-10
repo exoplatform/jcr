@@ -18,6 +18,10 @@
  */
 package org.exoplatform.services.jcr.integration;
 
+import org.apache.jackrabbit.test.AbstractJCRTest;
+import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
+import org.hsqldb.DatabaseManager;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileFilter;
@@ -33,25 +37,17 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 import javax.jcr.ValueFactory;
 
-import org.hsqldb.DatabaseManager;
-
-import org.apache.jackrabbit.test.AbstractJCRTest;
-
-import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
-
 /**
  * "Test case" that makes sure that the test repository is properly initialized for the JCR API
  * tests.
  */
-public class PrepareTestRepository
-   extends AbstractJCRTest
+public class PrepareTestRepository extends AbstractJCRTest
 {
 
    /** The encoding for the test resource */
    private static final String ENCODING = "UTF-8";
 
-   class LockFilter
-      implements FileFilter
+   class LockFilter implements FileFilter
    {
       public boolean accept(File pathname)
       {
@@ -101,7 +97,7 @@ public class PrepareTestRepository
 
    public void testPrepareTestRepository() throws RepositoryException, IOException
    {
-      NodeTypeManagerImpl manager = (NodeTypeManagerImpl) superuser.getWorkspace().getNodeTypeManager();
+      NodeTypeManagerImpl manager = (NodeTypeManagerImpl)superuser.getWorkspace().getNodeTypeManager();
 
       // if (!manager.hasNodeType("test:versionable")) {
       // InputStream xml = getClass().getResourceAsStream("test-nodetypes.xml");
@@ -146,8 +142,7 @@ public class PrepareTestRepository
       node.setProperty("calendar", c);
       ValueFactory factory = node.getSession().getValueFactory();
       node.setProperty("path", factory.createValue("/", PropertyType.PATH));
-      node.setProperty("multi", new String[]
-      {"one", "two", "three"});
+      node.setProperty("multi", new String[]{"one", "two", "three"});
    }
 
    /**
@@ -198,8 +193,7 @@ public class PrepareTestRepository
 
       Node multiReference = node.addNode("multiReference");
       ValueFactory factory = node.getSession().getValueFactory();
-      multiReference.setProperty("ref", new Value[]
-      {factory.createValue(resource), factory.createValue(resReference)});
+      multiReference.setProperty("ref", new Value[]{factory.createValue(resource), factory.createValue(resReference)});
    }
 
    private void addExportTestData(Node node) throws RepositoryException, IOException
@@ -211,7 +205,7 @@ public class PrepareTestRepository
       getOrAddNode(node, "jcr:xmltext").setProperty("jcr:xmlcharacters", "A text without any special character.");
       getOrAddNode(node, "some-element");
       getOrAddNode(node, "jcr:xmltext").setProperty("jcr:xmlcharacters",
-               " The entity reference characters: <, ', ,&, >,  \" should" + " be escaped in xml export. ");
+         " The entity reference characters: <, ', ,&, >,  \" should" + " be escaped in xml export. ");
       getOrAddNode(node, "some-element");
       getOrAddNode(node, "jcr:xmltext").setProperty("jcr:xmlcharacters", "A text without any special character.");
 
@@ -238,15 +232,13 @@ public class PrepareTestRepository
       }
       node = getOrAddNode(node, prefix + "Names");
 
-      String[] texts = new String[]
-      {"multival text 1", "multival text 2", "multival text 3"};
+      String[] texts = new String[]{"multival text 1", "multival text 2", "multival text 3"};
       getOrAddNode(node, prefix + "MultiNoBin").setProperty(name, texts);
 
       Node resource = getOrAddNode(node, prefix + "MultiBin");
       resource.setProperty("jcr:encoding", ENCODING);
       resource.setProperty("jcr:mimeType", "text/plain");
-      String[] values = new String[]
-      {"SGVsbG8gd8O2cmxkLg==", "SGVsbG8gd8O2cmxkLg=="};
+      String[] values = new String[]{"SGVsbG8gd8O2cmxkLg==", "SGVsbG8gd8O2cmxkLg=="};
       resource.setProperty(name, values, PropertyType.BINARY);
       resource.setProperty("jcr:lastModified", Calendar.getInstance());
 

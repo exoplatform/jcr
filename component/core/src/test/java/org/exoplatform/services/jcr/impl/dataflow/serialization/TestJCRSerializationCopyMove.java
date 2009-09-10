@@ -18,14 +18,14 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
+import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.Calendar;
 import java.util.List;
 
 import javax.jcr.Node;
-
-import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 
 /**
  * Created by The eXo Platform SAS.
@@ -35,8 +35,7 @@ import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a>
  * @version $Id: JCRSerializatinCopyMoveTest.java 111 2008-11-11 11:11:11Z rainf0x $
  */
-public class TestJCRSerializationCopyMove
-   extends JcrImplSerializationBaseTest
+public class TestJCRSerializationCopyMove extends JcrImplSerializationBaseTest
 {
 
    public void testSessionMove() throws Exception

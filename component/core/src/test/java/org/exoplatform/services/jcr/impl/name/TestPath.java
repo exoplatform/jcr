@@ -32,8 +32,7 @@ import org.exoplatform.services.jcr.impl.Constants;
  * @version $Id: TestPath.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class TestPath
-   extends TestCase
+public class TestPath extends TestCase
 {
 
    public void testParseQName() throws Exception

@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.usecases.common;
 
+import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -32,8 +34,6 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
 
-import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
-
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -41,8 +41,7 @@ import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
  * @version $Id: TestExportImportAmongSessions.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class TestExportImportAmongSessions
-   extends BaseUsecasesTest
+public class TestExportImportAmongSessions extends BaseUsecasesTest
 {
 
    static private String TEST_NODE = "testNode";
@@ -82,7 +81,7 @@ public class TestExportImportAmongSessions
          Node ntFile = testNode.getNode(TEST_NTFILE);
          InputStream storedData = ntFile.getProperty("jcr:content/jcr:data").getStream();
          assertTrue("AFTER EXPORT/IMPORT. Binary content must be same", checkBinaryEquals(new ByteArrayInputStream(
-                  TEST_BINARY_CONTENT), storedData));
+            TEST_BINARY_CONTENT), storedData));
       }
       catch (RepositoryException e)
       {
@@ -108,8 +107,7 @@ public class TestExportImportAmongSessions
       session1.save();
 
       Session session2 =
-               repository.login(new SimpleCredentials("admin", "admin".toCharArray()), repository
-                        .getSystemWorkspaceName());
+         repository.login(new SimpleCredentials("admin", "admin".toCharArray()), repository.getSystemWorkspaceName());
       testNode = session1.getRootNode().getNode(TEST_NODE);
       Node ntFile = testNode.getNode(TEST_NTFILE);
       InputStream storedData = ntFile.getProperty("jcr:content/jcr:data").getStream();
@@ -131,7 +129,7 @@ public class TestExportImportAmongSessions
          ntFile = testNode.getNode(TEST_NTFILE);
          storedData = ntFile.getProperty("jcr:content/jcr:data").getStream();
          assertTrue("AFTER EXPORT/IMPORT. Binary content must be same", checkBinaryEquals(new ByteArrayInputStream(
-                  TEST_BINARY_CONTENT), storedData));
+            TEST_BINARY_CONTENT), storedData));
       }
       catch (RepositoryException e)
       {
@@ -146,7 +144,7 @@ public class TestExportImportAmongSessions
          ntFile = testNode.getNode(TEST_NTFILE);
          storedData = ntFile.getProperty("jcr:content/jcr:data").getStream();
          assertTrue("AFTER EXPORT/IMPORT AFTER SAVE. Binary content must be same", checkBinaryEquals(
-                  new ByteArrayInputStream(TEST_BINARY_CONTENT), storedData));
+            new ByteArrayInputStream(TEST_BINARY_CONTENT), storedData));
       }
       catch (RepositoryException e)
       {

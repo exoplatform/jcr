@@ -18,17 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.storage;
 
-import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
-import javax.jcr.PropertyType;
-import javax.naming.InitialContext;
-import javax.naming.Reference;
-import javax.naming.StringRefAddr;
-import javax.sql.DataSource;
-
 import junit.framework.TestCase;
 
 import org.exoplatform.services.jcr.access.AccessControlList;
@@ -51,6 +40,17 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.log.LogConfigurationInitializer;
 
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+import javax.jcr.PropertyType;
+import javax.naming.InitialContext;
+import javax.naming.Reference;
+import javax.naming.StringRefAddr;
+import javax.sql.DataSource;
+
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -60,8 +60,7 @@ import org.exoplatform.services.log.LogConfigurationInitializer;
  * @version $Id: JDBCWDCTest.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class JDBCWDCTest
-   extends TestCase
+public class JDBCWDCTest extends TestCase
 {
 
    protected static Log log = ExoLogger.getLogger("jcr.JDBCWorkspaceDataContainer");
@@ -106,14 +105,13 @@ public class JDBCWDCTest
       // SimpleJNDIContextInitializer.initialize(sourceName, ref);
 
       container =
-               new JDBCWorkspaceDataContainer(config, repositoryEntry, null,
-                        new StandaloneStoragePluginProvider(config));
+         new JDBCWorkspaceDataContainer(config, repositoryEntry, null, new StandaloneStoragePluginProvider(config));
 
       Properties logProps = new Properties();
       logProps.put("org.apache.commons.logging.simplelog.defaultlog", "debug");
 
       new LogConfigurationInitializer("org.exoplatform.services.log.impl.BufferedSimpleLog",
-               "org.exoplatform.services.log.impl.SimpleLogConfigurator", logProps);
+         "org.exoplatform.services.log.impl.SimpleLogConfigurator", logProps);
 
    }
 
@@ -127,7 +125,7 @@ public class JDBCWDCTest
    {
       // log.info("Container "+container);
       InitialContext context = new InitialContext();
-      DataSource ds = (DataSource) context.lookup(sourceName);
+      DataSource ds = (DataSource)context.lookup(sourceName);
       assertNotNull(sourceName);
 
       Connection conn = ds.getConnection();
@@ -163,11 +161,11 @@ public class JDBCWDCTest
       QPath rootPath = QPath.parse(Constants.ROOT_URI);
       WorkspaceStorageConnection conn = container.openConnection();
       NodeData node =
-               new TransientNodeData(rootPath, Constants.ROOT_UUID, 1, nt, new InternalQName[0], 0, null,
-                        new AccessControlList());
+         new TransientNodeData(rootPath, Constants.ROOT_UUID, 1, nt, new InternalQName[0], 0, null,
+            new AccessControlList());
       TransientPropertyData ntProp =
-               new TransientPropertyData(QPath.makeChildPath(rootPath, Constants.JCR_PRIMARYTYPE), "1", 1,
-                        PropertyType.NAME, Constants.ROOT_UUID, false);
+         new TransientPropertyData(QPath.makeChildPath(rootPath, Constants.JCR_PRIMARYTYPE), "1", 1, PropertyType.NAME,
+            Constants.ROOT_UUID, false);
       ValueData vd = new TransientValueData(Constants.NT_UNSTRUCTURED.getAsString());
       ntProp.setValue(vd);
       conn.add(node);

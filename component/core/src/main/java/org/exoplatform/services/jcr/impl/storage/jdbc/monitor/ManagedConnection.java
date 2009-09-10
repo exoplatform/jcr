@@ -18,6 +18,9 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.monitor;
 
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -28,9 +31,6 @@ import java.sql.Savepoint;
 import java.sql.Statement;
 import java.util.Map;
 
-import org.exoplatform.services.log.Log;
-import org.exoplatform.services.log.ExoLogger;
-
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -39,8 +39,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: ManagedConnection.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class ManagedConnection
-   implements Connection
+public class ManagedConnection implements Connection
 {
 
    public static final String JCR_JDBC_CONNECTION_MONITOR = "org.exoplatform.jcr.monitor.jdbcMonitor";
@@ -124,10 +123,10 @@ public class ManagedConnection
    }
 
    public Statement createStatement(int resultSetType, int resultSetConcurrency, int resultSetHoldability)
-            throws SQLException
+      throws SQLException
    {
       return new ManagedStatement(jdbcConn.createStatement(resultSetType, resultSetConcurrency, resultSetHoldability),
-               interest, LOG);
+         interest, LOG);
    }
 
    public boolean getAutoCommit() throws SQLException
@@ -191,7 +190,7 @@ public class ManagedConnection
    }
 
    public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency,
-            int resultSetHoldability) throws SQLException
+      int resultSetHoldability) throws SQLException
    {
       return jdbcConn.prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability);
    }
@@ -217,17 +216,17 @@ public class ManagedConnection
    }
 
    public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency)
-            throws SQLException
+      throws SQLException
    {
       return new ManagedPreparedStatement(jdbcConn.prepareStatement(sql, resultSetType, resultSetConcurrency), sql,
-               interest, LOG);
+         interest, LOG);
    }
 
    public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency,
-            int resultSetHoldability) throws SQLException
+      int resultSetHoldability) throws SQLException
    {
       return new ManagedPreparedStatement(jdbcConn.prepareStatement(sql, resultSetType, resultSetConcurrency,
-               resultSetHoldability), sql, interest, LOG);
+         resultSetHoldability), sql, interest, LOG);
    }
 
    public void releaseSavepoint(Savepoint savepoint) throws SQLException

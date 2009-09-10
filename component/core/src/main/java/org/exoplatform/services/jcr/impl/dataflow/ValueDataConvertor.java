@@ -18,17 +18,17 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.Calendar;
-
-import javax.jcr.ValueFormatException;
-
 import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.Calendar;
+
+import javax.jcr.ValueFormatException;
 
 /**
  * Created by The eXo Platform SAS. <br/>
@@ -58,37 +58,37 @@ public class ValueDataConvertor
 {
 
    public static String readString(ValueData value) throws UnsupportedEncodingException, IllegalStateException,
-            IOException
+      IOException
    {
       return new String(value.getAsByteArray(), Constants.DEFAULT_ENCODING);
    }
 
    public static Calendar readDate(ValueData value) throws UnsupportedEncodingException, IllegalStateException,
-            IOException, ValueFormatException
+      IOException, ValueFormatException
    {
       return new JCRDateFormat().deserialize(new String(value.getAsByteArray(), Constants.DEFAULT_ENCODING));
    }
 
    public static long readLong(ValueData value) throws NumberFormatException, UnsupportedEncodingException,
-            IllegalStateException, IOException
+      IllegalStateException, IOException
    {
       return Long.valueOf(new String(value.getAsByteArray(), Constants.DEFAULT_ENCODING)).longValue();
    }
 
    public static double readDouble(ValueData value) throws NumberFormatException, UnsupportedEncodingException,
-            IllegalStateException, IOException
+      IllegalStateException, IOException
    {
       return Double.valueOf(new String(value.getAsByteArray(), Constants.DEFAULT_ENCODING)).doubleValue();
    }
 
    public static boolean readBoolean(ValueData value) throws UnsupportedEncodingException, IllegalStateException,
-            IOException
+      IOException
    {
       return Boolean.valueOf(new String(value.getAsByteArray(), Constants.DEFAULT_ENCODING)).booleanValue();
    }
 
    public static InternalQName readQName(ValueData value) throws UnsupportedEncodingException, IllegalNameException,
-            IOException
+      IOException
    {
       return InternalQName.parse(readString(value));
    }

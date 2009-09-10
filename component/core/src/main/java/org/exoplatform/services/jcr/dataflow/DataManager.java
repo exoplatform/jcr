@@ -24,8 +24,7 @@ package org.exoplatform.services.jcr.dataflow;
  * @author Gennady Azarenkov
  * @version $Id: DataManager.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public abstract interface DataManager
-   extends ItemDataConsumer, ItemDataKeeper
+public abstract interface DataManager extends ItemDataConsumer, ItemDataKeeper
 {
 
 }

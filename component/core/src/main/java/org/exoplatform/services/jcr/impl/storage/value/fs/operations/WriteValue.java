@@ -18,12 +18,12 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs.operations;
 
-import java.io.File;
-import java.io.IOException;
-
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+
+import java.io.File;
+import java.io.IOException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -34,8 +34,7 @@ import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: WriteValue.java 111 2008-11-11 11:11:11Z pnedonosko $
  */
-public class WriteValue
-   extends ValueFileOperation
+public class WriteValue extends ValueFileOperation
 {
 
    /**

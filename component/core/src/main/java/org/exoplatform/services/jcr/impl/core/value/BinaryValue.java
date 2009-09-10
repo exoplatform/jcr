@@ -18,6 +18,13 @@
  */
 package org.exoplatform.services.jcr.impl.core.value;
 
+import org.exoplatform.services.jcr.core.value.EditableBinaryValue;
+import org.exoplatform.services.jcr.impl.dataflow.EditableValueData;
+import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,22 +33,12 @@ import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.ValueFormatException;
 
-import org.exoplatform.services.log.Log;
-
-import org.exoplatform.services.jcr.core.value.EditableBinaryValue;
-import org.exoplatform.services.jcr.impl.dataflow.EditableValueData;
-import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.log.ExoLogger;
-
 /**
  * a binary value implementation.
  * 
  * @author Gennady Azarenkov
  */
-public class BinaryValue
-   extends BaseValue
-   implements EditableBinaryValue
+public class BinaryValue extends BaseValue implements EditableBinaryValue
 {
 
    public static final int TYPE = PropertyType.BINARY;
@@ -76,7 +73,7 @@ public class BinaryValue
     *           if error
     */
    public BinaryValue(InputStream stream, FileCleaner fileCleaner, File tempDirectory, int maxFufferSize)
-            throws IOException
+      throws IOException
    {
       this(new TransientValueData(stream), fileCleaner, tempDirectory, maxFufferSize);
    }
@@ -88,7 +85,7 @@ public class BinaryValue
 
    /** used in ValueFactory.loadValue */
    BinaryValue(TransientValueData data, FileCleaner fileCleaner, File tempDirectory, int maxFufferSize)
-            throws IOException
+      throws IOException
    {
       super(TYPE, data);
       internalData.setFileCleaner(fileCleaner);

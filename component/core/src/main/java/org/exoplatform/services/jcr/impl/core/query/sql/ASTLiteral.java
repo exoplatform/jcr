@@ -16,8 +16,7 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.sql;
 
-public class ASTLiteral
-   extends SimpleNode
+public class ASTLiteral extends SimpleNode
 {
 
    private String value;

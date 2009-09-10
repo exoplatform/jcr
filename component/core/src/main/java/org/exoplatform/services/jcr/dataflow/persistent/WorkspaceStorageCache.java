@@ -18,12 +18,12 @@
  */
 package org.exoplatform.services.jcr.dataflow.persistent;
 
-import java.util.List;
-
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
+
+import java.util.List;
 
 /**
  * Created by The eXo Platform SAS.
@@ -33,8 +33,7 @@ import org.exoplatform.services.jcr.datamodel.QPathEntry;
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov</a>
  * @version $Id: WorkspaceStorageCache.java 13869 2008-05-05 08:40:10Z pnedonosko $
  */
-public interface WorkspaceStorageCache
-   extends MandatoryItemsPersistenceListener
+public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
 {
 
    public static final String MAX_SIZE_PARAMETER_NAME = "max-size";

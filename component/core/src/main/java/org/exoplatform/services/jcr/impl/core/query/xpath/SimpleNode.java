@@ -20,8 +20,7 @@ package org.exoplatform.services.jcr.impl.core.query.xpath;
  * Implements a JavaCC Node interface. This Class was initially created by JavaCC and then adapted
  * for our needs.
  */
-public class SimpleNode
-   implements Node
+public class SimpleNode implements Node
 {
    protected Node parent;
 
@@ -144,7 +143,7 @@ public class SimpleNode
       {
          for (int i = 0; i < children.length; ++i)
          {
-            SimpleNode n = (SimpleNode) children[i];
+            SimpleNode n = (SimpleNode)children[i];
             if (n != null)
             {
                n.dump(prefix + "   ", ps);

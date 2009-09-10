@@ -30,8 +30,7 @@ import org.exoplatform.services.jcr.datamodel.QPath;
  * @version $Id: PersistedItemData.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public abstract class PersistedItemData
-   implements ItemData
+public abstract class PersistedItemData implements ItemData
 {
 
    protected final String id;
@@ -100,7 +99,7 @@ public abstract class PersistedItemData
 
       if (obj instanceof ItemData)
       {
-         return getIdentifier().hashCode() == ((ItemData) obj).getIdentifier().hashCode();
+         return getIdentifier().hashCode() == ((ItemData)obj).getIdentifier().hashCode();
       }
 
       return false;

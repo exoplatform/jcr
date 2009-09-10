@@ -27,8 +27,7 @@ import org.apache.lucene.search.Weight;
  * <code>AbstractWeight</code> implements base functionality for custom lucene weights in
  * jackrabbit.
  */
-abstract class AbstractWeight
-   implements Weight
+abstract class AbstractWeight implements Weight
 {
 
    /**
@@ -66,7 +65,7 @@ abstract class AbstractWeight
    {
       if (reader instanceof MultiIndexReader)
       {
-         MultiIndexReader mir = (MultiIndexReader) reader;
+         MultiIndexReader mir = (MultiIndexReader)reader;
          IndexReader readers[] = mir.getIndexReaders();
          int starts[] = new int[readers.length + 1];
          int maxDoc = 0;

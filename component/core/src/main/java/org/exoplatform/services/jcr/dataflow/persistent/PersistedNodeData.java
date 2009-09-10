@@ -18,13 +18,13 @@
  */
 package org.exoplatform.services.jcr.dataflow.persistent;
 
-import javax.jcr.RepositoryException;
-
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.dataflow.ItemDataVisitor;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPath;
+
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.</br>
@@ -35,9 +35,7 @@ import org.exoplatform.services.jcr.datamodel.QPath;
  * @version $Id: PersistedNodeData.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class PersistedNodeData
-   extends PersistedItemData
-   implements NodeData
+public class PersistedNodeData extends PersistedItemData implements NodeData
 {
 
    protected final int orderNumber;
@@ -49,7 +47,7 @@ public class PersistedNodeData
    protected AccessControlList acl;
 
    public PersistedNodeData(String id, QPath qpath, String parentId, int version, int orderNumber,
-            InternalQName primaryTypeName, InternalQName[] mixinTypeNames, AccessControlList acl)
+      InternalQName primaryTypeName, InternalQName[] mixinTypeNames, AccessControlList acl)
    {
       super(id, qpath, parentId, version);
       this.primaryTypeName = primaryTypeName;

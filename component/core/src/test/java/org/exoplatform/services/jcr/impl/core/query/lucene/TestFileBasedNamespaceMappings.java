@@ -17,11 +17,11 @@
 
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
+import junit.framework.TestCase;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Properties;
-
-import junit.framework.TestCase;
 
 /**
  * Created by The eXo Platform SAS Author : Sergey Karpenko <sergey.karpenko@exoplatform.com.ua>
@@ -29,8 +29,7 @@ import junit.framework.TestCase;
  * @version $Id: TestFileBasedNamespaceMappings.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class TestFileBasedNamespaceMappings
-   extends TestCase
+public class TestFileBasedNamespaceMappings extends TestCase
 {
 
    File test_mapp;

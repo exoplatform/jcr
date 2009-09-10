@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.lab.database;
 
+import junit.framework.TestCase;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Connection;
@@ -31,8 +33,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import junit.framework.TestCase;
-
 /**
  * Created by The eXo Platform SAS Author : Peter Nedonosko peter.nedonosko@exoplatform.com.ua
  * 06.11.2007
@@ -40,121 +40,93 @@ import junit.framework.TestCase;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestIDNumeric.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class TestIDNumeric
-   extends TestCase
+public class TestIDNumeric extends TestCase
 {
 
    public static final int RECORDS_COUNT = 100;
 
    public static String[] CREATE_ITEMS_SQL_NUMERIC_ANSI_SQL =
-            {
-                     "CREATE TABLE JCR_MITEM_N( " + "ID NUMERIC NOT NULL, " + "PARENT_ID NUMERIC NOT NULL, "
-                              + "NAME VARCHAR(512) NOT NULL, " + "VERSION INTEGER NOT NULL, "
-                              + "I_CLASS INTEGER NOT NULL, " + "I_INDEX INTEGER NOT NULL, " + "N_ORDER_NUM INTEGER, "
-                              + "P_TYPE INTEGER,  " + "P_MULTIVALUED INTEGER, "
-                              + "CONSTRAINT JCR_PK_MITEM_N PRIMARY KEY(ID), "
-                              + "CONSTRAINT JCR_FK_MITEM_PARENT_N FOREIGN KEY(PARENT_ID) REFERENCES JCR_MITEM_N(ID) "
-                              + ")",
-                     "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_N ON JCR_MITEM_N(PARENT_ID, NAME, I_INDEX, I_CLASS, VERSION)",
-                     "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_NAME_N ON JCR_MITEM_N(I_CLASS, PARENT_ID, NAME, I_INDEX, VERSION)",
-                     "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_ID_N ON JCR_MITEM_N(I_CLASS, PARENT_ID, ID, VERSION)"};
+      {
+         "CREATE TABLE JCR_MITEM_N( " + "ID NUMERIC NOT NULL, " + "PARENT_ID NUMERIC NOT NULL, "
+            + "NAME VARCHAR(512) NOT NULL, " + "VERSION INTEGER NOT NULL, " + "I_CLASS INTEGER NOT NULL, "
+            + "I_INDEX INTEGER NOT NULL, " + "N_ORDER_NUM INTEGER, " + "P_TYPE INTEGER,  " + "P_MULTIVALUED INTEGER, "
+            + "CONSTRAINT JCR_PK_MITEM_N PRIMARY KEY(ID), "
+            + "CONSTRAINT JCR_FK_MITEM_PARENT_N FOREIGN KEY(PARENT_ID) REFERENCES JCR_MITEM_N(ID) " + ")",
+         "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_N ON JCR_MITEM_N(PARENT_ID, NAME, I_INDEX, I_CLASS, VERSION)",
+         "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_NAME_N ON JCR_MITEM_N(I_CLASS, PARENT_ID, NAME, I_INDEX, VERSION)",
+         "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_ID_N ON JCR_MITEM_N(I_CLASS, PARENT_ID, ID, VERSION)"};
 
    public static String[] CREATE_ITEMS_SQL_NUMERIC_DERBY =
-            {
-                     "CREATE TABLE JCR_MITEM_N( " + "ID NUMERIC(31,0) NOT NULL, "
-                              + "PARENT_ID NUMERIC(31,0) NOT NULL, " + "NAME VARCHAR(512) NOT NULL, "
-                              + "VERSION INTEGER NOT NULL, " + "I_CLASS INTEGER NOT NULL, "
-                              + "I_INDEX INTEGER NOT NULL, " + "N_ORDER_NUM INTEGER, " + "P_TYPE INTEGER,  "
-                              + "P_MULTIVALUED INTEGER, " + "CONSTRAINT JCR_PK_MITEM_N PRIMARY KEY(ID), "
-                              + "CONSTRAINT JCR_FK_MITEM_PARENT_N FOREIGN KEY(PARENT_ID) REFERENCES JCR_MITEM_N(ID) "
-                              + ")",
-                     "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_N ON JCR_MITEM_N(PARENT_ID, NAME, I_INDEX, I_CLASS, VERSION)",
-                     "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_NAME_N ON JCR_MITEM_N(I_CLASS, PARENT_ID, NAME, I_INDEX, VERSION)",
-                     "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_ID_N ON JCR_MITEM_N(I_CLASS, PARENT_ID, ID, VERSION)"};
+      {
+         "CREATE TABLE JCR_MITEM_N( " + "ID NUMERIC(31,0) NOT NULL, " + "PARENT_ID NUMERIC(31,0) NOT NULL, "
+            + "NAME VARCHAR(512) NOT NULL, " + "VERSION INTEGER NOT NULL, " + "I_CLASS INTEGER NOT NULL, "
+            + "I_INDEX INTEGER NOT NULL, " + "N_ORDER_NUM INTEGER, " + "P_TYPE INTEGER,  " + "P_MULTIVALUED INTEGER, "
+            + "CONSTRAINT JCR_PK_MITEM_N PRIMARY KEY(ID), "
+            + "CONSTRAINT JCR_FK_MITEM_PARENT_N FOREIGN KEY(PARENT_ID) REFERENCES JCR_MITEM_N(ID) " + ")",
+         "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_N ON JCR_MITEM_N(PARENT_ID, NAME, I_INDEX, I_CLASS, VERSION)",
+         "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_NAME_N ON JCR_MITEM_N(I_CLASS, PARENT_ID, NAME, I_INDEX, VERSION)",
+         "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_ID_N ON JCR_MITEM_N(I_CLASS, PARENT_ID, ID, VERSION)"};
 
    public static String[] CREATE_ITEMS_SQL_NUMERIC_MYSQL =
-            {
-                     "CREATE TABLE JCR_MITEM_N( " + "ID NUMERIC(40) NOT NULL, " + "PARENT_ID NUMERIC(40) NOT NULL, "
-                              + "NAME VARCHAR(512) NOT NULL, " + "VERSION INTEGER NOT NULL, "
-                              + "I_CLASS INTEGER NOT NULL, " + "I_INDEX INTEGER NOT NULL, " + "N_ORDER_NUM INTEGER, "
-                              + "P_TYPE INTEGER,  " + "P_MULTIVALUED INTEGER, "
-                              + "CONSTRAINT JCR_PK_MITEM_N PRIMARY KEY(ID), "
-                              + "CONSTRAINT JCR_FK_MITEM_PARENT_N FOREIGN KEY(PARENT_ID) REFERENCES JCR_MITEM_N(ID) "
-                              + ")",
-                     "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_N ON JCR_MITEM_N(PARENT_ID, NAME, I_INDEX, I_CLASS, VERSION)",
-                     "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_NAME_N ON JCR_MITEM_N(I_CLASS, PARENT_ID, NAME, I_INDEX, VERSION)",
-                     "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_ID_N ON JCR_MITEM_N(I_CLASS, PARENT_ID, ID, VERSION)"};
+      {
+         "CREATE TABLE JCR_MITEM_N( " + "ID NUMERIC(40) NOT NULL, " + "PARENT_ID NUMERIC(40) NOT NULL, "
+            + "NAME VARCHAR(512) NOT NULL, " + "VERSION INTEGER NOT NULL, " + "I_CLASS INTEGER NOT NULL, "
+            + "I_INDEX INTEGER NOT NULL, " + "N_ORDER_NUM INTEGER, " + "P_TYPE INTEGER,  " + "P_MULTIVALUED INTEGER, "
+            + "CONSTRAINT JCR_PK_MITEM_N PRIMARY KEY(ID), "
+            + "CONSTRAINT JCR_FK_MITEM_PARENT_N FOREIGN KEY(PARENT_ID) REFERENCES JCR_MITEM_N(ID) " + ")",
+         "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_N ON JCR_MITEM_N(PARENT_ID, NAME, I_INDEX, I_CLASS, VERSION)",
+         "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_NAME_N ON JCR_MITEM_N(I_CLASS, PARENT_ID, NAME, I_INDEX, VERSION)",
+         "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_ID_N ON JCR_MITEM_N(I_CLASS, PARENT_ID, ID, VERSION)"};
 
    public static String[] CREATE_ITEMS_SQL_INT_ANSI_SQL =
-            {
-                     "CREATE TABLE JCR_MITEM_N( " + "ID INTEGER NOT NULL, " + "PARENT_ID INTEGER NOT NULL, "
-                              + "NAME VARCHAR(512) NOT NULL, " + "VERSION INTEGER NOT NULL, "
-                              + "I_CLASS INTEGER NOT NULL, " + "I_INDEX INTEGER NOT NULL, " + "N_ORDER_NUM INTEGER, "
-                              + "P_TYPE INTEGER,  " + "P_MULTIVALUED INTEGER, "
-                              + "CONSTRAINT JCR_PK_MITEM_N PRIMARY KEY(ID), "
-                              + "CONSTRAINT JCR_FK_MITEM_PARENT_N FOREIGN KEY(PARENT_ID) REFERENCES JCR_MITEM_N(ID) "
-                              + ")",
-                     "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_N ON JCR_MITEM_N(PARENT_ID, NAME, I_INDEX, I_CLASS, VERSION)",
-                     "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_NAME_N ON JCR_MITEM_N(I_CLASS, PARENT_ID, NAME, I_INDEX, VERSION)",
-                     "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_ID_N ON JCR_MITEM_N(I_CLASS, PARENT_ID, ID, VERSION)"};
+      {
+         "CREATE TABLE JCR_MITEM_N( " + "ID INTEGER NOT NULL, " + "PARENT_ID INTEGER NOT NULL, "
+            + "NAME VARCHAR(512) NOT NULL, " + "VERSION INTEGER NOT NULL, " + "I_CLASS INTEGER NOT NULL, "
+            + "I_INDEX INTEGER NOT NULL, " + "N_ORDER_NUM INTEGER, " + "P_TYPE INTEGER,  " + "P_MULTIVALUED INTEGER, "
+            + "CONSTRAINT JCR_PK_MITEM_N PRIMARY KEY(ID), "
+            + "CONSTRAINT JCR_FK_MITEM_PARENT_N FOREIGN KEY(PARENT_ID) REFERENCES JCR_MITEM_N(ID) " + ")",
+         "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_N ON JCR_MITEM_N(PARENT_ID, NAME, I_INDEX, I_CLASS, VERSION)",
+         "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_NAME_N ON JCR_MITEM_N(I_CLASS, PARENT_ID, NAME, I_INDEX, VERSION)",
+         "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_ID_N ON JCR_MITEM_N(I_CLASS, PARENT_ID, ID, VERSION)"};
 
    public static String[] CREATE_ITEMS_SQL_BIGINT_ANSI_SQL =
-            {
-                     "CREATE TABLE JCR_MITEM_N( "
-                              + "ID1 BIGINT NOT NULL, "
-                              + "ID2 BIGINT NOT NULL, "
-                              + "PARENT_ID1 BIGINT NOT NULL, "
-                              + "PARENT_ID2 BIGINT NOT NULL, "
-                              + "NAME VARCHAR(512) NOT NULL, "
-                              + "VERSION INTEGER NOT NULL, "
-                              + "I_CLASS INTEGER NOT NULL, "
-                              + "I_INDEX INTEGER NOT NULL, "
-                              + "N_ORDER_NUM INTEGER, "
-                              + "P_TYPE INTEGER,  "
-                              + "P_MULTIVALUED INTEGER, "
-                              + "CONSTRAINT JCR_PK_MITEM_N PRIMARY KEY(ID1,ID2), "
-                              + "CONSTRAINT JCR_FK_MITEM_PARENT_N FOREIGN KEY(PARENT_ID1, PARENT_ID2) REFERENCES JCR_MITEM_N(ID1, ID2) "
-                              + ")",
-                     "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_N ON JCR_MITEM_N(PARENT_ID1, PARENT_ID2, NAME, I_INDEX, I_CLASS, VERSION)",
-                     "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_NAME_N ON JCR_MITEM_N(I_CLASS, PARENT_ID1, PARENT_ID2, NAME, I_INDEX, VERSION)",
-                     "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_ID_N ON JCR_MITEM_N(I_CLASS, PARENT_ID1, PARENT_ID2, ID1, ID2, VERSION)"};
+      {
+         "CREATE TABLE JCR_MITEM_N( " + "ID1 BIGINT NOT NULL, " + "ID2 BIGINT NOT NULL, "
+            + "PARENT_ID1 BIGINT NOT NULL, " + "PARENT_ID2 BIGINT NOT NULL, " + "NAME VARCHAR(512) NOT NULL, "
+            + "VERSION INTEGER NOT NULL, " + "I_CLASS INTEGER NOT NULL, " + "I_INDEX INTEGER NOT NULL, "
+            + "N_ORDER_NUM INTEGER, " + "P_TYPE INTEGER,  " + "P_MULTIVALUED INTEGER, "
+            + "CONSTRAINT JCR_PK_MITEM_N PRIMARY KEY(ID1,ID2), "
+            + "CONSTRAINT JCR_FK_MITEM_PARENT_N FOREIGN KEY(PARENT_ID1, PARENT_ID2) REFERENCES JCR_MITEM_N(ID1, ID2) "
+            + ")",
+         "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_N ON JCR_MITEM_N(PARENT_ID1, PARENT_ID2, NAME, I_INDEX, I_CLASS, VERSION)",
+         "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_NAME_N ON JCR_MITEM_N(I_CLASS, PARENT_ID1, PARENT_ID2, NAME, I_INDEX, VERSION)",
+         "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_ID_N ON JCR_MITEM_N(I_CLASS, PARENT_ID1, PARENT_ID2, ID1, ID2, VERSION)"};
 
    public static String[] CREATE_ITEMS_SQL_BIGINT_ORACLE =
-            {
-                     "CREATE TABLE JCR_MITEM_N( "
-                              + "ID1 INTEGER NOT NULL, "
-                              + "ID2 INTEGER NOT NULL, "
-                              + "PARENT_ID1 INTEGER NOT NULL, "
-                              + "PARENT_ID2 INTEGER NOT NULL, "
-                              + "NAME VARCHAR(512) NOT NULL, "
-                              + "VERSION INTEGER NOT NULL, "
-                              + "I_CLASS INTEGER NOT NULL, "
-                              + "I_INDEX INTEGER NOT NULL, "
-                              + "N_ORDER_NUM INTEGER, "
-                              + "P_TYPE INTEGER,  "
-                              + "P_MULTIVALUED INTEGER, "
-                              + "CONSTRAINT JCR_PK_MITEM_N PRIMARY KEY(ID1,ID2), "
-                              + "CONSTRAINT JCR_FK_MITEM_PARENT_N FOREIGN KEY(PARENT_ID1, PARENT_ID2) REFERENCES JCR_MITEM_N(ID1, ID2) "
-                              + ")",
-                     "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_N ON JCR_MITEM_N(PARENT_ID1, PARENT_ID2, NAME, I_INDEX, I_CLASS, VERSION)",
-                     "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_NAME_N ON JCR_MITEM_N(I_CLASS, PARENT_ID1, PARENT_ID2, NAME, I_INDEX, VERSION)",
-                     "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_ID_N ON JCR_MITEM_N(I_CLASS, PARENT_ID1, PARENT_ID2, ID1, ID2, VERSION)"};
+      {
+         "CREATE TABLE JCR_MITEM_N( " + "ID1 INTEGER NOT NULL, " + "ID2 INTEGER NOT NULL, "
+            + "PARENT_ID1 INTEGER NOT NULL, " + "PARENT_ID2 INTEGER NOT NULL, " + "NAME VARCHAR(512) NOT NULL, "
+            + "VERSION INTEGER NOT NULL, " + "I_CLASS INTEGER NOT NULL, " + "I_INDEX INTEGER NOT NULL, "
+            + "N_ORDER_NUM INTEGER, " + "P_TYPE INTEGER,  " + "P_MULTIVALUED INTEGER, "
+            + "CONSTRAINT JCR_PK_MITEM_N PRIMARY KEY(ID1,ID2), "
+            + "CONSTRAINT JCR_FK_MITEM_PARENT_N FOREIGN KEY(PARENT_ID1, PARENT_ID2) REFERENCES JCR_MITEM_N(ID1, ID2) "
+            + ")",
+         "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_N ON JCR_MITEM_N(PARENT_ID1, PARENT_ID2, NAME, I_INDEX, I_CLASS, VERSION)",
+         "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_NAME_N ON JCR_MITEM_N(I_CLASS, PARENT_ID1, PARENT_ID2, NAME, I_INDEX, VERSION)",
+         "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_ID_N ON JCR_MITEM_N(I_CLASS, PARENT_ID1, PARENT_ID2, ID1, ID2, VERSION)"};
 
    public static String[] CREATE_ITEMS_SQL_VARCHAR_ANSI_SQL =
-            {
-                     "CREATE TABLE JCR_MITEM_N( " + "ID VARCHAR(96) NOT NULL, " + "PARENT_ID VARCHAR(96) NOT NULL, "
-                              + "NAME VARCHAR(512) NOT NULL, " + "VERSION INTEGER NOT NULL, "
-                              + "I_CLASS INTEGER NOT NULL, " + "I_INDEX INTEGER NOT NULL, " + "N_ORDER_NUM INTEGER, "
-                              + "P_TYPE INTEGER,  " + "P_MULTIVALUED INTEGER, "
-                              + "CONSTRAINT JCR_PK_MITEM_N PRIMARY KEY(ID), "
-                              + "CONSTRAINT JCR_FK_MITEM_PARENT_N FOREIGN KEY(PARENT_ID) REFERENCES JCR_MITEM_N(ID) "
-                              + ")",
-                     "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_N ON JCR_MITEM_N(PARENT_ID, NAME, I_INDEX, I_CLASS, VERSION)",
-                     "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_NAME_N ON JCR_MITEM_N(I_CLASS, PARENT_ID, NAME, I_INDEX, VERSION)",
-                     "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_ID_N ON JCR_MITEM_N(I_CLASS, PARENT_ID, ID, VERSION)"};
+      {
+         "CREATE TABLE JCR_MITEM_N( " + "ID VARCHAR(96) NOT NULL, " + "PARENT_ID VARCHAR(96) NOT NULL, "
+            + "NAME VARCHAR(512) NOT NULL, " + "VERSION INTEGER NOT NULL, " + "I_CLASS INTEGER NOT NULL, "
+            + "I_INDEX INTEGER NOT NULL, " + "N_ORDER_NUM INTEGER, " + "P_TYPE INTEGER,  " + "P_MULTIVALUED INTEGER, "
+            + "CONSTRAINT JCR_PK_MITEM_N PRIMARY KEY(ID), "
+            + "CONSTRAINT JCR_FK_MITEM_PARENT_N FOREIGN KEY(PARENT_ID) REFERENCES JCR_MITEM_N(ID) " + ")",
+         "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_N ON JCR_MITEM_N(PARENT_ID, NAME, I_INDEX, I_CLASS, VERSION)",
+         "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_NAME_N ON JCR_MITEM_N(I_CLASS, PARENT_ID, NAME, I_INDEX, VERSION)",
+         "CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_ID_N ON JCR_MITEM_N(I_CLASS, PARENT_ID, ID, VERSION)"};
 
-   public static String[] DROP_ITEMS_SQL_ANSI_SQL =
-   {"DROP TABLE JCR_MITEM_N"};
+   public static String[] DROP_ITEMS_SQL_ANSI_SQL = {"DROP TABLE JCR_MITEM_N"};
 
    abstract class TestTask
    {
@@ -197,9 +169,9 @@ public class TestIDNumeric
       void assertSame(Id expected)
       {
          assertEquals("MostSignificantBits should be same ", expected.id.getMostSignificantBits(), id
-                  .getMostSignificantBits());
+            .getMostSignificantBits());
          assertEquals("LeastSignificantBits should be same ", expected.id.getLeastSignificantBits(), id
-                  .getLeastSignificantBits());
+            .getLeastSignificantBits());
       }
 
       BigDecimal getBigDecimal()
@@ -212,14 +184,14 @@ public class TestIDNumeric
 
             // big-endian byte-order: the most significant byte is in the zeroth element
             byte[] bytes =
-                     {(byte) ((msb & 0xFF00000000000000L) >>> 56), (byte) ((msb & 0x00FF000000000000L) >>> 48),
-                              (byte) ((msb & 0x0000FF0000000000L) >>> 40), (byte) ((msb & 0x000000FF00000000L) >>> 32),
-                              (byte) ((msb & 0x00000000FF000000L) >>> 24), (byte) ((msb & 0x0000000000FF0000L) >>> 16),
-                              (byte) ((msb & 0x000000000000FF00L) >>> 8), (byte) (msb & 0x00000000000000FFL),
-                              (byte) ((lsb & 0xFF00000000000000L) >>> 56), (byte) ((lsb & 0x00FF000000000000L) >>> 48),
-                              (byte) ((lsb & 0x0000FF0000000000L) >>> 40), (byte) ((lsb & 0x000000FF00000000L) >>> 32),
-                              (byte) ((lsb & 0x00000000FF000000L) >>> 24), (byte) ((lsb & 0x0000000000FF0000L) >>> 16),
-                              (byte) ((lsb & 0x000000000000FF00L) >>> 8), (byte) (lsb & 0x00000000000000FFL)};
+               {(byte)((msb & 0xFF00000000000000L) >>> 56), (byte)((msb & 0x00FF000000000000L) >>> 48),
+                  (byte)((msb & 0x0000FF0000000000L) >>> 40), (byte)((msb & 0x000000FF00000000L) >>> 32),
+                  (byte)((msb & 0x00000000FF000000L) >>> 24), (byte)((msb & 0x0000000000FF0000L) >>> 16),
+                  (byte)((msb & 0x000000000000FF00L) >>> 8), (byte)(msb & 0x00000000000000FFL),
+                  (byte)((lsb & 0xFF00000000000000L) >>> 56), (byte)((lsb & 0x00FF000000000000L) >>> 48),
+                  (byte)((lsb & 0x0000FF0000000000L) >>> 40), (byte)((lsb & 0x000000FF00000000L) >>> 32),
+                  (byte)((lsb & 0x00000000FF000000L) >>> 24), (byte)((lsb & 0x0000000000FF0000L) >>> 16),
+                  (byte)((lsb & 0x000000000000FF00L) >>> 8), (byte)(lsb & 0x00000000000000FFL)};
 
             // String hexb = "";
             // for (byte b: bytes) {
@@ -343,7 +315,7 @@ public class TestIDNumeric
       Class.forName(driver);
 
       return (user == null || passwd == null) ? DriverManager.getConnection(url) : DriverManager.getConnection(url,
-               user, passwd);
+         user, passwd);
    }
 
    private void runDDL(Connection con, String[] ddl) throws Exception
@@ -368,8 +340,8 @@ public class TestIDNumeric
    {
       // autocommit=true
       Connection con =
-               openDatabase("oracle.jdbc.OracleDriver", "jdbc:oracle:thin:@tornado.exoua-int:1523:orcl", "exoadmin",
-                        "exo12321");
+         openDatabase("oracle.jdbc.OracleDriver", "jdbc:oracle:thin:@tornado.exoua-int:1523:orcl", "exoadmin",
+            "exo12321");
 
       runDDL(con, ddl);
 
@@ -390,7 +362,7 @@ public class TestIDNumeric
    {
       // autocommit=true
       Connection con =
-               openDatabase("org.postgresql.Driver", "jdbc:postgresql://localhost/portal", "exoadmin", "exo12321");
+         openDatabase("org.postgresql.Driver", "jdbc:postgresql://localhost/portal", "exoadmin", "exo12321");
 
       runDDL(con, ddl);
 
@@ -401,8 +373,8 @@ public class TestIDNumeric
    {
       // autocommit=true
       Connection con =
-               openDatabase("org.apache.derby.jdbc.EmbeddedDriver", "jdbc:derby:target/temp/derby/idtest;create=true",
-                        null, null);
+         openDatabase("org.apache.derby.jdbc.EmbeddedDriver", "jdbc:derby:target/temp/derby/idtest;create=true", null,
+            null);
 
       runDDL(con, ddl);
 
@@ -473,9 +445,9 @@ public class TestIDNumeric
             ssum += sstat;
          double savg = Math.round(ssum * 1000d / test.selectStats.size()) / 1000d;
          System.out.println("Stop " + getName() + " records:" + test.testNodesCount + " "
-                  + (System.currentTimeMillis() - start) + "ms "
-                  + (test.insertStats.size() > 0 ? "avg insert:" + iavg + "ms" : "")
-                  + (test.selectStats.size() > 0 ? " select:" + savg + "ms" : "") + "\n");
+            + (System.currentTimeMillis() - start) + "ms "
+            + (test.insertStats.size() > 0 ? "avg insert:" + iavg + "ms" : "")
+            + (test.selectStats.size() > 0 ? " select:" + savg + "ms" : "") + "\n");
       }
    }
 
@@ -491,7 +463,7 @@ public class TestIDNumeric
             this.testNodesCount = nodesCount;
 
             String insertSql =
-                     "insert into JCR_MITEM_N(ID, PARENT_ID, NAME, VERSION, I_CLASS, I_INDEX, N_ORDER_NUM, P_TYPE, P_MULTIVALUED) VALUES(?,?,?,?,?,?,?,?,?)";
+               "insert into JCR_MITEM_N(ID, PARENT_ID, NAME, VERSION, I_CLASS, I_INDEX, N_ORDER_NUM, P_TYPE, P_MULTIVALUED) VALUES(?,?,?,?,?,?,?,?,?)";
             String selectSql = "select * from JCR_MITEM_N where ID=?";
 
             PreparedStatement insert = con.prepareStatement(insertSql);
@@ -578,7 +550,7 @@ public class TestIDNumeric
             this.testNodesCount = nodesCount;
 
             String insertSql =
-                     "insert into JCR_MITEM_N(ID1, ID2, PARENT_ID1, PARENT_ID2, NAME, VERSION, I_CLASS, I_INDEX, N_ORDER_NUM, P_TYPE, P_MULTIVALUED) VALUES(?,?,?,?,?,?,?,?,?,?,?)";
+               "insert into JCR_MITEM_N(ID1, ID2, PARENT_ID1, PARENT_ID2, NAME, VERSION, I_CLASS, I_INDEX, N_ORDER_NUM, P_TYPE, P_MULTIVALUED) VALUES(?,?,?,?,?,?,?,?,?,?,?)";
             String selectSql = "select * from JCR_MITEM_N where ID1=? and ID2=?";
 
             PreparedStatement insert = con.prepareStatement(insertSql);
@@ -670,7 +642,7 @@ public class TestIDNumeric
             this.testNodesCount = nodesCount;
 
             String insertSql =
-                     "insert into JCR_MITEM_N(ID, PARENT_ID, NAME, VERSION, I_CLASS, I_INDEX, N_ORDER_NUM, P_TYPE, P_MULTIVALUED) VALUES(?,?,?,?,?,?,?,?,?)";
+               "insert into JCR_MITEM_N(ID, PARENT_ID, NAME, VERSION, I_CLASS, I_INDEX, N_ORDER_NUM, P_TYPE, P_MULTIVALUED) VALUES(?,?,?,?,?,?,?,?,?)";
             String selectSql = "select * from JCR_MITEM_N where ID=?";
 
             PreparedStatement insert = con.prepareStatement(insertSql);

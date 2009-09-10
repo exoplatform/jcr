@@ -18,6 +18,18 @@
  */
 package org.exoplatform.services.jcr.api.importing;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.core.ExtendedSession;
+import org.exoplatform.services.jcr.core.ExtendedWorkspace;
+import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
+import org.exoplatform.services.jcr.util.IdGenerator;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.XMLReaderFactory;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -46,28 +58,13 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
-
-import org.exoplatform.services.log.Log;
-
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-import org.exoplatform.services.jcr.core.ExtendedSession;
-import org.exoplatform.services.jcr.core.ExtendedWorkspace;
-import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
-import org.exoplatform.services.jcr.util.IdGenerator;
-import org.exoplatform.services.log.ExoLogger;
-
 /**
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: AbstractImportTest.java 14244 2008-05-14 11:44:54Z ksm $
  */
-public abstract class AbstractImportTest
-   extends JcrAPIBaseTest
+public abstract class AbstractImportTest extends JcrAPIBaseTest
 {
    /**
     * Initialization flag.
@@ -87,16 +84,13 @@ public abstract class AbstractImportTest
       super.initRepository();
       if (!isInitialized)
       {
-         NodeTypeManagerImpl ntManager = (NodeTypeManagerImpl) session.getWorkspace().getNodeTypeManager();
+         NodeTypeManagerImpl ntManager = (NodeTypeManagerImpl)session.getWorkspace().getNodeTypeManager();
          InputStream is = TestDocumentViewImport.class.getResourceAsStream("/nodetypes/ext-registry-nodetypes.xml");
          ntManager.registerNodeTypes(is, 0);
          ntManager.registerNodeTypes(TestDocumentViewImport.class
-                  .getResourceAsStream("/org/exoplatform/services/jcr/api/nodetypes/ecm/nodetypes-config.xml"), 0);
-         ntManager
-                  .registerNodeTypes(
-                           TestDocumentViewImport.class
-                                    .getResourceAsStream("/org/exoplatform/services/jcr/api/nodetypes/ecm/nodetypes-config-extended.xml"),
-                           0);
+            .getResourceAsStream("/org/exoplatform/services/jcr/api/nodetypes/ecm/nodetypes-config.xml"), 0);
+         ntManager.registerNodeTypes(TestDocumentViewImport.class
+            .getResourceAsStream("/org/exoplatform/services/jcr/api/nodetypes/ecm/nodetypes-config-extended.xml"), 0);
          isInitialized = true;
       }
    }
@@ -114,11 +108,11 @@ public abstract class AbstractImportTest
     * @throws IOException
     */
    protected void deserialize(Node importRoot, XmlSaveType saveType, boolean isImportedByStream, int uuidBehavior,
-            InputStream is) throws RepositoryException, SAXException, IOException
+      InputStream is) throws RepositoryException, SAXException, IOException
    {
 
-      ExtendedSession extendedSession = (ExtendedSession) importRoot.getSession();
-      ExtendedWorkspace extendedWorkspace = (ExtendedWorkspace) extendedSession.getWorkspace();
+      ExtendedSession extendedSession = (ExtendedSession)importRoot.getSession();
+      ExtendedWorkspace extendedWorkspace = (ExtendedWorkspace)extendedSession.getWorkspace();
       if (isImportedByStream)
       {
          if (saveType == XmlSaveType.SESSION)
@@ -151,9 +145,8 @@ public abstract class AbstractImportTest
    }
 
    protected void executeSingeleThreadImportTests(int attempts, Class<? extends BeforeExportAction> firstAction,
-            Class<? extends BeforeImportAction> secondAction, Class<? extends AfterImportAction> thirdAction)
-            throws TransformerConfigurationException, IOException, RepositoryException, SAXException,
-            InterruptedException
+      Class<? extends BeforeImportAction> secondAction, Class<? extends AfterImportAction> thirdAction)
+      throws TransformerConfigurationException, IOException, RepositoryException, SAXException, InterruptedException
    {
       ExecutorService executor = Executors.newSingleThreadExecutor();
       executeImportTests(executor, attempts, firstAction, secondAction, thirdAction);
@@ -161,9 +154,9 @@ public abstract class AbstractImportTest
    }
 
    protected void executeMultiThreadImportTests(int threadCount, int attempts,
-            Class<? extends BeforeExportAction> firstAction, Class<? extends BeforeImportAction> secondAction,
-            Class<? extends AfterImportAction> thirdAction) throws TransformerConfigurationException, IOException,
-            RepositoryException, SAXException, InterruptedException
+      Class<? extends BeforeExportAction> firstAction, Class<? extends BeforeImportAction> secondAction,
+      Class<? extends AfterImportAction> thirdAction) throws TransformerConfigurationException, IOException,
+      RepositoryException, SAXException, InterruptedException
    {
       ExecutorService executor = Executors.newCachedThreadPool();
       executeImportTests(executor, attempts, firstAction, secondAction, thirdAction);
@@ -184,27 +177,22 @@ public abstract class AbstractImportTest
     * @throws InterruptedException
     */
    private void executeImportTests(ExecutorService executor, int attempts,
-            Class<? extends BeforeExportAction> firstAction, Class<? extends BeforeImportAction> secondAction,
-            Class<? extends AfterImportAction> thirdAction) throws TransformerConfigurationException, IOException,
-            RepositoryException,
+      Class<? extends BeforeExportAction> firstAction, Class<? extends BeforeImportAction> secondAction,
+      Class<? extends AfterImportAction> thirdAction) throws TransformerConfigurationException, IOException,
+      RepositoryException,
 
-            SAXException, InterruptedException
+      SAXException, InterruptedException
    {
-      XmlSaveType[] posibleSaveTypes = new XmlSaveType[]
-      {XmlSaveType.SESSION, XmlSaveType.WORKSPACE};
+      XmlSaveType[] posibleSaveTypes = new XmlSaveType[]{XmlSaveType.SESSION, XmlSaveType.WORKSPACE};
 
       int[] posibleImportUUIDBehaviors =
-               new int[]
-               {ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING,
-                        ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING,
-                        ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW, ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW};
+         new int[]{ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING,
+            ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING, ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW,
+            ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW};
 
-      boolean[] posibleExportedByStream = new boolean[]
-      {true, false};
-      boolean[] posibleImportedByStream = new boolean[]
-      {true, false};
-      boolean[] posibleSystemViewExport = new boolean[]
-      {true, false};
+      boolean[] posibleExportedByStream = new boolean[]{true, false};
+      boolean[] posibleImportedByStream = new boolean[]{true, false};
+      boolean[] posibleSystemViewExport = new boolean[]{true, false};
 
       Collection<Callable<XmlTestResult>> tasks = new ArrayList<Callable<XmlTestResult>>();
       List<Session> sessions = new ArrayList<Session>();
@@ -232,9 +220,9 @@ public abstract class AbstractImportTest
                            Node testRoot = testSession.getRootNode().addNode(testRootName);
                            testSession.save();
 
-                           be = ((BeforeExportAction) initImportExportAction(firstAction, testSession, testRoot));
-                           bi = ((BeforeImportAction) initImportExportAction(secondAction, testSession, testRoot));
-                           ai = ((AfterImportAction) initImportExportAction(thirdAction, testSession, testRoot));
+                           be = ((BeforeExportAction)initImportExportAction(firstAction, testSession, testRoot));
+                           bi = ((BeforeImportAction)initImportExportAction(secondAction, testSession, testRoot));
+                           ai = ((AfterImportAction)initImportExportAction(thirdAction, testSession, testRoot));
 
                            if (testSession.getRootNode().hasNode(testRootName))
                            {
@@ -263,8 +251,8 @@ public abstract class AbstractImportTest
                         }
 
                         tasks.add(new XmlTestTask<XmlTestResult>(be, bi, ai, posibleSaveTypes[i],
-                                 posibleImportUUIDBehaviors[j], posibleExportedByStream[j2],
-                                 posibleImportedByStream[k], posibleSystemViewExport[k2]));
+                           posibleImportUUIDBehaviors[j], posibleExportedByStream[j2], posibleImportedByStream[k],
+                           posibleSystemViewExport[k2]));
 
                      }
                   }
@@ -293,10 +281,10 @@ public abstract class AbstractImportTest
     * @throws TransformerConfigurationException
     */
    protected byte[] serialize(Node exportRootNode, boolean isSystemView, boolean isStream) throws IOException,
-            RepositoryException, SAXException, TransformerConfigurationException
+      RepositoryException, SAXException, TransformerConfigurationException
    {
 
-      ExtendedSession extendedSession = (ExtendedSession) exportRootNode.getSession();
+      ExtendedSession extendedSession = (ExtendedSession)exportRootNode.getSession();
 
       ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
@@ -309,7 +297,7 @@ public abstract class AbstractImportTest
          }
          else
          {
-            SAXTransformerFactory saxFact = (SAXTransformerFactory) TransformerFactory.newInstance();
+            SAXTransformerFactory saxFact = (SAXTransformerFactory)TransformerFactory.newInstance();
             TransformerHandler handler = saxFact.newTransformerHandler();
             handler.setResult(new StreamResult(outStream));
             extendedSession.exportSystemView(exportRootNode.getPath(), handler, false, false);
@@ -323,7 +311,7 @@ public abstract class AbstractImportTest
          }
          else
          {
-            SAXTransformerFactory saxFact = (SAXTransformerFactory) TransformerFactory.newInstance();
+            SAXTransformerFactory saxFact = (SAXTransformerFactory)TransformerFactory.newInstance();
             TransformerHandler handler = saxFact.newTransformerHandler();
             handler.setResult(new StreamResult(outStream));
             extendedSession.exportDocumentView(exportRootNode.getPath(), handler, false, false);
@@ -334,9 +322,9 @@ public abstract class AbstractImportTest
    }
 
    protected void serialize(Node rootNode, boolean isSystemView, boolean isStream, File content) throws IOException,
-            RepositoryException, SAXException, TransformerConfigurationException
+      RepositoryException, SAXException, TransformerConfigurationException
    {
-      ExtendedSession extendedSession = (ExtendedSession) rootNode.getSession();
+      ExtendedSession extendedSession = (ExtendedSession)rootNode.getSession();
 
       OutputStream outStream = new FileOutputStream(content);
       if (isSystemView)
@@ -348,7 +336,7 @@ public abstract class AbstractImportTest
          }
          else
          {
-            SAXTransformerFactory saxFact = (SAXTransformerFactory) TransformerFactory.newInstance();
+            SAXTransformerFactory saxFact = (SAXTransformerFactory)TransformerFactory.newInstance();
             TransformerHandler handler = saxFact.newTransformerHandler();
             handler.setResult(new StreamResult(outStream));
             extendedSession.exportSystemView(rootNode.getPath(), handler, false, false);
@@ -362,7 +350,7 @@ public abstract class AbstractImportTest
          }
          else
          {
-            SAXTransformerFactory saxFact = (SAXTransformerFactory) TransformerFactory.newInstance();
+            SAXTransformerFactory saxFact = (SAXTransformerFactory)TransformerFactory.newInstance();
             TransformerHandler handler = saxFact.newTransformerHandler();
             handler.setResult(new StreamResult(outStream));
             extendedSession.exportDocumentView(rootNode.getPath(), handler, false, false);
@@ -373,8 +361,8 @@ public abstract class AbstractImportTest
    }
 
    private ImportExportAction initImportExportAction(final Class<? extends ImportExportAction> importExportAction,
-            final Session initSession, final Node testRoot) throws IllegalArgumentException, InstantiationException,
-            IllegalAccessException, InvocationTargetException
+      final Session initSession, final Node testRoot) throws IllegalArgumentException, InstantiationException,
+      IllegalAccessException, InvocationTargetException
    {
 
       Constructor<?>[] constructors = importExportAction.getDeclaredConstructors();
@@ -383,16 +371,14 @@ public abstract class AbstractImportTest
       for (int i = 0; i < constructors.length; i++)
       {
          if (constructors[i].getParameterTypes().length > 1)
-            constructor = (Constructor<? extends ImportExportAction>) constructors[i];
+            constructor = (Constructor<? extends ImportExportAction>)constructors[i];
       }
 
-      ImportExportAction action = constructor.newInstance(new Object[]
-      {this, initSession, testRoot});
+      ImportExportAction action = constructor.newInstance(new Object[]{this, initSession, testRoot});
       return action;
    }
 
-   protected abstract class AfterImportAction
-      extends ImportExportAction
+   protected abstract class AfterImportAction extends ImportExportAction
    {
 
       public AfterImportAction(Session session, Node testRootNode) throws RepositoryException
@@ -423,8 +409,7 @@ public abstract class AbstractImportTest
       }
    }
 
-   protected abstract class BeforeExportAction
-      extends ImportExportAction
+   protected abstract class BeforeExportAction extends ImportExportAction
    {
 
       public BeforeExportAction(Session session, Node testRootNode) throws RepositoryException
@@ -435,8 +420,7 @@ public abstract class AbstractImportTest
       public abstract Node getExportRoot() throws RepositoryException;
    }
 
-   protected abstract class BeforeImportAction
-      extends ImportExportAction
+   protected abstract class BeforeImportAction extends ImportExportAction
    {
 
       public BeforeImportAction(Session session, Node testRootNode) throws RepositoryException
@@ -472,8 +456,7 @@ public abstract class AbstractImportTest
 
    }
 
-   private class XmlTestTask<XmlTestResult>
-      implements Callable<XmlTestResult>
+   private class XmlTestTask<XmlTestResult> implements Callable<XmlTestResult>
    {
 
       private final BeforeExportAction firstAction;
@@ -493,8 +476,8 @@ public abstract class AbstractImportTest
       private final AfterImportAction thirdAction;
 
       public XmlTestTask(BeforeExportAction firstAction, BeforeImportAction secondAction,
-               AfterImportAction thirdAction, XmlSaveType importSaveType, int importUUIDBehavior,
-               boolean isExportedByStream, boolean isImportedByStream, boolean isSystemViewExport)
+         AfterImportAction thirdAction, XmlSaveType importSaveType, int importUUIDBehavior, boolean isExportedByStream,
+         boolean isImportedByStream, boolean isSystemViewExport)
       {
          super();
          this.firstAction = firstAction;
@@ -512,8 +495,8 @@ public abstract class AbstractImportTest
       {
          if (log.isDebugEnabled())
             log.debug("isSys=" + isSystemViewExport + "\t" + "isES=" + isExportedByStream + "\t" + "importST="
-                     + importSaveType.toString() + "\t" + "isIS=" + isImportedByStream + "\t" + "importBehavior="
-                     + importUUIDBehavior + "\t");
+               + importSaveType.toString() + "\t" + "isIS=" + isImportedByStream + "\t" + "importBehavior="
+               + importUUIDBehavior + "\t");
          firstAction.execute();
          firstAction.cleanUp();
 
@@ -527,7 +510,7 @@ public abstract class AbstractImportTest
          try
          {
             deserialize(importRoot, importSaveType, isImportedByStream, importUUIDBehavior, new ByteArrayInputStream(
-                     buf));
+               buf));
             if (importSaveType.equals(XmlSaveType.SESSION))
                importRoot.getSession().save();
          }
@@ -543,9 +526,9 @@ public abstract class AbstractImportTest
          {
 
             if (resultException instanceof RepositoryException)
-               throw (RepositoryException) resultException;
+               throw (RepositoryException)resultException;
             else if (resultException instanceof SAXException)
-               throw (SAXException) resultException;
+               throw (SAXException)resultException;
 
          }
 

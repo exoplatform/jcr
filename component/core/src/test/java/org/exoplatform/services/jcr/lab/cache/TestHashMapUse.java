@@ -18,9 +18,9 @@
  */
 package org.exoplatform.services.jcr.lab.cache;
 
-import java.util.HashMap;
-
 import junit.framework.TestCase;
+
+import java.util.HashMap;
 
 /**
  * Created by The eXo Platform SAS.
@@ -30,8 +30,7 @@ import junit.framework.TestCase;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestHashMapUse.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class TestHashMapUse
-   extends TestCase
+public class TestHashMapUse extends TestCase
 {
 
    private HashMap<String, Object> cache;
@@ -81,7 +80,7 @@ public class TestHashMapUse
       long time = System.currentTimeMillis() - start;
       double perItem = time * 1d / cnt;
       System.out.println(getName() + "\tPut\t" + cnt + " strings in " + time + "ms. Avg " + perItem
-               + "ms per one string.");
+         + "ms per one string.");
 
       // get 1M
       start = System.currentTimeMillis();
@@ -93,7 +92,7 @@ public class TestHashMapUse
       time = System.currentTimeMillis() - start;
       perItem = time * 1d / cnt;
       System.out.println(getName() + "\tGet\t" + cnt + " strings in " + time + "ms. Avg " + perItem
-               + "ms per one string.");
+         + "ms per one string.");
 
       // check if we have all keys/values same as just write
       for (int i = 1; i <= cnt; i++)
@@ -101,7 +100,7 @@ public class TestHashMapUse
          Object value = cache.get(CacheTestConstants.KEY_PREFIX + i);
          assertNotNull("The element '$key" + i + "' should not be a null", value);
          assertEquals("The element '$key" + i + "' value should be of a String class", String.class, value.getClass());
-         assertEquals("The element '$key" + i + "' value is wrong", "value" + i, (String) value);
+         assertEquals("The element '$key" + i + "' value is wrong", "value" + i, (String)value);
       }
    }
 
@@ -132,7 +131,7 @@ public class TestHashMapUse
       long time = System.currentTimeMillis() - start;
       double perItem = time * 1d / cnt;
       System.out.println(getName() + "\tRemove\t" + cnt + " strings in " + time + "ms. Avg " + perItem
-               + "ms per one string.");
+         + "ms per one string.");
 
    }
 

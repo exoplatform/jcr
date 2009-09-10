@@ -18,6 +18,9 @@
  */
 package org.exoplatform.services.jcr.api.reading;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.impl.core.value.BinaryValue;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Calendar;
@@ -28,17 +31,13 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 import javax.jcr.ValueFormatException;
 
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-import org.exoplatform.services.jcr.impl.core.value.BinaryValue;
-
 /**
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov</a>
  * @version $Id: TestValue.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class TestValue
-   extends JcrAPIBaseTest
+public class TestValue extends JcrAPIBaseTest
 {
 
    public void testGetString() throws RepositoryException
@@ -64,7 +63,7 @@ public class TestValue
       }
 
       value = session.getValueFactory().createValue("20");
-      assertEquals(20, (int) value.getDouble());
+      assertEquals(20, (int)value.getDouble());
 
       try
       {

@@ -18,6 +18,18 @@
  */
 package org.exoplatform.services.jcr.impl.access;
 
+import org.exoplatform.services.jcr.BaseStandaloneTest;
+import org.exoplatform.services.jcr.access.AccessControlEntry;
+import org.exoplatform.services.jcr.access.AccessControlList;
+import org.exoplatform.services.jcr.access.AccessManager;
+import org.exoplatform.services.jcr.access.PermissionType;
+import org.exoplatform.services.jcr.access.SystemIdentity;
+import org.exoplatform.services.jcr.core.CredentialsImpl;
+import org.exoplatform.services.jcr.core.ExtendedNode;
+import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.security.Identity;
+
 import java.io.InputStream;
 import java.security.AccessControlException;
 import java.util.HashMap;
@@ -31,18 +43,6 @@ import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
-import org.exoplatform.services.jcr.BaseStandaloneTest;
-import org.exoplatform.services.jcr.access.AccessControlEntry;
-import org.exoplatform.services.jcr.access.AccessControlList;
-import org.exoplatform.services.jcr.access.AccessManager;
-import org.exoplatform.services.jcr.access.PermissionType;
-import org.exoplatform.services.jcr.access.SystemIdentity;
-import org.exoplatform.services.jcr.core.CredentialsImpl;
-import org.exoplatform.services.jcr.core.ExtendedNode;
-import org.exoplatform.services.jcr.impl.core.NodeImpl;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
-import org.exoplatform.services.security.Identity;
-
 /**
  * Created by The eXo Platform SAS.<br/>
  * Prerequisite: enable access control i.e.
@@ -52,8 +52,7 @@ import org.exoplatform.services.security.Identity;
  * @version $Id: TestAccess.java 14515 2008-05-20 11:45:21Z ksm $
  */
 
-public class TestAccess
-   extends BaseStandaloneTest
+public class TestAccess extends BaseStandaloneTest
 {
 
    private ExtendedNode accessTestRoot;
@@ -64,11 +63,11 @@ public class TestAccess
       super.setUp();
       if (!session.getRootNode().hasNode("accessTestRoot"))
       {
-         accessTestRoot = (ExtendedNode) session.getRootNode().addNode("accessTestRoot");
+         accessTestRoot = (ExtendedNode)session.getRootNode().addNode("accessTestRoot");
          session.save();
       }
       else
-         accessTestRoot = (ExtendedNode) session.getRootNode().getNode("accessTestRoot");
+         accessTestRoot = (ExtendedNode)session.getRootNode().getNode("accessTestRoot");
    }
 
    @Override
@@ -91,7 +90,7 @@ public class TestAccess
     */
    public void testNoAccessControllable() throws Exception
    {
-      AccessControlList acl = ((ExtendedNode) root).getACL();
+      AccessControlList acl = ((ExtendedNode)root).getACL();
       assertEquals(SystemIdentity.SYSTEM, acl.getOwner());
       assertEquals(PermissionType.ALL.length, acl.getPermissionEntries().size());
       assertEquals(PermissionType.ALL[0], acl.getPermissionEntries().get(0).getPermission());
@@ -105,7 +104,7 @@ public class TestAccess
    public void testOwneable() throws Exception
    {
 
-      ExtendedNode node = (ExtendedNode) session.getRootNode().addNode("testACNode");
+      ExtendedNode node = (ExtendedNode)session.getRootNode().addNode("testACNode");
       node.addMixin("exo:owneable");
       AccessControlList acl = node.getACL();
       assertEquals(session.getUserID(), acl.getOwner());
@@ -122,7 +121,7 @@ public class TestAccess
    public void testPrivilegeable() throws Exception
    {
 
-      ExtendedNode node = (ExtendedNode) session.getRootNode().addNode("testACNode");
+      ExtendedNode node = (ExtendedNode)session.getRootNode().addNode("testACNode");
       node.addMixin("exo:privilegeable");
       AccessControlList acl = node.getACL();
       assertEquals(SystemIdentity.SYSTEM, acl.getOwner());
@@ -139,7 +138,7 @@ public class TestAccess
    public void testDefaultAccessControllable() throws Exception
    {
 
-      ExtendedNode node = (ExtendedNode) session.getRootNode().addNode("testACNode");
+      ExtendedNode node = (ExtendedNode)session.getRootNode().addNode("testACNode");
       // node.addMixin("exo:accessControllable");
       node.addMixin("exo:owneable");
       node.addMixin("exo:privilegeable");
@@ -152,7 +151,7 @@ public class TestAccess
 
       // the same after save() and re-retrieve
       session.save();
-      node = (ExtendedNode) session.getRootNode().getNode("testACNode");
+      node = (ExtendedNode)session.getRootNode().getNode("testACNode");
 
       Session session1 = repository.login(new CredentialsImpl("mary", "exo".toCharArray()));
       session1.getRootNode().getNode("testACNode");
@@ -172,7 +171,7 @@ public class TestAccess
     */
    public void testIfPermissionSaved() throws Exception
    {
-      NodeImpl node = (NodeImpl) accessTestRoot.addNode("testIfPermissionSaved");
+      NodeImpl node = (NodeImpl)accessTestRoot.addNode("testIfPermissionSaved");
       // node.addMixin("exo:accessControllable");
       node.addMixin("exo:owneable");
       node.addMixin("exo:privilegeable");
@@ -182,8 +181,7 @@ public class TestAccess
          log.debug("NODE PERM 1 >>> " + node.getACL().dump());
       // change permission
       HashMap<String, String[]> perm = new HashMap<String, String[]>();
-      perm.put("john", new String[]
-      {PermissionType.ADD_NODE, PermissionType.READ});
+      perm.put("john", new String[]{PermissionType.ADD_NODE, PermissionType.READ});
       node.setPermissions(perm);
 
       // showPermissions("accessTestRoot/testIfPermissionSaved");
@@ -198,7 +196,7 @@ public class TestAccess
 
       // get node in new session
       NodeImpl testNode =
-               (NodeImpl) repository.getSystemSession().getRootNode().getNode("accessTestRoot/testIfPermissionSaved");
+         (NodeImpl)repository.getSystemSession().getRootNode().getNode("accessTestRoot/testIfPermissionSaved");
 
       if (log.isDebugEnabled())
          log.debug("NODE PERM 4 >>> " + node.getACL().dump());
@@ -230,25 +228,24 @@ public class TestAccess
     */
    public void testPermissionInheritance() throws Exception
    {
-      NodeImpl node = (NodeImpl) accessTestRoot.addNode("testPermissionInheritance");
+      NodeImpl node = (NodeImpl)accessTestRoot.addNode("testPermissionInheritance");
       // node.addMixin("exo:accessControllable");
       node.addMixin("exo:owneable");
       node.addMixin("exo:privilegeable");
 
       // change permission
       HashMap<String, String[]> perm = new HashMap<String, String[]>();
-      perm.put("john", new String[]
-      {PermissionType.ADD_NODE, PermissionType.READ});
+      perm.put("john", new String[]{PermissionType.ADD_NODE, PermissionType.READ});
       node.setPermissions(perm);
       // AccessControlList acl = node.getACL();
 
       // add child node and test if acl is equal to parent
-      NodeImpl node1 = (NodeImpl) node.addNode("node1");
+      NodeImpl node1 = (NodeImpl)node.addNode("node1");
       // AccessControlList acl = node1.getACL();
       assertEquals(node.getACL(), node1.getACL());
 
       // add grandchild node and test if acl is equal to grandparent
-      NodeImpl node2 = (NodeImpl) node1.addNode("node1");
+      NodeImpl node2 = (NodeImpl)node1.addNode("node1");
       assertEquals(node.getACL(), node2.getACL());
    }
 
@@ -259,15 +256,14 @@ public class TestAccess
     */
    public void testSessionCheckPermission() throws Exception
    {
-      NodeImpl node = (NodeImpl) accessTestRoot.addNode("testSessionCheckPermission");
+      NodeImpl node = (NodeImpl)accessTestRoot.addNode("testSessionCheckPermission");
       // node.addMixin("exo:accessControllable");
       node.addMixin("exo:owneable");
       node.addMixin("exo:privilegeable");
 
       // change permission
       HashMap<String, String[]> perm = new HashMap<String, String[]>();
-      perm.put("john", new String[]
-      {PermissionType.ADD_NODE, PermissionType.READ});
+      perm.put("john", new String[]{PermissionType.ADD_NODE, PermissionType.READ});
       node.setPermissions(perm);
       session.save();
 
@@ -308,15 +304,14 @@ public class TestAccess
     */
    public void testRead() throws Exception
    {
-      NodeImpl node = (NodeImpl) accessTestRoot.addNode("testRead");
+      NodeImpl node = (NodeImpl)accessTestRoot.addNode("testRead");
       // node.addMixin("exo:accessControllable");
       node.addMixin("exo:owneable");
       node.addMixin("exo:privilegeable");
 
       // change permission
       HashMap<String, String[]> perm = new HashMap<String, String[]>();
-      perm.put("john", new String[]
-      {PermissionType.READ});
+      perm.put("john", new String[]{PermissionType.READ});
       node.setPermissions(perm);
       node.addNode("node1");
       session.save();
@@ -331,9 +326,9 @@ public class TestAccess
       session1.getItem("/accessTestRoot/testRead/jcr:primaryType");
       session1.getItem("/accessTestRoot/testRead/node1");
       // primartType, mixinTypes, permissions, owner
-      assertEquals(4, ((Node) session1.getItem("/accessTestRoot/testRead")).getProperties().getSize());
+      assertEquals(4, ((Node)session1.getItem("/accessTestRoot/testRead")).getProperties().getSize());
 
-      Node n1 = (Node) session1.getItem("/accessTestRoot");
+      Node n1 = (Node)session1.getItem("/accessTestRoot");
       assertEquals(1, n1.getNodes().getSize());
 
       // check permission for exo2 - nothing allowed
@@ -346,7 +341,7 @@ public class TestAccess
       catch (AccessDeniedException e)
       {
       }
-      Node n2 = (Node) session2.getItem("/accessTestRoot");
+      Node n2 = (Node)session2.getItem("/accessTestRoot");
       assertEquals(0, n2.getNodes().getSize());
 
       // ... test inheritanse
@@ -365,17 +360,15 @@ public class TestAccess
    {
       // ExtendedNode node =
       // (ExtendedNode)session.getRootNode().addNode("testAddNode");
-      ExtendedNode node = (ExtendedNode) accessTestRoot.addNode("testAddNode");
+      ExtendedNode node = (ExtendedNode)accessTestRoot.addNode("testAddNode");
       // node.addMixin("exo:accessControllable");
       node.addMixin("exo:owneable");
       node.addMixin("exo:privilegeable");
 
       HashMap<String, String[]> perm = new HashMap<String, String[]>();
       // perm.put("john", PermissionType.ALL);
-      perm.put("john", new String[]
-      {PermissionType.ADD_NODE, PermissionType.READ});
-      perm.put("mary", new String[]
-      {PermissionType.READ});
+      perm.put("john", new String[]{PermissionType.ADD_NODE, PermissionType.READ});
+      perm.put("mary", new String[]{PermissionType.READ});
       node.setPermissions(perm);
       session.save();
 
@@ -387,7 +380,7 @@ public class TestAccess
       // [PN] 19.06.07 owner it's by whom session was open
       // assertEquals("exo",((ExtendedNode)accessTestRoot.getNode("testAddNode")).
       // getACL().getOwner());
-      assertEquals(credentials.getUserID(), ((ExtendedNode) accessTestRoot.getNode("testAddNode")).getACL().getOwner());
+      assertEquals(credentials.getUserID(), ((ExtendedNode)accessTestRoot.getNode("testAddNode")).getACL().getOwner());
 
       accessTestRoot.getNode("testAddNode").addNode("ownersNode");
       session.save();
@@ -410,7 +403,7 @@ public class TestAccess
       session1.getRootNode().getNode("accessTestRoot/testAddNode").addNode("legal");
       session1.save();
 
-      NodeImpl addNode = (NodeImpl) session1.getRootNode().getNode("accessTestRoot/testAddNode");
+      NodeImpl addNode = (NodeImpl)session1.getRootNode().getNode("accessTestRoot/testAddNode");
       addNode.setProperty("illegal", "test");
       try
       {
@@ -426,15 +419,14 @@ public class TestAccess
 
    public void testModifyAndReadItem() throws Exception
    {
-      ExtendedNode node = (ExtendedNode) accessTestRoot.addNode("testModifyAndReadNode");
+      ExtendedNode node = (ExtendedNode)accessTestRoot.addNode("testModifyAndReadNode");
       // node.addMixin("exo:accessControllable");
       node.addMixin("exo:owneable");
       node.addMixin("exo:privilegeable");
 
       HashMap<String, String[]> perm = new HashMap<String, String[]>();
       perm.put("john", PermissionType.ALL);
-      perm.put("mary", new String[]
-      {PermissionType.READ});
+      perm.put("mary", new String[]{PermissionType.READ});
       node.setPermissions(perm);
       session.save();
 
@@ -443,8 +435,8 @@ public class TestAccess
       // ALL permissions for john
       // READ permissions for exo2
 
-      assertEquals(credentials.getUserID(), ((ExtendedNode) session.getRootNode().getNode(
-               "accessTestRoot/testModifyAndReadNode")).getACL().getOwner());
+      assertEquals(credentials.getUserID(), ((ExtendedNode)session.getRootNode().getNode(
+         "accessTestRoot/testModifyAndReadNode")).getACL().getOwner());
       session.getRootNode().getNode("accessTestRoot/testModifyAndReadNode").addNode("ownersNode");
       session.save();
 
@@ -463,7 +455,7 @@ public class TestAccess
       // john
       session1.getRootNode().getNode("accessTestRoot/testModifyAndReadNode").getProperty("illegal");
       assertEquals(1, session1.getRootNode().getNode("accessTestRoot/testModifyAndReadNode").getProperties("illegal")
-               .getSize());
+         .getSize());
 
       Session session2 = repository.login(new CredentialsImpl("mary", "exo".toCharArray()));
       session2.getRootNode().getNode("accessTestRoot/testModifyAndReadNode").getProperty("illegal").remove();
@@ -494,15 +486,14 @@ public class TestAccess
 
    public void testCheckAndCleanPermissions() throws Exception
    {
-      ExtendedNode node = (ExtendedNode) accessTestRoot.addNode("testCheckAndCleanPermissions");
+      ExtendedNode node = (ExtendedNode)accessTestRoot.addNode("testCheckAndCleanPermissions");
       // node.addMixin("exo:accessControllable");
       node.addMixin("exo:owneable");
       node.addMixin("exo:privilegeable");
 
       HashMap<String, String[]> perm = new HashMap<String, String[]>();
       perm.put("john", PermissionType.ALL);
-      perm.put("mary", new String[]
-      {PermissionType.READ});
+      perm.put("mary", new String[]{PermissionType.READ});
       node.setPermissions(perm);
       session.save();
 
@@ -527,7 +518,7 @@ public class TestAccess
       session2.checkPermission("/accessTestRoot/testCheckAndCleanPermissions", PermissionType.READ);
 
       // try to re set permissions
-      ExtendedNode node2 = (ExtendedNode) session2.getRootNode().getNode("accessTestRoot/testCheckAndCleanPermissions");
+      ExtendedNode node2 = (ExtendedNode)session2.getRootNode().getNode("accessTestRoot/testCheckAndCleanPermissions");
 
       try
       {
@@ -558,7 +549,7 @@ public class TestAccess
          session2.refresh(false);
       }
 
-      ExtendedNode node1 = (ExtendedNode) session1.getRootNode().getNode("accessTestRoot/testCheckAndCleanPermissions");
+      ExtendedNode node1 = (ExtendedNode)session1.getRootNode().getNode("accessTestRoot/testCheckAndCleanPermissions");
       node1.clearACL();
       session1.save();
       // default
@@ -596,14 +587,14 @@ public class TestAccess
 
    public void testAddSaveAndRead() throws Exception
    {
-      ExtendedNode node = (ExtendedNode) accessTestRoot.addNode("testSetAndRemovePermission");
+      ExtendedNode node = (ExtendedNode)accessTestRoot.addNode("testSetAndRemovePermission");
       node.addMixin("exo:privilegeable");
       node.setPermission("john", PermissionType.ALL);
       String owner = node.getACL().getOwner();
       assertEquals(8, node.getACL().getPermissionEntries().size());
       accessTestRoot.save();
       Session session1 = repository.login(new CredentialsImpl("john", "exo".toCharArray()));
-      NodeImpl node1 = (NodeImpl) session1.getRootNode().getNode("accessTestRoot/testSetAndRemovePermission");
+      NodeImpl node1 = (NodeImpl)session1.getRootNode().getNode("accessTestRoot/testSetAndRemovePermission");
       assertEquals(8, node1.getACL().getPermissionEntries().size());
       assertEquals(node1.getACL().getOwner(), owner);
 
@@ -611,7 +602,7 @@ public class TestAccess
 
    public void testSetAndRemovePermission() throws Exception
    {
-      ExtendedNode node = (ExtendedNode) accessTestRoot.addNode("testSetAndRemovePermission");
+      ExtendedNode node = (ExtendedNode)accessTestRoot.addNode("testSetAndRemovePermission");
       // node.addMixin("exo:accessControllable");
       node.addMixin("exo:owneable");
       node.addMixin("exo:privilegeable");
@@ -621,8 +612,7 @@ public class TestAccess
 
       // ("Access contr " +
       // node.isNodeType("exo:accessControllable"));
-      node.setPermission("mary", new String[]
-      {PermissionType.READ});
+      node.setPermission("mary", new String[]{PermissionType.READ});
       assertEquals(PermissionType.ALL.length * 2 + 1, node.getACL().getPermissionEntries().size());
 
       node.removePermission("john");
@@ -638,7 +628,7 @@ public class TestAccess
     */
    public void testReplacePermission() throws Exception
    {
-      ExtendedNode node = (ExtendedNode) accessTestRoot.addNode("testReplacePermission");
+      ExtendedNode node = (ExtendedNode)accessTestRoot.addNode("testReplacePermission");
       // node.addMixin("exo:accessControllable");
       node.addMixin("exo:owneable");
       node.addMixin("exo:privilegeable");
@@ -649,8 +639,7 @@ public class TestAccess
       // System.out.println("Access contr " +
       // node.isNodeType("exo:accessControllable"));
 
-      node.setPermission("john", new String[]
-      {PermissionType.READ});
+      node.setPermission("john", new String[]{PermissionType.READ});
       assertEquals(PermissionType.ALL.length + 1, node.getACL().getPermissionEntries().size());
 
       node.removePermission("john");
@@ -665,9 +654,9 @@ public class TestAccess
     */
    public void testRemoveSpecified() throws Exception
    {
-      AccessManager accessManager = ((SessionImpl) accessTestRoot.getSession()).getAccessManager();
+      AccessManager accessManager = ((SessionImpl)accessTestRoot.getSession()).getAccessManager();
 
-      ExtendedNode node = (ExtendedNode) accessTestRoot.addNode("testRemoveSpecified");
+      ExtendedNode node = (ExtendedNode)accessTestRoot.addNode("testRemoveSpecified");
       // node.addMixin("exo:accessControllable");
       node.addMixin("exo:owneable");
       node.addMixin("exo:privilegeable");
@@ -680,21 +669,21 @@ public class TestAccess
 
       Session session1 = repository.login(new CredentialsImpl("mary", "exo".toCharArray()));
       ExtendedNode testRemoveSpecifiedNode =
-               (ExtendedNode) session1.getRootNode().getNode("accessTestRoot").getNode("testRemoveSpecified");
+         (ExtendedNode)session1.getRootNode().getNode("accessTestRoot").getNode("testRemoveSpecified");
       testRemoveSpecifiedNode.removePermission(SystemIdentity.ANY);
 
       assertTrue(accessManager.hasPermission(testRemoveSpecifiedNode.getACL(), PermissionType.READ,
-               new Identity("john")));
+         new Identity("john")));
 
       testRemoveSpecifiedNode.removePermission("john", PermissionType.READ);
       assertTrue(accessManager.hasPermission(testRemoveSpecifiedNode.getACL(), PermissionType.SET_PROPERTY,
-               new Identity("john")));
+         new Identity("john")));
 
       assertFalse(accessManager.hasPermission(testRemoveSpecifiedNode.getACL(), PermissionType.READ, new Identity(
-               "john")));
+         "john")));
 
       assertTrue(accessManager.hasPermission(testRemoveSpecifiedNode.getACL(), PermissionType.READ,
-               new Identity("mary")));
+         new Identity("mary")));
 
       // assertFalse(accessManager.hasPermission(testRemoveSpecifiedNode.getACL(),
       // PermissionType.READ,
@@ -719,20 +708,18 @@ public class TestAccess
       session1.save();
       session1.logout();
 
-      accessTestRoot = (ExtendedNode) session.getRootNode().getNode("accessTestRoot");
+      accessTestRoot = (ExtendedNode)session.getRootNode().getNode("accessTestRoot");
 
       accessTestRoot.setPermission(accessTestRoot.getSession().getUserID(), PermissionType.ALL);
       accessTestRoot.removePermission("john");
       accessTestRoot.removePermission(SystemIdentity.ANY);
-      accessTestRoot.setPermission("john", new String[]
-      {PermissionType.READ});
+      accessTestRoot.setPermission("john", new String[]{PermissionType.READ});
 
-      ExtendedNode testByOwnerNodeSystem = (ExtendedNode) accessTestRoot.getNode("testByOwnerNode");
+      ExtendedNode testByOwnerNodeSystem = (ExtendedNode)accessTestRoot.getNode("testByOwnerNode");
       testByOwnerNodeSystem.setPermission(accessTestRoot.getSession().getUserID(), PermissionType.ALL);
       testByOwnerNodeSystem.removePermission("john");
       testByOwnerNodeSystem.removePermission(SystemIdentity.ANY);
-      testByOwnerNodeSystem.setPermission("john", new String[]
-      {PermissionType.READ});
+      testByOwnerNodeSystem.setPermission("john", new String[]{PermissionType.READ});
 
       session.save();
 
@@ -769,21 +756,21 @@ public class TestAccess
 
    public void testRemoveExoOwnable() throws Exception
    {
-      ExtendedNode testRoot = (ExtendedNode) accessTestRoot.addNode("testRemoveExoOwnable");
+      ExtendedNode testRoot = (ExtendedNode)accessTestRoot.addNode("testRemoveExoOwnable");
       testRoot.addMixin("exo:privilegeable");
-      testRoot.setPermission("john", new String[]
-      {PermissionType.READ, PermissionType.ADD_NODE, PermissionType.SET_PROPERTY});
+      testRoot.setPermission("john", new String[]{PermissionType.READ, PermissionType.ADD_NODE,
+         PermissionType.SET_PROPERTY});
       testRoot.setPermission(accessTestRoot.getSession().getUserID(), PermissionType.ALL);
       testRoot.removePermission(SystemIdentity.ANY);
 
-      ExtendedNode subRoot = (ExtendedNode) testRoot.addNode("subroot");
+      ExtendedNode subRoot = (ExtendedNode)testRoot.addNode("subroot");
       accessTestRoot.getSession().save();
 
       Session session1 = repository.login(new CredentialsImpl("john", "exo".toCharArray()));
       Node accessTestRoot1 = session1.getRootNode().getNode("accessTestRoot");
       Node testRoot1 = accessTestRoot1.getNode("testRemoveExoOwnable");
 
-      ExtendedNode subRoot1 = (ExtendedNode) testRoot1.getNode("subroot");
+      ExtendedNode subRoot1 = (ExtendedNode)testRoot1.getNode("subroot");
       subRoot1.addMixin("exo:owneable");
       assertEquals("john", subRoot1.getProperty("exo:owner").getString());
       assertEquals("john", subRoot1.getACL().getOwner());
@@ -794,7 +781,7 @@ public class TestAccess
       Session session2 = repository.login(new CredentialsImpl("john", "exo".toCharArray()));
 
       ExtendedNode subRoot2 =
-               (ExtendedNode) session2.getRootNode().getNode("accessTestRoot/testRemoveExoOwnable/subroot");
+         (ExtendedNode)session2.getRootNode().getNode("accessTestRoot/testRemoveExoOwnable/subroot");
       assertEquals("john", subRoot2.getProperty("exo:owner").getString());
       assertEquals("john", subRoot2.getACL().getOwner());
       Node testNode2 = subRoot1.getNode("node");
@@ -808,7 +795,7 @@ public class TestAccess
 
    public void testAnonim() throws RepositoryException
    {
-      ExtendedNode testNode = (ExtendedNode) accessTestRoot.addNode("testAnonim");
+      ExtendedNode testNode = (ExtendedNode)accessTestRoot.addNode("testAnonim");
       // node.addMixin("exo:accessControllable");
       testNode.addMixin("exo:owneable");
       testNode.addMixin("exo:privilegeable");
@@ -837,8 +824,7 @@ public class TestAccess
 
       }
 
-      testNode.setPermission(SystemIdentity.ANY, new String[]
-      {PermissionType.READ});
+      testNode.setPermission(SystemIdentity.ANY, new String[]{PermissionType.READ});
       session.save();
 
       try
@@ -863,8 +849,8 @@ public class TestAccess
       {
 
       }
-      testNode.setPermission(SystemIdentity.ANY, new String[]
-      {PermissionType.READ, PermissionType.SET_PROPERTY, PermissionType.REMOVE});
+      testNode.setPermission(SystemIdentity.ANY, new String[]{PermissionType.READ, PermissionType.SET_PROPERTY,
+         PermissionType.REMOVE});
       session.save();
 
       try
@@ -904,30 +890,30 @@ public class TestAccess
 
    public void testDualCheckPermissions() throws Exception
    {
-      ExtendedNode testRoot = (ExtendedNode) accessTestRoot.addNode("DualCheckPermissions");
+      ExtendedNode testRoot = (ExtendedNode)accessTestRoot.addNode("DualCheckPermissions");
 
       testRoot.addMixin("exo:privilegeable");
-      testRoot.setPermission("john", new String[]
-      {PermissionType.READ, PermissionType.ADD_NODE, PermissionType.SET_PROPERTY});
+      testRoot.setPermission("john", new String[]{PermissionType.READ, PermissionType.ADD_NODE,
+         PermissionType.SET_PROPERTY});
       testRoot.setPermission(accessTestRoot.getSession().getUserID(), PermissionType.ALL);
       testRoot.removePermission(SystemIdentity.ANY);
       accessTestRoot.save();
 
-      AccessManager accessManager = ((SessionImpl) accessTestRoot.getSession()).getAccessManager();
+      AccessManager accessManager = ((SessionImpl)accessTestRoot.getSession()).getAccessManager();
 
-      SessionImpl session1 = (SessionImpl) repository.login(new CredentialsImpl("john", "exo".toCharArray()));
+      SessionImpl session1 = (SessionImpl)repository.login(new CredentialsImpl("john", "exo".toCharArray()));
 
-      assertTrue(accessManager.hasPermission(testRoot.getACL(), new String[]
-      {PermissionType.READ, PermissionType.ADD_NODE}, session1.getUserState().getIdentity()));
+      assertTrue(accessManager.hasPermission(testRoot.getACL(), new String[]{PermissionType.READ,
+         PermissionType.ADD_NODE}, session1.getUserState().getIdentity()));
 
-      assertTrue(accessManager.hasPermission(testRoot.getACL(), new String[]
-      {PermissionType.READ, PermissionType.SET_PROPERTY}, session1.getUserState().getIdentity()));
+      assertTrue(accessManager.hasPermission(testRoot.getACL(), new String[]{PermissionType.READ,
+         PermissionType.SET_PROPERTY}, session1.getUserState().getIdentity()));
 
-      assertTrue(accessManager.hasPermission(testRoot.getACL(), new String[]
-      {PermissionType.ADD_NODE, PermissionType.SET_PROPERTY}, session1.getUserState().getIdentity()));
+      assertTrue(accessManager.hasPermission(testRoot.getACL(), new String[]{PermissionType.ADD_NODE,
+         PermissionType.SET_PROPERTY}, session1.getUserState().getIdentity()));
 
-      assertFalse(accessManager.hasPermission(testRoot.getACL(), new String[]
-      {PermissionType.READ, PermissionType.REMOVE}, session1.getUserState().getIdentity()));
+      assertFalse(accessManager.hasPermission(testRoot.getACL(), new String[]{PermissionType.READ,
+         PermissionType.REMOVE}, session1.getUserState().getIdentity()));
 
    }
 
@@ -938,7 +924,7 @@ public class TestAccess
     */
    public void testEmptyPermissions() throws Exception
    {
-      ExtendedNode testRoot = (ExtendedNode) accessTestRoot.addNode("testEmptyPermissions");
+      ExtendedNode testRoot = (ExtendedNode)accessTestRoot.addNode("testEmptyPermissions");
       testRoot.addMixin("exo:privilegeable");
       session.save();
 
@@ -966,12 +952,11 @@ public class TestAccess
 
       session.refresh(false);
 
-      ExtendedNode testRoot2 = (ExtendedNode) accessTestRoot.addNode("testEmptyPermissions2");
+      ExtendedNode testRoot2 = (ExtendedNode)accessTestRoot.addNode("testEmptyPermissions2");
       testRoot2.addMixin("exo:privilegeable");
       session.save();
 
-      testRoot2.setPermission(SystemIdentity.ANY, new String[]
-      {});
+      testRoot2.setPermission(SystemIdentity.ANY, new String[]{});
       try
       {
          session.save();
@@ -990,7 +975,7 @@ public class TestAccess
     */
    public void testPerseEntries() throws Exception
    {
-      ExtendedNode testRoot = (ExtendedNode) accessTestRoot.addNode("testPerseEntries");
+      ExtendedNode testRoot = (ExtendedNode)accessTestRoot.addNode("testPerseEntries");
       testRoot.addMixin("exo:privilegeable");
       session.save();
 
@@ -1028,7 +1013,7 @@ public class TestAccess
    public void testRemoveAllPermissions() throws Exception
    {
       Session session1 = repository.login(new CredentialsImpl("john", "exo".toCharArray()));
-      ExtendedNode testNode = (ExtendedNode) session1.getRootNode().addNode("testNode");
+      ExtendedNode testNode = (ExtendedNode)session1.getRootNode().addNode("testNode");
       testNode.addMixin("exo:privilegeable");
       session1.save();
       Map<String, String[]> permissions = new HashMap<String, String[]>();
@@ -1073,7 +1058,7 @@ public class TestAccess
       session1.importXML("/", importStream, ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW);
       session1.save();
       // After import
-      ExtendedNode testNode = (ExtendedNode) session1.getItem("/a");
+      ExtendedNode testNode = (ExtendedNode)session1.getItem("/a");
       List<AccessControlEntry> permsList = testNode.getACL().getPermissionEntries();
       int permsListTotal = 0;
       for (AccessControlEntry ace : permsList)
@@ -1083,7 +1068,7 @@ public class TestAccess
          if (id.equals("*:/platform/administrators") || id.equals("root"))
          {
             assertTrue(permission.equals(PermissionType.READ) || permission.equals(PermissionType.REMOVE)
-                     || permission.equals(PermissionType.SET_PROPERTY) || permission.equals(PermissionType.ADD_NODE));
+               || permission.equals(PermissionType.SET_PROPERTY) || permission.equals(PermissionType.ADD_NODE));
             permsListTotal++;
          }
          else if (id.equals("validator:/platform/users"))
@@ -1099,7 +1084,7 @@ public class TestAccess
 
    private void showPermissions(String path) throws RepositoryException
    {
-      NodeImpl node = (NodeImpl) this.repository.getSystemSession().getRootNode().getNode(path);
+      NodeImpl node = (NodeImpl)this.repository.getSystemSession().getRootNode().getNode(path);
       AccessControlList acl = node.getACL();
       if (log.isDebugEnabled())
          log.debug("DUMP: " + acl.dump());

@@ -18,12 +18,12 @@
  */
 package org.exoplatform.services.jcr.storage.value;
 
-import javax.jcr.PropertyType;
-
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
+
+import javax.jcr.PropertyType;
 
 /**
  * Created by The eXo Platform SAS.
@@ -62,7 +62,7 @@ public final class ValuePluginFilter
     * @throws RepositoryConfigurationException
     */
    public ValuePluginFilter(int propertyType, QPath ancestorPath, InternalQName propertyName, long minValueSize)
-            throws RepositoryConfigurationException
+      throws RepositoryConfigurationException
    {
       if (propertyType == PropertyType.UNDEFINED)
          throw new RepositoryConfigurationException("Property type is obligatory");
@@ -95,9 +95,9 @@ public final class ValuePluginFilter
    public boolean match(PropertyData prop, int valueOrderNumer)
    {
       if (propertyType == prop.getType()
-               && (ancestorPath == null || prop.getQPath().isDescendantOf(ancestorPath))
-               && (minValueSize == -1 || (prop.getValues().get(valueOrderNumer).getLength() > minValueSize && minValueSize > 0))
-               && (propertyName == null || prop.getQPath().getName().equals(propertyName)))
+         && (ancestorPath == null || prop.getQPath().isDescendantOf(ancestorPath))
+         && (minValueSize == -1 || (prop.getValues().get(valueOrderNumer).getLength() > minValueSize && minValueSize > 0))
+         && (propertyName == null || prop.getQPath().getName().equals(propertyName)))
          return true;
       else
          return false;

@@ -29,9 +29,7 @@ import javax.jcr.nodetype.PropertyDefinition;
  * @version $Id: PropertyDefinitionImpl.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class PropertyDefinitionImpl
-   extends ItemDefinitionImpl
-   implements PropertyDefinition
+public class PropertyDefinitionImpl extends ItemDefinitionImpl implements PropertyDefinition
 {
 
    private final int requiredType;
@@ -43,8 +41,7 @@ public class PropertyDefinitionImpl
    private final boolean multiple;
 
    public PropertyDefinitionImpl(String name, NodeType declaringNodeType, int requiredType, String[] valueConstraints,
-            Value[] defaultValues, boolean autoCreate, boolean mandatory, int onVersion, boolean readOnly,
-            boolean multiple)
+      Value[] defaultValues, boolean autoCreate, boolean mandatory, int onVersion, boolean readOnly, boolean multiple)
    {
 
       super(name, declaringNodeType, autoCreate, onVersion, readOnly, mandatory);

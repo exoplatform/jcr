@@ -26,8 +26,7 @@ import javax.jcr.version.VersionException;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko </a>
  * @version $Id: LabelNotFoundException.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class LabelNotFoundException
-   extends VersionException
+public class LabelNotFoundException extends VersionException
 {
 
    LabelNotFoundException(String message)

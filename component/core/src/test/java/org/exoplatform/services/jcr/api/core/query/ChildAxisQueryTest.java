@@ -28,8 +28,7 @@ import javax.jcr.RepositoryException;
 /**
  * <code>ChildAxisQueryTest</code> tests queries with a child axis in their predicates.
  */
-public class ChildAxisQueryTest
-   extends AbstractQueryTest
+public class ChildAxisQueryTest extends AbstractQueryTest
 {
 
    /**
@@ -47,56 +46,31 @@ public class ChildAxisQueryTest
       testRootNode.save();
 
       String base = testPath + "[" + nodeName1 + "/@" + propertyName1;
-      executeXPathQuery(testPath + "[" + nodeName1 + "]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + " = 1]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + " = 2]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + " = 3]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + " = 4]", new Node[]
-      {});
-      executeXPathQuery(base + " > 0]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + " > 1]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + " > 2]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + " > 3]", new Node[]
-      {});
-      executeXPathQuery(base + " >= 1]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + " >= 2]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + " >= 3]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + " >= 4]", new Node[]
-      {});
-      executeXPathQuery(base + " < 1]", new Node[]
-      {});
-      executeXPathQuery(base + " < 2]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + " < 3]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + " < 4]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + " <= 0]", new Node[]
-      {});
-      executeXPathQuery(base + " <= 1]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + " <= 2]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + " <= 3]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + " != 0]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + " != 1]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + " != 2]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + " != 3]", new Node[]
-      {testRootNode});
+      executeXPathQuery(testPath + "[" + nodeName1 + "]", new Node[]{testRootNode});
+      executeXPathQuery(base + " = 1]", new Node[]{testRootNode});
+      executeXPathQuery(base + " = 2]", new Node[]{testRootNode});
+      executeXPathQuery(base + " = 3]", new Node[]{testRootNode});
+      executeXPathQuery(base + " = 4]", new Node[]{});
+      executeXPathQuery(base + " > 0]", new Node[]{testRootNode});
+      executeXPathQuery(base + " > 1]", new Node[]{testRootNode});
+      executeXPathQuery(base + " > 2]", new Node[]{testRootNode});
+      executeXPathQuery(base + " > 3]", new Node[]{});
+      executeXPathQuery(base + " >= 1]", new Node[]{testRootNode});
+      executeXPathQuery(base + " >= 2]", new Node[]{testRootNode});
+      executeXPathQuery(base + " >= 3]", new Node[]{testRootNode});
+      executeXPathQuery(base + " >= 4]", new Node[]{});
+      executeXPathQuery(base + " < 1]", new Node[]{});
+      executeXPathQuery(base + " < 2]", new Node[]{testRootNode});
+      executeXPathQuery(base + " < 3]", new Node[]{testRootNode});
+      executeXPathQuery(base + " < 4]", new Node[]{testRootNode});
+      executeXPathQuery(base + " <= 0]", new Node[]{});
+      executeXPathQuery(base + " <= 1]", new Node[]{testRootNode});
+      executeXPathQuery(base + " <= 2]", new Node[]{testRootNode});
+      executeXPathQuery(base + " <= 3]", new Node[]{testRootNode});
+      executeXPathQuery(base + " != 0]", new Node[]{testRootNode});
+      executeXPathQuery(base + " != 1]", new Node[]{testRootNode});
+      executeXPathQuery(base + " != 2]", new Node[]{testRootNode});
+      executeXPathQuery(base + " != 3]", new Node[]{testRootNode});
    }
 
    public void testRelationQueryDeep() throws RepositoryException
@@ -112,54 +86,30 @@ public class ChildAxisQueryTest
       testRootNode.save();
 
       String base = testPath + "[" + nodeName1 + "/" + nodeName2 + "/" + nodeName3 + "/@" + propertyName1;
-      executeXPathQuery(base + " = 1]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + " = 2]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + " = 3]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + " = 4]", new Node[]
-      {});
-      executeXPathQuery(base + " > 0]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + " > 1]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + " > 2]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + " > 3]", new Node[]
-      {});
-      executeXPathQuery(base + " >= 1]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + " >= 2]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + " >= 3]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + " >= 4]", new Node[]
-      {});
-      executeXPathQuery(base + " < 1]", new Node[]
-      {});
-      executeXPathQuery(base + " < 2]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + " < 3]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + " < 4]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + " <= 0]", new Node[]
-      {});
-      executeXPathQuery(base + " <= 1]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + " <= 2]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + " <= 3]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + " != 0]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + " != 1]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + " != 2]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + " != 3]", new Node[]
-      {testRootNode});
+      executeXPathQuery(base + " = 1]", new Node[]{testRootNode});
+      executeXPathQuery(base + " = 2]", new Node[]{testRootNode});
+      executeXPathQuery(base + " = 3]", new Node[]{testRootNode});
+      executeXPathQuery(base + " = 4]", new Node[]{});
+      executeXPathQuery(base + " > 0]", new Node[]{testRootNode});
+      executeXPathQuery(base + " > 1]", new Node[]{testRootNode});
+      executeXPathQuery(base + " > 2]", new Node[]{testRootNode});
+      executeXPathQuery(base + " > 3]", new Node[]{});
+      executeXPathQuery(base + " >= 1]", new Node[]{testRootNode});
+      executeXPathQuery(base + " >= 2]", new Node[]{testRootNode});
+      executeXPathQuery(base + " >= 3]", new Node[]{testRootNode});
+      executeXPathQuery(base + " >= 4]", new Node[]{});
+      executeXPathQuery(base + " < 1]", new Node[]{});
+      executeXPathQuery(base + " < 2]", new Node[]{testRootNode});
+      executeXPathQuery(base + " < 3]", new Node[]{testRootNode});
+      executeXPathQuery(base + " < 4]", new Node[]{testRootNode});
+      executeXPathQuery(base + " <= 0]", new Node[]{});
+      executeXPathQuery(base + " <= 1]", new Node[]{testRootNode});
+      executeXPathQuery(base + " <= 2]", new Node[]{testRootNode});
+      executeXPathQuery(base + " <= 3]", new Node[]{testRootNode});
+      executeXPathQuery(base + " != 0]", new Node[]{testRootNode});
+      executeXPathQuery(base + " != 1]", new Node[]{testRootNode});
+      executeXPathQuery(base + " != 2]", new Node[]{testRootNode});
+      executeXPathQuery(base + " != 3]", new Node[]{testRootNode});
    }
 
    public void testMultiRelation() throws RepositoryException
@@ -178,17 +128,13 @@ public class ChildAxisQueryTest
       testRootNode.save();
 
       String base = testPath + "[" + nodeName1 + "/" + nodeName2 + "/" + nodeName3 + "/@" + propertyName2;
-      executeXPathQuery(base + " = 1]", new Node[]
-      {testRootNode});
+      executeXPathQuery(base + " = 1]", new Node[]{testRootNode});
       executeXPathQuery(base + " = 1 and " + nodeName1 + "/@" + propertyName1 + " = 'foo' and " + nodeName1 + "/"
-               + nodeName2 + "/@" + propertyName1 + " = 'bar']", new Node[]
-      {testRootNode});
+         + nodeName2 + "/@" + propertyName1 + " = 'bar']", new Node[]{testRootNode});
       executeXPathQuery(base + " = 1 and " + nodeName1 + "/@" + propertyName1 + " = 'foo' and " + nodeName1 + "/"
-               + nodeName2 + "/@" + propertyName1 + " = 'bar']", new Node[]
-      {testRootNode});
+         + nodeName2 + "/@" + propertyName1 + " = 'bar']", new Node[]{testRootNode});
       executeXPathQuery(base + " = 1 and " + nodeName1 + "/@" + propertyName1 + " = 'foo' and " + nodeName2 + "/@"
-               + propertyName1 + " = 'bar']", new Node[]
-      {});
+         + propertyName1 + " = 'bar']", new Node[]{});
    }
 
    public void testLike() throws RepositoryException
@@ -203,14 +149,10 @@ public class ChildAxisQueryTest
       testRootNode.save();
 
       String base = testPath + "[jcr:like(" + nodeName1 + "/@" + propertyName1;
-      executeXPathQuery(base + ", 'fo_')]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + ", 'foo_ar')]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + ", 'foo %')]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + ", 'f_oba')]", new Node[]
-      {});
+      executeXPathQuery(base + ", 'fo_')]", new Node[]{testRootNode});
+      executeXPathQuery(base + ", 'foo_ar')]", new Node[]{testRootNode});
+      executeXPathQuery(base + ", 'foo %')]", new Node[]{testRootNode});
+      executeXPathQuery(base + ", 'f_oba')]", new Node[]{});
    }
 
    public void testContains() throws RepositoryException
@@ -230,17 +172,13 @@ public class ChildAxisQueryTest
 
       String base = testPath + "[jcr:contains(";
       executeXPathQuery(base + nodeName1 + "/@" + propertyName1 + ", 'lazy')" + " and " + nodeName1 + "/" + nodeName2
-               + "/" + nodeName3 + "/@" + propertyName2 + " = 2]", new Node[]
-      {testRootNode});
+         + "/" + nodeName3 + "/@" + propertyName2 + " = 2]", new Node[]{testRootNode});
       executeXPathQuery(base + nodeName1 + "/" + nodeName2 + "/@" + propertyName1 + ", 'franz')" + " and " + nodeName1
-               + "/" + nodeName2 + "/" + nodeName3 + "/@" + propertyName2 + " = 3]", new Node[]
-      {testRootNode});
+         + "/" + nodeName2 + "/" + nodeName3 + "/@" + propertyName2 + " = 3]", new Node[]{testRootNode});
       executeXPathQuery(base + nodeName1 + ", 'lazy')" + " and " + nodeName1 + "/" + nodeName2 + "/" + nodeName3 + "/@"
-               + propertyName2 + " = 1]", new Node[]
-      {testRootNode});
+         + propertyName2 + " = 1]", new Node[]{testRootNode});
       executeXPathQuery(base + nodeName1 + "/" + nodeName2 + ", 'franz')" + " and " + nodeName1 + "/" + nodeName2 + "/"
-               + nodeName3 + "/@" + propertyName2 + " = 1]", new Node[]
-      {testRootNode});
+         + nodeName3 + "/@" + propertyName2 + " = 1]", new Node[]{testRootNode});
    }
 
    public void testNtFile() throws RepositoryException, IOException
@@ -258,8 +196,7 @@ public class ChildAxisQueryTest
 
       testRootNode.save();
       String xpath = testPath + "/*[jcr:contains(jcr:content, 'lazy')]";
-      executeXPathQuery(xpath, new Node[]
-      {file});
+      executeXPathQuery(xpath, new Node[]{file});
    }
 
    public void testStarNameTest() throws RepositoryException
@@ -279,20 +216,14 @@ public class ChildAxisQueryTest
 
       String base = testPath + "[jcr:contains(";
       executeXPathQuery(base + nodeName1 + "/@" + propertyName1 + ", 'lazy')" + " and " + nodeName1 + "/" + nodeName2
-               + "/" + nodeName3 + "/@" + propertyName2 + " = 3]", new Node[]
-      {});
+         + "/" + nodeName3 + "/@" + propertyName2 + " = 3]", new Node[]{});
       executeXPathQuery(base + nodeName1 + "/@" + propertyName1 + ", 'lazy')" + " and " + nodeName1 + "/" + nodeName2
-               + "/*/@" + propertyName2 + " = 3]", new Node[]
-      {testRootNode});
+         + "/*/@" + propertyName2 + " = 3]", new Node[]{testRootNode});
 
-      executeXPathQuery(base + "*/@" + propertyName1 + ", 'lazy')]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + nodeName1 + "/*, 'franz')]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + "*/*, 'franz')]", new Node[]
-      {testRootNode});
-      executeXPathQuery(base + "*/*, 'lazy')]", new Node[]
-      {});
+      executeXPathQuery(base + "*/@" + propertyName1 + ", 'lazy')]", new Node[]{testRootNode});
+      executeXPathQuery(base + nodeName1 + "/*, 'franz')]", new Node[]{testRootNode});
+      executeXPathQuery(base + "*/*, 'franz')]", new Node[]{testRootNode});
+      executeXPathQuery(base + "*/*, 'lazy')]", new Node[]{});
    }
 
    public void testSimpleQuery() throws Exception
@@ -303,8 +234,7 @@ public class ChildAxisQueryTest
       testRootNode.save();
 
       String sql = "SELECT * FROM nt:unstructured WHERE jcr:path LIKE '" + testRoot + "/foo'";
-      executeSQLQuery(sql, new Node[]
-      {foo});
+      executeSQLQuery(sql, new Node[]{foo});
    }
 
 }

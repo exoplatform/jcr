@@ -45,9 +45,7 @@ import org.exoplatform.services.log.ExoLogger;
  * does not rewrite to basic {@link org.apache.lucene.search.TermQuery} but will calculate the
  * matching documents itself. That way a <code>TooManyClauses</code> can be avoided.
  */
-public class RangeQuery
-   extends Query
-   implements Transformable
+public class RangeQuery extends Query implements Transformable
 {
 
    /**
@@ -241,8 +239,7 @@ public class RangeQuery
    /**
     * The <code>Weight</code> implementation for this <code>RangeQuery</code>.
     */
-   private class RangeQueryWeight
-      extends AbstractWeight
+   private class RangeQueryWeight extends AbstractWeight
    {
 
       /**
@@ -315,8 +312,7 @@ public class RangeQuery
    /**
     * Implements a <code>Scorer</code> for this <code>RangeQuery</code>.
     */
-   private final class RangeQueryScorer
-      extends Scorer
+   private final class RangeQueryScorer extends Scorer
    {
 
       /**
@@ -374,7 +370,7 @@ public class RangeQuery
          this.cacheKey = key.toString();
          // check cache
          PerQueryCache cache = PerQueryCache.getInstance();
-         Map m = (Map) cache.get(RangeQueryScorer.class, reader);
+         Map m = (Map)cache.get(RangeQueryScorer.class, reader);
          if (m == null)
          {
             m = new HashMap();
@@ -382,7 +378,7 @@ public class RangeQuery
          }
          resultMap = m;
 
-         BitSet result = (BitSet) resultMap.get(cacheKey);
+         BitSet result = (BitSet)resultMap.get(cacheKey);
          if (result == null)
          {
             result = new BitSet(reader.maxDoc());
@@ -490,7 +486,7 @@ public class RangeQuery
 
          for (Iterator it = startTerms.iterator(); it.hasNext();)
          {
-            Term startTerm = (Term) it.next();
+            Term startTerm = (Term)it.next();
 
             TermEnum terms = reader.terms(startTerm);
             try

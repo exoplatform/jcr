@@ -18,13 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.value;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FilenameFilter;
-
-import javax.jcr.Node;
-
 import org.exoplatform.services.jcr.BaseStandaloneTest;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
@@ -34,9 +27,15 @@ import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectWriter;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectWriterImpl;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.TransactionChangesLogWriter;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FilenameFilter;
+
+import javax.jcr.Node;
 
 /**
  * Created by The eXo Platform SAS.
@@ -47,9 +46,7 @@ import org.exoplatform.services.jcr.impl.dataflow.serialization.TransactionChang
  * @author <a href="mailto:anatoliy.bazko@exoplatform.com.ua">Anatoliy Bazko</a>
  * @version $Id: TestTransientValueDataSpooling.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class TestTransientValueDataSpooling
-   extends BaseStandaloneTest
-   implements ItemsPersistenceListener
+public class TestTransientValueDataSpooling extends BaseStandaloneTest implements ItemsPersistenceListener
 {
 
    private TransactionChangesLog cLog;
@@ -76,7 +73,7 @@ public class TestTransientValueDataSpooling
       }
 
       WorkspaceContainerFacade wsc = repository.getWorkspaceContainer(session.getWorkspace().getName());
-      PersistentDataManager dm = (PersistentDataManager) wsc.getComponent(PersistentDataManager.class);
+      PersistentDataManager dm = (PersistentDataManager)wsc.getComponent(PersistentDataManager.class);
       dm.addItemPersistenceListener(this);
    }
 
@@ -105,7 +102,7 @@ public class TestTransientValueDataSpooling
          }
       }).length;
 
-      NodeImpl node = (NodeImpl) root.addNode("testNode");
+      NodeImpl node = (NodeImpl)root.addNode("testNode");
       node.setProperty("testProp", new FileInputStream(tmpFile));
       root.save();
 
@@ -181,6 +178,6 @@ public class TestTransientValueDataSpooling
 
    public void onSaveItems(ItemStateChangesLog itemStates)
    {
-      cLog = (TransactionChangesLog) itemStates;
+      cLog = (TransactionChangesLog)itemStates;
    }
 }

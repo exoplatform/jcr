@@ -18,12 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.storage;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.jcr.PropertyType;
-import javax.jcr.RepositoryException;
-
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.access.PermissionType;
@@ -44,6 +38,12 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.jcr.PropertyType;
+import javax.jcr.RepositoryException;
+
 /**
  * Created by The eXo Platform SAS Author : Peter Nedonosko peter.nedonosko@exoplatform.com.ua
  * 30.01.2008
@@ -51,8 +51,7 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistent
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: JDBCStorageConnectionTest.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class JDBCStorageConnectionTest
-   extends JcrImplBaseTest
+public class JDBCStorageConnectionTest extends JcrImplBaseTest
 {
 
    private DataManager dataManager;
@@ -67,8 +66,8 @@ public class JDBCStorageConnectionTest
       super.setUp();
 
       dataManager =
-               (WorkspacePersistentDataManager) session.getContainer().getComponentInstanceOfType(
-                        WorkspacePersistentDataManager.class); // .
+         (WorkspacePersistentDataManager)session.getContainer().getComponentInstanceOfType(
+            WorkspacePersistentDataManager.class); // .
       // getTransientNodesManager
       // (
       // )
@@ -81,15 +80,15 @@ public class JDBCStorageConnectionTest
       // (
       // )
 
-      root = (NodeData) dataManager.getItemData(Constants.ROOT_UUID);
+      root = (NodeData)dataManager.getItemData(Constants.ROOT_UUID);
 
       TransientNodeData troot =
-               TransientNodeData.createNodeData(root, InternalQName.parse("[]jdbcStorageConnectionTest"),
-                        Constants.NT_UNSTRUCTURED);
+         TransientNodeData.createNodeData(root, InternalQName.parse("[]jdbcStorageConnectionTest"),
+            Constants.NT_UNSTRUCTURED);
 
       TransientPropertyData pt =
-               TransientPropertyData.createPropertyData(troot, Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false,
-                        new TransientValueData(Constants.NT_UNSTRUCTURED));
+         TransientPropertyData.createPropertyData(troot, Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false,
+            new TransientValueData(Constants.NT_UNSTRUCTURED));
 
       PlainChangesLogImpl chlog = new PlainChangesLogImpl();
       chlog.add(ItemState.createAddedState(troot));
@@ -98,8 +97,8 @@ public class JDBCStorageConnectionTest
       dataManager.save(new TransactionChangesLog(chlog));
 
       testRoot =
-               (NodeData) dataManager.getItemData(root,
-                        troot.getQPath().getEntries()[troot.getQPath().getEntries().length - 1]);
+         (NodeData)dataManager.getItemData(root,
+            troot.getQPath().getEntries()[troot.getQPath().getEntries().length - 1]);
 
       assertNotNull("Can't find test root node " + troot.getQPath().getAsString(), testRoot);
    }
@@ -114,16 +113,16 @@ public class JDBCStorageConnectionTest
       for (PropertyData p : cps)
       {
          TransientPropertyData tp =
-                  new TransientPropertyData(p.getQPath(), p.getIdentifier(), p.getPersistedVersion(), p.getType(), p
-                           .getParentIdentifier(), p.isMultiValued());
+            new TransientPropertyData(p.getQPath(), p.getIdentifier(), p.getPersistedVersion(), p.getType(), p
+               .getParentIdentifier(), p.isMultiValued());
          chlog.add(ItemState.createDeletedState(tp));
       }
 
       // just a TransientNodeData
       TransientNodeData troot =
-               new TransientNodeData(testRoot.getQPath(), testRoot.getIdentifier(), testRoot.getPersistedVersion(),
-                        testRoot.getPrimaryTypeName(), testRoot.getMixinTypeNames(), testRoot.getOrderNumber(),
-                        testRoot.getParentIdentifier(), testRoot.getACL());
+         new TransientNodeData(testRoot.getQPath(), testRoot.getIdentifier(), testRoot.getPersistedVersion(), testRoot
+            .getPrimaryTypeName(), testRoot.getMixinTypeNames(), testRoot.getOrderNumber(), testRoot
+            .getParentIdentifier(), testRoot.getACL());
 
       chlog.add(ItemState.createDeletedState(troot));
 
@@ -136,8 +135,7 @@ public class JDBCStorageConnectionTest
    {
 
       NodeData troot =
-               (NodeData) dataManager.getItemData(root, new QPathEntry(InternalQName
-                        .parse("[]jdbcStorageConnectionTest"), 1));
+         (NodeData)dataManager.getItemData(root, new QPathEntry(InternalQName.parse("[]jdbcStorageConnectionTest"), 1));
 
       assertEquals("Inherited acl should be here", root.getACL().getOwner(), troot.getACL().getOwner());
    }
@@ -147,12 +145,12 @@ public class JDBCStorageConnectionTest
 
       // prepare mixin
       TransientPropertyData mixin =
-               TransientPropertyData.createPropertyData(testRoot, Constants.JCR_MIXINTYPES, PropertyType.NAME, true,
-                        new TransientValueData(Constants.EXO_OWNEABLE));
+         TransientPropertyData.createPropertyData(testRoot, Constants.JCR_MIXINTYPES, PropertyType.NAME, true,
+            new TransientValueData(Constants.EXO_OWNEABLE));
 
       TransientPropertyData owner =
-               TransientPropertyData.createPropertyData(testRoot, Constants.EXO_OWNER, PropertyType.STRING, false,
-                        new TransientValueData("exo"));
+         TransientPropertyData.createPropertyData(testRoot, Constants.EXO_OWNER, PropertyType.STRING, false,
+            new TransientValueData("exo"));
 
       PlainChangesLogImpl chlog = new PlainChangesLogImpl();
       chlog.add(ItemState.createAddedState(mixin));
@@ -162,8 +160,7 @@ public class JDBCStorageConnectionTest
 
       // test
       NodeData troot =
-               (NodeData) dataManager.getItemData(root, new QPathEntry(InternalQName
-                        .parse("[]jdbcStorageConnectionTest"), 1));
+         (NodeData)dataManager.getItemData(root, new QPathEntry(InternalQName.parse("[]jdbcStorageConnectionTest"), 1));
 
       assertEquals("Owner is not valid", "exo", troot.getACL().getOwner());
    }
@@ -173,8 +170,8 @@ public class JDBCStorageConnectionTest
 
       // prepare mixin
       TransientPropertyData mixin =
-               TransientPropertyData.createPropertyData(testRoot, Constants.JCR_MIXINTYPES, PropertyType.NAME, true,
-                        new TransientValueData(Constants.EXO_PRIVILEGEABLE));
+         TransientPropertyData.createPropertyData(testRoot, Constants.JCR_MIXINTYPES, PropertyType.NAME, true,
+            new TransientValueData(Constants.EXO_PRIVILEGEABLE));
 
       List<ValueData> vd = new ArrayList<ValueData>();
       vd.add(new TransientValueData(SystemIdentity.ANY + AccessControlEntry.DELIMITER + PermissionType.READ));
@@ -185,8 +182,7 @@ public class JDBCStorageConnectionTest
       vd.add(new TransientValueData("operators" + AccessControlEntry.DELIMITER + PermissionType.ADD_NODE));
 
       TransientPropertyData permissions =
-               TransientPropertyData.createPropertyData(testRoot, Constants.EXO_PERMISSIONS, PropertyType.STRING,
-                        false, vd);
+         TransientPropertyData.createPropertyData(testRoot, Constants.EXO_PERMISSIONS, PropertyType.STRING, false, vd);
 
       PlainChangesLogImpl chlog = new PlainChangesLogImpl();
       chlog.add(ItemState.createAddedState(mixin));
@@ -196,8 +192,7 @@ public class JDBCStorageConnectionTest
 
       // test
       NodeData troot =
-               (NodeData) dataManager.getItemData(root, new QPathEntry(InternalQName
-                        .parse("[]jdbcStorageConnectionTest"), 1));
+         (NodeData)dataManager.getItemData(root, new QPathEntry(InternalQName.parse("[]jdbcStorageConnectionTest"), 1));
 
       List<String> iperms = troot.getACL().getPermissions(SystemIdentity.ANY);
       assertEquals("Wrong permission for " + SystemIdentity.ANY, 1, iperms.size());
@@ -221,8 +216,7 @@ public class JDBCStorageConnectionTest
       mixvd.add(new TransientValueData(Constants.EXO_OWNEABLE));
       mixvd.add(new TransientValueData(Constants.EXO_PRIVILEGEABLE));
       TransientPropertyData mixin =
-               TransientPropertyData.createPropertyData(testRoot, Constants.JCR_MIXINTYPES, PropertyType.NAME, true,
-                        mixvd);
+         TransientPropertyData.createPropertyData(testRoot, Constants.JCR_MIXINTYPES, PropertyType.NAME, true, mixvd);
 
       List<ValueData> vd = new ArrayList<ValueData>();
       vd.add(new TransientValueData(SystemIdentity.ANY + AccessControlEntry.DELIMITER + PermissionType.READ));
@@ -233,12 +227,11 @@ public class JDBCStorageConnectionTest
       vd.add(new TransientValueData("operators" + AccessControlEntry.DELIMITER + PermissionType.ADD_NODE));
 
       TransientPropertyData permissions =
-               TransientPropertyData.createPropertyData(testRoot, Constants.EXO_PERMISSIONS, PropertyType.STRING,
-                        false, vd);
+         TransientPropertyData.createPropertyData(testRoot, Constants.EXO_PERMISSIONS, PropertyType.STRING, false, vd);
 
       TransientPropertyData owner =
-               TransientPropertyData.createPropertyData(testRoot, Constants.EXO_OWNER, PropertyType.STRING, false,
-                        new TransientValueData("exo"));
+         TransientPropertyData.createPropertyData(testRoot, Constants.EXO_OWNER, PropertyType.STRING, false,
+            new TransientValueData("exo"));
 
       PlainChangesLogImpl chlog = new PlainChangesLogImpl();
       chlog.add(ItemState.createAddedState(mixin));
@@ -249,8 +242,7 @@ public class JDBCStorageConnectionTest
 
       // test
       NodeData troot =
-               (NodeData) dataManager.getItemData(root, new QPathEntry(InternalQName
-                        .parse("[]jdbcStorageConnectionTest"), 1));
+         (NodeData)dataManager.getItemData(root, new QPathEntry(InternalQName.parse("[]jdbcStorageConnectionTest"), 1));
 
       assertEquals("Owner is not valid", "exo", troot.getACL().getOwner());
 

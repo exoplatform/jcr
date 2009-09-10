@@ -18,8 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
-import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.container.ExoContainer;
+import org.exoplatform.services.security.ConversationState;
 
 import javax.jcr.RepositoryException;
 
@@ -27,14 +27,13 @@ import javax.jcr.RepositoryException;
  * @author <a href="mailto:julien.viet@exoplatform.com">Julien Viet</a>
  * @version $Revision$
  */
-public class TrackedSession
-   extends SessionImpl
+public class TrackedSession extends SessionImpl
 {
 
    private final SessionReference ref = new SessionReference(this);
 
    public TrackedSession(String workspaceName, ConversationState userState, ExoContainer container)
-            throws RepositoryException
+      throws RepositoryException
    {
       super(workspaceName, userState, container);
    }

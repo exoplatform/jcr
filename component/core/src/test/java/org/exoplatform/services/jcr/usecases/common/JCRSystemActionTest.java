@@ -18,16 +18,15 @@
  */
 package org.exoplatform.services.jcr.usecases.common;
 
+import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
+
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Workspace;
 
-import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
-
-public class JCRSystemActionTest
-   extends BaseUsecasesTest
+public class JCRSystemActionTest extends BaseUsecasesTest
 {
 
    protected void tearDown() throws Exception
@@ -71,7 +70,7 @@ public class JCRSystemActionTest
       Node cmsNode = null;
       try
       {
-         cmsNode = (Node) session.getItem("/jcr:system/cms");
+         cmsNode = (Node)session.getItem("/jcr:system/cms");
          fail("There should not be /jcr:system/cms");
       }
       catch (PathNotFoundException e)
@@ -83,7 +82,7 @@ public class JCRSystemActionTest
       Node ecmNode = null;
       try
       {
-         ecmNode = (Node) session.getItem("/jcr:system/ecm");
+         ecmNode = (Node)session.getItem("/jcr:system/ecm");
          fail("There should not be /jcr:system/ecm");
       }
       catch (PathNotFoundException e)
@@ -95,7 +94,7 @@ public class JCRSystemActionTest
       Node copyNode = null;
       try
       {
-         copyNode = (Node) session.getItem("/jcr:system/cms/copyNode");
+         copyNode = (Node)session.getItem("/jcr:system/cms/copyNode");
          fail("There should not be /jcr:system/cms/copyNode");
       }
       catch (PathNotFoundException e)
@@ -107,7 +106,7 @@ public class JCRSystemActionTest
       Node cutNode = null;
       try
       {
-         cutNode = (Node) session.getItem("/jcr:system/cms/cutNode");
+         cutNode = (Node)session.getItem("/jcr:system/cms/cutNode");
          fail("There should not be /jcr:system/cms/cutNode");
       }
       catch (Exception e)
@@ -133,14 +132,14 @@ public class JCRSystemActionTest
       session.refresh(false);
       try
       {
-         Node node = (Node) session.getItem("/jcr:system/ecm/copyNode");
+         Node node = (Node)session.getItem("/jcr:system/ecm/copyNode");
          assertTrue("expect copyNode is found:", node != null);
 
          // [PN] It's not are new node! You save it before.
          // assertTrue("expect copyNode is new state", node.isNew()) ;
          // session.save() ; // ??? What a reason?
 
-         node = (Node) session.getItem("/jcr:system/ecm/copyNode");
+         node = (Node)session.getItem("/jcr:system/ecm/copyNode");
          assertTrue("expect copyNode is not new state", !node.isNew());
       }
       catch (Exception e)
@@ -151,7 +150,7 @@ public class JCRSystemActionTest
       workspace.move(cutNode.getPath(), ecmNode.getPath() + "/" + copyNode.getName());
       try
       {
-         Node node = (Node) session.getItem("/jcr:system/cms/cutNode");
+         Node node = (Node)session.getItem("/jcr:system/cms/cutNode");
          fail("Node is not cut on source node");
       }
       catch (Exception e)
@@ -159,7 +158,7 @@ public class JCRSystemActionTest
       }
       try
       {
-         Node node = (Node) session.getItem("/jcr:system/cms/cutNode");
+         Node node = (Node)session.getItem("/jcr:system/cms/cutNode");
          assertTrue("Node is found", node != null);
       }
       catch (Exception e)

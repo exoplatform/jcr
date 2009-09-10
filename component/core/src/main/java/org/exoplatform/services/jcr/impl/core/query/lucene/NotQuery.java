@@ -32,8 +32,7 @@ import org.apache.lucene.search.Weight;
  * query will not match the <code>NotQuery</code> and Documents that did not match the context query
  * will be selected by this <code>NotQuery</code>.
  */
-class NotQuery
-   extends Query
+class NotQuery extends Query
 {
 
    /**
@@ -100,8 +99,7 @@ class NotQuery
    /**
     * Implements a weight for this <code>NotQuery</code>.
     */
-   private class NotQueryWeight
-      implements Weight
+   private class NotQueryWeight implements Weight
    {
 
       /**
@@ -173,8 +171,7 @@ class NotQuery
    /**
     * Implements a scorer that inverts the document matches of the context scorer.
     */
-   private class NotQueryScorer
-      extends Scorer
+   private class NotQueryScorer extends Scorer
    {
 
       /**

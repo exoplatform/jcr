@@ -18,6 +18,9 @@
  */
 package org.exoplatform.services.jcr.api.writing;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
+
 import java.io.ByteArrayInputStream;
 import java.util.GregorianCalendar;
 
@@ -26,9 +29,6 @@ import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
-
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -36,8 +36,7 @@ import org.exoplatform.services.jcr.impl.core.SessionImpl;
  * @version $Id: TestValue.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class TestValue
-   extends JcrAPIBaseTest
+public class TestValue extends JcrAPIBaseTest
 {
 
    public void initRepository() throws RepositoryException
@@ -53,7 +52,7 @@ public class TestValue
 
    public void tearDown() throws Exception
    {
-      session = (SessionImpl) repository.login(credentials, WORKSPACE);
+      session = (SessionImpl)repository.login(credentials, WORKSPACE);
       Node root = session.getRootNode();
       root.getNode("propertyDefNode").remove();
       root.getNode("childNodeDefNode").remove();
@@ -83,18 +82,16 @@ public class TestValue
       Node propertyDefNode = root.getNode("propertyDefNode");
       Property singleValuedProperty = propertyDefNode.getProperty("jcr:defaultValue");
       // remove initially created property
-      singleValuedProperty.setValue((String) null);
+      singleValuedProperty.setValue((String)null);
       propertyDefNode.save();
 
-      Property multiValuedProperty = propertyDefNode.setProperty("jcr:defaultValue", new String[]
-      {null, null});
+      Property multiValuedProperty = propertyDefNode.setProperty("jcr:defaultValue", new String[]{null, null});
 
-      Value[] values =
-      {session.getValueFactory().createValue("not"), session.getValueFactory().createValue("in")};
+      Value[] values = {session.getValueFactory().createValue("not"), session.getValueFactory().createValue("in")};
       multiValuedProperty.setValue(values);
 
       assertTrue("Property '" + multiValuedProperty.getPath() + "' must be multi-valued", multiValuedProperty
-               .getDefinition().isMultiple());
+         .getDefinition().isMultiple());
    }
 
 }

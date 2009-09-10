@@ -77,7 +77,7 @@ public class SIDGenerator
       tmpBuffer.append(hashcode);
 
       long timeNow = System.currentTimeMillis();
-      int timeLow = (int) timeNow & 0xFFFFFFFF;
+      int timeLow = (int)timeNow & 0xFFFFFFFF;
       int node = seeder_.nextInt();
 
       StringBuffer guid = new StringBuffer(32);

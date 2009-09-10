@@ -32,8 +32,7 @@ import java.security.MessageDigest;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: FileDigestOutputStream.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class FileDigestOutputStream
-   extends DigestOutputStream
+public class FileDigestOutputStream extends DigestOutputStream
 {
 
    protected final File file;

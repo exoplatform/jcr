@@ -18,12 +18,12 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs;
 
+import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
+import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.Semaphore;
-
-import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 
 /**
  * Created by The eXo Platform SAS
@@ -33,8 +33,7 @@ import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TreeFileIOChannel.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class TreeFileIOChannel
-   extends FileIOChannel
+public class TreeFileIOChannel extends FileIOChannel
 {
 
    private static Semaphore mkdirsLock = new Semaphore(1);
@@ -54,7 +53,7 @@ public class TreeFileIOChannel
    protected File getFile(final String propertyId, final int orderNumber) throws IOException
    {
       final TreeFile tfile =
-               new TreeFile(rootDir.getAbsolutePath() + makeFilePath(propertyId, orderNumber), cleaner, rootDir);
+         new TreeFile(rootDir.getAbsolutePath() + makeFilePath(propertyId, orderNumber), cleaner, rootDir);
       mkdirs(tfile.getParentFile()); // make dirs on path
       return tfile;
    }

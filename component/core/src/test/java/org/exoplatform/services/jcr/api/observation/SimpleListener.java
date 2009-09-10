@@ -18,12 +18,12 @@
  */
 package org.exoplatform.services.jcr.api.observation;
 
+import org.exoplatform.services.log.Log;
+
 import javax.jcr.RepositoryException;
 import javax.jcr.observation.Event;
 import javax.jcr.observation.EventIterator;
 import javax.jcr.observation.EventListener;
-
-import org.exoplatform.services.log.Log;
 
 /**
  * Created by The eXo Platform SAS 10.05.2006
@@ -31,8 +31,7 @@ import org.exoplatform.services.log.Log;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: SimpleListener.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class SimpleListener
-   implements EventListener
+public class SimpleListener implements EventListener
 {
 
    private Log log;

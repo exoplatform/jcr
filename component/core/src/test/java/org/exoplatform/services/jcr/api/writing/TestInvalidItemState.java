@@ -18,14 +18,14 @@
  */
 package org.exoplatform.services.jcr.api.writing;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+
 import javax.jcr.InvalidItemStateException;
 import javax.jcr.LoginException;
 import javax.jcr.NoSuchWorkspaceException;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
-
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
 
 /**
  * Created by The eXo Platform SAS.
@@ -35,8 +35,7 @@ import org.exoplatform.services.jcr.JcrAPIBaseTest;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestInvalidItemState.java 12967 2008-04-09 09:29:36Z pnedonosko $
  */
-public class TestInvalidItemState
-   extends JcrAPIBaseTest
+public class TestInvalidItemState extends JcrAPIBaseTest
 {
 
    private Node testRoot;
@@ -65,7 +64,7 @@ public class TestInvalidItemState
       final Node testRootS1 = testRoot;
 
       Session s2 = repository.login(credentials, testRootS1.getSession().getWorkspace().getName());
-      final Node testRootS2 = (Node) s2.getItem(testRootS1.getPath());
+      final Node testRootS2 = (Node)s2.getItem(testRootS1.getPath());
 
       // test
       Node nS1 = testRootS1.addNode("node");
@@ -94,7 +93,7 @@ public class TestInvalidItemState
       final Node testRootS1 = testRoot;
 
       Session s2 = repository.login(credentials, testRootS1.getSession().getWorkspace().getName());
-      final Node testRootS2 = (Node) s2.getItem(testRootS1.getPath());
+      final Node testRootS2 = (Node)s2.getItem(testRootS1.getPath());
 
       // test
 
@@ -123,7 +122,7 @@ public class TestInvalidItemState
       final Node testRootS1 = testRoot;
 
       Session s2 = repository.login(credentials, testRootS1.getSession().getWorkspace().getName());
-      final Node testRootS2 = (Node) s2.getItem(testRootS1.getPath());
+      final Node testRootS2 = (Node)s2.getItem(testRootS1.getPath());
 
       // test
 
@@ -183,7 +182,7 @@ public class TestInvalidItemState
       final Node testRootS1 = testRoot;
 
       Session s2 = repository.login(credentials, testRootS1.getSession().getWorkspace().getName());
-      final Node testRootS2 = (Node) s2.getItem(testRootS1.getPath());
+      final Node testRootS2 = (Node)s2.getItem(testRootS1.getPath());
 
       Node nS1 = testRootS1.addNode("node"); // node[1]
       testRootS1.save();
@@ -220,7 +219,7 @@ public class TestInvalidItemState
       final Node testRootS1 = testRoot;
 
       Session s2 = repository.login(credentials, testRootS1.getSession().getWorkspace().getName());
-      final Node testRootS2 = (Node) s2.getItem(testRootS1.getPath());
+      final Node testRootS2 = (Node)s2.getItem(testRootS1.getPath());
 
       testRootS1.addNode("node"); // node[1]
       testRootS1.save();
@@ -266,7 +265,7 @@ public class TestInvalidItemState
       final Node testRootS1 = testRoot;
 
       Session s2 = repository.login(credentials, testRootS1.getSession().getWorkspace().getName());
-      final Node testRootS2 = (Node) s2.getItem(testRootS1.getPath());
+      final Node testRootS2 = (Node)s2.getItem(testRootS1.getPath());
 
       Node nS1_1 = testRootS1.addNode("node"); // node[1]
       testRootS1.save();
@@ -327,13 +326,13 @@ public class TestInvalidItemState
     * @throws RepositoryException
     */
    public void testOrderSameNameSiblingsRemoveRegular() throws LoginException, NoSuchWorkspaceException,
-            RepositoryException
+      RepositoryException
    {
 
       final Node testRootS1 = testRoot;
 
       Session s2 = repository.login(credentials, testRootS1.getSession().getWorkspace().getName());
-      final Node testRootS2 = (Node) s2.getItem(testRootS1.getPath());
+      final Node testRootS2 = (Node)s2.getItem(testRootS1.getPath());
 
       Node nS1_1 = testRootS1.addNode("node"); // node[1]
       testRootS1.save();

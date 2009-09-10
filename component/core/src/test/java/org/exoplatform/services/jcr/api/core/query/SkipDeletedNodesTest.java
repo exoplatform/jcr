@@ -29,8 +29,7 @@ import javax.jcr.query.QueryResult;
  * Tests if the NodeIterator returned by {@link javax.jcr.query.QueryResult#getNodes()} skips Nodes
  * that have been deleted in the meantime.
  */
-public class SkipDeletedNodesTest
-   extends AbstractQueryTest
+public class SkipDeletedNodesTest extends AbstractQueryTest
 {
 
    private Session s2;

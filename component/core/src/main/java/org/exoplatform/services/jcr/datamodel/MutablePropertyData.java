@@ -29,8 +29,7 @@ import javax.jcr.RepositoryException;
  * @version $Id: MutablePropertyData.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public interface MutablePropertyData
-   extends PropertyData, MutableItemData
+public interface MutablePropertyData extends PropertyData, MutableItemData
 {
 
    /**

@@ -18,13 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.value;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.util.Calendar;
-
 import junit.framework.TestCase;
 
 import org.exoplatform.services.jcr.datamodel.Identifier;
@@ -34,6 +27,13 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.util.Calendar;
+
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -41,8 +41,7 @@ import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
  * @version $Id: TestTransientValueData.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
 
-public class TestTransientValueData
-   extends TestCase
+public class TestTransientValueData extends TestCase
 {
 
    public void testCreateByteArrayTransientValueData() throws Exception

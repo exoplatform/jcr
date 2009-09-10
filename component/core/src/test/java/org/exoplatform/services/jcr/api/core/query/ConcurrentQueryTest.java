@@ -16,6 +16,10 @@
  */
 package org.exoplatform.services.jcr.api.core.query;
 
+import org.apache.jackrabbit.test.AbstractJCRTest;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,16 +34,10 @@ import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
 
-import org.exoplatform.services.log.Log;
-import org.apache.jackrabbit.test.AbstractJCRTest;
-
-import org.exoplatform.services.log.ExoLogger;
-
 /**
  * Runs queries in one thread while another thread is modifying the workspace.
  */
-public class ConcurrentQueryTest
-   extends AbstractJCRTest
+public class ConcurrentQueryTest extends AbstractJCRTest
 {
 
    /**
@@ -235,8 +233,7 @@ public class ConcurrentQueryTest
    /**
     * Executes queries in a separate thread.
     */
-   private static final class QueryWorker
-      extends Thread
+   private static final class QueryWorker extends Thread
    {
 
       private Session s;
@@ -293,7 +290,7 @@ public class ConcurrentQueryTest
                if (size % 5 != 0)
                {
                   exceptions.add(new RepositoryException("number of result nodes must be divisible by 5, but is: "
-                           + size));
+                     + size));
                }
 
                // do not consume all cpu power

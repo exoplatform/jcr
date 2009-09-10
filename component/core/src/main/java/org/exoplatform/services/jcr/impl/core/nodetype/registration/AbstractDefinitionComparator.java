@@ -18,11 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.nodetype.registration;
 
-import java.util.List;
-
-import javax.jcr.RepositoryException;
-import javax.jcr.nodetype.ConstraintViolationException;
-
 import org.exoplatform.services.jcr.core.nodetype.ItemDefinitionData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
@@ -30,6 +25,11 @@ import org.exoplatform.services.jcr.dataflow.DataManager;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.impl.Constants;
+
+import java.util.List;
+
+import javax.jcr.RepositoryException;
+import javax.jcr.nodetype.ConstraintViolationException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -61,7 +61,7 @@ public abstract class AbstractDefinitionComparator<T extends ItemDefinitionData>
    }
 
    public abstract PlainChangesLog compare(NodeTypeData registeredNodeType, T[] ancestorDefinition,
-            T[] recipientDefinition) throws ConstraintViolationException, RepositoryException;
+      T[] recipientDefinition) throws ConstraintViolationException, RepositoryException;
 
    /**
     * Compare definitions
@@ -74,7 +74,7 @@ public abstract class AbstractDefinitionComparator<T extends ItemDefinitionData>
     * @param removedDefinitionData
     */
    protected void init(T[] ancestorDefinition, T[] recipientDefinition, List<T> sameDefinitionData,
-            List<RelatedDefinition<T>> changedDefinitionData, List<T> newDefinitionData, List<T> removedDefinitionData)
+      List<RelatedDefinition<T>> changedDefinitionData, List<T> newDefinitionData, List<T> removedDefinitionData)
    {
       for (int i = 0; i < recipientDefinition.length; i++)
       {
@@ -89,7 +89,7 @@ public abstract class AbstractDefinitionComparator<T extends ItemDefinitionData>
                else
                {
                   RelatedDefinition<T> relatedDefinition =
-                           new RelatedDefinition<T>(ancestorDefinition[j], recipientDefinition[i]);
+                     new RelatedDefinition<T>(ancestorDefinition[j], recipientDefinition[i]);
                   changedDefinitionData.add(relatedDefinition);
                }
             }

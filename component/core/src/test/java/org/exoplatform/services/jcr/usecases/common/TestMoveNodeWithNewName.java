@@ -18,13 +18,12 @@
  */
 package org.exoplatform.services.jcr.usecases.common;
 
+import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
+
 import javax.jcr.Node;
 import javax.jcr.Session;
 
-import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
-
-public class TestMoveNodeWithNewName
-   extends BaseUsecasesTest
+public class TestMoveNodeWithNewName extends BaseUsecasesTest
 {
 
    public void testMove() throws Exception
@@ -50,7 +49,7 @@ public class TestMoveNodeWithNewName
       session2.move(srcPath, destPath);
       session2.save();
 
-      Node nodeB = (Node) session2.getItem(destPath);
+      Node nodeB = (Node)session2.getItem(destPath);
       assertNotNull(nodeB);
 
       Node node1 = nodeB.getNode("node_1");

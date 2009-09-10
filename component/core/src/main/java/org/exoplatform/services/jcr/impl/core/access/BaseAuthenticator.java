@@ -18,20 +18,19 @@
  */
 package org.exoplatform.services.jcr.impl.core.access;
 
-import java.util.HashSet;
-
-import javax.jcr.LoginException;
-
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.jcr.access.AuthenticationPolicy;
 import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.Identity;
 import org.exoplatform.services.security.IdentityRegistry;
 import org.exoplatform.services.security.MembershipEntry;
+
+import java.util.HashSet;
+
+import javax.jcr.LoginException;
 
 /**
  * Created by The eXo Platform SAS.<br/> Abstract implementation of AuthenticationPolicy interface
@@ -39,8 +38,7 @@ import org.exoplatform.services.security.MembershipEntry;
  * @author eXo Platform
  * @version $Id: BaseAuthenticator.java 14100 2008-05-12 10:53:47Z gazarenkov $
  */
-abstract public class BaseAuthenticator
-   implements AuthenticationPolicy
+abstract public class BaseAuthenticator implements AuthenticationPolicy
 {
 
    protected static Log log = ExoLogger.getLogger("jcr.BaseAuthenticator");

@@ -24,32 +24,33 @@ import java.io.IOException;
  * <code>MultiIndexReader</code> exposes methods to get access to the contained
  * {@link IndexReader}s of this <code>MultiIndexReader</code>.
  */
-public interface MultiIndexReader extends ReleaseableIndexReader {
+public interface MultiIndexReader extends ReleaseableIndexReader
+{
 
-  /**
-   * @return the <code>IndexReader</code>s that are contained in this
-   *         <code>MultiIndexReader</code>.
-   */
-  public IndexReader[] getIndexReaders();
+   /**
+    * @return the <code>IndexReader</code>s that are contained in this
+    *         <code>MultiIndexReader</code>.
+    */
+   public IndexReader[] getIndexReaders();
 
-  /**
-   * Creates a document id for the given <code>uuid</code>.
-   * 
-   * @param uuid the uuid of the node.
-   * @return a foreign segment doc id or <code>null</code> if there is no node
-   *         with the given <code>uuid</code>.
-   * @throws IOException if an error occurs while reading from the index.
-   */
-  public ForeignSegmentDocId createDocId(String uuid) throws IOException;
+   /**
+    * Creates a document id for the given <code>uuid</code>.
+    * 
+    * @param uuid the uuid of the node.
+    * @return a foreign segment doc id or <code>null</code> if there is no node
+    *         with the given <code>uuid</code>.
+    * @throws IOException if an error occurs while reading from the index.
+    */
+   public ForeignSegmentDocId createDocId(String uuid) throws IOException;
 
-  /**
-   * Returns the document number for the passed <code>docId</code>. If the id is
-   * invalid <code>-1</code> is returned.
-   * 
-   * @param docId the document id to resolve.
-   * @return the document number or <code>-1</code> if it is invalid (e.g. does
-   *         not exist).
-   * @throws IOException if an error occurs while reading from the index.
-   */
-  public int getDocumentNumber(ForeignSegmentDocId docId) throws IOException;
+   /**
+    * Returns the document number for the passed <code>docId</code>. If the id is
+    * invalid <code>-1</code> is returned.
+    * 
+    * @param docId the document id to resolve.
+    * @return the document number or <code>-1</code> if it is invalid (e.g. does
+    *         not exist).
+    * @throws IOException if an error occurs while reading from the index.
+    */
+   public int getDocumentNumber(ForeignSegmentDocId docId) throws IOException;
 }

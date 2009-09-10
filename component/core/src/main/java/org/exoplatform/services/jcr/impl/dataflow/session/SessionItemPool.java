@@ -18,15 +18,15 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.session;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.WeakHashMap;
-
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.core.ItemImpl;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.PropertyImpl;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.WeakHashMap;
 
 /**
  * Created by The eXo Platform SAS.
@@ -79,7 +79,7 @@ final class SessionItemPool
       {
          ItemImpl item = i.next();
          if (item.getParentIdentifier().equals(parentIdentifier) && item.isNode())
-            children.add((NodeImpl) item);
+            children.add((NodeImpl)item);
       }
       return children;
    }
@@ -91,7 +91,7 @@ final class SessionItemPool
       {
          ItemImpl item = i.next();
          if (item.getParentIdentifier().equals(parentIdentifier) && item.isNode())
-            children.add((PropertyImpl) item);
+            children.add((PropertyImpl)item);
       }
       return children;
    }

@@ -18,28 +18,24 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs.operations;
 
+import org.exoplatform.services.jcr.JcrImplBaseTest;
+import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
+import org.exoplatform.services.jcr.dataflow.serialization.ObjectWriter;
+import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectReaderImpl;
+import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectWriterImpl;
+
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URL;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channel;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-
-import org.exoplatform.services.jcr.JcrImplBaseTest;
-import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
-import org.exoplatform.services.jcr.dataflow.serialization.ObjectWriter;
-import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectReaderImpl;
-import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectWriterImpl;
-import org.exoplatform.services.jcr.impl.storage.value.fs.FileIOChannel;
 
 /**
  * Created by The eXo Platform SAS.
@@ -50,8 +46,7 @@ import org.exoplatform.services.jcr.impl.storage.value.fs.FileIOChannel;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestValueFileIOHelper.java 111 2008-11-11 11:11:11Z pnedonosko $
  */
-public class TestValueFileIOHelper
-   extends JcrImplBaseTest
+public class TestValueFileIOHelper extends JcrImplBaseTest
 {
 
    private final static int BLOCK_COUNT = 5000;
@@ -203,7 +198,7 @@ public class TestValueFileIOHelper
       out.close();
 
       System.out.println("\t=== NIO  (inFile=" + inFile + " outFile=" + outFile + ") time "
-               + (System.currentTimeMillis() - start));
+         + (System.currentTimeMillis() - start));
 
       // check length
       assertEquals(srcSerialization.length(), dest.length());
@@ -293,13 +288,13 @@ public class TestValueFileIOHelper
       if (inFile && outFile)
       {
          // it's user file
-         infch = ((FileInputStream) in).getChannel();
-         outfch = ((FileOutputStream) out).getChannel();
+         infch = ((FileInputStream)in).getChannel();
+         outfch = ((FileOutputStream)out).getChannel();
       }
       else
       {
-         inch = inFile ? ((FileInputStream) in).getChannel() : Channels.newChannel(in);
-         outch = outFile ? ((FileOutputStream) out).getChannel() : Channels.newChannel(out);
+         inch = inFile ? ((FileInputStream)in).getChannel() : Channels.newChannel(in);
+         outch = outFile ? ((FileOutputStream)out).getChannel() : Channels.newChannel(out);
       }
    }
 

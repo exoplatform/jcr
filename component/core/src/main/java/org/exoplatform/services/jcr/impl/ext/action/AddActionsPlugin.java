@@ -18,12 +18,12 @@
  */
 package org.exoplatform.services.jcr.impl.ext.action;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.exoplatform.container.component.BaseComponentPlugin;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ObjectParameter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by The eXo Platform SAS.
@@ -32,8 +32,7 @@ import org.exoplatform.container.xml.ObjectParameter;
  * @version $Id: AddActionsPlugin.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class AddActionsPlugin
-   extends BaseComponentPlugin
+public class AddActionsPlugin extends BaseComponentPlugin
 {
 
    private ActionsConfig actionsConfig;
@@ -44,7 +43,7 @@ public class AddActionsPlugin
 
       if (param != null)
       {
-         actionsConfig = (ActionsConfig) param.getObject();
+         actionsConfig = (ActionsConfig)param.getObject();
       }
    }
 

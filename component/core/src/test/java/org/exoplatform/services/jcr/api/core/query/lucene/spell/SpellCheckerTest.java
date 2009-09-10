@@ -16,6 +16,8 @@
  */
 package org.exoplatform.services.jcr.api.core.query.lucene.spell;
 
+import org.apache.jackrabbit.test.AbstractJCRTest;
+
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 import javax.jcr.query.Query;
@@ -23,13 +25,10 @@ import javax.jcr.query.QueryManager;
 import javax.jcr.query.Row;
 import javax.jcr.query.RowIterator;
 
-import org.apache.jackrabbit.test.AbstractJCRTest;
-
 /**
  * <code>SpellCheckerTest</code> performs some spell checker tests.
  */
-public class SpellCheckerTest
-   extends AbstractJCRTest
+public class SpellCheckerTest extends AbstractJCRTest
 {
 
    // protected void setUp() throws Exception {
@@ -157,8 +156,8 @@ public class SpellCheckerTest
       }
 
       query =
-               qm.createQuery("select rep:spellcheck() from nt:base where " + "jcr:path = '/' and spellcheck('"
-                        + statement + "')", Query.SQL);
+         qm.createQuery("select rep:spellcheck() from nt:base where " + "jcr:path = '/' and spellcheck('" + statement
+            + "')", Query.SQL);
       rows = query.execute().getRows();
       assertEquals("no results returned", 1, rows.getSize());
       r = rows.nextRow();

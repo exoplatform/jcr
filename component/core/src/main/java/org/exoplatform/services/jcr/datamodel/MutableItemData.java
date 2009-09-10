@@ -25,8 +25,7 @@ package org.exoplatform.services.jcr.datamodel;
  * @version $Id: MutableItemData.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public interface MutableItemData
-   extends ItemData
+public interface MutableItemData extends ItemData
 {
 
    /**

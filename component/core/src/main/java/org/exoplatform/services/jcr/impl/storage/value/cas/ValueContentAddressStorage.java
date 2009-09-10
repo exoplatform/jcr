@@ -18,11 +18,11 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.cas;
 
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
-
-import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 
 /**
  * Created by The eXo Platform SAS .

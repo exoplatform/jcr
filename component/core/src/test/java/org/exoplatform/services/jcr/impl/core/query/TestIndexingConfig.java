@@ -16,9 +16,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
-import javax.jcr.Node;
-
-import org.exoplatform.services.log.Log;
 import org.apache.lucene.analysis.SimpleAnalyzer;
 import org.apache.lucene.analysis.StopAnalyzer;
 import org.apache.lucene.analysis.WhitespaceAnalyzer;
@@ -30,10 +27,12 @@ import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.BooleanClause.Occur;
-
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.query.lucene.IndexingConfigurationImpl;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import javax.jcr.Node;
 
 /**
  * Created by The eXo Platform SAS.
@@ -41,8 +40,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: TestIndexingConfig.java 12051 2008-03-18 13:47:22Z serg $
  */
-public class TestIndexingConfig
-   extends BaseQueryTest
+public class TestIndexingConfig extends BaseQueryTest
 {
    public final String testString1 = "The quick brown fox jumped over the lazy dogs";
 
@@ -71,7 +69,7 @@ public class TestIndexingConfig
    {
       super.setUp();
       IndexingConfigurationImpl indexingConfigurationImpl =
-               (IndexingConfigurationImpl) defaultSearchIndex.getIndexingConfig();
+         (IndexingConfigurationImpl)defaultSearchIndex.getIndexingConfig();
       indexingConfigurationImpl.setPropertyAnalyzer("FULL:" + simple, new SimpleAnalyzer());
       indexingConfigurationImpl.setPropertyAnalyzer("FULL:" + whitespace, new WhitespaceAnalyzer());
       indexingConfigurationImpl.setPropertyAnalyzer("FULL:" + stop, new StopAnalyzer());
@@ -91,7 +89,7 @@ public class TestIndexingConfig
    {
       try
       {
-         NodeImpl testNode1 = (NodeImpl) testRoot.addNode("node1");
+         NodeImpl testNode1 = (NodeImpl)testRoot.addNode("node1");
          testNode1.setProperty(simple, testString1);
 
          Node testNode2 = testRoot.addNode("node2");
@@ -167,7 +165,7 @@ public class TestIndexingConfig
       try
       {
 
-         NodeImpl testNode1 = (NodeImpl) testRoot.addNode("node1");
+         NodeImpl testNode1 = (NodeImpl)testRoot.addNode("node1");
          testNode1.setProperty(whitespace, testString1);
 
          Node testNode2 = testRoot.addNode("node2");
@@ -237,7 +235,7 @@ public class TestIndexingConfig
    {
       try
       {
-         NodeImpl testNode1 = (NodeImpl) testRoot.addNode("node1");
+         NodeImpl testNode1 = (NodeImpl)testRoot.addNode("node1");
          testNode1.setProperty(stop, testString1);
 
          Node testNode2 = testRoot.addNode("node2");
@@ -309,7 +307,7 @@ public class TestIndexingConfig
       {
          // StandardAnalyzer used for default
 
-         NodeImpl testNode1 = (NodeImpl) testRoot.addNode("node1");
+         NodeImpl testNode1 = (NodeImpl)testRoot.addNode("node1");
          testNode1.setProperty(def, testString1);
 
          Node testNode2 = testRoot.addNode("node2");

@@ -18,11 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.value;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-
 import junit.framework.TestCase;
 
 import org.exoplatform.services.jcr.datamodel.Identifier;
@@ -34,6 +29,11 @@ import org.exoplatform.services.jcr.impl.core.value.StringValue;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -41,8 +41,7 @@ import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
  * @version $Id: TestValueImpl.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
 
-public class TestValueImpl
-   extends TestCase
+public class TestValueImpl extends TestCase
 {
 
    private File tempDirectory = new File(System.getProperty("java.io.tmpdir"));

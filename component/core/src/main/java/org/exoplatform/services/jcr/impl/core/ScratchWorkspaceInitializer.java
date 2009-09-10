@@ -18,15 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.jcr.PathNotFoundException;
-import javax.jcr.PropertyType;
-import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.access.AccessControlPolicy;
@@ -53,6 +44,14 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.jcr.PathNotFoundException;
+import javax.jcr.PropertyType;
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS. <br/> Default workspace intializer. <br/>
@@ -66,8 +65,7 @@ import org.exoplatform.services.log.ExoLogger;
  *          pnedonosko $
  */
 
-public class ScratchWorkspaceInitializer
-   implements WorkspaceInitializer
+public class ScratchWorkspaceInitializer implements WorkspaceInitializer
 {
 
    protected static final Log log = ExoLogger.getLogger("jcr.WorkspaceInitializer");
@@ -91,10 +89,9 @@ public class ScratchWorkspaceInitializer
    private final NodeTypeDataManager nodeTypeDataManager;
 
    public ScratchWorkspaceInitializer(WorkspaceEntry config, RepositoryEntry repConfig,
-            CacheableWorkspaceDataManager dataManager, LocationFactory locationFactory,
-            NamespaceDataPersister nsPersister, NodeTypeDataManager nodeTypeDataManager,
-            NodeTypeDataPersister ntPersister) throws RepositoryConfigurationException, PathNotFoundException,
-            RepositoryException
+      CacheableWorkspaceDataManager dataManager, LocationFactory locationFactory, NamespaceDataPersister nsPersister,
+      NodeTypeDataManager nodeTypeDataManager, NodeTypeDataPersister ntPersister)
+      throws RepositoryConfigurationException, PathNotFoundException, RepositoryException
    {
 
       this.nodeTypeDataManager = nodeTypeDataManager;
@@ -109,7 +106,7 @@ public class ScratchWorkspaceInitializer
       {
          // use user configuration for initializer
          rootPermissions =
-                  config.getInitializer().getParameterValue(WorkspaceInitializer.ROOT_PERMISSIONS_PARAMETER, null);
+            config.getInitializer().getParameterValue(WorkspaceInitializer.ROOT_PERMISSIONS_PARAMETER, null);
          rootNodeType = config.getInitializer().getParameterValue(WorkspaceInitializer.ROOT_NODETYPE_PARAMETER, null);
       }
 
@@ -120,7 +117,7 @@ public class ScratchWorkspaceInitializer
          {
             rootNodeType = config.getAutoInitializedRootNt();
             log.warn("[" + workspaceName + "] auto-init-root-nodetype (" + rootNodeType
-                     + ") parameter is DEPRECATED ! Use <initializer .../> instead.");
+               + ") parameter is DEPRECATED ! Use <initializer .../> instead.");
          }
          else
          {
@@ -133,7 +130,7 @@ public class ScratchWorkspaceInitializer
          {
             rootPermissions = config.getAutoInitPermissions();
             log.warn("[" + workspaceName + "] auto-init-permissions (" + rootPermissions
-                     + ") parameter is DEPRECATED ! Use <initializer .../> instead.");
+               + ") parameter is DEPRECATED ! Use <initializer .../> instead.");
          }
          else
          {
@@ -146,8 +143,8 @@ public class ScratchWorkspaceInitializer
       // AccessControlList class
       this.rootPermissions = rootPermissions;
       this.rootNodeType =
-               rootNodeType != null ? locationFactory.parseJCRName(rootNodeType).getInternalName()
-                        : Constants.NT_UNSTRUCTURED;
+         rootNodeType != null ? locationFactory.parseJCRName(rootNodeType).getInternalName()
+            : Constants.NT_UNSTRUCTURED;
 
       this.dataManager = dataManager;
       this.nsPersister = nsPersister;
@@ -160,14 +157,14 @@ public class ScratchWorkspaceInitializer
 
       if (isWorkspaceInitialized())
       {
-         return (NodeData) dataManager.getItemData(Constants.ROOT_UUID);
+         return (NodeData)dataManager.getItemData(Constants.ROOT_UUID);
       }
 
       NodeData root = initRootNode(rootNodeType);
 
       if (log.isDebugEnabled())
          log.debug("Root node for " + workspaceName + " initialized. NodeType: " + rootNodeType + " system workspace: "
-                  + systemWorkspaceName);
+            + systemWorkspaceName);
 
       // Init system workspace
       if (workspaceName.equals(systemWorkspaceName))
@@ -204,13 +201,13 @@ public class ScratchWorkspaceInitializer
       PlainChangesLog changesLog = new PlainChangesLogImpl();
 
       TransientNodeData rootNode =
-               new TransientNodeData(Constants.ROOT_PATH, Constants.ROOT_UUID, -1, rootNodeType, new InternalQName[0],
-                        0, null, new AccessControlList());
+         new TransientNodeData(Constants.ROOT_PATH, Constants.ROOT_UUID, -1, rootNodeType, new InternalQName[0], 0,
+            null, new AccessControlList());
       changesLog.add(new ItemState(rootNode, ItemState.ADDED, false, null));
 
       TransientPropertyData primaryType =
-               new TransientPropertyData(QPath.makeChildPath(rootNode.getQPath(), Constants.JCR_PRIMARYTYPE),
-                        IdGenerator.generate(), -1, PropertyType.NAME, rootNode.getIdentifier(), false);
+         new TransientPropertyData(QPath.makeChildPath(rootNode.getQPath(), Constants.JCR_PRIMARYTYPE), IdGenerator
+            .generate(), -1, PropertyType.NAME, rootNode.getIdentifier(), false);
       primaryType.setValue(new TransientValueData(rootNodeType));
 
       changesLog.add(new ItemState(primaryType, ItemState.ADDED, false, null)); // 
@@ -229,8 +226,7 @@ public class ScratchWorkspaceInitializer
 
          rootNode.setACL(acl);
 
-         InternalQName[] mixins = new InternalQName[]
-         {Constants.EXO_OWNEABLE, Constants.EXO_PRIVILEGEABLE};
+         InternalQName[] mixins = new InternalQName[]{Constants.EXO_OWNEABLE, Constants.EXO_PRIVILEGEABLE};
          rootNode.setMixinTypeNames(mixins);
 
          // jcr:mixinTypes
@@ -240,12 +236,12 @@ public class ScratchWorkspaceInitializer
             mixValues.add(new TransientValueData(mixin));
          }
          TransientPropertyData exoMixinTypes =
-                  TransientPropertyData.createPropertyData(rootNode, Constants.JCR_MIXINTYPES, PropertyType.NAME, true,
-                           mixValues);
+            TransientPropertyData.createPropertyData(rootNode, Constants.JCR_MIXINTYPES, PropertyType.NAME, true,
+               mixValues);
 
          TransientPropertyData exoOwner =
-                  TransientPropertyData.createPropertyData(rootNode, Constants.EXO_OWNER, PropertyType.STRING, false,
-                           new TransientValueData(acl.getOwner()));
+            TransientPropertyData.createPropertyData(rootNode, Constants.EXO_OWNER, PropertyType.STRING, false,
+               new TransientValueData(acl.getOwner()));
 
          List<ValueData> permsValues = new ArrayList<ValueData>();
          for (int i = 0; i < acl.getPermissionEntries().size(); i++)
@@ -254,11 +250,11 @@ public class ScratchWorkspaceInitializer
             permsValues.add(new TransientValueData(entry));
          }
          TransientPropertyData exoPerms =
-                  TransientPropertyData.createPropertyData(rootNode, Constants.EXO_PERMISSIONS,
-                           ExtendedPropertyType.PERMISSION, true, permsValues);
+            TransientPropertyData.createPropertyData(rootNode, Constants.EXO_PERMISSIONS,
+               ExtendedPropertyType.PERMISSION, true, permsValues);
 
          changesLog.add(ItemState.createAddedState(exoMixinTypes)).add(ItemState.createAddedState(exoOwner)).add(
-                  ItemState.createAddedState(exoPerms));
+            ItemState.createAddedState(exoPerms));
          changesLog.add(new ItemState(rootNode, ItemState.MIXIN_CHANGED, false, null));
       }
 
@@ -273,11 +269,10 @@ public class ScratchWorkspaceInitializer
       PlainChangesLog changesLog = new PlainChangesLogImpl();
 
       TransientNodeData jcrSystem =
-               TransientNodeData.createNodeData(root, Constants.JCR_SYSTEM, Constants.NT_UNSTRUCTURED,
-                        Constants.SYSTEM_UUID);
+         TransientNodeData.createNodeData(root, Constants.JCR_SYSTEM, Constants.NT_UNSTRUCTURED, Constants.SYSTEM_UUID);
 
       TransientPropertyData primaryType =
-               TransientPropertyData.createPropertyData(jcrSystem, Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false);
+         TransientPropertyData.createPropertyData(jcrSystem, Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false);
       primaryType.setValue(new TransientValueData(jcrSystem.getPrimaryTypeName()));
 
       changesLog.add(ItemState.createAddedState(jcrSystem)).add(ItemState.createAddedState(primaryType));
@@ -288,8 +283,7 @@ public class ScratchWorkspaceInitializer
       {
          AccessControlList acl = new AccessControlList();
 
-         InternalQName[] mixins = new InternalQName[]
-         {Constants.EXO_OWNEABLE, Constants.EXO_PRIVILEGEABLE};
+         InternalQName[] mixins = new InternalQName[]{Constants.EXO_OWNEABLE, Constants.EXO_PRIVILEGEABLE};
          jcrSystem.setMixinTypeNames(mixins);
 
          // jcr:mixinTypes
@@ -299,12 +293,12 @@ public class ScratchWorkspaceInitializer
             mixValues.add(new TransientValueData(mixin));
          }
          TransientPropertyData exoMixinTypes =
-                  TransientPropertyData.createPropertyData(jcrSystem, Constants.JCR_MIXINTYPES, PropertyType.NAME,
-                           true, mixValues);
+            TransientPropertyData.createPropertyData(jcrSystem, Constants.JCR_MIXINTYPES, PropertyType.NAME, true,
+               mixValues);
 
          TransientPropertyData exoOwner =
-                  TransientPropertyData.createPropertyData(jcrSystem, Constants.EXO_OWNER, PropertyType.STRING, false,
-                           new TransientValueData(acl.getOwner()));
+            TransientPropertyData.createPropertyData(jcrSystem, Constants.EXO_OWNER, PropertyType.STRING, false,
+               new TransientValueData(acl.getOwner()));
 
          List<ValueData> permsValues = new ArrayList<ValueData>();
          for (int i = 0; i < acl.getPermissionEntries().size(); i++)
@@ -313,22 +307,22 @@ public class ScratchWorkspaceInitializer
             permsValues.add(new TransientValueData(entry));
          }
          TransientPropertyData exoPerms =
-                  TransientPropertyData.createPropertyData(jcrSystem, Constants.EXO_PERMISSIONS,
-                           ExtendedPropertyType.PERMISSION, true, permsValues);
+            TransientPropertyData.createPropertyData(jcrSystem, Constants.EXO_PERMISSIONS,
+               ExtendedPropertyType.PERMISSION, true, permsValues);
 
          changesLog.add(ItemState.createAddedState(exoMixinTypes)).add(ItemState.createAddedState(exoOwner)).add(
-                  ItemState.createAddedState(exoPerms));
+            ItemState.createAddedState(exoPerms));
          changesLog.add(new ItemState(jcrSystem, ItemState.MIXIN_CHANGED, false, null));
       }
 
       // init version storage
       TransientNodeData versionStorageNodeData =
-               TransientNodeData.createNodeData(jcrSystem, Constants.JCR_VERSIONSTORAGE, Constants.EXO_VERSIONSTORAGE,
-                        Constants.VERSIONSTORAGE_UUID);
+         TransientNodeData.createNodeData(jcrSystem, Constants.JCR_VERSIONSTORAGE, Constants.EXO_VERSIONSTORAGE,
+            Constants.VERSIONSTORAGE_UUID);
 
       TransientPropertyData vsPrimaryType =
-               TransientPropertyData.createPropertyData(versionStorageNodeData, Constants.JCR_PRIMARYTYPE,
-                        PropertyType.NAME, false);
+         TransientPropertyData.createPropertyData(versionStorageNodeData, Constants.JCR_PRIMARYTYPE, PropertyType.NAME,
+            false);
       vsPrimaryType.setValue(new TransientValueData(versionStorageNodeData.getPrimaryTypeName()));
 
       changesLog.add(ItemState.createAddedState(versionStorageNodeData)).add(ItemState.createAddedState(vsPrimaryType));

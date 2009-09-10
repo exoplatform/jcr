@@ -24,46 +24,53 @@ import java.io.IOException;
 /**
  * <code>RefCountingIndexReader</code>...
  */
-public class RefCountingIndexReader extends FilterIndexReader implements ReleaseableIndexReader {
+public class RefCountingIndexReader extends FilterIndexReader implements ReleaseableIndexReader
+{
 
-  /**
-   * A reference counter. When constructed the refCount is one.
-   */
-  private int refCount = 1;
+   /**
+    * A reference counter. When constructed the refCount is one.
+    */
+   private int refCount = 1;
 
-  public RefCountingIndexReader(IndexReader in) {
-    super(in);
-  }
+   public RefCountingIndexReader(IndexReader in)
+   {
+      super(in);
+   }
 
-  /**
-   * Increments the reference count on this index reader. The reference count is
-   * decremented on {@link #release()}.
-   */
-  synchronized final void acquire() {
-    refCount++;
-  }
+   /**
+    * Increments the reference count on this index reader. The reference count is
+    * decremented on {@link #release()}.
+    */
+   synchronized final void acquire()
+   {
+      refCount++;
+   }
 
-  /**
-   * @return the current reference count value.
-   */
-  synchronized int getRefCount() {
-    return refCount;
-  }
+   /**
+    * @return the current reference count value.
+    */
+   synchronized int getRefCount()
+   {
+      return refCount;
+   }
 
-  // -----------------------< ReleaseableIndexReader >--------------------------
+   // -----------------------< ReleaseableIndexReader >--------------------------
 
-  /**
-   * {@inheritDoc}
-   */
-  public synchronized final void release() throws IOException {
-    if (--refCount == 0) {
-      close();
-    }
-  }
+   /**
+    * {@inheritDoc}
+    */
+   public synchronized final void release() throws IOException
+   {
+      if (--refCount == 0)
+      {
+         close();
+      }
+   }
 
-  // -----------------------< FilterIndexReader >--------------------------
+   // -----------------------< FilterIndexReader >--------------------------
 
-  protected void doClose() throws IOException {
-    Util.closeOrRelease(in);
-  }
+   protected void doClose() throws IOException
+   {
+      Util.closeOrRelease(in);
+   }
 }

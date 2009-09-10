@@ -18,6 +18,18 @@
  */
 package org.exoplatform.services.jcr.impl.xml.importing;
 
+import org.exoplatform.services.jcr.access.AccessManager;
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
+import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
+import org.exoplatform.services.jcr.dataflow.ItemDataKeeper;
+import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.impl.core.LocationFactory;
+import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
+import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+import org.exoplatform.services.security.ConversationState;
+
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -37,25 +49,11 @@ import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
-import org.exoplatform.services.log.Log;
-import org.exoplatform.services.jcr.access.AccessManager;
-import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
-import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
-import org.exoplatform.services.jcr.dataflow.ItemDataKeeper;
-import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.impl.core.LocationFactory;
-import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
-import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
-import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.security.ConversationState;
-
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: StreamImporter.java 14100 2008-05-12 10:53:47Z gazarenkov $
  */
-public class StreamImporter
-   implements RawDataImporter
+public class StreamImporter implements RawDataImporter
 {
 
    private final Log log = ExoLogger.getLogger("jcr.StreamImporter");
@@ -73,27 +71,27 @@ public class StreamImporter
     * @param respectPropertyDefinitionsConstraints
     */
    public StreamImporter(NodeData parent, int uuidBehavior, ItemDataKeeper dataKeeper, ItemDataConsumer dataConsumer,
-            NodeTypeDataManager ntManager, LocationFactory locationFactory, ValueFactoryImpl valueFactory,
-            NamespaceRegistry namespaceRegistry, AccessManager accessManager, ConversationState userState,
-            Map<String, Object> context, RepositoryImpl repository, String currentWorkspaceName)
+      NodeTypeDataManager ntManager, LocationFactory locationFactory, ValueFactoryImpl valueFactory,
+      NamespaceRegistry namespaceRegistry, AccessManager accessManager, ConversationState userState,
+      Map<String, Object> context, RepositoryImpl repository, String currentWorkspaceName)
    {
       super();
       this.dataKeeper = dataKeeper;
       this.importer =
-               createContentImporter(parent, uuidBehavior, dataConsumer, ntManager, locationFactory, valueFactory,
-                        namespaceRegistry, accessManager, userState, context, repository, currentWorkspaceName);
+         createContentImporter(parent, uuidBehavior, dataConsumer, ntManager, locationFactory, valueFactory,
+            namespaceRegistry, accessManager, userState, context, repository, currentWorkspaceName);
    }
 
    /**
     * {@inheritDoc}
     */
    public ContentImporter createContentImporter(NodeData parent, int uuidBehavior, ItemDataConsumer dataConsumer,
-            NodeTypeDataManager ntManager, LocationFactory locationFactory, ValueFactoryImpl valueFactory,
-            NamespaceRegistry namespaceRegistry, AccessManager accessManager, ConversationState userState,
-            Map<String, Object> context, RepositoryImpl repository, String currentWorkspaceName)
+      NodeTypeDataManager ntManager, LocationFactory locationFactory, ValueFactoryImpl valueFactory,
+      NamespaceRegistry namespaceRegistry, AccessManager accessManager, ConversationState userState,
+      Map<String, Object> context, RepositoryImpl repository, String currentWorkspaceName)
    {
       return new NeutralImporter(parent, parent.getQPath(), uuidBehavior, dataConsumer, ntManager, locationFactory,
-               valueFactory, namespaceRegistry, accessManager, userState, context, repository, currentWorkspaceName);
+         valueFactory, namespaceRegistry, accessManager, userState, context, repository, currentWorkspaceName);
    }
 
    /**
@@ -132,18 +130,18 @@ public class StreamImporter
                   Map<String, String> attr = new HashMap<String, String>();
                   while (attributes.hasNext())
                   {
-                     Attribute attribute = (Attribute) attributes.next();
+                     Attribute attribute = (Attribute)attributes.next();
                      attr.put(attribute.getName().getPrefix() + ":" + attribute.getName().getLocalPart(), attribute
-                              .getValue());
+                        .getValue());
                   }
                   QName name = element.getName();
                   importer.startElement(name.getNamespaceURI(), name.getLocalPart(), name.getPrefix() + ":"
-                           + name.getLocalPart(), attr);
+                     + name.getLocalPart(), attr);
                   break;
                case XMLStreamConstants.END_ELEMENT :
                   EndElement endElement = event.asEndElement();
                   importer.endElement(endElement.getName().getNamespaceURI(), endElement.getName().getLocalPart(),
-                           endElement.getName().getPrefix() + ":" + endElement.getName().getLocalPart());
+                     endElement.getName().getPrefix() + ":" + endElement.getName().getLocalPart());
                   break;
                case XMLStreamConstants.PROCESSING_INSTRUCTION :
                   break;

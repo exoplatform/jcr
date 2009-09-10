@@ -18,14 +18,14 @@
  */
 package org.exoplatform.services.jcr.usecases.nodetypes;
 
+import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
+import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 
 import javax.jcr.Node;
-
-import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
-import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
 
 /**
  * 
@@ -48,8 +48,7 @@ import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestNodeTypeRegisterReferenced.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class TestNodeTypeRegisterReferenced
-   extends BaseUsecasesTest
+public class TestNodeTypeRegisterReferenced extends BaseUsecasesTest
 {
 
    public void testRegisterNodeTypesRelated() throws Exception
@@ -59,26 +58,26 @@ public class TestNodeTypeRegisterReferenced
 
       ByteArrayInputStream xmlInput = new ByteArrayInputStream(xmlData);
 
-      NodeTypeManagerImpl ntManager = (NodeTypeManagerImpl) session.getWorkspace().getNodeTypeManager();
+      NodeTypeManagerImpl ntManager = (NodeTypeManagerImpl)session.getWorkspace().getNodeTypeManager();
       ntManager.registerNodeTypes(xmlInput, 0);
 
       String ntName = "exojcrtest:testNodeType__1";
       assertNotNull(ntManager.getNodeType(ntName));
-      Node ntRoot = (Node) repository.getSystemSession().getItem(NodeTypeManagerImpl.NODETYPES_ROOT);
+      Node ntRoot = (Node)repository.getSystemSession().getItem(NodeTypeManagerImpl.NODETYPES_ROOT);
       assertTrue(ntRoot.hasNode(ntName));
       session.getRootNode().addNode("test1", ntName);
       session.save();
 
       ntName = "exojcrtest:testNodeType__2";
       assertNotNull(ntManager.getNodeType(ntName));
-      ntRoot = (Node) repository.getSystemSession().getItem(NodeTypeManagerImpl.NODETYPES_ROOT);
+      ntRoot = (Node)repository.getSystemSession().getItem(NodeTypeManagerImpl.NODETYPES_ROOT);
       assertTrue(ntRoot.hasNode(ntName));
       session.getRootNode().addNode("test2", ntName);
       session.save();
 
       ntName = "exojcrtest:testNodeType__3";
       assertNotNull(ntManager.getNodeType(ntName));
-      ntRoot = (Node) repository.getSystemSession().getItem(NodeTypeManagerImpl.NODETYPES_ROOT);
+      ntRoot = (Node)repository.getSystemSession().getItem(NodeTypeManagerImpl.NODETYPES_ROOT);
       assertTrue(ntRoot.hasNode(ntName));
       Node test3 = session.getRootNode().addNode("test3", ntName);
       test3.addNode("somePrimaryItem", "exojcrtest:testNodeType_required");
@@ -86,7 +85,7 @@ public class TestNodeTypeRegisterReferenced
 
       ntName = "exojcrtest:testNodeType__4";
       assertNotNull(ntManager.getNodeType(ntName));
-      ntRoot = (Node) repository.getSystemSession().getItem(NodeTypeManagerImpl.NODETYPES_ROOT);
+      ntRoot = (Node)repository.getSystemSession().getItem(NodeTypeManagerImpl.NODETYPES_ROOT);
       assertTrue(ntRoot.hasNode(ntName));
       Node test4 = session.getRootNode().addNode("test4", ntName);
       test4.addNode("somePrimaryItem", "exojcrtest:testNodeType_required");

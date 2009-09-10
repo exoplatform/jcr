@@ -18,17 +18,16 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
+import org.exoplatform.services.jcr.JcrImplBaseTest;
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
+
 import java.util.Calendar;
 
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.PropertyType;
 
-import org.exoplatform.services.jcr.JcrImplBaseTest;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
-
-public class TestCopyDataVisitor
-   extends JcrImplBaseTest
+public class TestCopyDataVisitor extends JcrImplBaseTest
 {
 
    public void setUp() throws Exception
@@ -43,7 +42,7 @@ public class TestCopyDataVisitor
       Node file = root.addNode("testCopy", "nt:folder").addNode("childNode2", "nt:file");
       Node contentNode = file.addNode("jcr:content", "nt:resource");
       contentNode.setProperty("jcr:data", session.getValueFactory().createValue("this is the content",
-               PropertyType.BINARY));
+         PropertyType.BINARY));
       contentNode.setProperty("jcr:mimeType", session.getValueFactory().createValue("text/html"));
       contentNode.setProperty("jcr:lastModified", session.getValueFactory().createValue(Calendar.getInstance()));
 
@@ -53,7 +52,7 @@ public class TestCopyDataVisitor
 
       workspace.copy("/testCopy", "/testCopy1");
 
-      session = (SessionImpl) repository.login(credentials, WORKSPACE);
+      session = (SessionImpl)repository.login(credentials, WORKSPACE);
       assertNotNull(session.getItem("/testCopy1"));
       assertNotNull(session.getItem("/testCopy1/childNode2"));
       assertNotNull(session.getItem("/testCopy1/childNode2/jcr:content"));

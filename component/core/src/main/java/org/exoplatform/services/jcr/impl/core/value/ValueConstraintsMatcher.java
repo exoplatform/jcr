@@ -18,18 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.value;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.Calendar;
-
-import javax.jcr.ItemNotFoundException;
-import javax.jcr.PropertyType;
-import javax.jcr.RepositoryException;
-import javax.jcr.ValueFormatException;
-import javax.jcr.nodetype.ConstraintViolationException;
-
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
@@ -42,6 +30,17 @@ import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.Calendar;
+
+import javax.jcr.ItemNotFoundException;
+import javax.jcr.PropertyType;
+import javax.jcr.RepositoryException;
+import javax.jcr.ValueFormatException;
+import javax.jcr.nodetype.ConstraintViolationException;
 
 /**
  * Created by The eXo Platform SAS Author : Peter Nedonosko
@@ -67,7 +66,7 @@ public class ValueConstraintsMatcher
    private final NodeTypeDataManager nodeTypeDataManager;
 
    public ValueConstraintsMatcher(String[] constraints, LocationFactory locator, ItemDataConsumer itemDataConsumer,
-            NodeTypeDataManager nodeTypeDataManager)
+      NodeTypeDataManager nodeTypeDataManager)
    {
       this.constraints = constraints;
       this.locator = locator;
@@ -77,7 +76,7 @@ public class ValueConstraintsMatcher
    }
 
    public boolean match(ValueData value, int type) throws ConstraintViolationException, IllegalStateException,
-            RepositoryException
+      RepositoryException
    {
 
       if (constraints == null || constraints.length <= 0)
@@ -86,7 +85,7 @@ public class ValueConstraintsMatcher
       boolean invalid = true;
 
       // do not use getString because of string consuming
-      TransientValueData valueData = (TransientValueData) value;
+      TransientValueData valueData = (TransientValueData)value;
       if (type == PropertyType.STRING)
       {
          try
@@ -167,13 +166,13 @@ public class ValueConstraintsMatcher
             ReferenceValue refVal = new ReferenceValue(valueData);
             // NodeImpl refNode = (NodeImpl)
             // session.getNodeByUUID(refVal.getIdentifier().getString());
-            NodeData refNode = (NodeData) itemDataConsumer.getItemData(refVal.getIdentifier().getString());
+            NodeData refNode = (NodeData)itemDataConsumer.getItemData(refVal.getIdentifier().getString());
             for (int i = 0; invalid && i < constraints.length; i++)
             {
                String constrString = constraints[i];
                InternalQName constrName = locator.parseJCRName(constrString).getInternalName();
                if (nodeTypeDataManager
-                        .isNodeType(constrName, refNode.getPrimaryTypeName(), refNode.getMixinTypeNames()))
+                  .isNodeType(constrName, refNode.getPrimaryTypeName(), refNode.getMixinTypeNames()))
                {
                   invalid = false;
                }
@@ -218,8 +217,8 @@ public class ValueConstraintsMatcher
             MinMaxConstraint constraint = parseAsMinMax(constrString);
 
             long min =
-                     constraint.getMin().getThreshold().length() > 0 ? new Long(constraint.getMin().getThreshold())
-                              : Long.MIN_VALUE;
+               constraint.getMin().getThreshold().length() > 0 ? new Long(constraint.getMin().getThreshold())
+                  : Long.MIN_VALUE;
             if (constraint.getMin().isExclusive())
             {
                if (valueLength > min)
@@ -232,8 +231,8 @@ public class ValueConstraintsMatcher
             }
 
             long max =
-                     constraint.getMax().getThreshold().length() > 0 ? new Long(constraint.getMax().getThreshold())
-                              : Long.MAX_VALUE;
+               constraint.getMax().getThreshold().length() > 0 ? new Long(constraint.getMax().getThreshold())
+                  : Long.MAX_VALUE;
             if (constraint.getMax().isExclusive())
             {
                if (valueLength < max)
@@ -344,8 +343,8 @@ public class ValueConstraintsMatcher
             MinMaxConstraint constraint = parseAsMinMax(constrString);
 
             Number min =
-                     constraint.getMin().getThreshold().length() > 0 ? new Double(constraint.getMin().getThreshold())
-                              : Double.MIN_VALUE;
+               constraint.getMin().getThreshold().length() > 0 ? new Double(constraint.getMin().getThreshold())
+                  : Double.MIN_VALUE;
             if (constraint.getMin().isExclusive())
             {
                if (valueNumber.doubleValue() > min.doubleValue())
@@ -358,8 +357,8 @@ public class ValueConstraintsMatcher
             }
 
             Number max =
-                     constraint.getMax().getThreshold().length() > 0 ? new Double(constraint.getMax().getThreshold())
-                              : Double.MAX_VALUE;
+               constraint.getMax().getThreshold().length() > 0 ? new Double(constraint.getMax().getThreshold())
+                  : Double.MAX_VALUE;
             if (constraint.getMax().isExclusive())
             {
                if (valueNumber.doubleValue() < max.doubleValue())
@@ -415,7 +414,7 @@ public class ValueConstraintsMatcher
 
       if (parts.length != 2)
          throw new ConstraintViolationException("Value constraint '" + constraint
-                  + "' is invalid accrding the JSR-170 spec.");
+            + "' is invalid accrding the JSR-170 spec.");
 
       boolean exclusive = false;
 
@@ -425,10 +424,10 @@ public class ValueConstraintsMatcher
          exclusive = false;
       else
          throw new ConstraintViolationException("Value constraint '" + constraint
-                  + "' min exclusion rule is unefined accrding the JSR-170 spec.");
+            + "' min exclusion rule is unefined accrding the JSR-170 spec.");
 
       ConstraintRange minValue =
-               new ConstraintRange(parts[0].length() > 1 ? parts[0].substring(1) : DEFAULT_THRESHOLD, exclusive);
+         new ConstraintRange(parts[0].length() > 1 ? parts[0].substring(1) : DEFAULT_THRESHOLD, exclusive);
 
       if (parts[1].endsWith(")"))
          exclusive = true;
@@ -436,11 +435,11 @@ public class ValueConstraintsMatcher
          exclusive = false;
       else
          throw new ConstraintViolationException("Value constraint '" + constraint
-                  + "' max exclusion rule is unefined accrding the JSR-170 spec.");
+            + "' max exclusion rule is unefined accrding the JSR-170 spec.");
 
       ConstraintRange maxValue =
-               new ConstraintRange(parts[1].length() > 1 ? parts[1].substring(0, parts[1].length() - 1)
-                        : DEFAULT_THRESHOLD, exclusive);
+         new ConstraintRange(parts[1].length() > 1 ? parts[1].substring(0, parts[1].length() - 1) : DEFAULT_THRESHOLD,
+            exclusive);
 
       return new MinMaxConstraint(minValue, maxValue);
    }

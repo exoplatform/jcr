@@ -16,6 +16,8 @@
  */
 package org.exoplatform.services.jcr.api.core.query;
 
+import org.apache.jackrabbit.test.AbstractJCRTest;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -30,13 +32,10 @@ import javax.jcr.query.Query;
 import javax.jcr.query.QueryResult;
 import javax.jcr.query.RowIterator;
 
-import org.apache.jackrabbit.test.AbstractJCRTest;
-
 /**
  * Abstract base class for query test cases.
  */
-public class AbstractQueryTest
-   extends AbstractJCRTest
+public class AbstractQueryTest extends AbstractJCRTest
 {
 
    /**
@@ -124,7 +123,7 @@ public class AbstractQueryTest
       {
          nodes.add(it.nextNode());
       }
-      return (Node[]) nodes.toArray(new Node[nodes.size()]);
+      return (Node[])nodes.toArray(new Node[nodes.size()]);
    }
 
    /**
@@ -181,13 +180,13 @@ public class AbstractQueryTest
       // check if all expected are in result
       for (Iterator it = expectedPaths.iterator(); it.hasNext();)
       {
-         String path = (String) it.next();
+         String path = (String)it.next();
          assertTrue(path + " is not part of the result set", resultPaths.contains(path));
       }
       // check result does not contain more than expected
       for (Iterator it = resultPaths.iterator(); it.hasNext();)
       {
-         String path = (String) it.next();
+         String path = (String)it.next();
          assertTrue(path + " is not expected to be part of the result set", expectedPaths.contains(path));
       }
    }

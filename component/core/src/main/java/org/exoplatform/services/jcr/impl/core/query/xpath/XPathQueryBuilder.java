@@ -54,8 +54,7 @@ import org.exoplatform.services.jcr.impl.util.ISO9075;
 /**
  * Query builder that translates a XPath statement into a query tree structure.
  */
-public class XPathQueryBuilder
-   implements XPathVisitor, XPathTreeConstants
+public class XPathQueryBuilder implements XPathVisitor, XPathTreeConstants
 {
 
    /**
@@ -266,7 +265,7 @@ public class XPathQueryBuilder
     *           if the XPath statement is malformed.
     */
    private XPathQueryBuilder(String statement, LocationFactory resolver, QueryNodeFactory factory)
-            throws InvalidQueryException
+      throws InvalidQueryException
    {
       this.resolver = resolver;
       this.factory = factory;
@@ -280,7 +279,7 @@ public class XPathQueryBuilder
          XPath parser;
          synchronized (parsers)
          {
-            parser = (XPath) parsers.get(resolver);
+            parser = (XPath)parsers.get(resolver);
             if (parser == null)
             {
                parser = new XPath(new StringReader(statement));
@@ -309,11 +308,11 @@ public class XPathQueryBuilder
       if (exceptions.size() > 0)
       {
          // simply report the first one
-         Exception e = (Exception) exceptions.get(0);
+         Exception e = (Exception)exceptions.get(0);
          if (e instanceof InvalidQueryException)
          {
             // just re-throw
-            throw (InvalidQueryException) e;
+            throw (InvalidQueryException)e;
          }
          else
          {
@@ -338,7 +337,7 @@ public class XPathQueryBuilder
     *           if the XPath statement is malformed.
     */
    public static QueryRootNode createQuery(String statement, LocationFactory resolver, QueryNodeFactory factory)
-            throws InvalidQueryException
+      throws InvalidQueryException
    {
       return new XPathQueryBuilder(statement, resolver, factory).getRootNode();
    }
@@ -383,7 +382,7 @@ public class XPathQueryBuilder
     */
    public Object visit(SimpleNode node, Object data)
    {
-      QueryNode queryNode = (QueryNode) data;
+      QueryNode queryNode = (QueryNode)data;
       switch (node.getId())
       {
          case JJTXPATH2 :
@@ -393,7 +392,7 @@ public class XPathQueryBuilder
          case JJTROOTDESCENDANTS :
             if (queryNode instanceof PathQueryNode)
             {
-               ((PathQueryNode) queryNode).setAbsolute(true);
+               ((PathQueryNode)queryNode).setAbsolute(true);
             }
             else
             {
@@ -404,10 +403,9 @@ public class XPathQueryBuilder
             if (isAttributeAxis(node))
             {
                if (queryNode.getType() == QueryNode.TYPE_RELATION
-                        || (queryNode.getType() == QueryNode.TYPE_DEREF && ((DerefQueryNode) queryNode)
-                                 .getRefProperty() == null) || queryNode.getType() == QueryNode.TYPE_ORDER
-                        || queryNode.getType() == QueryNode.TYPE_PATH
-                        || queryNode.getType() == QueryNode.TYPE_TEXTSEARCH)
+                  || (queryNode.getType() == QueryNode.TYPE_DEREF && ((DerefQueryNode)queryNode).getRefProperty() == null)
+                  || queryNode.getType() == QueryNode.TYPE_ORDER || queryNode.getType() == QueryNode.TYPE_PATH
+                  || queryNode.getType() == QueryNode.TYPE_TEXTSEARCH)
                {
                   // traverse
                   node.childrenAccept(this, queryNode);
@@ -416,11 +414,11 @@ public class XPathQueryBuilder
                {
                   // is null expression
                   RelationQueryNode isNull =
-                           factory.createRelationQueryNode(queryNode, RelationQueryNode.OPERATION_NULL);
+                     factory.createRelationQueryNode(queryNode, RelationQueryNode.OPERATION_NULL);
                   applyRelativePath(isNull);
                   node.childrenAccept(this, isNull);
-                  NotQueryNode notNode = (NotQueryNode) queryNode;
-                  NAryQueryNode parent = (NAryQueryNode) notNode.getParent();
+                  NotQueryNode notNode = (NotQueryNode)queryNode;
+                  NAryQueryNode parent = (NAryQueryNode)notNode.getParent();
                   parent.removeOperand(notNode);
                   parent.addOperand(isNull);
                }
@@ -428,20 +426,20 @@ public class XPathQueryBuilder
                {
                   // not null expression
                   RelationQueryNode notNull =
-                           factory.createRelationQueryNode(queryNode, RelationQueryNode.OPERATION_NOT_NULL);
+                     factory.createRelationQueryNode(queryNode, RelationQueryNode.OPERATION_NOT_NULL);
                   applyRelativePath(notNull);
                   node.childrenAccept(this, notNull);
-                  ((NAryQueryNode) queryNode).addOperand(notNull);
+                  ((NAryQueryNode)queryNode).addOperand(notNull);
                }
             }
             else
             {
                if (queryNode.getType() == QueryNode.TYPE_PATH)
                {
-                  createLocationStep(node, (NAryQueryNode) queryNode);
+                  createLocationStep(node, (NAryQueryNode)queryNode);
                }
                else if (queryNode.getType() == QueryNode.TYPE_TEXTSEARCH
-                        || queryNode.getType() == QueryNode.TYPE_RELATION)
+                  || queryNode.getType() == QueryNode.TYPE_RELATION)
                {
                   node.childrenAccept(this, queryNode);
                }
@@ -454,8 +452,7 @@ public class XPathQueryBuilder
                   if (tmpRelPath == null)
                   {
 
-                     tmpRelPath = new QPath(new QPathEntry[]
-                     {entr[entr.length - 1]});
+                     tmpRelPath = new QPath(new QPathEntry[]{entr[entr.length - 1]});
                   }
                   else
                   {
@@ -467,14 +464,14 @@ public class XPathQueryBuilder
             break;
          case JJTNAMETEST :
             if (queryNode.getType() == QueryNode.TYPE_LOCATION || queryNode.getType() == QueryNode.TYPE_DEREF
-                     || queryNode.getType() == QueryNode.TYPE_RELATION
-                     || queryNode.getType() == QueryNode.TYPE_TEXTSEARCH || queryNode.getType() == QueryNode.TYPE_PATH)
+               || queryNode.getType() == QueryNode.TYPE_RELATION || queryNode.getType() == QueryNode.TYPE_TEXTSEARCH
+               || queryNode.getType() == QueryNode.TYPE_PATH)
             {
                createNodeTest(node, queryNode);
             }
             else if (queryNode.getType() == QueryNode.TYPE_ORDER)
             {
-               createOrderSpec(node, (OrderQueryNode) queryNode);
+               createOrderSpec(node, (OrderQueryNode)queryNode);
             }
             else
             {
@@ -485,7 +482,7 @@ public class XPathQueryBuilder
          case JJTELEMENTNAMEORWILDCARD :
             if (queryNode.getType() == QueryNode.TYPE_LOCATION)
             {
-               SimpleNode child = (SimpleNode) node.jjtGetChild(0);
+               SimpleNode child = (SimpleNode)node.jjtGetChild(0);
                if (child.getId() != JJTANYNAME)
                {
                   createNodeTest(child, queryNode);
@@ -495,15 +492,15 @@ public class XPathQueryBuilder
          case JJTTEXTTEST :
             if (queryNode.getType() == QueryNode.TYPE_LOCATION)
             {
-               LocationStepQueryNode loc = (LocationStepQueryNode) queryNode;
+               LocationStepQueryNode loc = (LocationStepQueryNode)queryNode;
                loc.setNameTest(JCR_XMLTEXT);
             }
             break;
          case JJTTYPENAME :
             if (queryNode.getType() == QueryNode.TYPE_LOCATION)
             {
-               LocationStepQueryNode loc = (LocationStepQueryNode) queryNode;
-               String ntName = ((SimpleNode) node.jjtGetChild(0)).getValue();
+               LocationStepQueryNode loc = (LocationStepQueryNode)queryNode;
+               String ntName = ((SimpleNode)node.jjtGetChild(0)).getValue();
                try
                {
                   InternalQName nt = resolver.parseJCRName(ntName).getInternalName();
@@ -517,21 +514,21 @@ public class XPathQueryBuilder
             }
             break;
          case JJTOREXPR :
-            NAryQueryNode parent = (NAryQueryNode) queryNode;
+            NAryQueryNode parent = (NAryQueryNode)queryNode;
             QueryNode orQueryNode = factory.createOrQueryNode(parent);
             parent.addOperand(orQueryNode);
             // traverse
             node.childrenAccept(this, orQueryNode);
             break;
          case JJTANDEXPR :
-            parent = (NAryQueryNode) queryNode;
+            parent = (NAryQueryNode)queryNode;
             QueryNode andQueryNode = factory.createAndQueryNode(parent);
             parent.addOperand(andQueryNode);
             // traverse
             node.childrenAccept(this, andQueryNode);
             break;
          case JJTCOMPARISONEXPR :
-            createExpression(node, (NAryQueryNode) queryNode);
+            createExpression(node, (NAryQueryNode)queryNode);
             break;
          case JJTSTRINGLITERAL :
          case JJTDECIMALLITERAL :
@@ -539,19 +536,19 @@ public class XPathQueryBuilder
          case JJTINTEGERLITERAL :
             if (queryNode.getType() == QueryNode.TYPE_RELATION)
             {
-               assignValue(node, (RelationQueryNode) queryNode);
+               assignValue(node, (RelationQueryNode)queryNode);
             }
             else if (queryNode.getType() == QueryNode.TYPE_LOCATION)
             {
                if (node.getId() == JJTINTEGERLITERAL)
                {
                   int index = Integer.parseInt(node.getValue());
-                  ((LocationStepQueryNode) queryNode).setIndex(index);
+                  ((LocationStepQueryNode)queryNode).setIndex(index);
                }
                else
                {
                   exceptions
-                           .add(new InvalidQueryException("LocationStep only allows integer literal as position index"));
+                     .add(new InvalidQueryException("LocationStep only allows integer literal as position index"));
                }
             }
             else
@@ -562,7 +559,7 @@ public class XPathQueryBuilder
          case JJTUNARYMINUS :
             if (queryNode.getType() == QueryNode.TYPE_RELATION)
             {
-               ((RelationQueryNode) queryNode).setUnaryMinus(true);
+               ((RelationQueryNode)queryNode).setUnaryMinus(true);
             }
             else
             {
@@ -578,9 +575,9 @@ public class XPathQueryBuilder
             node.childrenAccept(this, queryNode);
             break;
          case JJTORDERMODIFIER :
-            if (node.jjtGetNumChildren() > 0 && ((SimpleNode) node.jjtGetChild(0)).getId() == JJTDESCENDING)
+            if (node.jjtGetNumChildren() > 0 && ((SimpleNode)node.jjtGetChild(0)).getId() == JJTDESCENDING)
             {
-               OrderQueryNode.OrderSpec[] specs = ((OrderQueryNode) queryNode).getOrderSpecs();
+               OrderQueryNode.OrderSpec[] specs = ((OrderQueryNode)queryNode).getOrderSpecs();
                specs[specs.length - 1].setAscending(false);
             }
             break;
@@ -588,7 +585,7 @@ public class XPathQueryBuilder
             if (queryNode.getType() == QueryNode.TYPE_PATH)
             {
                // switch to last location
-               QueryNode[] operands = ((PathQueryNode) queryNode).getOperands();
+               QueryNode[] operands = ((PathQueryNode)queryNode).getOperands();
                queryNode = operands[operands.length - 1];
             }
             node.childrenAccept(this, queryNode);
@@ -652,7 +649,7 @@ public class XPathQueryBuilder
       Node p = node.jjtGetParent();
       for (int i = 0; i < p.jjtGetNumChildren(); i++)
       {
-         SimpleNode c = (SimpleNode) p.jjtGetChild(i);
+         SimpleNode c = (SimpleNode)p.jjtGetChild(i);
          if (c == node)
          {
             queryNode = factory.createLocationStepQueryNode(parent);
@@ -683,7 +680,7 @@ public class XPathQueryBuilder
    {
       if (node.jjtGetNumChildren() > 0)
       {
-         SimpleNode child = (SimpleNode) node.jjtGetChild(0);
+         SimpleNode child = (SimpleNode)node.jjtGetChild(0);
          if (child.getId() == JJTQNAME || child.getId() == JJTQNAMEFORITEMTYPE)
          {
             try
@@ -695,15 +692,15 @@ public class XPathQueryBuilder
                   {
                      name = LocationStepQueryNode.EMPTY_NAME;
                   }
-                  ((LocationStepQueryNode) queryNode).setNameTest(name);
+                  ((LocationStepQueryNode)queryNode).setNameTest(name);
                }
                else if (queryNode.getType() == QueryNode.TYPE_DEREF)
                {
-                  ((DerefQueryNode) queryNode).setRefProperty(name);
+                  ((DerefQueryNode)queryNode).setRefProperty(name);
                }
                else if (queryNode.getType() == QueryNode.TYPE_RELATION)
                {
-                  ((RelationQueryNode) queryNode).addPathElement(new QPathEntry(name, 0));
+                  ((RelationQueryNode)queryNode).addPathElement(new QPathEntry(name, 0));
                }
                else if (queryNode.getType() == QueryNode.TYPE_PATH)
                {
@@ -715,7 +712,7 @@ public class XPathQueryBuilder
                }
                else if (queryNode.getType() == QueryNode.TYPE_TEXTSEARCH)
                {
-                  TextsearchQueryNode ts = (TextsearchQueryNode) queryNode;
+                  TextsearchQueryNode ts = (TextsearchQueryNode)queryNode;
                   ts.addPathElement(new QPathEntry(name, 0));
                   if (isAttributeNameTest(node))
                   {
@@ -732,15 +729,15 @@ public class XPathQueryBuilder
          {
             if (queryNode.getType() == QueryNode.TYPE_LOCATION)
             {
-               ((LocationStepQueryNode) queryNode).setNameTest(null);
+               ((LocationStepQueryNode)queryNode).setNameTest(null);
             }
             else if (queryNode.getType() == QueryNode.TYPE_RELATION)
             {
-               ((RelationQueryNode) queryNode).addPathElement(new QPathEntry(RelationQueryNode.STAR_NAME_TEST, 0));
+               ((RelationQueryNode)queryNode).addPathElement(new QPathEntry(RelationQueryNode.STAR_NAME_TEST, 0));
             }
             else if (queryNode.getType() == QueryNode.TYPE_TEXTSEARCH)
             {
-               ((TextsearchQueryNode) queryNode).addPathElement(new QPathEntry(RelationQueryNode.STAR_NAME_TEST, 0));
+               ((TextsearchQueryNode)queryNode).addPathElement(new QPathEntry(RelationQueryNode.STAR_NAME_TEST, 0));
             }
          }
          else
@@ -833,8 +830,8 @@ public class XPathQueryBuilder
          {
             String functionName = node.getFunctionName();
             if ((functionName.equals(PropertyFunctionQueryNode.LOWER_CASE) || functionName
-                     .equals(PropertyFunctionQueryNode.UPPER_CASE))
-                     && rqn.getValueType() != QueryConstants.TYPE_STRING)
+               .equals(PropertyFunctionQueryNode.UPPER_CASE))
+               && rqn.getValueType() != QueryConstants.TYPE_STRING)
             {
                String msg = "Upper and lower case function are only supported with String literals";
                exceptions.add(new InvalidQueryException(msg));
@@ -914,7 +911,7 @@ public class XPathQueryBuilder
    private QueryNode createFunction(SimpleNode node, QueryNode queryNode)
    {
       // find out function name
-      String tmp = ((SimpleNode) node.jjtGetChild(0)).getValue();
+      String tmp = ((SimpleNode)node.jjtGetChild(0)).getValue();
       String fName = tmp.substring(0, tmp.length() - 1);
       try
       {
@@ -925,7 +922,7 @@ public class XPathQueryBuilder
             if (queryNode instanceof NAryQueryNode)
             {
                QueryNode not = factory.createNotQueryNode(queryNode);
-               ((NAryQueryNode) queryNode).addOperand(not);
+               ((NAryQueryNode)queryNode).addOperand(not);
 
                queryNode = not;
                // traverse
@@ -950,8 +947,8 @@ public class XPathQueryBuilder
             {
                if (queryNode instanceof RelationQueryNode)
                {
-                  RelationQueryNode rel = (RelationQueryNode) queryNode;
-                  SimpleNode literal = (SimpleNode) node.jjtGetChild(1).jjtGetChild(0);
+                  RelationQueryNode rel = (RelationQueryNode)queryNode;
+                  SimpleNode literal = (SimpleNode)node.jjtGetChild(1).jjtGetChild(0);
                   if (literal.getId() == JJTSTRINGLITERAL)
                   {
                      String value = literal.getValue();
@@ -961,7 +958,7 @@ public class XPathQueryBuilder
                      if (c == null)
                      {
                         exceptions.add(new InvalidQueryException("Unable to parse string literal for xs:dateTime: "
-                                 + value));
+                           + value));
                      }
                      else
                      {
@@ -991,15 +988,15 @@ public class XPathQueryBuilder
             {
                if (queryNode instanceof NAryQueryNode)
                {
-                  SimpleNode literal = (SimpleNode) node.jjtGetChild(2).jjtGetChild(0);
+                  SimpleNode literal = (SimpleNode)node.jjtGetChild(2).jjtGetChild(0);
                   if (literal.getId() == JJTSTRINGLITERAL)
                   {
                      TextsearchQueryNode contains =
-                              factory.createTextsearchQueryNode(queryNode, unescapeQuotes(literal.getValue()));
+                        factory.createTextsearchQueryNode(queryNode, unescapeQuotes(literal.getValue()));
                      // assign property name
-                     SimpleNode path = (SimpleNode) node.jjtGetChild(1);
+                     SimpleNode path = (SimpleNode)node.jjtGetChild(1);
                      path.jjtAccept(this, contains);
-                     ((NAryQueryNode) queryNode).addOperand(contains);
+                     ((NAryQueryNode)queryNode).addOperand(contains);
                   }
                   else
                   {
@@ -1021,7 +1018,7 @@ public class XPathQueryBuilder
                if (queryNode instanceof NAryQueryNode)
                {
                   RelationQueryNode like = factory.createRelationQueryNode(queryNode, RelationQueryNode.OPERATION_LIKE);
-                  ((NAryQueryNode) queryNode).addOperand(like);
+                  ((NAryQueryNode)queryNode).addOperand(like);
 
                   // assign property name
                   node.jjtGetChild(1).jjtAccept(this, like);
@@ -1031,7 +1028,7 @@ public class XPathQueryBuilder
                      exceptions.add(new InvalidQueryException("Wrong first argument type for jcr:like"));
                   }
 
-                  SimpleNode literal = (SimpleNode) node.jjtGetChild(2).jjtGetChild(0);
+                  SimpleNode literal = (SimpleNode)node.jjtGetChild(2).jjtGetChild(0);
                   if (literal.getId() == JJTSTRINGLITERAL)
                   {
                      like.setStringValue(unescapeQuotes(literal.getValue()));
@@ -1056,7 +1053,7 @@ public class XPathQueryBuilder
          {
             if (queryNode.getType() == QueryNode.TYPE_RELATION)
             {
-               RelationQueryNode rel = (RelationQueryNode) queryNode;
+               RelationQueryNode rel = (RelationQueryNode)queryNode;
                rel.setStringValue("true");
             }
             else
@@ -1068,7 +1065,7 @@ public class XPathQueryBuilder
          {
             if (queryNode.getType() == QueryNode.TYPE_RELATION)
             {
-               RelationQueryNode rel = (RelationQueryNode) queryNode;
+               RelationQueryNode rel = (RelationQueryNode)queryNode;
                rel.setStringValue("false");
             }
             else
@@ -1080,7 +1077,7 @@ public class XPathQueryBuilder
          {
             if (queryNode.getType() == QueryNode.TYPE_RELATION)
             {
-               RelationQueryNode rel = (RelationQueryNode) queryNode;
+               RelationQueryNode rel = (RelationQueryNode)queryNode;
                if (rel.getOperation() == RelationQueryNode.OPERATION_EQ_GENERAL)
                {
                   // set dummy value to set type of relation query node
@@ -1091,7 +1088,7 @@ public class XPathQueryBuilder
                else
                {
                   exceptions.add(new InvalidQueryException(
-                           "Unsupported expression with position(). Only = is supported."));
+                     "Unsupported expression with position(). Only = is supported."));
                }
             }
             else
@@ -1103,11 +1100,11 @@ public class XPathQueryBuilder
          {
             if (queryNode.getType() == QueryNode.TYPE_RELATION)
             {
-               ((RelationQueryNode) queryNode).setPositionValue(1);
+               ((RelationQueryNode)queryNode).setPositionValue(1);
             }
             else if (queryNode.getType() == QueryNode.TYPE_LOCATION)
             {
-               ((LocationStepQueryNode) queryNode).setIndex(1);
+               ((LocationStepQueryNode)queryNode).setIndex(1);
             }
             else
             {
@@ -1118,11 +1115,11 @@ public class XPathQueryBuilder
          {
             if (queryNode.getType() == QueryNode.TYPE_RELATION)
             {
-               ((RelationQueryNode) queryNode).setPositionValue(LocationStepQueryNode.LAST);
+               ((RelationQueryNode)queryNode).setPositionValue(LocationStepQueryNode.LAST);
             }
             else if (queryNode.getType() == QueryNode.TYPE_LOCATION)
             {
-               ((LocationStepQueryNode) queryNode).setIndex(LocationStepQueryNode.LAST);
+               ((LocationStepQueryNode)queryNode).setIndex(LocationStepQueryNode.LAST);
             }
             else
             {
@@ -1137,15 +1134,15 @@ public class XPathQueryBuilder
                boolean descendant = false;
                if (queryNode.getType() == QueryNode.TYPE_LOCATION)
                {
-                  LocationStepQueryNode loc = (LocationStepQueryNode) queryNode;
+                  LocationStepQueryNode loc = (LocationStepQueryNode)queryNode;
                   // remember if descendant axis
                   descendant = loc.getIncludeDescendants();
                   queryNode = loc.getParent();
-                  ((NAryQueryNode) queryNode).removeOperand(loc);
+                  ((NAryQueryNode)queryNode).removeOperand(loc);
                }
                if (queryNode.getType() == QueryNode.TYPE_PATH)
                {
-                  PathQueryNode pathNode = (PathQueryNode) queryNode;
+                  PathQueryNode pathNode = (PathQueryNode)queryNode;
                   DerefQueryNode derefNode = factory.createDerefQueryNode(pathNode, null, false);
 
                   // assign property name
@@ -1156,7 +1153,7 @@ public class XPathQueryBuilder
                      exceptions.add(new InvalidQueryException("Wrong first argument type for jcr:deref"));
                   }
 
-                  SimpleNode literal = (SimpleNode) node.jjtGetChild(2).jjtGetChild(0);
+                  SimpleNode literal = (SimpleNode)node.jjtGetChild(2).jjtGetChild(0);
                   if (literal.getId() == JJTSTRINGLITERAL)
                   {
                      String value = literal.getValue();
@@ -1187,7 +1184,7 @@ public class XPathQueryBuilder
                      Node p = node.jjtGetParent();
                      for (int i = 0; i < p.jjtGetNumChildren(); i++)
                      {
-                        SimpleNode c = (SimpleNode) p.jjtGetChild(i);
+                        SimpleNode c = (SimpleNode)p.jjtGetChild(i);
                         if (c == node)
                         {
                            break;
@@ -1208,7 +1205,7 @@ public class XPathQueryBuilder
          {
             if (queryNode.getType() == QueryNode.TYPE_ORDER)
             {
-               createOrderSpec(node, (OrderQueryNode) queryNode);
+               createOrderSpec(node, (OrderQueryNode)queryNode);
             }
             else
             {
@@ -1221,9 +1218,9 @@ public class XPathQueryBuilder
             {
                if (queryNode.getType() == QueryNode.TYPE_RELATION)
                {
-                  RelationQueryNode relNode = (RelationQueryNode) queryNode;
+                  RelationQueryNode relNode = (RelationQueryNode)queryNode;
                   relNode.addOperand(factory.createPropertyFunctionQueryNode(relNode,
-                           PropertyFunctionQueryNode.LOWER_CASE));
+                     PropertyFunctionQueryNode.LOWER_CASE));
                   // get property name
                   node.jjtGetChild(1).jjtAccept(this, relNode);
                }
@@ -1243,9 +1240,9 @@ public class XPathQueryBuilder
             {
                if (queryNode.getType() == QueryNode.TYPE_RELATION)
                {
-                  RelationQueryNode relNode = (RelationQueryNode) queryNode;
+                  RelationQueryNode relNode = (RelationQueryNode)queryNode;
                   relNode.addOperand(factory.createPropertyFunctionQueryNode(relNode,
-                           PropertyFunctionQueryNode.UPPER_CASE));
+                     PropertyFunctionQueryNode.UPPER_CASE));
                   // get property name
                   node.jjtGetChild(1).jjtAccept(this, relNode);
                }
@@ -1265,7 +1262,7 @@ public class XPathQueryBuilder
             {
                if (queryNode instanceof NAryQueryNode)
                {
-                  NAryQueryNode parent = (NAryQueryNode) queryNode;
+                  NAryQueryNode parent = (NAryQueryNode)queryNode;
                   RelationQueryNode rel = factory.createRelationQueryNode(parent, RelationQueryNode.OPERATION_SIMILAR);
                   parent.addOperand(rel);
                   // assign path
@@ -1277,7 +1274,7 @@ public class XPathQueryBuilder
                   if (rel.getStringValue() == null)
                   {
                      exceptions.add(new InvalidQueryException(
-                              "Second argument for exo:similar() must be of type string"));
+                        "Second argument for exo:similar() must be of type string"));
                   }
                }
                else
@@ -1296,9 +1293,9 @@ public class XPathQueryBuilder
             {
                if (queryNode instanceof NAryQueryNode)
                {
-                  NAryQueryNode parent = (NAryQueryNode) queryNode;
+                  NAryQueryNode parent = (NAryQueryNode)queryNode;
                   RelationQueryNode rel =
-                           factory.createRelationQueryNode(parent, RelationQueryNode.OPERATION_SPELLCHECK);
+                     factory.createRelationQueryNode(parent, RelationQueryNode.OPERATION_SPELLCHECK);
                   parent.addOperand(rel);
 
                   // get string to check
@@ -1329,7 +1326,7 @@ public class XPathQueryBuilder
             {
                InternalQName name = resolver.parseJCRName(fName + "()").getInternalName();
 
-               RelationQueryNode relNode = (RelationQueryNode) queryNode;
+               RelationQueryNode relNode = (RelationQueryNode)queryNode;
                relNode.addPathElement(new QPathEntry(name, 0));
             }
             catch (RepositoryException e)
@@ -1368,7 +1365,7 @@ public class XPathQueryBuilder
 
    private OrderQueryNode.OrderSpec createOrderSpec(SimpleNode node, OrderQueryNode queryNode)
    {
-      SimpleNode child = (SimpleNode) node.jjtGetChild(0);
+      SimpleNode child = (SimpleNode)node.jjtGetChild(0);
       OrderQueryNode.OrderSpec spec = null;
       try
       {
@@ -1401,7 +1398,7 @@ public class XPathQueryBuilder
    {
       for (int i = 0; i < node.jjtGetNumChildren(); i++)
       {
-         if (((SimpleNode) node.jjtGetChild(i)).getId() == JJTAT)
+         if (((SimpleNode)node.jjtGetChild(i)).getId() == JJTAT)
          {
             return true;
          }
@@ -1426,10 +1423,10 @@ public class XPathQueryBuilder
     */
    private boolean isAttributeNameTest(SimpleNode node)
    {
-      SimpleNode stepExpr = (SimpleNode) node.jjtGetParent().jjtGetParent();
+      SimpleNode stepExpr = (SimpleNode)node.jjtGetParent().jjtGetParent();
       if (stepExpr.getId() == JJTSTEPEXPR)
       {
-         return ((SimpleNode) stepExpr.jjtGetChild(0)).getId() == JJTAT;
+         return ((SimpleNode)stepExpr.jjtGetChild(0)).getId() == JJTAT;
       }
       return false;
    }

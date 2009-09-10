@@ -47,9 +47,8 @@ import javax.jcr.version.VersionIterator;
  * @version $Id: EntityCollection.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class EntityCollection
-   implements NodeIterator, PropertyIterator, NodeTypeIterator, EventIterator, EventListenerIterator, RowIterator,
-   VersionIterator
+public class EntityCollection implements NodeIterator, PropertyIterator, NodeTypeIterator, EventIterator,
+   EventListenerIterator, RowIterator, VersionIterator
 {
 
    private Iterator iter;
@@ -92,7 +91,7 @@ public class EntityCollection
    public Node nextNode()
    {
       pos++;
-      return (Node) iter.next();
+      return (Node)iter.next();
    }
 
    /**
@@ -161,7 +160,7 @@ public class EntityCollection
    public Property nextProperty()
    {
       pos++;
-      return (Property) iter.next();
+      return (Property)iter.next();
    }
 
    /**
@@ -174,7 +173,7 @@ public class EntityCollection
    public String nextString()
    {
       pos++;
-      return (String) iter.next();
+      return (String)iter.next();
    }
 
    /**
@@ -183,7 +182,7 @@ public class EntityCollection
    public NodeType nextNodeType()
    {
       pos++;
-      return (NodeType) iter.next();
+      return (NodeType)iter.next();
    }
 
    /**
@@ -193,7 +192,7 @@ public class EntityCollection
    public Row nextRow()
    {
       pos++;
-      return (Row) iter.next();
+      return (Row)iter.next();
    }
 
    /**
@@ -202,7 +201,7 @@ public class EntityCollection
    public Event nextEvent()
    {
       pos++;
-      return (Event) iter.next();
+      return (Event)iter.next();
    }
 
    /**
@@ -211,7 +210,7 @@ public class EntityCollection
    public EventListener nextEventListener()
    {
       pos++;
-      return (EventListener) iter.next();
+      return (EventListener)iter.next();
    }
 
    /**
@@ -220,7 +219,7 @@ public class EntityCollection
    public Version nextVersion()
    {
       pos++;
-      return (Version) iter.next();
+      return (Version)iter.next();
    }
 
    public void add(Object obj)

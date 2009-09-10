@@ -18,6 +18,10 @@
  */
 package org.exoplatform.services.jcr.load.storage.fs;
 
+import junit.framework.TestCase;
+
+import org.exoplatform.services.jcr.util.SIDGenerator;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -31,18 +35,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
-import junit.framework.TestCase;
-
-import org.exoplatform.services.jcr.util.SIDGenerator;
-
 /**
  * Created by The eXo Platform SAS 10.07.2007
  * 
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestFSReadWrite.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class TestFSReadWrite
-   extends TestCase
+public class TestFSReadWrite extends TestCase
 {
 
    private static Logger log = Logger.getLogger("org.exoplatform.services.jcr.impl.storage.fs");
@@ -71,8 +70,7 @@ public class TestFSReadWrite
       }
    }
 
-   protected class NameFilter
-      implements FilenameFilter
+   protected class NameFilter implements FilenameFilter
    {
 
       private final String name;

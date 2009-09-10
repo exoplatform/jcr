@@ -27,8 +27,7 @@ import java.util.List;
  * @version $Id: PropertyData.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public interface PropertyData
-   extends ItemData
+public interface PropertyData extends ItemData
 {
 
    /**

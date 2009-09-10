@@ -33,8 +33,7 @@ import org.exoplatform.services.log.ExoLogger;
  * Implements an <code>IndexReader</code> that maintains caches to resolve
  * {@link #getParent(int, BitSet)} calls efficiently. <p/>
  */
-class CachingIndexReader
-   extends FilterIndexReader
+class CachingIndexReader extends FilterIndexReader
 {
 
    /**

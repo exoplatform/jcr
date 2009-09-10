@@ -18,11 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.ext.action;
 
-import javax.jcr.RepositoryException;
-import javax.jcr.observation.Event;
-
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.services.command.action.Action;
 import org.exoplatform.services.command.action.ActionCatalog;
@@ -34,6 +29,10 @@ import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.observation.ExtendedEvent;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import javax.jcr.RepositoryException;
+import javax.jcr.observation.Event;
 
 /**
  * Created by The eXo Platform SAS.
@@ -42,8 +41,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @version $Id: SessionActionCatalog.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class SessionActionCatalog
-   extends ActionCatalog
+public class SessionActionCatalog extends ActionCatalog
 {
 
    private static Log log = ExoLogger.getLogger("jcr.SessionActionCatalog");
@@ -55,7 +53,7 @@ public class SessionActionCatalog
    public SessionActionCatalog(RepositoryService repService) throws RepositoryException
    {
 
-      RepositoryImpl rep = (RepositoryImpl) repService.getCurrentRepository();
+      RepositoryImpl rep = (RepositoryImpl)repService.getCurrentRepository();
       this.locFactory = rep.getLocationFactory();
       this.typeDataManager = rep.getNodeTypeManager().getNodeTypesHolder();
    }
@@ -64,17 +62,17 @@ public class SessionActionCatalog
    {
       if (plugin instanceof AddActionsPlugin)
       {
-         AddActionsPlugin cplugin = (AddActionsPlugin) plugin;
+         AddActionsPlugin cplugin = (AddActionsPlugin)plugin;
          for (ActionConfiguration ac : cplugin.getActions())
          {
             try
             {
 
                SessionEventMatcher matcher =
-                        new SessionEventMatcher(getEventTypes(ac.getEventTypes()), getPaths(ac.getPath()), ac.isDeep(),
-                                 getWorkspaces(ac.getWorkspace()), getNames(ac.getNodeTypes()), typeDataManager);
+                  new SessionEventMatcher(getEventTypes(ac.getEventTypes()), getPaths(ac.getPath()), ac.isDeep(),
+                     getWorkspaces(ac.getWorkspace()), getNames(ac.getNodeTypes()), typeDataManager);
 
-               Action action = (Action) Class.forName(ac.getActionClassName()).newInstance();
+               Action action = (Action)Class.forName(ac.getActionClassName()).newInstance();
                addAction(matcher, action);
             }
             catch (Exception e)

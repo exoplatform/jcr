@@ -18,9 +18,9 @@
  */
 package org.exoplatform.services.jcr.datamodel;
 
-import javax.jcr.RepositoryException;
-
 import org.exoplatform.services.jcr.dataflow.ItemDataVisitor;
+
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.

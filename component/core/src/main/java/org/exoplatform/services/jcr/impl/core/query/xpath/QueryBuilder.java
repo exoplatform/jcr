@@ -30,8 +30,7 @@ import org.exoplatform.services.jcr.impl.core.query.QueryTreeBuilder;
 /**
  * Implements the XPath query tree builder.
  */
-public class QueryBuilder
-   implements QueryTreeBuilder
+public class QueryBuilder implements QueryTreeBuilder
 {
    static
    {
@@ -42,7 +41,7 @@ public class QueryBuilder
     * @inheritDoc
     */
    public QueryRootNode createQueryTree(String statement, LocationFactory resolver, QueryNodeFactory factory)
-            throws InvalidQueryException
+      throws InvalidQueryException
    {
       return XPathQueryBuilder.createQuery(statement, resolver, factory);
    }
@@ -62,8 +61,7 @@ public class QueryBuilder
     */
    public String[] getSupportedLanguages()
    {
-      return new String[]
-      {Query.XPATH};
+      return new String[]{Query.XPATH};
    }
 
    /**

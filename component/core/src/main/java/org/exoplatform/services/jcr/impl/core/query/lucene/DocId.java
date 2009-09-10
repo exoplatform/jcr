@@ -131,8 +131,7 @@ abstract class DocId
    /**
     * <code>DocId</code> based on a document number.
     */
-   private static final class PlainDocId
-      extends DocId
+   private static final class PlainDocId extends DocId
    {
 
       /**
@@ -189,8 +188,7 @@ abstract class DocId
    /**
     * <code>DocId</code> based on a UUID.
     */
-   private static final class UUIDDocId
-      extends DocId
+   private static final class UUIDDocId extends DocId
    {
 
       /**

@@ -18,18 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.xml.exporting;
 
-import java.io.IOException;
-import java.util.List;
-
-import javax.jcr.NamespaceException;
-import javax.jcr.NamespaceRegistry;
-import javax.jcr.PropertyType;
-import javax.jcr.RepositoryException;
-
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
-
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.NodeData;
@@ -39,13 +27,23 @@ import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.util.ISO9075;
 import org.exoplatform.services.jcr.impl.util.StringConverter;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
+
+import java.io.IOException;
+import java.util.List;
+
+import javax.jcr.NamespaceException;
+import javax.jcr.NamespaceRegistry;
+import javax.jcr.PropertyType;
+import javax.jcr.RepositoryException;
 
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version
  */
-public class DocumentViewContentExporter
-   extends HandlingContentExporter
+public class DocumentViewContentExporter extends HandlingContentExporter
 {
    /**
     * 
@@ -68,8 +66,8 @@ public class DocumentViewContentExporter
     * @throws RepositoryException
     */
    public DocumentViewContentExporter(ContentHandler handler, ItemDataConsumer dataManager,
-            NamespaceRegistry namespaceRegistry, ValueFactoryImpl systemValueFactory, boolean skipBinary,
-            boolean noRecurse) throws NamespaceException, RepositoryException
+      NamespaceRegistry namespaceRegistry, ValueFactoryImpl systemValueFactory, boolean skipBinary, boolean noRecurse)
+      throws NamespaceException, RepositoryException
    {
       super(handler, dataManager, namespaceRegistry, systemValueFactory, skipBinary, noRecurse);
    }
@@ -117,16 +115,16 @@ public class DocumentViewContentExporter
                   }
 
                   strValue +=
-                           MULTI_VALUE_DELIMITER
-                                    + (property.getType() == PropertyType.BINARY ? strVal : StringConverter
-                                             .normalizeString(strVal, true));
+                     MULTI_VALUE_DELIMITER
+                        + (property.getType() == PropertyType.BINARY ? strVal : StringConverter.normalizeString(strVal,
+                           true));
 
                }
                // encode node name
                InternalQName internalPropName = ISO9075.encode(property.getQPath().getName());
 
                currentAttr.addAttribute(internalPropName.getNamespace(), internalPropName.getName(), getExportName(
-                        property, true), "CDATA", strValue != "" ? strValue.substring(1) : strValue);
+                  property, true), "CDATA", strValue != "" ? strValue.substring(1) : strValue);
             }
 
             if (Constants.ROOT_PATH.equals(node.getQPath()))
@@ -134,7 +132,7 @@ public class DocumentViewContentExporter
 
             else
                contentHandler.startElement(node.getQPath().getName().getNamespace(), node.getQPath().getName()
-                        .getName(), getExportName(node, true), currentAttr);
+                  .getName(), getExportName(node, true), currentAttr);
 
          }
       }
@@ -182,7 +180,7 @@ public class DocumentViewContentExporter
 
             else
                contentHandler.endElement(node.getQPath().getName().getNamespace(), node.getQPath().getName().getName(),
-                        getExportName(node, true));
+                  getExportName(node, true));
          }
       }
       catch (SAXException e)

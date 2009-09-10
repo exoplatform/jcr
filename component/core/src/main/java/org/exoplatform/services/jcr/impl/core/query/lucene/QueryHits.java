@@ -29,102 +29,112 @@ import java.io.IOException;
  * to release resources after a query has been executed and the results have
  * been read completely.
  */
-public class QueryHits {
+public class QueryHits
+{
 
-  /**
-   * The lucene hits we wrap.
-   */
-  private final Hits        hits;
+   /**
+    * The lucene hits we wrap.
+    */
+   private final Hits hits;
 
-  /**
-   * The IndexReader in use by the lucene hits.
-   */
-  private final IndexReader reader;
+   /**
+    * The IndexReader in use by the lucene hits.
+    */
+   private final IndexReader reader;
 
-  /**
-   * Number of results.
-   */
-  private final int         length;
+   /**
+    * Number of results.
+    */
+   private final int length;
 
-  /**
-   * Creates a new <code>QueryHits</code> instance wrapping <code>hits</code>.
-   * 
-   * @param hits the lucene hits.
-   * @param reader the IndexReader in use by <code>hits</code>.
-   */
-  public QueryHits(Hits hits, IndexReader reader) {
-    this.hits = hits;
-    this.reader = reader;
-    this.length = hits.length();
-  }
+   /**
+    * Creates a new <code>QueryHits</code> instance wrapping <code>hits</code>.
+    * 
+    * @param hits the lucene hits.
+    * @param reader the IndexReader in use by <code>hits</code>.
+    */
+   public QueryHits(Hits hits, IndexReader reader)
+   {
+      this.hits = hits;
+      this.reader = reader;
+      this.length = hits.length();
+   }
 
-  /**
-   * Releases resources held by this hits instance.
-   * 
-   * @throws IOException if an error occurs while releasing resources.
-   */
-  public final void close() throws IOException {
-    PerQueryCache.getInstance().dispose();
-    Util.closeOrRelease(reader);
-  }
+   /**
+    * Releases resources held by this hits instance.
+    * 
+    * @throws IOException if an error occurs while releasing resources.
+    */
+   public final void close() throws IOException
+   {
+      PerQueryCache.getInstance().dispose();
+      Util.closeOrRelease(reader);
+   }
 
-  /**
-   * Returns the number of results.
-   * 
-   * @return the number of results.
-   */
-  public final int length() {
-    return length;
-  }
+   /**
+    * Returns the number of results.
+    * 
+    * @return the number of results.
+    */
+   public final int length()
+   {
+      return length;
+   }
 
-  /**
-   * Returns the <code>n</code><sup>th</sup> document in this QueryHits.
-   * 
-   * @param n index.
-   * @return the <code>n</code><sup>th</sup> document in this QueryHits.
-   * @throws IOException if an error occurs while reading from the index.
-   */
-  public final Document doc(int n) throws IOException {
-    return hits.doc(n);
-  }
+   /**
+    * Returns the <code>n</code><sup>th</sup> document in this QueryHits.
+    * 
+    * @param n index.
+    * @return the <code>n</code><sup>th</sup> document in this QueryHits.
+    * @throws IOException if an error occurs while reading from the index.
+    */
+   public final Document doc(int n) throws IOException
+   {
+      return hits.doc(n);
+   }
 
-  public String getFieldContent(int n, final String field) throws IOException {
-    int id = hits.id(n);
+   public String getFieldContent(int n, final String field) throws IOException
+   {
+      int id = hits.id(n);
 
-    FieldSelector fieldSelector = new FieldSelector() {
-      public FieldSelectorResult accept(String fieldName) {
-        if (fieldName.equals(field))
-          return FieldSelectorResult.LOAD_AND_BREAK;
-        return FieldSelectorResult.NO_LOAD;
-      }
-    };
+      FieldSelector fieldSelector = new FieldSelector()
+      {
+         public FieldSelectorResult accept(String fieldName)
+         {
+            if (fieldName.equals(field))
+               return FieldSelectorResult.LOAD_AND_BREAK;
+            return FieldSelectorResult.NO_LOAD;
+         }
+      };
 
-    Document doc = reader.document(id, fieldSelector);
-    if (doc == null)
-      throw new IOException("Document with id " + id + " not found");
-    return doc.get(field);
-  }
+      Document doc = reader.document(id, fieldSelector);
+      if (doc == null)
+         throw new IOException("Document with id " + id + " not found");
+      return doc.get(field);
+   }
 
-  /**
-   * Returns the score for the <code>n</code><sup>th</sup> document in this
-   * QueryHits.
-   * 
-   * @param n index.
-   * @return the score for the <code>n</code><sup>th</sup> document.
-   */
-  public final float score(int n) throws IOException {
-    return hits.score(n);
-  }
+   /**
+    * Returns the score for the <code>n</code><sup>th</sup> document in this
+    * QueryHits.
+    * 
+    * @param n index.
+    * @return the score for the <code>n</code><sup>th</sup> document.
+    */
+   public final float score(int n) throws IOException
+   {
+      return hits.score(n);
+   }
 
-  /**
-   * Returns the document number for the <code>n</code><sup>th</sup> document in
-   * this QueryHits.
-   * 
-   * @param n index.
-   * @return the document number for the <code>n</code><sup>th</sup> document.
-   * @throws IOException if an error occurs.
-   */
-  public final int id(int n) throws IOException {
-    return hits.id(n);
-  }
+   /**
+    * Returns the document number for the <code>n</code><sup>th</sup> document in
+    * this QueryHits.
+    * 
+    * @param n index.
+    * @return the document number for the <code>n</code><sup>th</sup> document.
+    * @throws IOException if an error occurs.
+    */
+   public final int id(int n) throws IOException
+   {
+      return hits.id(n);
+   }
 }

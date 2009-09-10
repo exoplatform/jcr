@@ -18,12 +18,10 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
-import javax.jcr.RepositoryException;
-
+import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.picocontainer.Startable;
 
-import org.exoplatform.services.jcr.datamodel.InternalQName;
-import org.exoplatform.services.jcr.datamodel.NodeData;
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -37,8 +35,7 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: WorkspaceInitializer.java 13891 2008-05-05 16:02:30Z pnedonosko $
  */
-public interface WorkspaceInitializer
-   extends Startable
+public interface WorkspaceInitializer extends Startable
 {
 
    public static final String ROOT_NODETYPE_PARAMETER = "root-nodetype";

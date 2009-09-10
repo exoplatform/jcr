@@ -47,9 +47,7 @@ import org.exoplatform.services.log.ExoLogger;
  * <li><code>_</code> : matches exactly one character</li>
  * </ul>
  */
-public class WildcardQuery
-   extends Query
-   implements Transformable
+public class WildcardQuery extends Query implements Transformable
 {
 
    /**
@@ -197,8 +195,7 @@ public class WildcardQuery
    /**
     * The <code>Weight</code> implementation for this <code>WildcardQuery</code>.
     */
-   private class WildcardQueryWeight
-      extends AbstractWeight
+   private class WildcardQueryWeight extends AbstractWeight
    {
 
       /**
@@ -269,8 +266,7 @@ public class WildcardQuery
    /**
     * Implements a <code>Scorer</code> for this <code>WildcardQuery</code>.
     */
-   private final class WildcardQueryScorer
-      extends Scorer
+   private final class WildcardQueryScorer extends Scorer
    {
 
       /**
@@ -318,7 +314,7 @@ public class WildcardQuery
          this.cacheKey = field + '\uFFFF' + propName + '\uFFFF' + transform + '\uFFFF' + pattern;
          // check cache
          PerQueryCache cache = PerQueryCache.getInstance();
-         Map m = (Map) cache.get(WildcardQueryScorer.class, reader);
+         Map m = (Map)cache.get(WildcardQueryScorer.class, reader);
          if (m == null)
          {
             m = new HashMap();
@@ -326,7 +322,7 @@ public class WildcardQuery
          }
          resultMap = m;
 
-         BitSet result = (BitSet) resultMap.get(cacheKey);
+         BitSet result = (BitSet)resultMap.get(cacheKey);
          if (result == null)
          {
             result = new BitSet(reader.maxDoc());

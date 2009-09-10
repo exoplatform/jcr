@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
+import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -32,16 +34,13 @@ import java.nio.channels.ReadableByteChannel;
 
 import javax.jcr.RepositoryException;
 
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-
-public class EditableValueData
-   extends TransientValueData
+public class EditableValueData extends TransientValueData
 {
 
    protected final int maxIOBuffSize;
 
    public EditableValueData(byte[] bytes, int orderNumber, FileCleaner fileCleaner, int maxBufferSize,
-            File tempDirectory) throws IOException
+      File tempDirectory) throws IOException
    {
 
       // send bytes to super.<init>
@@ -54,7 +53,7 @@ public class EditableValueData
 
    // TODO use InputStream instead of spoolFile and use Channel.transferFrom.
    public EditableValueData(File spoolFile, int orderNumber, FileCleaner fileCleaner, int maxBufferSize,
-            File tempDirectory) throws IOException
+      File tempDirectory) throws IOException
    {
 
       // don't send any data there (no stream, no bytes)
@@ -115,7 +114,7 @@ public class EditableValueData
 
    protected int calcBuffSize(long length)
    {
-      int buffSize = (int) (length > maxIOBuffSize ? maxIOBuffSize : length / 4);
+      int buffSize = (int)(length > maxIOBuffSize ? maxIOBuffSize : length / 4);
       buffSize = buffSize < 1024 ? 256 : buffSize;
       return buffSize;
    }
@@ -141,8 +140,8 @@ public class EditableValueData
             try
             {
                TransientValueData copy =
-                        new TransientValueData(orderNumber, null, thisStream, null, fileCleaner, maxBufferSize,
-                                 tempDirectory, true);
+                  new TransientValueData(orderNumber, null, thisStream, null, fileCleaner, maxBufferSize,
+                     tempDirectory, true);
                copy.spoolInputStream(); // force spool - read now, till the source isn't changed
                return copy;
             }
@@ -196,11 +195,11 @@ public class EditableValueData
          if ((newSize <= maxBufferSize && newSize <= Integer.MAX_VALUE) || maxBufferSize <= 0 || tempDirectory == null)
          {
             // bytes
-            byte[] newBytes = new byte[(int) newSize];
+            byte[] newBytes = new byte[(int)newSize];
 
             int newIndex = 0; // first pos to write
 
-            if ((newIndex = (int) position) > 0)
+            if ((newIndex = (int)position) > 0)
             {
                // begin from the existed bytes
                System.arraycopy(data, 0, newBytes, 0, newIndex < data.length ? newIndex : data.length);
@@ -252,7 +251,7 @@ public class EditableValueData
 
                ReadableByteChannel bch = Channels.newChannel(new ByteArrayInputStream(this.data));
 
-               if ((newIndex = (int) position) > 0)
+               if ((newIndex = (int)position) > 0)
                {
                   // begin from the existed bytes
                   chch.transferFrom(bch, 0, newIndex < data.length ? newIndex : data.length);
@@ -332,7 +331,7 @@ public class EditableValueData
          if (size < maxBufferSize || maxBufferSize <= 0 || tempDirectory == null)
          {
             // use bytes
-            byte[] newBytes = new byte[(int) size];
+            byte[] newBytes = new byte[(int)size];
             System.arraycopy(data, 0, newBytes, 0, (data.length < newBytes.length) ? data.length : newBytes.length);
             this.data = newBytes;
          }
@@ -384,7 +383,7 @@ public class EditableValueData
       else if (size < maxBufferSize)
       {
          // switch to bytes
-         ByteBuffer bb = ByteBuffer.allocate((int) size);
+         ByteBuffer bb = ByteBuffer.allocate((int)size);
          spoolChannel.force(false);
          spoolChannel.position(0);
          spoolChannel.read(bb);
@@ -415,7 +414,7 @@ public class EditableValueData
             else
             {
                log.warn("Could not remove temporary file on switch to bytes, fileCleaner not found. "
-                        + spoolFile.getAbsolutePath());
+                  + spoolFile.getAbsolutePath());
             }
          }
 

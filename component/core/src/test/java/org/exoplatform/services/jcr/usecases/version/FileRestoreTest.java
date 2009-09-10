@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.usecases.version;
 
+import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -25,8 +27,6 @@ import java.util.Calendar;
 
 import javax.jcr.Node;
 import javax.jcr.version.Version;
-
-import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
 
 /**
  * Created by The eXo Platform SAS.
@@ -37,8 +37,7 @@ import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a>
  * @version $Id: FileRestoreTest.java 111 2008-11-11 11:11:11Z rainf0x $
  */
-public class FileRestoreTest
-   extends BaseUsecasesTest
+public class FileRestoreTest extends BaseUsecasesTest
 {
 
    public void testBigFileRestore() throws Exception
@@ -90,8 +89,7 @@ public class FileRestoreTest
       session.save();
 
       log
-               .info("ADD VERSION #2 : file size = " + contentNode.getProperty("jcr:data").getStream().available()
-                        + " bytes");
+         .info("ADD VERSION #2 : file size = " + contentNode.getProperty("jcr:data").getStream().available() + " bytes");
       compareStream(new FileInputStream(tempFile2), contentNode.getProperty("jcr:data").getStream());
 
       file.checkin(); // v2
@@ -100,8 +98,7 @@ public class FileRestoreTest
       session.save();
 
       log
-               .info("ADD VERSION #3 : file size = " + contentNode.getProperty("jcr:data").getStream().available()
-                        + " bytes");
+         .info("ADD VERSION #3 : file size = " + contentNode.getProperty("jcr:data").getStream().available() + " bytes");
       compareStream(new FileInputStream(tempFile3), contentNode.getProperty("jcr:data").getStream());
 
       // restore version v2

@@ -18,6 +18,14 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
+import org.exoplatform.services.jcr.JcrImplBaseTest;
+import org.exoplatform.services.jcr.dataflow.ItemState;
+import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
+import org.exoplatform.services.jcr.dataflow.serialization.UnknownClassIdException;
+import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.PropertyData;
+import org.exoplatform.services.jcr.datamodel.ValueData;
+
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,14 +35,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.exoplatform.services.jcr.JcrImplBaseTest;
-import org.exoplatform.services.jcr.dataflow.ItemState;
-import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
-import org.exoplatform.services.jcr.dataflow.serialization.UnknownClassIdException;
-import org.exoplatform.services.jcr.datamodel.ItemData;
-import org.exoplatform.services.jcr.datamodel.PropertyData;
-import org.exoplatform.services.jcr.datamodel.ValueData;
-
 /**
  * Created by The eXo Platform SAS. <br/>Date: 16.02.2009
  * 
@@ -42,8 +42,7 @@ import org.exoplatform.services.jcr.datamodel.ValueData;
  * @version $Id: JcrImplSerializationBaseTest.java 111 2008-11-11 11:11:11Z
  *          rainf0x $
  */
-public abstract class JcrImplSerializationBaseTest
-   extends JcrImplBaseTest
+public abstract class JcrImplSerializationBaseTest extends JcrImplBaseTest
 {
 
    protected void checkIterator(Iterator<ItemState> expected, Iterator<ItemState> changes) throws Exception
@@ -67,8 +66,8 @@ public abstract class JcrImplSerializationBaseTest
 
          if (!expData.isNode())
          {
-            PropertyData expProp = (PropertyData) expData;
-            PropertyData elemProp = (PropertyData) elemData;
+            PropertyData expProp = (PropertyData)expData;
+            PropertyData elemProp = (PropertyData)elemData;
             assertEquals(expProp.getType(), elemProp.getType());
             assertEquals(expProp.isMultiValued(), elemProp.isMultiValued());
 
@@ -78,7 +77,7 @@ public abstract class JcrImplSerializationBaseTest
             for (int j = 0; j < expValDat.size(); j++)
             {
                assertTrue(java.util.Arrays
-                        .equals(expValDat.get(j).getAsByteArray(), elemValDat.get(j).getAsByteArray()));
+                  .equals(expValDat.get(j).getAsByteArray(), elemValDat.get(j).getAsByteArray()));
 
                // check is received property values ReplicableValueData
                // assertTrue(elemValDat.get(j) instanceof ReplicableValueData);
@@ -117,8 +116,7 @@ public abstract class JcrImplSerializationBaseTest
          while (true)
          {
             TransactionChangesLog obj =
-                     (TransactionChangesLog) (new TransactionChangesLogReader(fileCleaner, maxBufferSize, holder))
-                              .read(jcrin);
+               (TransactionChangesLog)(new TransactionChangesLogReader(fileCleaner, maxBufferSize, holder)).read(jcrin);
             // TransactionChangesLog obj = new TransactionChangesLog();
             // obj.readObject(jcrin);
             readed.add(obj);

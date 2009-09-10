@@ -25,8 +25,7 @@ package org.exoplatform.services.jcr.dataflow;
  * @version $Id: CompositeChangesLog.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public interface CompositeChangesLog
-   extends ItemStateChangesLog
+public interface CompositeChangesLog extends ItemStateChangesLog
 {
 
    /**

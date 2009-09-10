@@ -49,8 +49,7 @@ import org.exoplatform.services.log.ExoLogger;
 /**
  * Implements the {@link ExecutableQuery} interface.
  */
-public class QueryImpl
-   extends AbstractQueryImpl
+public class QueryImpl extends AbstractQueryImpl
 {
 
    /**
@@ -82,7 +81,7 @@ public class QueryImpl
     *           to the specified <code>language</code>.
     */
    public QueryImpl(SessionImpl session, SessionDataManager itemMgr, SearchIndex index, PropertyTypeRegistry propReg,
-            String statement, String language, QueryNodeFactory factory) throws InvalidQueryException
+      String statement, String language, QueryNodeFactory factory) throws InvalidQueryException
    {
       super(session, itemMgr, index, propReg);
       // parse query according to language
@@ -109,15 +108,15 @@ public class QueryImpl
       // check for special query
       if (allNodesQueryNode.equals(root))
       {
-         return new WorkspaceTraversalResult(session, new InternalQName[]
-         {Constants.JCR_PRIMARYTYPE, Constants.JCR_PATH, Constants.JCR_SCORE}, session.getLocationFactory());
+         return new WorkspaceTraversalResult(session, new InternalQName[]{Constants.JCR_PRIMARYTYPE,
+            Constants.JCR_PATH, Constants.JCR_SCORE}, session.getLocationFactory());
       }
 
       // build lucene query
       Query query =
-               LuceneQueryBuilder.createQuery(root, session, index.getContext().getItemStateManager(), index
-                        .getNamespaceMappings(), index.getContext().getNodeTypeDataManager(), index.getTextAnalyzer(),
-                        propReg, index.getSynonymProvider(), index.getIndexFormatVersion());
+         LuceneQueryBuilder.createQuery(root, session, index.getContext().getItemStateManager(), index
+            .getNamespaceMappings(), index.getContext().getNodeTypeDataManager(), index.getTextAnalyzer(), propReg,
+            index.getSynonymProvider(), index.getIndexFormatVersion());
 
       OrderQueryNode orderNode = root.getOrderNode();
 
@@ -139,9 +138,8 @@ public class QueryImpl
       }
 
       return new QueryResultImpl(index, itemMgr, session.getLocationFactory(), session.getValueFactory(), session
-               .getAccessManager(), session.getUserID(), this, query,
-               new SpellSuggestion(index.getSpellChecker(), root), getSelectProperties(), orderProperties, ascSpecs,
-               getRespectDocumentOrder(), offset, limit);
+         .getAccessManager(), session.getUserID(), this, query, new SpellSuggestion(index.getSpellChecker(), root),
+         getSelectProperties(), orderProperties, ascSpecs, getRespectDocumentOrder(), offset, limit);
    }
 
    /**
@@ -201,7 +199,7 @@ public class QueryImpl
          selectProps.add(Constants.JCR_SCORE);
       }
 
-      return (InternalQName[]) selectProps.toArray(new InternalQName[selectProps.size()]);
+      return (InternalQName[])selectProps.toArray(new InternalQName[selectProps.size()]);
    }
 
    /**

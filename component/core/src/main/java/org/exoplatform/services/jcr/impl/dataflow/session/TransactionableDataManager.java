@@ -18,13 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.session;
 
-import java.util.List;
-
-import javax.jcr.InvalidItemStateException;
-import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.jcr.dataflow.DataManager;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
@@ -33,15 +26,18 @@ import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
-import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
-import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
-import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.LocalWorkspaceDataManagerStub;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 import org.exoplatform.services.transaction.TransactionException;
 import org.exoplatform.services.transaction.TransactionResource;
+
+import java.util.List;
+
+import javax.jcr.InvalidItemStateException;
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -49,8 +45,7 @@ import org.exoplatform.services.transaction.TransactionResource;
  * @author Gennady Azarenkov
  * @version $Id: TransactionableDataManager.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class TransactionableDataManager
-   implements TransactionResource, DataManager
+public class TransactionableDataManager implements TransactionResource, DataManager
 {
 
    private WorkspaceStorageDataManagerProxy storageDataManager;
@@ -60,7 +55,7 @@ public class TransactionableDataManager
    private TransactionChangesLog transactionLog;
 
    public TransactionableDataManager(LocalWorkspaceDataManagerStub dataManager, SessionImpl session)
-            throws RepositoryException
+      throws RepositoryException
    {
       super();
       try
@@ -90,7 +85,7 @@ public class TransactionableDataManager
          {
             nodes.remove(state.getData());
             if (!state.isDeleted())
-               nodes.add((NodeData) state.getData());
+               nodes.add((NodeData)state.getData());
          }
       }
       return nodes;
@@ -110,7 +105,7 @@ public class TransactionableDataManager
          {
             props.remove(state.getData());
             if (!state.isDeleted())
-               props.add((PropertyData) state.getData());
+               props.add((PropertyData)state.getData());
          }
       }
       return props;
@@ -130,7 +125,7 @@ public class TransactionableDataManager
          {
             props.remove(state.getData());
             if (!state.isDeleted())
-               props.add((PropertyData) state.getData());
+               props.add((PropertyData)state.getData());
          }
       }
       return props;
@@ -176,7 +171,7 @@ public class TransactionableDataManager
     * {@inheritDoc}
     */
    public List<PropertyData> getReferencesData(String identifier, boolean skipVersionStorage)
-            throws RepositoryException
+      throws RepositoryException
    {
       return storageDataManager.getReferencesData(identifier, skipVersionStorage);
    }
@@ -240,11 +235,11 @@ public class TransactionableDataManager
    public void save(ItemStateChangesLog changes) throws RepositoryException
    {
 
-      PlainChangesLog statesLog = (PlainChangesLog) changes;
+      PlainChangesLog statesLog = (PlainChangesLog)changes;
 
       if (log.isDebugEnabled())
          log.debug("save() " + this + " txStarted: " + txStarted() + "\n====== Changes ======\n"
-                  + (statesLog != null ? "\n" + statesLog.dump() : "[NULL]") + "=====================");
+            + (statesLog != null ? "\n" + statesLog.dump() : "[NULL]") + "=====================");
       if (txStarted())
          transactionLog.addLog(statesLog);
       else

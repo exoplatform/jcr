@@ -18,13 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.ext.action;
 
-import java.util.Iterator;
-import java.util.Set;
-
-import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.services.command.action.Action;
 import org.exoplatform.services.command.action.ActionCatalog;
@@ -38,6 +31,12 @@ import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.PropertyImpl;
 import org.exoplatform.services.jcr.observation.ExtendedEvent;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import java.util.Iterator;
+import java.util.Set;
+
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -88,8 +87,7 @@ public class SessionActionInterceptor
          Condition conditions = new Condition();
          conditions.put(SessionEventMatcher.EVENTTYPE_KEY, ExtendedEvent.ADD_MIXIN);
          conditions.put(SessionEventMatcher.PATH_KEY, node.getInternalPath());
-         conditions.put(SessionEventMatcher.NODETYPES_KEY, new InternalQName[]
-         {mixinType});
+         conditions.put(SessionEventMatcher.NODETYPES_KEY, new InternalQName[]{mixinType});
 
          InvocationContext ctx = new InvocationContext();
          ctx.put(InvocationContext.CURRENT_ITEM, node);
@@ -118,7 +116,7 @@ public class SessionActionInterceptor
          Condition conditions = new Condition();
          conditions.put(SessionEventMatcher.EVENTTYPE_KEY, ExtendedEvent.NODE_ADDED);
          conditions.put(SessionEventMatcher.PATH_KEY, node.getInternalPath());
-         conditions.put(SessionEventMatcher.NODETYPES_KEY, readNodeTypeNames((NodeData) node.getData()));
+         conditions.put(SessionEventMatcher.NODETYPES_KEY, readNodeTypeNames((NodeData)node.getData()));
 
          InvocationContext ctx = new InvocationContext();
          ctx.put(InvocationContext.CURRENT_ITEM, node);
@@ -147,7 +145,7 @@ public class SessionActionInterceptor
          Condition conditions = new Condition();
          conditions.put(SessionEventMatcher.EVENTTYPE_KEY, ExtendedEvent.CHECKIN);
          conditions.put(SessionEventMatcher.PATH_KEY, node.getInternalPath());
-         conditions.put(SessionEventMatcher.NODETYPES_KEY, readNodeTypeNames((NodeData) node.getData()));
+         conditions.put(SessionEventMatcher.NODETYPES_KEY, readNodeTypeNames((NodeData)node.getData()));
 
          InvocationContext ctx = new InvocationContext();
          ctx.put(InvocationContext.CURRENT_ITEM, node);
@@ -176,7 +174,7 @@ public class SessionActionInterceptor
          Condition conditions = new Condition();
          conditions.put(SessionEventMatcher.EVENTTYPE_KEY, ExtendedEvent.CHECKOUT);
          conditions.put(SessionEventMatcher.PATH_KEY, node.getInternalPath());
-         conditions.put(SessionEventMatcher.NODETYPES_KEY, readNodeTypeNames((NodeData) node.getData()));
+         conditions.put(SessionEventMatcher.NODETYPES_KEY, readNodeTypeNames((NodeData)node.getData()));
 
          InvocationContext ctx = new InvocationContext();
          ctx.put(InvocationContext.CURRENT_ITEM, node);
@@ -205,7 +203,7 @@ public class SessionActionInterceptor
          Condition conditions = new Condition();
          conditions.put(SessionEventMatcher.EVENTTYPE_KEY, ExtendedEvent.LOCK);
          conditions.put(SessionEventMatcher.PATH_KEY, node.getInternalPath());
-         conditions.put(SessionEventMatcher.NODETYPES_KEY, readNodeTypeNames((NodeData) node.getData()));
+         conditions.put(SessionEventMatcher.NODETYPES_KEY, readNodeTypeNames((NodeData)node.getData()));
 
          InvocationContext ctx = new InvocationContext();
          ctx.put(InvocationContext.CURRENT_ITEM, node);
@@ -237,7 +235,7 @@ public class SessionActionInterceptor
 
          if (item.isNode())
          {
-            conditions.put(SessionEventMatcher.NODETYPES_KEY, readNodeTypeNames((NodeData) item.getData()));
+            conditions.put(SessionEventMatcher.NODETYPES_KEY, readNodeTypeNames((NodeData)item.getData()));
          }
          else
          {
@@ -316,7 +314,7 @@ public class SessionActionInterceptor
          Condition conditions = new Condition();
          conditions.put(SessionEventMatcher.EVENTTYPE_KEY, ExtendedEvent.UNLOCK);
          conditions.put(SessionEventMatcher.PATH_KEY, node.getInternalPath());
-         conditions.put(SessionEventMatcher.NODETYPES_KEY, readNodeTypeNames((NodeData) node.getData()));
+         conditions.put(SessionEventMatcher.NODETYPES_KEY, readNodeTypeNames((NodeData)node.getData()));
 
          InvocationContext ctx = new InvocationContext();
          ctx.put(InvocationContext.CURRENT_ITEM, node);
@@ -348,7 +346,7 @@ public class SessionActionInterceptor
          conditions.put(SessionEventMatcher.PATH_KEY, item.getInternalPath());
          if (item.isNode())
          {
-            conditions.put(SessionEventMatcher.NODETYPES_KEY, readNodeTypeNames((NodeData) item.getData()));
+            conditions.put(SessionEventMatcher.NODETYPES_KEY, readNodeTypeNames((NodeData)item.getData()));
          }
          else
          {
@@ -382,8 +380,7 @@ public class SessionActionInterceptor
          Condition conditions = new Condition();
          conditions.put(SessionEventMatcher.EVENTTYPE_KEY, ExtendedEvent.REMOVE_MIXIN);
          conditions.put(SessionEventMatcher.PATH_KEY, node.getInternalPath());
-         conditions.put(SessionEventMatcher.NODETYPES_KEY, new InternalQName[]
-         {mixinType});
+         conditions.put(SessionEventMatcher.NODETYPES_KEY, new InternalQName[]{mixinType});
 
          InvocationContext ctx = new InvocationContext();
          ctx.put(InvocationContext.CURRENT_ITEM, node);

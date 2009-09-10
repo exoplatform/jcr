@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.load.blob;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Calendar;
@@ -25,14 +27,11 @@ import java.util.Calendar;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-
 /**
  * Created by The eXo Platform SAS. NOTE: Make sure you have the files pointed below!
  */
 
-public class TestMoveBinaryValue1
-   extends JcrAPIBaseTest
+public class TestMoveBinaryValue1 extends JcrAPIBaseTest
 {
 
    private Node testBinaryValue = null;

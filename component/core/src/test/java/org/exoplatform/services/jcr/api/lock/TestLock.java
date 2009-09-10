@@ -18,6 +18,9 @@
  */
 package org.exoplatform.services.jcr.api.lock;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.core.CredentialsImpl;
+
 import java.io.ByteArrayInputStream;
 import java.util.Calendar;
 
@@ -27,9 +30,6 @@ import javax.jcr.Session;
 import javax.jcr.lock.Lock;
 import javax.jcr.lock.LockException;
 
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-import org.exoplatform.services.jcr.core.CredentialsImpl;
-
 /**
  * Created by The eXo Platform SAS Author : Peter Nedonosko peter.nedonosko@exoplatform.com.ua
  * 21.09.2006
@@ -37,8 +37,7 @@ import org.exoplatform.services.jcr.core.CredentialsImpl;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestLock.java 11908 2008-03-13 16:00:12Z ksm $
  */
-public class TestLock
-   extends JcrAPIBaseTest
+public class TestLock extends JcrAPIBaseTest
 {
 
    private Node lockedNode = null;
@@ -387,7 +386,7 @@ public class TestLock
       try
       {
          Session s1 =
-                  repository.login(new CredentialsImpl("exo", "exo".toCharArray()), session.getWorkspace().getName());
+            repository.login(new CredentialsImpl("exo", "exo".toCharArray()), session.getWorkspace().getName());
          s1.getRootNode().getNode("locked node").removeMixin("mix:lockable");
          s1.save();
 

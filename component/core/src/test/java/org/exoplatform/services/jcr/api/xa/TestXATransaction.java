@@ -18,6 +18,10 @@
  */
 package org.exoplatform.services.jcr.api.xa;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.core.XASession;
+import org.exoplatform.services.transaction.TransactionService;
+
 import javax.jcr.LoginException;
 import javax.jcr.NoSuchWorkspaceException;
 import javax.jcr.Node;
@@ -30,18 +34,13 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-import org.exoplatform.services.jcr.core.XASession;
-import org.exoplatform.services.transaction.TransactionService;
-
 /**
  * Created by The eXo Platform SAS. <br>
  * 
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov</a>
  * @version $Id: TestXATransaction.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class TestXATransaction
-   extends JcrAPIBaseTest
+public class TestXATransaction extends JcrAPIBaseTest
 {
 
    private TransactionService ts;
@@ -51,7 +50,7 @@ public class TestXATransaction
 
       super.setUp();
 
-      ts = (TransactionService) container.getComponentInstanceOfType(TransactionService.class);
+      ts = (TransactionService)container.getComponentInstanceOfType(TransactionService.class);
 
    }
 
@@ -59,14 +58,13 @@ public class TestXATransaction
    {
       assertNotNull(ts);
       Xid id = ts.createXid();
-      XAResource xares = ((XASession) session).getXAResource();
+      XAResource xares = ((XASession)session).getXAResource();
       xares.start(id, XAResource.TMNOFLAGS);
       session.getRootNode().addNode("txg1");
       session.save();
       xares.commit(id, true);
       Session s1 =
-               repository
-                        .login(new SimpleCredentials("admin", "admin".toCharArray()), session.getWorkspace().getName());
+         repository.login(new SimpleCredentials("admin", "admin".toCharArray()), session.getWorkspace().getName());
       assertNotNull(s1.getItem("/txg1"));
 
    }
@@ -75,11 +73,10 @@ public class TestXATransaction
    {
       assertNotNull(ts);
       Session s1 =
-               repository
-                        .login(new SimpleCredentials("admin", "admin".toCharArray()), session.getWorkspace().getName());
+         repository.login(new SimpleCredentials("admin", "admin".toCharArray()), session.getWorkspace().getName());
 
       Xid id1 = ts.createXid();
-      XAResource xares = ((XASession) session).getXAResource();
+      XAResource xares = ((XASession)session).getXAResource();
       xares.start(id1, XAResource.TMNOFLAGS);
 
       session.getRootNode().addNode("txg2");
@@ -124,21 +121,20 @@ public class TestXATransaction
    }
 
    public void testLockInTransactions() throws LoginException, NoSuchWorkspaceException, RepositoryException,
-            XAException
+      XAException
    {
       assertNotNull(ts);
       Session s1 =
-               repository
-                        .login(new SimpleCredentials("admin", "admin".toCharArray()), session.getWorkspace().getName());
+         repository.login(new SimpleCredentials("admin", "admin".toCharArray()), session.getWorkspace().getName());
       Session s2 =
-               repository.login(new SimpleCredentials("exo", "exo".toCharArray()), session.getWorkspace().getName());
+         repository.login(new SimpleCredentials("exo", "exo".toCharArray()), session.getWorkspace().getName());
 
       Node n1 = session.getRootNode().addNode("testLock");
       n1.addMixin("mix:lockable");
       session.getRootNode().save();
 
       Xid id1 = ts.createXid();
-      XAResource xares = ((XASession) session).getXAResource();
+      XAResource xares = ((XASession)session).getXAResource();
       xares.start(id1, XAResource.TMNOFLAGS);
 
       // lock node

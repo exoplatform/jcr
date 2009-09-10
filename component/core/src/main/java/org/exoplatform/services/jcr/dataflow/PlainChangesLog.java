@@ -18,9 +18,9 @@
  */
 package org.exoplatform.services.jcr.dataflow;
 
-import java.util.List;
-
 import org.exoplatform.services.jcr.observation.ExtendedEventType;
+
+import java.util.List;
 
 /**
  * Created by The eXo Platform SAS.<br/> Plain changes log implementation (i.e. no nested logs
@@ -29,8 +29,7 @@ import org.exoplatform.services.jcr.observation.ExtendedEventType;
  * @author Gennady Azarenkov
  * @version $Id: PlainChangesLog.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public interface PlainChangesLog
-   extends ItemStateChangesLog
+public interface PlainChangesLog extends ItemStateChangesLog
 {
 
    /**

@@ -18,13 +18,8 @@
  */
 package org.exoplatform.services.jcr.usecases;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-
-import org.exoplatform.services.jcr.dataflow.serialization.ObjectWriter;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
+import org.exoplatform.services.jcr.dataflow.serialization.ObjectWriter;
 import org.exoplatform.services.jcr.dataflow.serialization.UnknownClassIdException;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectReaderImpl;
@@ -33,6 +28,11 @@ import org.exoplatform.services.jcr.impl.dataflow.serialization.TransientValueDa
 import org.exoplatform.services.jcr.impl.dataflow.serialization.TransientValueDataWriter;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 /**
  * Created by The eXo Platform SAS. <br/>
  * Date:
@@ -40,8 +40,7 @@ import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a>
  * @version $Id: RemoveVDTest.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class RemoveVDTest
-   extends BaseUsecasesTest
+public class RemoveVDTest extends BaseUsecasesTest
 {
 
    public void testRemove() throws IOException

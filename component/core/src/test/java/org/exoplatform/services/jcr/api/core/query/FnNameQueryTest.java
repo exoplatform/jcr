@@ -22,8 +22,7 @@ import javax.jcr.RepositoryException;
 /**
  * <code>FnNameQueryTest</code> tests queries with fn:name() functions.
  */
-public class FnNameQueryTest
-   extends AbstractQueryTest
+public class FnNameQueryTest extends AbstractQueryTest
 {
 
    public void testFnName() throws RepositoryException
@@ -38,17 +37,12 @@ public class FnNameQueryTest
       testRootNode.save();
 
       String base = testPath + "/*[@" + propertyName1;
-      executeXPathQuery(base + " = 1 and fn:name() = '" + nodeName1 + "']", new Node[]
-      {n1});
-      executeXPathQuery(base + " = 1 and fn:name() = '" + nodeName2 + "']", new Node[]
-      {});
-      executeXPathQuery(base + " > 0 and fn:name() = '" + nodeName2 + "']", new Node[]
-      {n2});
+      executeXPathQuery(base + " = 1 and fn:name() = '" + nodeName1 + "']", new Node[]{n1});
+      executeXPathQuery(base + " = 1 and fn:name() = '" + nodeName2 + "']", new Node[]{});
+      executeXPathQuery(base + " > 0 and fn:name() = '" + nodeName2 + "']", new Node[]{n2});
       executeXPathQuery(base + " > 0 and (fn:name() = '" + nodeName1 + "' or fn:name() = '" + nodeName2 + "')]",
-               new Node[]
-               {n1, n2});
-      executeXPathQuery(base + " > 0 and not(fn:name() = '" + nodeName1 + "')]", new Node[]
-      {n2, n3});
+         new Node[]{n1, n2});
+      executeXPathQuery(base + " > 0 and not(fn:name() = '" + nodeName1 + "')]", new Node[]{n2, n3});
    }
 
    public void testFnNameWithSpace() throws RepositoryException
@@ -59,9 +53,7 @@ public class FnNameQueryTest
       testRootNode.save();
 
       String base = testPath + "/*[@" + propertyName1;
-      executeXPathQuery(base + " = 1 and fn:name() = 'My Documents']", new Node[]
-      {});
-      executeXPathQuery(base + " = 1 and fn:name() = 'My_x0020_Documents']", new Node[]
-      {n1});
+      executeXPathQuery(base + " = 1 and fn:name() = 'My Documents']", new Node[]{});
+      executeXPathQuery(base + " = 1 and fn:name() = 'My_x0020_Documents']", new Node[]{n1});
    }
 }

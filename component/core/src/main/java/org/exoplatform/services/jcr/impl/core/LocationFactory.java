@@ -18,16 +18,15 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
-import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.jcr.core.NamespaceAccessor;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.xml.XMLChar;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.<br>

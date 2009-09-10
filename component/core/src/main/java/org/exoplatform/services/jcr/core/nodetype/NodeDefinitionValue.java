@@ -29,8 +29,7 @@ import java.util.List;
  * @version $Id: NodeDefinitionValue.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public final class NodeDefinitionValue
-   extends ItemDefinitionValue
+public final class NodeDefinitionValue extends ItemDefinitionValue
 {
 
    private String defaultNodeTypeName;
@@ -54,7 +53,7 @@ public final class NodeDefinitionValue
     * @param sameNameSiblings
     */
    public NodeDefinitionValue(String name, boolean autoCreate, boolean mandatory, int onVersion, boolean readOnly,
-            String defaultNodeTypeName, List<String> requiredNodeTypeNames, boolean sameNameSiblings)
+      String defaultNodeTypeName, List<String> requiredNodeTypeNames, boolean sameNameSiblings)
    {
       super(name, autoCreate, mandatory, onVersion, readOnly);
       this.defaultNodeTypeName = defaultNodeTypeName;

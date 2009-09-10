@@ -28,9 +28,7 @@ import javax.jcr.nodetype.NodeType;
  * @version $Id: NodeDefinitionImpl.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class NodeDefinitionImpl
-   extends ItemDefinitionImpl
-   implements NodeDefinition
+public class NodeDefinitionImpl extends ItemDefinitionImpl implements NodeDefinition
 {
 
    private final NodeType defaultNodeType;
@@ -40,8 +38,7 @@ public class NodeDefinitionImpl
    private final boolean multiple;
 
    public NodeDefinitionImpl(String name, NodeType declaringNodeType, NodeType[] requiredNodeTypes,
-            NodeType defaultNodeType, boolean autoCreate, boolean mandatory, int onVersion, boolean readOnly,
-            boolean multiple)
+      NodeType defaultNodeType, boolean autoCreate, boolean mandatory, int onVersion, boolean readOnly, boolean multiple)
    {
 
       super(name, declaringNodeType, autoCreate, onVersion, readOnly, mandatory);
@@ -91,7 +88,7 @@ public class NodeDefinitionImpl
       if (!(obj instanceof NodeDefinitionImpl))
          return false;
       if (this.getName() == null)
-         return ((NodeDefinitionImpl) obj).getName() == null;
-      return this.getName().equals(((NodeDefinitionImpl) obj).getName());
+         return ((NodeDefinitionImpl)obj).getName() == null;
+      return this.getName().equals(((NodeDefinitionImpl)obj).getName());
    }
 }

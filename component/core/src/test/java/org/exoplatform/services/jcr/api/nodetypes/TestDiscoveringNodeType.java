@@ -18,10 +18,10 @@
  */
 package org.exoplatform.services.jcr.api.nodetypes;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+
 import javax.jcr.Node;
 import javax.jcr.nodetype.NodeType;
-
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
 
 /**
  * Created by The eXo Platform SAS.
@@ -30,8 +30,7 @@ import org.exoplatform.services.jcr.JcrAPIBaseTest;
  * @version $Id: TestDiscoveringNodeType.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class TestDiscoveringNodeType
-   extends JcrAPIBaseTest
+public class TestDiscoveringNodeType extends JcrAPIBaseTest
 {
 
    public void testGetPrimaryNodeType() throws Exception

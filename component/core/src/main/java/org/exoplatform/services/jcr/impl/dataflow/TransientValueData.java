@@ -18,6 +18,15 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
+import org.exoplatform.services.jcr.access.AccessControlEntry;
+import org.exoplatform.services.jcr.datamodel.Identifier;
+import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.datamodel.QPath;
+import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
+import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
+
 import java.io.ByteArrayInputStream;
 import java.io.Externalizable;
 import java.io.File;
@@ -39,15 +48,6 @@ import java.util.Arrays;
 import java.util.Calendar;
 
 import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.jcr.access.AccessControlEntry;
-import org.exoplatform.services.jcr.datamodel.Identifier;
-import org.exoplatform.services.jcr.datamodel.InternalQName;
-import org.exoplatform.services.jcr.datamodel.QPath;
-import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 
 /**
  * Created by The eXo Platform SAS.<br/>
@@ -834,7 +834,8 @@ public class TransientValueData extends AbstractValueData implements Externaliza
    {
       FileChannel fch = new FileInputStream(spoolFile).getChannel();
 
-      if (log.isDebugEnabled() && fch.size() > maxBufferSize) {
+      if (log.isDebugEnabled() && fch.size() > maxBufferSize)
+      {
          log.debug("Potential lack of memory due to call getAsByteArray() on stream data exceeded " + fch.size()
             + " bytes");
       }
@@ -886,7 +887,8 @@ public class TransientValueData extends AbstractValueData implements Externaliza
                {
                   fileCleaner.addFile(spoolFile);
 
-                  if (log.isDebugEnabled()) {
+                  if (log.isDebugEnabled())
+                  {
                      log.debug("Could not remove file. Add to fileCleaner " + spoolFile.getAbsolutePath());
                   }
                }

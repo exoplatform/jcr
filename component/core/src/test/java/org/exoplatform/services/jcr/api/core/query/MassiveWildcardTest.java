@@ -25,8 +25,7 @@ import javax.jcr.query.QueryResult;
 /**
  * Tests if a wildcard query with a lot of results does not throw an error.
  */
-public class MassiveWildcardTest
-   extends AbstractQueryTest
+public class MassiveWildcardTest extends AbstractQueryTest
 {
 
    /**

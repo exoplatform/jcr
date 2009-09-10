@@ -18,14 +18,13 @@
  */
 package org.exoplatform.services.jcr.usecases;
 
+import org.exoplatform.services.jcr.impl.core.value.StringValue;
+
 import java.util.Calendar;
 
 import javax.jcr.Node;
 
-import org.exoplatform.services.jcr.impl.core.value.StringValue;
-
-public class LoadTest
-   extends BaseUsecasesTest
+public class LoadTest extends BaseUsecasesTest
 {
    private int ntFolders = 1;
 
@@ -53,7 +52,7 @@ public class LoadTest
                contentNode.setProperty("jcr:data", LoadTest.class.getResourceAsStream("/test_tiff_file.tiff"));
                contentNode.setProperty("jcr:mimeType", new StringValue("image/tiff"));
                contentNode.setProperty("jcr:lastModified", session.getValueFactory()
-                        .createValue(Calendar.getInstance()));
+                  .createValue(Calendar.getInstance()));
                /*
                 * contentNode.addMixin("dc:elementSet"); Node elementNode =
                 * file.getNode("dc:elementSet"); elementNode.setProperty("dc:title", "Title"+j);

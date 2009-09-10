@@ -18,11 +18,11 @@
  */
 package org.exoplatform.services.jcr.impl.xml;
 
+import org.apache.ws.commons.util.Base64.Decoder;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-
-import org.apache.ws.commons.util.Base64.Decoder;
 
 /**
  * Created by The eXo Platform SAS.

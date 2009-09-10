@@ -18,11 +18,11 @@
  */
 package org.exoplatform.services.jcr.api.writing;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
 
 /**
  * Created by The eXo Platform SAS
@@ -32,8 +32,7 @@ import org.exoplatform.services.jcr.JcrAPIBaseTest;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestSameNameSiblingsReindex.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class TestSameNameSiblingsReindex
-   extends JcrAPIBaseTest
+public class TestSameNameSiblingsReindex extends JcrAPIBaseTest
 {
 
    protected final String TEST_ROOT = "reindex_test";
@@ -105,13 +104,13 @@ public class TestSameNameSiblingsReindex
       catch (PathNotFoundException e)
       {
          fail("Node /"
-                  + TEST_ROOT
-                  + "/n1[3] is not found after remove. But must as result of reindex n1[4] to n1[3]. Case Node.getNode(String)");
+            + TEST_ROOT
+            + "/n1[3] is not found after remove. But must as result of reindex n1[4] to n1[3]. Case Node.getNode(String)");
       }
 
       try
       {
-         n3 = (Node) testBase.getSession().getItem("/" + TEST_ROOT + "/n1[3]");
+         n3 = (Node)testBase.getSession().getItem("/" + TEST_ROOT + "/n1[3]");
          if (log.isDebugEnabled())
             log.debug("Third node is " + n3.getPath() + ", " + n3.getIndex());
 
@@ -127,8 +126,8 @@ public class TestSameNameSiblingsReindex
       catch (PathNotFoundException e)
       {
          fail("Node /"
-                  + TEST_ROOT
-                  + "/n1[3] is not found after remove. But must as result of reindex n1[4] to n1[3]. Case Session.getItem(String)");
+            + TEST_ROOT
+            + "/n1[3] is not found after remove. But must as result of reindex n1[4] to n1[3]. Case Session.getItem(String)");
       }
    }
 
@@ -139,8 +138,7 @@ public class TestSameNameSiblingsReindex
    public void testSubNodeDereferenced() throws Exception
    {
       // create siblings and sub-nodes
-      Node siblings[] = new Node[]
-      {testBase.addNode("node"), testBase.addNode("node")};
+      Node siblings[] = new Node[]{testBase.addNode("node"), testBase.addNode("node")};
       for (Node n : siblings)
       {
          n.addNode("sub1").addNode("sub1.1");

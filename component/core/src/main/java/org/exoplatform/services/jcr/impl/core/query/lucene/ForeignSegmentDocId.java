@@ -22,8 +22,7 @@ import java.util.BitSet;
 /**
  * A <code>DocId</code> that contains a document number and the creation tick of the index segment.
  */
-final class ForeignSegmentDocId
-   extends DocId
+final class ForeignSegmentDocId extends DocId
 {
 
    /**

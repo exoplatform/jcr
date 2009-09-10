@@ -18,9 +18,9 @@
  */
 package org.exoplatform.services.jcr.config;
 
-import java.io.InputStream;
-
 import org.exoplatform.container.xml.PropertiesParam;
+
+import java.io.InputStream;
 
 public interface ConfigurationPersister
 {

@@ -18,11 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
-import java.util.Random;
-
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.QPath;
@@ -30,12 +25,16 @@ import org.exoplatform.services.jcr.impl.tools.tree.NameTraversingVisitor;
 import org.exoplatform.services.jcr.impl.tools.tree.TreeGenerator;
 import org.exoplatform.services.jcr.impl.tools.tree.generator.WeightNodeGenerator;
 
+import java.util.Random;
+
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: TestItemAccess.java 14508 2008-05-20 10:07:45Z ksm $
  */
-public class TestItemAccess
-   extends JcrImplBaseTest
+public class TestItemAccess extends JcrImplBaseTest
 {
 
    private TreeGenerator nGen;
@@ -64,7 +63,7 @@ public class TestItemAccess
 
    public void testGetItemTest() throws RepositoryException
    {
-      SessionImpl newSession = (SessionImpl) repository.login(this.credentials, session.getWorkspace().getName());
+      SessionImpl newSession = (SessionImpl)repository.login(this.credentials, session.getWorkspace().getName());
 
       Random random = new Random();
       SessionDataManager tm = newSession.getTransientNodesManager();

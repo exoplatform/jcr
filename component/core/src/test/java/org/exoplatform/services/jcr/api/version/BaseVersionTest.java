@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.api.version;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,14 +34,11 @@ import javax.jcr.nodetype.NodeTypeManager;
 import javax.jcr.version.Version;
 import javax.jcr.version.VersionHistory;
 
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-
 /**
  * Created by The eXo Platform SAS Author : Peter Nedonosko
  * peter.nedonosko@exoplatform.com.ua 24.02.2006
  */
-public class BaseVersionTest
-   extends JcrAPIBaseTest
+public class BaseVersionTest extends JcrAPIBaseTest
 {
 
    protected Version version = null;
@@ -200,12 +199,12 @@ public class BaseVersionTest
       if (refs.size() != versionCount)
       {
          fail("Version history contains not all versions for node " + versionable.getPath() + ", expected:"
-                  + versionCount + " was:" + refs.size());
+            + versionCount + " was:" + refs.size());
       }
       if (!baseVersionFinder.isBaseVersionFound())
       {
          fail("Base version not founded in version history tree for node " + versionable.getPath()
-                  + ", but exists if call versionable.getBaseVersion() " + baseVersion.getPath());
+            + ", but exists if call versionable.getBaseVersion() " + baseVersion.getPath());
       }
    }
 
@@ -226,7 +225,7 @@ public class BaseVersionTest
          for (Value p : predecessors.getValues())
          {
             pstr += "\n    -- ";
-            Version pv = (Version) session.getNodeByUUID(p.getString());
+            Version pv = (Version)session.getNodeByUUID(p.getString());
             if (baseVersionFinder.check(pv))
                pstr += pv.getPath() + " >>>Base version<<<  ";
             else
@@ -249,7 +248,7 @@ public class BaseVersionTest
          for (Value s : sucessors.getValues())
          {
             pstr += "\n    -- ";
-            Version sv = (Version) session.getNodeByUUID(s.getString());
+            Version sv = (Version)session.getNodeByUUID(s.getString());
             if (baseVersionFinder.check(sv))
                pstr += sv.getPath() + " >>>Base version<<<  ";
             else
@@ -269,7 +268,7 @@ public class BaseVersionTest
    }
 
    protected List<Value> traverseVersionSubTree(Version ver, BaseVersionFinder baseVersionFinder,
-            VersionHistory vHistory, String outPrefix) throws RepositoryException
+      VersionHistory vHistory, String outPrefix) throws RepositoryException
    {
 
       List<Value> successorsRefs = new ArrayList<Value>();
@@ -295,12 +294,12 @@ public class BaseVersionTest
       {
          for (Value sv : versionSuccessors)
          {
-            Version successor = (Version) session.getNodeByUUID(sv.getString());
+            Version successor = (Version)session.getNodeByUUID(sv.getString());
             if (successor != null)
             {
                successorsRefs.add(sv);
                List<Value> successorSuccessors =
-                        traverseVersionSubTree(successor, baseVersionFinder, vHistory, "  " + outPrefix);
+                  traverseVersionSubTree(successor, baseVersionFinder, vHistory, "  " + outPrefix);
                if (successorSuccessors != null)
                {
                   successorsRefs.addAll(successorSuccessors);

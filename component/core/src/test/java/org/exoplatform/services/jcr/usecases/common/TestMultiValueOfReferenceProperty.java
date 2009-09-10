@@ -18,6 +18,11 @@
  */
 package org.exoplatform.services.jcr.usecases.common;
 
+import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeValue;
+import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionValue;
+import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,11 +33,6 @@ import javax.jcr.Session;
 import javax.jcr.Value;
 import javax.jcr.version.OnParentVersionAction;
 
-import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
-import org.exoplatform.services.jcr.core.nodetype.NodeTypeValue;
-import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionValue;
-import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
-
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -42,8 +42,7 @@ import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
  *          Items under /jcr:system
  */
 
-public class TestMultiValueOfReferenceProperty
-   extends BaseUsecasesTest
+public class TestMultiValueOfReferenceProperty extends BaseUsecasesTest
 {
 
    public void testValuesOfReferenceProperty() throws Exception
@@ -105,8 +104,7 @@ public class TestMultiValueOfReferenceProperty
       if (!srcNode.isNodeType(CATEGORY_MIXIN))
       {
          srcNode.addMixin(CATEGORY_MIXIN);
-         srcNode.setProperty(CATEGORY_PROP, new Value[]
-         {ref1Value});
+         srcNode.setProperty(CATEGORY_PROP, new Value[]{ref1Value});
       }
       else
       {

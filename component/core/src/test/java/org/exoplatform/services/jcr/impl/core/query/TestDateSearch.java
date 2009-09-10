@@ -17,6 +17,15 @@
 
 package org.exoplatform.services.jcr.impl.core.query;
 
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.Hits;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.TermQuery;
+import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.jcr.impl.core.query.lucene.FieldNames;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.Calendar;
@@ -25,24 +34,13 @@ import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.Hits;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.TermQuery;
-
-import org.exoplatform.services.jcr.impl.core.NodeImpl;
-import org.exoplatform.services.jcr.impl.core.query.lucene.FieldNames;
-
 /**
  * Created by The eXo Platform SAS Author : Sergey Karpenko <sergey.karpenko@exoplatform.com.ua>
  * 
  * @version $Id: $
  */
 
-public class TestDateSearch
-   extends BaseQueryTest
+public class TestDateSearch extends BaseQueryTest
 {
 
    public static String fileName = "testDateSearch";
@@ -54,8 +52,8 @@ public class TestDateSearch
 
       FileInputStream fis = new FileInputStream(file);
 
-      NodeImpl node = (NodeImpl) root.addNode(fileName, "nt:file");
-      NodeImpl cont = (NodeImpl) node.addNode("jcr:content", "nt:resource");
+      NodeImpl node = (NodeImpl)root.addNode(fileName, "nt:file");
+      NodeImpl cont = (NodeImpl)node.addNode("jcr:content", "nt:resource");
       cont.setProperty("jcr:mimeType", "application/excel");
       cont.setProperty("jcr:lastModified", Calendar.getInstance());
 

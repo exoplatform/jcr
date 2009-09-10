@@ -18,14 +18,14 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
-import java.io.IOException;
-
 import org.exoplatform.services.jcr.dataflow.ItemState;
-import org.exoplatform.services.jcr.dataflow.serialization.SerializationConstants;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectWriter;
+import org.exoplatform.services.jcr.dataflow.serialization.SerializationConstants;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
+
+import java.io.IOException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -66,12 +66,12 @@ public class ItemStateWriter
       if (isNodeData)
       {
          TransientNodeDataWriter wr = new TransientNodeDataWriter();
-         wr.write(out, (TransientNodeData) data);
+         wr.write(out, (TransientNodeData)data);
       }
       else
       {
          TransientPropertyDataWriter wr = new TransientPropertyDataWriter();
-         wr.write(out, (TransientPropertyData) data);
+         wr.write(out, (TransientPropertyData)data);
       }
    }
 

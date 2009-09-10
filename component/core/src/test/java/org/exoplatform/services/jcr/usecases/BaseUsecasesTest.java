@@ -27,8 +27,7 @@ import org.exoplatform.services.jcr.JcrAPIBaseTest;
  * @version $Id: BaseUsecasesTest.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class BaseUsecasesTest
-   extends JcrAPIBaseTest
+public class BaseUsecasesTest extends JcrAPIBaseTest
 {
 
 }

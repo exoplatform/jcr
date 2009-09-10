@@ -18,15 +18,14 @@
  */
 package org.exoplatform.services.jcr.impl.storage.inmemory;
 
-import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.storage.WorkspaceDataContainerBase;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.

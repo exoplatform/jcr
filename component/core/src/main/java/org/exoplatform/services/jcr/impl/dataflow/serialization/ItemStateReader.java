@@ -18,15 +18,15 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.StreamCorruptedException;
-
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
 import org.exoplatform.services.jcr.dataflow.serialization.SerializationConstants;
 import org.exoplatform.services.jcr.dataflow.serialization.UnknownClassIdException;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.StreamCorruptedException;
 
 /**
  * Created by The eXo Platform SAS. <br/>

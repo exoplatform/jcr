@@ -18,6 +18,11 @@
  */
 package org.exoplatform.services.jcr.impl.core.value;
 
+import org.exoplatform.services.jcr.datamodel.QPath;
+import org.exoplatform.services.jcr.impl.core.JCRPath;
+import org.exoplatform.services.jcr.impl.core.LocationFactory;
+import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+
 import java.io.IOException;
 import java.util.Calendar;
 
@@ -25,18 +30,12 @@ import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.ValueFormatException;
 
-import org.exoplatform.services.jcr.datamodel.QPath;
-import org.exoplatform.services.jcr.impl.core.JCRPath;
-import org.exoplatform.services.jcr.impl.core.LocationFactory;
-import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
-
 /**
  * a <code>PATH</code> value impl (an absolute or relative workspace path).
  * 
  * @author Gennady Azarenkov
  */
-public class PathValue
-   extends BaseValue
+public class PathValue extends BaseValue
 {
 
    public static final int TYPE = PropertyType.PATH;

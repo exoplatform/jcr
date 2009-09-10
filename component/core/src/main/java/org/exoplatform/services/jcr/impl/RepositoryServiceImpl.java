@@ -18,23 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl;
 
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
-import java.util.Map.Entry;
-
-import javax.jcr.NamespaceException;
-import javax.jcr.NamespaceRegistry;
-import javax.jcr.RepositoryException;
-
-import org.picocontainer.Startable;
-
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.PortalContainer;
@@ -51,6 +34,21 @@ import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+import org.picocontainer.Startable;
+
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
+import java.util.Map.Entry;
+
+import javax.jcr.NamespaceException;
+import javax.jcr.NamespaceRegistry;
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -59,8 +57,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @version $Id: RepositoryServiceImpl.java 13986 2008-05-08 10:48:43Z pnedonosko $
  */
 
-public class RepositoryServiceImpl
-   implements RepositoryService, Startable
+public class RepositoryServiceImpl implements RepositoryService, Startable
 {
 
    protected static Log log = ExoLogger.getLogger("jcr.RepositoryService");
@@ -104,13 +101,13 @@ public class RepositoryServiceImpl
          addNamespacesPlugins.add(plugin);
       else if (plugin instanceof RepositoryChangesListenerRegisterPlugin)
       {
-         managerStartChanges.addPlugin((RepositoryChangesListenerRegisterPlugin) plugin);
+         managerStartChanges.addPlugin((RepositoryChangesListenerRegisterPlugin)plugin);
       }
    }
 
    public boolean canRemoveRepository(String name) throws RepositoryException
    {
-      RepositoryImpl repo = (RepositoryImpl) getRepository(name);
+      RepositoryImpl repo = (RepositoryImpl)getRepository(name);
       try
       {
          RepositoryEntry repconfig = config.getRepositoryConfiguration(name);
@@ -124,7 +121,7 @@ public class RepositoryServiceImpl
          // check system workspace
          RepositoryContainer repositoryContainer = repositoryContainers.get(name);
          SessionRegistry sessionRegistry =
-                  (SessionRegistry) repositoryContainer.getComponentInstance(SessionRegistry.class);
+            (SessionRegistry)repositoryContainer.getComponentInstance(SessionRegistry.class);
          if (sessionRegistry == null || sessionRegistry.isInUse(repo.getSystemWorkspaceName()))
             return false;
 
@@ -164,7 +161,7 @@ public class RepositoryServiceImpl
 
       // turn on Repository ONLINE
       ManageableRepository mr =
-               (ManageableRepository) repositoryContainer.getComponentInstanceOfType(ManageableRepository.class);
+         (ManageableRepository)repositoryContainer.getComponentInstanceOfType(ManageableRepository.class);
       mr.setState(ManageableRepository.ONLINE);
    }
 
@@ -203,19 +200,19 @@ public class RepositoryServiceImpl
       if (repositoryContainer == null)
          throw new RepositoryException("Repository '" + name + "' not found.");
 
-      return (ManageableRepository) repositoryContainer.getComponentInstanceOfType(ManageableRepository.class);
+      return (ManageableRepository)repositoryContainer.getComponentInstanceOfType(ManageableRepository.class);
    }
 
    public void removeRepository(String name) throws RepositoryException
    {
       if (!canRemoveRepository(name))
          throw new RepositoryException("Repository " + name + " in use. If you want to "
-                  + " remove repository close all open sessions");
+            + " remove repository close all open sessions");
 
       try
       {
          RepositoryEntry repconfig = config.getRepositoryConfiguration(name);
-         RepositoryImpl repo = (RepositoryImpl) getRepository(name);
+         RepositoryImpl repo = (RepositoryImpl)getRepository(name);
          for (WorkspaceEntry wsEntry : repconfig.getWorkspaceEntries())
          {
             repo.internalRemoveWorkspace(wsEntry.getName());
@@ -301,7 +298,7 @@ public class RepositoryServiceImpl
 
       for (int j = 0; j < addNamespacesPlugins.size(); j++)
       {
-         AddNamespacesPlugin plugin = (AddNamespacesPlugin) addNamespacesPlugins.get(j);
+         AddNamespacesPlugin plugin = (AddNamespacesPlugin)addNamespacesPlugins.get(j);
          Map<String, String> namespaces = plugin.getNamespaces();
          try
          {
@@ -354,13 +351,13 @@ public class RepositoryServiceImpl
    private void registerNodeTypes(String repositoryName) throws RepositoryException
    {
       ConfigurationManager configService =
-               (ConfigurationManager) parentContainer.getComponentInstanceOfType(ConfigurationManager.class);
+         (ConfigurationManager)parentContainer.getComponentInstanceOfType(ConfigurationManager.class);
 
       ExtendedNodeTypeManager ntManager = getRepository(repositoryName).getNodeTypeManager();
       //
       for (int j = 0; j < addNodeTypePlugins.size(); j++)
       {
-         AddNodeTypePlugin plugin = (AddNodeTypePlugin) addNodeTypePlugins.get(j);
+         AddNodeTypePlugin plugin = (AddNodeTypePlugin)addNodeTypePlugins.get(j);
          List<String> autoNodeTypesFiles = plugin.getNodeTypesFiles(AddNodeTypePlugin.AUTO_CREATED);
          if (autoNodeTypesFiles != null && autoNodeTypesFiles.size() > 0)
          {
@@ -463,7 +460,7 @@ public class RepositoryServiceImpl
                   Class<?> listenerType = Class.forName(sk.getListenerClassName());
                   wc.registerComponentImplementation(listenerType);
                   ItemsPersistenceListener listener =
-                           (ItemsPersistenceListener) wc.getComponentInstanceOfType(listenerType);
+                     (ItemsPersistenceListener)wc.getComponentInstanceOfType(listenerType);
                   startChangesListeners.put(sk, listener);
                }
                catch (ClassNotFoundException e)
@@ -515,10 +512,10 @@ public class RepositoryServiceImpl
           */
          public boolean equals(Object o)
          {
-            StorageKey k = (StorageKey) o;
+            StorageKey k = (StorageKey)o;
 
             return repositoryName.equals(k.repositoryName) && workspaceName.equals(k.workspaceName)
-                     && listenerClassName.equals(k.listenerClassName);
+               && listenerClassName.equals(k.listenerClassName);
          }
 
          /**

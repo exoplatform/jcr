@@ -18,9 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
@@ -31,14 +28,16 @@ import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestLinkedWorkspaceStorageCacheMetrics.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class TestLinkedWorkspaceStorageCacheMetrics
-   extends JcrImplBaseTest
+public class TestLinkedWorkspaceStorageCacheMetrics extends JcrImplBaseTest
 {
 
    /**
@@ -51,21 +50,20 @@ public class TestLinkedWorkspaceStorageCacheMetrics
       final int cacheSize = 500;
       final int liveTime = 10; // sec
       WorkspaceStorageCache cache =
-               new LinkedWorkspaceStorageCacheImpl("testLiveTime_cache", true, cacheSize, liveTime, 60 * 1000,
-                        20 * 1000, false, true, 0, true);
+         new LinkedWorkspaceStorageCacheImpl("testLiveTime_cache", true, cacheSize, liveTime, 60 * 1000, 20 * 1000,
+            false, true, 0, true);
 
       NodeData parent =
-               new TransientNodeData(QPath.parse("[]:1[]parent:1"), IdGenerator.generate(), 1,
-                        Constants.NT_UNSTRUCTURED, new InternalQName[0], 1, IdGenerator.generate(),
-                        new AccessControlList());
+         new TransientNodeData(QPath.parse("[]:1[]parent:1"), IdGenerator.generate(), 1, Constants.NT_UNSTRUCTURED,
+            new InternalQName[0], 1, IdGenerator.generate(), new AccessControlList());
       cache.put(parent);
 
       List<NodeData> childs = new ArrayList<NodeData>();
       for (int i = 0; i < 200; i++)
       {
          NodeData child =
-                  TransientNodeData.createNodeData(parent, InternalQName.parse("[]node " + i + " :1"),
-                           Constants.NT_UNSTRUCTURED);
+            TransientNodeData.createNodeData(parent, InternalQName.parse("[]node " + i + " :1"),
+               Constants.NT_UNSTRUCTURED);
          cache.put(child);
          childs.add(child);
       }
@@ -94,21 +92,20 @@ public class TestLinkedWorkspaceStorageCacheMetrics
       final int cacheSize = 500;
       final int liveTime = 30; // sec
       WorkspaceStorageCache cache =
-               new LinkedWorkspaceStorageCacheImpl("testExpiredScheduler_cache", true, cacheSize, liveTime,
-                        liveTime * 1000 + 10000, 10 * 1000, false, true, 0, true); // (*)
+         new LinkedWorkspaceStorageCacheImpl("testExpiredScheduler_cache", true, cacheSize, liveTime,
+            liveTime * 1000 + 10000, 10 * 1000, false, true, 0, true); // (*)
 
       NodeData parent =
-               new TransientNodeData(QPath.parse("[]:1[]parent:1"), IdGenerator.generate(), 1,
-                        Constants.NT_UNSTRUCTURED, new InternalQName[0], 1, IdGenerator.generate(),
-                        new AccessControlList());
+         new TransientNodeData(QPath.parse("[]:1[]parent:1"), IdGenerator.generate(), 1, Constants.NT_UNSTRUCTURED,
+            new InternalQName[0], 1, IdGenerator.generate(), new AccessControlList());
       cache.put(parent);
 
       List<NodeData> childs = new ArrayList<NodeData>();
       for (int i = 0; i < 200; i++)
       {
          NodeData child =
-                  TransientNodeData.createNodeData(parent, InternalQName.parse("[]node " + i + " :1"),
-                           Constants.NT_UNSTRUCTURED);
+            TransientNodeData.createNodeData(parent, InternalQName.parse("[]node " + i + " :1"),
+               Constants.NT_UNSTRUCTURED);
          cache.put(child);
          childs.add(child);
       }
@@ -136,18 +133,17 @@ public class TestLinkedWorkspaceStorageCacheMetrics
    {
       final int cacheSize = 500;
       WorkspaceStorageCache cache =
-               new LinkedWorkspaceStorageCacheImpl("testSize_cache", true, cacheSize, 120, 60 * 1000, 20 * 1000, false,
-                        true, 0, true);
+         new LinkedWorkspaceStorageCacheImpl("testSize_cache", true, cacheSize, 120, 60 * 1000, 20 * 1000, false, true,
+            0, true);
 
       NodeData parent =
-               new TransientNodeData(QPath.parse("[]:1[]parent:1"), IdGenerator.generate(), 1,
-                        Constants.NT_UNSTRUCTURED, new InternalQName[0], 1, IdGenerator.generate(),
-                        new AccessControlList());
+         new TransientNodeData(QPath.parse("[]:1[]parent:1"), IdGenerator.generate(), 1, Constants.NT_UNSTRUCTURED,
+            new InternalQName[0], 1, IdGenerator.generate(), new AccessControlList());
       for (int i = 0; i < 200; i++)
       {
          NodeData child =
-                  TransientNodeData.createNodeData(parent, InternalQName.parse("[]node " + i + " :1"),
-                           Constants.NT_UNSTRUCTURED);
+            TransientNodeData.createNodeData(parent, InternalQName.parse("[]node " + i + " :1"),
+               Constants.NT_UNSTRUCTURED);
          cache.put(child);
       }
 
@@ -156,8 +152,8 @@ public class TestLinkedWorkspaceStorageCacheMetrics
       for (int i = 0; i < 100; i++)
       {
          NodeData child =
-                  TransientNodeData.createNodeData(parent, InternalQName.parse("[]node A " + i + " :1"),
-                           Constants.NT_UNSTRUCTURED);
+            TransientNodeData.createNodeData(parent, InternalQName.parse("[]node A " + i + " :1"),
+               Constants.NT_UNSTRUCTURED);
          cache.put(child);
       }
 

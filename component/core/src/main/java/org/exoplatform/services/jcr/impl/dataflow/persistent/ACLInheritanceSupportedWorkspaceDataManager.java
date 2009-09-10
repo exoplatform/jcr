@@ -18,14 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
-import java.util.Calendar;
-import java.util.List;
-
-import javax.jcr.InvalidItemStateException;
-import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.dataflow.SharedDataManager;
@@ -34,6 +26,13 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import java.util.Calendar;
+import java.util.List;
+
+import javax.jcr.InvalidItemStateException;
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS. Data Manager supported ACL Inheritance
@@ -41,8 +40,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @author Gennady Azarenkov
  * @version $Id: ACLInheritanceSupportedWorkspaceDataManager.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class ACLInheritanceSupportedWorkspaceDataManager
-   implements SharedDataManager
+public class ACLInheritanceSupportedWorkspaceDataManager implements SharedDataManager
 {
 
    private static Log log = ExoLogger.getLogger("jcr.ACLInheritanceSupportedWorkspaceDataManager");
@@ -68,7 +66,7 @@ public class ACLInheritanceSupportedWorkspaceDataManager
 
       if (node.getParentIdentifier() != null)
       {
-         NodeData parent = (NodeData) getItemData(node.getParentIdentifier());
+         NodeData parent = (NodeData)getItemData(node.getParentIdentifier());
          while (parent != null)
          {
             if (parent.getACL() != null)
@@ -77,7 +75,7 @@ public class ACLInheritanceSupportedWorkspaceDataManager
                return parent.getACL();
             }
             // going up to the root
-            parent = (NodeData) getItemData(parent.getParentIdentifier());
+            parent = (NodeData)getItemData(parent.getParentIdentifier());
          }
       }
       return new AccessControlList();
@@ -139,13 +137,13 @@ public class ACLInheritanceSupportedWorkspaceDataManager
    public ItemData getItemData(NodeData parent, QPathEntry name) throws RepositoryException
    {
       final ItemData item = persistentManager.getItemData(parent, name);
-      return item != null && item.isNode() ? initACL(parent, (NodeData) item) : item;
+      return item != null && item.isNode() ? initACL(parent, (NodeData)item) : item;
    }
 
    public ItemData getItemData(String identifier) throws RepositoryException
    {
       final ItemData item = persistentManager.getItemData(identifier);
-      return item != null && item.isNode() ? initACL(null, (NodeData) item) : item;
+      return item != null && item.isNode() ? initACL(null, (NodeData)item) : item;
    }
 
    public List<PropertyData> getChildPropertiesData(NodeData parent) throws RepositoryException
@@ -159,7 +157,7 @@ public class ACLInheritanceSupportedWorkspaceDataManager
    }
 
    public List<PropertyData> getReferencesData(String identifier, boolean skipVersionStorage)
-            throws RepositoryException
+      throws RepositoryException
    {
       return persistentManager.getReferencesData(identifier, skipVersionStorage);
    }
@@ -167,7 +165,7 @@ public class ACLInheritanceSupportedWorkspaceDataManager
    // ------------ SharedDataManager ----------------------
 
    public void save(ItemStateChangesLog changes) throws InvalidItemStateException, UnsupportedOperationException,
-            RepositoryException
+      RepositoryException
    {
       persistentManager.save(changes);
    }

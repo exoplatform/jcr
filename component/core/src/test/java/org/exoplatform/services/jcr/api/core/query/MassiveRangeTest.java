@@ -25,8 +25,7 @@ import javax.jcr.query.QueryResult;
 /**
  * Tests if a range query with a lot of results does not throw an error.
  */
-public class MassiveRangeTest
-   extends AbstractQueryTest
+public class MassiveRangeTest extends AbstractQueryTest
 {
 
    /**

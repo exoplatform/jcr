@@ -30,8 +30,7 @@ import javax.jcr.RepositoryException;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: ReadOnlyWorkspaceException.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class ReadOnlyWorkspaceException
-   extends RepositoryException
+public class ReadOnlyWorkspaceException extends RepositoryException
 {
 
    public ReadOnlyWorkspaceException(String message)

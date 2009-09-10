@@ -18,10 +18,10 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock;
 
+import org.picocontainer.Startable;
+
 import javax.jcr.RepositoryException;
 import javax.jcr.lock.LockException;
-
-import org.picocontainer.Startable;
 
 /**
  * Class for storing information about locks And will be notified about add and removing a lock
@@ -29,8 +29,7 @@ import org.picocontainer.Startable;
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: LockPersister.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public interface LockPersister
-   extends Startable
+public interface LockPersister extends Startable
 {
    /**
     * Add lock information to the persistent storage

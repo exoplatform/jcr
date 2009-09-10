@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
+import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -27,8 +29,6 @@ import java.util.List;
 import javax.jcr.Node;
 import javax.jcr.version.Version;
 
-import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
-
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -37,8 +37,7 @@ import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a> 
  * @version $Id: TestJCRSerializationVersionRestore.java 111 2008-11-11 11:11:11Z rainf0x $
  */
-public class TestJCRSerializationVersionRestore
-   extends JcrImplSerializationBaseTest
+public class TestJCRSerializationVersionRestore extends JcrImplSerializationBaseTest
 {
 
    public void testRestore() throws Exception

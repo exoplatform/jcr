@@ -33,8 +33,7 @@ import javax.jcr.version.Version;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestVersionableRemove.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class TestVersionableRemove
-   extends BaseVersionTest
+public class TestVersionableRemove extends BaseVersionTest
 {
 
    Session ws1Session = null;
@@ -141,8 +140,7 @@ public class TestVersionableRemove
       {
          Node vh = ws2Session.getNodeByUUID(versionHistoryUUID);
          fail("A version history must not exists but is visible from the workspace session "
-                  + "where the versionable node was deleted " + ws2Session.getWorkspace().getName() + ". "
-                  + vh.getPath());
+            + "where the versionable node was deleted " + ws2Session.getWorkspace().getName() + ". " + vh.getPath());
       }
       catch (ItemNotFoundException e)
       {
@@ -154,7 +152,7 @@ public class TestVersionableRemove
       {
          Node vh = ws1Session.getNodeByUUID(versionHistoryUUID);
          fail("A version history must not exists but is visible from another workspace session "
-                  + ws1Session.getWorkspace().getName() + ". " + vh.getPath());
+            + ws1Session.getWorkspace().getName() + ". " + vh.getPath());
       }
       catch (ItemNotFoundException e)
       {
@@ -252,7 +250,7 @@ public class TestVersionableRemove
       // corresponding node (with common version history)
       // clone to another location
       ws2Session.getWorkspace().clone("ws1", ws1VersionableChild.getPath(),
-               ws2TestRoot.getPath() + "/versionableChild", true);
+         ws2TestRoot.getPath() + "/versionableChild", true);
 
       ws2Versionable.addNode("Dummy node");
       ws2Versionable.save();
@@ -292,9 +290,9 @@ public class TestVersionableRemove
       Node ws2VersionableChild = ws2TestRoot.getNode("versionableChild");
 
       assertEquals("Corresponding nodes mut have same uuid", ws1VersionableChild.getUUID(), ws2VersionableChild
-               .getUUID());
+         .getUUID());
       assertEquals("Corresponding versionable mut have same history",
-               ws1VersionableChild.getVersionHistory().getUUID(), ws2VersionableChild.getVersionHistory().getUUID());
+         ws1VersionableChild.getVersionHistory().getUUID(), ws2VersionableChild.getVersionHistory().getUUID());
 
       String childVHUUID = ws1VersionableChild.getVersionHistory().getUUID();
 

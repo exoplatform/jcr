@@ -24,8 +24,7 @@ import javax.jcr.lock.Lock;
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: ExtendedLock.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public interface ExtendedLock
-   extends Lock
+public interface ExtendedLock extends Lock
 {
 
    /**

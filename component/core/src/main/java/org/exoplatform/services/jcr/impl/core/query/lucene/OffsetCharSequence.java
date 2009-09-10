@@ -20,8 +20,7 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
  * CharSequence that applies an offset to a base CharSequence. The base CharSequence can be replaced
  * without creating a new CharSequence.
  */
-final class OffsetCharSequence
-   implements CharSequence, Comparable<OffsetCharSequence>, TransformConstants
+final class OffsetCharSequence implements CharSequence, Comparable<OffsetCharSequence>, TransformConstants
 {
 
    /**

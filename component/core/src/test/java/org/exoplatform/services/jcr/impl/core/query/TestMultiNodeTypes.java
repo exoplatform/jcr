@@ -16,6 +16,9 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.query.InvalidQueryException;
@@ -23,18 +26,13 @@ import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
 
-import org.exoplatform.services.log.Log;
-
-import org.exoplatform.services.log.ExoLogger;
-
 /**
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: $
  */
-public class TestMultiNodeTypes
-   extends BaseQueryTest
+public class TestMultiNodeTypes extends BaseQueryTest
 {
    /**
     * Class logger.
@@ -82,8 +80,8 @@ public class TestMultiNodeTypes
       {
          QueryManager qman = this.workspace.getQueryManager();
          Query q =
-                  qman.createQuery("SELECT * FROM nt:base, mix:referenceable  where  p1='1' and jcr:uuid ='" + uuid
-                           + "'", Query.SQL);
+            qman.createQuery("SELECT * FROM nt:base, mix:referenceable  where  p1='1' and jcr:uuid ='" + uuid + "'",
+               Query.SQL);
 
          res = q.execute();
 

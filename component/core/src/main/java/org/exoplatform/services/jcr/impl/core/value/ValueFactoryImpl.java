@@ -18,21 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.value;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.util.Calendar;
-
-import javax.jcr.Node;
-import javax.jcr.PropertyType;
-import javax.jcr.RepositoryException;
-import javax.jcr.Value;
-import javax.jcr.ValueFactory;
-import javax.jcr.ValueFormatException;
-
-import org.exoplatform.services.log.Log;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ExtendedPropertyType;
 import org.exoplatform.services.jcr.datamodel.Identifier;
@@ -47,6 +32,21 @@ import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.WorkspaceFileCleanerHolder;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.Calendar;
+
+import javax.jcr.Node;
+import javax.jcr.PropertyType;
+import javax.jcr.RepositoryException;
+import javax.jcr.Value;
+import javax.jcr.ValueFactory;
+import javax.jcr.ValueFormatException;
 
 /**
  * Created by The eXo Platform SAS.<br/>
@@ -56,8 +56,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @version $Id: ValueFactoryImpl.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class ValueFactoryImpl
-   implements ValueFactory
+public class ValueFactoryImpl implements ValueFactory
 {
 
    protected static final Log LOG = ExoLogger.getLogger("jcr.ValueFactoryImpl");
@@ -71,7 +70,7 @@ public class ValueFactoryImpl
    private int maxBufferSize;
 
    public ValueFactoryImpl(LocationFactory locationFactory, WorkspaceEntry workspaceConfig,
-            WorkspaceFileCleanerHolder cleanerHolder)
+      WorkspaceFileCleanerHolder cleanerHolder)
    {
 
       this.locationFactory = locationFactory;
@@ -81,8 +80,8 @@ public class ValueFactoryImpl
 
       // TODO we use WorkspaceDataContainer constants but is it ok?
       this.maxBufferSize =
-               workspaceConfig.getContainer().getParameterInteger(WorkspaceDataContainer.MAXBUFFERSIZE_PROP,
-                        WorkspaceDataContainer.DEF_MAXBUFFERSIZE);
+         workspaceConfig.getContainer().getParameterInteger(WorkspaceDataContainer.MAXBUFFERSIZE_PROP,
+            WorkspaceDataContainer.DEF_MAXBUFFERSIZE);
    }
 
    public ValueFactoryImpl(LocationFactory locationFactory)
@@ -167,7 +166,7 @@ public class ValueFactoryImpl
       catch (IllegalArgumentException e)
       { // NumberFormatException
          throw new ValueFormatException("Cant create value from string '" + value + "' for type "
-                  + PropertyType.nameFromValue(type));
+            + PropertyType.nameFromValue(type));
       }
    }
 
@@ -289,7 +288,7 @@ public class ValueFactoryImpl
       {
          if (value instanceof NodeImpl)
          {
-            String jcrUuid = ((NodeImpl) value).getInternalIdentifier();
+            String jcrUuid = ((NodeImpl)value).getInternalIdentifier();
             return new ReferenceValue(new TransientValueData(jcrUuid));
          }
          else

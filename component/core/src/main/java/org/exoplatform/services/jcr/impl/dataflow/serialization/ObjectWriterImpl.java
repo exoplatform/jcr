@@ -18,6 +18,10 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
+import org.exoplatform.services.jcr.dataflow.serialization.ObjectWriter;
+import org.exoplatform.services.jcr.dataflow.serialization.SerializationConstants;
+import org.exoplatform.services.jcr.impl.Constants;
+
 import java.io.BufferedOutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -26,10 +30,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.channels.FileChannel;
 
-import org.exoplatform.services.jcr.dataflow.serialization.ObjectWriter;
-import org.exoplatform.services.jcr.dataflow.serialization.SerializationConstants;
-import org.exoplatform.services.jcr.impl.Constants;
-
 /**
  * Created by The eXo Platform SAS. <br/>
  * Date: 13.02.2009
@@ -37,8 +37,7 @@ import org.exoplatform.services.jcr.impl.Constants;
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a>
  * @version $Id: JCRObjectOutputImpl.java 111 2008-11-11 11:11:11Z rainf0x $
  */
-public class ObjectWriterImpl
-   implements ObjectWriter
+public class ObjectWriterImpl implements ObjectWriter
 {
 
    /**
@@ -62,7 +61,7 @@ public class ObjectWriterImpl
       this.out = new BufferedOutputStream(out, SerializationConstants.INTERNAL_BUFFER_SIZE);
 
       if (out instanceof FileOutputStream)
-         this.fileOut = (FileOutputStream) out;
+         this.fileOut = (FileOutputStream)out;
       else
          this.fileOut = null;
    }
@@ -135,14 +134,14 @@ public class ObjectWriterImpl
    {
 
       byte[] writeBuffer = new byte[8];
-      writeBuffer[0] = (byte) (v >>> 56);
-      writeBuffer[1] = (byte) (v >>> 48);
-      writeBuffer[2] = (byte) (v >>> 40);
-      writeBuffer[3] = (byte) (v >>> 32);
-      writeBuffer[4] = (byte) (v >>> 24);
-      writeBuffer[5] = (byte) (v >>> 16);
-      writeBuffer[6] = (byte) (v >>> 8);
-      writeBuffer[7] = (byte) (v >>> 0);
+      writeBuffer[0] = (byte)(v >>> 56);
+      writeBuffer[1] = (byte)(v >>> 48);
+      writeBuffer[2] = (byte)(v >>> 40);
+      writeBuffer[3] = (byte)(v >>> 32);
+      writeBuffer[4] = (byte)(v >>> 24);
+      writeBuffer[5] = (byte)(v >>> 16);
+      writeBuffer[6] = (byte)(v >>> 8);
+      writeBuffer[7] = (byte)(v >>> 0);
       out.write(writeBuffer, 0, 8);
    }
 
@@ -170,7 +169,7 @@ public class ObjectWriterImpl
          out.flush(); // flush buffer
 
          // and use NIO on original stream for transfer
-         FileChannel fin = ((FileInputStream) stream).getChannel();
+         FileChannel fin = ((FileInputStream)stream).getChannel();
          fileOut.getChannel().transferFrom(fin, 0, fin.size());
       }
       else

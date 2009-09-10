@@ -21,8 +21,7 @@ import org.exoplatform.services.jcr.datamodel.InternalQName;
 /**
  * Implements a query node that defines an exact match of a property and a value.
  */
-public class ExactQueryNode
-   extends QueryNode
+public class ExactQueryNode extends QueryNode
 {
 
    /**
@@ -102,9 +101,9 @@ public class ExactQueryNode
    {
       if (obj instanceof ExactQueryNode)
       {
-         ExactQueryNode other = (ExactQueryNode) obj;
+         ExactQueryNode other = (ExactQueryNode)obj;
          return (value == null ? other.value == null : value.equals(other.value))
-                  && (property == null ? other.property == null : property.equals(other.property));
+            && (property == null ? other.property == null : property.equals(other.property));
       }
       return false;
    }

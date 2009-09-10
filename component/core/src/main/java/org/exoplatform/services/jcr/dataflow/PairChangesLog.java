@@ -28,8 +28,7 @@ import java.util.List;
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a> 
  * @version $Id: PairChangesLog.java 111 2008-11-11 11:11:11Z rainf0x $
  */
-public class PairChangesLog
-   extends PlainChangesLogImpl
+public class PairChangesLog extends PlainChangesLogImpl
 {
 
    /**

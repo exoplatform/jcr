@@ -18,9 +18,9 @@
  */
 package org.exoplatform.services.jcr.core.nodetype;
 
-import javax.jcr.PropertyType;
-
 import org.exoplatform.services.jcr.core.ExtendedPropertyType;
+
+import javax.jcr.PropertyType;
 
 /**
  * Serialization/Deserialization for PropertyType beans. For JiBX binding process only.

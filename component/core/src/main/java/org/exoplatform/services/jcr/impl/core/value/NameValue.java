@@ -18,6 +18,12 @@
  */
 package org.exoplatform.services.jcr.impl.core.value;
 
+import org.exoplatform.services.jcr.datamodel.IllegalNameException;
+import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.impl.core.JCRName;
+import org.exoplatform.services.jcr.impl.core.LocationFactory;
+import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+
 import java.io.IOException;
 import java.util.Calendar;
 
@@ -25,19 +31,12 @@ import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.ValueFormatException;
 
-import org.exoplatform.services.jcr.datamodel.IllegalNameException;
-import org.exoplatform.services.jcr.datamodel.InternalQName;
-import org.exoplatform.services.jcr.impl.core.JCRName;
-import org.exoplatform.services.jcr.impl.core.LocationFactory;
-import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
-
 /**
  * a <code>NAME</code> value impl (a string that is namespace-qualified).
  * 
  * @author Gennady Azarenkov
  */
-public class NameValue
-   extends BaseValue
+public class NameValue extends BaseValue
 {
 
    public static final int TYPE = PropertyType.NAME;

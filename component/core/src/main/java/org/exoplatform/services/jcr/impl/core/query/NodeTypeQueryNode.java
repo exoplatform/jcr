@@ -22,8 +22,7 @@ import org.exoplatform.services.jcr.impl.Constants;
 /**
  * Implements a query node that defines a node type match.
  */
-public class NodeTypeQueryNode
-   extends ExactQueryNode
+public class NodeTypeQueryNode extends ExactQueryNode
 {
 
    /**

@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.core.value;
 
+import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+
 import java.io.IOException;
 import java.util.Calendar;
 
@@ -25,15 +27,12 @@ import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.ValueFormatException;
 
-import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
-
 /**
  * a boolean value implementation.
  * 
  * @author Gennady Azarenkov
  */
-public class BooleanValue
-   extends BaseValue
+public class BooleanValue extends BaseValue
 {
 
    public static final int TYPE = PropertyType.BOOLEAN;

@@ -18,8 +18,7 @@ package org.exoplatform.services.jcr.impl.core.query.sql;
 
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 
-public class ASTContainsExpression
-   extends SimpleNode
+public class ASTContainsExpression extends SimpleNode
 {
 
    private String query;

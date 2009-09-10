@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
+import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.Calendar;
@@ -27,8 +29,6 @@ import javax.jcr.Node;
 import javax.jcr.Value;
 import javax.jcr.ValueFactory;
 
-import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
-
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -37,8 +37,7 @@ import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a> 
  * @version $Id: TestJCRSerializationStream.java 111 2008-11-11 11:11:11Z rainf0x $
  */
-public class TestJCRSerializationStream
-   extends JcrImplSerializationBaseTest
+public class TestJCRSerializationStream extends JcrImplSerializationBaseTest
 {
 
    public void testAddStreamData() throws Exception
@@ -56,22 +55,16 @@ public class TestJCRSerializationStream
       contentNode.setProperty("jcr:lastModified", session.getValueFactory().createValue(Calendar.getInstance()));
       session.save();
 
-      test.setProperty("creator", new String[]
-      {"Creator 1", "Creator 2", "Creator 3"});
+      test.setProperty("creator", new String[]{"Creator 1", "Creator 2", "Creator 3"});
 
       ValueFactory vf = cool.getSession().getValueFactory();
-      test.setProperty("date", new Value[]
-      {vf.createValue(Calendar.getInstance()), vf.createValue(Calendar.getInstance()),
-               vf.createValue(Calendar.getInstance())});
+      test.setProperty("date", new Value[]{vf.createValue(Calendar.getInstance()),
+         vf.createValue(Calendar.getInstance()), vf.createValue(Calendar.getInstance())});
 
-      test.setProperty("source", new String[]
-      {"Source 1", "Source 2", "Source 3"});
-      test.setProperty("description", new String[]
-      {"description 1", "description 2", "description 3", "description 4"});
-      test.setProperty("publisher", new String[]
-      {"publisher 1", "publisher 2", "publisher 3"});
-      test.setProperty("language", new String[]
-      {"language 1", "language 2", "language3", "language 4", "language5"});
+      test.setProperty("source", new String[]{"Source 1", "Source 2", "Source 3"});
+      test.setProperty("description", new String[]{"description 1", "description 2", "description 3", "description 4"});
+      test.setProperty("publisher", new String[]{"publisher 1", "publisher 2", "publisher 3"});
+      test.setProperty("language", new String[]{"language 1", "language 2", "language3", "language 4", "language5"});
 
       session.save();
 

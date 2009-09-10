@@ -18,11 +18,11 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
+import org.exoplatform.services.jcr.core.NamespaceAccessor;
+
 import javax.jcr.NamespaceException;
 import javax.jcr.NamespaceRegistry;
 import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.jcr.core.NamespaceAccessor;
 
 /**
  * Created by The eXo Platform SAS.
@@ -30,8 +30,7 @@ import org.exoplatform.services.jcr.core.NamespaceAccessor;
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: $
  */
-public interface ExtendedNamespaceRegistry
-   extends NamespaceRegistry, NamespaceAccessor
+public interface ExtendedNamespaceRegistry extends NamespaceRegistry, NamespaceAccessor
 {
 
    /**

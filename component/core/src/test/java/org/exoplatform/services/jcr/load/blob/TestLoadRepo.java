@@ -18,6 +18,13 @@
  */
 package org.exoplatform.services.jcr.load.blob;
 
+import org.exoplatform.services.jcr.BaseStandaloneTest;
+import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.jcr.impl.tools.tree.TreeGenerator;
+import org.exoplatform.services.jcr.impl.tools.tree.ValueSsh1Comparator;
+import org.exoplatform.services.jcr.impl.tools.tree.ValueSsh1Generator;
+import org.exoplatform.services.jcr.impl.tools.tree.generator.RandomValueNodeGenerator;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,19 +43,11 @@ import javax.jcr.lock.LockException;
 import javax.jcr.nodetype.ConstraintViolationException;
 import javax.jcr.version.VersionException;
 
-import org.exoplatform.services.jcr.BaseStandaloneTest;
-import org.exoplatform.services.jcr.impl.core.NodeImpl;
-import org.exoplatform.services.jcr.impl.tools.tree.TreeGenerator;
-import org.exoplatform.services.jcr.impl.tools.tree.ValueSsh1Comparator;
-import org.exoplatform.services.jcr.impl.tools.tree.ValueSsh1Generator;
-import org.exoplatform.services.jcr.impl.tools.tree.generator.RandomValueNodeGenerator;
-
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: TestLoadRepo.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class TestLoadRepo
-   extends BaseStandaloneTest
+public class TestLoadRepo extends BaseStandaloneTest
 {
 
    @Override
@@ -63,12 +62,12 @@ public class TestLoadRepo
       File checkSummValue = new File(System.getProperty("java.io.tmpdir"), "repo.ssh1");
       BufferedOutputStream sshStrream = new BufferedOutputStream(new FileOutputStream(checkSummValue));
       RandomValueNodeGenerator nodeGenerator =
-               new RandomValueNodeGenerator(session.getValueFactory(), 6, 5, 8, 5, 1024 * 1024);
+         new RandomValueNodeGenerator(session.getValueFactory(), 6, 5, 8, 5, 1024 * 1024);
       TreeGenerator generator = new TreeGenerator(testNode, nodeGenerator);
       generator.genereteTree();
       root.save();
       ValueSsh1Generator ssh1Generator = new ValueSsh1Generator(session.getTransientNodesManager(), sshStrream);
-      ((NodeImpl) testNode).getData().accept(ssh1Generator);
+      ((NodeImpl)testNode).getData().accept(ssh1Generator);
       sshStrream.close();
       File exportFile = new File(System.getProperty("java.io.tmpdir"), "testExport.xml");
       OutputStream os = new FileOutputStream(exportFile);
@@ -82,14 +81,14 @@ public class TestLoadRepo
    }
 
    public void _testImport() throws ItemExistsException, PathNotFoundException, VersionException,
-            ConstraintViolationException, LockException, RepositoryException, IOException, NoSuchAlgorithmException
+      ConstraintViolationException, LockException, RepositoryException, IOException, NoSuchAlgorithmException
    {
 
       File importFile = new File(System.getProperty("java.io.tmpdir"), "testExport.xml");
       InputStream is = new FileInputStream(importFile);
 
       session.getWorkspace().getNamespaceRegistry().registerNamespace("exojcrtest_old",
-               "http://www.exoplatform.org/jcr/exojcrtest");
+         "http://www.exoplatform.org/jcr/exojcrtest");
       session.importXML(root.getPath(), is, ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
       session.save();
 
@@ -97,7 +96,7 @@ public class TestLoadRepo
       InputStream isSSH1 = new FileInputStream(ssh1File);
 
       ValueSsh1Comparator ssh1Comparator = new ValueSsh1Comparator(session.getTransientNodesManager(), isSSH1);
-      ((NodeImpl) root.getNode("testNode")).getData().accept(ssh1Comparator);
+      ((NodeImpl)root.getNode("testNode")).getData().accept(ssh1Comparator);
 
    };
 

@@ -18,6 +18,15 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
+import org.exoplatform.services.jcr.JcrImplBaseTest;
+import org.exoplatform.services.jcr.RepositoryService;
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
+import org.exoplatform.services.jcr.util.ConfigurationHelper;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -30,24 +39,13 @@ import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
-import org.exoplatform.services.log.Log;
-
-import org.exoplatform.services.jcr.JcrImplBaseTest;
-import org.exoplatform.services.jcr.RepositoryService;
-import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
-import org.exoplatform.services.jcr.config.WorkspaceEntry;
-import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
-import org.exoplatform.services.jcr.util.ConfigurationHelper;
-import org.exoplatform.services.log.ExoLogger;
-
 /**
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: TestWorkspaceRestore.java 11962 2008-03-16 16:31:14Z gazarenkov $
  */
-public class TestWorkspaceRestore
-   extends JcrImplBaseTest
+public class TestWorkspaceRestore extends JcrImplBaseTest
 {
 
    private static boolean isDefaultWsCreated = false;
@@ -77,14 +75,14 @@ public class TestWorkspaceRestore
       defSession.logout();
       WorkspaceEntry workspaceEntry = null;
       workspaceEntry =
-               helper.getNewWs("testRestore", isDefaultWsMultiDb, wsEntry.getContainer().getParameterValue(
-                        JDBCWorkspaceDataContainer.SOURCE_NAME), null, wsEntry.getContainer());
+         helper.getNewWs("testRestore", isDefaultWsMultiDb, wsEntry.getContainer().getParameterValue(
+            JDBCWorkspaceDataContainer.SOURCE_NAME), null, wsEntry.getContainer());
       assertNotNull(workspaceEntry);
 
-      RepositoryService service = (RepositoryService) container.getComponentInstanceOfType(RepositoryService.class);
+      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
       RepositoryImpl defRep;
 
-      defRep = (RepositoryImpl) service.getDefaultRepository();
+      defRep = (RepositoryImpl)service.getDefaultRepository();
       defRep.configWorkspace(workspaceEntry);
 
       defRep.importWorkspace(workspaceEntry.getName(), new BufferedInputStream(new FileInputStream(content)));
@@ -96,7 +94,7 @@ public class TestWorkspaceRestore
    public void setUp() throws Exception
    {
       super.setUp();
-      wsEntry = (WorkspaceEntry) session.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
+      wsEntry = (WorkspaceEntry)session.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
       if ("true".equals(wsEntry.getContainer().getParameterValue("multi-db")))
       {
          isDefaultWsMultiDb = true;
@@ -106,8 +104,8 @@ public class TestWorkspaceRestore
 
          WorkspaceEntry workspaceEntry = null;
          workspaceEntry =
-                  helper.getNewWs("defWs", isDefaultWsMultiDb, wsEntry.getContainer().getParameterValue(
-                           JDBCWorkspaceDataContainer.SOURCE_NAME), null, wsEntry.getContainer());
+            helper.getNewWs("defWs", isDefaultWsMultiDb, wsEntry.getContainer().getParameterValue(
+               JDBCWorkspaceDataContainer.SOURCE_NAME), null, wsEntry.getContainer());
          helper.createWorkspace(workspaceEntry, container);
          isDefaultWsCreated = true;
       }
@@ -116,13 +114,13 @@ public class TestWorkspaceRestore
    public void testRestore() throws RepositoryConfigurationException, Exception
    {
       WorkspaceEntry workspaceEntry =
-               helper.getNewWs("testResotore", isDefaultWsMultiDb, wsEntry.getContainer().getParameterValue(
-                        JDBCWorkspaceDataContainer.SOURCE_NAME), null, wsEntry.getContainer());
+         helper.getNewWs("testResotore", isDefaultWsMultiDb, wsEntry.getContainer().getParameterValue(
+            JDBCWorkspaceDataContainer.SOURCE_NAME), null, wsEntry.getContainer());
 
-      RepositoryService service = (RepositoryService) container.getComponentInstanceOfType(RepositoryService.class);
+      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
       RepositoryImpl defRep;
 
-      defRep = (RepositoryImpl) service.getDefaultRepository();
+      defRep = (RepositoryImpl)service.getDefaultRepository();
       defRep.configWorkspace(workspaceEntry);
       InputStream is = TestWorkspaceManagement.class.getResourceAsStream("/import-export/db1_ws1-20071220_0430.xml");
       repository.importWorkspace("testResotore", is);
@@ -145,14 +143,14 @@ public class TestWorkspaceRestore
       defSession.logout();
       WorkspaceEntry workspaceEntry = null;
       workspaceEntry =
-               helper.getNewWs("testRestoreBadXml", isDefaultWsMultiDb, wsEntry.getContainer().getParameterValue(
-                        JDBCWorkspaceDataContainer.SOURCE_NAME), null, wsEntry.getContainer());
+         helper.getNewWs("testRestoreBadXml", isDefaultWsMultiDb, wsEntry.getContainer().getParameterValue(
+            JDBCWorkspaceDataContainer.SOURCE_NAME), null, wsEntry.getContainer());
       assertNotNull(workspaceEntry);
 
-      RepositoryService service = (RepositoryService) container.getComponentInstanceOfType(RepositoryService.class);
+      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
       RepositoryImpl defRep;
 
-      defRep = (RepositoryImpl) service.getDefaultRepository();
+      defRep = (RepositoryImpl)service.getDefaultRepository();
       defRep.configWorkspace(workspaceEntry);
 
       try
@@ -169,7 +167,7 @@ public class TestWorkspaceRestore
 
    private void doTestOnWorkspace(String wsName) throws RepositoryException, RepositoryConfigurationException
    {
-      RepositoryService service = (RepositoryService) container.getComponentInstanceOfType(RepositoryService.class);
+      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
       Session sess = service.getDefaultRepository().getSystemSession(wsName);
 
       Node root2 = sess.getRootNode();

@@ -40,7 +40,7 @@ public interface QueryTreeBuilder
     *           if the statement is malformed.
     */
    QueryRootNode createQueryTree(String statement, LocationFactory resolver, QueryNodeFactory factory)
-            throws InvalidQueryException;
+      throws InvalidQueryException;
 
    /**
     * Returns <code>true</code> if this query tree builder can handle a statement in

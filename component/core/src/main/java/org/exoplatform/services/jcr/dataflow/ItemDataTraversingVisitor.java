@@ -18,10 +18,10 @@
  */
 package org.exoplatform.services.jcr.dataflow;
 
-import javax.jcr.RepositoryException;
-
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
+
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -30,8 +30,7 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
  * @version $Id: ItemDataTraversingVisitor.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public abstract class ItemDataTraversingVisitor
-   implements ItemDataVisitor
+public abstract class ItemDataTraversingVisitor implements ItemDataVisitor
 {
    /**
     * Maximum level.

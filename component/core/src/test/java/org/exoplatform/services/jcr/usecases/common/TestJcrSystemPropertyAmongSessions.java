@@ -18,11 +18,11 @@
  */
 package org.exoplatform.services.jcr.usecases.common;
 
+import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
+
 import javax.jcr.Node;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
-
-import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
 
 /**
  * Created by The eXo Platform SAS.
@@ -33,8 +33,7 @@ import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
  *          Items under /jcr:system
  */
 
-public class TestJcrSystemPropertyAmongSessions
-   extends BaseUsecasesTest
+public class TestJcrSystemPropertyAmongSessions extends BaseUsecasesTest
 {
 
    /**
@@ -55,8 +54,7 @@ public class TestJcrSystemPropertyAmongSessions
       session.save();
 
       Session session2 =
-               repository.login(new SimpleCredentials("admin", "admin".toCharArray()), repository
-                        .getSystemWorkspaceName());
+         repository.login(new SimpleCredentials("admin", "admin".toCharArray()), repository.getSystemWorkspaceName());
       testNode = session2.getRootNode().getNode("jcr:system/TestNode");
       String value = testNode.getProperty("p").getValue().getString();
       assertEquals(value, "test");
@@ -64,8 +62,7 @@ public class TestJcrSystemPropertyAmongSessions
       // you should change session to see both of session cann't use
       // Session session3 = repository.getSystemSession(repository.getSystemWorkspaceName());
       Session session3 =
-               repository.login(new SimpleCredentials("admin", "admin".toCharArray()), repository
-                        .getSystemWorkspaceName());
+         repository.login(new SimpleCredentials("admin", "admin".toCharArray()), repository.getSystemWorkspaceName());
       Node testNode2 = session3.getRootNode().getNode("jcr:system/TestNode");
       testNode2.setProperty("p", "testModify");
       session3.save();

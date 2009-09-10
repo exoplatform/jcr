@@ -16,30 +16,29 @@
  */
 package org.exoplatform.services.jcr.api.core.query;
 
+import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
+
 import java.io.ByteArrayInputStream;
 import java.util.Calendar;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
-import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
-
 /**
  * Tests if mixin types are queried correctly when using element test: element()
  */
-public class MixinTest
-   extends AbstractQueryTest
+public class MixinTest extends AbstractQueryTest
 {
 
    protected void setUp() throws Exception
    {
       super.setUp();
-      ExtendedNodeTypeManager manager = (ExtendedNodeTypeManager) superuser.getWorkspace().getNodeTypeManager();
+      ExtendedNodeTypeManager manager = (ExtendedNodeTypeManager)superuser.getWorkspace().getNodeTypeManager();
 
       String cnd =
-               "<nodeTypes><nodeType name='test:referenceable' isMixin='true' hasOrderableChildNodes='false' primaryItemName=''>"
-                        + "<supertypes>" + "     <supertype>mix:referenceable</supertype>" + "</supertypes>"
-                        + "</nodeType>" + "</nodeTypes>";
+         "<nodeTypes><nodeType name='test:referenceable' isMixin='true' hasOrderableChildNodes='false' primaryItemName=''>"
+            + "<supertypes>" + "     <supertype>mix:referenceable</supertype>" + "</supertypes>" + "</nodeType>"
+            + "</nodeTypes>";
 
       manager.registerNodeTypes(new ByteArrayInputStream(cnd.getBytes()), ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
    }
@@ -63,8 +62,7 @@ public class MixinTest
       testRootNode.save();
 
       String query = testPath + "//element(*, mix:referenceable)";
-      executeXPathQuery(query, new Node[]
-      {n1, n2, n3});
+      executeXPathQuery(query, new Node[]{n1, n2, n3});
    }
 
 }

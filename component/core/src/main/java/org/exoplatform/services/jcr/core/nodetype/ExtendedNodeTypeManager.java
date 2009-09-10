@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.core.nodetype;
 
+import org.exoplatform.services.jcr.datamodel.InternalQName;
+
 import java.io.InputStream;
 import java.util.List;
 
@@ -28,8 +30,6 @@ import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.NodeTypeIterator;
 import javax.jcr.nodetype.NodeTypeManager;
 
-import org.exoplatform.services.jcr.datamodel.InternalQName;
-
 /**
  * Created by The eXo Platform SAS. <br/> Node Type manager.
  * 
@@ -38,8 +38,7 @@ import org.exoplatform.services.jcr.datamodel.InternalQName;
  * @version $Id: ExtendedNodeTypeManager.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public interface ExtendedNodeTypeManager
-   extends NodeTypeManager
+public interface ExtendedNodeTypeManager extends NodeTypeManager
 {
 
    public static final int IGNORE_IF_EXISTS = 0;
@@ -124,7 +123,7 @@ public interface ExtendedNodeTypeManager
     * @throws RepositoryException if another error occurs.
     */
    public NodeTypeIterator registerNodeTypes(List<NodeTypeValue> values, int alreadyExistsBehaviour)
-            throws UnsupportedRepositoryOperationException, RepositoryException;
+      throws UnsupportedRepositoryOperationException, RepositoryException;
 
    /**
     * Unregisters the specified node type.
@@ -137,7 +136,7 @@ public interface ExtendedNodeTypeManager
     * @throws RepositoryException if another error occurs.
     */
    public void unregisterNodeType(String name) throws UnsupportedRepositoryOperationException, NoSuchNodeTypeException,
-            RepositoryException;
+      RepositoryException;
 
    /**
     * Unregisters the specified set of node types.<p/> Used to unregister a set
@@ -151,5 +150,5 @@ public interface ExtendedNodeTypeManager
     * @throws RepositoryException if another error occurs.
     */
    public void unregisterNodeTypes(String[] names) throws UnsupportedRepositoryOperationException,
-            NoSuchNodeTypeException, RepositoryException;
+      NoSuchNodeTypeException, RepositoryException;
 }

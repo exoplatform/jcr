@@ -18,16 +18,16 @@
  */
 package org.exoplatform.services.jcr.api.version;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.core.CredentialsImpl;
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
+
 import javax.jcr.AccessDeniedException;
 import javax.jcr.Node;
 import javax.jcr.Session;
 import javax.jcr.nodetype.ConstraintViolationException;
 import javax.jcr.version.Version;
 import javax.jcr.version.VersionHistory;
-
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-import org.exoplatform.services.jcr.core.CredentialsImpl;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
 
 /**
  * Created by The eXo Platform SAS.
@@ -37,8 +37,7 @@ import org.exoplatform.services.jcr.impl.core.SessionImpl;
  *          ksm $
  */
 
-public class TestInitializingVersionHistory
-   extends JcrAPIBaseTest
+public class TestInitializingVersionHistory extends JcrAPIBaseTest
 {
 
    public void testNewVersionable() throws Exception
@@ -106,7 +105,7 @@ public class TestInitializingVersionHistory
       root.save();
 
       // another session
-      SessionImpl session1 = (SessionImpl) repository.login(new CredentialsImpl("exo", "exo".toCharArray()));
+      SessionImpl session1 = (SessionImpl)repository.login(new CredentialsImpl("exo", "exo".toCharArray()));
 
       Node root1 = session1.getRootNode();
       node = root1.getNode("node-v1");
@@ -169,14 +168,14 @@ public class TestInitializingVersionHistory
       node.checkin();
 
       // another session
-      SessionImpl session1 = (SessionImpl) repository.login(new CredentialsImpl("__anonim", "exo".toCharArray()));
-      node = (Node) session1.getItem("/testBaseVersionAccessible");
+      SessionImpl session1 = (SessionImpl)repository.login(new CredentialsImpl("__anonim", "exo".toCharArray()));
+      node = (Node)session1.getItem("/testBaseVersionAccessible");
       assertEquals("1", node.getBaseVersion().getName());
       try
       {
          // [PN] 02.08.06
          // versionStorage's children should have READ permission for all
-         node = (Node) session1.getItem("/jcr:system/jcr:versionStorage/" + node.getVersionHistory().getUUID() + "/1");
+         node = (Node)session1.getItem("/jcr:system/jcr:versionStorage/" + node.getVersionHistory().getUUID() + "/1");
          // fail("AccessDeniedException should have been thrown");
       }
       catch (AccessDeniedException e)

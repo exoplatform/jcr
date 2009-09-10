@@ -28,8 +28,7 @@ import javax.jcr.SimpleCredentials;
  * @version $Id: CredentialsImpl.java 12841 2007-02-16 08:58:38Z peterit $
  */
 
-public class CredentialsImpl
-   implements Credentials
+public class CredentialsImpl implements Credentials
 {
 
    private SimpleCredentials simpleCredentials;

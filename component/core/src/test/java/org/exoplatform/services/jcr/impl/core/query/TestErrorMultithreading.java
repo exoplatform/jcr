@@ -17,6 +17,11 @@
 
 package org.exoplatform.services.jcr.impl.core.query;
 
+import org.exoplatform.services.jcr.core.CredentialsImpl;
+import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.util.IdGenerator;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.Calendar;
@@ -32,19 +37,13 @@ import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
 
-import org.exoplatform.services.jcr.core.CredentialsImpl;
-import org.exoplatform.services.jcr.impl.core.NodeImpl;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
-import org.exoplatform.services.jcr.util.IdGenerator;
-
 /**
  * Created by The eXo Platform SAS Author : Sergey Karpenko <sergey.karpenko@exoplatform.com.ua>
  * 
  * @version $Id: $
  */
 
-public class TestErrorMultithreading
-   extends BaseQueryTest
+public class TestErrorMultithreading extends BaseQueryTest
 {
    public static final int COUNT = 5;
 
@@ -69,8 +68,7 @@ public class TestErrorMultithreading
 
    private void loadLargeFiles() throws Exception
    {
-      class Writer
-         extends Thread
+      class Writer extends Thread
       {
          public String name;
 
@@ -97,8 +95,8 @@ public class TestErrorMultithreading
 
                   IdGenerator obj;
                   String fileName = IdGenerator.generate();// + "_" + i;
-                  NodeImpl node = (NodeImpl) root.addNode(fileName, "nt:file");
-                  NodeImpl cont = (NodeImpl) node.addNode("jcr:content", "nt:resource");
+                  NodeImpl node = (NodeImpl)root.addNode(fileName, "nt:file");
+                  NodeImpl cont = (NodeImpl)node.addNode("jcr:content", "nt:resource");
                   cont.setProperty("jcr:mimeType", "text/plain");
                   cont.setProperty("jcr:lastModified", Calendar.getInstance());
                   fis = new FileInputStream(file);
@@ -123,7 +121,7 @@ public class TestErrorMultithreading
       {
          Credentials credentials = new CredentialsImpl("admin", "admin".toCharArray());
 
-         Session ss = (SessionImpl) repository.login(credentials, "ws");
+         Session ss = (SessionImpl)repository.login(credentials, "ws");
          Writer wr = new Writer(THREAD_NAME + t, ss);
          writers.add(wr);
       }
@@ -147,8 +145,7 @@ public class TestErrorMultithreading
    private void fillRepo() throws Exception
    {
 
-      class Writer
-         extends Thread
+      class Writer extends Thread
       {
          public String name;
 
@@ -199,7 +196,7 @@ public class TestErrorMultithreading
       {
          Credentials credentials = new CredentialsImpl("admin", "admin".toCharArray());
 
-         Session ss = (SessionImpl) repository.login(credentials, "ws");
+         Session ss = (SessionImpl)repository.login(credentials, "ws");
          Writer wr = new Writer(THREAD_NAME + t, ss);
          writers.add(wr);
       }

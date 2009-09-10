@@ -22,8 +22,7 @@ import java.io.IOException;
  * <code>HighlightingExcerptProvider</code> extends the <code>ExcerptProvider</code> interface with
  * a method that highlights matching terms in arbitrary text.
  */
-public interface HighlightingExcerptProvider
-   extends ExcerptProvider
+public interface HighlightingExcerptProvider extends ExcerptProvider
 {
 
    /**

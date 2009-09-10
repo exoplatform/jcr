@@ -17,27 +17,25 @@
 
 package org.exoplatform.services.jcr.impl.core.query;
 
+import org.apache.lucene.document.Document;
+import org.exoplatform.services.jcr.impl.core.NodeImpl;
+
 import javax.jcr.PropertyType;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
 
-import org.apache.lucene.document.Document;
-import org.exoplatform.services.jcr.impl.core.NodeImpl;
-
 /**
  * Created by The eXo Platform SAS Author : Sergey Karpenko <sergey.karpenko@exoplatform.com.ua>
  */
 
-public class TestMultiValueSearch
-   extends BaseQueryTest
+public class TestMultiValueSearch extends BaseQueryTest
 {
 
    public void testString() throws Exception
    {
-      NodeImpl node = (NodeImpl) root.addNode("String", "nt:unstructured");
-      node.setProperty("jcr:data", new String[]
-      {"First", "Second"});
+      NodeImpl node = (NodeImpl)root.addNode("String", "nt:unstructured");
+      node.setProperty("jcr:data", new String[]{"First", "Second"});
       root.save();
 
       // Check is node indexed
@@ -60,11 +58,10 @@ public class TestMultiValueSearch
 
    public void testBinary() throws Exception
    {
-      NodeImpl node = (NodeImpl) root.addNode("Binary", "nt:unstructured");
-      NodeImpl cont = (NodeImpl) node.addNode("jcr:content");
+      NodeImpl node = (NodeImpl)root.addNode("Binary", "nt:unstructured");
+      NodeImpl cont = (NodeImpl)node.addNode("jcr:content");
       cont.setProperty("jcr:mimeType", "text/plain");
-      cont.setProperty("jcr:data", new String[]
-      {"FirstB", "SecondB"}, PropertyType.BINARY);
+      cont.setProperty("jcr:data", new String[]{"FirstB", "SecondB"}, PropertyType.BINARY);
       root.save();
 
       // Check is node indexed

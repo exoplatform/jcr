@@ -18,11 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.version;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.jcr.PropertyType;
-
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
@@ -40,6 +35,11 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.dataflow.session.SessionChangesLog;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.jcr.PropertyType;
+
 /**
  * Created by The eXo Platform SAS 07.12.2006
  * 
@@ -47,8 +47,7 @@ import org.exoplatform.services.jcr.util.IdGenerator;
  *         Nedonosko</a>
  * @version $Id: BaseVersionImplTest.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class BaseVersionImplTest
-   extends JcrImplBaseTest
+public class BaseVersionImplTest extends JcrImplBaseTest
 {
 
    protected static final int TESTCASE_ONPARENT_COPY = 0;
@@ -85,8 +84,7 @@ public class BaseVersionImplTest
 
    protected static String TEST_FROZEN_ROOT = "frozenRoot";
 
-   protected InternalQName[] mixVersionable = new InternalQName[]
-   {Constants.MIX_VERSIONABLE};
+   protected InternalQName[] mixVersionable = new InternalQName[]{Constants.MIX_VERSIONABLE};
 
    protected InternalQName testRootName = new InternalQName(Constants.NS_EXO_URI, TEST_ROOT);
 
@@ -176,8 +174,7 @@ public class BaseVersionImplTest
 
    protected FrozenNodeInitializer visitor;
 
-   protected class TestTransientValueData
-      extends TransientValueData
+   protected class TestTransientValueData extends TransientValueData
    {
       protected TestTransientValueData(byte[] data, int orderNumb)
       {
@@ -228,13 +225,13 @@ public class BaseVersionImplTest
 
       changesLog = new SessionChangesLog(session.getId());
 
-      ntManager = (NodeTypeManagerImpl) session.getWorkspace().getNodeTypeManager();
+      ntManager = (NodeTypeManagerImpl)session.getWorkspace().getNodeTypeManager();
 
       SessionChangesLog initChanges = new SessionChangesLog(session.getId());
 
-      NodeData wsRoot = (NodeData) ((NodeImpl) session.getRootNode()).getData();
+      NodeData wsRoot = (NodeData)((NodeImpl)session.getRootNode()).getData();
       testRoot =
-               TransientNodeData.createNodeData(wsRoot, new InternalQName(null, TEST_ROOT), Constants.NT_UNSTRUCTURED);
+         TransientNodeData.createNodeData(wsRoot, new InternalQName(null, TEST_ROOT), Constants.NT_UNSTRUCTURED);
       initChanges.add(ItemState.createAddedState(testRoot));
 
       frozenRoot = TransientNodeData.createNodeData(testRoot, frozenRootName, Constants.NT_UNSTRUCTURED);
@@ -242,14 +239,14 @@ public class BaseVersionImplTest
 
       // session.getTransientNodesManager().getTransactManager().save(changesLog);
       SessionDataManagerTestWrapper managerWrapper =
-               new SessionDataManagerTestWrapper(session.getTransientNodesManager());
+         new SessionDataManagerTestWrapper(session.getTransientNodesManager());
       managerWrapper.getChangesLog().addAll(initChanges.getAllStates());
 
       visitor =
-               new FrozenNodeInitializer(frozenRoot, session.getTransientNodesManager(), session.getWorkspace()
-                        .getNodeTypesHolder(),
+         new FrozenNodeInitializer(frozenRoot, session.getTransientNodesManager(), session.getWorkspace()
+            .getNodeTypesHolder(),
 
-               changesLog, session.getValueFactory());
+         changesLog, session.getValueFactory());
    }
 
    public void tearDown() throws Exception
@@ -274,84 +271,82 @@ public class BaseVersionImplTest
 
       // target node
       versionable = TransientNodeData.createNodeData(testRoot, nodeName1, Constants.NT_UNSTRUCTURED, nodeUuid1);
-      ((TransientNodeData) versionable).setMixinTypeNames(mixVersionable);
+      ((TransientNodeData)versionable).setMixinTypeNames(mixVersionable);
       versionableLog.add(ItemState.createAddedState(versionable));
 
       PropertyData vChildProperty1 =
-               TransientPropertyData.createPropertyData(versionable, propertyName1, 0, true, stringDataMultivalued);
+         TransientPropertyData.createPropertyData(versionable, propertyName1, 0, true, stringDataMultivalued);
       versionableLog.add(ItemState.createAddedState(vChildProperty1));
       PropertyData vChildProperty2 =
-               TransientPropertyData.createPropertyData(versionable, propertyName2, 0, false, longDataSinglevalued);
+         TransientPropertyData.createPropertyData(versionable, propertyName2, 0, false, longDataSinglevalued);
       versionableLog.add(ItemState.createAddedState(vChildProperty2));
 
       NodeData vChildNode1 = TransientNodeData.createNodeData(versionable, nodeName2, Constants.NT_UNSTRUCTURED);
       versionableLog.add(ItemState.createAddedState(vChildNode1));
       PropertyData vChildNode1_property1 =
-               TransientPropertyData.createPropertyData(vChildNode1, propertyName3, 0, false, stringDataSinglevalued);
+         TransientPropertyData.createPropertyData(vChildNode1, propertyName3, 0, false, stringDataSinglevalued);
       versionableLog.add(ItemState.createAddedState(vChildNode1_property1));
       PropertyData vChildNode1_property2 =
-               TransientPropertyData.createPropertyData(vChildNode1, propertyName4, 0, false, binaryDataSinglevalued);
+         TransientPropertyData.createPropertyData(vChildNode1, propertyName4, 0, false, binaryDataSinglevalued);
       versionableLog.add(ItemState.createAddedState(vChildNode1_property2));
 
       NodeData vChildNode1_node3 = TransientNodeData.createNodeData(vChildNode1, nodeName3, Constants.NT_UNSTRUCTURED);
       versionableLog.add(ItemState.createAddedState(vChildNode1_node3));
       PropertyData vChildNode1_node3_property1 =
-               TransientPropertyData.createPropertyData(vChildNode1_node3, propertyName5, 0, false,
-                        stringDataSinglevalued);
+         TransientPropertyData.createPropertyData(vChildNode1_node3, propertyName5, 0, false, stringDataSinglevalued);
       versionableLog.add(ItemState.createAddedState(vChildNode1_node3_property1));
 
       NodeData vChildNode1_node4 = TransientNodeData.createNodeData(vChildNode1, nodeName4, Constants.NT_UNSTRUCTURED);
       versionableLog.add(ItemState.createAddedState(vChildNode1_node4));
       PropertyData vChildNode1_node4_property1 =
-               TransientPropertyData.createPropertyData(vChildNode1_node4, propertyName1, 0, false,
-                        stringDataMultivalued);
+         TransientPropertyData.createPropertyData(vChildNode1_node4, propertyName1, 0, false, stringDataMultivalued);
       versionableLog.add(ItemState.createAddedState(vChildNode1_node4_property1));
 
       switch (testCase)
       {
          case (TESTCASE_ONPARENT_ABORT) : {
             NodeData vChildNode1_node5 =
-                     TransientNodeData.createNodeData(vChildNode1, nodeName5, NT_TEST_ONPARENT_ABORT);
+               TransientNodeData.createNodeData(vChildNode1, nodeName5, NT_TEST_ONPARENT_ABORT);
             versionableLog.add(ItemState.createAddedState(vChildNode1_node5));
             PropertyData vChildNode1_node5_propertyAborted =
-                     TransientPropertyData.createPropertyData(vChildNode1_node5, PROPERTY_ABORTED, 0, false,
-                              stringDataSinglevalued);
+               TransientPropertyData.createPropertyData(vChildNode1_node5, PROPERTY_ABORTED, 0, false,
+                  stringDataSinglevalued);
             versionableLog.add(ItemState.createAddedState(vChildNode1_node5_propertyAborted));
             NodeData vChildNode1_node5_nodeAborted =
-                     TransientNodeData.createNodeData(vChildNode1_node5, NODE_ABOORTED, Constants.NT_UNSTRUCTURED);
+               TransientNodeData.createNodeData(vChildNode1_node5, NODE_ABOORTED, Constants.NT_UNSTRUCTURED);
             versionableLog.add(ItemState.createAddedState(vChildNode1_node5_nodeAborted));
             PropertyData vChildNode1_node5_node1_property2 =
-                     TransientPropertyData.createPropertyData(vChildNode1_node5_nodeAborted, propertyName2, 0, false,
-                              stringDataSinglevalued);
+               TransientPropertyData.createPropertyData(vChildNode1_node5_nodeAborted, propertyName2, 0, false,
+                  stringDataSinglevalued);
             versionableLog.add(ItemState.createAddedState(vChildNode1_node5_node1_property2));
             break;
          }
 
          case (TESTCASE_ONPARENT_IGNORE) : {
             NodeData vChildNode1_node5 =
-                     TransientNodeData.createNodeData(vChildNode1, nodeName5, NT_TEST_ONPARENT_IGNORE);
+               TransientNodeData.createNodeData(vChildNode1, nodeName5, NT_TEST_ONPARENT_IGNORE);
             versionableLog.add(ItemState.createAddedState(vChildNode1_node5));
             PropertyData vChildNode1_node5_propertyIgnored =
-                     TransientPropertyData.createPropertyData(vChildNode1_node5, PROPERTY_IGNORED, 0, false,
-                              stringDataSinglevalued);
+               TransientPropertyData.createPropertyData(vChildNode1_node5, PROPERTY_IGNORED, 0, false,
+                  stringDataSinglevalued);
             versionableLog.add(ItemState.createAddedState(vChildNode1_node5_propertyIgnored));
             NodeData vChildNode1_node5_nodeIgnored =
-                     TransientNodeData.createNodeData(vChildNode1_node5, NODE_IGNORED, Constants.NT_UNSTRUCTURED);
+               TransientNodeData.createNodeData(vChildNode1_node5, NODE_IGNORED, Constants.NT_UNSTRUCTURED);
             versionableLog.add(ItemState.createAddedState(vChildNode1_node5_nodeIgnored));
             PropertyData vChildNode1_node5_node1_property2 =
-                     TransientPropertyData.createPropertyData(vChildNode1_node5_nodeIgnored, propertyName2, 0, false,
-                              stringDataSinglevalued);
+               TransientPropertyData.createPropertyData(vChildNode1_node5_nodeIgnored, propertyName2, 0, false,
+                  stringDataSinglevalued);
             versionableLog.add(ItemState.createAddedState(vChildNode1_node5_node1_property2));
             break;
          }
 
          case (TESTCASE_ONPARENT_VERSION) : {
             NodeData vChildNode1_node5 =
-                     TransientNodeData.createNodeData(vChildNode1, nodeName5, NT_TEST_ONPARENT_VERSION);
+               TransientNodeData.createNodeData(vChildNode1, nodeName5, NT_TEST_ONPARENT_VERSION);
             versionableLog.add(ItemState.createAddedState(vChildNode1_node5));
             PropertyData vChildNode1_node5_propertyVersioned =
-                     TransientPropertyData.createPropertyData(vChildNode1_node5, PROPERTY_VERSIONED, 0, false,
-                              stringDataSinglevalued); // behaviour
+               TransientPropertyData.createPropertyData(vChildNode1_node5, PROPERTY_VERSIONED, 0, false,
+                  stringDataSinglevalued); // behaviour
             // of
             // COPY
             // will
@@ -359,26 +354,26 @@ public class BaseVersionImplTest
             versionableLog.add(ItemState.createAddedState(vChildNode1_node5_propertyVersioned));
 
             NodeData vChildNode1_node5_nodeVersioned =
-                     TransientNodeData.createNodeData(vChildNode1_node5, NODE_VERSIONED, Constants.NT_UNSTRUCTURED);
-            ((TransientNodeData) vChildNode1_node5_nodeVersioned).setMixinTypeNames(mixVersionable);
+               TransientNodeData.createNodeData(vChildNode1_node5, NODE_VERSIONED, Constants.NT_UNSTRUCTURED);
+            ((TransientNodeData)vChildNode1_node5_nodeVersioned).setMixinTypeNames(mixVersionable);
             versionableLog.add(ItemState.createAddedState(vChildNode1_node5_nodeVersioned));
             PropertyData vChildNode1_node5_node1_property2 =
-                     TransientPropertyData.createPropertyData(vChildNode1_node5_nodeVersioned, propertyName2, 0, false,
-                              stringDataSinglevalued);
+               TransientPropertyData.createPropertyData(vChildNode1_node5_nodeVersioned, propertyName2, 0, false,
+                  stringDataSinglevalued);
             versionableLog.add(ItemState.createAddedState(vChildNode1_node5_node1_property2));
 
             // version history for store in jcr:childVersionHistory property during
             // visitor work
             PropertyData vChildNode1_node5_nodeVersioned_versionHistory =
-                     TransientPropertyData.createPropertyData(vChildNode1_node5_nodeVersioned,
-                              Constants.JCR_VERSIONHISTORY, PropertyType.REFERENCE, false, versionedVersionHistoryData);
+               TransientPropertyData.createPropertyData(vChildNode1_node5_nodeVersioned, Constants.JCR_VERSIONHISTORY,
+                  PropertyType.REFERENCE, false, versionedVersionHistoryData);
             versionableLog.add(ItemState.createAddedState(vChildNode1_node5_nodeVersioned_versionHistory));
             break;
          }
       }
 
       SessionDataManagerTestWrapper managerWrapper =
-               new SessionDataManagerTestWrapper(session.getTransientNodesManager());
+         new SessionDataManagerTestWrapper(session.getTransientNodesManager());
       managerWrapper.getChangesLog().addAll(versionableLog.getAllStates());
    }
 }

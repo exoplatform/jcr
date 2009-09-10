@@ -18,6 +18,13 @@
  */
 package org.exoplatform.services.jcr.impl.core.observation;
 
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.core.SessionRegistry;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
+import org.exoplatform.services.jcr.impl.util.EntityCollection;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,14 +32,6 @@ import java.util.Map;
 
 import javax.jcr.observation.EventListener;
 import javax.jcr.observation.EventListenerIterator;
-
-import org.exoplatform.services.log.Log;
-
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
-import org.exoplatform.services.jcr.impl.core.SessionRegistry;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
-import org.exoplatform.services.jcr.impl.util.EntityCollection;
-import org.exoplatform.services.log.ExoLogger;
 
 /**
  * Created by The eXo Platform SAS.
@@ -51,7 +50,7 @@ public class ObservationManagerRegistry
    protected ActionLauncher launcher;
 
    public ObservationManagerRegistry(WorkspacePersistentDataManager workspaceDataManager,
-            SessionRegistry sessionRegistry)
+      SessionRegistry sessionRegistry)
    {
 
       this.listenersMap = new HashMap<EventListener, ListenerCriteria>();

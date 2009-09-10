@@ -18,6 +18,11 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.cas;
 
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -30,11 +35,6 @@ import java.util.regex.Pattern;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
-
-import org.exoplatform.services.log.Log;
-import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
-import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
-import org.exoplatform.services.log.ExoLogger;
 
 /**
  * Created by The eXo Platform SAS .<br/>
@@ -49,8 +49,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: JDBCValueContentAddressStorageImpl.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class JDBCValueContentAddressStorageImpl
-   implements ValueContentAddressStorage
+public class JDBCValueContentAddressStorageImpl implements ValueContentAddressStorage
 {
 
    /**
@@ -82,13 +81,13 @@ public class JDBCValueContentAddressStorageImpl
     * MYSQL_PK_CONSTRAINT_DETECT_PATTERN.
     */
    private static final String MYSQL_PK_CONSTRAINT_DETECT_PATTERN =
-            "(.*Constraint+.*Violation+.*Duplicate+.*entry+.*)+?";
+      "(.*Constraint+.*Violation+.*Duplicate+.*entry+.*)+?";
 
    /**
     * MYSQL_PK_CONSTRAINT_DETECT.
     */
    private static final Pattern MYSQL_PK_CONSTRAINT_DETECT =
-            Pattern.compile(MYSQL_PK_CONSTRAINT_DETECT_PATTERN, Pattern.CASE_INSENSITIVE);
+      Pattern.compile(MYSQL_PK_CONSTRAINT_DETECT_PATTERN, Pattern.CASE_INSENSITIVE);
 
    protected DataSource dataSource;
 
@@ -133,7 +132,7 @@ public class JDBCValueContentAddressStorageImpl
       sqlVCASIDX = tableName + "_IDX";
 
       if (DBConstants.DB_DIALECT_PGSQL.equalsIgnoreCase(dialect)
-               || DBConstants.DB_DIALECT_INGRES.equalsIgnoreCase(dialect))
+         || DBConstants.DB_DIALECT_INGRES.equalsIgnoreCase(dialect))
       {
          // use lowercase for postgres/ingres metadata.getTable(), HSQLDB wants UPPERCASE
          // for other seems not matter
@@ -149,13 +148,13 @@ public class JDBCValueContentAddressStorageImpl
       sqlSelectRecords = "SELECT CAS_ID, ORDER_NUM FROM " + tableName + " WHERE PROPERTY_ID=? ORDER BY ORDER_NUM";
 
       sqlSelectOwnRecords =
-               "SELECT P.CAS_ID, P.ORDER_NUM, S.CAS_ID as SHARED_ID " + "FROM " + tableName + " P LEFT JOIN "
-                        + tableName + " S ON P.PROPERTY_ID<>S.PROPERTY_ID AND P.CAS_ID=S.CAS_ID "
-                        + "WHERE P.PROPERTY_ID=? GROUP BY P.CAS_ID, P.ORDER_NUM, S.CAS_ID ORDER BY P.ORDER_NUM";
+         "SELECT P.CAS_ID, P.ORDER_NUM, S.CAS_ID as SHARED_ID " + "FROM " + tableName + " P LEFT JOIN " + tableName
+            + " S ON P.PROPERTY_ID<>S.PROPERTY_ID AND P.CAS_ID=S.CAS_ID "
+            + "WHERE P.PROPERTY_ID=? GROUP BY P.CAS_ID, P.ORDER_NUM, S.CAS_ID ORDER BY P.ORDER_NUM";
 
       sqlSelectSharingProps =
-               "SELECT DISTINCT C.PROPERTY_ID AS PROPERTY_ID FROM " + tableName + " C, " + tableName + " P "
-                        + "WHERE C.CAS_ID=P.CAS_ID AND C.PROPERTY_ID<>P.PROPERTY_ID AND P.PROPERTY_ID=?";
+         "SELECT DISTINCT C.PROPERTY_ID AS PROPERTY_ID FROM " + tableName + " C, " + tableName + " P "
+            + "WHERE C.CAS_ID=P.CAS_ID AND C.PROPERTY_ID<>P.PROPERTY_ID AND P.PROPERTY_ID=?";
 
       // init database objects
       final String sn = props.getProperty(JDBC_SOURCE_NAME_PARAM);
@@ -163,7 +162,7 @@ public class JDBCValueContentAddressStorageImpl
       {
          try
          {
-            dataSource = (DataSource) new InitialContext().lookup(sn);
+            dataSource = (DataSource)new InitialContext().lookup(sn);
             try
             {
                Connection con = dataSource.getConnection();
@@ -175,17 +174,16 @@ public class JDBCValueContentAddressStorageImpl
                   {
                      // create table
                      con
-                              .createStatement()
-                              .executeUpdate(
-                                       "CREATE TABLE "
-                                                + tableName
-                                                + " (PROPERTY_ID VARCHAR(96) NOT NULL, ORDER_NUM INTEGER NOT NULL, CAS_ID VARCHAR(512) NOT NULL, "
-                                                + "CONSTRAINT " + sqlConstraintPK
-                                                + " PRIMARY KEY(PROPERTY_ID, ORDER_NUM))");
+                        .createStatement()
+                        .executeUpdate(
+                           "CREATE TABLE "
+                              + tableName
+                              + " (PROPERTY_ID VARCHAR(96) NOT NULL, ORDER_NUM INTEGER NOT NULL, CAS_ID VARCHAR(512) NOT NULL, "
+                              + "CONSTRAINT " + sqlConstraintPK + " PRIMARY KEY(PROPERTY_ID, ORDER_NUM))");
 
                      // create index on hash (CAS_ID)
                      con.createStatement().executeUpdate(
-                              "CREATE INDEX " + sqlVCASIDX + " ON " + tableName + "(CAS_ID, PROPERTY_ID, ORDER_NUM)");
+                        "CREATE INDEX " + sqlVCASIDX + " ON " + tableName + "(CAS_ID, PROPERTY_ID, ORDER_NUM)");
 
                      if (LOG.isDebugEnabled())
                         LOG.debug("JDBC Value Content Address Storage initialized in database " + sn);
@@ -206,7 +204,7 @@ public class JDBCValueContentAddressStorageImpl
          catch (final NamingException e)
          {
             throw new RepositoryConfigurationException("JDBC data source is not available in JNDI with name '" + sn
-                     + "'. Error: " + e);
+               + "'. Error: " + e);
          }
       }
       else
@@ -242,7 +240,7 @@ public class JDBCValueContentAddressStorageImpl
          // if primary key - it's record already exists issue, VCAS error otherwise.
          if (isRecordAlreadyExistsException(e))
             throw new RecordAlreadyExistsException("Record already exists, propertyId=" + propertyId + " orderNum="
-                     + orderNum + ". Error: " + e, e);
+               + orderNum + ". Error: " + e, e);
 
          throw new VCASException("VCAS ADD database error: " + e, e);
       }
@@ -270,7 +268,7 @@ public class JDBCValueContentAddressStorageImpl
       // (EXOADMIN.JCR_VCAS_PK) violated
       String err = e.toString();
       if (DBConstants.DB_DIALECT_MYSQL.equalsIgnoreCase(dialect)
-               || DBConstants.DB_DIALECT_MYSQL_UTF8.equalsIgnoreCase(dialect))
+         || DBConstants.DB_DIALECT_MYSQL_UTF8.equalsIgnoreCase(dialect))
       {
          // for MySQL will search
          return MYSQL_PK_CONSTRAINT_DETECT.matcher(err).find();
@@ -333,7 +331,7 @@ public class JDBCValueContentAddressStorageImpl
 
             if (res <= 0)
                throw new RecordNotFoundException("Value record not found, propertyId=" + propertyId + " orderNumb="
-                        + orderNumb);
+                  + orderNumb);
          }
          finally
          {
@@ -367,7 +365,7 @@ public class JDBCValueContentAddressStorageImpl
             }
             else
                throw new RecordNotFoundException("No record found with propertyId=" + propertyId + " orderNum="
-                        + orderNum);
+                  + orderNum);
          }
          finally
          {

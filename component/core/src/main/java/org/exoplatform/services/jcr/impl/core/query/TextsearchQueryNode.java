@@ -23,8 +23,7 @@ import org.exoplatform.services.jcr.datamodel.QPathEntry;
 /**
  * Implements a query node that defines a textsearch clause.
  */
-public class TextsearchQueryNode
-   extends QueryNode
+public class TextsearchQueryNode extends QueryNode
 {
 
    /**
@@ -165,8 +164,7 @@ public class TextsearchQueryNode
    public void addPathElement(QPathEntry element)
    {
       if (relPath == null)
-         this.relPath = new QPath(new QPathEntry[]
-         {element});
+         this.relPath = new QPath(new QPathEntry[]{element});
       else
          this.relPath = QPath.makeChildPath(relPath, element, element.getIndex());
    }
@@ -200,10 +198,10 @@ public class TextsearchQueryNode
    {
       if (obj instanceof TextsearchQueryNode)
       {
-         TextsearchQueryNode other = (TextsearchQueryNode) obj;
+         TextsearchQueryNode other = (TextsearchQueryNode)obj;
          return (query == null ? other.query == null : query.equals(other.query))
-                  && (relPath == null ? other.relPath == null : relPath.equals(other.relPath)
-                           && propertyRef == other.propertyRef);
+            && (relPath == null ? other.relPath == null : relPath.equals(other.relPath)
+               && propertyRef == other.propertyRef);
       }
       return false;
    }

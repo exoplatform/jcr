@@ -18,14 +18,14 @@
  */
 package org.exoplatform.services.jcr.dataflow.persistent;
 
-import java.util.List;
-
-import javax.jcr.RepositoryException;
-
 import org.exoplatform.services.jcr.dataflow.ItemDataVisitor;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.ValueData;
+
+import java.util.List;
+
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.</br>
@@ -36,9 +36,7 @@ import org.exoplatform.services.jcr.datamodel.ValueData;
  * @version $Id: PersistedPropertyData.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class PersistedPropertyData
-   extends PersistedItemData
-   implements PropertyData
+public class PersistedPropertyData extends PersistedItemData implements PropertyData
 {
 
    protected List<ValueData> values;

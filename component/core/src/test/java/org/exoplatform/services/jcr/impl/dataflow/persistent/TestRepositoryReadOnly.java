@@ -19,9 +19,7 @@
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
 import org.exoplatform.services.jcr.JcrImplBaseTest;
-import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
-import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 
 /**
  * Created by The eXo Platform SAS
@@ -29,8 +27,7 @@ import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
  * @version $Id: $
  */
 
-public class TestRepositoryReadOnly
-   extends JcrImplBaseTest
+public class TestRepositoryReadOnly extends JcrImplBaseTest
 {
 
    @Override
@@ -57,8 +54,8 @@ public class TestRepositoryReadOnly
       assertEquals(repository.READONLY, repository.getState());
 
       WorkspacePersistentDataManager dm =
-               (WorkspacePersistentDataManager) (repository.getWorkspaceContainer(session.getWorkspace().getName()))
-                        .getComponent(WorkspacePersistentDataManager.class);
+         (WorkspacePersistentDataManager)(repository.getWorkspaceContainer(session.getWorkspace().getName()))
+            .getComponent(WorkspacePersistentDataManager.class);
 
       try
       {

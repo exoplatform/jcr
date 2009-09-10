@@ -16,9 +16,10 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.db;
 
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCConnectionTestBase;
+
 import java.sql.SQLException;
 import java.sql.Statement;
-import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCConnectionTestBase;
 
 /**
  * Created by The eXo Platform SAS
@@ -28,58 +29,60 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCConnectionTestBase;
  * @author <a href="mailto:dezder@bk.ru">Denis Grebenyuk</a>
  * @version $Id:$ 
  */
-public class TestSingleDbJDBCConnection extends JDBCConnectionTestBase {
+public class TestSingleDbJDBCConnection extends JDBCConnectionTestBase
+{
 
-	/* (non-Javadoc)
-	 * @see org.exoplatform.services.jcr.BaseStandaloneTest#setUp()
-	 */
-	@Override
-	public void setUp() throws Exception {
-		super.setUp("/conf/storage/jcr-sjdbc.sql",false);
-		try {
+   /* (non-Javadoc)
+    * @see org.exoplatform.services.jcr.BaseStandaloneTest#setUp()
+    */
+   @Override
+   public void setUp() throws Exception
+   {
+      super.setUp("/conf/storage/jcr-sjdbc.sql", false);
+      try
+      {
 
-			Statement st = getJNDIConnection().createStatement();
-			st.executeUpdate("insert into JCR_SITEM values"
-					+ "('A','A','test1',20090525,'ws3',2,1233,1,10,5)");
-			st.executeUpdate("insert into JCR_SITEM values"
-					+ "('B','A','test2',20090625,'ws3',1,1233,5,10,4)");
-			st.executeUpdate("insert into JCR_SITEM values"
-					+ "('C','B','test3',20090825,'ws3',1,1233,5,10,2)");
-			st.executeUpdate("insert into JCR_SITEM values"
-					+ "('ws3B','A','test4',2009525,'ws3',2,1233,1,10,5)");
-			st
-					.executeUpdate("insert into JCR_SVALUE(DATA,ORDER_NUM,PROPERTY_ID,STORAGE_DESC) values"
-							+ "('0xfa',16,'A','testConn')");
-			st
-					.executeUpdate("insert into JCR_SVALUE(DATA,ORDER_NUM,PROPERTY_ID,STORAGE_DESC) values"
-							+ "('0xce',16,'B','testConn2')");
-			st.executeUpdate("insert into JCR_SREF values" + "('D','A',2)");
-			st.executeUpdate("insert into JCR_SREF values" + "('E','B',2)");
-			st.close();
-			jdbcConn = new SingleDbJDBCConnection(getJNDIConnection(), false, "ws3", null,
-					10, null, null);
-			tableType = "S";
+         Statement st = getJNDIConnection().createStatement();
+         st.executeUpdate("insert into JCR_SITEM values" + "('A','A','test1',20090525,'ws3',2,1233,1,10,5)");
+         st.executeUpdate("insert into JCR_SITEM values" + "('B','A','test2',20090625,'ws3',1,1233,5,10,4)");
+         st.executeUpdate("insert into JCR_SITEM values" + "('C','B','test3',20090825,'ws3',1,1233,5,10,2)");
+         st.executeUpdate("insert into JCR_SITEM values" + "('ws3B','A','test4',2009525,'ws3',2,1233,1,10,5)");
+         st.executeUpdate("insert into JCR_SVALUE(DATA,ORDER_NUM,PROPERTY_ID,STORAGE_DESC) values"
+            + "('0xfa',16,'A','testConn')");
+         st.executeUpdate("insert into JCR_SVALUE(DATA,ORDER_NUM,PROPERTY_ID,STORAGE_DESC) values"
+            + "('0xce',16,'B','testConn2')");
+         st.executeUpdate("insert into JCR_SREF values" + "('D','A',2)");
+         st.executeUpdate("insert into JCR_SREF values" + "('E','B',2)");
+         st.close();
+         jdbcConn = new SingleDbJDBCConnection(getJNDIConnection(), false, "ws3", null, 10, null, null);
+         tableType = "S";
 
-		} catch (SQLException se) {
-			fail(se.toString());
-		}
-	}
+      }
+      catch (SQLException se)
+      {
+         fail(se.toString());
+      }
+   }
 
-	/* (non-Javadoc)
-	 * @see org.exoplatform.services.jcr.impl.storage.jdbc.JDBCConnectionTestBase#tearDown()
-	 */
-	@Override
-	protected void tearDown() throws Exception {
+   /* (non-Javadoc)
+    * @see org.exoplatform.services.jcr.impl.storage.jdbc.JDBCConnectionTestBase#tearDown()
+    */
+   @Override
+   protected void tearDown() throws Exception
+   {
 
-		try {
-			Statement st = getJNDIConnection().createStatement();
-			st.executeUpdate("drop table JCR_SREF");
-			st.executeUpdate("drop table JCR_SVALUE");
-			st.executeUpdate("drop table JCR_SITEM");
-			st.close();
-		} catch (SQLException se) {
-			fail(se.toString());
-		}
-		super.tearDown();
-	}
+      try
+      {
+         Statement st = getJNDIConnection().createStatement();
+         st.executeUpdate("drop table JCR_SREF");
+         st.executeUpdate("drop table JCR_SVALUE");
+         st.executeUpdate("drop table JCR_SITEM");
+         st.close();
+      }
+      catch (SQLException se)
+      {
+         fail(se.toString());
+      }
+      super.tearDown();
+   }
 }

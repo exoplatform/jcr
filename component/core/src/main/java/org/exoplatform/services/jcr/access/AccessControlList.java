@@ -18,6 +18,9 @@
  */
 package org.exoplatform.services.jcr.access;
 
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -29,9 +32,6 @@ import java.util.StringTokenizer;
 
 import javax.jcr.RepositoryException;
 
-import org.exoplatform.services.log.Log;
-import org.exoplatform.services.log.ExoLogger;
-
 /**
  * Created by The eXo Platform SAS.<br/> Access Control List.
  * 
@@ -39,8 +39,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @version $Id: AccessControlList.java 14556 2008-05-21 15:22:15Z pnedonosko $
  */
 
-public class AccessControlList
-   implements Externalizable
+public class AccessControlList implements Externalizable
 {
 
    private static final long serialVersionUID = 5848327750178729120L;
@@ -184,7 +183,7 @@ public class AccessControlList
          return true;
       if (obj instanceof AccessControlList)
       {
-         AccessControlList another = (AccessControlList) obj;
+         AccessControlList another = (AccessControlList)obj;
          return dump().equals(another.dump());
       }
       return false;

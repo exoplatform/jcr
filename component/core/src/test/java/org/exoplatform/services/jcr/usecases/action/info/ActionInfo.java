@@ -18,9 +18,9 @@
  */
 package org.exoplatform.services.jcr.usecases.action.info;
 
-import javax.jcr.RepositoryException;
-
 import org.apache.commons.chain.Context;
+
+import javax.jcr.RepositoryException;
 
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>

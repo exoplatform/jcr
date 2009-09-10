@@ -18,6 +18,10 @@
  */
 package org.exoplatform.services.jcr.load.blob.thread;
 
+import org.exoplatform.services.jcr.impl.core.PropertyImpl;
+import org.exoplatform.services.jcr.load.blob.TestConcurrentItems;
+import org.exoplatform.services.jcr.util.IdGenerator;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,10 +30,6 @@ import java.util.Calendar;
 import javax.jcr.Node;
 import javax.jcr.Session;
 
-import org.exoplatform.services.jcr.impl.core.PropertyImpl;
-import org.exoplatform.services.jcr.load.blob.TestConcurrentItems;
-import org.exoplatform.services.jcr.util.IdGenerator;
-
 /**
  * Created by The eXo Platform SAS Author : Peter Nedonosko peter.nedonosko@exoplatform.com.ua
  * 10.10.2007
@@ -37,8 +37,7 @@ import org.exoplatform.services.jcr.util.IdGenerator;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: NtFileCreatorThread.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class NtFileCreatorThread
-   extends UserThread
+public class NtFileCreatorThread extends UserThread
 {
 
    private final String testRootName;
@@ -78,7 +77,7 @@ public class NtFileCreatorThread
          Node contentNode = ntFile.addNode("jcr:content", "nt:resource");
          // dataStream = new URL(TestSwap.URL_BIG_MEDIA_FILE).openStream();
          dataStream = new FileInputStream(TestConcurrentItems.TEST_FILE);
-         PropertyImpl data = (PropertyImpl) contentNode.setProperty("jcr:data", dataStream);
+         PropertyImpl data = (PropertyImpl)contentNode.setProperty("jcr:data", dataStream);
          contentNode.setProperty("jcr:mimeType", "video/avi");
          contentNode.setProperty("jcr:lastModified", Calendar.getInstance());
          this.threadSession.save();

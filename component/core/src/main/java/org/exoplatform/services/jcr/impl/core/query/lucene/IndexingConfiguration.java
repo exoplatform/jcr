@@ -54,7 +54,7 @@ public interface IndexingConfiguration
     *           if initialization fails.
     */
    public void init(Element config, QueryHandlerContext context, NamespaceMappings namespaceMappings)
-            throws RepositoryException, IllegalNameException;
+      throws RepositoryException, IllegalNameException;
 
    /**
     * Returns the configured indexing aggregate rules or <code>null</code> if none exist. The caller

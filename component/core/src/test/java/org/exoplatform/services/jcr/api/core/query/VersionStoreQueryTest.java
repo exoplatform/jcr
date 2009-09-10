@@ -24,8 +24,7 @@ import javax.jcr.RepositoryException;
 /**
  * <code>VersionStoreQueryTest</code> tests queries against the version store.
  */
-public class VersionStoreQueryTest
-   extends AbstractQueryTest
+public class VersionStoreQueryTest extends AbstractQueryTest
 {
 
    /**
@@ -44,19 +43,16 @@ public class VersionStoreQueryTest
 
       Node v1 = n1.checkin().getNode(jcrFrozenNode);
 
-      executeXPathQuery(statement, new Node[]
-      {n1, v1});
+      executeXPathQuery(statement, new Node[]{n1, v1});
 
       n1.checkout();
       Node v2 = n1.checkin().getNode(jcrFrozenNode);
 
-      executeXPathQuery(statement, new Node[]
-      {n1, v1, v2});
+      executeXPathQuery(statement, new Node[]{n1, v1, v2});
 
       n1.checkout();
       Node v3 = n1.checkin().getNode(jcrFrozenNode);
 
-      executeXPathQuery(statement, new Node[]
-      {n1, v1, v2, v3});
+      executeXPathQuery(statement, new Node[]{n1, v1, v2, v3});
    }
 }

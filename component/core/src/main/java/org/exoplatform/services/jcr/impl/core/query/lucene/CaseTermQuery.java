@@ -33,9 +33,7 @@ import org.apache.lucene.search.MultiTermQuery;
  * <code>CaseTermQuery</code> implements a term query which convert the term from the index either
  * to upper or lower case before it is matched.
  */
-abstract class CaseTermQuery
-   extends MultiTermQuery
-   implements TransformConstants
+abstract class CaseTermQuery extends MultiTermQuery implements TransformConstants
 {
 
    /**
@@ -57,8 +55,7 @@ abstract class CaseTermQuery
       return new CaseTermEnum(reader);
    }
 
-   static final class Upper
-      extends CaseTermQuery
+   static final class Upper extends CaseTermQuery
    {
 
       Upper(Term term)
@@ -67,8 +64,7 @@ abstract class CaseTermQuery
       }
    }
 
-   static final class Lower
-      extends CaseTermQuery
+   static final class Lower extends CaseTermQuery
    {
 
       Lower(Term term)
@@ -78,8 +74,7 @@ abstract class CaseTermQuery
 
    }
 
-   private final class CaseTermEnum
-      extends FilteredTermEnum
+   private final class CaseTermEnum extends FilteredTermEnum
    {
 
       private final int nameLength;
@@ -118,7 +113,7 @@ abstract class CaseTermQuery
                StringBuffer upperLimit = new StringBuffer(propName);
                upperLimit.append(termText.toString().toLowerCase());
                rangeScans.add(new RangeScan(reader, new Term(term.field(), lowerLimit.toString()), new Term(term
-                        .field(), upperLimit.toString())));
+                  .field(), upperLimit.toString())));
 
                // second scan with upper case start
                lowerLimit = new StringBuffer(propName);
@@ -127,7 +122,7 @@ abstract class CaseTermQuery
                upperLimit.append(termText.toString().toLowerCase());
                upperLimit.setCharAt(nameLength, Character.toUpperCase(upperLimit.charAt(nameLength)));
                rangeScans.add(new RangeScan(reader, new Term(term.field(), lowerLimit.toString()), new Term(term
-                        .field(), upperLimit.toString())));
+                  .field(), upperLimit.toString())));
 
             }
             else
@@ -138,7 +133,7 @@ abstract class CaseTermQuery
 
             for (Iterator it = rangeScans.iterator(); it.hasNext();)
             {
-               TermEnum terms = (TermEnum) it.next();
+               TermEnum terms = (TermEnum)it.next();
                do
                {
                   Term t = terms.term();
@@ -171,7 +166,7 @@ abstract class CaseTermQuery
          {
             for (Iterator it = rangeScans.iterator(); it.hasNext();)
             {
-               TermEnum terms = (TermEnum) it.next();
+               TermEnum terms = (TermEnum)it.next();
                try
                {
                   terms.close();
@@ -207,7 +202,7 @@ abstract class CaseTermQuery
 
             public int docFreq()
             {
-               Integer docFreq = (Integer) orderedTerms.get(current);
+               Integer docFreq = (Integer)orderedTerms.get(current);
                return docFreq != null ? docFreq.intValue() : 0;
             }
 
@@ -218,7 +213,7 @@ abstract class CaseTermQuery
 
             private void getNext()
             {
-               current = it.hasNext() ? (Term) it.next() : null;
+               current = it.hasNext() ? (Term)it.next() : null;
             }
          });
       }

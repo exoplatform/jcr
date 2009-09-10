@@ -33,8 +33,7 @@ import javax.jcr.version.VersionException;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: ExtendedProperty.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public interface ExtendedProperty
-   extends Property
+public interface ExtendedProperty extends Property
 {
 
    /**
@@ -50,6 +49,6 @@ public interface ExtendedProperty
     *          - position in the property value data from which the value will be written
     */
    void updateValue(int index, InputStream value, long length, long position) throws ValueFormatException,
-            VersionException, LockException, ConstraintViolationException, RepositoryException;
+      VersionException, LockException, ConstraintViolationException, RepositoryException;
 
 }

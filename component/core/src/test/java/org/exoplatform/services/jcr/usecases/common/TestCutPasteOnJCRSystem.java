@@ -18,6 +18,11 @@
  */
 package org.exoplatform.services.jcr.usecases.common;
 
+import org.exoplatform.services.jcr.BaseStandaloneTest;
+import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
+import org.exoplatform.services.jcr.core.nodetype.NodeDefinitionValue;
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeValue;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,13 +33,7 @@ import javax.jcr.SimpleCredentials;
 import javax.jcr.Workspace;
 import javax.jcr.version.OnParentVersionAction;
 
-import org.exoplatform.services.jcr.BaseStandaloneTest;
-import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
-import org.exoplatform.services.jcr.core.nodetype.NodeDefinitionValue;
-import org.exoplatform.services.jcr.core.nodetype.NodeTypeValue;
-
-public class TestCutPasteOnJCRSystem
-   extends BaseStandaloneTest
+public class TestCutPasteOnJCRSystem extends BaseStandaloneTest
 {
 
    @Override
@@ -93,7 +92,7 @@ public class TestCutPasteOnJCRSystem
       workspace.move(cutPath, pastedPath);
       // use other admin session to check
       Session otherAdminSession =
-               repository.login(new SimpleCredentials("admin", "admin".toCharArray()), workspaceName);
+         repository.login(new SimpleCredentials("admin", "admin".toCharArray()), workspaceName);
       assertNotSame(adminSession_, otherAdminSession);
       try
       {
@@ -116,7 +115,7 @@ public class TestCutPasteOnJCRSystem
       String newsSrcPath = newsTaxonomy.getPath();
       String destPath2Paste = sportsTaxonomy.getPath() + newsSrcPath.substring(newsSrcPath.lastIndexOf("/"));
       System.out.println("Move from " + newsSrcPath + " to " + destPath2Paste + " "
-               + newsSrcPath.substring(newsSrcPath.lastIndexOf("/")));
+         + newsSrcPath.substring(newsSrcPath.lastIndexOf("/")));
       // otherAdminSession.getItem(destPath2Paste) ;
 
       otherAdminSession.refresh(false);
@@ -171,7 +170,7 @@ public class TestCutPasteOnJCRSystem
       Node taxonomyHome = null;
       try
       {
-         taxonomyHome = (Node) systemSession_.getItem("/jcr:system/exo:taxonomies");
+         taxonomyHome = (Node)systemSession_.getItem("/jcr:system/exo:taxonomies");
          fail("There should not be /jcr:system/exo:taxonomies");
       }
       catch (PathNotFoundException e)

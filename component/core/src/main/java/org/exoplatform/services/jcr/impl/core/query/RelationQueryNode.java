@@ -26,9 +26,7 @@ import org.exoplatform.services.jcr.impl.Constants;
 /**
  * Implements a query node that defines property value relation.
  */
-public class RelationQueryNode
-   extends NAryQueryNode
-   implements QueryConstants
+public class RelationQueryNode extends NAryQueryNode implements QueryConstants
 {
 
    /**
@@ -162,8 +160,7 @@ public class RelationQueryNode
    @Deprecated
    public void setProperty(InternalQName name)
    {
-      this.relPath = new QPath(new QPathEntry[]
-      {new QPathEntry(name, 0)});
+      this.relPath = new QPath(new QPathEntry[]{new QPathEntry(name, 0)});
    }
 
    /**
@@ -201,8 +198,7 @@ public class RelationQueryNode
    public void addPathElement(QPathEntry element)
    {
       if (relPath == null)
-         this.relPath = new QPath(new QPathEntry[]
-         {element});
+         this.relPath = new QPath(new QPathEntry[]{element});
       else
          this.relPath = QPath.makeChildPath(relPath, element, element.getIndex());
    }
@@ -336,12 +332,11 @@ public class RelationQueryNode
    {
       if (obj instanceof RelationQueryNode)
       {
-         RelationQueryNode other = (RelationQueryNode) obj;
+         RelationQueryNode other = (RelationQueryNode)obj;
          return type == other.type && (valueDate == null ? other.valueDate == null : valueDate.equals(other.valueDate))
-                  && valueDouble == other.valueDouble && valueLong == other.valueLong
-                  && valuePosition == other.valuePosition
-                  && (valueString == null ? other.valueString == null : valueString.equals(other.valueString))
-                  && (relPath == null ? other.relPath == null : relPath.equals(other.relPath));
+            && valueDouble == other.valueDouble && valueLong == other.valueLong && valuePosition == other.valuePosition
+            && (valueString == null ? other.valueString == null : valueString.equals(other.valueString))
+            && (relPath == null ? other.relPath == null : relPath.equals(other.relPath));
       }
       return false;
    }

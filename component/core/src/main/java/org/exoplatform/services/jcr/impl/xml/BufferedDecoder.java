@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.xml;
 
+import org.apache.ws.commons.util.Base64;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
@@ -29,16 +31,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.apache.ws.commons.util.Base64;
-
 /**
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: BufferedDecoder.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class BufferedDecoder
-   extends Base64.Decoder
+public class BufferedDecoder extends Base64.Decoder
 {
    /**
     * Default buffer size.
@@ -96,7 +95,7 @@ public class BufferedDecoder
       flush();
       if (out instanceof ByteArrayOutputStream)
       {
-         return new ByteArrayInputStream(((ByteArrayOutputStream) out).toByteArray());
+         return new ByteArrayInputStream(((ByteArrayOutputStream)out).toByteArray());
       }
       else if (out instanceof BufferedOutputStream)
       {
@@ -134,7 +133,7 @@ public class BufferedDecoder
    {
       if (out instanceof ByteArrayOutputStream)
       {
-         return ((ByteArrayOutputStream) out).toString();
+         return ((ByteArrayOutputStream)out).toString();
       }
       else if (out instanceof BufferedOutputStream)
       {
@@ -176,7 +175,7 @@ public class BufferedDecoder
     */
    private void swapBuffers() throws IOException
    {
-      byte[] data = ((ByteArrayOutputStream) out).toByteArray();
+      byte[] data = ((ByteArrayOutputStream)out).toByteArray();
       fileBuffer = File.createTempFile("decoderBuffer", ".tmp");
       fileBuffer.deleteOnExit();
       out = new BufferedOutputStream(new FileOutputStream(fileBuffer), bufferSize);
@@ -200,7 +199,7 @@ public class BufferedDecoder
    {
       if (out instanceof ByteArrayOutputStream)
       {
-         if (((ByteArrayOutputStream) out).size() + length > bufferSize)
+         if (((ByteArrayOutputStream)out).size() + length > bufferSize)
          {
             swapBuffers();
          }

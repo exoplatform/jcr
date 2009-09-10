@@ -42,6 +42,6 @@ public interface ItemDataKeeper
     *           if some exception occured
     */
    void save(ItemStateChangesLog changes) throws InvalidItemStateException, UnsupportedOperationException,
-            RepositoryException;
+      RepositoryException;
 
 }

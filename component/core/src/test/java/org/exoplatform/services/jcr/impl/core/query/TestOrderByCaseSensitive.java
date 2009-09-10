@@ -16,6 +16,9 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.util.Calendar;
 
 import javax.jcr.Node;
@@ -24,17 +27,13 @@ import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
 
-import org.exoplatform.services.log.Log;
-import org.exoplatform.services.log.ExoLogger;
-
 /**
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: $
  */
-public class TestOrderByCaseSensitive
-   extends BaseQueryTest
+public class TestOrderByCaseSensitive extends BaseQueryTest
 {
    /**
     * Class logger.

@@ -18,11 +18,11 @@
  */
 package org.exoplatform.services.jcr.load;
 
+import org.exoplatform.services.jcr.JcrImplBaseTest;
+
 import java.util.Calendar;
 
 import javax.jcr.Node;
-
-import org.exoplatform.services.jcr.JcrImplBaseTest;
 
 /**
  * Created by The eXo Platform SAS.
@@ -32,8 +32,7 @@ import org.exoplatform.services.jcr.JcrImplBaseTest;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestBulkDelete.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class TestBulkDelete
-   extends JcrImplBaseTest
+public class TestBulkDelete extends JcrImplBaseTest
 {
 
    protected final int NODES_COUNT = 1000;
@@ -73,12 +72,9 @@ public class TestBulkDelete
 
          // dc:elementSet
          file.addMixin("dc:elementSet");
-         file.setProperty("dc:title", new String[]
-         {"File #" + i});
-         file.setProperty("dc:creator", new String[]
-         {"exo"});
-         file.setProperty("dc:description", new String[]
-         {"load test on postgres"});
+         file.setProperty("dc:title", new String[]{"File #" + i});
+         file.setProperty("dc:creator", new String[]{"exo"});
+         file.setProperty("dc:description", new String[]{"load test on postgres"});
 
          testRoot.save();
       }

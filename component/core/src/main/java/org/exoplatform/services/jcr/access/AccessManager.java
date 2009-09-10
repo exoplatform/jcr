@@ -18,6 +18,15 @@
  */
 package org.exoplatform.services.jcr.access;
 
+import org.exoplatform.services.ext.action.InvocationContext;
+import org.exoplatform.services.jcr.config.RepositoryEntry;
+import org.exoplatform.services.jcr.config.SimpleParameterEntry;
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+import org.exoplatform.services.security.Identity;
+import org.exoplatform.services.security.MembershipEntry;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,16 +34,6 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.log.Log;
-
-import org.exoplatform.services.ext.action.InvocationContext;
-import org.exoplatform.services.jcr.config.RepositoryEntry;
-import org.exoplatform.services.jcr.config.SimpleParameterEntry;
-import org.exoplatform.services.jcr.config.WorkspaceEntry;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.security.Identity;
-import org.exoplatform.services.security.MembershipEntry;
 
 /**
  * Created by The eXo Platform SAS.
@@ -87,7 +86,7 @@ public abstract class AccessManager
     * @throws RepositoryException
     */
    public final boolean hasPermission(AccessControlList acl, String permission, Identity user)
-            throws RepositoryException
+      throws RepositoryException
    {
       return hasPermission(acl, parseStringPermissions(permission), user);
    }
@@ -161,7 +160,7 @@ public abstract class AccessManager
       {
          String token = parser.nextToken();
          if (PermissionType.READ.equals(token) || PermissionType.ADD_NODE.equals(token)
-                  || PermissionType.REMOVE.equals(token) || PermissionType.SET_PROPERTY.equals(token))
+            || PermissionType.REMOVE.equals(token) || PermissionType.SET_PROPERTY.equals(token))
          {
 
             permissions.add(token);

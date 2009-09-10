@@ -24,8 +24,7 @@ import org.exoplatform.services.jcr.datamodel.InternalQName;
 /**
  * Implements the root node of a query tree.
  */
-public class QueryRootNode
-   extends QueryNode
+public class QueryRootNode extends QueryNode
 {
 
    /**
@@ -92,7 +91,7 @@ public class QueryRootNode
     */
    public InternalQName[] getSelectProperties()
    {
-      return (InternalQName[]) selectProperties.toArray(new InternalQName[selectProperties.size()]);
+      return (InternalQName[])selectProperties.toArray(new InternalQName[selectProperties.size()]);
    }
 
    /**
@@ -144,10 +143,10 @@ public class QueryRootNode
    {
       if (obj instanceof QueryRootNode)
       {
-         QueryRootNode other = (QueryRootNode) obj;
+         QueryRootNode other = (QueryRootNode)obj;
          return (locationNode == null ? other.locationNode == null : locationNode.equals(other.locationNode))
-                  && selectProperties.equals(other.selectProperties)
-                  && (orderNode == null ? other.orderNode == null : orderNode.equals(other.orderNode));
+            && selectProperties.equals(other.selectProperties)
+            && (orderNode == null ? other.orderNode == null : orderNode.equals(other.orderNode));
       }
       return false;
    }
@@ -159,7 +158,7 @@ public class QueryRootNode
    public boolean needsSystemTree()
    {
       return (locationNode != null && locationNode.needsSystemTree())
-               || (orderNode != null && orderNode.needsSystemTree());
+         || (orderNode != null && orderNode.needsSystemTree());
    }
 
 }

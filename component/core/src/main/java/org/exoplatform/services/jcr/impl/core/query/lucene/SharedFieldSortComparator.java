@@ -37,8 +37,7 @@ import org.exoplatform.services.jcr.impl.core.query.lucene.SharedFieldCache.Stri
  * when queries are executed with a <code>MultiSearcher</code>, which is currently not the case in
  * Jackrabbit.
  */
-public class SharedFieldSortComparator
-   extends SortComparator
+public class SharedFieldSortComparator extends SortComparator
 {
 
    /**
@@ -109,12 +108,12 @@ public class SharedFieldSortComparator
 
       for (int i = 0; i < readers.size(); i++)
       {
-         IndexReader r = (IndexReader) readers.get(i);
+         IndexReader r = (IndexReader)readers.get(i);
          starts[i] = maxDoc;
          maxDoc += r.maxDoc();
          indexes[i] =
-                  SharedFieldCache.INSTANCE.getStringIndex(r, field, FieldNames.createNamedValue(propertyName, ""),
-                           SharedFieldSortComparator.this, createComparatorValues);
+            SharedFieldCache.INSTANCE.getStringIndex(r, field, FieldNames.createNamedValue(propertyName, ""),
+               SharedFieldSortComparator.this, createComparatorValues);
       }
       starts[readers.size()] = maxDoc;
 
@@ -228,7 +227,7 @@ public class SharedFieldSortComparator
    {
       if (reader instanceof MultiIndexReader)
       {
-         IndexReader[] r = ((MultiIndexReader) reader).getIndexReaders();
+         IndexReader[] r = ((MultiIndexReader)reader).getIndexReaders();
          for (int i = 0; i < r.length; i++)
          {
             getIndexReaders(readers, r[i]);

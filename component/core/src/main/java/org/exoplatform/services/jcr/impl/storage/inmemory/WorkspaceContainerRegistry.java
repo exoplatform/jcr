@@ -59,7 +59,7 @@ public class WorkspaceContainerRegistry
       if (workspaces.get(name) == null)
          initWorkspaceContainer(name);
 
-      return (TreeMap) workspaces.get(name);
+      return (TreeMap)workspaces.get(name);
    }
 
    private void initWorkspaceContainer(String name)

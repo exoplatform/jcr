@@ -18,10 +18,10 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
+import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
+
 import java.io.File;
 import java.io.FileNotFoundException;
-
-import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 
 /**
  * Created by The eXo Platform SAS. <br/>
@@ -30,8 +30,7 @@ import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a>
  * @version $Id: SerializationSpoolFile.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class SerializationSpoolFile
-   extends SpoolFile
+public class SerializationSpoolFile extends SpoolFile
 {
 
    /**

@@ -44,7 +44,7 @@ public class ItemDefinitionData
    protected final boolean protectedItem;
 
    public ItemDefinitionData(InternalQName name, InternalQName declaringNodeType, boolean autoCreated,
-            boolean mandatory, int onParentVersion, boolean protectedItem)
+      boolean mandatory, int onParentVersion, boolean protectedItem)
    {
       this.name = name;
       this.declaringNodeType = declaringNodeType;
@@ -67,10 +67,10 @@ public class ItemDefinitionData
       if ((obj == null) || (obj.getClass() != this.getClass()))
          return false;
       // object must be Test at this point
-      ItemDefinitionData test = (ItemDefinitionData) obj;
+      ItemDefinitionData test = (ItemDefinitionData)obj;
       return name == test.name && declaringNodeType == test.declaringNodeType && autoCreated == test.autoCreated
-               && mandatory == test.mandatory && onParentVersion == test.onParentVersion
-               && protectedItem == test.protectedItem;
+         && mandatory == test.mandatory && onParentVersion == test.onParentVersion
+         && protectedItem == test.protectedItem;
    }
 
    public InternalQName getName()

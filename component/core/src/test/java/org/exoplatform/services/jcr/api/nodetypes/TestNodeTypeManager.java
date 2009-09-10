@@ -18,6 +18,15 @@
  */
 package org.exoplatform.services.jcr.api.nodetypes;
 
+import org.apache.lucene.search.MatchAllDocsQuery;
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeDataManagerImpl;
+import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
+import org.exoplatform.services.jcr.impl.core.query.lucene.FieldNames;
+import org.exoplatform.services.jcr.impl.core.query.lucene.QueryHits;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,16 +42,6 @@ import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.NodeTypeManager;
 import javax.jcr.version.VersionException;
 
-import org.apache.lucene.search.MatchAllDocsQuery;
-
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-import org.exoplatform.services.jcr.datamodel.InternalQName;
-import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeDataManagerImpl;
-import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
-import org.exoplatform.services.jcr.impl.core.query.lucene.FieldNames;
-import org.exoplatform.services.jcr.impl.core.query.lucene.QueryHits;
-
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -50,8 +49,7 @@ import org.exoplatform.services.jcr.impl.core.query.lucene.QueryHits;
  * @version $Id: TestNodeTypeManager.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class TestNodeTypeManager
-   extends JcrAPIBaseTest
+public class TestNodeTypeManager extends JcrAPIBaseTest
 {
 
    public void testGetNodeType() throws Exception
@@ -96,7 +94,7 @@ public class TestNodeTypeManager
 
    public void testNtQuery() throws Exception
    {
-      NodeTypeDataManagerImpl ntManager = (NodeTypeDataManagerImpl) session.getWorkspace().getNodeTypesHolder();
+      NodeTypeDataManagerImpl ntManager = (NodeTypeDataManagerImpl)session.getWorkspace().getNodeTypesHolder();
       QueryHandler qh = ntManager.getQueryHandlers().iterator().next();
       QueryHits hits = qh.executeQuery(new MatchAllDocsQuery(), true, new InternalQName[0], new boolean[0]);
       List<String> uuidList = new ArrayList<String>(hits.length());
@@ -109,7 +107,7 @@ public class TestNodeTypeManager
 
    public void testNtQueryNtBase() throws Exception
    {
-      NodeTypeDataManagerImpl ntManager = (NodeTypeDataManagerImpl) session.getWorkspace().getNodeTypesHolder();
+      NodeTypeDataManagerImpl ntManager = (NodeTypeDataManagerImpl)session.getWorkspace().getNodeTypesHolder();
 
       assertTrue(ntManager.getNodes(Constants.MIX_VERSIONABLE).size() == 0);
       Node t = root.addNode("tt");
@@ -119,9 +117,9 @@ public class TestNodeTypeManager
    }
 
    public void testNtQueryFindNodeByProperty() throws ItemExistsException, PathNotFoundException, VersionException,
-            ConstraintViolationException, LockException, RepositoryException, IOException
+      ConstraintViolationException, LockException, RepositoryException, IOException
    {
-      NodeTypeDataManagerImpl ntManager = (NodeTypeDataManagerImpl) session.getWorkspace().getNodeTypesHolder();
+      NodeTypeDataManagerImpl ntManager = (NodeTypeDataManagerImpl)session.getWorkspace().getNodeTypesHolder();
       int refNodes = ntManager.getNodes(Constants.MIX_REFERENCEABLE).size();
       Node testNode1 = root.addNode("test1");
       testNode1.addMixin("mix:referenceable");
@@ -132,15 +130,15 @@ public class TestNodeTypeManager
 
       session.save();
       assertEquals(2, ntManager.getNodes(Constants.MIX_REFERENCEABLE).size() - refNodes);
-      assertEquals(1, ntManager.getNodes(Constants.MIX_REFERENCEABLE, new InternalQName[]
-      {new InternalQName("", "p1")}, new InternalQName[0]).size());
-      assertEquals(1, ntManager.getNodes(Constants.MIX_REFERENCEABLE, new InternalQName[]
-      {new InternalQName("", "p2")},
+      assertEquals(1, ntManager.getNodes(Constants.MIX_REFERENCEABLE, new InternalQName[]{new InternalQName("", "p1")},
+         new InternalQName[0]).size());
+      assertEquals(1, ntManager.getNodes(Constants.MIX_REFERENCEABLE, new InternalQName[]{new InternalQName("", "p2")},
 
       new InternalQName[0]).size());
 
-      assertEquals(0, ntManager.getNodes(Constants.MIX_REFERENCEABLE, new InternalQName[0], new InternalQName[]
-      {new InternalQName("", "p1"), new InternalQName("", "p2")}).size() - refNodes);
+      assertEquals(0, ntManager.getNodes(Constants.MIX_REFERENCEABLE, new InternalQName[0],
+         new InternalQName[]{new InternalQName("", "p1"), new InternalQName("", "p2")}).size()
+         - refNodes);
 
    }
 }

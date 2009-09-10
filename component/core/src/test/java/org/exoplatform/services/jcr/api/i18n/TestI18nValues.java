@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.api.i18n;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -30,8 +32,6 @@ import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -39,8 +39,7 @@ import org.exoplatform.services.jcr.JcrAPIBaseTest;
  *         Nedonosko</a>
  * @version $Id: TestI18nValues.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class TestI18nValues
-   extends JcrAPIBaseTest
+public class TestI18nValues extends JcrAPIBaseTest
 {
 
    static protected String TEST_I18N = "I18N Node";
@@ -49,7 +48,7 @@ public class TestI18nValues
 
    // Cyrillic, 'Hello world' + some chars
    static public String TEST_I18N_CONTENT_CYR =
-            "\u041f\u0440\u0438\u0432\u0457\u0442\u0490\u044a\u0020\u043c\u0438\u0440\u0462";
+      "\u041f\u0440\u0438\u0432\u0457\u0442\u0490\u044a\u0020\u043c\u0438\u0440\u0462";
 
    // Hebrew, 'Hello world'
    static public String TEST_I18N_CONTENT_IL = "\u05e9\u05dc\u05d5\u05dd\u0020\u05e2\u05d5\u05dc\u05dd";
@@ -174,7 +173,7 @@ public class TestI18nValues
          byte[] valueBytes = baos.toByteArray();
          String content = new String(valueBytes, "UTF-8");
          assertTrue("Content must be identical. '" + source + "' = '" + content + "'", equalsBinary(valueBytes, source
-                  .getBytes("UTF-8")));
+            .getBytes("UTF-8")));
          assertEquals("Content must be identical", source, content);
       }
       catch (RepositoryException e)
@@ -237,7 +236,7 @@ public class TestI18nValues
          byte[] valueBytes = baos.toByteArray();
          String content = new String(valueBytes, "UTF-8");
          assertTrue("Content must be identical. '" + source + "' = '" + content + "'", equalsBinary(valueBytes, source
-                  .getBytes("UTF-8")));
+            .getBytes("UTF-8")));
          assertEquals("Content must be identical", source, content);
       }
       catch (RepositoryException e)
@@ -435,7 +434,7 @@ public class TestI18nValues
       testNode.save();
 
       Session s1 = repository.login(credentials);
-      Node tr = (Node) s1.getItem(testNode.getPath());
+      Node tr = (Node)s1.getItem(testNode.getPath());
 
       try
       {

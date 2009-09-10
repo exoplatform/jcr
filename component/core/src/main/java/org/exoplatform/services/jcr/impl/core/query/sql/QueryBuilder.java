@@ -27,15 +27,14 @@ import org.exoplatform.services.jcr.impl.core.query.QueryTreeBuilder;
 /**
  * Implements the JCR SQL query tree builder.
  */
-public class QueryBuilder
-   implements QueryTreeBuilder
+public class QueryBuilder implements QueryTreeBuilder
 {
 
    /**
     * @inheritDoc
     */
    public QueryRootNode createQueryTree(String statement, LocationFactory resolver, QueryNodeFactory factory)
-            throws InvalidQueryException
+      throws InvalidQueryException
    {
       return JCRSQLQueryBuilder.createQuery(statement, resolver, factory);
    }
@@ -55,8 +54,7 @@ public class QueryBuilder
     */
    public String[] getSupportedLanguages()
    {
-      return new String[]
-      {Query.SQL};
+      return new String[]{Query.SQL};
    }
 
    /**

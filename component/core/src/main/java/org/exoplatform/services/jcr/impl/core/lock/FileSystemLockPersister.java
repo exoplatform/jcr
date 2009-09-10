@@ -18,14 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-
-import javax.jcr.RepositoryException;
-import javax.jcr.lock.LockException;
-
-import org.exoplatform.services.log.Log;
 import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.config.LockPersisterEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
@@ -44,6 +36,14 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.jcr.observation.ExtendedEvent;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+
+import javax.jcr.RepositoryException;
+import javax.jcr.lock.LockException;
 
 /**
  * Store information about locks on file system. After start and before stop it remove all lock
@@ -52,8 +52,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: FileSystemLockPersister.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class FileSystemLockPersister
-   implements LockPersister
+public class FileSystemLockPersister implements LockPersister
 {
    /**
     * Name of the parameter.
@@ -87,7 +86,7 @@ public class FileSystemLockPersister
     * @throws RepositoryException
     */
    public FileSystemLockPersister(WorkspacePersistentDataManager dataManager, WorkspaceEntry config)
-            throws RepositoryConfigurationException, RepositoryException
+      throws RepositoryConfigurationException, RepositoryException
    {
       this.dataManager = dataManager;
       this.config = config.getLockManager().getPersister();
@@ -102,7 +101,7 @@ public class FileSystemLockPersister
     * @throws RepositoryException
     */
    public FileSystemLockPersister(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
-            SearchManager searchManager) throws RepositoryConfigurationException, RepositoryException
+      SearchManager searchManager) throws RepositoryConfigurationException, RepositoryException
    {
       this.dataManager = dataManager;
       this.config = config.getLockManager().getPersister();
@@ -176,33 +175,28 @@ public class FileSystemLockPersister
          for (int i = 0; i < list.length; i++)
          {
             PlainChangesLog plainChangesLog =
-                     new PlainChangesLogImpl(new ArrayList<ItemState>(), SystemIdentity.SYSTEM, ExtendedEvent.UNLOCK);
+               new PlainChangesLogImpl(new ArrayList<ItemState>(), SystemIdentity.SYSTEM, ExtendedEvent.UNLOCK);
 
-            NodeData lockedNodeData = (NodeData) dataManager.getItemData(list[i]);
+            NodeData lockedNodeData = (NodeData)dataManager.getItemData(list[i]);
             // No item no problem
             if (lockedNodeData != null)
             {
                PropertyData dataLockIsDeep =
-                        (PropertyData) dataManager.getItemData(lockedNodeData, new QPathEntry(Constants.JCR_LOCKISDEEP,
-                                 0));
+                  (PropertyData)dataManager.getItemData(lockedNodeData, new QPathEntry(Constants.JCR_LOCKISDEEP, 0));
 
                if (dataLockIsDeep != null)
                {
                   plainChangesLog.add(ItemState.createDeletedState(new TransientPropertyData(QPath.makeChildPath(
-                           lockedNodeData.getQPath(), Constants.JCR_LOCKISDEEP), dataLockIsDeep.getIdentifier(), 0,
-                           dataLockIsDeep.getType(), dataLockIsDeep.getParentIdentifier(), dataLockIsDeep
-                                    .isMultiValued())));
+                     lockedNodeData.getQPath(), Constants.JCR_LOCKISDEEP), dataLockIsDeep.getIdentifier(), 0,
+                     dataLockIsDeep.getType(), dataLockIsDeep.getParentIdentifier(), dataLockIsDeep.isMultiValued())));
                }
 
                PropertyData dataLockOwner =
-                        (PropertyData) dataManager.getItemData(lockedNodeData, new QPathEntry(Constants.JCR_LOCKOWNER,
-                                 0));
+                  (PropertyData)dataManager.getItemData(lockedNodeData, new QPathEntry(Constants.JCR_LOCKOWNER, 0));
                if (dataLockOwner != null)
-                  plainChangesLog.add(ItemState
-                           .createDeletedState(new TransientPropertyData(QPath.makeChildPath(lockedNodeData.getQPath(),
-                                    Constants.JCR_LOCKOWNER), dataLockOwner.getIdentifier(), 0,
-                                    dataLockOwner.getType(), dataLockOwner.getParentIdentifier(), dataLockOwner
-                                             .isMultiValued())));
+                  plainChangesLog.add(ItemState.createDeletedState(new TransientPropertyData(QPath.makeChildPath(
+                     lockedNodeData.getQPath(), Constants.JCR_LOCKOWNER), dataLockOwner.getIdentifier(), 0,
+                     dataLockOwner.getType(), dataLockOwner.getParentIdentifier(), dataLockOwner.isMultiValued())));
 
                if (plainChangesLog.getSize() > 0)
                {
@@ -292,7 +286,7 @@ public class FileSystemLockPersister
 
       if (root == null)
          throw new RepositoryConfigurationException("Repository service configuration." + " Source name ("
-                  + PARAM_ROOT_DIR + ") is expected");
+            + PARAM_ROOT_DIR + ") is expected");
       rootDir = new File(root);
       if (rootDir.exists())
       {

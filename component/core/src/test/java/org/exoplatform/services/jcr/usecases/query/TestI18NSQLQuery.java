@@ -16,6 +16,8 @@
  */
 package org.exoplatform.services.jcr.usecases.query;
 
+import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
+
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
@@ -23,23 +25,19 @@ import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
 
-import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
-
 /**
  * Created by The eXo Platform SAS Author : Anh Nguyen ntuananh.vn@gmail.com Nov
  * 15, 2007
  */
 
-public class TestI18NSQLQuery
-   extends BaseUsecasesTest
+public class TestI18NSQLQuery extends BaseUsecasesTest
 {
 
    private static String[] input;
 
    static
    {
-      input = new String[]
-      {"ngocanh's o'clock"};
+      input = new String[]{"ngocanh's o'clock"};
    }
 
    public void testI18NQueryPath() throws Exception

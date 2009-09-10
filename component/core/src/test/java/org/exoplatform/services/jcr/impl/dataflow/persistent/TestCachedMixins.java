@@ -18,13 +18,13 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
-import javax.jcr.RepositoryException;
-import javax.jcr.UnsupportedRepositoryOperationException;
-
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.PropertyImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
+
+import javax.jcr.RepositoryException;
+import javax.jcr.UnsupportedRepositoryOperationException;
 
 /**
  * Created by The eXo Platform SAS
@@ -37,8 +37,7 @@ import org.exoplatform.services.jcr.impl.core.SessionImpl;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestCachedMixins.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class TestCachedMixins
-   extends JcrImplBaseTest
+public class TestCachedMixins extends JcrImplBaseTest
 {
 
    public final String TEST_NODE_NAME = "cache_test";
@@ -50,7 +49,7 @@ public class TestCachedMixins
    {
       super.setUp();
 
-      this.testNode = (NodeImpl) session.getRootNode().addNode(TEST_NODE_NAME);
+      this.testNode = (NodeImpl)session.getRootNode().addNode(TEST_NODE_NAME);
 
       this.session.save();
    }
@@ -72,7 +71,7 @@ public class TestCachedMixins
 
       String uuid = null;
 
-      testNode = (NodeImpl) session.getRootNode().getNode(TEST_NODE_NAME);
+      testNode = (NodeImpl)session.getRootNode().getNode(TEST_NODE_NAME);
 
       try
       {
@@ -85,19 +84,19 @@ public class TestCachedMixins
 
       try
       {
-         uuid = ((NodeImpl) session.getItem("/" + TEST_NODE_NAME)).getUUID();
+         uuid = ((NodeImpl)session.getItem("/" + TEST_NODE_NAME)).getUUID();
       }
       catch (UnsupportedRepositoryOperationException e)
       {
          fail("Node isn't a referenceable, but must. Access from Session.geItem()");
       }
 
-      SessionImpl anotherSession = (SessionImpl) repository.login(this.credentials);
-      NodeImpl anotherRoot = (NodeImpl) anotherSession.getRootNode();
+      SessionImpl anotherSession = (SessionImpl)repository.login(this.credentials);
+      NodeImpl anotherRoot = (NodeImpl)anotherSession.getRootNode();
 
       try
       {
-         NodeImpl aNode = (NodeImpl) anotherRoot.getNode(TEST_NODE_NAME);
+         NodeImpl aNode = (NodeImpl)anotherRoot.getNode(TEST_NODE_NAME);
          assertEquals("UUIDs must equals", uuid, aNode.getUUID());
       }
       catch (UnsupportedRepositoryOperationException e)
@@ -107,7 +106,7 @@ public class TestCachedMixins
 
       try
       {
-         NodeImpl aNode = (NodeImpl) anotherSession.getItem("/" + TEST_NODE_NAME);
+         NodeImpl aNode = (NodeImpl)anotherSession.getItem("/" + TEST_NODE_NAME);
          assertEquals("UUIDs must equals. Access from Session.geItem()", uuid, aNode.getUUID());
       }
       catch (UnsupportedRepositoryOperationException e)
@@ -126,7 +125,7 @@ public class TestCachedMixins
 
       this.session.save();
 
-      testNode = (NodeImpl) session.getRootNode().getNode(TEST_NODE_NAME);
+      testNode = (NodeImpl)session.getRootNode().getNode(TEST_NODE_NAME);
 
       try
       {
@@ -140,7 +139,7 @@ public class TestCachedMixins
 
       try
       {
-         ((NodeImpl) session.getItem("/" + TEST_NODE_NAME)).getUUID();
+         ((NodeImpl)session.getItem("/" + TEST_NODE_NAME)).getUUID();
          fail("Node must be not referenceable, but it such. Access from Session.geItem().");
       }
       catch (UnsupportedRepositoryOperationException e)
@@ -148,13 +147,13 @@ public class TestCachedMixins
          // ok
       }
 
-      SessionImpl anotherSession = (SessionImpl) repository.login(this.credentials /*
-                                                                                                    * session.getCredentials
-                                                                                                    * ()
-                                                                                                    */);
-      NodeImpl anotherRoot = (NodeImpl) anotherSession.getRootNode();
+      SessionImpl anotherSession = (SessionImpl)repository.login(this.credentials /*
+                                                                                                   * session.getCredentials
+                                                                                                   * ()
+                                                                                                   */);
+      NodeImpl anotherRoot = (NodeImpl)anotherSession.getRootNode();
 
-      NodeImpl aNode = (NodeImpl) anotherRoot.getNode(TEST_NODE_NAME);
+      NodeImpl aNode = (NodeImpl)anotherRoot.getNode(TEST_NODE_NAME);
       try
       {
          aNode.getUUID();
@@ -165,7 +164,7 @@ public class TestCachedMixins
          // ok
       }
 
-      aNode = (NodeImpl) anotherSession.getItem("/" + TEST_NODE_NAME);
+      aNode = (NodeImpl)anotherSession.getItem("/" + TEST_NODE_NAME);
       try
       {
          aNode.getUUID();
@@ -180,8 +179,7 @@ public class TestCachedMixins
    public void testFewMixinAdd() throws Exception
    {
 
-      String[] mixins = new String[]
-      {"mix:referenceable", "mix:lockable"};
+      String[] mixins = new String[]{"mix:referenceable", "mix:lockable"};
 
       this.testNode.addMixin(mixins[0]);
       this.session.save();
@@ -191,25 +189,24 @@ public class TestCachedMixins
 
       this.testNode.lock(true, false);
 
-      checkMixins(mixins, (NodeImpl) session.getRootNode().getNode(TEST_NODE_NAME));
-      checkMixins(mixins, (NodeImpl) session.getItem("/" + TEST_NODE_NAME));
+      checkMixins(mixins, (NodeImpl)session.getRootNode().getNode(TEST_NODE_NAME));
+      checkMixins(mixins, (NodeImpl)session.getItem("/" + TEST_NODE_NAME));
 
-      SessionImpl anotherSession = (SessionImpl) repository.login(this.credentials /*
-                                                                                                    * session.getCredentials
-                                                                                                    * ()
-                                                                                                    */);
+      SessionImpl anotherSession = (SessionImpl)repository.login(this.credentials /*
+                                                                                                   * session.getCredentials
+                                                                                                   * ()
+                                                                                                   */);
 
-      checkMixins(mixins, (NodeImpl) anotherSession.getRootNode().getNode(TEST_NODE_NAME));
-      checkMixins(mixins, (NodeImpl) anotherSession.getItem("/" + TEST_NODE_NAME));
+      checkMixins(mixins, (NodeImpl)anotherSession.getRootNode().getNode(TEST_NODE_NAME));
+      checkMixins(mixins, (NodeImpl)anotherSession.getItem("/" + TEST_NODE_NAME));
    }
 
    public void testFewMixinAdd_ObjectInHand() throws Exception
    {
 
-      String[] mixins = new String[]
-      {"mix:referenceable", "mix:lockable"};
+      String[] mixins = new String[]{"mix:referenceable", "mix:lockable"};
 
-      NodeImpl node1 = (NodeImpl) this.testNode.addNode("node-1");
+      NodeImpl node1 = (NodeImpl)this.testNode.addNode("node-1");
       this.session.save();
 
       node1.addMixin(mixins[0]);
@@ -224,10 +221,8 @@ public class TestCachedMixins
    public void testFewMixinAddRemove() throws Exception
    {
 
-      String[] mixins = new String[]
-      {"mix:referenceable", "mix:lockable"};
-      String[] finalMixins = new String[]
-      {"mix:lockable"};
+      String[] mixins = new String[]{"mix:referenceable", "mix:lockable"};
+      String[] finalMixins = new String[]{"mix:lockable"};
 
       this.testNode.addMixin(mixins[0]);
       this.session.save();
@@ -240,27 +235,25 @@ public class TestCachedMixins
       this.testNode.removeMixin(mixins[0]);
       this.session.save();
 
-      checkMixins(finalMixins, (NodeImpl) session.getRootNode().getNode(TEST_NODE_NAME));
-      checkMixins(finalMixins, (NodeImpl) session.getItem("/" + TEST_NODE_NAME));
+      checkMixins(finalMixins, (NodeImpl)session.getRootNode().getNode(TEST_NODE_NAME));
+      checkMixins(finalMixins, (NodeImpl)session.getItem("/" + TEST_NODE_NAME));
 
-      SessionImpl anotherSession = (SessionImpl) repository.login(this.credentials /*
-                                                                                                    * session.getCredentials
-                                                                                                    * ()
-                                                                                                    */);
+      SessionImpl anotherSession = (SessionImpl)repository.login(this.credentials /*
+                                                                                                   * session.getCredentials
+                                                                                                   * ()
+                                                                                                   */);
 
-      checkMixins(finalMixins, (NodeImpl) anotherSession.getRootNode().getNode(TEST_NODE_NAME));
-      checkMixins(finalMixins, (NodeImpl) anotherSession.getItem("/" + TEST_NODE_NAME));
+      checkMixins(finalMixins, (NodeImpl)anotherSession.getRootNode().getNode(TEST_NODE_NAME));
+      checkMixins(finalMixins, (NodeImpl)anotherSession.getItem("/" + TEST_NODE_NAME));
    }
 
    public void testFewMixinAddRemove_ObjectInHand() throws Exception
    {
 
-      String[] mixins = new String[]
-      {"mix:referenceable", "mix:lockable"};
-      String[] finalMixins = new String[]
-      {"mix:lockable"};
+      String[] mixins = new String[]{"mix:referenceable", "mix:lockable"};
+      String[] finalMixins = new String[]{"mix:lockable"};
 
-      NodeImpl node1 = (NodeImpl) this.testNode.addNode("node-1");
+      NodeImpl node1 = (NodeImpl)this.testNode.addNode("node-1");
       this.session.save();
 
       node1.addMixin(mixins[0]);
@@ -278,22 +271,20 @@ public class TestCachedMixins
    public void testMixinAddTransient() throws Exception
    {
 
-      String[] mixins = new String[]
-      {"mix:referenceable", "mix:lockable"};
-      String[] finalMixins = new String[]
-      {"mix:lockable"};
+      String[] mixins = new String[]{"mix:referenceable", "mix:lockable"};
+      String[] finalMixins = new String[]{"mix:lockable"};
 
-      NodeImpl node1 = (NodeImpl) this.testNode.addNode("node-1");
+      NodeImpl node1 = (NodeImpl)this.testNode.addNode("node-1");
       this.session.save();
 
       node1.addMixin(mixins[0]);
       node1.addMixin(mixins[1]);
 
-      PropertyImpl uuid = (PropertyImpl) node1.getProperty("jcr:uuid");
+      PropertyImpl uuid = (PropertyImpl)node1.getProperty("jcr:uuid");
 
       try
       {
-         NodeImpl sameNode1 = (NodeImpl) session.getNodeByUUID(uuid.getString());
+         NodeImpl sameNode1 = (NodeImpl)session.getNodeByUUID(uuid.getString());
          checkMixins(mixins, sameNode1);
 
          assertEquals("Nodes must be same", node1, sameNode1);
@@ -305,7 +296,7 @@ public class TestCachedMixins
 
       try
       {
-         NodeImpl sameNode1 = (NodeImpl) session.getItem(node1.getPath());
+         NodeImpl sameNode1 = (NodeImpl)session.getItem(node1.getPath());
          checkMixins(mixins, sameNode1);
 
          assertEquals("Nodes must be same", node1, sameNode1);

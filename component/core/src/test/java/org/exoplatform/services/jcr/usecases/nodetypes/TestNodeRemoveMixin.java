@@ -18,15 +18,14 @@
  */
 package org.exoplatform.services.jcr.usecases.nodetypes;
 
-import javax.jcr.Node;
-
 import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
+
+import javax.jcr.Node;
 
 /**
  * Created by The eXo Platform SAS Author : Anh Nguyen ntuananh.vn@gmail.com Nov 13, 2007
  */
-public class TestNodeRemoveMixin
-   extends BaseUsecasesTest
+public class TestNodeRemoveMixin extends BaseUsecasesTest
 {
 
    public void testNodeRemoveMixin() throws Exception

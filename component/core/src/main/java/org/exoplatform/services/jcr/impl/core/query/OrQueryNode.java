@@ -19,8 +19,7 @@ package org.exoplatform.services.jcr.impl.core.query;
 /**
  * Implements a query node that defines an OR operation between arbitrary other {@link QueryNode}s.
  */
-public class OrQueryNode
-   extends NAryQueryNode
+public class OrQueryNode extends NAryQueryNode
 {
 
    /**

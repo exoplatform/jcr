@@ -18,6 +18,17 @@
  */
 package org.exoplatform.services.jcr.api.importing;
 
+import org.exoplatform.services.ext.action.InvocationContext;
+import org.exoplatform.services.jcr.core.ExtendedSession;
+import org.exoplatform.services.jcr.impl.util.StringConverter;
+import org.exoplatform.services.jcr.impl.xml.importing.ContentImporter;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.XMLReaderFactory;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,86 +45,68 @@ import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.ConstraintViolationException;
 
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
-
-import org.exoplatform.services.log.Log;
-
-import org.exoplatform.services.ext.action.InvocationContext;
-import org.exoplatform.services.jcr.core.ExtendedSession;
-import org.exoplatform.services.jcr.impl.util.StringConverter;
-import org.exoplatform.services.jcr.impl.xml.importing.ContentImporter;
-import org.exoplatform.services.log.ExoLogger;
-
 /**
  * Created by The eXo Platform SAS
  * 
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: TestDocumentViewImport.java 14244 2008-05-14 11:44:54Z ksm $
  */
-public class TestDocumentViewImport
-   extends AbstractImportTest
+public class TestDocumentViewImport extends AbstractImportTest
 {
    private static Log log = ExoLogger.getLogger("jcr.TestDocumentViewImport");
 
    private final String docView =
-            "<exo:test xmlns:nt=\"http://www.jcp.org/jcr/nt/1.0\" "
-                     + "xmlns:jcr=\"http://www.jcp.org/jcr/1.0\" "
-                     + "xmlns:sv=\"http://www.jcp.org/jcr/sv/1.0\" "
-                     + "xmlns:exo=\"http://www.exoplatform.com/jcr/exo/1.0\" "
-                     + "xmlns:mix=\"http://www.jcp.org/jcr/mix/1.0\" "
-                     + "jcr:primaryType=\"nt:unstructured\">"
-                     + "<childNode jcr:created=\"2004-08-18T20:07:42.626+01:00\" jcr:primaryType=\"nt:folder\">"
-                     + "<childNode3 jcr:created=\"2004-08-18T20:07:42.636+01:00\" jcr:primaryType=\"nt:file\">"
-                     + "<jcr:content jcr:data=\"dGhpcyBpcyB0aGUgYmluYXJ5IGNvbnRlbnQ=\" jcr:primaryType=\"nt:resource\" jcr:lastModified=\"2004-08-18T20:07:42.626+01:00\" jcr:mimeType=\"text/html\" jcr:uuid=\"1092852462407_\">"
-                     + "</jcr:content>"
-                     + "</childNode3>"
-                     + "<childNode2 jcr:created=\"2004-08-18T20:07:42.636+01:00\" jcr:primaryType=\"nt:file\">"
-                     + "<jcr:content jcr:data=\"VGhyZWUgYnl0ZXMgYXJlIGNvbmNhdGVuYXRlZCwgdGhlbiBzcGxpdCB0byBmb3JtIDQgZ3JvdXBz"
-                     + "IG9mIDYtYml0cyBlYWNoOw==\" jcr:primaryType=\"nt:resource\" jcr:mimeType=\"text/html\" jcr:lastModified=\"2004-08-18T20:07:42.626+01:00\" jcr:uuid=\"1092852462406_\">"
-                     + "</jcr:content>"
-                     + "</childNode2>"
-                     + "</childNode>"
-                     + "<testNodeWithText1 jcr:mixinTypes='mix:referenceable' jcr:uuid='id_uuidNode3' testProperty='test property value'>Thisi is a text content of node &lt;testNodeWithText1/&gt; </testNodeWithText1>"
-                     + "<testNodeWithText2><![CDATA[This is a text content of node <testNodeWithText2>]]></testNodeWithText2>"
-                     + "<uuidNode1 jcr:mixinTypes='mix:referenceable' jcr:uuid='id_uuidNode1' source='docView'/>"
-                     + "</exo:test>";
+      "<exo:test xmlns:nt=\"http://www.jcp.org/jcr/nt/1.0\" "
+         + "xmlns:jcr=\"http://www.jcp.org/jcr/1.0\" "
+         + "xmlns:sv=\"http://www.jcp.org/jcr/sv/1.0\" "
+         + "xmlns:exo=\"http://www.exoplatform.com/jcr/exo/1.0\" "
+         + "xmlns:mix=\"http://www.jcp.org/jcr/mix/1.0\" "
+         + "jcr:primaryType=\"nt:unstructured\">"
+         + "<childNode jcr:created=\"2004-08-18T20:07:42.626+01:00\" jcr:primaryType=\"nt:folder\">"
+         + "<childNode3 jcr:created=\"2004-08-18T20:07:42.636+01:00\" jcr:primaryType=\"nt:file\">"
+         + "<jcr:content jcr:data=\"dGhpcyBpcyB0aGUgYmluYXJ5IGNvbnRlbnQ=\" jcr:primaryType=\"nt:resource\" jcr:lastModified=\"2004-08-18T20:07:42.626+01:00\" jcr:mimeType=\"text/html\" jcr:uuid=\"1092852462407_\">"
+         + "</jcr:content>"
+         + "</childNode3>"
+         + "<childNode2 jcr:created=\"2004-08-18T20:07:42.636+01:00\" jcr:primaryType=\"nt:file\">"
+         + "<jcr:content jcr:data=\"VGhyZWUgYnl0ZXMgYXJlIGNvbmNhdGVuYXRlZCwgdGhlbiBzcGxpdCB0byBmb3JtIDQgZ3JvdXBz"
+         + "IG9mIDYtYml0cyBlYWNoOw==\" jcr:primaryType=\"nt:resource\" jcr:mimeType=\"text/html\" jcr:lastModified=\"2004-08-18T20:07:42.626+01:00\" jcr:uuid=\"1092852462406_\">"
+         + "</jcr:content>"
+         + "</childNode2>"
+         + "</childNode>"
+         + "<testNodeWithText1 jcr:mixinTypes='mix:referenceable' jcr:uuid='id_uuidNode3' testProperty='test property value'>Thisi is a text content of node &lt;testNodeWithText1/&gt; </testNodeWithText1>"
+         + "<testNodeWithText2><![CDATA[This is a text content of node <testNodeWithText2>]]></testNodeWithText2>"
+         + "<uuidNode1 jcr:mixinTypes='mix:referenceable' jcr:uuid='id_uuidNode1' source='docView'/>" + "</exo:test>";
 
    private final String docView2 =
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<childNode2 "
-                     + "xmlns:nt=\"http://www.jcp.org/jcr/nt/1.0\" " + "xmlns:jcr=\"http://www.jcp.org/jcr/1.0\" "
-                     + "jcr:primaryType=\"nt:file\" " + "jcr:created=\"2004-08-18T17:17:00.856+03:00\">"
-                     + "<jcr:content " + "jcr:primaryType=\"nt:resource\" "
-                     + "jcr:uuid=\"6a3859dac0a8004b006e6e0bf444ebaa\" "
-                     + "jcr:data=\"dGhpcyBpcyB0aGUgYmluYXJ5IGNvbnRlbnQ=\" "
-                     + "jcr:lastModified=\"2004-08-18T17:17:00.856+03:00\" "
-                     + "jcr:lastModified2=\"2004-08-18T17:17:00.856+03:00\" " + "jcr:mimeType=\"text/text\"/>"
-                     + "</childNode2>";
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<childNode2 " + "xmlns:nt=\"http://www.jcp.org/jcr/nt/1.0\" "
+         + "xmlns:jcr=\"http://www.jcp.org/jcr/1.0\" " + "jcr:primaryType=\"nt:file\" "
+         + "jcr:created=\"2004-08-18T17:17:00.856+03:00\">" + "<jcr:content " + "jcr:primaryType=\"nt:resource\" "
+         + "jcr:uuid=\"6a3859dac0a8004b006e6e0bf444ebaa\" " + "jcr:data=\"dGhpcyBpcyB0aGUgYmluYXJ5IGNvbnRlbnQ=\" "
+         + "jcr:lastModified=\"2004-08-18T17:17:00.856+03:00\" "
+         + "jcr:lastModified2=\"2004-08-18T17:17:00.856+03:00\" " + "jcr:mimeType=\"text/text\"/>" + "</childNode2>";
 
    private final String docViewECM =
-            "<test-article xmlns:nt=\"http://www.jcp.org/jcr/nt/1.0\" xmlns:kfx=\"http://www.exoplatform.com/jcr/kfx/1.1/\" xmlns:Fwd=\"http://www.exoplatform.com/jcr/Fwd/1.1/\" xmlns:Re=\"http://www.exoplatform.com/jcr/Re/1.1/\" xmlns:rma=\"http://www.rma.com/jcr/\" xmlns:xml=\"http://www.w3.org/XML/1998/namespace\" xmlns:sv=\"http://www.jcp.org/jcr/sv/1.0\" xmlns:mix=\"http://www.jcp.org/jcr/mix/1.0\" xmlns:fn=\"http://www.w3.org/2004/10/xpath-functions\" xmlns:jcr=\"http://www.jcp.org/jcr/1.0\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:exo=\"http://www.exoplatform.com/jcr/exo/1.0\" exo:summary=\"\" exo:voteTotal=\"0\" exo:votingRate=\"0.0\" jcr:primaryType=\"exo:article\" jcr:mixinTypes=\"mix:votable mix:i18n\" jcr:uuid=\"6da3fcebc0a800070043d28761e00078\" exo:language=\"en\" exo:title=\"title\" exo:text=\"\"></test-article>";
+      "<test-article xmlns:nt=\"http://www.jcp.org/jcr/nt/1.0\" xmlns:kfx=\"http://www.exoplatform.com/jcr/kfx/1.1/\" xmlns:Fwd=\"http://www.exoplatform.com/jcr/Fwd/1.1/\" xmlns:Re=\"http://www.exoplatform.com/jcr/Re/1.1/\" xmlns:rma=\"http://www.rma.com/jcr/\" xmlns:xml=\"http://www.w3.org/XML/1998/namespace\" xmlns:sv=\"http://www.jcp.org/jcr/sv/1.0\" xmlns:mix=\"http://www.jcp.org/jcr/mix/1.0\" xmlns:fn=\"http://www.w3.org/2004/10/xpath-functions\" xmlns:jcr=\"http://www.jcp.org/jcr/1.0\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:exo=\"http://www.exoplatform.com/jcr/exo/1.0\" exo:summary=\"\" exo:voteTotal=\"0\" exo:votingRate=\"0.0\" jcr:primaryType=\"exo:article\" jcr:mixinTypes=\"mix:votable mix:i18n\" jcr:uuid=\"6da3fcebc0a800070043d28761e00078\" exo:language=\"en\" exo:title=\"title\" exo:text=\"\"></test-article>";
 
    private final String NAV_XML =
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<node-navigation>" + "<owner-type>portal</owner-type>"
-                     + "<owner-id>portalone</owner-id>" + "<access-permissions>*:/guest</access-permissions>"
-                     + "<page-nodes>" + "<node>" + "<uri>portalone::home</uri>" + "<name>home</name>"
-                     + "<label>Home</label>" + "<page-reference>portal::portalone::content</page-reference>"
-                     + "</node>" + "<node>" + "<uri>portalone::register</uri>" + "<name>register</name>"
-                     + "<label>Register</label>" + "<page-reference>portal::portalone::register</page-reference>"
-                     + "</node>" + "</page-nodes>" + "</node-navigation>";
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<node-navigation>" + "<owner-type>portal</owner-type>"
+         + "<owner-id>portalone</owner-id>" + "<access-permissions>*:/guest</access-permissions>" + "<page-nodes>"
+         + "<node>" + "<uri>portalone::home</uri>" + "<name>home</name>" + "<label>Home</label>"
+         + "<page-reference>portal::portalone::content</page-reference>" + "</node>" + "<node>"
+         + "<uri>portalone::register</uri>" + "<name>register</name>" + "<label>Register</label>"
+         + "<page-reference>portal::portalone::register</page-reference>" + "</node>" + "</page-nodes>"
+         + "</node-navigation>";
 
    private final String NAV_XML2 =
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-                     + "<node-navigation  xmlns:jcr='http://www.jcp.org/jcr/1.0' jcr:primaryType='nt:unstructured' >"
-                     + "<owner-type>portal</owner-type>" + "<owner-id>portalone</owner-id>"
-                     + "<access-permissions>*:/guest</access-permissions>" + "<page-nodes>" + "<node>"
-                     + "<uri>portalone::home</uri>" + "<name>home</name>" + "<label>Home</label>"
-                     + "<page-reference>portal::portalone::content</page-reference>" + "</node>" + "<node>"
-                     + "<uri>portalone::register</uri>" + "<name>register</name>" + "<label>Register</label>"
-                     + "<page-reference>portal::portalone::register</page-reference>" + "</node>" + "</page-nodes>"
-                     + "</node-navigation>";
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+         + "<node-navigation  xmlns:jcr='http://www.jcp.org/jcr/1.0' jcr:primaryType='nt:unstructured' >"
+         + "<owner-type>portal</owner-type>" + "<owner-id>portalone</owner-id>"
+         + "<access-permissions>*:/guest</access-permissions>" + "<page-nodes>" + "<node>"
+         + "<uri>portalone::home</uri>" + "<name>home</name>" + "<label>Home</label>"
+         + "<page-reference>portal::portalone::content</page-reference>" + "</node>" + "<node>"
+         + "<uri>portalone::register</uri>" + "<name>register</name>" + "<label>Register</label>"
+         + "<page-reference>portal::portalone::register</page-reference>" + "</node>" + "</page-nodes>"
+         + "</node-navigation>";
 
    private final String xmlSameNameSablings4Xmltext = "<html><body>a<b>b</b>c</body></html>";
 
@@ -134,8 +127,8 @@ public class TestDocumentViewImport
       {
 
          context.put(ContentImporter.RESPECT_PROPERTY_DEFINITIONS_CONSTRAINTS, true);
-         ((ExtendedSession) session).importXML(root.getPath(), new ByteArrayInputStream(docView2.getBytes()), 0,
-                  context);
+         ((ExtendedSession)session)
+            .importXML(root.getPath(), new ByteArrayInputStream(docView2.getBytes()), 0, context);
          session.save();
          fail();
       }
@@ -146,8 +139,8 @@ public class TestDocumentViewImport
       try
       {
          context.put(ContentImporter.RESPECT_PROPERTY_DEFINITIONS_CONSTRAINTS, false);
-         ((ExtendedSession) session).importXML(root.getPath(), new ByteArrayInputStream(docView2.getBytes()), 0,
-                  context);
+         ((ExtendedSession)session)
+            .importXML(root.getPath(), new ByteArrayInputStream(docView2.getBytes()), 0, context);
          session.save();
       }
       catch (RepositoryException e)
@@ -191,7 +184,7 @@ public class TestDocumentViewImport
       try
       {
          deserialize(testRoot, XmlSaveType.SESSION, true, ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW,
-                  new ByteArrayInputStream(NAV_XML.getBytes()));
+            new ByteArrayInputStream(NAV_XML.getBytes()));
          testRoot.getSession().save();
          fail();
       }
@@ -202,7 +195,7 @@ public class TestDocumentViewImport
       try
       {
          deserialize(testRoot, XmlSaveType.SESSION, false, ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW,
-                  new ByteArrayInputStream(NAV_XML.getBytes()));
+            new ByteArrayInputStream(NAV_XML.getBytes()));
          testRoot.getSession().save();
          fail();
       }
@@ -229,7 +222,7 @@ public class TestDocumentViewImport
       try
       {
          deserialize(testRoot, XmlSaveType.SESSION, false, ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW,
-                  new ByteArrayInputStream(content));
+            new ByteArrayInputStream(content));
          testRoot.getSession().save();
          fail();
       }
@@ -255,7 +248,7 @@ public class TestDocumentViewImport
       try
       {
          deserialize(testRoot, XmlSaveType.SESSION, true, ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW,
-                  new ByteArrayInputStream(content));
+            new ByteArrayInputStream(content));
          testRoot.getSession().save();
          fail();
       }
@@ -265,7 +258,7 @@ public class TestDocumentViewImport
    }
 
    public void testImportDocView() throws RepositoryException, InvalidSerializedDataException,
-            ConstraintViolationException, IOException, ItemExistsException
+      ConstraintViolationException, IOException, ItemExistsException
    {
       root.addNode("test2");
       session.importXML("/test2", new ByteArrayInputStream(docView.getBytes()), 0);
@@ -286,7 +279,7 @@ public class TestDocumentViewImport
    }
 
    public void testImportDocViewECM() throws RepositoryException, InvalidSerializedDataException,
-            ConstraintViolationException, IOException, ItemExistsException
+      ConstraintViolationException, IOException, ItemExistsException
    {
       root.addNode("testECM");
       session.importXML("/testECM", new ByteArrayInputStream(docViewECM.getBytes()), 0);
@@ -308,7 +301,7 @@ public class TestDocumentViewImport
       session.save();
 
       deserialize(testRoot, XmlSaveType.SESSION, true, ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW,
-               new ByteArrayInputStream(NAV_XML.getBytes()));
+         new ByteArrayInputStream(NAV_XML.getBytes()));
       testRoot.getSession().save();
 
       Node node_navigation = testRoot.getNode("node-navigation");
@@ -327,7 +320,7 @@ public class TestDocumentViewImport
       try
       {
          deserialize(testRoot, XmlSaveType.SESSION, true, ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW,
-                  new ByteArrayInputStream(NAV_XML2.getBytes()));
+            new ByteArrayInputStream(NAV_XML2.getBytes()));
          testRoot.getSession().save();
          fail();
       }
@@ -365,7 +358,7 @@ public class TestDocumentViewImport
       Node importRoot = root.addNode("ImportRoot");
 
       deserialize(importRoot, XmlSaveType.SESSION, true, ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW,
-               new ByteArrayInputStream(buf));
+         new ByteArrayInputStream(buf));
 
       session.save();
 
@@ -415,7 +408,7 @@ public class TestDocumentViewImport
    {
 
       session.importXML(root.getPath(), new ByteArrayInputStream(xmlSpeacialChars.getBytes()),
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
       session.save();
       Node htmlNode = root.getNode("html");
       Node bodyNode = htmlNode.getNode("body");
@@ -428,7 +421,7 @@ public class TestDocumentViewImport
    {
 
       session.importXML(root.getPath(), new ByteArrayInputStream(xmlSameNameSablings4Xmltext.getBytes()),
-               ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
       session.save();
       Node htmlNode = root.getNode("html");
       Node bodyNode = htmlNode.getNode("body");

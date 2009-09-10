@@ -18,10 +18,10 @@
  */
 package org.exoplatform.services.jcr.impl.core.nodetype;
 
-import javax.jcr.nodetype.NodeType;
-
 import org.exoplatform.services.jcr.core.nodetype.ExtendedItemDefinition;
 import org.exoplatform.services.jcr.impl.Constants;
+
+import javax.jcr.nodetype.NodeType;
 
 /**
  * Created by The eXo Platform SAS.
@@ -30,8 +30,7 @@ import org.exoplatform.services.jcr.impl.Constants;
  * @version $Id: ItemDefinitionImpl.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public abstract class ItemDefinitionImpl
-   implements ExtendedItemDefinition
+public abstract class ItemDefinitionImpl implements ExtendedItemDefinition
 {
 
    protected final NodeType declaringNodeType;
@@ -49,7 +48,7 @@ public abstract class ItemDefinitionImpl
    protected int hashCode;
 
    public ItemDefinitionImpl(String name, NodeType declaringNodeType, boolean autoCreate, int onVersion,
-            boolean readOnly, boolean mandatory)
+      boolean readOnly, boolean mandatory)
    {
       this.declaringNodeType = declaringNodeType;
       this.autoCreate = autoCreate;

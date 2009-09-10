@@ -18,13 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.jcr.InvalidItemStateException;
-import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.log.Log;
 import org.exoplatform.services.jcr.dataflow.ChangesLogIterator;
 import org.exoplatform.services.jcr.dataflow.CompositeChangesLog;
 import org.exoplatform.services.jcr.dataflow.DataManager;
@@ -41,6 +34,13 @@ import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.jcr.InvalidItemStateException;
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS. Responsible for: *redirecting repository operations if item is
@@ -51,8 +51,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @version $Id: VersionableWorkspaceDataManager.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class VersionableWorkspaceDataManager
-   extends ACLInheritanceSupportedWorkspaceDataManager
+public class VersionableWorkspaceDataManager extends ACLInheritanceSupportedWorkspaceDataManager
 {
 
    private static Log log = ExoLogger.getLogger("jcr.VersionableWorkspaceDataManager");
@@ -70,7 +69,7 @@ public class VersionableWorkspaceDataManager
    public void setSystemDataManager(DataManager systemDataManager)
    {
 
-      this.versionDataManager = (ACLInheritanceSupportedWorkspaceDataManager) systemDataManager;
+      this.versionDataManager = (ACLInheritanceSupportedWorkspaceDataManager)systemDataManager;
    }
 
    /*
@@ -195,16 +194,16 @@ public class VersionableWorkspaceDataManager
          if (vstates.size() > 0)
          {
             versionLog.addLog((pairId != null) ? new PairChangesLog(vstates, changes.getSessionId(), changes
-                     .getEventType(), pairId) : new PlainChangesLogImpl(vstates, changes.getSessionId(), changes
-                     .getEventType()));
+               .getEventType(), pairId) : new PlainChangesLogImpl(vstates, changes.getSessionId(), changes
+               .getEventType()));
             saveVersions = true;
          }
 
          if (nvstates.size() > 0)
          {
             nonVersionLog.addLog((pairId != null) ? new PairChangesLog(nvstates, changes.getSessionId(), changes
-                     .getEventType(), pairId) : new PlainChangesLogImpl(nvstates, changes.getSessionId(), changes
-                     .getEventType()));
+               .getEventType(), pairId) : new PlainChangesLogImpl(nvstates, changes.getSessionId(), changes
+               .getEventType()));
 
             saveNonVersions = true;
          }

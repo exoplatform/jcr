@@ -18,10 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
@@ -29,6 +25,10 @@ import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
 import org.exoplatform.services.jcr.dataflow.serialization.SerializationConstants;
 import org.exoplatform.services.jcr.dataflow.serialization.UnknownClassIdException;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by The eXo Platform SAS. <br/>

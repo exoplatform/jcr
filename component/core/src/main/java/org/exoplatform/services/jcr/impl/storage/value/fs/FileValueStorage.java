@@ -18,18 +18,17 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
-
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePlugin;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
 
 /**
  * Created by The eXo Platform SAS.
@@ -38,8 +37,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @version $Id: FileValueStorage.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
 
-public abstract class FileValueStorage
-   extends ValueStoragePlugin
+public abstract class FileValueStorage extends ValueStoragePlugin
 {
 
    private Log log = ExoLogger.getLogger("jcr.FileValueStorage");
@@ -70,7 +68,7 @@ public abstract class FileValueStorage
     * {@inheritDoc}
     */
    public void init(Properties props, ValueDataResourceHolder resources) throws IOException,
-            RepositoryConfigurationException
+      RepositoryConfigurationException
    {
       this.resources = resources;
       prepareRootDir(props.getProperty(PATH));
@@ -122,14 +120,12 @@ public abstract class FileValueStorage
                // care about storage temp dir cleanup
                for (File tmpf : tempDir.listFiles())
                   if (!tmpf.delete())
-                     log
-                              .warn("Storage temporary directory contains un-deletable file "
-                                       + tmpf.getAbsolutePath()
-                                       + ". It's recommended to leave this directory for JCR External Values Storage private use.");
+                     log.warn("Storage temporary directory contains un-deletable file " + tmpf.getAbsolutePath()
+                        + ". It's recommended to leave this directory for JCR External Values Storage private use.");
             }
             else
                throw new RepositoryConfigurationException("Cannot create " + TEMP_DIR_NAME
-                        + " directory under External Value Storage.");
+                  + " directory under External Value Storage.");
          }
          else
          {

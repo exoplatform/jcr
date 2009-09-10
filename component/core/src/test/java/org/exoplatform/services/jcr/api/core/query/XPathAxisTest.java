@@ -22,8 +22,7 @@ import javax.jcr.RepositoryException;
 /**
  * Tests the various XPath axis.
  */
-public class XPathAxisTest
-   extends AbstractQueryTest
+public class XPathAxisTest extends AbstractQueryTest
 {
 
    private Node n1;
@@ -64,8 +63,7 @@ public class XPathAxisTest
    public void testChildAxisRoot() throws RepositoryException
    {
       String xpath = "/*";
-      executeXPathQuery(xpath, new Node[]
-      {superuser.getRootNode()});
+      executeXPathQuery(xpath, new Node[]{superuser.getRootNode()});
    }
 
    public void testChildAxisJCRRoot() throws RepositoryException
@@ -78,15 +76,13 @@ public class XPathAxisTest
    public void testChildAxisTestRoot() throws RepositoryException
    {
       String xpath = "/jcr:root" + testRoot + "/*";
-      executeXPathQuery(xpath, new Node[]
-      {n1, n2});
+      executeXPathQuery(xpath, new Node[]{n1, n2});
    }
 
    public void testChildAxisTestRootRelative() throws RepositoryException
    {
       String xpath = testPath + "/*";
-      executeXPathQuery(xpath, new Node[]
-      {n1, n2});
+      executeXPathQuery(xpath, new Node[]{n1, n2});
    }
 
    public void testChildAxisLeaf() throws RepositoryException
@@ -104,15 +100,13 @@ public class XPathAxisTest
    public void testDescendantAxisTestRoot() throws RepositoryException
    {
       String xpath = "/jcr:root" + testRoot + "//*";
-      executeXPathQuery(xpath, new Node[]
-      {n1, n11, n12, n2, n21, n22});
+      executeXPathQuery(xpath, new Node[]{n1, n11, n12, n2, n21, n22});
    }
 
    public void testDescendantAxisTestRootRelative() throws RepositoryException
    {
       String xpath = testPath + "//*";
-      executeXPathQuery(xpath, new Node[]
-      {n1, n11, n12, n2, n21, n22});
+      executeXPathQuery(xpath, new Node[]{n1, n11, n12, n2, n21, n22});
    }
 
    public void testDescendantAxisLeaf() throws RepositoryException
@@ -130,85 +124,73 @@ public class XPathAxisTest
    public void testDescendantSelfAxisTestRoot1() throws RepositoryException
    {
       String xpath = "/jcr:root" + testRoot + "//node1";
-      executeXPathQuery(xpath, new Node[]
-      {n1});
+      executeXPathQuery(xpath, new Node[]{n1});
    }
 
    public void testDescendantSelfAxisTestRoot1Relative() throws RepositoryException
    {
       String xpath = testPath + "//node1";
-      executeXPathQuery(xpath, new Node[]
-      {n1});
+      executeXPathQuery(xpath, new Node[]{n1});
    }
 
    public void testDescendantSelfAxisAndChild() throws RepositoryException
    {
       String xpath = "/jcr:root" + testRoot + "//node1/*";
-      executeXPathQuery(xpath, new Node[]
-      {n11, n12});
+      executeXPathQuery(xpath, new Node[]{n11, n12});
    }
 
    public void testDescendantSelfAxisAndChildRelative() throws RepositoryException
    {
       String xpath = testPath + "//node1/*";
-      executeXPathQuery(xpath, new Node[]
-      {n11, n12});
+      executeXPathQuery(xpath, new Node[]{n11, n12});
    }
 
    public void testChildAndDescendantSelfAxis() throws RepositoryException
    {
       String xpath = "/jcr:root" + testRoot + "/*//*";
-      executeXPathQuery(xpath, new Node[]
-      {n11, n12, n21, n22});
+      executeXPathQuery(xpath, new Node[]{n11, n12, n21, n22});
    }
 
    public void testChildAndDescendantSelfAxisRelative() throws RepositoryException
    {
       String xpath = testPath + "/*//*";
-      executeXPathQuery(xpath, new Node[]
-      {n11, n12, n21, n22});
+      executeXPathQuery(xpath, new Node[]{n11, n12, n21, n22});
    }
 
    public void testChildChildAxis() throws RepositoryException
    {
       String xpath = "/jcr:root" + testRoot + "/*/*";
-      executeXPathQuery(xpath, new Node[]
-      {n11, n12, n21, n22});
+      executeXPathQuery(xpath, new Node[]{n11, n12, n21, n22});
    }
 
    public void testChildChildAxisRelative() throws RepositoryException
    {
       String xpath = testPath + "/*/*";
-      executeXPathQuery(xpath, new Node[]
-      {n11, n12, n21, n22});
+      executeXPathQuery(xpath, new Node[]{n11, n12, n21, n22});
    }
 
    public void testChildAndNodeTestAxis() throws RepositoryException
    {
       String xpath = "/jcr:root" + testRoot + "/*/node11";
-      executeXPathQuery(xpath, new Node[]
-      {n11});
+      executeXPathQuery(xpath, new Node[]{n11});
    }
 
    public void testChildAndNodeTestAxisRelative() throws RepositoryException
    {
       String xpath = testPath + "/*/node11";
-      executeXPathQuery(xpath, new Node[]
-      {n11});
+      executeXPathQuery(xpath, new Node[]{n11});
    }
 
    public void testDescendantSelfAxisTestRoot2() throws RepositoryException
    {
       String xpath = "/jcr:root" + testRoot + "//node11";
-      executeXPathQuery(xpath, new Node[]
-      {n11});
+      executeXPathQuery(xpath, new Node[]{n11});
    }
 
    public void testDescendantSelfAxisTestRoot2Relative() throws RepositoryException
    {
       String xpath = testPath + "//node11";
-      executeXPathQuery(xpath, new Node[]
-      {n11});
+      executeXPathQuery(xpath, new Node[]{n11});
    }
 
    public void testDescendantSelfAxisNonDesc() throws RepositoryException
@@ -220,15 +202,13 @@ public class XPathAxisTest
    public void testDescendantSelfAxisRelativeTestPath() throws RepositoryException
    {
       String xpath = testPath;
-      executeXPathQuery(xpath, new Node[]
-      {testRootNode});
+      executeXPathQuery(xpath, new Node[]{testRootNode});
    }
 
    public void testExactRelative() throws RepositoryException
    {
       String xpath = testPath + "/node1";
-      executeXPathQuery(xpath, new Node[]
-      {n1});
+      executeXPathQuery(xpath, new Node[]{n1});
    }
 
    public void testIndex0Descendant() throws RepositoryException
@@ -240,15 +220,13 @@ public class XPathAxisTest
    public void testIndex1Descendant() throws RepositoryException
    {
       String xpath = "/jcr:root" + testRoot + "//*[1]";
-      executeXPathQuery(xpath, new Node[]
-      {n1, n11, n21});
+      executeXPathQuery(xpath, new Node[]{n1, n11, n21});
    }
 
    public void testIndex2Descendant() throws RepositoryException
    {
       String xpath = "/jcr:root" + testRoot + "//*[2]";
-      executeXPathQuery(xpath, new Node[]
-      {n2, n12, n22});
+      executeXPathQuery(xpath, new Node[]{n2, n12, n22});
    }
 
    public void testIndex3Descendant() throws RepositoryException

@@ -18,25 +18,23 @@
  */
 package org.exoplatform.services.jcr.usecases.action.info;
 
+import org.apache.commons.chain.Context;
+import org.exoplatform.services.jcr.observation.ExtendedEvent;
+
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
-
-import org.apache.commons.chain.Context;
-
-import org.exoplatform.services.jcr.observation.ExtendedEvent;
 
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: AddMixinActionInfo.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class AddMixinActionInfo
-   extends ActionInfo
+public class AddMixinActionInfo extends ActionInfo
 {
 
    @Override
    public void execute(Context ctx) throws RepositoryException
    {
-      Node node = (Node) ctx.get("node");
+      Node node = (Node)ctx.get("node");
       if (node.canAddMixin("mix:versionable"))
          node.addMixin("mix:versionable");
       node.getSession().save();

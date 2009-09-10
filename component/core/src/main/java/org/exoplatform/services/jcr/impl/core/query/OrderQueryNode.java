@@ -24,8 +24,7 @@ import org.exoplatform.services.jcr.datamodel.InternalQName;
 /**
  * Implements a query node that defines the order of nodes according to the values of properties.
  */
-public class OrderQueryNode
-   extends QueryNode
+public class OrderQueryNode extends QueryNode
 {
 
    /**
@@ -102,7 +101,7 @@ public class OrderQueryNode
     */
    public boolean isAscending(int i) throws IndexOutOfBoundsException
    {
-      return ((OrderSpec) specs.get(i)).ascending;
+      return ((OrderSpec)specs.get(i)).ascending;
    }
 
    /**
@@ -112,7 +111,7 @@ public class OrderQueryNode
     */
    public OrderSpec[] getOrderSpecs()
    {
-      return (OrderSpec[]) specs.toArray(new OrderSpec[specs.size()]);
+      return (OrderSpec[])specs.toArray(new OrderSpec[specs.size()]);
    }
 
    /**
@@ -123,7 +122,7 @@ public class OrderQueryNode
    {
       if (obj instanceof OrderQueryNode)
       {
-         OrderQueryNode other = (OrderQueryNode) obj;
+         OrderQueryNode other = (OrderQueryNode)obj;
          return specs.equals(other.specs);
       }
       return false;
@@ -206,9 +205,9 @@ public class OrderQueryNode
       {
          if (obj instanceof OrderSpec)
          {
-            OrderSpec other = (OrderSpec) obj;
+            OrderSpec other = (OrderSpec)obj;
             return (property == null ? other.property == null : property.equals(other.property))
-                     && ascending == other.ascending;
+               && ascending == other.ascending;
          }
          return false;
       }

@@ -28,8 +28,7 @@ import javax.jcr.query.QueryResult;
  * <code>QueryResultTest</code> tests various methods on the <code>NodeIterator</code> returned by a
  * <code>QueryResult</code>.
  */
-public class QueryResultTest
-   extends AbstractQueryTest
+public class QueryResultTest extends AbstractQueryTest
 {
 
    private static int INITIAL_NODE_NUM = 55;

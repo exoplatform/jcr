@@ -50,11 +50,12 @@ public class CleanableFileStreamValueData extends FileStreamPersistedValueData
     * @param cleaner
     *          FileCleaner
     */
-   public CleanableFileStreamValueData(SwapFile file, int orderNumber, FileCleaner cleaner) throws FileNotFoundException
+   public CleanableFileStreamValueData(SwapFile file, int orderNumber, FileCleaner cleaner)
+      throws FileNotFoundException
    {
       super(file, orderNumber);
       this.cleaner = cleaner;
-      
+
       // aquire this file
       file.acquire(this);
    }
@@ -73,7 +74,8 @@ public class CleanableFileStreamValueData extends FileStreamPersistedValueData
          {
             cleaner.addFile(file);
 
-            if (log.isDebugEnabled()) {
+            if (log.isDebugEnabled())
+            {
                log.debug("Ñould not remove temporary file on finalize: inUse=" + (((SwapFile)file).inUse()) + ", "
                   + file.getAbsolutePath());
             }

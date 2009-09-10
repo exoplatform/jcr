@@ -18,6 +18,10 @@
  */
 package org.exoplatform.services.jcr.api.writing;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.impl.core.PropertyImpl;
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
+
 import java.util.Calendar;
 
 import javax.jcr.InvalidItemStateException;
@@ -30,18 +34,13 @@ import javax.jcr.Session;
 import javax.jcr.Value;
 import javax.jcr.nodetype.ConstraintViolationException;
 
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-import org.exoplatform.services.jcr.impl.core.PropertyImpl;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
-
 /**
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov</a>
  * @version $Id: TestRemove.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class TestRemove
-   extends JcrAPIBaseTest
+public class TestRemove extends JcrAPIBaseTest
 {
 
    public void initRepository() throws RepositoryException
@@ -50,7 +49,7 @@ public class TestRemove
       Node file = root.addNode("TestRemove", "nt:folder").addNode("childNode2", "nt:file");
       Node contentNode = file.addNode("jcr:content", "nt:resource");
       contentNode.setProperty("jcr:data", session.getValueFactory().createValue("this is the content",
-               PropertyType.BINARY));
+         PropertyType.BINARY));
       contentNode.setProperty("jcr:mimeType", session.getValueFactory().createValue("text/html"));
       contentNode.setProperty("jcr:lastModified", session.getValueFactory().createValue(Calendar.getInstance()));
 
@@ -86,7 +85,7 @@ public class TestRemove
       //log.debug(">>> "+((ItemLocation)((NodeImpl)session.getItem("/childNode")).getChildNodeLocations
       // ().get(0)).getPath());
 
-      session = (SessionImpl) repository.login(credentials, WORKSPACE);
+      session = (SessionImpl)repository.login(credentials, WORKSPACE);
       root = session.getRootNode();
       try
       {
@@ -102,10 +101,10 @@ public class TestRemove
    {
 
       // log.debug(">>> set null value ");
-      root.setProperty("prop", (Value) null);
+      root.setProperty("prop", (Value)null);
       try
       {
-         PropertyImpl p = (PropertyImpl) root.getProperty("prop");
+         PropertyImpl p = (PropertyImpl)root.getProperty("prop");
          System.out.println("Removed property ====== " + p.getData().getQPath().getAsString());
          fail("exception should have been thrown");
       }
@@ -132,7 +131,7 @@ public class TestRemove
       root.getProperty("u/prop").remove();
       root.save();
 
-      session = (SessionImpl) repository.login(credentials, WORKSPACE);
+      session = (SessionImpl)repository.login(credentials, WORKSPACE);
       root = session.getRootNode();
       // System.out.println(">>"+session.getContainer());
 

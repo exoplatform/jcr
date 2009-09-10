@@ -18,21 +18,19 @@
  */
 package org.exoplatform.services.jcr;
 
+import org.apache.jackrabbit.test.RepositoryStub;
+import org.apache.jackrabbit.test.RepositoryStubException;
+import org.exoplatform.container.StandaloneContainer;
+import org.exoplatform.services.jcr.core.ManageableRepository;
+
 import java.util.Properties;
 
 import javax.jcr.Repository;
 
-import org.apache.jackrabbit.test.RepositoryStub;
-import org.apache.jackrabbit.test.RepositoryStubException;
-
-import org.exoplatform.container.StandaloneContainer;
-import org.exoplatform.services.jcr.core.ManageableRepository;
-
 /**
  * Implements the <code>RepositoryStub</code> for the JCR Reference Implementation.
  */
-public class ExoRepositoryStub
-   extends RepositoryStub
+public class ExoRepositoryStub extends RepositoryStub
 {
 
    /**
@@ -94,7 +92,7 @@ public class ExoRepositoryStub
          {
 
             String containerConf =
-                     ExoRepositoryStub.class.getResource(System.getProperty("jcr.test.configuration.file")).toString();
+               ExoRepositoryStub.class.getResource(System.getProperty("jcr.test.configuration.file")).toString();
             String loginConf = ExoRepositoryStub.class.getResource("/login.conf").toString();
 
             StandaloneContainer.addConfigurationURL(containerConf);
@@ -104,7 +102,7 @@ public class ExoRepositoryStub
                System.setProperty("java.security.auth.login.config", loginConf);
 
             RepositoryService repositoryService =
-                     (RepositoryService) servicesManager.getComponentInstanceOfType(RepositoryService.class);
+               (RepositoryService)servicesManager.getComponentInstanceOfType(RepositoryService.class);
 
             repository = repositoryService.getRepository("db1tck");
             /*

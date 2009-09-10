@@ -28,8 +28,7 @@ import org.exoplatform.container.xml.ValueParam;
  * @author <a href="mailto:anatoliy.bazko@exoplatform.com.ua">Anatoliy Bazko</a>
  * @version $Id: StoreChangesPlugin.java 111 2008-11-11 11:11:11Z $
  */
-public class RepositoryChangesListenerRegisterPlugin
-   extends BaseComponentPlugin
+public class RepositoryChangesListenerRegisterPlugin extends BaseComponentPlugin
 {
 
    private String repositoryName = null;

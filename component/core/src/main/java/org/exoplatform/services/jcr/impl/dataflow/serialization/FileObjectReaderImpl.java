@@ -18,6 +18,10 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
+import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
+import org.exoplatform.services.jcr.dataflow.serialization.SerializationConstants;
+import org.exoplatform.services.jcr.impl.Constants;
+
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,10 +33,6 @@ import java.io.StreamCorruptedException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
-import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
-import org.exoplatform.services.jcr.dataflow.serialization.SerializationConstants;
-import org.exoplatform.services.jcr.impl.Constants;
-
 /**
  * Created by The eXo Platform SAS. <br/>
  * Date: 15.04.2009
@@ -40,8 +40,7 @@ import org.exoplatform.services.jcr.impl.Constants;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: FileObjectReaderImpl.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class FileObjectReaderImpl
-   implements ObjectReader
+public class FileObjectReaderImpl implements ObjectReader
 {
 
    /**
@@ -170,7 +169,7 @@ public class FileObjectReaderImpl
       if (stream instanceof FileOutputStream)
       {
          // use NIO
-         return channel.transferTo(0, length, ((FileOutputStream) stream).getChannel());
+         return channel.transferTo(0, length, ((FileOutputStream)stream).getChannel());
       }
       else
       {

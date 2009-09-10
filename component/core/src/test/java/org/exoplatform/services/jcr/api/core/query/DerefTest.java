@@ -27,8 +27,7 @@ import javax.jcr.version.Version;
 /**
  * Tests the jcr:deref() function.
  */
-public class DerefTest
-   extends AbstractQueryTest
+public class DerefTest extends AbstractQueryTest
 {
 
    /**
@@ -110,29 +109,22 @@ public class DerefTest
     */
    public void testDeref() throws RepositoryException
    {
-      executeXPathQuery(testPath + "/people/jcr:deref(@worksfor, '*')", new Node[]
-      {});
+      executeXPathQuery(testPath + "/people/jcr:deref(@worksfor, '*')", new Node[]{});
 
-      executeXPathQuery(testPath + "/people/*/jcr:deref(@worksfor, '*')", new Node[]
-      {sun, microsoft});
+      executeXPathQuery(testPath + "/people/*/jcr:deref(@worksfor, '*')", new Node[]{sun, microsoft});
 
-      executeXPathQuery(testPath + "/people/*/*/jcr:deref(@worksfor, '*')", new Node[]
-      {ibm});
+      executeXPathQuery(testPath + "/people/*/*/jcr:deref(@worksfor, '*')", new Node[]{ibm});
 
-      executeXPathQuery(testPath + "/people//jcr:deref(@worksfor, '*')", new Node[]
-      {sun, ibm, microsoft});
+      executeXPathQuery(testPath + "/people//jcr:deref(@worksfor, '*')", new Node[]{sun, ibm, microsoft});
 
-      executeXPathQuery(testPath + "/people/carl//jcr:deref(@worksfor, '*')", new Node[]
-      {sun, ibm});
+      executeXPathQuery(testPath + "/people/carl//jcr:deref(@worksfor, '*')", new Node[]{sun, ibm});
 
-      executeXPathQuery(testPath + "/people//jcr:deref(@worksfor, 'sun')", new Node[]
-      {sun});
+      executeXPathQuery(testPath + "/people//jcr:deref(@worksfor, 'sun')", new Node[]{sun});
 
-      executeXPathQuery(testPath + "/people//jcr:deref(@worksfor, '*')[@ceo = 'McNealy']", new Node[]
-      {sun});
+      executeXPathQuery(testPath + "/people//jcr:deref(@worksfor, '*')[@ceo = 'McNealy']", new Node[]{sun});
 
-      executeXPathQuery(testPath + "/people/*/jcr:deref(@worksfor, '*')[jcr:contains(.,'ballmer')]", new Node[]
-      {microsoft});
+      executeXPathQuery(testPath + "/people/*/jcr:deref(@worksfor, '*')[jcr:contains(.,'ballmer')]",
+         new Node[]{microsoft});
    }
 
    /**
@@ -158,7 +150,7 @@ public class DerefTest
       assertEquals("Must find one result in query", 1, ni.getSize());
       while (ni.hasNext())
       {
-         Node node = (Node) ni.next();
+         Node node = (Node)ni.next();
          assertTrue(node.getProperty("jcr:frozenUuid").getString().equals(referenced.getUUID()));
       }
    }

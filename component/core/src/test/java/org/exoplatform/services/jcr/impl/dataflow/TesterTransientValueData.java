@@ -30,8 +30,7 @@ import java.io.InputStream;
  * @author <a href="mailto:anatoliy.bazko@exoplatform.com.ua">Anatoliy Bazko</a>
  * @version $Id: TesterTransientValueData.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class TesterTransientValueData
-   extends TransientValueData
+public class TesterTransientValueData extends TransientValueData
 {
 
    public TransientValueData getTransientValueData(InputStream stream, int orderNumber) throws IOException

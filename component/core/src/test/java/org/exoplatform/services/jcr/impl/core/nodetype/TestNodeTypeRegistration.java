@@ -18,6 +18,14 @@
  */
 package org.exoplatform.services.jcr.impl.core.nodetype;
 
+import org.exoplatform.services.jcr.JcrImplBaseTest;
+import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
+import org.exoplatform.services.jcr.core.nodetype.NodeDefinitionValue;
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeValue;
+import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionValue;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -30,23 +38,13 @@ import javax.jcr.RepositoryException;
 import javax.jcr.ValueFormatException;
 import javax.jcr.nodetype.ConstraintViolationException;
 
-import org.exoplatform.services.log.Log;
-
-import org.exoplatform.services.jcr.JcrImplBaseTest;
-import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
-import org.exoplatform.services.jcr.core.nodetype.NodeDefinitionValue;
-import org.exoplatform.services.jcr.core.nodetype.NodeTypeValue;
-import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionValue;
-import org.exoplatform.services.log.ExoLogger;
-
 /**
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: $
  */
-public class TestNodeTypeRegistration
-   extends JcrImplBaseTest
+public class TestNodeTypeRegistration extends JcrImplBaseTest
 {
    /**
     * Class logger.
@@ -96,7 +94,7 @@ public class TestNodeTypeRegistration
    public void setUp() throws Exception
    {
       super.setUp();
-      nodeTypeManager = (NodeTypeManagerImpl) session.getWorkspace().getNodeTypeManager();
+      nodeTypeManager = (NodeTypeManagerImpl)session.getWorkspace().getNodeTypeManager();
    }
 
    public void testRemoveNodeTypeUnexisted()
@@ -208,7 +206,7 @@ public class TestNodeTypeRegistration
       testNValue.setDeclaredSupertypeNames(superType);
       List<PropertyDefinitionValue> props = new ArrayList<PropertyDefinitionValue>();
       props.add(new PropertyDefinitionValue("*", false, false, 1, false, new ArrayList<String>(), false, 0,
-               new ArrayList<String>()));
+         new ArrayList<String>()));
       testNValue.setDeclaredPropertyDefinitionValues(props);
 
       nodeTypeManager.registerNodeType(testNValue, ExtendedNodeTypeManager.FAIL_IF_EXISTS);
@@ -262,7 +260,7 @@ public class TestNodeTypeRegistration
       List<String> def = new ArrayList<String>();
       def.add("tt");
       props.add(new PropertyDefinitionValue("tt", true, false, 1, false, def, false, PropertyType.STRING,
-               new ArrayList<String>()));
+         new ArrayList<String>()));
       testNValue.setDeclaredPropertyDefinitionValues(props);
       nodeTypeManager.registerNodeType(testNValue, ExtendedNodeTypeManager.FAIL_IF_EXISTS);
 
@@ -281,7 +279,7 @@ public class TestNodeTypeRegistration
       // chenge mandatory
       List<PropertyDefinitionValue> props2 = new ArrayList<PropertyDefinitionValue>();
       props2.add(new PropertyDefinitionValue("tt", true, true, 1, true, def, false, PropertyType.STRING,
-               new ArrayList<String>()));
+         new ArrayList<String>()));
       testNValue.setDeclaredPropertyDefinitionValues(props2);
       try
       {
@@ -317,7 +315,7 @@ public class TestNodeTypeRegistration
       testNTValue = nodeTypeManager.getNodeTypeValue(testNTValue.getName());
       List<PropertyDefinitionValue> props = new ArrayList<PropertyDefinitionValue>();
       props.add(new PropertyDefinitionValue("tt", true, true, 1, false, new ArrayList<String>(), false,
-               PropertyType.STRING, new ArrayList<String>()));
+         PropertyType.STRING, new ArrayList<String>()));
       testNTValue.setDeclaredPropertyDefinitionValues(props);
 
       try
@@ -334,7 +332,7 @@ public class TestNodeTypeRegistration
       def.add("tt");
       props = new ArrayList<PropertyDefinitionValue>();
       props.add(new PropertyDefinitionValue("tt", true, true, 1, false, def, false, PropertyType.STRING,
-               new ArrayList<String>()));
+         new ArrayList<String>()));
       testNTValue.setDeclaredPropertyDefinitionValues(props);
       nodeTypeManager.registerNodeType(testNTValue, ExtendedNodeTypeManager.REPLACE_IF_EXISTS);
 
@@ -360,7 +358,7 @@ public class TestNodeTypeRegistration
       List<PropertyDefinitionValue> props = new ArrayList<PropertyDefinitionValue>();
 
       props.add(new PropertyDefinitionValue("tt", false, false, 1, false, new ArrayList<String>(), false,
-               PropertyType.STRING, new ArrayList<String>()));
+         PropertyType.STRING, new ArrayList<String>()));
       testNValue.setDeclaredPropertyDefinitionValues(props);
       nodeTypeManager.registerNodeType(testNValue, ExtendedNodeTypeManager.FAIL_IF_EXISTS);
       testNValue = nodeTypeManager.getNodeTypeValue(testNValue.getName());
@@ -370,7 +368,7 @@ public class TestNodeTypeRegistration
       // chenge mandatory
       List<PropertyDefinitionValue> props2 = new ArrayList<PropertyDefinitionValue>();
       props2.add(new PropertyDefinitionValue("tt", false, true, 1, false, new ArrayList<String>(), false,
-               PropertyType.STRING, new ArrayList<String>()));
+         PropertyType.STRING, new ArrayList<String>()));
       testNValue.setDeclaredPropertyDefinitionValues(props2);
       try
       {
@@ -403,7 +401,7 @@ public class TestNodeTypeRegistration
       List<PropertyDefinitionValue> props = new ArrayList<PropertyDefinitionValue>();
 
       props.add(new PropertyDefinitionValue("*", false, false, 1, false, new ArrayList<String>(), false,
-               PropertyType.UNDEFINED, new ArrayList<String>()));
+         PropertyType.UNDEFINED, new ArrayList<String>()));
       testNValue.setDeclaredPropertyDefinitionValues(props);
       nodeTypeManager.registerNodeType(testNValue, ExtendedNodeTypeManager.FAIL_IF_EXISTS);
       testNValue = nodeTypeManager.getNodeTypeValue(testNValue.getName());
@@ -417,7 +415,7 @@ public class TestNodeTypeRegistration
       // chenge mandatory
       List<PropertyDefinitionValue> props2 = new ArrayList<PropertyDefinitionValue>();
       props2.add(new PropertyDefinitionValue("*", false, false, 1, false, new ArrayList<String>(), false,
-               PropertyType.STRING, new ArrayList<String>()));
+         PropertyType.STRING, new ArrayList<String>()));
       testNValue.setDeclaredPropertyDefinitionValues(props2);
 
       try
@@ -453,7 +451,7 @@ public class TestNodeTypeRegistration
       List<PropertyDefinitionValue> props = new ArrayList<PropertyDefinitionValue>();
 
       props.add(new PropertyDefinitionValue("tt", false, false, 1, false, new ArrayList<String>(), false,
-               PropertyType.UNDEFINED, new ArrayList<String>()));
+         PropertyType.UNDEFINED, new ArrayList<String>()));
       testNValue.setDeclaredPropertyDefinitionValues(props);
       nodeTypeManager.registerNodeType(testNValue, ExtendedNodeTypeManager.FAIL_IF_EXISTS);
       testNValue = nodeTypeManager.getNodeTypeValue(testNValue.getName());
@@ -466,7 +464,7 @@ public class TestNodeTypeRegistration
       // chenge mandatory
       List<PropertyDefinitionValue> props2 = new ArrayList<PropertyDefinitionValue>();
       props2.add(new PropertyDefinitionValue("tt", false, false, 1, false, new ArrayList<String>(), false,
-               PropertyType.STRING, new ArrayList<String>()));
+         PropertyType.STRING, new ArrayList<String>()));
       testNValue.setDeclaredPropertyDefinitionValues(props2);
 
       try
@@ -503,7 +501,7 @@ public class TestNodeTypeRegistration
       List<PropertyDefinitionValue> props = new ArrayList<PropertyDefinitionValue>();
 
       props.add(new PropertyDefinitionValue("*", false, false, 1, false, new ArrayList<String>(), false,
-               PropertyType.LONG, new ArrayList<String>()));
+         PropertyType.LONG, new ArrayList<String>()));
       testNValue.setDeclaredPropertyDefinitionValues(props);
       nodeTypeManager.registerNodeType(testNValue, ExtendedNodeTypeManager.FAIL_IF_EXISTS);
 
@@ -518,7 +516,7 @@ public class TestNodeTypeRegistration
       valueConstraint.add("[200,)");
       props = new ArrayList<PropertyDefinitionValue>();
       props.add(new PropertyDefinitionValue("*", false, false, 1, false, new ArrayList<String>(), false,
-               PropertyType.LONG, valueConstraint));
+         PropertyType.LONG, valueConstraint));
       testNValue.setDeclaredPropertyDefinitionValues(props);
       try
       {
@@ -549,7 +547,7 @@ public class TestNodeTypeRegistration
       List<PropertyDefinitionValue> props = new ArrayList<PropertyDefinitionValue>();
 
       props.add(new PropertyDefinitionValue("t1", false, false, 1, false, new ArrayList<String>(), false,
-               PropertyType.LONG, new ArrayList<String>()));
+         PropertyType.LONG, new ArrayList<String>()));
       testNValue.setDeclaredPropertyDefinitionValues(props);
       nodeTypeManager.registerNodeType(testNValue, ExtendedNodeTypeManager.FAIL_IF_EXISTS);
       testNValue = nodeTypeManager.getNodeTypeValue(testNValue.getName());
@@ -563,7 +561,7 @@ public class TestNodeTypeRegistration
       valueConstraint.add("[200,)");
       props = new ArrayList<PropertyDefinitionValue>();
       props.add(new PropertyDefinitionValue("t1", false, false, 1, false, new ArrayList<String>(), false,
-               PropertyType.LONG, valueConstraint));
+         PropertyType.LONG, valueConstraint));
       testNValue.setDeclaredPropertyDefinitionValues(props);
       try
       {
@@ -595,18 +593,17 @@ public class TestNodeTypeRegistration
       List<PropertyDefinitionValue> props = new ArrayList<PropertyDefinitionValue>();
 
       props.add(new PropertyDefinitionValue("*", false, false, 1, false, new ArrayList<String>(), true,
-               PropertyType.STRING, new ArrayList<String>()));
+         PropertyType.STRING, new ArrayList<String>()));
       testNValue.setDeclaredPropertyDefinitionValues(props);
       nodeTypeManager.registerNodeType(testNValue, ExtendedNodeTypeManager.FAIL_IF_EXISTS);
       testNValue = nodeTypeManager.getNodeTypeValue(testNValue.getName());
       Node tNode = root.addNode("test", "exo:testReregisterIsMultipleChangeResidualProperty");
-      Property prop = tNode.setProperty("t1", new String[]
-      {"100", "150"});
+      Property prop = tNode.setProperty("t1", new String[]{"100", "150"});
 
       session.save();
       props = new ArrayList<PropertyDefinitionValue>();
       props.add(new PropertyDefinitionValue("*", false, false, 1, false, new ArrayList<String>(), false,
-               PropertyType.STRING, new ArrayList<String>()));
+         PropertyType.STRING, new ArrayList<String>()));
       testNValue.setDeclaredPropertyDefinitionValues(props);
       try
       {
@@ -624,8 +621,7 @@ public class TestNodeTypeRegistration
 
       try
       {
-         prop = tNode.setProperty("t1", new String[]
-         {"100", "150"});
+         prop = tNode.setProperty("t1", new String[]{"100", "150"});
          session.save();
          fail();
       }
@@ -649,19 +645,18 @@ public class TestNodeTypeRegistration
       List<PropertyDefinitionValue> props = new ArrayList<PropertyDefinitionValue>();
 
       props.add(new PropertyDefinitionValue("t1", false, false, 1, false, new ArrayList<String>(), true,
-               PropertyType.STRING, new ArrayList<String>()));
+         PropertyType.STRING, new ArrayList<String>()));
       testNValue.setDeclaredPropertyDefinitionValues(props);
       nodeTypeManager.registerNodeType(testNValue, ExtendedNodeTypeManager.FAIL_IF_EXISTS);
       testNValue = nodeTypeManager.getNodeTypeValue(testNValue.getName());
 
       Node tNode = root.addNode("test", "exo:testReregisterIsMultipleChangeProperty");
-      Property prop = tNode.setProperty("t1", new String[]
-      {"100", "150"});
+      Property prop = tNode.setProperty("t1", new String[]{"100", "150"});
 
       session.save();
       props = new ArrayList<PropertyDefinitionValue>();
       props.add(new PropertyDefinitionValue("t1", false, false, 1, false, new ArrayList<String>(), false,
-               PropertyType.STRING, new ArrayList<String>()));
+         PropertyType.STRING, new ArrayList<String>()));
       testNValue.setDeclaredPropertyDefinitionValues(props);
       try
       {
@@ -679,8 +674,7 @@ public class TestNodeTypeRegistration
 
       try
       {
-         prop = tNode.setProperty("t1", new String[]
-         {"100", "150"});
+         prop = tNode.setProperty("t1", new String[]{"100", "150"});
          session.save();
          fail();
       }
@@ -1092,7 +1086,7 @@ public class TestNodeTypeRegistration
       List<NodeDefinitionValue> nodes = new ArrayList<NodeDefinitionValue>();
 
       nodes.add(new NodeDefinitionValue("child", false, false, 1, false, "nt:unstructured", new ArrayList<String>(),
-               true));
+         true));
       testNValue.setDeclaredChildNodeDefinitionValues(nodes);
 
       nodeTypeManager.registerNodeType(testNValue, ExtendedNodeTypeManager.FAIL_IF_EXISTS);
@@ -1107,7 +1101,7 @@ public class TestNodeTypeRegistration
 
       nodes = new ArrayList<NodeDefinitionValue>();
       nodes.add(new NodeDefinitionValue("child", false, false, 1, false, "nt:unstructured", new ArrayList<String>(),
-               false));
+         false));
       testNValue.setDeclaredChildNodeDefinitionValues(nodes);
 
       try
@@ -1159,8 +1153,7 @@ public class TestNodeTypeRegistration
 
       nodes = new ArrayList<NodeDefinitionValue>();
       nodes
-               .add(new NodeDefinitionValue("*", false, false, 1, false, "nt:unstructured", new ArrayList<String>(),
-                        false));
+         .add(new NodeDefinitionValue("*", false, false, 1, false, "nt:unstructured", new ArrayList<String>(), false));
       testNValue.setDeclaredChildNodeDefinitionValues(nodes);
 
       try
@@ -1246,7 +1239,7 @@ public class TestNodeTypeRegistration
       List<NodeDefinitionValue> nodes = new ArrayList<NodeDefinitionValue>();
 
       nodes.add(new NodeDefinitionValue("child", false, false, 1, false, "nt:unstructured", new ArrayList<String>(),
-               true));
+         true));
       testNValue.setDeclaredChildNodeDefinitionValues(nodes);
 
       nodeTypeManager.registerNodeType(testNValue, ExtendedNodeTypeManager.FAIL_IF_EXISTS);
@@ -1261,8 +1254,7 @@ public class TestNodeTypeRegistration
 
       nodes = new ArrayList<NodeDefinitionValue>();
       nodes
-               .add(new NodeDefinitionValue("*", false, false, 1, false, "nt:unstructured", new ArrayList<String>(),
-                        false));
+         .add(new NodeDefinitionValue("*", false, false, 1, false, "nt:unstructured", new ArrayList<String>(), false));
       testNValue.setDeclaredChildNodeDefinitionValues(nodes);
 
       try
@@ -1462,9 +1454,9 @@ public class TestNodeTypeRegistration
    {
 
       InputStream xml =
-               this.getClass().getResourceAsStream("/org/exoplatform/services/jcr/impl/core/nodetype/test-jcr589.xml");
+         this.getClass().getResourceAsStream("/org/exoplatform/services/jcr/impl/core/nodetype/test-jcr589.xml");
       repositoryService.getCurrentRepository().getNodeTypeManager().registerNodeTypes(xml,
-               ExtendedNodeTypeManager.FAIL_IF_EXISTS);
+         ExtendedNodeTypeManager.FAIL_IF_EXISTS);
 
       Node tr = root.addNode("testRoot");
       Node l1 = tr.addNode("t", "myNodeTypes");

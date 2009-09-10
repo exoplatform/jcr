@@ -18,12 +18,12 @@
  */
 package org.exoplatform.services.jcr.impl.datamodel;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import junit.framework.TestCase;
 
 import org.exoplatform.services.jcr.util.SIDGenerator;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created by The eXo Platform SAS Author : Peter Nedonosko peter.nedonosko@exoplatform.com.ua
@@ -34,8 +34,7 @@ import org.exoplatform.services.jcr.util.SIDGenerator;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: QNameInternTest.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class QNameInternTest
-   extends TestCase
+public class QNameInternTest extends TestCase
 {
 
    static public final int INTERN_SIZE = 100000;
@@ -48,8 +47,8 @@ public class QNameInternTest
    {
       String info = "";
       info =
-               "free: " + mb(Runtime.getRuntime().freeMemory()) + "M of " + mb(Runtime.getRuntime().totalMemory())
-                        + "M (max: " + mb(Runtime.getRuntime().maxMemory()) + "M)";
+         "free: " + mb(Runtime.getRuntime().freeMemory()) + "M of " + mb(Runtime.getRuntime().totalMemory())
+            + "M (max: " + mb(Runtime.getRuntime().maxMemory()) + "M)";
       return info;
    }
 

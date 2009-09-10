@@ -18,12 +18,12 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock;
 
+import org.exoplatform.services.jcr.core.lock.ExtendedLock;
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
+
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.lock.LockException;
-
-import org.exoplatform.services.jcr.core.lock.ExtendedLock;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
 
 /**
  * Created by The eXo Platform SAS.
@@ -32,8 +32,7 @@ import org.exoplatform.services.jcr.impl.core.SessionImpl;
  * @version $Id: LockImpl.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class LockImpl
-   implements ExtendedLock
+public class LockImpl implements ExtendedLock
 {
    private LockData lockData;
 
@@ -71,7 +70,7 @@ public class LockImpl
    {
       try
       {
-         return (Node) session.getTransientNodesManager().getItemByIdentifier(lockData.getNodeIdentifier(), true);
+         return (Node)session.getTransientNodesManager().getItemByIdentifier(lockData.getNodeIdentifier(), true);
       }
       catch (RepositoryException e)
       {

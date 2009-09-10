@@ -18,43 +18,11 @@
  */
 package org.exoplatform.services.jcr.impl.core.nodetype;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.WeakHashMap;
-import java.util.Map.Entry;
-
-import javax.jcr.InvalidItemStateException;
-import javax.jcr.NamespaceRegistry;
-import javax.jcr.PathNotFoundException;
-import javax.jcr.PropertyType;
-import javax.jcr.RepositoryException;
-import javax.jcr.ValueFormatException;
-import javax.jcr.nodetype.ConstraintViolationException;
-import javax.jcr.nodetype.NoSuchNodeTypeException;
-
-import org.jibx.runtime.BindingDirectory;
-import org.jibx.runtime.IBindingFactory;
-import org.jibx.runtime.IUnmarshallingContext;
-import org.jibx.runtime.JiBXException;
-
-import org.exoplatform.services.log.Log;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.BooleanClause.Occur;
-
 import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.access.AccessControlPolicy;
@@ -94,6 +62,36 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.dataflow.version.VersionHistoryDataHelper;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+import org.jibx.runtime.BindingDirectory;
+import org.jibx.runtime.IBindingFactory;
+import org.jibx.runtime.IUnmarshallingContext;
+import org.jibx.runtime.JiBXException;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.WeakHashMap;
+import java.util.Map.Entry;
+
+import javax.jcr.InvalidItemStateException;
+import javax.jcr.NamespaceRegistry;
+import javax.jcr.PathNotFoundException;
+import javax.jcr.PropertyType;
+import javax.jcr.RepositoryException;
+import javax.jcr.ValueFormatException;
+import javax.jcr.nodetype.ConstraintViolationException;
+import javax.jcr.nodetype.NoSuchNodeTypeException;
 
 /**
  * Created by The eXo Platform SAS. <br/>
@@ -104,8 +102,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @version $Id: NodeTypeDataManagerImpl.java 111 2008-11-11 11:11:11Z
  *          pnedonosko $
  */
-public class NodeTypeDataManagerImpl
-   implements NodeTypeDataManager
+public class NodeTypeDataManagerImpl implements NodeTypeDataManager
 {
 
    protected static final Log LOG = ExoLogger.getLogger("jcr.NodeTypeDataManagerImpl");
@@ -136,7 +133,7 @@ public class NodeTypeDataManagerImpl
    private final ValueFactoryImpl valueFactory;
 
    public NodeTypeDataManagerImpl(RepositoryEntry config, LocationFactory locationFactory,
-            NamespaceRegistry namespaceRegistry, NodeTypeDataPersister persister) throws RepositoryException
+      NamespaceRegistry namespaceRegistry, NodeTypeDataPersister persister) throws RepositoryException
    {
 
       this.namespaceRegistry = namespaceRegistry;
@@ -164,7 +161,7 @@ public class NodeTypeDataManagerImpl
     * @throws RepositoryException
     */
    public NodeTypeDataManagerImpl(String accessControlPolicy, LocationFactory locationFactory,
-            NamespaceRegistry namespaceRegistry, NodeTypeDataPersister persister) throws RepositoryException
+      NamespaceRegistry namespaceRegistry, NodeTypeDataPersister persister) throws RepositoryException
    {
 
       this.namespaceRegistry = namespaceRegistry;
@@ -221,7 +218,7 @@ public class NodeTypeDataManagerImpl
     * {@inheritDoc}
     */
    public NodeDefinitionData findChildNodeDefinition(InternalQName nodeName, InternalQName primaryNodeType,
-            InternalQName[] mixinTypes)
+      InternalQName[] mixinTypes)
    {
 
       if (mixinTypes != null)
@@ -250,7 +247,7 @@ public class NodeTypeDataManagerImpl
     * {@inheritDoc}
     */
    public PropertyDefinitionDatas findPropertyDefinitions(InternalQName propertyName, InternalQName primaryNodeType,
-            InternalQName[] mixinTypes)
+      InternalQName[] mixinTypes)
    {
 
       if (mixinTypes != null)
@@ -333,7 +330,7 @@ public class NodeTypeDataManagerImpl
     * {@inheritDoc}
     */
    public NodeDefinitionData getChildNodeDefinition(InternalQName nodeName, InternalQName nodeTypeName,
-            InternalQName parentTypeName)
+      InternalQName parentTypeName)
    {
       NodeDefinitionData def = defsHolder.getChildNodeDefinition(parentTypeName, nodeName, nodeTypeName);
       // residual
@@ -355,16 +352,14 @@ public class NodeTypeDataManagerImpl
    {
       Collection<ItemDefinitionData> mandatoryDefs = new HashSet<ItemDefinitionData>();
       // primary type properties
-      ItemDefinitionData[] itemDefs = getAllPropertyDefinitions(new InternalQName[]
-      {primaryNodeType});
+      ItemDefinitionData[] itemDefs = getAllPropertyDefinitions(new InternalQName[]{primaryNodeType});
       for (int i = 0; i < itemDefs.length; i++)
       {
          if (itemDefs[i].isMandatory())
             mandatoryDefs.add(itemDefs[i]);
       }
       // primary type nodes
-      itemDefs = getAllChildNodeDefinitions(new InternalQName[]
-      {primaryNodeType});
+      itemDefs = getAllChildNodeDefinitions(new InternalQName[]{primaryNodeType});
       for (int i = 0; i < itemDefs.length; i++)
       {
          if (itemDefs[i].isMandatory())
@@ -409,7 +404,7 @@ public class NodeTypeDataManagerImpl
     * @throws IOException
     */
    public Set<String> getNodes(InternalQName nodeType, InternalQName[] includeProperties,
-            InternalQName[] excludeProperties) throws RepositoryException
+      InternalQName[] excludeProperties) throws RepositoryException
    {
       Query query = getQuery(nodeType);
       if (includeProperties.length > 0)
@@ -508,7 +503,7 @@ public class NodeTypeDataManagerImpl
    }
 
    public boolean isChildNodePrimaryTypeAllowed(InternalQName childNodeTypeName, InternalQName parentNodeType,
-            InternalQName[] parentMixinNames)
+      InternalQName[] parentMixinNames)
    {
       // NodeTypeData childDef = findNodeType(childNodeTypeName);
       Set<InternalQName> testSuperTypesNames = hierarchy.getSupertypes(childNodeTypeName);
@@ -556,7 +551,7 @@ public class NodeTypeDataManagerImpl
     * {@inheritDoc}
     */
    public boolean isNodeType(final InternalQName testTypeName, final InternalQName primaryType,
-            final InternalQName[] mixinTypes)
+      final InternalQName[] mixinTypes)
    {
 
       if (hierarchy.isNodeType(testTypeName, primaryType))
@@ -604,21 +599,20 @@ public class NodeTypeDataManagerImpl
    }
 
    public PlainChangesLog makeAutoCreatedItems(NodeData parent, InternalQName nodeTypeName,
-            ItemDataConsumer dataManager, String owner) throws RepositoryException
+      ItemDataConsumer dataManager, String owner) throws RepositoryException
    {
       PlainChangesLogImpl changes = new PlainChangesLogImpl();
       NodeTypeData type = findNodeType(nodeTypeName);
 
       changes.addAll(makeAutoCreatedProperties(parent, nodeTypeName, getAllPropertyDefinitions(nodeTypeName),
-               dataManager, owner).getAllStates());
+         dataManager, owner).getAllStates());
       changes.addAll(makeAutoCreatedNodes(parent, nodeTypeName, getAllChildNodeDefinitions(nodeTypeName), dataManager,
-               owner).getAllStates());
+         owner).getAllStates());
 
       // Add autocreated child nodes
 
       // versionable
-      if (isNodeType(Constants.MIX_VERSIONABLE, new InternalQName[]
-      {type.getName()}))
+      if (isNodeType(Constants.MIX_VERSIONABLE, new InternalQName[]{type.getName()}))
       {
 
          // using VH helper as for one new VH, all changes in changes log
@@ -628,7 +622,7 @@ public class NodeTypeDataManagerImpl
    }
 
    public PlainChangesLog makeAutoCreatedNodes(NodeData parent, InternalQName typeName, NodeDefinitionData[] nodeDefs,
-            ItemDataConsumer dataManager, String owner) throws RepositoryException
+      ItemDataConsumer dataManager, String owner) throws RepositoryException
    {
       PlainChangesLogImpl changes = new PlainChangesLogImpl();
       Set<InternalQName> addedNodes = new HashSet<InternalQName>();
@@ -641,11 +635,11 @@ public class NodeTypeDataManagerImpl
             {
 
                TransientNodeData childNodeData =
-                        TransientNodeData.createNodeData(parent, ndef.getName(), ndef.getDefaultPrimaryType(),
-                                 IdGenerator.generate());
+                  TransientNodeData.createNodeData(parent, ndef.getName(), ndef.getDefaultPrimaryType(), IdGenerator
+                     .generate());
                changes.add(ItemState.createAddedState(childNodeData, false));
                changes.addAll(makeAutoCreatedItems(childNodeData, childNodeData.getPrimaryTypeName(), dataManager,
-                        owner).getAllStates());
+                  owner).getAllStates());
                addedNodes.add(ndef.getName());
             }
             else
@@ -653,8 +647,8 @@ public class NodeTypeDataManagerImpl
                if (LOG.isDebugEnabled())
                {
                   LOG.debug("Skipping existed node " + ndef.getName() + " in " + parent.getQPath().getAsString()
-                           + "   during the automatic creation of items for " + typeName.getAsString()
-                           + " nodetype or mixin type");
+                     + "   during the automatic creation of items for " + typeName.getAsString()
+                     + " nodetype or mixin type");
                }
             }
          }
@@ -664,7 +658,7 @@ public class NodeTypeDataManagerImpl
    }
 
    public PlainChangesLog makeAutoCreatedProperties(NodeData parent, InternalQName typeName,
-            PropertyDefinitionData[] propDefs, ItemDataConsumer dataManager, String owner) throws RepositoryException
+      PropertyDefinitionData[] propDefs, ItemDataConsumer dataManager, String owner) throws RepositoryException
    {
       PlainChangesLogImpl changes = new PlainChangesLogImpl();
 
@@ -690,8 +684,8 @@ public class NodeTypeDataManagerImpl
                if (listAutoCreateValue != null)
                {
                   TransientPropertyData propertyData =
-                           TransientPropertyData.createPropertyData(parent, pdef.getName(), pdef.getRequiredType(),
-                                    pdef.isMultiple(), listAutoCreateValue);
+                     TransientPropertyData.createPropertyData(parent, pdef.getName(), pdef.getRequiredType(), pdef
+                        .isMultiple(), listAutoCreateValue);
                   changes.add(ItemState.createAddedState(propertyData));
                   addedProperties.add(pdef.getName());
                }
@@ -703,8 +697,8 @@ public class NodeTypeDataManagerImpl
                if (LOG.isDebugEnabled())
                {
                   LOG.debug("Skipping existed property " + pdef.getName() + " in " + parent.getQPath().getAsString()
-                           + "   during the automatic creation of items for " + typeName.getAsString()
-                           + " nodetype or mixin type");
+                     + "   during the automatic creation of items for " + typeName.getAsString()
+                     + " nodetype or mixin type");
                }
             }
          }
@@ -723,7 +717,7 @@ public class NodeTypeDataManagerImpl
 
          IBindingFactory factory = BindingDirectory.getFactory(NodeTypeValuesList.class);
          IUnmarshallingContext uctx = factory.createUnmarshallingContext();
-         NodeTypeValuesList nodeTypeValuesList = (NodeTypeValuesList) uctx.unmarshalDocument(xml, null);
+         NodeTypeValuesList nodeTypeValuesList = (NodeTypeValuesList)uctx.unmarshalDocument(xml, null);
          List ntvList = nodeTypeValuesList.getNodeTypeValuesList();
 
          long start = System.currentTimeMillis();
@@ -732,7 +726,7 @@ public class NodeTypeDataManagerImpl
          {
             if (ntvList.get(i) != null)
             {
-               NodeTypeValue nodeTypeValue = (NodeTypeValue) ntvList.get(i);
+               NodeTypeValue nodeTypeValue = (NodeTypeValue)ntvList.get(i);
                nts.add(nodeTypeValue);
             }
             else
@@ -743,7 +737,7 @@ public class NodeTypeDataManagerImpl
          }
          if (LOG.isDebugEnabled())
             LOG.debug("Nodetypes registered from xml definitions (count: " + ntvList.size() + "). "
-                     + (System.currentTimeMillis() - start) + " ms.");
+               + (System.currentTimeMillis() - start) + " ms.");
 
          return registerNodeTypes(nts, alreadyExistsBehaviour);
 
@@ -758,7 +752,7 @@ public class NodeTypeDataManagerImpl
     * {@inheritDoc}
     */
    public List<NodeTypeData> registerNodeTypes(List<NodeTypeValue> ntvalues, int alreadyExistsBehaviour)
-            throws RepositoryException
+      throws RepositoryException
    {
 
       PlainChangesLog changesLog = new PlainChangesLogImpl();
@@ -816,8 +810,8 @@ public class NodeTypeDataManagerImpl
       if (descendantNt.size() > 0)
       {
          String message =
-                  "Can not remove " + nodeTypeName.getAsString()
-                           + "nodetype, because the following node types depend on it: ";
+            "Can not remove " + nodeTypeName.getAsString()
+               + "nodetype, because the following node types depend on it: ";
          for (InternalQName internalQName : descendantNt)
          {
             message += internalQName.getAsString() + " ";
@@ -828,8 +822,8 @@ public class NodeTypeDataManagerImpl
       if (nodes.size() > 0)
       {
          String message =
-                  "Can not remove " + nodeTypeName.getAsString()
-                           + " nodetype, because the following node types is used in nodes with uuid: ";
+            "Can not remove " + nodeTypeName.getAsString()
+               + " nodetype, because the following node types is used in nodes with uuid: ";
          for (String uuids : nodes)
          {
             message += uuids + " ";
@@ -841,39 +835,39 @@ public class NodeTypeDataManagerImpl
    }
 
    protected List<ValueData> autoCreatedValue(NodeData parent, InternalQName typeName, PropertyDefinitionData def,
-            String owner) throws RepositoryException
+      String owner) throws RepositoryException
    {
       NodeTypeDataManager typeDataManager = this;
       List<ValueData> vals = new ArrayList<ValueData>();
 
-      if (typeDataManager.isNodeType(Constants.NT_BASE, new InternalQName[]
-      {typeName}) && def.getName().equals(Constants.JCR_PRIMARYTYPE))
+      if (typeDataManager.isNodeType(Constants.NT_BASE, new InternalQName[]{typeName})
+         && def.getName().equals(Constants.JCR_PRIMARYTYPE))
       {
          vals.add(new TransientValueData(parent.getPrimaryTypeName()));
 
       }
-      else if (typeDataManager.isNodeType(Constants.MIX_REFERENCEABLE, new InternalQName[]
-      {typeName}) && def.getName().equals(Constants.JCR_UUID))
+      else if (typeDataManager.isNodeType(Constants.MIX_REFERENCEABLE, new InternalQName[]{typeName})
+         && def.getName().equals(Constants.JCR_UUID))
       {
          vals.add(new TransientValueData(parent.getIdentifier()));
 
       }
-      else if (typeDataManager.isNodeType(Constants.NT_HIERARCHYNODE, new InternalQName[]
-      {typeName}) && def.getName().equals(Constants.JCR_CREATED))
+      else if (typeDataManager.isNodeType(Constants.NT_HIERARCHYNODE, new InternalQName[]{typeName})
+         && def.getName().equals(Constants.JCR_CREATED))
       {
          vals.add(new TransientValueData(Calendar.getInstance()));
 
       }
-      else if (typeDataManager.isNodeType(Constants.EXO_OWNEABLE, new InternalQName[]
-      {typeName}) && def.getName().equals(Constants.EXO_OWNER))
+      else if (typeDataManager.isNodeType(Constants.EXO_OWNEABLE, new InternalQName[]{typeName})
+         && def.getName().equals(Constants.EXO_OWNER))
       {
          // String owner = session.getUserID();
          vals.add(new TransientValueData(owner));
          parent.setACL(new AccessControlList(owner, parent.getACL().getPermissionEntries()));
 
       }
-      else if (typeDataManager.isNodeType(Constants.EXO_PRIVILEGEABLE, new InternalQName[]
-      {typeName}) && def.getName().equals(Constants.EXO_PERMISSIONS))
+      else if (typeDataManager.isNodeType(Constants.EXO_PRIVILEGEABLE, new InternalQName[]{typeName})
+         && def.getName().equals(Constants.EXO_PERMISSIONS))
       {
          for (AccessControlEntry ace : parent.getACL().getPermissionEntries())
          {
@@ -891,9 +885,9 @@ public class NodeTypeDataManagerImpl
             {
                if (v != null)
                   if (def.getRequiredType() == PropertyType.UNDEFINED)
-                     vals.add(((BaseValue) valueFactory.createValue(v)).getInternalData());
+                     vals.add(((BaseValue)valueFactory.createValue(v)).getInternalData());
                   else
-                     vals.add(((BaseValue) valueFactory.createValue(v, def.getRequiredType())).getInternalData());
+                     vals.add(((BaseValue)valueFactory.createValue(v, def.getRequiredType())).getInternalData());
                else
                {
                   vals.add(null);
@@ -924,8 +918,8 @@ public class NodeTypeDataManagerImpl
          else
          {
             String msg =
-                     "Resource file '" + NODETYPES_FILE
-                              + "' with NodeTypes configuration does not found. Can not create node type manager";
+               "Resource file '" + NODETYPES_FILE
+                  + "' with NodeTypes configuration does not found. Can not create node type manager";
             LOG.error(msg);
             throw new RepositoryException(msg);
          }
@@ -933,8 +927,8 @@ public class NodeTypeDataManagerImpl
       catch (RepositoryException e)
       {
          String msg =
-                  "Error of initialization default types. Resource file with NodeTypes configuration '"
-                           + NODETYPES_FILE + "'. " + e;
+            "Error of initialization default types. Resource file with NodeTypes configuration '" + NODETYPES_FILE
+               + "'. " + e;
          LOG.error(msg);
          throw new RepositoryException(msg, e);
       }
@@ -951,7 +945,7 @@ public class NodeTypeDataManagerImpl
     * @throws PathNotFoundException
     */
    protected void internalRegister(NodeTypeData nodeType, Map<InternalQName, NodeTypeData> volatileNodeTypes)
-            throws PathNotFoundException, ValueFormatException, RepositoryException
+      throws PathNotFoundException, ValueFormatException, RepositoryException
    {
       hierarchy.addNodeType(nodeType, volatileNodeTypes);
 
@@ -1054,7 +1048,7 @@ public class NodeTypeDataManagerImpl
          {
             List<String> nsupertypes = ntvalue.getDeclaredSupertypeNames();
             if (nsupertypes != null && nsupertypes.contains("exo:privilegeable")
-                     || ntvalue.getName().equals("exo:privilegeable"))
+               || ntvalue.getName().equals("exo:privilegeable"))
             {
                // skip this node, so it's not necessary at this runtime
                // + "' -- it's not necessary at this runtime";
@@ -1085,12 +1079,12 @@ public class NodeTypeDataManagerImpl
 
             PropertyDefinitionData pd;
             pd =
-                     new PropertyDefinitionData(locationFactory.parseJCRName(v.getName()).getInternalName(), ntName, v
-                              .isAutoCreate(), v.isMandatory(), v.getOnVersion(), v.isReadOnly(), v.getRequiredType(),
-                              v.getValueConstraints() != null ? v.getValueConstraints().toArray(
-                                       new String[v.getValueConstraints().size()]) : new String[0], v
-                                       .getDefaultValueStrings() == null ? new String[0] : v.getDefaultValueStrings()
-                                       .toArray(new String[v.getDefaultValueStrings().size()]), v.isMultiple());
+               new PropertyDefinitionData(locationFactory.parseJCRName(v.getName()).getInternalName(), ntName, v
+                  .isAutoCreate(), v.isMandatory(), v.getOnVersion(), v.isReadOnly(), v.getRequiredType(), v
+                  .getValueConstraints() != null ? v.getValueConstraints().toArray(
+                  new String[v.getValueConstraints().size()]) : new String[0], v.getDefaultValueStrings() == null
+                  ? new String[0] : v.getDefaultValueStrings().toArray(new String[v.getDefaultValueStrings().size()]),
+                  v.isMultiple());
 
             props[i] = pd;
          }
@@ -1113,9 +1107,9 @@ public class NodeTypeDataManagerImpl
                defaultNodeName = locationFactory.parseJCRName(v.getDefaultNodeTypeName()).getInternalName();
             }
             NodeDefinitionData nd =
-                     new NodeDefinitionData(locationFactory.parseJCRName(v.getName()).getInternalName(), ntName, v
-                              .isAutoCreate(), v.isMandatory(), v.getOnVersion(), v.isReadOnly(), requiredNTs,
-                              defaultNodeName, v.isSameNameSiblings());
+               new NodeDefinitionData(locationFactory.parseJCRName(v.getName()).getInternalName(), ntName, v
+                  .isAutoCreate(), v.isMandatory(), v.getOnVersion(), v.isReadOnly(), requiredNTs, defaultNodeName, v
+                  .isSameNameSiblings());
             nodes[i] = nd;
          }
 
@@ -1124,8 +1118,8 @@ public class NodeTypeDataManagerImpl
             primaryItemName = locationFactory.parseJCRName(ntvalue.getPrimaryItemName()).getInternalName();
 
          NodeTypeData nodeTypeData =
-                  new NodeTypeData(ntName, primaryItemName, ntvalue.isMixin(), ntvalue.isOrderableChild(), supertypes,
-                           props, nodes);
+            new NodeTypeData(ntName, primaryItemName, ntvalue.isMixin(), ntvalue.isOrderableChild(), supertypes, props,
+               nodes);
 
          validateNodeType(nodeTypeData);
          nodeTypeDataList.put(nodeTypeData.getName(), nodeTypeData);
@@ -1149,7 +1143,7 @@ public class NodeTypeDataManagerImpl
          if (nodeType.getName().equals(nodeType.getDeclaredSupertypeNames()[i]))
          {
             throw new RepositoryException("Invalid super type name"
-                     + nodeType.getDeclaredSupertypeNames()[i].getAsString());
+               + nodeType.getDeclaredSupertypeNames()[i].getAsString());
          }
       }
       for (int i = 0; i < nodeType.getDeclaredPropertyDefinitions().length; i++)
@@ -1157,7 +1151,7 @@ public class NodeTypeDataManagerImpl
          if (!nodeType.getDeclaredPropertyDefinitions()[i].getDeclaringNodeType().equals(nodeType.getName()))
          {
             throw new RepositoryException("Invalid declared  node type in property definitions with name "
-                     + nodeType.getDeclaredPropertyDefinitions()[i].getName().getAsString() + " not registred");
+               + nodeType.getDeclaredPropertyDefinitions()[i].getName().getAsString() + " not registred");
          }
       }
       for (int i = 0; i < nodeType.getDeclaredChildNodeDefinitions().length; i++)
@@ -1165,14 +1159,14 @@ public class NodeTypeDataManagerImpl
          if (!nodeType.getDeclaredChildNodeDefinitions()[i].getDeclaringNodeType().equals(nodeType.getName()))
          {
             throw new RepositoryException("Invalid declared  node type in child node definitions with name "
-                     + nodeType.getDeclaredChildNodeDefinitions()[i].getName().getAsString() + " not registred");
+               + nodeType.getDeclaredChildNodeDefinitions()[i].getName().getAsString() + " not registred");
          }
       }
 
       if (nodeType.getName() == null)
       {
          throw new RepositoryException("NodeType implementation class " + nodeType.getClass().getName()
-                  + " is not supported in this method");
+            + " is not supported in this method");
       }
    }
 
@@ -1204,7 +1198,7 @@ public class NodeTypeDataManagerImpl
             {
                InternalQName requiredPrimaryTypeName = childnodeDefinitionData.getRequiredPrimaryTypes()[j];
                if (hierarchy.getNodeType(requiredPrimaryTypeName) == null
-                        && !resolvedDependecies.contains(requiredPrimaryTypeName))
+                  && !resolvedDependecies.contains(requiredPrimaryTypeName))
                {
                   unresolvedDependecies.add(requiredPrimaryTypeName);
                }
@@ -1212,7 +1206,7 @@ public class NodeTypeDataManagerImpl
             if (childnodeDefinitionData.getDefaultPrimaryType() != null)
             {
                if (hierarchy.getNodeType(childnodeDefinitionData.getDefaultPrimaryType()) == null
-                        && !resolvedDependecies.contains(childnodeDefinitionData.getDefaultPrimaryType()))
+                  && !resolvedDependecies.contains(childnodeDefinitionData.getDefaultPrimaryType()))
                {
                   unresolvedDependecies.add(childnodeDefinitionData.getDefaultPrimaryType());
 
@@ -1232,7 +1226,7 @@ public class NodeTypeDataManagerImpl
    }
 
    private NodeDefinitionData[] getAllChildNodeDefinitions(NodeTypeData nodeType,
-            Map<InternalQName, NodeTypeData> volatileNodeTypes)
+      Map<InternalQName, NodeTypeData> volatileNodeTypes)
    {
       Collection<NodeDefinitionData> defs = new HashSet<NodeDefinitionData>();
 
@@ -1261,7 +1255,7 @@ public class NodeTypeDataManagerImpl
     * @return
     */
    private PropertyDefinitionData[] getAllPropertyDefinitions(NodeTypeData recipientDefinition,
-            Map<InternalQName, NodeTypeData> volatileNodeTypes)
+      Map<InternalQName, NodeTypeData> volatileNodeTypes)
    {
       Collection<PropertyDefinitionData> defs = new HashSet<PropertyDefinitionData>();
 
@@ -1299,16 +1293,16 @@ public class NodeTypeDataManagerImpl
       {
          // search for nodes where jcr:mixinTypes is set to this mixin
          Term t =
-                  new Term(FieldNames.PROPERTIES, FieldNames.createNamedValue(mixinTypesField, locationFactory
-                           .createJCRName(nodeType).getAsString()));
+            new Term(FieldNames.PROPERTIES, FieldNames.createNamedValue(mixinTypesField, locationFactory.createJCRName(
+               nodeType).getAsString()));
          terms.add(t);
       }
       else
       {
          // search for nodes where jcr:primaryType is set to this type
          Term t =
-                  new Term(FieldNames.PROPERTIES, FieldNames.createNamedValue(primaryTypeField, locationFactory
-                           .createJCRName(nodeType).getAsString()));
+            new Term(FieldNames.PROPERTIES, FieldNames.createNamedValue(primaryTypeField, locationFactory
+               .createJCRName(nodeType).getAsString()));
          terms.add(t);
       }
 
@@ -1361,7 +1355,7 @@ public class NodeTypeDataManagerImpl
     * @throws RepositoryException
     */
    private void makeMixVesionableChanges(NodeData parent, ItemDataConsumer dataManager, PlainChangesLog changes)
-            throws RepositoryException
+      throws RepositoryException
    {
       new VersionHistoryDataHelper(parent, changes, dataManager, this);
    }
@@ -1432,7 +1426,7 @@ public class NodeTypeDataManagerImpl
     * @throws ValueFormatException
     */
    private PlainChangesLog persistNodeTypeData(NodeTypeData nodeType, boolean checkExistence)
-            throws RepositoryException, PathNotFoundException, ValueFormatException
+      throws RepositoryException, PathNotFoundException, ValueFormatException
    {
       PlainChangesLog changesLog = new PlainChangesLogImpl();
       long start = System.currentTimeMillis();
@@ -1451,14 +1445,14 @@ public class NodeTypeDataManagerImpl
          }
          if (LOG.isDebugEnabled())
             LOG.debug("NodeType " + nodeType.getName() + " initialized. " + (System.currentTimeMillis() - start)
-                     + " ms");
+               + " ms");
       }
       else
       {
          if (LOG.isDebugEnabled())
             LOG.debug("NodeType " + nodeType.getName()
-                     + " registered but not initialized (storage is not initialized). "
-                     + (System.currentTimeMillis() - start) + " ms");
+               + " registered but not initialized (storage is not initialized). "
+               + (System.currentTimeMillis() - start) + " ms");
       }
       return changesLog;
    }
@@ -1467,7 +1461,7 @@ public class NodeTypeDataManagerImpl
     * {@inheritDoc}
     */
    private PlainChangesLog registerNodeType(NodeTypeData nodeType, int alreadyExistsBehaviour,
-            Map<InternalQName, NodeTypeData> volatileNodeTypes) throws RepositoryException
+      Map<InternalQName, NodeTypeData> volatileNodeTypes) throws RepositoryException
    {
 
       if (nodeType == null)
@@ -1486,7 +1480,7 @@ public class NodeTypeDataManagerImpl
       if (qname == null)
       {
          throw new RepositoryException("NodeType implementation class " + nodeType.getClass().getName()
-                  + " is not supported in this method");
+            + " is not supported in this method");
       }
       PlainChangesLog changesLog = new PlainChangesLogImpl();
 
@@ -1526,8 +1520,7 @@ public class NodeTypeDataManagerImpl
    }
 
    private PlainChangesLog reregisterNodeType(NodeTypeData ancestorDefinition, NodeTypeData recipientDefinition,
-            Map<InternalQName, NodeTypeData> volatileNodeTypes) throws ConstraintViolationException,
-            RepositoryException
+      Map<InternalQName, NodeTypeData> volatileNodeTypes) throws ConstraintViolationException, RepositoryException
    {
       if (!ancestorDefinition.getName().equals(recipientDefinition.getName()))
       {
@@ -1545,7 +1538,7 @@ public class NodeTypeDataManagerImpl
       Set<String> nodes = getNodes(recipientDefinition.getName());
       // check add mix:versionable super
       if (isNodeType(Constants.MIX_VERSIONABLE, recipientDefinition.getDeclaredSupertypeNames())
-               && !isNodeType(Constants.MIX_VERSIONABLE, ancestorDefinition.getDeclaredSupertypeNames()))
+         && !isNodeType(Constants.MIX_VERSIONABLE, ancestorDefinition.getDeclaredSupertypeNames()))
       {
 
          for (String uuid : nodes)
@@ -1553,12 +1546,12 @@ public class NodeTypeDataManagerImpl
             ItemData item = persister.getDataManager().getItemData(uuid);
             if (item != null && item.isNode())
             {
-               makeMixVesionableChanges(((NodeData) item), persister.getDataManager(), changesLog);
+               makeMixVesionableChanges(((NodeData)item), persister.getDataManager(), changesLog);
             }
          }
       }
       else if (!isNodeType(Constants.MIX_VERSIONABLE, recipientDefinition.getDeclaredSupertypeNames())
-               && isNodeType(Constants.MIX_VERSIONABLE, ancestorDefinition.getDeclaredSupertypeNames()))
+         && isNodeType(Constants.MIX_VERSIONABLE, ancestorDefinition.getDeclaredSupertypeNames()))
       {
          if (nodes.size() > 0)
          {
@@ -1582,24 +1575,23 @@ public class NodeTypeDataManagerImpl
 
       // child nodes
       NodeDefinitionComparator nodeDefinitionComparator =
-               new NodeDefinitionComparator(volatileNodeTypeDataManager, persister.getDataManager());
+         new NodeDefinitionComparator(volatileNodeTypeDataManager, persister.getDataManager());
       changesLog.addAll(nodeDefinitionComparator.compare(recipientDefinition,
-               getAllChildNodeDefinitions(ancestorDefinition, new HashMap<InternalQName, NodeTypeData>()),
-               getAllChildNodeDefinitions(recipientDefinition, volatileNodeTypes)).getAllStates());
+         getAllChildNodeDefinitions(ancestorDefinition, new HashMap<InternalQName, NodeTypeData>()),
+         getAllChildNodeDefinitions(recipientDefinition, volatileNodeTypes)).getAllStates());
 
       // properties defs
       PropertyDefinitionComparator propertyDefinitionComparator =
-               new PropertyDefinitionComparator(volatileNodeTypeDataManager, persister.getDataManager(),
-                        locationFactory);
+         new PropertyDefinitionComparator(volatileNodeTypeDataManager, persister.getDataManager(), locationFactory);
       changesLog.addAll(propertyDefinitionComparator.compare(recipientDefinition,
-               getAllPropertyDefinitions(ancestorDefinition, new HashMap<InternalQName, NodeTypeData>()),
-               getAllPropertyDefinitions(recipientDefinition, volatileNodeTypes))
+         getAllPropertyDefinitions(ancestorDefinition, new HashMap<InternalQName, NodeTypeData>()),
+         getAllPropertyDefinitions(recipientDefinition, volatileNodeTypes))
 
       .getAllStates());
 
       // mixin changed
       if (!Arrays.deepEquals(recipientDefinition.getDeclaredSupertypeNames(), ancestorDefinition
-               .getDeclaredSupertypeNames()))
+         .getDeclaredSupertypeNames()))
       {
          for (String uuid : nodes)
          {
@@ -1608,10 +1600,9 @@ public class NodeTypeDataManagerImpl
             {
                if (!(item instanceof TransientNodeData))
                   item =
-                           new TransientNodeData(item.getQPath(), item.getIdentifier(), item.getPersistedVersion(),
-                                    ((NodeData) item).getPrimaryTypeName(), ((NodeData) item).getMixinTypeNames(),
-                                    ((NodeData) item).getOrderNumber(), ((NodeData) item).getParentIdentifier(),
-                                    ((NodeData) item).getACL());
+                     new TransientNodeData(item.getQPath(), item.getIdentifier(), item.getPersistedVersion(),
+                        ((NodeData)item).getPrimaryTypeName(), ((NodeData)item).getMixinTypeNames(), ((NodeData)item)
+                           .getOrderNumber(), ((NodeData)item).getParentIdentifier(), ((NodeData)item).getACL());
                changesLog.add(new ItemState(item, ItemState.MIXIN_CHANGED, false, null));
             }
          }

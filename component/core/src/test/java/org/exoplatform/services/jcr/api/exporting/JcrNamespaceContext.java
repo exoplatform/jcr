@@ -30,8 +30,7 @@ import javax.xml.namespace.NamespaceContext;
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: JcrNamespaceContext.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class JcrNamespaceContext
-   implements NamespaceContext
+public class JcrNamespaceContext implements NamespaceContext
 {
    private final Session session;
 

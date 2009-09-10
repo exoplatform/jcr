@@ -16,10 +16,7 @@
  */
 package org.exoplatform.services.jcr.api.core.query;
 
-import java.util.Arrays;
-
 import org.apache.jackrabbit.test.AbstractJCRTest;
-
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
@@ -28,13 +25,13 @@ import org.exoplatform.services.jcr.impl.core.query.DefaultQueryNodeFactory;
 import org.exoplatform.services.jcr.impl.core.query.QueryRootNode;
 import org.exoplatform.services.jcr.impl.core.query.xpath.XPathQueryBuilder;
 
-public class PathQueryNodeTest
-   extends AbstractJCRTest
+import java.util.Arrays;
+
+public class PathQueryNodeTest extends AbstractJCRTest
 {
 
    private static final DefaultQueryNodeFactory QUERY_NODE_FACTORY =
-            new DefaultQueryNodeFactory(Arrays.asList(new InternalQName[]
-            {Constants.NT_NODETYPE}));
+      new DefaultQueryNodeFactory(Arrays.asList(new InternalQName[]{Constants.NT_NODETYPE}));
 
    // private static final NameResolver JCR_RESOLVER = new DefaultNamePathResolver(new
    // NamespaceResolver() {
@@ -54,7 +51,7 @@ public class PathQueryNodeTest
 
    public void testNeedsSystemTree() throws Exception
    {
-      LocationFactory JCR_RESOLVER = ((SessionImpl) testRootNode.getSession()).getLocationFactory();
+      LocationFactory JCR_RESOLVER = ((SessionImpl)testRootNode.getSession()).getLocationFactory();
       QueryRootNode queryRootNode = XPathQueryBuilder.createQuery("/jcr:root/*", JCR_RESOLVER, QUERY_NODE_FACTORY);
       assertTrue(queryRootNode.needsSystemTree());
 
@@ -76,14 +73,14 @@ public class PathQueryNodeTest
 
    public void testNeedsSystemTreeForAllNodesByNodeType() throws Exception
    {
-      LocationFactory JCR_RESOLVER = ((SessionImpl) testRootNode.getSession()).getLocationFactory();
+      LocationFactory JCR_RESOLVER = ((SessionImpl)testRootNode.getSession()).getLocationFactory();
       QueryRootNode queryRootNode =
-               XPathQueryBuilder.createQuery("//element(*, nt:resource)", JCR_RESOLVER, QUERY_NODE_FACTORY);
+         XPathQueryBuilder.createQuery("//element(*, nt:resource)", JCR_RESOLVER, QUERY_NODE_FACTORY);
       assertFalse(queryRootNode.needsSystemTree());
 
       queryRootNode =
-               XPathQueryBuilder.createQuery("//element(*, nt:resource)[@jcr:test = 'foo']", JCR_RESOLVER,
-                        QUERY_NODE_FACTORY);
+         XPathQueryBuilder
+            .createQuery("//element(*, nt:resource)[@jcr:test = 'foo']", JCR_RESOLVER, QUERY_NODE_FACTORY);
       assertFalse(queryRootNode.needsSystemTree());
 
       queryRootNode = XPathQueryBuilder.createQuery("//element(*, nt:nodeType)", JCR_RESOLVER, QUERY_NODE_FACTORY);

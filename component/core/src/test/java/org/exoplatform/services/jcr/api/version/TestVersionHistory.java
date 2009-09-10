@@ -33,8 +33,7 @@ import javax.jcr.version.VersionHistory;
  * @version $Id: TestVersionHistory.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class TestVersionHistory
-   extends BaseVersionTest
+public class TestVersionHistory extends BaseVersionTest
 {
 
    private Node testRoot = null;
@@ -129,9 +128,8 @@ public class TestVersionHistory
 
       if (log.isDebugEnabled())
          log.debug("===== init =====");
-      checkItemsExisted(new String[]
-      {n1.getPath(), snsN1_2.getPath(), snsN1_3.getPath(), snsN1_4.getPath(), n2.getPath(), n3.getPath(), n4.getPath(),
-               n5.getPath()}, null);
+      checkItemsExisted(new String[]{n1.getPath(), snsN1_2.getPath(), snsN1_3.getPath(), snsN1_4.getPath(),
+         n2.getPath(), n3.getPath(), n4.getPath(), n5.getPath()}, null);
       checkVersionHistory(testVersionable, 4);
 
       // removing nodes: n2, n4
@@ -140,18 +138,16 @@ public class TestVersionHistory
       testVersionable.save();
       if (log.isDebugEnabled())
          log.debug("===== ver.1 before restore =====");
-      checkItemsExisted(new String[]
-      {n1.getPath(), snsN1_2.getPath(), snsN1_3.getPath(), snsN1_4.getPath(), n3.getPath(), n5.getPath()}, new String[]
-      {n2.getPath(), n4.getPath()});
+      checkItemsExisted(new String[]{n1.getPath(), snsN1_2.getPath(), snsN1_3.getPath(), snsN1_4.getPath(),
+         n3.getPath(), n5.getPath()}, new String[]{n2.getPath(), n4.getPath()});
       checkVersionHistory(testVersionable, 4);
 
       // RESTORE ver.1 and n1, n2 will be restored
       testVersionable.restore(ver1, true);
       if (log.isDebugEnabled())
          log.debug("===== ver.1 after restore =====");
-      checkItemsExisted(new String[]
-      {n1.getPath(), n2.getPath()}, new String[]
-      {snsN1_2.getPath(), snsN1_3.getPath(), snsN1_4.getPath(), n3.getPath(), n4.getPath(), n5.getPath()});
+      checkItemsExisted(new String[]{n1.getPath(), n2.getPath()}, new String[]{snsN1_2.getPath(), snsN1_3.getPath(),
+         snsN1_4.getPath(), n3.getPath(), n4.getPath(), n5.getPath()});
       checkVersionHistory(testVersionable, 4);
 
       testVersionable.checkout();
@@ -163,9 +159,8 @@ public class TestVersionHistory
 
       if (log.isDebugEnabled())
          log.debug("===== ver.1.1 =====");
-      checkItemsExisted(new String[]
-      {n1.getPath(), n2.getPath(), n6.getPath()}, new String[]
-      {snsN1_2.getPath(), snsN1_3.getPath(), snsN1_4.getPath(), n3.getPath(), n4.getPath(), n5.getPath()});
+      checkItemsExisted(new String[]{n1.getPath(), n2.getPath(), n6.getPath()}, new String[]{snsN1_2.getPath(),
+         snsN1_3.getPath(), snsN1_4.getPath(), n3.getPath(), n4.getPath(), n5.getPath()});
       checkVersionHistory(testVersionable, 5); // has five versions in history
 
       testVersionable.checkout();
@@ -175,21 +170,16 @@ public class TestVersionHistory
       testVersionable.save();
       if (log.isDebugEnabled())
          log.debug("===== ver.3 before restore =====");
-      checkItemsExisted(new String[]
-      {n2.getPath()}, new String[]
-      {n1.getPath(), snsN1_2.getPath(), snsN1_3.getPath(), snsN1_4.getPath(), n2.getPath(), n3.getPath(), n4.getPath(),
-               n5.getPath(), n6.getPath()});
+      checkItemsExisted(new String[]{n2.getPath()}, new String[]{n1.getPath(), snsN1_2.getPath(), snsN1_3.getPath(),
+         snsN1_4.getPath(), n2.getPath(), n3.getPath(), n4.getPath(), n5.getPath(), n6.getPath()});
       checkVersionHistory(testVersionable, 5);
 
       // RESTORE ver.3 and n1, n1_2, n1_3, n1_4, n2, n3, n4 will be restored
       testVersionable.restore(ver3, true);
       if (log.isDebugEnabled())
          log.debug("===== ver.3 after restore =====");
-      checkItemsExisted(
-               new String[]
-               {n1.getPath(), snsN1_2.getPath(), snsN1_3.getPath(), snsN1_4.getPath(), n2.getPath(), n3.getPath(),
-                        n4.getPath()}, new String[]
-               {n5.getPath(), n6.getPath()});
+      checkItemsExisted(new String[]{n1.getPath(), snsN1_2.getPath(), snsN1_3.getPath(), snsN1_4.getPath(),
+         n2.getPath(), n3.getPath(), n4.getPath()}, new String[]{n5.getPath(), n6.getPath()});
       checkVersionHistory(testVersionable, 5);
 
       testVersionable.checkout();
@@ -201,10 +191,8 @@ public class TestVersionHistory
 
       if (log.isDebugEnabled())
          log.debug("===== ver.3.1 =====");
-      checkItemsExisted(new String[]
-      {n1.getPath(), snsN1_2.getPath(), snsN1_3.getPath(), snsN1_4.getPath(), n2.getPath(), snsN2_2.getPath(),
-               n3.getPath(), n4.getPath()}, new String[]
-      {n5.getPath(), n6.getPath()});
+      checkItemsExisted(new String[]{n1.getPath(), snsN1_2.getPath(), snsN1_3.getPath(), snsN1_4.getPath(),
+         n2.getPath(), snsN2_2.getPath(), n3.getPath(), n4.getPath()}, new String[]{n5.getPath(), n6.getPath()});
       checkVersionHistory(testVersionable, 6);
 
       testVersionable.checkout();
@@ -213,10 +201,8 @@ public class TestVersionHistory
 
       if (log.isDebugEnabled())
          log.debug("===== ver.2 before restore =====");
-      checkItemsExisted(new String[]
-      {n1.getPath(), snsN1_2.getPath(), snsN1_3.getPath(), snsN1_4.getPath(), n2.getPath(), snsN2_2.getPath(),
-               n3.getPath(), n4.getPath()}, new String[]
-      {n5.getPath(), n6.getPath()});
+      checkItemsExisted(new String[]{n1.getPath(), snsN1_2.getPath(), snsN1_3.getPath(), snsN1_4.getPath(),
+         n2.getPath(), snsN2_2.getPath(), n3.getPath(), n4.getPath()}, new String[]{n5.getPath(), n6.getPath()});
       checkVersionHistory(testVersionable, 7);
 
       // RESTORE ver.2 and n1, n1_2, n1_3, n1_4, n2, n3 will be restored
@@ -225,9 +211,9 @@ public class TestVersionHistory
          log.debug("===== ver.2 after restore =====");
       // the node snsN2_2 points to a node with index 1 (result of reindex), i.e.
       // n2 (n2[1])
-      checkItemsExisted(new String[]
-      {n1.getPath(), snsN1_2.getPath(), snsN1_3.getPath(), snsN1_4.getPath(), n2.getPath(), n3.getPath()}, new String[]
-      {testVersionable.getPath() + "/n2[2]", n4.getPath(), n5.getPath(), n6.getPath()});
+      checkItemsExisted(new String[]{n1.getPath(), snsN1_2.getPath(), snsN1_3.getPath(), snsN1_4.getPath(),
+         n2.getPath(), n3.getPath()}, new String[]{testVersionable.getPath() + "/n2[2]", n4.getPath(), n5.getPath(),
+         n6.getPath()});
       checkVersionHistory(testVersionable, 7);
 
       if (log.isDebugEnabled())
@@ -251,10 +237,8 @@ public class TestVersionHistory
       // with old state.
       // But reindex done: n1[4] -> n1[3] and n1[3] already exists
       //
-      checkItemsExisted(new String[]
-      {n1.getPath(), snsN1_2.getPath(), snsN1_3.getPath(), n2.getPath(), snsN2_2_Other.getPath(), n3.getPath()},
-               new String[]
-               {n4.getPath(), n5.getPath(), n6.getPath()});
+      checkItemsExisted(new String[]{n1.getPath(), snsN1_2.getPath(), snsN1_3.getPath(), n2.getPath(),
+         snsN2_2_Other.getPath(), n3.getPath()}, new String[]{n4.getPath(), n5.getPath(), n6.getPath()});
       checkVersionHistory(testVersionable, 8);
    }
 
@@ -338,10 +322,9 @@ public class TestVersionHistory
 
       if (log.isDebugEnabled())
          log.debug("===== init =====");
-      checkItemsExisted(new String[]
-      {"/testRoot/testVersionable/n1", "/testRoot/testVersionable/n1[2]", "/testRoot/testVersionable/n1[3]",
-               "/testRoot/testVersionable/n1[4]", "/testRoot/testVersionable/n2", "/testRoot/testVersionable/n3",
-               "/testRoot/testVersionable/n4", "/testRoot/testVersionable/n5"}, null);
+      checkItemsExisted(new String[]{"/testRoot/testVersionable/n1", "/testRoot/testVersionable/n1[2]",
+         "/testRoot/testVersionable/n1[3]", "/testRoot/testVersionable/n1[4]", "/testRoot/testVersionable/n2",
+         "/testRoot/testVersionable/n3", "/testRoot/testVersionable/n4", "/testRoot/testVersionable/n5"}, null);
       showVersionable(testVersionable);
       checkVersionHistory(testVersionable, 4);
 
@@ -369,11 +352,9 @@ public class TestVersionHistory
       testVersionable.save();
       if (log.isDebugEnabled())
          log.debug("===== ver.3 before restore =====");
-      checkItemsExisted(new String[]
-      {"/testRoot/testVersionable/n1", "/testRoot/testVersionable/n1[2]", "/testRoot/testVersionable/n1[3]",
-               "/testRoot/testVersionable/n1[4]", "/testRoot/testVersionable/n3", "/testRoot/testVersionable/n5"},
-               new String[]
-               {"/testRoot/testVersionable/n2", "/testRoot/testVersionable/n4"});
+      checkItemsExisted(new String[]{"/testRoot/testVersionable/n1", "/testRoot/testVersionable/n1[2]",
+         "/testRoot/testVersionable/n1[3]", "/testRoot/testVersionable/n1[4]", "/testRoot/testVersionable/n3",
+         "/testRoot/testVersionable/n5"}, new String[]{"/testRoot/testVersionable/n2", "/testRoot/testVersionable/n4"});
       showVersionable(testVersionable);
       checkVersionHistory(testVersionable, 3);
 
@@ -381,11 +362,9 @@ public class TestVersionHistory
       testVersionable.restore(vHistory.getVersionByLabel("ver.3"), true);
       if (log.isDebugEnabled())
          log.debug("===== ver.3 after restore =====");
-      checkItemsExisted(new String[]
-      {"/testRoot/testVersionable/n1", "/testRoot/testVersionable/n1[2]", "/testRoot/testVersionable/n1[3]",
-               "/testRoot/testVersionable/n1[4]", "/testRoot/testVersionable/n3", "/testRoot/testVersionable/n4"},
-               new String[]
-               {"/testRoot/testVersionable/n5"});
+      checkItemsExisted(new String[]{"/testRoot/testVersionable/n1", "/testRoot/testVersionable/n1[2]",
+         "/testRoot/testVersionable/n1[3]", "/testRoot/testVersionable/n1[4]", "/testRoot/testVersionable/n3",
+         "/testRoot/testVersionable/n4"}, new String[]{"/testRoot/testVersionable/n5"});
       showVersionable(testVersionable);
       checkVersionHistory(testVersionable, 3);
 
@@ -438,7 +417,7 @@ public class TestVersionHistory
          v1_BV_UUID = versionable1.getProperty("jcr:baseVersion").getString();
          v2_BV_UUID = versionable2.getProperty("jcr:baseVersion").getString();
          assertNotSame("Copied node and its source versionable node must has a different version graphs (1) ",
-                  v1_BV_UUID, v2_BV_UUID);
+            v1_BV_UUID, v2_BV_UUID);
 
          // add new version to the another versionable
          versionable2.checkin();
@@ -446,7 +425,7 @@ public class TestVersionHistory
 
          v2_BV_UUID = versionable2.getProperty("jcr:baseVersion").getString();
          assertNotSame("Copied node and its source versionable node must has a different version graphs (2) ",
-                  v1_BV_UUID, v2_BV_UUID);
+            v1_BV_UUID, v2_BV_UUID);
 
       }
       catch (RepositoryException e)

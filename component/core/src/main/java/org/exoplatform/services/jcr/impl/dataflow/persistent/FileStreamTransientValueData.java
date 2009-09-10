@@ -37,13 +37,13 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
+import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+
 import java.io.File;
 import java.io.IOException;
 
 import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 
 /**
  * Created by The eXo Platform SAS.
@@ -59,8 +59,7 @@ import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: FileStreamTransientValueData.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class FileStreamTransientValueData
-   extends TransientValueData
+public class FileStreamTransientValueData extends TransientValueData
 {
 
    /**
@@ -95,7 +94,7 @@ public class FileStreamTransientValueData
     *           if error occurs
     */
    FileStreamTransientValueData(File file, int orderNumber, FileCleaner fileCleaner, boolean deleteFile)
-            throws IOException
+      throws IOException
    {
       super(orderNumber, null, null, file, fileCleaner, -1, null, deleteFile);
    }

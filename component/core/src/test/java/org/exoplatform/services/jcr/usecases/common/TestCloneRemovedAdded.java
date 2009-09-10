@@ -18,12 +18,12 @@
  */
 package org.exoplatform.services.jcr.usecases.common;
 
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
+
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Workspace;
-
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
-import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
 
 /**
  * Created by The eXo Platform SAS Author : Peter Nedonosko peter.nedonosko@exoplatform.com.ua
@@ -32,8 +32,7 @@ import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestCloneRemovedAdded.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class TestCloneRemovedAdded
-   extends BaseUsecasesTest
+public class TestCloneRemovedAdded extends BaseUsecasesTest
 {
 
    @Override
@@ -41,7 +40,7 @@ public class TestCloneRemovedAdded
    {
       super.setUp();
 
-      Session session1 = (SessionImpl) repository.login(credentials, "ws");
+      Session session1 = (SessionImpl)repository.login(credentials, "ws");
       session1.getRootNode().addNode("my");
       session1.save(); // need save newly created node before the adding their childs
       session1.getRootNode().getNode("my").addNode("path");
@@ -51,7 +50,7 @@ public class TestCloneRemovedAdded
       session1.logout();
 
       // prepare the parent node for cloned
-      Session session2 = (SessionImpl) repository.login(credentials, "ws2");
+      Session session2 = (SessionImpl)repository.login(credentials, "ws2");
       session2.getRootNode().addNode("my");
       session2.save(); // need save newly created node before the adding their childs
       session2.getRootNode().getNode("my").addNode("path");
@@ -63,12 +62,12 @@ public class TestCloneRemovedAdded
    {
       try
       {
-         SessionImpl session1 = (SessionImpl) repository.login(credentials, "ws");
+         SessionImpl session1 = (SessionImpl)repository.login(credentials, "ws");
          session1.getRootNode().getNode("my").remove();
          session1.save();
          session1.logout();
 
-         SessionImpl session2 = (SessionImpl) repository.login(credentials, "ws2");
+         SessionImpl session2 = (SessionImpl)repository.login(credentials, "ws2");
          session2.getRootNode().getNode("my").remove();
          session2.save();
          session2.logout();
@@ -87,7 +86,7 @@ public class TestCloneRemovedAdded
       try
       {
          // clone on 2nd ws
-         Session session2 = (SessionImpl) repository.login(credentials, "ws2");
+         Session session2 = (SessionImpl)repository.login(credentials, "ws2");
          Workspace workspace1 = session2.getWorkspace();
          workspace1.clone("ws", "/my/path/node", "/my/path/node", true);
          session2.logout();
@@ -106,7 +105,7 @@ public class TestCloneRemovedAdded
       try
       {
          // delete and add /my/path/node in ws
-         SessionImpl session1 = (SessionImpl) repository.login(credentials, "ws");
+         SessionImpl session1 = (SessionImpl)repository.login(credentials, "ws");
          session1.getRootNode().getNode("my/path/node").remove();
          session1.save();
          // add...
@@ -119,7 +118,7 @@ public class TestCloneRemovedAdded
          session1.logout();
 
          // clone on 2nd ws
-         Session session2 = (SessionImpl) repository.login(credentials, "ws2");
+         Session session2 = (SessionImpl)repository.login(credentials, "ws2");
          Workspace workspace1 = session2.getWorkspace();
          workspace1.clone("ws", "/my/path/node", "/my/path/node", true);
          session2.logout();

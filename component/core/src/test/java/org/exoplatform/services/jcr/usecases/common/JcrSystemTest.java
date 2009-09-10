@@ -18,13 +18,13 @@
  */
 package org.exoplatform.services.jcr.usecases.common;
 
+import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
+
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
-
-import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
 
 /**
  * Created by The eXo Platform SAS.
@@ -35,8 +35,7 @@ import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
  *          Items under /jcr:system
  */
 
-public class JcrSystemTest
-   extends BaseUsecasesTest
+public class JcrSystemTest extends BaseUsecasesTest
 {
 
    protected void tearDown() throws Exception
@@ -80,7 +79,7 @@ public class JcrSystemTest
       Node testNode1 = null;
       try
       {
-         testNode1 = (Node) session2.getItem("/jcr:system/cms");
+         testNode1 = (Node)session2.getItem("/jcr:system/cms");
          fail("There should not be /jcr:system/cms");
       }
       catch (PathNotFoundException e)
@@ -97,7 +96,7 @@ public class JcrSystemTest
       Node testNode2 = null;
       try
       {
-         Node testNode3 = (Node) session2.getItem("/jcr:system/cms");
+         Node testNode3 = (Node)session2.getItem("/jcr:system/cms");
          testNode2 = session2.getNodeByUUID(uuid);
 
          assertTrue(testNode3.isSame(testNode2));

@@ -18,8 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
-import java.io.IOException;
-
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
 import org.exoplatform.services.jcr.dataflow.serialization.SerializationConstants;
@@ -29,6 +27,8 @@ import org.exoplatform.services.jcr.datamodel.IllegalPathException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
+
+import java.io.IOException;
 
 /**
  * Created by The eXo Platform SAS. <br/>Date:
@@ -158,7 +158,7 @@ public class TransientNodeDataReader
       }
 
       return new TransientNodeData(qpath, identifier, persistedVersion, primaryTypeName, mixinTypeNames, orderNum,
-               parentIdentifier, acl);
+         parentIdentifier, acl);
 
    }
 

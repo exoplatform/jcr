@@ -18,27 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.jcr.AccessDeniedException;
-import javax.jcr.InvalidItemStateException;
-import javax.jcr.Item;
-import javax.jcr.ItemNotFoundException;
-import javax.jcr.PathNotFoundException;
-import javax.jcr.PropertyType;
-import javax.jcr.ReferentialIntegrityException;
-import javax.jcr.RepositoryException;
-import javax.jcr.Value;
-import javax.jcr.ValueFormatException;
-import javax.jcr.lock.LockException;
-import javax.jcr.nodetype.ConstraintViolationException;
-import javax.jcr.nodetype.ItemDefinition;
-import javax.jcr.version.VersionException;
-
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.access.AccessManager;
@@ -68,6 +47,26 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.jcr.AccessDeniedException;
+import javax.jcr.InvalidItemStateException;
+import javax.jcr.Item;
+import javax.jcr.ItemNotFoundException;
+import javax.jcr.PathNotFoundException;
+import javax.jcr.PropertyType;
+import javax.jcr.ReferentialIntegrityException;
+import javax.jcr.RepositoryException;
+import javax.jcr.Value;
+import javax.jcr.ValueFormatException;
+import javax.jcr.lock.LockException;
+import javax.jcr.nodetype.ConstraintViolationException;
+import javax.jcr.nodetype.ItemDefinition;
+import javax.jcr.version.VersionException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -75,8 +74,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @author Gennady Azarenkov
  * @version $Id: ItemImpl.java 14590 2008-05-22 08:51:29Z pnedonosko $
  */
-public abstract class ItemImpl
-   implements Item
+public abstract class ItemImpl implements Item
 {
 
    /**
@@ -262,7 +260,7 @@ public abstract class ItemImpl
          {
 
             // identifier is not changed on ItemImpl
-            return getInternalIdentifier().equals(((ItemImpl) otherItem).getInternalIdentifier());
+            return getInternalIdentifier().equals(((ItemImpl)otherItem).getInternalIdentifier());
          }
          catch (Exception e)
          {
@@ -312,9 +310,9 @@ public abstract class ItemImpl
       // Check constraints
       ItemDefinition def;
       if (isNode())
-         def = ((NodeImpl) this).getDefinition();
+         def = ((NodeImpl)this).getDefinition();
       else
-         def = ((PropertyImpl) this).getDefinition();
+         def = ((PropertyImpl)this).getDefinition();
 
       if (def.isMandatory() || def.isProtected())
          throw new ConstraintViolationException("Can't remove mandatory or protected item " + getPath());
@@ -349,7 +347,7 @@ public abstract class ItemImpl
       if (isNode())
       {
          NodeTypeDataManager ntManager = session.getWorkspace().getNodeTypesHolder();
-         NodeData node = (NodeData) data;
+         NodeData node = (NodeData)data;
          if (ntManager.isNodeType(Constants.MIX_VERSIONABLE, node.getPrimaryTypeName(), node.getMixinTypeNames()))
          {
 
@@ -358,7 +356,7 @@ public abstract class ItemImpl
             {
                try
                {
-                  String vhID = new String(((PropertyData) vhpd).getValues().get(0).getAsByteArray());
+                  String vhID = new String(((PropertyData)vhpd).getValues().get(0).getAsByteArray());
                   dataManager.removeVersionHistory(vhID, null, data.getQPath());
                }
                catch (IOException e)
@@ -375,22 +373,21 @@ public abstract class ItemImpl
    }
 
    protected PropertyImpl doUpdateProperty(NodeImpl parentNode, InternalQName propertyName, Value propertyValue,
-            boolean multiValue, int expectedType) throws ValueFormatException, VersionException, LockException,
-            ConstraintViolationException, RepositoryException
+      boolean multiValue, int expectedType) throws ValueFormatException, VersionException, LockException,
+      ConstraintViolationException, RepositoryException
    {
 
       Value[] val = null;
       if (propertyValue != null)
       {
-         val = new Value[]
-         {propertyValue};
+         val = new Value[]{propertyValue};
       }
       return doUpdateProperty(parentNode, propertyName, val, multiValue, expectedType);
    }
 
    protected PropertyImpl doUpdateProperty(NodeImpl parentNode, InternalQName propertyName, Value[] propertyValues,
-            boolean multiValue, int expectedType) throws ValueFormatException, VersionException, LockException,
-            ConstraintViolationException, RepositoryException
+      boolean multiValue, int expectedType) throws ValueFormatException, VersionException, LockException,
+      ConstraintViolationException, RepositoryException
    {
 
       QPath qpath = QPath.makeChildPath(parentNode.getInternalPath(), propertyName);
@@ -403,7 +400,7 @@ public abstract class ItemImpl
       PropertyDefinitionDatas defs = null;
 
       NodeTypeDataManager ntm = session.getWorkspace().getNodeTypesHolder();
-      NodeData parentData = (NodeData) parentNode.getData();
+      NodeData parentData = (NodeData)parentNode.getData();
       boolean isMultiValue = multiValue;
       if (oldItem == null || oldItem.isNode())
       { // new prop
@@ -413,25 +410,23 @@ public abstract class ItemImpl
          {
             // new property null values;
             TransientPropertyData nullData =
-                     new TransientPropertyData(qpath, identifier, version, PropertyType.UNDEFINED, parentNode
-                              .getInternalIdentifier(), isMultiValue);
+               new TransientPropertyData(qpath, identifier, version, PropertyType.UNDEFINED, parentNode
+                  .getInternalIdentifier(), isMultiValue);
             PropertyImpl nullProperty = new PropertyImpl(nullData, session);
             nullProperty.invalidate();
             return nullProperty;
          }
          defs =
-                  ntm.findPropertyDefinitions(propertyName, parentData.getPrimaryTypeName(), parentData
-                           .getMixinTypeNames());
+            ntm.findPropertyDefinitions(propertyName, parentData.getPrimaryTypeName(), parentData.getMixinTypeNames());
 
          state = ItemState.ADDED;
       }
       else
       {
-         oldProp = (PropertyImpl) oldItem;
+         oldProp = (PropertyImpl)oldItem;
          isMultiValue = oldProp.isMultiValued();
          defs =
-                  ntm.findPropertyDefinitions(propertyName, parentData.getPrimaryTypeName(), parentData
-                           .getMixinTypeNames());
+            ntm.findPropertyDefinitions(propertyName, parentData.getPrimaryTypeName(), parentData.getMixinTypeNames());
 
          identifier = oldProp.getInternalIdentifier();
          version = oldProp.getData().getPersistedVersion();
@@ -448,18 +443,18 @@ public abstract class ItemImpl
       PropertyDefinitionData def = defs.getDefinition(isMultiValue);
       if (def != null && def.isProtected())
          throw new ConstraintViolationException("Can not set protected property "
-                  + locationFactory.createJCRPath(qpath).getAsString(false));
+            + locationFactory.createJCRPath(qpath).getAsString(false));
 
       if (multiValue && (def == null || (oldProp != null && !oldProp.isMultiValued())))
       {
          throw new ValueFormatException("Can not assign multiple-values Value to a single-valued property "
-                  + locationFactory.createJCRPath(qpath).getAsString(false));
+            + locationFactory.createJCRPath(qpath).getAsString(false));
       }
 
       if (!multiValue && (def == null || (oldProp != null && oldProp.isMultiValued())))
       {
          throw new ValueFormatException("Can not assign single-value Value to a multiple-valued property "
-                  + locationFactory.createJCRPath(qpath).getAsString(false));
+            + locationFactory.createJCRPath(qpath).getAsString(false));
       }
 
       if (!parentNode.checkedOut())
@@ -532,16 +527,14 @@ public abstract class ItemImpl
       checkValueConstraints(def, valueDataList, propType);
 
       TransientPropertyData newData =
-               new TransientPropertyData(qpath, identifier, version, propType, parentNode.getInternalIdentifier(),
-                        multiValue);
+         new TransientPropertyData(qpath, identifier, version, propType, parentNode.getInternalIdentifier(), multiValue);
 
       if (requiredType != PropertyType.UNDEFINED && expectedType != PropertyType.UNDEFINED
-               && requiredType != expectedType)
+         && requiredType != expectedType)
       {
          throw new ConstraintViolationException(" the type parameter "
-                  + ExtendedPropertyType.nameFromValue(expectedType) + " and the "
-                  + "type of the property do not match required type"
-                  + ExtendedPropertyType.nameFromValue(requiredType));
+            + ExtendedPropertyType.nameFromValue(expectedType) + " and the "
+            + "type of the property do not match required type" + ExtendedPropertyType.nameFromValue(requiredType));
       }
 
       PropertyImpl prop = null;
@@ -549,7 +542,7 @@ public abstract class ItemImpl
       {
          newData.setValues(valueDataList);
          ItemState itemState = new ItemState(newData, state, true, qpath, false);
-         prop = (PropertyImpl) dataManager.update(itemState, true);
+         prop = (PropertyImpl)dataManager.update(itemState, true);
          // launch event
          session.getActionHandler().postSetProperty(prop, state);
 
@@ -559,7 +552,7 @@ public abstract class ItemImpl
          if (def.isMandatory())
          {
             throw new ConstraintViolationException("Can not remove (by setting null value) mandatory property "
-                     + locationFactory.createJCRPath(qpath).getAsString(false));
+               + locationFactory.createJCRPath(qpath).getAsString(false));
          }
          // launch event
          session.getActionHandler().preRemoveItem(oldProp);
@@ -574,7 +567,7 @@ public abstract class ItemImpl
     * {@inheritDoc}
     */
    public void save() throws ReferentialIntegrityException, AccessDeniedException, LockException,
-            ConstraintViolationException, InvalidItemStateException, ReferentialIntegrityException, RepositoryException
+      ConstraintViolationException, InvalidItemStateException, ReferentialIntegrityException, RepositoryException
    {
 
       checkValid();
@@ -598,11 +591,11 @@ public abstract class ItemImpl
          {
             if (changedItem.isNode())
             {
-               NodeData refNode = (NodeData) changedItem.getData();
+               NodeData refNode = (NodeData)changedItem.getData();
 
                // Check referential integrity (remove of mix:referenceable node)
                if (ntManager.isNodeType(Constants.MIX_REFERENCEABLE, refNode.getPrimaryTypeName(), refNode
-                        .getMixinTypeNames()))
+                  .getMixinTypeNames()))
                {
 
                   // mix:referenceable
@@ -626,20 +619,19 @@ public abstract class ItemImpl
                if (refState != null && refState.isDeleted())
                   continue;
 
-               NodeData refParent = (NodeData) dataManager.getItemData(refProp.getParentIdentifier());
+               NodeData refParent = (NodeData)dataManager.getItemData(refProp.getParentIdentifier());
                AccessControlList acl = refParent.getACL();
                AccessManager am = session.getAccessManager();
 
                if (!am.hasPermission(acl, PermissionType.READ, session.getUserState().getIdentity()))
                {
                   throw new AccessDeniedException("Can not delete node " + refNode.getQPath() + " ("
-                           + refNode.getIdentifier() + ")"
-                           + ". It is currently the target of a REFERENCE property and "
-                           + refProp.getQPath().getAsString());
+                     + refNode.getIdentifier() + ")" + ". It is currently the target of a REFERENCE property and "
+                     + refProp.getQPath().getAsString());
                }
                throw new ReferentialIntegrityException("Can not delete node " + refNode.getQPath() + " ("
-                        + refNode.getIdentifier() + ")" + ". It is currently the target of a REFERENCE property "
-                        + refProp.getQPath().getAsString());
+                  + refNode.getIdentifier() + ")" + ". It is currently the target of a REFERENCE property "
+                  + refProp.getQPath().getAsString());
             }
          }
       }
@@ -702,10 +694,10 @@ public abstract class ItemImpl
     */
    protected NodeImpl parent() throws RepositoryException
    {
-      NodeImpl parent = (NodeImpl) item(getParentIdentifier());
+      NodeImpl parent = (NodeImpl)item(getParentIdentifier());
       if (parent == null)
          throw new ItemNotFoundException("FATAL: Parent is null for " + getPath() + " parent UUID: "
-                  + getParentIdentifier());
+            + getParentIdentifier());
       return parent;
    }
 
@@ -718,10 +710,10 @@ public abstract class ItemImpl
     */
    public NodeData parentData() throws RepositoryException
    {
-      NodeData parent = (NodeData) dataManager.getItemData(getData().getParentIdentifier());
+      NodeData parent = (NodeData)dataManager.getItemData(getData().getParentIdentifier());
       if (parent == null)
          throw new ItemNotFoundException("FATAL: Parent is null for " + getPath() + " parent UUID: "
-                  + getData().getParentIdentifier());
+            + getData().getParentIdentifier());
       return parent;
    }
 
@@ -778,7 +770,7 @@ public abstract class ItemImpl
    {
       NodeData ndata;
       if (isNode())
-         ndata = (NodeData) getData();
+         ndata = (NodeData)getData();
       else
          ndata = parentData(); // (NodeData)
       // dataManager.getItemData(data.getParentIdentifier
@@ -795,7 +787,7 @@ public abstract class ItemImpl
    {
       if (obj instanceof ItemImpl)
       {
-         ItemImpl otherItem = (ItemImpl) obj;
+         ItemImpl otherItem = (ItemImpl)obj;
 
          if (!otherItem.isValid() || !this.isValid())
             return false;
@@ -836,19 +828,19 @@ public abstract class ItemImpl
             if (value instanceof BaseValue)
             {
                // if the value is normaly created in JCR API
-               vd = ((BaseValue) value).getInternalData().createTransientCopy();
+               vd = ((BaseValue)value).getInternalData().createTransientCopy();
             }
             else if (value instanceof ExtendedValue)
             {
                // if te value comes from outside the JCR API scope, e.g. RMI invocation
-               vd = ((BaseValue) getSession().getValueFactory().createValue(value.getStream())).getInternalData();
+               vd = ((BaseValue)getSession().getValueFactory().createValue(value.getStream())).getInternalData();
             }
             else
             {
                // third part value impl, convert via String
                vd =
-                        ((BaseValue) getSession().getValueFactory().createValue(value.getString(), PropertyType.BINARY))
-                                 .getInternalData();
+                  ((BaseValue)getSession().getValueFactory().createValue(value.getString(), PropertyType.BINARY))
+                     .getInternalData();
             }
             return vd;
          case PropertyType.BOOLEAN :
@@ -863,7 +855,7 @@ public abstract class ItemImpl
             TransientValueData tvd = null;
             if (value instanceof PathValue)
             {
-               tvd = ((PathValue) value).getInternalData().createTransientCopy();
+               tvd = ((PathValue)value).getInternalData().createTransientCopy();
             }
             else
             {
@@ -878,7 +870,7 @@ public abstract class ItemImpl
             Identifier identifier = new Identifier(value.getString());
             return new TransientValueData(identifier);
          case ExtendedPropertyType.PERMISSION :
-            PermissionValue permValue = (PermissionValue) value;
+            PermissionValue permValue = (PermissionValue)value;
             AccessControlEntry ace = new AccessControlEntry(permValue.getIdentity(), permValue.getPermission());
             return new TransientValueData(ace);
          default :
@@ -887,12 +879,12 @@ public abstract class ItemImpl
    }
 
    private void checkValueConstraints(PropertyDefinitionData def, List<ValueData> newValues, int type)
-            throws ConstraintViolationException, RepositoryException
+      throws ConstraintViolationException, RepositoryException
    {
 
       ValueConstraintsMatcher constraints =
-               new ValueConstraintsMatcher(def.getValueConstraints(), session.getLocationFactory(), session
-                        .getTransientNodesManager(), session.getWorkspace().getNodeTypesHolder());
+         new ValueConstraintsMatcher(def.getValueConstraints(), session.getLocationFactory(), session
+            .getTransientNodesManager(), session.getWorkspace().getNodeTypesHolder());
 
       for (ValueData value : newValues)
       {
@@ -904,7 +896,7 @@ public abstract class ItemImpl
                if (type != PropertyType.BINARY)
                {// [VO]20.06.07, PropertyType.BINARY
                   // may have large size
-                  strVal = ((TransientValueData) value).getString();
+                  strVal = ((TransientValueData)value).getString();
                }
                else
                {
@@ -916,7 +908,7 @@ public abstract class ItemImpl
                log.error("Error of value read: " + e.getMessage(), e);
             }
             throw new ConstraintViolationException("Can not set value '" + strVal + "' to " + getPath()
-                     + " due to value constraints ");
+               + " due to value constraints ");
          }
       }
    }

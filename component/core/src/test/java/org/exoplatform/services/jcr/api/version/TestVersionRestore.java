@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.api.version;
 
+import org.exoplatform.services.jcr.impl.Constants;
+
 import java.io.ByteArrayInputStream;
 import java.util.Calendar;
 
@@ -29,8 +31,6 @@ import javax.jcr.lock.LockException;
 import javax.jcr.version.Version;
 import javax.jcr.version.VersionException;
 
-import org.exoplatform.services.jcr.impl.Constants;
-
 /**
  * <code>TestVersionRestore</code> covers tests related to the methods of the
  * {@link javax.jcr.version.Version} class.
@@ -40,8 +40,7 @@ import org.exoplatform.services.jcr.impl.Constants;
  * @executeClass org.apache.jackrabbit.test.api.version.VersionTest
  * @keywords versioning
  */
-public class TestVersionRestore
-   extends BaseVersionTest
+public class TestVersionRestore extends BaseVersionTest
 {
 
    /**
@@ -92,8 +91,8 @@ public class TestVersionRestore
          // do restore ver1
          versionableNode.restore(ver1, true);
 
-         Node doc1 = checkExisted("doc1", new String[]
-         {"jcr:content/jcr:primaryType", "jcr:content/doc1ContentProperty"});
+         Node doc1 =
+            checkExisted("doc1", new String[]{"jcr:content/jcr:primaryType", "jcr:content/doc1ContentProperty"});
 
          checkNotExisted("doc2");
          checkNotExisted("doc3");
@@ -106,10 +105,9 @@ public class TestVersionRestore
          // do restore ver2
          versionableNode.restore(ver2, true);
 
-         doc1 = checkExisted("doc1", new String[]
-         {"jcr:content/jcr:primaryType", "jcr:content/doc1ContentProperty"});
-         Node doc2 = checkExisted("doc2", new String[]
-         {"jcr:content/jcr:primaryType", "jcr:content/doc2ContentProperty"});
+         doc1 = checkExisted("doc1", new String[]{"jcr:content/jcr:primaryType", "jcr:content/doc1ContentProperty"});
+         Node doc2 =
+            checkExisted("doc2", new String[]{"jcr:content/jcr:primaryType", "jcr:content/doc2ContentProperty"});
 
          checkNotExisted("doc3");
 
@@ -299,8 +297,7 @@ public class TestVersionRestore
       nodeC.remove();
       nodeA.save();
 
-      Version[] vs = new Version[]
-      {vA, vB, vC};
+      Version[] vs = new Version[]{vA, vB, vC};
 
       // test it
       session.getWorkspace().restore(vs, true);// restore A v.3, B v.2, C v.2
@@ -344,7 +341,7 @@ public class TestVersionRestore
       file.restore(v2, true);
 
       compareStream(new ByteArrayInputStream(content2.getBytes(Constants.DEFAULT_ENCODING)), file
-               .getNode("jcr:content").getProperty("jcr:data").getStream());
+         .getNode("jcr:content").getProperty("jcr:data").getStream());
 
       // restore version v1
       Version v1 = file.getBaseVersion().getPredecessors()[0];
@@ -356,6 +353,6 @@ public class TestVersionRestore
       file.restore(v2, true);
 
       compareStream(new ByteArrayInputStream(content2.getBytes(Constants.DEFAULT_ENCODING)), file
-               .getNode("jcr:content").getProperty("jcr:data").getStream());
+         .getNode("jcr:content").getProperty("jcr:data").getStream());
    }
 }

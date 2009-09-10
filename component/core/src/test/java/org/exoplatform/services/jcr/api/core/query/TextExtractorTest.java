@@ -28,8 +28,7 @@ import javax.jcr.Node;
 /**
  * <code>TextExtractorTest</code> implements a file / folder import from the local file system.
  */
-public class TextExtractorTest
-   extends AbstractQueryTest
+public class TextExtractorTest extends AbstractQueryTest
 {
 
    private static final String TEST_FOLDER = "test-data";
@@ -96,8 +95,7 @@ public class TextExtractorTest
       for (int i = 0; i < 10; i++)
       {
          // kick start text extractor
-         executeXPathQuery(testPath, new Node[]
-         {testRootNode});
+         executeXPathQuery(testPath, new Node[]{testRootNode});
          InputStream in = new BufferedInputStream(new FileInputStream(testFile));
          try
          {

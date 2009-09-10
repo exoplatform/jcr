@@ -18,12 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.session;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
@@ -34,6 +28,12 @@ import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.dataflow.TransientItemData;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Created by The eXo Platform SAS.<br/> Responsible for managing session changes log. Relying on
  * fact that ItemData inside ItemState SHOULD be TransientItemData
@@ -41,8 +41,7 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientItemData;
  * @author Gennady Azarenkov
  * @version $Id: SessionChangesLog.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public final class SessionChangesLog
-   extends PlainChangesLogImpl
+public final class SessionChangesLog extends PlainChangesLogImpl
 {
 
    /**
@@ -133,7 +132,7 @@ public final class SessionChangesLog
       {
          QPath qPath = item.getData().getQPath();
          if (qPath.isDescendantOf(rootPath) || item.getAncestorToSave().isDescendantOf(rootPath)
-                  || item.getAncestorToSave().equals(rootPath) || qPath.equals(rootPath))
+            || item.getAncestorToSave().equals(rootPath) || qPath.equals(rootPath))
          {
             removedList.add(item);
          }
@@ -263,8 +262,7 @@ public final class SessionChangesLog
       {
          ItemState state = allStates.get(i);
          if (state.getData().getParentIdentifier().equals(parentData.getIdentifier())
-                  && state.getData().getQPath().getEntries()[state.getData().getQPath().getEntries().length - 1]
-                           .isSame(name))
+            && state.getData().getQPath().getEntries()[state.getData().getQPath().getEntries().length - 1].isSame(name))
             return state;
       }
       return null;
@@ -353,7 +351,7 @@ public final class SessionChangesLog
 
       for (int i = 0; i < items.size(); i++)
       {
-         TransientItemData item = (TransientItemData) items.get(i).getData();
+         TransientItemData item = (TransientItemData)items.get(i).getData();
          if (item.getIdentifier().equals(rootData.getIdentifier()))
          {
             // the node
@@ -393,9 +391,9 @@ public final class SessionChangesLog
       {
          ItemState state = allStates.get(i);
          if (state.getState() == ItemState.DELETED
-                  && !state.isPersisted()
-                  && (deletedPath.isDescendantOf(state.getData().getQPath()) || deletedPath.equals(state.getData()
-                           .getQPath())))
+            && !state.isPersisted()
+            && (deletedPath.isDescendantOf(state.getData().getQPath()) || deletedPath
+               .equals(state.getData().getQPath())))
          {
             // 1. if it's an item or ancestor of logged data
             try
@@ -404,7 +402,7 @@ public final class SessionChangesLog
                ItemState rename = allStates.get(i + 1);
 
                if (rename.getState() == ItemState.RENAMED && rename.isPersisted()
-                        && rename.getData().getIdentifier().equals(delete.getData().getIdentifier()))
+                  && rename.getData().getIdentifier().equals(delete.getData().getIdentifier()))
                {
 
                   // 2. search of most fresh state for searched rename state
@@ -412,19 +410,17 @@ public final class SessionChangesLog
                   {
                      state = allStates.get(bi);
                      if (state.getState() == ItemState.RENAMED && state.isPersisted()
-                              && state.getData().getIdentifier().equals(rename.getData().getIdentifier()))
+                        && state.getData().getIdentifier().equals(rename.getData().getIdentifier()))
                      {
                         // got much fresh
                         rename = state;
                         delete = allStates.get(i - 1); // try the fresh delete state
                         if (delete.getData().getIdentifier().equals(rename.getData().getIdentifier()))
-                           return new ItemState[]
-                           {delete, rename}; // 3. ok, got it
+                           return new ItemState[]{delete, rename}; // 3. ok, got it
                      }
                   }
 
-                  return new ItemState[]
-                  {delete, rename}; // 4. ok, there are no
+                  return new ItemState[]{delete, rename}; // 4. ok, there are no
                   // more fresh we have
                   // found before p.2
                } // else, it's not a rename, search deeper
@@ -456,7 +452,7 @@ public final class SessionChangesLog
     * @throws IllegalPathException
     */
    public ItemState findItemState(QPath rootPath, Boolean isPersisted, Boolean orAncestor, int... states)
-            throws IllegalPathException
+      throws IllegalPathException
    {
       List<ItemState> allStates = getAllStates();
       // search from the end for state
@@ -478,9 +474,9 @@ public final class SessionChangesLog
          else
             byState = true;
          if (byState
-                  && (isPersisted != null ? istate.isPersisted() == isPersisted : true)
-                  && ((orAncestor != null && orAncestor ? rootPath.isDescendantOf(istate.getData().getQPath()) : true) || rootPath
-                           .equals(istate.getData().getQPath())))
+            && (isPersisted != null ? istate.isPersisted() == isPersisted : true)
+            && ((orAncestor != null && orAncestor ? rootPath.isDescendantOf(istate.getData().getQPath()) : true) || rootPath
+               .equals(istate.getData().getQPath())))
          {
             return istate;
          }
@@ -525,7 +521,7 @@ public final class SessionChangesLog
          else
             byState = true;
          if (byState && (isPersisted != null ? istate.isPersisted() == isPersisted : true)
-                  && istate.getData().getIdentifier().equals(id))
+            && istate.getData().getIdentifier().equals(id))
          {
             return istate;
          }

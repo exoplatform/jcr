@@ -18,14 +18,14 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.cas;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.util.IdGenerator;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Created by The eXo Platform SAS
@@ -35,8 +35,7 @@ import org.exoplatform.services.jcr.util.IdGenerator;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestJDBCValueContentAddressStorageImpl.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class TestJDBCValueContentAddressStorageImpl
-   extends JcrImplBaseTest
+public class TestJDBCValueContentAddressStorageImpl extends JcrImplBaseTest
 {
 
    private JDBCValueContentAddressStorageImpl vcas;
@@ -66,7 +65,7 @@ public class TestJDBCValueContentAddressStorageImpl
       props.put(JDBCValueContentAddressStorageImpl.JDBC_SOURCE_NAME_PARAM, jdbcSourceName);
       props.put(JDBCValueContentAddressStorageImpl.JDBC_DIALECT_PARAM, jdbcDialect);
       props.put(JDBCValueContentAddressStorageImpl.TABLE_NAME_PARAM,
-               JDBCValueContentAddressStorageImpl.DEFAULT_TABLE_NAME + "_TEST");
+         JDBCValueContentAddressStorageImpl.DEFAULT_TABLE_NAME + "_TEST");
 
       vcas = new JDBCValueContentAddressStorageImpl();
       vcas.init(props);

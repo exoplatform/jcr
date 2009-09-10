@@ -18,6 +18,19 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
+import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
+import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionData;
+import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionDatas;
+import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.PropertyData;
+import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.nodetype.PropertyDefinitionImpl;
+import org.exoplatform.services.jcr.impl.core.value.BaseValue;
+import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
+import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+
 import java.io.InputStream;
 import java.util.Calendar;
 
@@ -33,28 +46,13 @@ import javax.jcr.nodetype.ConstraintViolationException;
 import javax.jcr.nodetype.PropertyDefinition;
 import javax.jcr.version.VersionException;
 
-import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
-import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionData;
-import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionDatas;
-import org.exoplatform.services.jcr.datamodel.InternalQName;
-import org.exoplatform.services.jcr.datamodel.ItemData;
-import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.datamodel.PropertyData;
-import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.core.nodetype.PropertyDefinitionImpl;
-import org.exoplatform.services.jcr.impl.core.value.BaseValue;
-import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
-import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
-
 /**
  * Created by The eXo Platform SAS.
  * 
  * @author Gennady Azarenkov
  * @version $Id: PropertyImpl.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class PropertyImpl
-   extends ItemImpl
-   implements Property
+public class PropertyImpl extends ItemImpl implements Property
 {
 
    /**
@@ -92,7 +90,7 @@ public class PropertyImpl
          throw new RepositoryException("Load data: TransientPropertyData is expected, but have " + data);
 
       this.data = data;
-      this.propertyData = (TransientPropertyData) data;
+      this.propertyData = (TransientPropertyData)data;
       this.type = propertyData.getType();
 
       this.location = session.getLocationFactory().createJCRPath(getData().getQPath());
@@ -114,7 +112,7 @@ public class PropertyImpl
       if (propertyData.getValues() != null && propertyData.getValues().size() == 0)
          throw new ValueFormatException("The single valued property " + getPath() + " is empty");
 
-      return valueFactory.loadValue((TransientValueData) propertyData.getValues().get(0), propertyData.getType());
+      return valueFactory.loadValue((TransientValueData)propertyData.getValues().get(0), propertyData.getType());
 
    }
 
@@ -237,7 +235,7 @@ public class PropertyImpl
    {
       try
       {
-         String identifier = ((BaseValue) getValue()).getReference();
+         String identifier = ((BaseValue)getValue()).getReference();
          return session.getNodeByUUID(identifier);
       }
       catch (IllegalStateException e)
@@ -252,7 +250,7 @@ public class PropertyImpl
    public long getLength() throws ValueFormatException, RepositoryException
    {
 
-      return ((BaseValue) getValue()).getLength();
+      return ((BaseValue)getValue()).getLength();
    }
 
    /**
@@ -266,7 +264,7 @@ public class PropertyImpl
       long[] lengths = new long[thisValues.length];
       for (int i = 0; i < lengths.length; i++)
       {
-         lengths[i] = ((BaseValue) thisValues[i]).getLength();
+         lengths[i] = ((BaseValue)thisValues[i]).getLength();
       }
       return lengths;
    }
@@ -282,12 +280,12 @@ public class PropertyImpl
       if (propertyDef == null)
       {
          throw new RepositoryException("FATAL: property definition is NULL " + getPath() + " "
-                  + propertyData.getValues());
+            + propertyData.getValues());
       }
       String name =
-               locationFactory.createJCRName(
-                        propertyDef.getName() != null ? propertyDef.getName() : Constants.JCR_ANY_NAME).getAsString();
-      ExtendedNodeTypeManager nodeTypeManager = (ExtendedNodeTypeManager) session.getWorkspace().getNodeTypeManager();
+         locationFactory.createJCRName(propertyDef.getName() != null ? propertyDef.getName() : Constants.JCR_ANY_NAME)
+            .getAsString();
+      ExtendedNodeTypeManager nodeTypeManager = (ExtendedNodeTypeManager)session.getWorkspace().getNodeTypeManager();
 
       Value[] defaultValues = new Value[propertyDef.getDefaultValues().length];
       String[] propVal = propertyDef.getDefaultValues();
@@ -304,9 +302,9 @@ public class PropertyImpl
       }
 
       return new PropertyDefinitionImpl(name, nodeTypeManager.findNodeType(propertyDef.getDeclaringNodeType()),
-               propertyDef.getRequiredType(), propertyDef.getValueConstraints(), defaultValues, propertyDef
-                        .isAutoCreated(), propertyDef.isMandatory(), propertyDef.getOnParentVersion(), propertyDef
-                        .isProtected(), propertyDef.isMultiple());
+         propertyDef.getRequiredType(), propertyDef.getValueConstraints(), defaultValues, propertyDef.isAutoCreated(),
+         propertyDef.isMandatory(), propertyDef.getOnParentVersion(), propertyDef.isProtected(), propertyDef
+            .isMultiple());
 
    }
 
@@ -320,8 +318,8 @@ public class PropertyImpl
       NodeData parent = parentData();
       InternalQName pname = getData().getQPath().getName();
       PropertyDefinitionDatas definitions =
-               session.getWorkspace().getNodeTypesHolder().findPropertyDefinitions(pname, parent.getPrimaryTypeName(),
-                        parent.getMixinTypeNames());
+         session.getWorkspace().getNodeTypesHolder().findPropertyDefinitions(pname, parent.getPrimaryTypeName(),
+            parent.getMixinTypeNames());
       if (definitions == null)
          throw new ConstraintViolationException("Definition for property " + getPath() + " not found.");
 
@@ -340,7 +338,7 @@ public class PropertyImpl
     * {@inheritDoc}
     */
    public void setValue(Value value) throws ValueFormatException, VersionException, LockException,
-            ConstraintViolationException, RepositoryException
+      ConstraintViolationException, RepositoryException
    {
 
       checkValid();
@@ -352,7 +350,7 @@ public class PropertyImpl
     * {@inheritDoc}
     */
    public void setValue(Value[] values) throws ValueFormatException, VersionException, LockException,
-            ConstraintViolationException, RepositoryException
+      ConstraintViolationException, RepositoryException
    {
 
       checkValid();
@@ -369,14 +367,14 @@ public class PropertyImpl
     */
    public boolean isMultiValued()
    {
-      return ((PropertyData) data).isMultiValued();
+      return ((PropertyData)data).isMultiValued();
    }
 
    /**
     * {@inheritDoc}
     */
    public void setValue(String value) throws ValueFormatException, VersionException, LockException,
-            ConstraintViolationException, RepositoryException
+      ConstraintViolationException, RepositoryException
    {
       setValue(valueFactory.createValue(value));
    }
@@ -385,7 +383,7 @@ public class PropertyImpl
     * {@inheritDoc}
     */
    public void setValue(InputStream stream) throws ValueFormatException, VersionException, LockException,
-            ConstraintViolationException, RepositoryException
+      ConstraintViolationException, RepositoryException
    {
       setValue(valueFactory.createValue(stream));
    }
@@ -394,7 +392,7 @@ public class PropertyImpl
     * {@inheritDoc}
     */
    public void setValue(double number) throws ValueFormatException, VersionException, LockException,
-            ConstraintViolationException, RepositoryException
+      ConstraintViolationException, RepositoryException
    {
       setValue(valueFactory.createValue(number));
    }
@@ -403,7 +401,7 @@ public class PropertyImpl
     * {@inheritDoc}
     */
    public void setValue(long number) throws ValueFormatException, VersionException, LockException,
-            ConstraintViolationException, RepositoryException
+      ConstraintViolationException, RepositoryException
    {
       setValue(valueFactory.createValue(number));
    }
@@ -412,7 +410,7 @@ public class PropertyImpl
     * {@inheritDoc}
     */
    public void setValue(Calendar date) throws ValueFormatException, VersionException, LockException,
-            ConstraintViolationException, RepositoryException
+      ConstraintViolationException, RepositoryException
    {
       setValue(valueFactory.createValue(date));
    }
@@ -421,7 +419,7 @@ public class PropertyImpl
     * {@inheritDoc}
     */
    public void setValue(boolean b) throws ValueFormatException, VersionException, LockException,
-            ConstraintViolationException, RepositoryException
+      ConstraintViolationException, RepositoryException
    {
       setValue(valueFactory.createValue(b));
    }
@@ -430,7 +428,7 @@ public class PropertyImpl
     * {@inheritDoc}
     */
    public void setValue(Node value) throws ValueFormatException, VersionException, LockException,
-            ConstraintViolationException, RepositoryException
+      ConstraintViolationException, RepositoryException
    {
       setValue(valueFactory.createValue(value));
    }
@@ -439,7 +437,7 @@ public class PropertyImpl
     * {@inheritDoc}
     */
    public void setValue(String[] values) throws ValueFormatException, VersionException, LockException,
-            ConstraintViolationException, RepositoryException
+      ConstraintViolationException, RepositoryException
    {
 
       Value[] strValues = null;
@@ -517,7 +515,7 @@ public class PropertyImpl
       for (int i = 0; i < values.length; i++)
       {
          values[i] =
-                  valueFactory.loadValue((TransientValueData) propertyData.getValues().get(i), propertyData.getType());
+            valueFactory.loadValue((TransientValueData)propertyData.getValues().get(i), propertyData.getType());
       }
       return values;
    }
@@ -534,7 +532,7 @@ public class PropertyImpl
       {
          for (int i = 0; i < getValueArray().length; i++)
          {
-            vals += new String(((BaseValue) getValueArray()[i]).getInternalData().getAsByteArray()) + ";";
+            vals += new String(((BaseValue)getValueArray()[i]).getInternalData().getAsByteArray()) + ";";
          }
       }
       catch (Exception e)
@@ -557,7 +555,7 @@ public class PropertyImpl
          try
          {
             // by path
-            return getLocation().equals(((PropertyImpl) obj).getLocation());
+            return getLocation().equals(((PropertyImpl)obj).getLocation());
          }
          catch (Exception e)
          {

@@ -18,11 +18,10 @@
  */
 package org.exoplatform.services.jcr.config;
 
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.jcr.impl.core.query.QueryImpl;
 import org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 /**
  * Created by The eXo Platform SAS.

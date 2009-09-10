@@ -18,15 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.observation;
 
-import java.util.List;
-
-import javax.jcr.RepositoryException;
-import javax.jcr.observation.Event;
-import javax.jcr.observation.EventListener;
-import javax.jcr.observation.EventListenerIterator;
-
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ChangesLogIterator;
@@ -45,6 +36,14 @@ import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.jcr.impl.util.EntityCollection;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import java.util.List;
+
+import javax.jcr.RepositoryException;
+import javax.jcr.observation.Event;
+import javax.jcr.observation.EventListener;
+import javax.jcr.observation.EventListenerIterator;
 
 /**
  * Created by The eXo Platform SAS.
@@ -52,8 +51,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov</a>
  * @version $Id: ActionLauncher.java 15072 2008-06-02 13:01:26Z pnedonosko $
  */
-public class ActionLauncher
-   implements ItemsPersistenceListener
+public class ActionLauncher implements ItemsPersistenceListener
 {
 
    public final int SKIP_EVENT = Integer.MIN_VALUE;
@@ -67,7 +65,7 @@ public class ActionLauncher
    private final SessionRegistry sessionRegistry;
 
    public ActionLauncher(ObservationManagerRegistry registry, WorkspacePersistentDataManager workspaceDataManager,
-            SessionRegistry sessionRegistry)
+      SessionRegistry sessionRegistry)
    {
       this.observationRegistry = registry;
       this.workspaceDataManager = workspaceDataManager;
@@ -87,7 +85,7 @@ public class ActionLauncher
 
          EntityCollection events = new EntityCollection();
 
-         ChangesLogIterator logIterator = ((CompositeChangesLog) changesLog).getLogIterator();
+         ChangesLogIterator logIterator = ((CompositeChangesLog)changesLog).getLogIterator();
          while (logIterator.hasNextLog())
          {
 
@@ -107,13 +105,13 @@ public class ActionLauncher
                      {
                         int eventType = eventType(itemState);
                         if (eventType != SKIP_EVENT && isTypeMatch(criteria, eventType)
-                                 && isPathMatch(criteria, item, userSession) && isIdentifierMatch(criteria, item)
-                                 && isNodeTypeMatch(criteria, item, userSession, subLog)
-                                 && isSessionMatch(criteria, sessionId))
+                           && isPathMatch(criteria, item, userSession) && isIdentifierMatch(criteria, item)
+                           && isNodeTypeMatch(criteria, item, userSession, subLog)
+                           && isSessionMatch(criteria, sessionId))
                         {
 
                            String path =
-                                    userSession.getLocationFactory().createJCRPath(item.getQPath()).getAsString(false);
+                              userSession.getLocationFactory().createJCRPath(item.getQPath()).getAsString(false);
 
                            events.add(new EventImpl(eventType, path, userSession.getUserID()));
                         }
@@ -121,7 +119,7 @@ public class ActionLauncher
                      catch (RepositoryException e)
                      {
                         log.error("Can not fire ActionLauncher.onSaveItems() for " + item.getQPath().getAsString()
-                                 + " reason: " + e);
+                           + " reason: " + e);
                      }
                   }
                }
@@ -188,12 +186,12 @@ public class ActionLauncher
    }
 
    private boolean isNodeTypeMatch(ListenerCriteria criteria, ItemData item, SessionImpl userSession,
-            PlainChangesLog changesLog) throws RepositoryException
+      PlainChangesLog changesLog) throws RepositoryException
    {
       if (criteria.getNodeTypeName() == null)
          return true;
 
-      NodeData node = (NodeData) workspaceDataManager.getItemData(item.getParentIdentifier());
+      NodeData node = (NodeData)workspaceDataManager.getItemData(item.getParentIdentifier());
       if (node == null)
       {
          // check if parent exists in changes log
@@ -203,7 +201,7 @@ public class ActionLauncher
             if (states.get(i).getData().getIdentifier().equals(item.getParentIdentifier()))
             {
                // parent found
-               node = (NodeData) states.get(i).getData();
+               node = (NodeData)states.get(i).getData();
                break;
             }
          }
@@ -211,7 +209,7 @@ public class ActionLauncher
          if (node == null)
          {
             log.warn("Item's " + item.getQPath().getAsString() + " associated parent (" + item.getParentIdentifier()
-                     + ") can't be found nor in workspace nor in current changes. Nodetype filter is rejected.");
+               + ") can't be found nor in workspace nor in current changes. Nodetype filter is rejected.");
             return false;
          }
       }
@@ -264,6 +262,6 @@ public class ActionLauncher
             return SKIP_EVENT;
       }
       throw new RepositoryException("Unexpected ItemState for Node " + ItemState.nameFromValue(state.getState()) + " "
-               + state.getData().getQPath().getAsString());
+         + state.getData().getQPath().getAsString());
    }
 }

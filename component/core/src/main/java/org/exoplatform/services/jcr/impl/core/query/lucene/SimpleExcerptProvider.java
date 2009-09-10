@@ -40,8 +40,7 @@ import org.exoplatform.services.log.ExoLogger;
  * 
  * @see #getExcerpt(org.apache.jackrabbit.core.NodeId, int, int)
  */
-public class SimpleExcerptProvider
-   implements ExcerptProvider
+public class SimpleExcerptProvider implements ExcerptProvider
 {
 
    /**
@@ -74,7 +73,7 @@ public class SimpleExcerptProvider
          if (node != null && node.isNode())
          {
             String separator = "";
-            List<PropertyData> childs = ism.getChildPropertiesData((NodeData) node);
+            List<PropertyData> childs = ism.getChildPropertiesData((NodeData)node);
             for (PropertyData property : childs)
             {
                if (property.getType() == PropertyType.STRING)

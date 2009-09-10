@@ -18,12 +18,12 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs;
 
+import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
+import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-
-import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 
 /**
  * Created by The eXo Platform SAS
@@ -32,12 +32,10 @@ import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
  * @version $Id: SimpleFileIOChannel.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
 
-public class SimpleFileIOChannel
-   extends FileIOChannel
+public class SimpleFileIOChannel extends FileIOChannel
 {
 
-   protected class PropertyIDFilter
-      implements FileFilter
+   protected class PropertyIDFilter implements FileFilter
    {
 
       private String propertyId;

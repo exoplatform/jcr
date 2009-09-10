@@ -30,8 +30,7 @@ import org.exoplatform.services.jcr.util.StringNumberParser;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: StringNumberParserTest.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class StringNumberParserTest
-   extends TestCase
+public class StringNumberParserTest extends TestCase
 {
 
    public void testParseInt()

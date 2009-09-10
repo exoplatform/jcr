@@ -18,18 +18,18 @@
  */
 package org.exoplatform.services.jcr.dataflow;
 
+import org.exoplatform.services.jcr.datamodel.IllegalPathException;
+import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.QPathEntry;
+import org.exoplatform.services.jcr.impl.Constants;
+
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.exoplatform.services.jcr.datamodel.IllegalPathException;
-import org.exoplatform.services.jcr.datamodel.ItemData;
-import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.datamodel.QPathEntry;
-import org.exoplatform.services.jcr.impl.Constants;
 
 /**
  * Created by The eXo Platform SAS.
@@ -38,8 +38,7 @@ import org.exoplatform.services.jcr.impl.Constants;
  * @version $Id: TransactionChangesLog.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class TransactionChangesLog
-   implements CompositeChangesLog, Externalizable
+public class TransactionChangesLog implements CompositeChangesLog, Externalizable
 {
 
    private static final long serialVersionUID = 4866736965040228027L;
@@ -151,8 +150,7 @@ public class TransactionChangesLog
       {
          ItemState state = allStates.get(i);
          if (state.getData().getParentIdentifier().equals(parentData.getIdentifier())
-                  && state.getData().getQPath().getEntries()[state.getData().getQPath().getEntries().length - 1]
-                           .isSame(name))
+            && state.getData().getQPath().getEntries()[state.getData().getQPath().getEntries().length - 1].isSame(name))
             return state;
       }
       return null;
@@ -188,7 +186,7 @@ public class TransactionChangesLog
       {
          ItemState state = allStates.get(i);
          if (state.getState() == ItemState.DELETED && !state.isPersisted()
-                  && item.getQPath().isDescendantOf(state.getData().getQPath()))
+            && item.getQPath().isDescendantOf(state.getData().getQPath()))
          {
             // 1. if it's a parent or the parent is descendant of logged data
             try
@@ -197,7 +195,7 @@ public class TransactionChangesLog
                ItemState rename = allStates.get(i + 1);
 
                if (rename.getState() == ItemState.RENAMED && rename.isPersisted()
-                        && rename.getData().getIdentifier().equals(delete.getData().getIdentifier()))
+                  && rename.getData().getIdentifier().equals(delete.getData().getIdentifier()))
                {
 
                   // 2. search of most fresh state of rename for searched rename state
@@ -207,19 +205,17 @@ public class TransactionChangesLog
                   {
                      state = allStates.get(bi);
                      if (state.getState() == ItemState.RENAMED && state.isPersisted()
-                              && state.getData().getIdentifier().equals(rename.getData().getIdentifier()))
+                        && state.getData().getIdentifier().equals(rename.getData().getIdentifier()))
                      {
                         // got much fresh
                         rename = state;
                         delete = allStates.get(i - 1); // try the fresh delete state
                         if (delete.getData().getIdentifier().equals(rename.getData().getIdentifier()))
-                           return new ItemState[]
-                           {delete, rename}; // 3. ok, got it
+                           return new ItemState[]{delete, rename}; // 3. ok, got it
                      }
                   }
 
-                  return new ItemState[]
-                  {delete, rename}; // 4. ok, there are no
+                  return new ItemState[]{delete, rename}; // 4. ok, there are no
                   // more fresh we have
                   // found before p.2
                } // else, it's not a rename, search deeper
@@ -281,7 +277,7 @@ public class TransactionChangesLog
 
       int listSize = in.readInt();
       for (int i = 0; i < listSize; i++)
-         changesLogs.add((PlainChangesLogImpl) in.readObject());
+         changesLogs.add((PlainChangesLogImpl)in.readObject());
    }
 
    // ------------------ [ END ] ------------------

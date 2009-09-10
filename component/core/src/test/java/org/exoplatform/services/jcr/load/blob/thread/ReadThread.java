@@ -18,6 +18,9 @@
  */
 package org.exoplatform.services.jcr.load.blob.thread;
 
+import org.exoplatform.services.jcr.impl.core.PropertyImpl;
+import org.exoplatform.services.jcr.load.blob.TestConcurrentItems;
+
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -28,17 +31,13 @@ import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
-import org.exoplatform.services.jcr.impl.core.PropertyImpl;
-import org.exoplatform.services.jcr.load.blob.TestConcurrentItems;
-
 /**
  * Created by The eXo Platform SAS Author : Peter Nedonosko peter.nedonosko@exoplatform.com.ua
  * 24.10.2006
  * 
  * @version $Id: ReadThread.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class ReadThread
-   extends UserThread
+public class ReadThread extends UserThread
 {
 
    public ReadThread(Session threadSession)
@@ -80,7 +79,7 @@ public class ReadThread
             int dataSize = 0;
             try
             {
-               PropertyImpl data = (PropertyImpl) content.getProperty("jcr:data");
+               PropertyImpl data = (PropertyImpl)content.getProperty("jcr:data");
                dataStream = data.getStream();
                // threadLog.info("Read property " + data.getPath() + ", " + data.getInternalUUID());
                byte[] buff = new byte[1024 * 4];
@@ -92,16 +91,16 @@ public class ReadThread
                }
                if (dataSize != TestConcurrentItems.TEST_FILE_SIZE)
                   threadLog.error("Wrong data size. " + dataSize + " but expected "
-                           + TestConcurrentItems.TEST_FILE_SIZE + ". " + dataStream + ". " + data.getPath() + " "
-                           + data.getInternalIdentifier());
+                     + TestConcurrentItems.TEST_FILE_SIZE + ". " + dataStream + ". " + data.getPath() + " "
+                     + data.getInternalIdentifier());
                else if (threadLog.isDebugEnabled())
                   threadLog.debug("Read node: " + dataStream + ", " + node.getPath() + ", data: "
-                           + data.getInternalIdentifier());
+                     + data.getInternalIdentifier());
             }
             catch (RepositoryException e)
             {
                threadLog.error("Repository error: " + e.getMessage() + ", " + dataSize + " bytes from "
-                        + TestConcurrentItems.TEST_FILE_SIZE, e);
+                  + TestConcurrentItems.TEST_FILE_SIZE, e);
             }
             catch (FileNotFoundException e)
             {
@@ -120,7 +119,7 @@ public class ReadThread
       catch (Throwable th)
       {
          threadLog.error("Read error: " + th.getMessage() + ", " + dataSizeInfo + " bytes from "
-                  + TestConcurrentItems.TEST_FILE_SIZE, th);
+            + TestConcurrentItems.TEST_FILE_SIZE, th);
       }
       finally
       {

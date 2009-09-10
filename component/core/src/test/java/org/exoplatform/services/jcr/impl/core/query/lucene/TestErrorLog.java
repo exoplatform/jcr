@@ -17,21 +17,20 @@
 
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
+import org.exoplatform.services.jcr.impl.core.query.BaseQueryTest;
+import org.exoplatform.services.jcr.impl.core.query.ErrorLog;
+
 import java.io.File;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import org.exoplatform.services.jcr.impl.core.query.BaseQueryTest;
-import org.exoplatform.services.jcr.impl.core.query.ErrorLog;
 
 /**
  * Created by The eXo Platform SAS Author : Sergey Karpenko <sergey.karpenko@exoplatform.com.ua>
  * 
  * @version $Id: $
  */
-public class TestErrorLog
-   extends BaseQueryTest
+public class TestErrorLog extends BaseQueryTest
 {
    ErrorLog log;
 
@@ -59,8 +58,7 @@ public class TestErrorLog
    public void testConcurrentWrite() throws Exception
    {
 
-      class Loader
-         extends Thread
+      class Loader extends Thread
       {
          private String name;
 

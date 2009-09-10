@@ -34,11 +34,9 @@ public interface PermissionType
 
    public static final String REMOVE = "remove";
 
-   public static final String[] ALL = new String[]
-   {READ, ADD_NODE, SET_PROPERTY, REMOVE};
+   public static final String[] ALL = new String[]{READ, ADD_NODE, SET_PROPERTY, REMOVE};
 
-   public static final String[] DEFAULT_AC = new String[]
-   {READ};
+   public static final String[] DEFAULT_AC = new String[]{READ};
 
    public static final String CHANGE_PERMISSION = ADD_NODE + "," + SET_PROPERTY + "," + REMOVE;
 }

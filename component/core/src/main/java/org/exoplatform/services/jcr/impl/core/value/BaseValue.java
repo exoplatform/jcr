@@ -18,6 +18,15 @@
  */
 package org.exoplatform.services.jcr.impl.core.value;
 
+import org.exoplatform.services.jcr.core.value.ExtendedValue;
+import org.exoplatform.services.jcr.core.value.ReadableBinaryValue;
+import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.dataflow.AbstractValueData;
+import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -28,16 +37,6 @@ import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.ValueFormatException;
 
-import org.exoplatform.services.log.Log;
-
-import org.exoplatform.services.jcr.core.value.ExtendedValue;
-import org.exoplatform.services.jcr.core.value.ReadableBinaryValue;
-import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.dataflow.AbstractValueData;
-import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
-import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
-import org.exoplatform.services.log.ExoLogger;
-
 /**
  * This class is the superclass of the type-specific classes implementing the <code>Value</code>
  * interfaces.
@@ -46,8 +45,7 @@ import org.exoplatform.services.log.ExoLogger;
  * 
  * @version $Id: BaseValue.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public abstract class BaseValue
-   implements ExtendedValue, ReadableBinaryValue
+public abstract class BaseValue implements ExtendedValue, ReadableBinaryValue
 {
 
    protected static Log log = ExoLogger.getLogger("jcr.BinaryValue");
@@ -130,7 +128,7 @@ public abstract class BaseValue
       {
          if (type == PropertyType.DATE)
             return new JCRDateFormat().deserialize(new String(getLocalData(false).getAsByteArray(),
-                     Constants.DEFAULT_ENCODING));
+               Constants.DEFAULT_ENCODING));
 
          return JCRDateFormat.parse(new String(getLocalData(false).getAsByteArray(), Constants.DEFAULT_ENCODING));
       }
@@ -274,7 +272,7 @@ public abstract class BaseValue
          return false;
       if (obj instanceof BaseValue)
       {
-         BaseValue other = (BaseValue) obj;
+         BaseValue other = (BaseValue)obj;
          return getInternalData().equals(other.getInternalData());
       }
       return false;
@@ -321,8 +319,7 @@ public abstract class BaseValue
    /**
     * Session scope ValueData.
     */
-   protected class LocalTransientValueData
-      extends AbstractValueData
+   protected class LocalTransientValueData extends AbstractValueData
    {
 
       protected InputStream stream;

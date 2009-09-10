@@ -18,30 +18,29 @@
  */
 package org.exoplatform.services.jcr.impl.xml.exporting;
 
+import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
+import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
+
 import javax.jcr.NamespaceException;
 import javax.jcr.NamespaceRegistry;
 import javax.jcr.RepositoryException;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
-import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
-
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: StreamExporter.java 14244 2008-05-14 11:44:54Z ksm $
  */
-public abstract class StreamExporter
-   extends BaseXmlExporter
+public abstract class StreamExporter extends BaseXmlExporter
 {
 
    protected final XMLStreamWriter writer;
 
    public StreamExporter(XMLStreamWriter writer, ItemDataConsumer dataManager, NamespaceRegistry namespaceRegistry,
-            ValueFactoryImpl systemValueFactory, boolean skipBinary, boolean noRecurse) throws NamespaceException,
-            RepositoryException
+      ValueFactoryImpl systemValueFactory, boolean skipBinary, boolean noRecurse) throws NamespaceException,
+      RepositoryException
    {
 
       super(dataManager, namespaceRegistry, systemValueFactory, skipBinary, noRecurse, noRecurse ? 1 : -1);

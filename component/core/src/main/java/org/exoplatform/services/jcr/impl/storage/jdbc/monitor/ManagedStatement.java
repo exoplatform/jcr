@@ -18,13 +18,13 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.monitor;
 
+import org.exoplatform.services.log.Log;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
-
-import org.exoplatform.services.log.Log;
 
 /**
  * Created by The eXo Platform SAS.
@@ -34,8 +34,7 @@ import org.exoplatform.services.log.Log;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: ManagedStatement.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class ManagedStatement
-   implements Statement
+public class ManagedStatement implements Statement
 {
 
    protected final Statement jdbcStmt;

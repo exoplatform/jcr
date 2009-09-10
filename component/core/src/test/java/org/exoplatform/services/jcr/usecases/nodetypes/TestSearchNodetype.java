@@ -18,6 +18,9 @@
  */
 package org.exoplatform.services.jcr.usecases.nodetypes;
 
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Iterator;
@@ -29,9 +32,6 @@ import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
 
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
-import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
-
 /**
  * Created by The eXo Platform SASL .
  * 
@@ -39,8 +39,7 @@ import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
  * @version $Id: TestSearchNodetype.java 17:40:24
  */
 
-public class TestSearchNodetype
-   extends BaseUsecasesTest
+public class TestSearchNodetype extends BaseUsecasesTest
 {
 
    public void testCreateNodetype() throws Exception
@@ -142,7 +141,7 @@ public class TestSearchNodetype
       session.logout();
 
       // new login
-      session = (SessionImpl) repository.login(credentials, "ws");
+      session = (SessionImpl)repository.login(credentials, "ws");
       manager = session.getWorkspace().getQueryManager();
       Query query2 = manager.createQuery(sqlQuery, Query.SQL);
       QueryResult queryResult2 = query2.execute();
@@ -207,7 +206,7 @@ public class TestSearchNodetype
       session.logout();
 
       // new login
-      session = (SessionImpl) repository.login(credentials, "ws");
+      session = (SessionImpl)repository.login(credentials, "ws");
 
       manager = session.getWorkspace().getQueryManager();
       Query query2 = manager.createQuery(sqlQuery, Query.SQL);

@@ -29,8 +29,7 @@ import javax.transaction.xa.XAResource;
  * @version $Id: XASession.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public interface XASession
-   extends Session
+public interface XASession extends Session
 {
 
    /**

@@ -18,15 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
-
-import javax.jcr.PropertyType;
-
-import org.exoplatform.services.log.Log;
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.NodeData;
@@ -39,6 +30,15 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
+
+import javax.jcr.PropertyType;
 
 /**
  * Created by The eXo Platform SAS
@@ -48,8 +48,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestLinkedCacheMultithread.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class TestLinkedCacheMultithread
-   extends JcrImplBaseTest
+public class TestLinkedCacheMultithread extends JcrImplBaseTest
 {
 
    protected static Log log = ExoLogger.getLogger("jcr.TestLinkedCacheMultithread");
@@ -60,8 +59,7 @@ public class TestLinkedCacheMultithread
 
    private NodeData rootData;
 
-   class Reader
-      extends Thread
+   class Reader extends Thread
    {
       final NodeData[] nodes;
 
@@ -92,7 +90,7 @@ public class TestLinkedCacheMultithread
                if (random.nextBoolean())
                {
                   // by id
-                  NodeData n = (NodeData) cache.get(rndNode.getIdentifier());
+                  NodeData n = (NodeData)cache.get(rndNode.getIdentifier());
                   if (n != null)
                      assertEquals(rndNode.getIdentifier(), n.getIdentifier());
                }
@@ -100,8 +98,8 @@ public class TestLinkedCacheMultithread
                {
                   // by parent + name
                   NodeData n =
-                           (NodeData) cache.get(rndNode.getParentIdentifier(), rndNode.getQPath().getEntries()[rndNode
-                                    .getQPath().getEntries().length - 1]);
+                     (NodeData)cache.get(rndNode.getParentIdentifier(), rndNode.getQPath().getEntries()[rndNode
+                        .getQPath().getEntries().length - 1]);
                   if (n != null)
                      assertEquals(rndNode.getIdentifier(), n.getIdentifier());
                }
@@ -121,8 +119,7 @@ public class TestLinkedCacheMultithread
       }
    }
 
-   class Writer
-      extends Thread
+   class Writer extends Thread
    {
       final NodeData[] parentNodes;
 
@@ -161,15 +158,15 @@ public class TestLinkedCacheMultithread
                   {
                      // node
                      cache.put(new TransientNodeData(QPath.makeChildPath(rndNode.getQPath(), InternalQName
-                              .parse("[]childNode-" + next)), IdGenerator.generate(), 1, Constants.NT_UNSTRUCTURED,
-                              new InternalQName[0], 1, IdGenerator.generate(), rndNode.getACL()));
+                        .parse("[]childNode-" + next)), IdGenerator.generate(), 1, Constants.NT_UNSTRUCTURED,
+                        new InternalQName[0], 1, IdGenerator.generate(), rndNode.getACL()));
                   }
                   else
                   {
                      TransientPropertyData pd =
-                              new TransientPropertyData(QPath.makeChildPath(rndNode.getQPath(), InternalQName
-                                       .parse("[]property-" + next)), IdGenerator.generate(), 1, PropertyType.STRING,
-                                       rndNode.getIdentifier(), false);
+                        new TransientPropertyData(QPath.makeChildPath(rndNode.getQPath(), InternalQName
+                           .parse("[]property-" + next)), IdGenerator.generate(), 1, PropertyType.STRING, rndNode
+                           .getIdentifier(), false);
                      pd.setValue(new TransientValueData("prop data"));
                      cache.put(pd);
                   }
@@ -210,8 +207,7 @@ public class TestLinkedCacheMultithread
       }
    }
 
-   class Remover
-      extends Thread
+   class Remover extends Thread
    {
       final NodeData[] nodes;
 
@@ -274,8 +270,7 @@ public class TestLinkedCacheMultithread
       }
    }
 
-   class Locker
-      extends Thread
+   class Locker extends Thread
    {
 
       final int timeout;
@@ -314,10 +309,10 @@ public class TestLinkedCacheMultithread
       // cache = new LRUWorkspaceStorageCacheImpl("testLoad_cache", true, 100 * 1024, 120, 5 * 60000,
       // 30000, false);
       cache =
-               new LinkedWorkspaceStorageCacheImpl("testLoad_cache", true, 100 * 1024, 120, 5 * 60000, 30000, false,
-                        true, 0, true);
+         new LinkedWorkspaceStorageCacheImpl("testLoad_cache", true, 100 * 1024, 120, 5 * 60000, 30000, false, true, 0,
+            true);
 
-      rootData = (NodeData) ((NodeImpl) root).getData();
+      rootData = (NodeData)((NodeImpl)root).getData();
    }
 
    private List<NodeData> createNodesData(NodeData parent, int count) throws Exception
@@ -328,8 +323,8 @@ public class TestLinkedCacheMultithread
       for (int i = 1; i <= count; i++)
       {
          nodes.add(new TransientNodeData(QPath.makeChildPath(parent.getQPath(), InternalQName.parse("[]node" + i)),
-                  IdGenerator.generate(), 1, Constants.NT_UNSTRUCTURED, new InternalQName[0], 1,
-                  IdGenerator.generate(), parent.getACL()));
+            IdGenerator.generate(), 1, Constants.NT_UNSTRUCTURED, new InternalQName[0], 1, IdGenerator.generate(),
+            parent.getACL()));
       }
 
       return nodes;
@@ -351,8 +346,8 @@ public class TestLinkedCacheMultithread
       for (int i = 1; i <= count; i++)
       {
          TransientPropertyData pd =
-                  new TransientPropertyData(QPath.makeChildPath(parent.getQPath(), InternalQName.parse("[]property-"
-                           + i)), IdGenerator.generate(), 1, PropertyType.STRING, parent.getIdentifier(), false);
+            new TransientPropertyData(QPath.makeChildPath(parent.getQPath(), InternalQName.parse("[]property-" + i)),
+               IdGenerator.generate(), 1, PropertyType.STRING, parent.getIdentifier(), false);
          pd.setValue(new TransientValueData("prop data"));
          props.add(pd);
       }

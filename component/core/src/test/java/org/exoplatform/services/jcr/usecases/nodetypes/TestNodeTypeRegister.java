@@ -18,6 +18,11 @@
  */
 package org.exoplatform.services.jcr.usecases.nodetypes;
 
+import org.exoplatform.services.jcr.api.observation.SimpleListener;
+import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeValue;
+import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,17 +31,11 @@ import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.NodeTypeManager;
 import javax.jcr.observation.Event;
 
-import org.exoplatform.services.jcr.api.observation.SimpleListener;
-import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
-import org.exoplatform.services.jcr.core.nodetype.NodeTypeValue;
-import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
-
 /**
  * Created by The eXo Platform SAS Author : Hoa Pham hoa.pham@exoplatform.com
  * phamvuxuanhoa@yahoo.com Jul 3, 2006
  */
-public class TestNodeTypeRegister
-   extends BaseUsecasesTest
+public class TestNodeTypeRegister extends BaseUsecasesTest
 {
 
    public void testRegisterNodeType() throws Exception
@@ -50,7 +49,7 @@ public class TestNodeTypeRegister
       nodeTypeValue.setName("exo:testNodeType");
       nodeTypeValue.setPrimaryItemName("");
       nodeTypeValue.setDeclaredSupertypeNames(superType);
-      ExtendedNodeTypeManager extNodeTypeManager = (ExtendedNodeTypeManager) nodeTypeManager;
+      ExtendedNodeTypeManager extNodeTypeManager = (ExtendedNodeTypeManager)nodeTypeManager;
       try
       {
          nodeTypeManager.getNodeType("exo:testNodeType");
@@ -91,7 +90,7 @@ public class TestNodeTypeRegister
 
       SimpleListener listener = new SimpleListener("testSessionOpen", log, 0);
       session.getWorkspace().getObservationManager().addEventListener(listener, Event.NODE_ADDED, root.getPath(),
-               false, null, null, false);
+         false, null, null, false);
 
       NodeTypeManager nodeTypeManager = session.getWorkspace().getNodeTypeManager();
       NodeTypeValue nodeTypeValue = new NodeTypeValue();

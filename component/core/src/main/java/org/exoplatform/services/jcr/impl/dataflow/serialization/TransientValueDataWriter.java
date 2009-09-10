@@ -18,15 +18,13 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectWriter;
 import org.exoplatform.services.jcr.dataflow.serialization.SerializationConstants;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.util.IdGenerator;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Created by The eXo Platform SAS. <br/>
@@ -71,7 +69,7 @@ public class TransientValueDataWriter
          InputStream in = vd.getAsStream();
          if (vd.getSpoolFile() instanceof SerializationSpoolFile)
          {
-            SerializationSpoolFile ssf = (SerializationSpoolFile) vd.getSpoolFile();
+            SerializationSpoolFile ssf = (SerializationSpoolFile)vd.getSpoolFile();
             out.writeString(ssf.getId());
             out.writeLong(0);
          }

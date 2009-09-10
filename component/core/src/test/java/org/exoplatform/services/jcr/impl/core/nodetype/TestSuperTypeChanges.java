@@ -18,6 +18,13 @@
  */
 package org.exoplatform.services.jcr.impl.core.nodetype;
 
+import org.exoplatform.services.jcr.JcrImplBaseTest;
+import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeValue;
+import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionValue;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,22 +33,13 @@ import javax.jcr.Property;
 import javax.jcr.PropertyType;
 import javax.jcr.nodetype.ConstraintViolationException;
 
-import org.exoplatform.services.log.Log;
-
-import org.exoplatform.services.jcr.JcrImplBaseTest;
-import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
-import org.exoplatform.services.jcr.core.nodetype.NodeTypeValue;
-import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionValue;
-import org.exoplatform.services.log.ExoLogger;
-
 /**
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: $
  */
-public class TestSuperTypeChanges
-   extends JcrImplBaseTest
+public class TestSuperTypeChanges extends JcrImplBaseTest
 {
    /**
     * Class logger.
@@ -54,7 +52,7 @@ public class TestSuperTypeChanges
    public void setUp() throws Exception
    {
       super.setUp();
-      nodeTypeManager = (NodeTypeManagerImpl) session.getWorkspace().getNodeTypeManager();
+      nodeTypeManager = (NodeTypeManagerImpl)session.getWorkspace().getNodeTypeManager();
    }
 
    /**
@@ -155,9 +153,9 @@ public class TestSuperTypeChanges
       List<PropertyDefinitionValue> props = new ArrayList<PropertyDefinitionValue>();
 
       props.add(new PropertyDefinitionValue("jcr:mimeType1", false, false, 1, false, new ArrayList<String>(), false,
-               PropertyType.STRING, new ArrayList<String>()));
+         PropertyType.STRING, new ArrayList<String>()));
       props.add(new PropertyDefinitionValue("jcr:mimeType2", false, false, 1, false, new ArrayList<String>(), false,
-               PropertyType.STRING, new ArrayList<String>()));
+         PropertyType.STRING, new ArrayList<String>()));
 
       testNValue.setDeclaredPropertyDefinitionValues(props);
       nodeTypeManager.registerNodeType(testNValue, ExtendedNodeTypeManager.FAIL_IF_EXISTS);
@@ -180,7 +178,7 @@ public class TestSuperTypeChanges
       List<PropertyDefinitionValue> props2 = new ArrayList<PropertyDefinitionValue>();
 
       props2.add(new PropertyDefinitionValue("jcr:mimeType2", false, false, 1, false, new ArrayList<String>(), false,
-               PropertyType.STRING, new ArrayList<String>()));
+         PropertyType.STRING, new ArrayList<String>()));
 
       testNValue2.setDeclaredPropertyDefinitionValues(props);
 
@@ -194,7 +192,7 @@ public class TestSuperTypeChanges
       props = new ArrayList<PropertyDefinitionValue>();
 
       props.add(new PropertyDefinitionValue("jcr:mimeType1", false, false, 1, false, new ArrayList<String>(), false,
-               PropertyType.STRING, new ArrayList<String>()));
+         PropertyType.STRING, new ArrayList<String>()));
       testNValue.setDeclaredPropertyDefinitionValues(props);
       nodeTypeManager.registerNodeType(testNValue, ExtendedNodeTypeManager.REPLACE_IF_EXISTS);
    }

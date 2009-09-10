@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.api.nodetypes;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+
 import javax.jcr.ItemExistsException;
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
@@ -26,8 +28,6 @@ import javax.jcr.RepositoryException;
 import javax.jcr.lock.LockException;
 import javax.jcr.nodetype.ConstraintViolationException;
 import javax.jcr.version.VersionException;
-
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
 
 /**
  * Created by The eXo Platform SAS
@@ -61,8 +61,7 @@ import org.exoplatform.services.jcr.JcrAPIBaseTest;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestSameNameItems.java 12855 2008-04-07 14:47:20Z pnedonosko $
  */
-public class TestSameNameItems
-   extends JcrAPIBaseTest
+public class TestSameNameItems extends JcrAPIBaseTest
 {
 
    private Node testRoot;
@@ -86,7 +85,7 @@ public class TestSameNameItems
    }
 
    public void testSameNames() throws ItemExistsException, PathNotFoundException, VersionException,
-            ConstraintViolationException, LockException, RepositoryException
+      ConstraintViolationException, LockException, RepositoryException
    {
 
       try

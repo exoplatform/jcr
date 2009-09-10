@@ -82,8 +82,8 @@ public class QueryHandlerContext
     *          Any descendant of that node is also excluded from indexing.
     */
    public QueryHandlerContext(ItemDataConsumer stateMgr, String rootIdentifer, NodeTypeDataManager nodeTypeDataManager,
-            NamespaceRegistryImpl nsRegistry, QueryHandler parentHandler, String indexDirectory,
-            DocumentReaderService extractor)
+      NamespaceRegistryImpl nsRegistry, QueryHandler parentHandler, String indexDirectory,
+      DocumentReaderService extractor)
    {
       this.stateMgr = stateMgr;
       this.rootIdentifer = rootIdentifer;
@@ -93,7 +93,7 @@ public class QueryHandlerContext
       this.extractor = extractor;
       this.propRegistry = new PropertyTypeRegistry(nodeTypeDataManager);
       this.parentHandler = parentHandler;
-      ((NodeTypeDataManagerImpl) this.nodeTypeDataManager).addListener(propRegistry);
+      ((NodeTypeDataManagerImpl)this.nodeTypeDataManager).addListener(propRegistry);
    }
 
    /**
@@ -163,7 +163,7 @@ public class QueryHandlerContext
     */
    public void destroy()
    {
-      ((NodeTypeDataManagerImpl) this.nodeTypeDataManager).removeListener(propRegistry);
+      ((NodeTypeDataManagerImpl)this.nodeTypeDataManager).removeListener(propRegistry);
    }
 
    public DocumentReaderService getExtractor()

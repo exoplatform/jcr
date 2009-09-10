@@ -32,8 +32,7 @@ import javax.jcr.version.VersionException;
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: WeightNodeGenerator.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class WeightNodeGenerator
-   implements NodeGenerator
+public class WeightNodeGenerator implements NodeGenerator
 {
    private int maxDepth;
 
@@ -71,7 +70,7 @@ public class WeightNodeGenerator
    }
 
    protected void addNodes(Node parentNode, int level) throws ItemExistsException, PathNotFoundException,
-            VersionException, ConstraintViolationException, LockException, RepositoryException
+      VersionException, ConstraintViolationException, LockException, RepositoryException
    {
       if (level >= maxDepth)
          return;
@@ -82,7 +81,7 @@ public class WeightNodeGenerator
       for (int i = 0; i < maxNodesOnLevel; i++)
       {
          currentNode =
-                  parentNode.addNode("node_level_" + level + "_number_" + i + "_" + random.nextInt(Integer.MAX_VALUE));
+            parentNode.addNode("node_level_" + level + "_number_" + i + "_" + random.nextInt(Integer.MAX_VALUE));
          addProperties();
          addNodes(currentNode, level + 1);
       }
@@ -94,7 +93,7 @@ public class WeightNodeGenerator
    }
 
    public void genereteTree(Node root) throws ItemExistsException, PathNotFoundException, VersionException,
-            ConstraintViolationException, LockException, RepositoryException
+      ConstraintViolationException, LockException, RepositoryException
    {
       addNodes(root, 1);
    }

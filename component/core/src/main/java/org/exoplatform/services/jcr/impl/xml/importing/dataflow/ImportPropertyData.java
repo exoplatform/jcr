@@ -18,11 +18,10 @@
  */
 package org.exoplatform.services.jcr.impl.xml.importing.dataflow;
 
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 /**
  * Created by The eXo Platform SAS.
@@ -30,9 +29,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: ImportPropertyData.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class ImportPropertyData
-   extends TransientPropertyData
-   implements ImportItemData
+public class ImportPropertyData extends TransientPropertyData implements ImportItemData
 {
    /**
     * Logger.
@@ -64,7 +61,7 @@ public class ImportPropertyData
     *          - is property multivalued
     */
    public ImportPropertyData(QPath path, String identifier, int version, int type, String parentIdentifier,
-            boolean multiValued)
+      boolean multiValued)
    {
       super(path, identifier, version, type, parentIdentifier, multiValued);
    }

@@ -25,8 +25,7 @@ import org.apache.lucene.index.TermEnum;
 /**
  * Implements a TermDocs with a single document.
  */
-class SingleTermDocs
-   implements TermDocs
+class SingleTermDocs implements TermDocs
 {
 
    /**

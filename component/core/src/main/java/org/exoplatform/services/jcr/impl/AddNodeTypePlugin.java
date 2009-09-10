@@ -18,17 +18,16 @@
  */
 package org.exoplatform.services.jcr.impl;
 
+import org.exoplatform.container.component.BaseComponentPlugin;
+import org.exoplatform.container.xml.InitParams;
+import org.exoplatform.container.xml.ValuesParam;
+
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.exoplatform.container.component.BaseComponentPlugin;
-import org.exoplatform.container.xml.InitParams;
-import org.exoplatform.container.xml.ValuesParam;
-
-public class AddNodeTypePlugin
-   extends BaseComponentPlugin
+public class AddNodeTypePlugin extends BaseComponentPlugin
 {
 
    /**

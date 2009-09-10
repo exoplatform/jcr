@@ -29,8 +29,7 @@ import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a> 
  * @version $Id: PersistentDataManager.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public interface PersistentDataManager
-   extends DataManager
+public interface PersistentDataManager extends DataManager
 {
 
    void addItemPersistenceListener(ItemsPersistenceListener listener);

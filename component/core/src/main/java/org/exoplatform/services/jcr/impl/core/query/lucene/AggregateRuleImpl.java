@@ -44,8 +44,7 @@ import org.exoplatform.services.jcr.util.Text;
  * for items that should be included in the node scope index of an ancestor. Per default the values
  * of properties are only added to the node scope index of the parent node.
  */
-class AggregateRuleImpl
-   implements AggregateRule
+class AggregateRuleImpl implements AggregateRule
 {
 
    /**
@@ -90,7 +89,7 @@ class AggregateRuleImpl
     * @throws PathNotFoundException
     */
    AggregateRuleImpl(Node config, LocationFactory resolver, ItemDataConsumer ism) throws IllegalNameException,
-            PathNotFoundException, RepositoryException
+      PathNotFoundException, RepositoryException
    {
       this.resolver = resolver;
       this.nodeTypeName = getNodeTypeName(config);
@@ -165,7 +164,7 @@ class AggregateRuleImpl
     * @throws PathNotFoundException
     */
    private InternalQName getNodeTypeName(Node config) throws IllegalNameException, PathNotFoundException,
-            RepositoryException
+      RepositoryException
    {
       String ntString = config.getAttributes().getNamedItem("primaryType").getNodeValue();
       return resolver.parseJCRName(ntString).getInternalName();
@@ -235,7 +234,7 @@ class AggregateRuleImpl
          Node n = nodes.item(i);
          if (n.getNodeType() == Node.TEXT_NODE)
          {
-            content.append(((CharacterData) n).getData());
+            content.append(((CharacterData)n).getData());
          }
       }
       return content.toString();
@@ -292,7 +291,7 @@ class AggregateRuleImpl
                   // nodeState is root node
                   return null;
                }
-               NodeData parent = (NodeData) ism.getItemData(parentId);
+               NodeData parent = (NodeData)ism.getItemData(parentId);
                if (elements[e].getName().equals("*"))
                {
                   // match any parent
@@ -367,7 +366,7 @@ class AggregateRuleImpl
             ItemData item = ism.getItemData(nodeState, currentName);
             if (item != null && item.isNode())
             {
-               cne.add((NodeData) item);
+               cne.add((NodeData)item);
             }
          }
          if (pattern.getEntries().length - 1 == offset)

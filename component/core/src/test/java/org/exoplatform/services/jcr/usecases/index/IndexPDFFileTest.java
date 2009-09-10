@@ -18,6 +18,10 @@
  */
 package org.exoplatform.services.jcr.usecases.index;
 
+import org.exoplatform.container.StandaloneContainer;
+import org.exoplatform.services.document.DocumentReaderService;
+import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
+
 import java.io.InputStream;
 import java.util.Calendar;
 
@@ -25,10 +29,6 @@ import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryResult;
-
-import org.exoplatform.container.StandaloneContainer;
-import org.exoplatform.services.document.DocumentReaderService;
-import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
 
 /**
  * Created by The eXo Platform SAS.
@@ -39,8 +39,7 @@ import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
  *          The test for indexing an Adobe pdf .pdf file which contained within jcr:data property
  */
 
-public class IndexPDFFileTest
-   extends BaseUsecasesTest
+public class IndexPDFFileTest extends BaseUsecasesTest
 {
 
    /**
@@ -110,7 +109,7 @@ public class IndexPDFFileTest
                is = next.getProperty("jcr:data").getStream();
                StandaloneContainer scontainer = StandaloneContainer.getInstance();
                DocumentReaderService service_ =
-                        (DocumentReaderService) scontainer.getComponentInstanceOfType(DocumentReaderService.class);
+                  (DocumentReaderService)scontainer.getComponentInstanceOfType(DocumentReaderService.class);
                assertNotNull("Can not create service_ a for indexing", world);
                String found_text = service_.getContentAsText(mimeType, is);
                assertNotNull("Can not create found_text for indexing", world);

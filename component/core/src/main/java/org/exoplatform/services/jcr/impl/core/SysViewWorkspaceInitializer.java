@@ -18,32 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Stack;
-
-import javax.jcr.NamespaceException;
-import javax.jcr.PathNotFoundException;
-import javax.jcr.PropertyType;
-import javax.jcr.RepositoryException;
-import javax.xml.stream.FactoryConfigurationError;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import javax.xml.stream.events.StartElement;
-
-import org.exoplatform.services.log.Log;
 import org.apache.ws.commons.util.Base64;
-
 import org.exoplatform.services.jcr.access.AccessManager;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
@@ -70,6 +45,29 @@ import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Stack;
+
+import javax.jcr.NamespaceException;
+import javax.jcr.PathNotFoundException;
+import javax.jcr.PropertyType;
+import javax.jcr.RepositoryException;
+import javax.xml.stream.FactoryConfigurationError;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.events.StartElement;
 
 /**
  * Created by The eXo Platform SAS. <br/>
@@ -81,8 +79,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @version $Id: SysViewWorkspaceInitializer.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
 
-public class SysViewWorkspaceInitializer
-   implements WorkspaceInitializer
+public class SysViewWorkspaceInitializer implements WorkspaceInitializer
 {
 
    public static final String RESTORE_PATH_PARAMETER = "restore-path";
@@ -106,8 +103,7 @@ public class SysViewWorkspaceInitializer
 
    protected String restorePath;
 
-   protected class TempOutputStream
-      extends ByteArrayOutputStream
+   protected class TempOutputStream extends ByteArrayOutputStream
    {
 
       byte[] getBuffer()
@@ -168,8 +164,7 @@ public class SysViewWorkspaceInitializer
       abstract String getText() throws IOException;
    }
 
-   protected class StringValueWriter
-      extends ValueWriter
+   protected class StringValueWriter extends ValueWriter
    {
       final StringBuilder string = new StringBuilder();
 
@@ -204,8 +199,7 @@ public class SysViewWorkspaceInitializer
       }
    }
 
-   protected class BinaryValueWriter
-      extends ValueWriter
+   protected class BinaryValueWriter extends ValueWriter
    {
       final Base64Decoder decoder = new Base64Decoder();
 
@@ -240,8 +234,7 @@ public class SysViewWorkspaceInitializer
       }
    }
 
-   protected class Base64Decoder
-      extends Base64.Decoder
+   protected class Base64Decoder extends Base64.Decoder
    {
 
       private File tmpFile;
@@ -267,11 +260,11 @@ public class SysViewWorkspaceInitializer
                buff = new TempOutputStream();
             }
          }
-         else if (tmpFile == null && (((TempOutputStream) buff).getSize() + buffer.length) > maxBufferSize)
+         else if (tmpFile == null && (((TempOutputStream)buff).getSize() + buffer.length) > maxBufferSize)
          {
             // spool to file
             FileOutputStream fout = new FileOutputStream(tmpFile = File.createTempFile("jcrrestorewi", ".tmp"));
-            fout.write(((TempOutputStream) buff).getBuffer());
+            fout.write(((TempOutputStream)buff).getBuffer());
             buff.close();
             buff = fout; // use file
          }
@@ -295,7 +288,7 @@ public class SysViewWorkspaceInitializer
       byte[] getByteArray() throws IOException
       {
          if (buff != null)
-            return ((TempOutputStream) buff).getBuffer();
+            return ((TempOutputStream)buff).getBuffer();
          else
             return null;
       }
@@ -306,8 +299,7 @@ public class SysViewWorkspaceInitializer
       }
    }
 
-   protected class SVNodeData
-      extends TransientNodeData
+   protected class SVNodeData extends TransientNodeData
    {
 
       List<InternalQName> childNodes = new LinkedList<InternalQName>();
@@ -337,13 +329,11 @@ public class SysViewWorkspaceInitializer
                index++;
          }
          childNodes.add(childName);
-         return new int[]
-         {orderNumber, index};
+         return new int[]{orderNumber, index};
       }
    }
 
-   protected class SVPropertyData
-      extends TransientPropertyData
+   protected class SVPropertyData extends TransientPropertyData
    {
 
       SVPropertyData(QPath path, String identifier, int version, int type, String parentIdentifier, boolean multivalued)
@@ -386,10 +376,9 @@ public class SysViewWorkspaceInitializer
     *           if Repository error
     */
    public SysViewWorkspaceInitializer(WorkspaceEntry config, RepositoryEntry repConfig,
-            CacheableWorkspaceDataManager dataManager, NamespaceRegistryImpl namespaceRegistry,
-            LocationFactory locationFactory, NodeTypeManagerImpl nodeTypeManager, ValueFactoryImpl valueFactory,
-            AccessManager accessManager) throws RepositoryConfigurationException, PathNotFoundException,
-            RepositoryException
+      CacheableWorkspaceDataManager dataManager, NamespaceRegistryImpl namespaceRegistry,
+      LocationFactory locationFactory, NodeTypeManagerImpl nodeTypeManager, ValueFactoryImpl valueFactory,
+      AccessManager accessManager) throws RepositoryConfigurationException, PathNotFoundException, RepositoryException
    {
 
       this.workspaceName = config.getName();
@@ -401,15 +390,15 @@ public class SysViewWorkspaceInitializer
 
       this.fileCleaner = new FileCleaner(false); // cleaner should be started!
       this.maxBufferSize =
-               config.getContainer().getParameterInteger(WorkspaceDataContainer.MAXBUFFERSIZE_PROP,
-                        WorkspaceDataContainer.DEF_MAXBUFFERSIZE);
+         config.getContainer().getParameterInteger(WorkspaceDataContainer.MAXBUFFERSIZE_PROP,
+            WorkspaceDataContainer.DEF_MAXBUFFERSIZE);
 
       this.restorePath =
-               config.getInitializer().getParameterValue(SysViewWorkspaceInitializer.RESTORE_PATH_PARAMETER, null);
+         config.getInitializer().getParameterValue(SysViewWorkspaceInitializer.RESTORE_PATH_PARAMETER, null);
       if (this.restorePath == null)
          throw new RepositoryConfigurationException("Workspace (" + workspaceName
-                  + ") RestoreIntializer should have mandatory parameter "
-                  + SysViewWorkspaceInitializer.RESTORE_PATH_PARAMETER);
+            + ") RestoreIntializer should have mandatory parameter "
+            + SysViewWorkspaceInitializer.RESTORE_PATH_PARAMETER);
    }
 
    /**
@@ -437,9 +426,9 @@ public class SysViewWorkspaceInitializer
     *           if Repository error
     */
    public SysViewWorkspaceInitializer(WorkspaceEntry config, RepositoryEntry repConfig,
-            CacheableWorkspaceDataManager dataManager, NamespaceRegistryImpl namespaceRegistry,
-            LocationFactory locationFactory, NodeTypeManagerImpl nodeTypeManager, ValueFactoryImpl valueFactory,
-            AccessManager accessManager, String restorePath) throws RepositoryException
+      CacheableWorkspaceDataManager dataManager, NamespaceRegistryImpl namespaceRegistry,
+      LocationFactory locationFactory, NodeTypeManagerImpl nodeTypeManager, ValueFactoryImpl valueFactory,
+      AccessManager accessManager, String restorePath) throws RepositoryException
    {
 
       this.workspaceName = config.getName();
@@ -451,8 +440,8 @@ public class SysViewWorkspaceInitializer
 
       this.fileCleaner = new FileCleaner(false); // cleaner should be started!
       this.maxBufferSize =
-               config.getContainer().getParameterInteger(WorkspaceDataContainer.MAXBUFFERSIZE_PROP,
-                        WorkspaceDataContainer.DEF_MAXBUFFERSIZE);
+         config.getContainer().getParameterInteger(WorkspaceDataContainer.MAXBUFFERSIZE_PROP,
+            WorkspaceDataContainer.DEF_MAXBUFFERSIZE);
       this.restorePath = restorePath;
    }
 
@@ -464,7 +453,7 @@ public class SysViewWorkspaceInitializer
 
       if (isWorkspaceInitialized())
       {
-         return (NodeData) dataManager.getItemData(Constants.ROOT_UUID);
+         return (NodeData)dataManager.getItemData(Constants.ROOT_UUID);
       }
 
       try
@@ -478,10 +467,10 @@ public class SysViewWorkspaceInitializer
 
          dataManager.save(tLog);
 
-         final NodeData root = (NodeData) dataManager.getItemData(Constants.ROOT_UUID);
+         final NodeData root = (NodeData)dataManager.getItemData(Constants.ROOT_UUID);
 
          log.info("Workspace " + workspaceName + " restored from file " + restorePath + " in "
-                  + (System.currentTimeMillis() - start) * 1d / 1000 + "sec");
+            + (System.currentTimeMillis() - start) * 1d / 1000 + "sec");
 
          return root;
       }
@@ -520,7 +509,7 @@ public class SysViewWorkspaceInitializer
     *           if illegal name
     */
    protected PlainChangesLog read() throws XMLStreamException, FactoryConfigurationError, IOException,
-            NamespaceException, RepositoryException, IllegalNameException
+      NamespaceException, RepositoryException, IllegalNameException
    {
 
       InputStream input = new FileInputStream(restorePath);
@@ -616,11 +605,11 @@ public class SysViewWorkspaceInitializer
                            // add current node to changes log.
                            // add node, no event fire, persisted, internally created, root is ancestor to save
                            changes.add(new ItemState(currentNode, ItemState.ADDED, false, Constants.ROOT_PATH, true,
-                                    true));
+                              true));
                         }
                         else
                            log.warn("Node skipped name=" + svName + " id=" + exoId + ". Context node "
-                                    + (parents.size() > 0 ? parents.peek().getQPath().getAsString() : "/"));
+                              + (parents.size() > 0 ? parents.peek().getQPath().getAsString() : "/"));
 
                      }
                      else if (Constants.SV_PROPERTY.equals(lname))
@@ -634,8 +623,8 @@ public class SysViewWorkspaceInitializer
                            {
                               SVNodeData parent = parents.peek();
                               QPath currentPath =
-                                       QPath.makeChildPath(parent.getQPath(), locationFactory.parseJCRName(svName)
-                                                .getInternalName());
+                                 QPath.makeChildPath(parent.getQPath(), locationFactory.parseJCRName(svName)
+                                    .getInternalName());
                               try
                               {
                                  propertyType = PropertyType.valueFromName(svType);
@@ -649,18 +638,18 @@ public class SysViewWorkspaceInitializer
                               String exoMultivalued = reader.getAttributeValue(exoURI, Constants.EXO_MULTIVALUED);
 
                               currentProperty =
-                                       new SVPropertyData(currentPath, exoId, 0, propertyType, parent.getIdentifier(),
-                                                ("true".equals(exoMultivalued) ? true : false));
+                                 new SVPropertyData(currentPath, exoId, 0, propertyType, parent.getIdentifier(),
+                                    ("true".equals(exoMultivalued) ? true : false));
                            }
                            else
                               log.warn("Property can'b be first name=" + svName + " type=" + svType + " id=" + exoId
-                                       + ". Node should be prior. Context node "
-                                       + (parents.size() > 0 ? parents.peek().getQPath().getAsString() : "/"));
+                                 + ". Node should be prior. Context node "
+                                 + (parents.size() > 0 ? parents.peek().getQPath().getAsString() : "/"));
                         }
                         else
                            log.warn("Property skipped name=" + svName + " type=" + svType + " id=" + exoId
-                                    + ". Context node "
-                                    + (parents.size() > 0 ? parents.peek().getQPath().getAsString() : "/"));
+                              + ". Context node "
+                              + (parents.size() > 0 ? parents.peek().getQPath().getAsString() : "/"));
 
                      }
                      else if (Constants.SV_VALUE.equals(lname) && propertyType != -1)
@@ -705,7 +694,7 @@ public class SysViewWorkspaceInitializer
                            if (currentProperty.getQPath().getName().equals(Constants.JCR_PRIMARYTYPE))
                            {
                               parent.setPrimartTypeName(InternalQName.parse(new String(currentProperty.getValues().get(
-                                       0).getAsByteArray())));
+                                 0).getAsByteArray())));
                            }
                            else if (currentProperty.getQPath().getName().equals(Constants.JCR_MIXINTYPES))
                            {
@@ -713,8 +702,8 @@ public class SysViewWorkspaceInitializer
                               for (int i = 0; i < currentProperty.getValues().size(); i++)
                               {
                                  mixins[i] =
-                                          InternalQName.parse(new String(currentProperty.getValues().get(i)
-                                                   .getAsByteArray()));
+                                    InternalQName
+                                       .parse(new String(currentProperty.getValues().get(i).getAsByteArray()));
                               }
                               parent.setMixinTypeNames(mixins);
                            }
@@ -722,7 +711,7 @@ public class SysViewWorkspaceInitializer
                            // add property, no event fire, persisted, internally created, root is ancestor to
                            // save
                            changes.add(new ItemState(currentProperty, ItemState.ADDED, false, Constants.ROOT_PATH,
-                                    true, true));
+                              true, true));
 
                            // reset property context
                            propertyType = -1;
@@ -738,14 +727,14 @@ public class SysViewWorkspaceInitializer
                         if (propertyType == PropertyType.NAME)
                         {
                            vdata =
-                                    new TransientValueData(locationFactory.parseJCRName(propertyValue.getText())
-                                             .getInternalName());
+                              new TransientValueData(locationFactory.parseJCRName(propertyValue.getText())
+                                 .getInternalName());
                         }
                         else if (propertyType == PropertyType.PATH)
                         {
                            vdata =
-                                    new TransientValueData(locationFactory.parseJCRPath(propertyValue.getText())
-                                             .getInternalPath());
+                              new TransientValueData(locationFactory.parseJCRPath(propertyValue.getText())
+                                 .getInternalPath());
                         }
                         else if (propertyType == PropertyType.DATE)
                         {
@@ -761,12 +750,10 @@ public class SysViewWorkspaceInitializer
                               if (pfile != null)
                               {
                                  vdata =
-                                          new TransientValueData(0, null, null, pfile, fileCleaner, maxBufferSize,
-                                                   null, true);
+                                    new TransientValueData(0, null, null, pfile, fileCleaner, maxBufferSize, null, true);
                               }
                               else
-                                 vdata = new TransientValueData(new byte[]
-                                 {}, 0);
+                                 vdata = new TransientValueData(new byte[]{}, 0);
                            }
                         }
                         else

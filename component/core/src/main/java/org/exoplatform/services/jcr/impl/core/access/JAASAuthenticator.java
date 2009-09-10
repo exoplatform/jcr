@@ -18,14 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.access;
 
-import java.util.HashSet;
-
-import javax.jcr.Credentials;
-import javax.jcr.LoginException;
-import javax.jcr.SimpleCredentials;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.login.LoginContext;
-
 import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
@@ -34,6 +26,14 @@ import org.exoplatform.services.security.Identity;
 import org.exoplatform.services.security.IdentityRegistry;
 import org.exoplatform.services.security.MembershipEntry;
 import org.exoplatform.services.security.jaas.BasicCallbackHandler;
+
+import java.util.HashSet;
+
+import javax.jcr.Credentials;
+import javax.jcr.LoginException;
+import javax.jcr.SimpleCredentials;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.login.LoginContext;
 
 /**
  * Created by The eXo Platform SAS .<br/>
@@ -44,8 +44,7 @@ import org.exoplatform.services.security.jaas.BasicCallbackHandler;
  * @version $Id: $
  */
 
-public class JAASAuthenticator
-   extends BaseAuthenticator
+public class JAASAuthenticator extends BaseAuthenticator
 {
 
    public JAASAuthenticator(RepositoryEntry config, IdentityRegistry identityRegistry)
@@ -64,17 +63,17 @@ public class JAASAuthenticator
       CredentialsImpl thisCredentials;
       if (credentials instanceof CredentialsImpl)
       {
-         thisCredentials = (CredentialsImpl) credentials;
+         thisCredentials = (CredentialsImpl)credentials;
       }
       else if (credentials instanceof SimpleCredentials)
       {
-         String name = ((SimpleCredentials) credentials).getUserID();
-         char[] pswd = ((SimpleCredentials) credentials).getPassword();
+         String name = ((SimpleCredentials)credentials).getUserID();
+         char[] pswd = ((SimpleCredentials)credentials).getPassword();
          thisCredentials = new CredentialsImpl(name, pswd);
       }
       else
          throw new LoginException(
-                  "Credentials for the authentication should be CredentialsImpl or SimpleCredentials type");
+            "Credentials for the authentication should be CredentialsImpl or SimpleCredentials type");
 
       // SYSTEM
       // TODO do we need to cache system state (identity) in registry?

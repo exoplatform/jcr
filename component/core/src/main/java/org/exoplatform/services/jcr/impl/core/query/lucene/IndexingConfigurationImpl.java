@@ -56,8 +56,7 @@ import org.exoplatform.services.log.ExoLogger;
  * <code>IndexingConfigurationImpl</code> implements a concrete indexing
  * configuration.
  */
-public class IndexingConfigurationImpl
-   implements IndexingConfiguration
+public class IndexingConfigurationImpl implements IndexingConfiguration
 {
 
    /**
@@ -106,8 +105,7 @@ public class IndexingConfigurationImpl
     */
    public void addAggregateRule(Node configNode) throws Exception
    {
-      AggregateRule[] rules =
-      {new AggregateRuleImpl(configNode, resolver, ism)};
+      AggregateRule[] rules = {new AggregateRuleImpl(configNode, resolver, ism)};
       addAggregateRules(rules);
    }
 
@@ -217,7 +215,7 @@ public class IndexingConfigurationImpl
     * @throws PathNotFoundException
     */
    public void init(Element config, QueryHandlerContext context, NamespaceMappings nsMappings)
-            throws RepositoryException, IllegalNameException
+      throws RepositoryException, IllegalNameException
    {
       ism = context.getItemStateManager();
       resolver = new LocationFactory(context.getNamespaceRegistry());
@@ -271,14 +269,14 @@ public class IndexingConfigurationImpl
                      if (clazz == JcrStandartAnalyzer.class)
                      {
                         log.warn("Not allowed to configure " + JcrStandartAnalyzer.class.getName()
-                                 + " for a property. " + "Using default analyzer for that property.");
+                           + " for a property. " + "Using default analyzer for that property.");
                      }
                      else if (Analyzer.class.isAssignableFrom(clazz))
                      {
                         Analyzer analyzer;
                         try
                         {
-                           analyzer = (Analyzer) clazz.newInstance();
+                           analyzer = (Analyzer)clazz.newInstance();
                         }
                         catch (InstantiationException e)
                         {
@@ -299,19 +297,19 @@ public class IndexingConfigurationImpl
                            {
                               // get property name
                               InternalQName propName =
-                                       resolver.parseJCRName(getTextContent(propertyNode)).getInternalName();
+                                 resolver.parseJCRName(getTextContent(propertyNode)).getInternalName();
                               String fieldName = nsMappings.translatePropertyName(propName);
                               // set analyzer for the fulltext property fieldname
                               int idx = fieldName.indexOf(':');
                               fieldName =
-                                       fieldName.substring(0, idx + 1) + FieldNames.FULLTEXT_PREFIX
-                                                + fieldName.substring(idx + 1);;
+                                 fieldName.substring(0, idx + 1) + FieldNames.FULLTEXT_PREFIX
+                                    + fieldName.substring(idx + 1);;
                               Object prevAnalyzer = setPropertyAnalyzer(fieldName, analyzer);
                               if (prevAnalyzer != null)
                               {
                                  log.warn("Property " + propName.getAsString()
-                                          + " has been configured for multiple analyzers. "
-                                          + " Last configured analyzer is used");
+                                    + " has been configured for multiple analyzers. "
+                                    + " Last configured analyzer is used");
                               }
                            }
                         }
@@ -319,7 +317,7 @@ public class IndexingConfigurationImpl
                      else
                      {
                         log.warn("org.apache.lucene.analysis.Analyzer is not a superclass of " + analyzerClassName
-                                 + ". Ignoring this configure analyzer");
+                           + ". Ignoring this configure analyzer");
                      }
                   }
                   catch (ClassNotFoundException e)
@@ -526,7 +524,7 @@ public class IndexingConfigurationImpl
     *           characters.
     */
    private Map<InternalQName, PropertyConfig> getPropertyConfigs(Node config) throws PathNotFoundException,
-            RepositoryException
+      RepositoryException
    {
       Map<InternalQName, PropertyConfig> configs = new HashMap<InternalQName, PropertyConfig>();
       NodeList childNodes = config.getChildNodes();
@@ -769,7 +767,7 @@ public class IndexingConfigurationImpl
       private final String propertyValue;
 
       PathExpression(int axis, InternalQName elementTest, InternalQName nameTest, InternalQName propertyName,
-               String propertyValue)
+         String propertyValue)
       {
          this.axis = axis;
          this.elementTest = elementTest;
@@ -814,7 +812,7 @@ public class IndexingConfigurationImpl
                nodeStates = new Iterator<NodeData>()
                {
 
-                  private NodeData next = (NodeData) ism.getItemData(context.getParentIdentifier());
+                  private NodeData next = (NodeData)ism.getItemData(context.getParentIdentifier());
 
                   public boolean hasNext()
                   {
@@ -828,7 +826,7 @@ public class IndexingConfigurationImpl
                      {
                         if (next.getParentIdentifier() != null)
                         {
-                           next = (NodeData) ism.getItemData(next.getParentIdentifier());
+                           next = (NodeData)ism.getItemData(next.getParentIdentifier());
                         }
                         else
                         {
@@ -859,7 +857,7 @@ public class IndexingConfigurationImpl
             {
                if (context.getParentIdentifier() != null)
                {
-                  NodeData state = (NodeData) ism.getItemData(context.getParentIdentifier());
+                  NodeData state = (NodeData)ism.getItemData(context.getParentIdentifier());
                   nodeStates = Collections.singletonList(state).iterator();
                }
                else
@@ -986,7 +984,7 @@ public class IndexingConfigurationImpl
          Node n = nodes.item(i);
          if (n.getNodeType() == Node.TEXT_NODE)
          {
-            content.append(((CharacterData) n).getData());
+            content.append(((CharacterData)n).getData());
          }
       }
       return content.toString();

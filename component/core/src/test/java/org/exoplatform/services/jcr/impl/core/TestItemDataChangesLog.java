@@ -18,12 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
-import java.util.Collection;
-import java.util.List;
-
-import javax.jcr.PropertyType;
-import javax.jcr.RepositoryException;
-
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.dataflow.ItemState;
@@ -35,14 +29,19 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.session.SessionChangesLog;
 
+import java.util.Collection;
+import java.util.List;
+
+import javax.jcr.PropertyType;
+import javax.jcr.RepositoryException;
+
 /**
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov</a>
  * @version $Id: TestItemDataChangesLog.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class TestItemDataChangesLog
-   extends JcrImplBaseTest
+public class TestItemDataChangesLog extends JcrImplBaseTest
 {
 
    private TransientNodeData data1;
@@ -59,11 +58,11 @@ public class TestItemDataChangesLog
       QPath path3 = QPath.makeChildPath(Constants.ROOT_PATH, new InternalQName(null, "testBasicOperations3"));
 
       data1 =
-               new TransientNodeData(path1, "1", 0, new InternalQName(Constants.NS_NT_URI, "unstructured"),
-                        new InternalQName[0], 0, Constants.ROOT_UUID, new AccessControlList());
+         new TransientNodeData(path1, "1", 0, new InternalQName(Constants.NS_NT_URI, "unstructured"),
+            new InternalQName[0], 0, Constants.ROOT_UUID, new AccessControlList());
       data2 =
-               new TransientNodeData(path2, "2", 0, new InternalQName(Constants.NS_NT_URI, "unstructured"),
-                        new InternalQName[0], 0, Constants.ROOT_UUID, new AccessControlList());
+         new TransientNodeData(path2, "2", 0, new InternalQName(Constants.NS_NT_URI, "unstructured"),
+            new InternalQName[0], 0, Constants.ROOT_UUID, new AccessControlList());
       data3 = new TransientPropertyData(path3, "3", 0, PropertyType.STRING, Constants.ROOT_UUID, false);
 
    }
@@ -96,8 +95,8 @@ public class TestItemDataChangesLog
       SessionChangesLog cLog = new SessionChangesLog("s1");
 
       TransientNodeData d1 =
-               TransientNodeData.createNodeData(data1, new InternalQName(null, "testSessionOperations"),
-                        new InternalQName(Constants.NS_NT_URI, "unstructured"), "d1");
+         TransientNodeData.createNodeData(data1, new InternalQName(null, "testSessionOperations"), new InternalQName(
+            Constants.NS_NT_URI, "unstructured"), "d1");
 
       // test remove
       cLog.add(ItemState.createAddedState(data1));
@@ -142,23 +141,21 @@ public class TestItemDataChangesLog
    public void testMixinsAddTransient() throws Exception
    {
 
-      String[] mixins = new String[]
-      {"mix:referenceable", "mix:lockable"};
-      String[] finalMixins = new String[]
-      {"mix:lockable"};
+      String[] mixins = new String[]{"mix:referenceable", "mix:lockable"};
+      String[] finalMixins = new String[]{"mix:lockable"};
 
-      NodeImpl testNode = (NodeImpl) session.getRootNode().addNode("mixin_transient_test");
-      NodeImpl node1 = (NodeImpl) testNode.addNode("node-1");
+      NodeImpl testNode = (NodeImpl)session.getRootNode().addNode("mixin_transient_test");
+      NodeImpl node1 = (NodeImpl)testNode.addNode("node-1");
       session.save();
 
       node1.addMixin(mixins[0]);
       node1.addMixin(mixins[1]);
 
-      PropertyImpl uuid = (PropertyImpl) node1.getProperty("jcr:uuid");
+      PropertyImpl uuid = (PropertyImpl)node1.getProperty("jcr:uuid");
 
       try
       {
-         NodeImpl sameNode1 = (NodeImpl) session.getNodeByUUID(uuid.getString());
+         NodeImpl sameNode1 = (NodeImpl)session.getNodeByUUID(uuid.getString());
          checkMixins(mixins, sameNode1);
 
          assertEquals("Nodes must be same", node1, sameNode1);
@@ -170,7 +167,7 @@ public class TestItemDataChangesLog
 
       try
       {
-         NodeImpl sameNode1 = (NodeImpl) session.getItem(node1.getPath());
+         NodeImpl sameNode1 = (NodeImpl)session.getItem(node1.getPath());
          checkMixins(mixins, sameNode1);
 
          assertEquals("Nodes must be same", node1, sameNode1);

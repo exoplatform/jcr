@@ -18,13 +18,13 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs;
 
-import java.io.IOException;
-import java.util.Properties;
-
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.storage.value.cas.ValueContentAddressStorage;
 import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
+
+import java.io.IOException;
+import java.util.Properties;
 
 /**
  * Created by The eXo Platform SAS .
@@ -33,8 +33,7 @@ import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
  * @version $Id: CASableSimpleFileValueStorage.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
 
-public class CASableSimpleFileValueStorage
-   extends FileValueStorage
+public class CASableSimpleFileValueStorage extends FileValueStorage
 {
 
    private ValueContentAddressStorage vcas;
@@ -43,7 +42,7 @@ public class CASableSimpleFileValueStorage
 
    @Override
    public void init(Properties props, ValueDataResourceHolder resources) throws IOException,
-            RepositoryConfigurationException
+      RepositoryConfigurationException
    {
       super.init(props, resources);
 
@@ -53,7 +52,7 @@ public class CASableSimpleFileValueStorage
       // get other vcas specific props and make VCAS
       try
       {
-         vcas = (ValueContentAddressStorage) Class.forName(vcasType).newInstance();
+         vcas = (ValueContentAddressStorage)Class.forName(vcasType).newInstance();
       }
       catch (Exception e)
       {

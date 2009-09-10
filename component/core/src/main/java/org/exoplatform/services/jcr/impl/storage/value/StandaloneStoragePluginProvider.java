@@ -18,16 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-
-import javax.jcr.PropertyType;
-
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.ValueStorageEntry;
@@ -40,6 +30,15 @@ import org.exoplatform.services.jcr.storage.value.ValuePluginFilter;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePlugin;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+
+import javax.jcr.PropertyType;
 
 /**
  * Created by The eXo Platform SAS. Per-workspace factory object for ValueStoragePlugin
@@ -48,9 +47,8 @@ import org.exoplatform.services.log.ExoLogger;
  * @version $Id: StandaloneStoragePluginProvider.java 13463 2007-03-16 09:17:29Z geaz $
  */
 
-public class StandaloneStoragePluginProvider
-   extends ArrayList<ValueStoragePlugin>
-   implements ValueStoragePluginProvider
+public class StandaloneStoragePluginProvider extends ArrayList<ValueStoragePlugin> implements
+   ValueStoragePluginProvider
 {
 
    private static final long serialVersionUID = 4537116106932443262L;
@@ -78,7 +76,7 @@ public class StandaloneStoragePluginProvider
             {
                if (vsp.getId().equals(storageEntry.getId()))
                   throw new RepositoryConfigurationException("Value storage with ID '" + storageEntry.getId()
-                           + "' already exists");
+                     + "' already exists");
             }
 
             Object o = null;
@@ -97,15 +95,15 @@ public class StandaloneStoragePluginProvider
                continue;
             }
 
-            ValueStoragePlugin plugin = (ValueStoragePlugin) o;
+            ValueStoragePlugin plugin = (ValueStoragePlugin)o;
             // init filters
             ArrayList<ValuePluginFilter> filters = new ArrayList<ValuePluginFilter>();
             List<ValueStorageFilterEntry> filterEntries = storageEntry.getFilters();
             for (ValueStorageFilterEntry filterEntry : filterEntries)
             {
                ValuePluginFilter filter =
-                        new ValuePluginFilter(PropertyType.valueFromName(filterEntry.getPropertyType()), null, null,
-                                 filterEntry.getMinValueSize());
+                  new ValuePluginFilter(PropertyType.valueFromName(filterEntry.getPropertyType()), null, null,
+                     filterEntry.getMinValueSize());
                filters.add(filter);
             }
 

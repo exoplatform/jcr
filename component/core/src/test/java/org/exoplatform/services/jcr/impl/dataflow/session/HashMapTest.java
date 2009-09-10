@@ -18,13 +18,13 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.session;
 
+import junit.framework.TestCase;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
-
-import junit.framework.TestCase;
 
 /**
  * Created by The eXo Platform SAS
@@ -34,8 +34,7 @@ import junit.framework.TestCase;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: HashMapTest.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class HashMapTest
-   extends TestCase
+public class HashMapTest extends TestCase
 {
 
    public void testStringKey()

@@ -27,8 +27,7 @@ import javax.jcr.observation.EventListener;
  * @version $Id: ThrowableEventListener.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public abstract class ThrowableEventListener
-   implements EventListener
+public abstract class ThrowableEventListener implements EventListener
 {
 
    private Throwable exception;

@@ -17,22 +17,21 @@
 
 package org.exoplatform.services.jcr.impl.core.query;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.util.Calendar;
-
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.TermQuery;
-
 import org.exoplatform.services.document.DocumentReader;
 import org.exoplatform.services.document.DocumentReaderService;
 import org.exoplatform.services.document.impl.MSExcelDocumentReader;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.query.lucene.FieldNames;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.util.Calendar;
 
 /**
  * Created by The eXo Platform SAS Author : Sergey Karpenko <sergey.karpenko@exoplatform.com.ua>
@@ -40,8 +39,7 @@ import org.exoplatform.services.jcr.impl.core.query.lucene.FieldNames;
  * @version $Id: $
  */
 
-public class TestExcelFileSearch
-   extends BaseQueryTest
+public class TestExcelFileSearch extends BaseQueryTest
 {
 
    public void testFindFileContent() throws Exception
@@ -51,8 +49,8 @@ public class TestExcelFileSearch
 
       FileInputStream fis = new FileInputStream(file);
 
-      NodeImpl node = (NodeImpl) root.addNode("excelFile", "nt:file");
-      NodeImpl cont = (NodeImpl) node.addNode("jcr:content", "nt:resource");
+      NodeImpl node = (NodeImpl)root.addNode("excelFile", "nt:file");
+      NodeImpl cont = (NodeImpl)node.addNode("jcr:content", "nt:resource");
       cont.setProperty("jcr:mimeType", "application/excel");
       cont.setProperty("jcr:lastModified", Calendar.getInstance());
       // cont.setProperty("jcr:encoding","UTF-8");
@@ -63,7 +61,7 @@ public class TestExcelFileSearch
       fis.close();
       fis = new FileInputStream(file);
       DocumentReaderService extr =
-               (DocumentReaderService) session.getContainer().getComponentInstanceOfType(DocumentReaderService.class);
+         (DocumentReaderService)session.getContainer().getComponentInstanceOfType(DocumentReaderService.class);
 
       DocumentReader dreader = extr.getDocumentReader("application/excel");
       assertNotNull(dreader);

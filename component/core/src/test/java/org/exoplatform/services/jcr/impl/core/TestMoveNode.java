@@ -18,6 +18,10 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
+import org.exoplatform.services.jcr.JcrImplBaseTest;
+import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.datamodel.QPath;
+
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -29,16 +33,11 @@ import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 
-import org.exoplatform.services.jcr.JcrImplBaseTest;
-import org.exoplatform.services.jcr.datamodel.InternalQName;
-import org.exoplatform.services.jcr.datamodel.QPath;
-
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: TestMoveNode.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class TestMoveNode
-   extends JcrImplBaseTest
+public class TestMoveNode extends JcrImplBaseTest
 {
    private static int FILES_COUNT = 20;
 
@@ -181,9 +180,9 @@ public class TestMoveNode
 
       assertEquals("/node5/jcr:primaryType", root.getNode("node5").getProperty("jcr:primaryType").getPath());
 
-      assertEquals(QPath.makeChildPath(((NodeImpl) root).getData().getQPath(), new InternalQName("", "node5"),
+      assertEquals(QPath.makeChildPath(((NodeImpl)root).getData().getQPath(), new InternalQName("", "node5"),
 
-      0).getAsString(), ((NodeImpl) node2).getData().getQPath().getAsString());
+      0).getAsString(), ((NodeImpl)node2).getData().getQPath().getAsString());
 
       session.save();
 

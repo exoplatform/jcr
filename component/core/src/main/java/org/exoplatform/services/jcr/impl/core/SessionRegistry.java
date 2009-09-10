@@ -18,20 +18,18 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.picocontainer.Startable;
-
-import org.exoplatform.services.log.Log;
-
-import org.exoplatform.services.jcr.config.RepositoryEntry;
-import org.exoplatform.services.jcr.impl.proccess.WorkerThread;
-import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
 import org.exoplatform.management.jmx.annotations.Property;
+import org.exoplatform.services.jcr.config.RepositoryEntry;
+import org.exoplatform.services.jcr.impl.proccess.WorkerThread;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+import org.picocontainer.Startable;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
@@ -39,8 +37,7 @@ import org.exoplatform.management.jmx.annotations.Property;
  */
 @Managed
 @NameTemplate(@Property(key = "service", value = "SessionRegistry"))
-public final class SessionRegistry
-   implements Startable
+public final class SessionRegistry implements Startable
 {
    private final Map<String, SessionImpl> sessionsMap;
 
@@ -119,7 +116,7 @@ public final class SessionRegistry
          {
             if (log.isDebugEnabled())
                log.debug("Session for workspace " + workspaceName + " in use." + " Session id:" + session.getId()
-                        + " user: " + session.getUserID());
+                  + " user: " + session.getUserID());
             return true;
          }
       }
@@ -165,8 +162,7 @@ public final class SessionRegistry
       return closedSessions;
    }
 
-   private class SessionCleaner
-      extends WorkerThread
+   private class SessionCleaner extends WorkerThread
    {
 
       private final long sessionTimeOut;
@@ -181,7 +177,7 @@ public final class SessionRegistry
          start();
          if (log.isDebugEnabled())
             log.debug("SessionCleaner instantiated name= " + getName() + " workTime= " + workTime + " sessionTimeOut="
-                     + sessionTimeOut);
+               + sessionTimeOut);
       }
 
       @Override

@@ -18,14 +18,13 @@
  */
 package org.exoplatform.services.jcr.impl.xml.importing.dataflow;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.impl.xml.DecodedValue;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by The eXo Platform SAS.

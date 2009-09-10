@@ -18,11 +18,11 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.db;
 
+import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
+
 import java.sql.Connection;
 
 import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 
 /**
  * WorkspaceStorageConnectionFactory interface.

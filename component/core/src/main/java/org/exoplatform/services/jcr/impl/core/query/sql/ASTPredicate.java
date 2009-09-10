@@ -18,8 +18,7 @@ package org.exoplatform.services.jcr.impl.core.query.sql;
 
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 
-public class ASTPredicate
-   extends SimpleNode
+public class ASTPredicate extends SimpleNode
 {
 
    private int operationType;

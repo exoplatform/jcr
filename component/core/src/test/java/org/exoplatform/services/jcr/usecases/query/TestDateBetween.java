@@ -16,6 +16,8 @@
  */
 package org.exoplatform.services.jcr.usecases.query;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+
 import java.util.ArrayList;
 
 import javax.jcr.Node;
@@ -25,8 +27,6 @@ import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
 
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-
 /**
  * Created by The eXo Platform SAS Author : Alex Reshetnyak
  * alex.reshetnyak@exoplatform.org.ua reshetnyak.alex@gmail.com 20.07.2007
@@ -34,8 +34,7 @@ import org.exoplatform.services.jcr.JcrAPIBaseTest;
  * 
  * @version $Id: TestDateBetween.java 20.07.2007 14:05:20 rainfox
  */
-public class TestDateBetween
-   extends JcrAPIBaseTest
+public class TestDateBetween extends JcrAPIBaseTest
 {
 
    String date;

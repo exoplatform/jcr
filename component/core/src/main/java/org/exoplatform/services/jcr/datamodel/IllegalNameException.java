@@ -25,8 +25,7 @@ package org.exoplatform.services.jcr.datamodel;
  * @version $Id: IllegalNameException.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class IllegalNameException
-   extends Exception
+public class IllegalNameException extends Exception
 {
 
    public IllegalNameException()

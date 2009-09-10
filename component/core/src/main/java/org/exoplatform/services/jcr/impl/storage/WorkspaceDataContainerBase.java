@@ -18,10 +18,10 @@
  */
 package org.exoplatform.services.jcr.impl.storage;
 
+import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
+
 import java.util.Calendar;
 import java.util.Date;
-
-import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 
 /**
  * Created by The eXo Platform SAS.
@@ -29,8 +29,7 @@ import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov</a>
  * @version $Id: WorkspaceDataContainerBase.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-abstract public class WorkspaceDataContainerBase
-   implements WorkspaceDataContainer
+abstract public class WorkspaceDataContainerBase implements WorkspaceDataContainer
 {
 
    /**

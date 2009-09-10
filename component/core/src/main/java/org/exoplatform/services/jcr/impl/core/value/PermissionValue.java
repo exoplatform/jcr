@@ -18,16 +18,16 @@
  */
 package org.exoplatform.services.jcr.impl.core.value;
 
-import java.io.IOException;
-import java.util.StringTokenizer;
-
-import javax.jcr.ValueFormatException;
-
 import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.access.PermissionType;
 import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.core.ExtendedPropertyType;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+
+import java.io.IOException;
+import java.util.StringTokenizer;
+
+import javax.jcr.ValueFormatException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -37,8 +37,7 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
  * @version $Id: PermissionValue.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class PermissionValue
-   extends BaseValue
+public class PermissionValue extends BaseValue
 {
 
    private static final int TYPE = ExtendedPropertyType.PERMISSION;
@@ -70,7 +69,7 @@ public class PermissionValue
       if (identity != null && identity.indexOf(" ") != -1)
          throw new RuntimeException("Identity should not contain ' '");
       if (permission != null && !permission.equals(PermissionType.READ) && !permission.equals(PermissionType.ADD_NODE)
-               && !permission.equals(PermissionType.REMOVE) && !permission.equals(PermissionType.SET_PROPERTY))
+         && !permission.equals(PermissionType.REMOVE) && !permission.equals(PermissionType.SET_PROPERTY))
          throw new RuntimeException("Permission should be one of defined in PermissionType. Have " + permission);
       this.identity = identity;
       this.permission = permission;
@@ -118,7 +117,7 @@ public class PermissionValue
    {
       if (identity != null || permission != null) // SystemIdentity.ANY, PermissionType.ALL
          return (identity != null ? identity : SystemIdentity.ANY) + AccessControlEntry.DELIMITER
-                  + (permission != null ? permission : PermissionType.READ);
+            + (permission != null ? permission : PermissionType.READ);
       else
          return "";
    }

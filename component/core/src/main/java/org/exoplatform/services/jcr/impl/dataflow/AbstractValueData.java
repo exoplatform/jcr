@@ -18,12 +18,11 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
-import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import javax.jcr.RepositoryException;
 
 /**
  * 
@@ -33,8 +32,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @version $Id:AbstractValueData.java 12534 2007-02-02 15:30:52Z peterit $
  */
 
-public abstract class AbstractValueData
-   implements ValueData
+public abstract class AbstractValueData implements ValueData
 {
 
    protected final static Log log = ExoLogger.getLogger("jcr.AbstractValueData");

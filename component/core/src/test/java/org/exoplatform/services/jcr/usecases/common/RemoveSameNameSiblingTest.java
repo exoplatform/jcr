@@ -18,6 +18,9 @@
  */
 package org.exoplatform.services.jcr.usecases.common;
 
+import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
+
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.PathNotFoundException;
@@ -26,9 +29,6 @@ import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryResult;
-
-import org.exoplatform.services.jcr.impl.core.NodeImpl;
-import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
 
 /**
  * Created by The eXo Platform SAS 27.04.2006
@@ -42,8 +42,7 @@ import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
  * 
  * @version $Id: RemoveSameNameSiblingTest.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class RemoveSameNameSiblingTest
-   extends BaseUsecasesTest
+public class RemoveSameNameSiblingTest extends BaseUsecasesTest
 {
 
    public void testRemoveSameNameSibling() throws RepositoryException
@@ -129,7 +128,7 @@ public class RemoveSameNameSiblingTest
       root.save();
 
       n3 = root.getNode("u1/child[3]");
-      String n3id = ((NodeImpl) n3).getData().getIdentifier();
+      String n3id = ((NodeImpl)n3).getData().getIdentifier();
       n2 = subRoot.getNode("child[2]");
       log.debug(">>>> SAME NAME start " + n2.getPath() + " " + n2.getIndex());
       n2.remove(); // reindex child[3] --> child[2]
@@ -146,7 +145,7 @@ public class RemoveSameNameSiblingTest
             assertTrue("Node path must be reindexed ", chn.getPath().startsWith("/u1/child[2]"));
          }
 
-         assertEquals("Ids must be same", n3id, ((NodeImpl) root.getNode("u1/child[2]")).getData().getIdentifier());
+         assertEquals("Ids must be same", n3id, ((NodeImpl)root.getNode("u1/child[2]")).getData().getIdentifier());
 
          try
          {
@@ -202,8 +201,8 @@ public class RemoveSameNameSiblingTest
       try
       {
          Query query =
-                  session.getWorkspace().getQueryManager().createQuery(
-                           "select * from nt:base where jcr:path like '/u1/child[3]/%'", Query.SQL);
+            session.getWorkspace().getQueryManager().createQuery(
+               "select * from nt:base where jcr:path like '/u1/child[3]/%'", Query.SQL);
          QueryResult queryResult = query.execute();
          NodeIterator iterator = queryResult.getNodes();
          while (iterator.hasNext())
@@ -212,8 +211,8 @@ public class RemoveSameNameSiblingTest
          }
 
          query =
-                  session.getWorkspace().getQueryManager().createQuery(
-                           "select * from nt:base where jcr:path like '/u1/child[2]/%'", Query.SQL);
+            session.getWorkspace().getQueryManager().createQuery(
+               "select * from nt:base where jcr:path like '/u1/child[2]/%'", Query.SQL);
          queryResult = query.execute();
          iterator = queryResult.getNodes();
          while (iterator.hasNext())
@@ -254,8 +253,8 @@ public class RemoveSameNameSiblingTest
       try
       {
          Query query =
-                  session.getWorkspace().getQueryManager().createQuery("/jcr:root/u1/child[3]//element(*, nt:base)",
-                           Query.XPATH);
+            session.getWorkspace().getQueryManager().createQuery("/jcr:root/u1/child[3]//element(*, nt:base)",
+               Query.XPATH);
          QueryResult queryResult = query.execute();
          NodeIterator iterator = queryResult.getNodes();
          while (iterator.hasNext())
@@ -264,8 +263,8 @@ public class RemoveSameNameSiblingTest
          }
 
          query =
-                  session.getWorkspace().getQueryManager().createQuery("/jcr:root/u1/child[2]//element(*, nt:base)",
-                           Query.XPATH);
+            session.getWorkspace().getQueryManager().createQuery("/jcr:root/u1/child[2]//element(*, nt:base)",
+               Query.XPATH);
          queryResult = query.execute();
          iterator = queryResult.getNodes();
          while (iterator.hasNext())
@@ -299,7 +298,7 @@ public class RemoveSameNameSiblingTest
 
       root.getNode("u1/child[3]");
       n2 = subRoot.getNode("child[2]");
-      String n2id = ((NodeImpl) n2).getData().getIdentifier();
+      String n2id = ((NodeImpl)n2).getData().getIdentifier();
       log.debug(">>>> SAME NAME start " + n2.getPath() + " " + n2.getIndex());
       n2.remove(); // reindex child[3] --> child[2]
 
@@ -307,7 +306,7 @@ public class RemoveSameNameSiblingTest
       {
          root.refresh(false);
 
-         assertEquals("Ids must be same", n2id, ((NodeImpl) root.getNode("u1/child[2]")).getData().getIdentifier());
+         assertEquals("Ids must be same", n2id, ((NodeImpl)root.getNode("u1/child[2]")).getData().getIdentifier());
 
          root.getNode("u1/child[3]");
 
@@ -337,7 +336,7 @@ public class RemoveSameNameSiblingTest
 
       n3 = root.getNode("u1/child[3]");
       n2 = subRoot.getNode("child[2]");
-      String n3id = ((NodeImpl) n3).getData().getIdentifier();
+      String n3id = ((NodeImpl)n3).getData().getIdentifier();
       log.debug(">>>> SAME NAME start " + n2.getPath() + " " + n2.getIndex());
       n2.remove(); // reindex child[3] --> child[2]
 
@@ -345,7 +344,7 @@ public class RemoveSameNameSiblingTest
       {
          root.refresh(true);
 
-         assertEquals("Ids must be same", n3id, ((NodeImpl) root.getNode("u1/child[2]")).getData().getIdentifier());
+         assertEquals("Ids must be same", n3id, ((NodeImpl)root.getNode("u1/child[2]")).getData().getIdentifier());
 
          try
          {

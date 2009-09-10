@@ -25,8 +25,7 @@ import org.exoplatform.services.jcr.datamodel.InternalQName;
  * <code>ExecutablePreparedQuery</code> extends {@link ExecutableQuery} with a method to bind a
  * value to a variable.
  */
-public interface ExecutablePreparedQuery
-   extends ExecutableQuery
+public interface ExecutablePreparedQuery extends ExecutableQuery
 {
 
    /**

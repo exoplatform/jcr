@@ -18,13 +18,13 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
+import org.exoplatform.services.jcr.JcrImplBaseTest;
+import org.exoplatform.services.jcr.core.CredentialsImpl;
+
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
 import javax.jcr.Session;
-
-import org.exoplatform.services.jcr.JcrImplBaseTest;
-import org.exoplatform.services.jcr.core.CredentialsImpl;
 
 /**
  * Created by The eXo Platform SAS
@@ -33,8 +33,7 @@ import org.exoplatform.services.jcr.core.CredentialsImpl;
  * 
  *         May 14, 2009
  */
-public class TestDuplicateProperties
-   extends JcrImplBaseTest
+public class TestDuplicateProperties extends JcrImplBaseTest
 {
 
    // Reproduces the issue described in http://jira.exoplatform.org/browse/JCR-953
@@ -64,7 +63,7 @@ public class TestDuplicateProperties
       PropertyIterator iter = node1.getProperties();
       while (iter.hasNext())
       {
-         Property prop = (Property) iter.next();
+         Property prop = (Property)iter.next();
          if (prop.getName().equals(propName))
          {
             neededProp = prop;

@@ -28,8 +28,7 @@ import java.util.Calendar;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: SharedDataManager.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public interface SharedDataManager
-   extends DataManager
+public interface SharedDataManager extends DataManager
 {
 
    /**

@@ -46,8 +46,7 @@ import org.exoplatform.services.log.ExoLogger;
  * <code>LuceneSpellChecker</code> implements a spell checker based on the terms present in a lucene
  * index.
  */
-public class LuceneSpellChecker
-   implements org.exoplatform.services.jcr.impl.core.query.lucene.SpellChecker
+public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.core.query.lucene.SpellChecker
 {
 
    /**
@@ -55,8 +54,7 @@ public class LuceneSpellChecker
     */
    private static final Log log = ExoLogger.getLogger(LuceneSpellChecker.class);
 
-   public static final class FiveSecondsRefreshInterval
-      extends LuceneSpellChecker
+   public static final class FiveSecondsRefreshInterval extends LuceneSpellChecker
    {
       public FiveSecondsRefreshInterval()
       {
@@ -64,8 +62,7 @@ public class LuceneSpellChecker
       }
    }
 
-   public static final class OneMinuteRefreshInterval
-      extends LuceneSpellChecker
+   public static final class OneMinuteRefreshInterval extends LuceneSpellChecker
    {
       public OneMinuteRefreshInterval()
       {
@@ -73,8 +70,7 @@ public class LuceneSpellChecker
       }
    }
 
-   public static final class FiveMinutesRefreshInterval
-      extends LuceneSpellChecker
+   public static final class FiveMinutesRefreshInterval extends LuceneSpellChecker
    {
       public FiveMinutesRefreshInterval()
       {
@@ -82,8 +78,7 @@ public class LuceneSpellChecker
       }
    }
 
-   public static final class ThirtyMinutesRefreshInterval
-      extends LuceneSpellChecker
+   public static final class ThirtyMinutesRefreshInterval extends LuceneSpellChecker
    {
       public ThirtyMinutesRefreshInterval()
       {
@@ -91,8 +86,7 @@ public class LuceneSpellChecker
       }
    }
 
-   public static final class OneHourRefreshInterval
-      extends LuceneSpellChecker
+   public static final class OneHourRefreshInterval extends LuceneSpellChecker
    {
       public OneHourRefreshInterval()
       {
@@ -100,8 +94,7 @@ public class LuceneSpellChecker
       }
    }
 
-   public static final class SixHoursRefreshInterval
-      extends LuceneSpellChecker
+   public static final class SixHoursRefreshInterval extends LuceneSpellChecker
    {
       public SixHoursRefreshInterval()
       {
@@ -109,8 +102,7 @@ public class LuceneSpellChecker
       }
    }
 
-   public static final class TwelveHoursRefreshInterval
-      extends LuceneSpellChecker
+   public static final class TwelveHoursRefreshInterval extends LuceneSpellChecker
    {
       public TwelveHoursRefreshInterval()
       {
@@ -118,8 +110,7 @@ public class LuceneSpellChecker
       }
    }
 
-   public static final class OneDayRefreshInterval
-      extends LuceneSpellChecker
+   public static final class OneDayRefreshInterval extends LuceneSpellChecker
    {
       public OneDayRefreshInterval()
       {
@@ -162,7 +153,7 @@ public class LuceneSpellChecker
    {
       if (handler instanceof SearchIndex)
       {
-         this.spellChecker = new InternalSpellChecker((SearchIndex) handler);
+         this.spellChecker = new InternalSpellChecker((SearchIndex)handler);
       }
       else
       {
@@ -348,7 +339,7 @@ public class LuceneSpellChecker
                   // closer to original word
                   Token current = tokens.get(tokens.size() - 1);
                   if (Math.abs(origWord.length() - current.termText().length()) > Math.abs(origWord.length()
-                           - t.termText().length()))
+                     - t.termText().length()))
                   {
                      // replace current token and word
                      words.set(words.size() - 1, t.termText());

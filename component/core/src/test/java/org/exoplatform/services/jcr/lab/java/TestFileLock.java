@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.lab.java;
 
+import junit.framework.TestCase;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -25,8 +27,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
-
-import junit.framework.TestCase;
 
 /**
  * Created by The eXo Platform SAS.
@@ -37,8 +37,7 @@ import junit.framework.TestCase;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestFileLock.java 111 2008-11-11 11:11:11Z pnedonosko $
  */
-public class TestFileLock
-   extends TestCase
+public class TestFileLock extends TestCase
 {
 
    public void _testSameJVMlLock() throws IOException, InterruptedException

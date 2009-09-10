@@ -4,8 +4,7 @@ import junit.framework.TestCase;
 
 import org.exoplatform.services.jcr.impl.core.query.lucene.hits.ArrayHits;
 
-public class ArrayHitsTest
-   extends TestCase
+public class ArrayHitsTest extends TestCase
 {
 
    public void testSkipToDocumentNumberGreaterThanLastMatch() throws Exception

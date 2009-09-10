@@ -39,8 +39,7 @@ import org.apache.lucene.search.Weight;
  * Implements a lucene <code>Query</code> which returns the nodes selected by a reference property
  * of the context node.
  */
-class DerefQuery
-   extends Query
+class DerefQuery extends Query
 {
 
    /**
@@ -139,8 +138,7 @@ class DerefQuery
    /**
     * The <code>Weight</code> implementation for this <code>DerefQuery</code>.
     */
-   private class DerefWeight
-      implements Weight
+   private class DerefWeight implements Weight
    {
 
       /**
@@ -225,8 +223,7 @@ class DerefQuery
    /**
     * Implements a <code>Scorer</code> for this <code>DerefQuery</code>.
     */
-   private class DerefScorer
-      extends Scorer
+   private class DerefScorer extends Scorer
    {
 
       /**
@@ -361,7 +358,7 @@ class DerefQuery
             hits.clear();
             for (Iterator it = uuids.iterator(); it.hasNext();)
             {
-               TermDocs node = reader.termDocs(new Term(FieldNames.UUID, (String) it.next()));
+               TermDocs node = reader.termDocs(new Term(FieldNames.UUID, (String)it.next()));
                try
                {
                   while (node.next())

@@ -18,6 +18,12 @@
  */
 package org.exoplatform.services.jcr.api.importing;
 
+import org.exoplatform.services.jcr.dataflow.ItemState;
+import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.jcr.impl.core.TransientNodesManagerUtil;
+import org.exoplatform.services.jcr.impl.dataflow.session.SessionChangesLog;
+import org.xml.sax.SAXException;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
@@ -28,21 +34,13 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.xml.transform.TransformerConfigurationException;
 
-import org.xml.sax.SAXException;
-
-import org.exoplatform.services.jcr.dataflow.ItemState;
-import org.exoplatform.services.jcr.impl.core.NodeImpl;
-import org.exoplatform.services.jcr.impl.core.TransientNodesManagerUtil;
-import org.exoplatform.services.jcr.impl.dataflow.session.SessionChangesLog;
-
 /**
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: BaseXmlImporter.java 12649 2008-04-02 12:46:37Z ksm $
  */
-public class AbstractCollisionTest
-   extends AbstractImportTest
+public class AbstractCollisionTest extends AbstractImportTest
 {
 
    /**
@@ -137,8 +135,8 @@ public class AbstractCollisionTest
     * @throws SAXException
     */
    protected void importUuidCollisionTest(boolean isSystemView, boolean isExportedByStream, boolean isImportedByStream,
-            XmlSaveType saveType, int testedBehavior) throws RepositoryException, TransformerConfigurationException,
-            IOException, SAXException
+      XmlSaveType saveType, int testedBehavior) throws RepositoryException, TransformerConfigurationException,
+      IOException, SAXException
    {
       Exception result = null;
       try
@@ -156,8 +154,7 @@ public class AbstractCollisionTest
       if (testedBehavior != ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW)
       {
          imporRoot =
-                  session.getRootNode().getNode(ROOT_NODE_NAME).getNode(IMPORT_ROOT_NODE_NAME).getNode(
-                           EXPORT_ROOT_NODE_NAME);
+            session.getRootNode().getNode(ROOT_NODE_NAME).getNode(IMPORT_ROOT_NODE_NAME).getNode(EXPORT_ROOT_NODE_NAME);
       }
       else
       {
@@ -165,7 +162,7 @@ public class AbstractCollisionTest
       }
 
       checkResult(imporRoot, session.getRootNode().getNode(ROOT_NODE_NAME).getNode(EXPORT_ROOT_NODE_NAME), result,
-               isImportedByStream, testedBehavior);
+         isImportedByStream, testedBehavior);
 
       session.refresh(false);
 
@@ -176,7 +173,7 @@ public class AbstractCollisionTest
       }
 
       if ((testedBehavior == ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING || testedBehavior == ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING)
-               && saveType == XmlSaveType.SESSION)
+         && saveType == XmlSaveType.SESSION)
       {
          preformImport(isSystemView, isExportedByStream, isImportedByStream, saveType, testedBehavior);
          SessionChangesLog changesLog = TransientNodesManagerUtil.getChangesLog(session.getTransientNodesManager());
@@ -184,7 +181,7 @@ public class AbstractCollisionTest
          for (ItemState state : changesLog.getAllStates())
          {
             assertTrue(state.getAncestorToSave().equals(
-                     ((NodeImpl) session.getRootNode().getNode(ROOT_NODE_NAME)).getData().getQPath()));
+               ((NodeImpl)session.getRootNode().getNode(ROOT_NODE_NAME)).getData().getQPath()));
          }
       }
 
@@ -205,7 +202,7 @@ public class AbstractCollisionTest
     *           - RepositoryException.
     */
    private void checkFamilyTree(final Node checkRoot, final Family family, final String referenceableUuid)
-            throws RepositoryException
+      throws RepositoryException
    {
       String parentName = null;
       String child1Name = null;
@@ -259,7 +256,7 @@ public class AbstractCollisionTest
     * @throws RepositoryException
     */
    private void checkResult(Node importRoot, Node exportRootNode, Exception result, boolean isImportedByStream,
-            int testedBehavior) throws RepositoryException
+      int testedBehavior) throws RepositoryException
    {
       assertNotNull(exportRootNode);
       assertNotNull(importRoot);
@@ -290,7 +287,7 @@ public class AbstractCollisionTest
          checkFamilyTree(exportRootNode, Family.B, familyBuuid);
 
          assertTrue(exportRootNode.hasNode(FAMILY_B_PARENT + "/" + FAMILY_B_FIRST_CHILD_NODE_NAME + "/"
-                  + FAMILY_B_FIRST_GRAND_CHILD_NODE_NAME));
+            + FAMILY_B_FIRST_GRAND_CHILD_NODE_NAME));
 
          // all content of document imported to the importRoot
          checkFamilyTree(importRoot, Family.A, null);
@@ -317,7 +314,7 @@ public class AbstractCollisionTest
          checkFamilyTree(exportRootNode, Family.B, familyBuuid);
 
          assertFalse(exportRootNode.hasNode(FAMILY_B_PARENT + "/" + FAMILY_B_FIRST_CHILD_NODE_NAME + "/"
-                  + FAMILY_B_FIRST_GRAND_CHILD_NODE_NAME));
+            + FAMILY_B_FIRST_GRAND_CHILD_NODE_NAME));
 
          checkFamilyTree(importRoot, Family.A, familyAuuid);
          assertFalse(importRoot.hasNode(FAMILY_B_PARENT));
@@ -338,10 +335,10 @@ public class AbstractCollisionTest
     * @throws SAXException
     */
    private void preformImport(boolean isSystemView, boolean isExportedByStream, boolean isImportedByStream,
-            XmlSaveType saveType, int testedBehavior) throws RepositoryException, TransformerConfigurationException,
-            IOException, SAXException
+      XmlSaveType saveType, int testedBehavior) throws RepositoryException, TransformerConfigurationException,
+      IOException, SAXException
    {
-      NodeImpl testRoot = (NodeImpl) prepareForExport(session);
+      NodeImpl testRoot = (NodeImpl)prepareForExport(session);
 
       Node exportRoot = testRoot.getNode(EXPORT_ROOT_NODE_NAME);
       byte[] content = serialize(exportRoot, isSystemView, isExportedByStream);
@@ -410,7 +407,7 @@ public class AbstractCollisionTest
       exportRootNode.getNode(FAMILY_A_PARENT).remove();
 
       exportRootNode.getNode(FAMILY_B_PARENT).getNode(FAMILY_B_FIRST_CHILD_NODE_NAME).addNode(
-               FAMILY_B_FIRST_GRAND_CHILD_NODE_NAME);
+         FAMILY_B_FIRST_GRAND_CHILD_NODE_NAME);
 
       Node familyCParentNode = exportRootNode.addNode(FAMILY_C_PARENT);
       familyCParentNode.addMixin("mix:referenceable");

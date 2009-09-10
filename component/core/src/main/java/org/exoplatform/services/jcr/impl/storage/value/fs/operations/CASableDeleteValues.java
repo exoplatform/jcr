@@ -18,12 +18,12 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs.operations;
 
-import java.io.File;
-import java.io.IOException;
-
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.storage.value.cas.ValueContentAddressStorage;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+
+import java.io.File;
+import java.io.IOException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -34,8 +34,7 @@ import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: CASableDeleteValues.java 111 2008-11-11 11:11:11Z pnedonosko $
  */
-public class CASableDeleteValues
-   extends DeleteValues
+public class CASableDeleteValues extends DeleteValues
 {
 
    /**
@@ -70,7 +69,7 @@ public class CASableDeleteValues
     * 
     */
    public CASableDeleteValues(File[] files, ValueDataResourceHolder resources, FileCleaner cleaner, File tempDir,
-            String propertyId, ValueContentAddressStorage vcas)
+      String propertyId, ValueContentAddressStorage vcas)
    {
       super(files, resources, cleaner, tempDir);
 

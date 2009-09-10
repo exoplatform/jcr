@@ -24,8 +24,7 @@ import org.exoplatform.services.jcr.impl.core.NodeImpl;
  * Extends the {@link javax.jcr.NodeIterator} interface by adding a {@link #getScore()} method that
  * returns the score for the node that is returned by {@link javax.jcr.NodeIterator#nextNode()}.
  */
-public interface ScoreNodeIterator
-   extends NodeIterator
+public interface ScoreNodeIterator extends NodeIterator
 {
 
    /**

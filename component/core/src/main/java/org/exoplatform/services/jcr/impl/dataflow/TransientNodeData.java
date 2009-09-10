@@ -27,14 +27,6 @@ package org.exoplatform.services.jcr.impl.dataflow;
  * @version $Id: TransientNodeData.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-
-import javax.jcr.PathNotFoundException;
-import javax.jcr.RepositoryException;
-
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.dataflow.ItemDataVisitor;
 import org.exoplatform.services.jcr.datamodel.IllegalNameException;
@@ -46,9 +38,15 @@ import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
-public class TransientNodeData
-   extends TransientItemData
-   implements Comparable, MutableNodeData, Externalizable
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+
+import javax.jcr.PathNotFoundException;
+import javax.jcr.RepositoryException;
+
+public class TransientNodeData extends TransientItemData implements Comparable, MutableNodeData, Externalizable
 {
 
    private static final long serialVersionUID = -8675118546441306180L;
@@ -62,7 +60,7 @@ public class TransientNodeData
    protected int orderNum;
 
    public TransientNodeData(QPath path, String identifier, int version, InternalQName primaryTypeName,
-            InternalQName[] mixinTypeNames, int orderNum, String parentIdentifier, AccessControlList acl)
+      InternalQName[] mixinTypeNames, int orderNum, String parentIdentifier, AccessControlList acl)
    {
       super(path, identifier, version, parentIdentifier);
       this.primaryTypeName = primaryTypeName;
@@ -192,8 +190,8 @@ public class TransientNodeData
       TransientNodeData nodeData = null;
       QPath path = QPath.makeChildPath(parent.getQPath(), name);
       nodeData =
-               new TransientNodeData(path, IdGenerator.generate(), -1, primaryTypeName, new InternalQName[0], 0, parent
-                        .getIdentifier(), parent.getACL());
+         new TransientNodeData(path, IdGenerator.generate(), -1, primaryTypeName, new InternalQName[0], 0, parent
+            .getIdentifier(), parent.getACL());
       return nodeData;
    }
 
@@ -206,13 +204,13 @@ public class TransientNodeData
     * @return
     */
    public static TransientNodeData createNodeData(NodeData parent, InternalQName name, InternalQName primaryTypeName,
-            int index)
+      int index)
    {
       TransientNodeData nodeData = null;
       QPath path = QPath.makeChildPath(parent.getQPath(), name, index);
       nodeData =
-               new TransientNodeData(path, IdGenerator.generate(), -1, primaryTypeName, new InternalQName[0], 0, parent
-                        .getIdentifier(), parent.getACL());
+         new TransientNodeData(path, IdGenerator.generate(), -1, primaryTypeName, new InternalQName[0], 0, parent
+            .getIdentifier(), parent.getACL());
       return nodeData;
    }
 
@@ -225,13 +223,13 @@ public class TransientNodeData
     * @return
     */
    public static TransientNodeData createNodeData(NodeData parent, InternalQName name, InternalQName primaryTypeName,
-            String identifier)
+      String identifier)
    {
       TransientNodeData nodeData = null;
       QPath path = QPath.makeChildPath(parent.getQPath(), name);
       nodeData =
-               new TransientNodeData(path, identifier, -1, primaryTypeName, new InternalQName[0], 0, parent
-                        .getIdentifier(), parent.getACL());
+         new TransientNodeData(path, identifier, -1, primaryTypeName, new InternalQName[0], 0, parent.getIdentifier(),
+            parent.getACL());
       return nodeData;
    }
 
@@ -239,7 +237,7 @@ public class TransientNodeData
 
    public int compareTo(Object obj)
    {
-      return ((NodeData) obj).getOrderNumber() - orderNum;
+      return ((NodeData)obj).getOrderNumber() - orderNum;
    }
 
    // Need for Externalizable
@@ -347,9 +345,9 @@ public class TransientNodeData
    public TransientNodeData clone()
    {
       TransientNodeData dataCopy =
-               new TransientNodeData(getQPath(), getIdentifier(), getPersistedVersion(), getPrimaryTypeName(),
-                        getMixinTypeNames(), getOrderNumber(), getParentIdentifier() != null ? getParentIdentifier()
-                                 : null, getACL());
+         new TransientNodeData(getQPath(), getIdentifier(), getPersistedVersion(), getPrimaryTypeName(),
+            getMixinTypeNames(), getOrderNumber(), getParentIdentifier() != null ? getParentIdentifier() : null,
+            getACL());
 
       return dataCopy;
    }
@@ -360,9 +358,9 @@ public class TransientNodeData
       QPath siblingPath = QPath.makeChildPath(getQPath().makeParentPath(), getQPath().getName(), index);
 
       TransientNodeData dataCopy =
-               new TransientNodeData(siblingPath, getIdentifier(), getPersistedVersion(), getPrimaryTypeName(),
-                        getMixinTypeNames(), getOrderNumber(), getParentIdentifier() != null ? getParentIdentifier()
-                                 : null, getACL());
+         new TransientNodeData(siblingPath, getIdentifier(), getPersistedVersion(), getPrimaryTypeName(),
+            getMixinTypeNames(), getOrderNumber(), getParentIdentifier() != null ? getParentIdentifier() : null,
+            getACL());
 
       return dataCopy;
    }

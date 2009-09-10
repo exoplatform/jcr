@@ -18,14 +18,14 @@
  */
 package org.exoplatform.services.jcr.config;
 
-import java.io.InputStream;
-
-import javax.jcr.RepositoryException;
-
 import org.jibx.runtime.BindingDirectory;
 import org.jibx.runtime.IBindingFactory;
 import org.jibx.runtime.IUnmarshallingContext;
 import org.jibx.runtime.JiBXException;
+
+import java.io.InputStream;
+
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.

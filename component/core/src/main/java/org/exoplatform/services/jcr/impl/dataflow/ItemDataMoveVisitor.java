@@ -18,13 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Stack;
-
-import javax.jcr.RepositoryException;
-
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemDataTraversingVisitor;
 import org.exoplatform.services.jcr.dataflow.ItemState;
@@ -37,6 +30,13 @@ import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Stack;
+
+import javax.jcr.RepositoryException;
+
 /**
  * The class visits each node, all subnodes and all of them properties. It transfer as parameter of
  * a method <code>ItemData.visits()</code>. During visiting the class forms the <b>itemAddStates</b>
@@ -45,8 +45,7 @@ import org.exoplatform.services.jcr.util.IdGenerator;
  * 
  * @version $Id: ItemDataMoveVisitor.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class ItemDataMoveVisitor
-   extends ItemDataTraversingVisitor
+public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
 {
    /**
     * The list of added item states
@@ -97,7 +96,7 @@ public class ItemDataMoveVisitor
     */
 
    public ItemDataMoveVisitor(NodeData parent, InternalQName dstNodeName, NodeTypeDataManager nodeTypeManager,
-            SessionDataManager srcDataManager, boolean keepIdentifiers)
+      SessionDataManager srcDataManager, boolean keepIdentifiers)
    {
       super(srcDataManager);
       this.keepIdentifiers = keepIdentifiers;
@@ -151,10 +150,10 @@ public class ItemDataMoveVisitor
             }
 
             // for fix SNSes on source
-            srcParent = (NodeData) dataManager.getItemData(node.getParentIdentifier());
+            srcParent = (NodeData)dataManager.getItemData(node.getParentIdentifier());
             if (srcParent == null)
                throw new RepositoryException("FATAL: parent Node not for " + node.getQPath().getAsString()
-                        + ", parent id: " + node.getParentIdentifier());
+                  + ", parent id: " + node.getParentIdentifier());
 
             srcChilds = dataManager.getChildNodesData(srcParent);
          }
@@ -172,9 +171,9 @@ public class ItemDataMoveVisitor
                {
                   QPath siblingPath = QPath.makeChildPath(srcParent.getQPath(), child.getQPath().getName(), srcIndex);
                   TransientNodeData sibling =
-                           new TransientNodeData(siblingPath, child.getIdentifier(), child.getPersistedVersion() + 1,
-                                    child.getPrimaryTypeName(), child.getMixinTypeNames(), srcOrderNum, // orderNum
-                                    child.getParentIdentifier(), child.getACL());
+                     new TransientNodeData(siblingPath, child.getIdentifier(), child.getPersistedVersion() + 1, child
+                        .getPrimaryTypeName(), child.getMixinTypeNames(), srcOrderNum, // orderNum
+                        child.getParentIdentifier(), child.getACL());
                   addStates.add(new ItemState(sibling, ItemState.UPDATED, true, ancestorToSave, false, true));
 
                   srcIndex++;
@@ -202,8 +201,8 @@ public class ItemDataMoveVisitor
       QPath qpath = QPath.makeChildPath(parent.getQPath(), qname, destIndex);
 
       TransientNodeData newNode =
-               new TransientNodeData(qpath, id, -1, node.getPrimaryTypeName(), node.getMixinTypeNames(), destOrderNum,
-                        parent.getIdentifier(), node.getACL());
+         new TransientNodeData(qpath, id, -1, node.getPrimaryTypeName(), node.getMixinTypeNames(), destOrderNum, parent
+            .getIdentifier(), node.getACL());
 
       parents.push(newNode);
 
@@ -222,8 +221,8 @@ public class ItemDataMoveVisitor
       List<ValueData> values;
 
       if (ntManager.isNodeType(Constants.MIX_REFERENCEABLE, curParent().getPrimaryTypeName(), curParent()
-               .getMixinTypeNames())
-               && qname.equals(Constants.JCR_UUID))
+         .getMixinTypeNames())
+         && qname.equals(Constants.JCR_UUID))
       {
 
          values = new ArrayList<ValueData>(1);
@@ -235,9 +234,9 @@ public class ItemDataMoveVisitor
       }
 
       TransientPropertyData newProperty =
-               new TransientPropertyData(QPath.makeChildPath(curParent().getQPath(), qname), keepIdentifiers ? property
-                        .getIdentifier() : IdGenerator.generate(), -1, property.getType(), curParent().getIdentifier(),
-                        property.isMultiValued());
+         new TransientPropertyData(QPath.makeChildPath(curParent().getQPath(), qname), keepIdentifiers ? property
+            .getIdentifier() : IdGenerator.generate(), -1, property.getType(), curParent().getIdentifier(), property
+            .isMultiValued());
 
       newProperty.setValues(values);
       addStates.add(new ItemState(newProperty, ItemState.RENAMED, false, ancestorToSave, false, false));

@@ -18,37 +18,31 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
-import javax.jcr.RepositoryException;
-
 import junit.framework.TestCase;
+
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.
  * 
  * @author Anatoliy Bazko
  */
-public class TestLocationFactory
-   extends TestCase
+public class TestLocationFactory extends TestCase
 {
 
    private static int MAX_CREATE_PATH_TIME = 100000;
 
    private static String testJCRPathElementValid[][] =
-   {
-   {"jcr:name", "jcr", "name"},
-   {"jcr:name[30]", "jcr", "name"},
-   {"na me[1]", "", "na me"},
-   {"...", "", "..."},
-   {"123", "", "123"}};
+      {{"jcr:name", "jcr", "name"}, {"jcr:name[30]", "jcr", "name"}, {"na me[1]", "", "na me"}, {"...", "", "..."},
+         {"123", "", "123"}};
 
    private static String testJCRPathElementInvalid[] =
-   {" na m e", "name[0]", " name[9]", "\n", "ddr:df:", "", "xml:na*me", "[1]", " ", "ddd:..", "&io:lala"};
+      {" na m e", "name[0]", " name[9]", "\n", "ddr:df:", "", "xml:na*me", "[1]", " ", "ddd:..", "&io:lala"};
 
    private static String testJCRPathValid[] =
-   {"..", "jcr:ig[2]/aaa", "v/d/...", "/path", "/vv/fff", "ff", "/", "..", "|fff"};
+      {"..", "jcr:ig[2]/aaa", "v/d/...", "/path", "/vv/fff", "ff", "/", "..", "|fff"};
 
-   private static String testJCRPathInvalid[] =
-   {"/.:./uuu", "/ ", "/./xml:name[0]", "xxx//fff", "//", " sdfas/", ""};
+   private static String testJCRPathInvalid[] = {"/.:./uuu", "/ ", "/./xml:name[0]", "xxx//fff", "//", " sdfas/", ""};
 
    private LocationFactory factory;
 
@@ -155,7 +149,7 @@ public class TestLocationFactory
       for (int i = 1; i <= MAX_CREATE_PATH_TIME; i++)
       {
          factory
-                  .parseAbsPath("/jcr:namenamename/jcr:namenamename/jcr:namenamename/jcr:namenamename/jcr:namenamename/jcr:namenamename");
+            .parseAbsPath("/jcr:namenamename/jcr:namenamename/jcr:namenamename/jcr:namenamename/jcr:namenamename/jcr:namenamename");
       }
    }
 

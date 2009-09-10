@@ -18,25 +18,10 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import javax.jcr.AccessDeniedException;
-import javax.jcr.RepositoryException;
-import javax.jcr.UnsupportedRepositoryOperationException;
-import javax.jcr.lock.Lock;
-import javax.jcr.lock.LockException;
-
-import org.picocontainer.Startable;
-
-import org.exoplatform.services.log.Log;
-
+import org.exoplatform.management.annotations.Managed;
+import org.exoplatform.management.annotations.ManagedDescription;
+import org.exoplatform.management.jmx.annotations.NameTemplate;
+import org.exoplatform.management.jmx.annotations.Property;
 import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ExtendedSession;
@@ -66,10 +51,23 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistent
 import org.exoplatform.services.jcr.observation.ExtendedEvent;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.management.annotations.Managed;
-import org.exoplatform.management.annotations.ManagedDescription;
-import org.exoplatform.management.jmx.annotations.NameTemplate;
-import org.exoplatform.management.jmx.annotations.Property;
+import org.exoplatform.services.log.Log;
+import org.picocontainer.Startable;
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import javax.jcr.AccessDeniedException;
+import javax.jcr.RepositoryException;
+import javax.jcr.UnsupportedRepositoryOperationException;
+import javax.jcr.lock.Lock;
+import javax.jcr.lock.LockException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -79,8 +77,7 @@ import org.exoplatform.management.jmx.annotations.Property;
  */
 @Managed
 @NameTemplate(@Property(key = "service", value = "lockmanager"))
-public class LockManagerImpl
-   implements ItemsPersistenceListener, SessionLifecycleListener, LockManager, Startable
+public class LockManagerImpl implements ItemsPersistenceListener, SessionLifecycleListener, LockManager, Startable
 {
    /**
     * Default lock time out. 30min
@@ -162,8 +159,7 @@ public class LockManagerImpl
       if (config.getLockManager() != null)
       {
          lockTimeOut =
-                  config.getLockManager().getTimeout() > 0 ? config.getLockManager().getTimeout()
-                           : DEFAULT_LOCK_TIMEOUT;
+            config.getLockManager().getTimeout() > 0 ? config.getLockManager().getTimeout() : DEFAULT_LOCK_TIMEOUT;
       }
       else
          lockTimeOut = DEFAULT_LOCK_TIMEOUT;
@@ -197,9 +193,9 @@ public class LockManagerImpl
     * .jcr.impl.core.NodeImpl, boolean, boolean, long)
     */
    public synchronized Lock addPendingLock(NodeImpl node, boolean isDeep, boolean isSessionScoped, long timeOut)
-            throws LockException
+      throws LockException
    {
-      LockData lData = getLockData((NodeData) node.getData(), SEARCH_EXECMATCH | SEARCH_CLOSEDPARENT);
+      LockData lData = getLockData((NodeData)node.getData(), SEARCH_EXECMATCH | SEARCH_CLOSEDPARENT);
       if (lData != null)
       {
          if (lData.getNodeIdentifier().equals(node.getInternalIdentifier()))
@@ -212,15 +208,15 @@ public class LockManagerImpl
          }
       }
 
-      if (isDeep && getLockData((NodeData) node.getData(), SEARCH_CLOSEDCHILD) != null)
+      if (isDeep && getLockData((NodeData)node.getData(), SEARCH_CLOSEDCHILD) != null)
       {
          throw new LockException("Some child node is locked.");
       }
 
       String lockToken = IdGenerator.generate();
       lData =
-               new LockData(node.getInternalIdentifier(), lockToken, isDeep, isSessionScoped, node.getSession()
-                        .getUserID(), timeOut > 0 ? timeOut : lockTimeOut);
+         new LockData(node.getInternalIdentifier(), lockToken, isDeep, isSessionScoped, node.getSession().getUserID(),
+            timeOut > 0 ? timeOut : lockTimeOut);
 
       lData.addLockHolder(node.getSession().getId());
       pendingLocks.put(node.getInternalIdentifier(), lData);
@@ -239,7 +235,7 @@ public class LockManagerImpl
    public LockImpl getLock(NodeImpl node) throws LockException, RepositoryException
    {
 
-      LockData lData = getLockData((NodeData) node.getData(), SEARCH_EXECMATCH | SEARCH_CLOSEDPARENT);
+      LockData lData = getLockData((NodeData)node.getData(), SEARCH_EXECMATCH | SEARCH_CLOSEDPARENT);
 
       if (lData == null || (!node.getInternalIdentifier().equals(lData.getNodeIdentifier()) && !lData.isDeep()))
       {
@@ -302,7 +298,7 @@ public class LockManagerImpl
     */
    public boolean isLockHolder(NodeImpl node) throws RepositoryException
    {
-      LockData lData = getLockData((NodeData) node.getData(), SEARCH_EXECMATCH | SEARCH_CLOSEDPARENT);
+      LockData lData = getLockData((NodeData)node.getData(), SEARCH_EXECMATCH | SEARCH_CLOSEDPARENT);
       return lData != null && lData.isLockHolder(node.getSession().getId());
    }
 
@@ -315,7 +311,7 @@ public class LockManagerImpl
    public synchronized void onCloseSession(ExtendedSession session)
    {
       // List<String> deadLocksList = new ArrayList<String>();
-      SessionImpl sessionImpl = (SessionImpl) session;
+      SessionImpl sessionImpl = (SessionImpl)session;
       for (Iterator<Map.Entry<String, LockData>> entries = locks.entrySet().iterator(); entries.hasNext();)
       {
          Map.Entry<String, LockData> entry = entries.next();
@@ -340,8 +336,8 @@ public class LockManagerImpl
                      // org.exoplatform.services.jcr.impl.core.SessionRegistry$SessionCleaner.callPeriodically(SessionRegistry.java:165)
                      // at
                      // org.exoplatform.services.jcr.impl.proccess.WorkerThread.run(WorkerThread.java:46)
-                     ((NodeImpl) sessionImpl.getTransientNodesManager().getItemByIdentifier(
-                              lockData.getNodeIdentifier(), false)).unlock();
+                     ((NodeImpl)sessionImpl.getTransientNodesManager().getItemByIdentifier(
+                        lockData.getNodeIdentifier(), false)).unlock();
                   }
                   catch (UnsupportedRepositoryOperationException e)
                   {
@@ -384,7 +380,7 @@ public class LockManagerImpl
       List<PlainChangesLog> chengesLogList = new ArrayList<PlainChangesLog>();
       if (changesLog instanceof TransactionChangesLog)
       {
-         ChangesLogIterator logIterator = ((TransactionChangesLog) changesLog).getLogIterator();
+         ChangesLogIterator logIterator = ((TransactionChangesLog)changesLog).getLogIterator();
 
          while (logIterator.hasNextLog())
          {
@@ -393,11 +389,11 @@ public class LockManagerImpl
       }
       else if (changesLog instanceof PlainChangesLog)
       {
-         chengesLogList.add((PlainChangesLog) changesLog);
+         chengesLogList.add((PlainChangesLog)changesLog);
       }
       else if (changesLog instanceof CompositeChangesLog)
       {
-         for (ChangesLogIterator iter = ((CompositeChangesLog) changesLog).getLogIterator(); iter.hasNextLog();)
+         for (ChangesLogIterator iter = ((CompositeChangesLog)changesLog).getLogIterator(); iter.hasNextLog();)
          {
             chengesLogList.add(iter.nextLog());
          }
@@ -414,7 +410,7 @@ public class LockManagerImpl
                   if (currChangesLog.getSize() < 2)
                   {
                      log.error("Incorrect changes log  of type ExtendedEvent.LOCK size=" + currChangesLog.getSize()
-                              + "<2 \n" + currChangesLog.dump());
+                        + "<2 \n" + currChangesLog.dump());
                      break;
                   }
                   nodeIdentifier = currChangesLog.getAllStates().get(0).getData().getParentIdentifier();
@@ -426,7 +422,7 @@ public class LockManagerImpl
                   else
                   {
                      log.warn("No lock in pendingLocks for identifier " + nodeIdentifier
-                              + " Probably lock come from replication.");
+                        + " Probably lock come from replication.");
 
                      String lockToken = IdGenerator.generate();
                      ItemState ownerState = getItemState(currChangesLog, Constants.JCR_LOCKOWNER);
@@ -435,14 +431,13 @@ public class LockManagerImpl
                      {
 
                         String owner =
-                                 new String(((((TransientPropertyData) (ownerState.getData())).getValues()).get(0))
-                                          .getAsByteArray(), Constants.DEFAULT_ENCODING);
+                           new String(((((TransientPropertyData)(ownerState.getData())).getValues()).get(0))
+                              .getAsByteArray(), Constants.DEFAULT_ENCODING);
 
                         boolean isDeep =
-                                 Boolean.valueOf(
-                                          new String(((((TransientPropertyData) (isDeepState.getData())).getValues())
-                                                   .get(0)).getAsByteArray(), Constants.DEFAULT_ENCODING))
-                                          .booleanValue();
+                           Boolean.valueOf(
+                              new String(((((TransientPropertyData)(isDeepState.getData())).getValues()).get(0))
+                                 .getAsByteArray(), Constants.DEFAULT_ENCODING)).booleanValue();
 
                         createRemoteLock(currChangesLog.getSessionId(), nodeIdentifier, lockToken, isDeep, false, owner);
                      }
@@ -452,12 +447,12 @@ public class LockManagerImpl
                   if (currChangesLog.getSize() < 2)
                   {
                      log.error("Incorrect changes log  of type ExtendedEvent.UNLOCK size=" + currChangesLog.getSize()
-                              + "<2 \n" + currChangesLog.dump());
+                        + "<2 \n" + currChangesLog.dump());
                      break;
                   }
 
                   internalUnLock(currChangesLog.getSessionId(), currChangesLog.getAllStates().get(0).getData()
-                           .getParentIdentifier());
+                     .getParentIdentifier());
                   break;
                default :
                   HashSet<String> removedLock = new HashSet<String>();
@@ -582,8 +577,8 @@ public class LockManagerImpl
 
       // make a copy
       TransientPropertyData newData =
-               new TransientPropertyData(prop.getQPath(), prop.getIdentifier(), prop.getPersistedVersion(), prop
-                        .getType(), prop.getParentIdentifier(), prop.isMultiValued());
+         new TransientPropertyData(prop.getQPath(), prop.getIdentifier(), prop.getPersistedVersion(), prop.getType(),
+            prop.getParentIdentifier(), prop.isMultiValued());
 
       List<ValueData> values = null;
       // null is possible for deleting items
@@ -592,7 +587,7 @@ public class LockManagerImpl
          values = new ArrayList<ValueData>();
          for (ValueData val : prop.getValues())
          {
-            values.add(((AbstractValueData) val).createTransientCopy());
+            values.add(((AbstractValueData)val).createTransientCopy());
          }
       }
       newData.setValues(values);
@@ -639,7 +634,7 @@ public class LockManagerImpl
          if (retval == null && (searchType & SEARCH_CLOSEDPARENT) != 0)
          {
 
-            NodeData parentData = (NodeData) dataManager.getItemData(data.getParentIdentifier());
+            NodeData parentData = (NodeData)dataManager.getItemData(data.getParentIdentifier());
             if (parentData != null)
             {
                retval = locks.get(parentData.getIdentifier());
@@ -748,7 +743,7 @@ public class LockManagerImpl
     * @return LockData
     */
    private synchronized LockData createRemoteLock(String sessionId, String nodeIdentifier, String lockToken,
-            boolean isDeep, boolean sessionScoped, String owner)
+      boolean isDeep, boolean sessionScoped, String owner)
    {
       LockData lData = new LockData(nodeIdentifier, lockToken, isDeep, sessionScoped, owner, lockTimeOut);
       lData.addLockHolder(sessionId);
@@ -767,19 +762,17 @@ public class LockManagerImpl
    {
       try
       {
-         NodeData nData = (NodeData) dataManager.getItemData(nodeIdentifier);
+         NodeData nData = (NodeData)dataManager.getItemData(nodeIdentifier);
          PlainChangesLog changesLog =
-                  new PlainChangesLogImpl(new ArrayList<ItemState>(), SystemIdentity.SYSTEM, ExtendedEvent.UNLOCK);
+            new PlainChangesLogImpl(new ArrayList<ItemState>(), SystemIdentity.SYSTEM, ExtendedEvent.UNLOCK);
 
          ItemData lockOwner =
-                  copyItemData((PropertyData) dataManager
-                           .getItemData(nData, new QPathEntry(Constants.JCR_LOCKOWNER, 1)));
+            copyItemData((PropertyData)dataManager.getItemData(nData, new QPathEntry(Constants.JCR_LOCKOWNER, 1)));
 
          changesLog.add(ItemState.createDeletedState(lockOwner));
 
          ItemData lockIsDeep =
-                  copyItemData((PropertyData) dataManager.getItemData(nData,
-                           new QPathEntry(Constants.JCR_LOCKISDEEP, 1)));
+            copyItemData((PropertyData)dataManager.getItemData(nData, new QPathEntry(Constants.JCR_LOCKISDEEP, 1)));
          changesLog.add(ItemState.createDeletedState(lockIsDeep));
 
          // lock probably removed by other thread

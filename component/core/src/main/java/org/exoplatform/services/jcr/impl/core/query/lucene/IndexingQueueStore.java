@@ -107,7 +107,7 @@ class IndexingQueueStore
     */
    public String[] getPending()
    {
-      return (String[]) pending.toArray(new String[pending.size()]);
+      return (String[])pending.toArray(new String[pending.size()]);
    }
 
    /**

@@ -18,14 +18,14 @@
  */
 package org.exoplatform.services.jcr.dataflow;
 
-import java.util.List;
-
-import javax.jcr.RepositoryException;
-
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
+
+import java.util.List;
+
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.

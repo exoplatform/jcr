@@ -18,15 +18,15 @@
  */
 package org.exoplatform.services.jcr.storage;
 
-import java.util.List;
-
-import javax.jcr.InvalidItemStateException;
-import javax.jcr.RepositoryException;
-
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
+
+import java.util.List;
+
+import javax.jcr.InvalidItemStateException;
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS. <br>
@@ -145,7 +145,7 @@ public interface WorkspaceStorageConnection
     *           if operation is not supported
     */
    List<PropertyData> getReferencesData(String nodeIdentifier) throws RepositoryException, IllegalStateException,
-            UnsupportedOperationException;
+      UnsupportedOperationException;
 
    /**
     * Adds single <code>NodeData</code>.
@@ -162,7 +162,7 @@ public interface WorkspaceStorageConnection
     *           if connection is closed
     */
    void add(NodeData data) throws RepositoryException, UnsupportedOperationException, InvalidItemStateException,
-            IllegalStateException;
+      IllegalStateException;
 
    /**
     * Adds single <code>PropertyData</code>.
@@ -179,7 +179,7 @@ public interface WorkspaceStorageConnection
     *           if connection is closed
     */
    void add(PropertyData data) throws RepositoryException, UnsupportedOperationException, InvalidItemStateException,
-            IllegalStateException;
+      IllegalStateException;
 
    /**
     * Updates <code>NodeData</code>.
@@ -199,7 +199,7 @@ public interface WorkspaceStorageConnection
     *           if connection is closed
     */
    void update(NodeData data) throws RepositoryException, UnsupportedOperationException, InvalidItemStateException,
-            IllegalStateException;
+      IllegalStateException;
 
    /**
     * Updates <code>PropertyData</code>.
@@ -219,7 +219,7 @@ public interface WorkspaceStorageConnection
     *           if connection is closed
     */
    void update(PropertyData data) throws RepositoryException, UnsupportedOperationException, InvalidItemStateException,
-            IllegalStateException;
+      IllegalStateException;
 
    /**
     * Renames <code>NodeData</code> using Node identifier and new name and index from the data.
@@ -239,7 +239,7 @@ public interface WorkspaceStorageConnection
     *           if connection is closed
     */
    void rename(NodeData data) throws RepositoryException, UnsupportedOperationException, InvalidItemStateException,
-            IllegalStateException;
+      IllegalStateException;
 
    /**
     * Deletes <code>NodeData</code>.
@@ -257,7 +257,7 @@ public interface WorkspaceStorageConnection
     *           if connection is closed
     */
    void delete(NodeData data) throws RepositoryException, UnsupportedOperationException, InvalidItemStateException,
-            IllegalStateException;
+      IllegalStateException;
 
    /**
     * Deletes <code>PropertyData</code>.
@@ -275,7 +275,7 @@ public interface WorkspaceStorageConnection
     *           if connection is closed
     */
    void delete(PropertyData data) throws RepositoryException, UnsupportedOperationException, InvalidItemStateException,
-            IllegalStateException;
+      IllegalStateException;
 
    /**
     * Persist changes and closes connection. It can be database transaction commit for instance etc.

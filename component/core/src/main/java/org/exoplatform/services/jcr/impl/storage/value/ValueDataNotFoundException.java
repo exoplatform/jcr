@@ -24,8 +24,7 @@ import javax.jcr.RepositoryException;
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: ValueDataNotFoundException.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class ValueDataNotFoundException
-   extends RepositoryException
+public class ValueDataNotFoundException extends RepositoryException
 {
 
    private static final long serialVersionUID = -3480032427540892483L;

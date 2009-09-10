@@ -27,8 +27,7 @@ import org.exoplatform.services.jcr.datamodel.InternalQName;
  * /     -> descendants = false, nameTest = ""
  * </code>
  */
-public class LocationStepQueryNode
-   extends NAryQueryNode
+public class LocationStepQueryNode extends NAryQueryNode
 {
 
    /** Constant value for position index = last() */
@@ -143,7 +142,7 @@ public class LocationStepQueryNode
       }
       else
       {
-         return (QueryNode[]) operands.toArray(new QueryNode[operands.size()]);
+         return (QueryNode[])operands.toArray(new QueryNode[operands.size()]);
       }
    }
 
@@ -196,9 +195,9 @@ public class LocationStepQueryNode
    {
       if (obj instanceof LocationStepQueryNode)
       {
-         LocationStepQueryNode other = (LocationStepQueryNode) obj;
+         LocationStepQueryNode other = (LocationStepQueryNode)obj;
          return super.equals(other) && includeDescendants == other.includeDescendants && index == other.index
-                  && (nameTest == null ? other.nameTest == null : nameTest.equals(other.nameTest));
+            && (nameTest == null ? other.nameTest == null : nameTest.equals(other.nameTest));
       }
       return false;
    }

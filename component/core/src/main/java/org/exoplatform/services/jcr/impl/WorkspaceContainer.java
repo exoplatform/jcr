@@ -18,24 +18,21 @@
  */
 package org.exoplatform.services.jcr.impl;
 
-import javax.jcr.RepositoryException;
-import javax.management.MBeanServer;
-import javax.management.MBeanServerFactory;
-
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.jmx.MX4JComponentAdapterFactory;
+import org.exoplatform.management.annotations.Managed;
+import org.exoplatform.management.annotations.ManagedDescription;
+import org.exoplatform.management.jmx.annotations.NameTemplate;
+import org.exoplatform.management.jmx.annotations.NamingContext;
+import org.exoplatform.management.jmx.annotations.Property;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.core.SessionFactory;
 import org.exoplatform.services.jcr.impl.core.WorkspaceInitializer;
 import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.management.jmx.annotations.NameTemplate;
-import org.exoplatform.management.jmx.annotations.Property;
-import org.exoplatform.management.jmx.annotations.NamingContext;
-import org.exoplatform.management.annotations.Managed;
-import org.exoplatform.management.annotations.ManagedDescription;
+import org.exoplatform.services.log.Log;
+
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -45,11 +42,9 @@ import org.exoplatform.management.annotations.ManagedDescription;
  */
 
 @Managed
-@NameTemplate(
-{@Property(key = "container", value = "workspace"), @Property(key = "name", value = "{Name}")})
+@NameTemplate({@Property(key = "container", value = "workspace"), @Property(key = "name", value = "{Name}")})
 @NamingContext(@Property(key = "workspace", value = "{Name}"))
-public class WorkspaceContainer
-   extends ExoContainer
+public class WorkspaceContainer extends ExoContainer
 {
 
    protected static Log log = ExoLogger.getLogger("jcr.WorkspaceContainer");
@@ -59,7 +54,7 @@ public class WorkspaceContainer
    private final RepositoryContainer repositoryContainer;
 
    public WorkspaceContainer(RepositoryContainer parent, WorkspaceEntry config) throws RepositoryException,
-            RepositoryConfigurationException
+      RepositoryConfigurationException
    {
 
       // Before repository instantiation
@@ -80,12 +75,12 @@ public class WorkspaceContainer
 
    public SessionFactory getSessionFactory()
    {
-      return (SessionFactory) getComponentInstanceOfType(SessionFactory.class);
+      return (SessionFactory)getComponentInstanceOfType(SessionFactory.class);
    }
 
    public WorkspaceInitializer getWorkspaceInitializer()
    {
-      return (WorkspaceInitializer) getComponentInstanceOfType(WorkspaceInitializer.class);
+      return (WorkspaceInitializer)getComponentInstanceOfType(WorkspaceInitializer.class);
    }
 
    /*

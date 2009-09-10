@@ -29,8 +29,7 @@ import javax.jcr.Node;
  *          JCR Use Case test sample
  */
 
-public class SampleUseCaseTest
-   extends BaseUsecasesTest
+public class SampleUseCaseTest extends BaseUsecasesTest
 {
 
    /**

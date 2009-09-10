@@ -24,8 +24,7 @@ import org.exoplatform.services.jcr.impl.Constants;
 /**
  * Implements a query node that defines a path restriction.
  */
-public class PathQueryNode
-   extends NAryQueryNode
+public class PathQueryNode extends NAryQueryNode
 {
 
    /**
@@ -110,7 +109,7 @@ public class PathQueryNode
       }
       else
       {
-         return (LocationStepQueryNode[]) operands.toArray(new LocationStepQueryNode[operands.size()]);
+         return (LocationStepQueryNode[])operands.toArray(new LocationStepQueryNode[operands.size()]);
       }
    }
 
@@ -144,7 +143,7 @@ public class PathQueryNode
    {
       if (obj instanceof PathQueryNode)
       {
-         PathQueryNode other = (PathQueryNode) obj;
+         PathQueryNode other = (PathQueryNode)obj;
          return super.equals(obj) && absolute == other.absolute;
       }
       return false;
@@ -174,7 +173,7 @@ public class PathQueryNode
          {
             if (pathStepOperands[0] instanceof NodeTypeQueryNode)
             {
-               NodeTypeQueryNode nodeTypeQueryNode = (NodeTypeQueryNode) pathStepOperands[0];
+               NodeTypeQueryNode nodeTypeQueryNode = (NodeTypeQueryNode)pathStepOperands[0];
                if (!validJcrSystemNodeTypeNames.contains(nodeTypeQueryNode.getValue()))
                {
                   return false;

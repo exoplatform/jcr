@@ -18,11 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.value;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-
 import junit.framework.TestCase;
 
 import org.exoplatform.services.jcr.impl.dataflow.persistent.ByteArrayPersistedValueData;
@@ -32,6 +27,11 @@ import org.exoplatform.services.jcr.impl.storage.value.fs.Probe;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.SwapFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -39,8 +39,7 @@ import org.exoplatform.services.jcr.impl.util.io.SwapFile;
  * @version $Id: TestPersistedValueData.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class TestPersistedValueData
-   extends TestCase
+public class TestPersistedValueData extends TestCase
 {
 
    public void testCreateByteArrayValueData() throws Exception
@@ -109,8 +108,8 @@ public class TestPersistedValueData
    {
 
       byte[] buf =
-               "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"
-                        .getBytes();
+         "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"
+            .getBytes();
       File file = new File("target/testConcurrentFileStreamValueDataReading");
       if (file.exists())
          file.delete();

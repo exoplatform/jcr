@@ -18,18 +18,14 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
+import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
+import org.exoplatform.services.jcr.impl.core.NodeImpl;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Iterator;
 import java.util.List;
-
-import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
-import org.exoplatform.services.jcr.impl.core.NodeImpl;
 
 /**
  * Created by The eXo Platform SAS. <br/>Date:
@@ -37,8 +33,7 @@ import org.exoplatform.services.jcr.impl.core.NodeImpl;
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a>
  * @version $Id: JCRSerializationLogTest.java 111 2008-11-11 11:11:11Z serg $
  */
-public class JCRSerializationLogTestLoad
-   extends JcrImplSerializationBaseTest
+public class JCRSerializationLogTestLoad extends JcrImplSerializationBaseTest
 {
 
    private final int iter = 10000;
@@ -50,8 +45,8 @@ public class JCRSerializationLogTestLoad
       File file = this.createBLOBTempFile(310);
       FileInputStream fis = new FileInputStream(file);
 
-      NodeImpl node = (NodeImpl) root.addNode("file", "nt:file");
-      NodeImpl cont = (NodeImpl) node.addNode("jcr:content", "nt:resource");
+      NodeImpl node = (NodeImpl)root.addNode("file", "nt:file");
+      NodeImpl cont = (NodeImpl)node.addNode("jcr:content", "nt:resource");
       cont.setProperty("jcr:mimeType", "text/plain");
       cont.setProperty("jcr:lastModified", Calendar.getInstance());
       cont.setProperty("jcr:encoding", "UTF-8");
@@ -94,7 +89,7 @@ public class JCRSerializationLogTestLoad
       for (int i = 0; i < iter; i++)
       {
          TransactionChangesLogReader rdr = new TransactionChangesLogReader(fileCleaner, maxBufferSize, holder);
-         TransactionChangesLog obj = (TransactionChangesLog) rdr.read(jcrin);
+         TransactionChangesLog obj = (TransactionChangesLog)rdr.read(jcrin);
 
          //  readed.add(obj); 
       }

@@ -18,6 +18,9 @@
  */
 package org.exoplatform.services.jcr.api.nodetypes;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
@@ -28,15 +31,11 @@ import javax.jcr.Property;
 import javax.jcr.PropertyType;
 import javax.jcr.Value;
 
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
-
 /**
  * Created by The eXo Platform SAS.
  */
 
-public class TestValueConstraints
-   extends JcrAPIBaseTest
+public class TestValueConstraints extends JcrAPIBaseTest
 {
 
    private Node testValueConstraintsNode = null;
@@ -65,10 +64,10 @@ public class TestValueConstraints
 
       byte[] xmlData = readXmlContent("/org/exoplatform/services/jcr/api/nodetypes/nodetypes-api-test.xml");
       ByteArrayInputStream xmlInput = new ByteArrayInputStream(xmlData);
-      ntManager = (NodeTypeManagerImpl) session.getWorkspace().getNodeTypeManager();
+      ntManager = (NodeTypeManagerImpl)session.getWorkspace().getNodeTypeManager();
       ntManager.registerNodeTypes(xmlInput, 0);
       assertNotNull(ntManager.getNodeType(nodeTypeName));
-      Node ntRoot = (Node) repository.getSystemSession().getItem(NodeTypeManagerImpl.NODETYPES_ROOT);
+      Node ntRoot = (Node)repository.getSystemSession().getItem(NodeTypeManagerImpl.NODETYPES_ROOT);
       assertTrue(ntRoot.hasNode(nodeTypeName));
       testValueConstraintsNode = root.addNode("testValueConstraints", nodeTypeName);
       testValueConstraintsNode.addMixin("mix:referenceable");
@@ -111,8 +110,7 @@ public class TestValueConstraints
    {
 
       Property testProperty =
-               testValueConstraintsNode
-                        .setProperty("jcr:testPATH", valueFactory.createValue("/abc", PropertyType.PATH));
+         testValueConstraintsNode.setProperty("jcr:testPATH", valueFactory.createValue("/abc", PropertyType.PATH));
       Value value = valueFactory.createValue("../exojcrtest:def/ghi", PropertyType.PATH);
       testProperty.setValue(value);
       root.save();
@@ -187,7 +185,7 @@ public class TestValueConstraints
    {
 
       Property testProperty =
-               testValueConstraintsNode.setProperty("jcr:testBINARYINCLUSIVE", new FileInputStream(LOCAL_SMALL_FILE));
+         testValueConstraintsNode.setProperty("jcr:testBINARYINCLUSIVE", new FileInputStream(LOCAL_SMALL_FILE));
       testProperty.setValue(new FileInputStream(LOCAL_BIG_FILE));
       root.save();
    }
@@ -198,8 +196,7 @@ public class TestValueConstraints
       try
       {
          Property testProperty =
-                  testValueConstraintsNode
-                           .setProperty("jcr:testBINARYEXCLUSIVE", new FileInputStream(LOCAL_SMALL_FILE));
+            testValueConstraintsNode.setProperty("jcr:testBINARYEXCLUSIVE", new FileInputStream(LOCAL_SMALL_FILE));
          testProperty.setValue(new FileInputStream(LOCAL_BIG_FILE));
          root.save();
          fail("setValue(BINARY value) must throw a ConstraintViolationException ");
@@ -212,8 +209,7 @@ public class TestValueConstraints
       try
       {
          Property testProperty =
-                  testValueConstraintsNode.setProperty("jcr:testBINARYEXCLUSIVE",
-                           new FileInputStream(LOCAL_NORMAL_FILE));
+            testValueConstraintsNode.setProperty("jcr:testBINARYEXCLUSIVE", new FileInputStream(LOCAL_NORMAL_FILE));
          root.save();
          fail("setValue(BINARY value) must throw a ConstraintViolationException ");
       }
@@ -227,8 +223,8 @@ public class TestValueConstraints
    {
 
       Property testProperty =
-               testValueConstraintsNode.setProperty("jcr:testDATEINCLUSIVE", valueFactory.createValue(
-                        "1111-11-11T11:11:11.111Z", PropertyType.DATE));
+         testValueConstraintsNode.setProperty("jcr:testDATEINCLUSIVE", valueFactory.createValue(
+            "1111-11-11T11:11:11.111Z", PropertyType.DATE));
       testProperty.setValue(valueFactory.createValue("1222-11-11T11:11:11.111Z", PropertyType.DATE));
       root.save();
    }
@@ -239,8 +235,8 @@ public class TestValueConstraints
       try
       {
          Property testProperty =
-                  testValueConstraintsNode.setProperty("jcr:testDATEEXCLUSIVE", valueFactory.createValue(
-                           "1111-11-11T11:11:11.111Z", PropertyType.DATE));
+            testValueConstraintsNode.setProperty("jcr:testDATEEXCLUSIVE", valueFactory.createValue(
+               "1111-11-11T11:11:11.111Z", PropertyType.DATE));
          testProperty.setValue(valueFactory.createValue("1222-11-11T11:11:11.111Z", PropertyType.DATE));
          root.save();
          fail("setValue(DATE value) must throw a ConstraintViolationException ");
@@ -253,8 +249,8 @@ public class TestValueConstraints
       try
       {
          Property testProperty =
-                  testValueConstraintsNode.setProperty("jcr:testDATEEXCLUSIVE", valueFactory.createValue(
-                           "1155-11-11T11:11:11.111Z", PropertyType.DATE));
+            testValueConstraintsNode.setProperty("jcr:testDATEEXCLUSIVE", valueFactory.createValue(
+               "1155-11-11T11:11:11.111Z", PropertyType.DATE));
          root.save();
          fail("setValue(DATE value) must throw a ConstraintViolationException ");
       }

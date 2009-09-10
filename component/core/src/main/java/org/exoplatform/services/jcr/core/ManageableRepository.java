@@ -18,6 +18,12 @@
  */
 package org.exoplatform.services.jcr.core;
 
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.config.RepositoryEntry;
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
+import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -27,12 +33,6 @@ import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
-import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
-import org.exoplatform.services.jcr.config.RepositoryEntry;
-import org.exoplatform.services.jcr.config.WorkspaceEntry;
-import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
-import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
-
 /**
  * Created by The eXo Platform SAS.<br/> Etended Repository implementation
  * 
@@ -41,8 +41,7 @@ import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener
  *          $
  */
 
-public interface ManageableRepository
-   extends Repository
+public interface ManageableRepository extends Repository
 {
 
    /**

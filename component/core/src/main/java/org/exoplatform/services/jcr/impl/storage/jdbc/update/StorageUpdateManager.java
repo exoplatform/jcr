@@ -18,6 +18,11 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.update;
 
+import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.util.IdGenerator;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,12 +33,6 @@ import java.sql.SQLException;
 
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.log.Log;
-
-import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.util.IdGenerator;
-import org.exoplatform.services.log.ExoLogger;
 
 /**
  * Created by The eXo Platform SAS.
@@ -88,45 +87,45 @@ public class StorageUpdateManager
    protected static final String SQL_UPDATE_JCRUUID_SINGLEDB = "update JCR_SVALUE set DATA=? where ID=?";
 
    protected static final String SQL_SELECT_JCRUUID_MULTIDB =
-            "select I.PATH, N.ID as NID, V.ID as VID, V.DATA from JCR_MITEM I, JCR_MNODE N, JCR_MPROPERTY P, JCR_MVALUE V "
-                     + "WHERE I.ID = P.ID and N.ID = P.PARENT_ID and P.ID = V.PROPERTY_ID and " + "I.PATH like '%"
-                     + Constants.JCR_UUID.getAsString() + "%' " + "order by V.ID";
+      "select I.PATH, N.ID as NID, V.ID as VID, V.DATA from JCR_MITEM I, JCR_MNODE N, JCR_MPROPERTY P, JCR_MVALUE V "
+         + "WHERE I.ID = P.ID and N.ID = P.PARENT_ID and P.ID = V.PROPERTY_ID and " + "I.PATH like '%"
+         + Constants.JCR_UUID.getAsString() + "%' " + "order by V.ID";
 
    protected static final String SQL_SELECT_JCRUUID_SINGLEDB =
-            "select I.PATH, N.ID as NID, V.ID as VID, V.DATA from JCR_SITEM I, JCR_SNODE N, JCR_SPROPERTY P, JCR_SVALUE V "
-                     + "WHERE I.ID = P.ID and N.ID = P.PARENT_ID and P.ID = V.PROPERTY_ID and " + "I.PATH like '%"
-                     + Constants.JCR_UUID.getAsString() + "%' " + "order by V.ID";
+      "select I.PATH, N.ID as NID, V.ID as VID, V.DATA from JCR_SITEM I, JCR_SNODE N, JCR_SPROPERTY P, JCR_SVALUE V "
+         + "WHERE I.ID = P.ID and N.ID = P.PARENT_ID and P.ID = V.PROPERTY_ID and " + "I.PATH like '%"
+         + Constants.JCR_UUID.getAsString() + "%' " + "order by V.ID";
 
    protected static final String FROZENJCRUUID = "$FROZENJCRUUID$";
 
    protected static final String SQL_SELECT_FROZENJCRUUID_MULTIDB =
-            "select I.PATH, N.ID as NID, V.ID as VID, V.DATA from JCR_MITEM I, JCR_MNODE N, JCR_MPROPERTY P, JCR_MVALUE V "
-                     + "WHERE I.ID = P.ID and N.ID = P.PARENT_ID and P.ID = V.PROPERTY_ID and " + "I.PATH like '"
-                     + FROZENJCRUUID + "' " + "order by V.ID";
+      "select I.PATH, N.ID as NID, V.ID as VID, V.DATA from JCR_MITEM I, JCR_MNODE N, JCR_MPROPERTY P, JCR_MVALUE V "
+         + "WHERE I.ID = P.ID and N.ID = P.PARENT_ID and P.ID = V.PROPERTY_ID and " + "I.PATH like '" + FROZENJCRUUID
+         + "' " + "order by V.ID";
 
    protected static final String SQL_SELECT_FROZENJCRUUID_SINGLEDB =
-            "select I.PATH, N.ID as NID, V.ID as VID, V.DATA from JCR_SITEM I, JCR_SNODE N, JCR_SPROPERTY P, JCR_SVALUE V "
-                     + "WHERE I.ID = P.ID and N.ID = P.PARENT_ID and P.ID = V.PROPERTY_ID and " + "I.PATH like '"
-                     + FROZENJCRUUID + "' " + "order by V.ID";
+      "select I.PATH, N.ID as NID, V.ID as VID, V.DATA from JCR_SITEM I, JCR_SNODE N, JCR_SPROPERTY P, JCR_SVALUE V "
+         + "WHERE I.ID = P.ID and N.ID = P.PARENT_ID and P.ID = V.PROPERTY_ID and " + "I.PATH like '" + FROZENJCRUUID
+         + "' " + "order by V.ID";
 
    protected static final String SQL_SELECT_REFERENCES_MULTIDB =
-            "select I.PATH, V.PROPERTY_ID, V.ORDER_NUM, V.DATA" + " from JCR_MITEM I, JCR_MPROPERTY P, JCR_MVALUE V"
-                     + " where I.ID=P.ID and P.ID=V.PROPERTY_ID and P.TYPE=" + PropertyType.REFERENCE
-                     + " order by I.ID, V.ORDER_NUM";
+      "select I.PATH, V.PROPERTY_ID, V.ORDER_NUM, V.DATA" + " from JCR_MITEM I, JCR_MPROPERTY P, JCR_MVALUE V"
+         + " where I.ID=P.ID and P.ID=V.PROPERTY_ID and P.TYPE=" + PropertyType.REFERENCE
+         + " order by I.ID, V.ORDER_NUM";
 
    protected static final String SQL_SELECT_REFERENCES_SINGLEDB =
-            "select I.PATH, V.PROPERTY_ID, V.ORDER_NUM, V.DATA" + " from JCR_SITEM I, JCR_SPROPERTY P, JCR_SVALUE V"
-                     + " where I.ID=P.ID and P.ID=V.PROPERTY_ID and P.TYPE=" + PropertyType.REFERENCE
-                     // + " and I.CONTAINER_NAME=?"
-                     // // An UUID contains
-                     // container name as prefix
-                     + " order by I.ID, V.ORDER_NUM";
+      "select I.PATH, V.PROPERTY_ID, V.ORDER_NUM, V.DATA" + " from JCR_SITEM I, JCR_SPROPERTY P, JCR_SVALUE V"
+         + " where I.ID=P.ID and P.ID=V.PROPERTY_ID and P.TYPE=" + PropertyType.REFERENCE
+         // + " and I.CONTAINER_NAME=?"
+         // // An UUID contains
+         // container name as prefix
+         + " order by I.ID, V.ORDER_NUM";
 
    protected static final String SQL_INSERT_REFERENCES_MULTIDB =
-            "insert into JCR_MREF (NODE_ID, PROPERTY_ID, ORDER_NUM) values(?,?,?)";
+      "insert into JCR_MREF (NODE_ID, PROPERTY_ID, ORDER_NUM) values(?,?,?)";
 
    protected static final String SQL_INSERT_REFERENCES_SINGLEDB =
-            "insert into JCR_SREF (NODE_ID, PROPERTY_ID, ORDER_NUM) values(?,?,?)";
+      "insert into JCR_SREF (NODE_ID, PROPERTY_ID, ORDER_NUM) values(?,?,?)";
 
    protected final String SQL_SELECT_JCRUUID;
 
@@ -156,7 +155,7 @@ public class StorageUpdateManager
       private final String valueId;
 
       public JcrIdentifier(String path, String nodeIdentifier, String valueId, InputStream valueData)
-               throws IOException
+         throws IOException
       {
          this.path = path;
          this.nodeIdentifier = nodeIdentifier;
@@ -217,8 +216,7 @@ public class StorageUpdateManager
       }
    }
 
-   private class Updater100
-      extends Updater
+   private class Updater100 extends Updater
    {
 
       @Override
@@ -229,8 +227,7 @@ public class StorageUpdateManager
       }
    }
 
-   private class Updater101
-      extends Updater
+   private class Updater101 extends Updater
    {
 
       @Override
@@ -266,7 +263,7 @@ public class StorageUpdateManager
     * @throws RepositoryException
     */
    public static synchronized String checkVersion(String sourceName, Connection connection, boolean multiDB,
-            boolean updateNow) throws RepositoryException
+      boolean updateNow) throws RepositoryException
    {
       int transactIsolation = Connection.TRANSACTION_READ_COMMITTED;
       try
@@ -333,11 +330,11 @@ public class StorageUpdateManager
       {
          // warn
          log.warn("UPDATE IS NOT AVAILABLE from " + curVersion + " to " + STORAGE_VERSION_1_7_0
-                  + " using auto-update option. Use XML export/import to migrate to the next version of JCR. "
-                  + "See for details: http://wiki.exoplatform.org/xwiki/bin/view/JCR/How+to+JCR+import+export. "
-                  + "All data which were created prior (with " + curVersion
-                  + " and older) and stored in external value storage(s) will be unavailable with storage "
-                  + STORAGE_VERSION_1_7_0 + ". " + "No auto-update changes was made to database.");
+            + " using auto-update option. Use XML export/import to migrate to the next version of JCR. "
+            + "See for details: http://wiki.exoplatform.org/xwiki/bin/view/JCR/How+to+JCR+import+export. "
+            + "All data which were created prior (with " + curVersion
+            + " and older) and stored in external value storage(s) will be unavailable with storage "
+            + STORAGE_VERSION_1_7_0 + ". " + "No auto-update changes was made to database.");
       }
 
       // was before 1.7
@@ -351,9 +348,9 @@ public class StorageUpdateManager
          if (!updateNow)
          {
             log.warn("STORAGE VERSION OF " + sourceName + " IS " + curVersion
-                     + " IT IS HIGHLY RECOMMENDED TO UPDATE IT TO " + REQUIRED_STORAGE_VERSION
-                     + " ENABLE UPDATING in the CONFIGURATION:\n <container class='...'>\n"
-                     + "  <properties> \n   <property name='update-storage' value='true'/> \n ...\n");
+               + " IT IS HIGHLY RECOMMENDED TO UPDATE IT TO " + REQUIRED_STORAGE_VERSION
+               + " ENABLE UPDATING in the CONFIGURATION:\n <container class='...'>\n"
+               + "  <properties> \n   <property name='update-storage' value='true'/> \n ...\n");
          }
          else
          {
@@ -414,29 +411,29 @@ public class StorageUpdateManager
             try
             {
                JcrIdentifier jcrIdentifier =
-                        new JcrIdentifier(refs.getString("PATH"), refs.getString("NID"), refs.getString("VID"), refs
-                                 .getBinaryStream("DATA"));
+                  new JcrIdentifier(refs.getString("PATH"), refs.getString("NID"), refs.getString("VID"), refs
+                     .getBinaryStream("DATA"));
                if (!jcrIdentifier.getNodeIdentifier().equals(jcrIdentifier.getJcrIdentifier()))
                {
                   log.info("STORAGE UPDATE >>>: Property jcr:uuid have to be updated with actual value. Property: "
-                           + jcrIdentifier.getPath() + ", actual:" + jcrIdentifier.getNodeIdentifier() + ", existed: "
-                           + jcrIdentifier.getJcrIdentifier());
+                     + jcrIdentifier.getPath() + ", actual:" + jcrIdentifier.getNodeIdentifier() + ", existed: "
+                     + jcrIdentifier.getJcrIdentifier());
 
                   update.clearParameters();
                   update.setBinaryStream(1, new ByteArrayInputStream(jcrIdentifier.getNodeIdentifier().getBytes()),
-                           jcrIdentifier.getNodeIdentifier().length());
+                     jcrIdentifier.getNodeIdentifier().length());
                   update.setString(2, jcrIdentifier.getValueId());
 
                   if (update.executeUpdate() != 1)
                   {
                      log
-                              .warn("STORAGE UPDATE !!!: More than one jcr:uuid property values were updated. Updated value id: "
-                                       + jcrIdentifier.getValueId());
+                        .warn("STORAGE UPDATE !!!: More than one jcr:uuid property values were updated. Updated value id: "
+                           + jcrIdentifier.getValueId());
                   }
                   else
                   {
                      log.info("STORAGE UPDATE <<<: Property jcr:uuid update successful. Property: "
-                              + jcrIdentifier.getPath());
+                        + jcrIdentifier.getPath());
                   }
 
                   // [PN] 27.09.06 Need to be developed more with common versionHistory (of copied nodes)
@@ -465,8 +462,8 @@ public class StorageUpdateManager
    private void fixCopyFrozenIdentifierBug(JcrIdentifier jcrIdentifier, Connection conn) throws SQLException
    {
       String searchCriteria =
-               "'" + Constants.JCR_VERSION_STORAGE_PATH.getAsString() + ":1[]" + jcrIdentifier.getNodeIdentifier()
-                        + "%" + Constants.JCR_FROZENUUID.getAsString() + "%' ";
+         "'" + Constants.JCR_VERSION_STORAGE_PATH.getAsString() + ":1[]" + jcrIdentifier.getNodeIdentifier() + "%"
+            + Constants.JCR_FROZENUUID.getAsString() + "%' ";
 
       ResultSet refs = null;
       PreparedStatement update = null;
@@ -479,16 +476,17 @@ public class StorageUpdateManager
             try
             {
                JcrIdentifier frozenIdentifier =
-                        new JcrIdentifier(refs.getString("PATH"), refs.getString("NID"), refs.getString("VID"), refs
-                                 .getBinaryStream("DATA"));
+                  new JcrIdentifier(refs.getString("PATH"), refs.getString("NID"), refs.getString("VID"), refs
+                     .getBinaryStream("DATA"));
                if (!frozenIdentifier.getNodeIdentifier().equals(frozenIdentifier.getJcrIdentifier()))
                {
                   log
-                           .info("VERSION STORAGE UPDATE >>>: Property jcr:frozenUuid have to be updated with actual value. Property: "
-                                    + frozenIdentifier.getPath()
-                                    + ", actual:"
-                                    + jcrIdentifier.getNodeIdentifier()
-                                    + ", existed: " + frozenIdentifier.getJcrIdentifier());
+                     .info("VERSION STORAGE UPDATE >>>: Property jcr:frozenUuid have to be updated with actual value. Property: "
+                        + frozenIdentifier.getPath()
+                        + ", actual:"
+                        + jcrIdentifier.getNodeIdentifier()
+                        + ", existed: "
+                        + frozenIdentifier.getJcrIdentifier());
                }
             }
             catch (IOException e)
@@ -535,7 +533,7 @@ public class StorageUpdateManager
                String refPropertyPath = refs.getString("PATH");
 
                log.info("INSERT REFERENCE >>> Property: " + refPropertyPath + ", " + refPropertyIdentifier + ", "
-                        + refOrderNum + "; Node UUID: " + refNodeIdentifier);
+                  + refOrderNum + "; Node UUID: " + refNodeIdentifier);
 
                update.clearParameters();
                update.setString(1, refNodeIdentifier);

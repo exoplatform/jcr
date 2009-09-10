@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
+import org.exoplatform.services.jcr.JcrImplBaseTest;
+
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,14 +31,11 @@ import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
-import org.exoplatform.services.jcr.JcrImplBaseTest;
-
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: TestSessionCleaner.java 14508 2008-05-20 10:07:45Z ksm $
  */
-public class TestSessionCleaner
-   extends JcrImplBaseTest
+public class TestSessionCleaner extends JcrImplBaseTest
 {
    private final static int AGENT_COUNT = 10;
 
@@ -50,7 +49,7 @@ public class TestSessionCleaner
    public void setUp() throws Exception
    {
       super.setUp();
-      sessionRegistry = (SessionRegistry) session.getContainer().getComponentInstanceOfType(SessionRegistry.class);
+      sessionRegistry = (SessionRegistry)session.getContainer().getComponentInstanceOfType(SessionRegistry.class);
       oldTimeOut = sessionRegistry.timeOut;
       sessionRegistry.timeOut = TEST_SESSION_TIMEOUT;
       sessionRegistry.stop();
@@ -69,9 +68,9 @@ public class TestSessionCleaner
    }
 
    public void testSessionRemove() throws LoginException, NoSuchWorkspaceException, RepositoryException,
-            InterruptedException
+      InterruptedException
    {
-      SessionImpl session2 = (SessionImpl) repository.login(credentials, "ws");
+      SessionImpl session2 = (SessionImpl)repository.login(credentials, "ws");
 
       // Create a weak reference to the session
       WeakReference<SessionImpl> ref = new WeakReference<SessionImpl>(session2);
@@ -99,8 +98,7 @@ public class TestSessionCleaner
    {
       assertNotNull(sessionRegistry);
 
-      class AgentLogin
-         extends Thread
+      class AgentLogin extends Thread
       {
 
          Random random = new Random();
@@ -120,7 +118,7 @@ public class TestSessionCleaner
             {
                Thread.sleep(SessionRegistry.DEFAULT_CLEANER_TIMEOUT - random.nextInt(200) + 200);
 
-               workSession = (SessionImpl) repository.login(credentials, "ws");
+               workSession = (SessionImpl)repository.login(credentials, "ws");
                sessionStarted = true;
 
             }
@@ -132,8 +130,7 @@ public class TestSessionCleaner
          }
       }
 
-      class AgentLogout
-         extends Thread
+      class AgentLogout extends Thread
       {
          AgentLogin agentLogin;
 
@@ -166,7 +163,7 @@ public class TestSessionCleaner
          }
       }
 
-      Session workSession = (SessionImpl) repository.login(credentials, "ws");
+      Session workSession = (SessionImpl)repository.login(credentials, "ws");
       while (workSession.isLive())
       {
          Thread.sleep(100);
@@ -193,7 +190,7 @@ public class TestSessionCleaner
          isNeedWait = false;
          for (int i = 0; i < AGENT_COUNT * 2; i++)
          {
-            Thread agent = (Thread) agents.get(i);
+            Thread agent = (Thread)agents.get(i);
             if (agent.isAlive())
             {
                isNeedWait = true;
@@ -210,8 +207,7 @@ public class TestSessionCleaner
    {
       assertNotNull(sessionRegistry);
 
-      class AgentLogin
-         extends Thread
+      class AgentLogin extends Thread
       {
 
          SessionImpl workSession;
@@ -231,7 +227,7 @@ public class TestSessionCleaner
             try
             {
                Thread.sleep(sleepTime);
-               workSession = (SessionImpl) repository.login(credentials, "ws");
+               workSession = (SessionImpl)repository.login(credentials, "ws");
                sessionStarted = true;
 
             }
@@ -243,8 +239,7 @@ public class TestSessionCleaner
          }
       }
 
-      class AgentLogout
-         extends Thread
+      class AgentLogout extends Thread
       {
          AgentLogin agentLogin;
 
@@ -294,8 +289,8 @@ public class TestSessionCleaner
          agentLogout.start();
 
          sleepTime =
-                  SessionRegistry.DEFAULT_CLEANER_TIMEOUT / 10
-                           + (sleepTime >= 2 * SessionRegistry.DEFAULT_CLEANER_TIMEOUT ? 0 : sleepTime);
+            SessionRegistry.DEFAULT_CLEANER_TIMEOUT / 10
+               + (sleepTime >= 2 * SessionRegistry.DEFAULT_CLEANER_TIMEOUT ? 0 : sleepTime);
       }
 
       // wait to stop all threads
@@ -305,7 +300,7 @@ public class TestSessionCleaner
          isNeedWait = false;
          for (int i = 0; i < AGENT_COUNT * 2; i++)
          {
-            Thread agent = (Thread) agents.get(i);
+            Thread agent = (Thread)agents.get(i);
             if (agent.isAlive())
             {
                isNeedWait = true;
@@ -322,8 +317,7 @@ public class TestSessionCleaner
    {
       assertNotNull(sessionRegistry);
       final Random random = new Random();
-      class Agent
-         extends Thread
+      class Agent extends Thread
       {
          boolean result = false;
 
@@ -339,7 +333,7 @@ public class TestSessionCleaner
          {
             try
             {
-               SessionImpl session2 = (SessionImpl) repository.login(credentials, "ws");
+               SessionImpl session2 = (SessionImpl)repository.login(credentials, "ws");
                Node rootNode = session2.getRootNode();
                rootNode.addNode("test");
                assertTrue(session2.isLive());

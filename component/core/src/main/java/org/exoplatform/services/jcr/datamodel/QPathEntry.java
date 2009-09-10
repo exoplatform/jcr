@@ -24,9 +24,7 @@ package org.exoplatform.services.jcr.datamodel;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: QPathEntry.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class QPathEntry
-   extends InternalQName
-   implements Comparable<QPathEntry>
+public class QPathEntry extends InternalQName implements Comparable<QPathEntry>
 {
 
    /**

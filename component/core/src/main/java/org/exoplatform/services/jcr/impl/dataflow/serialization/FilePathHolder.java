@@ -18,12 +18,12 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
+import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 
 /**
  * Created by The eXo Platform SAS.

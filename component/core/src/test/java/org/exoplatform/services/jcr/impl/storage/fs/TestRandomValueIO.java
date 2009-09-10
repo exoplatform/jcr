@@ -18,6 +18,11 @@
  */
 package org.exoplatform.services.jcr.impl.storage.fs;
 
+import org.exoplatform.commons.utils.MimeTypeResolver;
+import org.exoplatform.services.jcr.JcrImplBaseTest;
+import org.exoplatform.services.jcr.core.value.EditableBinaryValue;
+import org.exoplatform.services.jcr.core.value.ReadableBinaryValue;
+
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -31,19 +36,13 @@ import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.Session;
 
-import org.exoplatform.commons.utils.MimeTypeResolver;
-import org.exoplatform.services.jcr.JcrImplBaseTest;
-import org.exoplatform.services.jcr.core.value.EditableBinaryValue;
-import org.exoplatform.services.jcr.core.value.ReadableBinaryValue;
-
 /**
  * Created by The eXo Platform SAS
  * 
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestRandomValueIO.java 13062 2008-04-10 12:51:39Z pnedonosko $
  */
-public class TestRandomValueIO
-   extends JcrImplBaseTest
+public class TestRandomValueIO extends JcrImplBaseTest
 {
 
    private Node testRoot;
@@ -84,7 +83,7 @@ public class TestRandomValueIO
       String pname = "file@" + testFile.getName();
       Property p = testRoot.setProperty(pname, new FileInputStream(testFile));
 
-      EditableBinaryValue exv = (EditableBinaryValue) p.getValue();
+      EditableBinaryValue exv = (EditableBinaryValue)p.getValue();
 
       String update1String = "update#1";
 
@@ -104,13 +103,13 @@ public class TestRandomValueIO
          p.setValue(exv);
 
          compareStream(new ByteArrayInputStream(update1String.getBytes()), testRoot.getProperty(pname).getStream(), 0,
-                  pos, update1String.length());
+            pos, update1String.length());
 
          testRoot.save();
 
          // persisted, after the save
          compareStream(new ByteArrayInputStream(update1String.getBytes()), testRoot.getProperty(pname).getStream(), 0,
-                  pos, update1String.length());
+            pos, update1String.length());
 
       }
       catch (CompareStreamException e)
@@ -129,7 +128,7 @@ public class TestRandomValueIO
 
       testRoot.save();
 
-      EditableBinaryValue exv = (EditableBinaryValue) p.getValue();
+      EditableBinaryValue exv = (EditableBinaryValue)p.getValue();
 
       String update1String = "update#1";
 
@@ -149,13 +148,13 @@ public class TestRandomValueIO
          p.setValue(exv);
 
          compareStream(new ByteArrayInputStream(update1String.getBytes()), testRoot.getProperty(pname).getStream(), 0,
-                  pos, update1String.length());
+            pos, update1String.length());
 
          testRoot.save();
 
          // persisted, after the save
          compareStream(new ByteArrayInputStream(update1String.getBytes()), testRoot.getProperty(pname).getStream(), 0,
-                  pos, update1String.length());
+            pos, update1String.length());
 
       }
       catch (CompareStreamException e)
@@ -175,7 +174,7 @@ public class TestRandomValueIO
       testRoot.save();
 
       // get the property value
-      EditableBinaryValue exv = (EditableBinaryValue) testRoot.getProperty(pname).getValue();
+      EditableBinaryValue exv = (EditableBinaryValue)testRoot.getProperty(pname).getValue();
 
       String update1String = "update#1";
 
@@ -195,14 +194,14 @@ public class TestRandomValueIO
          testRoot.setProperty(pname, exv);
 
          compareStream(new ByteArrayInputStream(update1String.getBytes()), testRoot.getProperty(pname).getStream(), 0,
-                  pos, update1String.length());
+            pos, update1String.length());
 
          // save
          testRoot.save();
 
          // persisted, after the save
          compareStream(new ByteArrayInputStream(update1String.getBytes()), testRoot.getProperty(pname).getStream(), 0,
-                  pos, update1String.length());
+            pos, update1String.length());
 
       }
       catch (CompareStreamException e)
@@ -219,7 +218,7 @@ public class TestRandomValueIO
       String pname = "file@" + testFile.getName();
       Property p = testRoot.setProperty(pname, new FileInputStream(testFile));
 
-      EditableBinaryValue exv = (EditableBinaryValue) p.getValue();
+      EditableBinaryValue exv = (EditableBinaryValue)p.getValue();
 
       String update1String = "update#1";
 
@@ -250,13 +249,13 @@ public class TestRandomValueIO
       try
       {
          compareStream(new ByteArrayInputStream(updateString.getBytes()), testRoot.getProperty(pname).getStream(), 0,
-                  pos1, updateString.length());
+            pos1, updateString.length());
 
          testRoot.save();
 
          // persisted, after the save
          compareStream(new ByteArrayInputStream(updateString.getBytes()), testRoot.getProperty(pname).getStream(), 0,
-                  pos1, updateString.length());
+            pos1, updateString.length());
 
       }
       catch (CompareStreamException e)
@@ -272,7 +271,7 @@ public class TestRandomValueIO
       String pname = "file@" + testFile.getName();
       Property p = testRoot.setProperty(pname, new FileInputStream(testFile));
 
-      EditableBinaryValue exv = (EditableBinaryValue) p.getValue();
+      EditableBinaryValue exv = (EditableBinaryValue)p.getValue();
 
       String update1String = "update#1";
 
@@ -293,7 +292,7 @@ public class TestRandomValueIO
 
          BufferedInputStream exvStream = new BufferedInputStream(exv.getStream());
          // fill the buffer from exv
-         exvStream.mark((int) exv.getLength() + 1);
+         exvStream.mark((int)exv.getLength() + 1);
          while ((exvStream.read(new byte[2048])) >= 0)
          {
          }
@@ -321,17 +320,17 @@ public class TestRandomValueIO
 
          // transient, before the save
          compareStream(new ByteArrayInputStream(updateString.getBytes()), troot.getProperty(pname).getStream(), 0,
-                  pos1, updateString.length());
+            pos1, updateString.length());
 
          troot.save();
 
          // persisted, after the save
          compareStream(new ByteArrayInputStream(updateString.getBytes()), troot.getProperty(pname).getStream(), 0,
-                  pos1, updateString.length());
+            pos1, updateString.length());
 
          // from first session
          compareStream(new ByteArrayInputStream(updateString.getBytes()), testRoot.getProperty(pname).getStream(), 0,
-                  pos1, updateString.length());
+            pos1, updateString.length());
 
       }
       catch (CompareStreamException e)
@@ -352,7 +351,7 @@ public class TestRandomValueIO
       String pname = "file@" + testFile.getName();
       Property p = testRoot.setProperty(pname, new FileInputStream(testFile));
 
-      EditableBinaryValue exv = (EditableBinaryValue) p.getValue();
+      EditableBinaryValue exv = (EditableBinaryValue)p.getValue();
 
       String update1String = "update#1";
 
@@ -383,13 +382,13 @@ public class TestRandomValueIO
       try
       {
          compareStream(new ByteArrayInputStream(update1String.getBytes()), testRoot.getProperty(pname).getStream(), 0,
-                  pos, update1String.length());
+            pos, update1String.length());
 
          testRoot.save();
 
          // persisted, after the save
          compareStream(new ByteArrayInputStream(update1String.getBytes()), testRoot.getProperty(pname).getStream(), 0,
-                  pos, update1String.length());
+            pos, update1String.length());
 
       }
       catch (CompareStreamException e)
@@ -405,7 +404,7 @@ public class TestRandomValueIO
       String pname = "file@" + testFile.getName();
       Property p = testRoot.setProperty(pname, new FileInputStream(testFile));
 
-      EditableBinaryValue exv = (EditableBinaryValue) p.getValue();
+      EditableBinaryValue exv = (EditableBinaryValue)p.getValue();
       String update1String = "update#1";
       long pos = 3 * 1024 * 1024;
 
@@ -420,7 +419,7 @@ public class TestRandomValueIO
 
          // test the value for correct stream
          BufferedInputStream vstream = new BufferedInputStream(exv.getStream());
-         vstream.mark((int) exv.getLength() + 1);
+         vstream.mark((int)exv.getLength() + 1);
 
          // first 2M of stream data must be same as on setProperty()
          compareStream(new FileInputStream(testFile), vstream, 0, 0, testFile.length());
@@ -437,7 +436,7 @@ public class TestRandomValueIO
          compareStream(new FileInputStream(testFile), testRoot.getProperty(pname).getStream(), 0, 0, testFile.length());
 
          compareStream(new ByteArrayInputStream(update1String.getBytes()), testRoot.getProperty(pname).getStream(), 0,
-                  pos, update1String.length());
+            pos, update1String.length());
       }
       catch (CompareStreamException e)
       {
@@ -456,7 +455,7 @@ public class TestRandomValueIO
       String content = "short message";
       Property p = testRoot.setProperty(pname, new ByteArrayInputStream(content.getBytes()));
 
-      EditableBinaryValue exv = (EditableBinaryValue) p.getValue();
+      EditableBinaryValue exv = (EditableBinaryValue)p.getValue();
       long pos = exv.getLength() + 1024 * 1024 * 5;
 
       long fmem = Runtime.getRuntime().freeMemory();
@@ -467,7 +466,7 @@ public class TestRandomValueIO
 
       if ((fmemAfter - fmem) >= (pos + testFile.length()))
          log.warn("Free memory must not be increased on value of the new Value size but does. Was " + fmem
-                  + " current " + fmemAfter);
+            + " current " + fmemAfter);
 
       assertEquals("Value data length must be increased ", pos + testFile.length(), exv.getLength());
 
@@ -475,7 +474,7 @@ public class TestRandomValueIO
       p.setValue(exv);
       testRoot.save();
 
-      EditableBinaryValue newexv = (EditableBinaryValue) testRoot.getProperty(pname).getValue();
+      EditableBinaryValue newexv = (EditableBinaryValue)testRoot.getProperty(pname).getValue();
 
       assertEquals("Value data length must be increased ", pos + testFile.length(), newexv.getLength());
 
@@ -502,7 +501,7 @@ public class TestRandomValueIO
       String pname = "file@" + testFile.getName();
       Property p = testRoot.setProperty(pname, new FileInputStream(testFile));
 
-      EditableBinaryValue exv = (EditableBinaryValue) p.getValue();
+      EditableBinaryValue exv = (EditableBinaryValue)p.getValue();
       long pos = 3 * 1024 * 1024;
 
       exv.setLength(pos);
@@ -513,7 +512,7 @@ public class TestRandomValueIO
       p.setValue(exv);
       testRoot.save();
 
-      EditableBinaryValue newexv = (EditableBinaryValue) testRoot.getProperty(pname).getValue();
+      EditableBinaryValue newexv = (EditableBinaryValue)testRoot.getProperty(pname).getValue();
       assertEquals("Value data length must be increased ", pos, newexv.getLength());
    }
 
@@ -524,7 +523,7 @@ public class TestRandomValueIO
       String pname = "file@" + testFile.getName();
       Property p = testRoot.setProperty(pname, new FileInputStream(testFile));
 
-      EditableBinaryValue exv = (EditableBinaryValue) p.getValue();
+      EditableBinaryValue exv = (EditableBinaryValue)p.getValue();
       long pos = 1024 * 1024;
 
       exv.setLength(pos);
@@ -535,7 +534,7 @@ public class TestRandomValueIO
       p.setValue(exv);
       testRoot.save();
 
-      EditableBinaryValue newexv = (EditableBinaryValue) testRoot.getProperty(pname).getValue();
+      EditableBinaryValue newexv = (EditableBinaryValue)testRoot.getProperty(pname).getValue();
       assertEquals("Value data length must be decreased ", pos, newexv.getLength());
    }
 
@@ -546,7 +545,7 @@ public class TestRandomValueIO
       String pname = "file@" + testFile.getName();
       Property p = testRoot.setProperty(pname, new ByteArrayInputStream("short message".getBytes()));
 
-      EditableBinaryValue exv = (EditableBinaryValue) p.getValue();
+      EditableBinaryValue exv = (EditableBinaryValue)p.getValue();
       long pos = exv.getLength() + 20;
 
       exv.setLength(pos);
@@ -557,7 +556,7 @@ public class TestRandomValueIO
       p.setValue(exv);
       testRoot.save();
 
-      EditableBinaryValue newexv = (EditableBinaryValue) testRoot.getProperty(pname).getValue();
+      EditableBinaryValue newexv = (EditableBinaryValue)testRoot.getProperty(pname).getValue();
       assertEquals("Value data length must be increased ", pos, newexv.getLength());
    }
 
@@ -568,7 +567,7 @@ public class TestRandomValueIO
       String pname = "file@" + testFile.getName();
       Property p = testRoot.setProperty(pname, new ByteArrayInputStream("short message".getBytes()));
 
-      EditableBinaryValue exv = (EditableBinaryValue) p.getValue();
+      EditableBinaryValue exv = (EditableBinaryValue)p.getValue();
       long pos = exv.getLength() + 1024 * 1024 * 5;
 
       long fmem = Runtime.getRuntime().freeMemory();
@@ -579,7 +578,7 @@ public class TestRandomValueIO
 
       if ((fmemAfter - fmem) >= pos)
          log.warn("Free memory must not be increased on value of the new Value size but does. Was " + fmem
-                  + " current " + fmemAfter);
+            + " current " + fmemAfter);
 
       assertEquals("Value data length must be increased ", pos, exv.getLength());
 
@@ -587,7 +586,7 @@ public class TestRandomValueIO
       p.setValue(exv);
       testRoot.save();
 
-      EditableBinaryValue newexv = (EditableBinaryValue) testRoot.getProperty(pname).getValue();
+      EditableBinaryValue newexv = (EditableBinaryValue)testRoot.getProperty(pname).getValue();
       assertEquals("Value data length must be increased ", pos, newexv.getLength());
    }
 
@@ -596,13 +595,12 @@ public class TestRandomValueIO
 
       // create property
       String pname = "file@" + testFile.getName();
-      testRoot.setProperty(pname, new ByteArrayInputStream(new byte[]
-      {}));
+      testRoot.setProperty(pname, new ByteArrayInputStream(new byte[]{}));
 
       testRoot.save();
 
       // change after save
-      EditableBinaryValue newexv = (EditableBinaryValue) testRoot.getProperty(pname).getValue();
+      EditableBinaryValue newexv = (EditableBinaryValue)testRoot.getProperty(pname).getValue();
       long pos = newexv.getLength() + 1024 * 1024 * 5;
 
       long tmem = Runtime.getRuntime().totalMemory();
@@ -616,16 +614,16 @@ public class TestRandomValueIO
 
       if ((tmemAfter - tmem) >= pos)
          log.warn("JVM total memory should not be increased on size of the new Value but does. Was " + tmem
-                  + " current " + tmemAfter);
+            + " current " + tmemAfter);
 
       assertEquals("Value data length must be increased ", pos, newexv.getLength());
 
-      newexv = (EditableBinaryValue) testRoot.getProperty(pname).getValue();
+      newexv = (EditableBinaryValue)testRoot.getProperty(pname).getValue();
       assertEquals("Value data length must be increased ", pos, newexv.getLength());
 
       // save new size
       testRoot.save();
-      newexv = (EditableBinaryValue) testRoot.getProperty(pname).getValue();
+      newexv = (EditableBinaryValue)testRoot.getProperty(pname).getValue();
       assertEquals("Value data length must be increased ", pos, newexv.getLength());
    }
 
@@ -636,7 +634,7 @@ public class TestRandomValueIO
       String pname = "file@" + testFile.getName();
       Property p = testRoot.setProperty(pname, new FileInputStream(testFile));
 
-      EditableBinaryValue exv = (EditableBinaryValue) p.getValue();
+      EditableBinaryValue exv = (EditableBinaryValue)p.getValue();
       long pos = exv.getLength() - (testFile.length() - 20);
 
       exv.setLength(pos);
@@ -647,7 +645,7 @@ public class TestRandomValueIO
       p.setValue(exv);
       testRoot.save();
 
-      EditableBinaryValue newexv = (EditableBinaryValue) testRoot.getProperty(pname).getValue();
+      EditableBinaryValue newexv = (EditableBinaryValue)testRoot.getProperty(pname).getValue();
       assertEquals("Value data length must be decreased ", pos, newexv.getLength());
    }
 
@@ -658,7 +656,7 @@ public class TestRandomValueIO
       String pname = "file@" + testFile.getName();
       Property p = testRoot.setProperty(pname, new ByteArrayInputStream("short message".getBytes()));
 
-      EditableBinaryValue exv = (EditableBinaryValue) p.getValue();
+      EditableBinaryValue exv = (EditableBinaryValue)p.getValue();
       long pos = exv.getLength() - 5;
 
       exv.setLength(pos);
@@ -669,7 +667,7 @@ public class TestRandomValueIO
       p.setValue(exv);
       testRoot.save();
 
-      EditableBinaryValue newexv = (EditableBinaryValue) testRoot.getProperty(pname).getValue();
+      EditableBinaryValue newexv = (EditableBinaryValue)testRoot.getProperty(pname).getValue();
       assertEquals("Value data length must be decreased ", pos, newexv.getLength());
    }
 
@@ -698,13 +696,12 @@ public class TestRandomValueIO
 
       dataNode.setProperty("jcr:mimeType", mimeType);
       dataNode.setProperty("jcr:lastModified", Calendar.getInstance());
-      dataNode.setProperty("jcr:data", new ByteArrayInputStream(new byte[]
-      {}));
+      dataNode.setProperty("jcr:data", new ByteArrayInputStream(new byte[]{}));
 
       testRoot.save();
 
       EditableBinaryValue exv =
-               (EditableBinaryValue) testRoot.getNode(name).getNode("jcr:content").getProperty("jcr:data").getValue();
+         (EditableBinaryValue)testRoot.getNode(name).getNode("jcr:content").getProperty("jcr:data").getValue();
       long pos = 1024 * 1024 * 5;
 
       exv.setLength(pos);
@@ -727,7 +724,7 @@ public class TestRandomValueIO
       testRoot.save();
 
       // read partial
-      ReadableBinaryValue exv = (ReadableBinaryValue) testRoot.getProperty(pname).getValue();
+      ReadableBinaryValue exv = (ReadableBinaryValue)testRoot.getProperty(pname).getValue();
 
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
@@ -747,7 +744,7 @@ public class TestRandomValueIO
       String pname = "file@" + testFile.getName();
       Property p = testRoot.setProperty(pname, new FileInputStream(testFile));
 
-      EditableBinaryValue exv = (EditableBinaryValue) p.getValue();
+      EditableBinaryValue exv = (EditableBinaryValue)p.getValue();
 
       String update1String = "update#1";
 
@@ -759,7 +756,7 @@ public class TestRandomValueIO
       testRoot.save();
 
       // read partial
-      exv = (EditableBinaryValue) testRoot.getProperty(pname).getValue();
+      exv = (EditableBinaryValue)testRoot.getProperty(pname).getValue();
 
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
@@ -789,7 +786,7 @@ public class TestRandomValueIO
       String pname = "file@" + testFile.getName();
       Property p = testRoot.setProperty(pname, new FileInputStream(testFile));
 
-      EditableBinaryValue exv = (EditableBinaryValue) p.getValue();
+      EditableBinaryValue exv = (EditableBinaryValue)p.getValue();
 
       String update1String = "update#1";
 
@@ -801,7 +798,7 @@ public class TestRandomValueIO
       testRoot.save();
 
       // read partial greater the value size
-      exv = (EditableBinaryValue) testRoot.getProperty(pname).getValue();
+      exv = (EditableBinaryValue)testRoot.getProperty(pname).getValue();
 
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
@@ -821,7 +818,7 @@ public class TestRandomValueIO
       String pname = "file@" + testFile.getName();
       Property p = testRoot.setProperty(pname, new ByteArrayInputStream("short message".getBytes()));
 
-      EditableBinaryValue exv = (EditableBinaryValue) p.getValue();
+      EditableBinaryValue exv = (EditableBinaryValue)p.getValue();
 
       String update1String = "update#1";
 
@@ -833,7 +830,7 @@ public class TestRandomValueIO
       testRoot.save();
 
       // read partial
-      exv = (EditableBinaryValue) testRoot.getProperty(pname).getValue();
+      exv = (EditableBinaryValue)testRoot.getProperty(pname).getValue();
 
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
@@ -853,7 +850,7 @@ public class TestRandomValueIO
       String pname = "file@" + testFile.getName();
       Property p = testRoot.setProperty(pname, new ByteArrayInputStream("short message".getBytes()));
 
-      EditableBinaryValue exv = (EditableBinaryValue) p.getValue();
+      EditableBinaryValue exv = (EditableBinaryValue)p.getValue();
 
       String update1String = "update#1";
 
@@ -865,7 +862,7 @@ public class TestRandomValueIO
       testRoot.save();
 
       // read partial greater the value size
-      exv = (EditableBinaryValue) testRoot.getProperty(pname).getValue();
+      exv = (EditableBinaryValue)testRoot.getProperty(pname).getValue();
 
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
@@ -885,10 +882,10 @@ public class TestRandomValueIO
       String pname = "file@" + testFile.getName();
       Property p = testRoot.setProperty(pname, new ByteArrayInputStream("short message".getBytes()));
 
-      EditableBinaryValue exv = (EditableBinaryValue) p.getValue();
+      EditableBinaryValue exv = (EditableBinaryValue)p.getValue();
 
       // read zero bytes
-      exv = (EditableBinaryValue) testRoot.getProperty(pname).getValue();
+      exv = (EditableBinaryValue)testRoot.getProperty(pname).getValue();
 
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
@@ -927,10 +924,10 @@ public class TestRandomValueIO
       String pname = "file@" + testFile.getName();
       Property p = testRoot.setProperty(pname, new FileInputStream(testFile));
 
-      EditableBinaryValue exv = (EditableBinaryValue) p.getValue();
+      EditableBinaryValue exv = (EditableBinaryValue)p.getValue();
 
       // read zero bytes
-      exv = (EditableBinaryValue) testRoot.getProperty(pname).getValue();
+      exv = (EditableBinaryValue)testRoot.getProperty(pname).getValue();
 
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
@@ -971,12 +968,11 @@ public class TestRandomValueIO
       // create property
       String pname = "jcr:data";
 
-      Property p = testRoot.setProperty(pname, new ByteArrayInputStream(new byte[]
-      {}));
+      Property p = testRoot.setProperty(pname, new ByteArrayInputStream(new byte[]{}));
 
       testRoot.save();
 
-      EditableBinaryValue exv = (EditableBinaryValue) p.getValue();
+      EditableBinaryValue exv = (EditableBinaryValue)p.getValue();
 
       long pos = 0;
 
@@ -995,8 +991,7 @@ public class TestRandomValueIO
       {
 
          // the value obtained by getXXX must be same as on setProperty()
-         compareStream(new ByteArrayInputStream(new byte[]
-         {}), testRoot.getProperty(pname).getStream());
+         compareStream(new ByteArrayInputStream(new byte[]{}), testRoot.getProperty(pname).getStream());
          p.setValue(exv);
 
          compareStream(new ByteArrayInputStream(data), testRoot.getProperty(pname).getStream(), 0, pos, size);

@@ -41,8 +41,7 @@ import java.util.concurrent.CountDownLatch;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: SwapFile.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class SwapFile
-   extends SpoolFile
+public class SwapFile extends SpoolFile
 {
 
    /**

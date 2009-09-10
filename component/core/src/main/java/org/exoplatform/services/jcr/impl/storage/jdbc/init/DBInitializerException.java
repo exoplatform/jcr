@@ -26,8 +26,7 @@ package org.exoplatform.services.jcr.impl.storage.jdbc.init;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: DBInitializerException.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class DBInitializerException
-   extends Exception
+public class DBInitializerException extends Exception
 {
 
    public DBInitializerException(String message, Throwable e)

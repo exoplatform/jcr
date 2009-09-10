@@ -18,10 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
 import org.exoplatform.services.jcr.dataflow.serialization.SerializationConstants;
 import org.exoplatform.services.jcr.dataflow.serialization.UnknownClassIdException;
@@ -30,6 +26,10 @@ import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by The eXo Platform SAS. <br/>Date:
@@ -115,7 +115,7 @@ public class TransientPropertyDataReader
       boolean multiValued = in.readBoolean();
 
       TransientPropertyData prop =
-               new TransientPropertyData(qpath, identifier, persistedVersion, type, parentIdentifier, multiValued);
+         new TransientPropertyData(qpath, identifier, persistedVersion, type, parentIdentifier, multiValued);
 
       if (in.readByte() == SerializationConstants.NOT_NULL_DATA)
       {

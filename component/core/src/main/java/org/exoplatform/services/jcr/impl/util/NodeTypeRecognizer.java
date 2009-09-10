@@ -18,18 +18,17 @@
  */
 package org.exoplatform.services.jcr.impl.util;
 
+import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.xml.XmlMapping;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+
 import java.io.IOException;
 import java.io.InputStream;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
-
-import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.xml.XmlMapping;
 
 /**
  * Created by The eXo Platform SAS.

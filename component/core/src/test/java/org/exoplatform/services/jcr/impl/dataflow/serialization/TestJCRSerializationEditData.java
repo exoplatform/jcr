@@ -18,13 +18,13 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
+import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
+
 import java.io.File;
 import java.util.Calendar;
 import java.util.List;
 
 import javax.jcr.Node;
-
-import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 
 /**
  * Created by The eXo Platform SAS.
@@ -34,8 +34,7 @@ import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a>
  * @version $Id: TestJCRSerializationEditDataTest.java 111 2008-11-11 11:11:11Z rainf0x $
  */
-public class TestJCRSerializationEditData
-   extends JcrImplSerializationBaseTest
+public class TestJCRSerializationEditData extends JcrImplSerializationBaseTest
 {
 
    public void testAddNode() throws Exception
@@ -55,7 +54,7 @@ public class TestJCRSerializationEditData
       String newData = "____________simple_data_2____________";
 
       session.getRootNode().getNode("cms3").getNode("test").getNode("nnn").getNode("jcr:content").setProperty(
-               "jcr:data", newData);
+         "jcr:data", newData);
       session.save();
 
       List<TransactionChangesLog> srcLog = pl.pushChanges();

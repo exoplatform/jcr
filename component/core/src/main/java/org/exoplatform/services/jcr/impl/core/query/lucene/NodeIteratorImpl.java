@@ -31,8 +31,7 @@ import org.exoplatform.services.log.ExoLogger;
  * Implements a {@link javax.jcr.NodeIterator} returned by
  * {@link javax.jcr.query.QueryResult#getNodes()}.
  */
-class NodeIteratorImpl
-   implements TwoWayRangeIterator, ScoreNodeIterator
+class NodeIteratorImpl implements TwoWayRangeIterator, ScoreNodeIterator
 {
 
    /** Logger instance for this class */
@@ -232,7 +231,7 @@ class NodeIteratorImpl
       {
          try
          {
-            next = (NodeImpl) itemMgr.getItemByIdentifier(scoreNodes[pos + 1].getNodeId(), true);
+            next = (NodeImpl)itemMgr.getItemByIdentifier(scoreNodes[pos + 1].getNodeId(), true);
             if (next == null)
             {
                invalid++;

@@ -16,6 +16,11 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
+import org.exoplatform.services.jcr.JcrImplBaseTest;
+import org.exoplatform.services.jcr.impl.core.query.lucene.TwoWayRangeIterator;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.util.NoSuchElementException;
 import java.util.Random;
 
@@ -25,20 +30,13 @@ import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
 
-import org.exoplatform.services.log.Log;
-
-import org.exoplatform.services.jcr.JcrImplBaseTest;
-import org.exoplatform.services.jcr.impl.core.query.lucene.TwoWayRangeIterator;
-import org.exoplatform.services.log.ExoLogger;
-
 /**
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: $
  */
-public class TestTwoWayRangeIterator
-   extends JcrImplBaseTest
+public class TestTwoWayRangeIterator extends JcrImplBaseTest
 {
    /**
     * Class logger.
@@ -87,7 +85,7 @@ public class TestTwoWayRangeIterator
             public TwoWayRangeIterator execute(Query query) throws RepositoryException
             {
                QueryResult result = query.execute();
-               TwoWayRangeIterator iterator = (TwoWayRangeIterator) result.getNodes();
+               TwoWayRangeIterator iterator = (TwoWayRangeIterator)result.getNodes();
                iterator.skip(skip);
                return iterator;
             }
@@ -106,7 +104,7 @@ public class TestTwoWayRangeIterator
          public TwoWayRangeIterator execute(Query query) throws RepositoryException
          {
             QueryResult result = query.execute();
-            TwoWayRangeIterator iterator = (TwoWayRangeIterator) result.getNodes();
+            TwoWayRangeIterator iterator = (TwoWayRangeIterator)result.getNodes();
             iterator.skip(0);
             return iterator;
          }
@@ -134,7 +132,7 @@ public class TestTwoWayRangeIterator
             public TwoWayRangeIterator execute(Query query) throws RepositoryException
             {
                QueryResult result = query.execute();
-               TwoWayRangeIterator iterator = (TwoWayRangeIterator) result.getNodes();
+               TwoWayRangeIterator iterator = (TwoWayRangeIterator)result.getNodes();
                log.info("testSkipBeforeFirst" + skip);
                iterator.skip(skip);
                assertEquals(skip, iterator.getPosition());
@@ -177,7 +175,7 @@ public class TestTwoWayRangeIterator
             public TwoWayRangeIterator execute(Query query) throws RepositoryException
             {
                QueryResult result = query.execute();
-               TwoWayRangeIterator iterator = (TwoWayRangeIterator) result.getNodes();
+               TwoWayRangeIterator iterator = (TwoWayRangeIterator)result.getNodes();
                iterator.skip(skip);
                assertEquals(skip, iterator.getPosition());
                try
@@ -217,7 +215,7 @@ public class TestTwoWayRangeIterator
             public TwoWayRangeIterator execute(Query query) throws RepositoryException
             {
                QueryResult result = query.execute();
-               TwoWayRangeIterator iterator = (TwoWayRangeIterator) result.getNodes();
+               TwoWayRangeIterator iterator = (TwoWayRangeIterator)result.getNodes();
                iterator.skip(skip);
                assertEquals(skip, iterator.getPosition());
                iterator.skipBack(skip);
@@ -246,7 +244,7 @@ public class TestTwoWayRangeIterator
             public TwoWayRangeIterator execute(Query query) throws RepositoryException
             {
                QueryResult result = query.execute();
-               TwoWayRangeIterator iterator = (TwoWayRangeIterator) result.getNodes();
+               TwoWayRangeIterator iterator = (TwoWayRangeIterator)result.getNodes();
                iterator.skip(5);
                iterator.skip(skip);
                iterator.skipBack(skip);
@@ -270,7 +268,7 @@ public class TestTwoWayRangeIterator
       TwoWayRangeIterator iterator = testAction.execute(selectChildQuery);
       assertTrue(iterator.hasNext());
       assertEquals(expectedPosition, iterator.getPosition());
-      assertEquals(expectedPosition, ((Node) iterator.next()).getProperty("val").getLong());
+      assertEquals(expectedPosition, ((Node)iterator.next()).getProperty("val").getLong());
 
       // Order by
       String strOrder = "select * from nt:unstructured where jcr:path like '/" + testRootNodeName + "/%' order by val";
@@ -279,16 +277,16 @@ public class TestTwoWayRangeIterator
       TwoWayRangeIterator orderIterator = testAction.execute(selectOrderChildQuery);
       assertTrue(orderIterator.hasNext());
       assertEquals(expectedPosition, orderIterator.getPosition());
-      Node nextNode = (Node) orderIterator.next();
+      Node nextNode = (Node)orderIterator.next();
 
       if (nextNode.getProperty("val").getLong() != expectedPosition)
       {
          orderIterator.skipBack(orderIterator.getPosition());
          while (orderIterator.hasNext())
          {
-            Node nooode = (Node) orderIterator.next();
+            Node nooode = (Node)orderIterator.next();
             log.info("node " + nooode.getPath() + " " + nooode.getProperty("val").getLong() + "  "
-                     + orderIterator.getPosition());
+               + orderIterator.getPosition());
 
          }
       }

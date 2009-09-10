@@ -18,6 +18,9 @@
  */
 package org.exoplatform.services.jcr.load.perf;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.util.IdGenerator;
+
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -25,17 +28,13 @@ import java.util.Calendar;
 
 import javax.jcr.Node;
 
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-import org.exoplatform.services.jcr.util.IdGenerator;
-
 /**
  * Created by The eXo Platform SAS Author : Vitaliy Obmanjuk vitaliy.obmanjuk@exoplatform.com.ua
  * 20.07.2006
  * 
  * @version $Id: TestPerformance.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class TestPerformance
-   extends JcrAPIBaseTest
+public class TestPerformance extends JcrAPIBaseTest
 {
 
    private Node testRoot = null;
@@ -83,7 +82,7 @@ public class TestPerformance
          testAddNodeOfTypeNtBase.addNode("NodeOfTypeNtBase#" + i, "nt:base");
       }
       long endTime = System.currentTimeMillis();
-      time += ((float) ((endTime - startTime)) / NODES_COUNT_SHORT_SESSION);
+      time += ((float)((endTime - startTime)) / NODES_COUNT_SHORT_SESSION);
       testAddNodeOfTypeNtBase.remove();
       session.save();
       log.info("[1.1 addNode short session                   ] average time: " + time + "ms");
@@ -99,7 +98,7 @@ public class TestPerformance
          testSetProperty.setProperty("testProperty" + i, "1234567890");
       }
       long endTime = System.currentTimeMillis();
-      time += ((float) ((endTime - startTime)) / NODES_COUNT_SHORT_SESSION);
+      time += ((float)((endTime - startTime)) / NODES_COUNT_SHORT_SESSION);
       testSetProperty.remove();
       session.save();
       log.info("[2.1 setProperty short session               ] average time: " + time + "ms");
@@ -109,7 +108,7 @@ public class TestPerformance
    {
       float time = 0;
       Node testAddMixReferenceableToNodeOfTypeNtBase =
-               testRoot.addNode("testAddMixReferenceableToNodeOfTypeNtBase", "nt:unstructured");
+         testRoot.addNode("testAddMixReferenceableToNodeOfTypeNtBase", "nt:unstructured");
       ArrayList<Node> nodesList = new ArrayList<Node>();
       for (int i = 1; i < NODES_COUNT_SHORT_SESSION; i++)
       {
@@ -122,7 +121,7 @@ public class TestPerformance
          tmpNode.addMixin("mix:referenceable");
       }
       long endTime = System.currentTimeMillis();
-      time += ((float) ((endTime - startTime)) / NODES_COUNT_SHORT_SESSION);
+      time += ((float)((endTime - startTime)) / NODES_COUNT_SHORT_SESSION);
       testAddMixReferenceableToNodeOfTypeNtBase.remove();
       session.save();
       log.info("[3.1 add mix:referenceable short session     ] average time: " + time + "ms");
@@ -139,7 +138,7 @@ public class TestPerformance
       long startTime = System.currentTimeMillis();
       session.save();
       long endTime = System.currentTimeMillis();
-      time += ((float) ((endTime - startTime)) / NODES_COUNT_SHORT_SESSION);
+      time += ((float)((endTime - startTime)) / NODES_COUNT_SHORT_SESSION);
 
       testSaveNodesShortSession.remove();
       session.save();
@@ -157,7 +156,7 @@ public class TestPerformance
       long startTime = System.currentTimeMillis();
       session.save();
       long endTime = System.currentTimeMillis();
-      time += ((float) ((endTime - startTime)) / NODES_COUNT_LONG_SESSION);
+      time += ((float)((endTime - startTime)) / NODES_COUNT_LONG_SESSION);
       testSaveNodesLongSession.remove();
       session.save();
       log.info("[4.2 nodes saving long session.save          ] average time: " + time + "ms");
@@ -174,7 +173,7 @@ public class TestPerformance
       long startTime = System.currentTimeMillis();
       session.save();
       long endTime = System.currentTimeMillis();
-      time += ((float) ((endTime - startTime)) / NODES_COUNT_SHORT_SESSION);
+      time += ((float)((endTime - startTime)) / NODES_COUNT_SHORT_SESSION);
       testSavePropertiesShortSession.remove();
       session.save();
       log.info("[5.1 properties saving short session.save    ] average time: " + time + "ms");
@@ -191,7 +190,7 @@ public class TestPerformance
       long startTime = System.currentTimeMillis();
       session.save();
       long endTime = System.currentTimeMillis();
-      time += ((float) ((endTime - startTime)) / NODES_COUNT_LONG_SESSION);
+      time += ((float)((endTime - startTime)) / NODES_COUNT_LONG_SESSION);
       testSavePropertiesLongSession.remove();
       session.save();
       log.info("[5.2 properties saving long session.save     ] average time: " + time + "ms");
@@ -213,7 +212,7 @@ public class TestPerformance
          tmpNode.addMixin("mix:versionable");
       }
       long endTime = System.currentTimeMillis();
-      time += ((float) ((endTime - startTime)) / NODES_COUNT_SHORT_SESSION);
+      time += ((float)((endTime - startTime)) / NODES_COUNT_SHORT_SESSION);
       testAddVersionableMixin.remove();
       session.save();
       log.info("[6.1 add mix:versionable short session       ] average time: " + time + "ms");
@@ -237,7 +236,7 @@ public class TestPerformance
          tmpNode.checkin();
       }
       long endTime = System.currentTimeMillis();
-      time += ((float) ((endTime - startTime)) / NODES_COUNT_SHORT_SESSION);
+      time += ((float)((endTime - startTime)) / NODES_COUNT_SHORT_SESSION);
       // to make node removeable
       for (Node tmpNode : nodesList)
       {
@@ -268,7 +267,7 @@ public class TestPerformance
          tmpNode.checkout();
       }
       long endTime = System.currentTimeMillis();
-      time += ((float) ((endTime - startTime)) / NODES_COUNT_SHORT_SESSION);
+      time += ((float)((endTime - startTime)) / NODES_COUNT_SHORT_SESSION);
       testCheckout.remove();
       session.save();
       log.info("[8.1 checkout short session                  ] average time: " + time + "ms");
@@ -291,7 +290,7 @@ public class TestPerformance
          tmpNode.remove();
       }
       long endTime = System.currentTimeMillis();
-      time += ((float) ((endTime - startTime)) / NODES_COUNT_SHORT_SESSION);
+      time += ((float)((endTime - startTime)) / NODES_COUNT_SHORT_SESSION);
       testRemoveNodes.remove();
       session.save();
       log.info("[9.1 remove nodes short session              ] average time: " + time + "ms");
@@ -315,7 +314,7 @@ public class TestPerformance
          tmpNode.getProperty("testProperty").remove();
       }
       long endTime = System.currentTimeMillis();
-      time += ((float) ((endTime - startTime)) / NODES_COUNT_SHORT_SESSION);
+      time += ((float)((endTime - startTime)) / NODES_COUNT_SHORT_SESSION);
       testRemoveProperties.remove();
       session.save();
       log.info("[9.2 remove properties short session         ] average time: " + time + "ms");
@@ -339,7 +338,7 @@ public class TestPerformance
       long startTime = System.currentTimeMillis();
       session.save();
       long endTime = System.currentTimeMillis();
-      time += ((float) ((endTime - startTime)) / NODES_COUNT_SHORT_SESSION);
+      time += ((float)((endTime - startTime)) / NODES_COUNT_SHORT_SESSION);
       testSaveRemovedNodes.remove();
       session.save();
       log.info("[10.1 save removed nodes short session       ] average time: " + time + "ms");
@@ -364,7 +363,7 @@ public class TestPerformance
       long startTime = System.currentTimeMillis();
       session.save();
       long endTime = System.currentTimeMillis();
-      time += ((float) ((endTime - startTime)) / NODES_COUNT_SHORT_SESSION);
+      time += ((float)((endTime - startTime)) / NODES_COUNT_SHORT_SESSION);
       testSaveRemovedNodes.remove();
       session.save();
       log.info("[10.2 save removed properties short session  ] average time: " + time + "ms");
@@ -388,7 +387,7 @@ public class TestPerformance
          tmpNode.lock(true, true);
       }
       long endTime = System.currentTimeMillis();
-      time += ((float) ((endTime - startTime)) / NODES_COUNT_SHORT_SESSION);
+      time += ((float)((endTime - startTime)) / NODES_COUNT_SHORT_SESSION);
       // to make node removeable
       for (Node tmpNode : nodesList)
       {
@@ -419,7 +418,7 @@ public class TestPerformance
          tmpNode.unlock();
       }
       long endTime = System.currentTimeMillis();
-      time += ((float) ((endTime - startTime)) / NODES_COUNT_SHORT_SESSION);
+      time += ((float)((endTime - startTime)) / NODES_COUNT_SHORT_SESSION);
       testUnlock.remove();
       session.save();
       log.info("[12.1 unlock short session                   ] average time: " + time + "ms");
@@ -446,14 +445,14 @@ public class TestPerformance
       }
       long endTime = System.currentTimeMillis();
       log.info("[13.1 adding nt:file                         ] average time: "
-               + ((float) ((endTime - startTime)) / NODES_COUNT_SHORT_SESSION) + "ms");
+         + ((float)((endTime - startTime)) / NODES_COUNT_SHORT_SESSION) + "ms");
       try
       {
          startTime = System.currentTimeMillis();
          session.save();
          endTime = System.currentTimeMillis();
          log.info("[13.2 saving nt:file                         ] average time: "
-                  + ((float) ((endTime - startTime)) / NODES_COUNT_SHORT_SESSION) + "ms");
+            + ((float)((endTime - startTime)) / NODES_COUNT_SHORT_SESSION) + "ms");
       }
       catch (Exception e)
       {
@@ -478,7 +477,7 @@ public class TestPerformance
          testAddNodeOfTypeNtBase.getNode("NodeOfTypeNtBase#" + i);
       }
       long endTime = System.currentTimeMillis();
-      time += ((float) ((endTime - startTime)) / NODES_COUNT_SHORT_SESSION);
+      time += ((float)((endTime - startTime)) / NODES_COUNT_SHORT_SESSION);
       testAddNodeOfTypeNtBase.remove();
       session.save();
       log.info("[14.1 getNode short session                  ] average time: " + time + "ms");
@@ -498,7 +497,7 @@ public class TestPerformance
          testSetProperty.getProperty("testProperty" + i);
       }
       long endTime = System.currentTimeMillis();
-      time += ((float) ((endTime - startTime)) / NODES_COUNT_SHORT_SESSION);
+      time += ((float)((endTime - startTime)) / NODES_COUNT_SHORT_SESSION);
       testSetProperty.remove();
       session.save();
       log.info("[15.1 getProperty short session              ] average time: " + time + "ms");

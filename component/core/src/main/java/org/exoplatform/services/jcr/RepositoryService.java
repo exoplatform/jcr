@@ -18,12 +18,12 @@
  */
 package org.exoplatform.services.jcr;
 
-import javax.jcr.RepositoryException;
-
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.RepositoryServiceConfiguration;
 import org.exoplatform.services.jcr.core.ManageableRepository;
+
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.<br/> The repository service

@@ -18,21 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.xml.exporting;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-
-import javax.jcr.NamespaceRegistry;
-import javax.jcr.PropertyType;
-import javax.jcr.RepositoryException;
-import javax.jcr.UnsupportedRepositoryOperationException;
-import javax.jcr.ValueFormatException;
-import javax.xml.stream.XMLStreamException;
-
-import org.xml.sax.SAXException;
-
 import org.apache.ws.commons.util.Base64;
-
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.dataflow.ItemDataTraversingVisitor;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
@@ -48,6 +34,18 @@ import org.exoplatform.services.jcr.impl.dataflow.PropertyDataOrderComparator;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.dataflow.ValueDataConvertor;
 import org.exoplatform.services.jcr.impl.util.ISO9075;
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+
+import javax.jcr.NamespaceRegistry;
+import javax.jcr.PropertyType;
+import javax.jcr.RepositoryException;
+import javax.jcr.UnsupportedRepositoryOperationException;
+import javax.jcr.ValueFormatException;
+import javax.xml.stream.XMLStreamException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -55,8 +53,7 @@ import org.exoplatform.services.jcr.impl.util.ISO9075;
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: ImportNodeData.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public abstract class BaseXmlExporter
-   extends ItemDataTraversingVisitor
+public abstract class BaseXmlExporter extends ItemDataTraversingVisitor
 {
    /**
     * Empty namespace prefix.
@@ -110,8 +107,8 @@ public abstract class BaseXmlExporter
     * @exception RepositoryException if an repository error occurs.
     */
    public BaseXmlExporter(ItemDataConsumer dataManager, NamespaceRegistry namespaceRegistry,
-            ValueFactoryImpl systemValueFactory, boolean skipBinary, boolean noRecurse, int maxLevel)
-            throws RepositoryException
+      ValueFactoryImpl systemValueFactory, boolean skipBinary, boolean noRecurse, int maxLevel)
+      throws RepositoryException
    {
       super(dataManager, maxLevel);
       this.skipBinary = skipBinary;
@@ -263,7 +260,7 @@ public abstract class BaseXmlExporter
             }
             else
             {
-               charValue = Base64.encode(data.getAsByteArray(), 0, (int) data.getLength(), 0, "");
+               charValue = Base64.encode(data.getAsByteArray(), 0, (int)data.getLength(), 0, "");
             }
             break;
          case PropertyType.NAME :
@@ -272,7 +269,7 @@ public abstract class BaseXmlExporter
             // TODO namespace mapping for values
             try
             {
-               charValue = systemValueFactory.loadValue((TransientValueData) data, type).getString();
+               charValue = systemValueFactory.loadValue((TransientValueData)data, type).getString();
             }
             catch (ValueFormatException e)
             {

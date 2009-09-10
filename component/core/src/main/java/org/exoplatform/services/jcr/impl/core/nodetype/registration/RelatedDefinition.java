@@ -18,9 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.core.nodetype.registration;
 
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 /**
  * Created by The eXo Platform SAS.

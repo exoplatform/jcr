@@ -18,15 +18,15 @@
  */
 package org.exoplatform.services.jcr.api.observation;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.core.CredentialsImpl;
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
+
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.observation.Event;
 import javax.jcr.observation.EventIterator;
 import javax.jcr.observation.EventListener;
-
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-import org.exoplatform.services.jcr.core.CredentialsImpl;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
 
 /**
  * Created by The eXo Platform SAS Author : Alex Reshetnyak
@@ -35,9 +35,7 @@ import org.exoplatform.services.jcr.impl.core.SessionImpl;
  * 
  * @version $Id: TestUserIDEvent.java 20.06.2007 10:36:07 rainfox
  */
-public class TestUserIDEvent
-   extends JcrAPIBaseTest
-   implements EventListener
+public class TestUserIDEvent extends JcrAPIBaseTest implements EventListener
 {
 
    @Override
@@ -52,11 +50,11 @@ public class TestUserIDEvent
    {
 
       session.getWorkspace().getObservationManager().addEventListener(this, Event.NODE_ADDED, root.getPath(), true,
-               null, null, false);
+         null, null, false);
 
       CredentialsImpl credentialsEXO = new CredentialsImpl("exo", "exo".toCharArray());
 
-      SessionImpl sessionEXO = (SessionImpl) repository.login(credentialsEXO, "ws");
+      SessionImpl sessionEXO = (SessionImpl)repository.login(credentialsEXO, "ws");
 
       Node rootEXO = sessionEXO.getRootNode();
 

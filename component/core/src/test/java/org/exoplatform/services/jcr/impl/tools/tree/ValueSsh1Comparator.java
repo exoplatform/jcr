@@ -18,6 +18,15 @@
  */
 package org.exoplatform.services.jcr.impl.tools.tree;
 
+import org.apache.ws.commons.util.Base64;
+import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
+import org.exoplatform.services.jcr.dataflow.ItemDataTraversingVisitor;
+import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.PropertyData;
+import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -32,22 +41,11 @@ import java.util.StringTokenizer;
 
 import javax.jcr.RepositoryException;
 
-import org.exoplatform.services.log.Log;
-import org.apache.ws.commons.util.Base64;
-
-import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
-import org.exoplatform.services.jcr.dataflow.ItemDataTraversingVisitor;
-import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.datamodel.PropertyData;
-import org.exoplatform.services.jcr.datamodel.ValueData;
-import org.exoplatform.services.log.ExoLogger;
-
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: ValueSsh1Comparator.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class ValueSsh1Comparator
-   extends ItemDataTraversingVisitor
+public class ValueSsh1Comparator extends ItemDataTraversingVisitor
 {
    private Map<String, HashMap<Integer, byte[]>> propertysCheckSum = new HashMap<String, HashMap<Integer, byte[]>>();
 
@@ -56,7 +54,7 @@ public class ValueSsh1Comparator
    protected Log log = ExoLogger.getLogger(ValueSsh1Comparator.class);
 
    public ValueSsh1Comparator(ItemDataConsumer dataManager, InputStream ssh1ChecksumStream) throws IOException,
-            NoSuchAlgorithmException
+      NoSuchAlgorithmException
    {
       super(dataManager);
       this.md = MessageDigest.getInstance("SHA");

@@ -21,8 +21,7 @@ import java.io.IOException;
 /**
  * Creates the intersection of two hit sets.
  */
-public class HitsIntersection
-   implements Hits
+public class HitsIntersection implements Hits
 {
 
    private final Hits hits1;

@@ -45,7 +45,7 @@ public class ListenerCriteria
    private String sessionId;
 
    public ListenerCriteria(int eventTypes, String absPath, boolean isDeep, String[] identifier, String[] nodeTypeName,
-            boolean noLocal, String sessionId) throws RepositoryException
+      boolean noLocal, String sessionId) throws RepositoryException
    {
       this.eventTypes = eventTypes;
       this.absPath = absPath;

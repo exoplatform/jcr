@@ -18,11 +18,11 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs;
 
-import java.io.File;
-import java.io.IOException;
-
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
+
+import java.io.File;
+import java.io.IOException;
 
 /**
  * Created by The eXo Platform SAS
@@ -30,12 +30,10 @@ import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TreeFileValueStorage.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class TreeFileValueStorage
-   extends FileValueStorage
+public class TreeFileValueStorage extends FileValueStorage
 {
 
-   protected class TreeFileCleaner
-      extends FileCleaner
+   protected class TreeFileCleaner extends FileCleaner
    {
       @Override
       public synchronized void addFile(File file)

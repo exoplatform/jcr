@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.api.writing;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -25,8 +27,6 @@ import java.io.InputStream;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
-
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
 
 /**
  * Created by The eXo Platform SAS
@@ -36,8 +36,7 @@ import org.exoplatform.services.jcr.JcrAPIBaseTest;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestUpdate.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class TestUpdate
-   extends JcrAPIBaseTest
+public class TestUpdate extends JcrAPIBaseTest
 {
 
    private Node testRoot;
@@ -59,7 +58,7 @@ public class TestUpdate
 
       ws1session.getWorkspace().clone("ws", ws1node.getPath(), ws1node.getPath(), true);
 
-      Node corrNode = (Node) ws1session.getItem(ws1node.getPath());
+      Node corrNode = (Node)ws1session.getItem(ws1node.getPath());
 
       File propData = createBLOBTempFile(1024);
       propData.deleteOnExit();

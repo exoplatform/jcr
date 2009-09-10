@@ -18,6 +18,9 @@
  */
 package org.exoplatform.services.jcr.api.version;
 
+import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.impl.core.NodeImpl;
+
 import java.io.ByteArrayInputStream;
 import java.util.Calendar;
 import java.util.Random;
@@ -28,9 +31,6 @@ import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NoSuchNodeTypeException;
 import javax.jcr.version.VersionHistory;
 
-import org.exoplatform.services.jcr.datamodel.ItemData;
-import org.exoplatform.services.jcr.impl.core.NodeImpl;
-
 /**
  * Created by The eXo Platform SAS Author : Peter Nedonosko peter.nedonosko@exoplatform.com.ua
  * 18.01.2008
@@ -38,8 +38,7 @@ import org.exoplatform.services.jcr.impl.core.NodeImpl;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestVersionable.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class TestVersionable
-   extends BaseVersionTest
+public class TestVersionable extends BaseVersionTest
 {
 
    private Node testRoot;
@@ -156,7 +155,7 @@ public class TestVersionable
       VersionHistory vHistory = verionableChild.getVersionHistory();
       assertNotNull(vHistory);
 
-      String vhId = ((NodeImpl) vHistory).getUUID();
+      String vhId = ((NodeImpl)vHistory).getUUID();
 
       assertNotNull(session.getTransientNodesManager().getItemData(vhId));
       testroot.remove();

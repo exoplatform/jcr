@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.usecases.version;
 
+import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
@@ -25,13 +27,10 @@ import javax.jcr.ImportUUIDBehavior;
 import javax.jcr.Node;
 import javax.jcr.version.Version;
 
-import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
-
 /**
  * Created by The eXo Platform SARL Author : Anh Nguyen ntuananh.vn@gmail.com Dec 24, 2007
  */
-public class ErrorsRelateToRestoreVersionTest
-   extends BaseUsecasesTest
+public class ErrorsRelateToRestoreVersionTest extends BaseUsecasesTest
 {
 
    private boolean runTest = false;

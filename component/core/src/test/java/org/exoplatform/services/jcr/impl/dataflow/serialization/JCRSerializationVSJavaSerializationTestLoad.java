@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
+import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -30,8 +32,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
-
 /**
  * Created by The eXo Platform SAS. <br/>Date:
  * 
@@ -39,8 +39,7 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
  * @version $Id: JCRSerializationVSJavaSerializationTest.java 111 2008-11-11
  *          11:11:11Z serg $
  */
-public class JCRSerializationVSJavaSerializationTestLoad
-   extends JcrImplSerializationBaseTest
+public class JCRSerializationVSJavaSerializationTestLoad extends JcrImplSerializationBaseTest
 {
 
    private final static int nodes = 1000;
@@ -129,7 +128,7 @@ public class JCRSerializationVSJavaSerializationTestLoad
          long t4 = System.currentTimeMillis();
          for (int i = 0; i < nodes; i++)
          {
-            TransientValueData obj = (TransientValueData) jin.readObject();
+            TransientValueData obj = (TransientValueData)jin.readObject();
          }
          t4 = System.currentTimeMillis() - t4;
          javaRead += t4;

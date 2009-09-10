@@ -28,8 +28,7 @@ import java.io.FileInputStream;
  * @version $Id: Probe.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class Probe
-   extends Thread
+public class Probe extends Thread
 {
 
    private File file;

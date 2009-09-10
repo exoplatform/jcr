@@ -19,7 +19,6 @@
 package org.exoplatform.services.jcr.usecases.action;
 
 import org.apache.commons.chain.Context;
-
 import org.exoplatform.services.command.action.Action;
 
 /**
@@ -29,8 +28,7 @@ import org.exoplatform.services.command.action.Action;
  * @version $Id: DummyAction.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class DummyAction
-   implements Action
+public class DummyAction implements Action
 {
    private int actionExecuterCount = 0;
 

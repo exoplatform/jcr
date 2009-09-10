@@ -18,13 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-
-import javax.jcr.RepositoryException;
-
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
@@ -32,6 +25,13 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS. 
@@ -42,8 +42,7 @@ import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
  * 
  * @version $Id: CacheableWorkspaceDataManager.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class CacheableWorkspaceDataManager
-   extends WorkspacePersistentDataManager
+public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManager
 {
 
    /**
@@ -259,7 +258,7 @@ public class CacheableWorkspaceDataManager
     *          System Workspace data container (persistent level)
     */
    public CacheableWorkspaceDataManager(WorkspaceDataContainer dataContainer, WorkspaceStorageCache cache,
-            SystemDataContainerHolder systemDataContainerHolder)
+      SystemDataContainerHolder systemDataContainerHolder)
    {
       super(dataContainer, systemDataContainerHolder);
       this.cache = cache;
@@ -337,7 +336,7 @@ public class CacheableWorkspaceDataManager
     *           Repository error
     */
    protected List<NodeData> getChildNodesData(NodeData nodeData, boolean forcePersistentRead)
-            throws RepositoryException
+      throws RepositoryException
    {
 
       final DataRequest request = new DataRequest(nodeData.getIdentifier(), DataRequest.GET_NODES);
@@ -357,9 +356,9 @@ public class CacheableWorkspaceDataManager
          childNodes = super.getChildNodesData(nodeData);
          if (cache.isEnabled())
          {
-            NodeData parentData = (NodeData) cache.get(nodeData.getIdentifier());
+            NodeData parentData = (NodeData)cache.get(nodeData.getIdentifier());
             if (parentData == null)
-               parentData = (NodeData) super.getItemData(nodeData.getIdentifier());
+               parentData = (NodeData)super.getItemData(nodeData.getIdentifier());
             cache.addChildNodes(parentData, childNodes);
          }
          return childNodes;
@@ -382,7 +381,7 @@ public class CacheableWorkspaceDataManager
     *           Repository error
     */
    protected List<PropertyData> getChildPropertiesData(NodeData nodeData, boolean forcePersistentRead)
-            throws RepositoryException
+      throws RepositoryException
    {
 
       final DataRequest request = new DataRequest(nodeData.getIdentifier(), DataRequest.GET_PROPERTIES);
@@ -404,9 +403,9 @@ public class CacheableWorkspaceDataManager
          // TODO childProperties.size() > 0 for SDB
          if (childProperties.size() > 0 && cache.isEnabled())
          {
-            NodeData parentData = (NodeData) cache.get(nodeData.getIdentifier());
+            NodeData parentData = (NodeData)cache.get(nodeData.getIdentifier());
             if (parentData == null)
-               parentData = (NodeData) super.getItemData(nodeData.getIdentifier());
+               parentData = (NodeData)super.getItemData(nodeData.getIdentifier());
             cache.addChildProperties(parentData, childProperties);
          }
          return childProperties;
@@ -429,7 +428,7 @@ public class CacheableWorkspaceDataManager
     *           Repository error
     */
    protected List<PropertyData> listChildPropertiesData(NodeData nodeData, boolean forcePersistentRead)
-            throws RepositoryException
+      throws RepositoryException
    {
 
       final DataRequest request = new DataRequest(nodeData.getIdentifier(), DataRequest.GET_PROPERTIES);
@@ -447,9 +446,9 @@ public class CacheableWorkspaceDataManager
       // TODO propertiesList.size() > 0 for SDB
       if (propertiesList.size() > 0 && cache.isEnabled())
       {
-         NodeData parentData = (NodeData) cache.get(nodeData.getIdentifier());
+         NodeData parentData = (NodeData)cache.get(nodeData.getIdentifier());
          if (parentData == null)
-            parentData = (NodeData) super.getItemData(nodeData.getIdentifier());
+            parentData = (NodeData)super.getItemData(nodeData.getIdentifier());
          cache.addChildPropertiesList(parentData, propertiesList);
       }
       return propertiesList;
@@ -459,7 +458,7 @@ public class CacheableWorkspaceDataManager
     * {@inheritDoc}
     */
    public List<PropertyData> getReferencesData(String identifier, boolean skipVersionStorage)
-            throws RepositoryException
+      throws RepositoryException
    {
       return super.getReferencesData(identifier, skipVersionStorage);
    }

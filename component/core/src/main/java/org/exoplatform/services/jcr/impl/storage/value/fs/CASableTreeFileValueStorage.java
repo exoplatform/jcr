@@ -18,12 +18,12 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs;
 
-import java.io.IOException;
-import java.util.Properties;
-
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.storage.value.cas.ValueContentAddressStorage;
+
+import java.io.IOException;
+import java.util.Properties;
 
 /**
  * Created by The eXo Platform SAS
@@ -31,8 +31,7 @@ import org.exoplatform.services.jcr.impl.storage.value.cas.ValueContentAddressSt
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: CASableTreeFileValueStorage.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class CASableTreeFileValueStorage
-   extends TreeFileValueStorage
+public class CASableTreeFileValueStorage extends TreeFileValueStorage
 {
 
    private ValueContentAddressStorage vcas;
@@ -44,7 +43,7 @@ public class CASableTreeFileValueStorage
     */
    @Override
    public void init(Properties props, ValueDataResourceHolder resources) throws IOException,
-            RepositoryConfigurationException
+      RepositoryConfigurationException
    {
       super.init(props, resources);
 
@@ -54,7 +53,7 @@ public class CASableTreeFileValueStorage
       // get other vcas specific props and make VCAS
       try
       {
-         vcas = (ValueContentAddressStorage) Class.forName(vcasType).newInstance();
+         vcas = (ValueContentAddressStorage)Class.forName(vcasType).newInstance();
       }
       catch (Exception e)
       {

@@ -18,14 +18,13 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
+import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
+
 import java.io.File;
 import java.util.List;
 
 import javax.jcr.Node;
 import javax.jcr.lock.Lock;
-import javax.jcr.lock.LockException;
-
-import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 
 /**
  * Created by The eXo Platform SAS.
@@ -35,8 +34,7 @@ import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a> 
  * @version $Id: TestJCRSerislizationLock.java 111 2008-11-11 11:11:11Z rainf0x $
  */
-public class TestJCRSerislizationLock
-   extends JcrImplSerializationBaseTest
+public class TestJCRSerislizationLock extends JcrImplSerializationBaseTest
 {
 
    public void test10Lock() throws Exception

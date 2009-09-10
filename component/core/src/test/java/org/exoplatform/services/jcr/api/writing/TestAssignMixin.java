@@ -18,6 +18,13 @@
  */
 package org.exoplatform.services.jcr.api.writing;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.core.nodetype.NodeDefinitionValue;
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeValue;
+import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionValue;
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
+
 import java.util.ArrayList;
 
 import javax.jcr.Node;
@@ -26,21 +33,13 @@ import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NoSuchNodeTypeException;
 import javax.jcr.version.OnParentVersionAction;
 
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-import org.exoplatform.services.jcr.core.nodetype.NodeDefinitionValue;
-import org.exoplatform.services.jcr.core.nodetype.NodeTypeValue;
-import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionValue;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
-import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
-
 /**
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov</a>
  * @version $Id: TestAssignMixin.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class TestAssignMixin
-   extends JcrAPIBaseTest
+public class TestAssignMixin extends JcrAPIBaseTest
 {
 
    public void initRepository() throws RepositoryException
@@ -52,7 +51,7 @@ public class TestAssignMixin
 
    public void tearDown() throws Exception
    {
-      session = (SessionImpl) repository.login(credentials, WORKSPACE);
+      session = (SessionImpl)repository.login(credentials, WORKSPACE);
       Node root = session.getRootNode();
       root.getNode("TestAssignMixin").remove();
       session.save();
@@ -62,7 +61,7 @@ public class TestAssignMixin
 
    public void testAddMixin() throws RepositoryException
    {
-      Node node = (Node) session.getItem("/TestAssignMixin");
+      Node node = (Node)session.getItem("/TestAssignMixin");
 
       try
       {
@@ -92,7 +91,7 @@ public class TestAssignMixin
    public void testCanAddMixin() throws RepositoryException
    {
 
-      Node node = (Node) session.getItem("/TestAssignMixin");
+      Node node = (Node)session.getItem("/TestAssignMixin");
 
       log.debug(">>>>>>>" + node.hasProperty("jcr:mixinTypes"));
       assertTrue(node.canAddMixin("mix:referenceable"));
@@ -102,7 +101,7 @@ public class TestAssignMixin
 
    public void testRemoveMixin() throws RepositoryException
    {
-      Node node = (Node) session.getItem("/TestAssignMixin");
+      Node node = (Node)session.getItem("/TestAssignMixin");
       node.addMixin("mix:referenceable");
       assertEquals(1, node.getMixinNodeTypes().length);
       // node.save();
@@ -114,7 +113,7 @@ public class TestAssignMixin
 
    public void testAddCustomMixinAfterNodeSave() throws Exception
    {
-      NodeTypeManagerImpl ntManager = (NodeTypeManagerImpl) session.getWorkspace().getNodeTypeManager();
+      NodeTypeManagerImpl ntManager = (NodeTypeManagerImpl)session.getWorkspace().getNodeTypeManager();
       ntManager.registerNodeType(createTestMixinValue(), 0);
 
       Node node = root.addNode("testAddCustomMixinAfterNodeSave", "nt:base");
@@ -135,7 +134,7 @@ public class TestAssignMixin
    public void testAddCustomMixinBeforeNodeSave() throws Exception
    {
 
-      NodeTypeManagerImpl ntManager = (NodeTypeManagerImpl) session.getWorkspace().getNodeTypeManager();
+      NodeTypeManagerImpl ntManager = (NodeTypeManagerImpl)session.getWorkspace().getNodeTypeManager();
       ntManager.registerNodeType(createTestMixinValue1(), 0);
 
       Node node = root.addNode("testAddCustomMixinBeforeNodeSave", "nt:folder");

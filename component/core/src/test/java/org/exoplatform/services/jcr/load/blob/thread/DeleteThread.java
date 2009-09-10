@@ -18,13 +18,13 @@
  */
 package org.exoplatform.services.jcr.load.blob.thread;
 
+import org.exoplatform.services.jcr.impl.core.PropertyImpl;
+import org.exoplatform.services.jcr.load.blob.TestConcurrentItems;
+
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
-
-import org.exoplatform.services.jcr.impl.core.PropertyImpl;
-import org.exoplatform.services.jcr.load.blob.TestConcurrentItems;
 
 /**
  * Created by The eXo Platform SAS Author : Peter Nedonosko peter.nedonosko@exoplatform.com.ua
@@ -32,8 +32,7 @@ import org.exoplatform.services.jcr.load.blob.TestConcurrentItems;
  * 
  * @version $Id: DeleteThread.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class DeleteThread
-   extends UserThread
+public class DeleteThread extends UserThread
 {
 
    public DeleteThread(Session threadSession)
@@ -61,7 +60,7 @@ public class DeleteThread
    {
 
       final String[] nodes =
-               TestConcurrentItems.consumedNodes.toArray(new String[TestConcurrentItems.consumedNodes.size()]);
+         TestConcurrentItems.consumedNodes.toArray(new String[TestConcurrentItems.consumedNodes.size()]);
       try
       {
          threadSession.refresh(false);
@@ -75,8 +74,8 @@ public class DeleteThread
          String nodeInfo = "";
          try
          {
-            Node node = (Node) threadSession.getItem(nodePath);
-            PropertyImpl data = (PropertyImpl) node.getProperty("jcr:content/jcr:data");
+            Node node = (Node)threadSession.getItem(nodePath);
+            PropertyImpl data = (PropertyImpl)node.getProperty("jcr:content/jcr:data");
             nodeInfo = "node: " + node.getPath() + ", data: " + data.getInternalIdentifier();
             node.remove();
             threadSession.save();

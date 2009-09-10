@@ -103,7 +103,7 @@ final class DocNumberCache
       LRUMap cacheSegment = docNumbers[getSegmentIndex(uuid.charAt(0))];
       synchronized (cacheSegment)
       {
-         Entry e = (Entry) cacheSegment.get(uuid);
+         Entry e = (Entry)cacheSegment.get(uuid);
          if (e != null)
          {
             // existing entry
@@ -113,7 +113,7 @@ final class DocNumberCache
                if (log.isDebugEnabled())
                {
                   log.debug("Ignoring put(). New entry is not from a newer reader. " + "existing: " + e.creationTick
-                           + ", new: " + reader.getCreationTick());
+                     + ", new: " + reader.getCreationTick());
                }
                e = null;
             }
@@ -145,7 +145,7 @@ final class DocNumberCache
       Entry entry;
       synchronized (cacheSegment)
       {
-         entry = (Entry) cacheSegment.get(uuid);
+         entry = (Entry)cacheSegment.get(uuid);
       }
       if (log.isInfoEnabled())
       {

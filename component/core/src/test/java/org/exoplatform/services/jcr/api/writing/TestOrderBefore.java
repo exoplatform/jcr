@@ -18,6 +18,9 @@
  */
 package org.exoplatform.services.jcr.api.writing;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.impl.util.EntityCollection;
+
 import javax.jcr.ItemExistsException;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
@@ -29,9 +32,6 @@ import javax.jcr.nodetype.ConstraintViolationException;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.version.VersionException;
 
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-import org.exoplatform.services.jcr.impl.util.EntityCollection;
-
 /**
  * Created by The eXo Platform SAS 27.12.2006
  * 
@@ -39,8 +39,7 @@ import org.exoplatform.services.jcr.impl.util.EntityCollection;
  *         Nedonosko</a>
  * @version $Id: TestOrderBefore.java 11962 2008-03-16 16:31:14Z gazarenkov $
  */
-public class TestOrderBefore
-   extends JcrAPIBaseTest
+public class TestOrderBefore extends JcrAPIBaseTest
 {
 
    protected final String TEST_ROOT = "order_test";
@@ -125,7 +124,7 @@ public class TestOrderBefore
    }
 
    private void initCustom(String[] names) throws ItemExistsException, PathNotFoundException, VersionException,
-            ConstraintViolationException, LockException, RepositoryException
+      ConstraintViolationException, LockException, RepositoryException
    {
       for (int i = 0; i < names.length; i++)
       {
@@ -190,8 +189,8 @@ public class TestOrderBefore
          if (!next.getPath().endsWith(nodeName))
          {
             String failMsg =
-                     "Nodes order is invalid. Expected: " + nodeName + ". Found: " + next.getPath() + ". Position: "
-                              + orderPos;
+               "Nodes order is invalid. Expected: " + nodeName + ". Found: " + next.getPath() + ". Position: "
+                  + orderPos;
             log.error(failMsg);
             fail(failMsg);
          }
@@ -244,8 +243,7 @@ public class TestOrderBefore
 
       testBase.orderBefore("n4", "n3");
 
-      String[] order = new String[]
-      {"n1", "n2", "n4", "n3"};
+      String[] order = new String[]{"n1", "n2", "n4", "n3"};
 
       checkOrder(order);
 
@@ -261,8 +259,7 @@ public class TestOrderBefore
       // was n2,n3,n1,n4,n5
       testBase.orderBefore("n4", "n3");
 
-      String[] order = new String[]
-      {"n2", "n4", "n3", "n1", "n5"};
+      String[] order = new String[]{"n2", "n4", "n3", "n1", "n5"};
 
       checkOrder(order);
 
@@ -277,8 +274,7 @@ public class TestOrderBefore
 
       testBase.orderBefore("n3", "n1");
 
-      String[] order = new String[]
-      {"n3", "n1", "n2", "n4"};
+      String[] order = new String[]{"n3", "n1", "n2", "n4"};
 
       checkOrder(order);
 
@@ -293,8 +289,7 @@ public class TestOrderBefore
 
       testBase.orderBefore("n2", "n4");
 
-      String[] order = new String[]
-      {"n1", "n3", "n2", "n4"};
+      String[] order = new String[]{"n1", "n3", "n2", "n4"};
 
       checkOrder(order);
 
@@ -309,8 +304,7 @@ public class TestOrderBefore
 
       testBase.orderBefore("n2", null);
 
-      String[] order = new String[]
-      {"n1", "n3", "n4", "n2"};
+      String[] order = new String[]{"n1", "n3", "n4", "n2"};
 
       checkOrder(order);
 
@@ -327,8 +321,7 @@ public class TestOrderBefore
 
       testBase.orderBefore("n3", "n2");
 
-      String[] order = new String[]
-      {"n1", "n3", "n2", "n2[2]"};
+      String[] order = new String[]{"n1", "n3", "n2", "n2[2]"};
 
       checkOrder(order);
 
@@ -343,8 +336,7 @@ public class TestOrderBefore
 
       testBase.orderBefore("n2[2]", "n1");
 
-      String[] order = new String[]
-      {"n2", "n1", "n2[2]", "n3"};
+      String[] order = new String[]{"n2", "n1", "n2[2]", "n3"};
 
       checkOrder(order);
 
@@ -359,8 +351,7 @@ public class TestOrderBefore
 
       testBase.orderBefore("n1", "n2[2]");
 
-      String[] order = new String[]
-      {"n2", "n1", "n2[2]", "n3"};
+      String[] order = new String[]{"n2", "n1", "n2[2]", "n3"};
 
       checkOrder(order);
 
@@ -378,8 +369,7 @@ public class TestOrderBefore
 
       testBase.orderBefore("n2", "n3");
 
-      String[] order = new String[]
-      {"n1", "n2", "n2[2]", "n3"};
+      String[] order = new String[]{"n1", "n2", "n2[2]", "n3"};
 
       checkOrder(order);
 
@@ -394,8 +384,7 @@ public class TestOrderBefore
 
       testBase.orderBefore("n2[2]", null);
 
-      String[] order = new String[]
-      {"n1", "n2", "n3", "n2[2]"};
+      String[] order = new String[]{"n1", "n2", "n3", "n2[2]"};
 
       checkOrder(order);
 
@@ -416,8 +405,7 @@ public class TestOrderBefore
 
       testBase.orderBefore("n1[3]", "n1");
 
-      String[] order = new String[]
-      {"n1", "n1[2]", "n1[3]", "n1[4]"}; // n1[3]
+      String[] order = new String[]{"n1", "n1[2]", "n1[3]", "n1[4]"}; // n1[3]
       // -> n1
 
       checkOrder(order);
@@ -430,7 +418,7 @@ public class TestOrderBefore
       catch (RepositoryException e)
       {
          fail("A node is not mix:referenceable after order to another position, " + testBase.getNode("n1").getPath()
-                  + ". " + e);
+            + ". " + e);
       }
 
       testBase.save();
@@ -445,7 +433,7 @@ public class TestOrderBefore
       catch (RepositoryException e)
       {
          fail("A node is not mix:referenceable after order to another position, " + testBase.getNode("n1").getPath()
-                  + ". " + e);
+            + ". " + e);
       }
    }
 
@@ -457,8 +445,7 @@ public class TestOrderBefore
 
       testBase.orderBefore("n1[4]", "n1[2]");
 
-      String[] order = new String[]
-      {"n1", "n1[2]", "n1[3]", "n1[4]"}; // n1[3]
+      String[] order = new String[]{"n1", "n1[2]", "n1[3]", "n1[4]"}; // n1[3]
       // ->
       // n1[4]
 
@@ -472,7 +459,7 @@ public class TestOrderBefore
       catch (RepositoryException e)
       {
          fail("A node is not mix:referenceable after order to another position, " + testBase.getNode("n1[4]").getPath()
-                  + ". " + e);
+            + ". " + e);
       }
 
       testBase.save();
@@ -487,7 +474,7 @@ public class TestOrderBefore
       catch (RepositoryException e)
       {
          fail("A node is not mix:referenceable after order to another position, " + testBase.getNode("n1[4]").getPath()
-                  + ". " + e);
+            + ". " + e);
       }
    }
 
@@ -499,8 +486,7 @@ public class TestOrderBefore
 
       testBase.orderBefore("n1", "n1[3]");
 
-      String[] order = new String[]
-      {"n1", "n1[2]", "n1[3]", "n1[4]"}; // n1[3]
+      String[] order = new String[]{"n1", "n1[2]", "n1[3]", "n1[4]"}; // n1[3]
       // is
       // unchanged
       // in
@@ -516,7 +502,7 @@ public class TestOrderBefore
       catch (RepositoryException e)
       {
          fail("A node is not mix:referenceable after order of an other node, " + testBase.getNode("n1[3]").getPath()
-                  + ". " + e);
+            + ". " + e);
       }
 
       testBase.save();
@@ -531,7 +517,7 @@ public class TestOrderBefore
       catch (RepositoryException e)
       {
          fail("A node is not mix:referenceable after order to another position, " + testBase.getNode("n1[3]").getPath()
-                  + ". " + e);
+            + ". " + e);
       }
    }
 
@@ -546,8 +532,7 @@ public class TestOrderBefore
 
       testBase.orderBefore("n1[2]", "n1[4]");
 
-      String[] order = new String[]
-      {"n1", "n1[2]", "n1[3]", "n1[4]"}; // n1[3]
+      String[] order = new String[]{"n1", "n1[2]", "n1[3]", "n1[4]"}; // n1[3]
       // ->
       // n1[2]
 
@@ -561,7 +546,7 @@ public class TestOrderBefore
       catch (RepositoryException e)
       {
          fail("A node is not mix:referenceable after order to another position, " + testBase.getNode("n1[2]").getPath()
-                  + ". " + e);
+            + ". " + e);
       }
 
       testBase.save();
@@ -576,7 +561,7 @@ public class TestOrderBefore
       catch (RepositoryException e)
       {
          fail("A node is not mix:referenceable after order to another position, " + testBase.getNode("n1[2]").getPath()
-                  + ". " + e);
+            + ". " + e);
       }
    }
 
@@ -588,8 +573,7 @@ public class TestOrderBefore
 
       testBase.orderBefore("n1[2]", null);
 
-      String[] order = new String[]
-      {"n1", "n1[2]", "n1[3]", "n1[4]"}; // n1[3]
+      String[] order = new String[]{"n1", "n1[2]", "n1[3]", "n1[4]"}; // n1[3]
       // ->
       // n1[2]
 
@@ -603,7 +587,7 @@ public class TestOrderBefore
       catch (RepositoryException e)
       {
          fail("A node is not mix:referenceable after order to another position, " + testBase.getNode("n1[2]").getPath()
-                  + ". " + e);
+            + ". " + e);
       }
 
       testBase.save();
@@ -618,7 +602,7 @@ public class TestOrderBefore
       catch (RepositoryException e)
       {
          fail("A node is not mix:referenceable after order to another position, " + testBase.getNode("n1[2]").getPath()
-                  + ". " + e);
+            + ". " + e);
       }
    }
 
@@ -634,8 +618,7 @@ public class TestOrderBefore
 
       testBase.orderBefore("n2", "n1");
 
-      String[] order = new String[]
-      {"n2", "n1", "n1[2]", "n1[3]", "n1[4]"}; // n1
+      String[] order = new String[]{"n2", "n1", "n1[2]", "n1[3]", "n1[4]"}; // n1
       // [
       // 3
       // ]
@@ -651,7 +634,7 @@ public class TestOrderBefore
       catch (RepositoryException e)
       {
          fail("A node is not mix:referenceable after order of an other node, " + testBase.getNode("n1[3]").getPath()
-                  + ". " + e);
+            + ". " + e);
       }
 
       testBase.save();
@@ -666,7 +649,7 @@ public class TestOrderBefore
       catch (RepositoryException e)
       {
          fail("A node is not mix:referenceable after order of an other node, " + testBase.getNode("n1[3]").getPath()
-                  + ". " + e);
+            + ". " + e);
       }
    }
 
@@ -678,8 +661,7 @@ public class TestOrderBefore
 
       testBase.orderBefore("n2", "n1[3]");
 
-      String[] order = new String[]
-      {"n1", "n1[2]", "n2", "n1[3]", "n1[4]"}; // n1
+      String[] order = new String[]{"n1", "n1[2]", "n2", "n1[3]", "n1[4]"}; // n1
       // [
       // 3
       // ]
@@ -695,7 +677,7 @@ public class TestOrderBefore
       catch (RepositoryException e)
       {
          fail("A node is not mix:referenceable after order of an other node, " + testBase.getNode("n1[3]").getPath()
-                  + ". " + e);
+            + ". " + e);
       }
 
       testBase.save();
@@ -710,7 +692,7 @@ public class TestOrderBefore
       catch (RepositoryException e)
       {
          fail("A node is not mix:referenceable after order of an other node, " + testBase.getNode("n1[3]").getPath()
-                  + ". " + e);
+            + ". " + e);
       }
    }
 
@@ -722,8 +704,7 @@ public class TestOrderBefore
 
       testBase.orderBefore("n1", "n2");
 
-      String[] order = new String[]
-      {"n1", "n1[2]", "n1[3]", "n1[4]", "n2"}; // n1
+      String[] order = new String[]{"n1", "n1[2]", "n1[3]", "n1[4]", "n2"}; // n1
       // [
       // 3
       // ]
@@ -744,7 +725,7 @@ public class TestOrderBefore
       catch (RepositoryException e)
       {
          fail("A node is not mix:referenceable after order to another position, " + testBase.getNode("n1[2]").getPath()
-                  + ". " + e);
+            + ". " + e);
       }
 
       testBase.save();
@@ -759,7 +740,7 @@ public class TestOrderBefore
       catch (RepositoryException e)
       {
          fail("A node is not mix:referenceable after order to another position, " + testBase.getNode("n1[2]").getPath()
-                  + ". " + e);
+            + ". " + e);
       }
    }
 
@@ -774,8 +755,7 @@ public class TestOrderBefore
 
       testBase.orderBefore("n1[2]", "n1[4]");
 
-      String[] order = new String[]
-      {"n1", "n1[2]", "n1[3]", "n1[4]", "n2"}; // n1
+      String[] order = new String[]{"n1", "n1[2]", "n1[3]", "n1[4]", "n2"}; // n1
       // [
       // 3
       // ]
@@ -796,7 +776,7 @@ public class TestOrderBefore
       catch (RepositoryException e)
       {
          fail("A node is not mix:referenceable after order to another position, " + testBase.getNode("n1[2]").getPath()
-                  + ". " + e);
+            + ". " + e);
       }
 
       testBase.save();
@@ -811,7 +791,7 @@ public class TestOrderBefore
       catch (RepositoryException e)
       {
          fail("A node is not mix:referenceable after order to another position, " + testBase.getNode("n1[2]").getPath()
-                  + ". " + e);
+            + ". " + e);
       }
    }
 
@@ -823,8 +803,7 @@ public class TestOrderBefore
 
       testBase.orderBefore("n1[3]", null);
 
-      String[] order = new String[]
-      {"n1", "n1[2]", "n1[3]", "n2", "n1[4]"}; // n1
+      String[] order = new String[]{"n1", "n1[2]", "n1[3]", "n2", "n1[4]"}; // n1
       // [
       // 3
       // ]
@@ -845,7 +824,7 @@ public class TestOrderBefore
       catch (RepositoryException e)
       {
          fail("A node is not mix:referenceable after order to another position, " + testBase.getNode("n1[4]").getPath()
-                  + ". " + e);
+            + ". " + e);
       }
 
       testBase.save();
@@ -860,7 +839,7 @@ public class TestOrderBefore
       catch (RepositoryException e)
       {
          fail("A node is not mix:referenceable after order to another position, " + testBase.getNode("n1[4]").getPath()
-                  + ". " + e);
+            + ". " + e);
       }
    }
 
@@ -886,7 +865,7 @@ public class TestOrderBefore
       // n1[100] -> n1[99] pos:99
       testBase.orderBefore("n1[2]", "n_21");
 
-      EntityCollection nodes = (EntityCollection) testBase.getNodes();
+      EntityCollection nodes = (EntityCollection)testBase.getNodes();
 
       assertEquals("Nodes must be equals ", n1__2, nodes.getList().get(119)); // pos
       // :
@@ -901,7 +880,7 @@ public class TestOrderBefore
 
       testBase.save();
 
-      nodes = (EntityCollection) testBase.getNodes();
+      nodes = (EntityCollection)testBase.getNodes();
 
       assertEquals("Nodes must be equals ", n1__2, nodes.getList().get(119)); // pos
       // :
@@ -921,7 +900,7 @@ public class TestOrderBefore
       // n_24 -> pos:120; n1[100] -> pos:121;
       testBase.orderBefore("n_24", "n1[100]");
 
-      nodes = (EntityCollection) testBase.getNodes();
+      nodes = (EntityCollection)testBase.getNodes();
 
       assertEquals("Nodes must be equals ", n1__100, nodes.getList().get(120)); // pos
       // :
@@ -955,15 +934,13 @@ public class TestOrderBefore
    public void testOrderTwice() throws Exception
    {
 
-      String[] order = new String[]
-      {"n1", "n2", "n3", "n4", "n5"};
+      String[] order = new String[]{"n1", "n2", "n3", "n4", "n5"};
       initCustom(order);
       checkOrder(testBase, order);
 
       testBase.orderBefore("n1", "n4");
 
-      order = new String[]
-      {"n2", "n3", "n1", "n4", "n5"};
+      order = new String[]{"n2", "n3", "n1", "n4", "n5"};
 
       checkOrder(order);
 
@@ -975,8 +952,7 @@ public class TestOrderBefore
 
       testBase.orderBefore("n4", "n3");
 
-      order = new String[]
-      {"n2", "n4", "n3", "n1", "n5"};
+      order = new String[]{"n2", "n4", "n3", "n1", "n5"};
 
       checkOrder(order);
 

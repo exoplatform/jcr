@@ -18,6 +18,12 @@
  */
 package org.exoplatform.services.jcr.api.writing;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.PropertyData;
+import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
+
 import java.util.List;
 
 import javax.jcr.Node;
@@ -25,20 +31,13 @@ import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.ConstraintViolationException;
 
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.datamodel.PropertyData;
-import org.exoplatform.services.jcr.impl.core.NodeImpl;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
-
 /**
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov</a>
  * @version $Id: TestItem.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class TestItem
-   extends JcrAPIBaseTest
+public class TestItem extends JcrAPIBaseTest
 {
 
    public void testSave() throws RepositoryException
@@ -57,7 +56,7 @@ public class TestItem
       // assertEquals("/childNode/childNode2", root.getNode("childNode/childNode2").getPath());
       session.refresh(false);
 
-      session = (SessionImpl) repository.login(credentials, WORKSPACE);
+      session = (SessionImpl)repository.login(credentials, WORKSPACE);
       root = session.getRootNode();
 
       try
@@ -110,7 +109,7 @@ public class TestItem
 
       // System.out.println(">>>>>>>>>>>>"+((Node)session.getItem("/childNode")).getProperty("prop"));
 
-      session = (SessionImpl) repository.login(credentials, WORKSPACE);
+      session = (SessionImpl)repository.login(credentials, WORKSPACE);
       Node node22 = session.getRootNode().getNode("testSave2");
       root = session.getRootNode();
       try
@@ -133,7 +132,7 @@ public class TestItem
       }
 
       List<PropertyData> props =
-               session.getTransientNodesManager().getChildPropertiesData((NodeData) ((NodeImpl) node22).getData());
+         session.getTransientNodesManager().getChildPropertiesData((NodeData)((NodeImpl)node22).getData());
       for (PropertyData prop : props)
       {
          if (log.isDebugEnabled())

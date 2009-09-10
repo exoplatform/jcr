@@ -27,8 +27,7 @@ import javax.jcr.observation.Event;
  * @version $Id: EventImpl.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class EventImpl
-   implements Event
+public class EventImpl implements Event
 {
 
    private int type;

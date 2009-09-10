@@ -24,8 +24,7 @@ import java.util.List;
 /**
  * Defines an abstract query node for nodes that have child nodes.
  */
-public abstract class NAryQueryNode
-   extends QueryNode
+public abstract class NAryQueryNode extends QueryNode
 {
 
    /**
@@ -114,7 +113,7 @@ public abstract class NAryQueryNode
       }
       else
       {
-         return (QueryNode[]) operands.toArray(new QueryNode[operands.size()]);
+         return (QueryNode[])operands.toArray(new QueryNode[operands.size()]);
       }
    }
 
@@ -155,7 +154,7 @@ public abstract class NAryQueryNode
       List result = new ArrayList(operands.size());
       for (int i = 0; i < operands.size(); i++)
       {
-         Object r = ((QueryNode) operands.get(i)).accept(visitor, data);
+         Object r = ((QueryNode)operands.get(i)).accept(visitor, data);
          if (r != null)
          {
             result.add(r);
@@ -172,7 +171,7 @@ public abstract class NAryQueryNode
    {
       if (obj instanceof NAryQueryNode)
       {
-         NAryQueryNode other = (NAryQueryNode) obj;
+         NAryQueryNode other = (NAryQueryNode)obj;
          return operands == null ? other.operands == null : operands.equals(other.operands);
       }
       return false;
@@ -190,7 +189,7 @@ public abstract class NAryQueryNode
       }
       for (Iterator iter = operands.iterator(); iter.hasNext();)
       {
-         QueryNode queryNode = (QueryNode) iter.next();
+         QueryNode queryNode = (QueryNode)iter.next();
          if (queryNode.needsSystemTree())
             return true;
       }

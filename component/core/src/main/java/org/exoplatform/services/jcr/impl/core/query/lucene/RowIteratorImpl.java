@@ -46,8 +46,7 @@ import org.exoplatform.services.log.ExoLogger;
  * Implements the {@link javax.jcr.query.RowIterator} interface returned by a
  * {@link javax.jcr.query.QueryResult}.
  */
-class RowIteratorImpl
-   implements RowIterator
+class RowIteratorImpl implements RowIterator
 {
 
    /**
@@ -127,7 +126,7 @@ class RowIteratorImpl
     *          result or <code>null</code> if none is available.
     */
    RowIteratorImpl(ScoreNodeIterator nodes, InternalQName[] properties, LocationFactory resolver,
-            ExcerptProvider exProvider, SpellSuggestion spellSuggestion, ValueFactory vFactory)
+      ExcerptProvider exProvider, SpellSuggestion spellSuggestion, ValueFactory vFactory)
    {
       this.nodes = nodes;
       this.properties = properties;
@@ -221,8 +220,7 @@ class RowIteratorImpl
     * Implements the {@link javax.jcr.query.Row} interface, which represents a
     * row in the query result.
     */
-   class RowImpl
-      implements Row
+   class RowImpl implements Row
    {
 
       /**
@@ -276,7 +274,7 @@ class RowIteratorImpl
                String propertyName = resolver.createJCRName(properties[i]).getAsString();
                if (node.hasProperty(propertyName))
                {
-                  PropertyImpl prop = (PropertyImpl) node.getProperty(propertyName);
+                  PropertyImpl prop = (PropertyImpl)node.getProperty(propertyName);
                   if (!prop.getDefinition().isMultiple())
                   {
                      if (prop.getDefinition().getRequiredType() == PropertyType.UNDEFINED)
@@ -476,7 +474,7 @@ class RowIteratorImpl
          String decodedPath = ISO9075.decode(pathStr);
          try
          {
-            NodeImpl n = (NodeImpl) node.getNode(decodedPath);
+            NodeImpl n = (NodeImpl)node.getNode(decodedPath);
             return createExcerpt(n.getInternalIdentifier());
          }
          catch (PathNotFoundException e)
@@ -539,7 +537,7 @@ class RowIteratorImpl
          {
             return null;
          }
-         HighlightingExcerptProvider hep = (HighlightingExcerptProvider) excerptProvider;
+         HighlightingExcerptProvider hep = (HighlightingExcerptProvider)excerptProvider;
          try
          {
             long time = System.currentTimeMillis();

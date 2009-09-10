@@ -18,22 +18,21 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-
-import org.exoplatform.services.log.Log;
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TesterTransientValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.FileStreamPersistedValueData;
 import org.exoplatform.services.jcr.impl.storage.value.cas.RecordAlreadyExistsException;
 import org.exoplatform.services.jcr.impl.storage.value.cas.RecordNotFoundException;
 import org.exoplatform.services.jcr.impl.storage.value.cas.ValueContentAddressStorage;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 
 /**
  * Created by The eXo Platform SAS
@@ -43,8 +42,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: CASableFileIOChannelTestBase.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public abstract class CASableFileIOChannelTestBase
-   extends JcrImplBaseTest
+public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
 {//
 
    private static Log LOG = ExoLogger.getLogger("jcr.CASableFileIOChannelTestBase");
@@ -123,8 +121,7 @@ public abstract class CASableFileIOChannelTestBase
       fch.commit();
 
       File vsfile =
-               new File(rootDir, fch.makeFilePath(vcas.getIdentifier(propertyId, 0),
-                        CASableIOSupport.HASHFILE_ORDERNUMBER)); // orderNum
+         new File(rootDir, fch.makeFilePath(vcas.getIdentifier(propertyId, 0), CASableIOSupport.HASHFILE_ORDERNUMBER)); // orderNum
       // =0
       assertTrue("File should exists " + vsfile.getAbsolutePath(), vsfile.exists());
 
@@ -159,7 +156,7 @@ public abstract class CASableFileIOChannelTestBase
       {
          fch = openCASChannel(digestType);
          fch.write(new String(propertyId), testerTransientValueData.getTransientValueData(
-                  new FileInputStream(testFile), 0));
+            new FileInputStream(testFile), 0));
          fch.commit();
 
          fail("RecordAlreadyExistsException should be thrown, record exists");
@@ -244,8 +241,7 @@ public abstract class CASableFileIOChannelTestBase
       fch.commit();
 
       File vsfile =
-               new File(rootDir, fch.makeFilePath(vcas.getIdentifier(propertyId, 0),
-                        CASableIOSupport.HASHFILE_ORDERNUMBER)); // orderNum
+         new File(rootDir, fch.makeFilePath(vcas.getIdentifier(propertyId, 0), CASableIOSupport.HASHFILE_ORDERNUMBER)); // orderNum
       // =0
 
       fch.delete(propertyId);
@@ -329,12 +325,11 @@ public abstract class CASableFileIOChannelTestBase
       fch.commit();
 
       File vsfile =
-               new File(rootDir, fch.makeFilePath(vcas.getIdentifier(propertyId, 15),
-                        CASableIOSupport.HASHFILE_ORDERNUMBER));
+         new File(rootDir, fch.makeFilePath(vcas.getIdentifier(propertyId, 15), CASableIOSupport.HASHFILE_ORDERNUMBER));
       assertTrue("File should exists " + vsfile.getAbsolutePath(), vsfile.exists());
 
       assertEquals("Storage size must be increased on size of ONE file ", initialSize + testFile.length(),
-               calcDirSize(rootDir));
+         calcDirSize(rootDir));
    }
 
    /**
@@ -360,12 +355,11 @@ public abstract class CASableFileIOChannelTestBase
       fch.commit();
 
       File vsfile =
-               new File(rootDir, fch.makeFilePath(vcas.getIdentifier(propertyId, 15),
-                        CASableIOSupport.HASHFILE_ORDERNUMBER));
+         new File(rootDir, fch.makeFilePath(vcas.getIdentifier(propertyId, 15), CASableIOSupport.HASHFILE_ORDERNUMBER));
       assertTrue("File should exists " + vsfile.getAbsolutePath(), vsfile.exists());
 
       assertEquals("Storage size must be increased on size of ALL files ", initialSize + addedSize,
-               calcDirSize(rootDir));
+         calcDirSize(rootDir));
    }
 
    /**
@@ -390,7 +384,7 @@ public abstract class CASableFileIOChannelTestBase
       }
 
       assertEquals("Storage size must be increased on size of ONE file ", initialSize + testFile.length(),
-               calcDirSize(rootDir));
+         calcDirSize(rootDir));
    }
 
    /**
@@ -419,7 +413,7 @@ public abstract class CASableFileIOChannelTestBase
       }
 
       assertEquals("Storage size must be increased on size of ALL files ", initialSize + addedSize,
-               calcDirSize(rootDir));
+         calcDirSize(rootDir));
    }
 
    /**
@@ -454,7 +448,7 @@ public abstract class CASableFileIOChannelTestBase
       fch.commit();
 
       assertEquals("Storage size must be unchanged after the delete ", initialSize + testFile.length(),
-               calcDirSize(rootDir));
+         calcDirSize(rootDir));
    }
 
    /**
@@ -495,7 +489,7 @@ public abstract class CASableFileIOChannelTestBase
       fch.commit();
 
       assertEquals("Storage size must be decreased on one file size after the delete ", initialSize
-               + (addedSize - fileSize), calcDirSize(rootDir));
+         + (addedSize - fileSize), calcDirSize(rootDir));
    }
 
    /**
@@ -606,7 +600,7 @@ public abstract class CASableFileIOChannelTestBase
       fch.delete(property1MultivaluedId);
       fch.commit();
       assertEquals("Storage size must be unchanged after the delete of multivalue property #1 ", finalSize,
-               calcDirSize(rootDir));
+         calcDirSize(rootDir));
 
       // remove mapping in VCAS for multivalued property #2
       finalSize -= m2fileSize * m2filesCount;
@@ -614,7 +608,7 @@ public abstract class CASableFileIOChannelTestBase
       fch.delete(property2MultivaluedId);
       fch.commit();
       assertEquals("Storage size must be decreased on " + (m2fileSize * m2filesCount)
-               + " bytes after the delete of multivalue property #2 ", finalSize, calcDirSize(rootDir));
+         + " bytes after the delete of multivalue property #2 ", finalSize, calcDirSize(rootDir));
 
       // remove mapping in VCAS for singlevalued property #1
       finalSize -= m1fileSize;
@@ -622,7 +616,7 @@ public abstract class CASableFileIOChannelTestBase
       fch.delete(property1Id);
       fch.commit();
       assertEquals("Storage size must be decreased on " + m1fileSize + " bytes after the delete of property #1 ",
-               finalSize, calcDirSize(rootDir));
+         finalSize, calcDirSize(rootDir));
    }
 
    // ----- utilities -----

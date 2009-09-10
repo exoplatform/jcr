@@ -18,18 +18,18 @@
  */
 package org.exoplatform.services.jcr.core.nodetype;
 
-import java.io.InputStream;
-import java.util.List;
-import java.util.Set;
-
-import javax.jcr.RepositoryException;
-
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
+
+import java.io.InputStream;
+import java.util.List;
+import java.util.Set;
+
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS. <br/>
@@ -67,7 +67,7 @@ public interface NodeTypeDataManager
     * @return
     */
    NodeDefinitionData findChildNodeDefinition(InternalQName nodeName, InternalQName primaryNodeType,
-            InternalQName[] mixinTypes);
+      InternalQName[] mixinTypes);
 
    /**
     * @param typeName
@@ -82,7 +82,7 @@ public interface NodeTypeDataManager
     * @return
     */
    PropertyDefinitionDatas findPropertyDefinitions(InternalQName propertyName, InternalQName primaryNodeType,
-            InternalQName[] mixinTypes);
+      InternalQName[] mixinTypes);
 
    /**
     * @param nodeTypeNames
@@ -111,7 +111,7 @@ public interface NodeTypeDataManager
     * @return
     */
    NodeDefinitionData getChildNodeDefinition(InternalQName nodeName, InternalQName nodeTypeName,
-            InternalQName parentTypeName);
+      InternalQName parentTypeName);
 
    /**
     * Returns the <i>direct</i> subtypes of this node type in the node type
@@ -144,7 +144,7 @@ public interface NodeTypeDataManager
     * @throws RepositoryException
     */
    Set<String> getNodes(InternalQName name, InternalQName[] includeProperties, InternalQName[] excludeProperties)
-            throws RepositoryException;
+      throws RepositoryException;
 
    /**
     * @param propertyName
@@ -169,7 +169,7 @@ public interface NodeTypeDataManager
     * @return
     */
    boolean isChildNodePrimaryTypeAllowed(InternalQName childNodeTypeName, InternalQName parentNodeType,
-            InternalQName[] parentMixinNames);
+      InternalQName[] parentMixinNames);
 
    /**
     * @param testTypeName
@@ -200,7 +200,7 @@ public interface NodeTypeDataManager
     * @throws RepositoryException
     */
    PlainChangesLog makeAutoCreatedItems(NodeData parent, InternalQName nodeTypeName, ItemDataConsumer dataManager,
-            String owner) throws RepositoryException;
+      String owner) throws RepositoryException;
 
    /**
     * @param nodeData
@@ -212,8 +212,7 @@ public interface NodeTypeDataManager
     * @throws RepositoryException
     */
    ItemStateChangesLog makeAutoCreatedNodes(NodeData nodeData, InternalQName name,
-            NodeDefinitionData[] nodeDefinitionDatas, ItemDataConsumer dataManager, String owner)
-            throws RepositoryException;
+      NodeDefinitionData[] nodeDefinitionDatas, ItemDataConsumer dataManager, String owner) throws RepositoryException;
 
    /**
     * @param nodeData
@@ -225,8 +224,8 @@ public interface NodeTypeDataManager
     * @throws RepositoryException
     */
    PlainChangesLog makeAutoCreatedProperties(NodeData nodeData, InternalQName name,
-            PropertyDefinitionData[] propertyDefinitionDatas, ItemDataConsumer dataManager, String owner)
-            throws RepositoryException;
+      PropertyDefinitionData[] propertyDefinitionDatas, ItemDataConsumer dataManager, String owner)
+      throws RepositoryException;
 
    /**
     * @param xml
@@ -243,7 +242,7 @@ public interface NodeTypeDataManager
     * @throws RepositoryException
     */
    List<NodeTypeData> registerNodeTypes(List<NodeTypeValue> ntValues, int alreadyExistsBehaviour)
-            throws RepositoryException;
+      throws RepositoryException;
 
    /**
     * @param nodeTypeName

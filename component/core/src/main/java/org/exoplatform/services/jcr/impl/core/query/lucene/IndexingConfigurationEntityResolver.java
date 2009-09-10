@@ -27,8 +27,7 @@ import org.xml.sax.SAXException;
  * <code>IndexingConfigurationEntityResolver</code> implements an entity resolver for the indexing
  * configuration DTD.
  */
-public class IndexingConfigurationEntityResolver
-   implements EntityResolver
+public class IndexingConfigurationEntityResolver implements EntityResolver
 {
 
    /**

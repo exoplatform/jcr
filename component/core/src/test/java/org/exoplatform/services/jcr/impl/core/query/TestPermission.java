@@ -17,6 +17,14 @@
 
 package org.exoplatform.services.jcr.impl.core.query;
 
+import org.exoplatform.services.jcr.JcrImplBaseTest;
+import org.exoplatform.services.jcr.access.PermissionType;
+import org.exoplatform.services.jcr.core.CredentialsImpl;
+import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.jcr.impl.core.query.lucene.TestRemapping;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.util.HashMap;
 
 import javax.jcr.Credentials;
@@ -28,23 +36,13 @@ import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
 
-import org.exoplatform.services.log.Log;
-
-import org.exoplatform.services.jcr.JcrImplBaseTest;
-import org.exoplatform.services.jcr.access.PermissionType;
-import org.exoplatform.services.jcr.core.CredentialsImpl;
-import org.exoplatform.services.jcr.impl.core.NodeImpl;
-import org.exoplatform.services.jcr.impl.core.query.lucene.TestRemapping;
-import org.exoplatform.services.log.ExoLogger;
-
 /**
  * Created by The eXo Platform SAS Author : Sergey Karpenko <sergey.karpenko@exoplatform.com.ua>
  * 
  * @version $Id: TestPermission.java 11908 2008-03-13 16:00:12Z ksm $
  */
 
-public class TestPermission
-   extends JcrImplBaseTest
+public class TestPermission extends JcrImplBaseTest
 {
 
    public static final Log logger = ExoLogger.getLogger(TestRemapping.class);
@@ -55,7 +53,7 @@ public class TestPermission
    {
       super.setUp();
       // create test document
-      NodeImpl node = (NodeImpl) root.addNode(TEST_NAME);
+      NodeImpl node = (NodeImpl)root.addNode(TEST_NAME);
       node.addMixin("exo:privilegeable");
 
       HashMap<String, String[]> perm = new HashMap<String, String[]>();
@@ -70,7 +68,7 @@ public class TestPermission
       Credentials cred = new CredentialsImpl("exo", "exo".toCharArray());
       Session sess = repository.login(cred, "ws");
 
-      Node node = (Node) sess.getItem("/" + TEST_NAME);
+      Node node = (Node)sess.getItem("/" + TEST_NAME);
       node.remove();
       sess.save();
       sess.logout();
@@ -79,7 +77,7 @@ public class TestPermission
 
    public void testPermissionXPATH() throws Exception
    {
-      NodeImpl node = (NodeImpl) session.getItem("/" + TEST_NAME);
+      NodeImpl node = (NodeImpl)session.getItem("/" + TEST_NAME);
 
       QueryManager qManager = session.getWorkspace().getQueryManager();
       QueryResult res = qManager.createQuery(TEST_NAME, Query.XPATH).execute();
@@ -112,13 +110,13 @@ public class TestPermission
 
    public void testPermissionSQL() throws Exception
    {
-      NodeImpl node = (NodeImpl) session.getItem("/" + TEST_NAME);
+      NodeImpl node = (NodeImpl)session.getItem("/" + TEST_NAME);
 
       QueryManager qManager = session.getWorkspace().getQueryManager();
       QueryResult res =
-               qManager.createQuery(
-                        "SELECT * FROM " + node.getPrimaryNodeType().getName() + " WHERE jcr:path LIKE '/" + TEST_NAME
-                                 + "'", Query.SQL).execute();
+         qManager.createQuery(
+            "SELECT * FROM " + node.getPrimaryNodeType().getName() + " WHERE jcr:path LIKE '/" + TEST_NAME + "'",
+            Query.SQL).execute();
       assertEquals(1, getActualSize(res));
 
       // Search in other jcr - session
@@ -127,9 +125,9 @@ public class TestPermission
 
       qManager = sess.getWorkspace().getQueryManager();
       res =
-               qManager.createQuery(
-                        "SELECT * FROM " + node.getPrimaryNodeType().getName() + " WHERE jcr:path LIKE '/" + TEST_NAME
-                                 + "'", Query.SQL).execute();
+         qManager.createQuery(
+            "SELECT * FROM " + node.getPrimaryNodeType().getName() + " WHERE jcr:path LIKE '/" + TEST_NAME + "'",
+            Query.SQL).execute();
       assertEquals(0, getActualSize(res));
 
       // add permission for "exo" user
@@ -141,17 +139,17 @@ public class TestPermission
       // search in "admin" session SQL
       qManager = session.getWorkspace().getQueryManager();
       res =
-               qManager.createQuery(
-                        "SELECT * FROM " + node.getPrimaryNodeType().getName() + " WHERE jcr:path LIKE '/" + TEST_NAME
-                                 + "'", Query.SQL).execute();
+         qManager.createQuery(
+            "SELECT * FROM " + node.getPrimaryNodeType().getName() + " WHERE jcr:path LIKE '/" + TEST_NAME + "'",
+            Query.SQL).execute();
       assertEquals(0, getActualSize(res));
 
       // search in "exo" session SQL
       qManager = sess.getWorkspace().getQueryManager();
       res =
-               qManager.createQuery(
-                        "SELECT * FROM " + node.getPrimaryNodeType().getName() + " WHERE jcr:path LIKE '/" + TEST_NAME
-                                 + "'", Query.SQL).execute();
+         qManager.createQuery(
+            "SELECT * FROM " + node.getPrimaryNodeType().getName() + " WHERE jcr:path LIKE '/" + TEST_NAME + "'",
+            Query.SQL).execute();
       assertEquals(1, getActualSize(res));
    }
 

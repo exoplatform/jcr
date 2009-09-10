@@ -18,6 +18,22 @@
  */
 package org.exoplatform.services.jcr.impl.core.nodetype;
 
+import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
+import org.exoplatform.services.jcr.core.nodetype.NodeDefinitionData;
+import org.exoplatform.services.jcr.core.nodetype.NodeDefinitionValue;
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeValue;
+import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionData;
+import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionValue;
+import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.LocationFactory;
+import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
+import org.exoplatform.services.jcr.impl.util.EntityCollection;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,23 +49,6 @@ import javax.jcr.nodetype.NoSuchNodeTypeException;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.NodeTypeIterator;
 
-import org.exoplatform.services.log.Log;
-
-import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
-import org.exoplatform.services.jcr.core.nodetype.NodeDefinitionData;
-import org.exoplatform.services.jcr.core.nodetype.NodeDefinitionValue;
-import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
-import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
-import org.exoplatform.services.jcr.core.nodetype.NodeTypeValue;
-import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionData;
-import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionValue;
-import org.exoplatform.services.jcr.datamodel.InternalQName;
-import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.core.LocationFactory;
-import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
-import org.exoplatform.services.jcr.impl.util.EntityCollection;
-import org.exoplatform.services.log.ExoLogger;
-
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -57,8 +56,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @version $Id: NodeTypeManagerImpl.java 13986 2008-05-08 10:48:43Z pnedonosko
  *          $
  */
-public class NodeTypeManagerImpl
-   implements ExtendedNodeTypeManager
+public class NodeTypeManagerImpl implements ExtendedNodeTypeManager
 {
 
    protected static final Log LOG = ExoLogger.getLogger("jcr.NodeTypeManagerImpl");
@@ -72,7 +70,7 @@ public class NodeTypeManagerImpl
    protected final NodeTypeDataManager typesManager;
 
    public NodeTypeManagerImpl(LocationFactory locationFactory, ValueFactoryImpl valueFactory,
-            NodeTypeDataManager typesManager)
+      NodeTypeDataManager typesManager)
    {
       this.valueFactory = valueFactory;
       this.locationFactory = locationFactory;
@@ -167,7 +165,7 @@ public class NodeTypeManagerImpl
          for (int i = 0; i < ntdata.getDeclaredSupertypeNames().length; i++)
          {
             declaredSupertypeNames.add(locationFactory.createJCRName(ntdata.getDeclaredSupertypeNames()[i])
-                     .getAsString());
+               .getAsString());
          }
          List<PropertyDefinitionValue> declaredPropertyDefinitionValues = new ArrayList<PropertyDefinitionValue>();
 
@@ -234,7 +232,7 @@ public class NodeTypeManagerImpl
    }
 
    public NodeTypeIterator registerNodeTypes(List<NodeTypeValue> values, int alreadyExistsBehaviour)
-            throws UnsupportedRepositoryOperationException, RepositoryException
+      throws UnsupportedRepositoryOperationException, RepositoryException
    {
 
       Collection<NodeTypeData> nts = typesManager.registerNodeTypes(values, alreadyExistsBehaviour);
@@ -265,7 +263,7 @@ public class NodeTypeManagerImpl
     * {@inheritDoc}
     */
    public void unregisterNodeType(String name) throws UnsupportedRepositoryOperationException, NoSuchNodeTypeException,
-            RepositoryException
+      RepositoryException
    {
       InternalQName nodeTypeName = locationFactory.parseJCRName(name).getInternalName();
       if (typesManager.findNodeType(nodeTypeName) == null)
@@ -277,7 +275,7 @@ public class NodeTypeManagerImpl
     * {@inheritDoc}
     */
    public void unregisterNodeTypes(String[] names) throws UnsupportedRepositoryOperationException,
-            NoSuchNodeTypeException, RepositoryException
+      NoSuchNodeTypeException, RepositoryException
    {
       for (int i = 0; i < names.length; i++)
       {
@@ -336,8 +334,7 @@ public class NodeTypeManagerImpl
     * 
     * @author sj
     */
-   private class NodeTypeDataComparator
-      implements Comparator<NodeTypeData>
+   private class NodeTypeDataComparator implements Comparator<NodeTypeData>
    {
 
       private static final int NT = 4;

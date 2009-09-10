@@ -18,9 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs.operations;
 
-import java.io.File;
-import java.io.IOException;
-
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
@@ -32,6 +29,9 @@ import org.exoplatform.services.jcr.impl.storage.value.fs.FileDigestOutputStream
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
+import java.io.File;
+import java.io.IOException;
+
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -41,8 +41,7 @@ import org.exoplatform.services.jcr.util.IdGenerator;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: CASableWriteValue.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class CASableWriteValue
-   extends WriteValue
+public class CASableWriteValue extends WriteValue
 {
 
    /**
@@ -99,7 +98,7 @@ public class CASableWriteValue
     *          CASableIOSupport
     */
    public CASableWriteValue(ValueData value, ValueDataResourceHolder resources, FileCleaner cleaner, File tempDir,
-            String propertyId, ValueContentAddressStorage vcas, CASableIOSupport cas)
+      String propertyId, ValueContentAddressStorage vcas, CASableIOSupport cas)
    {
       super(null, value, resources, cleaner, tempDir);
 
@@ -178,12 +177,12 @@ public class CASableWriteValue
                vcasFile.getParentFile().mkdirs();
                if (!tempFile.renameTo(vcasFile)) // rename propetynamed file to hashnamed one
                   throw new VCASException("File " + tempFile.getAbsolutePath() + " can't be renamed to VCAS-named "
-                           + vcasFile.getAbsolutePath());
+                     + vcasFile.getAbsolutePath());
             } // else - CASed Value already exists
 
             // set new spool file as persisted
             if (value.isTransient() && !value.isByteArray())
-               ((TransientValueData) value).setPersistedFile(vcasFile);
+               ((TransientValueData)value).setPersistedFile(vcasFile);
 
          }
          finally

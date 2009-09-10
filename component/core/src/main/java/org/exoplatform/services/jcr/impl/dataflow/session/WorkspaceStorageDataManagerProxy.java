@@ -18,9 +18,9 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.session;
 
-import java.util.Calendar;
-
 import org.exoplatform.services.jcr.dataflow.DataManager;
+
+import java.util.Calendar;
 
 /**
  * Created by The eXo Platform SAS.
@@ -29,8 +29,7 @@ import org.exoplatform.services.jcr.dataflow.DataManager;
  * @version $Id: WorkspaceStorageDataManagerProxy.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public interface WorkspaceStorageDataManagerProxy
-   extends DataManager
+public interface WorkspaceStorageDataManagerProxy extends DataManager
 {
 
    Calendar getCurrentTime();

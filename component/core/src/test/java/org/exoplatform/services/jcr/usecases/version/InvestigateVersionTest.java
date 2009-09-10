@@ -18,15 +18,15 @@
  */
 package org.exoplatform.services.jcr.usecases.version;
 
-import java.util.List;
-
-import javax.jcr.Node;
-
 import org.exoplatform.services.jcr.dataflow.ChangesLogIterator;
 import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.TesterItemsPersistenceListener;
 import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
+
+import java.util.List;
+
+import javax.jcr.Node;
 
 /**
  * Created by The eXo Platform SAS.
@@ -36,15 +36,14 @@ import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a> 
  * @version $Id: InvestigateVersionTest.java 111 2008-11-11 11:11:11Z rainf0x $
  */
-public class InvestigateVersionTest
-   extends BaseUsecasesTest
+public class InvestigateVersionTest extends BaseUsecasesTest
 {
 
    public void testVersion() throws Exception
    {
       TesterItemsPersistenceListener system_ws_pl = new TesterItemsPersistenceListener(this.session);
 
-      SessionImpl session_ws1 = (SessionImpl) repository.login(credentials, "ws1");
+      SessionImpl session_ws1 = (SessionImpl)repository.login(credentials, "ws1");
 
       TesterItemsPersistenceListener ws1_pl = new TesterItemsPersistenceListener(session);
 

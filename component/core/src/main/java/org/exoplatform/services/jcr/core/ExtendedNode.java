@@ -18,6 +18,9 @@
  */
 package org.exoplatform.services.jcr.core;
 
+import org.exoplatform.services.jcr.access.AccessControlList;
+import org.exoplatform.services.jcr.datamodel.InternalQName;
+
 import java.security.AccessControlException;
 import java.util.Map;
 
@@ -29,9 +32,6 @@ import javax.jcr.UnsupportedRepositoryOperationException;
 import javax.jcr.lock.Lock;
 import javax.jcr.lock.LockException;
 
-import org.exoplatform.services.jcr.access.AccessControlList;
-import org.exoplatform.services.jcr.datamodel.InternalQName;
-
 /**
  * Created by The eXo Platform SAS.<br/> The extension for JSR-170 standard Node interface.
  * 
@@ -39,8 +39,7 @@ import org.exoplatform.services.jcr.datamodel.InternalQName;
  * @version $Id: ExtendedNode.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public interface ExtendedNode
-   extends Node
+public interface ExtendedNode extends Node
 {
 
    /**
@@ -110,5 +109,5 @@ public interface ExtendedNode
     * 
     */
    Lock lock(boolean isDeep, long timeOut) throws UnsupportedRepositoryOperationException, LockException,
-            AccessDeniedException, InvalidItemStateException, RepositoryException;
+      AccessDeniedException, InvalidItemStateException, RepositoryException;
 }

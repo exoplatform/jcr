@@ -25,8 +25,7 @@ import org.exoplatform.services.jcr.impl.core.query.PropertyTypeRegistry;
  * <code>AbstractQueryImpl</code> provides a base class for executable queries based on
  * {@link SearchIndex}.
  */
-public abstract class AbstractQueryImpl
-   implements ExecutableQuery
+public abstract class AbstractQueryImpl implements ExecutableQuery
 {
 
    /**
@@ -67,7 +66,7 @@ public abstract class AbstractQueryImpl
     *          the property type registry.
     */
    public AbstractQueryImpl(SessionImpl session, SessionDataManager itemMgr, SearchIndex index,
-            PropertyTypeRegistry propReg)
+      PropertyTypeRegistry propReg)
    {
       this.session = session;
       this.itemMgr = itemMgr;

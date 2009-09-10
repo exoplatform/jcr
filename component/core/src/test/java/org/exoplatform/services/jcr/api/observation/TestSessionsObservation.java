@@ -18,15 +18,14 @@
  */
 package org.exoplatform.services.jcr.api.observation;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
+
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.observation.Event;
 
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
-
-public class TestSessionsObservation
-   extends JcrAPIBaseTest
+public class TestSessionsObservation extends JcrAPIBaseTest
 {
 
    private Node testRootWs = null;
@@ -48,7 +47,7 @@ public class TestSessionsObservation
       nodeWs = testRootWs.addNode("node");
       session.save();
 
-      sessionWs1 = (SessionImpl) repository.login(credentials, "ws1");
+      sessionWs1 = (SessionImpl)repository.login(credentials, "ws1");
       testRootWs1 = sessionWs1.getRootNode().addNode("observationTest");
       nodeWs1 = testRootWs1.addNode("node");
       sessionWs1.save();
@@ -76,7 +75,7 @@ public class TestSessionsObservation
       try
       {
          sessionWs1.getWorkspace().getObservationManager().addEventListener(listener, Event.NODE_ADDED,
-                  testRootWs1.getPath() + "/n1", false, null, null, false);
+            testRootWs1.getPath() + "/n1", false, null, null, false);
 
          Node n1 = testRootWs1.addNode("n1"); // /observationTest/n1
          Node n1n2 = n1.addNode("n2"); // /observationTest/n1/n2
@@ -100,14 +99,14 @@ public class TestSessionsObservation
       try
       {
          sessionWs1.getWorkspace().getObservationManager().addEventListener(listener, Event.NODE_ADDED,
-                  testRootWs1.getPath() + "/n1", false, null, null, false);
+            testRootWs1.getPath() + "/n1", false, null, null, false);
 
          sessionWs1.logout();
 
          System.gc();
          Thread.sleep(1000);
 
-         SessionImpl anotherWs1 = (SessionImpl) repository.login(credentials, "ws1");
+         SessionImpl anotherWs1 = (SessionImpl)repository.login(credentials, "ws1");
 
          try
          {
@@ -140,8 +139,7 @@ public class TestSessionsObservation
       try
       {
          sessionWs1.getWorkspace().getObservationManager().addEventListener(addListener, Event.NODE_ADDED,
-                  testRootWs1.getPath(), true, null, new String[]
-                  {"nt:file"}, false);
+            testRootWs1.getPath(), true, null, new String[]{"nt:file"}, false);
 
          sessionWs1.logout();
 
@@ -155,7 +153,7 @@ public class TestSessionsObservation
          int removeIndex = 0;
          for (int i = 0; i < sessionCount; i++)
          {
-            SessionImpl anotherWs1 = (SessionImpl) repository.login(credentials, "ws1");
+            SessionImpl anotherWs1 = (SessionImpl)repository.login(credentials, "ws1");
 
             try
             {
@@ -172,7 +170,7 @@ public class TestSessionsObservation
                if (i == removeCount)
                {
                   anotherWs1.getWorkspace().getObservationManager().addEventListener(removeListener,
-                           Event.PROPERTY_REMOVED, testRootWs1.getPath(), true, null, null, true); // no local
+                     Event.PROPERTY_REMOVED, testRootWs1.getPath(), true, null, null, true); // no local
                   removeIndex = i + removeCount;
                }
                else if (i > removeCount && i <= removeIndex)
@@ -215,14 +213,14 @@ public class TestSessionsObservation
       try
       {
          sessionWs1.getWorkspace().getObservationManager().addEventListener(listener1, Event.NODE_ADDED,
-                  testRootWs1.getPath() + "/n1", true, null, null, false);
+            testRootWs1.getPath() + "/n1", true, null, null, false);
 
          sessionWs1.getWorkspace().getObservationManager().addEventListener(listener2, Event.PROPERTY_CHANGED,
-                  testRootWs1.getPath() + "/n1", true, null, null, false);
+            testRootWs1.getPath() + "/n1", true, null, null, false);
 
          sessionWs1.logout();
 
-         SessionImpl anotherWs1 = (SessionImpl) repository.login(credentials, "ws1");
+         SessionImpl anotherWs1 = (SessionImpl)repository.login(credentials, "ws1");
 
          try
          {

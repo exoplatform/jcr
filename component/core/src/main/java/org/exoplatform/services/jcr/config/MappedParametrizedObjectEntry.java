@@ -18,10 +18,10 @@
  */
 package org.exoplatform.services.jcr.config;
 
+import org.exoplatform.services.jcr.util.StringNumberParser;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import org.exoplatform.services.jcr.util.StringNumberParser;
 
 /**
  * Created by The eXo Platform SAS.

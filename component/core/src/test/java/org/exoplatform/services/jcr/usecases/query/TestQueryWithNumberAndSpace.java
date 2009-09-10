@@ -16,6 +16,8 @@
  */
 package org.exoplatform.services.jcr.usecases.query;
 
+import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
+
 import java.util.Calendar;
 
 import javax.jcr.Node;
@@ -25,14 +27,11 @@ import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
 
-import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
-
 /**
  * Created by The eXo Platform SAS Author : Ly Dinh Quang quang.ly@exoplatform.com xxx5669@yahoo.com
  * Jul 23, 2008
  */
-public class TestQueryWithNumberAndSpace
-   extends BaseUsecasesTest
+public class TestQueryWithNumberAndSpace extends BaseUsecasesTest
 {
 
    /**
@@ -110,8 +109,7 @@ public class TestQueryWithNumberAndSpace
       QueryManager queryManager = session.getWorkspace().getQueryManager();
 
       Query query =
-               queryManager.createQuery("SELECT * FROM nt:unstructured WHERE jcr:path LIKE '/Document/test A'",
-                        Query.SQL);
+         queryManager.createQuery("SELECT * FROM nt:unstructured WHERE jcr:path LIKE '/Document/test A'", Query.SQL);
       QueryResult result = query.execute();
       assertEquals(1, result.getNodes().getSize());
 

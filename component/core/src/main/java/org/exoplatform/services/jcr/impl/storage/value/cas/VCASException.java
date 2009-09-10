@@ -28,8 +28,7 @@ import java.io.IOException;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: VCASException.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class VCASException
-   extends IOException
+public class VCASException extends IOException
 {
 
    private final Throwable cause;

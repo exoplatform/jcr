@@ -46,8 +46,7 @@ import org.exoplatform.services.log.ExoLogger;
  * requested, a new prefix is created on the fly and associated with the namespace. Known namespace
  * mappings are stored in a properties file.
  */
-public class FileBasedNamespaceMappings
-   implements NamespaceMappings
+public class FileBasedNamespaceMappings implements NamespaceMappings
 {
 
    /**
@@ -143,7 +142,7 @@ public class FileBasedNamespaceMappings
             Iterator iter = props.keySet().iterator();
             while (iter.hasNext())
             {
-               String prefix = (String) iter.next();
+               String prefix = (String)iter.next();
                String uri = props.getProperty(prefix);
                log.debug(prefix + " -> " + uri);
                prefixToURI.put(prefix, uri);
@@ -173,8 +172,8 @@ public class FileBasedNamespaceMappings
       Iterator iter = prefixToURI.keySet().iterator();
       while (iter.hasNext())
       {
-         String prefix = (String) iter.next();
-         String uri = (String) prefixToURI.get(prefix);
+         String prefix = (String)iter.next();
+         String uri = (String)prefixToURI.get(prefix);
          props.setProperty(prefix, uri);
       }
 
@@ -193,7 +192,7 @@ public class FileBasedNamespaceMappings
 
    public String[] getAllNamespacePrefixes() throws RepositoryException
    {
-      return (String[]) prefixToURI.keySet().toArray(new String[prefixToURI.keySet().size()]);
+      return (String[])prefixToURI.keySet().toArray(new String[prefixToURI.keySet().size()]);
    }
 
    /**
@@ -208,7 +207,7 @@ public class FileBasedNamespaceMappings
     */
    public String getNamespacePrefixByURI(String uri) throws NamespaceException, RepositoryException
    {
-      String prefix = (String) uriToPrefix.get(uri);
+      String prefix = (String)uriToPrefix.get(uri);
       if (prefix == null)
       {
          // make sure prefix is not taken
@@ -247,7 +246,7 @@ public class FileBasedNamespaceMappings
       {
          throw new NamespaceException(prefix + ": is not a registered namespace prefix.");
       }
-      return (String) prefixToURI.get(prefix);
+      return (String)prefixToURI.get(prefix);
    }
 
 }

@@ -18,6 +18,19 @@
  */
 package org.exoplatform.services.jcr.impl.core.nodetype;
 
+import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
+import org.exoplatform.services.jcr.core.nodetype.NodeDefinitionData;
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
+import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionData;
+import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionDatas;
+import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.LocationFactory;
+import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
@@ -37,20 +50,6 @@ import javax.jcr.nodetype.NodeDefinition;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.PropertyDefinition;
 
-import org.exoplatform.services.log.Log;
-
-import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
-import org.exoplatform.services.jcr.core.nodetype.NodeDefinitionData;
-import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
-import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
-import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionData;
-import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionDatas;
-import org.exoplatform.services.jcr.datamodel.InternalQName;
-import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.core.LocationFactory;
-import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
-import org.exoplatform.services.log.ExoLogger;
-
 /**
  * Created by The eXo Platform SAS. <br/>
  * Date: 02.12.2008
@@ -59,8 +58,7 @@ import org.exoplatform.services.log.ExoLogger;
  *         Nedonosko</a>
  * @version $Id: NodeTypeImpl.java 111 2008-11-11 11:11:11Z pnedonosko $
  */
-public class NodeTypeImpl
-   implements NodeType
+public class NodeTypeImpl implements NodeType
 {
 
    private static final Log LOG = ExoLogger.getLogger("jcr.NodeTypeImpl");
@@ -83,7 +81,7 @@ public class NodeTypeImpl
     * @param valueFactory
     */
    public NodeTypeImpl(NodeTypeData nodeTypeData, NodeTypeDataManager nodeTypeDataManager,
-            ExtendedNodeTypeManager nodeTypeManager, LocationFactory locationFactory, ValueFactory valueFactory)
+      ExtendedNodeTypeManager nodeTypeManager, LocationFactory locationFactory, ValueFactory valueFactory)
    {
       this.nodeTypeData = nodeTypeData;
       this.nodeTypeDataManager = nodeTypeDataManager;
@@ -123,7 +121,7 @@ public class NodeTypeImpl
          InternalQName ntname = locationFactory.parseJCRName(nodeTypeName).getInternalName();
 
          NodeDefinitionData childNodeDef =
-                  nodeTypeDataManager.findChildNodeDefinition(cname, ntname, nodeTypeData.getName());
+            nodeTypeDataManager.findChildNodeDefinition(cname, ntname, nodeTypeData.getName());
          return !(childNodeDef == null || childNodeDef.isProtected()) && isChildNodePrimaryTypeAllowed(nodeTypeName);
       }
       catch (RepositoryException e)
@@ -245,8 +243,8 @@ public class NodeTypeImpl
     */
    public NodeDefinition[] getChildNodeDefinitions()
    {
-      NodeDefinitionData[] nodeDefs = nodeTypeDataManager.getAllChildNodeDefinitions(new InternalQName[]
-      {nodeTypeData.getName()});
+      NodeDefinitionData[] nodeDefs =
+         nodeTypeDataManager.getAllChildNodeDefinitions(new InternalQName[]{nodeTypeData.getName()});
       NodeDefinition[] ndefs = new NodeDefinition[nodeDefs.length];
       for (int i = 0; i < nodeDefs.length; i++)
       {
@@ -293,7 +291,7 @@ public class NodeTypeImpl
    }
 
    private NodeDefinition makeNodeDefinition(NodeDefinitionData data) throws NoSuchNodeTypeException,
-            RepositoryException
+      RepositoryException
    {
       InternalQName[] rnames = data.getRequiredPrimaryTypes();
       NodeType[] rnts = new NodeType[rnames.length];
@@ -303,12 +301,11 @@ public class NodeTypeImpl
       }
 
       String name =
-               locationFactory.createJCRName(data.getName() != null ? data.getName() : Constants.JCR_ANY_NAME)
-                        .getAsString();
+         locationFactory.createJCRName(data.getName() != null ? data.getName() : Constants.JCR_ANY_NAME).getAsString();
       NodeType defType =
-               data.getDefaultPrimaryType() != null ? nodeTypeManager.findNodeType(data.getDefaultPrimaryType()) : null;
+         data.getDefaultPrimaryType() != null ? nodeTypeManager.findNodeType(data.getDefaultPrimaryType()) : null;
       return new NodeDefinitionImpl(name, this, rnts, defType, data.isAutoCreated(), data.isMandatory(), data
-               .getOnParentVersion(), data.isProtected(), data.isAllowsSameNameSiblings());
+         .getOnParentVersion(), data.isProtected(), data.isAllowsSameNameSiblings());
    }
 
    public PropertyDefinition[] getDeclaredPropertyDefinitions()
@@ -328,9 +325,8 @@ public class NodeTypeImpl
          {
             PropertyDefinitionData propertyDef = pdefs[i];
             String name =
-                     locationFactory.createJCRName(
-                              propertyDef.getName() != null ? propertyDef.getName() : Constants.JCR_ANY_NAME)
-                              .getAsString();
+               locationFactory.createJCRName(
+                  propertyDef.getName() != null ? propertyDef.getName() : Constants.JCR_ANY_NAME).getAsString();
 
             Value[] defaultValues = new Value[propertyDef.getDefaultValues().length];
             String[] propVal = propertyDef.getDefaultValues();
@@ -347,10 +343,10 @@ public class NodeTypeImpl
             }
 
             propertyDefinitions[i] =
-                     new PropertyDefinitionImpl(name, nodeTypeManager.findNodeType(propertyDef.getDeclaringNodeType()),
-                              propertyDef.getRequiredType(), propertyDef.getValueConstraints(), defaultValues,
-                              propertyDef.isAutoCreated(), propertyDef.isMandatory(), propertyDef.getOnParentVersion(),
-                              propertyDef.isProtected(), propertyDef.isMultiple());
+               new PropertyDefinitionImpl(name, nodeTypeManager.findNodeType(propertyDef.getDeclaringNodeType()),
+                  propertyDef.getRequiredType(), propertyDef.getValueConstraints(), defaultValues, propertyDef
+                     .isAutoCreated(), propertyDef.isMandatory(), propertyDef.getOnParentVersion(), propertyDef
+                     .isProtected(), propertyDef.isMultiple());
          }
          catch (ValueFormatException e)
          {
@@ -377,8 +373,8 @@ public class NodeTypeImpl
       for (int i = 0; i < snames.length; i++)
       {
          supers[i] =
-                  new NodeTypeImpl(nodeTypeDataManager.findNodeType(snames[i]), nodeTypeDataManager, nodeTypeManager,
-                           locationFactory, valueFactory);
+            new NodeTypeImpl(nodeTypeDataManager.findNodeType(snames[i]), nodeTypeDataManager, nodeTypeManager,
+               locationFactory, valueFactory);
       }
 
       return supers;
@@ -460,7 +456,7 @@ public class NodeTypeImpl
       try
       {
          return nodeTypeDataManager.isNodeType(locationFactory.parseJCRName(nodeTypeName).getInternalName(),
-                  nodeTypeData.getName());
+            nodeTypeData.getName());
       }
       catch (RepositoryException e)
       {
@@ -508,10 +504,9 @@ public class NodeTypeImpl
          return checkValueConstraints(constrains, value);
       }
       else if (requiredType == PropertyType.BINARY
-               && (value.getType() == PropertyType.STRING || value.getType() == PropertyType.DATE
-                        || value.getType() == PropertyType.LONG || value.getType() == PropertyType.DOUBLE
-                        || value.getType() == PropertyType.NAME || value.getType() == PropertyType.PATH || value
-                        .getType() == PropertyType.BOOLEAN))
+         && (value.getType() == PropertyType.STRING || value.getType() == PropertyType.DATE
+            || value.getType() == PropertyType.LONG || value.getType() == PropertyType.DOUBLE
+            || value.getType() == PropertyType.NAME || value.getType() == PropertyType.PATH || value.getType() == PropertyType.BOOLEAN))
       {
          return checkValueConstraints(constrains, value);
       }
@@ -526,7 +521,7 @@ public class NodeTypeImpl
             try
             {
                return isCharsetString(value.getString(), Constants.DEFAULT_ENCODING)
-                        && checkValueConstraints(constrains, value);
+                  && checkValueConstraints(constrains, value);
             }
             catch (Exception e)
             {
@@ -744,8 +739,8 @@ public class NodeTypeImpl
                likeStringString = getCharsetString(value.getString(), Constants.DEFAULT_ENCODING);
             }
             else if (value.getType() == PropertyType.DATE || value.getType() == PropertyType.LONG
-                     || value.getType() == PropertyType.BOOLEAN || value.getType() == PropertyType.NAME
-                     || value.getType() == PropertyType.PATH || value.getType() == PropertyType.DOUBLE)
+               || value.getType() == PropertyType.BOOLEAN || value.getType() == PropertyType.NAME
+               || value.getType() == PropertyType.PATH || value.getType() == PropertyType.DOUBLE)
             {
                likeStringString = value.getString();
             }

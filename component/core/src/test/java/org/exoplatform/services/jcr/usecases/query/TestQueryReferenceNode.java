@@ -16,6 +16,8 @@
  */
 package org.exoplatform.services.jcr.usecases.query;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.Session;
@@ -24,16 +26,13 @@ import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
 
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-
 /**
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov</a>
  * @version $Id: TestQueryReferenceNode.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class TestQueryReferenceNode
-   extends JcrAPIBaseTest
+public class TestQueryReferenceNode extends JcrAPIBaseTest
 {
 
    public void testGetReferences() throws Exception
@@ -70,8 +69,7 @@ public class TestQueryReferenceNode
 
       // /////////
       Session session1 =
-               repository.login(new SimpleCredentials("admin", "admin".toCharArray()), repository
-                        .getSystemWorkspaceName());
+         repository.login(new SimpleCredentials("admin", "admin".toCharArray()), repository.getSystemWorkspaceName());
       manager = session1.getWorkspace().getQueryManager();
       query = manager.createQuery(sqlQuery, Query.SQL);
       // /////////

@@ -18,13 +18,13 @@
  */
 package org.exoplatform.services.jcr.api.writing;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
+
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.ConstraintViolationException;
-
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
 
 /**
  * Created by The eXo Platform SAS.
@@ -33,8 +33,7 @@ import org.exoplatform.services.jcr.impl.core.SessionImpl;
  * @version $Id: TestSession.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class TestSession
-   extends JcrAPIBaseTest
+public class TestSession extends JcrAPIBaseTest
 {
 
    public void testSave() throws RepositoryException
@@ -50,7 +49,7 @@ public class TestSession
       {
       }
 
-      session = (SessionImpl) repository.login(credentials, WORKSPACE);
+      session = (SessionImpl)repository.login(credentials, WORKSPACE);
       root = session.getRootNode();
       try
       {
@@ -69,7 +68,7 @@ public class TestSession
 
    public void testRefresh() throws RepositoryException
    {
-      session = (SessionImpl) repository.login(credentials, WORKSPACE);
+      session = (SessionImpl)repository.login(credentials, WORKSPACE);
       Node root = session.getRootNode();
       Node node = root.addNode("nodeType", "exo:mockNodeType");
       node.addNode("jcr:childNodeDefinition", "nt:childNodeDefinition");
@@ -116,7 +115,7 @@ public class TestSession
       node.addNode("addedNode", "nt:unstructured");
       session.save();
 
-      session = (SessionImpl) repository.login(credentials, WORKSPACE);
+      session = (SessionImpl)repository.login(credentials, WORKSPACE);
       node = session.getRootNode().getNode("testPropertiesManipThenSave");
       root = session.getRootNode();
       try

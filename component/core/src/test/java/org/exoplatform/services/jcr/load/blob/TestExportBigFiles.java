@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.load.blob;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -33,14 +35,11 @@ import java.util.Random;
 import javax.jcr.ImportUUIDBehavior;
 import javax.jcr.Node;
 
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: TestExportBigFiles.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class TestExportBigFiles
-   extends JcrAPIBaseTest
+public class TestExportBigFiles extends JcrAPIBaseTest
 {
    /**
     * Testing SysView import - export
@@ -97,7 +96,7 @@ public class TestExportBigFiles
 
       // comparing with source file
       compareStream(new BufferedInputStream(new FileInputStream(TEST_FILE)), content.getProperty("jcr:data")
-               .getStream());
+         .getStream());
 
       n1.remove();
       session.save();
@@ -161,7 +160,7 @@ public class TestExportBigFiles
 
       // comparing with source file
       compareStream(new BufferedInputStream(new FileInputStream(TEST_FILE2)), content.getProperty("jcr:data")
-               .getStream());
+         .getStream());
 
       n1.remove();
       session.save();
@@ -221,7 +220,7 @@ public class TestExportBigFiles
 
       // comparing with source file
       compareStream(new BufferedInputStream(new FileInputStream(TEST_FILE)), content.getProperty("jcr:data")
-               .getStream());
+         .getStream());
 
       n1.remove();
       session.save();
@@ -293,7 +292,7 @@ public class TestExportBigFiles
          Node content = lbf.getNode("jcr:content");
          // comparing with source file
          compareStream(new BufferedInputStream(new FileInputStream(TEST_FILE)), content.getProperty("jcr:data")
-                  .getStream());
+            .getStream());
       }
       n1.remove();
       session.save();

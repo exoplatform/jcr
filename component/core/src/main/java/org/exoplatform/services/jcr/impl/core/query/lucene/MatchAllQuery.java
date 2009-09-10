@@ -27,8 +27,7 @@ import org.apache.lucene.search.Weight;
  * <p>
  * Use this Query to perform a match '*'.
  */
-class MatchAllQuery
-   extends Query
+class MatchAllQuery extends Query
 {
 
    private final String field;

@@ -18,10 +18,10 @@
  */
 package org.exoplatform.services.jcr.usecases.common;
 
+import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
+
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
-
-import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
 
 /**
  * Created by The eXo Platform SAS .
@@ -29,8 +29,7 @@ import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: AddSameNameNodeTest.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class AddSameNameNodeTest
-   extends BaseUsecasesTest
+public class AddSameNameNodeTest extends BaseUsecasesTest
 {
 
    private Node testRoot = null;
@@ -71,7 +70,7 @@ public class AddSameNameNodeTest
       try
       {
          assertEquals("Content must be equals", testRoot.getProperty("file1/jcr:content/any property").getString(),
-                  "any content");
+            "any content");
       }
       catch (PathNotFoundException e)
       {
@@ -100,7 +99,7 @@ public class AddSameNameNodeTest
       try
       {
          assertEquals("Content must be equals", testRoot.getProperty("file1[2]/jcr:content/any property").getString(),
-                  "any content 1");
+            "any content 1");
       }
       catch (PathNotFoundException e)
       {
@@ -111,7 +110,7 @@ public class AddSameNameNodeTest
       try
       {
          assertFalse("The node shouldn't has mix:versionable", testRoot.getNode("file1[2]").isNodeType(
-                  "mix:versionable"));
+            "mix:versionable"));
       }
       catch (PathNotFoundException e)
       {

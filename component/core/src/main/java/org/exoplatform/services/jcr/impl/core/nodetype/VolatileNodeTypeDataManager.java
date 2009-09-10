@@ -18,6 +18,12 @@
  */
 package org.exoplatform.services.jcr.impl.core.nodetype;
 
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
+import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,27 +31,19 @@ import java.util.Map;
 
 import javax.jcr.RepositoryException;
 
-import org.exoplatform.services.log.Log;
-
-import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
-import org.exoplatform.services.jcr.datamodel.InternalQName;
-import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
-import org.exoplatform.services.log.ExoLogger;
-
 /**
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: $
  */
-public class VolatileNodeTypeDataManager
-   extends NodeTypeDataManagerImpl
+public class VolatileNodeTypeDataManager extends NodeTypeDataManagerImpl
 {
 
    public VolatileNodeTypeDataManager(NodeTypeDataManagerImpl nodeTypeDataManagerImpl) throws RepositoryException
    {
       super(nodeTypeDataManagerImpl.accessControlPolicy, nodeTypeDataManagerImpl.locationFactory,
-               nodeTypeDataManagerImpl.namespaceRegistry, nodeTypeDataManagerImpl.persister);
+         nodeTypeDataManagerImpl.namespaceRegistry, nodeTypeDataManagerImpl.persister);
       this.superNodeTypeDataManager = nodeTypeDataManagerImpl;
       this.queryHandlers = new HashSet<QueryHandler>(nodeTypeDataManagerImpl.queryHandlers);
 

@@ -18,6 +18,17 @@
  */
 package org.exoplatform.services.jcr.impl.xml.exporting;
 
+import org.apache.ws.commons.util.Base64;
+import org.exoplatform.services.jcr.core.ExtendedPropertyType;
+import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
+import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.PropertyData;
+import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -27,25 +38,11 @@ import javax.jcr.NamespaceRegistry;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
-
-import org.apache.ws.commons.util.Base64;
-
-import org.exoplatform.services.jcr.core.ExtendedPropertyType;
-import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
-import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.datamodel.PropertyData;
-import org.exoplatform.services.jcr.datamodel.ValueData;
-import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
-
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version
  */
-public class SystemViewContentExporter
-   extends HandlingContentExporter
+public class SystemViewContentExporter extends HandlingContentExporter
 {
 
    /**
@@ -57,8 +54,8 @@ public class SystemViewContentExporter
     * @throws RepositoryException
     */
    public SystemViewContentExporter(ContentHandler handler, ItemDataConsumer dataManager,
-            NamespaceRegistry namespaceRegistry, ValueFactoryImpl systemValueFactory, boolean skipBinary,
-            boolean noRecurse) throws NamespaceException, RepositoryException
+      NamespaceRegistry namespaceRegistry, ValueFactoryImpl systemValueFactory, boolean skipBinary, boolean noRecurse)
+      throws NamespaceException, RepositoryException
    {
       super(handler, dataManager, namespaceRegistry, systemValueFactory, skipBinary, noRecurse);
 
@@ -111,7 +108,7 @@ public class SystemViewContentExporter
          AttributesImpl atts = new AttributesImpl();
          atts.addAttribute(getSvNamespaceUri(), "name", "sv:name", "CDATA", getExportName(property, false));
          atts.addAttribute(getSvNamespaceUri(), "type", "sv:type", "CDATA", ExtendedPropertyType.nameFromValue(property
-                  .getType()));
+            .getType()));
 
          contentHandler.startElement(getSvNamespaceUri(), "property", "sv:property", atts);
 
@@ -180,7 +177,7 @@ public class SystemViewContentExporter
    }
 
    protected void writeValueData(ValueData data, int type) throws RepositoryException, IllegalStateException,
-            IOException, SAXException
+      IOException, SAXException
    {
       if (PropertyType.BINARY == type)
       {

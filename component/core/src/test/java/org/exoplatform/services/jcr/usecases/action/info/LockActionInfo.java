@@ -18,19 +18,17 @@
  */
 package org.exoplatform.services.jcr.usecases.action.info;
 
+import org.apache.commons.chain.Context;
+import org.exoplatform.services.jcr.observation.ExtendedEvent;
+
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
-
-import org.apache.commons.chain.Context;
-
-import org.exoplatform.services.jcr.observation.ExtendedEvent;
 
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: LockActionInfo.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class LockActionInfo
-   extends ActionInfo
+public class LockActionInfo extends ActionInfo
 {
 
    @Override
@@ -42,7 +40,7 @@ public class LockActionInfo
    @Override
    public void execute(Context ctx) throws RepositoryException
    {
-      Node node = (Node) ctx.get("node");
+      Node node = (Node)ctx.get("node");
       if (node.canAddMixin("mix:lockable"))
          node.addMixin("mix:lockable");
       node.getSession().save();
@@ -52,7 +50,7 @@ public class LockActionInfo
 
    public void tearDown(Context ctx) throws RepositoryException
    {
-      Node node = (Node) ctx.get("node");
+      Node node = (Node)ctx.get("node");
       if (node.isLocked())
          node.unlock();
    }

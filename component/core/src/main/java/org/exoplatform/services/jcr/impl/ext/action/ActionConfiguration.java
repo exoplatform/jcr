@@ -51,7 +51,7 @@ public class ActionConfiguration
    }
 
    public ActionConfiguration(String actionClassName, String eventTypes, String path, boolean isDeep, String workspace,
-            String nodeTypes)
+      String nodeTypes)
    {
       this.actionClassName = actionClassName;
       this.eventTypes = eventTypes;

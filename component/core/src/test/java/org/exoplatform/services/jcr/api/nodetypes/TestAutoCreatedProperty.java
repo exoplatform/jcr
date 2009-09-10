@@ -18,6 +18,9 @@
  */
 package org.exoplatform.services.jcr.api.nodetypes;
 
+import org.exoplatform.services.jcr.JcrImplBaseTest;
+import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -31,17 +34,13 @@ import javax.jcr.nodetype.ConstraintViolationException;
 import javax.jcr.nodetype.NoSuchNodeTypeException;
 import javax.jcr.version.VersionException;
 
-import org.exoplatform.services.jcr.JcrImplBaseTest;
-import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
-
 /**
  * Created by The eXo Platform SAS Author : Alex Reshetnyak alex.reshetnyak@exoplatform.com.ua
  * reshetnyak.alex@gmail.com 13.03.2007 18:00:03
  * 
  * @version $Id: TestAutoCreatedProperty.java 13.03.2007 18:00:03 rainfox
  */
-public class TestAutoCreatedProperty
-   extends JcrImplBaseTest
+public class TestAutoCreatedProperty extends JcrImplBaseTest
 {
 
    private NodeTypeManagerImpl ntManager = null;
@@ -52,7 +51,7 @@ public class TestAutoCreatedProperty
 
       byte[] xmlData = readXmlContent("/org/exoplatform/services/jcr/api/nodetypes/nodetypes-api-test.xml");
       ByteArrayInputStream xmlInput = new ByteArrayInputStream(xmlData);
-      ntManager = (NodeTypeManagerImpl) session.getWorkspace().getNodeTypeManager();
+      ntManager = (NodeTypeManagerImpl)session.getWorkspace().getNodeTypeManager();
       ntManager.registerNodeTypes(xmlInput, 0);
       assertNotNull(ntManager.getNodeType("exo:autoCreate"));
       assertNotNull(ntManager.getNodeType("exo:refRoot"));
@@ -60,7 +59,7 @@ public class TestAutoCreatedProperty
    }
 
    public void testAutoCreated() throws ItemExistsException, PathNotFoundException, NoSuchNodeTypeException,
-            LockException, VersionException, ConstraintViolationException, RepositoryException
+      LockException, VersionException, ConstraintViolationException, RepositoryException
    {
       Node autoCreated = root.addNode("NODE", "exo:autoCreate");
       autoCreated.setProperty("jcr:data", "123123123");
@@ -86,7 +85,7 @@ public class TestAutoCreatedProperty
    }
 
    public void testAutoCreated2() throws ItemExistsException, PathNotFoundException, NoSuchNodeTypeException,
-            LockException, VersionException, ConstraintViolationException, RepositoryException
+      LockException, VersionException, ConstraintViolationException, RepositoryException
    {
       Node autoCreated = root.addNode("NODE2", "exo:autoCreate2");
       autoCreated.setProperty("jcr:data", "123123123");

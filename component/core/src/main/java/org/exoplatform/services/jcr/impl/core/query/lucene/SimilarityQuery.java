@@ -28,8 +28,7 @@ import org.apache.lucene.search.TermQuery;
 /**
  * <code>SimilarityQuery</code> implements a query that returns similar nodes for a given node UUID.
  */
-public class SimilarityQuery
-   extends Query
+public class SimilarityQuery extends Query
 {
 
    /**
@@ -60,8 +59,7 @@ public class SimilarityQuery
    {
       MoreLikeThis more = new MoreLikeThis(reader);
       more.setAnalyzer(analyzer);
-      more.setFieldNames(new String[]
-      {FieldNames.FULLTEXT});
+      more.setFieldNames(new String[]{FieldNames.FULLTEXT});
       more.setMinWordLen(4);
       Query similarityQuery = null;
       TermDocs td = reader.termDocs(new Term(FieldNames.UUID, uuid));

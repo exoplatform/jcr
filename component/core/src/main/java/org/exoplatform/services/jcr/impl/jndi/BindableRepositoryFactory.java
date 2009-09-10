@@ -18,6 +18,13 @@
  */
 package org.exoplatform.services.jcr.impl.jndi;
 
+import org.apache.commons.collections.map.ReferenceMap;
+import org.exoplatform.container.ExoContainer;
+import org.exoplatform.container.ExoContainerContext;
+import org.exoplatform.container.StandaloneContainer;
+import org.exoplatform.services.jcr.RepositoryService;
+import org.exoplatform.services.jcr.core.ManageableRepository;
+
 import java.util.Hashtable;
 import java.util.Map;
 
@@ -26,14 +33,6 @@ import javax.naming.Name;
 import javax.naming.RefAddr;
 import javax.naming.Reference;
 import javax.naming.spi.ObjectFactory;
-
-import org.apache.commons.collections.map.ReferenceMap;
-
-import org.exoplatform.container.ExoContainer;
-import org.exoplatform.container.ExoContainerContext;
-import org.exoplatform.container.StandaloneContainer;
-import org.exoplatform.services.jcr.RepositoryService;
-import org.exoplatform.services.jcr.core.ManageableRepository;
 
 /**
  * Created by The eXo Platform SAS.<br/>
@@ -44,8 +43,7 @@ import org.exoplatform.services.jcr.core.ManageableRepository;
  * @version $Id: BindableRepositoryFactory.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class BindableRepositoryFactory
-   implements ObjectFactory
+public class BindableRepositoryFactory implements ObjectFactory
 {
 
    static final String REPOSITORYNAME_ADDRTYPE = "repositoryName";
@@ -62,7 +60,7 @@ public class BindableRepositoryFactory
    {
       if (obj instanceof Reference)
       {
-         Reference ref = (Reference) obj;
+         Reference ref = (Reference)obj;
          synchronized (cache)
          {
             if (cache.containsKey(ref))
@@ -70,20 +68,20 @@ public class BindableRepositoryFactory
                return cache.get(ref);
             }
             RefAddr containerConfig = ref.get(CONTAINERCONFIG_ADDRTYPE);
-            String repositoryName = (String) ref.get(REPOSITORYNAME_ADDRTYPE).getContent();
+            String repositoryName = (String)ref.get(REPOSITORYNAME_ADDRTYPE).getContent();
             ExoContainer container = ExoContainerContext.getCurrentContainerIfPresent();
             if (containerConfig != null)
             {
                // here the code will work properly only when no StandaloneContainer instance created yet
                if (container == null)
                {
-                  StandaloneContainer.setConfigurationURL((String) containerConfig.getContent());
+                  StandaloneContainer.setConfigurationURL((String)containerConfig.getContent());
                   container = StandaloneContainer.getInstance();
                }
             }
             ManageableRepository rep =
-                     ((RepositoryService) container.getComponentInstanceOfType(RepositoryService.class))
-                              .getRepository(repositoryName);
+               ((RepositoryService)container.getComponentInstanceOfType(RepositoryService.class))
+                  .getRepository(repositoryName);
             // BindableRepositoryImpl brep = new BindableRepositoryImpl(rep);
             cache.put(ref, rep);
             return rep;

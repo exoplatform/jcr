@@ -18,12 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-
-import org.exoplatform.services.log.Log;
 import org.exoplatform.services.jcr.datamodel.IllegalPathException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
@@ -31,6 +25,12 @@ import org.exoplatform.services.jcr.datamodel.MutableItemData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
 /**
  * Created by The eXo Platform SAS.
@@ -38,8 +38,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @author Gennady Azarenkov
  * @version $Id: TransientItemData.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public abstract class TransientItemData
-   implements MutableItemData, Externalizable
+public abstract class TransientItemData implements MutableItemData, Externalizable
 {
 
    protected static final Log LOG = ExoLogger.getLogger("jcr.TransientItemData");
@@ -92,7 +91,7 @@ public abstract class TransientItemData
       if (obj instanceof ItemData)
       {
          // TODO use String.equals, but check performance!
-         return getIdentifier().hashCode() == ((ItemData) obj).getIdentifier().hashCode();
+         return getIdentifier().hashCode() == ((ItemData)obj).getIdentifier().hashCode();
       }
 
       return false;

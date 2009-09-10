@@ -26,8 +26,7 @@ import org.apache.lucene.search.Similarity;
  * <code>MultiScorer</code> spans multiple Scorers and returns document numbers and score values in
  * the order as supplied to the constructor of this <code>MultiScorer</code>.
  */
-class MultiScorer
-   extends Scorer
+class MultiScorer extends Scorer
 {
 
    /**

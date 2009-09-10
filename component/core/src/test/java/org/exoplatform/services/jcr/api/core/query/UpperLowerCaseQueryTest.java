@@ -28,136 +28,102 @@ import javax.jcr.query.InvalidQueryException;
  * <code>UpperLowerCaseQueryTest</code> tests the functions fn:lower-case() and fn:upper-case() in
  * XPath and LOWER() and UPPER() in SQL.
  */
-public class UpperLowerCaseQueryTest
-   extends AbstractQueryTest
+public class UpperLowerCaseQueryTest extends AbstractQueryTest
 {
 
    public void testEqualsGeneralComparison() throws RepositoryException
    {
-      check(new String[]
-      {"foo", "Foo", "fOO", "FOO", "fooBar", "fo", "fooo"}, "=", "foo", new boolean[]
-      {true, true, true, true, false, false, false});
-      check(new String[]
-      {"foo"}, "=", "", new boolean[]
-      {false});
-      check(new String[]
-      {""}, "=", "", new boolean[]
-      {true});
+      check(new String[]{"foo", "Foo", "fOO", "FOO", "fooBar", "fo", "fooo"}, "=", "foo", new boolean[]{true, true,
+         true, true, false, false, false});
+      check(new String[]{"foo"}, "=", "", new boolean[]{false});
+      check(new String[]{""}, "=", "", new boolean[]{true});
    }
 
    public void testGreaterThanGeneralComparison() throws RepositoryException
    {
       // check edges
-      check(new String[]
-      {"foo", "FOO", "FoO", "fOo", "FON", "fon", "fo", "FO"}, ">", "foo", new boolean[]
-      {false, false, false, false, false, false, false, false});
-      check(new String[]
-      {"foo ", "FOOa", "FoOO", "fOo1", "FOp", "foP", "fp", "g", "G"}, ">", "foo", new boolean[]
-      {true, true, true, true, true, true, true, true, true});
+      check(new String[]{"foo", "FOO", "FoO", "fOo", "FON", "fon", "fo", "FO"}, ">", "foo", new boolean[]{false, false,
+         false, false, false, false, false, false});
+      check(new String[]{"foo ", "FOOa", "FoOO", "fOo1", "FOp", "foP", "fp", "g", "G"}, ">", "foo", new boolean[]{true,
+         true, true, true, true, true, true, true, true});
       // check combinations
-      check(new String[]
-      {"foo", "fooo", "FooO", "fo", "FON", "fon"}, ">", "foo", new boolean[]
-      {false, true, true, false, false, false});
+      check(new String[]{"foo", "fooo", "FooO", "fo", "FON", "fon"}, ">", "foo", new boolean[]{false, true, true,
+         false, false, false});
    }
 
    public void testLessThanGeneralComparison() throws RepositoryException
    {
       // check edges
-      check(new String[]
-      {"foo", "FOO", "FoO", "fOo", "foOo", "foo ", "fooa", "fop"}, "<", "foo", new boolean[]
-      {false, false, false, false, false, false, false, false});
-      check(new String[]
-      {"fo", "FOn", "FoN", "fO", "FO1", "fn", "fN", "E", "e"}, "<", "foo", new boolean[]
-      {true, true, true, true, true, true, true, true, true});
+      check(new String[]{"foo", "FOO", "FoO", "fOo", "foOo", "foo ", "fooa", "fop"}, "<", "foo", new boolean[]{false,
+         false, false, false, false, false, false, false});
+      check(new String[]{"fo", "FOn", "FoN", "fO", "FO1", "fn", "fN", "E", "e"}, "<", "foo", new boolean[]{true, true,
+         true, true, true, true, true, true, true});
       // check combinations
-      check(new String[]
-      {"foo", "fooo", "FooO", "fo", "FON", "fon"}, "<", "foo", new boolean[]
-      {false, false, false, true, true, true});
+      check(new String[]{"foo", "fooo", "FooO", "fo", "FON", "fon"}, "<", "foo", new boolean[]{false, false, false,
+         true, true, true});
    }
 
    public void testGreaterEqualsGeneralComparison() throws RepositoryException
    {
       // check edges
-      check(new String[]
-      {"fo", "FO", "Fon", "fONo", "FON", "fO", "fo", "FO"}, ">=", "foo", new boolean[]
-      {false, false, false, false, false, false, false, false});
-      check(new String[]
-      {"foo", "FoO", "FoOO", "fOo1", "FOp", "foP", "fp", "g", "G"}, ">=", "foo", new boolean[]
-      {true, true, true, true, true, true, true, true, true});
+      check(new String[]{"fo", "FO", "Fon", "fONo", "FON", "fO", "fo", "FO"}, ">=", "foo", new boolean[]{false, false,
+         false, false, false, false, false, false});
+      check(new String[]{"foo", "FoO", "FoOO", "fOo1", "FOp", "foP", "fp", "g", "G"}, ">=", "foo", new boolean[]{true,
+         true, true, true, true, true, true, true, true});
       // check combinations
-      check(new String[]
-      {"foo", "fooo", "FOo", "fo", "FON", "fon"}, ">=", "foo", new boolean[]
-      {true, true, true, false, false, false});
+      check(new String[]{"foo", "fooo", "FOo", "fo", "FON", "fon"}, ">=", "foo", new boolean[]{true, true, true, false,
+         false, false});
    }
 
    public void testLessEqualsGeneralComparison() throws RepositoryException
    {
       // check edges
-      check(new String[]
-      {"fooo", "FOoo", "Fop", "fOpo", "FOP", "fOo ", "fp", "G"}, "<=", "foo", new boolean[]
-      {false, false, false, false, false, false, false, false});
-      check(new String[]
-      {"foo", "FoO", "Foo", "fOn", "FO", "fo", "f", "E", "e"}, "<=", "foo", new boolean[]
-      {true, true, true, true, true, true, true, true, true});
+      check(new String[]{"fooo", "FOoo", "Fop", "fOpo", "FOP", "fOo ", "fp", "G"}, "<=", "foo", new boolean[]{false,
+         false, false, false, false, false, false, false});
+      check(new String[]{"foo", "FoO", "Foo", "fOn", "FO", "fo", "f", "E", "e"}, "<=", "foo", new boolean[]{true, true,
+         true, true, true, true, true, true, true});
       // check combinations
-      check(new String[]
-      {"foo", "fo", "FOo", "fop", "FOP", "fooo"}, "<=", "foo", new boolean[]
-      {true, true, true, false, false, false});
+      check(new String[]{"foo", "fo", "FOo", "fop", "FOP", "fooo"}, "<=", "foo", new boolean[]{true, true, true, false,
+         false, false});
    }
 
    public void testNotEqualsGeneralComparison() throws RepositoryException
    {
       // check edges
-      check(new String[]
-      {"fooo", "FOoo", "Fop", "fOpo", "FOP", "fOo ", "fp", "G", ""}, "!=", "foo", new boolean[]
-      {true, true, true, true, true, true, true, true, true});
-      check(new String[]
-      {"foo", "FoO", "Foo", "foO", "FOO"}, "!=", "foo", new boolean[]
-      {false, false, false, false, false});
+      check(new String[]{"fooo", "FOoo", "Fop", "fOpo", "FOP", "fOo ", "fp", "G", ""}, "!=", "foo", new boolean[]{true,
+         true, true, true, true, true, true, true, true});
+      check(new String[]{"foo", "FoO", "Foo", "foO", "FOO"}, "!=", "foo", new boolean[]{false, false, false, false,
+         false});
       // check combinations
-      check(new String[]
-      {"foo", "fo", "FOo", "fop", "FOP", "fooo"}, "!=", "foo", new boolean[]
-      {false, true, false, true, true, true});
+      check(new String[]{"foo", "fo", "FOo", "fop", "FOP", "fooo"}, "!=", "foo", new boolean[]{false, true, false,
+         true, true, true});
    }
 
    public void testLikeComparison() throws RepositoryException
    {
-      check(new String[]
-      {"foo", "Foo", "fOO", "FO "}, "like", "fo_", new boolean[]
-      {true, true, true, true});
-      check(new String[]
-      {"foo", "Foo", "fOO", "FOO"}, "like", "f_o", new boolean[]
-      {true, true, true, true});
-      check(new String[]
-      {"foo", "Foo", "fOO", " OO"}, "like", "_oo", new boolean[]
-      {true, true, true, true});
-      check(new String[]
-      {"foo", "Foa", "fOO", "FO", "foRm"}, "like", "fo%", new boolean[]
-      {true, true, true, true, true});
+      check(new String[]{"foo", "Foo", "fOO", "FO "}, "like", "fo_", new boolean[]{true, true, true, true});
+      check(new String[]{"foo", "Foo", "fOO", "FOO"}, "like", "f_o", new boolean[]{true, true, true, true});
+      check(new String[]{"foo", "Foo", "fOO", " OO"}, "like", "_oo", new boolean[]{true, true, true, true});
+      check(new String[]{"foo", "Foa", "fOO", "FO", "foRm"}, "like", "fo%", new boolean[]{true, true, true, true, true});
    }
 
    public void testRangeWithEmptyString() throws RepositoryException
    {
-      check(new String[]
-      {" ", "a", "A", "1", "3", "!", "@"}, ">", "", new boolean[]
-      {true, true, true, true, true, true, true});
-      check(new String[]
-      {"", "a", "A", "1", "3", "!", "@"}, ">=", "", new boolean[]
-      {true, true, true, true, true, true, true});
-      check(new String[]
-      {"", "a", "A", "1", "3", "!", "@"}, "<", "", new boolean[]
-      {false, false, false, false, false, false, false});
-      check(new String[]
-      {"", "a", "A", "1", "3", "!", "@"}, "<=", "", new boolean[]
-      {true, false, false, false, false, false, false});
+      check(new String[]{" ", "a", "A", "1", "3", "!", "@"}, ">", "", new boolean[]{true, true, true, true, true, true,
+         true});
+      check(new String[]{"", "a", "A", "1", "3", "!", "@"}, ">=", "", new boolean[]{true, true, true, true, true, true,
+         true});
+      check(new String[]{"", "a", "A", "1", "3", "!", "@"}, "<", "", new boolean[]{false, false, false, false, false,
+         false, false});
+      check(new String[]{"", "a", "A", "1", "3", "!", "@"}, "<=", "", new boolean[]{true, false, false, false, false,
+         false, false});
    }
 
    public void testInvalidQuery() throws RepositoryException
    {
       try
       {
-         executeXPathQuery("//*[fn:lower-case(@foo) = 123]", new Node[]
-         {});
+         executeXPathQuery("//*[fn:lower-case(@foo) = 123]", new Node[]{});
          fail("must throw InvalidQueryException");
       }
       catch (InvalidQueryException e)
@@ -167,8 +133,7 @@ public class UpperLowerCaseQueryTest
 
       try
       {
-         executeSQLQuery("select * from nt:base where LOWER(foo) = 123", new Node[]
-         {});
+         executeSQLQuery("select * from nt:base where LOWER(foo) = 123", new Node[]{});
          fail("must throw InvalidQueryException");
       }
       catch (InvalidQueryException e)
@@ -182,14 +147,13 @@ public class UpperLowerCaseQueryTest
       Node n = testRootNode.addNode("node");
       n.setProperty("foo", "Bar");
       testRootNode.save();
-      executeXPathQuery(testPath + "/*[jcr:like(fn:lower-case(@foo), 'BA%')]", new Node[]
-      {});
+      executeXPathQuery(testPath + "/*[jcr:like(fn:lower-case(@foo), 'BA%')]", new Node[]{});
    }
 
    // ----------------------------< internal >----------------------------------
 
    private void check(String[] values, String operation, String queryTerm, boolean[] matches)
-            throws RepositoryException
+      throws RepositoryException
    {
       if (values.length != matches.length)
       {
@@ -211,7 +175,7 @@ public class UpperLowerCaseQueryTest
       }
       testRootNode.save();
 
-      Node[] nodes = (Node[]) matchingNodes.toArray(new Node[matchingNodes.size()]);
+      Node[] nodes = (Node[])matchingNodes.toArray(new Node[matchingNodes.size()]);
       String sqlOperation = operation;
       if (operation.equals("!="))
       {
@@ -231,8 +195,8 @@ public class UpperLowerCaseQueryTest
       executeXPathQuery(xpath, nodes);
 
       String sql =
-               "select * from nt:base where jcr:path like '" + testRoot + "/%' and LOWER(" + propertyName1 + ") "
-                        + sqlOperation + " '" + queryTerm.toLowerCase() + "'";
+         "select * from nt:base where jcr:path like '" + testRoot + "/%' and LOWER(" + propertyName1 + ") "
+            + sqlOperation + " '" + queryTerm.toLowerCase() + "'";
       executeSQLQuery(sql, nodes);
 
       // run queries with upper-case
@@ -248,8 +212,8 @@ public class UpperLowerCaseQueryTest
       executeXPathQuery(xpath, nodes);
 
       sql =
-               "select * from nt:base where jcr:path like '" + testRoot + "/%' and UPPER(" + propertyName1 + ") "
-                        + sqlOperation + " '" + queryTerm.toUpperCase() + "'";
+         "select * from nt:base where jcr:path like '" + testRoot + "/%' and UPPER(" + propertyName1 + ") "
+            + sqlOperation + " '" + queryTerm.toUpperCase() + "'";
       executeSQLQuery(sql, nodes);
    }
 }

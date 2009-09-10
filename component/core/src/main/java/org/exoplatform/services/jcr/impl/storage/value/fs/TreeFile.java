@@ -18,11 +18,11 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs;
 
-import java.io.File;
-
-import org.exoplatform.services.log.Log;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import java.io.File;
 
 /**
  * Created by The eXo Platform SAS
@@ -32,8 +32,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TreeFile.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class TreeFile
-   extends File
+public class TreeFile extends File
 {
 
    /** Files log */

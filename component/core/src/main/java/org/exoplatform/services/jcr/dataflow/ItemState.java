@@ -18,16 +18,15 @@
  */
 package org.exoplatform.services.jcr.dataflow;
 
+import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.QPath;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-
-import org.exoplatform.services.log.Log;
-
-import org.exoplatform.services.jcr.datamodel.ItemData;
-import org.exoplatform.services.jcr.datamodel.QPath;
-import org.exoplatform.services.log.ExoLogger;
 
 /**
  * Created by The eXo Platform SAS.<br/> item state to save
@@ -35,8 +34,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @author Gennady Azarenkov
  * @version $Id: ItemState.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class ItemState
-   implements Externalizable
+public class ItemState implements Externalizable
 {
 
    private static final long serialVersionUID = 7967457831325761318L;
@@ -112,7 +110,7 @@ public class ItemState
    }
 
    public ItemState(ItemData data, int state, boolean eventFire, QPath ancestorToSave, boolean isInternalCreated,
-            boolean isPersisted)
+      boolean isPersisted)
    {
       this.data = data;
       this.state = state;
@@ -217,7 +215,7 @@ public class ItemState
 
       if (obj instanceof ItemState)
       {
-         ItemState other = (ItemState) obj;
+         ItemState other = (ItemState)obj;
          return other.getData().equals(data) && other.getState() == state;
       }
 
@@ -230,8 +228,8 @@ public class ItemState
          return true;
 
       return this.getData().getIdentifier().hashCode() == item.getData().getIdentifier().hashCode()
-               && this.getData().getQPath().hashCode() == item.getData().getQPath().hashCode()
-               && this.getState() == item.getState();
+         && this.getData().getQPath().hashCode() == item.getData().getQPath().hashCode()
+         && this.getState() == item.getState();
    }
 
    /**
@@ -246,7 +244,7 @@ public class ItemState
    public boolean isSame(String dstIdentifier, QPath dstPath, int dstState)
    {
       return this.getData().getIdentifier().hashCode() == dstIdentifier.hashCode()
-               && this.getData().getQPath().hashCode() == dstPath.hashCode() && this.getState() == dstState;
+         && this.getData().getQPath().hashCode() == dstPath.hashCode() && this.getState() == dstState;
    }
 
    /**
@@ -378,7 +376,7 @@ public class ItemState
       state = in.readInt();
       isPersisted = in.readBoolean();
       eventFire = in.readBoolean();
-      data = (ItemData) in.readObject();
+      data = (ItemData)in.readObject();
    }
 
 }

@@ -31,8 +31,7 @@ import org.exoplatform.services.jcr.datamodel.QPath;
  * @version $Id: SessionEventMatcher.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class SessionEventMatcher
-   implements ActionMatcher
+public class SessionEventMatcher implements ActionMatcher
 {
 
    /**
@@ -74,7 +73,7 @@ public class SessionEventMatcher
    private final NodeTypeDataManager typeDataManager;
 
    public SessionEventMatcher(int eventTypes, QPath[] paths, boolean isDeep, String[] workspaces,
-            InternalQName[] nodeTypeNames, NodeTypeDataManager typeDataManager)
+      InternalQName[] nodeTypeNames, NodeTypeDataManager typeDataManager)
    {
       super();
       this.eventTypes = eventTypes;
@@ -114,25 +113,25 @@ public class SessionEventMatcher
    public final boolean match(Condition conditions)
    {
 
-      if (conditions.get(EVENTTYPE_KEY) == null || !isEventTypeMatch((Integer) conditions.get(EVENTTYPE_KEY)))
+      if (conditions.get(EVENTTYPE_KEY) == null || !isEventTypeMatch((Integer)conditions.get(EVENTTYPE_KEY)))
       {
          return false;
       }
 
-      if (!isPathMatch((QPath) conditions.get(PATH_KEY)))
+      if (!isPathMatch((QPath)conditions.get(PATH_KEY)))
       {
          return false;
       }
 
       if (nodeTypeNames != null)
       {
-         if (!isNodeTypesMatch((InternalQName[]) conditions.get(NODETYPES_KEY)))
+         if (!isNodeTypesMatch((InternalQName[])conditions.get(NODETYPES_KEY)))
          {
             return false;
          }
       }
 
-      if (!isWorkspaceMatch((String) conditions.get(WORKSPACE_KEY)))
+      if (!isWorkspaceMatch((String)conditions.get(WORKSPACE_KEY)))
       {
          return false;
       }

@@ -18,15 +18,15 @@
  */
 package org.exoplatform.services.jcr.impl.datamodel;
 
+import org.exoplatform.services.jcr.JcrImplBaseTest;
+import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
+
 import java.util.Calendar;
 
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.UnsupportedRepositoryOperationException;
-
-import org.exoplatform.services.jcr.JcrImplBaseTest;
-import org.exoplatform.services.jcr.impl.core.NodeImpl;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
 
 /**
  * Created by The eXo Platform SAS
@@ -36,8 +36,7 @@ import org.exoplatform.services.jcr.impl.core.SessionImpl;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: ItemQPathTest.java 14508 2008-05-20 10:07:45Z ksm $
  */
-public class ItemQPathTest
-   extends JcrImplBaseTest
+public class ItemQPathTest extends JcrImplBaseTest
 {
 
    protected final String TEST_ROOT = "qpath_test";
@@ -49,7 +48,7 @@ public class ItemQPathTest
    {
       super.setUp();
 
-      testRoot = (NodeImpl) session.getRootNode().addNode(TEST_ROOT);
+      testRoot = (NodeImpl)session.getRootNode().addNode(TEST_ROOT);
       session.save();
    }
 
@@ -79,14 +78,14 @@ public class ItemQPathTest
       session.save();
 
       SessionImpl user =
-               (SessionImpl) repository.login(this.credentials /* session.getCredentials() */, session.getWorkspace()
-                        .getName());
+         (SessionImpl)repository.login(this.credentials /* session.getCredentials() */, session.getWorkspace()
+            .getName());
 
       try
       {
-         NodeImpl n1 = (NodeImpl) user.getRootNode().getNode(TEST_ROOT).getNode("node");
+         NodeImpl n1 = (NodeImpl)user.getRootNode().getNode(TEST_ROOT).getNode("node");
          assertEquals("Path is invalid", "/" + TEST_ROOT + "/node", n1.getPath());
-         NodeImpl n2 = (NodeImpl) user.getRootNode().getNode(TEST_ROOT).getNode("node[2]");
+         NodeImpl n2 = (NodeImpl)user.getRootNode().getNode(TEST_ROOT).getNode("node[2]");
          assertEquals("Path is invalid", "/" + TEST_ROOT + "/node[2]", n2.getPath());
       }
       catch (PathNotFoundException e)
@@ -113,8 +112,8 @@ public class ItemQPathTest
       session.save();
 
       SessionImpl user =
-               (SessionImpl) repository.login(this.credentials /* session.getCredentials() */, session.getWorkspace()
-                        .getName());
+         (SessionImpl)repository.login(this.credentials /* session.getCredentials() */, session.getWorkspace()
+            .getName());
 
       try
       {
@@ -155,8 +154,8 @@ public class ItemQPathTest
       session.save();
 
       SessionImpl user =
-               (SessionImpl) repository.login(this.credentials /* session.getCredentials() */, session.getWorkspace()
-                        .getName());
+         (SessionImpl)repository.login(this.credentials /* session.getCredentials() */, session.getWorkspace()
+            .getName());
 
       try
       {

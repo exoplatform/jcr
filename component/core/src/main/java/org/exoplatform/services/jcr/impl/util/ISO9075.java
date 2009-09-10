@@ -18,11 +18,11 @@
  */
 package org.exoplatform.services.jcr.impl.util;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.impl.xml.XMLChar;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Implements the encode and decode routines as specified for XML name to SQL identifier conversion
@@ -43,8 +43,7 @@ public class ISO9075
    private static final Pattern ENCODE_PATTERN = Pattern.compile("_x\\p{XDigit}{4}_");
 
    /** Padding characters */
-   private static final char[] PADDING = new char[]
-   {'0', '0', '0'};
+   private static final char[] PADDING = new char[]{'0', '0', '0'};
 
    /** All the possible hex digits */
    private static final String HEX_DIGITS = "0123456789abcdefABCDEF";
@@ -175,7 +174,7 @@ public class ISO9075
       Matcher m = ENCODE_PATTERN.matcher(name);
       while (m.find())
       {
-         m.appendReplacement(decoded, Character.toString((char) Integer.parseInt(m.group().substring(2, 6), 16)));
+         m.appendReplacement(decoded, Character.toString((char)Integer.parseInt(m.group().substring(2, 6), 16)));
       }
       m.appendTail(decoded);
       return decoded.toString();
@@ -218,9 +217,9 @@ public class ISO9075
       if (name.charAt(location) == '_' && name.length() >= location + 6)
       {
          return name.charAt(location + 1) == 'x' && HEX_DIGITS.indexOf(name.charAt(location + 2)) != -1
-                  && HEX_DIGITS.indexOf(name.charAt(location + 3)) != -1
-                  && HEX_DIGITS.indexOf(name.charAt(location + 4)) != -1
-                  && HEX_DIGITS.indexOf(name.charAt(location + 5)) != -1;
+            && HEX_DIGITS.indexOf(name.charAt(location + 3)) != -1
+            && HEX_DIGITS.indexOf(name.charAt(location + 4)) != -1
+            && HEX_DIGITS.indexOf(name.charAt(location + 5)) != -1;
       }
       else
       {

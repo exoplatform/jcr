@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.core.value;
 
+import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
@@ -27,16 +29,13 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 import javax.jcr.ValueFormatException;
 
-import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
-
 /**
  * A <code>LongValue</code> provides an implementation of the <code>Value</code> interface
  * representing a long value.
  * 
  * @author Gennady Azarenkov
  */
-public class LongValue
-   extends BaseValue
+public class LongValue extends BaseValue
 {
 
    public static final int TYPE = PropertyType.LONG;

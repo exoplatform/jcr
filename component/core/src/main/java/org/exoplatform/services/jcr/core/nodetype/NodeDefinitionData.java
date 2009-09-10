@@ -18,9 +18,9 @@
  */
 package org.exoplatform.services.jcr.core.nodetype;
 
-import java.util.Arrays;
-
 import org.exoplatform.services.jcr.datamodel.InternalQName;
+
+import java.util.Arrays;
 
 /**
  * Created by The eXo Platform SAS. <br/>Date: 25.11.2008
@@ -29,8 +29,7 @@ import org.exoplatform.services.jcr.datamodel.InternalQName;
  *         Nedonosko</a>
  * @version $Id: NodeDefinitionData.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class NodeDefinitionData
-   extends ItemDefinitionData
+public class NodeDefinitionData extends ItemDefinitionData
 {
 
    protected final InternalQName[] requiredPrimaryTypes;
@@ -40,8 +39,8 @@ public class NodeDefinitionData
    protected final boolean allowsSameNameSiblings;
 
    public NodeDefinitionData(InternalQName name, InternalQName declaringNodeType, boolean autoCreated,
-            boolean mandatory, int onParentVersion, boolean protectedItem, InternalQName[] requiredPrimaryTypes,
-            InternalQName defaultPrimaryType, boolean allowsSameNameSiblings)
+      boolean mandatory, int onParentVersion, boolean protectedItem, InternalQName[] requiredPrimaryTypes,
+      InternalQName defaultPrimaryType, boolean allowsSameNameSiblings)
    {
       super(name, declaringNodeType, autoCreated, mandatory, onParentVersion, protectedItem);
       this.requiredPrimaryTypes = requiredPrimaryTypes;
@@ -72,8 +71,8 @@ public class NodeDefinitionData
       if ((obj == null) || (obj.getClass() != this.getClass()))
          return false;
       // object must be Test at this point
-      NodeDefinitionData test = (NodeDefinitionData) obj;
+      NodeDefinitionData test = (NodeDefinitionData)obj;
       return defaultPrimaryType == test.defaultPrimaryType && allowsSameNameSiblings == test.allowsSameNameSiblings
-               && super.equals(test) && Arrays.equals(this.requiredPrimaryTypes, test.requiredPrimaryTypes);
+         && super.equals(test) && Arrays.equals(this.requiredPrimaryTypes, test.requiredPrimaryTypes);
    }
 }

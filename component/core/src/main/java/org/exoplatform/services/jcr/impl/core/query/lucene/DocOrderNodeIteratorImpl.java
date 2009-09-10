@@ -41,8 +41,7 @@ import org.exoplatform.services.log.ExoLogger;
 /**
  * Implements a NodeIterator that returns the nodes in document order.
  */
-class DocOrderNodeIteratorImpl
-   implements TwoWayRangeIterator, ScoreNodeIterator
+class DocOrderNodeIteratorImpl implements TwoWayRangeIterator, ScoreNodeIterator
 {
 
    /** Logger instance for this class */
@@ -71,7 +70,7 @@ class DocOrderNodeIteratorImpl
     *          the ids of the matching nodes with their score value.
     */
    DocOrderNodeIteratorImpl(final SessionDataManager itemMgr, AccessManager accessManager, String userId,
-            List<ScoreNode> scoreNodes)
+      List<ScoreNode> scoreNodes)
    {
       this.itemMgr = itemMgr;
       this.accessManager = accessManager;
@@ -229,7 +228,7 @@ class DocOrderNodeIteratorImpl
                   NodeData node = lcache.get(id);
                   if (node == null)
                   {
-                     node = (NodeData) itemMgr.getItemData(id);
+                     node = (NodeData)itemMgr.getItemData(id);
                      if (node != null)
                         lcache.put(id, node);
 
@@ -353,8 +352,7 @@ class DocOrderNodeIteratorImpl
    /**
     * Indicates that sorting failed.
     */
-   private static final class SortFailedException
-      extends RuntimeException
+   private static final class SortFailedException extends RuntimeException
    {
    }
 }

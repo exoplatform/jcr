@@ -18,17 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
-import javax.jcr.NamespaceRegistry;
-import javax.jcr.RepositoryException;
-import javax.jcr.nodetype.NodeTypeManager;
-import javax.jcr.query.QueryManager;
-import javax.naming.NameNotFoundException;
-
-import org.exoplatform.services.log.Log;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.jmx.MX4JComponentAdapterFactory;
 import org.exoplatform.management.annotations.Managed;
@@ -70,6 +59,17 @@ import org.exoplatform.services.jcr.impl.util.io.WorkspaceFileCleanerHolder;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
+import javax.jcr.NamespaceRegistry;
+import javax.jcr.RepositoryException;
+import javax.jcr.nodetype.NodeTypeManager;
+import javax.jcr.query.QueryManager;
+import javax.naming.NameNotFoundException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -78,11 +78,9 @@ import org.exoplatform.services.log.ExoLogger;
  * @version $Id: RepositoryContainer.java 13986 2008-05-08 10:48:43Z pnedonosko $
  */
 @Managed
-@NameTemplate(
-{@Property(key = "container", value = "repository"), @Property(key = "name", value = "{Name}")})
+@NameTemplate({@Property(key = "container", value = "repository"), @Property(key = "name", value = "{Name}")})
 @NamingContext(@Property(key = "repository", value = "{Name}"))
-public class RepositoryContainer
-   extends ExoContainer
+public class RepositoryContainer extends ExoContainer
 {
 
    /**
@@ -113,7 +111,7 @@ public class RepositoryContainer
     *           configuration error
     */
    public RepositoryContainer(ExoContainer parent, RepositoryEntry config) throws RepositoryException,
-            RepositoryConfigurationException
+      RepositoryConfigurationException
    {
 
       super(new MX4JComponentAdapterFactory(), parent);
@@ -129,7 +127,7 @@ public class RepositoryContainer
 
    public LocationFactory getLocationFactory()
    {
-      return (LocationFactory) getComponentInstanceOfType(LocationFactory.class);
+      return (LocationFactory)getComponentInstanceOfType(LocationFactory.class);
    }
 
    /**
@@ -144,12 +142,12 @@ public class RepositoryContainer
 
    public NamespaceRegistry getNamespaceRegistry()
    {
-      return (NamespaceRegistry) getComponentInstanceOfType(NamespaceRegistry.class);
+      return (NamespaceRegistry)getComponentInstanceOfType(NamespaceRegistry.class);
    }
 
    public ExtendedNodeTypeManager getNodeTypeManager()
    {
-      return (ExtendedNodeTypeManager) getComponentInstanceOfType(NodeTypeManager.class);
+      return (ExtendedNodeTypeManager)getComponentInstanceOfType(NodeTypeManager.class);
    }
 
    /**
@@ -162,7 +160,7 @@ public class RepositoryContainer
    public WorkspaceContainer getWorkspaceContainer(String workspaceName)
    {
       Object comp = getComponentInstance(workspaceName);
-      return comp != null && comp instanceof WorkspaceContainer ? (WorkspaceContainer) comp : null;
+      return comp != null && comp instanceof WorkspaceContainer ? (WorkspaceContainer)comp : null;
    }
 
    /**
@@ -193,7 +191,7 @@ public class RepositoryContainer
     *           configuration error
     */
    public void registerWorkspace(final WorkspaceEntry wsConfig) throws RepositoryException,
-            RepositoryConfigurationException
+      RepositoryConfigurationException
    {
 
       try
@@ -219,14 +217,14 @@ public class RepositoryContainer
             workspaceContainer.registerComponentImplementation(containerType);
             if (isSystem)
             {
-               registerComponentInstance(new SystemDataContainerHolder((WorkspaceDataContainer) workspaceContainer
-                        .getComponentInstanceOfType(WorkspaceDataContainer.class)));
+               registerComponentInstance(new SystemDataContainerHolder((WorkspaceDataContainer)workspaceContainer
+                  .getComponentInstanceOfType(WorkspaceDataContainer.class)));
             }
          }
          catch (ClassNotFoundException e)
          {
             throw new RepositoryConfigurationException("Class not found for workspace data container "
-                     + wsConfig.getUniqueName() + " : " + e);
+               + wsConfig.getUniqueName() + " : " + e);
          }
 
          // cache type
@@ -243,7 +241,7 @@ public class RepositoryContainer
          catch (ClassNotFoundException e)
          {
             log.warn("Workspace cache class not found " + wsConfig.getCache().getType()
-                     + ", will use default. Error : " + e);
+               + ", will use default. Error : " + e);
             workspaceContainer.registerComponentImplementation(LinkedWorkspaceStorageCacheImpl.class);
          }
 
@@ -262,8 +260,8 @@ public class RepositoryContainer
             catch (ClassNotFoundException e)
             {
                throw new RepositoryConfigurationException("Class not found for workspace lock persister "
-                        + wsConfig.getLockManager().getPersister().getType() + ", container "
-                        + wsConfig.getUniqueName() + " : " + e);
+                  + wsConfig.getLockManager().getPersister().getType() + ", container " + wsConfig.getUniqueName()
+                  + " : " + e);
             }
          }
          workspaceContainer.registerComponentImplementation(LockManagerImpl.class);
@@ -292,7 +290,7 @@ public class RepositoryContainer
             catch (ClassNotFoundException e)
             {
                throw new RepositoryConfigurationException("Class not found for workspace access manager "
-                        + wsConfig.getAccessManager().getType() + ", container " + wsConfig.getUniqueName() + " : " + e);
+                  + wsConfig.getAccessManager().getType() + ", container " + wsConfig.getUniqueName() + " : " + e);
             }
          }
 
@@ -308,7 +306,7 @@ public class RepositoryContainer
             catch (ClassNotFoundException e)
             {
                throw new RepositoryConfigurationException("Class not found for workspace initializer "
-                        + wsConfig.getInitializer().getType() + ", container " + wsConfig.getUniqueName() + " : " + e);
+                  + wsConfig.getInitializer().getType() + ", container " + wsConfig.getUniqueName() + " : " + e);
             }
          }
          else
@@ -321,8 +319,8 @@ public class RepositoryContainer
          workspaceContainer.registerComponentImplementation(WorkspaceFileCleanerHolder.class);
 
          LocalWorkspaceDataManagerStub wsDataManager =
-                  (LocalWorkspaceDataManagerStub) workspaceContainer
-                           .getComponentInstanceOfType(LocalWorkspaceDataManagerStub.class);
+            (LocalWorkspaceDataManagerStub)workspaceContainer
+               .getComponentInstanceOfType(LocalWorkspaceDataManagerStub.class);
 
          if (isSystem)
          {
@@ -419,17 +417,16 @@ public class RepositoryContainer
    {
       List<WorkspaceEntry> wsEntries = config.getWorkspaceEntries();
 
-      NodeTypeDataManager typeManager =
-               (NodeTypeDataManager) this.getComponentInstanceOfType(NodeTypeDataManager.class);
+      NodeTypeDataManager typeManager = (NodeTypeDataManager)this.getComponentInstanceOfType(NodeTypeDataManager.class);
       NamespaceRegistryImpl namespaceRegistry =
-               (NamespaceRegistryImpl) this.getComponentInstanceOfType(NamespaceRegistry.class);
+         (NamespaceRegistryImpl)this.getComponentInstanceOfType(NamespaceRegistry.class);
 
       for (WorkspaceEntry ws : wsEntries)
       {
          initWorkspace(ws);
          WorkspaceContainer workspaceContainer = getWorkspaceContainer(ws.getName());
          SearchManager searchManager =
-                  (SearchManager) workspaceContainer.getComponentInstanceOfType(SearchManager.class);
+            (SearchManager)workspaceContainer.getComponentInstanceOfType(SearchManager.class);
          if (searchManager != null)
          {
             typeManager.addQueryHandler(searchManager.getHandler());
@@ -442,7 +439,7 @@ public class RepositoryContainer
       }
 
       SystemSearchManagerHolder searchManager =
-               (SystemSearchManagerHolder) this.getComponentInstanceOfType(SystemSearchManagerHolder.class);
+         (SystemSearchManagerHolder)this.getComponentInstanceOfType(SystemSearchManagerHolder.class);
       if (searchManager != null)
       {
          typeManager.addQueryHandler(searchManager.get().getHandler());
@@ -471,7 +468,7 @@ public class RepositoryContainer
 
       // Init Root and jcr:system if workspace is system workspace
       WorkspaceInitializer wsInitializer =
-               (WorkspaceInitializer) workspaceContainer.getComponentInstanceOfType(WorkspaceInitializer.class);
+         (WorkspaceInitializer)workspaceContainer.getComponentInstanceOfType(WorkspaceInitializer.class);
       wsInitializer.initWorkspace();
    }
 
@@ -512,8 +509,8 @@ public class RepositoryContainer
       if (systemWsEntry != null && systemWsEntry.getQueryHandler() != null)
       {
          SystemSearchManager systemSearchManager =
-                  (SystemSearchManager) getWorkspaceContainer(systemWsname).getComponentInstanceOfType(
-                           SystemSearchManager.class);
+            (SystemSearchManager)getWorkspaceContainer(systemWsname).getComponentInstanceOfType(
+               SystemSearchManager.class);
          registerComponentInstance(new SystemSearchManagerHolder(systemSearchManager));
       }
 
@@ -552,10 +549,10 @@ public class RepositoryContainer
     */
    private void load() throws RepositoryException
    {
-      NamespaceRegistryImpl nsRegistry = (NamespaceRegistryImpl) getNamespaceRegistry();
+      NamespaceRegistryImpl nsRegistry = (NamespaceRegistryImpl)getNamespaceRegistry();
 
       NodeTypeDataPersister nodeTypeDataPersister =
-               (NodeTypeDataPersister) getComponentInstanceOfType(NodeTypeDataPersister.class);
+         (NodeTypeDataPersister)getComponentInstanceOfType(NodeTypeDataPersister.class);
 
       // Load from persistence
       nsRegistry.loadFromStorage();
@@ -566,8 +563,7 @@ public class RepositoryContainer
     * Workspaces order comparator.
     * 
     */
-   private static class WorkspaceOrderComparator
-      implements Comparator<WorkspaceEntry>
+   private static class WorkspaceOrderComparator implements Comparator<WorkspaceEntry>
    {
       private final String sysWs;
 

@@ -18,21 +18,7 @@
  */
 package org.exoplatform.services.jcr.util;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
-import javax.jcr.RepositoryException;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.sql.DataSource;
-
 import org.apache.commons.dbcp.BasicDataSourceFactory;
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.CacheEntry;
@@ -48,6 +34,19 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+import javax.jcr.RepositoryException;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
 
 /**
  * Created by The eXo Platform SAS
@@ -67,12 +66,12 @@ public class ConfigurationHelper
    }
 
    public void createWorkspace(WorkspaceEntry workspaceEntry, ExoContainer container)
-            throws RepositoryConfigurationException, RepositoryException
+      throws RepositoryConfigurationException, RepositoryException
    {
-      RepositoryService service = (RepositoryService) container.getComponentInstanceOfType(RepositoryService.class);
+      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
       RepositoryImpl defRep;
 
-      defRep = (RepositoryImpl) service.getDefaultRepository();
+      defRep = (RepositoryImpl)service.getDefaultRepository();
       defRep.configWorkspace(workspaceEntry);
       defRep.createWorkspace(workspaceEntry.getName());
 
@@ -104,7 +103,7 @@ public class ConfigurationHelper
    }
 
    public WorkspaceEntry getNewWs(String wsName, boolean isMultiDb, String dsName, String vsPath, ContainerEntry entry)
-            throws Exception
+      throws Exception
    {
 
       List params = new ArrayList();
@@ -123,7 +122,7 @@ public class ConfigurationHelper
       if (entry.getParameterValue(JDBCWorkspaceDataContainer.DB_DIALECT) != null)
       {
          params.add(new SimpleParameterEntry(JDBCWorkspaceDataContainer.DB_DIALECT, entry
-                  .getParameterValue(JDBCWorkspaceDataContainer.DB_DIALECT)));
+            .getParameterValue(JDBCWorkspaceDataContainer.DB_DIALECT)));
       }
 
       String oldSwap = entry.getParameterValue("swap-directory");
@@ -132,8 +131,8 @@ public class ConfigurationHelper
       params.add(new SimpleParameterEntry("swap-directory", newSwap));
 
       ContainerEntry containerEntry =
-               new ContainerEntry("org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer",
-                        (ArrayList) params);
+         new ContainerEntry("org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer",
+            (ArrayList)params);
       containerEntry.setParameters(params);
 
       if (vsPath != null)
@@ -145,8 +144,7 @@ public class ConfigurationHelper
          vsparams.add(filterEntry);
 
          ValueStorageEntry valueStorageEntry =
-                  new ValueStorageEntry("org.exoplatform.services.jcr.impl.storage.value.fs.SimpleFileValueStorage",
-                           vsparams);
+            new ValueStorageEntry("org.exoplatform.services.jcr.impl.storage.value.fs.SimpleFileValueStorage", vsparams);
          ArrayList<SimpleParameterEntry> spe = new ArrayList<SimpleParameterEntry>();
          spe.add(new SimpleParameterEntry("path", vsPath));
          valueStorageEntry.setId(IdGenerator.generate());
@@ -166,10 +164,10 @@ public class ConfigurationHelper
       ArrayList qParams = new ArrayList();
       qParams.add(new SimpleParameterEntry("indexDir", "../temp/index/" + IdGenerator.generate()));
       QueryHandlerEntry qEntry =
-               new QueryHandlerEntry("org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex", qParams);
+         new QueryHandlerEntry("org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex", qParams);
 
       WorkspaceEntry workspaceEntry =
-               new WorkspaceEntry(wsName != null ? wsName : IdGenerator.generate(), "nt:unstructured");
+         new WorkspaceEntry(wsName != null ? wsName : IdGenerator.generate(), "nt:unstructured");
       workspaceEntry.setContainer(containerEntry);
 
       ArrayList cacheParams = new ArrayList();

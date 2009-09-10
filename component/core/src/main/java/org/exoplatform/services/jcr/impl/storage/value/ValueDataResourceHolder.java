@@ -18,11 +18,11 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value;
 
+import org.exoplatform.services.jcr.impl.storage.value.fs.operations.ValueLockSupport;
+
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.exoplatform.services.jcr.impl.storage.value.fs.operations.ValueLockSupport;
 
 /**
  * Created by The eXo Platform SAS.
@@ -150,7 +150,7 @@ public class ValueDataResourceHolder
     *           if lock error occurs
     */
    public boolean aquire(final Object resource, final ValueLockSupport lockHolder) throws InterruptedException,
-            IOException
+      IOException
    {
       final Thread myThread = Thread.currentThread();
       final VDResource res = resources.get(resource);

@@ -18,16 +18,16 @@
  */
 package org.exoplatform.services.jcr.impl.access;
 
-import java.security.AccessControlException;
-
-import javax.jcr.Node;
-import javax.jcr.Session;
-
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.access.PermissionType;
 import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
+
+import java.security.AccessControlException;
+
+import javax.jcr.Node;
+import javax.jcr.Session;
 
 /**
  * Created by The eXo Platform SAS
@@ -37,8 +37,7 @@ import org.exoplatform.services.jcr.impl.core.NodeImpl;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestUserAccess.java 14464 2008-05-19 11:05:20Z pnedonosko $
  */
-public class TestUserAccess
-   extends JcrImplBaseTest
+public class TestUserAccess extends JcrImplBaseTest
 {
 
    private NodeImpl testRoot;
@@ -48,7 +47,7 @@ public class TestUserAccess
    {
       super.setUp();
 
-      testRoot = (NodeImpl) root.addNode("testUserAccess");
+      testRoot = (NodeImpl)root.addNode("testUserAccess");
       root.save();
    }
 
@@ -69,7 +68,7 @@ public class TestUserAccess
    public void testUser() throws Exception
    {
       // Mary only node, Mary membership is '*:/exo', seems it's user
-      NodeImpl maryNode = (NodeImpl) testRoot.addNode("mary");
+      NodeImpl maryNode = (NodeImpl)testRoot.addNode("mary");
       maryNode.addMixin("exo:privilegeable");
       if (!session.getUserID().equals("mary"))
       {
@@ -82,8 +81,8 @@ public class TestUserAccess
       try
       {
          Session marySession =
-                  repository.login(new CredentialsImpl("mary", "exo".toCharArray()), session.getWorkspace().getName());
-         NodeImpl myNode = (NodeImpl) marySession.getItem(maryNode.getPath());
+            repository.login(new CredentialsImpl("mary", "exo".toCharArray()), session.getWorkspace().getName());
+         NodeImpl myNode = (NodeImpl)marySession.getItem(maryNode.getPath());
          Node test = myNode.addNode("test");
          test.setProperty("property", "any data");
          myNode.save();
@@ -105,7 +104,7 @@ public class TestUserAccess
    public void testRoot() throws Exception
    {
       // root's only node, root membership is '*:/admin'
-      NodeImpl rootNode = (NodeImpl) testRoot.addNode("root");
+      NodeImpl rootNode = (NodeImpl)testRoot.addNode("root");
       rootNode.addMixin("exo:privilegeable");
       if (!session.getUserID().equals("root"))
       {
@@ -118,8 +117,8 @@ public class TestUserAccess
       try
       {
          Session rootSession =
-                  repository.login(new CredentialsImpl("root", "exo".toCharArray()), session.getWorkspace().getName());
-         NodeImpl myNode = (NodeImpl) rootSession.getItem(rootNode.getPath());
+            repository.login(new CredentialsImpl("root", "exo".toCharArray()), session.getWorkspace().getName());
+         NodeImpl myNode = (NodeImpl)rootSession.getItem(rootNode.getPath());
          Node test = myNode.addNode("test");
          test.setProperty("property", "any data");
          myNode.save();
@@ -141,7 +140,7 @@ public class TestUserAccess
    public void testRootAndAnyRead() throws Exception
    {
       // root has all rights, any to read only
-      NodeImpl rootNode = (NodeImpl) testRoot.addNode("root");
+      NodeImpl rootNode = (NodeImpl)testRoot.addNode("root");
       rootNode.addMixin("exo:privilegeable");
       if (!session.getUserID().equals("root"))
          rootNode.setPermission("root", PermissionType.ALL);
@@ -149,8 +148,7 @@ public class TestUserAccess
       // set any to read only
       rootNode.setPermission(session.getUserID(), PermissionType.ALL); // temp all for current user
       rootNode.removePermission(SystemIdentity.ANY);
-      rootNode.setPermission(SystemIdentity.ANY, new String[]
-      {PermissionType.READ});
+      rootNode.setPermission(SystemIdentity.ANY, new String[]{PermissionType.READ});
       rootNode.removePermission(session.getUserID()); // clean temp rights
 
       testRoot.save();
@@ -158,8 +156,8 @@ public class TestUserAccess
       try
       {
          Session rootSession =
-                  repository.login(new CredentialsImpl("root", "exo".toCharArray()), session.getWorkspace().getName());
-         NodeImpl myNode = (NodeImpl) rootSession.getItem(rootNode.getPath());
+            repository.login(new CredentialsImpl("root", "exo".toCharArray()), session.getWorkspace().getName());
+         NodeImpl myNode = (NodeImpl)rootSession.getItem(rootNode.getPath());
          Node test = myNode.addNode("test");
          test.setProperty("property", "any data");
          myNode.save();

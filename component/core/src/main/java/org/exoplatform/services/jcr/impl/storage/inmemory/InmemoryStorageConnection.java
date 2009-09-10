@@ -18,6 +18,17 @@
  */
 package org.exoplatform.services.jcr.impl.storage.inmemory;
 
+import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.PropertyData;
+import org.exoplatform.services.jcr.datamodel.QPath;
+import org.exoplatform.services.jcr.datamodel.QPathEntry;
+import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.core.JCRPath;
+import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -29,18 +40,6 @@ import javax.jcr.ItemExistsException;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 
-import org.exoplatform.services.log.Log;
-
-import org.exoplatform.services.jcr.datamodel.ItemData;
-import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.datamodel.PropertyData;
-import org.exoplatform.services.jcr.datamodel.QPath;
-import org.exoplatform.services.jcr.datamodel.QPathEntry;
-import org.exoplatform.services.jcr.datamodel.ValueData;
-import org.exoplatform.services.jcr.impl.core.JCRPath;
-import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
-import org.exoplatform.services.log.ExoLogger;
-
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -48,8 +47,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @version $Id: InmemoryStorageConnection.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class InmemoryStorageConnection
-   implements WorkspaceStorageConnection
+public class InmemoryStorageConnection implements WorkspaceStorageConnection
 {
 
    private static Log log = ExoLogger.getLogger("jcr.InmemoryStorageConnection");
@@ -74,7 +72,7 @@ public class InmemoryStorageConnection
       log.debug("InmemoryContainer finding " + qPath.getAsString());
       Object o = items.get(qPath.getAsString());
       log.debug("InmemoryContainer FOUND " + qPath.getAsString() + " " + o);
-      return (ItemData) o;
+      return (ItemData)o;
    }
 
    public ItemData getItemData(String identifier) throws RepositoryException, IllegalStateException
@@ -82,7 +80,7 @@ public class InmemoryStorageConnection
       Iterator itemsIterator = items.values().iterator();
       while (itemsIterator.hasNext())
       {
-         ItemData data = (ItemData) itemsIterator.next();
+         ItemData data = (ItemData)itemsIterator.next();
          if (data.getIdentifier().equals(identifier))
             return data;
       }
@@ -120,15 +118,15 @@ public class InmemoryStorageConnection
       Iterator it = items.values().iterator();
       while (it.hasNext())
       {
-         ItemData itemData = (ItemData) it.next();
-         ValueData identifierVal = ((PropertyData) itemData).getValues().get(0);
+         ItemData itemData = (ItemData)it.next();
+         ValueData identifierVal = ((PropertyData)itemData).getValues().get(0);
          try
          {
-            if ((itemData instanceof PropertyData) && ((PropertyData) itemData).getType() == PropertyType.REFERENCE
-                     && new String(identifierVal.getAsByteArray()).equals(identifier))
+            if ((itemData instanceof PropertyData) && ((PropertyData)itemData).getType() == PropertyType.REFERENCE
+               && new String(identifierVal.getAsByteArray()).equals(identifier))
             {
 
-               refs.add((PropertyData) itemData);
+               refs.add((PropertyData)itemData);
             }
          }
          catch (IOException e)
@@ -140,62 +138,62 @@ public class InmemoryStorageConnection
    }
 
    public void add(NodeData item) throws RepositoryException, UnsupportedOperationException, InvalidItemStateException,
-            IllegalStateException
+      IllegalStateException
    {
 
       if (items.get(item.getQPath().getAsString()) != null)
          throw new ItemExistsException("WorkspaceContainerImpl.add(Item) item '" + item.getQPath().getAsString()
-                  + "' already exists!");
+            + "' already exists!");
 
       items.put(item.getQPath().getAsString(), item);
       log.debug("InmemoryContainer added node " + item.getQPath().getAsString());
       Iterator props = getChildProperties(item).iterator();
       while (props.hasNext())
       {
-         add((PropertyData) props.next());
+         add((PropertyData)props.next());
       }
       Iterator nodes = getChildNodes(item).iterator();
       while (nodes.hasNext())
       {
-         add((NodeData) nodes.next());
+         add((NodeData)nodes.next());
       }
    }
 
    public void add(PropertyData prop) throws RepositoryException, UnsupportedOperationException,
-            InvalidItemStateException, IllegalStateException
+      InvalidItemStateException, IllegalStateException
    {
       items.put(prop.getQPath().getAsString(), prop);
       log.debug("InmemoryContainer added property " + prop.getQPath().getAsString());
    }
 
    public void update(NodeData data) throws RepositoryException, UnsupportedOperationException,
-            InvalidItemStateException, IllegalStateException
+      InvalidItemStateException, IllegalStateException
    {
       throw new UnsupportedOperationException("not implemented");
    }
 
    public void reindex(NodeData oldData, NodeData data) throws RepositoryException, UnsupportedOperationException,
-            InvalidItemStateException, IllegalStateException
+      InvalidItemStateException, IllegalStateException
    {
       throw new UnsupportedOperationException("not implemented");
    }
 
    public void update(PropertyData item) throws RepositoryException, UnsupportedOperationException,
-            InvalidItemStateException, IllegalStateException
+      InvalidItemStateException, IllegalStateException
    {
       items.put(item.getQPath().getAsString(), item);
       log.debug("InmemoryContainer updated " + item);
    }
 
    public void delete(NodeData data) throws RepositoryException, UnsupportedOperationException,
-            InvalidItemStateException, IllegalStateException
+      InvalidItemStateException, IllegalStateException
    {
       items.remove(data.getQPath().getAsString());
       log.debug("InmemoryContainer removed " + data.getQPath().getAsString());
    }
 
    public void delete(PropertyData data) throws RepositoryException, UnsupportedOperationException,
-            InvalidItemStateException, IllegalStateException
+      InvalidItemStateException, IllegalStateException
    {
       items.remove(data.getQPath().getAsString());
       log.debug("InmemoryContainer removed " + data.getQPath().getAsString());
@@ -234,14 +232,14 @@ public class InmemoryStorageConnection
       Iterator i = items.keySet().iterator();
       while (i.hasNext())
       {
-         JCRPath d = (JCRPath) i.next();
+         JCRPath d = (JCRPath)i.next();
          str += d.getInternalPath() + "\n";
       }
       return str;
    }
 
    public void rename(NodeData destData) throws RepositoryException, UnsupportedOperationException,
-            InvalidItemStateException, IllegalStateException
+      InvalidItemStateException, IllegalStateException
    {
       throw new UnsupportedOperationException();
 

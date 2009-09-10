@@ -18,15 +18,15 @@
  */
 package org.exoplatform.services.jcr.impl.access;
 
-import java.security.AccessControlException;
-
-import javax.jcr.Node;
-import javax.jcr.Session;
-
 import org.exoplatform.services.jcr.BaseStandaloneTest;
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
+
+import java.security.AccessControlException;
+
+import javax.jcr.Node;
+import javax.jcr.Session;
 
 /**
  * Created by The eXo Platform SAS. <br/>Date: 16.10.2008
@@ -35,8 +35,7 @@ import org.exoplatform.services.jcr.impl.core.NodeImpl;
  *         Reshetnyak</a>
  * @version $Id: TestAutoInitPermissions.java 111 2008-11-11 11:11:11Z rainf0x $
  */
-public class TestAutoInitPermissions
-   extends BaseStandaloneTest
+public class TestAutoInitPermissions extends BaseStandaloneTest
 {
 
    @Override
@@ -47,7 +46,7 @@ public class TestAutoInitPermissions
 
    public void testCheckAutoInitPermissions() throws Exception
    {
-      AccessControlList adminRootACL = ((NodeImpl) root).getACL();
+      AccessControlList adminRootACL = ((NodeImpl)root).getACL();
       if (log.isDebugEnabled())
          log.debug(adminRootACL.dump());
 
@@ -56,8 +55,8 @@ public class TestAutoInitPermissions
       try
       {
          Session johnSession =
-                  repository.login(new CredentialsImpl("john", "exo".toCharArray()), session.getWorkspace().getName());
-         NodeImpl myNode = (NodeImpl) johnSession.getRootNode().addNode("node_for_john");
+            repository.login(new CredentialsImpl("john", "exo".toCharArray()), session.getWorkspace().getName());
+         NodeImpl myNode = (NodeImpl)johnSession.getRootNode().addNode("node_for_john");
          johnSession.save();
 
          Node test = myNode.addNode("test");
@@ -66,7 +65,7 @@ public class TestAutoInitPermissions
          test.remove();
          myNode.save();
 
-         AccessControlList johnRootACL = ((NodeImpl) johnSession.getRootNode()).getACL();
+         AccessControlList johnRootACL = ((NodeImpl)johnSession.getRootNode()).getACL();
          if (log.isDebugEnabled())
             log.debug(johnRootACL.dump());
 

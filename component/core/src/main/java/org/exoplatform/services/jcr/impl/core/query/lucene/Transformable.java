@@ -19,8 +19,7 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 /**
  * <code>Transformable</code> marks queries that can transform the value to upper- or lower-case.
  */
-public interface Transformable
-   extends TransformConstants
+public interface Transformable extends TransformConstants
 {
 
    /**

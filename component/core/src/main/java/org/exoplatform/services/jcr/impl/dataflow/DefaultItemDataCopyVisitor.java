@@ -18,12 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
-
-import javax.jcr.RepositoryException;
-
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemDataTraversingVisitor;
 import org.exoplatform.services.jcr.dataflow.ItemState;
@@ -36,6 +30,12 @@ import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Stack;
+
+import javax.jcr.RepositoryException;
+
 /**
  * The class visits each node, all subnodes and all of them properties. It transfer as parameter of
  * a method <code>ItemData.visits()</code>. During visiting the class forms the <b>itemAddStates</b>
@@ -45,8 +45,7 @@ import org.exoplatform.services.jcr.util.IdGenerator;
  * @version $Id: DefaultItemDataCopyVisitor.java 12306 2008-03-24 10:25:55Z ksm $
  */
 
-public abstract class DefaultItemDataCopyVisitor
-   extends ItemDataTraversingVisitor
+public abstract class DefaultItemDataCopyVisitor extends ItemDataTraversingVisitor
 {
 
    /**
@@ -93,7 +92,7 @@ public abstract class DefaultItemDataCopyVisitor
     */
 
    public DefaultItemDataCopyVisitor(NodeData parent, InternalQName destNodeName, NodeTypeDataManager nodeTypeManager,
-            SessionDataManager dataManager, boolean keepIdentifiers)
+      SessionDataManager dataManager, boolean keepIdentifiers)
    {
       super(dataManager);
 
@@ -117,8 +116,8 @@ public abstract class DefaultItemDataCopyVisitor
       List<ValueData> values;
 
       if (ntManager.isNodeType(Constants.MIX_REFERENCEABLE, curParent().getPrimaryTypeName(), curParent()
-               .getMixinTypeNames())
-               && qname.equals(Constants.JCR_UUID))
+         .getMixinTypeNames())
+         && qname.equals(Constants.JCR_UUID))
       {
 
          values = new ArrayList<ValueData>(1);
@@ -130,9 +129,9 @@ public abstract class DefaultItemDataCopyVisitor
       }
 
       TransientPropertyData newProperty =
-               new TransientPropertyData(QPath.makeChildPath(curParent().getQPath(), qname), keepIdentifiers ? property
-                        .getIdentifier() : IdGenerator.generate(), -1, property.getType(), curParent().getIdentifier(),
-                        property.isMultiValued());
+         new TransientPropertyData(QPath.makeChildPath(curParent().getQPath(), qname), keepIdentifiers ? property
+            .getIdentifier() : IdGenerator.generate(), -1, property.getType(), curParent().getIdentifier(), property
+            .isMultiValued());
 
       newProperty.setValues(values);
       itemAddStates.add(new ItemState(newProperty, ItemState.ADDED, true, ancestorToSave, level != 0));
@@ -166,8 +165,8 @@ public abstract class DefaultItemDataCopyVisitor
       String id = keepIdentifiers ? node.getIdentifier() : IdGenerator.generate();
 
       TransientNodeData newNode =
-               new TransientNodeData(qpath, id, -1, node.getPrimaryTypeName(), node.getMixinTypeNames(), orderNum,
-                        parent.getIdentifier(), node.getACL());
+         new TransientNodeData(qpath, id, -1, node.getPrimaryTypeName(), node.getMixinTypeNames(), orderNum, parent
+            .getIdentifier(), node.getACL());
 
       parents.push(newNode);
 

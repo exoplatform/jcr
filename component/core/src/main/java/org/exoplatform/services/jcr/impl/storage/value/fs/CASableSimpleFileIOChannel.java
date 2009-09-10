@@ -18,20 +18,19 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-
-import org.exoplatform.services.log.Log;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
-import org.exoplatform.services.jcr.impl.storage.value.ValueOperation;
 import org.exoplatform.services.jcr.impl.storage.value.cas.RecordNotFoundException;
 import org.exoplatform.services.jcr.impl.storage.value.cas.ValueContentAddressStorage;
 import org.exoplatform.services.jcr.impl.storage.value.fs.operations.CASableDeleteValues;
 import org.exoplatform.services.jcr.impl.storage.value.fs.operations.CASableWriteValue;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
 /**
  * Created by The eXo Platform SAS .
@@ -40,8 +39,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @version $Id: CASableSimpleFileIOChannel.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
 
-public class CASableSimpleFileIOChannel
-   extends SimpleFileIOChannel
+public class CASableSimpleFileIOChannel extends SimpleFileIOChannel
 {
 
    static private final Log LOG = ExoLogger.getLogger("jcr.CASableSimpleFileIOChannel");
@@ -51,7 +49,7 @@ public class CASableSimpleFileIOChannel
    private final ValueContentAddressStorage vcas;
 
    public CASableSimpleFileIOChannel(File rootDir, FileCleaner cleaner, String storageId,
-            ValueDataResourceHolder resources, ValueContentAddressStorage vcas, String digestAlgo)
+      ValueDataResourceHolder resources, ValueContentAddressStorage vcas, String digestAlgo)
    {
       super(rootDir, cleaner, storageId, resources);
 

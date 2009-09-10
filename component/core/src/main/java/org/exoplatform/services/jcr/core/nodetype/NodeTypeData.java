@@ -18,9 +18,9 @@
  */
 package org.exoplatform.services.jcr.core.nodetype;
 
-import java.util.Arrays;
-
 import org.exoplatform.services.jcr.datamodel.InternalQName;
+
+import java.util.Arrays;
 
 /**
  * Created by The eXo Platform SAS. Define base abstraction for NodeType data
@@ -48,8 +48,8 @@ public class NodeTypeData
    protected boolean mixin;
 
    public NodeTypeData(InternalQName name, InternalQName primaryItemName, boolean mixin,
-            boolean hasOrderableChildNodes, InternalQName[] declaredSupertypeNames,
-            PropertyDefinitionData[] declaredPropertyDefinitions, NodeDefinitionData[] declaredChildNodeDefinitions)
+      boolean hasOrderableChildNodes, InternalQName[] declaredSupertypeNames,
+      PropertyDefinitionData[] declaredPropertyDefinitions, NodeDefinitionData[] declaredChildNodeDefinitions)
    {
 
       this.name = name;
@@ -101,7 +101,7 @@ public class NodeTypeData
       {
          return false;
       }
-      NodeTypeData other = (NodeTypeData) obj;
+      NodeTypeData other = (NodeTypeData)obj;
       if (!Arrays.equals(declaredChildNodeDefinitions, other.declaredChildNodeDefinitions))
       {
          return false;

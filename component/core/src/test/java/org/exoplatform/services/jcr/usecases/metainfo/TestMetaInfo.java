@@ -18,15 +18,14 @@
  */
 package org.exoplatform.services.jcr.usecases.metainfo;
 
+import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
+
 import java.io.InputStream;
 import java.util.Calendar;
 
 import javax.jcr.Node;
 
-import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
-
-public class TestMetaInfo
-   extends BaseUsecasesTest
+public class TestMetaInfo extends BaseUsecasesTest
 {
 
    public void testXLSFile() throws Exception

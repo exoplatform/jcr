@@ -18,6 +18,10 @@
  */
 package org.exoplatform.services.jcr.impl.core.observation;
 
+import org.exoplatform.services.jcr.core.ExtendedSession;
+import org.exoplatform.services.jcr.core.SessionLifecycleListener;
+import org.exoplatform.services.jcr.impl.util.EntityCollection;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,10 +30,6 @@ import javax.jcr.observation.EventListener;
 import javax.jcr.observation.EventListenerIterator;
 import javax.jcr.observation.ObservationManager;
 
-import org.exoplatform.services.jcr.core.ExtendedSession;
-import org.exoplatform.services.jcr.core.SessionLifecycleListener;
-import org.exoplatform.services.jcr.impl.util.EntityCollection;
-
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -37,8 +37,7 @@ import org.exoplatform.services.jcr.impl.util.EntityCollection;
  * @version $Id: ObservationManagerImpl.java 12096 2008-03-19 11:42:40Z gazarenkov $
  */
 
-public class ObservationManagerImpl
-   implements ObservationManager, SessionLifecycleListener
+public class ObservationManagerImpl implements ObservationManager, SessionLifecycleListener
 {
 
    protected String sessionId;
@@ -62,11 +61,11 @@ public class ObservationManagerImpl
     * @see javax.jcr.observation.ObservationManager#addEventListener
     */
    public void addEventListener(EventListener listener, int eventTypes, String absPath, boolean isDeep, String[] uuid,
-            String[] nodeTypeName, boolean noLocal) throws RepositoryException
+      String[] nodeTypeName, boolean noLocal) throws RepositoryException
    {
 
       registry.addEventListener(listener, new ListenerCriteria(eventTypes, absPath, isDeep, uuid, nodeTypeName,
-               noLocal, sessionId));
+         noLocal, sessionId));
 
       sessionListeners.add(listener);
    }

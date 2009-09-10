@@ -18,6 +18,13 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.db;
 
+import org.exoplatform.services.jcr.impl.storage.jdbc.monitor.ManagedConnection;
+import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
+import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -25,13 +32,6 @@ import java.sql.SQLException;
 
 import javax.jcr.RepositoryException;
 import javax.sql.DataSource;
-
-import org.exoplatform.services.log.Log;
-import org.exoplatform.services.jcr.impl.storage.jdbc.monitor.ManagedConnection;
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
-import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
-import org.exoplatform.services.log.ExoLogger;
 
 /**
  * Created by The eXo Platform SAS

@@ -18,13 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.xml;
 
-import java.io.IOException;
-import java.util.List;
-
-import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.jcr.access.AccessManager;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
@@ -39,7 +32,13 @@ import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.dataflow.ItemDataRemoveVisitor;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.ConversationState;
+
+import java.io.IOException;
+import java.util.List;
+
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS. Helper class for removing version history.
@@ -117,8 +116,8 @@ public class VersionHistoryRemover
     * @param userState - user state.
     */
    public VersionHistoryRemover(String vhID, ItemDataConsumer dataManager, NodeTypeDataManager ntManager,
-            RepositoryImpl repository, String currentWorkspaceName, QPath containingHistory, QPath ancestorToSave,
-            PlainChangesLogImpl transientChangesLog, AccessManager accessManager, ConversationState userState)
+      RepositoryImpl repository, String currentWorkspaceName, QPath containingHistory, QPath ancestorToSave,
+      PlainChangesLogImpl transientChangesLog, AccessManager accessManager, ConversationState userState)
    {
       super();
       this.vhID = vhID;
@@ -140,7 +139,7 @@ public class VersionHistoryRemover
     */
    public void remove() throws RepositoryException
    {
-      NodeData vhnode = (NodeData) dataManager.getItemData(vhID);
+      NodeData vhnode = (NodeData)dataManager.getItemData(vhID);
 
       if (vhnode == null)
       {
@@ -161,7 +160,7 @@ public class VersionHistoryRemover
             return;
 
          throw new RepositoryException("Version history is not found. UUID: " + vhID
-                  + ". Context item (ancestor to save) " + ancestorToSave.getAsString());
+            + ". Context item (ancestor to save) " + ancestorToSave.getAsString());
       }
 
       // mix:versionable
@@ -180,7 +179,7 @@ public class VersionHistoryRemover
                if (sref.getQPath().isDescendantOf(Constants.JCR_VERSION_STORAGE_PATH))
                {
                   if (!sref.getQPath().isDescendantOf(vhnode.getQPath())
-                           && (containingHistory != null ? !sref.getQPath().isDescendantOf(containingHistory) : true))
+                     && (containingHistory != null ? !sref.getQPath().isDescendantOf(containingHistory) : true))
                      // has a reference to the VH in version storage,
                      // it's a REFERENCE property jcr:childVersionHistory of
                      // nt:versionedChild
@@ -218,12 +217,11 @@ public class VersionHistoryRemover
          if (ntManager.isNodeType(Constants.NT_VERSIONEDCHILD, vhnode.getPrimaryTypeName(), vhnode.getMixinTypeNames()))
          {
             PropertyData property =
-                     (PropertyData) dataManager.getItemData(nodeData, new QPathEntry(Constants.JCR_CHILDVERSIONHISTORY,
-                              1));
+               (PropertyData)dataManager.getItemData(nodeData, new QPathEntry(Constants.JCR_CHILDVERSIONHISTORY, 1));
 
             if (property == null)
                throw new RepositoryException("Property " + Constants.JCR_CHILDVERSIONHISTORY.getAsString()
-                        + " for node " + nodeData.getQPath().getAsString() + " not found");
+                  + " for node " + nodeData.getQPath().getAsString() + " not found");
 
             String childVhID;
             try
@@ -235,8 +233,8 @@ public class VersionHistoryRemover
                throw new RepositoryException("Child version history UUID read error " + e, e);
             }
             VersionHistoryRemover historyRemover =
-                     new VersionHistoryRemover(childVhID, dataManager, ntManager, repository, currentWorkspaceName,
-                              containingHistory, ancestorToSave, transientChangesLog, accessManager, userState);
+               new VersionHistoryRemover(childVhID, dataManager, ntManager, repository, currentWorkspaceName,
+                  containingHistory, ancestorToSave, transientChangesLog, accessManager, userState);
             historyRemover.remove();
 
          }

@@ -19,8 +19,7 @@ package org.exoplatform.services.jcr.impl.core.query;
 /**
  * Implements a query node that defines an AND operation between arbitrary other {@link QueryNode}s.
  */
-public class AndQueryNode
-   extends NAryQueryNode
+public class AndQueryNode extends NAryQueryNode
 {
 
    /**

@@ -21,9 +21,8 @@ package org.exoplatform.services.jcr.integration;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 /**
  * Created by The eXo Platform SAS.
@@ -31,8 +30,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: JCRAPITest.java 12419 2008-03-26 16:47:49Z pnedonosko $
  */
-public class JCRAPITest
-   extends TestSuite
+public class JCRAPITest extends TestSuite
 {
    /**
     * Class logger.

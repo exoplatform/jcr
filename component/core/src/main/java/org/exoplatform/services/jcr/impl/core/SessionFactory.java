@@ -18,19 +18,18 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
-import javax.jcr.LoginException;
-import javax.jcr.RepositoryException;
-import javax.transaction.xa.XAException;
-
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableResourceManager;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.transaction.TransactionService;
+
+import javax.jcr.LoginException;
+import javax.jcr.RepositoryException;
+import javax.transaction.xa.XAException;
 
 /**
  * Created by The eXo Platform SAS.<br/> the factory for jcr Session
@@ -110,7 +109,7 @@ public class SessionFactory
     */
    public SessionFactory(WorkspaceEntry config, ExoContainerContext containerContext)
    {
-      this((TransactionService) null, config, containerContext);
+      this((TransactionService)null, config, containerContext);
    }
 
    /**

@@ -27,8 +27,7 @@ import javax.jcr.RepositoryException;
  * @version $Id: IllegalPathException.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class IllegalPathException
-   extends RepositoryException
+public class IllegalPathException extends RepositoryException
 {
 
    public IllegalPathException()

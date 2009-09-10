@@ -23,8 +23,7 @@ import java.util.BitSet;
  * as the highest doc number in the hit set. This means it might need of lot of memory for large
  * indexes.
  */
-public class BitSetHits
-   implements Hits
+public class BitSetHits implements Hits
 {
    private BitSet hits;
 

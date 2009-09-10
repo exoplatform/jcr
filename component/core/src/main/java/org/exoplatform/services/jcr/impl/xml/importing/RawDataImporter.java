@@ -18,10 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.xml.importing;
 
-import java.util.Map;
-
-import javax.jcr.NamespaceRegistry;
-
 import org.exoplatform.services.jcr.access.AccessManager;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
@@ -30,6 +26,10 @@ import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.security.ConversationState;
+
+import java.util.Map;
+
+import javax.jcr.NamespaceRegistry;
 
 /**
  * Created by The eXo Platform SAS.
@@ -41,9 +41,8 @@ public interface RawDataImporter
 {
 
    public abstract ContentImporter createContentImporter(NodeData parent, int uuidBehavior,
-            ItemDataConsumer dataConsumer, NodeTypeDataManager ntManager, LocationFactory locationFactory,
-            ValueFactoryImpl valueFactory, NamespaceRegistry namespaceRegistry, AccessManager accessManager,
-            ConversationState userState, Map<String, Object> context, RepositoryImpl repository,
-            String currentWorkspaceName);
+      ItemDataConsumer dataConsumer, NodeTypeDataManager ntManager, LocationFactory locationFactory,
+      ValueFactoryImpl valueFactory, NamespaceRegistry namespaceRegistry, AccessManager accessManager,
+      ConversationState userState, Map<String, Object> context, RepositoryImpl repository, String currentWorkspaceName);
 
 }

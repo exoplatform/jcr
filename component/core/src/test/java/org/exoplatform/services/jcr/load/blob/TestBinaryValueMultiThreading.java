@@ -18,15 +18,15 @@
  */
 package org.exoplatform.services.jcr.load.blob;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.core.CredentialsImpl;
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
+
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 
 import javax.jcr.Node;
-
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-import org.exoplatform.services.jcr.core.CredentialsImpl;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
 
 /**
  * Created by The eXo Platform SAS.
@@ -34,8 +34,7 @@ import org.exoplatform.services.jcr.impl.core.SessionImpl;
  * NOTE: Make sure you have the files pointed below!
  */
 
-public class TestBinaryValueMultiThreading
-   extends JcrAPIBaseTest
+public class TestBinaryValueMultiThreading extends JcrAPIBaseTest
 {
 
    private int FILES_COUNT = 3;
@@ -69,8 +68,7 @@ public class TestBinaryValueMultiThreading
    // "http://exooffice:8080/jcr-webdav/repository/production/SmallFile.zip";
    // private static String URL_SMALL_FILE = "ftp://exoua.dnsalias.net/jcr/test/SmallFile.zip";
 
-   protected class TestJCRClient
-      extends Thread
+   protected class TestJCRClient extends Thread
    {
 
       public void run()
@@ -79,7 +77,7 @@ public class TestBinaryValueMultiThreading
          SessionImpl clientSession = null;
          try
          {
-            clientSession = (SessionImpl) repository.login(new CredentialsImpl("exo", "exo".toCharArray()), "ws");
+            clientSession = (SessionImpl)repository.login(new CredentialsImpl("exo", "exo".toCharArray()), "ws");
             Node testLocalSmallFiles = clientSession.getRootNode().getNode("testLocalSmallFiles");
             Node testLocalBigFiles = clientSession.getRootNode().getNode("testLocalBigFiles");
 
@@ -95,9 +93,9 @@ public class TestBinaryValueMultiThreading
                // check streams
 
                compareStream(new FileInputStream(LOCAL_SMALL_FILE), testLocalSmallFiles.getProperty(
-                        "smallFile" + i + "/jcr:content/jcr:data").getStream());
+                  "smallFile" + i + "/jcr:content/jcr:data").getStream());
                compareStream(new FileInputStream(LOCAL_BIG_FILE), testLocalBigFiles.getProperty(
-                        "bigFile" + i + "/jcr:content/jcr:data").getStream());
+                  "bigFile" + i + "/jcr:content/jcr:data").getStream());
 
                /*
                 * compareStream(new FileInputStream(REMOTE_SMALL_FILE),

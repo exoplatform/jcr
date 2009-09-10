@@ -18,19 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.version;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
-
-import javax.jcr.PropertyType;
-import javax.jcr.RepositoryException;
-import javax.jcr.ValueFactory;
-import javax.jcr.nodetype.ConstraintViolationException;
-import javax.jcr.version.OnParentVersionAction;
-import javax.jcr.version.VersionException;
-
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.jcr.core.nodetype.NodeDefinitionData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionData;
@@ -51,6 +38,18 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Stack;
+
+import javax.jcr.PropertyType;
+import javax.jcr.RepositoryException;
+import javax.jcr.ValueFactory;
+import javax.jcr.nodetype.ConstraintViolationException;
+import javax.jcr.version.OnParentVersionAction;
+import javax.jcr.version.VersionException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -59,8 +58,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @version $Id: FrozenNodeInitializer.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class FrozenNodeInitializer
-   extends ItemDataTraversingVisitor
+public class FrozenNodeInitializer extends ItemDataTraversingVisitor
 {
 
    private static Log log = ExoLogger.getLogger("jcr.FrozenNodeInitializer");
@@ -76,7 +74,7 @@ public class FrozenNodeInitializer
    private final ValueFactory valueFactory;
 
    public FrozenNodeInitializer(NodeData frozen, SessionDataManager dataManager, NodeTypeDataManager ntManager,
-            PlainChangesLog changesLog, ValueFactory valueFactory
+      PlainChangesLog changesLog, ValueFactory valueFactory
 
    ) throws RepositoryException
    {
@@ -106,7 +104,7 @@ public class FrozenNodeInitializer
       List<ValueData> values = new ArrayList<ValueData>();
       for (ValueData valueData : property.getValues())
       {
-         values.add(((TransientValueData) valueData).createTransientCopy());
+         values.add(((TransientValueData)valueData).createTransientCopy());
       }
 
       boolean mv = property.isMultiValued();
@@ -114,28 +112,28 @@ public class FrozenNodeInitializer
       if (qname.equals(Constants.JCR_PRIMARYTYPE) && level == 1)
       {
          frozenProperty =
-                  TransientPropertyData.createPropertyData(currentNode(), Constants.JCR_FROZENPRIMARYTYPE,
-                           PropertyType.NAME, mv, values);
+            TransientPropertyData.createPropertyData(currentNode(), Constants.JCR_FROZENPRIMARYTYPE, PropertyType.NAME,
+               mv, values);
       }
       else if (qname.equals(Constants.JCR_UUID) && level == 1)
       {
          frozenProperty =
-                  TransientPropertyData.createPropertyData(currentNode(), Constants.JCR_FROZENUUID,
-                           PropertyType.STRING, mv, values);
+            TransientPropertyData.createPropertyData(currentNode(), Constants.JCR_FROZENUUID, PropertyType.STRING, mv,
+               values);
       }
       else if (qname.equals(Constants.JCR_MIXINTYPES) && level == 1)
       {
          frozenProperty =
-                  TransientPropertyData.createPropertyData(currentNode(), Constants.JCR_FROZENMIXINTYPES,
-                           PropertyType.NAME, mv, values);
+            TransientPropertyData.createPropertyData(currentNode(), Constants.JCR_FROZENMIXINTYPES, PropertyType.NAME,
+               mv, values);
       }
       else
       {
-         NodeData parent = (NodeData) dataManager.getItemData(property.getParentIdentifier());
+         NodeData parent = (NodeData)dataManager.getItemData(property.getParentIdentifier());
 
          PropertyDefinitionData pdef =
-                  ntManager.findPropertyDefinitions(qname, parent.getPrimaryTypeName(), parent.getMixinTypeNames())
-                           .getAnyDefinition();
+            ntManager.findPropertyDefinitions(qname, parent.getPrimaryTypeName(), parent.getMixinTypeNames())
+               .getAnyDefinition();
 
          int action = pdef.getOnParentVersion();
 
@@ -148,10 +146,10 @@ public class FrozenNodeInitializer
             throw new VersionException("Property is aborted " + property.getQPath().getAsString());
          }
          else if (action == OnParentVersionAction.COPY || action == OnParentVersionAction.VERSION
-                  || action == OnParentVersionAction.COMPUTE)
+            || action == OnParentVersionAction.COMPUTE)
          {
             frozenProperty =
-                     TransientPropertyData.createPropertyData(currentNode(), qname, property.getType(), mv, values);
+               TransientPropertyData.createPropertyData(currentNode(), qname, property.getType(), mv, values);
          }
          else if (action == OnParentVersionAction.INITIALIZE)
          {
@@ -171,13 +169,12 @@ public class FrozenNodeInitializer
                      TransientValueData defData;
                      if (PropertyType.UNDEFINED == pdef.getRequiredType())
                      {
-                        defData = ((BaseValue) valueFactory.createValue(defValue)).getInternalData();
+                        defData = ((BaseValue)valueFactory.createValue(defValue)).getInternalData();
                      }
                      else
                      {
                         defData =
-                                 ((BaseValue) valueFactory.createValue(defValue, pdef.getRequiredType()))
-                                          .getInternalData();
+                           ((BaseValue)valueFactory.createValue(defValue, pdef.getRequiredType())).getInternalData();
                      }
                      // TransientValueData defData = ((BaseValue)
                      // defValue).getInternalData();
@@ -186,18 +183,18 @@ public class FrozenNodeInitializer
                   }
                }
                else if (ntManager.isNodeType(Constants.NT_HIERARCHYNODE, parent.getPrimaryTypeName(), parent
-                        .getMixinTypeNames())
-                        && qname.equals(Constants.JCR_CREATED))
+                  .getMixinTypeNames())
+                  && qname.equals(Constants.JCR_CREATED))
                {
                   // custom logic for nt:hierarchyNode jcr:created
                   values.clear();
                   values.add(new TransientValueData(dataManager.getTransactManager().getStorageDataManager()
-                           .getCurrentTime()));
+                     .getCurrentTime()));
                }
             } // else... just as it would be if created normally in a workspace
             // (sure with value data)
             frozenProperty =
-                     TransientPropertyData.createPropertyData(currentNode(), qname, property.getType(), mv, values);
+               TransientPropertyData.createPropertyData(currentNode(), qname, property.getType(), mv, values);
          }
          else
             throw new RepositoryException("Unknown OnParentVersion value " + action);
@@ -228,9 +225,9 @@ public class FrozenNodeInitializer
 
       InternalQName qname = node.getQPath().getName();
 
-      NodeData parent = (NodeData) dataManager.getItemData(node.getParentIdentifier());
+      NodeData parent = (NodeData)dataManager.getItemData(node.getParentIdentifier());
       NodeDefinitionData ndef =
-               ntManager.findChildNodeDefinition(qname, parent.getPrimaryTypeName(), parent.getMixinTypeNames());
+         ntManager.findChildNodeDefinition(qname, parent.getPrimaryTypeName(), parent.getMixinTypeNames());
       if (ndef == null)
       {
          throw new ConstraintViolationException("Definition not found for " + qname.getAsString());
@@ -239,7 +236,7 @@ public class FrozenNodeInitializer
 
       if (log.isDebugEnabled())
          log.debug("Entering node " + node.getQPath().getAsString() + ", "
-                  + OnParentVersionAction.nameFromValue(action));
+            + OnParentVersionAction.nameFromValue(action));
 
       NodeData frozenNode = null;
       if (action == OnParentVersionAction.IGNORE)
@@ -255,10 +252,9 @@ public class FrozenNodeInitializer
 
          QPath frozenPath = QPath.makeChildPath(currentNode().getQPath(), qname, node.getQPath().getIndex());
          frozenNode =
-                  new TransientNodeData(frozenPath, IdGenerator.generate(), node.getPersistedVersion(), node
-                           .getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(), currentNode()
-                           .getIdentifier(), // parent
-                           node.getACL());
+            new TransientNodeData(frozenPath, IdGenerator.generate(), node.getPersistedVersion(), node
+               .getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(), currentNode().getIdentifier(), // parent
+               node.getACL());
 
          contextNodes.push(frozenNode);
          changesLog.add(ItemState.createAddedState(frozenNode));
@@ -268,20 +264,20 @@ public class FrozenNodeInitializer
          if (ntManager.isNodeType(Constants.MIX_VERSIONABLE, node.getPrimaryTypeName(), node.getMixinTypeNames()))
          {
             frozenNode =
-                     TransientNodeData.createNodeData(currentNode(), qname, Constants.NT_VERSIONEDCHILD, node
-                              .getQPath().getIndex());
+               TransientNodeData.createNodeData(currentNode(), qname, Constants.NT_VERSIONEDCHILD, node.getQPath()
+                  .getIndex());
 
             PropertyData pt =
-                     TransientPropertyData.createPropertyData(frozenNode, Constants.JCR_PRIMARYTYPE, PropertyType.NAME,
-                              false, new TransientValueData(Constants.NT_VERSIONEDCHILD));
+               TransientPropertyData.createPropertyData(frozenNode, Constants.JCR_PRIMARYTYPE, PropertyType.NAME,
+                  false, new TransientValueData(Constants.NT_VERSIONEDCHILD));
 
             ValueData vh =
-                     ((PropertyData) dataManager.getItemData(node, new QPathEntry(Constants.JCR_VERSIONHISTORY, 0)))
-                              .getValues().get(0);
+               ((PropertyData)dataManager.getItemData(node, new QPathEntry(Constants.JCR_VERSIONHISTORY, 0)))
+                  .getValues().get(0);
 
             PropertyData pd =
-                     TransientPropertyData.createPropertyData(frozenNode, Constants.JCR_CHILDVERSIONHISTORY,
-                              PropertyType.REFERENCE, false, vh);
+               TransientPropertyData.createPropertyData(frozenNode, Constants.JCR_CHILDVERSIONHISTORY,
+                  PropertyType.REFERENCE, false, vh);
 
             contextNodes.push(null);
             changesLog.add(ItemState.createAddedState(frozenNode));
@@ -292,10 +288,10 @@ public class FrozenNodeInitializer
          { // behaviour of COPY
             QPath frozenPath = QPath.makeChildPath(currentNode().getQPath(), qname, node.getQPath().getIndex());
             frozenNode =
-                     new TransientNodeData(frozenPath, IdGenerator.generate(), node.getPersistedVersion(), node
-                              .getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(), currentNode()
-                              .getIdentifier(), // parent
-                              node.getACL());
+               new TransientNodeData(frozenPath, IdGenerator.generate(), node.getPersistedVersion(), node
+                  .getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(),
+                  currentNode().getIdentifier(), // parent
+                  node.getACL());
 
             contextNodes.push(frozenNode);
             changesLog.add(ItemState.createAddedState(frozenNode));
@@ -310,8 +306,8 @@ public class FrozenNodeInitializer
          // would be if created normally in a workspace. No state information
          // of the current C in the workspace is preserved.
          frozenNode =
-                  TransientNodeData.createNodeData(currentNode(), qname, node.getPrimaryTypeName(), node.getQPath()
-                           .getIndex());
+            TransientNodeData.createNodeData(currentNode(), qname, node.getPrimaryTypeName(), node.getQPath()
+               .getIndex());
          contextNodes.push(null);
          changesLog.add(ItemState.createAddedState(frozenNode));
       }
@@ -324,8 +320,8 @@ public class FrozenNodeInitializer
          // [PN] 10.04.06 Creatimg simply an new node with same name and same node
          // type
          frozenNode =
-                  TransientNodeData.createNodeData(currentNode(), qname, node.getPrimaryTypeName(), node.getQPath()
-                           .getIndex());
+            TransientNodeData.createNodeData(currentNode(), qname, node.getPrimaryTypeName(), node.getQPath()
+               .getIndex());
          contextNodes.push(null);
          changesLog.add(ItemState.createAddedState(frozenNode));
       }

@@ -18,24 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.storage.fs;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.jcr.Node;
-import javax.jcr.NodeIterator;
-import javax.jcr.PropertyType;
-import javax.jcr.RepositoryException;
-import javax.jcr.Value;
-import javax.jcr.ValueFormatException;
-
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.dataflow.DataManager;
 import org.exoplatform.services.jcr.dataflow.ItemState;
@@ -55,6 +37,23 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.dataflow.session.SessionChangesLog;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.jcr.Node;
+import javax.jcr.NodeIterator;
+import javax.jcr.PropertyType;
+import javax.jcr.RepositoryException;
+import javax.jcr.Value;
+import javax.jcr.ValueFormatException;
 
 /**
  * Created by The eXo Platform SAS 10.07.2007
@@ -62,8 +61,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestJCRVSReadWrite.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class TestJCRVSReadWrite
-   extends JcrImplBaseTest
+public class TestJCRVSReadWrite extends JcrImplBaseTest
 {
 
    private static Log log = ExoLogger.getLogger("jcr.TestJCRVSReadWrite");
@@ -142,8 +140,9 @@ public class TestJCRVSReadWrite
             String path = "";
             if (i % 10 == 0)
             {
-               Value[] vals = new Value[]
-               {session.getValueFactory().createValue(fBLOB1), session.getValueFactory().createValue(fBLOB2),};
+               Value[] vals =
+                  new Value[]{session.getValueFactory().createValue(fBLOB1),
+                     session.getValueFactory().createValue(fBLOB2),};
                path = resource.setProperty("jcr:data", vals).getPath();
             }
             else
@@ -181,35 +180,34 @@ public class TestJCRVSReadWrite
    protected List<QPathEntry[]> createInternalAPICase() throws Exception
    {
       DataManager dm =
-               ((NodeImpl) testRoot).getSession().getTransientNodesManager().getTransactManager()
-                        .getStorageDataManager();
+         ((NodeImpl)testRoot).getSession().getTransientNodesManager().getTransactManager().getStorageDataManager();
 
       List<QPathEntry[]> props = new ArrayList<QPathEntry[]>();
-      NodeData rootData = (NodeData) ((NodeImpl) testRoot).getData();
+      NodeData rootData = (NodeData)((NodeImpl)testRoot).getData();
       fBLOB1.mark(FILE1_SIZE);
       fBLOB2.mark(FILE2_SIZE);
       for (int i = 0; i < FILES_COUNT; i++)
       {
          try
          {
-            SessionChangesLog changes = new SessionChangesLog(((NodeImpl) testRoot).getSession().getId());
+            SessionChangesLog changes = new SessionChangesLog(((NodeImpl)testRoot).getSession().getId());
 
             TransientNodeData ntfile =
-                     TransientNodeData.createNodeData(rootData, InternalQName.parse("[]blob" + i), Constants.NT_FILE);
+               TransientNodeData.createNodeData(rootData, InternalQName.parse("[]blob" + i), Constants.NT_FILE);
             changes.add(ItemState.createAddedState(ntfile));
 
             TransientPropertyData ntfilePrimaryType =
-                     TransientPropertyData.createPropertyData(ntfile, Constants.JCR_PRIMARYTYPE, PropertyType.NAME,
-                              false, new TransientValueData(Constants.NT_FILE));
+               TransientPropertyData.createPropertyData(ntfile, Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false,
+                  new TransientValueData(Constants.NT_FILE));
             changes.add(ItemState.createAddedState(ntfilePrimaryType));
 
             TransientNodeData res =
-                     TransientNodeData.createNodeData(ntfile, Constants.JCR_CONTENT, Constants.NT_UNSTRUCTURED);
+               TransientNodeData.createNodeData(ntfile, Constants.JCR_CONTENT, Constants.NT_UNSTRUCTURED);
             changes.add(ItemState.createAddedState(res));
 
             TransientPropertyData resPrimaryType =
-                     TransientPropertyData.createPropertyData(res, Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false,
-                              new TransientValueData(Constants.NT_UNSTRUCTURED));
+               TransientPropertyData.createPropertyData(res, Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false,
+                  new TransientValueData(Constants.NT_UNSTRUCTURED));
             changes.add(ItemState.createAddedState(resPrimaryType));
 
             List<ValueData> data = new ArrayList<ValueData>();
@@ -222,18 +220,18 @@ public class TestJCRVSReadWrite
                data.add(new TransientValueData(fBLOB1));
 
             TransientPropertyData resData =
-                     TransientPropertyData.createPropertyData(res, Constants.JCR_DATA, PropertyType.BINARY,
-                              data.size() > 1, data);
+               TransientPropertyData.createPropertyData(res, Constants.JCR_DATA, PropertyType.BINARY, data.size() > 1,
+                  data);
             changes.add(ItemState.createAddedState(resData));
 
             TransientPropertyData resMimeType =
-                     TransientPropertyData.createPropertyData(res, Constants.JCR_MIMETYPE, PropertyType.STRING, false,
-                              new TransientValueData("application/x-octet-stream"));
+               TransientPropertyData.createPropertyData(res, Constants.JCR_MIMETYPE, PropertyType.STRING, false,
+                  new TransientValueData("application/x-octet-stream"));
             changes.add(ItemState.createAddedState(resMimeType));
 
             TransientPropertyData resLastModified =
-                     TransientPropertyData.createPropertyData(res, Constants.JCR_LASTMODIFIED, PropertyType.DATE,
-                              false, new TransientValueData(Calendar.getInstance()));
+               TransientPropertyData.createPropertyData(res, Constants.JCR_LASTMODIFIED, PropertyType.DATE, false,
+                  new TransientValueData(Calendar.getInstance()));
             changes.add(ItemState.createAddedState(resLastModified));
 
             QPath path = resData.getQPath();
@@ -259,9 +257,8 @@ public class TestJCRVSReadWrite
    protected void deleteInternalAPICase() throws RepositoryException
    {
       final DataManager dm =
-               ((NodeImpl) testRoot).getSession().getTransientNodesManager().getTransactManager()
-                        .getStorageDataManager();
-      final SessionChangesLog changes = new SessionChangesLog(((NodeImpl) testRoot).getSession().getId());
+         ((NodeImpl)testRoot).getSession().getTransientNodesManager().getTransactManager().getStorageDataManager();
+      final SessionChangesLog changes = new SessionChangesLog(((NodeImpl)testRoot).getSession().getId());
 
       class Remover
       {
@@ -279,7 +276,7 @@ public class TestJCRVSReadWrite
          }
       }
 
-      NodeData rootData = (NodeData) ((NodeImpl) testRoot).getData();
+      NodeData rootData = (NodeData)((NodeImpl)testRoot).getData();
 
       new Remover().delete(rootData);
 
@@ -288,7 +285,7 @@ public class TestJCRVSReadWrite
 
    // copied from SessionDataManager
    protected ItemData getItemData(DataManager manager, NodeData parent, QPathEntry[] relPathEntries)
-            throws RepositoryException
+      throws RepositoryException
    {
       ItemData item = parent;
       for (int i = 0; i < relPathEntries.length; i++)
@@ -299,7 +296,7 @@ public class TestJCRVSReadWrite
             break;
 
          if (item.isNode())
-            parent = (NodeData) item;
+            parent = (NodeData)item;
          else if (i < relPathEntries.length - 1)
             throw new IllegalPathException("Path can not contains a property as the intermediate element");
       }
@@ -347,9 +344,8 @@ public class TestJCRVSReadWrite
    {
 
       DataManager manager =
-               ((NodeImpl) testRoot).getSession().getTransientNodesManager().getTransactManager()
-                        .getStorageDataManager();
-      NodeData parent = (NodeData) ((NodeImpl) testRoot).getData();
+         ((NodeImpl)testRoot).getSession().getTransientNodesManager().getTransactManager().getStorageDataManager();
+      NodeData parent = (NodeData)((NodeImpl)testRoot).getData();
 
       long time = System.currentTimeMillis();
       List<QPathEntry[]> props = createInternalAPICase();
@@ -360,12 +356,12 @@ public class TestJCRVSReadWrite
       Set<QPathEntry[]> caseProps = new HashSet<QPathEntry[]>(props);
       for (QPathEntry[] prop : caseProps)
       {
-         PropertyData p = (PropertyData) getItemData(manager, parent, prop);
+         PropertyData p = (PropertyData)getItemData(manager, parent, prop);
          List<ValueData> vals = p.getValues();
          for (int i = 0; i < vals.size(); i++)
          {
             assertEquals("Value has wrong length", i == 0 ? FILE1_SIZE : FILE2_SIZE, vals.get(i).getAsStream()
-                     .available());
+               .available());
          }
       }
       log.info(getName() + " READ -- " + (System.currentTimeMillis() - time));

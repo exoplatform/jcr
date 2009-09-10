@@ -46,7 +46,7 @@ public class RepositoryEntry extends RepositoryInfo
    {
       return workspaces;
    }
-   
+
    /**
     * Set workspaces.
     * 

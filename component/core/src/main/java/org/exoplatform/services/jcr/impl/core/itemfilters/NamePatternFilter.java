@@ -32,8 +32,7 @@ import javax.jcr.RepositoryException;
  * @version $Id: NamePatternFilter.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class NamePatternFilter
-   implements ItemFilter
+public class NamePatternFilter implements ItemFilter
 {
 
    private ArrayList expressions;
@@ -55,7 +54,7 @@ public class NamePatternFilter
       // boolean result = false;
       for (int i = 0; i < expressions.size(); i++)
       {
-         String expr = (String) expressions.get(i);
+         String expr = (String)expressions.get(i);
          if (estimate(name, expr))
             return true;
       }

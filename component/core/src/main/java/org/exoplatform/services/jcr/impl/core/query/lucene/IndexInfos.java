@@ -175,7 +175,7 @@ class IndexInfos
     */
    String getName(int i)
    {
-      return (String) indexes.get(i);
+      return (String)indexes.get(i);
    }
 
    /**

@@ -18,11 +18,11 @@
  */
 package org.exoplatform.services.jcr.impl.core.access;
 
-import javax.jcr.RepositoryException;
-
 import org.exoplatform.services.jcr.access.AccessManager;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
+
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -31,8 +31,7 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
  * @version $Id: DefaultAccessManagerImpl.java 14100 2008-05-12 10:53:47Z gazarenkov $
  */
 
-public class DefaultAccessManagerImpl
-   extends AccessManager
+public class DefaultAccessManagerImpl extends AccessManager
 {
 
    public DefaultAccessManagerImpl(RepositoryEntry config, WorkspaceEntry wsConfig) throws RepositoryException

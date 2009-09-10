@@ -102,12 +102,12 @@ class SharedFieldCache
     *           if an error occurs while reading from the index.
     */
    public SharedFieldCache.StringIndex getStringIndex(IndexReader reader, String field, String prefix,
-            SortComparator comparator, boolean includeLookup) throws IOException
+      SortComparator comparator, boolean includeLookup) throws IOException
    {
 
       if (reader instanceof ReadOnlyIndexReader)
       {
-         reader = ((ReadOnlyIndexReader) reader).getBase();
+         reader = ((ReadOnlyIndexReader)reader).getBase();
       }
 
       field = field.intern();
@@ -169,7 +169,7 @@ class SharedFieldCache
          String[] lookup = null;
          if (includeLookup)
          {
-            lookup = (String[]) mterms.toArray(new String[mterms.size()]);
+            lookup = (String[])mterms.toArray(new String[mterms.size()]);
          }
          SharedFieldCache.StringIndex value = new SharedFieldCache.StringIndex(retArray, lookup);
          store(reader, field, prefix, comparator, value);
@@ -186,12 +186,12 @@ class SharedFieldCache
       Key key = new Key(field, prefix, comparer);
       synchronized (this)
       {
-         HashMap readerCache = (HashMap) cache.get(reader);
+         HashMap readerCache = (HashMap)cache.get(reader);
          if (readerCache == null)
          {
             return null;
          }
-         return (SharedFieldCache.StringIndex) readerCache.get(key);
+         return (SharedFieldCache.StringIndex)readerCache.get(key);
       }
    }
 
@@ -199,12 +199,12 @@ class SharedFieldCache
     * Put a <code>StringIndex</code> <code>value</code> to cache.
     */
    Object store(IndexReader reader, String field, String prefix, SortComparator comparer,
-            SharedFieldCache.StringIndex value)
+      SharedFieldCache.StringIndex value)
    {
       Key key = new Key(field, prefix, comparer);
       synchronized (this)
       {
-         HashMap readerCache = (HashMap) cache.get(reader);
+         HashMap readerCache = (HashMap)cache.get(reader);
          if (readerCache == null)
          {
             readerCache = new HashMap();
@@ -245,7 +245,7 @@ class SharedFieldCache
       {
          if (o instanceof Key)
          {
-            Key other = (Key) o;
+            Key other = (Key)o;
             return other.field == field && other.prefix == prefix && other.comparator.equals(comparator);
          }
          return false;

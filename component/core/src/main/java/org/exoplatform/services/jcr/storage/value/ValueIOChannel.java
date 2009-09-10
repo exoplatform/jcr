@@ -18,9 +18,9 @@
  */
 package org.exoplatform.services.jcr.storage.value;
 
-import java.io.IOException;
-
 import org.exoplatform.services.jcr.datamodel.ValueData;
+
+import java.io.IOException;
 
 /**
  * Created by The eXo Platform SAS.

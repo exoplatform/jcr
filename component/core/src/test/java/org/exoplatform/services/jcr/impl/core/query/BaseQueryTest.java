@@ -16,22 +16,21 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
-import java.io.IOException;
-
-import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.log.Log;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.TermQuery;
-
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.impl.core.query.lucene.FieldNames;
 import org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import java.io.IOException;
+
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -39,8 +38,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: BaseQueryTest.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class BaseQueryTest
-   extends JcrImplBaseTest
+public class BaseQueryTest extends JcrImplBaseTest
 {
    /**
     * Class logger.
@@ -54,7 +52,7 @@ public class BaseQueryTest
    protected SearchIndex defaultSearchIndex;
 
    protected Document getDocument(String nodeIdentifer, boolean includeSystemIndex) throws IOException,
-            RepositoryException
+      RepositoryException
    {
       IndexReader reader = defaultSearchIndex.getIndexReader(includeSystemIndex);
       IndexSearcher is = new IndexSearcher(reader);
@@ -74,10 +72,9 @@ public class BaseQueryTest
    public void setUp() throws Exception
    {
       super.setUp();
-      this.defaultSearchManager =
-               (SearchManager) session.getContainer().getComponentInstanceOfType(SearchManager.class);
+      this.defaultSearchManager = (SearchManager)session.getContainer().getComponentInstanceOfType(SearchManager.class);
       this.systemSearchManager =
-               (SystemSearchManager) session.getContainer().getComponentInstanceOfType(SystemSearchManager.class);
-      this.defaultSearchIndex = (SearchIndex) defaultSearchManager.getHandler();
+         (SystemSearchManager)session.getContainer().getComponentInstanceOfType(SystemSearchManager.class);
+      this.defaultSearchIndex = (SearchIndex)defaultSearchManager.getHandler();
    }
 }

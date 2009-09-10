@@ -18,31 +18,29 @@
  */
 package org.exoplatform.services.jcr.impl.xml.exporting;
 
-import javax.jcr.NamespaceException;
-import javax.jcr.NamespaceRegistry;
-import javax.jcr.RepositoryException;
-
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+
+import javax.jcr.NamespaceException;
+import javax.jcr.NamespaceRegistry;
+import javax.jcr.RepositoryException;
 
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version
  */
-public abstract class HandlingContentExporter
-   extends BaseXmlExporter
+public abstract class HandlingContentExporter extends BaseXmlExporter
 {
 
    protected final ContentHandler contentHandler;
 
    public HandlingContentExporter(ContentHandler handler, ItemDataConsumer dataManager,
-            NamespaceRegistry namespaceRegistry, ValueFactoryImpl systemValueFactory, boolean skipBinary,
-            boolean noRecurse) throws NamespaceException, RepositoryException
+      NamespaceRegistry namespaceRegistry, ValueFactoryImpl systemValueFactory, boolean skipBinary, boolean noRecurse)
+      throws NamespaceException, RepositoryException
    {
 
       super(dataManager, namespaceRegistry, systemValueFactory, skipBinary, noRecurse, noRecurse ? 1 : -1);

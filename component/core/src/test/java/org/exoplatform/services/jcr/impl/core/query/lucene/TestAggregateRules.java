@@ -17,6 +17,10 @@
 
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
+import org.exoplatform.services.jcr.impl.core.query.BaseQueryTest;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.StringBufferInputStream;
@@ -29,19 +33,13 @@ import javax.jcr.query.QueryResult;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-
-import org.exoplatform.services.jcr.impl.core.query.BaseQueryTest;
-
 /**
  * Created by The eXo Platform SAS Author : Sergey Karpenko <sergey.karpenko@exoplatform.com.ua>
  * 
  * @version $Id: TestAggregateRules.java 11931 2008-03-14 09:29:17Z serg $
  */
 
-public class TestAggregateRules
-   extends BaseQueryTest
+public class TestAggregateRules extends BaseQueryTest
 {
 
    public final String fileName = "FileName";
@@ -53,13 +51,11 @@ public class TestAggregateRules
          // add aggregate rules to indexing configuration
 
          String conf =
-                  "<?xml version=\"1.0\"?>"
-                           + "\n"
-                           + "<!DOCTYPE configuration SYSTEM \"http://www.exoplatform.org/dtd/indexing-configuration-1.0.dtd\">"
-                           + "\n" + "<configuration xmlns:jcr=\"http://www.jcp.org/jcr/1.0\"" + "\n"
-                           + " xmlns:nt=\"http://www.jcp.org/jcr/nt/1.0\">" + "\n"
-                           + "<aggregate primaryType=\"nt:file\">" + "\n" + "<include>jcr:content</include>" + "\n"
-                           + "</aggregate>" + "\n" + "</configuration>";
+            "<?xml version=\"1.0\"?>" + "\n"
+               + "<!DOCTYPE configuration SYSTEM \"http://www.exoplatform.org/dtd/indexing-configuration-1.0.dtd\">"
+               + "\n" + "<configuration xmlns:jcr=\"http://www.jcp.org/jcr/1.0\"" + "\n"
+               + " xmlns:nt=\"http://www.jcp.org/jcr/nt/1.0\">" + "\n" + "<aggregate primaryType=\"nt:file\">" + "\n"
+               + "<include>jcr:content</include>" + "\n" + "</aggregate>" + "\n" + "</configuration>";
 
          InputStream is = new StringBufferInputStream(conf);
 
@@ -74,7 +70,7 @@ public class TestAggregateRules
          assertNotNull(configNode);
 
          IndexingConfigurationImpl indexingConfigurationImpl =
-                  (IndexingConfigurationImpl) defaultSearchIndex.getIndexingConfig();
+            (IndexingConfigurationImpl)defaultSearchIndex.getIndexingConfig();
          indexingConfigurationImpl.addAggregateRule(configNode);
 
          // create node nt:file
@@ -83,7 +79,7 @@ public class TestAggregateRules
          content.setProperty("jcr:mimeType", "text/plain");
          content.setProperty("jcr:lastModified", Calendar.getInstance());
          content.setProperty("jcr:data", new ByteArrayInputStream("The quick brown fox jump over the lazy dog"
-                  .getBytes()));
+            .getBytes()));
          session.save();
 
          QueryManager qman = this.workspace.getQueryManager();

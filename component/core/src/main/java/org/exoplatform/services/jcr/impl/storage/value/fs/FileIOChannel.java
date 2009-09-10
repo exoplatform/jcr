@@ -18,12 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.exoplatform.services.log.Log;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.storage.value.ValueOperation;
@@ -33,6 +27,12 @@ import org.exoplatform.services.jcr.impl.storage.value.fs.operations.WriteValue;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by The eXo Platform SAS.
@@ -40,9 +40,7 @@ import org.exoplatform.services.log.ExoLogger;
  * @author Gennady Azarenkov
  * @version $Id: FileIOChannel.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public abstract class FileIOChannel
-   extends ValueFileIOHelper
-   implements ValueIOChannel
+public abstract class FileIOChannel extends ValueFileIOHelper implements ValueIOChannel
 {
 
    /**

@@ -18,15 +18,15 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
+import org.exoplatform.services.jcr.impl.dataflow.AbstractValueData;
+import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.jcr.impl.dataflow.AbstractValueData;
-import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 
 /**
  * Created by The eXo Platform SAS.
@@ -35,8 +35,7 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
  * @version $Id: FileStreamPersistedValueData.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class FileStreamPersistedValueData
-   extends AbstractValueData
+public class FileStreamPersistedValueData extends AbstractValueData
 {
 
    protected final File file;
@@ -67,7 +66,7 @@ public class FileStreamPersistedValueData
    public byte[] getAsByteArray() throws IllegalStateException
    {
       throw new IllegalStateException(
-               "It is illegal to call on FileStreamPersistedValueData due to potential lack of memory");
+         "It is illegal to call on FileStreamPersistedValueData due to potential lack of memory");
    }
 
    /**

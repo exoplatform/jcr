@@ -28,8 +28,7 @@ import javax.jcr.Node;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestVersionLocks.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class TestVersionLocks
-   extends BaseVersionTest
+public class TestVersionLocks extends BaseVersionTest
 {
 
    protected final String TEST_ROOT = "lockable_version_test";

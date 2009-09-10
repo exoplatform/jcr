@@ -18,15 +18,14 @@
  */
 package org.exoplatform.services.jcr.usecases.common;
 
+import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
+
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
 
-import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
-
-public class JCRSystemSessionTest
-   extends BaseUsecasesTest
+public class JCRSystemSessionTest extends BaseUsecasesTest
 {
 
    protected void tearDown() throws Exception

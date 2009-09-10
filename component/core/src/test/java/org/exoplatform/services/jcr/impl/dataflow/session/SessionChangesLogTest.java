@@ -18,15 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.session;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
-import javax.jcr.Credentials;
-import javax.jcr.PropertyType;
-import javax.jcr.Repository;
-import javax.jcr.RepositoryException;
-
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
@@ -41,6 +32,15 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import javax.jcr.Credentials;
+import javax.jcr.PropertyType;
+import javax.jcr.Repository;
+import javax.jcr.RepositoryException;
+
 /**
  * Created by The eXo Platform SAS
  * 
@@ -49,8 +49,7 @@ import org.exoplatform.services.jcr.util.IdGenerator;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: SessionChangesLogTest.java 11962 2008-03-16 16:31:14Z gazarenkov $
  */
-public class SessionChangesLogTest
-   extends JcrImplBaseTest
+public class SessionChangesLogTest extends JcrImplBaseTest
 {
 
    // for makeNotThisThreadLog() method, contains SessionChangesLog and its sessionId
@@ -83,7 +82,7 @@ public class SessionChangesLogTest
    {
       super.setUp();
 
-      NodeImpl testRoot = (NodeImpl) root.addNode("sessionLinkRoot");
+      NodeImpl testRoot = (NodeImpl)root.addNode("sessionLinkRoot");
       session.save();
    }
 
@@ -93,7 +92,7 @@ public class SessionChangesLogTest
 
       if (root.hasNode("sessionLinkRoot"))
       {
-         NodeImpl testRoot = (NodeImpl) root.getNode("sessionLinkRoot");
+         NodeImpl testRoot = (NodeImpl)root.getNode("sessionLinkRoot");
          testRoot.remove();
          session.save();
       }
@@ -119,7 +118,7 @@ public class SessionChangesLogTest
             SessionImpl userSession;
             try
             {
-               userSession = (SessionImpl) frepository.login(fcredentials, "ws");
+               userSession = (SessionImpl)frepository.login(fcredentials, "ws");
                chlog[0] = new SessionChangesLogInfo(new SessionChangesLog(userSession.getId()), userSession.getId());
             }
             catch (RepositoryException e)
@@ -140,7 +139,7 @@ public class SessionChangesLogTest
    private SessionImpl getRegisteredSession(String sessionId)
    {
 
-      SessionRegistry sreg = (SessionRegistry) session.getContainer().getComponentInstanceOfType(SessionRegistry.class);
+      SessionRegistry sreg = (SessionRegistry)session.getContainer().getComponentInstanceOfType(SessionRegistry.class);
 
       return sreg.getSession(sessionId);
    }
@@ -166,7 +165,7 @@ public class SessionChangesLogTest
 
       SessionChangesLogInfo chlog = makeNotThisThreadLog();
       assertEquals("Session must be same as given id owns", chlog.getSessionId(), getRegisteredSession(
-               chlog.getLog().getSessionId()).getId());
+         chlog.getLog().getSessionId()).getId());
    }
 
    public void testSessionLogout() throws Exception
@@ -190,9 +189,9 @@ public class SessionChangesLogTest
 
       List<SessionChangesLogInfo> logs = new ArrayList<SessionChangesLogInfo>();
 
-      NodeImpl testRoot = (NodeImpl) root.getNode("sessionLinkRoot");
+      NodeImpl testRoot = (NodeImpl)root.getNode("sessionLinkRoot");
 
-      NodeData parent = (NodeData) testRoot.getData();
+      NodeData parent = (NodeData)testRoot.getData();
 
       for (int i = 1; i <= 1000; i++)
       {
@@ -206,7 +205,7 @@ public class SessionChangesLogTest
 
          // jcr:primaryType
          TransientPropertyData ndpt =
-                  TransientPropertyData.createPropertyData(ndata, Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false);
+            TransientPropertyData.createPropertyData(ndata, Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false);
          ndpt.setValue(new TransientValueData(ndata.getPrimaryTypeName()));
 
          slog.add(ItemState.createAddedState(ndata));

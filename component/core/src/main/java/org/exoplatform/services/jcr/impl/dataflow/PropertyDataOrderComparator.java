@@ -18,18 +18,17 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
-import java.util.Comparator;
-
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.impl.Constants;
+
+import java.util.Comparator;
 
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version
  */
-public class PropertyDataOrderComparator
-   implements Comparator<PropertyData>
+public class PropertyDataOrderComparator implements Comparator<PropertyData>
 {
 
    public int compare(PropertyData p1, PropertyData p2)

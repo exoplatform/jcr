@@ -18,13 +18,12 @@
  */
 package org.exoplatform.services.jcr.impl.tools.tree;
 
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.jcr.impl.tools.tree.generator.NodeGenerator;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
 
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>

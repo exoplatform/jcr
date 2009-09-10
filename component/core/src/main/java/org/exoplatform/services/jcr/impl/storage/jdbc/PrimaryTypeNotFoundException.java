@@ -18,9 +18,9 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc;
 
-import javax.jcr.ItemNotFoundException;
-
 import org.exoplatform.services.jcr.datamodel.QPath;
+
+import javax.jcr.ItemNotFoundException;
 
 /**
  * Created by The eXo Platform SAS
@@ -30,8 +30,7 @@ import org.exoplatform.services.jcr.datamodel.QPath;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: PrimaryTypeNotFoundException.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class PrimaryTypeNotFoundException
-   extends ItemNotFoundException
+public class PrimaryTypeNotFoundException extends ItemNotFoundException
 {
 
    /**

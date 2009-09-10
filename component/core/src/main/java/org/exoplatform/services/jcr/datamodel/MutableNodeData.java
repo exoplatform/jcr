@@ -27,8 +27,7 @@ import org.exoplatform.services.jcr.access.AccessControlList;
  * @version $Id: MutableNodeData.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public interface MutableNodeData
-   extends NodeData, MutableItemData
+public interface MutableNodeData extends NodeData, MutableItemData
 {
 
    void setOrderNumber(int orderNum);

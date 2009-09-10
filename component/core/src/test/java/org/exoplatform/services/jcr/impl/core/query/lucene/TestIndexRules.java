@@ -17,15 +17,14 @@
 
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import javax.jcr.Node;
-
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.TermQuery;
-
 import org.exoplatform.services.jcr.impl.core.query.BaseQueryTest;
+
+import javax.jcr.Node;
 
 /**
  * Created by The eXo Platform SAS Author : Sergey Karpenko <sergey.karpenko@exoplatform.com.ua>
@@ -33,8 +32,7 @@ import org.exoplatform.services.jcr.impl.core.query.BaseQueryTest;
  * @version $Id: TestIndexRules.java 11908 2008-03-13 16:00:12Z ksm $
  */
 
-public class TestIndexRules
-   extends BaseQueryTest
+public class TestIndexRules extends BaseQueryTest
 {
 
    public final String fName = "FileName";

@@ -18,16 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import javax.jcr.AccessDeniedException;
-import javax.jcr.ReferentialIntegrityException;
-import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.log.Log;
-
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.access.AccessManager;
 import org.exoplatform.services.jcr.access.PermissionType;
@@ -39,10 +29,18 @@ import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
-import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.ConversationState;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import javax.jcr.AccessDeniedException;
+import javax.jcr.ReferentialIntegrityException;
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS 15.12.2006
@@ -50,8 +48,7 @@ import org.exoplatform.services.security.ConversationState;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: ItemDataRemoveVisitor.java 14100 2008-05-12 10:53:47Z gazarenkov $
  */
-public class ItemDataRemoveVisitor
-   extends ItemDataTraversingVisitor
+public class ItemDataRemoveVisitor extends ItemDataTraversingVisitor
 {
 
    private static Log log = ExoLogger.getLogger("jcr.ItemDataRemoveVisitor");
@@ -82,7 +79,7 @@ public class ItemDataRemoveVisitor
    }
 
    public ItemDataRemoveVisitor(ItemDataConsumer dataManager, QPath ancestorToSave,
-            NodeTypeDataManager nodeTypeManager, AccessManager accessManager, ConversationState userState)
+      NodeTypeDataManager nodeTypeManager, AccessManager accessManager, ConversationState userState)
    {
       super(dataManager);
       this.nodeTypeManager = nodeTypeManager;
@@ -111,11 +108,11 @@ public class ItemDataRemoveVisitor
 
    protected void validateAccessDenied(PropertyData property) throws RepositoryException
    {
-      NodeData parent = (NodeData) dataManager.getItemData(property.getParentIdentifier());
+      NodeData parent = (NodeData)dataManager.getItemData(property.getParentIdentifier());
       if (!accessManager.hasPermission(parent.getACL(), PermissionType.READ, userState.getIdentity()))
       {
          throw new AccessDeniedException("Access denied " + property.getQPath().getAsString() + " for "
-                  + userState.getIdentity().getUserId() + " (get item parent by id)");
+            + userState.getIdentity().getUserId() + " (get item parent by id)");
       }
    }
 
@@ -157,7 +154,7 @@ public class ItemDataRemoveVisitor
       if (!accessManager.hasPermission(node.getACL(), PermissionType.READ, userState.getIdentity()))
       {
          throw new AccessDeniedException("Access denied " + node.getQPath().getAsString() + " for "
-                  + userState.getIdentity().getUserId() + " (get item by id)");
+            + userState.getIdentity().getUserId() + " (get item by id)");
 
       }
    }
@@ -190,16 +187,16 @@ public class ItemDataRemoveVisitor
          }
          else
          {
-            NodeData refParent = (NodeData) dataManager.getItemData(rpd.getParentIdentifier());
+            NodeData refParent = (NodeData)dataManager.getItemData(rpd.getParentIdentifier());
             if (!accessManager.hasPermission(refParent.getACL(), PermissionType.READ, userState.getIdentity()))
             {
                throw new AccessDeniedException("Access denied " + rpd.getQPath().getAsString() + " for "
-                        + userState.getIdentity().getUserId() + " (get reference property parent by id)");
+                  + userState.getIdentity().getUserId() + " (get reference property parent by id)");
             }
 
             throw new ReferentialIntegrityException("This node " + node.getQPath().getAsString()
-                     + " is currently the target of a REFERENCE property " + rpd.getQPath().getAsString()
-                     + " located in this workspace. Session id: " + userState.getIdentity().getUserId());
+               + " is currently the target of a REFERENCE property " + rpd.getQPath().getAsString()
+               + " located in this workspace. Session id: " + userState.getIdentity().getUserId());
          }
       }
    }
@@ -231,10 +228,10 @@ public class ItemDataRemoveVisitor
       {
          validate(property);
       }
-      property = (PropertyData) copyItemDataDelete(property);
+      property = (PropertyData)copyItemDataDelete(property);
       ItemState state =
-               new ItemState(property, ItemState.DELETED, true, ancestorToSave != null ? ancestorToSave : removedRoot
-                        .getQPath());
+         new ItemState(property, ItemState.DELETED, true, ancestorToSave != null ? ancestorToSave : removedRoot
+            .getQPath());
 
       if (!itemRemovedStates.contains(state))
          itemRemovedStates.add(state);
@@ -261,11 +258,10 @@ public class ItemDataRemoveVisitor
       }
       if (!(node instanceof TransientItemData))
       {
-         node = (NodeData) copyItemDataDelete(node);
+         node = (NodeData)copyItemDataDelete(node);
       }
       ItemState state =
-               new ItemState(node, ItemState.DELETED, true, ancestorToSave != null ? ancestorToSave : removedRoot
-                        .getQPath());
+         new ItemState(node, ItemState.DELETED, true, ancestorToSave != null ? ancestorToSave : removedRoot.getQPath());
       itemRemovedStates.add(state);
    }
 
@@ -308,26 +304,25 @@ public class ItemDataRemoveVisitor
       if (item.isNode())
       {
 
-         final NodeData node = (NodeData) item;
+         final NodeData node = (NodeData)item;
 
          // the node ACL can't be are null as ACL manager does care about this
          final AccessControlList acl = node.getACL();
          if (acl == null)
          {
             throw new RepositoryException("Node ACL is null. " + node.getQPath().getAsString() + " "
-                     + node.getIdentifier());
+               + node.getIdentifier());
          }
          return new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(), node
-                  .getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(), node.getParentIdentifier(),
-                  acl);
+            .getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(), node.getParentIdentifier(), acl);
       }
 
       // else - property
-      final PropertyData prop = (PropertyData) item;
+      final PropertyData prop = (PropertyData)item;
       // make a copy
       TransientPropertyData newData =
-               new TransientPropertyData(prop.getQPath(), prop.getIdentifier(), prop.getPersistedVersion(), prop
-                        .getType(), prop.getParentIdentifier(), prop.isMultiValued());
+         new TransientPropertyData(prop.getQPath(), prop.getIdentifier(), prop.getPersistedVersion(), prop.getType(),
+            prop.getParentIdentifier(), prop.isMultiValued());
 
       // set null as it's delete state, was set list of createTransientCopy()
       newData.setValues(null);

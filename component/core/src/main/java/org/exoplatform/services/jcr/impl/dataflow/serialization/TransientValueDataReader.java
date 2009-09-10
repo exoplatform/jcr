@@ -18,16 +18,16 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
 import org.exoplatform.services.jcr.dataflow.serialization.SerializationConstants;
 import org.exoplatform.services.jcr.dataflow.serialization.UnknownClassIdException;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 /**
  * Created by The eXo Platform SAS. <br/>
@@ -125,8 +125,7 @@ public class TransientValueDataReader
             try
             {
                TransientValueData vd =
-                        new TransientValueData(orderNumber, null, null, sf, fileCleaner, maxBufferSize, tempDirectory,
-                                 true);
+                  new TransientValueData(orderNumber, null, null, sf, fileCleaner, maxBufferSize, tempDirectory, true);
 
                // skip data in input stream
                if (in.skip(length) != length)
@@ -158,7 +157,7 @@ public class TransientValueDataReader
 
          if (length > 0)
          {
-            buff = new byte[(int) length];
+            buff = new byte[(int)length];
             src.readFully(buff);
             sfout.write(buff);
          }

@@ -18,6 +18,23 @@
  */
 package org.exoplatform.services.jcr;
 
+import junit.framework.TestCase;
+
+import org.exoplatform.container.StandaloneContainer;
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.core.CredentialsImpl;
+import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
+import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.dataflow.serialization.ReaderSpoolFileHolder;
+import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.WorkspaceFileCleanerHolder;
+import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -32,31 +49,13 @@ import javax.jcr.RepositoryException;
 import javax.jcr.ValueFactory;
 import javax.jcr.Workspace;
 
-import junit.framework.TestCase;
-
-import org.exoplatform.services.log.Log;
-import org.exoplatform.container.StandaloneContainer;
-import org.exoplatform.services.jcr.config.WorkspaceEntry;
-import org.exoplatform.services.jcr.core.CredentialsImpl;
-import org.exoplatform.services.jcr.core.ManageableRepository;
-import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
-import org.exoplatform.services.jcr.impl.core.NodeImpl;
-import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
-import org.exoplatform.services.jcr.impl.dataflow.serialization.ReaderSpoolFileHolder;
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.jcr.impl.util.io.WorkspaceFileCleanerHolder;
-import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
-import org.exoplatform.services.log.ExoLogger;
-
 /**
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov </a>
  * @version $Id: BaseStandaloneTest.java 11908 2008-03-13 16:00:12Z ksm $
  */
-public abstract class BaseStandaloneTest
-   extends TestCase
+public abstract class BaseStandaloneTest extends TestCase
 {
 
    protected static Log log = ExoLogger.getLogger("jcr.JCRTest");
@@ -87,8 +86,7 @@ public abstract class BaseStandaloneTest
 
    public ReaderSpoolFileHolder holder;
 
-   protected class CompareStreamException
-      extends Exception
+   protected class CompareStreamException extends Exception
    {
 
       CompareStreamException(String message)
@@ -106,7 +104,7 @@ public abstract class BaseStandaloneTest
    {
 
       String containerConf =
-               BaseStandaloneTest.class.getResource(System.getProperty("jcr.test.configuration.file")).toString();
+         BaseStandaloneTest.class.getResource(System.getProperty("jcr.test.configuration.file")).toString();
       String loginConf = BaseStandaloneTest.class.getResource("/login.conf").toString();
 
       StandaloneContainer.addConfigurationURL(containerConf);
@@ -123,10 +121,10 @@ public abstract class BaseStandaloneTest
 
       credentials = new CredentialsImpl("admin", "admin".toCharArray());
 
-      repositoryService = (RepositoryService) container.getComponentInstanceOfType(RepositoryService.class);
-      repository = (RepositoryImpl) repositoryService.getDefaultRepository();
+      repositoryService = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
+      repository = (RepositoryImpl)repositoryService.getDefaultRepository();
 
-      session = (SessionImpl) repository.login(credentials, "ws");
+      session = (SessionImpl)repository.login(credentials, "ws");
       workspace = session.getWorkspace();
       root = session.getRootNode();
       valueFactory = session.getValueFactory();
@@ -135,14 +133,14 @@ public abstract class BaseStandaloneTest
       ManageableRepository repository = repositoryService.getDefaultRepository();
       WorkspaceContainerFacade wsc = repository.getWorkspaceContainer("ws");
 
-      WorkspaceEntry wconf = (WorkspaceEntry) wsc.getComponent(WorkspaceEntry.class);
+      WorkspaceEntry wconf = (WorkspaceEntry)wsc.getComponent(WorkspaceEntry.class);
 
       maxBufferSize =
-               wconf.getContainer().getParameterInteger(WorkspaceDataContainer.MAXBUFFERSIZE_PROP,
-                        WorkspaceDataContainer.DEF_MAXBUFFERSIZE);
+         wconf.getContainer().getParameterInteger(WorkspaceDataContainer.MAXBUFFERSIZE_PROP,
+            WorkspaceDataContainer.DEF_MAXBUFFERSIZE);
 
       WorkspaceFileCleanerHolder wfcleaner =
-               (WorkspaceFileCleanerHolder) wsc.getComponent(WorkspaceFileCleanerHolder.class);
+         (WorkspaceFileCleanerHolder)wsc.getComponent(WorkspaceFileCleanerHolder.class);
       fileCleaner = wfcleaner.getFileCleaner();
       holder = new ReaderSpoolFileHolder();
 
@@ -289,7 +287,7 @@ public abstract class BaseStandaloneTest
     * @throws IOException
     */
    protected void compareStream(InputStream etalon, InputStream data, long etalonPos, long dataPos, long length)
-            throws IOException, CompareStreamException
+      throws IOException, CompareStreamException
    {
 
       int dindex = 0;
@@ -315,12 +313,12 @@ public abstract class BaseStandaloneTest
             catch (IOException e)
             {
                throw new CompareStreamException("Streams is not equals by length or data stream is unreadable. Cause: "
-                        + e.getMessage());
+                  + e.getMessage());
             }
 
             if (dread == -1)
                throw new CompareStreamException(
-                        "Streams is not equals by length. Data end-of-stream reached at position " + dindex);
+                  "Streams is not equals by length. Data end-of-stream reached at position " + dindex);
 
             for (int i = 0; i < dread; i++)
             {
@@ -328,9 +326,8 @@ public abstract class BaseStandaloneTest
                byte db = dbuff[i];
                if (eb != db)
                   throw new CompareStreamException("Streams is not equals. Wrong byte stored at position " + dindex
-                           + " of data stream. Expected 0x" + Integer.toHexString(eb) + " '" + new String(new byte[]
-                           {eb}) + "' but found 0x" + Integer.toHexString(db) + " '" + new String(new byte[]
-                           {db}) + "'");
+                     + " of data stream. Expected 0x" + Integer.toHexString(eb) + " '" + new String(new byte[]{eb})
+                     + "' but found 0x" + Integer.toHexString(db) + " '" + new String(new byte[]{db}) + "'");
 
                erindex++;
                dindex++;
@@ -345,7 +342,7 @@ public abstract class BaseStandaloneTest
 
       if (data.available() > 0)
          throw new CompareStreamException("Streams is not equals by length. Data stream contains more data. Were read "
-                  + dindex);
+            + dindex);
    }
 
    protected void skipStream(InputStream stream, long pos) throws IOException
@@ -420,8 +417,8 @@ public abstract class BaseStandaloneTest
    {
       String info = "";
       info =
-               "free: " + mb(Runtime.getRuntime().freeMemory()) + "M of " + mb(Runtime.getRuntime().totalMemory())
-                        + "M (max: " + mb(Runtime.getRuntime().maxMemory()) + "M)";
+         "free: " + mb(Runtime.getRuntime().freeMemory()) + "M of " + mb(Runtime.getRuntime().totalMemory())
+            + "M (max: " + mb(Runtime.getRuntime().maxMemory()) + "M)";
       return info;
    }
 

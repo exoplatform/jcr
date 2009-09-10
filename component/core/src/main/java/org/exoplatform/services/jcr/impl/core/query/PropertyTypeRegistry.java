@@ -40,8 +40,7 @@ import org.exoplatform.services.log.ExoLogger;
  * definitions and its property types. It provides a fast type lookup for a
  * given property name.
  */
-public class PropertyTypeRegistry
-   implements NodeTypeManagerListener
+public class PropertyTypeRegistry implements NodeTypeManagerListener
 {
 
    /** The logger instance for this class */

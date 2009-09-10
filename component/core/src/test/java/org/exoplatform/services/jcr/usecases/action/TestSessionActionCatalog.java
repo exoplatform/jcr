@@ -18,19 +18,6 @@
  */
 package org.exoplatform.services.jcr.usecases.action;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
-import javax.jcr.ItemExistsException;
-import javax.jcr.Node;
-import javax.jcr.PathNotFoundException;
-import javax.jcr.RepositoryException;
-import javax.jcr.lock.LockException;
-import javax.jcr.nodetype.ConstraintViolationException;
-import javax.jcr.observation.Event;
-import javax.jcr.version.VersionException;
-
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ObjectParameter;
 import org.exoplatform.services.command.action.ActionMatcher;
@@ -49,21 +36,33 @@ import org.exoplatform.services.jcr.impl.ext.action.AddActionsPlugin.ActionsConf
 import org.exoplatform.services.jcr.observation.ExtendedEvent;
 import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
 
-public class TestSessionActionCatalog
-   extends BaseUsecasesTest
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import javax.jcr.ItemExistsException;
+import javax.jcr.Node;
+import javax.jcr.PathNotFoundException;
+import javax.jcr.RepositoryException;
+import javax.jcr.lock.LockException;
+import javax.jcr.nodetype.ConstraintViolationException;
+import javax.jcr.observation.Event;
+import javax.jcr.version.VersionException;
+
+public class TestSessionActionCatalog extends BaseUsecasesTest
 {
 
    private NodeTypeDataManager ntHolder;
 
    public void testDumpMatcher() throws Exception
    {
-      NodeImpl node = (NodeImpl) root.addNode("test");
-      NodeImpl node1 = (NodeImpl) root.addNode("test1");
-      QPath[] paths = new QPath[]
-      {node.getInternalPath(), node1.getInternalPath()};
+      NodeImpl node = (NodeImpl)root.addNode("test");
+      NodeImpl node1 = (NodeImpl)root.addNode("test1");
+      QPath[] paths = new QPath[]{node.getInternalPath(), node1.getInternalPath()};
 
-      SessionEventMatcher matcher = new SessionEventMatcher(Event.NODE_ADDED, paths, true, null, new InternalQName[]
-      {Constants.NT_BASE, Constants.NT_UNSTRUCTURED, Constants.NT_QUERY}, ntHolder);
+      SessionEventMatcher matcher =
+         new SessionEventMatcher(Event.NODE_ADDED, paths, true, null, new InternalQName[]{Constants.NT_BASE,
+            Constants.NT_UNSTRUCTURED, Constants.NT_QUERY}, ntHolder);
       System.out.println(matcher.dump());
    }
 
@@ -77,14 +76,14 @@ public class TestSessionActionCatalog
    public void testIfServicePresent() throws Exception
    {
       SessionActionCatalog catalog =
-               (SessionActionCatalog) container.getComponentInstanceOfType(SessionActionCatalog.class);
+         (SessionActionCatalog)container.getComponentInstanceOfType(SessionActionCatalog.class);
 
       assertNotNull("No SessionActionCatalog configured!", catalog);
       Iterator<ActionMatcher> matchers = catalog.getAllEntries().keySet().iterator();
       System.out.println(">>testIfServicePresent");
       while (matchers.hasNext())
       {
-         System.out.println(((SessionEventMatcher) matchers.next()).dump());
+         System.out.println(((SessionEventMatcher)matchers.next()).dump());
       }
 
    }
@@ -92,12 +91,13 @@ public class TestSessionActionCatalog
    public void testLockActions() throws Exception
    {
       SessionActionCatalog catalog =
-               (SessionActionCatalog) container.getComponentInstanceOfType(SessionActionCatalog.class);
+         (SessionActionCatalog)container.getComponentInstanceOfType(SessionActionCatalog.class);
       catalog.clear();
 
       // test by path
-      SessionEventMatcher matcher = new SessionEventMatcher(ExtendedEvent.LOCK, null, true, null, new InternalQName[]
-      {Constants.NT_UNSTRUCTURED}, ntHolder);
+      SessionEventMatcher matcher =
+         new SessionEventMatcher(ExtendedEvent.LOCK, null, true, null, new InternalQName[]{Constants.NT_UNSTRUCTURED},
+            ntHolder);
       DummyAction dAction = new DummyAction();
       catalog.addAction(matcher, dAction);
 
@@ -116,13 +116,13 @@ public class TestSessionActionCatalog
    public void testMatchDeepPath() throws Exception
    {
       SessionActionCatalog catalog =
-               (SessionActionCatalog) container.getComponentInstanceOfType(SessionActionCatalog.class);
+         (SessionActionCatalog)container.getComponentInstanceOfType(SessionActionCatalog.class);
       catalog.clear();
-      NodeImpl node = (NodeImpl) root.addNode("test");
+      NodeImpl node = (NodeImpl)root.addNode("test");
 
       // test by path
-      SessionEventMatcher matcher = new SessionEventMatcher(Event.NODE_ADDED, new QPath[]
-      {node.getInternalPath()}, true, null, null, ntHolder);
+      SessionEventMatcher matcher =
+         new SessionEventMatcher(Event.NODE_ADDED, new QPath[]{node.getInternalPath()}, true, null, null, ntHolder);
       catalog.addAction(matcher, new DummyAction());
       Condition cond = new Condition();
 
@@ -151,7 +151,7 @@ public class TestSessionActionCatalog
    public void testMatchEventType() throws Exception
    {
       SessionActionCatalog catalog =
-               (SessionActionCatalog) container.getComponentInstanceOfType(SessionActionCatalog.class);
+         (SessionActionCatalog)container.getComponentInstanceOfType(SessionActionCatalog.class);
       catalog.clear();
       assertEquals(0, catalog.getAllActions().size());
 
@@ -175,56 +175,50 @@ public class TestSessionActionCatalog
    public void testMatchNodeTypes() throws Exception
    {
       SessionActionCatalog catalog =
-               (SessionActionCatalog) container.getComponentInstanceOfType(SessionActionCatalog.class);
+         (SessionActionCatalog)container.getComponentInstanceOfType(SessionActionCatalog.class);
       catalog.clear();
 
       // test by path
       SessionEventMatcher matcher =
-               new SessionEventMatcher(ExtendedEvent.ADD_MIXIN, null, true, null, new InternalQName[]
-               {Constants.MIX_LOCKABLE}, ntHolder);
+         new SessionEventMatcher(ExtendedEvent.ADD_MIXIN, null, true, null,
+            new InternalQName[]{Constants.MIX_LOCKABLE}, ntHolder);
       catalog.addAction(matcher, new DummyAction());
       Condition cond = new Condition();
       cond.put(SessionEventMatcher.EVENTTYPE_KEY, ExtendedEvent.ADD_MIXIN);
 
       // test for this nodetype
-      cond.put(SessionEventMatcher.NODETYPES_KEY, new InternalQName[]
-      {Constants.NT_UNSTRUCTURED});
+      cond.put(SessionEventMatcher.NODETYPES_KEY, new InternalQName[]{Constants.NT_UNSTRUCTURED});
       assertEquals(0, catalog.getActions(cond).size());
 
-      cond.put(SessionEventMatcher.NODETYPES_KEY, new InternalQName[]
-      {Constants.MIX_LOCKABLE});
+      cond.put(SessionEventMatcher.NODETYPES_KEY, new InternalQName[]{Constants.MIX_LOCKABLE});
       assertEquals(1, catalog.getActions(cond).size());
    }
 
    public void testMatchSuperNodeTypes() throws Exception
    {
       SessionActionCatalog catalog =
-               (SessionActionCatalog) container.getComponentInstanceOfType(SessionActionCatalog.class);
+         (SessionActionCatalog)container.getComponentInstanceOfType(SessionActionCatalog.class);
       catalog.clear();
 
       // test by path
       SessionEventMatcher matcher =
-               new SessionEventMatcher(ExtendedEvent.NODE_ADDED, null, true, null, new InternalQName[]
-               {Constants.NT_HIERARCHYNODE}, ntHolder);
+         new SessionEventMatcher(ExtendedEvent.NODE_ADDED, null, true, null,
+            new InternalQName[]{Constants.NT_HIERARCHYNODE}, ntHolder);
       catalog.addAction(matcher, new DummyAction());
       Condition cond = new Condition();
       cond.put(SessionEventMatcher.EVENTTYPE_KEY, ExtendedEvent.NODE_ADDED);
 
       // test for this nodetype
-      cond.put(SessionEventMatcher.NODETYPES_KEY, new InternalQName[]
-      {Constants.NT_UNSTRUCTURED});
+      cond.put(SessionEventMatcher.NODETYPES_KEY, new InternalQName[]{Constants.NT_UNSTRUCTURED});
       assertEquals(0, catalog.getActions(cond).size());
 
-      cond.put(SessionEventMatcher.NODETYPES_KEY, new InternalQName[]
-      {Constants.NT_HIERARCHYNODE});
+      cond.put(SessionEventMatcher.NODETYPES_KEY, new InternalQName[]{Constants.NT_HIERARCHYNODE});
       assertEquals(1, catalog.getActions(cond).size());
 
-      cond.put(SessionEventMatcher.NODETYPES_KEY, new InternalQName[]
-      {Constants.NT_FILE});
+      cond.put(SessionEventMatcher.NODETYPES_KEY, new InternalQName[]{Constants.NT_FILE});
       assertEquals(1, catalog.getActions(cond).size());
 
-      cond.put(SessionEventMatcher.NODETYPES_KEY, new InternalQName[]
-      {Constants.NT_FOLDER});
+      cond.put(SessionEventMatcher.NODETYPES_KEY, new InternalQName[]{Constants.NT_FOLDER});
       assertEquals(1, catalog.getActions(cond).size());
 
    }
@@ -232,13 +226,14 @@ public class TestSessionActionCatalog
    public void testMatchNotDeepPath() throws Exception
    {
       SessionActionCatalog catalog =
-               (SessionActionCatalog) container.getComponentInstanceOfType(SessionActionCatalog.class);
+         (SessionActionCatalog)container.getComponentInstanceOfType(SessionActionCatalog.class);
       catalog.clear();
-      NodeImpl node = (NodeImpl) root.addNode("test");
+      NodeImpl node = (NodeImpl)root.addNode("test");
 
       // test by path
-      SessionEventMatcher matcher = new SessionEventMatcher(Event.NODE_ADDED, new QPath[]
-      {((NodeImpl) root).getInternalPath()}, false, null, null, ntHolder);
+      SessionEventMatcher matcher =
+         new SessionEventMatcher(Event.NODE_ADDED, new QPath[]{((NodeImpl)root).getInternalPath()}, false, null, null,
+            ntHolder);
       catalog.addAction(matcher, new DummyAction());
       Condition cond = new Condition();
 
@@ -263,12 +258,12 @@ public class TestSessionActionCatalog
    public void testMatchWorkspace() throws Exception
    {
       SessionActionCatalog catalog =
-               (SessionActionCatalog) container.getComponentInstanceOfType(SessionActionCatalog.class);
+         (SessionActionCatalog)container.getComponentInstanceOfType(SessionActionCatalog.class);
       catalog.clear();
 
       //
-      SessionEventMatcher matcher = new SessionEventMatcher(Event.NODE_ADDED, null, true, new String[]
-      {"production"}, null, ntHolder);
+      SessionEventMatcher matcher =
+         new SessionEventMatcher(Event.NODE_ADDED, null, true, new String[]{"production"}, null, ntHolder);
       catalog.addAction(matcher, new DummyAction());
       Condition cond = new Condition();
       cond.put(SessionEventMatcher.EVENTTYPE_KEY, Event.NODE_ADDED);
@@ -285,8 +280,8 @@ public class TestSessionActionCatalog
    public void testPluginConfiguration() throws Exception
    {
       ActionConfiguration ac =
-               new ActionConfiguration("org.exoplatform.services.jcr.usecases.action.DummyAction",
-                        "addNode,addProperty", "/test,/exo:test1", true, null, "nt:base");
+         new ActionConfiguration("org.exoplatform.services.jcr.usecases.action.DummyAction", "addNode,addProperty",
+            "/test,/exo:test1", true, null, "nt:base");
       List actionsList = new ArrayList();
       ActionsConfig actions = new ActionsConfig();
       actions.setActions(actionsList);
@@ -299,7 +294,7 @@ public class TestSessionActionCatalog
       AddActionsPlugin aap = new AddActionsPlugin(params);
 
       SessionActionCatalog catalog =
-               (SessionActionCatalog) container.getComponentInstanceOfType(SessionActionCatalog.class);
+         (SessionActionCatalog)container.getComponentInstanceOfType(SessionActionCatalog.class);
       catalog.clear();
 
       catalog.addPlugin(aap);
@@ -318,26 +313,26 @@ public class TestSessionActionCatalog
 
       while (matchers.hasNext())
       {
-         System.out.println(((SessionEventMatcher) matchers.next()).dump());
+         System.out.println(((SessionEventMatcher)matchers.next()).dump());
       }
    }
 
    public void testReadAction() throws ItemExistsException, PathNotFoundException, VersionException,
-            ConstraintViolationException, LockException, RepositoryException
+      ConstraintViolationException, LockException, RepositoryException
    {
       SessionActionCatalog catalog =
-               (SessionActionCatalog) container.getComponentInstanceOfType(SessionActionCatalog.class);
+         (SessionActionCatalog)container.getComponentInstanceOfType(SessionActionCatalog.class);
       catalog.clear();
 
       // test by path
 
       Node testNode = root.addNode("testNode");
-      PropertyImpl prop = (PropertyImpl) testNode.setProperty("test", "test");
+      PropertyImpl prop = (PropertyImpl)testNode.setProperty("test", "test");
       root.save();
 
-      SessionEventMatcher matcher = new SessionEventMatcher(ExtendedEvent.READ, new QPath[]
-      {prop.getData().getQPath()}, true, null, new InternalQName[]
-      {Constants.NT_UNSTRUCTURED}, ntHolder);
+      SessionEventMatcher matcher =
+         new SessionEventMatcher(ExtendedEvent.READ, new QPath[]{prop.getData().getQPath()}, true, null,
+            new InternalQName[]{Constants.NT_UNSTRUCTURED}, ntHolder);
       DummyAction dAction = new DummyAction();
 
       catalog.addAction(matcher, dAction);
@@ -351,13 +346,13 @@ public class TestSessionActionCatalog
    public void testAddMixinAction() throws Exception
    {
       SessionActionCatalog catalog =
-               (SessionActionCatalog) container.getComponentInstanceOfType(SessionActionCatalog.class);
+         (SessionActionCatalog)container.getComponentInstanceOfType(SessionActionCatalog.class);
       catalog.clear();
 
       // test by path
       SessionEventMatcher matcher =
-               new SessionEventMatcher(ExtendedEvent.ADD_MIXIN, null, true, null, new InternalQName[]
-               {Constants.MIX_REFERENCEABLE, Constants.EXO_OWNEABLE}, ntHolder);
+         new SessionEventMatcher(ExtendedEvent.ADD_MIXIN, null, true, null, new InternalQName[]{
+            Constants.MIX_REFERENCEABLE, Constants.EXO_OWNEABLE}, ntHolder);
       DummyAction dAction = new DummyAction();
       catalog.addAction(matcher, dAction);
 
@@ -373,13 +368,13 @@ public class TestSessionActionCatalog
    public void testRemoveMixinAction() throws Exception
    {
       SessionActionCatalog catalog =
-               (SessionActionCatalog) container.getComponentInstanceOfType(SessionActionCatalog.class);
+         (SessionActionCatalog)container.getComponentInstanceOfType(SessionActionCatalog.class);
       catalog.clear();
 
       // test by path
       SessionEventMatcher matcher =
-               new SessionEventMatcher(ExtendedEvent.REMOVE_MIXIN, null, true, null, new InternalQName[]
-               {Constants.EXO_OWNEABLE}, ntHolder);
+         new SessionEventMatcher(ExtendedEvent.REMOVE_MIXIN, null, true, null,
+            new InternalQName[]{Constants.EXO_OWNEABLE}, ntHolder);
       DummyAction dAction = new DummyAction();
       catalog.addAction(matcher, dAction);
 

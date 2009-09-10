@@ -18,13 +18,6 @@
  */
 package org.exoplatform.services.jcr.usecases;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.jcr.PropertyType;
-
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.dataflow.ItemState;
@@ -43,6 +36,13 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.jcr.PropertyType;
+
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -52,8 +52,7 @@ import org.exoplatform.services.jcr.util.IdGenerator;
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a>
  * @version $Id: TestRollbackBigFiles.java 111 2008-11-11 11:11:11Z serg $
  */
-public class TestRollbackBigFiles
-   extends JcrImplBaseTest
+public class TestRollbackBigFiles extends JcrImplBaseTest
 {
 
    public void testRollback() throws Exception
@@ -62,7 +61,7 @@ public class TestRollbackBigFiles
       List<ItemState> list = new ArrayList<ItemState>();
 
       // create ADD node itemState
-      NodeData parent = (NodeData) ((NodeImpl) this.root).getData();
+      NodeData parent = (NodeData)((NodeImpl)this.root).getData();
       QPath ancestorToSave = parent.getQPath();
 
       JCRPath nodePath = session.getLocationFactory().parseRelPath("testNode");
@@ -70,8 +69,8 @@ public class TestRollbackBigFiles
 
       String id = IdGenerator.generate();
       TransientNodeData newNode =
-               new TransientNodeData(nodePath.getInternalPath(), id, -1, primaryType, new InternalQName[0], 0,
-                        ((NodeImpl) root).getInternalIdentifier(), ((NodeImpl) root).getACL());
+         new TransientNodeData(nodePath.getInternalPath(), id, -1, primaryType, new InternalQName[0], 0,
+            ((NodeImpl)root).getInternalIdentifier(), ((NodeImpl)root).getACL());
 
       ItemState state = new ItemState(newNode, ItemState.ADDED, false, parent.getQPath());
       list.add(state);
@@ -82,8 +81,8 @@ public class TestRollbackBigFiles
       JCRPath propPath = session.getLocationFactory().parseRelPath("bigProp");
 
       TransientPropertyData newProperty =
-               new TransientPropertyData(propPath.getInternalPath(), IdGenerator.generate(), -1, PropertyType.BINARY,
-                        newNode.getIdentifier(), false);
+         new TransientPropertyData(propPath.getInternalPath(), IdGenerator.generate(), -1, PropertyType.BINARY, newNode
+            .getIdentifier(), false);
 
       File f = this.createBLOBTempFile(1024);
       TransientValueData value = new TransientValueData(new FileInputStream(f));
@@ -94,8 +93,8 @@ public class TestRollbackBigFiles
       // crate broken node;
       nodePath = session.getLocationFactory().parseRelPath("testNodeBroken");
       newNode =
-               new TransientNodeData(nodePath.getInternalPath(), id, -1, primaryType, new InternalQName[0], 0,
-                        ((NodeImpl) root).getInternalIdentifier(), ((NodeImpl) root).getACL());
+         new TransientNodeData(nodePath.getInternalPath(), id, -1, primaryType, new InternalQName[0], 0,
+            ((NodeImpl)root).getInternalIdentifier(), ((NodeImpl)root).getACL());
 
       list.add(new ItemState(newNode, ItemState.ADDED, false, parent.getQPath()));
 
@@ -107,7 +106,7 @@ public class TestRollbackBigFiles
 
       WorkspaceContainerFacade wsc = repository.getWorkspaceContainer(workspace.getName());
 
-      PersistentDataManager dm = (PersistentDataManager) wsc.getComponent(PersistentDataManager.class);
+      PersistentDataManager dm = (PersistentDataManager)wsc.getComponent(PersistentDataManager.class);
       try
       {
          dm.save(tlog);

@@ -18,6 +18,9 @@
  */
 package org.exoplatform.services.jcr.api.search;
 
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
+
 import java.io.ByteArrayInputStream;
 import java.util.Calendar;
 
@@ -28,9 +31,6 @@ import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
 
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
-
 /**
  * Created by The eXo Platform SAS Author : Peter Nedonosko peter.nedonosko@exoplatform.com.ua
  * 22.10.2007
@@ -38,8 +38,7 @@ import org.exoplatform.services.jcr.impl.core.SessionImpl;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestBinarySearch.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class TestBinarySearch
-   extends JcrAPIBaseTest
+public class TestBinarySearch extends JcrAPIBaseTest
 {
 
    public void testSearchBinaryContent() throws Exception
@@ -75,7 +74,7 @@ public class TestBinarySearch
 
       session.save();
 
-      SessionImpl querySession = (SessionImpl) repository.login(credentials, "ws");
+      SessionImpl querySession = (SessionImpl)repository.login(credentials, "ws");
       String sqlQuery = "SELECT * FROM rma:record WHERE jcr:path LIKE '/queryNode/%' ";
       QueryManager manager = querySession.getWorkspace().getQueryManager();
       Query query = manager.createQuery(sqlQuery, Query.SQL);
@@ -104,7 +103,7 @@ public class TestBinarySearch
 
    public void testSearchBinaryContentAnotherSessionQueryManader() throws Exception
    {
-      SessionImpl querySession = (SessionImpl) repository.login(credentials, "ws");
+      SessionImpl querySession = (SessionImpl)repository.login(credentials, "ws");
 
       Node rootNode = session.getRootNode();
       Node queryNode = rootNode.addNode("queryNode", "nt:unstructured");

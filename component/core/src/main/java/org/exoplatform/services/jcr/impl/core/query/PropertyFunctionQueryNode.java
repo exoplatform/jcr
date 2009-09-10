@@ -30,8 +30,7 @@ import java.util.Set;
  * href="http://www.w3.org/TR/xquery-operators/#func-lower-case">fn:lower-case()</a></li>
  * </ul>
  */
-public class PropertyFunctionQueryNode
-   extends QueryNode
+public class PropertyFunctionQueryNode extends QueryNode
 {
 
    /**
@@ -113,7 +112,7 @@ public class PropertyFunctionQueryNode
    {
       if (obj instanceof PropertyFunctionQueryNode)
       {
-         PropertyFunctionQueryNode other = (PropertyFunctionQueryNode) obj;
+         PropertyFunctionQueryNode other = (PropertyFunctionQueryNode)obj;
          return functionName.equals(other.functionName);
       }
       return false;

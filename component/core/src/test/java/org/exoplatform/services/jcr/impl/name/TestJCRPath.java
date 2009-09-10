@@ -33,8 +33,7 @@ import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
  * @version $Id: TestJCRPath.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class TestJCRPath
-   extends TestCase
+public class TestJCRPath extends TestCase
 {
 
    private LocationFactory factory;
@@ -67,7 +66,7 @@ public class TestJCRPath
       assertEquals(namespaceRegistry.getNamespaceURIByPrefix("jcr"), name.getNamespace());
       assertEquals("jcr", name.getPrefix());
       assertEquals("[" + namespaceRegistry.getNamespaceURIByPrefix("jcr") + "]test", name.getInternalName()
-               .getAsString());
+         .getAsString());
 
       JCRName name1 = factory.createJCRName(name.getInternalName());
       assertTrue(name.equals(name1));
@@ -103,7 +102,7 @@ public class TestJCRPath
 
       assertEquals("/jcr:node/node1[2]/exo:node2", factory.createJCRPath(parent, "exo:node2").getAsString(false));
       assertEquals("/jcr:node/node1[2]/exo:node2/node3", factory.createJCRPath(parent, "exo:node2/node3").getAsString(
-               false));
+         false));
 
       assertTrue(path.equals(factory.createJCRPath(parent, "exo:node2")));
       QPath qpath = path.getInternalPath();

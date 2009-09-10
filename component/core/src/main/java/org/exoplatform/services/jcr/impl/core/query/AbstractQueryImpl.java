@@ -27,8 +27,7 @@ import org.exoplatform.services.jcr.impl.core.SessionImpl;
 /**
  * Defines common initialization methods for all query implementations.
  */
-public abstract class AbstractQueryImpl
-   implements Query
+public abstract class AbstractQueryImpl implements Query
 {
 
    /**
@@ -48,7 +47,7 @@ public abstract class AbstractQueryImpl
     *           if the query statement is invalid according to the specified <code>language</code>.
     */
    public abstract void init(SessionImpl session, SessionDataManager itemMgr, QueryHandler handler, String statement,
-            String language) throws InvalidQueryException;
+      String language) throws InvalidQueryException;
 
    /**
     * Initializes a query instance from a nt:query node.
@@ -68,5 +67,5 @@ public abstract class AbstractQueryImpl
     *           if another error occurs
     */
    public abstract void init(SessionImpl session, SessionDataManager itemMgr, QueryHandler handler, Node node)
-            throws InvalidQueryException, RepositoryException;
+      throws InvalidQueryException, RepositoryException;
 }

@@ -32,8 +32,7 @@ import java.util.List;
  * @version $Id: PlainChangesLogImpl.java 14464 2008-05-19 11:05:20Z pnedonosko $
  *          Stores collection of ItemStates
  */
-public class PlainChangesLogImpl
-   implements Externalizable, PlainChangesLog
+public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
 {
 
    private static final long serialVersionUID = 5624550860372364084L;
@@ -165,11 +164,10 @@ public class PlainChangesLogImpl
       String str = "ChangesLog: \n";
       for (int i = 0; i < items.size(); i++)
          str +=
-                  " " + ItemState.nameFromValue(items.get(i).getState()) + "\t"
-                           + items.get(i).getData().getIdentifier() + "\t" + "isPersisted="
-                           + items.get(i).isPersisted() + "\t" + "isEventFire=" + items.get(i).isEventFire() + "\t"
-                           + "isInternallyCreated=" + items.get(i).isInternallyCreated() + "\t"
-                           + items.get(i).getData().getQPath().getAsString() + "\n";
+            " " + ItemState.nameFromValue(items.get(i).getState()) + "\t" + items.get(i).getData().getIdentifier()
+               + "\t" + "isPersisted=" + items.get(i).isPersisted() + "\t" + "isEventFire="
+               + items.get(i).isEventFire() + "\t" + "isInternallyCreated=" + items.get(i).isInternallyCreated() + "\t"
+               + items.get(i).getData().getQPath().getAsString() + "\n";
 
       return str;
    }
@@ -204,7 +202,7 @@ public class PlainChangesLogImpl
       items = new ArrayList<ItemState>();
       int listSize = in.readInt();
       for (int i = 0; i < listSize; i++)
-         add((ItemState) in.readObject());
+         add((ItemState)in.readObject());
    }
    // ------------------ [ END ] ------------------
 }

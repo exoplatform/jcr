@@ -50,7 +50,7 @@ public class QueryParser
     *           if an error occurs while parsing the statement.
     */
    public static QueryRootNode parse(String statement, String language, LocationFactory resolver,
-            QueryNodeFactory factory) throws InvalidQueryException
+      QueryNodeFactory factory) throws InvalidQueryException
    {
 
       QueryTreeBuilder builder = QueryTreeBuilderRegistry.getQueryTreeBuilder(language);
@@ -79,7 +79,7 @@ public class QueryParser
     *           languages returned by the {@link javax.jcr.query.QueryManager}.
     */
    public static String toString(QueryRootNode root, String language, LocationFactory resolver)
-            throws InvalidQueryException
+      throws InvalidQueryException
    {
 
       QueryTreeBuilder builder = QueryTreeBuilderRegistry.getQueryTreeBuilder(language);

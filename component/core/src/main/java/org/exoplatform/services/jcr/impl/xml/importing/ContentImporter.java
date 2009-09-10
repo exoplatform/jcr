@@ -18,11 +18,11 @@
  */
 package org.exoplatform.services.jcr.impl.xml.importing;
 
+import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
+
 import java.util.Map;
 
 import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
@@ -108,5 +108,5 @@ public interface ContentImporter
     * @see org.xml.sax.helpers.AttributesImpl
     */
    public void startElement(String namespaceURI, String localName, String qName, Map<String, String> atts)
-            throws RepositoryException;
+      throws RepositoryException;
 }
