@@ -35,7 +35,6 @@
 
    <properties>
       <jcr.test.configuration.file>/conf/standalone/test-configuration.xml</jcr.test.configuration.file>
-      <exo.devtest.skip>true</exo.devtest.skip>
    </properties>
 
    <dependencies>
@@ -395,7 +394,7 @@
                      <goal>test</goal>
                   </goals>
                   <configuration>
-                     <skip>${maven.test.skip}</skip>
+                     <skip>${exo.test.skip}</skip>
                      <argLine>-Xmx512M</argLine>
                      <systemProperties>
                         <property>
