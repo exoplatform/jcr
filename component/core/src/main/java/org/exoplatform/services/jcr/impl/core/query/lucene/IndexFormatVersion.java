@@ -19,6 +19,10 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.WildcardQuery;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -153,7 +157,26 @@ public class IndexFormatVersion
       {
          return true;
       }
-      return false;
+
+      IndexSearcher searcher = new IndexSearcher(indexReader);
+      Query primaryType = new WildcardQuery(new Term(FieldNames.PROPERTIES, "jcr:primaryType[*?"));
+      try
+      {
+
+         try
+         {
+            TopDocs hits = searcher.search(primaryType, 1);
+            return hits.totalHits > 0;
+         }
+         finally
+         {
+            searcher.close();
+         }
+      }
+      catch (IOException e)
+      {
+         return false;
+      }
    }
 
    /**
