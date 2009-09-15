@@ -19,6 +19,8 @@
 package org.exoplatform.services.jcr.impl;
 
 import org.exoplatform.container.ExoContainer;
+import org.exoplatform.container.component.ComponentPlugin;
+import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.jmx.MX4JComponentAdapterFactory;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
@@ -29,6 +31,7 @@ import org.exoplatform.services.jcr.access.AccessControlPolicy;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
@@ -61,10 +64,13 @@ import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
+import javax.jcr.NamespaceException;
 import javax.jcr.NamespaceRegistry;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeTypeManager;
@@ -99,19 +105,33 @@ public class RepositoryContainer extends ExoContainer
    private final Log log = ExoLogger.getLogger("jcr.RepositoryContainer");
 
    /**
+    * NodeType plugins list.
+    */
+   private final List<ComponentPlugin> addNodeTypePlugins;
+
+   /**
+    * NameSpace plugins list.
+    */
+   private final List<ComponentPlugin> addNamespacesPlugins;
+
+   /**
     * RepositoryContainer constructor.
     * 
     * @param parent
     *          container
     * @param config
     *          Repository configuration
+    * @param addNodeTypePlugins
+    *          NodeType plugins list
+    * @param addNamespacesPlugins
+    *          NameSpace plugins list
     * @throws RepositoryException
     *           container initialization error
     * @throws RepositoryConfigurationException
     *           configuration error
     */
-   public RepositoryContainer(ExoContainer parent, RepositoryEntry config) throws RepositoryException,
-      RepositoryConfigurationException
+   public RepositoryContainer(ExoContainer parent, RepositoryEntry config, List<ComponentPlugin> addNodeTypePlugins,
+      List<ComponentPlugin> addNamespacesPlugins) throws RepositoryException, RepositoryConfigurationException
    {
 
       super(new MX4JComponentAdapterFactory(), parent);
@@ -121,6 +141,8 @@ public class RepositoryContainer extends ExoContainer
          config.setAccessControl(AccessControlPolicy.OPTIONAL);
 
       this.config = config;
+      this.addNamespacesPlugins = addNamespacesPlugins;
+      this.addNodeTypePlugins = addNodeTypePlugins;
 
       registerComponents();
    }
@@ -483,6 +505,99 @@ public class RepositoryContainer extends ExoContainer
       registerRepositoryComponents();
    }
 
+   private void addNamespaces() throws RepositoryException
+   {
+      NamespaceRegistry nsRegistry = (NamespaceRegistry)this.getComponentInstanceOfType(NamespaceRegistryImpl.class);
+      this.getComponentInstanceOfType(IdGenerator.class);
+
+      for (int j = 0; j < addNamespacesPlugins.size(); j++)
+      {
+         AddNamespacesPlugin plugin = (AddNamespacesPlugin)addNamespacesPlugins.get(j);
+         Map<String, String> namespaces = plugin.getNamespaces();
+         try
+         {
+            for (Map.Entry<String, String> namespace : namespaces.entrySet())
+            {
+
+               String prefix = namespace.getKey();
+               String uri = namespace.getValue();
+
+               // register namespace if not found
+               try
+               {
+                  nsRegistry.getURI(prefix);
+               }
+               catch (NamespaceException e)
+               {
+                  nsRegistry.registerNamespace(prefix, uri);
+               }
+               if (log.isDebugEnabled())
+                  log.debug("Namespace is registered " + prefix + " = " + uri);
+            }
+         }
+         catch (Exception e)
+         {
+            log.error("Error load namespaces ", e);
+         }
+      }
+   }
+
+   private void registerNodeTypes() throws RepositoryException
+   {
+      ConfigurationManager configService =
+         (ConfigurationManager)this.getParent().getComponentInstanceOfType(ConfigurationManager.class);
+
+      NodeTypeDataManagerImpl ntManager =
+         (NodeTypeDataManagerImpl)this.getComponentInstanceOfType(NodeTypeDataManagerImpl.class);
+      //
+      for (int j = 0; j < addNodeTypePlugins.size(); j++)
+      {
+         AddNodeTypePlugin plugin = (AddNodeTypePlugin)addNodeTypePlugins.get(j);
+         List<String> autoNodeTypesFiles = plugin.getNodeTypesFiles(AddNodeTypePlugin.AUTO_CREATED);
+         if (autoNodeTypesFiles != null && autoNodeTypesFiles.size() > 0)
+         {
+            for (String nodeTypeFilesName : autoNodeTypesFiles)
+            {
+
+               InputStream inXml;
+               try
+               {
+                  inXml = configService.getInputStream(nodeTypeFilesName);
+               }
+               catch (Exception e)
+               {
+                  throw new RepositoryException(e);
+               }
+               if (log.isDebugEnabled())
+                  log.debug("Trying register node types from xml-file " + nodeTypeFilesName);
+               ntManager.registerNodeTypes(inXml, ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
+               if (log.isDebugEnabled())
+                  log.debug("Node types is registered from xml-file " + nodeTypeFilesName);
+            }
+            List<String> defaultNodeTypesFiles = plugin.getNodeTypesFiles(this.getName());
+            if (defaultNodeTypesFiles != null && defaultNodeTypesFiles.size() > 0)
+            {
+               for (String nodeTypeFilesName : defaultNodeTypesFiles)
+               {
+
+                  InputStream inXml;
+                  try
+                  {
+                     inXml = configService.getInputStream(nodeTypeFilesName);
+                  }
+                  catch (Exception e)
+                  {
+                     throw new RepositoryException(e);
+                  }
+                  log.info("Trying register node types (" + this.getName() + ") from xml-file " + nodeTypeFilesName);
+                  ntManager.registerNodeTypes(inXml, ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
+                  log.info("Node types is registered (" + this.getName() + ") from xml-file " + nodeTypeFilesName);
+               }
+            }
+         }
+      }
+   }
+
    private void registerRepositoryComponents() throws RepositoryConfigurationException, RepositoryException
    {
 
@@ -491,6 +606,8 @@ public class RepositoryContainer extends ExoContainer
       registerComponentImplementation(NamespaceDataPersister.class);
       registerComponentImplementation(NamespaceRegistryImpl.class);
 
+      addNamespaces();
+
       registerComponentImplementation(WorkspaceFileCleanerHolder.class);
       registerComponentImplementation(LocationFactory.class);
       registerComponentImplementation(ValueFactoryImpl.class);
@@ -498,6 +615,8 @@ public class RepositoryContainer extends ExoContainer
       registerComponentImplementation(NodeTypeDataPersister.class);
       registerComponentImplementation(NodeTypeManagerImpl.class);
       registerComponentImplementation(NodeTypeDataManagerImpl.class);
+
+      registerNodeTypes();
 
       registerComponentImplementation(DefaultAccessManagerImpl.class);
 
