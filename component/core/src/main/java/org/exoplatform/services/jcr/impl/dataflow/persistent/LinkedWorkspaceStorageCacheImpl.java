@@ -1728,8 +1728,11 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
                   ItemData parent = get(item.getParentIdentifier());
                   // delete parent
                   remove(parent);
-                  // traverse itemCache
 
+                  // delete parent containing child nodes list
+                  nodesCache.remove(parent.getParentIdentifier());
+
+                  // traverse itemCache
                   Iterator<CacheValue> cacheIterator = cache.values().iterator();
                   while (cacheIterator.hasNext())
                   {

@@ -94,7 +94,7 @@ public abstract class BaseValue implements ExtendedValue, ReadableBinaryValue
     * @throws ValueFormatException
     *           if the value can not be represented as a <code>String</code> or if the value is
     *           <code>null</code>.
-    * @throws RepositoryException
+    * @throws RepositoryException 
     *           if another error occurs.
     */
    protected String getInternalString() throws ValueFormatException, RepositoryException
