@@ -1720,8 +1720,7 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
                }
                else if (item.getQPath().getName().equals(Constants.EXO_PERMISSIONS))
                {
-                  // TODO JCR-1117 place to put workaround for JCR cache
-                  // exo:permissions updated
+                  // TODO EXOJCR-12 place to put workaround for JCR cache exo:permissions updated
                   // get parent Node
 
                   // check if parent is mix:privilegeable
@@ -1729,7 +1728,9 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
                   // delete parent
                   remove(parent);
 
-                  
+                  // delete parent containing child nodes list
+                  nodesCache.remove(parent.getParentIdentifier());
+
                   // traverse itemCache
                   Iterator<CacheValue> cacheIterator = cache.values().iterator();
                   while (cacheIterator.hasNext())
