@@ -97,29 +97,28 @@ public class NodeHierarchyCreatorImpl implements NodeHierarchyCreator, Startable
       Node node = rootNode;
       for (String token : path.split("/"))
       {
-         if (token.length() == 0) 
+         if (token.length() > 0)
          {
-            continue;
-         }
-         try
-         {
-            node = node.getNode(token);
-         }
-         catch (PathNotFoundException e)
-         {
-            if (nodeType == null || nodeType.length() == 0)
-               nodeType = NT_UNSTRUCTURED;
-            node = node.addNode(token, nodeType);
-            if (node.canAddMixin("exo:privilegeable"))
-               node.addMixin("exo:privilegeable");
-            if (permissions != null && !permissions.isEmpty())
-               ((ExtendedNode)node).setPermissions(permissions);
-            if (mixinTypes.size() > 0)
+            try
             {
-               for (String mixin : mixinTypes)
+               node = node.getNode(token);
+            }
+            catch (PathNotFoundException e)
+            {
+               if (nodeType == null || nodeType.length() == 0)
+                  nodeType = NT_UNSTRUCTURED;
+               node = node.addNode(token, nodeType);
+               if (node.canAddMixin("exo:privilegeable"))
+                  node.addMixin("exo:privilegeable");
+               if (permissions != null && !permissions.isEmpty())
+                  ((ExtendedNode)node).setPermissions(permissions);
+               if (mixinTypes.size() > 0)
                {
-                  if (node.canAddMixin(mixin))
-                     node.addMixin(mixin);
+                  for (String mixin : mixinTypes)
+                  {
+                     if (node.canAddMixin(mixin))
+                        node.addMixin(mixin);
+                  }
                }
             }
          }
