@@ -97,6 +97,10 @@ public class NodeHierarchyCreatorImpl implements NodeHierarchyCreator, Startable
       Node node = rootNode;
       for (String token : path.split("/"))
       {
+         if (token.length() == 0) 
+         {
+            continue;
+         }
          try
          {
             node = node.getNode(token);
