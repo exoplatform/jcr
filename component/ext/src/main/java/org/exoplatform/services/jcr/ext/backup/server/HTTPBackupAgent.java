@@ -437,9 +437,36 @@ public class HTTPBackupAgent
          BackupChainLog backupChainLog = new BackupChainLog(backupLog);
 
          backupManager.restore(backupChainLog, repository, wEntry, true);
+
+         /*
+          * Sleeping
+          * Restore must be initialized by job thread
+          */
          
-         ShortInfo shortInfo = new ShortInfo(ShortInfo.CURRENT, backupChainLog);
-         return Response.ok(shortInfo).cacheControl(noCache).build();
+         Thread.sleep(100);
+         
+         /*
+          * search necessary restore
+          */
+
+         List<JobWorkspaceRestore> restoreJobs = backupManager.getRestores();
+         JobWorkspaceRestore restore = null;
+         for (JobWorkspaceRestore curRestore : restoreJobs) {
+            if (curRestore.getRepositoryName().equals(repository) &&
+                     curRestore.getWorkspaceName().equals(wEntry.getName())) {
+               restore = curRestore;
+               break;
+            }
+         }
+         
+         if (restore != null) {
+            ShortInfo info =
+               new ShortInfo(ShortInfo.RESTORE, restore.getBackupChainLog(), restore.getStartTime(), restore.getEndTime(),
+                  restore.getStateRestore(), restore.getRepositoryName(), restore.getWorkspaceName());         
+            return Response.ok(info).cacheControl(noCache).build();
+         }
+         
+         return Response.ok().cacheControl(noCache).build();         
       }
       catch (WorkspaceRestoreExeption e)
       {
