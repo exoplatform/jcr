@@ -18,6 +18,26 @@
  */
 package org.exoplatform.services.jcr.ext.backup.server;
 
+import java.io.File;
+import java.io.FilenameFilter;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.security.RolesAllowed;
+import javax.jcr.LoginException;
+import javax.jcr.NoSuchWorkspaceException;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.CacheControl;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
@@ -42,26 +62,6 @@ import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.rest.resource.ResourceContainer;
-
-import java.io.File;
-import java.io.FilenameFilter;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.security.RolesAllowed;
-import javax.jcr.LoginException;
-import javax.jcr.NoSuchWorkspaceException;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.CacheControl;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 /**
  * Created by The eXo Platform SAS.
@@ -410,6 +410,7 @@ public class HTTPBackupAgent
     */
    @POST
    @Consumes(MediaType.APPLICATION_JSON)
+   @Produces(MediaType.APPLICATION_JSON)
    @RolesAllowed("administrators")
    @Path("/restore/{repo}/{id}")
    public Response restore(WorkspaceEntry wEntry, @PathParam("repo") String repository, @PathParam("id") String backupId)
@@ -436,8 +437,9 @@ public class HTTPBackupAgent
          BackupChainLog backupChainLog = new BackupChainLog(backupLog);
 
          backupManager.restore(backupChainLog, repository, wEntry, true);
-
-         return Response.ok().cacheControl(noCache).build();
+         
+         ShortInfo shortInfo = new ShortInfo(ShortInfo.CURRENT, backupChainLog);
+         return Response.ok(shortInfo).cacheControl(noCache).build();
       }
       catch (WorkspaceRestoreExeption e)
       {
