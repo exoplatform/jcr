@@ -175,7 +175,6 @@
       <dependency>
          <groupId>org.apache.jackrabbit</groupId>
          <artifactId>jackrabbit-jcr-tests</artifactId>
-         <version>1.6.0</version>
          <exclusions>
             <exclusion>
                <groupId>org.slf4j</groupId>
@@ -364,25 +363,55 @@
             <!-- debug  mode: mvn -Dmaven.test.skip=false -Dexo.tck.skip=false -DforkMode=never clean install -->
             <!-- forking: to run both eXo test and TCK use forkMode=once, to run one of them (only) in Eclipse debug use forkMode=never -->
             <configuration>
-               <argLine>-Xmx512M</argLine>
-               <systemProperties>
-                  <property>
-                     <name>jcr.test.configuration.file</name>
-                     <value>${jcr.test.configuration.file}</value>
-                  </property>
-                  <property>
-                     <name>emma.coverage.out.file</name>
-                     <value>target/emma/coverage.ec</value>
-                  </property>
-               </systemProperties>
-               <includes>
-                  <!-- include>**/api/core/query/TestAll.java</include-->
-
+               <skip>true</skip>
+            </configuration>
+            <executions>
+               <execution>
+                  <id>execution0 - developers tests</id>
+                  <phase>test</phase>
+                  <goals>
+                     <goal>test</goal>
+                  </goals>
+                  <configuration>
+                     <skip>${exo.devtest.skip}</skip>
+                     <systemProperties>
+                        <property>
+                           <name>jcr.test.configuration.file</name>
+                           <value>${jcr.test.configuration.file}</value>
+                        </property>
+                     </systemProperties>
+                     <includes>
+                        <include>**/**/TestErrorMultithreading__.java</include>
+                        <include>**/**/TestConcurrentItems__.java</include>
+                        <include>**/**/TestInvalidItemState__.java</include>
+                     </includes>
+                  </configuration>
+               </execution>
+               <execution>
+                  <id>execution1 - exo tests</id>
+                  <phase>test</phase>
+                  <goals>
+                     <goal>test</goal>
+                  </goals>
+                  <configuration>
+                     <skip>${exo.test.skip}</skip>
+                     <argLine>-Xmx512M</argLine>
+                     <systemProperties>
+                        <property>
+                           <name>jcr.test.configuration.file</name>
+                           <value>${jcr.test.configuration.file}</value>
+                        </property>
+                        <property>
+                           <name>emma.coverage.out.file</name>
+                           <value>target/emma/coverage.ec</value>
+                        </property>
+                     </systemProperties>
+                     <includes>
                         <include>**/api/**/Test*.java</include>
                         <include>**/usecases/**/Test*.java</include>
                         <include>**/usecases/**/*Test.java</include>
                         <include>**/impl/**/Test*.java</include>
-               </includes>
+                     </includes>
                <excludes>
                   <exclude>**/ExcerptTest.java</exclude>
                   <exclude>**/TestSearchManagerIndexing.java</exclude>
@@ -423,12 +452,62 @@
                   <exclude>**/api/**/TestSameNameItems.java</exclude>
                   <exclude>**/api/**/TestVersionRestore.java</exclude>
                </excludes>
-            </configuration>
-            <executions>
-               <execution>
-                  <id>do_test</id>
-                  <phase>integration-test</phase>
+                  </configuration>
+               </execution>
+               <!-- execution>
+                  <id>execution2 - pause 10 sec</id>
+                  <phase>test</phase>
+                  <goals>
+                     <goal>test</goal>
+                  </goals>
                   <configuration>
+                     <skip>${exo.tck.skip}</skip>
+                     <includes>
+                        <include>**/util/Sleeping10Seconds.java</include>
+                     </includes>
+                  </configuration>
+               </execution>
+               <execution>
+                  <id>execution3 - TCK init section</id>
+                  <phase>test</phase>
+                  <goals>
+                     <goal>test</goal>
+                  </goals>
+                  <configuration>
+                     <skip>${exo.tck.skip}</skip>
+                     <argLine>-Xmx512M</argLine>
+                     <systemProperties>
+                        <property>
+                           <name>jcr.test.configuration.file</name>
+                           <value>${jcr.test.configuration.file}</value>
+                        </property>
+                     </systemProperties>
+                     <includes>
+                        <include>org/exoplatform/services/jcr/integration/PrepareTestRepository.java</include>
+                     </includes>
+                  </configuration>
+               </execution -->
+               <execution>
+                  <id>execution4 - pause 10 sec</id>
+                  <phase>test</phase>
+                  <goals>
+                     <goal>test</goal>
+                  </goals>
+                  <configuration>
+                     <skip>${exo.tck.skip}</skip>
+                     <includes>
+                        <include>**/util/Sleeping10Seconds.java</include>
+                     </includes>
+                  </configuration>
+               </execution>
+               <execution>
+                  <id>execution5 - integration tests (TCK)</id>
+                  <phase>test</phase>
+                  <goals>
+                     <goal>test</goal>
+                  </goals>
+                  <configuration>
+                     <skip>${exo.tck.skip}</skip>
                      <argLine>-Xmx512M</argLine>
                      <systemProperties>
                         <property>
@@ -439,7 +518,6 @@
                            <name>emma.coverage.out.file</name>
                            <value>target/emma/coverage.ec</value>
                         </property>
-                        <property>
                            <name>known.issues</name>
                            <value>
                               org.apache.jackrabbit.test.api.nodetype.PropertyDefTest#testIsRequiredType
@@ -475,16 +553,40 @@
                               org.apache.jackrabbit.test.api.version.RestoreTest#testRestoreOrder2
                               org.apache.jackrabbit.test.api.NamespaceRegistryTest#testRegisterNamespace 
                               org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testVersion                             
-                            </value>
-                        </property>
+                           </value>
+
+                        <!-- property>
+                           <name>known.issues</name>
+                           <value>
+                              org.apache.jackrabbit.test.api.nodetype.PropertyDefTest#testIsRequiredType
+                              org.apache.jackrabbit.test.api.DocumentViewImportTest#testSessionImportXml
+                              org.apache.jackrabbit.test.api.DocumentViewImportTest#testWorkspaceImportXml
+                              org.apache.jackrabbit.test.api.DocumentViewImportTest#testWorkspaceGetImportContentHandler
+                              org.apache.jackrabbit.test.api.DocumentViewImportTest#testSessionGetImportContentHandler
+                              org.apache.jackrabbit.test.api.SetPropertyConstraintViolationExceptionTest#testBooleanProperty
+                              org.apache.jackrabbit.test.api.SetValueConstraintViolationExceptionTest#testMultipleBooleanProperty
+                              org.apache.jackrabbit.test.api.SetValueConstraintViolationExceptionTest#testBooleanProperty
+                              org.apache.jackrabbit.test.api.version.RestoreTest#testRestoreName
+                              org.apache.jackrabbit.test.api.version.RestoreTest#testRestoreOrder
+                              org.apache.jackrabbit.test.api.version.RestoreTest#testRestoreOrder2
+                           </value>
+                        </property -->
                      </systemProperties>
                      <includes>
-                        <include>**/integration/*Test.java</include>
+                        <include>**/api/*Test.java</include>
+                        <include>**/api/observation/*Test.java</include>
+                        <include>**/api/lock/*Test.java</include>
+                        <include>**/api/nodetype/*Test.java</include>
+                        <include>**/api/query/*Test.java</include>
+                        <include>**/api/version/*Test.java</include>
                      </includes>
+                     <excludes>
+                        <exclude>**/api/TestAll.java</exclude>
+                        <exclude>**/api/**/Abstract*.java</exclude>
+                        <exclude>**/api/**/FrozenNodeTest.java</exclude>
+                        <exclude>**/exoplatform/**</exclude>
+                     </excludes>
                   </configuration>
-                  <goals>
-                     <goal>test</goal>
-                  </goals>
                </execution>
             </executions>
          </plugin>
@@ -517,7 +619,7 @@
                      <tasks>
                         <echo>Remove files that have been customized</echo>
                         <delete>
-                          <fileset dir="${project.build.directory}/generated-sources/javacc/org/exoplatform/services/jcr/impl/core/query">
+                           <fileset dir="${project.build.directory}/generated-sources/javacc/org/exoplatform/services/jcr/impl/core/query">
                               <include name="sql/ASTLiteral.java" />
                               <include name="sql/ASTContainsExpression.java" />
                               <include name="sql/ASTPredicate.java" />
