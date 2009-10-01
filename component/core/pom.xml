@@ -518,6 +518,7 @@
                            <name>emma.coverage.out.file</name>
                            <value>target/emma/coverage.ec</value>
                         </property>
+                        <property>
                            <name>known.issues</name>
                            <value>
                               org.apache.jackrabbit.test.api.nodetype.PropertyDefTest#testIsRequiredType
@@ -554,7 +555,7 @@
                               org.apache.jackrabbit.test.api.NamespaceRegistryTest#testRegisterNamespace 
                               org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testVersion                             
                            </value>
-
+                        </property>
                         <!-- property>
                            <name>known.issues</name>
                            <value>
