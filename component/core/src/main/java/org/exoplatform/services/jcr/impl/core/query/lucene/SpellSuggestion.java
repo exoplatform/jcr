@@ -16,9 +16,11 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
+import org.exoplatform.services.jcr.impl.core.query.QueryRootNode;
+
 import java.io.IOException;
 
-import org.exoplatform.services.jcr.impl.core.query.QueryRootNode;
+import javax.jcr.RepositoryException;
 
 /**
  * <code>SpellSuggestion</code> implements a spell suggestion, which uses the
@@ -38,28 +40,32 @@ class SpellSuggestion {
 
     /**
      * Creates a new spell suggestion.
-     *
-     * @param spellChecker the spell checker or <code>null</code> if none is
-     *                     available.
-     * @param root         the abstract query tree.
+     * 
+     * @param spellChecker
+     *            the spell checker or <code>null</code> if none is available.
+     * @param root
+     *            the abstract query tree.
      */
     SpellSuggestion(SpellChecker spellChecker, QueryRootNode root) {
-        this.spellChecker = spellChecker;
-        this.root = root;
+	this.spellChecker = spellChecker;
+	this.root = root;
     }
 
     /**
      * @return a suggestion for the spellcheck query node in the abstract query
-     *         tree passed in the constructor of this <code>SpellSuggestion</code>.
-     *         This method returns <code>null</code> if the spell checker thinks
-     *         the spelling is correct or no spell checker was provided.
-     * @throws IOException if an error occurs while checking the spelling.
+     *         tree passed in the constructor of this
+     *         <code>SpellSuggestion</code>. This method returns
+     *         <code>null</code> if the spell checker thinks the spelling is
+     *         correct or no spell checker was provided.
+     * @throws IOException
+     *             if an error occurs while checking the spelling.
+     * @throws RepositoryException
      */
-    public String getSuggestion() throws IOException {
-        if (spellChecker != null) {
-            return spellChecker.check(root);
-        } else {
-            return null;
-        }
+    public String getSuggestion() throws IOException, RepositoryException {
+	if (spellChecker != null) {
+	    return spellChecker.check(root);
+	} else {
+	    return null;
+	}
     }
 }
