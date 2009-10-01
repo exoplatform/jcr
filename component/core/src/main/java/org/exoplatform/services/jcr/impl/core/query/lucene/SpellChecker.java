@@ -16,23 +16,26 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import java.io.IOException;
-
 import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
 import org.exoplatform.services.jcr.impl.core.query.QueryRootNode;
 
+import java.io.IOException;
+
+import javax.jcr.RepositoryException;
+
 /**
- * <code>SpellChecker</code> defines an interface to run a spellchecker over
- * a fulltext query statement.
+ * <code>SpellChecker</code> defines an interface to run a spellchecker over a
+ * fulltext query statement.
  */
 public interface SpellChecker {
 
     /**
      * Initializes this spell checker with an abstract query tree.
-     *
-     * @param handler the query handler that created this spell checker.
-     * @throws IOException if an error occurs while initializing the spell
-     *                     checker.
+     * 
+     * @param handler
+     *            the query handler that created this spell checker.
+     * @throws IOException
+     *             if an error occurs while initializing the spell checker.
      */
     void init(QueryHandler handler) throws IOException;
 
@@ -42,14 +45,16 @@ public interface SpellChecker {
      * spellchecker thinks the words are misspelled. If the spellchecker
      * determines that the words are spelled correctly <code>null</code> is
      * returned.
-     *
-     * @param aqt the abstract query tree, which may contain a relation query
+     * 
+     * @param aqt
+     *            the abstract query tree, which may contain a relation query
      *            node with a spellcheck operation.
      * @return a suggestion or <code>null</code> if this spell checker
      *         determines that the fulltext query statement is spelled
      *         correctly.
+     * @throws RepositoryException
      */
-    String check(QueryRootNode aqt) throws IOException;
+    String check(QueryRootNode aqt) throws IOException, RepositoryException;
 
     /**
      * Closes this spell checker and allows it to free resources.
