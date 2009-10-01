@@ -16,34 +16,19 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import javax.jcr.NodeIterator;
-
-import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import javax.jcr.RangeIterator;
 
 /**
- * Extends the {@link javax.jcr.NodeIterator} interface by adding a {@link #getScore()} method that
- * returns the score for the node that is returned by {@link javax.jcr.NodeIterator#nextNode()}.
+ * A range iterator over {@link ScoreNode}[].
  */
-public interface ScoreNodeIterator extends NodeIterator
-{
+public interface ScoreNodeIterator extends RangeIterator {
 
-   /**
-    * Returns the score of the node returned by {@link #nextNode()}. In other words, this method
-    * returns the score value of the next <code>Node</code>.
-    * 
-    * @return the score of the node returned by {@link #nextNode()}.
-    * @throws java.util.NoSuchElementException
-    *           if there is no next node.
-    */
-   float getScore();
-
-   /**
-    * Returns the next <code>Node</code> in the result set.
-    * 
-    * @return the next <code>Node</code> in the result set.
-    * @throws java.util.NoSuchElementException
-    *           if iteration has no more <code>Node</code>s.
-    */
-   NodeImpl nextNodeImpl();
-
+    /**
+     * Returns the next score nodes.
+     *
+     * @return the next score nodes.
+     * @throws java.util.NoSuchElementException
+     *          if there are no next score nodes.
+     */
+    ScoreNode[] nextScoreNodes();
 }

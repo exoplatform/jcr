@@ -20,31 +20,33 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * <code>SynonymProvider</code> defines an interface for a component that returns synonyms for a
- * given term.
+ * <code>SynonymProvider</code> defines an interface for a component that
+ * returns synonyms for a given term.
  */
-public interface SynonymProvider
-{
+public interface SynonymProvider {
 
-   /**
-    * Initializes the synonym provider and passes the file system resource to the synonym provider
-    * configuration defined by the configuration value of the <code>synonymProviderConfigPath</code>
-    * parameter. The resource may be <code>null</code> if the configuration parameter is not set.
-    * 
-    * @param fsr
-    *          the file system resource to the synonym provider configuration.
-    * @throws IOException
-    *           if an error occurs while initializing the synonym provider.
-    */
-   public void initialize(InputStream fsr) throws IOException;
+    /**
+     * Initializes the synonym provider and passes the file system resource to
+     * the synonym provider configuration defined by the configuration value of
+     * the <code>synonymProviderConfigPath</code> parameter. The resource may be
+     * <code>null</code> if the configuration parameter is not set.
+     *
+     * @param fsr the file system resource to the synonym provider
+     *            configuration.
+     * @throws IOException if an error occurs while initializing the synonym
+     *                     provider.
+     */
+    void initialize(InputStream fsr) throws IOException;
 
-   /**
-    * Returns an array of terms that are considered synonyms for the given <code>term</code>.
-    * 
-    * @param term
-    *          a search term.
-    * @return an array of synonyms for the given <code>term</code> or an empty array if no synonyms
-    *         are known.
-    */
-   public String[] getSynonyms(String term);
+    /**
+     * Returns an array of terms that are considered synonyms for the given
+     * <code>term</code>.
+     *
+     * @param term a search term.
+     * @return an array of synonyms for the given <code>term</code> or an empty
+     *         array if no synonyms are known.
+     */
+    String[] getSynonyms(String term);
+
+
 }

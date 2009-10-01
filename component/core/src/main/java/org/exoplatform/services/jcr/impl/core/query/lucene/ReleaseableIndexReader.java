@@ -21,16 +21,15 @@ import java.io.IOException;
 /**
  * <code>ReleaseableIndexReader</code>...
  */
-public interface ReleaseableIndexReader
-{
+public interface ReleaseableIndexReader {
 
-   /**
-    * Releases this index reader and potentially frees resources. In contrast to
-    * {@link org.apache.lucene.index.IndexReader#close()} this method does not
-    * necessarily close the index reader, but gives the implementation the
-    * opportunity to do reference counting.
-    * 
-    * @throws IOException if an error occurs while releasing the index reader.
-    */
-   public void release() throws IOException;
+    /**
+     * Releases this index reader and potentially frees resources. In contrast
+     * to {@link org.apache.lucene.index.IndexReader#close()} this method
+     * does not necessarily close the index reader, but gives the implementation
+     * the opportunity to do reference counting.
+     *
+     * @throws IOException if an error occurs while releasing the index reader.
+     */
+    public void release() throws IOException;
 }

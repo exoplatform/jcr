@@ -28,99 +28,90 @@ import org.apache.lucene.search.Similarity;
 /**
  * This class implements the Weight calculation for the MatchAllQuery.
  */
-class MatchAllWeight extends AbstractWeight
-{
+class MatchAllWeight extends AbstractWeight {
 
-   /**
-    * Name of the field to match.
-    */
-   private final String field;
+    /**
+     * Name of the field to match.
+     */
+    private final String field;
 
-   /**
-    * the MatchAllQuery
-    */
-   private final Query query;
+    /**
+     * the MatchAllQuery
+     */
+    private final Query query;
 
-   /**
-    * the weight value
-    */
-   private float value;
+    /**
+     * the weight value
+     */
+    private float value;
 
-   /**
-    * doc frequency for this weight
-    */
-   private float idf;
+    /**
+     * doc frequency for this weight
+     */
+    private float idf;
 
-   /**
-    * the query weight
-    */
-   private float queryWeight;
+    /**
+     * the query weight
+     */
+    private float queryWeight;
 
-   /**
-    * @param query
-    * @param searcher
-    * @param field
-    *          name of the field to match
-    */
-   MatchAllWeight(Query query, Searcher searcher, String field)
-   {
-      super(searcher);
-      this.query = query;
-      this.field = field;
-   }
+    /**
+     * @param query
+     * @param searcher
+     * @param field name of the field to match
+     */
+    MatchAllWeight(Query query, Searcher searcher, String field) {
+        super(searcher);
+        this.query = query;
+        this.field = field;
+    }
 
-   /**
-    * Creates a {@link MatchAllScorer} instance.
-    * 
-    * @param reader
-    *          index reader
-    * @return a {@link MatchAllScorer} instance
-    */
-   protected Scorer createScorer(IndexReader reader) throws IOException
-   {
-      return new MatchAllScorer(reader, field);
-   }
+    /**
+     * Creates a {@link MatchAllScorer} instance.
+     *
+     * @param reader index reader
+     * @return a {@link MatchAllScorer} instance
+     */
+    protected Scorer createScorer(IndexReader reader) throws IOException {
+        return new MatchAllScorer(reader, field);
+    }
 
-   /**
-    * {@inheritDoc}
-    */
-   public Query getQuery()
-   {
-      return query;
-   }
+    /**
+     * {@inheritDoc}
+     */
+    public Query getQuery() {
+        return query;
+    }
 
-   /**
-    * {@inheritDoc}
-    */
-   public float getValue()
-   {
-      return value;
-   }
+    /**
+     * {@inheritDoc}
+     */
+    public float getValue() {
+        return value;
+    }
 
-   /**
-    * {@inheritDoc}
-    */
-   public float sumOfSquaredWeights() throws IOException
-   {
-      idf = searcher.getSimilarity().idf(searcher.maxDoc(), searcher.maxDoc()); // compute idf
-      queryWeight = idf * 1.0f; // boost // compute query weight
-      return queryWeight * queryWeight; // square it
-   }
+    /**
+     * {@inheritDoc}
+     */
+    public float sumOfSquaredWeights() throws IOException {
+        idf = searcher.getSimilarity().idf(searcher.maxDoc(), searcher.maxDoc()); // compute idf
+        queryWeight = idf * 1.0f; // boost         // compute query weight
+        return queryWeight * queryWeight;           // square it
+    }
 
-   /**
-    * {@inheritDoc}
-    */
-   public void normalize(float queryNorm)
-   {
-      queryWeight *= queryNorm; // normalize query weight
-      value = queryWeight * idf; // idf for document
-   }
+    /**
+     * {@inheritDoc}
+     */
+    public void normalize(float queryNorm) {
+        queryWeight *= queryNorm;                   // normalize query weight
+        value = queryWeight * idf;                  // idf for document
+    }
 
-   /**
-    * {@inheritDoc}
-    */
-   public Explanation explain(IndexReader reader, int doc) throws IOException
-   {
-      return new Explanation(Similarity.getDefault().idf(reader.maxDoc(), reader.maxDoc()), "matchAll");
-   }
+    /**
+     * {@inheritDoc}
+     */
+    public Explanation explain(IndexReader reader, int doc) throws IOException {
+        return new Explanation(Similarity.getDefault().idf(reader.maxDoc(), reader.maxDoc()),
+                "matchAll");
+    }
 }

@@ -22,48 +22,48 @@ import javax.jcr.query.QueryResult;
 
 /**
  */
-public class SQLTest extends AbstractQueryTest
-{
+public class SQLTest extends AbstractQueryTest {
 
-   public void testSimpleQuery1() throws Exception
-   {
-      Node foo = testRootNode.addNode("foo");
-      foo.setProperty("bla", new String[]{"bla"});
 
-      testRootNode.save();
+    public void testSimpleQuery1() throws Exception {
+        Node foo = testRootNode.addNode("foo");
+        foo.setProperty("bla", new String[]{"bla"});
 
-      String sql = "SELECT * FROM nt:unstructured WHERE bla='bla' " + "AND jcr:path LIKE '" + testRoot + "/%'";
-      Query q = superuser.getWorkspace().getQueryManager().createQuery(sql, Query.SQL);
-      QueryResult result = q.execute();
-      checkResult(result, 1);
-   }
+        testRootNode.save();
 
-   public void testFulltextSimple() throws Exception
-   {
-      Node foo = testRootNode.addNode("foo");
-      foo.setProperty("mytext", new String[]{"the quick brown fox jumps over the lazy dog."});
+        String sql = "SELECT * FROM nt:unstructured WHERE bla='bla' " +
+                "AND jcr:path LIKE '" + testRoot + "/%'";
+        Query q = superuser.getWorkspace().getQueryManager().createQuery(sql, Query.SQL);
+        QueryResult result = q.execute();
+        checkResult(result, 1);
+    }
 
-      testRootNode.save();
+    public void testFulltextSimple() throws Exception {
+        Node foo = testRootNode.addNode("foo");
+        foo.setProperty("mytext", new String[]{"the quick brown fox jumps over the lazy dog."});
 
-      String sql = "SELECT * FROM nt:unstructured WHERE contains(., 'fox') " + "AND jcr:path LIKE '" + testRoot + "/%'";
-      Query q = superuser.getWorkspace().getQueryManager().createQuery(sql, Query.SQL);
-      QueryResult result = q.execute();
-      checkResult(result, 1);
-   }
+        testRootNode.save();
 
-   public void testFulltextComplex() throws Exception
-   {
-      Node foo = testRootNode.addNode("foo");
-      foo.setProperty("mytext", new String[]{"the quick brown fox jumps over the lazy dog."});
+        String sql = "SELECT * FROM nt:unstructured WHERE contains(., 'fox') " +
+                "AND jcr:path LIKE '" + testRoot + "/%'";
+        Query q = superuser.getWorkspace().getQueryManager().createQuery(sql, Query.SQL);
+        QueryResult result = q.execute();
+        checkResult(result, 1);
+    }
 
-      testRootNode.save();
+    public void testFulltextComplex() throws Exception {
+        Node foo = testRootNode.addNode("foo");
+        foo.setProperty("mytext", new String[]{"the quick brown fox jumps over the lazy dog."});
 
-      String sql =
-         "SELECT foo.mytext, bla.foo FROM nt:unstructured WHERE " + "contains(., 'fox') AND NOT contains(., 'bla') "
-            + "AND jcr:path LIKE '" + testRoot + "/%'";
-      Query q = superuser.getWorkspace().getQueryManager().createQuery(sql, Query.SQL);
-      QueryResult result = q.execute();
-      checkResult(result, 1);
-   }
+        testRootNode.save();
+
+        String sql = "SELECT foo.mytext, bla.foo FROM nt:unstructured WHERE " +
+                "contains(., 'fox') AND NOT contains(., 'bla') " +
+                "AND jcr:path LIKE '" + testRoot + "/%'";
+        Query q = superuser.getWorkspace().getQueryManager().createQuery(sql, Query.SQL);
+        QueryResult result = q.execute();
+        checkResult(result, 1);
+    }
+
 
 }

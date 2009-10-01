@@ -270,7 +270,7 @@ public class QueryHandlerEntryWrapper implements QueryHandlerParams
       {
          log.warn("Exception initializing indexing configuration from: " + getIndexingConfigurationPath(), e);
       }
-      catch (ClassNotFoundException e)
+      catch (Exception e)
       {
          log.warn("Exception initializing indexing configuration from: " + getIndexingConfigurationPath(), e);
       }

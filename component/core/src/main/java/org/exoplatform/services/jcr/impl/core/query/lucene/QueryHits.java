@@ -16,125 +16,19 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.FieldSelector;
-import org.apache.lucene.document.FieldSelectorResult;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.search.Hits;
-
 import java.io.IOException;
 
 /**
- * Wraps the lucene <code>Hits</code> object and adds a close method that allows
- * to release resources after a query has been executed and the results have
- * been read completely.
+ * Defines an interface for reading {@link ScoreNode}s
  */
-public class QueryHits
-{
+public interface QueryHits extends CloseableHits {
 
-   /**
-    * The lucene hits we wrap.
-    */
-   private final Hits hits;
-
-   /**
-    * The IndexReader in use by the lucene hits.
-    */
-   private final IndexReader reader;
-
-   /**
-    * Number of results.
-    */
-   private final int length;
-
-   /**
-    * Creates a new <code>QueryHits</code> instance wrapping <code>hits</code>.
-    * 
-    * @param hits the lucene hits.
-    * @param reader the IndexReader in use by <code>hits</code>.
-    */
-   public QueryHits(Hits hits, IndexReader reader)
-   {
-      this.hits = hits;
-      this.reader = reader;
-      this.length = hits.length();
-   }
-
-   /**
-    * Releases resources held by this hits instance.
-    * 
-    * @throws IOException if an error occurs while releasing resources.
-    */
-   public final void close() throws IOException
-   {
-      PerQueryCache.getInstance().dispose();
-      Util.closeOrRelease(reader);
-   }
-
-   /**
-    * Returns the number of results.
-    * 
-    * @return the number of results.
-    */
-   public final int length()
-   {
-      return length;
-   }
-
-   /**
-    * Returns the <code>n</code><sup>th</sup> document in this QueryHits.
-    * 
-    * @param n index.
-    * @return the <code>n</code><sup>th</sup> document in this QueryHits.
-    * @throws IOException if an error occurs while reading from the index.
-    */
-   public final Document doc(int n) throws IOException
-   {
-      return hits.doc(n);
-   }
-
-   public String getFieldContent(int n, final String field) throws IOException
-   {
-      int id = hits.id(n);
-
-      FieldSelector fieldSelector = new FieldSelector()
-      {
-         public FieldSelectorResult accept(String fieldName)
-         {
-            if (fieldName.equals(field))
-               return FieldSelectorResult.LOAD_AND_BREAK;
-            return FieldSelectorResult.NO_LOAD;
-         }
-      };
-
-      Document doc = reader.document(id, fieldSelector);
-      if (doc == null)
-         throw new IOException("Document with id " + id + " not found");
-      return doc.get(field);
-   }
-
-   /**
-    * Returns the score for the <code>n</code><sup>th</sup> document in this
-    * QueryHits.
-    * 
-    * @param n index.
-    * @return the score for the <code>n</code><sup>th</sup> document.
-    */
-   public final float score(int n) throws IOException
-   {
-      return hits.score(n);
-   }
-
-   /**
-    * Returns the document number for the <code>n</code><sup>th</sup> document in
-    * this QueryHits.
-    * 
-    * @param n index.
-    * @return the document number for the <code>n</code><sup>th</sup> document.
-    * @throws IOException if an error occurs.
-    */
-   public final int id(int n) throws IOException
-   {
-      return hits.id(n);
-   }
+    /**
+     * Returns the next score node in this QueryHits or <code>null</code> if
+     * there are no more score nodes.
+     *
+     * @return the next score node in this QueryHits.
+     * @throws IOException if an error occurs while reading from the index.
+     */
+    ScoreNode nextScoreNode() throws IOException;
 }

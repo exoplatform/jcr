@@ -19,10 +19,15 @@ package org.exoplatform.services.jcr.impl.core.query;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.jcr.RepositoryException;
+
 import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.datamodel.QPath;
+import org.exoplatform.services.jcr.datamodel.QPathEntry;
 
 /**
- * Implements a query node that defines the order of nodes according to the values of properties.
+ * Implements a query node that defines the order of nodes according to the
+ * values of properties.
  */
 public class OrderQueryNode extends QueryNode
 {
@@ -33,11 +38,10 @@ public class OrderQueryNode extends QueryNode
    private final List specs = new ArrayList();
 
    /**
-    * Creates a new <code>OrderQueryNode</code> with a reference to a parent node and sort
-    * properties.
-    * 
-    * @param parent
-    *          the parent node of this query node.
+    * Creates a new <code>OrderQueryNode</code> with a reference to a parent
+    * node and sort properties.
+    *
+    * @param parent the parent node of this query node.
     */
    protected OrderQueryNode(QueryNode parent)
    {
@@ -46,10 +50,9 @@ public class OrderQueryNode extends QueryNode
 
    /**
     * Returns the type of this node.
-    * 
+    *
     * @return the type of this node.
     */
-   @Override
    public int getType()
    {
       return QueryNode.TYPE_ORDER;
@@ -57,23 +60,33 @@ public class OrderQueryNode extends QueryNode
 
    /**
     * Adds an order specification to this query node.
-    * 
-    * @param property
-    *          the name of the property.
-    * @param ascending
-    *          if <code>true</code> values of this properties are ordered ascending; descending if
-    *          <code>false</code>.
+    *
+    * @param property  the name of the property.
+    * @param ascending if <code>true</code> values of this properties are
+    *                  ordered ascending; descending if <code>false</code>.
+    * @deprecated use {@link #addOrderSpec(Path , boolean)} instead.
     */
    public void addOrderSpec(InternalQName property, boolean ascending)
+   {
+      addOrderSpec(createPath(property), ascending);
+   }
+
+   /**
+    * Adds an order specification to this query node.
+    *
+    * @param property  the relative path of the property.
+    * @param ascending if <code>true</code> values of this properties are
+    *                  ordered ascending; descending if <code>false</code>.
+    */
+   public void addOrderSpec(QPath property, boolean ascending)
    {
       specs.add(new OrderSpec(property, ascending));
    }
 
    /**
     * Adds an order specification to this query node.
-    * 
-    * @param spec
-    *          the order spec.
+    *
+    * @param spec the order spec.
     */
    public void addOrderSpec(OrderSpec spec)
    {
@@ -82,22 +95,21 @@ public class OrderQueryNode extends QueryNode
 
    /**
     * {@inheritDoc}
+    * @throws RepositoryException
     */
-   @Override
-   public Object accept(QueryNodeVisitor visitor, Object data)
+   public Object accept(QueryNodeVisitor visitor, Object data) throws RepositoryException
    {
       return visitor.visit(this, data);
    }
 
    /**
-    * Returns <code>true</code> if the property <code>i</code> should be orderd ascending. If
-    * <code>false</code> the property is ordered descending.
-    * 
-    * @param i
-    *          index of the property
+    * Returns <code>true</code> if the property <code>i</code> should be orderd
+    * ascending. If <code>false</code> the property is ordered descending.
+    *
+    * @param i index of the property
     * @return the order spec for the property <code>i</code>.
-    * @throws IndexOutOfBoundsException
-    *           if there is no property with index <code>i</code>.
+    * @throws IndexOutOfBoundsException if there is no property with
+    *                                   index <code>i</code>.
     */
    public boolean isAscending(int i) throws IndexOutOfBoundsException
    {
@@ -105,8 +117,9 @@ public class OrderQueryNode extends QueryNode
    }
 
    /**
-    * Returns a <code>OrderSpec</code> array that contains order by specifications.
-    * 
+    * Returns a <code>OrderSpec</code> array that contains order by
+    * specifications.
+    *
     * @return order by specs.
     */
    public OrderSpec[] getOrderSpecs()
@@ -117,7 +130,6 @@ public class OrderQueryNode extends QueryNode
    /**
     * @inheritDoc
     */
-   @Override
    public boolean equals(Object obj)
    {
       if (obj instanceof OrderQueryNode)
@@ -128,19 +140,19 @@ public class OrderQueryNode extends QueryNode
       return false;
    }
 
-   // ------------------< OrderSpec class >-------------------------------------
+   //------------------< OrderSpec class >-------------------------------------
 
    /**
-    * Implements a single order specification. Contains a property name and whether it is ordered
-    * ascending or descending.
+    * Implements a single order specification. Contains a property name
+    * and whether it is ordered ascending or descending.
     */
    public static final class OrderSpec
    {
 
       /**
-       * The name of the property
+       * The relative path to of the property
        */
-      private InternalQName property;
+      private final QPath property;
 
       /**
        * If <code>true</code> this property is orderd ascending
@@ -149,13 +161,25 @@ public class OrderQueryNode extends QueryNode
 
       /**
        * Creates a new <code>OrderSpec</code> for <code>property</code>.
-       * 
-       * @param property
-       *          the name of the property.
-       * @param ascending
-       *          if <code>true</code> the property is ordered ascending, otherwise descending.
+       *
+       * @param property  the name of the property.
+       * @param ascending if <code>true</code> the property is ordered
+       *                  ascending, otherwise descending.
+       * @deprecated use {@link OrderSpec#OrderSpec(Path, boolean)} instead.
        */
       public OrderSpec(InternalQName property, boolean ascending)
+      {
+         this(createPath(property), ascending);
+      }
+
+      /**
+       * Creates a new <code>OrderSpec</code> for <code>property</code>.
+       *
+       * @param property  the relative path of the property.
+       * @param ascending if <code>true</code> the property is ordered
+       *                  ascending, otherwise descending.
+       */
+      public OrderSpec(QPath property, boolean ascending)
       {
          this.property = property;
          this.ascending = ascending;
@@ -163,18 +187,31 @@ public class OrderQueryNode extends QueryNode
 
       /**
        * Returns the name of the property.
-       * 
+       *
        * @return the name of the property.
+       * @deprecated use {@link #getPropertyPath()} instead.
        */
       public InternalQName getProperty()
+      {
+         return property.getName();
+      }
+
+      /**
+       * Returns the relative path of the property.
+       *
+       * @return the relative path of the property.
+       */
+      public QPath getPropertyPath()
       {
          return property;
       }
 
       /**
-       * If <code>true</code> the property is ordered ascending, otherwise descending.
-       * 
-       * @return <code>true</code> for ascending; <code>false</code> for descending.
+       * If <code>true</code> the property is ordered ascending, otherwise
+       * descending.
+       *
+       * @return <code>true</code> for ascending; <code>false</code> for
+       *         descending.
        */
       public boolean isAscending()
       {
@@ -183,9 +220,9 @@ public class OrderQueryNode extends QueryNode
 
       /**
        * Sets the new value for the ascending property.
-       * 
-       * @param ascending
-       *          <code>true</code> for ascending; <code>false</code> for descending.
+       *
+       * @param ascending <code>true</code> for ascending; <code>false</code>
+       *                  for descending.
        */
       public void setAscending(boolean ascending)
       {
@@ -193,14 +230,12 @@ public class OrderQueryNode extends QueryNode
       }
 
       /**
-       * Returns <code>true</code> if <code>this</code> order spec is equal to <code>obj</code>
-       * 
-       * @param obj
-       *          the reference object with which to compare.
-       * @return <code>true</code> if <code>this</code> order spec is equal to <code>obj</code>;
-       *         <code>false</code> otherwise.
+       * Returns <code>true</code> if <code>this</code> order spec is equal
+       * to <code>obj</code>
+       * @param obj the reference object with which to compare.
+       * @return <code>true</code> if <code>this</code> order spec is equal
+       *   to <code>obj</code>; <code>false</code> otherwise.
        */
-      @Override
       public boolean equals(Object obj)
       {
          if (obj instanceof OrderSpec)
@@ -216,10 +251,21 @@ public class OrderQueryNode extends QueryNode
    /**
     * {@inheritDoc}
     */
-   @Override
    public boolean needsSystemTree()
    {
       return false;
    }
 
+   //--------------------------------< internal >------------------------------
+
+   /**
+    * Creates a path with a single element out of the given <code>name</code>.
+    *
+    * @param name the name to create the path from.
+    * @return a path with a single element.
+    */
+   private static QPath createPath(InternalQName name)
+   {
+      return new QPath(new QPathEntry[]{new QPathEntry(name, 1)});
+   }
 }

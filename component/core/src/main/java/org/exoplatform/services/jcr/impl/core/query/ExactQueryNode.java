@@ -16,104 +16,91 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
+import javax.jcr.RepositoryException;
+
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 
 /**
- * Implements a query node that defines an exact match of a property and a value.
+ * Implements a query node that defines an exact match of a property and a
+ * value.
  */
-public class ExactQueryNode extends QueryNode
-{
+public class ExactQueryNode extends QueryNode {
 
-   /**
-    * The name of the property to match
-    */
-   private final InternalQName property;
+    /**
+     * The name of the property to match
+     */
+    private final InternalQName property;
 
-   /**
-    * The value of the property to match
-    */
-   private final InternalQName value;
+    /**
+     * The value of the property to match
+     */
+    private final InternalQName value;
 
-   /**
-    * Creates a new <code>ExactQueryNode</code> instance.
-    * 
-    * @param parent
-    *          the parent node for this <code>ExactQueryNode</code>.
-    * @param property
-    *          the name of the property to match.
-    * @param value
-    *          the value of the property to match.
-    */
-   public ExactQueryNode(QueryNode parent, InternalQName property, InternalQName value)
-   {
-      super(parent);
-      if (parent == null)
-      {
-         throw new NullPointerException("parent");
-      }
-      this.property = property;
-      this.value = value;
-   }
+    /**
+     * Creates a new <code>ExactQueryNode</code> instance.
+     *
+     * @param parent   the parent node for this <code>ExactQueryNode</code>.
+     * @param property the name of the property to match.
+     * @param value    the value of the property to match.
+     */
+    public ExactQueryNode(QueryNode parent, InternalQName property, InternalQName value) {
+        super(parent);
+        if (parent == null) {
+            throw new NullPointerException("parent");
+        }
+        this.property = property;
+        this.value = value;
+    }
 
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public Object accept(QueryNodeVisitor visitor, Object data)
-   {
-      return visitor.visit(this, data);
-   }
+    /**
+     * {@inheritDoc}
+     * @throws RepositoryException
+     */
+    public Object accept(QueryNodeVisitor visitor, Object data) throws RepositoryException {
+        return visitor.visit(this, data);
+    }
 
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public int getType()
-   {
-      return QueryNode.TYPE_EXACT;
-   }
+    /**
+     * {@inheritDoc}
+     */
+    public int getType() {
+        return QueryNode.TYPE_EXACT;
+    }
 
-   /**
-    * Returns the name of the property to match.
-    * 
-    * @return the name of the property to match.
-    */
-   public InternalQName getPropertyName()
-   {
-      return property;
-   }
+    /**
+     * Returns the name of the property to match.
+     *
+     * @return the name of the property to match.
+     */
+    public InternalQName getPropertyName() {
+        return property;
+    }
 
-   /**
-    * Returns the value of the property to match.
-    * 
-    * @return the value of the property to match.
-    */
-   public InternalQName getValue()
-   {
-      return value;
-   }
+    /**
+     * Returns the value of the property to match.
+     *
+     * @return the value of the property to match.
+     */
+    public InternalQName getValue() {
+        return value;
+    }
 
-   /**
-    * @inheritDoc
-    */
-   @Override
-   public boolean equals(Object obj)
-   {
-      if (obj instanceof ExactQueryNode)
-      {
-         ExactQueryNode other = (ExactQueryNode)obj;
-         return (value == null ? other.value == null : value.equals(other.value))
-            && (property == null ? other.property == null : property.equals(other.property));
-      }
-      return false;
-   }
+    /**
+     * @inheritDoc
+     */
+    public boolean equals(Object obj) {
+        if (obj instanceof ExactQueryNode) {
+            ExactQueryNode other = (ExactQueryNode) obj;
+            return (value == null ? other.value == null : value.equals(other.value))
+                    && (property == null ? other.property == null : property.equals(other.property));
+        }
+        return false;
+    }
 
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public boolean needsSystemTree()
-   {
-      return false;
-   }
+    /**
+     * {@inheritDoc}
+     */
+    public boolean needsSystemTree() {
+        return false;
+    }
 }

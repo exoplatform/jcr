@@ -54,7 +54,7 @@ public class BaseQueryTest extends JcrImplBaseTest
    protected Document getDocument(String nodeIdentifer, boolean includeSystemIndex) throws IOException,
       RepositoryException
    {
-      IndexReader reader = defaultSearchIndex.getIndexReader(includeSystemIndex);
+      IndexReader reader = defaultSearchIndex.getIndexReader();
       IndexSearcher is = new IndexSearcher(reader);
       TermQuery query = new TermQuery(new Term(FieldNames.UUID, nodeIdentifer));
 

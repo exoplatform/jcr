@@ -19,37 +19,53 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 import javax.jcr.RepositoryException;
 
 import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.PropertyData;
 
 /**
- * <code>AggregateRule</code> defines a configuration for a node index aggregate. It defines rules
- * for items that should be included in the node scope index of an ancestor. Per default the values
- * of properties are only added to the node scope index of the parent node.
+ * <code>AggregateRule</code> defines a configuration for a node index
+ * aggregate. It defines rules for items that should be included in the node
+ * scope index of an ancestor. Per default the values of properties are only
+ * added to the node scope index of the parent node.
  */
-public interface AggregateRule
-{
+public interface AggregateRule {
 
-   /**
-    * Returns root node state for the indexing aggregate where <code>nodeState</code> belongs to.
-    * 
-    * @param nodeState
-    * @return the root node state of the indexing aggregate or <code>null</code> if
-    *         <code>nodeState</code> does not belong to an indexing aggregate.
-    * @throws ItemStateException
-    *           if an error occurs.
-    * @throws RepositoryException
-    *           if an error occurs.
-    */
-   NodeData getAggregateRoot(NodeData nodeState) throws RepositoryException;
+    /**
+     * Returns root node state for the indexing aggregate where
+     * <code>nodeState</code> belongs to.
+     *
+     * @param nodeState
+     * @return the root node state of the indexing aggregate or
+     *         <code>null</code> if <code>nodeState</code> does not belong to an
+     *         indexing aggregate.
+     * @throws ItemStateException  if an error occurs.
+     * @throws RepositoryException if an error occurs.
+     */
+   NodeData getAggregateRoot(NodeData nodeState)
+            throws  RepositoryException;
 
-   /**
-    * Returns the node states that are part of the indexing aggregate of the <code>nodeState</code>.
-    * 
-    * @param nodeState
-    *          a node state
-    * @return the node states that are part of the indexing aggregate of <code>nodeState</code>.
-    *         Returns <code>null</code> if this aggregate does not apply to <code>nodeState</code>.
-    * @throws ItemStateException
-    *           if an error occurs.
-    */
-   NodeData[] getAggregatedNodeStates(NodeData nodeState) throws RepositoryException;
+    /**
+     * Returns the node states that are part of the indexing aggregate of the
+     * <code>nodeState</code>.
+     *
+     * @param nodeState a node state
+     * @return the node states that are part of the indexing aggregate of
+     *         <code>nodeState</code>. Returns <code>null</code> if this
+     *         aggregate does not apply to <code>nodeState</code>.
+     * @throws ItemStateException if an error occurs.
+     */
+   NodeData[] getAggregatedNodeStates(NodeData nodeState)
+            throws RepositoryException;
+
+    /**
+     * Returns the property states that are part of the indexing aggregate of
+     * the <code>nodeState</code>.
+     *
+     * @param nodeState a node state
+     * @return the property states that are part of the indexing aggregate of
+     *         <code>nodeState</code>. Returns <code>null</code> if this
+     *         aggregate does not apply to <code>nodeState</code>.
+     * @throws ItemStateException if an error occurs.
+     */
+    public PropertyData[] getAggregatedPropertyStates(NodeData nodeState)
+            throws RepositoryException;
 }

@@ -67,7 +67,7 @@ public class TestDateSearch extends BaseQueryTest
       assertNotNull("Node is not indexed", doc);
       System.out.println("its doc " + doc);
 
-      IndexReader reader = defaultSearchIndex.getIndexReader(false);
+      IndexReader reader = defaultSearchIndex.getIndexReader();
       IndexSearcher is = new IndexSearcher(reader);
       TermQuery query = new TermQuery(new Term(FieldNames.FULLTEXT, word));
       Hits result = is.search(query);

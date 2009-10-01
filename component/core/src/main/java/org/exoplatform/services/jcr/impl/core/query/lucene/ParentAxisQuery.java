@@ -23,8 +23,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.HitCollector;
 import org.apache.lucene.search.Query;
@@ -33,335 +31,338 @@ import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.Similarity;
 import org.apache.lucene.search.Weight;
 
+import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.impl.core.query.lucene.hits.Hits;
+import org.exoplatform.services.jcr.impl.core.query.lucene.hits.ScorerHits;
+
 /**
  * <code>ParentAxisQuery</code> selects the parent nodes of a context query.
  */
-class ParentAxisQuery extends Query
-{
+class ParentAxisQuery extends Query {
 
-   /**
-    * Default score is 1.0f.
-    */
-   private static final Float DEFAULT_SCORE = new Float(1.0f);
+    /**
+     * Default score is 1.0f.
+     */
+    private static final Float DEFAULT_SCORE = new Float(1.0f);
 
-   /**
-    * The context query
-    */
-   private final Query contextQuery;
+    /**
+     * The context query
+     */
+    private final Query contextQuery;
 
-   /**
-    * The nameTest to apply on the parent axis, or <code>null</code> if any parent node should be
-    * selected.
-    */
-   private final String nameTest;
+    /**
+     * The nameTest to apply on the parent axis, or <code>null</code> if any
+     * parent node should be selected.
+     */
+    private final InternalQName nameTest;
 
-   /**
-    * The scorer of the context query
-    */
-   private Scorer contextScorer;
+    /**
+     * The index format version.
+     */
+    private final IndexFormatVersion version;
 
-   /**
-    * Creates a new <code>ParentAxisQuery</code> based on a <code>context</code> query.
-    * 
-    * @param context
-    *          the context for this query.
-    * @param nameTest
-    *          a name test or <code>null</code> if any parent node is selected.
-    */
-   ParentAxisQuery(Query context, String nameTest)
-   {
-      this.contextQuery = context;
-      this.nameTest = nameTest;
-   }
+    /**
+     * The internal namespace mappings.
+     */
+    private final NamespaceMappings nsMappings;
 
-   /**
-    * Creates a <code>Weight</code> instance for this query.
-    * 
-    * @param searcher
-    *          the <code>Searcher</code> instance to use.
-    * @return a <code>ParentAxisWeight</code>.
-    */
-   protected Weight createWeight(Searcher searcher)
-   {
-      return new ParentAxisWeight(searcher);
-   }
+    /**
+     * The scorer of the context query
+     */
+    private Scorer contextScorer;
 
-   /**
-    * {@inheritDoc}
-    */
-   public void extractTerms(Set terms)
-   {
-      contextQuery.extractTerms(terms);
-   }
+    /**
+     * Creates a new <code>ParentAxisQuery</code> based on a
+     * <code>context</code> query.
+     *
+     * @param context  the context for this query.
+     * @param nameTest a name test or <code>null</code> if any parent node is
+     *                 selected.
+     * @param version the index format version.
+     * @param nsMappings the internal namespace mappings.
+     */
+    ParentAxisQuery(Query context, InternalQName nameTest,
+                   IndexFormatVersion version, NamespaceMappings nsMappings) {
+        this.contextQuery = context;
+        this.nameTest = nameTest;
+        this.version = version;
+        this.nsMappings = nsMappings;
+    }
 
-   /**
-    * {@inheritDoc}
-    */
-   public Query rewrite(IndexReader reader) throws IOException
-   {
-      Query cQuery = contextQuery.rewrite(reader);
-      if (cQuery == contextQuery)
-      {
-         return this;
-      }
-      else
-      {
-         return new ParentAxisQuery(cQuery, nameTest);
-      }
-   }
+    /**
+     * Creates a <code>Weight</code> instance for this query.
+     *
+     * @param searcher the <code>Searcher</code> instance to use.
+     * @return a <code>ParentAxisWeight</code>.
+     */
+    protected Weight createWeight(Searcher searcher) {
+        return new ParentAxisWeight(searcher);
+    }
 
-   /**
-    * Always returns 'ParentAxisQuery'.
-    * 
-    * @param field
-    *          the name of a field.
-    * @return 'ParentAxisQuery'.
-    */
-   public String toString(String field)
-   {
-      return "(ParentAxisQuery " + contextQuery.toString() + " nameTest:" + nameTest + ")";
-   }
+    /**
+     * {@inheritDoc}
+     */
+    public void extractTerms(Set terms) {
+        contextQuery.extractTerms(terms);
+    }
 
-   // -----------------------< ParentAxisWeight >-------------------------------
+    /**
+     * {@inheritDoc}
+     */
+    public Query rewrite(IndexReader reader) throws IOException {
+        Query cQuery = contextQuery.rewrite(reader);
+        if (cQuery == contextQuery) {
+            return this;
+        } else {
+            return new ParentAxisQuery(cQuery, nameTest, version, nsMappings);
+        }
+    }
 
-   /**
-    * The <code>Weight</code> implementation for this <code>ParentAxisQuery</code>.
-    */
-   private class ParentAxisWeight implements Weight
-   {
+    /**
+     * Always returns 'ParentAxisQuery'.
+     *
+     * @param field the name of a field.
+     * @return 'ParentAxisQuery'.
+     */
+    public String toString(String field) {
+       return "ParentAxisQuery "+"nameTest="+(nameTest!=null?nameTest.toString():"null")+" contextQuery="+contextQuery.toString();
+    }
 
-      /**
-       * The searcher in use
-       */
-      private final Searcher searcher;
+    //-----------------------< ParentAxisWeight >-------------------------------
 
-      /**
-       * Creates a new <code>ParentAxisWeight</code> instance using <code>searcher</code>.
-       * 
-       * @param searcher
-       *          a <code>Searcher</code> instance.
-       */
-      private ParentAxisWeight(Searcher searcher)
-      {
-         this.searcher = searcher;
-      }
+    /**
+     * The <code>Weight</code> implementation for this <code>ParentAxisQuery</code>.
+     */
+    private class ParentAxisWeight implements Weight {
 
-      /**
-       * Returns this <code>ParentAxisQuery</code>.
-       * 
-       * @return this <code>ParentAxisQuery</code>.
-       */
-      public Query getQuery()
-      {
-         return ParentAxisQuery.this;
-      }
+        /**
+         * The searcher in use
+         */
+        private final Searcher searcher;
 
-      /**
-       * {@inheritDoc}
-       */
-      public float getValue()
-      {
-         return 1.0f;
-      }
+        /**
+         * Creates a new <code>ParentAxisWeight</code> instance using
+         * <code>searcher</code>.
+         *
+         * @param searcher a <code>Searcher</code> instance.
+         */
+        private ParentAxisWeight(Searcher searcher) {
+            this.searcher = searcher;
+        }
 
-      /**
-       * {@inheritDoc}
-       */
-      public float sumOfSquaredWeights() throws IOException
-      {
-         return 1.0f;
-      }
+        /**
+         * Returns this <code>ParentAxisQuery</code>.
+         *
+         * @return this <code>ParentAxisQuery</code>.
+         */
+        public Query getQuery() {
+            return ParentAxisQuery.this;
+        }
 
-      /**
-       * {@inheritDoc}
-       */
-      public void normalize(float norm)
-      {
-      }
+        /**
+         * {@inheritDoc}
+         */
+        public float getValue() {
+            return 1.0f;
+        }
 
-      /**
-       * Creates a scorer for this <code>ParentAxisQuery</code>.
-       * 
-       * @param reader
-       *          a reader for accessing the index.
-       * @return a <code>ParentAxisScorer</code>.
-       * @throws IOException
-       *           if an error occurs while reading from the index.
-       */
-      public Scorer scorer(IndexReader reader) throws IOException
-      {
-         contextScorer = contextQuery.weight(searcher).scorer(reader);
-         HierarchyResolver resolver = (HierarchyResolver)reader;
-         return new ParentAxisScorer(searcher.getSimilarity(), reader, resolver);
-      }
+        /**
+         * {@inheritDoc}
+         */
+        public float sumOfSquaredWeights() throws IOException {
+            return 1.0f;
+        }
 
-      /**
-       * {@inheritDoc}
-       */
-      public Explanation explain(IndexReader reader, int doc) throws IOException
-      {
-         return new Explanation();
-      }
-   }
+        /**
+         * {@inheritDoc}
+         */
+        public void normalize(float norm) {
+        }
 
-   // --------------------------< ParentAxisScorer >----------------------------
+        /**
+         * Creates a scorer for this <code>ParentAxisQuery</code>.
+         *
+         * @param reader a reader for accessing the index.
+         * @return a <code>ParentAxisScorer</code>.
+         * @throws IOException if an error occurs while reading from the index.
+         */
+        public Scorer scorer(IndexReader reader) throws IOException {
+            contextScorer = contextQuery.weight(searcher).scorer(reader);
+            HierarchyResolver resolver = (HierarchyResolver) reader;
+            return new ParentAxisScorer(searcher.getSimilarity(),
+                    reader, searcher, resolver);
+        }
 
-   /**
-    * Implements a <code>Scorer</code> for this <code>ParentAxisQuery</code>.
-    */
-   private class ParentAxisScorer extends Scorer
-   {
+        /**
+         * {@inheritDoc}
+         */
+        public Explanation explain(IndexReader reader, int doc) throws IOException {
+            return new Explanation();
+        }
+    }
 
-      /**
-       * An <code>IndexReader</code> to access the index.
-       */
-      private final IndexReader reader;
+    //--------------------------< ParentAxisScorer >----------------------------
 
-      /**
-       * The <code>HierarchyResolver</code> of the index.
-       */
-      private final HierarchyResolver hResolver;
+    /**
+     * Implements a <code>Scorer</code> for this <code>ParentAxisQuery</code>.
+     */
+    private class ParentAxisScorer extends Scorer {
 
-      /**
-       * BitSet storing the id's of selected documents
-       */
-      private BitSet hits;
+        /**
+         * An <code>IndexReader</code> to access the index.
+         */
+        private final IndexReader reader;
 
-      /**
-       * Map that contains the scores from matching documents from the context query. To save memory
-       * only scores that are not equal to 1.0f are put to this map. <p/> key=[Integer] id of selected
-       * document from context query<br>
-       * value=[Float] score for that document
-       */
-      private final Map scores = new HashMap();
+        /**
+         * The <code>HierarchyResolver</code> of the index.
+         */
+        private final HierarchyResolver hResolver;
 
-      /**
-       * The next document id to return
-       */
-      private int nextDoc = -1;
+        /**
+         * The searcher instance.
+         */
+        private final Searcher searcher;
 
-      /**
-       * Creates a new <code>ParentAxisScorer</code>.
-       * 
-       * @param similarity
-       *          the <code>Similarity</code> instance to use.
-       * @param reader
-       *          for index access.
-       */
-      protected ParentAxisScorer(Similarity similarity, IndexReader reader, HierarchyResolver resolver)
-      {
-         super(similarity);
-         this.reader = reader;
-         this.hResolver = resolver;
-      }
+        /**
+         * BitSet storing the id's of selected documents
+         */
+        private BitSet hits;
 
-      /**
-       * {@inheritDoc}
-       */
-      public boolean next() throws IOException
-      {
-         calculateParent();
-         nextDoc = hits.nextSetBit(nextDoc + 1);
-         return nextDoc > -1;
-      }
+        /**
+         * Map that contains the scores from matching documents from the context
+         * query. To save memory only scores that are not equal to 1.0f are put
+         * to this map.
+         * <p/>
+         * key=[Integer] id of selected document from context query<br>
+         * value=[Float] score for that document
+         */
+        private final Map scores = new HashMap();
 
-      /**
-       * {@inheritDoc}
-       */
-      public int doc()
-      {
-         return nextDoc;
-      }
+        /**
+         * The next document id to return
+         */
+        private int nextDoc = -1;
 
-      /**
-       * {@inheritDoc}
-       */
-      public float score() throws IOException
-      {
-         Float score = (Float)scores.get(new Integer(nextDoc));
-         if (score == null)
-         {
-            score = DEFAULT_SCORE;
-         }
-         return score.floatValue();
-      }
+        /**
+         * Creates a new <code>ParentAxisScorer</code>.
+         *
+         * @param similarity the <code>Similarity</code> instance to use.
+         * @param reader     for index access.
+         * @param searcher   the index searcher.
+         * @param resolver   the hierarchy resolver.
+         */
+        protected ParentAxisScorer(Similarity similarity,
+                                   IndexReader reader,
+                                   Searcher searcher,
+                                   HierarchyResolver resolver) {
+            super(similarity);
+            this.reader = reader;
+            this.searcher = searcher;
+            this.hResolver = resolver;
+        }
 
-      /**
-       * {@inheritDoc}
-       */
-      public boolean skipTo(int target) throws IOException
-      {
-         calculateParent();
-         nextDoc = hits.nextSetBit(target);
-         return nextDoc > -1;
-      }
+        /**
+         * {@inheritDoc}
+         */
+        public boolean next() throws IOException {
+            calculateParent();
+            nextDoc = hits.nextSetBit(nextDoc + 1);
+            return nextDoc > -1;
+        }
 
-      /**
-       * {@inheritDoc}
-       * 
-       * @throws UnsupportedOperationException
-       *           this implementation always throws an <code>UnsupportedOperationException</code>.
-       */
-      public Explanation explain(int doc) throws IOException
-      {
-         throw new UnsupportedOperationException();
-      }
+        /**
+         * {@inheritDoc}
+         */
+        public int doc() {
+            return nextDoc;
+        }
 
-      private void calculateParent() throws IOException
-      {
-         if (hits == null)
-         {
-            hits = new BitSet(reader.maxDoc());
+        /**
+         * {@inheritDoc}
+         */
+        public float score() throws IOException {
+            Float score = (Float) scores.get(new Integer(nextDoc));
+            if (score == null) {
+                score = DEFAULT_SCORE;
+            }
+            return score.floatValue();
+        }
 
-            final IOException[] ex = new IOException[1];
-            contextScorer.score(new HitCollector()
-            {
-               public void collect(int doc, float score)
-               {
-                  try
-                  {
-                     doc = hResolver.getParent(doc);
-                     if (doc != -1)
-                     {
-                        hits.set(doc);
-                        if (score != DEFAULT_SCORE.floatValue())
-                        {
-                           scores.put(new Integer(doc), new Float(score));
+        /**
+         * {@inheritDoc}
+         */
+        public boolean skipTo(int target) throws IOException {
+            calculateParent();
+            nextDoc = hits.nextSetBit(target);
+            return nextDoc > -1;
+        }
+
+        /**
+         * {@inheritDoc}
+         *
+         * @throws UnsupportedOperationException this implementation always
+         *                                       throws an <code>UnsupportedOperationException</code>.
+         */
+        public Explanation explain(int doc) throws IOException {
+            throw new UnsupportedOperationException();
+        }
+
+        private void calculateParent() throws IOException {
+            if (hits == null) {
+                hits = new BitSet(reader.maxDoc());
+
+                final IOException[] ex = new IOException[1];
+                contextScorer.score(new HitCollector() {
+
+                    private int[] docs = new int[1];
+
+                    public void collect(int doc, float score) {
+                        try {
+                            docs = hResolver.getParents(doc, docs);
+                            if (docs.length == 1) {
+                                // optimize single value
+                                hits.set(docs[0]);
+                                if (score != DEFAULT_SCORE.floatValue()) {
+                                    scores.put(new Integer(docs[0]), new Float(score));
+                                }
+                            } else {
+                                for (int i = 0; i < docs.length; i++) {
+                                    hits.set(docs[i]);
+                                    if (score != DEFAULT_SCORE.floatValue()) {
+                                        scores.put(new Integer(docs[i]), new Float(score));
+                                    }
+                                }
+                            }
+                        } catch (IOException e) {
+                            ex[0] = e;
                         }
-                     }
-                  }
-                  catch (IOException e)
-                  {
-                     ex[0] = e;
-                  }
-               }
-            });
+                    }
+                });
 
-            if (ex[0] != null)
-            {
-               throw ex[0];
-            }
+                if (ex[0] != null) {
+                    throw ex[0];
+                }
 
-            // filter out documents that do not match the name test
-            if (nameTest != null)
-            {
-               TermDocs tDocs = reader.termDocs(new Term(FieldNames.LABEL, nameTest));
-               try
-               {
-                  for (int i = hits.nextSetBit(0); i >= 0; i = hits.nextSetBit(i + 1))
-                  {
-                     if (!tDocs.skipTo(i))
-                     {
-                        hits.clear(i);
-                     }
-                  }
-               }
-               finally
-               {
-                  tDocs.close();
-               }
+                // filter out documents that do not match the name test
+                if (nameTest != null) {
+                    Query nameQuery = new NameQuery(nameTest, version, nsMappings);
+                    Hits nameHits = new ScorerHits(nameQuery.weight(searcher).scorer(reader));
+                    for (int i = hits.nextSetBit(0); i >= 0; i = hits.nextSetBit(i + 1)) {
+                        int doc = nameHits.skipTo(i);
+                        if (doc == -1) {
+                            // no more name tests, clear remaining
+                            hits.clear(i, hits.length());
+                        } else {
+                            // assert doc >= i
+                            if (doc > i) {
+                                // clear hits
+                                hits.clear(i, doc);
+                                i = doc;
+                            }
+                        }
+                    }
+                }
             }
-         }
-      }
-   }
+        }
+    }
 }

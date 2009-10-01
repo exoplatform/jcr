@@ -17,27 +17,41 @@
 package org.exoplatform.services.jcr.impl.core.query;
 
 import javax.jcr.RepositoryException;
+import javax.jcr.Value;
 import javax.jcr.query.QueryResult;
 
+import org.exoplatform.services.jcr.datamodel.InternalQName;
+
+
+
+
 /**
- * Specifies an interface for a query object implementation that can just be executed.
- * 
+ * Specifies an interface for a query object implementation that can just be
+ * executed.
  * @see QueryImpl
  */
-public interface ExecutableQuery
-{
+public interface ExecutableQuery {
 
-   /**
-    * Executes this query and returns a <code>{@link QueryResult}</code>.
-    * 
-    * @param offset
-    *          the offset in the total result set
-    * @param limit
-    *          the maximum result size
-    * 
-    * @return a <code>QueryResult</code>
-    * @throws RepositoryException
-    *           if an error occurs
-    */
-   QueryResult execute(long offset, long limit) throws RepositoryException;
+    /**
+     * Executes this query and returns a <code>{@link QueryResult}</code>.
+     * @param offset the offset in the total result set
+     * @param limit the maximum result size
+     *
+     * @return a <code>QueryResult</code>
+     * @throws RepositoryException if an error occurs
+     */
+    QueryResult execute(long offset, long limit) throws RepositoryException;
+
+    /**
+     * Binds the given <code>value</code> to the variable named
+     * <code>varName</code>.
+     *
+     * @param varName name of variable in query
+     * @param value   value to bind
+     * @throws IllegalArgumentException      if <code>varName</code> is not a
+     *                                       valid variable in this query.
+     * @throws javax.jcr.RepositoryException if an error occurs.
+     */
+    void bindValue(InternalQName varName, Value value)
+        throws IllegalArgumentException, RepositoryException;
 }

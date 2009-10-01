@@ -19,18 +19,17 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 import org.apache.lucene.index.Term;
 
 /**
- * Defines an interface that allows implementing classes to listen for index changes (namely
- * document deletes) while using a {@link ReadOnlyIndexReader}.
+ * Defines an interface that allows implementing classes to listen for index
+ * changes (namely document deletes) while using a {@link ReadOnlyIndexReader}.
  */
-public interface IndexListener
-{
+public interface IndexListener {
 
-   /**
-    * Informs this listener, that the document with <code>id</code> has been deleted.
-    * 
-    * @param id
-    *          the <code>Term</code> that identifies the deleted document.
-    */
-   void documentDeleted(Term id);
+    /**
+     * Informs this listener, that the document with <code>id</code> has been
+     * deleted.
+     *
+     * @param id the <code>Term</code> that identifies the deleted document.
+     */
+    void documentDeleted(Term id);
 
 }

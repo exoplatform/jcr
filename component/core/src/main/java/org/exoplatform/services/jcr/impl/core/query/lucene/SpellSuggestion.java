@@ -21,51 +21,45 @@ import java.io.IOException;
 import org.exoplatform.services.jcr.impl.core.query.QueryRootNode;
 
 /**
- * <code>SpellSuggestion</code> implements a spell suggestion, which uses the spell checker.
+ * <code>SpellSuggestion</code> implements a spell suggestion, which uses the
+ * spell checker.
  */
-class SpellSuggestion
-{
+class SpellSuggestion {
 
-   /**
-    * The spell checker.
-    */
-   private final SpellChecker spellChecker;
+    /**
+     * The spell checker.
+     */
+    private final SpellChecker spellChecker;
 
-   /**
-    * The abstract query tree.
-    */
-   private final QueryRootNode root;
+    /**
+     * The abstract query tree.
+     */
+    private final QueryRootNode root;
 
-   /**
-    * Creates a new spell suggestion.
-    * 
-    * @param spellChecker
-    *          the spell checker or <code>null</code> if none is available.
-    * @param root
-    *          the abstract query tree.
-    */
-   SpellSuggestion(SpellChecker spellChecker, QueryRootNode root)
-   {
-      this.spellChecker = spellChecker;
-      this.root = root;
-   }
+    /**
+     * Creates a new spell suggestion.
+     *
+     * @param spellChecker the spell checker or <code>null</code> if none is
+     *                     available.
+     * @param root         the abstract query tree.
+     */
+    SpellSuggestion(SpellChecker spellChecker, QueryRootNode root) {
+        this.spellChecker = spellChecker;
+        this.root = root;
+    }
 
-   /**
-    * @return a suggestion for the spellcheck query node in the abstract query tree passed in the
-    *         constructor of this <code>SpellSuggestion</code>. This method returns <code>null</code>
-    *         if the spell checker thinks the spelling is correct or no spell checker was provided.
-    * @throws IOException
-    *           if an error occurs while checking the spelling.
-    */
-   public String getSuggestion() throws IOException
-   {
-      if (spellChecker != null)
-      {
-         return spellChecker.check(root);
-      }
-      else
-      {
-         return null;
-      }
-   }
+    /**
+     * @return a suggestion for the spellcheck query node in the abstract query
+     *         tree passed in the constructor of this <code>SpellSuggestion</code>.
+     *         This method returns <code>null</code> if the spell checker thinks
+     *         the spelling is correct or no spell checker was provided.
+     * @throws IOException if an error occurs while checking the spelling.
+     */
+    public String getSuggestion() throws IOException {
+        if (spellChecker != null) {
+            return spellChecker.check(root);
+        } else {
+            return null;
+        }
+    }
 }

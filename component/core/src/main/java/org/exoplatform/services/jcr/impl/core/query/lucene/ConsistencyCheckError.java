@@ -21,47 +21,40 @@ import java.io.IOException;
 /**
  * Common base class for errors detected during the consistency check.
  */
-abstract class ConsistencyCheckError
-{
+abstract class ConsistencyCheckError {
 
-   /**
-    * Diagnostic message for this error.
-    */
-   protected final String message;
+    /**
+     * Diagnostic message for this error.
+     */
+    protected final String message;
 
-   /**
-    * The UUID of the affected node.
-    */
-   protected final String uuid;
+    /**
+     * The UUID of the affected node.
+     */
+    protected final String uuid;
 
-   ConsistencyCheckError(String message, String uuid)
-   {
-      this.message = message;
-      this.uuid = uuid;
-   }
+    ConsistencyCheckError(String message, String uuid) {
+        this.message = message;
+        this.uuid = uuid;
+    }
 
-   /**
-    * Returns the diagnostic message.
-    * 
-    * @return the diagnostic message.
-    */
-   public String toString()
-   {
-      return message;
-   }
+    /**
+     * Returns the diagnostic message.
+     * @return the diagnostic message.
+     */
+    public String toString() {
+        return message;
+    }
 
-   /**
-    * Returns <code>true</code> if this error can be repaired.
-    * 
-    * @return <code>true</code> if this error can be repaired.
-    */
-   abstract boolean repairable();
+    /**
+     * Returns <code>true</code> if this error can be repaired.
+     * @return <code>true</code> if this error can be repaired.
+     */
+    abstract boolean repairable();
 
-   /**
-    * Executes the repair operation.
-    * 
-    * @throws IOException
-    *           if an error occurs while repairing.
-    */
-   abstract void repair() throws IOException;
+    /**
+     * Executes the repair operation.
+     * @throws IOException if an error occurs while repairing.
+     */
+    abstract void repair() throws IOException;
 }

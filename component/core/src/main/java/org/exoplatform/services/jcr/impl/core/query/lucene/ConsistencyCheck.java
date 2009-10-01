@@ -25,415 +25,347 @@ import java.util.Set;
 
 import javax.jcr.RepositoryException;
 
-import org.exoplatform.services.log.Log;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.IndexReader;
-
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.log.ExoLogger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Implements a consistency check on the search index. Currently the following checks are
- * implemented:
+ * Implements a consistency check on the search index. Currently the following
+ * checks are implemented:
  * <ul>
- * <li>Does not node exist in the ItemStateManager? If it does not exist anymore the node is deleted
- * from the index.</li>
- * <li>Is the parent of a node also present in the index? If it is not present it will be indexed.</li>
- * <li>Is a node indexed multiple times? If that is the case, all occurrences in the index for such
- * a node are removed, and the node is re-indexed.</li>
+ * <li>Does not node exist in the ItemStateManager? If it does not exist
+ * anymore the node is deleted from the index.</li>
+ * <li>Is the parent of a node also present in the index? If it is not present it
+ * will be indexed.</li>
+ * <li>Is a node indexed multiple times? If that is the case, all occurrences
+ * in the index for such a node are removed, and the node is re-indexed.</li>
  * </ul>
  */
-class ConsistencyCheck
-{
+class ConsistencyCheck {
 
-   /**
-    * Logger instance for this class
-    */
-   private static final Log log = ExoLogger.getLogger(ConsistencyCheck.class);
+    /**
+     * Logger instance for this class
+     */
+    private static final Logger log = LoggerFactory.getLogger(ConsistencyCheck.class);
 
-   /**
-    * The ItemStateManager of the workspace.
-    */
-   private final ItemDataConsumer stateMgr;
+    /**
+     * The ItemStateManager of the workspace.
+     */
+    private final ItemDataConsumer stateMgr;
 
-   /**
-    * The index to check.
-    */
-   private final MultiIndex index;
+    /**
+     * The index to check.
+     */
+    private final MultiIndex index;
 
-   /**
-    * All the document UUIDs within the index.
-    */
-   private Set<String> documentUUIDs;
+    /**
+     * All the document UUIDs within the index.
+     */
+    private Set documentUUIDs;
 
-   /**
-    * List of all errors.
-    */
-   private final List<ConsistencyCheckError> errors = new ArrayList<ConsistencyCheckError>();
+    /**
+     * List of all errors.
+     */
+    private final List errors = new ArrayList();
 
-   /**
-    * Private constructor.
-    */
-   private ConsistencyCheck(MultiIndex index, ItemDataConsumer mgr)
-   {
-      this.index = index;
-      this.stateMgr = mgr;
-   }
+    /**
+     * Private constructor.
+     */
+    private ConsistencyCheck(MultiIndex index, ItemDataConsumer mgr) {
+        this.index = index;
+        this.stateMgr = mgr;
+    }
 
-   /**
-    * Runs the consistency check on <code>index</code>.
-    * 
-    * @param index
-    *          the index to check.
-    * @param mgr
-    *          the ItemStateManager from where to load content.
-    * @return the consistency check with the results.
-    * @throws IOException
-    *           if an error occurs while checking.
-    * @throws RepositoryException
-    */
-   static ConsistencyCheck run(MultiIndex index, ItemDataConsumer mgr) throws IOException, RepositoryException
-   {
-      ConsistencyCheck check = new ConsistencyCheck(index, mgr);
-      check.run();
-      return check;
-   }
+    /**
+     * Runs the consistency check on <code>index</code>.
+     *
+     * @param index the index to check.
+     * @param mgr   the ItemStateManager from where to load content.
+     * @return the consistency check with the results.
+     * @throws IOException if an error occurs while checking.
+    * @throws RepositoryException 
+     */
+    static ConsistencyCheck run(MultiIndex index, ItemDataConsumer mgr) throws IOException, RepositoryException {
+        ConsistencyCheck check = new ConsistencyCheck(index, mgr);
+        check.run();
+        return check;
+    }
 
-   /**
-    * Repairs detected errors during the consistency check.
-    * 
-    * @param ignoreFailure
-    *          if <code>true</code> repair failures are ignored, the repair continues without
-    *          throwing an exception. If <code>false</code> the repair procedure is aborted on the
-    *          first repair failure.
-    * @throws IOException
-    *           if a repair failure occurs.
-    */
-   void repair(boolean ignoreFailure) throws IOException
-   {
-      if (errors.size() == 0)
-      {
-         log.info("No errors found.");
-         return;
-      }
-      int notRepairable = 0;
-      for (Iterator it = errors.iterator(); it.hasNext();)
-      {
-         ConsistencyCheckError error = (ConsistencyCheckError)it.next();
-         try
-         {
-            if (error.repairable())
-            {
-               error.repair();
+    /**
+     * Repairs detected errors during the consistency check.
+     * @param ignoreFailure if <code>true</code> repair failures are ignored,
+     *   the repair continues without throwing an exception. If
+     *   <code>false</code> the repair procedure is aborted on the first
+     *   repair failure.
+     * @throws IOException if a repair failure occurs.
+     */
+    void repair(boolean ignoreFailure) throws IOException {
+        if (errors.size() == 0) {
+            log.info("No errors found.");
+            return;
+        }
+        int notRepairable = 0;
+        for (Iterator it = errors.iterator(); it.hasNext();) {
+            ConsistencyCheckError error = (ConsistencyCheckError) it.next();
+            try {
+                if (error.repairable()) {
+                    error.repair();
+                } else {
+                    log.warn("Not repairable: " + error);
+                    notRepairable++;
+                }
+            } catch (Exception e) {
+                if (ignoreFailure) {
+                    log.warn("Exception while reparing: " + e);
+                } else {
+                    if (!(e instanceof IOException)) {
+                        e = new IOException(e.getMessage());
+                    }
+                    throw (IOException) e;
+                }
             }
-            else
-            {
-               log.warn("Not repairable: " + error);
-               notRepairable++;
+        }
+        log.info("Repaired " + (errors.size() - notRepairable) + " errors.");
+        if (notRepairable > 0) {
+            log.warn("" + notRepairable + " error(s) not repairable.");
+        }
+    }
+
+    /**
+     * Returns the errors detected by the consistency check.
+     * @return the errors detected by the consistency check.
+     */
+    List getErrors() {
+        return new ArrayList(errors);
+    }
+
+    /**
+     * Runs the consistency check.
+     * @throws IOException if an error occurs while running the check.
+    * @throws RepositoryException 
+     */
+    private void run() throws IOException, RepositoryException {
+        // UUIDs of multiple nodes in the index
+        Set multipleEntries = new HashSet();
+        // collect all documents UUIDs
+        documentUUIDs = new HashSet();
+        CachingMultiIndexReader reader = index.getIndexReader();
+        try {
+            for (int i = 0; i < reader.maxDoc(); i++) {
+                if (i > 10 && i % (reader.maxDoc() / 5) == 0) {
+                    long progress = Math.round((100.0 * (float) i) / ((float) reader.maxDoc() * 2f));
+                    log.info("progress: " + progress + "%");
+                }
+                if (reader.isDeleted(i)) {
+                    continue;
+                }
+                Document d = reader.document(i, FieldSelectors.UUID);
+                String uuid = d.get(FieldNames.UUID);
+                if (stateMgr.getItemData(uuid) != null){
+                    if (!documentUUIDs.add(uuid)) {
+                        multipleEntries.add(uuid);
+                    }
+                } else {
+                    errors.add(new NodeDeleted(uuid));
+                }
             }
-         }
-         catch (Exception e)
-         {
-            if (ignoreFailure)
-            {
-               log.warn("Exception while reparing: " + e);
+        } finally {
+            reader.release();
+        }
+
+        // create multiple entries errors
+        for (Iterator it = multipleEntries.iterator(); it.hasNext();) {
+            errors.add(new MultipleEntries((String)it.next()));
+        }
+
+        reader = index.getIndexReader();
+        try {
+            // run through documents again and check parent
+            for (int i = 0; i < reader.maxDoc(); i++) {
+                if (i > 10 && i % (reader.maxDoc() / 5) == 0) {
+                    long progress = Math.round((100.0 * (float) i) / ((float) reader.maxDoc() * 2f));
+                    log.info("progress: " + (progress + 50) + "%");
+                }
+                if (reader.isDeleted(i)) {
+                    continue;
+                }
+                Document d = reader.document(i, FieldSelectors.UUID_AND_PARENT);
+                String uuid = d.get(FieldNames.UUID);
+                String parentUUIDString = d.get(FieldNames.PARENT);
+
+                if (parentUUIDString == null || documentUUIDs.contains(parentUUIDString)) {
+                    continue;
+                }
+                
+                
+                // parent is missing
+                //NodeId parentId = new NodeId(parentUUID);
+                if (stateMgr.getItemData(parentUUIDString) != null)
+                {
+                   errors.add(new MissingAncestor(uuid, parentUUIDString));
+                }
+                else
+                {
+                   errors.add(new UnknownParent(uuid, parentUUIDString));
+                }
             }
-            else
-            {
-               if (!(e instanceof IOException))
-               {
-                  e = new IOException(e.getMessage());
-               }
-               throw (IOException)e;
-            }
-         }
-      }
-      log.info("Repaired " + (errors.size() - notRepairable) + " errors.");
-      if (notRepairable > 0)
-      {
-         log.warn("" + notRepairable + " error(s) not repairable.");
-      }
-   }
+        } finally {
+            reader.release();
+        }
+    }
 
-   /**
-    * Returns the errors detected by the consistency check.
-    * 
-    * @return the errors detected by the consistency check.
-    */
-   List<ConsistencyCheckError> getErrors()
-   {
-      return new ArrayList<ConsistencyCheckError>(errors);
-   }
+    /**
+     * Returns the path for <code>node</code>. If an error occurs this method
+     * returns the uuid of the node.
+     *
+     * @param node the node to retrieve the path from
+     * @return the path of the node or its uuid.
+     */
+    private String getPath(NodeData node) {
+        // remember as fallback
+       return node.getQPath().getAsString();
+    }
 
-   /**
-    * Runs the consistency check.
-    * 
-    * @throws IOException
-    *           if an error occurs while running the check.
-    * @throws RepositoryException
-    */
-   private void run() throws IOException, RepositoryException
-   {
-      // UUIDs of multiple nodes in the index
-      Set<String> multipleEntries = new HashSet<String>();
-      // collect all documents UUIDs
-      documentUUIDs = new HashSet<String>();
-      IndexReader reader = index.getIndexReader();
-      try
-      {
-         for (int i = 0; i < reader.maxDoc(); i++)
-         {
-            if (i > 10 && i % (reader.maxDoc() / 5) == 0)
-            {
-               long progress = Math.round((100.0 * (float)i) / ((float)reader.maxDoc() * 2f));
-               log.info("progress: " + progress + "%");
-            }
-            if (reader.isDeleted(i))
-            {
-               continue;
-            }
-            Document d = reader.document(i);
-            String uuid = d.get(FieldNames.UUID);
+    //-------------------< ConsistencyCheckError classes >----------------------
 
-            if (stateMgr.getItemData(uuid) != null)
-            {
-               if (!documentUUIDs.add(uuid))
-               {
-                  multipleEntries.add(uuid);
-               }
-            }
-            else
-            {
-               errors.add(new NodeDeleted(uuid));
-            }
-         }
-      }
-      finally
-      {
-         reader.close();
-      }
+    /**
+     * One or more ancestors of an indexed node are not available in the index.
+     */
+    private class MissingAncestor extends ConsistencyCheckError {
 
-      // create multiple entries errors
-      for (Iterator<String> it = multipleEntries.iterator(); it.hasNext();)
-      {
-         errors.add(new MultipleEntries(it.next()));
-      }
+        private final String parentUUID;
 
-      reader = index.getIndexReader();
-      try
-      {
-         // run through documents again and check parent
-         for (int i = 0; i < reader.maxDoc(); i++)
-         {
-            if (i > 10 && i % (reader.maxDoc() / 5) == 0)
-            {
-               long progress = Math.round((100.0 * (float)i) / ((float)reader.maxDoc() * 2f));
-               log.info("progress: " + (progress + 50) + "%");
-            }
-            if (reader.isDeleted(i))
-            {
-               continue;
-            }
-            Document d = reader.document(i);
-            String uuid = d.get(FieldNames.UUID);
-            String parentUUID = d.get(FieldNames.PARENT);
-            if (parentUUID == null || documentUUIDs.contains(parentUUID))
-            {
-               continue;
-            }
-            // parent is missing
-            if (stateMgr.getItemData(parentUUID) != null)
-            {
-               errors.add(new MissingAncestor(uuid, parentUUID));
-            }
-            else
-            {
-               errors.add(new UnknownParent(uuid, parentUUID));
-            }
-         }
-      }
-      finally
-      {
-         reader.close();
-      }
-   }
+        private MissingAncestor(String uuid, String parentUUID) {
+            super("Parent of " + uuid + " missing in index. Parent: " + parentUUID, uuid);
+            this.parentUUID = parentUUID;
+        }
 
-   /**
-    * Returns the path for <code>node</code>. If an error occurs this method returns the uuid of the
-    * node.
-    * 
-    * @param node
-    *          the node to retrieve the path from
-    * @return the path of the node or its uuid.
-    */
-   private String getPath(NodeData node)
-   {
-      return node.getQPath().getAsString();
-   }
+        /**
+         * Returns <code>true</code>.
+         * @return <code>true</code>.
+         */
+        public boolean repairable() {
+            return true;
+        }
 
-   // -------------------< ConsistencyCheckError classes >----------------------
+        /**
+         * Repairs the missing node by indexing the missing ancestors.
+         * @throws IOException if an error occurs while repairing.
+         */
+        public void repair() throws IOException {
+           String parentId = parentUUID;
+           while (parentId != null && !documentUUIDs.contains(parentId))
+           {
+              try
+              {
+                 NodeData n = (NodeData)stateMgr.getItemData(parentId);
+                 log.info("Reparing missing node " + getPath(n));
+                 Document d = index.createDocument(n);
+                 index.addDocument(d);
+                 documentUUIDs.add(n.getIdentifier());
+                 parentId = n.getParentIdentifier();
+              }
+              catch (RepositoryException e)
+              {
+                 throw new IOException(e.toString());
+              }
+           }
+        }
+    }
 
-   /**
-    * One or more ancestors of an indexed node are not available in the index.
-    */
-   private class MissingAncestor extends ConsistencyCheckError
-   {
+    /**
+     * The parent of a node is not available through the ItemStateManager.
+     */
+    private class UnknownParent extends ConsistencyCheckError {
 
-      private final String parentUUID;
+        private UnknownParent(String uuid, String parentUUID) {
+            super("Node " + uuid + " has unknown parent: " + parentUUID, uuid);
+        }
 
-      private MissingAncestor(String uuid, String parentUUID)
-      {
-         super("Parent of " + uuid + " missing in index. Parent: " + parentUUID, uuid);
-         this.parentUUID = parentUUID;
-      }
+        /**
+         * Not reparable (yet).
+         * @return <code>false</code>.
+         */
+        public boolean repairable() {
+            return false;
+        }
 
-      /**
-       * Returns <code>true</code>.
-       * 
-       * @return <code>true</code>.
-       */
-      public boolean repairable()
-      {
-         return true;
-      }
+        /**
+         * No operation.
+         */
+        public void repair() throws IOException {
+            log.warn("Unknown parent for " + uuid + " cannot be repaired");
+        }
+    }
 
-      /**
-       * Repairs the missing node by indexing the missing ancestors.
-       * 
-       * @throws IOException
-       *           if an error occurs while repairing.
-       */
-      public void repair() throws IOException
-      {
-         String parentId = parentUUID;
-         while (parentId != null && !documentUUIDs.contains(parentId))
-         {
-            try
-            {
-               NodeData n = (NodeData)stateMgr.getItemData(parentId);
-               log.info("Reparing missing node " + getPath(n));
-               Document d = index.createDocument(n);
-               index.addDocument(d);
-               documentUUIDs.add(n.getIdentifier());
-               parentId = n.getParentIdentifier();
-            }
-            catch (RepositoryException e)
-            {
-               throw new IOException(e.toString());
-            }
-         }
-      }
-   }
+    /**
+     * A node is present multiple times in the index.
+     */
+    private class MultipleEntries extends ConsistencyCheckError {
 
-   /**
-    * The parent of a node is not available through the ItemStateManager.
-    */
-   private class UnknownParent extends ConsistencyCheckError
-   {
+        MultipleEntries(String uuid) {
+            super("Multiple entries found for node " + uuid, uuid);
+        }
 
-      private UnknownParent(String uuid, String parentUUID)
-      {
-         super("Node " + uuid + " has unknown parent: " + parentUUID, uuid);
-      }
+        /**
+         * Returns <code>true</code>.
+         * @return <code>true</code>.
+         */
+        public boolean repairable() {
+            return true;
+        }
 
-      /**
-       * Not reparable (yet).
-       * 
-       * @return <code>false</code>.
-       */
-      public boolean repairable()
-      {
-         return false;
-      }
+        /**
+         * Removes the nodes with the identical uuids from the index and
+         * re-index the node.
+         * @throws IOException if an error occurs while repairing.
+         */
+        public void repair() throws IOException {
+           // first remove all occurrences
+           index.removeAllDocuments(uuid);
+           // then re-index the node
+           try
+           {
+              NodeData node = (NodeData)stateMgr.getItemData(uuid);
+              log.info("Re-indexing duplicate node occurrences in index: " + getPath(node));
+              Document d = index.createDocument(node);
+              index.addDocument(d);
+              documentUUIDs.add(node.getIdentifier());
+           }
+           catch (RepositoryException e)
+           {
+              throw new IOException(e.toString());
+           }
+        }
+    }
 
-      /**
-       * No operation.
-       */
-      public void repair() throws IOException
-      {
-         log.warn("Unknown parent for " + uuid + " cannot be repaired");
-      }
-   }
+    /**
+     * Indicates that a node has been deleted but is still in the index.
+     */
+    private class NodeDeleted extends ConsistencyCheckError {
 
-   /**
-    * A node is present multiple times in the index.
-    */
-   private class MultipleEntries extends ConsistencyCheckError
-   {
+        NodeDeleted(String uuid) {
+            super("Node " + uuid + " does not longer exist.", uuid);
+        }
 
-      MultipleEntries(String uuid)
-      {
-         super("Multiple entries found for node " + uuid, uuid);
-      }
+        /**
+         * Returns <code>true</code>.
+         * @return <code>true</code>.
+         */
+        public boolean repairable() {
+            return true;
+        }
 
-      /**
-       * Returns <code>true</code>.
-       * 
-       * @return <code>true</code>.
-       */
-      public boolean repairable()
-      {
-         return true;
-      }
-
-      /**
-       * Removes the nodes with the identical uuids from the index and re-index the node.
-       * 
-       * @throws IOException
-       *           if an error occurs while repairing.
-       */
-      public void repair() throws IOException
-      {
-         // first remove all occurrences
-         index.removeAllDocuments(uuid);
-         // then re-index the node
-         try
-         {
-            NodeData node = (NodeData)stateMgr.getItemData(uuid);
-            log.info("Re-indexing duplicate node occurrences in index: " + getPath(node));
-            Document d = index.createDocument(node);
-            index.addDocument(d);
-            documentUUIDs.add(node.getIdentifier());
-         }
-         catch (RepositoryException e)
-         {
-            throw new IOException(e.toString());
-         }
-      }
-   }
-
-   /**
-    * Indicates that a node has been deleted but is still in the index.
-    */
-   private class NodeDeleted extends ConsistencyCheckError
-   {
-
-      NodeDeleted(String uuid)
-      {
-         super("Node " + uuid + " does not longer exist.", uuid);
-      }
-
-      /**
-       * Returns <code>true</code>.
-       * 
-       * @return <code>true</code>.
-       */
-      public boolean repairable()
-      {
-         return true;
-      }
-
-      /**
-       * Deletes the nodes from the index.
-       * 
-       * @throws IOException
-       *           if an error occurs while repairing.
-       */
-      public void repair() throws IOException
-      {
-         log.info("Removing deleted node from index: " + uuid);
-         index.removeDocument(uuid);
-      }
-   }
+        /**
+         * Deletes the nodes from the index.
+         * @throws IOException if an error occurs while repairing.
+         */
+        public void repair() throws IOException {
+            log.info("Removing deleted node from index: " + uuid);
+            index.removeDocument(uuid);
+        }
+    }
 }

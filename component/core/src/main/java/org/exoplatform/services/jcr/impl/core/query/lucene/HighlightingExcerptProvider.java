@@ -19,20 +19,19 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 import java.io.IOException;
 
 /**
- * <code>HighlightingExcerptProvider</code> extends the <code>ExcerptProvider</code> interface with
- * a method that highlights matching terms in arbitrary text.
+ * <code>HighlightingExcerptProvider</code> extends the
+ * <code>ExcerptProvider</code> interface with a method that highlights matching
+ * terms in arbitrary text.
  */
-public interface HighlightingExcerptProvider extends ExcerptProvider
-{
+public interface HighlightingExcerptProvider extends ExcerptProvider {
 
-   /**
-    * Highlights the matching terms in the passed <code>text</code>.
-    * 
-    * @param text
-    *          the input text.
-    * @return the highlighted text.
-    * @throws IOException
-    *           if an error occurs while highlighting the text.
-    */
-   public String highlight(String text) throws IOException;
+    /**
+     * Highlights the matching terms in the passed <code>text</code>.
+     *
+     * @param text the input text.
+     * @return the highlighted text.
+     * @throws IOException if an error occurs while highlighting the text.
+     */
+    String highlight(String text) throws IOException;
+
 }

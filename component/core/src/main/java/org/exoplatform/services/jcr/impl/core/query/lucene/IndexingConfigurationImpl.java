@@ -18,26 +18,22 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Properties;
 
-import javax.jcr.PathNotFoundException;
+import javax.jcr.NamespaceException;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 
-import org.w3c.dom.CharacterData;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import org.exoplatform.services.log.Log;
+import org.apache.commons.collections.iterators.AbstractIteratorDecorator;
 import org.apache.lucene.analysis.Analyzer;
-
+import org.exoplatform.services.jcr.core.NamespaceAccessor;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
@@ -45,12 +41,24 @@ import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
+import org.exoplatform.services.jcr.datamodel.QPath;
+import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
+import org.exoplatform.services.jcr.impl.core.query.AdditionalNamespaceResolver;
 import org.exoplatform.services.jcr.impl.core.query.QueryHandlerContext;
+import org.exoplatform.services.jcr.impl.core.query.misc.Pattern;
+
 import org.exoplatform.services.jcr.impl.util.ISO9075;
-import org.exoplatform.services.log.ExoLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.Attr;
+import org.w3c.dom.CharacterData;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * <code>IndexingConfigurationImpl</code> implements a concrete indexing
@@ -62,8 +70,12 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
    /**
     * The logger instance for this class
     */
-   private static final Log log = ExoLogger.getLogger(IndexingConfigurationImpl.class);
+   private static final Logger log = LoggerFactory.getLogger(IndexingConfigurationImpl.class);
 
+   /**
+    * The path factory instance.
+    */
+   //private static final PathFactory PATH_FACTORY = PathFactoryImpl.getInstance();
    /**
     * A namespace resolver for parsing QNames in the configuration.
     */
@@ -75,9 +87,13 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
    private ItemDataConsumer ism;
 
    /**
+    * A hierarchy resolver for the item state manager.
+    */
+   //   private HierarchyManager hmgr;
+   /**
     * The {@link IndexingRule}s inside this configuration.
     */
-   private Map<InternalQName, List<IndexingRule>> configElements = new HashMap<InternalQName, List<IndexingRule>>();
+   private Map configElements = new HashMap();
 
    /**
     * The indexing aggregates inside this configuration.
@@ -87,166 +103,43 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
    /**
     * The configured analyzers for indexing properties.
     */
-   private Map<String, Analyzer> analyzers = new HashMap<String, Analyzer>();
-
-   public void addAggregateRules(AggregateRule[] rules)
-   {
-      AggregateRule[] newRules = new AggregateRule[aggregateRules.length + rules.length];
-      System.arraycopy(aggregateRules, 0, newRules, 0, aggregateRules.length);
-      System.arraycopy(rules, 0, newRules, aggregateRules.length, rules.length);
-      aggregateRules = newRules;
-   }
-
-   /**
-    * ONLY FOR TEST PURPOSES
-    * 
-    * @param configNode
-    * @throws Exception
-    */
-   public void addAggregateRule(Node configNode) throws Exception
-   {
-      AggregateRule[] rules = {new AggregateRuleImpl(configNode, resolver, ism)};
-      addAggregateRules(rules);
-   }
-
-   /**
-    * ONLY FOR TEST PURPOSES
-    */
-   public void removeLastAggregateRule()
-   {
-      if (aggregateRules != null && aggregateRules.length > 0)
-      {
-         AggregateRule[] newRules = new AggregateRule[aggregateRules.length - 1];
-         System.arraycopy(aggregateRules, 0, newRules, 0, aggregateRules.length - 1);
-         aggregateRules = newRules;
-      }
-   }
-
-   public void addIndexigRules(InternalQName name, List<IndexingRule> rules)
-   {
-      List<IndexingRule> namedRules = configElements.get(name);
-      if (namedRules == null)
-         configElements.put(name, rules);
-      else
-      {
-         namedRules.addAll(rules);
-      }
-   }
-
-   public Analyzer setPropertyAnalyzer(String propertyName, Analyzer analyzer)
-   {
-      return analyzers.put(propertyName, analyzer);
-   }
-
-   /**
-    * Returns the configured indexing aggregate rules or <code>null</code> if
-    * none exist.
-    * 
-    * @return the configured rules or <code>null</code> if none exist.
-    */
-   public AggregateRule[] getAggregateRules()
-   {
-      return aggregateRules;
-   }
-
-   /**
-    * Returns the boost for the node scope fulltext index field.
-    * 
-    * @param state the node state.
-    * @return the boost for the node scope fulltext index field.
-    */
-   public float getNodeBoost(NodeData state)
-   {
-      IndexingRule rule = getApplicableIndexingRule(state);
-      if (rule != null)
-      {
-         return rule.getNodeBoost();
-      }
-      return DEFAULT_BOOST;
-   }
-
-   /**
-    * Returns the analyzer configured for the property with this fieldName (the
-    * string representation ,JCR-style name, of the given <code>Name</code>
-    * prefixed with <code>FieldNames.FULLTEXT_PREFIX</code>)), and
-    * <code>null</code> if none is configured, or the configured analyzer cannot
-    * be found. If <code>null</code> is returned, the default Analyzer is used.
-    * 
-    * @param fieldName the string representation ,JCR-style name, of the given
-    *          <code>Name</code> prefixed with
-    *          <code>FieldNames.FULLTEXT_PREFIX</code>))
-    * @return the <code>analyzer</code> to use for indexing this property
-    */
-   public Analyzer getPropertyAnalyzer(String fieldName)
-   {
-      if (analyzers.containsKey(fieldName))
-      {
-         return analyzers.get(fieldName);
-      }
-      return null;
-   }
-
-   // ---------------------------------< internal >-----------------------------
-
-   /**
-    * Returns the boost value for the given property name. If there is no
-    * configuration entry for the property name the {@link #DEFAULT_BOOST} is
-    * returned.
-    * 
-    * @param state the node state.
-    * @param propertyName the name of a property.
-    * @return the boost value for the property.
-    */
-   public float getPropertyBoost(NodeData state, InternalQName propertyName)
-   {
-      IndexingRule rule = getApplicableIndexingRule(state);
-      if (rule != null)
-      {
-         return rule.getBoost(propertyName);
-      }
-      return DEFAULT_BOOST;
-   }
+   private Map analyzers = new HashMap();
 
    /**
     * {@inheritDoc}
-    * 
-    * @throws RepositoryException
-    * @throws IllegalNameException
-    * @throws PathNotFoundException
     */
-   public void init(Element config, QueryHandlerContext context, NamespaceMappings nsMappings)
-      throws RepositoryException, IllegalNameException
+   public void init(Element config, QueryHandlerContext context, NamespaceMappings nsMappings) throws Exception
    {
       ism = context.getItemStateManager();
-      resolver = new LocationFactory(context.getNamespaceRegistry());
+
+      NamespaceAccessor nsResolver = new AdditionalNamespaceResolver(getNamespaces(config));
+      resolver = new LocationFactory(nsResolver);//new ParsingNameResolver(NameFactoryImpl.getInstance(), nsResolver);
 
       NodeTypeDataManager ntReg = context.getNodeTypeDataManager();
-
-      List<AggregateRuleImpl> idxAggregates = new ArrayList<AggregateRuleImpl>();
+      List<NodeTypeData> ntNames = ntReg.getAllNodeTypes();
+      List idxAggregates = new ArrayList();
       NodeList indexingConfigs = config.getChildNodes();
-
       for (int i = 0; i < indexingConfigs.getLength(); i++)
       {
-         // Reset node types iterator
-         Collection<NodeTypeData> nTypes = context.getNodeTypeDataManager().getAllNodeTypes();
-
          Node configNode = indexingConfigs.item(i);
-
          if (configNode.getNodeName().equals("index-rule"))
          {
             IndexingRule element = new IndexingRule(configNode);
-            for (NodeTypeData nodeTypeData : nTypes)
+            // register under node type and all its sub types
+            log.debug("Found rule '{}' for NodeType '{}'", element, element.getNodeTypeName());
+            for (NodeTypeData nodeTypeData : ntNames)
             {
 
                if (ntReg.isNodeType(element.getNodeTypeName(), nodeTypeData.getName()))
                {
-                  List<IndexingRule> perNtConfig = configElements.get(nodeTypeData.getName());
+                  List perNtConfig = (List)configElements.get(nodeTypeData);
                   if (perNtConfig == null)
                   {
-                     perNtConfig = new ArrayList<IndexingRule>();
-                     configElements.put(nodeTypeData.getName(), perNtConfig);
+                     perNtConfig = new ArrayList();
+                     configElements.put(nodeTypeData, perNtConfig);
                   }
-                  perNtConfig.add(element);
+                  log.debug("Registering it for name '{}'", nodeTypeData);
+                  perNtConfig.add(new IndexingRule(element, nodeTypeData.getName()));
                }
             }
          }
@@ -273,22 +166,7 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
                      }
                      else if (Analyzer.class.isAssignableFrom(clazz))
                      {
-                        Analyzer analyzer;
-                        try
-                        {
-                           analyzer = (Analyzer)clazz.newInstance();
-                        }
-                        catch (InstantiationException e)
-                        {
-
-                           throw new RepositoryException(e);
-
-                        }
-                        catch (IllegalAccessException e)
-                        {
-
-                           throw new RepositoryException(e);
-                        }
+                        Analyzer analyzer = (Analyzer)clazz.newInstance();
                         NodeList propertyChildNodes = analyzerNode.getChildNodes();
                         for (int k = 0; k < propertyChildNodes.getLength(); k++)
                         {
@@ -298,16 +176,16 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
                               // get property name
                               InternalQName propName =
                                  resolver.parseJCRName(getTextContent(propertyNode)).getInternalName();
-                              String fieldName = nsMappings.translatePropertyName(propName);
+                              String fieldName = nsMappings.translateName(propName);
                               // set analyzer for the fulltext property fieldname
                               int idx = fieldName.indexOf(':');
                               fieldName =
                                  fieldName.substring(0, idx + 1) + FieldNames.FULLTEXT_PREFIX
-                                    + fieldName.substring(idx + 1);;
-                              Object prevAnalyzer = setPropertyAnalyzer(fieldName, analyzer);
+                                    + fieldName.substring(idx + 1);
+                              Object prevAnalyzer = analyzers.put(fieldName, analyzer);
                               if (prevAnalyzer != null)
                               {
-                                 log.warn("Property " + propName.getAsString()
+                                 log.warn("Property " + propName.getName()
                                     + " has been configured for multiple analyzers. "
                                     + " Last configured analyzer is used");
                               }
@@ -329,14 +207,80 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
          }
 
       }
-      aggregateRules = idxAggregates.toArray(new AggregateRule[idxAggregates.size()]);
+      aggregateRules = (AggregateRule[])idxAggregates.toArray(new AggregateRule[idxAggregates.size()]);
+   }
+
+   /**
+    * Returns the configured indexing aggregate rules or <code>null</code> if
+    * none exist.
+    *
+    * @return the configured rules or <code>null</code> if none exist.
+    */
+   public AggregateRule[] getAggregateRules()
+   {
+      return aggregateRules;
+   }
+
+   /**
+    * Returns <code>true</code> if the property with the given name is fulltext
+    * indexed according to this configuration.
+    *
+    * @param state        the node state.
+    * @param propertyName the name of a property.
+    * @return <code>true</code> if the property is fulltext indexed;
+    *         <code>false</code> otherwise.
+    */
+   public boolean isIndexed(NodeData state, InternalQName propertyName)
+   {
+      IndexingRule rule = getApplicableIndexingRule(state);
+      if (rule != null)
+      {
+         return rule.isIndexed(propertyName);
+      }
+      // none of the configs matches -> index property
+      return true;
+   }
+
+   /**
+    * Returns the boost value for the given property name. If there is no
+    * configuration entry for the property name the {@link #DEFAULT_BOOST} is
+    * returned.
+    *
+    * @param state        the node state.
+    * @param propertyName the name of a property.
+    * @return the boost value for the property.
+    */
+   public float getPropertyBoost(NodeData state, InternalQName propertyName)
+   {
+      IndexingRule rule = getApplicableIndexingRule(state);
+      if (rule != null)
+      {
+         return rule.getBoost(propertyName);
+      }
+      return DEFAULT_BOOST;
+   }
+
+   /**
+    * Returns the boost for the node scope fulltext index field.
+    *
+    * @param state the node state.
+    * @return the boost for the node scope fulltext index field.
+    */
+   public float getNodeBoost(NodeData state)
+   {
+      IndexingRule rule = getApplicableIndexingRule(state);
+      if (rule != null)
+      {
+         return rule.getNodeBoost();
+      }
+      return DEFAULT_BOOST;
    }
 
    /**
     * Returns <code>true</code> if the property with the given name should be
     * included in the node scope fulltext index. If there is not configuration
     * entry for that propery <code>false</code> is returned.
-    * 
+    *
     * @param state the node state.
     * @param propertyName the name of a property.
     * @return <code>true</code> if the property should be included in the node
@@ -354,51 +298,75 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
    }
 
    /**
-    * Returns <code>true</code> if the property with the given name is fulltext
-    * indexed according to this configuration.
-    * 
+    * Returns <code>true</code> if the content of the property with the given
+    * name should show up in an excerpt. If there is no configuration entry for
+    * that property <code>true</code> is returned.
+    *
     * @param state the node state.
     * @param propertyName the name of a property.
-    * @return <code>true</code> if the property is fulltext indexed;
-    *         <code>false</code> otherwise.
+    * @return <code>true</code> if the content of the property should be
+    *         included in an excerpt; <code>false</code> otherwise.
     */
-   public boolean isIndexed(NodeData state, InternalQName propertyName)
+   public boolean useInExcerpt(NodeData state, InternalQName propertyName)
    {
       IndexingRule rule = getApplicableIndexingRule(state);
       if (rule != null)
       {
-         return rule.isIndexed(propertyName);
+         return rule.useInExcerpt(propertyName);
       }
-      // none of the configs matches -> index property
+      // none of the config elements matched -> default is to include
       return true;
    }
 
    /**
+    * Returns the analyzer configured for the property with this fieldName
+    * (the string representation ,JCR-style name, of the given <code>InternalQName</code>
+    * prefixed with <code>FieldNames.FULLTEXT_PREFIX</code>)),
+    * and <code>null</code> if none is configured, or the configured analyzer
+    * cannot be found. If <code>null</code> is returned, the default Analyzer
+    * is used.
+    *
+    * @param fieldName the string representation ,JCR-style name, of the given <code>InternalQName</code>
+    * prefixed with <code>FieldNames.FULLTEXT_PREFIX</code>))
+    * @return the <code>analyzer</code> to use for indexing this property
+    */
+   public Analyzer getPropertyAnalyzer(String fieldName)
+   {
+      if (analyzers.containsKey(fieldName))
+      {
+         return (Analyzer)analyzers.get(fieldName);
+      }
+      return null;
+   }
+
+   //---------------------------------< internal >-----------------------------
+
+   /**
     * Returns the first indexing rule that applies to the given node
     * <code>state</code>.
-    * 
+    *
     * @param state a node state.
     * @return the indexing rule or <code>null</code> if none applies.
     */
    private IndexingRule getApplicableIndexingRule(NodeData state)
    {
-      List<IndexingRule> rules = null;
-      List<IndexingRule> r = configElements.get(state.getPrimaryTypeName());
+      List rules = null;
+      List r = (List)configElements.get(state.getPrimaryTypeName());
       if (r != null)
       {
-         rules = new ArrayList<IndexingRule>();
+         rules = new ArrayList();
          rules.addAll(r);
       }
 
-      InternalQName[] mixTypes = state.getMixinTypeNames();
-      for (InternalQName mixType : mixTypes)
+      Iterator it = Arrays.asList(state.getMixinTypeNames()).iterator();
+      while (it.hasNext())
       {
-         r = configElements.get(mixType);
+         r = (List)configElements.get(it.next());
          if (r != null)
          {
             if (rules == null)
             {
-               rules = new ArrayList<IndexingRule>();
+               rules = new ArrayList();
             }
             rules.addAll(r);
          }
@@ -406,8 +374,10 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
 
       if (rules != null)
       {
-         for (IndexingRule ir : rules)
+         it = rules.iterator();
+         while (it.hasNext())
          {
+            IndexingRule ir = (IndexingRule)it.next();
             if (ir.appliesTo(state))
             {
                return ir;
@@ -420,17 +390,112 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
    }
 
    /**
+    * Returns the namespaces declared on the <code>node</code>.
+    *
+    * @param node a DOM node.
+    * @return the namespaces
+    */
+   private Properties getNamespaces(Node node)
+   {
+      Properties namespaces = new Properties();
+      NamedNodeMap attributes = node.getAttributes();
+      for (int i = 0; i < attributes.getLength(); i++)
+      {
+         Attr attribute = (Attr)attributes.item(i);
+         if (attribute.getName().startsWith("xmlns:"))
+         {
+            namespaces.setProperty(attribute.getName().substring(6), attribute.getValue());
+         }
+      }
+      return namespaces;
+   }
+
+   /**
+    * Creates property configurations defined in the <code>config</code>.
+    *
+    * @param config the fulltext indexing configuration.
+    * @param propConfigs will be filled with exact <code>InternalQName</code> to
+    *                    <code>PropertyConfig</code> mappings.
+    * @param namePatterns will be filled with <code>NamePattern</code>s.
+    * @throws IllegalNameException   if the node type name contains illegal
+    *                                characters.
+   * @throws RepositoryException 
+    */
+   private void createPropertyConfigs(Node config, Map propConfigs, List namePatterns) throws IllegalNameException,
+      RepositoryException
+   {
+      NodeList childNodes = config.getChildNodes();
+      for (int i = 0; i < childNodes.getLength(); i++)
+      {
+         Node n = childNodes.item(i);
+         if (n.getNodeName().equals("property"))
+         {
+            NamedNodeMap attributes = n.getAttributes();
+            // get boost value
+            float boost = 1.0f;
+            Node boostAttr = attributes.getNamedItem("boost");
+            if (boostAttr != null)
+            {
+               try
+               {
+                  boost = Float.parseFloat(boostAttr.getNodeValue());
+               }
+               catch (NumberFormatException e)
+               {
+                  // use default
+               }
+            }
+
+            // get nodeScopeIndex flag
+            boolean nodeScopeIndex = true;
+            Node nsIndex = attributes.getNamedItem("nodeScopeIndex");
+            if (nsIndex != null)
+            {
+               nodeScopeIndex = Boolean.valueOf(nsIndex.getNodeValue()).booleanValue();
+            }
+
+            // get isRegexp flag
+            boolean isRegexp = false;
+            Node regexp = attributes.getNamedItem("isRegexp");
+            if (regexp != null)
+            {
+               isRegexp = Boolean.valueOf(regexp.getNodeValue()).booleanValue();
+            }
+
+            // get useInExcerpt flag
+            boolean useInExcerpt = true;
+            Node excerpt = attributes.getNamedItem("useInExcerpt");
+            if (excerpt != null)
+            {
+               useInExcerpt = Boolean.valueOf(excerpt.getNodeValue()).booleanValue();
+            }
+
+            PropertyConfig pc = new PropertyConfig(boost, nodeScopeIndex, useInExcerpt);
+
+            if (isRegexp)
+            {
+               namePatterns.add(new NamePattern(getTextContent(n), pc, resolver));
+            }
+            else
+            {
+               InternalQName propName = resolver.parseJCRName(getTextContent(n)).getInternalName();
+               propConfigs.put(propName, pc);
+            }
+         }
+      }
+   }
+
+   /**
     * Gets the condition expression from the configuration.
-    * 
+    *
     * @param config the config node.
     * @return the condition expression or <code>null</code> if there is no
     *         condition set on the <code>config</code>.
-    * @throws RepositoryException
-    * @throws PathNotFoundException
     * @throws MalformedPathException if the condition string is malformed.
-    * @throws IllegalNameException if a name contains illegal characters.
+    * @throws IllegalNameException   if a name contains illegal characters.
+   * @throws RepositoryException 
     */
-   private PathExpression getCondition(Node config) throws PathNotFoundException, RepositoryException
+   private PathExpression getCondition(Node config) throws IllegalNameException, RepositoryException
    {
       Node conditionAttr = config.getAttributes().getNamedItem("condition");
       if (conditionAttr == null)
@@ -484,7 +549,7 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
          }
          else
          {
-            if ((axis == PathExpression.ANCESTOR) || (axis == PathExpression.CHILD) || (axis == PathExpression.PARENT))
+            if (axis == PathExpression.ANCESTOR || axis == PathExpression.CHILD || axis == PathExpression.PARENT)
             {
                // simple name test
                String name = conditionString.substring(idx, conditionString.indexOf('/', idx));
@@ -514,59 +579,87 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
    }
 
    /**
-    * Creates property configurations defined in the <code>config</code>.
-    * 
-    * @param config the fulltext indexing configuration.
-    * @return the property configurations defined in the <code>config</code>.
-    * @throws RepositoryException
-    * @throws PathNotFoundException
-    * @throws IllegalNameException if the node type name contains illegal
-    *           characters.
+    * @param node a node.
+    * @return the text content of the <code>node</code>.
     */
-   private Map<InternalQName, PropertyConfig> getPropertyConfigs(Node config) throws PathNotFoundException,
-      RepositoryException
+   private static String getTextContent(Node node)
    {
-      Map<InternalQName, PropertyConfig> configs = new HashMap<InternalQName, PropertyConfig>();
-      NodeList childNodes = config.getChildNodes();
-      for (int i = 0; i < childNodes.getLength(); i++)
+      StringBuffer content = new StringBuffer();
+      NodeList nodes = node.getChildNodes();
+      for (int i = 0; i < nodes.getLength(); i++)
       {
-         Node n = childNodes.item(i);
-         if (n.getNodeName().equals("property"))
+         Node n = nodes.item(i);
+         if (n.getNodeType() == Node.TEXT_NODE)
          {
-            NamedNodeMap attributes = n.getAttributes();
-            // get boost value
-            float boost = 1.0f;
-            Node boostAttr = attributes.getNamedItem("boost");
-            if (boostAttr != null)
-            {
-               try
-               {
-                  boost = Float.parseFloat(boostAttr.getNodeValue());
-               }
-               catch (NumberFormatException e)
-               {
-                  // use default
-               }
-            }
-
-            // get nodeScopeIndex flag
-            boolean nodeScopeIndex = true;
-            Node nsIndex = attributes.getNamedItem("nodeScopeIndex");
-            if (nsIndex != null)
-            {
-               nodeScopeIndex = Boolean.valueOf(nsIndex.getNodeValue()).booleanValue();
-            }
-
-            // get property name
-            InternalQName propName = resolver.parseJCRName(getTextContent(n)).getInternalName();
-
-            configs.put(propName, new PropertyConfig(boost, nodeScopeIndex));
+            content.append(((CharacterData)n).getData());
          }
       }
-      return configs;
+      return content.toString();
    }
 
-   public class IndexingRule
+   /**
+    * A property name pattern.
+    */
+   private static final class NamePattern
+   {
+
+      /**
+       * The pattern to match.
+       */
+      private final Pattern pattern;
+
+      /**
+       * The associated configuration.
+       */
+      private final PropertyConfig config;
+
+      /**
+       * Creates a new name pattern.
+       *
+       * @param pattern the pattern as read from the configuration file.
+       * @param config the associated configuration.
+       * @param resolver a namespace resolver for parsing name from the
+       *                 configuration.
+       * @throws IllegalNameException if the prefix of the name pattern is
+       *                              illegal.
+      * @throws RepositoryException 
+       */
+      private NamePattern(String pattern, PropertyConfig config, LocationFactory resolver) throws IllegalNameException,
+         RepositoryException
+      {
+         String uri = Constants.NS_DEFAULT_URI;
+         String localPattern = pattern;
+         int idx = pattern.indexOf(':');
+         if (idx != -1)
+         {
+            // use a dummy local name to get namespace uri
+            uri = resolver.parseJCRName(pattern.substring(0, idx) + ":a").getNamespace();
+            localPattern = pattern.substring(idx + 1);
+         }
+         this.pattern = Pattern.name(uri, localPattern);
+         this.config = config;
+      }
+
+      /**
+       * @param path the path to match.
+       * @return <code>true</code> if <code>path</code> matches this name
+       *         pattern; <code>false</code> otherwise.
+       */
+      boolean matches(QPath path)
+      {
+         return pattern.match(path).isFullMatch();
+      }
+
+      /**
+       * @return the property configuration for this name pattern.
+       */
+      PropertyConfig getConfig()
+      {
+         return config;
+      }
+   }
+
+   private class IndexingRule
    {
 
       /**
@@ -575,9 +668,14 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
       private final InternalQName nodeTypeName;
 
       /**
-       * Map of {@link PropertyConfig}. Key=Name of property.
+       * Map of {@link PropertyConfig}. Key=InternalQName of property.
        */
-      private final Map<InternalQName, PropertyConfig> propConfigs;
+      private final Map propConfigs;
+
+      /**
+       * List of {@link NamePattern}s.
+       */
+      private final List namePatterns;
 
       /**
        * An expression based on a relative path.
@@ -590,24 +688,138 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
       private final float boost;
 
       /**
-       * @param config the configuration for this rule.
-       * @throws RepositoryException
-       * @throws PathNotFoundException
-       * @throws MalformedPathException if the condition expression is malformed.
-       * @throws IllegalNameException if a name contains illegal characters.
+       * Creates a new indexing rule base on an existing one, but for a
+       * different node type name.
+       *
+       * @param original the existing rule.
+       * @param nodeTypeName the node type name for the rule.
        */
-      IndexingRule(Node config) throws PathNotFoundException, RepositoryException
+      IndexingRule(IndexingRule original, InternalQName nodeTypeName)
+      {
+         this.nodeTypeName = nodeTypeName;
+         this.propConfigs = original.propConfigs;
+         this.namePatterns = original.namePatterns;
+         this.condition = original.condition;
+         this.boost = original.boost;
+      }
+
+      /**
+       *
+       * @param config the configuration for this rule.
+       * @throws MalformedPathException if the condition expression is malformed.
+       * @throws IllegalNameException   if a name contains illegal characters.
+      * @throws RepositoryException 
+       */
+      IndexingRule(Node config) throws IllegalNameException, RepositoryException
       {
          this.nodeTypeName = getNodeTypeName(config);
-         this.propConfigs = getPropertyConfigs(config);
          this.condition = getCondition(config);
          this.boost = getNodeBoost(config);
+         this.propConfigs = new HashMap();
+         this.namePatterns = new ArrayList();
+         createPropertyConfigs(config, propConfigs, namePatterns);
+      }
+
+      /**
+       * Returns the name of the node type where this rule applies to.
+       *
+       * @return name of the node type.
+       */
+      public InternalQName getNodeTypeName()
+      {
+         return nodeTypeName;
+      }
+
+      /**
+       * @return the value for the node boost.
+       */
+      public float getNodeBoost()
+      {
+         return boost;
+      }
+
+      /**
+       * Returns <code>true</code> if the property with the given name is
+       * indexed according to this rule.
+       *
+       * @param propertyName the name of a property.
+       * @return <code>true</code> if the property is indexed;
+       *         <code>false</code> otherwise.
+       */
+      public boolean isIndexed(InternalQName propertyName)
+      {
+         return getConfig(propertyName) != null;
+      }
+
+      /**
+       * Returns the boost value for the given property name. If there is no
+       * configuration entry for the property name the default boost value is
+       * returned.
+       *
+       * @param propertyName the name of a property.
+       * @return the boost value for the property.
+       */
+      public float getBoost(InternalQName propertyName)
+      {
+         PropertyConfig config = getConfig(propertyName);
+         if (config != null)
+         {
+            return config.boost;
+         }
+         else
+         {
+            return DEFAULT_BOOST;
+         }
+      }
+
+      /**
+       * Returns <code>true</code> if the property with the given name should
+       * be included in the node scope fulltext index. If there is no
+       * configuration entry for that propery <code>false</code> is returned.
+       *
+       * @param propertyName the name of a property.
+       * @return <code>true</code> if the property should be included in the
+       *         node scope fulltext index.
+       */
+      public boolean isIncludedInNodeScopeIndex(InternalQName propertyName)
+      {
+         PropertyConfig config = getConfig(propertyName);
+         if (config != null)
+         {
+            return config.nodeScopeIndex;
+         }
+         else
+         {
+            return false;
+         }
+      }
+
+      /**
+       * Returns <code>true</code> if the content of the property with the
+       * given name should show up in an excerpt. If there is no configuration
+       * entry for that property <code>true</code> is returned.
+       *
+       * @param propertyName the name of a property.
+       * @return <code>true</code> if the content of the property should be
+       *         included in an excerpt; <code>false</code> otherwise.
+       */
+      public boolean useInExcerpt(InternalQName propertyName)
+      {
+         PropertyConfig config = getConfig(propertyName);
+         if (config != null)
+         {
+            return config.useInExcerpt;
+         }
+         else
+         {
+            return true;
+         }
       }
 
       /**
        * Returns <code>true</code> if this rule applies to the given node
        * <code>state</code>.
-       * 
+       *
        * @param state the state to check.
        * @return <code>true</code> the rule applies to the given node;
        *         <code>false</code> otherwise.
@@ -628,85 +840,55 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
          }
       }
 
+      //-------------------------< internal >---------------------------------
+
       /**
-       * Returns the boost value for the given property name. If there is no
-       * configuration entry for the property name the default boost value is
-       * returned.
-       * 
-       * @param propertyName the name of a property.
-       * @return the boost value for the property.
+       * @param propertyName name of a property.
+       * @return the property configuration or <code>null</code> if this
+       *         indexing rule does not contain a configuration for the given
+       *         property.
        */
-      public float getBoost(InternalQName propertyName)
+      private PropertyConfig getConfig(InternalQName propertyName)
       {
-         PropertyConfig config = propConfigs.get(propertyName);
+         PropertyConfig config = (PropertyConfig)propConfigs.get(propertyName);
          if (config != null)
          {
-            return config.boost;
+            return config;
          }
-         else
+         else if (namePatterns.size() > 0)
          {
-            return DEFAULT_BOOST;
+            QPath path = new QPath(new QPathEntry[]{new QPathEntry(propertyName, 1)});
+            // check patterns
+            for (Iterator it = namePatterns.iterator(); it.hasNext();)
+            {
+               NamePattern np = (NamePattern)it.next();
+               if (np.matches(path))
+               {
+                  return np.getConfig();
+               }
+            }
          }
+         return null;
       }
 
       /**
-       * @return the value for the node boost.
+       * Reads the node type of the root node of the indexing rule.
+       *
+       * @param config the configuration.
+       * @return the name of the node type.
+       * @throws IllegalNameException   if the node type name contains illegal
+       *                                characters.
+       * @throws RepositoryException 
        */
-      public float getNodeBoost()
+      private InternalQName getNodeTypeName(Node config) throws IllegalNameException, RepositoryException
       {
-         return boost;
+         String ntString = config.getAttributes().getNamedItem("nodeType").getNodeValue();
+         return resolver.parseJCRName(ntString).getInternalName();
       }
-
-      /**
-       * Returns the name of the node type where this rule applies to.
-       * 
-       * @return name of the node type.
-       */
-      public InternalQName getNodeTypeName()
-      {
-         return nodeTypeName;
-      }
-
-      /**
-       * Returns <code>true</code> if the property with the given name should be
-       * included in the node scope fulltext index. If there is not configuration
-       * entry for that propery <code>false</code> is returned.
-       * 
-       * @param propertyName the name of a property.
-       * @return <code>true</code> if the property should be included in the node
-       *         scope fulltext index.
-       */
-      public boolean isIncludedInNodeScopeIndex(InternalQName propertyName)
-      {
-         PropertyConfig config = propConfigs.get(propertyName);
-         if (config != null)
-         {
-            return config.nodeScopeIndex;
-         }
-         else
-         {
-            return false;
-         }
-      }
-
-      /**
-       * Returns <code>true</code> if the property with the given name is indexed
-       * according to this rule.
-       * 
-       * @param propertyName the name of a property.
-       * @return <code>true</code> if the property is indexed; <code>false</code>
-       *         otherwise.
-       */
-      public boolean isIndexed(InternalQName propertyName)
-      {
-         return propConfigs.containsKey(propertyName);
-      }
-
-      // -------------------------< internal >---------------------------------
 
       /**
        * Returns the node boost from the <code>config</code>.
-       * 
+       *
        * @param config the configuration.
        * @return the configured node boost or the default boost if none is
        *         configured.
@@ -727,25 +909,40 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
          }
          return DEFAULT_BOOST;
       }
+   }
+
+   /**
+    * Simple class that holds boost and nodeScopeIndex flag.
+    */
+   private class PropertyConfig
+   {
 
       /**
-       * Reads the node type of the root node of the indexing rule.
-       * 
-       * @param config the configuration.
-       * @return the name of the node type.
-       * @throws RepositoryException
-       * @throws PathNotFoundException
-       * @throws IllegalNameException if the node type name contains illegal
-       *           characters.
+       * The boost value for a property.
        */
-      private InternalQName getNodeTypeName(Node config) throws PathNotFoundException, RepositoryException
+      final float boost;
+
+      /**
+       * Flag that indicates whether a property is included in the node
+       * scope fulltext index of its parent.
+       */
+      final boolean nodeScopeIndex;
+
+      /**
+       * Flag that indicates whether the content of a property should be used
+       * to create an excerpt.
+       */
+      final boolean useInExcerpt;
+
+      PropertyConfig(float boost, boolean nodeScopeIndex, boolean useInExcerpt)
       {
-         String ntString = config.getAttributes().getNamedItem("nodeType").getNodeValue();
-         return resolver.parseJCRName(ntString).getInternalName();
+         this.boost = boost;
+         this.nodeScopeIndex = nodeScopeIndex;
+         this.useInExcerpt = useInExcerpt;
       }
    }
 
-   public class PathExpression
+   private class PathExpression
    {
 
       static final int SELF = 0;
@@ -777,16 +974,18 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
       }
 
       /**
-       * Evaluates this expression and returns <code>true</code> if the condition
-       * matches using <code>state</code> as the context node state.
-       * 
-       * @param context the context from where the expression should be evaluated.
+       * Evaluates this expression and returns <code>true</code> if the
+       * condition matches using <code>state</code> as the context node
+       * state.
+       *
+       * @param context the context from where the expression should be
+       *                evaluated.
        * @return expression result.
        */
       boolean evaluate(final NodeData context)
       {
          // get iterator along specified axis
-         Iterator<NodeData> nodeStates;
+         Iterator nodeStates;
          if (axis == SELF)
          {
             nodeStates = Collections.singletonList(context).iterator();
@@ -803,23 +1002,27 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
             {
                nodeStates = Collections.<NodeData> emptyList().iterator();
             }
-
          }
          else if (axis == ANCESTOR)
          {
             try
             {
-               nodeStates = new Iterator<NodeData>()
+               nodeStates = new Iterator()
                {
 
                   private NodeData next = (NodeData)ism.getItemData(context.getParentIdentifier());
+
+                  public void remove()
+                  {
+                     throw new UnsupportedOperationException();
+                  }
 
                   public boolean hasNext()
                   {
                      return next != null;
                   }
 
-                  public NodeData next()
+                  public Object next()
                   {
                      NodeData tmp = next;
                      try
@@ -839,16 +1042,11 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
                      }
                      return tmp;
                   }
-
-                  public void remove()
-                  {
-                     throw new UnsupportedOperationException();
-                  }
                };
             }
             catch (RepositoryException e)
             {
-               nodeStates = Collections.<NodeData> emptyList().iterator();
+               nodeStates = Collections.EMPTY_LIST.iterator();
             }
          }
          else if (axis == PARENT)
@@ -862,18 +1060,18 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
                }
                else
                {
-                  nodeStates = Collections.<NodeData> emptyList().iterator();
+                  nodeStates = Collections.EMPTY_LIST.iterator();
                }
             }
             catch (RepositoryException e)
             {
-               nodeStates = Collections.<NodeData> emptyList().iterator();
+               nodeStates = Collections.EMPTY_LIST.iterator();
             }
          }
          else
          {
             // unsupported axis
-            nodeStates = Collections.<NodeData> emptyList().iterator();
+            nodeStates = Collections.EMPTY_LIST.iterator();
          }
 
          // check node type, name and property value for each
@@ -881,7 +1079,7 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
          {
             try
             {
-               NodeData current = nodeStates.next();
+               NodeData current = (NodeData)nodeStates.next();
                if ((elementTest != null) && !current.getPrimaryTypeName().equals(elementTest))
                {
                   continue;
@@ -945,48 +1143,5 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
          }
          return false;
       }
-   }
-
-   /**
-    * Simple class that holds boost and nodeScopeIndex flag.
-    */
-   public class PropertyConfig
-   {
-
-      /**
-       * The boost value for a property.
-       */
-      final float boost;
-
-      /**
-       * Flag that indicates whether a property is included in the node scope
-       * fulltext index of its parent.
-       */
-      final boolean nodeScopeIndex;
-
-      PropertyConfig(float boost, boolean nodeScopeIndex)
-      {
-         this.boost = boost;
-         this.nodeScopeIndex = nodeScopeIndex;
-      }
-   }
-
-   /**
-    * @param node a node.
-    * @return the text content of the <code>node</code>.
-    */
-   private static String getTextContent(Node node)
-   {
-      StringBuffer content = new StringBuffer();
-      NodeList nodes = node.getChildNodes();
-      for (int i = 0; i < nodes.getLength(); i++)
-      {
-         Node n = nodes.item(i);
-         if (n.getNodeType() == Node.TEXT_NODE)
-         {
-            content.append(((CharacterData)n).getData());
-         }
-      }
-      return content.toString();
    }
 }

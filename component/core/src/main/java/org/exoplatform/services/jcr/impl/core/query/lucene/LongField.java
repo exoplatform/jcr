@@ -18,71 +18,59 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 /**
  */
-public class LongField
-{
+public class LongField {
 
-   private static final int STRING_LONG_LEN = Long.toString(Long.MAX_VALUE, Character.MAX_RADIX).length() + 1;
+    private static final int STRING_LONG_LEN
+            = Long.toString(Long.MAX_VALUE, Character.MAX_RADIX).length() + 1;
 
-   private LongField()
-   {
+    private LongField() {
 
-   }
+    }
 
-   public static String longToString(long value)
-   {
-      StringBuffer sb = new StringBuffer(STRING_LONG_LEN);
-      if (value < 0)
-      {
-         // shift value
-         value += Long.MAX_VALUE;
-         value++;
-         // after shift
-         // Long.MIN_VALUE -> 0
-         // 1 -> Long.MAX_VALUE
+    public static String longToString(long value) {
+        StringBuffer sb = new StringBuffer(STRING_LONG_LEN);
+        if (value < 0) {
+            // shift value
+            value += Long.MAX_VALUE;
+            value++;
+            // after shift
+            // Long.MIN_VALUE -> 0
+            // 1 -> Long.MAX_VALUE
 
-         // convert into string
-         String s = Long.toString(value, Character.MAX_RADIX);
-         // pad with leading zeros
-         while ((sb.length() + s.length()) < STRING_LONG_LEN)
-         {
-            sb.append('0');
-         }
-         sb.append(s);
-      }
-      else
-      {
-         // convert into string
-         String s = Long.toString(value, Character.MAX_RADIX);
-         // mark as positive
-         sb.append('1');
-         // fill in zeros if needed
-         while ((sb.length() + s.length()) < STRING_LONG_LEN)
-         {
-            sb.append('0');
-         }
-         sb.append(s);
-      }
-      return sb.toString();
-   }
+            // convert into string
+            String s = Long.toString(value, Character.MAX_RADIX);
+            // pad with leading zeros
+            while ((sb.length() + s.length()) < STRING_LONG_LEN) {
+                sb.append('0');
+            }
+            sb.append(s);
+        } else {
+            // convert into string
+            String s = Long.toString(value, Character.MAX_RADIX);
+            // mark as positive
+            sb.append('1');
+            // fill in zeros if needed
+            while ((sb.length() + s.length()) < STRING_LONG_LEN) {
+                sb.append('0');
+            }
+            sb.append(s);
+        }
+        return sb.toString();
+    }
 
-   public static long stringToLong(String value)
-   {
-      if (value.charAt(0) == '1')
-      {
-         // positive
-         return Long.parseLong(value.substring(1), Character.MAX_RADIX);
-      }
-      if (value.charAt(0) == '0')
-      {
-         // negative
-         long longValue = Long.parseLong(value, Character.MAX_RADIX);
-         // reverse shift
-         longValue -= Long.MAX_VALUE;
-         return --longValue;
-      }
-      else
-      {
-         throw new IllegalArgumentException(value);
-      }
-   }
+    public static long stringToLong(String value) {
+        if (value.charAt(0) == '1') {
+            // positive
+            return Long.parseLong(value.substring(1), Character.MAX_RADIX);
+        }
+        if (value.charAt(0) == '0') {
+            // negative
+            long longValue = Long.parseLong(value, Character.MAX_RADIX);
+            // reverse shift
+            longValue -= Long.MAX_VALUE;
+            return --longValue;
+        } else {
+            throw new IllegalArgumentException(value);
+        }
+    }
 }

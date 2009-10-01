@@ -19,6 +19,8 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -26,494 +28,473 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermPositionVector;
 import org.apache.lucene.index.TermVectorOffsetInfo;
-
 import org.exoplatform.services.jcr.util.Text;
 
 /**
- * This is an adapted version of the <code>FulltextHighlighter</code> posted in issue: <a
- * href="http://issues.apache.org/jira/browse/LUCENE-644">LUCENE-644</a>. <p/> Important: for this
- * highlighter to function properly, field must be stored with token offsets.<br/> Use Field
- * constructor {@link Field#Field(String,String,Field.Store,Field.Index,Field.TermVector)
- * Field(String, String, Field.Store, Field.Index, Field.TermVector)} where the last argument is
- * either {@link Field.TermVector#WITH_POSITIONS_OFFSETS} or
+ * This is an adapted version of the <code>FulltextHighlighter</code> posted in
+ * issue: <a href="http://issues.apache.org/jira/browse/LUCENE-644">LUCENE-644</a>.
+ * <p/>
+ * Important: for this highlighter to function properly, field must be stored
+ * with token offsets.<br/> Use Field constructor {@link
+ * Field#Field(String,String,Field.Store,Field.Index,Field.TermVector)
+ * Field(String, String, Field.Store, Field.Index, Field.TermVector)} where the
+ * last argument is either {@link Field.TermVector#WITH_POSITIONS_OFFSETS} or
  * {@link org.apache.lucene.document.Field.TermVector#WITH_OFFSETS}
- * 
+ *
  * @see org.apache.lucene.index.TermPositionVector
  * @see org.apache.lucene.index.TermFreqVector
  */
-class DefaultHighlighter
-{
+public class DefaultHighlighter {
 
-   /**
-    * A default value of <tt>3</tt>
-    */
-   public static final int DEFAULT_MAXFRAGMENTS = 3;
+    /**
+     * A default value of <tt>3</tt>
+     */
+    public static final int DEFAULT_MAXFRAGMENTS = 3;
 
-   /**
-    * A default value of <tt>80</tt>
-    */
-   public static final int DEFAULT_SURROUND = 80;
+    /**
+     * A default value of <tt>75</tt>
+     */
+    public static final int DEFAULT_SURROUND = 75;
 
-   public static final String START_EXCERPT = "<excerpt>";
+    public static final String START_EXCERPT = "<excerpt>";
 
-   public static final String END_EXCERPT = "</excerpt>";
+    public static final String END_EXCERPT = "</excerpt>";
 
-   public static final String START_FRAGMENT_SEPARATOR = "<fragment>";
+    public static final String START_FRAGMENT_SEPARATOR = "<fragment>";
 
-   public static final String END_FRAGMENT_SEPARATOR = "</fragment>";
+    public static final String END_FRAGMENT_SEPARATOR = "</fragment>";
 
-   private DefaultHighlighter()
-   {
-   }
+    public static final String START_HIGHLIGHT = "<highlight>";
 
-   /**
-    * @param tvec
-    *          the term position vector for this hit
-    * @param queryTerms
-    *          the query terms.
-    * @param text
-    *          the original text that was used to create the tokens.
-    * @param prepend
-    *          the string used to prepend a highlighted token, for example
-    *          <tt>&quot;&lt;b&gt;&quot;</tt>
-    * @param append
-    *          the string used to append a highlighted token, for example
-    *          <tt>&quot;&lt;/b&gt;&quot;</tt>
-    * @return a String with text fragments where tokens from the query are highlighted
-    */
-   public static String highlight(TermPositionVector tvec, Set queryTerms, String text, String prepend, String append)
-      throws IOException
-   {
-      return highlight(tvec, queryTerms, text, prepend, append, DEFAULT_MAXFRAGMENTS, DEFAULT_SURROUND);
-   }
+    public static final String END_HIGHLIGHT = "</highlight>";
 
-   /**
-    * @param tvec
-    *          the term position vector for this hit
-    * @param queryTerms
-    *          the query terms.
-    * @param text
-    *          the original text that was used to create the tokens.
-    * @param excerptStart
-    *          this string is prepended to the excerpt
-    * @param excerptEnd
-    *          this string is appended to the excerpt
-    * @param fragmentStart
-    *          this string is prepended to every fragment
-    * @param fragmentEnd
-    *          this string is appended to the end of every fragement.
-    * @param hlStart
-    *          the string used to prepend a highlighted token, for example
-    *          <tt>&quot;&lt;b&gt;&quot;</tt>
-    * @param hlEnd
-    *          the string used to append a highlighted token, for example
-    *          <tt>&quot;&lt;/b&gt;&quot;</tt>
-    * @param maxFragments
-    *          the maximum number of fragments
-    * @param surround
-    *          the maximum number of chars surrounding a highlighted token
-    * @return a String with text fragments where tokens from the query are highlighted
-    */
-   public static String highlight(TermPositionVector tvec, Set queryTerms, String text, String excerptStart,
-      String excerptEnd, String fragmentStart, String fragmentEnd, String hlStart, String hlEnd, int maxFragments,
-      int surround) throws IOException
-   {
-      String[] terms = new String[queryTerms.size()];
-      Iterator it = queryTerms.iterator();
-      for (int i = 0; it.hasNext(); i++)
-      {
-         terms[i] = ((Term)it.next()).text();
-      }
-      ArrayList list = new ArrayList();
-      int[] tvecindexes = tvec.indexesOf(terms, 0, terms.length);
-      for (int i = 0; i < tvecindexes.length; i++)
-      {
-         TermVectorOffsetInfo[] termoffsets = tvec.getOffsets(tvecindexes[i]);
-         for (int ii = 0; ii < termoffsets.length; ii++)
-         {
-            list.add(termoffsets[ii]);
-         }
-      }
+    protected DefaultHighlighter() {
+    }
 
-      TermVectorOffsetInfo[] offsets = (TermVectorOffsetInfo[])list.toArray(new TermVectorOffsetInfo[0]);
-      // sort offsets
-      if (terms.length > 1)
-      {
-         java.util.Arrays.sort(offsets, new TermVectorOffsetInfoSorter());
-      }
+    /**
+     * @param tvec          the term position vector for this hit
+     * @param queryTerms    the query terms.
+     * @param text          the original text that was used to create the
+     *                      tokens.
+     * @param excerptStart  this string is prepended to the excerpt
+     * @param excerptEnd    this string is appended to the excerpt
+     * @param fragmentStart this string is prepended to every fragment
+     * @param fragmentEnd   this string is appended to the end of every
+     *                      fragement.
+     * @param hlStart       the string used to prepend a highlighted token, for
+     *                      example <tt>&quot;&lt;b&gt;&quot;</tt>
+     * @param hlEnd         the string used to append a highlighted token, for
+     *                      example <tt>&quot;&lt;/b&gt;&quot;</tt>
+     * @param maxFragments  the maximum number of fragments
+     * @param surround      the maximum number of chars surrounding a
+     *                      highlighted token
+     * @return a String with text fragments where tokens from the query are
+     *         highlighted
+     */
+    public static String highlight(TermPositionVector tvec,
+                                   Set queryTerms,
+                                   String text,
+                                   String excerptStart,
+                                   String excerptEnd,
+                                   String fragmentStart,
+                                   String fragmentEnd,
+                                   String hlStart,
+                                   String hlEnd,
+                                   int maxFragments,
+                                   int surround)
+            throws IOException {
+        return new DefaultHighlighter().doHighlight(tvec, queryTerms, text,
+                excerptStart, excerptEnd, fragmentStart, fragmentEnd, hlStart,
+                hlEnd, maxFragments, surround);
+    }
 
-      return mergeFragments(offsets, new StringReader(text), excerptStart, excerptEnd, fragmentStart, fragmentEnd,
-         hlStart, hlEnd, maxFragments, surround);
-   }
+    /**
+     * @param tvec         the term position vector for this hit
+     * @param queryTerms   the query terms.
+     * @param text         the original text that was used to create the tokens.
+     * @param maxFragments the maximum number of fragments
+     * @param surround     the maximum number of chars surrounding a highlighted
+     *                     token
+     * @return a String with text fragments where tokens from the query are
+     *         highlighted
+     */
+    public static String highlight(TermPositionVector tvec,
+                                   Set queryTerms,
+                                   String text,
+                                   int maxFragments,
+                                   int surround)
+            throws IOException {
+        return highlight(tvec, queryTerms, text, START_EXCERPT, END_EXCERPT,
+                START_FRAGMENT_SEPARATOR, END_FRAGMENT_SEPARATOR,
+                START_HIGHLIGHT, END_HIGHLIGHT, maxFragments, surround);
+    }
 
-   /**
-    * @param tvec
-    *          the term position vector for this hit
-    * @param queryTerms
-    *          the query terms.
-    * @param text
-    *          the original text that was used to create the tokens.
-    * @param prepend
-    *          the string used to prepend a highlighted token, for example
-    *          <tt>&quot;&lt;b&gt;&quot;</tt>
-    * @param append
-    *          the string used to append a highlighted token, for example
-    *          <tt>&quot;&lt;/b&gt;&quot;</tt>
-    * @param maxFragments
-    *          the maximum number of fragments
-    * @param surround
-    *          the maximum number of chars surrounding a highlighted token
-    * @return a String with text fragments where tokens from the query are highlighted
-    */
-   public static String highlight(TermPositionVector tvec, Set queryTerms, String text, String prepend, String append,
-      int maxFragments, int surround) throws IOException
-   {
-      return highlight(tvec, queryTerms, text, START_EXCERPT, END_EXCERPT, START_FRAGMENT_SEPARATOR,
-         END_FRAGMENT_SEPARATOR, prepend, append, maxFragments, surround);
-   }
+    /**
+     * @see #highlight(TermPositionVector, Set, String, String, String, String, String, String, String, int, int)
+     */
+    protected String doHighlight(TermPositionVector tvec,
+                                 Set queryTerms,
+                                 String text,
+                                 String excerptStart,
+                                 String excerptEnd,
+                                 String fragmentStart,
+                                 String fragmentEnd,
+                                 String hlStart,
+                                 String hlEnd,
+                                 int maxFragments,
+                                 int surround) throws IOException {
+        String[] terms = new String[queryTerms.size()];
+        Iterator it = queryTerms.iterator();
+        for (int i = 0; it.hasNext(); i++) {
+            terms[i] = ((Term) it.next()).text();
+        }
+        ArrayList list = new ArrayList();
+        int[] tvecindexes = tvec.indexesOf(terms, 0, terms.length);
+        for (int i = 0; i < tvecindexes.length; i++) {
+            TermVectorOffsetInfo[] termoffsets = tvec.getOffsets(tvecindexes[i]);
+            list.addAll(Arrays.asList(termoffsets));
+        }
 
-   private static String mergeFragments(TermVectorOffsetInfo[] offsets, StringReader reader, String excerptStart,
-      String excerptEnd, String fragmentStart, String fragmentEnd, String hlStart, String hlEnd, int maxFragments,
-      int surround) throws IOException
-   {
-      if (offsets == null || offsets.length == 0)
-      {
-         // nothing to highlight
-         StringBuffer text = new StringBuffer(excerptStart);
-         text.append(fragmentStart);
-         int min = text.length();
-         char[] buf = new char[surround * 2];
-         int len = reader.read(buf);
-         text.append(buf, 0, len);
-         if (len == buf.length)
-         {
-            for (int i = text.length() - 1; i > min; i--)
-            {
-               if (Character.isWhitespace(text.charAt(i)))
-               {
-                  text.delete(i, text.length());
-                  text.append(" ...");
-                  break;
-               }
+        TermVectorOffsetInfo[] offsets = (TermVectorOffsetInfo[]) list.toArray(new TermVectorOffsetInfo[list.size()]);
+        // sort offsets
+        if (terms.length > 1) {
+            Arrays.sort(offsets, new TermVectorOffsetInfoSorter());
+        }
+
+        return mergeFragments(offsets, text, excerptStart,
+                excerptEnd, fragmentStart, fragmentEnd, hlStart, hlEnd,
+                maxFragments, surround);
+    }
+
+    protected String mergeFragments(TermVectorOffsetInfo[] offsets,
+                                    String text,
+                                    String excerptStart,
+                                    String excerptEnd,
+                                    String fragmentStart,
+                                    String fragmentEnd,
+                                    String hlStart,
+                                    String hlEnd,
+                                    int maxFragments,
+                                    int surround) throws IOException {
+        if (offsets == null || offsets.length == 0) {
+            // nothing to highlight
+            return createDefaultExcerpt(text, excerptStart, excerptEnd,
+                    fragmentStart, fragmentEnd, surround * 2);
+        }
+        int lastOffset = offsets.length; // Math.min(10, offsets.length); // 10 terms is plenty?
+        ArrayList fragmentInfoList = new ArrayList();
+        if (offsets[0].getEndOffset() <= text.length()) {
+            FragmentInfo fi = new FragmentInfo(offsets[0], surround * 2);
+            for (int i = 1; i < lastOffset; i++) {
+                if (offsets[i].getEndOffset() > text.length()) {
+                    break;
+                }
+                if (fi.add(offsets[i])) {
+                    continue;
+                }
+                fragmentInfoList.add(fi);
+                fi = new FragmentInfo(offsets[i], surround * 2);
             }
-         }
-         text.append(fragmentEnd).append(excerptEnd);
-         return text.toString();
-      }
-      int lastOffset = offsets.length; // 10 terms is plenty?
-      ArrayList fragmentInfoList = new ArrayList();
-      FragmentInfo fi = new FragmentInfo(offsets[0], surround * 2);
-      for (int i = 1; i < lastOffset; i++)
-      {
-         if (fi.add(offsets[i]))
-         {
-            continue;
-         }
-         fragmentInfoList.add(fi);
-         fi = new FragmentInfo(offsets[i], surround * 2);
-      }
-      fragmentInfoList.add(fi);
+            fragmentInfoList.add(fi);
+        }
 
-      // sort with score
-      java.util.Collections.sort(fragmentInfoList, new FragmentInfoScoreSorter());
+        if (fragmentInfoList.isEmpty()) {
+            // nothing to highlight
+            return createDefaultExcerpt(text, excerptStart, excerptEnd,
+                    fragmentStart, fragmentEnd, surround * 2);
+        }
 
-      // extract best fragments
-      ArrayList bestFragmentsList = new ArrayList();
-      for (int i = 0; i < Math.min(fragmentInfoList.size(), maxFragments); i++)
-      {
-         bestFragmentsList.add(fragmentInfoList.get(i));
-      }
+        // sort with score
+        Collections.sort(fragmentInfoList, new FragmentInfoScoreSorter());
 
-      // re-sort with positions
-      java.util.Collections.sort(bestFragmentsList, new FragmentInfoPositionSorter());
+        // extract best fragments
+        ArrayList bestFragmentsList = new ArrayList();
+        for (int i = 0; i < Math.min(fragmentInfoList.size(), maxFragments); i++) {
+            bestFragmentsList.add(fragmentInfoList.get(i));
+        }
 
-      // merge #maxFragments fragments
-      StringBuffer sb = new StringBuffer(excerptStart);
-      int pos = 0;
-      char[] cbuf;
-      int skip;
-      int nextStart;
-      int skippedChars;
-      int firstWhitespace;
-      for (int i = 0; i < bestFragmentsList.size(); i++)
-      {
-         fi = (FragmentInfo)bestFragmentsList.get(i);
-         fi.trim();
-         nextStart = fi.getStartOffset();
-         skip = nextStart - pos;
-         if (skip > surround * 2)
-         {
-            skip -= surround;
-            if (i > 0)
-            {
-               // end last fragment
-               cbuf = new char[surround];
-               reader.read(cbuf, 0, surround);
-               // find last whitespace
-               skippedChars = 1;
-               for (; skippedChars < surround + 1; skippedChars++)
-               {
-                  if (Character.isWhitespace(cbuf[surround - skippedChars]))
-                  {
-                     break;
-                  }
-               }
-               pos += surround;
-               if (skippedChars > surround)
-               {
-                  skippedChars = surround;
-               }
-               sb.append(Text.encodeIllegalXMLCharacters((new String(cbuf, 0, surround - skippedChars))));
-               sb.append(fragmentEnd);
+        // re-sort with positions
+        Collections.sort(bestFragmentsList, new FragmentInfoPositionSorter());
+
+        // merge #maxFragments fragments
+        StringReader reader = new StringReader(text);
+        StringBuffer sb = new StringBuffer(excerptStart);
+        int pos = 0;
+        char[] cbuf;
+        int skip;
+        int nextStart;
+        int skippedChars;
+        int firstWhitespace;
+        for (int i = 0; i < bestFragmentsList.size(); i++) {
+            FragmentInfo fi = (FragmentInfo) bestFragmentsList.get(i);
+            fi.trim();
+            nextStart = fi.getStartOffset();
+            skip = nextStart - pos;
+            if (skip > surround * 2) {
+                skip -= surround;
+                if (i > 0) {
+                    // end last fragment
+                    cbuf = new char[surround];
+                    reader.read(cbuf, 0, surround);
+                    // find last whitespace
+                    skippedChars = 1;
+                    for (; skippedChars < surround + 1; skippedChars++) {
+                        if (Character.isWhitespace(cbuf[surround - skippedChars])) {
+                            break;
+                        }
+                    }
+                    pos += surround;
+                    if (skippedChars > surround) {
+                        skippedChars = surround;
+                    }
+                    sb.append(Text.encodeIllegalXMLCharacters(
+                            new String(cbuf, 0, surround - skippedChars)));
+                    sb.append(fragmentEnd);
+                }
             }
-         }
 
-         if (skip >= surround)
-         {
-            if (i > 0)
-            {
-               skip -= surround;
+            if (skip >= surround) {
+                if (i > 0) {
+                    skip -= surround;
+                }
+                // skip
+                reader.skip((long) skip);
+                pos += skip;
             }
-            // skip
-            reader.skip((long)skip);
-            pos += skip;
-         }
-         // start fragment
-         cbuf = new char[nextStart - pos];
-         skippedChars = Math.max(cbuf.length - 1, 0);
-         firstWhitespace = skippedChars;
-         reader.read(cbuf, 0, nextStart - pos);
-         pos += (nextStart - pos);
-         sb.append(fragmentStart);
-         // find last period followed by whitespace
-         if (cbuf.length > 0)
-         {
-            for (; skippedChars >= 0; skippedChars--)
-            {
-               if (Character.isWhitespace(cbuf[skippedChars]))
-               {
-                  firstWhitespace = skippedChars;
-                  if (skippedChars - 1 >= 0 && cbuf[skippedChars - 1] == '.')
-                  {
-                     skippedChars++;
-                     break;
-                  }
-               }
-            }
-         }
-         boolean sentenceStart = true;
-         if (skippedChars == -1)
-         {
-            if (pos == cbuf.length)
-            {
-               // this fragment is the start of the text -> skip none
-               skippedChars = 0;
-            }
-            else
-            {
-               sentenceStart = false;
-               skippedChars = firstWhitespace + 1;
-            }
-         }
-
-         if (!sentenceStart)
-         {
-            sb.append("... ");
-         }
-         sb.append(Text.encodeIllegalXMLCharacters(new String(cbuf, skippedChars, cbuf.length - skippedChars)));
-
-         // iterate terms
-         for (Iterator iter = fi.iterator(); iter.hasNext();)
-         {
-            TermVectorOffsetInfo ti = (TermVectorOffsetInfo)iter.next();
-            nextStart = ti.getStartOffset();
-            if (nextStart - pos > 0)
-            {
-               cbuf = new char[nextStart - pos];
-               int charsRead = reader.read(cbuf, 0, nextStart - pos);
-               pos += (nextStart - pos);
-               sb.append(cbuf, 0, charsRead);
-            }
-            sb.append(hlStart);
-            nextStart = ti.getEndOffset();
-            // print term
+            // start fragment
             cbuf = new char[nextStart - pos];
+            skippedChars = Math.max(cbuf.length - 1, 0);
+            firstWhitespace = skippedChars;
             reader.read(cbuf, 0, nextStart - pos);
             pos += (nextStart - pos);
-            sb.append(cbuf);
-            sb.append(hlEnd);
-         }
-      }
-      if (pos != 0)
-      {
-         // end fragment
-         if (offsets.length > lastOffset)
-         {
-            surround = Math.min(offsets[lastOffset].getStartOffset() - pos, surround);
-         }
-         cbuf = new char[surround];
-         skip = reader.read(cbuf, 0, surround);
-         boolean EOF = reader.read() == -1;
-         if (skip >= 0)
-         {
-            if (!EOF)
-            {
-               skippedChars = 1;
-               for (; skippedChars < surround + 1; skippedChars++)
-               {
-                  if (Character.isWhitespace(cbuf[surround - skippedChars]))
-                  {
-                     break;
-                  }
-               }
-               if (skippedChars > surround)
-               {
-                  skippedChars = surround;
-               }
+            sb.append(fragmentStart);
+            // find last period followed by whitespace
+            if (cbuf.length > 0) {
+                for (; skippedChars >= 0; skippedChars--) {
+                    if (Character.isWhitespace(cbuf[skippedChars])) {
+                        firstWhitespace = skippedChars;
+                        if (skippedChars - 1 >= 0
+                                && cbuf[skippedChars - 1] == '.') {
+                            skippedChars++;
+                            break;
+                        }
+                    }
+                }
             }
-            else
-            {
-               skippedChars = 0;
+            boolean sentenceStart = true;
+            if (skippedChars == -1) {
+                if (pos == cbuf.length) {
+                    // this fragment is the start of the text -> skip none
+                    skippedChars = 0;
+                } else {
+                    sentenceStart = false;
+                    skippedChars = firstWhitespace + 1;
+                }
             }
-            sb.append(Text.encodeIllegalXMLCharacters(new String(cbuf, 0, EOF ? skip : (surround - skippedChars))));
-            if (!EOF)
-            {
-               char lastChar = sb.charAt(sb.length() - 1);
-               if (lastChar != '.' && lastChar != '!' && lastChar != '?')
-               {
-                  sb.append(" ...");
-               }
+
+            if (!sentenceStart) {
+                sb.append("... ");
             }
-         }
-         sb.append(fragmentEnd);
-      }
-      sb.append(excerptEnd);
-      return sb.toString();
-   }
+            sb.append(Text.encodeIllegalXMLCharacters(
+                    new String(cbuf, skippedChars, cbuf.length - skippedChars)));
 
-   private static class FragmentInfo
-   {
-      ArrayList offsetInfosList;
+            // iterate terms
+            for (Iterator iter = fi.iterator(); iter.hasNext();) {
+                TermVectorOffsetInfo ti = (TermVectorOffsetInfo) iter.next();
+                nextStart = ti.getStartOffset();
+                if (nextStart - pos > 0) {
+                    cbuf = new char[nextStart - pos];
+                    int charsRead = reader.read(cbuf, 0, nextStart - pos);
+                    pos += (nextStart - pos);
+                    sb.append(cbuf, 0, charsRead);
+                }
+                sb.append(hlStart);
+                nextStart = ti.getEndOffset();
+                // print term
+                cbuf = new char[nextStart - pos];
+                reader.read(cbuf, 0, nextStart - pos);
+                pos += (nextStart - pos);
+                sb.append(cbuf);
+                sb.append(hlEnd);
+            }
+        }
+        if (pos != 0) {
+            // end fragment
+            if (offsets.length > lastOffset) {
+                surround = Math.min(offsets[lastOffset].getStartOffset() - pos, surround);
+            }
+            cbuf = new char[surround];
+            skip = reader.read(cbuf, 0, surround);
+            boolean EOF = reader.read() == -1;
+            if (skip >= 0) {
+                if (!EOF) {
+                    skippedChars = 1;
+                    for (; skippedChars < surround + 1; skippedChars++) {
+                        if (Character.isWhitespace(cbuf[surround - skippedChars])) {
+                            break;
+                        }
+                    }
+                    if (skippedChars > surround) {
+                        skippedChars = surround;
+                    }
+                } else {
+                    skippedChars = 0;
+                }
+                sb.append(Text.encodeIllegalXMLCharacters(
+                        new String(cbuf, 0, EOF ? skip : (surround - skippedChars))));
+                if (!EOF) {
+                    char lastChar = sb.charAt(sb.length() - 1);
+                    if (lastChar != '.' && lastChar != '!' && lastChar != '?') {
+                        sb.append(" ...");
+                    }
+                }
+            }
+            sb.append(fragmentEnd);
+        }
+        sb.append(excerptEnd);
+        return sb.toString();
+    }
 
-      int startOffset;
+    /**
+     * Creates a default excerpt with the given text.
+     *
+     * @param text the text.
+     * @param excerptStart the excerpt start.
+     * @param excerptEnd the excerpt end.
+     * @param fragmentStart the fragement start.
+     * @param fragmentEnd the fragment end.
+     * @param maxLength the maximum length of the fragment.
+     * @return a default excerpt.
+     * @throws IOException if an error occurs while reading from the text.
+     */
+    protected String createDefaultExcerpt(String text,
+                                          String excerptStart,
+                                          String excerptEnd,
+                                          String fragmentStart,
+                                          String fragmentEnd,
+                                          int maxLength) throws IOException {
+        StringReader reader = new StringReader(text);
+        StringBuffer excerpt = new StringBuffer(excerptStart);
+        excerpt.append(fragmentStart);
+        int min = excerpt.length();
+        char[] buf = new char[maxLength];
+        int len = reader.read(buf);
+        StringBuffer tmp = new StringBuffer();
+        tmp.append(buf, 0, len);
+        if (len == buf.length) {
+            for (int i = tmp.length() - 1; i > min; i--) {
+                if (Character.isWhitespace(tmp.charAt(i))) {
+                    tmp.delete(i, tmp.length());
+                    tmp.append(" ...");
+                    break;
+                }
+            }
+        }
+        excerpt.append(Text.encodeIllegalXMLCharacters(tmp.toString()));
+        excerpt.append(fragmentEnd).append(excerptEnd);
+        return excerpt.toString();
+    }
 
-      int endOffset;
+    private static class FragmentInfo {
+        ArrayList offsetInfosList;
+        int startOffset;
+        int endOffset;
+        int mergeGap;
+        int numTerms;
 
-      int mergeGap;
+        public FragmentInfo(TermVectorOffsetInfo offsetinfo, int mergeGap) {
+            offsetInfosList = new ArrayList();
+            offsetInfosList.add(offsetinfo);
+            startOffset = offsetinfo.getStartOffset();
+            endOffset = offsetinfo.getEndOffset();
+            this.mergeGap = mergeGap;
+            numTerms = 1;
+        }
 
-      int numTerms;
+        public boolean add(TermVectorOffsetInfo offsetinfo) {
+            if (offsetinfo.getStartOffset() > (endOffset + mergeGap)) {
+                return false;
+            }
+            offsetInfosList.add(offsetinfo);
+            numTerms++;
+            endOffset = offsetinfo.getEndOffset();
+            return true;
+        }
 
-      public FragmentInfo(TermVectorOffsetInfo offsetinfo, int mergeGap)
-      {
-         offsetInfosList = new ArrayList();
-         offsetInfosList.add(offsetinfo);
-         startOffset = offsetinfo.getStartOffset();
-         endOffset = offsetinfo.getEndOffset();
-         this.mergeGap = mergeGap;
-         numTerms = 1;
-      }
+        public Iterator iterator() {
+            return offsetInfosList.iterator();
+        }
 
-      public boolean add(TermVectorOffsetInfo offsetinfo)
-      {
-         if (offsetinfo.getStartOffset() > (endOffset + mergeGap))
-         {
+        public int getStartOffset() {
+            return startOffset;
+        }
+
+        public int getEndOffset() {
+            return endOffset;
+        }
+
+        public int numTerms() {
+            return numTerms;
+        }
+
+        public void trim() {
+            int end = startOffset + (mergeGap / 2);
+            Iterator it = offsetInfosList.iterator();
+            while (it.hasNext()) {
+                TermVectorOffsetInfo tvoi = (TermVectorOffsetInfo) it.next();
+                if (tvoi.getStartOffset() > end) {
+                    it.remove();
+                }
+            }
+        }
+    }
+
+    private static class FragmentInfoScoreSorter
+            implements java.util.Comparator {
+        public int compare(Object o1, Object o2) {
+            int s1 = ((FragmentInfo) o1).numTerms();
+            int s2 = ((FragmentInfo) o2).numTerms();
+            if (s1 == s2) {
+                return ((FragmentInfo) o1).getStartOffset() < ((FragmentInfo) o2).getStartOffset() ? -1 : 1;
+            }
+            return s1 > s2 ? -1 : 1;
+        }
+
+        public boolean equals(Object obj) {
             return false;
-         }
-         offsetInfosList.add(offsetinfo);
-         numTerms++;
-         endOffset = offsetinfo.getEndOffset();
-         return true;
-      }
+        }
+    }
 
-      public Iterator iterator()
-      {
-         return offsetInfosList.iterator();
-      }
-
-      public int getStartOffset()
-      {
-         return startOffset;
-      }
-
-      public int getEndOffset()
-      {
-         return endOffset;
-      }
-
-      public int numTerms()
-      {
-         return numTerms;
-      }
-
-      public void trim()
-      {
-         int end = startOffset + (mergeGap / 2);
-         for (Iterator it = offsetInfosList.iterator(); it.hasNext();)
-         {
-            TermVectorOffsetInfo tvoi = (TermVectorOffsetInfo)it.next();
-            if (tvoi.getStartOffset() > end)
-            {
-               it.remove();
+    private static class FragmentInfoPositionSorter
+            implements java.util.Comparator {
+        public int compare(Object o1, Object o2) {
+            int s1 = ((FragmentInfo) o1).getStartOffset();
+            int s2 = ((FragmentInfo) o2).getStartOffset();
+            if (s1 == s2) {
+                return 0;
             }
-         }
-      }
-   }
+            return s1 < s2 ? -1 : 1;
+        }
 
-   private static class FragmentInfoScoreSorter implements java.util.Comparator
-   {
-      public int compare(Object o1, Object o2)
-      {
-         int s1 = ((FragmentInfo)o1).numTerms();
-         int s2 = ((FragmentInfo)o2).numTerms();
-         if (s1 == s2)
-         {
-            return ((FragmentInfo)o1).getStartOffset() < ((FragmentInfo)o2).getStartOffset() ? -1 : 1;
-         }
-         return s1 > s2 ? -1 : 1;
-      }
+        public boolean equals(Object obj) {
+            return false;
+        }
+    }
 
-      public boolean equals(Object obj)
-      {
-         return false;
-      }
-   }
+    private static class TermVectorOffsetInfoSorter
+            implements java.util.Comparator {
+        public int compare(Object o1, Object o2) {
+            int s1 = ((TermVectorOffsetInfo) o1).getStartOffset();
+            int s2 = ((TermVectorOffsetInfo) o2).getStartOffset();
+            if (s1 == s2) {
+                return 0;
+            }
+            return s1 < s2 ? -1 : 1;
+        }
 
-   private static class FragmentInfoPositionSorter implements java.util.Comparator
-   {
-      public int compare(Object o1, Object o2)
-      {
-         int s1 = ((FragmentInfo)o1).getStartOffset();
-         int s2 = ((FragmentInfo)o2).getStartOffset();
-         if (s1 == s2)
-         {
-            return 0;
-         }
-         return s1 < s2 ? -1 : 1;
-      }
-
-      public boolean equals(Object obj)
-      {
-         return false;
-      }
-   }
-
-   private static class TermVectorOffsetInfoSorter implements java.util.Comparator
-   {
-      public int compare(Object o1, Object o2)
-      {
-         int s1 = ((TermVectorOffsetInfo)o1).getStartOffset();
-         int s2 = ((TermVectorOffsetInfo)o2).getStartOffset();
-         if (s1 == s2)
-         {
-            return 0;
-         }
-         return s1 < s2 ? -1 : 1;
-      }
-
-      public boolean equals(Object obj)
-      {
-         return false;
-      }
-   }
+        public boolean equals(Object obj) {
+            return false;
+        }
+    }
 
 }

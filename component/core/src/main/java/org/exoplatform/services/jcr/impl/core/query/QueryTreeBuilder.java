@@ -20,59 +20,58 @@ import javax.jcr.query.InvalidQueryException;
 
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 
+
+
 /**
  * Specifies an interface for a query tree builder.
  */
-public interface QueryTreeBuilder
-{
+public interface QueryTreeBuilder {
 
-   /**
-    * Creates a <code>QueryNode</code> tree from a statement using the passed query node factory.
-    * 
-    * @param statement
-    *          the statement.
-    * @param resolver
-    *          the name resolver to use.
-    * @param factory
-    *          the query node factory to use.
-    * @return the <code>QueryNode</code> tree for the statement.
-    * @throws javax.jcr.query.InvalidQueryException
-    *           if the statement is malformed.
-    */
-   QueryRootNode createQueryTree(String statement, LocationFactory resolver, QueryNodeFactory factory)
-      throws InvalidQueryException;
+    /**
+     * Creates a <code>QueryNode</code> tree from a statement using the passed
+     * query node factory.
+     *
+     * @param statement the statement.
+     * @param resolver  the name resolver to use.
+     * @param factory   the query node factory to use.
+     * @return the <code>QueryNode</code> tree for the statement.
+     * @throws javax.jcr.query.InvalidQueryException
+     *          if the statement is malformed.
+     */
+    QueryRootNode createQueryTree(String statement,
+                                  LocationFactory resolver,
+                                  QueryNodeFactory factory)
+            throws InvalidQueryException;
 
-   /**
-    * Returns <code>true</code> if this query tree builder can handle a statement in
-    * <code>language</code>.
-    * 
-    * @param language
-    *          the language of a query statement to build a query tree.
-    * @return <code>true</code> if this builder can handle <code>language</code>; <code>false</code>
-    *         otherwise.
-    */
-   boolean canHandle(String language);
+    /**
+     * Returns <code>true</code> if this query tree builder can handle a
+     * statement in <code>language</code>.
+     *
+     * @param language the language of a query statement to build a query tree.
+     * @return <code>true</code> if this builder can handle <code>language</code>;
+     *         <code>false</code> otherwise.
+     */
+    boolean canHandle(String language);
 
-   /**
-    * Returns the set of query languages supported by this builder.
-    * 
-    * @return String array containing the names of the supported languages.
-    */
-   String[] getSupportedLanguages();
+    /**
+     * Returns the set of query languages supported by this builder.
+     *
+     * @return String array containing the names of the supported languages.
+     */
+    String[] getSupportedLanguages();
 
-   /**
-    * Creates a String representation of the query node tree in the syntax this
-    * <code>QueryTreeBuilder</code> can handle.
-    * 
-    * @param root
-    *          the root of the query node tree.
-    * @param resolver
-    *          to resolve Names.
-    * @return a String representation of the query node tree.
-    * @throws InvalidQueryException
-    *           if the query node tree cannot be converted into a String representation due to
-    *           restrictions in this syntax.
-    */
-   String toString(QueryRootNode root, LocationFactory resolver) throws InvalidQueryException;
+    /**
+     * Creates a String representation of the query node tree in the syntax this
+     * <code>QueryTreeBuilder</code> can handle.
+     *
+     * @param root     the root of the query node tree.
+     * @param resolver to resolve Names.
+     * @return a String representation of the query node tree.
+     * @throws InvalidQueryException if the query node tree cannot be converted
+     *                               into a String representation due to
+     *                               restrictions in this syntax.
+     */
+    String toString(QueryRootNode root, LocationFactory resolver)
+            throws InvalidQueryException;
 
 }

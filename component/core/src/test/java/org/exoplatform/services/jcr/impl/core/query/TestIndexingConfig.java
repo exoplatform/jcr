@@ -70,9 +70,9 @@ public class TestIndexingConfig extends BaseQueryTest
       super.setUp();
       IndexingConfigurationImpl indexingConfigurationImpl =
          (IndexingConfigurationImpl)defaultSearchIndex.getIndexingConfig();
-      indexingConfigurationImpl.setPropertyAnalyzer("FULL:" + simple, new SimpleAnalyzer());
-      indexingConfigurationImpl.setPropertyAnalyzer("FULL:" + whitespace, new WhitespaceAnalyzer());
-      indexingConfigurationImpl.setPropertyAnalyzer("FULL:" + stop, new StopAnalyzer());
+//      indexingConfigurationImpl.setPropertyAnalyzer("FULL:" + simple, new SimpleAnalyzer());
+//      indexingConfigurationImpl.setPropertyAnalyzer("FULL:" + whitespace, new WhitespaceAnalyzer());
+//      indexingConfigurationImpl.setPropertyAnalyzer("FULL:" + stop, new StopAnalyzer());
       testRoot = root.addNode("testrootAnalyzers");
       root.save();
    }
@@ -123,7 +123,7 @@ public class TestIndexingConfig extends BaseQueryTest
          compl.add(lazy, Occur.MUST);
          compl.add(dogs, Occur.MUST);
 
-         IndexReader ir = defaultSearchIndex.getIndexReader(false);
+         IndexReader ir = defaultSearchIndex.getIndexReader();
          IndexSearcher is = new IndexSearcher(ir);
 
          Hits hits = is.search(compl);
@@ -150,7 +150,7 @@ public class TestIndexingConfig extends BaseQueryTest
          hits = is.search(compl);
          assertEquals(1, hits.length());
 
-         ir.close();
+         //ir.close();
          is.close();
       }
       catch (Exception e)
@@ -198,7 +198,7 @@ public class TestIndexingConfig extends BaseQueryTest
          compl.add(lazy, Occur.MUST);
          compl.add(dogs, Occur.MUST);
 
-         IndexReader ir = defaultSearchIndex.getIndexReader(false);
+         IndexReader ir = defaultSearchIndex.getIndexReader();
          IndexSearcher is = new IndexSearcher(ir);
 
          Hits hits = is.search(compl);
@@ -264,7 +264,7 @@ public class TestIndexingConfig extends BaseQueryTest
          compl.add(lazy, Occur.MUST);
          compl.add(dogs, Occur.MUST);
 
-         IndexReader ir = defaultSearchIndex.getIndexReader(false);
+         IndexReader ir = defaultSearchIndex.getIndexReader();
          IndexSearcher is = new IndexSearcher(ir);
 
          Hits hits = is.search(compl);
@@ -338,7 +338,7 @@ public class TestIndexingConfig extends BaseQueryTest
          compl.add(lazy, Occur.MUST);
          compl.add(dogs, Occur.MUST);
 
-         IndexReader ir = defaultSearchIndex.getIndexReader(false);
+         IndexReader ir = defaultSearchIndex.getIndexReader();
          IndexSearcher is = new IndexSearcher(ir);
 
          Hits hits = is.search(compl);

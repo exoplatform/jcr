@@ -16,53 +16,46 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
+import javax.jcr.RepositoryException;
+
 /**
  * Implements a query node that defines a not operation on the child query.
  */
-public class NotQueryNode extends NAryQueryNode
-{
+public class NotQueryNode extends NAryQueryNode {
 
-   /**
-    * Creates a new <code>NotQueryNode</code> instance.
-    * 
-    * @param parent
-    *          the parent node for this query node.
-    */
-   protected NotQueryNode(QueryNode parent)
-   {
-      super(parent);
-   }
+    /**
+     * Creates a new <code>NotQueryNode</code> instance.
+     *
+     * @param parent the parent node for this query node.
+     */
+    protected NotQueryNode(QueryNode parent) {
+        super(parent);
+    }
 
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public Object accept(QueryNodeVisitor visitor, Object data)
-   {
-      return visitor.visit(this, data);
-   }
+    /**
+     * {@inheritDoc}
+     * @throws RepositoryException
+     */
+    public Object accept(QueryNodeVisitor visitor, Object data) throws RepositoryException {
+        return visitor.visit(this, data);
+    }
 
-   /**
-    * Returns the type of this node.
-    * 
-    * @return the type of this node.
-    */
-   @Override
-   public int getType()
-   {
-      return QueryNode.TYPE_NOT;
-   }
+    /**
+     * Returns the type of this node.
+     *
+     * @return the type of this node.
+     */
+    public int getType() {
+        return QueryNode.TYPE_NOT;
+    }
 
-   /**
-    * @inheritDoc
-    */
-   @Override
-   public boolean equals(Object obj)
-   {
-      if (obj instanceof NotQueryNode)
-      {
-         return super.equals(obj);
-      }
-      return false;
-   }
+    /**
+     * @inheritDoc
+     */
+    public boolean equals(Object obj) {
+        if (obj instanceof NotQueryNode) {
+            return super.equals(obj);
+        }
+        return false;
+    }
 }

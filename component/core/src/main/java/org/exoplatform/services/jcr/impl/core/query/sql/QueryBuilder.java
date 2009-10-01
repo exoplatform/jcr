@@ -24,44 +24,42 @@ import org.exoplatform.services.jcr.impl.core.query.QueryNodeFactory;
 import org.exoplatform.services.jcr.impl.core.query.QueryRootNode;
 import org.exoplatform.services.jcr.impl.core.query.QueryTreeBuilder;
 
+
 /**
  * Implements the JCR SQL query tree builder.
  */
-public class QueryBuilder implements QueryTreeBuilder
-{
+public class QueryBuilder implements QueryTreeBuilder {
 
-   /**
-    * @inheritDoc
-    */
-   public QueryRootNode createQueryTree(String statement, LocationFactory resolver, QueryNodeFactory factory)
-      throws InvalidQueryException
-   {
-      return JCRSQLQueryBuilder.createQuery(statement, resolver, factory);
-   }
+    /**
+     * @inheritDoc
+     */
+    public QueryRootNode createQueryTree(String statement,
+                                         LocationFactory resolver,
+                                         QueryNodeFactory factory)
+            throws InvalidQueryException {
+        return JCRSQLQueryBuilder.createQuery(statement, resolver, factory);
+    }
 
-   /**
-    * @inheritDoc
-    */
-   public boolean canHandle(String language)
-   {
-      return Query.SQL.equals(language);
-   }
+    /**
+     * @inheritDoc
+     */
+    public boolean canHandle(String language) {
+        return Query.SQL.equals(language);
+    }
 
-   /**
-    * This builder supports {@link Query#SQL}.
-    * 
-    * @inheritDoc
-    */
-   public String[] getSupportedLanguages()
-   {
-      return new String[]{Query.SQL};
-   }
+    /**
+     * This builder supports {@link Query#SQL}.
+     * @inheritDoc
+     */
+    public String[] getSupportedLanguages() {
+        return new String[]{Query.SQL};
+    }
 
-   /**
-    * @inheritDoc
-    */
-   public String toString(QueryRootNode root, LocationFactory resolver) throws InvalidQueryException
-   {
-      return JCRSQLQueryBuilder.toString(root, resolver);
-   }
+    /**
+     * @inheritDoc
+     */
+    public String toString(QueryRootNode root, LocationFactory resolver)
+            throws InvalidQueryException {
+        return JCRSQLQueryBuilder.toString(root, resolver);
+    }
 }

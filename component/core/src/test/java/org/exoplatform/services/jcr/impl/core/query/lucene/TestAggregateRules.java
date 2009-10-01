@@ -71,7 +71,7 @@ public class TestAggregateRules extends BaseQueryTest
 
          IndexingConfigurationImpl indexingConfigurationImpl =
             (IndexingConfigurationImpl)defaultSearchIndex.getIndexingConfig();
-         indexingConfigurationImpl.addAggregateRule(configNode);
+         //indexingConfigurationImpl.addAggregateRule(configNode);
 
          // create node nt:file
          Node node = session.getRootNode().addNode(fileName, "nt:file");
@@ -96,7 +96,7 @@ public class TestAggregateRules extends BaseQueryTest
          assertEquals(1, res.getNodes().getSize());
 
          // tear down
-         indexingConfigurationImpl.removeLastAggregateRule();
+         //indexingConfigurationImpl.removeLastAggregateRule();
       }
       catch (Exception e)
       {

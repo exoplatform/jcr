@@ -16,54 +16,49 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
+import javax.jcr.RepositoryException;
+
 /**
- * Implements a query node that defines an AND operation between arbitrary other {@link QueryNode}s.
+ * Implements a query node that defines an AND operation between arbitrary
+ * other {@link QueryNode}s.
  */
-public class AndQueryNode extends NAryQueryNode
-{
+public class AndQueryNode extends NAryQueryNode {
 
-   /**
-    * Creates a new <code>AndQueryNode</code> with a <code>parent</code> query node.
-    * 
-    * @param parent
-    *          the parent of <code>this</code> <code>AndQueryNode</code>.
-    */
-   protected AndQueryNode(QueryNode parent)
-   {
-      super(parent);
-   }
+    /**
+     * Creates a new <code>AndQueryNode</code> with a <code>parent</code>
+     * query node.
+     *
+     * @param parent the parent of <code>this</code> <code>AndQueryNode</code>.
+     */
+    protected AndQueryNode(QueryNode parent) {
+        super(parent);
+    }
 
-   /**
-    * This method can return <code>null</code> to indicate that this <code>AndQueryNode</code> does
-    * not contain any operands. {@inheritDoc}
-    */
-   @Override
-   public Object accept(QueryNodeVisitor visitor, Object data)
-   {
-      return visitor.visit(this, data);
-   }
+    /**
+     * This method can return <code>null</code> to indicate that this
+     * <code>AndQueryNode</code> does not contain any operands.
+     * {@inheritDoc}
+     * @throws RepositoryException
+     */
+    public Object accept(QueryNodeVisitor visitor, Object data) throws RepositoryException {
+        return visitor.visit(this, data);
+    }
 
-   /**
-    * Returns the type of this node.
-    * 
-    * @return the type of this node.
-    */
-   @Override
-   public int getType()
-   {
-      return QueryNode.TYPE_AND;
-   }
+    /**
+     * Returns the type of this node.
+     * @return the type of this node.
+     */
+    public int getType() {
+        return QueryNode.TYPE_AND;
+    }
 
-   /**
-    * @inheritDoc
-    */
-   @Override
-   public boolean equals(Object obj)
-   {
-      if (obj instanceof AndQueryNode)
-      {
-         return super.equals(obj);
-      }
-      return false;
-   }
+    /**
+     * @inheritDoc
+     */
+    public boolean equals(Object obj) {
+        if (obj instanceof AndQueryNode) {
+            return super.equals(obj);
+        }
+        return false;
+    }
 }

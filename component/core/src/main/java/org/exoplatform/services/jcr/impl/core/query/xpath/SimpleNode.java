@@ -16,167 +16,138 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.xpath;
 
+
 /**
- * Implements a JavaCC Node interface. This Class was initially created by JavaCC and then adapted
- * for our needs.
+ * Implements a JavaCC Node interface.
+ * This Class was initially created by JavaCC and then adapted for our needs.
  */
-public class SimpleNode implements Node
-{
-   protected Node parent;
+public class SimpleNode implements Node {
+    protected Node parent;
+    protected Node[] children;
+    protected int id;
+    protected XPath parser;
 
-   protected Node[] children;
+    public SimpleNode(int i) {
+        id = i;
+    }
 
-   protected int id;
+    public SimpleNode(XPath p, int i) {
+        this(i);
+        parser = p;
+    }
 
-   protected XPath parser;
+    // Factory method
+    public static Node jjtCreate(XPath p, int id) {
+        return new SimpleNode(p, id);
+    }
 
-   public SimpleNode(int i)
-   {
-      id = i;
-   }
+    public void jjtOpen() {
+    }
 
-   public SimpleNode(XPath p, int i)
-   {
-      this(i);
-      parser = p;
-   }
+    public void jjtClose() {
+    }
 
-   // Factory method
-   public static Node jjtCreate(XPath p, int id)
-   {
-      return new SimpleNode(p, id);
-   }
+    public void jjtSetParent(Node n) {
+        parent = n;
+    }
 
-   public void jjtOpen()
-   {
-   }
+    public Node jjtGetParent() {
+        return parent;
+    }
 
-   public void jjtClose()
-   {
-   }
+    public void jjtAddChild(Node n, int i) {
+        if (children == null) {
+            children = new Node[i + 1];
+        } else if (i >= children.length) {
+            Node[] c = new Node[i + 1];
+            System.arraycopy(children, 0, c, 0, children.length);
+            children = c;
+        }
+        children[i] = n;
+    }
 
-   public void jjtSetParent(Node n)
-   {
-      parent = n;
-   }
+    public Node jjtGetChild(int i) {
+        return children[i];
+    }
 
-   public Node jjtGetParent()
-   {
-      return parent;
-   }
+    public int jjtGetNumChildren() {
+        return (children == null) ? 0 : children.length;
+    }
 
-   public void jjtAddChild(Node n, int i)
-   {
-      if (children == null)
-      {
-         children = new Node[i + 1];
-      }
-      else if (i >= children.length)
-      {
-         Node[] c = new Node[i + 1];
-         System.arraycopy(children, 0, c, 0, children.length);
-         children = c;
-      }
-      children[i] = n;
-   }
+    /**
+     * Accept the visitor. *
+     */
+    public Object jjtAccept(XPathVisitor visitor, Object data) {
+        return visitor.visit(this, data);
+    }
 
-   public Node jjtGetChild(int i)
-   {
-      return children[i];
-   }
-
-   public int jjtGetNumChildren()
-   {
-      return (children == null) ? 0 : children.length;
-   }
-
-   /**
-    * Accept the visitor. *
-    */
-   public Object jjtAccept(XPathVisitor visitor, Object data)
-   {
-      return visitor.visit(this, data);
-   }
-
-   /**
-    * Accept the visitor. *
-    */
-   public Object childrenAccept(XPathVisitor visitor, Object data)
-   {
-      if (children != null)
-      {
-         for (int i = 0; i < children.length; ++i)
-         {
-            data = children[i].jjtAccept(visitor, data);
-         }
-      }
-      return data;
-   }
-
-   /*
-    * You can override these two methods in subclasses of SimpleNode to customize the way the node
-    * appears when the tree is dumped. If your output uses more than one line you should override
-    * toString(String), otherwise overriding toString() is probably all you need to do.
-    */
-
-   public String toString()
-   {
-      return XPathTreeConstants.jjtNodeName[id];
-   }
-
-   public String toString(String prefix)
-   {
-      return prefix + toString();
-   }
-
-   public void dump(String prefix)
-   {
-      dump(prefix, System.out);
-   }
-
-   public void dump(String prefix, java.io.PrintStream ps)
-   {
-      ps.print(toString(prefix));
-      printValue(ps);
-      ps.println();
-      if (children != null)
-      {
-         for (int i = 0; i < children.length; ++i)
-         {
-            SimpleNode n = (SimpleNode)children[i];
-            if (n != null)
-            {
-               n.dump(prefix + "   ", ps);
+    /**
+     * Accept the visitor. *
+     */
+    public Object childrenAccept(XPathVisitor visitor, Object data) {
+        if (children != null) {
+            for (int i = 0; i < children.length; ++i) {
+                data = children[i].jjtAccept(visitor, data);
             }
-         }
-      }
-   }
+        }
+        return data;
+    }
 
-   // Manually inserted code begins here
+    /* You can override these two methods in subclasses of SimpleNode to
+       customize the way the node appears when the tree is dumped.  If
+       your output uses more than one line you should override
+       toString(String), otherwise overriding toString() is probably all
+       you need to do. */
 
-   protected String m_value;
+    public String toString() {
+        return XPathTreeConstants.jjtNodeName[id];
+    }
 
-   public void processToken(Token t)
-   {
-      m_value = t.image;
-   }
+    public String toString(String prefix) {
+        return prefix + toString();
+    }
 
-   public void printValue(java.io.PrintStream ps)
-   {
-      if (null != m_value)
-      {
-         ps.print(" " + m_value);
-      }
-   }
+    public void dump(String prefix) {
+        dump(prefix, System.out);
+    }
 
-   public int getId()
-   {
-      return id;
-   }
+    public void dump(String prefix, java.io.PrintStream ps) {
+        ps.print(toString(prefix));
+        printValue(ps);
+        ps.println();
+        if (children != null) {
+            for (int i = 0; i < children.length; ++i) {
+                SimpleNode n = (SimpleNode) children[i];
+                if (n != null) {
+                    n.dump(prefix + "   ", ps);
+                }
+            }
+        }
+    }
 
-   public String getValue()
-   {
-      return m_value;
-   }
+
+    // Manually inserted code begins here
+
+    protected String m_value;
+
+    public void processToken(Token t) {
+        m_value = t.image;
+    }
+
+    public void printValue(java.io.PrintStream ps) {
+        if (null != m_value) {
+            ps.print(" " + m_value);
+        }
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public String getValue() {
+        return m_value;
+    }
 
 }
+
+

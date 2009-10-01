@@ -16,74 +16,75 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
+
 import javax.jcr.query.InvalidQueryException;
 
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 
+
+
 /**
- * This class acts as the central entry point for parsing query statements from different query
- * syntaxes into a query tree.
+ * This class acts as the central entry point for parsing query statements from
+ * different query syntaxes into a query tree.
  */
-public class QueryParser
-{
+public class QueryParser {
 
-   /**
-    * This class cannot be instanciated.
-    */
-   private QueryParser()
-   {
-   }
+    /**
+     * This class cannot be instanciated.
+     */
+    private QueryParser() {
+    }
 
-   /**
-    * Parses a query <code>statement</code> according to a query <code>language</code> into a query
-    * tree. <p/> <code>language</code> must be one of: {@link javax.jcr.query.Query#SQL},
-    * {@link javax.jcr.query.Query#XPATH}.
-    * 
-    * @param statement
-    *          the query statement.
-    * @param language
-    *          the language of the query statement.
-    * @param factory
-    *          the query node factory.
-    * @return the root node of the generated query tree.
-    * @throws InvalidQueryException
-    *           if an error occurs while parsing the statement.
-    */
-   public static QueryRootNode parse(String statement, String language, LocationFactory resolver,
-      QueryNodeFactory factory) throws InvalidQueryException
-   {
+    /**
+     * Parses a query <code>statement</code> according to a query
+     * <code>language</code> into a query tree.
+     * <p/>
+     * <code>language</code> must be one of: {@link javax.jcr.query.Query#SQL},
+     * {@link javax.jcr.query.Query#XPATH}.
+     *
+     * @param statement the query statement.
+     * @param language  the language of the query statement.
+     * @param factory   the query node factory.
+     * @return the root node of the generated query tree.
+     * @throws InvalidQueryException if an error occurs while parsing the
+     *                               statement.
+     */
+    public static QueryRootNode parse(String statement,
+                                      String language,
+                                      LocationFactory resolver,
+                                      QueryNodeFactory factory)
+            throws InvalidQueryException {
 
-      QueryTreeBuilder builder = QueryTreeBuilderRegistry.getQueryTreeBuilder(language);
-      return builder.createQueryTree(statement, resolver, factory);
-   }
+        QueryTreeBuilder builder = QueryTreeBuilderRegistry.getQueryTreeBuilder(language);
+        return builder.createQueryTree(statement, resolver, factory);
+    }
 
-   /**
-    * Creates a String representation of the QueryNode tree argument <code>root</code>. The argument
-    * <code>language</code> specifies the syntax. See also:
-    * {@link javax.jcr.query.QueryManager#getSupportedQueryLanguages()}.
-    * 
-    * @param root
-    *          the query node tree.
-    * @param language
-    *          one of the languages returned by:
-    *          {@link javax.jcr.query.QueryManager#getSupportedQueryLanguages()}.
-    * @param resolver
-    *          to resolve QNames.
-    * 
-    * @return a String representation of the query node tree.
-    * 
-    * @throws InvalidQueryException
-    *           if the query node tree cannot be converted into a String representation of the given
-    *           language. This might be due to syntax restrictions of the given language. This
-    *           exception is also thrown if <code>language</code> is not one of the supported query
-    *           languages returned by the {@link javax.jcr.query.QueryManager}.
-    */
-   public static String toString(QueryRootNode root, String language, LocationFactory resolver)
-      throws InvalidQueryException
-   {
+    /**
+     * Creates a String representation of the QueryNode tree argument
+     * <code>root</code>. The argument <code>language</code> specifies the
+     * syntax.
+     * See also: {@link javax.jcr.query.QueryManager#getSupportedQueryLanguages()}.
+     *
+     * @param root the query node tree.
+     * @param language one of the languages returned by:
+     *   {@link javax.jcr.query.QueryManager#getSupportedQueryLanguages()}.
+     * @param resolver to resolve QNames.
+     *
+     * @return a String representation of the query node tree.
+     *
+     * @throws InvalidQueryException if the query node tree cannot be converted
+     * into a String representation of the given language. This might be due to
+     * syntax restrictions of the given language. This exception is also thrown
+     * if <code>language</code> is not one of the supported query languages
+     * returned by the {@link javax.jcr.query.QueryManager}.
+     */
+    public static String toString(QueryRootNode root,
+                                  String language,
+                                  LocationFactory resolver)
+            throws InvalidQueryException {
 
-      QueryTreeBuilder builder = QueryTreeBuilderRegistry.getQueryTreeBuilder(language);
-      return builder.toString(root, resolver);
-   }
+        QueryTreeBuilder builder = QueryTreeBuilderRegistry.getQueryTreeBuilder(language);
+        return builder.toString(root, resolver);
+    }
 
 }

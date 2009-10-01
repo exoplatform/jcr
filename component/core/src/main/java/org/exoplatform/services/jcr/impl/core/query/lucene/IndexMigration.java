@@ -16,7 +16,8 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import java.io.IOException;
+
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldSelector;
@@ -28,271 +29,183 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.index.TermPositions;
-import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.store.NoLockFactory;
+import org.apache.lucene.store.Directory;
+import org.exoplatform.services.jcr.impl.core.query.lucene.directory.DirectoryManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.IOException;
 
 /**
  * <code>IndexMigration</code> implements a utility that migrates a Jackrabbit
  * 1.4.x index to version 1.5. Until version 1.4.x, indexes used the character
- * '\uFFFF' to separate the name of a property from the value. As of Lucene 2.3
- * this does not work anymore. See LUCENE-1221. Jackrabbit >= 1.5 uses the
- * character '[' as a separator. Whenever an index is opened from disk, a quick
- * check is run to find out whether a migration is required. See also JCR-1363
- * for more details.
+ * '\uFFFF' to separate the name of a property from the value. As of Lucene
+ * 2.3 this does not work anymore. See LUCENE-1221. Jackrabbit >= 1.5 uses
+ * the character '[' as a separator. Whenever an index is opened from disk, a
+ * quick check is run to find out whether a migration is required. See also
+ * JCR-1363 for more details.
  */
-public class IndexMigration
-{
+public class IndexMigration {
 
-   /**
-    * The logger instance for this class.
-    */
-   private static final Logger log = LoggerFactory.getLogger(IndexMigration.class);
+    /**
+     * The logger instance for this class.
+     */
+    private static final Logger log = LoggerFactory.getLogger(IndexMigration.class);
 
-   /**
-    * Checks if the given <code>index</code> needs to be migrated.
-    * 
-    * @param index the index to check and migration if needed.
-    * @param indexDir the directory where the index is stored.
-   * @param isUpgradeIndex 
-    * @throws IOException if an error occurs while migrating the index.
-    */
-   public static void migrate(PersistentIndex index, File indexDir, boolean isUpgradeIndex) throws IOException
-   {
-      log.debug("Checking {} ...", indexDir.getAbsolutePath());
-      ReadOnlyIndexReader reader = index.getReadOnlyIndexReader();
-      try
-      {
-         if (IndexFormatVersion.getVersion(reader).getVersion() >= IndexFormatVersion.V3.getVersion())
-         {
-            // index was created with Jackrabbit 1.5 or higher
-            // no need for migration
-            log.debug("IndexFormatVersion >= V3, no migration needed");
-            return;
-         }
-         if (!isUpgradeIndex)
-         {
-            throw new IOException("Outdated index format. To allow index upgrade process add "
-               + "to the index configuration parameter 'upgrade-index' with value 'true'"
-               + " or  set system  property -Dupgrade-index=true.");
-         }
-         // assert: there is at least one node in the index, otherwise the
-         // index format version would be at least V3
-         TermEnum terms = reader.terms(new Term(FieldNames.PROPERTIES, ""));
-         try
-         {
-            Term t = terms.term();
-            if (t.text().indexOf('\uFFFF') == -1)
-            {
-               log.debug("Index already migrated");
-               return;
+    /**
+     * Checks if the given <code>index</code> needs to be migrated.
+     *
+     * @param index the index to check and migration if needed.
+     * @param directoryManager the directory manager.
+     * @throws IOException if an error occurs while migrating the index.
+     */
+    public static void migrate(PersistentIndex index,
+                               DirectoryManager directoryManager)
+            throws IOException {
+        Directory indexDir = index.getDirectory();
+        log.debug("Checking {} ...", indexDir);
+        ReadOnlyIndexReader reader = index.getReadOnlyIndexReader();
+        try {
+            if (IndexFormatVersion.getVersion(reader).getVersion() >=
+                    IndexFormatVersion.V3.getVersion()) {
+                // index was created with Jackrabbit 1.5 or higher
+                // no need for migration
+                log.debug("IndexFormatVersion >= V3, no migration needed");
+                return;
             }
-         }
-         finally
-         {
-            terms.close();
-         }
-      }
-      finally
-      {
-         reader.release();
-      }
-
-      // if we get here then the index must be migrated
-      log.debug("Index requires migration {}", indexDir.getAbsolutePath());
-
-      // make sure readers are closed, otherwise the directory
-      // cannot be deleted
-      index.releaseWriterAndReaders();
-
-      File migrationDir = new File(indexDir.getAbsoluteFile().getParentFile(), indexDir.getName() + "_v2.3");
-      if (migrationDir.exists())
-      {
-         // TODO DELETE
-         fullyDelete(migrationDir);
-      }
-      if (!migrationDir.mkdirs())
-      {
-         throw new IOException("failed to create directory " + migrationDir.getAbsolutePath());
-      }
-      FSDirectory fsDir = FSDirectory.getDirectory(migrationDir, NoLockFactory.getNoLockFactory());
-      try
-      {
-         IndexWriter writer = new IndexWriter(fsDir, new StandardAnalyzer());
-         try
-         {
-            IndexReader r = new MigrationIndexReader(IndexReader.open(index.getDirectory()));
-            try
-            {
-               writer.addIndexes(new IndexReader[]{r});
-               writer.close();
+            // assert: there is at least one node in the index, otherwise the
+            //         index format version would be at least V3
+            TermEnum terms = reader.terms(new Term(FieldNames.PROPERTIES, ""));
+            try {
+                Term t = terms.term();
+                if (t.text().indexOf('\uFFFF') == -1) {
+                    log.debug("Index already migrated");
+                    return;
+                }
+            } finally {
+                terms.close();
             }
-            finally
-            {
-               r.close();
+        } finally {
+            reader.release();
+            index.releaseWriterAndReaders();
+        }
+
+        // if we get here then the index must be migrated
+        log.debug("Index requires migration {}", indexDir);
+
+        String migrationName = index.getName() + "_v2.3";
+        if (directoryManager.hasDirectory(migrationName)) {
+            directoryManager.delete(migrationName);
+        }
+
+        Directory migrationDir = directoryManager.getDirectory(migrationName);
+        try {
+            IndexWriter writer = new IndexWriter(migrationDir, new JcrStandartAnalyzer(),
+                    IndexWriter.MaxFieldLength.UNLIMITED);
+            try {
+                IndexReader r = new MigrationIndexReader(
+                        IndexReader.open(index.getDirectory()));
+                try {
+                    writer.addIndexes(new IndexReader[]{r});
+                    writer.close();
+                } finally {
+                    r.close();
+                }
+            } finally {
+                writer.close();
             }
-         }
-         finally
-         {
-            writer.close();
-         }
-      }
-      finally
-      {
-         fsDir.close();
-      }
-      // TODO DELETE
-      fullyDelete(indexDir);
-      if (!migrationDir.renameTo(indexDir))
-      {
-         throw new IOException("failed to move migrated directory " + migrationDir.getAbsolutePath());
-      }
-      log.info("Migrated " + indexDir.getAbsolutePath());
-   }
+        } finally {
+            migrationDir.close();
+        }
+        directoryManager.delete(index.getName());
+        if (!directoryManager.rename(migrationName, index.getName())) {
+            throw new IOException("failed to move migrated directory " +
+                    migrationDir);
+        }
+        log.info("Migrated " + index.getName());
+    }
 
-   // ---------------------------< internal helper >----------------------------
-   /**
-    * Delete files and directories, even if non-empty.
-    *
-    * @param dir file or directory
-    * @return true on success, false if no or part of files have been deleted
-    * @throws java.io.IOException
-    */
-   public static boolean fullyDelete(File dir) throws IOException
-   {
-      if (dir == null || !dir.exists())
-         return false;
-      File contents[] = dir.listFiles();
-      if (contents != null)
-      {
-         for (int i = 0; i < contents.length; i++)
-         {
-            if (contents[i].isFile())
-            {
-               if (!contents[i].delete())
-               {
-                  return false;
-               }
-            }
-            else
-            {
-               if (!fullyDelete(contents[i]))
-               {
-                  return false;
-               }
-            }
-         }
-      }
-      return dir.delete();
-   }
+    //---------------------------< internal helper >----------------------------
 
-   /**
-    * An index reader that migrates stored field values and term text on the fly.
-    */
-   private static class MigrationIndexReader extends FilterIndexReader
-   {
+    /**
+     * An index reader that migrates stored field values and term text on the
+     * fly.
+     */
+    private static class MigrationIndexReader extends FilterIndexReader {
 
-      public MigrationIndexReader(IndexReader in)
-      {
-         super(in);
-      }
-
-      public Document document(int n, FieldSelector fieldSelector) throws CorruptIndexException, IOException
-      {
-         Document doc = super.document(n, fieldSelector);
-         Fieldable[] fields = doc.getFieldables(FieldNames.PROPERTIES);
-         if (fields != null)
-         {
-            doc.removeFields(FieldNames.PROPERTIES);
-            for (int i = 0; i < fields.length; i++)
-            {
-               String value = fields[i].stringValue();
-               value = value.replace('\uFFFF', '[');
-               doc.add(new Field(FieldNames.PROPERTIES, value, Field.Store.YES, Field.Index.NO_NORMS));
-            }
-         }
-         return doc;
-      }
-
-      public TermEnum terms() throws IOException
-      {
-         return new MigrationTermEnum(in.terms());
-      }
-
-      public TermPositions termPositions() throws IOException
-      {
-         return new MigrationTermPositions(in.termPositions());
-      }
-
-      private static class MigrationTermEnum extends FilterTermEnum
-      {
-
-         public MigrationTermEnum(TermEnum in)
-         {
+        public MigrationIndexReader(IndexReader in) {
             super(in);
-         }
+        }
 
-         public Term term()
-         {
-            Term t = super.term();
-            if (t == null)
-            {
-               return t;
+        public Document document(int n, FieldSelector fieldSelector)
+                throws CorruptIndexException, IOException {
+            Document doc = super.document(n, fieldSelector);
+            Fieldable[] fields = doc.getFieldables(FieldNames.PROPERTIES);
+            if (fields != null) {
+                doc.removeFields(FieldNames.PROPERTIES);
+                for (int i = 0; i < fields.length; i++) {
+                    String value = fields[i].stringValue();
+                    value = value.replace('\uFFFF', '[');
+                    doc.add(new Field(FieldNames.PROPERTIES, value,
+                            Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS));
+                }
             }
-            if (t.field().equals(FieldNames.PROPERTIES))
-            {
-               String text = t.text();
-               return t.createTerm(text.replace('\uFFFF', '['));
-            }
-            else
-            {
-               return t;
-            }
-         }
+            return doc;
+        }
 
-         TermEnum unwrap()
-         {
-            return in;
-         }
-      }
+        public TermEnum terms() throws IOException {
+            return new MigrationTermEnum(in.terms());
+        }
 
-      private static class MigrationTermPositions extends FilterTermPositions
-      {
+        public TermPositions termPositions() throws IOException {
+            return new MigrationTermPositions(in.termPositions());
+        }
 
-         public MigrationTermPositions(TermPositions in)
-         {
-            super(in);
-         }
+        private static class MigrationTermEnum extends FilterTermEnum {
 
-         public void seek(Term term) throws IOException
-         {
-            if (term.field().equals(FieldNames.PROPERTIES))
-            {
-               char[] text = term.text().toCharArray();
-               text[term.text().indexOf('[')] = '\uFFFF';
-               super.seek(term.createTerm(new String(text)));
+            public MigrationTermEnum(TermEnum in) {
+                super(in);
             }
-            else
-            {
-               super.seek(term);
-            }
-         }
 
-         public void seek(TermEnum termEnum) throws IOException
-         {
-            if (termEnum instanceof MigrationTermEnum)
-            {
-               super.seek(((MigrationTermEnum)termEnum).unwrap());
+            public Term term() {
+                Term t = super.term();
+                if (t == null) {
+                    return t;
+                }
+                if (t.field().equals(FieldNames.PROPERTIES)) {
+                    String text = t.text();
+                    return t.createTerm(text.replace('\uFFFF', '['));
+                } else {
+                    return t;
+                }
             }
-            else
-            {
-               super.seek(termEnum);
+
+            TermEnum unwrap() {
+                return in;
             }
-         }
-      }
-   }
+        }
+
+        private static class MigrationTermPositions extends FilterTermPositions {
+
+            public MigrationTermPositions(TermPositions in) {
+                super(in);
+            }
+
+            public void seek(Term term) throws IOException {
+                if (term.field().equals(FieldNames.PROPERTIES)) {
+                    char[] text = term.text().toCharArray();
+                    text[term.text().indexOf('[')] = '\uFFFF';
+                    super.seek(term.createTerm(new String(text)));
+                } else {
+                    super.seek(term);
+                }
+            }
+
+            public void seek(TermEnum termEnum) throws IOException {
+                if (termEnum instanceof MigrationTermEnum) {
+                    super.seek(((MigrationTermEnum) termEnum).unwrap());
+                } else {
+                    super.seek(termEnum);
+                }
+            }
+        }
+    }
 }

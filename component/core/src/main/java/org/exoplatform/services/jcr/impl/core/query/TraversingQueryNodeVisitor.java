@@ -16,62 +16,47 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
+import javax.jcr.RepositoryException;
+
 /**
- * <code>TraversingQueryNodeVisitor</code> implements a base class for a traversing query node
- * visitor.
+ * <code>TraversingQueryNodeVisitor</code> implements a base class for a
+ * traversing query node visitor.
  */
-public class TraversingQueryNodeVisitor extends DefaultQueryNodeVisitor
-{
+public class TraversingQueryNodeVisitor extends DefaultQueryNodeVisitor {
 
-   @Override
-   public Object visit(OrQueryNode node, Object data)
-   {
-      return node.acceptOperands(this, data);
-   }
+    public Object visit(OrQueryNode node, Object data) throws RepositoryException {
+        return node.acceptOperands(this, data);
+    }
 
-   @Override
-   public Object visit(AndQueryNode node, Object data)
-   {
-      return node.acceptOperands(this, data);
-   }
+    public Object visit(AndQueryNode node, Object data) throws RepositoryException {
+        return node.acceptOperands(this, data);
+    }
 
-   @Override
-   public Object visit(QueryRootNode node, Object data)
-   {
-      PathQueryNode pathNode = node.getLocationNode();
-      if (pathNode != null)
-      {
-         pathNode.accept(this, data);
-      }
-      OrderQueryNode orderNode = node.getOrderNode();
-      if (orderNode != null)
-      {
-         orderNode.accept(this, data);
-      }
-      return data;
-   }
+    public Object visit(QueryRootNode node, Object data) throws RepositoryException {
+        PathQueryNode pathNode = node.getLocationNode();
+        if (pathNode != null) {
+            pathNode.accept(this, data);
+        }
+        OrderQueryNode orderNode = node.getOrderNode();
+        if (orderNode != null) {
+            orderNode.accept(this, data);
+        }
+        return data;
+    }
 
-   @Override
-   public Object visit(NotQueryNode node, Object data)
-   {
-      return node.acceptOperands(this, data);
-   }
+    public Object visit(NotQueryNode node, Object data) throws RepositoryException {
+        return node.acceptOperands(this, data);
+    }
 
-   @Override
-   public Object visit(PathQueryNode node, Object data)
-   {
-      return node.acceptOperands(this, data);
-   }
+    public Object visit(PathQueryNode node, Object data) throws RepositoryException {
+        return node.acceptOperands(this, data);
+    }
 
-   @Override
-   public Object visit(LocationStepQueryNode node, Object data)
-   {
-      return node.acceptOperands(this, data);
-   }
+    public Object visit(LocationStepQueryNode node, Object data) throws RepositoryException {
+        return node.acceptOperands(this, data);
+    }
 
-   @Override
-   public Object visit(DerefQueryNode node, Object data)
-   {
-      return node.acceptOperands(this, data);
-   }
+    public Object visit(DerefQueryNode node, Object data) throws RepositoryException {
+        return node.acceptOperands(this, data);
+    }
 }

@@ -16,43 +16,42 @@
  */
 package org.exoplatform.services.jcr.api.core.query;
 
-import java.util.Calendar;
-
-import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+import javax.jcr.Node;
+import java.util.Calendar;
 
 /**
  * <code>VersionStoreQueryTest</code> tests queries against the version store.
  */
-public class VersionStoreQueryTest extends AbstractQueryTest
-{
+public class VersionStoreQueryTest extends AbstractQueryTest {
 
-   /**
-    * Tests if after each checkin an additional node is returned in a result of a query.
-    */
-   public void testCheckin() throws RepositoryException
-   {
-      // current time
-      Calendar c = Calendar.getInstance();
-      Node n1 = testRootNode.addNode(nodeName1);
-      n1.setProperty(propertyName1, c);
-      n1.addMixin(mixVersionable);
-      testRootNode.save();
+    /**
+     * Tests if after each checkin an additional node is returned in a result
+     * of a query.
+     */
+    public void testCheckin() throws RepositoryException {
+        // current time
+        Calendar c = Calendar.getInstance();
+        Node n1 = testRootNode.addNode(nodeName1);
+        n1.setProperty(propertyName1, c);
+        n1.addMixin(mixVersionable);
+        testRootNode.save();
 
-      String statement = "//*[@" + propertyName1 + "=xs:dateTime('" + n1.getProperty(propertyName1).getString() + "')]";
+        String statement = "//*[@" + propertyName1 + "=xs:dateTime('" +
+                n1.getProperty(propertyName1).getString() + "')]";
 
-      Node v1 = n1.checkin().getNode(jcrFrozenNode);
+        Node v1 = n1.checkin().getNode(jcrFrozenNode);
 
-      executeXPathQuery(statement, new Node[]{n1, v1});
+        executeXPathQuery(statement, new Node[]{n1,v1});
 
-      n1.checkout();
-      Node v2 = n1.checkin().getNode(jcrFrozenNode);
+        n1.checkout();
+        Node v2 = n1.checkin().getNode(jcrFrozenNode);
 
-      executeXPathQuery(statement, new Node[]{n1, v1, v2});
+        executeXPathQuery(statement, new Node[]{n1,v1,v2});
 
-      n1.checkout();
-      Node v3 = n1.checkin().getNode(jcrFrozenNode);
+        n1.checkout();
+        Node v3 = n1.checkin().getNode(jcrFrozenNode);
 
-      executeXPathQuery(statement, new Node[]{n1, v1, v2, v3});
-   }
+        executeXPathQuery(statement, new Node[]{n1,v1,v2,v3});
+    }
 }

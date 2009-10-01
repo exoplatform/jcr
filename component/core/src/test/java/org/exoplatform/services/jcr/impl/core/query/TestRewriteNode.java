@@ -50,7 +50,7 @@ public class TestRewriteNode extends BaseQueryTest
       cont.setProperty("jcr:data", "The Quick brown fox jumped over the lazy dog");
       root.save();
 
-      IndexReader reader = defaultSearchIndex.getIndexReader(false);
+      IndexReader reader = defaultSearchIndex.getIndexReader();
       IndexSearcher is = new IndexSearcher(reader);
       TermQuery query = new TermQuery(new Term(FieldNames.FULLTEXT, "fox"));
       Hits result = is.search(query);
@@ -59,13 +59,13 @@ public class TestRewriteNode extends BaseQueryTest
       cont.setProperty("jcr:data", "Bahama mama");
       root.save();
 
-      reader = defaultSearchIndex.getIndexReader(false);
+      reader = defaultSearchIndex.getIndexReader();
       is = new IndexSearcher(reader);
       query = new TermQuery(new Term(FieldNames.FULLTEXT, "mama"));
       result = is.search(query);
       assertEquals(1, result.length());
 
-      reader = defaultSearchIndex.getIndexReader(false);
+      reader = defaultSearchIndex.getIndexReader();
       is = new IndexSearcher(reader);
       query = new TermQuery(new Term(FieldNames.FULLTEXT, "fox"));
       result = is.search(query);

@@ -17,109 +17,88 @@
 package org.exoplatform.services.jcr.impl.core.query.sql;
 
 /**
- * Implements a {@link JCRSQLParserVisitor} with default method implementations. All visit method
- * simply return the <code>data</code> parameter.
+ * Implements a {@link JCRSQLParserVisitor} with default method implementations.
+ * All visit method simply return the <code>data</code> parameter.
  */
-class DefaultParserVisitor implements JCRSQLParserVisitor
-{
+class DefaultParserVisitor implements JCRSQLParserVisitor {
 
-   public Object visit(SimpleNode node, Object data)
-   {
-      return data;
-   }
+    public Object visit(SimpleNode node, Object data) {
+        return data;
+    }
 
-   public Object visit(ASTQuery node, Object data)
-   {
-      return data;
-   }
+    public Object visit(ASTQuery node, Object data) {
+        return data;
+    }
 
-   public Object visit(ASTSelectList node, Object data)
-   {
-      return data;
-   }
+    public Object visit(ASTSelectList node, Object data) {
+        return data;
+    }
 
-   public Object visit(ASTFromClause node, Object data)
-   {
-      return data;
-   }
+    public Object visit(ASTFromClause node, Object data) {
+        return data;
+    }
 
-   public Object visit(ASTWhereClause node, Object data)
-   {
-      return data;
-   }
+    public Object visit(ASTWhereClause node, Object data) {
+        return data;
+    }
 
-   public Object visit(ASTPredicate node, Object data)
-   {
-      return data;
-   }
+    public Object visit(ASTPredicate node, Object data) {
+        return data;
+    }
 
-   public Object visit(ASTOrExpression node, Object data)
-   {
-      return data;
-   }
+    public Object visit(ASTOrExpression node, Object data) {
+        return data;
+    }
 
-   public Object visit(ASTAndExpression node, Object data)
-   {
-      return data;
-   }
+    public Object visit(ASTAndExpression node, Object data) {
+        return data;
+    }
 
-   public Object visit(ASTNotExpression node, Object data)
-   {
-      return data;
-   }
+    public Object visit(ASTNotExpression node, Object data) {
+        return data;
+    }
 
-   public Object visit(ASTBracketExpression node, Object data)
-   {
-      return data;
-   }
+    public Object visit(ASTBracketExpression node, Object data) {
+        return data;
+    }
 
-   public Object visit(ASTLiteral node, Object data)
-   {
-      return data;
-   }
+    public Object visit(ASTLiteral node, Object data) {
+        return data;
+    }
 
-   public Object visit(ASTIdentifier node, Object data)
-   {
-      return data;
-   }
+    public Object visit(ASTIdentifier node, Object data) {
+        return data;
+    }
 
-   public Object visit(ASTOrderByClause node, Object data)
-   {
-      return data;
-   }
+    public Object visit(ASTOrderByClause node, Object data) {
+        return data;
+    }
 
-   public Object visit(ASTContainsExpression node, Object data)
-   {
-      return data;
-   }
+    public Object visit(ASTContainsExpression node, Object data) {
+        return data;
+    }
 
-   public Object visit(ASTOrderSpec node, Object data)
-   {
-      return data;
-   }
+    public Object visit(ASTOrderSpec node, Object data) {
+        return data;
+    }
 
-   public Object visit(ASTAscendingOrderSpec node, Object data)
-   {
-      return data;
-   }
+    public Object visit(ASTAscendingOrderSpec node, Object data) {
+        return data;
+    }
 
-   public Object visit(ASTDescendingOrderSpec node, Object data)
-   {
-      return data;
-   }
+    public Object visit(ASTDescendingOrderSpec node, Object data) {
+        return data;
+    }
 
-   public Object visit(ASTLowerFunction node, Object data)
-   {
-      return data;
-   }
+    public Object visit(ASTLowerFunction node, Object data) {
+        return data;
+    }
 
-   public Object visit(ASTUpperFunction node, Object data)
-   {
-      return data;
-   }
+    public Object visit(ASTUpperFunction node, Object data) {
+        return data;
+    }
 
-   public Object visit(ASTExcerptFunction node, Object data)
-   {
-      return data;
-   }
+    public Object visit(ASTExcerptFunction node, Object data) {
+        return data;
+    }
 }

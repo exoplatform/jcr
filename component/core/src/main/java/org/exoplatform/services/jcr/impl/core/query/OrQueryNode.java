@@ -16,53 +16,48 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
+import javax.jcr.RepositoryException;
+
 /**
- * Implements a query node that defines an OR operation between arbitrary other {@link QueryNode}s.
+ * Implements a query node that defines an OR operation between arbitrary
+ * other {@link QueryNode}s.
  */
-public class OrQueryNode extends NAryQueryNode
-{
+public class OrQueryNode extends NAryQueryNode {
 
-   /**
-    * Creates a new <code>OrQueryNode</code> with a <code>parent</code> query node.
-    * 
-    * @param parent
-    *          the parent of <code>this</code> <code>OrQueryNode</code>.
-    */
-   protected OrQueryNode(QueryNode parent)
-   {
-      super(parent);
-   }
+    /**
+     * Creates a new <code>OrQueryNode</code> with a <code>parent</code>
+     * query node.
+     *
+     * @param parent the parent of <code>this</code> <code>OrQueryNode</code>.
+     */
+    protected OrQueryNode(QueryNode parent) {
+        super(parent);
+    }
 
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public Object accept(QueryNodeVisitor visitor, Object data)
-   {
-      return visitor.visit(this, data);
-   }
+    /**
+     * {@inheritDoc}
+     * @throws RepositoryException
+     */
+    public Object accept(QueryNodeVisitor visitor, Object data) throws RepositoryException {
+        return visitor.visit(this, data);
+    }
 
-   /**
-    * Returns the type of this node.
-    * 
-    * @return the type of this node.
-    */
-   @Override
-   public int getType()
-   {
-      return QueryNode.TYPE_OR;
-   }
+    /**
+     * Returns the type of this node.
+     *
+     * @return the type of this node.
+     */
+    public int getType() {
+        return QueryNode.TYPE_OR;
+    }
 
-   /**
-    * @inheritDoc
-    */
-   @Override
-   public boolean equals(Object obj)
-   {
-      if (obj instanceof OrQueryNode)
-      {
-         return super.equals(obj);
-      }
-      return false;
-   }
+    /**
+     * @inheritDoc
+     */
+    public boolean equals(Object obj) {
+        if (obj instanceof OrQueryNode) {
+            return super.equals(obj);
+        }
+        return false;
+    }
 }

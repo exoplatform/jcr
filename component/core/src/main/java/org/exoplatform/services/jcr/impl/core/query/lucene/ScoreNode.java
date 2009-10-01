@@ -16,90 +16,106 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
+import java.io.IOException;
+
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.index.TermDocs;
+
 /**
- * <code>ScoreNode</code> implements a simple container which holds a mapping of {@link NodeId} to a
- * score value.
+ * <code>ScoreNode</code> implements a simple container which holds a mapping
+ * of {@link NodeId} to a score value.
  */
-final class ScoreNode
-{
+public final class ScoreNode {
 
-   /**
-    * The id of a node.
-    */
-   private final String id;
+    /**
+     * The id of a node.
+     */
+    private final String id;
 
-   /**
-    * The score of the node.
-    */
-   private final float score;
+    /**
+     * The score of the node.
+     */
+    private final float score;
 
-   /**
-    * Creates a new <code>ScoreNode</code>.
-    * 
-    * @param id
-    *          the node id.
-    * @param score
-    *          the score value.
-    */
-   ScoreNode(String id, float score)
-   {
-      this.id = id;
-      this.score = score;
-   }
+    /**
+     * The lucene document number for this score node. Set to <code>-1</code> if
+     * unknown.
+     */
+    private final int doc;
 
-   /**
-    * @return the node id for this <code>ScoreNode</code>.
-    */
-   public String getNodeId()
-   {
-      return id;
-   }
+    /**
+     * Creates a new <code>ScoreNode</code>.
+     *
+     * @param id    the node id.
+     * @param score the score value.
+     */
+    public ScoreNode(String id, float score) {
+        this(id, score, -1);
+    }
 
-   /**
-    * @return the score for this <code>ScoreNode</code>.
-    */
-   public float getScore()
-   {
-      return score;
-   }
+    /**
+     * Creates a new <code>ScoreNode</code>.
+     *
+     * @param id    the node id.
+     * @param score the score value.
+     * @param doc   the document number.
+     */
+    public ScoreNode(String id, float score, int doc) {
+        this.id = id;
+        this.score = score;
+        this.doc = doc;
+    }
 
-   @Override
-   public int hashCode()
-   {
-      return id.hashCode();
-   }
+    /**
+     * @return the node id for this <code>ScoreNode</code>.
+     */
+    public String getNodeId() {
+        return id;
+    }
 
-   @Override
-   public boolean equals(Object obj)
-   {
-      if (this == obj)
-      {
-         return true;
-      }
-      if (obj == null)
-      {
-         return false;
-      }
-      if (getClass() != obj.getClass())
-      {
-         return false;
-      }
-      ScoreNode other = (ScoreNode)obj;
-      if (id == null)
-      {
-         if (other.id != null)
-         {
-            return false;
-         }
-      }
-      else if (!id.equals(other.id))
-      {
-         return false;
-      }
-      if (Float.floatToIntBits(score) != Float.floatToIntBits(other.score))
-      {
-         return false;
-      }
-      return true;
-   }
+    /**
+     * @return the score for this <code>ScoreNode</code>.
+     */
+    public float getScore() {
+        return score;
+    }
+
+    /**
+     * Returns the document number for this score node.
+     *
+     * @param reader the current index reader to look up the document if
+     *               needed.
+     * @return the document number.
+     * @throws IOException if an error occurs while reading from the index or
+     *                     the node is not present in the index.
+     */
+    public int getDoc(IndexReader reader) throws IOException {
+        if (doc == -1) {
+            TermDocs docs = reader.termDocs(new Term(FieldNames.UUID, id.toString()));
+            try {
+                if (docs.next()) {
+                    return docs.doc();
+                } else {
+                    throw new IOException("Node with id " + id + " not found in index");
+                }
+            } finally {
+                docs.close();
+            }
+        } else {
+            return doc;
+        }
+    }
+
+    public String toString() {
+        StringBuffer sb = new StringBuffer(id.toString());
+        sb.append("(");
+        if (doc != -1) {
+            sb.append(doc);
+        } else {
+            sb.append("?");
+        }
+        sb.append(")");
+        return sb.toString();
+    }
 }

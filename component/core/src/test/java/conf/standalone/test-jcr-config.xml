@@ -399,6 +399,9 @@
                      <property name="indexing-configuration-path" value="../../indexing-configuration.xml" />
                      <property name="query-class" value="org.exoplatform.services.jcr.impl.core.query.QueryImpl" />
                      <property name="spellchecker-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" />
+                     <property name="excerptprovider-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.WeightedHTMLExcerpt"/>
+                     <property name="extractorPoolSize" value="2"/>
+                     <property name="extractorTimeout" value="10"/>
                   </properties>
                </query-handler>
             </workspace>

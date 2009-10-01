@@ -16,16 +16,9 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.index.TermDocs;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.WildcardQuery;
-
-import java.io.IOException;
 import java.util.Collection;
+
+import org.apache.lucene.index.IndexReader;
 
 /**
  * This class indicates the lucene index format that is used.
@@ -46,157 +39,77 @@ import java.util.Collection;
  * version! If you want to take advantage of a certain 'feature' in an index
  * format version you need to re-index the repository.
  */
-public class IndexFormatVersion
-{
+public class IndexFormatVersion {
 
-   /**
-    * V1 is the index format for Jackrabbit releases 1.0 to 1.3.x.
-    */
-   public static final IndexFormatVersion V1 = new IndexFormatVersion(1);
+    /**
+     * V1 is the index format for Jackrabbit releases 1.0 to 1.3.x.
+     */
+    public static final IndexFormatVersion V1 = new IndexFormatVersion(1);
 
-   /**
-    * V2 is the index format for Jackrabbit releases 1.4.x
-    */
-   public static final IndexFormatVersion V2 = new IndexFormatVersion(2);
+    /**
+     * V2 is the index format for Jackrabbit releases 1.4.x
+     */
+    public static final IndexFormatVersion V2 = new IndexFormatVersion(2);
 
-   /**
-    * V3 is the index format for Jackrabbit releases >= 1.5
-    */
-   public static final IndexFormatVersion V3 = new IndexFormatVersion(3);
+    /**
+     * V3 is the index format for Jackrabbit releases >= 1.5
+     */
+    public static final IndexFormatVersion V3 = new IndexFormatVersion(3);
 
-   /**
-    * The used version of the index format
-    */
-   private final int version;
+    /**
+     * The used version of the index format
+     */
+    private final int version;
 
-   /**
-    * Creates a index format version.
-    *
-    * @param version       The version of the index.
-    */
-   private IndexFormatVersion(int version)
-   {
-      this.version = version;
-   }
+    /**
+     * Creates a index format version.
+     *
+     * @param version       The version of the index.
+     */
+    private IndexFormatVersion(int version) {
+        this.version = version;
+    }
 
-   /**
-    * Returns the index format version
-    * @return the index format version.
-    */
-   public int getVersion()
-   {
-      return version;
-   }
+    /**
+     * Returns the index format version
+     * @return the index format version.
+     */
+    public int getVersion() {
+        return version;
+    }
 
-   /**
-    * Returns <code>true</code> if this version is at least as high as the
-    * given <code>version</code>.
-    *
-    * @param version the other version to compare.
-    * @return <code>true</code> if this version is at least as high as the
-    *         provided; <code>false</code> otherwise.
-    */
-   public boolean isAtLeast(IndexFormatVersion version)
-   {
-      return this.version >= version.getVersion();
-   }
+    /**
+     * Returns <code>true</code> if this version is at least as high as the
+     * given <code>version</code>.
+     *
+     * @param version the other version to compare.
+     * @return <code>true</code> if this version is at least as high as the
+     *         provided; <code>false</code> otherwise.
+     */
+    public boolean isAtLeast(IndexFormatVersion version) {
+        return this.version >= version.getVersion();
+    }
 
-   /**
-    * @return a string representation of this index format version.
-    */
-   public String toString()
-   {
-      return String.valueOf(getVersion());
-   }
+    /**
+     * @return a string representation of this index format version.
+     */
+    public String toString() {
+        return String.valueOf(getVersion());
+    }
 
-   /**
-    * @return the index format version of the index used by the given
-    * index reader.
-    */
-   public static IndexFormatVersion getVersion(IndexReader indexReader)
-   {
-      Collection fields = indexReader.getFieldNames(IndexReader.FieldOption.ALL);
-      if (indexReader.numDocs() == 0 || isV3Index(indexReader))
-      {
-         return IndexFormatVersion.V3;
-      }
-      else if (fields.contains(FieldNames.PROPERTIES_SET))
-      {
-         return IndexFormatVersion.V2;
-      }
-      else
-      {
-         return IndexFormatVersion.V1;
-      }
-   }
-
-   /**
-    * Test if index contains primary type terms in new format
-    * @param indexReader
-    * @return
-    */
-   private static boolean isV3Index(IndexReader indexReader)
-   {
-      if (containsV3PrimaryType(indexReader, "nt:base"))
-      {
-         return true;
-      }
-      else if (containsV3PrimaryType(indexReader, "nt:unstructured"))
-      {
-         return true;
-      }
-      else if (containsV3PrimaryType(indexReader, "nt:file"))
-      {
-         return true;
-      }
-      else if (containsV3PrimaryType(indexReader, "nt:folder"))
-      {
-         return true;
-      }
-      else if (containsV3PrimaryType(indexReader, "exo:versionStorage"))
-      {
-         return true;
-      }
-
-      IndexSearcher searcher = new IndexSearcher(indexReader);
-      Query primaryType = new WildcardQuery(new Term(FieldNames.PROPERTIES, "jcr:primaryType[*?"));
-      try
-      {
-
-         try
-         {
-            TopDocs hits = searcher.search(primaryType, 1);
-            return hits.totalHits > 0;
-         }
-         finally
-         {
-            searcher.close();
-         }
-      }
-      catch (IOException e)
-      {
-         return false;
-      }
-   }
-
-   /**
-    * Return true if index contains term jcr:primaryType+'['+primaryType
-    * @param indexReader
-    * @param primaryType
-    * @return
-    */
-   private static boolean containsV3PrimaryType(IndexReader indexReader, String primaryType)
-   {
-      try
-      {
-         TermDocs doc =
-            indexReader.termDocs(new Term(FieldNames.PROPERTIES, FieldNames.createNamedValue("jcr:primaryType",
-               primaryType)));
-         return doc.next();
-      }
-      catch (IOException e)
-      {
-         return false;
-      }
-   }
+    /**
+     * @return the index format version of the index used by the given
+     * index reader.
+     */
+    public static IndexFormatVersion getVersion(IndexReader indexReader) {
+        Collection fields = indexReader.getFieldNames(
+                IndexReader.FieldOption.ALL);
+        if (fields.contains(FieldNames.LOCAL_NAME) || indexReader.numDocs() == 0) {
+            return IndexFormatVersion.V3;
+        } else if (fields.contains(FieldNames.PROPERTIES_SET)) {
+            return IndexFormatVersion.V2;
+        } else {
+            return IndexFormatVersion.V1;
+        }
+    }
 }

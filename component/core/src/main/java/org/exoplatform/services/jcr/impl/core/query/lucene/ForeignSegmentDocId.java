@@ -20,82 +20,90 @@ import java.io.IOException;
 import java.util.BitSet;
 
 /**
- * A <code>DocId</code> that contains a document number and the creation tick of the index segment.
+ * A <code>DocId</code> that contains a document number and the creation tick
+ * of the index segment.
  */
-final class ForeignSegmentDocId extends DocId
-{
+final class ForeignSegmentDocId extends DocId {
 
-   /**
-    * The document number.
-    */
-   private final int docNumber;
+    /**
+     * Empty array of {@link ForeignSegmentDocId}s.
+     */
+    static final ForeignSegmentDocId[] EMPTY_ARRAY = new ForeignSegmentDocId[0];
 
-   /**
-    * The creation tick of the index segment.
-    */
-   private final long creationTick;
+    /**
+     * The document number.
+     */
+    private final int docNumber;
 
-   /**
-    * Creates a <code>DocId</code> based on a document number in the index segment with the given
-    * <code>creationTick</code>.
-    * 
-    * @param docNumber
-    *          the lucene document number.
-    * @param creationTick
-    *          the creation tick of the index segment.
-    */
-   ForeignSegmentDocId(int docNumber, long creationTick)
-   {
-      this.docNumber = docNumber;
-      this.creationTick = creationTick;
-   }
+    /**
+     * The creation tick of the index segment.
+     */
+    private final long creationTick;
 
-   /**
-    * @return the document number in the foreign index segment.
-    */
-   int getDocNumber()
-   {
-      return docNumber;
-   }
+    /**
+     * Creates a <code>DocId</code> based on a document number in the index
+     * segment with the given <code>creationTick</code>.
+     *
+     * @param docNumber    the lucene document number.
+     * @param creationTick the creation tick of the index segment.
+     */
+    ForeignSegmentDocId(int docNumber, long creationTick) {
+        this.docNumber = docNumber;
+        this.creationTick = creationTick;
+    }
 
-   /**
-    * @return the creation tick of the foreign index segment.
-    */
-   long getCreationTick()
-   {
-      return creationTick;
-   }
+    /**
+     * @return the document number in the foreign index segment.
+     */
+    int getDocNumber() {
+        return docNumber;
+    }
 
-   /**
-    * @inheritDoc
-    */
-   int getDocumentNumber(MultiIndexReader reader) throws IOException
-   {
-      return reader.getDocumentNumber(this);
-   }
+    /**
+     * @return the creation tick of the foreign index segment.
+     */
+    long getCreationTick() {
+        return creationTick;
+    }
 
-   /**
-    * This implementation will return <code>this</code>. Document number is not known until resolved
-    * in {@link #getDocumentNumber(MultiIndexReader)}.
-    * 
-    * {@inheritDoc}
-    */
-   DocId applyOffset(int offset)
-   {
-      return this;
-   }
+    /**
+     * @inheritDoc
+     */
+    int[] getDocumentNumbers(MultiIndexReader reader, int[] docNumbers) throws IOException {
+        int doc = reader.getDocumentNumber(this);
+        if (doc == -1) {
+            return EMPTY;
+        } else {
+            if (docNumbers.length == 1) {
+                docNumbers[0] = doc;
+                return docNumbers;
+            } else {
+                return new int[]{doc};
+            }
+        }
+    }
 
-   /**
-    * Always returns <code>true</code> because this calls is in context of the index segment where
-    * this DocId lives. Within this segment this DocId is always valid. Whether the target of this
-    * DocId is valid can only be checked in the method {@link #getDocumentNumber(MultiIndexReader)}.
-    * 
-    * @param deleted
-    *          the deleted documents in the segment where this DocId lives.
-    * @return always <code>true</code>.
-    */
-   boolean isValid(BitSet deleted)
-   {
-      return true;
-   }
+    /**
+     * This implementation will return <code>this</code>. Document number is
+     * not known until resolved in {@link DocId#getDocumentNumbers(MultiIndexReader,int[])}.
+     *
+     * {@inheritDoc}
+     */
+    DocId applyOffset(int offset) {
+        return this;
+    }
+
+    /**
+     * Always returns <code>true</code> because this calls is in context of the
+     * index segment where this DocId lives. Within this segment this DocId is
+     * always valid. Whether the target of this DocId is valid can only be
+     * checked in the method {@link DocId#getDocumentNumbers(MultiIndexReader,int[])}.
+     *
+     * @param deleted the deleted documents in the segment where this DocId
+     *                lives.
+     * @return always <code>true</code>.
+     */
+    boolean isValid(BitSet deleted) {
+        return true;
+    }
 }

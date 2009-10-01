@@ -138,7 +138,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       this.parentSearchManager = parentSearchManager != null ? parentSearchManager.get() : null;
       itemMgr.addItemPersistenceListener(this);
 
-      initializeQueryHandler();
+      //initializeQueryHandler();
    }
 
    /**
@@ -156,7 +156,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    public Query createQuery(SessionImpl session, SessionDataManager sessionDataManager, Node node)
       throws InvalidQueryException, RepositoryException
    {
-      AbstractQueryImpl query = handler.createQueryInstance();
+      AbstractQueryImpl query = createQueryInstance();
       query.init(session, sessionDataManager, handler, node);
       return query;
    }
@@ -177,7 +177,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    public Query createQuery(SessionImpl session, SessionDataManager sessionDataManager, String statement,
       String language) throws InvalidQueryException, RepositoryException
    {
-      AbstractQueryImpl query = handler.createQueryInstance();
+      AbstractQueryImpl query = createQueryInstance();
       query.init(session, sessionDataManager, handler, statement, language);
       return query;
    }
@@ -440,15 +440,16 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       }
       try
       {
-         handler.init();
+        // handler.init(null);
+         initializeQueryHandler();
 
       }
-      catch (IOException e)
-      {
-         log.error(e.getLocalizedMessage());
-         handler = null;
-         throw new RuntimeException(e.getLocalizedMessage(), e.getCause());
-      }
+//      catch (IOException e)
+//      {
+//         log.error(e.getLocalizedMessage());
+//         handler = null;
+//         throw new RuntimeException(e.getLocalizedMessage(), e.getCause());
+//      }
       catch (RepositoryException e)
       {
          log.error(e.getLocalizedMessage());
@@ -507,7 +508,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     * @throws RepositoryConfigurationException
     * @throws ClassNotFoundException
     */
-   private void initializeQueryHandler() throws RepositoryException, RepositoryConfigurationException
+   protected void initializeQueryHandler() throws RepositoryException, RepositoryConfigurationException
    {
       // initialize query handler
       String className = config.getType();
@@ -521,7 +522,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          handler = (QueryHandler)constuctor.newInstance(config.getQueryHandlerEntry(), cfm);
          QueryHandler parentHandler = (this.parentSearchManager != null) ? parentSearchManager.getHandler() : null;
          QueryHandlerContext context = createQueryHandlerContext(parentHandler);
-         handler.setContext(context);
+         handler.init(context);
       }
       catch (SecurityException e)
       {
@@ -555,6 +556,28 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       {
          throw new RepositoryException(e.getMessage(), e);
       }
+   }
+   /**
+    * Creates a new instance of an {@link AbstractQueryImpl} which is not
+    * initialized.
+    *
+    * @return an new query instance.
+    * @throws RepositoryException if an error occurs while creating a new query
+    *                             instance.
+    */
+   protected AbstractQueryImpl createQueryInstance() throws RepositoryException {
+       try {
+           String queryImplClassName = handler.getQueryClass();
+           Object obj = Class.forName(queryImplClassName).newInstance();
+           if (obj instanceof AbstractQueryImpl) {
+               return (AbstractQueryImpl) obj;
+           } else {
+               throw new IllegalArgumentException(queryImplClassName
+                       + " is not of type " + AbstractQueryImpl.class.getName());
+           }
+       } catch (Throwable t) {
+           throw new RepositoryException("Unable to create query: " + t.toString(), t);
+       }
    }
 
 }

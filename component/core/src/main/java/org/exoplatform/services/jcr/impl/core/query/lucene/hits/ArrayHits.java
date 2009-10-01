@@ -19,89 +19,78 @@ package org.exoplatform.services.jcr.impl.core.query.lucene.hits;
 import java.util.Arrays;
 
 /**
- * Uses an integer array to store the hit set. This implementation uses less memory than
- * {@link BitSetHits} if the total number of documents is high and and the number of hits is low or
- * if your hits doc numbers are mostly in the upper part of your doc number range. If you don't know
- * about your hit distribution in advance use {@link AdaptingHits} instead.
+ * Uses an integer array to store the hit set. This implementation uses less
+ * memory than {@link BitSetHits} if the total number of documents is high and
+ * and the number of hits is low or if your hits doc numbers are mostly in the
+ * upper part of your doc number range.
+ * If you don't know about your hit distribution in advance use
+ * {@link AdaptingHits} instead.
  */
-public class ArrayHits implements Hits
-{
+public class ArrayHits implements Hits {
 
-   private static final int INITIAL_SIZE = 100;
+    private static final int INITIAL_SIZE = 100;
+    private int[] hits;
+    private int index;
+    private boolean initialized;
 
-   private int[] hits;
+    public ArrayHits() {
+        this(INITIAL_SIZE);
+    }
 
-   private int index;
+    public ArrayHits(int initialSize) {
+        hits = new int[initialSize];
+        index = 0;
+        initialized = false;
+    }
 
-   private boolean initialized;
+    private void initialize() {
+        if (!initialized) {
+            Arrays.sort(hits);
+            index = hits.length - index;
+            initialized = true;
+        }
+    }
 
-   public ArrayHits()
-   {
-      this(INITIAL_SIZE);
-   }
+    /**
+     * {@inheritDoc}
+     */
+    public void set(int doc) {
+        if (initialized) {
+            throw new IllegalStateException(
+                    "You must not call set() after next() or skipTo()");
+        }
+        if (index >= hits.length) {
+            int[] resizedHits = new int[hits.length * 2];
+            System.arraycopy(hits, 0, resizedHits, 0, hits.length);
+            hits = resizedHits;
+        }
+        hits[index++] = doc;
+    }
 
-   public ArrayHits(int initialSize)
-   {
-      hits = new int[initialSize];
-      index = 0;
-      initialized = false;
-   }
+    /**
+     * {@inheritDoc}
+     */
+    public int next() {
+        initialize();
+        if (index >= hits.length) {
+            return -1;
+        } else {
+            return hits[index++];
+        }
+    }
 
-   private void initialize()
-   {
-      if (!initialized)
-      {
-         Arrays.sort(hits);
-         index = hits.length - index;
-         initialized = true;
-      }
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public void set(int doc)
-   {
-      if (initialized)
-      {
-         throw new IllegalStateException("You must not call set() after next() or skipTo()");
-      }
-      if (index >= hits.length)
-      {
-         int[] resizedHits = new int[hits.length * 2];
-         System.arraycopy(hits, 0, resizedHits, 0, hits.length);
-         hits = resizedHits;
-      }
-      hits[index++] = doc;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public int next()
-   {
-      initialize();
-      if (index >= hits.length)
-         return -1;
-
-      return hits[index++];
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public int skipTo(int target)
-   {
-      initialize();
-      for (int i = index; i < hits.length; i++)
-      {
-         int nextDocValue = hits[i];
-         if (nextDocValue >= target)
-         {
-            index = i;
-            return next();
-         }
-      }
-      return -1;
-   }
+    /**
+     * {@inheritDoc}
+     */
+    public int skipTo(int target) {
+        initialize();
+        for (int i = index; i < hits.length; i++) {
+            int nextDocValue = hits[i];
+            if (nextDocValue >= target) {
+                index = i;
+                return next();
+            }
+        }
+        return -1;
+    }
 }

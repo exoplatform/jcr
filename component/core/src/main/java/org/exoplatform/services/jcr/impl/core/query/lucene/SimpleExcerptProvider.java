@@ -17,14 +17,13 @@
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 
-import org.exoplatform.services.log.Log;
 import org.apache.lucene.search.Query;
-
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
@@ -32,22 +31,21 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 /**
- * <code>SimpleExcerptProvider</code> is a <b>very</b> simple excerpt provider. It does not do any
- * highlighting and simply returns up to <code>maxFragmentSize</code> characters of string
- * properties for a given node.
- * 
+ * <code>SimpleExcerptProvider</code> is a <b>very</b> simple excerpt provider.
+ * It does not do any highlighting and simply returns up to
+ * <code>maxFragmentSize</code> characters of string properties for a given
+ * node.
  * @see #getExcerpt(org.apache.jackrabbit.core.NodeId, int, int)
  */
 public class SimpleExcerptProvider implements ExcerptProvider
 {
-
    /**
     * Logger instance for this class
     */
    private static final Log log = ExoLogger.getLogger(SimpleExcerptProvider.class);
-
    /**
     * The item state manager.
     */
@@ -70,24 +68,22 @@ public class SimpleExcerptProvider implements ExcerptProvider
       try
       {
          ItemData node = ism.getItemData(id);
-         if (node != null && node.isNode())
+         String separator = "";
+         List<PropertyData> childs = ism.getChildPropertiesData((NodeData)node);
+         for (PropertyData property : childs)
          {
-            String separator = "";
-            List<PropertyData> childs = ism.getChildPropertiesData((NodeData)node);
-            for (PropertyData property : childs)
+            if (property.getType() == PropertyType.STRING)
             {
-               if (property.getType() == PropertyType.STRING)
+               text.append(separator);
+               separator = " ... ";
+               List<ValueData> values = property.getValues();
+               for (int i = 0; i < values.size(); i++)
                {
-                  text.append(separator);
-                  separator = " ... ";
-                  List<ValueData> values = property.getValues();
-                  for (int i = 0; i < values.size(); i++)
-                  {
-                     text.append(new String(values.get(i).getAsByteArray(), Constants.DEFAULT_ENCODING));
-                  }
+                  text.append(new String(values.get(i).getAsByteArray(), Constants.DEFAULT_ENCODING));
                }
             }
          }
+
       }
       catch (RepositoryException e)
       {

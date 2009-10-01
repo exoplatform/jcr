@@ -26,6 +26,7 @@ import javax.jcr.query.InvalidQueryException;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 
+
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 
@@ -116,5 +117,13 @@ public class QueryManagerImpl implements QueryManager
       {
          throw new RepositoryException("corresponding session has been closed");
       }
+   }
+   //------------------------< testing only >----------------------------------
+
+   /**
+    * @return the query handler implementation.
+    */
+   public QueryHandler getQueryHandler() {
+       return searchMgr.getHandler();
    }
 }

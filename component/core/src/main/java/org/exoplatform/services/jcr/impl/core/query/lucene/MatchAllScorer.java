@@ -31,166 +31,150 @@ import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Similarity;
 
 /**
- * The MatchAllScorer implements a Scorer that scores / collects all documents in the index that
- * match a field.
+ * The MatchAllScorer implements a Scorer that scores / collects all
+ * documents in the index that match a field.
  */
-class MatchAllScorer extends Scorer
-{
+class MatchAllScorer extends Scorer {
 
-   /**
-    * next doc number
-    */
-   private int nextDoc = -1;
+    /**
+     * next doc number
+     */
+    private int nextDoc = -1;
 
-   /**
-    * IndexReader giving access to index
-    */
-   private IndexReader reader;
+    /**
+     * IndexReader giving access to index
+     */
+    private IndexReader reader;
 
-   /**
-    * The field to match
-    */
-   private String field;
+    /**
+     * The field to match
+     */
+    private String field;
 
-   /**
-    * BitSet filtering documents without content is specified field
-    */
-   private BitSet docFilter;
+    /**
+     * BitSet filtering documents without content is specified field
+     */
+    private BitSet docFilter;
 
-   /**
-    * Explanation object. the same for all docs
-    */
-   private final Explanation matchExpl;
+    /**
+     * Explanation object. the same for all docs
+     */
+    private final Explanation matchExpl;
 
-   /**
-    * Creates a new MatchAllScorer.
-    * 
-    * @param reader
-    *          the IndexReader
-    * @param field
-    *          the field name to match.
-    * @throws IOException
-    *           if an error occurs while collecting hits. e.g. while reading from the search index.
-    */
-   MatchAllScorer(IndexReader reader, String field) throws IOException
-   {
-      super(Similarity.getDefault());
-      this.reader = reader;
-      this.field = field;
-      matchExpl = new Explanation(Similarity.getDefault().idf(reader.maxDoc(), reader.maxDoc()), "matchAll");
-      calculateDocFilter();
-   }
+    /**
+     * Creates a new MatchAllScorer.
+     *
+     * @param reader the IndexReader
+     * @param field  the field name to match.
+     * @throws IOException if an error occurs while collecting hits.
+     *                     e.g. while reading from the search index.
+     */
+    MatchAllScorer(IndexReader reader, String field)
+            throws IOException {
+        super(Similarity.getDefault());
+        this.reader = reader;
+        this.field = field;
+        matchExpl
+                = new Explanation(Similarity.getDefault().idf(reader.maxDoc(),
+                        reader.maxDoc()),
+                        "matchAll");
+        calculateDocFilter();
+    }
 
-   /**
-    * {@inheritDoc}
-    */
-   public void score(HitCollector hc) throws IOException
-   {
-      while (next())
-      {
-         hc.collect(doc(), score());
-      }
-   }
+    /**
+     * {@inheritDoc}
+     */
+    public void score(HitCollector hc) throws IOException {
+        while (next()) {
+            hc.collect(doc(), score());
+        }
+    }
 
-   /**
-    * {@inheritDoc}
-    */
-   public boolean next() throws IOException
-   {
-      nextDoc = docFilter.nextSetBit(nextDoc + 1);
-      return nextDoc > -1;
-   }
+    /**
+     * {@inheritDoc}
+     */
+    public boolean next() throws IOException {
+        nextDoc = docFilter.nextSetBit(nextDoc + 1);
+        return nextDoc > -1;
+    }
 
-   /**
-    * {@inheritDoc}
-    */
-   public int doc()
-   {
-      return nextDoc;
-   }
+    /**
+     * {@inheritDoc}
+     */
+    public int doc() {
+        return nextDoc;
+    }
 
-   /**
-    * {@inheritDoc}
-    */
-   public float score() throws IOException
-   {
-      return 1.0f;
-   }
+    /**
+     * {@inheritDoc}
+     */
+    public float score() throws IOException {
+        return 1.0f;
+    }
 
-   /**
-    * {@inheritDoc}
-    */
-   public boolean skipTo(int target) throws IOException
-   {
-      nextDoc = target - 1;
-      return next();
-   }
+    /**
+     * {@inheritDoc}
+     */
+    public boolean skipTo(int target) throws IOException {
+        nextDoc = target - 1;
+        return next();
+    }
 
-   /**
-    * {@inheritDoc}
-    */
-   public Explanation explain(int doc)
-   {
-      return matchExpl;
-   }
+    /**
+     * {@inheritDoc}
+     */
+    public Explanation explain(int doc) {
+        return matchExpl;
+    }
 
-   /**
-    * Calculates a BitSet filter that includes all the nodes that have content in properties
-    * according to the field name passed in the constructor of this MatchAllScorer.
-    * 
-    * @throws IOException
-    *           if an error occurs while reading from the search index.
-    */
-   private void calculateDocFilter() throws IOException
-   {
-      PerQueryCache cache = PerQueryCache.getInstance();
-      Map readerCache = (Map)cache.get(MatchAllScorer.class, reader);
-      if (readerCache == null)
-      {
-         readerCache = new HashMap();
-         cache.put(MatchAllScorer.class, reader, readerCache);
-      }
-      // get BitSet for field
-      docFilter = (BitSet)readerCache.get(field);
+    /**
+     * Calculates a BitSet filter that includes all the nodes
+     * that have content in properties according to the field name
+     * passed in the constructor of this MatchAllScorer.
+     *
+     * @throws IOException if an error occurs while reading from
+     *                     the search index.
+     */
+    private void calculateDocFilter() throws IOException {
+        PerQueryCache cache = PerQueryCache.getInstance();
+        Map readerCache = (Map) cache.get(MatchAllScorer.class, reader);
+        if (readerCache == null) {
+            readerCache = new HashMap();
+            cache.put(MatchAllScorer.class, reader, readerCache);
+        }
+        // get BitSet for field
+        docFilter = (BitSet) readerCache.get(field);
 
-      if (docFilter != null)
-      {
-         // use cached BitSet;
-         return;
-      }
+        if (docFilter != null) {
+            // use cached BitSet;
+            return;
+        }
 
-      // otherwise calculate new
-      docFilter = new BitSet(reader.maxDoc());
-      // we match all terms
-      String namedValue = FieldNames.createNamedValue(field, "");
-      TermEnum terms = reader.terms(new Term(FieldNames.PROPERTIES, namedValue));
-      try
-      {
-         TermDocs docs = reader.termDocs();
-         try
-         {
-            while (terms.term() != null && terms.term().field() == FieldNames.PROPERTIES
-               && terms.term().text().startsWith(namedValue))
-            {
-               docs.seek(terms);
-               while (docs.next())
-               {
-                  docFilter.set(docs.doc());
-               }
-               terms.next();
+        // otherwise calculate new
+        docFilter = new BitSet(reader.maxDoc());
+        // we match all terms
+        String namedValue = FieldNames.createNamedValue(field, "");
+        TermEnum terms = reader.terms(new Term(FieldNames.PROPERTIES, namedValue));
+        try {
+            TermDocs docs = reader.termDocs();
+            try {
+                while (terms.term() != null
+                        && terms.term().field() == FieldNames.PROPERTIES
+                        && terms.term().text().startsWith(namedValue)) {
+                    docs.seek(terms);
+                    while (docs.next()) {
+                        docFilter.set(docs.doc());
+                    }
+                    terms.next();
+                }
+            } finally {
+                docs.close();
             }
-         }
-         finally
-         {
-            docs.close();
-         }
-      }
-      finally
-      {
-         terms.close();
-      }
+        } finally {
+            terms.close();
+        }
 
-      // put BitSet into cache
-      readerCache.put(field, docFilter);
-   }
+        // put BitSet into cache
+        readerCache.put(field, docFilter);
+    }
 }

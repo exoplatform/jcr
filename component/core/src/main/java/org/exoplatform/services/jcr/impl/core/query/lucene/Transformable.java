@@ -17,21 +17,20 @@
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 /**
- * <code>Transformable</code> marks queries that can transform the value to upper- or lower-case.
+ * <code>Transformable</code> marks queries that can transform the value to
+ * upper- or lower-case.
  */
-public interface Transformable extends TransformConstants
-{
+public interface Transformable extends TransformConstants {
 
-   /**
-    * Sets the transformation. Must be one of the following values:
-    * <ul>
-    * <li>{@link #TRANSFORM_LOWER_CASE}</li>
-    * <li>{@link #TRANSFORM_NONE}</li>
-    * <li>{@link #TRANSFORM_UPPER_CASE}</li>
-    * </ul>
-    * 
-    * @param transformation
-    *          a transform constant.
-    */
-   public void setTransformation(int transformation);
+    /**
+     * Sets the transformation. Must be one of the following values:
+     * <ul>
+     * <li>{@link #TRANSFORM_LOWER_CASE}</li>
+     * <li>{@link #TRANSFORM_NONE}</li>
+     * <li>{@link #TRANSFORM_UPPER_CASE}</li>
+     * </ul>
+     * @param transformation a transform constant.
+     */
+    void setTransformation(int transformation);
+
 }

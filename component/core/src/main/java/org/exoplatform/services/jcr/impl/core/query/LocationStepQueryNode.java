@@ -16,10 +16,16 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
+import javax.jcr.RepositoryException;
+
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 
+
+
 /**
- * Defines a location step for querying the path of a node. <p/> <code>
+ * Defines a location step for querying the path of a node.
+ * <p/>
+ * <code>
  * /foo  -> descendants = false, nameTest = foo<br>
  * //foo -> descendants = true, nameTest = foo<br>
  * //*   -> descendants = true, nameTest = null<br>
@@ -27,178 +33,156 @@ import org.exoplatform.services.jcr.datamodel.InternalQName;
  * /     -> descendants = false, nameTest = ""
  * </code>
  */
-public class LocationStepQueryNode extends NAryQueryNode
-{
+public class LocationStepQueryNode extends NAryQueryNode {
 
-   /** Constant value for position index = last() */
-   public static final int LAST = Integer.MIN_VALUE;
+    /** Constant value for position index = last() */
+    public static final int LAST = Integer.MIN_VALUE;
 
-   /** Constant value to indicate no position index */
-   public static final int NONE = Integer.MIN_VALUE + 1;
+    /** Constant value to indicate no position index */
+    public static final int NONE = Integer.MIN_VALUE + 1;
 
-   /**
-    * The empty name used in matching the root node. This is an implementation specific constant as
-    * the empty name is not a valid JCR name. The root location step should be refactored somehow
-    */
-   public static final InternalQName EMPTY_NAME = new InternalQName("", "");
+    /**
+     * The empty name used in matching the root node. This is an implementation
+     * specific constant as the empty name is not a valid JCR name.
+     * TODO: The root location step should be refactored somehow
+     */
+    public static final InternalQName EMPTY_NAME = new InternalQName("", "");
 
-   /** Empty <code>QueryNode</code> array for us as return value */
-   private static final QueryNode[] EMPTY = new QueryNode[0];
+    /** Empty <code>QueryNode</code> array for us as return value */
+    private static final QueryNode[] EMPTY = new QueryNode[0];
 
-   /**
-    * Name test for this location step. A <code>null</code> value indicates a '*' name test.
-    */
-   private InternalQName nameTest;
+    /**
+     * Name test for this location step. A <code>null</code> value indicates
+     * a '*' name test.
+     */
+    private InternalQName nameTest;
 
-   /**
-    * If set to <code>true</code> this location step uses the descendant-or-self axis.
-    */
-   private boolean includeDescendants;
+    /**
+     * If set to <code>true</code> this location step uses the descendant-or-self
+     * axis.
+     */
+    private boolean includeDescendants;
 
-   /**
-    * The context position <code>index</code>. Initially {@link #NONE}.
-    */
-   private int index = NONE;
+    /**
+     * The context position <code>index</code>. Initially {@link #NONE}.
+     */
+    private int index = NONE;
 
-   /**
-    * Creates a new <code>LocationStepQueryNode</code> that matches only the empty name (the
-    * repository root). The created location step uses only the child axis.
-    */
-   protected LocationStepQueryNode(QueryNode parent)
-   {
-      super(parent);
-      this.nameTest = EMPTY_NAME;
-      this.includeDescendants = false;
-   }
+    /**
+     * Creates a new <code>LocationStepQueryNode</code> that matches only
+     * the empty name (the repository root). The created location step
+     * uses only the child axis.
+     */
+    protected LocationStepQueryNode(QueryNode parent) {
+        super(parent);
+        this.nameTest = EMPTY_NAME;
+        this.includeDescendants = false;
+    }
 
-   /**
-    * Returns the label of the node for this location step, or <code>null</code> if the name test is
-    * '*'.
-    * 
-    * @return the label of the node for this location step.
-    */
-   public InternalQName getNameTest()
-   {
-      return nameTest;
-   }
+    /**
+     * Returns the label of the node for this location step, or <code>null</code>
+     * if the name test is '*'.
+     * @return the label of the node for this location step.
+     */
+    public InternalQName getNameTest() {
+        return nameTest;
+    }
 
-   /**
-    * Sets a new name test.
-    * 
-    * @param nameTest
-    *          the name test or <code>null</code> to match all names.
-    */
-   public void setNameTest(InternalQName nameTest)
-   {
-      this.nameTest = nameTest;
-   }
+    /**
+     * Sets a new name test.
+     * @param nameTest the name test or <code>null</code> to match all names.
+     */
+    public void setNameTest(InternalQName nameTest) {
+        this.nameTest = nameTest;
+    }
 
-   /**
-    * Returns <code>true</code> if this location step uses the descendant-or-self axis,
-    * <code>false</code> if this step uses the child axis.
-    * 
-    * @return <code>true</code> if this step uses the descendant-or-self axis.
-    */
-   public boolean getIncludeDescendants()
-   {
-      return includeDescendants;
-   }
+    /**
+     * Returns <code>true</code> if this location step uses the
+     * descendant-or-self axis, <code>false</code> if this step uses the child
+     * axis.
+     * @return <code>true</code> if this step uses the descendant-or-self axis.
+     */
+    public boolean getIncludeDescendants() {
+        return includeDescendants;
+    }
 
-   /**
-    * Sets a new value for the includeDescendants property.
-    * 
-    * @param include
-    *          the new value.
-    * @see #getIncludeDescendants()
-    */
-   public void setIncludeDescendants(boolean include)
-   {
-      this.includeDescendants = include;
-   }
+    /**
+     * Sets a new value for the includeDescendants property.
+     * @param include the new value.
+     * @see #getIncludeDescendants()
+     */
+    public void setIncludeDescendants(boolean include) {
+        this.includeDescendants = include;
+    }
 
-   /**
-    * Adds a predicate node to this location step.
-    * 
-    * @param predicate
-    *          the node to add.
-    */
-   public void addPredicate(QueryNode predicate)
-   {
-      addOperand(predicate);
-   }
+    /**
+     * Adds a predicate node to this location step.
+     * @param predicate the node to add.
+     */
+    public void addPredicate(QueryNode predicate) {
+        addOperand(predicate);
+    }
 
-   /**
-    * Returns the predicate nodes for this location step. This method may also return a position
-    * predicate.
-    * 
-    * @return the predicate nodes or an empty array if there are no predicates for this location
-    *         step.
-    */
-   public QueryNode[] getPredicates()
-   {
-      if (operands == null)
-      {
-         return EMPTY;
-      }
-      else
-      {
-         return (QueryNode[])operands.toArray(new QueryNode[operands.size()]);
-      }
-   }
+    /**
+     * Returns the predicate nodes for this location step. This method may
+     * also return a position predicate.
+     * @return the predicate nodes or an empty array if there are no predicates
+     *   for this location step.
+     */
+    public QueryNode[] getPredicates() {
+        if (operands == null) {
+            return EMPTY;
+        } else {
+            return (QueryNode[]) operands.toArray(new QueryNode[operands.size()]);
+        }
+    }
 
-   /**
-    * Sets the position index for this step. A value of {@link #NONE} indicates that this location
-    * step has no position index assigned. That is, the step selects all same name siblings.
-    * 
-    * @param index
-    *          the position index.
-    */
-   public void setIndex(int index)
-   {
-      this.index = index;
-   }
+    /**
+     * Sets the position index for this step. A value of {@link #NONE} indicates
+     * that this location step has no position index assigned. That is, the
+     * step selects all same name siblings.
+     * @param index the position index.
+     */
+    public void setIndex(int index) {
+        this.index = index;
+    }
 
-   /**
-    * Returns the position index for this step. A value of {@link #NONE} indicates that this location
-    * step has no position index assigned. That is, the step selects all same name siblings.
-    * 
-    * @return the position index for this step.
-    */
-   public int getIndex()
-   {
-      return index;
-   }
+    /**
+     * Returns the position index for this step. A value of {@link #NONE} indicates
+     * that this location step has no position index assigned. That is, the
+     * step selects all same name siblings.
+     * @return the position index for this step.
+     */
+    public int getIndex() {
+        return index;
+    }
 
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public Object accept(QueryNodeVisitor visitor, Object data)
-   {
-      return visitor.visit(this, data);
-   }
+    /**
+     * {@inheritDoc}
+     * @throws RepositoryException
+     */
+    public Object accept(QueryNodeVisitor visitor, Object data) throws RepositoryException {
+        return visitor.visit(this, data);
+    }
 
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public int getType()
-   {
-      return QueryNode.TYPE_LOCATION;
-   }
+    /**
+     * {@inheritDoc}
+     */
+    public int getType() {
+        return QueryNode.TYPE_LOCATION;
+    }
 
-   /**
-    * @inheritDoc
-    */
-   @Override
-   public boolean equals(Object obj)
-   {
-      if (obj instanceof LocationStepQueryNode)
-      {
-         LocationStepQueryNode other = (LocationStepQueryNode)obj;
-         return super.equals(other) && includeDescendants == other.includeDescendants && index == other.index
-            && (nameTest == null ? other.nameTest == null : nameTest.equals(other.nameTest));
-      }
-      return false;
-   }
+    /**
+     * @inheritDoc
+     */
+    public boolean equals(Object obj) {
+        if (obj instanceof LocationStepQueryNode) {
+            LocationStepQueryNode other = (LocationStepQueryNode) obj;
+            return super.equals(other)
+                    && includeDescendants == other.includeDescendants
+                    && index == other.index
+                    && (nameTest == null ? other.nameTest == null : nameTest.equals(other.nameTest));
+        }
+        return false;
+    }
 }

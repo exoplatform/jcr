@@ -16,8 +16,6 @@
  */
 package org.exoplatform.services.jcr.api.core.query;
 
-//import org.apache.jackrabbit.core.query.lucene.hits.ArrayHitsTest;
-
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -31,9 +29,11 @@ public class TestAll extends TestCase
 {
 
    /**
-    * Returns a <code>Test</code> suite that executes all tests inside this package.
-    * 
-    * @return a <code>Test</code> suite that executes all tests inside this package.
+    * Returns a <code>Test</code> suite that executes all tests inside this
+    * package.
+    *
+    * @return a <code>Test</code> suite that executes all tests inside this
+    *         package.
     */
    public static Test suite()
    {
@@ -46,24 +46,21 @@ public class TestAll extends TestCase
       suite.addTestSuite(OrderByTest.class);
       suite.addTestSuite(XPathAxisTest.class);
       suite.addTestSuite(SkipDeletedNodesTest.class);
+      suite.addTestSuite(SkipDeniedNodesTest.class);
       suite.addTestSuite(MixinTest.class);
       suite.addTestSuite(DerefTest.class);
       suite.addTestSuite(VersionStoreQueryTest.class);
       suite.addTestSuite(UpperLowerCaseQueryTest.class);
-
       suite.addTestSuite(ChildAxisQueryTest.class);
-
+      suite.addTestSuite(QueryResultTest.class);
       suite.addTestSuite(FnNameQueryTest.class);
       suite.addTestSuite(PathQueryNodeTest.class);
-
       suite.addTestSuite(SynonymProviderTest.class);
       suite.addTestSuite(ArrayHitsTest.class);
-
-      // exclude long running tests per default
-      suite.addTestSuite(QueryResultTest.class);
-      suite.addTestSuite(MassiveRangeTest.class);
-      // suite.addTestSuite(ConcurrentQueryTest.class);
-      suite.addTestSuite(MassiveWildcardTest.class);
+      //suite.addTestSuite(ExcerptTest.class);
+      suite.addTestSuite(IndexFormatVersionTest.class);
+      //suite.addTestSuite(IndexingRuleTest.class);
+      suite.addTestSuite(ShareableNodeTest.class);
 
       return suite;
    }

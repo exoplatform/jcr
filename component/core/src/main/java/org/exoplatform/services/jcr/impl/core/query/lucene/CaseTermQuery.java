@@ -30,208 +30,179 @@ import org.apache.lucene.search.FilteredTermEnum;
 import org.apache.lucene.search.MultiTermQuery;
 
 /**
- * <code>CaseTermQuery</code> implements a term query which convert the term from the index either
- * to upper or lower case before it is matched.
+ * <code>CaseTermQuery</code> implements a term query which convert the term
+ * from the index either to upper or lower case before it is matched.
  */
-abstract class CaseTermQuery extends MultiTermQuery implements TransformConstants
-{
+abstract class CaseTermQuery extends MultiTermQuery implements TransformConstants {
 
-   /**
-    * Indicates whether terms from the index should be lower-cased or upper-cased.
-    */
-   protected final int transform;
+    /**
+     * Indicates whether terms from the index should be lower-cased or
+     * upper-cased.
+     */
+    protected final int transform;
 
-   CaseTermQuery(Term term, int transform)
-   {
-      super(term);
-      this.transform = transform;
-   }
+    CaseTermQuery(Term term, int transform) {
+        super(term);
+        this.transform = transform;
+    }
 
-   /**
-    * {@inheritDoc}
-    */
-   protected FilteredTermEnum getEnum(IndexReader reader) throws IOException
-   {
-      return new CaseTermEnum(reader);
-   }
+    /**
+     * {@inheritDoc}
+     */
+    protected FilteredTermEnum getEnum(IndexReader reader) throws IOException {
+        return new CaseTermEnum(reader);
+    }
 
-   static final class Upper extends CaseTermQuery
-   {
+    static final class Upper extends CaseTermQuery {
 
-      Upper(Term term)
-      {
-         super(term, TRANSFORM_UPPER_CASE);
-      }
-   }
+        Upper(Term term) {
+            super(term, TRANSFORM_UPPER_CASE);
+        }
+    }
 
-   static final class Lower extends CaseTermQuery
-   {
+    static final class Lower extends CaseTermQuery {
 
-      Lower(Term term)
-      {
-         super(term, TRANSFORM_LOWER_CASE);
-      }
+        Lower(Term term) {
+            super(term, TRANSFORM_LOWER_CASE);
+        }
 
-   }
+    }
 
-   private final class CaseTermEnum extends FilteredTermEnum
-   {
+    private final class CaseTermEnum extends FilteredTermEnum {
 
-      private final int nameLength;
+        private final int nameLength;
 
-      private final OffsetCharSequence termText;
+        private final OffsetCharSequence termText;
 
-      private final OffsetCharSequence currentTerm;
+        private final OffsetCharSequence currentTerm;
 
-      CaseTermEnum(IndexReader reader) throws IOException
-      {
-         // gather all terms that match
-         // keep them in order and remember the doc frequency as value
-         final Map orderedTerms = new LinkedHashMap();
+        CaseTermEnum(IndexReader reader) throws IOException {
+            // gather all terms that match
+            // keep them in order and remember the doc frequency as value
+            final Map orderedTerms = new LinkedHashMap();
 
-         Term term = getTerm();
+            Term term = getTerm();
 
-         // there are always two range scanse: one with an initial
-         // lower case character and another one with an initial upper case
-         // character
-         List rangeScans = new ArrayList(2);
-         nameLength = FieldNames.getNameLength(term.text());
-         String propName = term.text().substring(0, nameLength);
-         this.termText = new OffsetCharSequence(nameLength, term.text());
-         this.currentTerm = new OffsetCharSequence(nameLength, term.text(), transform);
+            // there are always two range scanse: one with an initial
+            // lower case character and another one with an initial upper case
+            // character
+            List rangeScans = new ArrayList(2);
+            nameLength = FieldNames.getNameLength(term.text());
+            String propName = term.text().substring(0, nameLength);
+            this.termText = new OffsetCharSequence(nameLength, term.text());
+            this.currentTerm = new OffsetCharSequence(nameLength, term.text(), transform);
 
-         try
-         {
-            // start with a term using the lower case character for the first
-            // character of the value.
-            if (term.text().length() > nameLength)
-            {
-               // start with initial lower case
-               StringBuffer lowerLimit = new StringBuffer(propName);
-               lowerLimit.append(termText.toString().toUpperCase());
-               lowerLimit.setCharAt(nameLength, Character.toLowerCase(lowerLimit.charAt(nameLength)));
-               StringBuffer upperLimit = new StringBuffer(propName);
-               upperLimit.append(termText.toString().toLowerCase());
-               rangeScans.add(new RangeScan(reader, new Term(term.field(), lowerLimit.toString()), new Term(term
-                  .field(), upperLimit.toString())));
+            try {
+                // start with a term using the lower case character for the first
+                // character of the value.
+                if (term.text().length() > nameLength) {
+                    // start with initial lower case
+                    StringBuffer lowerLimit = new StringBuffer(propName);
+                    String termStr = termText.toString();
+                    String upperTermStr = termStr.toUpperCase();
+                    String lowerTermStr = termStr.toLowerCase();
+                    
+                    lowerLimit.append(upperTermStr);
+                    lowerLimit.setCharAt(nameLength, Character.toLowerCase(lowerLimit.charAt(nameLength)));
+                    StringBuffer upperLimit = new StringBuffer(propName);
+                    upperLimit.append(lowerTermStr);
+                    rangeScans.add(new RangeScan(reader,
+                            new Term(term.field(), lowerLimit.toString()),
+                            new Term(term.field(), upperLimit.toString())));
 
-               // second scan with upper case start
-               lowerLimit = new StringBuffer(propName);
-               lowerLimit.append(termText.toString().toUpperCase());
-               upperLimit = new StringBuffer(propName);
-               upperLimit.append(termText.toString().toLowerCase());
-               upperLimit.setCharAt(nameLength, Character.toUpperCase(upperLimit.charAt(nameLength)));
-               rangeScans.add(new RangeScan(reader, new Term(term.field(), lowerLimit.toString()), new Term(term
-                  .field(), upperLimit.toString())));
+                    // second scan with upper case start
+                    lowerLimit = new StringBuffer(propName);
+                    lowerLimit.append(upperTermStr);
+                    upperLimit = new StringBuffer(propName);
+                    upperLimit.append(lowerTermStr);
+                    upperLimit.setCharAt(nameLength, Character.toUpperCase(upperLimit.charAt(nameLength)));
+                    rangeScans.add(new RangeScan(reader,
+                            new Term(term.field(), lowerLimit.toString()),
+                            new Term(term.field(), upperLimit.toString())));
 
-            }
-            else
-            {
-               // use term as is
-               rangeScans.add(new RangeScan(reader, term, term));
-            }
+                } else {
+                    // use term as is
+                    rangeScans.add(new RangeScan(reader, term, term));
+                }
 
-            for (Iterator it = rangeScans.iterator(); it.hasNext();)
-            {
-               TermEnum terms = (TermEnum)it.next();
-               do
-               {
-                  Term t = terms.term();
-                  if (t != null)
-                  {
-                     currentTerm.setBase(t.text());
-                     int compare = currentTerm.compareTo(termText);
-                     if (compare == 0)
-                     {
-                        orderedTerms.put(t, new Integer(terms.docFreq()));
-                     }
-                     else if (compare < 0)
-                     {
-                        // try next one
-                     }
-                     else
-                     {
-                        // compare > 0
-                     }
-                  }
-                  else
-                  {
-                     break;
-                  }
-               }
-               while (terms.next());
-            }
-         }
-         finally
-         {
-            for (Iterator it = rangeScans.iterator(); it.hasNext();)
-            {
-               TermEnum terms = (TermEnum)it.next();
-               try
-               {
-                  terms.close();
-               }
-               catch (IOException e)
-               {
-                  // ignore
-               }
-            }
-         }
-
-         final Iterator it = orderedTerms.keySet().iterator();
-
-         setEnum(new TermEnum()
-         {
-
-            private Term current;
-
-            {
-               getNext();
+                Iterator it = rangeScans.iterator();
+                while (it.hasNext()) {
+                    TermEnum terms = (TermEnum) it.next();
+                    do {
+                        Term t = terms.term();
+                        if (t != null) {
+                            currentTerm.setBase(t.text());
+                            int compare = currentTerm.compareTo(termText);
+                            if (compare == 0) {
+                                orderedTerms.put(t, new Integer(terms.docFreq()));
+                            } else if (compare < 0) {
+                                // try next one
+                            } else {
+                                // compare > 0
+                            }
+                        } else {
+                            break;
+                        }
+                    } while (terms.next());
+                }
+            } finally {
+                Iterator it = rangeScans.iterator();
+                while (it.hasNext()) {
+                    TermEnum terms = (TermEnum) it.next();
+                    try {
+                        terms.close();
+                    } catch (IOException e) {
+                        // ignore
+                    }
+                }
             }
 
-            public boolean next()
-            {
-               getNext();
-               return current != null;
-            }
+            final Iterator it = orderedTerms.keySet().iterator();
 
-            public Term term()
-            {
-               return current;
-            }
+            setEnum(new TermEnum() {
 
-            public int docFreq()
-            {
-               Integer docFreq = (Integer)orderedTerms.get(current);
-               return docFreq != null ? docFreq.intValue() : 0;
-            }
+                private Term current;
 
-            public void close()
-            {
-               // nothing to close
-            }
+                {
+                    getNext();
+                }
 
-            private void getNext()
-            {
-               current = it.hasNext() ? (Term)it.next() : null;
-            }
-         });
-      }
+                public boolean next() {
+                    getNext();
+                    return current != null;
+                }
 
-      protected boolean termCompare(Term term)
-      {
-         // they all match
-         return true;
-      }
+                public Term term() {
+                    return current;
+                }
 
-      public float difference()
-      {
-         return 1.0f;
-      }
+                public int docFreq() {
+                    Integer docFreq = (Integer) orderedTerms.get(current);
+                    return docFreq != null ? docFreq.intValue() : 0;
+                }
 
-      protected boolean endEnum()
-      {
-         return false;
-      }
-   }
+                public void close() {
+                    // nothing to close
+                }
+
+                private void getNext() {
+                    current = it.hasNext() ? (Term) it.next() : null;
+                }
+            });
+        }
+
+        protected boolean termCompare(Term term) {
+            // they all match
+            return true;
+        }
+
+        public float difference() {
+            return 1.0f;
+        }
+
+        protected boolean endEnum() {
+            // todo correct?
+            return false;
+        }
+    }
 }

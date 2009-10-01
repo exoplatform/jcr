@@ -19,46 +19,40 @@ package org.exoplatform.services.jcr.impl.core.query.lucene.hits;
 import java.util.BitSet;
 
 /**
- * Uses a BitSet instance to store the hit set. Keep in mind that this BitSet is at least as large
- * as the highest doc number in the hit set. This means it might need of lot of memory for large
- * indexes.
+ * Uses a BitSet instance to store the hit set. Keep in mind that this BitSet
+ * is at least as large as the highest doc number in the hit set. This means it
+ * might need of lot of memory for large indexes.
  */
-public class BitSetHits implements Hits
-{
-   private BitSet hits;
+public class BitSetHits implements Hits {
+    private BitSet hits;
+    private int index;
 
-   private int index;
+    public BitSetHits() {
+        hits = new BitSet();
+        index = 0;
+    }
 
-   public BitSetHits()
-   {
-      hits = new BitSet();
-      index = 0;
-   }
+    /**
+     * {@inheritDoc}
+     */
+    public void set(int doc) {
+        hits.set(doc);
+    }
 
-   /**
-    * {@inheritDoc}
-    */
-   public void set(int doc)
-   {
-      hits.set(doc);
-   }
+    /**
+     * {@inheritDoc}
+     */
+    public int next() {
+        int result = hits.nextSetBit(index);
+        index = result + 1;
+        return result;
+    }
 
-   /**
-    * {@inheritDoc}
-    */
-   public int next()
-   {
-      int result = hits.nextSetBit(index);
-      index = result + 1;
-      return result;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public int skipTo(int target)
-   {
-      index = target;
-      return next();
-   }
+    /**
+     * {@inheritDoc}
+     */
+    public int skipTo(int target) {
+        index = target;
+        return next();
+    }
 }

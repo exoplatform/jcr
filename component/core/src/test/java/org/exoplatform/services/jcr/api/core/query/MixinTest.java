@@ -17,52 +17,54 @@
 package org.exoplatform.services.jcr.api.core.query;
 
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
+import org.exoplatform.services.jcr.impl.core.WorkspaceImpl;
+
+import javax.jcr.RepositoryException;
+import javax.jcr.Node;
+
+
 
 import java.io.ByteArrayInputStream;
 import java.util.Calendar;
 
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-
 /**
  * Tests if mixin types are queried correctly when using element test: element()
  */
-public class MixinTest extends AbstractQueryTest
-{
+public class MixinTest extends AbstractQueryTest {
 
-   protected void setUp() throws Exception
-   {
-      super.setUp();
-      ExtendedNodeTypeManager manager = (ExtendedNodeTypeManager)superuser.getWorkspace().getNodeTypeManager();
+    protected void setUp() throws Exception {
+        super.setUp();
 
-      String cnd =
-         "<nodeTypes><nodeType name='test:referenceable' isMixin='true' hasOrderableChildNodes='false' primaryItemName=''>"
-            + "<supertypes>" + "     <supertype>mix:referenceable</supertype>" + "</supertypes>" + "</nodeType>"
-            + "</nodeTypes>";
+        ExtendedNodeTypeManager manager = (ExtendedNodeTypeManager)superuser.getWorkspace().getNodeTypeManager();
 
-      manager.registerNodeTypes(new ByteArrayInputStream(cnd.getBytes()), ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
-   }
+        String cnd =
+           "<nodeTypes><nodeType name='test:referenceable' isMixin='true' hasOrderableChildNodes='false' primaryItemName=''>"
+              + "<supertypes>" + "     <supertype>mix:referenceable</supertype>" + "</supertypes>" + "</nodeType>"
+              + "</nodeTypes>";
 
-   public void testBuiltInMixin() throws RepositoryException
-   {
-      // nt:resoure is referenceable by its node type definition
-      Node n1 = testRootNode.addNode("n1", "nt:resource");
-      n1.setProperty("jcr:data", new ByteArrayInputStream("hello world".getBytes()));
-      n1.setProperty("jcr:lastModified", Calendar.getInstance());
-      n1.setProperty("jcr:mimeType", "application/octet-stream");
+        manager.registerNodeTypes(new ByteArrayInputStream(cnd.getBytes()), ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
+    }
 
-      // assign mix:referenceable to arbitrary node
-      Node n2 = testRootNode.addNode("n2");
-      n2.addMixin("mix:referenceable");
+    public void testBuiltInMixin() throws RepositoryException {
+        // nt:resoure is referenceable by its node type definition
+        Node n1 = testRootNode.addNode("n1", "nt:resource");
+        n1.setProperty("jcr:data", new ByteArrayInputStream("hello world".getBytes()));
+        n1.setProperty("jcr:lastModified", Calendar.getInstance());
+        n1.setProperty("jcr:mimeType", "application/octet-stream");
 
-      // make node referenceable using a mixin that extends from mix:referenceable
-      Node n3 = testRootNode.addNode("n3");
-      n3.addMixin("test:referenceable");
+        // assign mix:referenceable to arbitrary node
+        Node n2 = testRootNode.addNode("n2");
+        n2.addMixin("mix:referenceable");
 
-      testRootNode.save();
+        // make node referenceable using a mixin that extends from mix:referenceable
+        Node n3 = testRootNode.addNode("n3");
+        n3.addMixin("test:referenceable");
 
-      String query = testPath + "//element(*, mix:referenceable)";
-      executeXPathQuery(query, new Node[]{n1, n2, n3});
-   }
+        testRootNode.save();
+
+        String query = testPath + "//element(*, mix:referenceable)";
+        executeXPathQuery(query, new Node[]{n1, n2, n3});
+    }
 
 }

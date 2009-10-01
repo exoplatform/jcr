@@ -22,37 +22,38 @@ import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
 import org.exoplatform.services.jcr.impl.core.query.QueryRootNode;
 
 /**
- * <code>SpellChecker</code> defines an interface to run a spellchecker over a fulltext query
- * statement.
+ * <code>SpellChecker</code> defines an interface to run a spellchecker over
+ * a fulltext query statement.
  */
-public interface SpellChecker
-{
+public interface SpellChecker {
 
-   /**
-    * Initializes this spell checker with an abstract query tree.
-    * 
-    * @param handler
-    *          the query handler that created this spell checker.
-    * @throws IOException
-    *           if an error occurs while initializing the spell checker.
-    */
-   public void init(QueryHandler handler) throws IOException;
+    /**
+     * Initializes this spell checker with an abstract query tree.
+     *
+     * @param handler the query handler that created this spell checker.
+     * @throws IOException if an error occurs while initializing the spell
+     *                     checker.
+     */
+    void init(QueryHandler handler) throws IOException;
 
-   /**
-    * Runs the spell checker over the first spellcheck relation query node in the abstract query tree
-    * and returns a suggestion in case this spellchecker thinks the words are misspelled. If the
-    * spellchecker determines that the words are spelled correctly <code>null</code> is returned.
-    * 
-    * @param aqt
-    *          the abstract query tree, which may contain a relation query node with a spellcheck
-    *          operation.
-    * @return a suggestion or <code>null</code> if this spell checker determines that the fulltext
-    *         query statement is spelled correctly.
-    */
-   public String check(QueryRootNode aqt) throws IOException;
+    /**
+     * Runs the spell checker over the first spellcheck relation query node in
+     * the abstract query tree and returns a suggestion in case this
+     * spellchecker thinks the words are misspelled. If the spellchecker
+     * determines that the words are spelled correctly <code>null</code> is
+     * returned.
+     *
+     * @param aqt the abstract query tree, which may contain a relation query
+     *            node with a spellcheck operation.
+     * @return a suggestion or <code>null</code> if this spell checker
+     *         determines that the fulltext query statement is spelled
+     *         correctly.
+     */
+    String check(QueryRootNode aqt) throws IOException;
 
-   /**
-    * Closes this spell checker and allows it to free resources.
-    */
-   public void close();
+    /**
+     * Closes this spell checker and allows it to free resources.
+     */
+    void close();
+
 }

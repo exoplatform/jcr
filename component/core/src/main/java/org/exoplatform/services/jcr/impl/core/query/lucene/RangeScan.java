@@ -25,46 +25,36 @@ import org.apache.lucene.search.FilteredTermEnum;
 /**
  * <code>RangeScan</code> implements a range scan on terms.
  */
-class RangeScan extends FilteredTermEnum
-{
+class RangeScan extends FilteredTermEnum {
 
-   private final Term upper;
+    private final Term upper;
 
-   private boolean endEnum = false;
+    private boolean endEnum = false;
 
-   /**
-    * Scans the index beginning at <code>lower</code> Term to <code>upper</code>.
-    * 
-    * @param reader
-    *          the index reader;
-    * @param lower
-    *          the lower limit.
-    * @param upper
-    *          the upper limit.
-    */
-   RangeScan(IndexReader reader, Term lower, Term upper) throws IOException
-   {
-      this.upper = upper;
-      setEnum(reader.terms(lower));
-   }
+    /**
+     * Scans the index beginning at <code>lower</code> Term to <code>upper</code>.
+     * @param reader the index reader;
+     * @param lower the lower limit.
+     * @param upper the upper limit.
+     */
+    RangeScan(IndexReader reader, Term lower, Term upper) throws IOException {
+        this.upper = upper;
+        setEnum(reader.terms(lower));
+    }
 
-   protected boolean termCompare(Term term)
-   {
-      int compare = term.compareTo(upper);
-      if (compare > 0)
-      {
-         endEnum = true;
-      }
-      return compare <= 0;
-   }
+    protected boolean termCompare(Term term) {
+        int compare = term.compareTo(upper);
+        if (compare > 0) {
+            endEnum = true;
+        }
+        return compare <= 0;
+    }
 
-   public float difference()
-   {
-      return 1.0f;
-   }
+    public float difference() {
+        return 1.0f;
+    }
 
-   protected boolean endEnum()
-   {
-      return endEnum;
-   }
+    protected boolean endEnum() {
+        return endEnum;
+    }
 }

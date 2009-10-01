@@ -19,146 +19,133 @@ package org.exoplatform.services.jcr.impl.core.query;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.jcr.RepositoryException;
+
 import org.exoplatform.services.jcr.datamodel.InternalQName;
+
+
+
+
 
 /**
  * Implements the root node of a query tree.
  */
-public class QueryRootNode extends QueryNode
-{
+public class QueryRootNode extends QueryNode {
 
-   /**
-    * The path sub query
-    */
-   private PathQueryNode locationNode;
+    /**
+     * The path sub query
+     */
+    private PathQueryNode locationNode;
 
-   /**
-    * The list of property names (as {@link org.apache.jackrabbit.spi.Name}s to select.
-    */
-   private List selectProperties = new ArrayList();
+    /**
+     * The list of property names (as {@link org.exoplatform.services.jcr.impl.core.query.adapter.Name}s
+     * to select.
+     */
+    private final List selectProperties = new ArrayList();
 
-   /**
-    * The list of property names to order the result nodes. Might be null
-    */
-   private OrderQueryNode orderNode;
+    /**
+     * The list of property names to order the result nodes. Might be null
+     */
+    private OrderQueryNode orderNode;
 
-   /**
-    * Creates a new <code>QueryRootNode</code> instance.
-    */
-   protected QueryRootNode()
-   {
-      super(null);
-   }
+    /**
+     * Creates a new <code>QueryRootNode</code> instance.
+     */
+    protected QueryRootNode() {
+        super(null);
+    }
 
-   /**
-    * Returns the {@link PathQueryNode} or <code>null</code> if this query does not have a location
-    * node.
-    * 
-    * @return the {@link PathQueryNode} or <code>null</code> if this query does not have a location
-    *         node.
-    */
-   public PathQueryNode getLocationNode()
-   {
-      return locationNode;
-   }
+    /**
+     * Returns the {@link PathQueryNode} or <code>null</code> if this query does
+     * not have a location node.
+     *
+     * @return the {@link PathQueryNode} or <code>null</code> if this query does
+     *         not have a location node.
+     */
+    public PathQueryNode getLocationNode() {
+        return locationNode;
+    }
 
-   /**
-    * Sets the location node.
-    * 
-    * @param locationNode
-    *          the new location node.
-    */
-   public void setLocationNode(PathQueryNode locationNode)
-   {
-      this.locationNode = locationNode;
-   }
+    /**
+     * Sets the location node.
+     *
+     * @param locationNode the new location node.
+     */
+    public void setLocationNode(PathQueryNode locationNode) {
+        this.locationNode = locationNode;
+    }
 
-   /**
-    * Adds a new select property to the query.
-    * 
-    * @param propName
-    *          the name of the property to select.
-    */
-   public void addSelectProperty(InternalQName propName)
-   {
-      selectProperties.add(propName);
-   }
+    /**
+     * Adds a new select property to the query.
+     *
+     * @param propName the name of the property to select.
+     */
+    public void addSelectProperty(InternalQName propName) {
+        selectProperties.add(propName);
+    }
 
-   /**
-    * Returns an array of select properties.
-    * 
-    * @return an array of select properties.
-    */
-   public InternalQName[] getSelectProperties()
-   {
-      return (InternalQName[])selectProperties.toArray(new InternalQName[selectProperties.size()]);
-   }
+    /**
+     * Returns an array of select properties.
+     *
+     * @return an array of select properties.
+     */
+    public InternalQName[] getSelectProperties() {
+        return (InternalQName[]) selectProperties.toArray(new InternalQName[selectProperties.size()]);
+    }
 
-   /**
-    * Returns the order node.
-    * 
-    * @return the order node.
-    */
-   public OrderQueryNode getOrderNode()
-   {
-      return orderNode;
-   }
+    /**
+     * Returns the order node or <code>null</code> if no order is specified.
+     *
+     * @return the order node.
+     */
+    public OrderQueryNode getOrderNode() {
+        return orderNode;
+    }
 
-   /**
-    * Sets a new order node.
-    * 
-    * @param orderNode
-    *          the new order node.
-    */
-   public void setOrderNode(OrderQueryNode orderNode)
-   {
-      this.orderNode = orderNode;
-   }
+    /**
+     * Sets a new order node.
+     *
+     * @param orderNode the new order node.
+     */
+    public void setOrderNode(OrderQueryNode orderNode) {
+        this.orderNode = orderNode;
+    }
 
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public Object accept(QueryNodeVisitor visitor, Object data)
-   {
-      return visitor.visit(this, data);
-   }
+    /**
+     * {@inheritDoc}
+     * @throws RepositoryException
+     */
+    public Object accept(QueryNodeVisitor visitor, Object data) throws RepositoryException {
+        return visitor.visit(this, data);
+    }
 
-   /**
-    * Returns the type of this node.
-    * 
-    * @return the type of this node.
-    */
-   @Override
-   public int getType()
-   {
-      return QueryNode.TYPE_ROOT;
-   }
+    /**
+     * Returns the type of this node.
+     *
+     * @return the type of this node.
+     */
+    public int getType() {
+        return QueryNode.TYPE_ROOT;
+    }
 
-   /**
-    * @inheritDoc
-    */
-   @Override
-   public boolean equals(Object obj)
-   {
-      if (obj instanceof QueryRootNode)
-      {
-         QueryRootNode other = (QueryRootNode)obj;
-         return (locationNode == null ? other.locationNode == null : locationNode.equals(other.locationNode))
-            && selectProperties.equals(other.selectProperties)
-            && (orderNode == null ? other.orderNode == null : orderNode.equals(other.orderNode));
-      }
-      return false;
-   }
+    /**
+     * @inheritDoc
+     */
+    public boolean equals(Object obj) {
+        if (obj instanceof QueryRootNode) {
+            QueryRootNode other = (QueryRootNode) obj;
+            return (locationNode == null ? other.locationNode == null : locationNode.equals(other.locationNode))
+                    && selectProperties.equals(other.selectProperties)
+                    && (orderNode == null ? other.orderNode == null : orderNode.equals(other.orderNode));
+        }
+        return false;
+    }
 
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public boolean needsSystemTree()
-   {
-      return (locationNode != null && locationNode.needsSystemTree())
-         || (orderNode != null && orderNode.needsSystemTree());
-   }
+    /**
+     * {@inheritDoc}
+     */
+    public boolean needsSystemTree() {
+        return (locationNode != null && locationNode.needsSystemTree()) || (orderNode != null && orderNode.needsSystemTree());
+    }
 
 }

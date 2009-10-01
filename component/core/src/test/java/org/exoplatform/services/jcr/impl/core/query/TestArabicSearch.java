@@ -69,7 +69,7 @@ public class TestArabicSearch extends BaseQueryTest
       Document doc = getDocument(cont.getInternalIdentifier(), false);
       assertNotNull("Node is not indexed", doc);
 
-      IndexReader reader = defaultSearchIndex.getIndexReader(false);
+      IndexReader reader = defaultSearchIndex.getIndexReader();
       IndexSearcher is = new IndexSearcher(reader);
       TermQuery query = new TermQuery(new Term(FieldNames.FULLTEXT, word));
       Hits result = is.search(query);

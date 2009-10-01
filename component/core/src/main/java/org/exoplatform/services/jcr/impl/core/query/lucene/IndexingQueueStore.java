@@ -16,265 +16,149 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.exoplatform.services.log.Log;
-
-import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.log.ExoLogger;
+import org.apache.lucene.store.Directory;
+import org.exoplatform.services.jcr.impl.core.query.lucene.directory.IndexInputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * <code>IndexingQueueStore</code> implements the persistent store to keep track of pending document
- * in an indexing queue.
+ * <code>IndexingQueueStore</code> implements a store that keeps the uuids of
+ * nodes that are pending in the indexing queue. Until Jackrabbit 1.4 this store
+ * was also persisted to disk. Starting with 1.5 the pending
+ * nodes are marked directly in the index with a special field.
+ * See {@link FieldNames#REINDEXING_REQUIRED}.
  */
-class IndexingQueueStore
-{
+class IndexingQueueStore {
 
-   /**
-    * The logger instance for this class.
-    */
-   private static final Log log = ExoLogger.getLogger(IndexingQueueStore.class);
+    /**
+     * The logger instance for this class.
+     */
+    private static final Logger log = LoggerFactory.getLogger(IndexingQueueStore.class);
 
-   /**
-    * Encoding of the indexing queue store.
-    */
-   private static final String ENCODING = "UTF-8";
+    /**
+     * Encoding of the indexing queue store.
+     */
+    private static final String ENCODING = "UTF-8";
 
-   /**
-    * Operation identifier for an added node.
-    */
-   private static final String ADD = "ADD";
+    /**
+     * Operation identifier for an added node.
+     */
+    private static final String ADD = "ADD";
 
-   /**
-    * Operation identifier for an removed node.
-    */
-   private static final String REMOVE = "REMOVE";
+    /**
+     * Operation identifier for an removed node.
+     */
+    private static final String REMOVE = "REMOVE";
 
-   /**
-    * The UUID Strings of the pending documents.
-    */
-   private final Set pending = new HashSet();
+    /**
+     * Name of the file that contains the indexing queue log.
+     */
+    private static final String INDEXING_QUEUE_FILE = "indexing_queue.log";
 
-   /**
-    * The file system where to write the pending document UUIDs.
-    */
-   private final File indexDir;
+    /**
+     * The UUID Strings of the pending documents.
+     */
+    private final Set pending = new HashSet();
 
-   /**
-    * The name of the file for the pending document UUIDs.
-    */
-   private final String fileName;
+    /**
+     * The directory from where to read pending document UUIDs.
+     */
+    private final Directory dir;
 
-   /**
-    * Non-null if we are currently writing to the file.
-    */
-   private Writer out;
+    /**
+     * Creates a new <code>IndexingQueueStore</code> using the given directory.
+     *
+     * @param directory the directory to use.
+     * @throws IOException if an error ocurrs while reading pending UUIDs.
+     */
+    IndexingQueueStore(Directory directory) throws IOException {
+        this.dir = directory;
+        readStore();
+    }
 
-   private File fileStore;
+    /**
+     * @return the UUIDs of the pending text extraction jobs.
+     */
+    public String[] getPending() {
+        return (String[]) pending.toArray(new String[pending.size()]);
+    }
 
-   /**
-    * Creates a new <code>IndexingQueueStore</code> using the given file system.
-    * 
-    * @param fs
-    *          the file system to use.
-    * @param fileName
-    *          the name of the file where to write the pending UUIDs to.
-    * @throws FileSystemException
-    *           if an error ocurrs while reading pending UUIDs.
-    */
-   IndexingQueueStore(File roodDir, String fileName) throws IOException
-   {
-      this.indexDir = roodDir;
-      this.fileName = fileName;
-      readStore();
-   }
+    /**
+     * Adds a <code>uuid</code> to the store.
+     *
+     * @param uuid the uuid to add.
+     */
+    public void addUUID(String uuid) {
+        pending.add(uuid);
+    }
 
-   /**
-    * @return the UUIDs of the pending text extraction jobs.
-    */
-   public String[] getPending()
-   {
-      return (String[])pending.toArray(new String[pending.size()]);
-   }
+    /**
+     * Removes a <code>uuid</code> from the store.
+     *
+     * @param uuid the uuid to add.
+     */
+    public void removeUUID(String uuid) {
+        pending.remove(uuid);
+    }
 
-   /**
-    * Adds a <code>uuid</code> to the store.
-    * 
-    * @param uuid
-    *          the uuid to add.
-    * @throws IOException
-    *           if an error occurs while writing.
-    */
-   public void addUUID(String uuid) throws IOException
-   {
-      writeEntry(ADD, uuid, getLog());
-      pending.add(uuid);
-   }
-
-   /**
-    * Removes a <code>uuid</code> from the store.
-    * 
-    * @param uuid
-    *          the uuid to add.
-    * @throws IOException
-    *           if an error occurs while writing.
-    */
-   public void removeUUID(String uuid) throws IOException
-   {
-      writeEntry(REMOVE, uuid, getLog());
-      pending.remove(uuid);
-   }
-
-   /**
-    * Commits the pending changes to the file.
-    * 
-    * @throws IOException
-    *           if an error occurs while writing.
-    */
-   public void commit() throws IOException
-   {
-      if (out != null)
-      {
-         out.flush();
-         if (pending.size() == 0)
-         {
-            out.close();
-            out = null;
-         }
-      }
-   }
-
-   /**
-    * Flushes and closes this queue store.
-    * 
-    * @throws IOException
-    *           if an error occurs while writing.
-    */
-   public void close() throws IOException
-   {
-      commit();
-      if (out != null)
-      {
-         out.close();
-      }
-   }
-
-   // ----------------------------< internal >----------------------------------
-
-   /**
-    * Reads all pending UUIDs from the file and puts them into {@link #pending}.
-    * 
-    * @throws FileSystemException
-    *           if an error occurs while reading.
-    */
-   private void readStore() throws IOException
-   {
-      fileStore = new File(indexDir, fileName);
-      if (fileStore.exists())
-      {
-         InputStream in = new BufferedInputStream(new FileInputStream(fileStore));
-         BufferedReader reader = new BufferedReader(new InputStreamReader(in, Constants.DEFAULT_ENCODING));
-         try
-         {
-            String line;
-            while ((line = reader.readLine()) != null)
-            {
-               int idx = line.indexOf(' ');
-               if (idx == -1)
-               {
-                  // invalid line
-                  log.warn("invalid line in " + fileName + ":" + line);
-               }
-               else
-               {
-                  String cmd = line.substring(0, idx);
-                  String uuid = line.substring(idx + 1, line.length());
-                  if (ADD.equals(cmd))
-                  {
-                     pending.add(uuid);
-                  }
-                  else if (REMOVE.equals(cmd))
-                  {
-                     pending.remove(uuid);
-                  }
-                  else
-                  {
-                     // invalid line
-                     log.warn("invalid line in " + fileName + ":" + line);
-                  }
-               }
+    /**
+     * Closes this queue store.
+     */
+    public void close() {
+        if (pending.isEmpty()) {
+            try {
+                if (dir.fileExists(INDEXING_QUEUE_FILE)) {
+                    dir.deleteFile(INDEXING_QUEUE_FILE);
+                }
+            } catch (IOException e) {
+                log.warn("unable to delete " + INDEXING_QUEUE_FILE);
             }
-         }
-         finally
-         {
-            in.close();
-         }
+        }
+    }
 
-      }
-   }
+    //----------------------------< internal >----------------------------------
 
-   /**
-    * Writes an entry to the log file.
-    * 
-    * @param op
-    *          the operation. Either {@link #ADD} or {@link #REMOVE}.
-    * @param uuid
-    *          the uuid of the added or removed node.
-    * @param writer
-    *          the writer where the entry is written to.
-    * @throws IOException
-    *           if an error occurs when writing the entry.
-    */
-   private static void writeEntry(String op, String uuid, Writer writer) throws IOException
-   {
-      StringBuffer buf = new StringBuffer(op);
-      buf.append(' ').append(uuid).append('\n');
-      writer.write(buf.toString());
-   }
-
-   /**
-    * Returns the writer to the log file.
-    * 
-    * @return the writer to the log file.
-    * @throws IOException
-    *           if an error occurs while opening the log file.
-    */
-   private Writer getLog() throws IOException
-   {
-      if (out == null)
-      {
-         // open file
-         try
-         {
-            OutputStream os = new FileOutputStream(fileStore, true);
-            out = new OutputStreamWriter(new BufferedOutputStream(os), Constants.DEFAULT_ENCODING);
-         }
-         catch (IOException e)
-         {
-            if (out != null)
-            {
-               out.close();
-               out = null;
+    /**
+     * Reads all pending UUIDs from the file and puts them into {@link
+     * #pending}.
+     *
+     * @throws IOException if an error occurs while reading.
+     */
+    private void readStore() throws IOException {
+        if (dir.fileExists(INDEXING_QUEUE_FILE)) {
+            InputStream in = new IndexInputStream(dir.openInput(INDEXING_QUEUE_FILE));
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(in, ENCODING));
+            try {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    int idx = line.indexOf(' ');
+                    if (idx == -1) {
+                        // invalid line
+                        log.warn("invalid line in {}: {}", INDEXING_QUEUE_FILE, line);
+                    } else {
+                        String cmd = line.substring(0, idx);
+                        String uuid = line.substring(idx + 1, line.length());
+                        if (ADD.equals(cmd)) {
+                            pending.add(uuid);
+                        } else if (REMOVE.equals(cmd)) {
+                            pending.remove(uuid);
+                        } else {
+                            // invalid line
+                            log.warn("invalid line in {}: {}", INDEXING_QUEUE_FILE, line);
+                        }
+                    }
+                }
+            } finally {
+                in.close();
             }
-            IOException ex = new IOException(e.getMessage());
-            ex.initCause(e);
-            throw ex;
-         }
-
-      }
-      return out;
-   }
+        }
+    }
 }

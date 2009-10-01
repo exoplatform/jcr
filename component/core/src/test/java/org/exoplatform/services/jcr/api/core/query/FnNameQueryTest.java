@@ -16,44 +16,47 @@
  */
 package org.exoplatform.services.jcr.api.core.query;
 
-import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+import javax.jcr.Node;
 
 /**
  * <code>FnNameQueryTest</code> tests queries with fn:name() functions.
  */
-public class FnNameQueryTest extends AbstractQueryTest
-{
+public class FnNameQueryTest extends AbstractQueryTest {
 
-   public void testFnName() throws RepositoryException
-   {
-      Node n1 = testRootNode.addNode(nodeName1);
-      n1.setProperty(propertyName1, 1);
-      Node n2 = testRootNode.addNode(nodeName2);
-      n2.setProperty(propertyName1, 2);
-      Node n3 = testRootNode.addNode(nodeName3);
-      n3.setProperty(propertyName1, 3);
+    public void testFnName() throws RepositoryException {
+        Node n1 = testRootNode.addNode(nodeName1);
+        n1.setProperty(propertyName1, 1);
+        Node n2 = testRootNode.addNode(nodeName2);
+        n2.setProperty(propertyName1, 2);
+        Node n3 = testRootNode.addNode(nodeName3);
+        n3.setProperty(propertyName1, 3);
 
-      testRootNode.save();
+        testRootNode.save();
 
-      String base = testPath + "/*[@" + propertyName1;
-      executeXPathQuery(base + " = 1 and fn:name() = '" + nodeName1 + "']", new Node[]{n1});
-      executeXPathQuery(base + " = 1 and fn:name() = '" + nodeName2 + "']", new Node[]{});
-      executeXPathQuery(base + " > 0 and fn:name() = '" + nodeName2 + "']", new Node[]{n2});
-      executeXPathQuery(base + " > 0 and (fn:name() = '" + nodeName1 + "' or fn:name() = '" + nodeName2 + "')]",
-         new Node[]{n1, n2});
-      executeXPathQuery(base + " > 0 and not(fn:name() = '" + nodeName1 + "')]", new Node[]{n2, n3});
-   }
+        String base = testPath + "/*[@" + propertyName1;
+        executeXPathQuery(base + " = 1 and fn:name() = '" + nodeName1 + "']",
+                new Node[]{n1});
+        executeXPathQuery(base + " = 1 and fn:name() = '" + nodeName2 + "']",
+                new Node[]{});
+        executeXPathQuery(base + " > 0 and fn:name() = '" + nodeName2 + "']",
+                new Node[]{n2});
+        executeXPathQuery(base + " > 0 and (fn:name() = '" + nodeName1 +
+                "' or fn:name() = '" + nodeName2 + "')]", new Node[]{n1, n2});
+        executeXPathQuery(base + " > 0 and not(fn:name() = '" + nodeName1 + "')]",
+                new Node[]{n2, n3});
+    }
 
-   public void testFnNameWithSpace() throws RepositoryException
-   {
-      Node n1 = testRootNode.addNode("My Documents");
-      n1.setProperty(propertyName1, 1);
+    public void testFnNameWithSpace() throws RepositoryException {
+        Node n1 = testRootNode.addNode("My Documents");
+        n1.setProperty(propertyName1, 1);
 
-      testRootNode.save();
+        testRootNode.save();
 
-      String base = testPath + "/*[@" + propertyName1;
-      executeXPathQuery(base + " = 1 and fn:name() = 'My Documents']", new Node[]{});
-      executeXPathQuery(base + " = 1 and fn:name() = 'My_x0020_Documents']", new Node[]{n1});
-   }
+        String base = testPath + "/*[@" + propertyName1;
+        executeXPathQuery(base + " = 1 and fn:name() = 'My Documents']",
+                new Node[]{});
+        executeXPathQuery(base + " = 1 and fn:name() = 'My_x0020_Documents']",
+                new Node[]{n1});
+    }
 }

@@ -22,74 +22,59 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
 
 /**
- * <code>SimilarityQuery</code> implements a query that returns similar nodes for a given node UUID.
+ * <code>SimilarityQuery</code> implements a query that returns similar nodes
+ * for a given node UUID.
  */
-public class SimilarityQuery extends Query
-{
+public class SimilarityQuery extends Query {
 
-   /**
-    * 
-    */
-   private static final long serialVersionUID = 3336035430784964269L;
+    /**
+     * The UUID of the node for which to find similar nodes.
+     */
+    private final String uuid;
 
-   /**
-    * The UUID of the node for which to find similar nodes.
-    */
-   private final String uuid;
+    /**
+     * The analyzer in use.
+     */
+    private final Analyzer analyzer;
 
-   /**
-    * The analyzer in use.
-    */
-   private final Analyzer analyzer;
+    public SimilarityQuery(String uuid, Analyzer analyzer) {
+        this.uuid = uuid;
+        this.analyzer = analyzer;
+    }
 
-   public SimilarityQuery(String uuid, Analyzer analyzer)
-   {
-      this.uuid = uuid;
-      this.analyzer = analyzer;
-   }
+    /**
+     * {@inheritDoc}
+     */
+    public Query rewrite(IndexReader reader) throws IOException {
+        MoreLikeThis more = new MoreLikeThis(reader);
+        more.setAnalyzer(analyzer);
+        more.setFieldNames(new String[]{FieldNames.FULLTEXT});
+        more.setMinWordLen(4);
+        Query similarityQuery = null;
+        TermDocs td = reader.termDocs(new Term(FieldNames.UUID, uuid));
+        try {
+            if (td.next()) {
+                similarityQuery = more.like(td.doc());
+            }
+        } finally {
+            td.close();
+        }
+        if (similarityQuery != null) {
+            return similarityQuery.rewrite(reader);
+        } else {
+            // return dummy query that never matches
+            return new BooleanQuery();
+        }
+    }
 
-   /**
-    * {@inheritDoc}
-    */
-   public Query rewrite(IndexReader reader) throws IOException
-   {
-      MoreLikeThis more = new MoreLikeThis(reader);
-      more.setAnalyzer(analyzer);
-      more.setFieldNames(new String[]{FieldNames.FULLTEXT});
-      more.setMinWordLen(4);
-      Query similarityQuery = null;
-      TermDocs td = reader.termDocs(new Term(FieldNames.UUID, uuid));
-      try
-      {
-         if (td.next())
-         {
-            similarityQuery = more.like(td.doc());
-         }
-      }
-      finally
-      {
-         td.close();
-      }
-      if (similarityQuery != null)
-      {
-         return similarityQuery.rewrite(reader);
-      }
-      else
-      {
-         // return dummy query that never matches
-         return new TermQuery(new Term(FieldNames.UUID, "x"));
-      }
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public String toString(String field)
-   {
-      return "exo:similar(" + uuid + ")";
-   }
+    /**
+     * {@inheritDoc}
+     */
+    public String toString(String field) {
+        return "rep:similar(" + uuid + ")";
+    }
 }

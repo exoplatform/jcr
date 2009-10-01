@@ -89,17 +89,18 @@ public class SystemSearchManager extends SearchManager
       isStarted = true;
       try
       {
-         handler.init();
+         //handler.init(null);
+         initializeQueryHandler();
 
       }
-      catch (IOException e)
-      {
-         log.error(e.getLocalizedMessage());
-         handler = null;
-         changesLogBuffer.clear();
-         changesLogBuffer = null;
-         throw new RuntimeException(e);
-      }
+//      catch (IOException e)
+//      {
+//         log.error(e.getLocalizedMessage());
+//         handler = null;
+//         changesLogBuffer.clear();
+//         changesLogBuffer = null;
+//         throw new RuntimeException(e);
+//      }
       catch (RepositoryException e)
       {
          log.error(e.getLocalizedMessage());

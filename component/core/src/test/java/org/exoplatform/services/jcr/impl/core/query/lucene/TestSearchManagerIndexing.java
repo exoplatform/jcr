@@ -86,10 +86,10 @@ public class TestSearchManagerIndexing extends JcrImplBaseTest
             + getIndexPrefix(si, "nt") + "unstructured"));
       TermQuery full1 = new TermQuery(new Term(FieldNames.FULLTEXT, "string"));
       TermQuery full2 = new TermQuery(new Term(FieldNames.FULLTEXT, "value"));
-      TermQuery fullprop1 =
-         new TermQuery(new Term(FieldNames.createFullTextFieldName(getIndexPrefix(si, "") + "prop"), "string"));
-      TermQuery fullprop2 =
-         new TermQuery(new Term(FieldNames.createFullTextFieldName(getIndexPrefix(si, "") + "prop"), "value"));
+//      TermQuery fullprop1 =
+//         new TermQuery(new Term(FieldNames.createFullTextFieldName(getIndexPrefix(si, "") + "prop"), "string"));
+//      TermQuery fullprop2 =
+//         new TermQuery(new Term(FieldNames.createFullTextFieldName(getIndexPrefix(si, "") + "prop"), "value"));
 
       BooleanQuery compl = new BooleanQuery();
       compl.add(name, Occur.MUST);
@@ -97,8 +97,8 @@ public class TestSearchManagerIndexing extends JcrImplBaseTest
       compl.add(prop2, Occur.MUST);
       compl.add(full1, Occur.MUST);
       compl.add(full2, Occur.MUST);
-      compl.add(fullprop1, Occur.MUST);
-      compl.add(fullprop2, Occur.MUST);
+//      compl.add(fullprop1, Occur.MUST);
+//      compl.add(fullprop2, Occur.MUST);
 
       Hits hits = is.search(compl);
       assertEquals(1, hits.length());

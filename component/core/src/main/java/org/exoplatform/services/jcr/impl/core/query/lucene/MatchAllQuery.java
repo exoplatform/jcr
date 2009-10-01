@@ -24,59 +24,49 @@ import org.apache.lucene.search.Weight;
 
 /**
  * Specialized query that returns / scores all pages in the search index.
- * <p>
- * Use this Query to perform a match '*'.
+ * <p>Use this Query to perform a match '*'.
  */
-class MatchAllQuery extends Query
-{
+class MatchAllQuery extends Query {
 
-   private final String field;
+    private final String field;
 
-   /**
-    * Creates a new <code>MatchAllQuery</code> . <p/>
-    * 
-    * @param field
-    *          the field name.
-    * @throws NullPointerException
-    *           if <code>field</code> is null.
-    */
-   MatchAllQuery(String field) throws NullPointerException
-   {
-      if (field == null)
-      {
-         throw new NullPointerException("field");
-      }
-      this.field = field.intern();
-   }
+    /**
+     * Creates a new <code>MatchAllQuery</code> .
+     * <p/>
+     *
+     * @param field the field name.
+     * @throws NullPointerException if <code>field</code> is null.
+     */
+    MatchAllQuery(String field) throws NullPointerException {
+        if (field == null) {
+            throw new NullPointerException("field");
+        }
+        this.field = field.intern();
+    }
 
-   /**
-    * Returns the <code>Weight</code> for this Query.
-    * 
-    * @param searcher
-    *          the current searcher.
-    * @return the <code>Weight</code> for this Query.
-    */
-   protected Weight createWeight(Searcher searcher)
-   {
-      return new MatchAllWeight(this, searcher, field);
-   }
+    /**
+     * Returns the <code>Weight</code> for this Query.
+     *
+     * @param searcher the current searcher.
+     * @return the <code>Weight</code> for this Query.
+     */
+    protected Weight createWeight(Searcher searcher) {
+        return new MatchAllWeight(this, searcher, field);
+    }
 
-   /**
-    * Returns the String "%".
-    * 
-    * @param field
-    *          default field for the query.
-    * @return the String "%".
-    */
-   public String toString(String field)
-   {
-      return "%";
-   }
+    /**
+     * Returns the String "%".
+     *
+     * @param field default field for the query.
+     * @return the String "%".
+     */
+    public String toString(String field) {
+        return "%";
+    }
 
-   /**
-    * Does nothing but simply returns. There are no terms to extract.
-    */
-   public void extractTerms(Set terms)
-   {
-   }
+    /**
+     * Does nothing but simply returns. There are no terms to extract.
+     */
+    public void extractTerms(Set terms) {
+    }
 }

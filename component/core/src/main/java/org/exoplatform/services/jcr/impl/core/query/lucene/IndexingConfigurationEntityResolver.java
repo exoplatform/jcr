@@ -18,42 +18,51 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 /**
- * <code>IndexingConfigurationEntityResolver</code> implements an entity resolver for the indexing
- * configuration DTD.
+ * <code>IndexingConfigurationEntityResolver</code> implements an entity
+ * resolver for the indexing configuration DTD.
  */
-public class IndexingConfigurationEntityResolver implements EntityResolver
-{
+public class IndexingConfigurationEntityResolver implements EntityResolver {
 
-   /**
-    * The system id of the indexing configuration DTD.
-    */
-   private static final String SYSTEM_ID = "http://www.exoplatform.org/dtd/indexing-configuration-1.0.dtd";
+    /**
+     * Maps system ids to DTD resource names.
+     */
+    private static final Map SYSTEM_IDS;
 
-   /**
-    * The name of the DTD resource.
-    */
-   private static final String RESOURCE_NAME = "indexing-configuration-1.0.dtd";
+    static {
+        Map systemIds = new HashMap();
+        systemIds.put(
+                "http://jackrabbit.apache.org/dtd/indexing-configuration-1.0.dtd",
+                "indexing-configuration-1.0.dtd");
+        systemIds.put(
+                "http://jackrabbit.apache.org/dtd/indexing-configuration-1.1.dtd",
+                "indexing-configuration-1.1.dtd");
+        systemIds.put(
+                "http://jackrabbit.apache.org/dtd/indexing-configuration-1.2.dtd",
+                "indexing-configuration-1.2.dtd");
+        SYSTEM_IDS = Collections.unmodifiableMap(systemIds);
+    }
 
-   /**
-    * {@inheritDoc}
-    */
-   public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException
-   {
-      if (SYSTEM_ID.equals(systemId))
-      {
-         int i = 1 + 3;
-         InputStream in = getClass().getResourceAsStream(RESOURCE_NAME);
-         if (in != null)
-         {
-            return new InputSource(in);
-         }
-      }
-      return null;
-   }
+    /**
+     * {@inheritDoc}
+     */
+    public InputSource resolveEntity(String publicId, String systemId)
+            throws SAXException, IOException {
+        String resourceName = (String) SYSTEM_IDS.get(systemId);
+        if (resourceName != null) {
+            InputStream in = getClass().getResourceAsStream(resourceName);
+            if (in != null) {
+                return new InputSource(in);
+            }
+        }
+        return null;
+    }
 }

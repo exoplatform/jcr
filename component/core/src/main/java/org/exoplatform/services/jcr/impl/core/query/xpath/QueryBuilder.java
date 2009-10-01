@@ -16,9 +16,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.xpath;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import javax.jcr.query.InvalidQueryException;
 import javax.jcr.query.Query;
 
@@ -27,15 +24,12 @@ import org.exoplatform.services.jcr.impl.core.query.QueryNodeFactory;
 import org.exoplatform.services.jcr.impl.core.query.QueryRootNode;
 import org.exoplatform.services.jcr.impl.core.query.QueryTreeBuilder;
 
+
 /**
  * Implements the XPath query tree builder.
  */
 public class QueryBuilder implements QueryTreeBuilder
 {
-   static
-   {
-      Set<String> languages = new HashSet<String>();
-   }
 
    /**
     * @inheritDoc
@@ -56,7 +50,6 @@ public class QueryBuilder implements QueryTreeBuilder
 
    /**
     * This builder supports {@link Query#XPATH}.
-    * 
     * @inheritDoc
     */
    public String[] getSupportedLanguages()

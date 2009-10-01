@@ -26,16 +26,18 @@ import java.util.List;
 import javax.jcr.NamespaceException;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
+import javax.jcr.nodetype.NodeType;
+import javax.jcr.nodetype.NodeTypeIterator;
+import javax.jcr.nodetype.NodeTypeManager;
 import javax.jcr.query.InvalidQueryException;
 
-import org.exoplatform.services.log.Log;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.BooleanClause.Occur;
-
 import org.exoplatform.commons.utils.ISO8601;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
@@ -49,6 +51,7 @@ import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
+import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.core.query.AndQueryNode;
 import org.exoplatform.services.jcr.impl.core.query.DefaultQueryNodeVisitor;
@@ -67,18 +70,19 @@ import org.exoplatform.services.jcr.impl.core.query.QueryNode;
 import org.exoplatform.services.jcr.impl.core.query.QueryNodeVisitor;
 import org.exoplatform.services.jcr.impl.core.query.QueryRootNode;
 import org.exoplatform.services.jcr.impl.core.query.RelationQueryNode;
+import org.exoplatform.services.jcr.impl.core.query.SearchManager;
 import org.exoplatform.services.jcr.impl.core.query.TextsearchQueryNode;
-import org.exoplatform.services.jcr.impl.core.query.lucene.fulltext.ParseException;
-import org.exoplatform.services.jcr.impl.core.query.lucene.fulltext.QueryParser;
+
 import org.exoplatform.services.jcr.impl.util.ISO9075;
 import org.exoplatform.services.jcr.impl.xml.XMLChar;
-import org.exoplatform.services.log.ExoLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Implements a query builder that takes an abstract query tree and creates a
- * lucene {@link org.apache.lucene.search.Query} tree that can be executed on an
- * index. todo introduce a node type hierarchy for efficient translation of
- * NodeTypeQueryNode
+ * Implements a query builder that takes an abstract query tree and creates
+ * a lucene {@link org.apache.lucene.search.Query} tree that can be executed
+ * on an index.
+ * todo introduce a node type hierarchy for efficient translation of NodeTypeQueryNode
  */
 public class LuceneQueryBuilder implements QueryNodeVisitor
 {
@@ -106,121 +110,132 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
    /**
     * Logger for this class
     */
-   private static final Log log = ExoLogger.getLogger(LuceneQueryBuilder.class);
+   private static final Logger log = LoggerFactory.getLogger(LuceneQueryBuilder.class);
 
    /**
     * Root node of the abstract query tree
     */
-   private QueryRootNode root;
+   private final QueryRootNode root;
 
    /**
     * Session of the user executing this query
     */
-   private SessionImpl session;
+   private final SessionImpl session;
 
    /**
     * The shared item state manager of the workspace.
     */
-   private ItemDataConsumer sharedItemMgr;
+   private final ItemDataConsumer sharedItemMgr;
+
+   //    /**
+   //     * A hierarchy manager based on {@link #sharedItemMgr} to resolve paths.
+   //     */
+   //    private final HierarchyManager hmgr;
 
    /**
     * Namespace mappings to internal prefixes
     */
-   private NamespaceMappings nsMappings;
+   private final NamespaceMappings nsMappings;
 
    /**
     * Name and Path resolver
     */
-   private LocationFactory resolver;
+   private final LocationFactory resolver;
 
    /**
     * The analyzer instance to use for contains function query parsing
     */
-   private Analyzer analyzer;
+   private final Analyzer analyzer;
 
    /**
     * The property type registry.
     */
-   private PropertyTypeRegistry propRegistry;
+   private final PropertyTypeRegistry propRegistry;
 
    /**
     * The synonym provider or <code>null</code> if none is configured.
     */
-   private SynonymProvider synonymProvider;
+   private final SynonymProvider synonymProvider;
 
    /**
     * Wether the index format is new or old.
     */
-   private IndexFormatVersion indexFormatVersion;
+   private final IndexFormatVersion indexFormatVersion;
 
    /**
     * Exceptions thrown during tree translation
     */
-   private List<Exception> exceptions = new ArrayList<Exception>();
+   private final List exceptions = new ArrayList();
 
    private final NodeTypeDataManager nodeTypeDataManager;
 
    /**
     * Creates a new <code>LuceneQueryBuilder</code> instance.
-    * 
-    * @param root the root node of the abstract query tree.
-    * @param session of the user executing this query.
-    * @param sharedItemMgr the shared item state manager of the workspace.
-    * @param hmgr a hierarchy manager based on sharedItemMgr.
-    * @param nsMappings namespace resolver for internal prefixes.
-    * @param analyzer for parsing the query statement of the contains function.
-    * @param propReg the property type registry.
-    * @param synonymProvider the synonym provider or <code>null</code> if node is
-    *          configured.
+    *
+    * @param root               the root node of the abstract query tree.
+    * @param session            of the user executing this query.
+    * @param sharedItemMgr      the shared item state manager of the
+    *                           workspace.
+    * @param hmgr               a hierarchy manager based on sharedItemMgr.
+    * @param nsMappings         namespace resolver for internal prefixes.
+    * @param analyzer           for parsing the query statement of the contains
+    *                           function.
+    * @param propReg            the property type registry.
+    * @param synonymProvider    the synonym provider or <code>null</code> if
+    *                           node is configured.
     * @param indexFormatVersion the index format version for the lucene query.
+   * @throws RepositoryException 
     */
    private LuceneQueryBuilder(QueryRootNode root, SessionImpl session, ItemDataConsumer sharedItemMgr,
-      NamespaceMappings nsMappings, NodeTypeDataManager nodeTypeDataManager, Analyzer analyzer,
-      PropertyTypeRegistry propReg, SynonymProvider synonymProvider, IndexFormatVersion indexFormatVersion)
+      //HierarchyManager hmgr,
+      NamespaceMappings nsMappings, Analyzer analyzer, PropertyTypeRegistry propReg, SynonymProvider synonymProvider,
+      IndexFormatVersion indexFormatVersion) throws RepositoryException
    {
       this.root = root;
       this.session = session;
       this.sharedItemMgr = sharedItemMgr;
+      //this.hmgr = hmgr;
       this.nsMappings = nsMappings;
-      this.nodeTypeDataManager = nodeTypeDataManager;
       this.analyzer = analyzer;
       this.propRegistry = propReg;
       this.synonymProvider = synonymProvider;
       this.indexFormatVersion = indexFormatVersion;
+      this.nodeTypeDataManager = session.getWorkspace().getNodeTypesHolder();
       this.resolver = new LocationFactory(nsMappings);
    }
 
    /**
     * Creates a lucene {@link org.apache.lucene.search.Query} tree from an
     * abstract query tree.
-    * 
-    * @param root the root node of the abstract query tree.
-    * @param session of the user executing the query.
-    * @param sharedItemMgr the shared item state manager of the workspace.
-    * @param nsMappings namespace resolver for internal prefixes.
-    * @param analyzer for parsing the query statement of the contains function.
-    * @param propReg the property type registry to lookup type information.
-    * @param synonymProvider the synonym provider or <code>null</code> if node is
-    *          configured.
-    * @param indexFormatVersion the index format version to be used
+    *
+    * @param root            the root node of the abstract query tree.
+    * @param session         of the user executing the query.
+    * @param sharedItemMgr   the shared item state manager of the workspace.
+    * @param nsMappings      namespace resolver for internal prefixes.
+    * @param analyzer        for parsing the query statement of the contains
+    *                        function.
+    * @param propReg         the property type registry to lookup type
+    *                        information.
+    * @param synonymProvider the synonym provider or <code>null</code> if node
+    *                        is configured.
+    * @param  indexFormatVersion  the index format version to be used
     * @return the lucene query tree.
     * @throws RepositoryException if an error occurs during the translation.
     */
    public static Query createQuery(QueryRootNode root, SessionImpl session, ItemDataConsumer sharedItemMgr,
-      NamespaceMappings nsMappings, NodeTypeDataManager nodeTypeDataManager, Analyzer analyzer,
-      PropertyTypeRegistry propReg, SynonymProvider synonymProvider, IndexFormatVersion indexFormatVersion)
-      throws RepositoryException
+      NamespaceMappings nsMappings, Analyzer analyzer, PropertyTypeRegistry propReg, SynonymProvider synonymProvider,
+      IndexFormatVersion indexFormatVersion) throws RepositoryException
    {
 
       LuceneQueryBuilder builder =
-         new LuceneQueryBuilder(root, session, sharedItemMgr, nsMappings, nodeTypeDataManager, analyzer, propReg,
-            synonymProvider, indexFormatVersion);
+         new LuceneQueryBuilder(root, session, sharedItemMgr, nsMappings, analyzer, propReg, synonymProvider,
+            indexFormatVersion);
 
       Query q = builder.createLuceneQuery();
       if (builder.exceptions.size() > 0)
       {
          StringBuffer msg = new StringBuffer();
-         for (Iterator<Exception> it = builder.exceptions.iterator(); it.hasNext();)
+         for (Iterator it = builder.exceptions.iterator(); it.hasNext();)
          {
             msg.append(it.next().toString()).append('\n');
          }
@@ -232,17 +247,18 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
    /**
     * Starts the tree traversal and returns the lucene
     * {@link org.apache.lucene.search.Query}.
-    * 
+    *
     * @return the lucene <code>Query</code>.
+    * @throws RepositoryException
     */
-   private Query createLuceneQuery()
+   private Query createLuceneQuery() throws RepositoryException
    {
       return (Query)root.accept(this, null);
    }
 
-   // ---------------------< QueryNodeVisitor interface >-----------------------
+   //---------------------< QueryNodeVisitor interface >-----------------------
 
-   public Object visit(QueryRootNode node, Object data)
+   public Object visit(QueryRootNode node, Object data) throws RepositoryException
    {
       BooleanQuery root = new BooleanQuery();
 
@@ -255,7 +271,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
       return wrapped;
    }
 
-   public Object visit(OrQueryNode node, Object data)
+   public Object visit(OrQueryNode node, Object data) throws RepositoryException
    {
       BooleanQuery orQuery = new BooleanQuery();
       Object[] result = node.acceptOperands(this, null);
@@ -267,7 +283,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
       return orQuery;
    }
 
-   public Object visit(AndQueryNode node, Object data)
+   public Object visit(AndQueryNode node, Object data) throws RepositoryException
    {
       Object[] result = node.acceptOperands(this, null);
       if (result.length == 0)
@@ -283,7 +299,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
       return andQuery;
    }
 
-   public Object visit(NotQueryNode node, Object data)
+   public Object visit(NotQueryNode node, Object data) throws RepositoryException
    {
       Object[] result = node.acceptOperands(this, null);
       if (result.length == 0)
@@ -312,22 +328,19 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
       catch (RepositoryException e)
       {
          // will never happen, prefixes are created when unknown
-         log.warn(e.getLocalizedMessage());
       }
-      return new TermQuery(new Term(FieldNames.PROPERTIES, FieldNames.createNamedValue(field, value)));
+      return new JackrabbitTermQuery(new Term(FieldNames.PROPERTIES, FieldNames.createNamedValue(field, value)));
    }
 
    public Object visit(NodeTypeQueryNode node, Object data)
    {
 
-      List<Term> terms = new ArrayList<Term>();
+      List terms = new ArrayList();
       try
       {
          String mixinTypesField = resolver.createJCRName(Constants.JCR_MIXINTYPES).getAsString();
          String primaryTypeField = resolver.createJCRName(Constants.JCR_PRIMARYTYPE).getAsString();
 
-         // ExtendedNodeTypeManager ntMgr =
-         // session.getWorkspace().getNodeTypeManager();
          NodeTypeData base = nodeTypeDataManager.findNodeType(node.getValue());
 
          if (base.isMixin())
@@ -351,11 +364,10 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
          Collection<NodeTypeData> allTypes = nodeTypeDataManager.getAllNodeTypes();
          for (NodeTypeData nodeTypeData : allTypes)
          {
-            // ExtendedNodeType nt = (ExtendedNodeType) allTypes.nextNodeType();
             InternalQName[] superTypes = nodeTypeData.getDeclaredSupertypeNames();
             if (Arrays.asList(superTypes).contains(base.getName()))
             {
-               String ntName = nsMappings.translatePropertyName(nodeTypeData.getName());
+               String ntName = nsMappings.translateName(nodeTypeData.getName());
                Term t;
                if (nodeTypeData.isMixin())
                {
@@ -386,14 +398,14 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
       }
       else if (terms.size() == 1)
       {
-         return new TermQuery((Term)terms.get(0));
+         return new JackrabbitTermQuery((Term)terms.get(0));
       }
       else
       {
          BooleanQuery b = new BooleanQuery();
          for (Iterator it = terms.iterator(); it.hasNext();)
          {
-            b.add(new TermQuery((Term)it.next()), Occur.SHOULD);
+            b.add(new JackrabbitTermQuery((Term)it.next()), Occur.SHOULD);
          }
          return b;
       }
@@ -413,65 +425,25 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
          else
          {
             // final path element is a property name
-            InternalQName propName = relPath.getName();
-            StringBuffer tmp = new StringBuffer();
 
-            fieldname = FieldNames.createFullTextFieldName(resolver.createJCRName(propName).getAsString());
+            fieldname = resolver.createJCRName(relPath.getName()).getAsString(); 
+            int idx = fieldname.indexOf(':');
+            fieldname = fieldname.substring(0, idx + 1)
+                    + FieldNames.FULLTEXT_PREFIX + fieldname.substring(idx + 1);
+            
          }
-
-         QueryParser parser = new QueryParser(fieldname, analyzer, synonymProvider);
-         parser.setOperator(QueryParser.DEFAULT_OPERATOR_AND);
-         // replace escaped ' with just '
-         StringBuffer query = new StringBuffer();
-         String textsearch = node.getQuery();
-         // the default lucene query parser recognizes 'AND' and 'NOT' as
-         // keywords.
-         textsearch = textsearch.replaceAll("AND", "and");
-         textsearch = textsearch.replaceAll("NOT", "not");
-         boolean escaped = false;
-         for (int i = 0; i < textsearch.length(); i++)
-         {
-            if (textsearch.charAt(i) == '\\')
-            {
-               if (escaped)
-               {
-                  query.append("\\\\");
-                  escaped = false;
-               }
-               else
-               {
-                  escaped = true;
-               }
-            }
-            else if (textsearch.charAt(i) == '\'')
-            {
-               if (escaped)
-               {
-                  escaped = false;
-               }
-               query.append(textsearch.charAt(i));
-            }
-            else
-            {
-               if (escaped)
-               {
-                  query.append('\\');
-                  escaped = false;
-               }
-               query.append(textsearch.charAt(i));
-            }
-         }
-         Query context = parser.parse(query.toString());
+         QueryParser parser = new JackrabbitQueryParser(fieldname, analyzer, synonymProvider);
+         Query context = parser.parse(node.getQuery());
          if (relPath != null && (!node.getReferencesProperty() || relPath.getEntries().length > 1))
          {
             // text search on some child axis
             QPathEntry[] elements = relPath.getEntries();
             for (int i = elements.length - 1; i >= 0; i--)
             {
-               String name = null;
+               QPathEntry name = null;
                if (!elements[i].equals(RelationQueryNode.STAR_NAME_TEST))
                {
-                  name = resolver.createJCRName(elements[i]).getAsString();
+                  name = elements[i];
                }
                // join text search with name test
                // if path references property that's elements.length - 2
@@ -479,7 +451,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
                if (name != null
                   && ((node.getReferencesProperty() && i == elements.length - 2) || (!node.getReferencesProperty() && i == elements.length - 1)))
                {
-                  Query q = new TermQuery(new Term(FieldNames.LABEL, name));
+                  Query q = new NameQuery(name, indexFormatVersion, nsMappings);
                   BooleanQuery and = new BooleanQuery();
                   and.add(q, Occur.MUST);
                   and.add(context, Occur.MUST);
@@ -489,11 +461,11 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
                   || (!node.getReferencesProperty() && i < elements.length - 1))
                {
                   // otherwise do a parent axis step
-                  context = new ParentAxisQuery(context, name);
+                  context = new ParentAxisQuery(context, name, indexFormatVersion, nsMappings);
                }
             }
             // finally select parent
-            context = new ParentAxisQuery(context, null);
+            context = new ParentAxisQuery(context, null, indexFormatVersion, nsMappings);
          }
          return context;
       }
@@ -504,16 +476,16 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
       catch (ParseException e)
       {
          exceptions.add(e);
-
       }
       catch (RepositoryException e)
       {
-         exceptions.add(e);
+         // TODO Auto-generated catch block
+         e.printStackTrace();
       }
       return null;
    }
 
-   public Object visit(PathQueryNode node, Object data)
+   public Object visit(PathQueryNode node, Object data) throws RepositoryException
    {
       Query context = null;
       LocationStepQueryNode[] steps = node.getPathSteps();
@@ -526,31 +498,20 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
             if (nameTest == null)
             {
                // this is equivalent to the root node
-               context = new TermQuery(new Term(FieldNames.PARENT, ""));
+               context = new JackrabbitTermQuery(new Term(FieldNames.UUID, Constants.ROOT_UUID));
             }
             else if (nameTest.getName().length() == 0)
             {
                // root node
-               // context = new TermQuery(new Term(FieldNames.PARENT, ""));
-               context = new TermQuery(new Term(FieldNames.UUID, Constants.ROOT_UUID));
+               context = new JackrabbitTermQuery(new Term(FieldNames.UUID, Constants.ROOT_UUID));
             }
             else
             {
                // then this is a node != the root node
                // will never match anything!
-               String name = "";
-               try
-               {
-                  name = resolver.createJCRName(nameTest).getAsString();
-               }
-               catch (RepositoryException e)
-               {
-                  exceptions.add(e);
-               }
                BooleanQuery and = new BooleanQuery();
-               and.add(new TermQuery(new Term(FieldNames.PARENT, "")), Occur.MUST);
-
-               and.add(new TermQuery(new Term(FieldNames.LABEL, name)), Occur.MUST);
+               and.add(new JackrabbitTermQuery(new Term(FieldNames.UUID, Constants.ROOT_UUID)), Occur.MUST);
+               and.add(new NameQuery(nameTest, indexFormatVersion, nsMappings), Occur.MUST);
                context = and;
             }
             LocationStepQueryNode[] tmp = new LocationStepQueryNode[steps.length - 1];
@@ -561,7 +522,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
          {
             // path is 1) relative or 2) descendant-or-self
             // use root node as context
-            context = new TermQuery(new Term(FieldNames.PARENT, ""));
+            context = new JackrabbitTermQuery(new Term(FieldNames.UUID, Constants.ROOT_UUID));
          }
       }
       else
@@ -585,7 +546,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
       return context;
    }
 
-   public Object visit(LocationStepQueryNode node, Object data)
+   public Object visit(LocationStepQueryNode node, Object data) throws RepositoryException
    {
       Query context = (Query)data;
       BooleanQuery andQuery = new BooleanQuery();
@@ -616,26 +577,17 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
          }
       }
 
-      TermQuery nameTest = null;
+      NameQuery nameTest = null;
       if (node.getNameTest() != null)
       {
-         try
-         {
-            String internalName = resolver.createJCRName(node.getNameTest()).getAsString();
-            nameTest = new TermQuery(new Term(FieldNames.LABEL, internalName));
-         }
-         catch (RepositoryException e)
-         {
-            // should never happen
-            exceptions.add(e);
-         }
+         nameTest = new NameQuery(node.getNameTest(), indexFormatVersion, nsMappings);
       }
 
       if (node.getIncludeDescendants())
       {
          if (nameTest != null)
          {
-            andQuery.add(new DescendantSelfAxisQuery(context, nameTest), Occur.MUST);
+            andQuery.add(new DescendantSelfAxisQuery(context, nameTest, false), Occur.MUST);
          }
          else
          {
@@ -658,25 +610,25 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
             else
             {
                // todo this will traverse the whole index, optimize!
-               Query subQuery = null;
-               try
-               {
-                  subQuery = createMatchAllQuery(resolver.createJCRName(Constants.JCR_PRIMARYTYPE).getAsString());
-               }
-               catch (RepositoryException e)
-               {
-                  // will never happen, prefixes are created when unknown
-               }
                // only use descendant axis if path is not //*
                PathQueryNode pathNode = (PathQueryNode)node.getParent();
                if (pathNode.getPathSteps()[0] != node)
                {
-                  context = new DescendantSelfAxisQuery(context, subQuery);
-                  andQuery.add(new ChildAxisQuery(sharedItemMgr, context, null, node.getIndex()), Occur.MUST);
+                  if (node.getIndex() == LocationStepQueryNode.NONE)
+                  {
+                     context = new DescendantSelfAxisQuery(context, false);
+                     andQuery.add(context, Occur.MUST);
+                  }
+                  else
+                  {
+                     context = new DescendantSelfAxisQuery(context, true);
+                     andQuery.add(new ChildAxisQuery(sharedItemMgr, context, null, node.getIndex(), indexFormatVersion,
+                        nsMappings), Occur.MUST);
+                  }
                }
                else
                {
-                  andQuery.add(subQuery, Occur.MUST);
+                  andQuery.add(new MatchAllDocsQuery(), Occur.MUST);
                }
             }
          }
@@ -686,20 +638,21 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
          // name test
          if (nameTest != null)
          {
-            andQuery.add(new ChildAxisQuery(sharedItemMgr, context, nameTest.getTerm().text(), node.getIndex()),
-               Occur.MUST);
+            andQuery.add(new ChildAxisQuery(sharedItemMgr, context, nameTest.getName(), node.getIndex(),
+               indexFormatVersion, nsMappings), Occur.MUST);
          }
          else
          {
             // select child nodes
-            andQuery.add(new ChildAxisQuery(sharedItemMgr, context, null, node.getIndex()), Occur.MUST);
+            andQuery.add(new ChildAxisQuery(sharedItemMgr, context, null, node.getIndex(), indexFormatVersion,
+               nsMappings), Occur.MUST);
          }
       }
 
       return andQuery;
    }
 
-   public Object visit(DerefQueryNode node, Object data)
+   public Object visit(DerefQueryNode node, Object data) throws RepositoryException
    {
       Query context = (Query)data;
       if (context == null)
@@ -710,19 +663,14 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
       try
       {
          String refProperty = resolver.createJCRName(node.getRefProperty()).getAsString();
-         String nameTest = null;
-         if (node.getNameTest() != null)
-         {
-            nameTest = resolver.createJCRName(node.getNameTest()).getAsString();
-         }
 
          if (node.getIncludeDescendants())
          {
-            Query refPropQuery = createMatchAllQuery(refProperty);
+            Query refPropQuery = Util.createMatchAllQuery(refProperty, indexFormatVersion);
             context = new DescendantSelfAxisQuery(context, refPropQuery, false);
          }
 
-         context = new DerefQuery(context, refProperty, nameTest);
+         context = new DerefQuery(context, refProperty, node.getNameTest(), indexFormatVersion, nsMappings);
 
          // attach predicates
          Object[] predicates = node.acceptOperands(this, data);
@@ -738,7 +686,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
          }
 
       }
-      catch (RepositoryException e)
+      catch (NamespaceException e)
       {
          // should never happen
          exceptions.add(e);
@@ -747,7 +695,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
       return context;
    }
 
-   public Object visit(RelationQueryNode node, Object data)
+   public Object visit(RelationQueryNode node, Object data) throws RepositoryException
    {
       Query query;
       String[] stringValues = new String[1];
@@ -826,7 +774,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
       {
          field = resolver.createJCRName(relPath.getName()).getAsString();
       }
-      catch (RepositoryException e)
+      catch (NamespaceException e)
       {
          // should never happen
          exceptions.add(e);
@@ -857,16 +805,9 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
             {
                InternalQName n =
                   session.getLocationFactory().parseJCRName(ISO9075.decode(node.getStringValue())).getInternalName();
-               String translatedQName = nsMappings.translatePropertyName(n);
-               Term t = new Term(FieldNames.LABEL, translatedQName);
-               query = new TermQuery(t);
+               query = new NameQuery(n, indexFormatVersion, nsMappings);
             }
             catch (RepositoryException e)
-            {
-               exceptions.add(e);
-               return data;
-            }
-            catch (IllegalNameException e)
             {
                exceptions.add(e);
                return data;
@@ -875,7 +816,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
          else
          {
             // will never match -> create dummy query
-            query = new TermQuery(new Term(FieldNames.UUID, "x"));
+            query = new BooleanQuery();
          }
       }
       else
@@ -899,7 +840,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
                   }
                   else
                   {
-                     q = new TermQuery(t);
+                     q = new JackrabbitTermQuery(t);
                   }
                   or.add(q, Occur.SHOULD);
                }
@@ -959,7 +900,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
                // no coercing, see above
                if (stringValues[0].equals("%"))
                {
-                  query = createMatchAllQuery(field);
+                  query = Util.createMatchAllQuery(field, indexFormatVersion);
                }
                else
                {
@@ -984,7 +925,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
             case QueryConstants.OPERATION_NE_VALUE : // !=
                // match nodes with property 'field' that includes svp and mvp
                BooleanQuery notQuery = new BooleanQuery();
-               notQuery.add(createMatchAllQuery(field), Occur.SHOULD);
+               notQuery.add(Util.createMatchAllQuery(field, indexFormatVersion), Occur.SHOULD);
                // exclude all nodes where 'field' has the term in question
                for (int i = 0; i < stringValues.length; i++)
                {
@@ -1000,28 +941,28 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
                   }
                   else
                   {
-                     q = new TermQuery(t);
+                     q = new JackrabbitTermQuery(t);
                   }
                   notQuery.add(q, Occur.MUST_NOT);
                }
                // and exclude all nodes where 'field' is multi valued
-               notQuery.add(new TermQuery(new Term(FieldNames.MVP, field)), Occur.MUST_NOT);
+               notQuery.add(new JackrabbitTermQuery(new Term(FieldNames.MVP, field)), Occur.MUST_NOT);
                query = notQuery;
                break;
             case QueryConstants.OPERATION_NE_GENERAL : // !=
                // that's:
                // all nodes with property 'field'
                // minus the nodes that have a single property 'field' that is
-               // not equal to term in question
+               //    not equal to term in question
                // minus the nodes that have a multi-valued property 'field' and
-               // all values are equal to term in question
+               //    all values are equal to term in question
                notQuery = new BooleanQuery();
-               notQuery.add(createMatchAllQuery(field), Occur.SHOULD);
+               notQuery.add(Util.createMatchAllQuery(field, indexFormatVersion), Occur.SHOULD);
                for (int i = 0; i < stringValues.length; i++)
                {
                   // exclude the nodes that have the term and are single valued
                   Term t = new Term(FieldNames.PROPERTIES, FieldNames.createNamedValue(field, stringValues[i]));
-                  Query svp = new NotQuery(new TermQuery(new Term(FieldNames.MVP, field)));
+                  Query svp = new NotQuery(new JackrabbitTermQuery(new Term(FieldNames.MVP, field)));
                   BooleanQuery and = new BooleanQuery();
                   Query q;
                   if (transform[0] == TransformConstants.TRANSFORM_UPPER_CASE)
@@ -1034,18 +975,18 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
                   }
                   else
                   {
-                     q = new TermQuery(t);
+                     q = new JackrabbitTermQuery(t);
                   }
                   and.add(q, Occur.MUST);
                   and.add(svp, Occur.MUST);
                   notQuery.add(and, Occur.MUST_NOT);
                }
-               // above also excludes multi-valued properties that contain
-               // multiple instances of only stringValues. e.g. text={foo, foo}
+               // todo above also excludes multi-valued properties that contain
+               //      multiple instances of only stringValues. e.g. text={foo, foo}
                query = notQuery;
                break;
             case QueryConstants.OPERATION_NULL :
-               query = new NotQuery(createMatchAllQuery(field));
+               query = new NotQuery(Util.createMatchAllQuery(field, indexFormatVersion));
                break;
             case QueryConstants.OPERATION_SIMILAR :
                String uuid = "x";
@@ -1087,10 +1028,10 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
                query = new SimilarityQuery(uuid, analyzer);
                break;
             case QueryConstants.OPERATION_NOT_NULL :
-               query = createMatchAllQuery(field);
+               query = Util.createMatchAllQuery(field, indexFormatVersion);
                break;
             case QueryConstants.OPERATION_SPELLCHECK :
-               query = createMatchAllQuery(field);
+               query = Util.createMatchAllQuery(field, indexFormatVersion);
                break;
             default :
                throw new IllegalArgumentException("Unknown relation operation: " + node.getOperation());
@@ -1099,48 +1040,40 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
 
       if (relPath.getEntries().length > 1)
       {
-         try
+         // child axis in relation
+         QPathEntry[] elements = relPath.getEntries();
+         // elements.length - 1 = property name
+         // elements.length - 2 = last child axis name test
+         for (int i = elements.length - 2; i >= 0; i--)
          {
-            // child axis in relation
-            QPathEntry[] elements = relPath.getEntries();
-            // elements.length - 1 = property name
-            // elements.length - 2 = last child axis name test
-            for (int i = elements.length - 2; i >= 0; i--)
+            QPathEntry name = null;
+            if (!elements[i].equals(RelationQueryNode.STAR_NAME_TEST))
             {
-               String name = null;
-               if (!elements[i].equals(RelationQueryNode.STAR_NAME_TEST))
+               name = elements[i];
+            }
+            if (i == elements.length - 2)
+            {
+               // join name test with property query if there is one
+               if (name != null)
                {
-                  name = resolver.createJCRName(elements[i]).getAsString();
-               }
-               if (i == elements.length - 2)
-               {
-                  // join name test with property query if there is one
-                  if (name != null)
-                  {
-                     Query nameTest = new TermQuery(new Term(FieldNames.LABEL, name));
-                     BooleanQuery and = new BooleanQuery();
-                     and.add(query, Occur.MUST);
-                     and.add(nameTest, Occur.MUST);
-                     query = and;
-                  }
-                  else
-                  {
-                     // otherwise the query can be used as is
-                  }
+                  Query nameTest = new NameQuery(name, indexFormatVersion, nsMappings);
+                  BooleanQuery and = new BooleanQuery();
+                  and.add(query, Occur.MUST);
+                  and.add(nameTest, Occur.MUST);
+                  query = and;
                }
                else
                {
-                  query = new ParentAxisQuery(query, name);
+                  // otherwise the query can be used as is
                }
             }
-         }
-         catch (RepositoryException e)
-         {
-            // should never happen
-            exceptions.add(e);
+            else
+            {
+               query = new ParentAxisQuery(query, name, indexFormatVersion, nsMappings);
+            }
          }
          // finally select the parent of the selected nodes
-         query = new ParentAxisQuery(query, null);
+         query = new ParentAxisQuery(query, null, indexFormatVersion, nsMappings);
       }
 
       return query;
@@ -1156,21 +1089,21 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
       return data;
    }
 
-   // ---------------------------< internal >-----------------------------------
+   //---------------------------< internal >-----------------------------------
 
    /**
     * Wraps a constraint query around <code>q</code> that limits the nodes to
-    * those where <code>propName</code> is the name of a single value property on
-    * the node instance.
-    * 
-    * @param q the query to wrap.
+    * those where <code>propName</code> is the name of a single value property
+    * on the node instance.
+    *
+    * @param q        the query to wrap.
     * @param propName the name of a property that only has one value.
     * @return the wrapped query <code>q</code>.
     */
    private Query createSingleValueConstraint(Query q, String propName)
    {
       // get nodes with multi-values in propName
-      Query mvp = new TermQuery(new Term(FieldNames.MVP, propName));
+      Query mvp = new JackrabbitTermQuery(new Term(FieldNames.MVP, propName));
       // now negate, that gives the nodes that have propName as single
       // values but also all others
       Query svp = new NotQuery(mvp);
@@ -1184,15 +1117,15 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
    }
 
    /**
-    * Returns an array of String values to be used as a term to lookup the search
-    * index for a String <code>literal</code> of a certain property name. This
-    * method will lookup the <code>propertyName</code> in the node type registry
-    * trying to find out the {@link javax.jcr.PropertyType}s. If no property type
-    * is found looking up node type information, this method will guess the
-    * property type.
-    * 
+    * Returns an array of String values to be used as a term to lookup the search index
+    * for a String <code>literal</code> of a certain property name. This method
+    * will lookup the <code>propertyName</code> in the node type registry
+    * trying to find out the {@link javax.jcr.PropertyType}s.
+    * If no property type is found looking up node type information, this
+    * method will guess the property type.
+    *
     * @param propertyName the name of the property in the relation.
-    * @param literal the String literal in the relation.
+    * @param literal      the String literal in the relation.
     * @return the String values to use as term for the query.
     */
    private String[] getStringValues(InternalQName propertyName, String literal)
@@ -1208,7 +1141,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
                try
                {
                   InternalQName n = session.getLocationFactory().parseJCRName(literal).getInternalName();
-                  values.add(nsMappings.translatePropertyName(n));
+                  values.add(nsMappings.translateName(n));
                   log.debug("Coerced " + literal + " into NAME.");
                }
                catch (RepositoryException e)
@@ -1304,7 +1237,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
             try
             {
                InternalQName n = session.getLocationFactory().parseJCRName(literal).getInternalName();
-               values.add(nsMappings.translatePropertyName(n));
+               values.add(nsMappings.translateName(n));
                log.debug("Coerced " + literal + " into NAME.");
             }
             catch (Exception e)
@@ -1353,25 +1286,5 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
          log.debug("Using literal " + literal + " as is.");
       }
       return (String[])values.toArray(new String[values.size()]);
-   }
-
-   /**
-    * Depending on the index format this method returns a query that matches all
-    * nodes that have a property named 'field'
-    * 
-    * @param field
-    * @return Query that matches all nodes that have a property named 'field'
-    */
-   private final Query createMatchAllQuery(String field)
-   {
-      if (indexFormatVersion.getVersion() >= IndexFormatVersion.V2.getVersion())
-      {
-         // new index format style
-         return new TermQuery(new Term(FieldNames.PROPERTIES_SET, field));
-      }
-      else
-      {
-         return new MatchAllQuery(field);
-      }
    }
 }

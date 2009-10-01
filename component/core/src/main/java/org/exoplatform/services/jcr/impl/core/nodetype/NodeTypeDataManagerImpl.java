@@ -54,6 +54,7 @@ import org.exoplatform.services.jcr.impl.core.nodetype.registration.PropertyDefi
 import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
 import org.exoplatform.services.jcr.impl.core.query.lucene.FieldNames;
 import org.exoplatform.services.jcr.impl.core.query.lucene.QueryHits;
+import org.exoplatform.services.jcr.impl.core.query.lucene.ScoreNode;
 import org.exoplatform.services.jcr.impl.core.value.BaseValue;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
@@ -441,10 +442,13 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager
          while (it.hasNext())
          {
             QueryHandler queryHandler = it.next();
-            QueryHits hits = queryHandler.executeQuery(query, true, new InternalQName[0], new boolean[0]);
-            for (int i = 0; i < hits.length(); i++)
+            QueryHits hits = queryHandler.executeQuery(query);
+
+            ScoreNode sn;
+
+            while ((sn = hits.nextScoreNode()) != null)
             {
-               result.add(hits.getFieldContent(i, FieldNames.UUID));
+               result.add(sn.getNodeId());
             }
          }
       }

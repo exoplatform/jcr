@@ -21,77 +21,60 @@ import java.io.IOException;
 /**
  * Creates the intersection of two hit sets.
  */
-public class HitsIntersection implements Hits
-{
+public class HitsIntersection implements Hits {
 
-   private final Hits hits1;
+    private final Hits hits1;
+    private final Hits hits2;
 
-   private final Hits hits2;
+    private int nextChildrenHit = -1;
+    private int nextNameTestHit = -1;
 
-   private int nextChildrenHit = -1;
+    public HitsIntersection(Hits hits1, Hits hits2) {
+        this.hits1 = hits1;
+        this.hits2 = hits2;
+    }
 
-   private int nextNameTestHit = -1;
+    /**
+     * {@inheritDoc}
+     */
+    public void set(int doc) {
+        throw new UnsupportedOperationException();
+    }
 
-   public HitsIntersection(Hits hits1, Hits hits2)
-   {
-      this.hits1 = hits1;
-      this.hits2 = hits2;
-   }
+    /**
+     * {@inheritDoc}
+     */
+    public int next() throws IOException {
+        do {
+            if (nextChildrenHit == nextNameTestHit) {
+                nextNameTestHit = hits2.next();
+                nextChildrenHit = hits1.next();
+            } else if (nextNameTestHit < nextChildrenHit) {
+                nextNameTestHit = hits2.skipTo(nextChildrenHit);
+            } else {
+                nextChildrenHit = hits1.skipTo(nextNameTestHit);
+            }
+        } while (nextChildrenHit > -1 && nextNameTestHit > -1
+                && nextNameTestHit != nextChildrenHit);
 
-   /**
-    * {@inheritDoc}
-    */
-   public void set(int doc)
-   {
-      throw new UnsupportedOperationException();
-   }
+        int nextDoc = -1;
+        if (nextChildrenHit == nextNameTestHit) {
+            nextDoc = nextChildrenHit;
+        }
+        return nextDoc;
+    }
 
-   /**
-    * {@inheritDoc}
-    */
-   public int next() throws IOException
-   {
-      do
-      {
-         if (nextChildrenHit == nextNameTestHit)
-         {
-            nextNameTestHit = hits2.next();
-            nextChildrenHit = hits1.next();
-         }
-         else if (nextNameTestHit < nextChildrenHit)
-         {
-            nextNameTestHit = hits2.skipTo(nextChildrenHit);
-         }
-         else
-         {
-            nextChildrenHit = hits1.skipTo(nextNameTestHit);
-         }
-      }
-      while (nextChildrenHit > -1 && nextNameTestHit > -1 && nextNameTestHit != nextChildrenHit);
-
-      int nextDoc = -1;
-      if (nextChildrenHit == nextNameTestHit)
-      {
-         nextDoc = nextChildrenHit;
-      }
-      return nextDoc;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public int skipTo(int target) throws IOException
-   {
-      nextChildrenHit = hits1.skipTo(target);
-      nextNameTestHit = hits2.skipTo(target);
-      if (nextChildrenHit == nextNameTestHit)
-      {
-         return nextChildrenHit;
-      }
-      else
-      {
-         return next();
-      }
-   }
+    /**
+     * {@inheritDoc}
+     */
+    public int skipTo(int target) throws IOException {
+        nextChildrenHit = hits1.skipTo(target);
+        nextNameTestHit = hits2.skipTo(target);
+        if (nextChildrenHit == nextNameTestHit) {
+            return nextChildrenHit;
+        } else {
+            return next();
+        }
+    }
 
 }

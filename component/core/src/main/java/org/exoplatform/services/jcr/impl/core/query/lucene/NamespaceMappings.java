@@ -19,22 +19,32 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 import org.exoplatform.services.jcr.core.NamespaceAccessor;
 import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.datamodel.QPath;
+
 
 /**
- * The class <code>NamespaceMappings</code> holds a namespace mapping that is used internally in the
- * search index. Storing paths with the full uri of a namespace would require too much space in the
- * search index.
+ * The class <code>NamespaceMappings</code> holds a namespace mapping that is
+ * used internally in the search index. Storing paths with the full uri of a
+ * namespace would require too much space in the search index.
  */
-public interface NamespaceMappings extends NamespaceAccessor
-{
+public interface NamespaceMappings extends NamespaceAccessor {
 
-   /**
-    * Translates a property name from a session local namespace mapping into a search index private
-    * namespace mapping.
-    * 
-    * @param qName
-    *          the property name to translate
-    * @return the translated JCR property name
-    */
-   public String translatePropertyName(InternalQName qName) throws IllegalNameException;
+    /**
+     * Translates a name from a session local namespace mapping into a search
+     * index private namespace mapping.
+     *
+     * @param name the name to translate
+     * @return the translated JCR name
+     * @throws IllegalNameException if the name cannot be translated.
+     */
+    String translateName(InternalQName name) throws IllegalNameException;
+
+    /**
+     * Translates a path into a search index private namespace mapping.
+     *
+     * @param path the path to translate
+     * @return the translated path.
+     * @throws IllegalNameException if the name cannot be translated.
+     */
+    String translatePath(QPath path) throws IllegalNameException;
 }
