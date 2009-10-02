@@ -25,43 +25,41 @@ import org.exoplatform.services.jcr.api.core.query.lucene.hits.ArrayHitsTest;
 /**
  * Test suite that includes all testcases for the Search module.
  */
-public class TestAll extends TestCase
-{
+public class TestAll extends TestCase {
 
-   /**
-    * Returns a <code>Test</code> suite that executes all tests inside this
-    * package.
-    *
-    * @return a <code>Test</code> suite that executes all tests inside this
-    *         package.
-    */
-   public static Test suite()
-   {
-      TestSuite suite = new TestSuite("Search tests");
+    /**
+     * Returns a <code>Test</code> suite that executes all tests inside this
+     * package.
+     * 
+     * @return a <code>Test</code> suite that executes all tests inside this
+     *         package.
+     */
+    public static Test suite() {
+	TestSuite suite = new TestSuite("Search tests");
 
-      suite.addTestSuite(SimpleQueryTest.class);
-      suite.addTestSuite(FulltextQueryTest.class);
-      suite.addTestSuite(SelectClauseTest.class);
-      suite.addTestSuite(SQLTest.class);
-      suite.addTestSuite(OrderByTest.class);
-      suite.addTestSuite(XPathAxisTest.class);
-      suite.addTestSuite(SkipDeletedNodesTest.class);
-      suite.addTestSuite(SkipDeniedNodesTest.class);
-      suite.addTestSuite(MixinTest.class);
-      suite.addTestSuite(DerefTest.class);
-      suite.addTestSuite(VersionStoreQueryTest.class);
-      suite.addTestSuite(UpperLowerCaseQueryTest.class);
-      suite.addTestSuite(ChildAxisQueryTest.class);
-      suite.addTestSuite(QueryResultTest.class);
-      suite.addTestSuite(FnNameQueryTest.class);
-      suite.addTestSuite(PathQueryNodeTest.class);
-      suite.addTestSuite(SynonymProviderTest.class);
-      suite.addTestSuite(ArrayHitsTest.class);
-      //suite.addTestSuite(ExcerptTest.class);
-      suite.addTestSuite(IndexFormatVersionTest.class);
-      //suite.addTestSuite(IndexingRuleTest.class);
-      suite.addTestSuite(ShareableNodeTest.class);
+	suite.addTestSuite(SimpleQueryTest.class);
+	suite.addTestSuite(FulltextQueryTest.class);
+	suite.addTestSuite(SelectClauseTest.class);
+	suite.addTestSuite(SQLTest.class);
+	suite.addTestSuite(OrderByTest.class);
+	suite.addTestSuite(XPathAxisTest.class);
+	suite.addTestSuite(SkipDeletedNodesTest.class);
+	suite.addTestSuite(SkipDeniedNodesTest.class);
+	suite.addTestSuite(MixinTest.class);
+	suite.addTestSuite(DerefTest.class);
+	suite.addTestSuite(VersionStoreQueryTest.class);
+	suite.addTestSuite(UpperLowerCaseQueryTest.class);
+	suite.addTestSuite(ChildAxisQueryTest.class);
+	suite.addTestSuite(QueryResultTest.class);
+	suite.addTestSuite(FnNameQueryTest.class);
+	suite.addTestSuite(PathQueryNodeTest.class);
+	// suite.addTestSuite(SynonymProviderTest.class);
+	suite.addTestSuite(ArrayHitsTest.class);
+	// suite.addTestSuite(ExcerptTest.class);
+	suite.addTestSuite(IndexFormatVersionTest.class);
+	// suite.addTestSuite(IndexingRuleTest.class);
+	suite.addTestSuite(ShareableNodeTest.class);
 
-      return suite;
-   }
+	return suite;
+    }
 }

@@ -22,13 +22,14 @@ import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
+import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,98 +42,89 @@ import javax.jcr.RepositoryException;
  * @version $Id: SystemSearchManager.java 13891 2008-05-05 16:02:30Z pnedonosko
  *          $
  */
-public class SystemSearchManager extends SearchManager
-{
+public class SystemSearchManager extends SearchManager {
 
-   /**
-    * Class logger.
-    */
-   private final Log log = ExoLogger.getLogger("jcr.SystemSearchManager");
+    /**
+     * Class logger.
+     */
+    private final Log log = ExoLogger.getLogger("jcr.SystemSearchManager");
 
-   /**
-    * Is started flag.
-    */
-   private boolean isStarted = false;
+    /**
+     * Is started flag.
+     */
+    private boolean isStarted = false;
 
-   /**
-    * ChangesLog Buffer (used for saves before start).
-    */
-   private List<ItemStateChangesLog> changesLogBuffer = new ArrayList<ItemStateChangesLog>();
+    /**
+     * ChangesLog Buffer (used for saves before start).
+     */
+    private List<ItemStateChangesLog> changesLogBuffer = new ArrayList<ItemStateChangesLog>();
 
-   public static final String INDEX_DIR_SUFFIX = "system";
+    public static final String INDEX_DIR_SUFFIX = "system";
 
-   public SystemSearchManager(QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
-      WorkspacePersistentDataManager itemMgr, DocumentReaderService service, ConfigurationManager cfm)
-      throws RepositoryException, RepositoryConfigurationException
-   {
-      super(config, nsReg, ntReg, itemMgr, null, service, cfm);
-   }
+    public SystemSearchManager(QueryHandlerEntry config,
+	    NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
+	    WorkspacePersistentDataManager itemMgr,
+	    DocumentReaderService service, ConfigurationManager cfm)
+	    throws RepositoryException, RepositoryConfigurationException {
+	super(config, nsReg, ntReg, itemMgr, null, service, cfm);
+    }
 
-   @Override
-   public void onSaveItems(ItemStateChangesLog changesLog)
-   {
-      if (!isStarted)
-      {
-         changesLogBuffer.add(changesLog);
-      }
-      else
-      {
-         super.onSaveItems(changesLog);
-      }
-   }
+    @Override
+    public void onSaveItems(ItemStateChangesLog changesLog) {
+	if (!isStarted) {
+	    changesLogBuffer.add(changesLog);
+	} else {
+	    super.onSaveItems(changesLog);
+	}
+    }
 
-   @Override
-   public void start()
-   {
-      indexingRoot = Constants.JCR_SYSTEM_PATH;
-      excludedPaths.remove(Constants.JCR_SYSTEM_PATH);
-      isStarted = true;
-      try
-      {
-         //handler.init(null);
-         initializeQueryHandler();
+    @Override
+    public void start() {
 
-      }
-//      catch (IOException e)
-//      {
-//         log.error(e.getLocalizedMessage());
-//         handler = null;
-//         changesLogBuffer.clear();
-//         changesLogBuffer = null;
-//         throw new RuntimeException(e);
-//      }
-      catch (RepositoryException e)
-      {
-         log.error(e.getLocalizedMessage());
-         handler = null;
-         changesLogBuffer.clear();
-         changesLogBuffer = null;
-         throw new RuntimeException(e);
-      }
-      catch (RepositoryConfigurationException e)
-      {
-         log.error(e.getLocalizedMessage());
-         handler = null;
-         changesLogBuffer.clear();
-         changesLogBuffer = null;
-         throw new RuntimeException(e);
-      }
-      for (ItemStateChangesLog bufferedChangesLog : changesLogBuffer)
-      {
-         super.onSaveItems(bufferedChangesLog);
-      }
-      changesLogBuffer.clear();
-      changesLogBuffer = null;
-   }
+	isStarted = true;
+	try {
+	    if (indexingTree == null) {
+		List<QPath> excludedPaths = new ArrayList<QPath>();
 
-   @Override
-   protected QueryHandlerContext createQueryHandlerContext(QueryHandler parentHandler)
-      throws RepositoryConfigurationException
-   {
-      QueryHandlerContext context =
-         new QueryHandlerContext(itemMgr, Constants.SYSTEM_UUID, nodeTypeDataManager, nsReg, parentHandler, config
-            .getIndexDir()
-            + "_" + INDEX_DIR_SUFFIX, extractor);
-      return context;
-   }
+		NodeData indexingRootNodeData = (NodeData) itemMgr
+			.getItemData(Constants.SYSTEM_UUID);
+
+		indexingTree = new IndexingTree(indexingRootNodeData,
+			excludedPaths);
+	    }
+	    initializeQueryHandler();
+
+	}
+
+	catch (RepositoryException e) {
+	    log.error(e.getLocalizedMessage());
+	    handler = null;
+	    changesLogBuffer.clear();
+	    changesLogBuffer = null;
+	    throw new RuntimeException(e);
+	} catch (RepositoryConfigurationException e) {
+	    log.error(e.getLocalizedMessage());
+	    handler = null;
+	    changesLogBuffer.clear();
+	    changesLogBuffer = null;
+	    throw new RuntimeException(e);
+	}
+	for (ItemStateChangesLog bufferedChangesLog : changesLogBuffer) {
+	    super.onSaveItems(bufferedChangesLog);
+	}
+	changesLogBuffer.clear();
+	changesLogBuffer = null;
+    }
+
+    @Override
+    protected QueryHandlerContext createQueryHandlerContext(
+	    QueryHandler parentHandler) throws RepositoryConfigurationException {
+	QueryHandlerContext context = new QueryHandlerContext(itemMgr,
+		indexingTree, nodeTypeDataManager, nsReg, parentHandler, config
+			.getIndexDir()
+			+ "_" + INDEX_DIR_SUFFIX, extractor, changesLogBuffer
+			.size() > 0
+			&& !isStarted);
+	return context;
+    }
 }

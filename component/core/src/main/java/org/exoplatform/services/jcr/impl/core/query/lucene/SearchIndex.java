@@ -38,7 +38,7 @@ import org.apache.lucene.search.SortField;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.document.DocumentReaderService;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
-import org.exoplatform.services.jcr.config.QueryHandlerEntryWrapper;
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
@@ -54,6 +54,7 @@ import org.exoplatform.services.jcr.impl.core.query.ErrorLog;
 import org.exoplatform.services.jcr.impl.core.query.ExecutableQuery;
 import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
 import org.exoplatform.services.jcr.impl.core.query.QueryHandlerContext;
+import org.exoplatform.services.jcr.impl.core.query.SearchIndexConfigurationHelper;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.DirectoryManager;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.FSDirectoryManager;
 import org.slf4j.Logger;
@@ -379,7 +380,7 @@ public class SearchIndex extends AbstractQueryHandler {
      */
     private SynonymProvider synProvider;
 
-    private File indexDirectory;
+    // private File indexDirectory;
 
     /**
      * The configuration path for the synonym provider.
@@ -450,14 +451,14 @@ public class SearchIndex extends AbstractQueryHandler {
      */
     private boolean closed = false;
 
-    private QueryHandlerContext context;
+    // private QueryHandlerContext context;
 
     /**
      * Text extractor for extracting text content of binary properties.
      */
     private DocumentReaderService extractor;
 
-    private final QueryHandlerEntryWrapper queryHandlerConfig;
+    // private final QueryHandlerEntryWrapper queryHandlerConfig;
 
     /**
      * The ErrorLog of this <code>MultiIndex</code>. All changes that must be in
@@ -469,13 +470,20 @@ public class SearchIndex extends AbstractQueryHandler {
 
     /**
      * Working constructor.
+     * 
+     * @throws RepositoryConfigurationException
+     * @throws IOException
      */
     public SearchIndex(QueryHandlerEntry queryHandlerConfig,
-	    ConfigurationManager cfm) {
+	    ConfigurationManager cfm) throws IOException,
+	    RepositoryConfigurationException {
 	this.analyzer = new JcrStandartAnalyzer();
-	this.queryHandlerConfig = new QueryHandlerEntryWrapper(
-		queryHandlerConfig);
+	// this.queryHandlerConfig = new QueryHandlerEntryWrapper(
+	// queryHandlerConfig);
 	this.cfm = cfm;
+	SearchIndexConfigurationHelper searchIndexConfigurationHelper = new SearchIndexConfigurationHelper(
+		this);
+	searchIndexConfigurationHelper.init(queryHandlerConfig);
     }
 
     /**
@@ -483,20 +491,8 @@ public class SearchIndex extends AbstractQueryHandler {
      */
     public SearchIndex() {
 	this.analyzer = new JcrStandartAnalyzer();
-	this.queryHandlerConfig = null;
+	// this.queryHandlerConfig = null;
 	this.cfm = null;
-    }
-
-    /**
-     * Initializes this query handler by setting all properties in this class
-     * with appropriate parameter values.
-     * 
-     * @param context
-     *            the context for this query handler.
-     */
-    public final void setContext(QueryHandlerContext queryHandlerContext)
-	    throws IOException {
-	this.context = queryHandlerContext;
     }
 
     /**
@@ -510,25 +506,25 @@ public class SearchIndex extends AbstractQueryHandler {
      */
     public void doInit() throws IOException, RepositoryException {
 	QueryHandlerContext context = getContext();
-	// if (path == null)
-	// {
-	// throw new
-	// IOException("SearchIndex requires 'path' parameter in configuration!");
-	// }
+	setPath(context.getIndexDirectory());
+	if (path == null) {
+	    throw new IOException(
+		    "SearchIndex requires 'path' parameter in configuration!");
+	}
 
-	String indexDir = context.getIndexDirectory();
-	if (indexDir != null) {
-	    indexDir = indexDir.replace("${java.io.tmpdir}", System
-		    .getProperty("java.io.tmpdir"));
-	    indexDirectory = new File(indexDir);
+	File indexDirectory;
+	if (path != null) {
+
+	    indexDirectory = new File(path);
 	    if (!indexDirectory.exists())
 		if (!indexDirectory.mkdirs())
 		    throw new RepositoryException("fail to create index dir "
-			    + indexDir);
+			    + path);
 	} else {
 	    throw new IOException(
 		    "SearchIndex requires 'path' parameter in configuration!");
 	}
+	log.info("path=" + path);
 
 	// Set excludedIDs = new HashSet();
 	// if (context.getExcludedNodeId() != null)
@@ -537,7 +533,7 @@ public class SearchIndex extends AbstractQueryHandler {
 	// }
 
 	extractor = context.getExtractor();
-	synProvider = queryHandlerConfig.createSynonymProvider(cfm);
+	// synProvider = queryHandlerConfig.createSynonymProvider(cfm);
 	directoryManager = createDirectoryManager();
 
 	if (context.getParentHandler() instanceof SearchIndex) {
@@ -566,22 +562,10 @@ public class SearchIndex extends AbstractQueryHandler {
 	indexingConfig = createIndexingConfiguration(nsMappings);
 	analyzer.setIndexingConfig(indexingConfig);
 
-	index = new MultiIndex(this, new HashSet<String>());
-	if (index.numDocs() == 0) {
-	    // Path rootPath;
-	    // if (excludedIDs.isEmpty())
-	    // {
-	    // // this is the index for jcr:system
-	    // rootPath = JCR_SYSTEM_PATH;
-	    // }
-	    // else
-	    // {
-	    // rootPath = ROOT_PATH;
-	    // }
-	    // index.createInitialIndex(context.getItemStateManager(),
-	    // context.getRootId(), rootPath);
-	    index.createInitialIndex(context.getItemStateManager(), context
-		    .getRootNodeIdentifer());
+	index = new MultiIndex(this, context.getIndexingTree());
+	if (index.numDocs() == 0 && context.isCreateInitialIndex()) {
+
+	    index.createInitialIndex(context.getItemStateManager());
 	}
 	if (consistencyCheckEnabled
 		&& (index.getRedoLogApplied() || forceConsistencyCheck)) {
@@ -1797,9 +1781,13 @@ public class SearchIndex extends AbstractQueryHandler {
      * 
      * @param path
      *            the location of the search index.
+     * @throws IOException
      */
     public void setPath(String path) {
-	indexDirectory = new File(path);
+
+	this.path = path.replace("${java.io.tmpdir}", System
+		.getProperty("java.io.tmpdir"));
+
     }
 
     /**
@@ -1809,7 +1797,7 @@ public class SearchIndex extends AbstractQueryHandler {
      * @return the location of the search index.
      */
     public String getPath() {
-	return indexDirectory.getAbsolutePath();
+	return path;
     }
 
     /**
