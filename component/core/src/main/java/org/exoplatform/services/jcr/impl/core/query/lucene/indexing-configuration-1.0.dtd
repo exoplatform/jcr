@@ -16,7 +16,7 @@
 -->
 <!--
     The configuration element configures the indexing behaviour of the lucene
-    backed query handler in Jackrabbit. It allows you to define indexing
+    backed query handler . It allows you to define indexing
     aggregates and configure which properties of a node are indexed.
     This element must contain all the namespace declarations that are used
     throughout this configuration.

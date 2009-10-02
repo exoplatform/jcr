@@ -64,9 +64,11 @@ public class SystemSearchManager extends SearchManager {
     public SystemSearchManager(QueryHandlerEntry config,
 	    NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
 	    WorkspacePersistentDataManager itemMgr,
-	    DocumentReaderService service, ConfigurationManager cfm)
+	    DocumentReaderService service, ConfigurationManager cfm,
+	    RepositoryIndexSearcherHolder indexSearcherHolder)
 	    throws RepositoryException, RepositoryConfigurationException {
-	super(config, nsReg, ntReg, itemMgr, null, service, cfm);
+	super(config, nsReg, ntReg, itemMgr, null, service, cfm,
+		indexSearcherHolder);
     }
 
     @Override
@@ -124,7 +126,7 @@ public class SystemSearchManager extends SearchManager {
 			.getIndexDir()
 			+ "_" + INDEX_DIR_SUFFIX, extractor, changesLogBuffer
 			.size() > 0
-			&& !isStarted);
+			&& !isStarted, virtualTableResolver);
 	return context;
     }
 }

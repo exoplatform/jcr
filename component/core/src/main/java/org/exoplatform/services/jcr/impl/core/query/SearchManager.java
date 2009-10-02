@@ -16,6 +16,11 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.WildcardQuery;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.document.DocumentReaderService;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
@@ -26,13 +31,26 @@ import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.dataflow.persistent.MandatoryItemsPersistenceListener;
+import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
+import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.core.query.lucene.FieldNames;
+import org.exoplatform.services.jcr.impl.core.query.lucene.LuceneVirtualTableResolver;
+import org.exoplatform.services.jcr.impl.core.query.lucene.QueryHits;
+import org.exoplatform.services.jcr.impl.core.query.lucene.ScoreNode;
+import org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex;
+import org.exoplatform.services.jcr.impl.core.value.NameValue;
+import org.exoplatform.services.jcr.impl.core.value.PathValue;
+import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
+import org.exoplatform.services.jcr.impl.dataflow.AbstractValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -42,6 +60,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -52,7 +71,9 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.jcr.Node;
+import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
+import javax.jcr.Value;
 import javax.jcr.query.InvalidQueryException;
 import javax.jcr.query.Query;
 
@@ -108,6 +129,8 @@ public class SearchManager implements Startable,
 
     private final ConfigurationManager cfm;
 
+    protected LuceneVirtualTableResolver virtualTableResolver;
+
     /**
      * Creates a new <code>SearchManager</code>.
      * 
@@ -134,17 +157,19 @@ public class SearchManager implements Startable,
     public SearchManager(QueryHandlerEntry config, NamespaceRegistryImpl nsReg,
 	    NodeTypeDataManager ntReg, WorkspacePersistentDataManager itemMgr,
 	    SystemSearchManagerHolder parentSearchManager,
-	    DocumentReaderService extractor, ConfigurationManager cfm)
+	    DocumentReaderService extractor, ConfigurationManager cfm,
+	    final RepositoryIndexSearcherHolder indexSearcherHolder)
 	    throws RepositoryException, RepositoryConfigurationException {
 
 	this.extractor = extractor;
-
+	indexSearcherHolder.addIndexSearcher(this);
 	this.config = new QueryHandlerEntryWrapper(config);
 	this.nodeTypeDataManager = ntReg;
 	this.nsReg = nsReg;
 	this.itemMgr = itemMgr;
 	this.cfm = cfm;
-
+	this.virtualTableResolver = new LuceneVirtualTableResolver(
+		nodeTypeDataManager, nsReg);
 	this.parentSearchManager = parentSearchManager != null ? parentSearchManager
 		.get()
 		: null;
@@ -465,7 +490,7 @@ public class SearchManager implements Startable,
 
 	QueryHandlerContext context = new QueryHandlerContext(itemMgr,
 		indexingTree, nodeTypeDataManager, nsReg, parentHandler, config
-			.getIndexDir(), extractor, true);
+			.getIndexDir(), extractor, true, virtualTableResolver);
 	return context;
     }
 
@@ -541,6 +566,180 @@ public class SearchManager implements Startable,
 	    throw new RepositoryException("Unable to create query: "
 		    + t.toString(), t);
 	}
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Set<String> getFieldNames() throws IndexException {
+	final Set<String> fildsSet = new HashSet<String>();
+	if (handler instanceof SearchIndex) {
+	    IndexReader reader = null;
+	    try {
+		reader = ((SearchIndex) handler).getIndexReader();
+		final Collection fields = reader
+			.getFieldNames(IndexReader.FieldOption.ALL);
+		for (final Object field : fields) {
+		    fildsSet.add((String) field);
+		}
+	    } catch (IOException e) {
+		throw new IndexException(e.getLocalizedMessage(), e);
+	    } finally {
+		try {
+		    if (reader != null)
+			reader.close();
+		} catch (IOException e) {
+		    throw new IndexException(e.getLocalizedMessage(), e);
+		}
+	    }
+
+	}
+	return fildsSet;
+    }
+
+    public Set<String> getNodesByNodeType(final InternalQName nodeType)
+	    throws RepositoryException {
+
+	return getNodes(virtualTableResolver.resolve(nodeType, true));
+    }
+
+    /**
+     * Return set of uuid of nodes. Contains in names prefixes maped to the
+     * given uri
+     * 
+     * @param prefix
+     * @return
+     * @throws RepositoryException
+     */
+    public Set<String> getNodesByUri(final String uri)
+	    throws RepositoryException {
+	Set<String> result;
+	final int defaultClauseCount = BooleanQuery.getMaxClauseCount();
+	try {
+
+	    // final LocationFactory locationFactory = new
+	    // LocationFactory(this);
+	    final ValueFactoryImpl valueFactory = new ValueFactoryImpl(
+		    new LocationFactory(nsReg));
+	    BooleanQuery.setMaxClauseCount(Integer.MAX_VALUE);
+	    BooleanQuery query = new BooleanQuery();
+
+	    final String prefix = nsReg.getNamespacePrefixByURI(uri);
+	    query.add(new WildcardQuery(new Term(FieldNames.LABEL, prefix
+		    + ":*")), Occur.SHOULD);
+	    // name of the property
+	    query.add(new WildcardQuery(new Term(FieldNames.PROPERTIES_SET,
+		    prefix + ":*")), Occur.SHOULD);
+
+	    result = getNodes(query);
+
+	    // value of the property
+
+	    try {
+		final Set<String> props = getFieldNames();
+
+		query = new BooleanQuery();
+		for (final String fieldName : props) {
+		    if (!FieldNames.PROPERTIES_SET.equals(fieldName)) {
+			query.add(new WildcardQuery(new Term(fieldName, "*"
+				+ prefix + ":*")), Occur.SHOULD);
+		    }
+		}
+	    } catch (final IndexException e) {
+		throw new RepositoryException(e.getLocalizedMessage(), e);
+	    }
+
+	    final Set<String> propSet = getNodes(query);
+	    // Manually check property values;
+	    for (final String uuid : propSet) {
+		if (isPrefixMatch(valueFactory, uuid, prefix)) {
+		    result.add(uuid);
+		}
+	    }
+	} finally {
+	    BooleanQuery.setMaxClauseCount(defaultClauseCount);
+	}
+
+	return result;
+    }
+
+    private boolean isPrefixMatch(final InternalQName value, final String prefix)
+	    throws RepositoryException {
+	return value.getNamespace().equals(
+		nsReg.getNamespaceURIByPrefix(prefix));
+    }
+
+    private boolean isPrefixMatch(final QPath value, final String prefix)
+	    throws RepositoryException {
+	for (int i = 0; i < value.getEntries().length; i++) {
+	    if (isPrefixMatch(value.getEntries()[i], prefix)) {
+		return true;
+	    }
+	}
+	return false;
+    }
+
+    /**
+     * @param valueFactory
+     * @param dm
+     * @param uuid
+     * @param prefix
+     * @throws RepositoryException
+     */
+    private boolean isPrefixMatch(final ValueFactoryImpl valueFactory,
+	    final String uuid, final String prefix) throws RepositoryException {
+
+	final ItemData node = itemMgr.getItemData(uuid);
+	if (node != null && node.isNode()) {
+	    final List<PropertyData> props = itemMgr
+		    .getChildPropertiesData((NodeData) node);
+	    for (final PropertyData propertyData : props) {
+		if (propertyData.getType() == PropertyType.PATH
+			|| propertyData.getType() == PropertyType.NAME) {
+		    for (final ValueData vdata : propertyData.getValues()) {
+			final Value val = valueFactory.loadValue(
+				((AbstractValueData) vdata)
+					.createTransientCopy(), propertyData
+					.getType());
+			if (propertyData.getType() == PropertyType.PATH) {
+			    if (isPrefixMatch(((PathValue) val).getQPath(),
+				    prefix)) {
+				return true;
+			    }
+			} else if (propertyData.getType() == PropertyType.NAME) {
+			    if (isPrefixMatch(((NameValue) val).getQName(),
+				    prefix)) {
+				return true;
+			    }
+			}
+		    }
+		}
+	    }
+	}
+	return false;
+    }
+
+    /**
+     * @param query
+     * @return
+     * @throws RepositoryException
+     */
+    private Set<String> getNodes(final org.apache.lucene.search.Query query)
+	    throws RepositoryException {
+	Set<String> result = new HashSet<String>();
+	try {
+	    QueryHits hits = handler.executeQuery(query);
+
+	    ScoreNode sn;
+
+	    while ((sn = hits.nextScoreNode()) != null) {
+		// Node node = session.getNodeById(sn.getNodeId());
+		result.add(sn.getNodeId());
+	    }
+	} catch (IOException e) {
+	    throw new RepositoryException(e.getLocalizedMessage(), e);
+	}
+	return result;
     }
 
 }

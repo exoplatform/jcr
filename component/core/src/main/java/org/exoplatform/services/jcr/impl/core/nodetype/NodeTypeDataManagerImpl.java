@@ -51,10 +51,8 @@ import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.nodetype.registration.NodeDefinitionComparator;
 import org.exoplatform.services.jcr.impl.core.nodetype.registration.PropertyDefinitionComparator;
-import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
+import org.exoplatform.services.jcr.impl.core.query.RepositoryIndexSearcherHolder;
 import org.exoplatform.services.jcr.impl.core.query.lucene.FieldNames;
-import org.exoplatform.services.jcr.impl.core.query.lucene.QueryHits;
-import org.exoplatform.services.jcr.impl.core.query.lucene.ScoreNode;
 import org.exoplatform.services.jcr.impl.core.value.BaseValue;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
@@ -78,7 +76,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -129,12 +126,15 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager
     */
    private final Map<NodeTypeManagerListener, NodeTypeManagerListener> listeners;
 
-   protected HashSet<QueryHandler> queryHandlers;
+   // protected HashSet<QueryHandler> queryHandlers;
 
    private final ValueFactoryImpl valueFactory;
 
+   protected final RepositoryIndexSearcherHolder indexSearcherHolder;
+
    public NodeTypeDataManagerImpl(RepositoryEntry config, LocationFactory locationFactory,
-      NamespaceRegistry namespaceRegistry, NodeTypeDataPersister persister) throws RepositoryException
+      NamespaceRegistry namespaceRegistry, NodeTypeDataPersister persister,
+      RepositoryIndexSearcherHolder indexSearcherHolder) throws RepositoryException
    {
 
       this.namespaceRegistry = namespaceRegistry;
@@ -142,6 +142,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager
       this.persister = persister;
 
       this.locationFactory = locationFactory;
+      this.indexSearcherHolder = indexSearcherHolder;
       this.valueFactory = new ValueFactoryImpl(locationFactory);
       this.accessControlPolicy = config.getAccessControl();
 
@@ -151,7 +152,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager
       this.listeners = Collections.synchronizedMap(new WeakHashMap<NodeTypeManagerListener, NodeTypeManagerListener>());
       this.buildInNodeTypesNames = new HashSet<InternalQName>();
       initDefault();
-      this.queryHandlers = new HashSet<QueryHandler>();
+      //this.queryHandlers = new HashSet<QueryHandler>();
    }
 
    /**
@@ -162,7 +163,8 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager
     * @throws RepositoryException
     */
    public NodeTypeDataManagerImpl(String accessControlPolicy, LocationFactory locationFactory,
-      NamespaceRegistry namespaceRegistry, NodeTypeDataPersister persister) throws RepositoryException
+      NamespaceRegistry namespaceRegistry, NodeTypeDataPersister persister,
+      RepositoryIndexSearcherHolder indexSearcherHolder) throws RepositoryException
    {
 
       this.namespaceRegistry = namespaceRegistry;
@@ -170,6 +172,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager
       this.persister = persister;
 
       this.locationFactory = locationFactory;
+      this.indexSearcherHolder = indexSearcherHolder;
       this.valueFactory = new ValueFactoryImpl(locationFactory);
       this.accessControlPolicy = accessControlPolicy;
 
@@ -178,7 +181,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager
       this.defsHolder = new ItemDefinitionDataHolder();
       this.listeners = Collections.synchronizedMap(new WeakHashMap<NodeTypeManagerListener, NodeTypeManagerListener>());
       this.buildInNodeTypesNames = new HashSet<InternalQName>();
-      this.queryHandlers = new HashSet<QueryHandler>();
+      //this.queryHandlers = new HashSet<QueryHandler>();
    }
 
    /**
@@ -195,10 +198,11 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager
       }
    }
 
-   public void addQueryHandler(QueryHandler queryHandler)
-   {
-      queryHandlers.add(queryHandler);
-   }
+   //
+   //   public void addQueryHandler(QueryHandler queryHandler)
+   //   {
+   //      queryHandlers.add(queryHandler);
+   //   }
 
    /**
     * {@inheritDoc}
@@ -393,7 +397,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager
     */
    public Set<String> getNodes(InternalQName nodeType) throws RepositoryException
    {
-      return getNodes(nodeType, new InternalQName[0], new InternalQName[0]);
+      return indexSearcherHolder.getNodesByNodeType(nodeType);
    }
 
    /**
@@ -407,56 +411,47 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager
    public Set<String> getNodes(InternalQName nodeType, InternalQName[] includeProperties,
       InternalQName[] excludeProperties) throws RepositoryException
    {
-      Query query = getQuery(nodeType);
-      if (includeProperties.length > 0)
-      {
-         BooleanQuery tmp = new BooleanQuery();
-         for (int i = 0; i < includeProperties.length; i++)
-         {
+      return new HashSet<String>();
 
-            String field = locationFactory.createJCRName(includeProperties[i]).getAsString();
-            tmp.add(new TermQuery(new Term(FieldNames.PROPERTIES_SET, field)), Occur.MUST);
-         }
-         tmp.add(query, Occur.MUST);
-         query = tmp;
-      }
-
-      if (excludeProperties.length > 0)
-      {
-         BooleanQuery tmp = new BooleanQuery();
-         for (int i = 0; i < excludeProperties.length; i++)
-         {
-
-            String field = locationFactory.createJCRName(excludeProperties[i]).getAsString();
-            tmp.add(new TermQuery(new Term(FieldNames.PROPERTIES_SET, field)), Occur.MUST_NOT);
-         }
-         tmp.add(query, Occur.MUST);
-         query = tmp;
-      }
-
-      Iterator<QueryHandler> it = queryHandlers.iterator();
-      Set<String> result = new HashSet<String>();
-
-      try
-      {
-         while (it.hasNext())
-         {
-            QueryHandler queryHandler = it.next();
-            QueryHits hits = queryHandler.executeQuery(query);
-
-            ScoreNode sn;
-
-            while ((sn = hits.nextScoreNode()) != null)
-            {
-               result.add(sn.getNodeId());
-            }
-         }
-      }
-      catch (IOException e)
-      {
-         throw new RepositoryException(e.getLocalizedMessage(), e);
-      }
-      return result;
+      //      Query query = getQuery(nodeType);
+      //      if (includeProperties.length > 0)
+      //      {
+      //         BooleanQuery tmp = new BooleanQuery();
+      //         for (int i = 0; i < includeProperties.length; i++)
+      //         {
+      //
+      //            String field = locationFactory.createJCRName(includeProperties[i]).getAsString();
+      //            tmp.add(new TermQuery(new Term(FieldNames.PROPERTIES_SET, field)), Occur.MUST);
+      //         }
+      //         tmp.add(query, Occur.MUST);
+      //         query = tmp;
+      //      }
+      //
+      //      if (excludeProperties.length > 0)
+      //      {
+      //         BooleanQuery tmp = new BooleanQuery();
+      //         for (int i = 0; i < excludeProperties.length; i++)
+      //         {
+      //
+      //            String field = locationFactory.createJCRName(excludeProperties[i]).getAsString();
+      //            tmp.add(new TermQuery(new Term(FieldNames.PROPERTIES_SET, field)), Occur.MUST_NOT);
+      //         }
+      //         tmp.add(query, Occur.MUST);
+      //         query = tmp;
+      //      }
+      //
+      //      Iterator<QueryHandler> it = queryHandlers.iterator();
+      //      Set<String> result = new HashSet<String>();
+      //
+      //      try
+      //      {
+      //         indexSearcherHolder.getNodesByNodeType()
+      //      }
+      //      catch (IOException e)
+      //      {
+      //         throw new RepositoryException(e.getLocalizedMessage(), e);
+      //      }
+      //      return result;
    }
 
    /**
@@ -486,11 +481,11 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager
       return propertyDefinitions;
    }
 
-   // TODO make me private
-   public Set<QueryHandler> getQueryHandlers()
-   {
-      return queryHandlers;
-   }
+   //   // TODO make me private
+   //   public Set<QueryHandler> getQueryHandlers()
+   //   {
+   //      return queryHandlers;
+   //   }
 
    /**
     * @param nodeTypeName

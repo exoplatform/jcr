@@ -21,6 +21,7 @@ import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeDataManagerImpl;
+import org.exoplatform.services.jcr.impl.core.query.lucene.LuceneVirtualTableResolver;
 
 /**
  * Acts as an argument for the {@link QueryHandler} to keep the interface
@@ -68,6 +69,8 @@ public class QueryHandlerContext {
 
     private final boolean createInitialIndex;
 
+    private final LuceneVirtualTableResolver virtualTableResolver;
+
     /**
      * Creates a new context instance.
      * 
@@ -86,6 +89,7 @@ public class QueryHandlerContext {
      * @param parentHandler
      *            the parent query handler or <code>null</code> it there is no
      *            parent handler.
+     * @param virtualTableResolver
      * @param excludedNodeId
      *            id of the node that should be excluded from indexing. Any
      *            descendant of that node is also excluded from indexing.
@@ -94,7 +98,8 @@ public class QueryHandlerContext {
 	    IndexingTree indexingTree, NodeTypeDataManager nodeTypeDataManager,
 	    NamespaceRegistryImpl nsRegistry, QueryHandler parentHandler,
 	    String indexDirectory, DocumentReaderService extractor,
-	    boolean createInitialIndex) {
+	    boolean createInitialIndex,
+	    LuceneVirtualTableResolver virtualTableResolver) {
 	this.stateMgr = stateMgr;
 	this.indexingTree = indexingTree;
 	this.nodeTypeDataManager = nodeTypeDataManager;
@@ -102,10 +107,18 @@ public class QueryHandlerContext {
 	this.indexDirectory = indexDirectory;
 	this.extractor = extractor;
 	this.createInitialIndex = createInitialIndex;
+	this.virtualTableResolver = virtualTableResolver;
 	this.propRegistry = new PropertyTypeRegistry(nodeTypeDataManager);
 	this.parentHandler = parentHandler;
 	((NodeTypeDataManagerImpl) this.nodeTypeDataManager)
 		.addListener(propRegistry);
+    }
+
+    /**
+     * @return the virtualTableResolver
+     */
+    public LuceneVirtualTableResolver getVirtualTableResolver() {
+	return virtualTableResolver;
     }
 
     /**

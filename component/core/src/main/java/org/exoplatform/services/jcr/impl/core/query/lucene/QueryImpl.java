@@ -16,15 +16,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import javax.jcr.RepositoryException;
-import javax.jcr.nodetype.PropertyDefinition;
-import javax.jcr.query.InvalidQueryException;
-import javax.jcr.query.QueryResult;
-
 import org.apache.lucene.search.Query;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
 import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionData;
@@ -33,8 +24,6 @@ import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
-import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeImpl;
-import org.exoplatform.services.jcr.impl.core.nodetype.PropertyDefinitionImpl;
 import org.exoplatform.services.jcr.impl.core.query.AndQueryNode;
 import org.exoplatform.services.jcr.impl.core.query.DefaultQueryNodeVisitor;
 import org.exoplatform.services.jcr.impl.core.query.LocationStepQueryNode;
@@ -44,9 +33,16 @@ import org.exoplatform.services.jcr.impl.core.query.PropertyTypeRegistry;
 import org.exoplatform.services.jcr.impl.core.query.QueryNodeFactory;
 import org.exoplatform.services.jcr.impl.core.query.QueryParser;
 import org.exoplatform.services.jcr.impl.core.query.QueryRootNode;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import javax.jcr.RepositoryException;
+import javax.jcr.query.InvalidQueryException;
+import javax.jcr.query.QueryResult;
 
 /**
  * Implements the {@link org.apache.jackrabbit.core.query.ExecutableQuery}
@@ -62,7 +58,8 @@ public class QueryImpl extends AbstractQueryImpl {
     /**
      * The default selector name 's'.
      */
-    public static final InternalQName DEFAULT_SELECTOR_NAME = new InternalQName(Constants.NS_DEFAULT_URI,"s");
+    public static final InternalQName DEFAULT_SELECTOR_NAME = new InternalQName(
+	    Constants.NS_DEFAULT_URI, "s");
 
     /**
      * The root node of the query tree
@@ -71,135 +68,149 @@ public class QueryImpl extends AbstractQueryImpl {
 
     /**
      * Creates a new query instance from a query string.
-     *
-     * @param session   the session of the user executing this query.
-     * @param itemMgr   the item manager of the session executing this query.
-     * @param index     the search index.
-     * @param propReg   the property type registry.
-     * @param statement the query statement.
-     * @param language  the syntax of the query statement.
-     * @param factory   the query node factory.
-     * @throws InvalidQueryException if the query statement is invalid according
-     *                               to the specified <code>language</code>.
+     * 
+     * @param session
+     *            the session of the user executing this query.
+     * @param itemMgr
+     *            the item manager of the session executing this query.
+     * @param index
+     *            the search index.
+     * @param propReg
+     *            the property type registry.
+     * @param statement
+     *            the query statement.
+     * @param language
+     *            the syntax of the query statement.
+     * @param factory
+     *            the query node factory.
+     * @throws InvalidQueryException
+     *             if the query statement is invalid according to the specified
+     *             <code>language</code>.
      */
-    public QueryImpl(SessionImpl session,
-                SessionDataManager itemMgr,
-                     SearchIndex index,
-                     PropertyTypeRegistry propReg,
-                     String statement,
-                     String language,
-                     QueryNodeFactory factory) throws InvalidQueryException {
-        super(session, itemMgr, index, propReg);
-        // parse query according to language
-        // build query tree using the passed factory
-        //this.root = QueryParser.parse(statement, language, session, factory);
-        this.root = QueryParser.parse(statement, language, session.getLocationFactory(), factory);
+    public QueryImpl(SessionImpl session, SessionDataManager itemMgr,
+	    SearchIndex index, PropertyTypeRegistry propReg, String statement,
+	    String language, QueryNodeFactory factory)
+	    throws InvalidQueryException {
+	super(session, itemMgr, index, propReg);
+	// parse query according to language
+	// build query tree using the passed factory
+	// this.root = QueryParser.parse(statement, language, session, factory);
+	this.root = QueryParser.parse(statement, language, session
+		.getLocationFactory(), factory);
     }
 
     /**
      * Executes this query and returns a <code>{@link QueryResult}</code>.
-     *
-     * @param offset the offset in the total result set
-     * @param limit the maximum result size
+     * 
+     * @param offset
+     *            the offset in the total result set
+     * @param limit
+     *            the maximum result size
      * @return a <code>QueryResult</code>
-     * @throws RepositoryException if an error occurs
+     * @throws RepositoryException
+     *             if an error occurs
      */
-    public QueryResult execute(long offset, long limit) throws RepositoryException {
-        if (log.isDebugEnabled()) {
-            log.debug("Executing query: \n" + root.dump());
-        }
+    public QueryResult execute(long offset, long limit)
+	    throws RepositoryException {
+	if (log.isDebugEnabled()) {
+	    log.debug("Executing query: \n" + root.dump());
+	}
 
-        // build lucene query
-        Query query = LuceneQueryBuilder.createQuery(root, session,
-                index.getContext().getItemStateManager(),
-                index.getNamespaceMappings(), index.getTextAnalyzer(),
-                propReg, index.getSynonymProvider(),
-                index.getIndexFormatVersion());
+	// build lucene query
+	Query query = LuceneQueryBuilder.createQuery(root, session, index
+		.getContext().getItemStateManager(), index
+		.getNamespaceMappings(), index.getTextAnalyzer(), propReg,
+		index.getSynonymProvider(), index.getIndexFormatVersion(),
+		index.getContext().getVirtualTableResolver());
 
-        OrderQueryNode orderNode = root.getOrderNode();
+	OrderQueryNode orderNode = root.getOrderNode();
 
-        OrderQueryNode.OrderSpec[] orderSpecs;
-        if (orderNode != null) {
-            orderSpecs = orderNode.getOrderSpecs();
-        } else {
-            orderSpecs = new OrderQueryNode.OrderSpec[0];
-        }
-        QPath[] orderProperties = new QPath[orderSpecs.length];
-        boolean[] ascSpecs = new boolean[orderSpecs.length];
-        for (int i = 0; i < orderSpecs.length; i++) {
-            orderProperties[i] = orderSpecs[i].getPropertyPath();
-            ascSpecs[i] = orderSpecs[i].isAscending();
-        }
+	OrderQueryNode.OrderSpec[] orderSpecs;
+	if (orderNode != null) {
+	    orderSpecs = orderNode.getOrderSpecs();
+	} else {
+	    orderSpecs = new OrderQueryNode.OrderSpec[0];
+	}
+	QPath[] orderProperties = new QPath[orderSpecs.length];
+	boolean[] ascSpecs = new boolean[orderSpecs.length];
+	for (int i = 0; i < orderSpecs.length; i++) {
+	    orderProperties[i] = orderSpecs[i].getPropertyPath();
+	    ascSpecs[i] = orderSpecs[i].isAscending();
+	}
 
-        return new SingleColumnQueryResult(index, itemMgr,
-                session, session.getAccessManager(),
-                this, query, new SpellSuggestion(index.getSpellChecker(), root),
-                getSelectProperties(), orderProperties, ascSpecs,
-                getRespectDocumentOrder(), offset, limit);
+	return new SingleColumnQueryResult(index, itemMgr, session, session
+		.getAccessManager(), this, query, new SpellSuggestion(index
+		.getSpellChecker(), root), getSelectProperties(),
+		orderProperties, ascSpecs, getRespectDocumentOrder(), offset,
+		limit);
     }
 
     /**
      * Returns the select properties for this query.
-     *
+     * 
      * @return array of select property names.
-     * @throws RepositoryException if an error occurs.
+     * @throws RepositoryException
+     *             if an error occurs.
      */
     protected InternalQName[] getSelectProperties() throws RepositoryException {
-        // get select properties
-        List selectProps = new ArrayList();
-        selectProps.addAll(Arrays.asList(root.getSelectProperties()));
-        if (selectProps.size() == 0) {
-            // use node type constraint
-            LocationStepQueryNode[] steps = root.getLocationNode().getPathSteps();
-            final InternalQName[] ntName = new InternalQName[1];
-            steps[steps.length - 1].acceptOperands(new DefaultQueryNodeVisitor() {
+	// get select properties
+	List selectProps = new ArrayList();
+	selectProps.addAll(Arrays.asList(root.getSelectProperties()));
+	if (selectProps.size() == 0) {
+	    // use node type constraint
+	    LocationStepQueryNode[] steps = root.getLocationNode()
+		    .getPathSteps();
+	    final InternalQName[] ntName = new InternalQName[1];
+	    steps[steps.length - 1].acceptOperands(
+		    new DefaultQueryNodeVisitor() {
 
-                public Object visit(AndQueryNode node, Object data) throws RepositoryException {
-                    return node.acceptOperands(this, data);
-                }
+			public Object visit(AndQueryNode node, Object data)
+				throws RepositoryException {
+			    return node.acceptOperands(this, data);
+			}
 
-                public Object visit(NodeTypeQueryNode node, Object data) {
-                    ntName[0] = node.getValue();
-                    return data;
-                }
-            }, null);
-            if (ntName[0] == null) {
-                ntName[0] = Constants.NT_BASE;
-            }
-            NodeTypeData nt = session.getWorkspace().getNodeTypesHolder().findNodeType(ntName[0]);
-            PropertyDefinitionData[] propDefs = nt.getDeclaredPropertyDefinitions();
-            
-            for (int i = 0; i < propDefs.length; i++) {
-               PropertyDefinitionData propDef = propDefs[i];
-               if (!propDef.isResidualSet() && !propDef.isMultiple())
-               {
-                  selectProps.add(propDef.getName());
-               }
-            }
-        }
+			public Object visit(NodeTypeQueryNode node, Object data) {
+			    ntName[0] = node.getValue();
+			    return data;
+			}
+		    }, null);
+	    if (ntName[0] == null) {
+		ntName[0] = Constants.NT_BASE;
+	    }
+	    NodeTypeData nt = session.getWorkspace().getNodeTypesHolder()
+		    .findNodeType(ntName[0]);
+	    PropertyDefinitionData[] propDefs = nt
+		    .getDeclaredPropertyDefinitions();
 
-        // add jcr:path and jcr:score if not selected already
-        if (!selectProps.contains(Constants.JCR_PATH))
-        {
-           selectProps.add(Constants.JCR_PATH);
-        }
-        if (!selectProps.contains(Constants.JCR_SCORE))
-        {
-           selectProps.add(Constants.JCR_SCORE);
-        }
+	    for (int i = 0; i < propDefs.length; i++) {
+		PropertyDefinitionData propDef = propDefs[i];
+		if (!propDef.isResidualSet() && !propDef.isMultiple()) {
+		    selectProps.add(propDef.getName());
+		}
+	    }
+	}
 
-        return (InternalQName[])selectProps.toArray(new InternalQName[selectProps.size()]);
+	// add jcr:path and jcr:score if not selected already
+	if (!selectProps.contains(Constants.JCR_PATH)) {
+	    selectProps.add(Constants.JCR_PATH);
+	}
+	if (!selectProps.contains(Constants.JCR_SCORE)) {
+	    selectProps.add(Constants.JCR_SCORE);
+	}
+
+	return (InternalQName[]) selectProps
+		.toArray(new InternalQName[selectProps.size()]);
     }
 
     /**
      * Returns <code>true</code> if this query node needs items under
      * /jcr:system to be queried.
-     *
+     * 
      * @return <code>true</code> if this query node needs content under
      *         /jcr:system to be queried; <code>false</code> otherwise.
      */
     public boolean needsSystemTree() {
-        return this.root.needsSystemTree();
+	return this.root.needsSystemTree();
     }
 
 }

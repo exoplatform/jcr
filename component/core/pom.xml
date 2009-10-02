@@ -112,6 +112,12 @@
       <dependency>
          <groupId>commons-dbcp</groupId>
          <artifactId>commons-dbcp</artifactId>
+         <exclusions>
+                    <exclusion>
+                        <groupId>xerces</groupId>
+                        <artifactId>xercesImpl</artifactId>
+                    </exclusion>
+         </exclusions>
       </dependency>
 
       <!-- JOTM comes from exo.kernel.component.common -->
@@ -129,7 +135,7 @@
                <artifactId>log4j</artifactId>
             </exclusion>
          </exclusions>
-      </dependency -->
+      </dependency-->
 
       <dependency>
          <groupId>javax.resource</groupId>
@@ -205,7 +211,7 @@
          <artifactId>mysql-connector-java</artifactId>
          <version>5.0.5</version>
          <scope>test</scope>
-      </dependency -->
+      </dependency-->
 
       <!-- For PostgresSQL support -->
       <!-- dependency>
@@ -213,7 +219,7 @@
          <artifactId>postgresql</artifactId>
          <version>8.2-504.jdbc3</version>
          <scope>compile</scope>
-      </dependency -->
+      </dependency-->
 
       <!-- For Oracle 10g support (local-jcr repository) -->
       <!-- dependency>
@@ -227,7 +233,7 @@
          <artifactId>orai18n</artifactId>
          <version>14</version>
          <scope>compile</scope>
-      </dependency -->
+      </dependency-->
 
       <!-- For IBM DB2 support (local-jcr repository) -->
       <!-- dependency>
@@ -241,7 +247,7 @@
          <artifactId>db2jcc_license_cu</artifactId>
          <version>9.1</version>
          <scope>compile</scope>
-      </dependency -->
+      </dependency-->
 
       <!-- For MS SQL 7/2000/2005 and Sybase ASE/Anywhere support (jTDS driver) -->
       <!-- dependency>
@@ -249,7 +255,7 @@
          <artifactId>jtds</artifactId>
          <version>1.2</version>
          <scope>compile</scope>
-      </dependency -->
+      </dependency-->
 
       <!-- For MS SQL 2005 support (Microsoft JDBC driver) (local-jcr repository) -->
       <!-- dependency>
@@ -257,7 +263,7 @@
          <artifactId>sqljdbc</artifactId>
          <version>9.0</version>
          <scope>compile</scope>
-      </dependency -->
+      </dependency-->
 
       <!-- For Sybase ASE/Anywhere support (jConnect driver) (local-jcr repository) -->
       <!-- dependency>
@@ -265,7 +271,7 @@
          <artifactId>jconn3</artifactId>
          <version>6.05</version>
          <scope>compile</scope>
-      </dependency -->
+      </dependency-->
 
       <!-- For Apache Derby support (aka JavaDB) -->
       <!-- dependency>
@@ -273,7 +279,7 @@
          <artifactId>derby</artifactId>
          <version>10.2.2.0</version>
          <scope>compile</scope>
-      </dependency -->
+      </dependency-->
 
       <!-- Ingres Database (local repository) -->
       <!-- dependency>
@@ -281,7 +287,7 @@
          <artifactId>iijdbc</artifactId>
          <version>9.2</version>
          <scope>test</scope>
-      </dependency -->
+      </dependency-->
 
       <!-- H2 Database -->
       <!--dependency>
@@ -289,7 +295,7 @@
          <artifactId>h2</artifactId>
          <version>1.0.74</version>
          <scope>compile</scope>
-      </dependency -->
+      </dependency-->
       <!-- ======================================================================= -->
    </dependencies>
 
@@ -428,6 +434,12 @@
                   <exclude>**/TestAggregateRules.java</exclude>
                   <exclude>**/IndexingAggregateTest.java</exclude>
                   <exclude>**/IndexingRuleTest.java</exclude>
+                  <exclude>**/TestExcelFileSearch.java</exclude>
+                  <exclude>**/TestRewriteNode.java</exclude>
+                  <exclude>**/TestArabicSearch.java</exclude>
+                  <exclude>**/TestDateSearch.java</exclude>
+                  <exclude>**/TestBinarySearch.java</exclude>
+                  
                   
                   
                   <exclude>**/TestImport.java</exclude>
@@ -486,7 +498,7 @@
                         <include>org/exoplatform/services/jcr/integration/PrepareTestRepository.java</include>
                      </includes>
                   </configuration>
-               </execution -->
+               </execution-->
                <execution>
                   <id>execution4 - pause 10 sec</id>
                   <phase>test</phase>

@@ -23,7 +23,6 @@ import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
 
 import java.io.InputStream;
 import java.util.List;
@@ -51,7 +50,7 @@ public interface NodeTypeDataManager
     */
    public Set<InternalQName> getSupertypes(final InternalQName nodeTypeName);
 
-   void addQueryHandler(QueryHandler queryHandler);
+   //void addQueryHandler(QueryHandler queryHandler);
 
    /**
     * @param nodeName

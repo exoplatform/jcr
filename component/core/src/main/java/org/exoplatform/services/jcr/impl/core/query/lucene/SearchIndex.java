@@ -87,24 +87,6 @@ import javax.xml.parsers.ParserConfigurationException;
  */
 public class SearchIndex extends AbstractQueryHandler {
 
-    // public static final List VALID_SYSTEM_INDEX_NODE_TYPE_NAMES
-    // = Collections.unmodifiableList(Arrays.asList(new Name[]{
-    // NameConstants.NT_CHILDNODEDEFINITION,
-    // NameConstants.NT_FROZENNODE,
-    // NameConstants.NT_NODETYPE,
-    // NameConstants.NT_PROPERTYDEFINITION,
-    // NameConstants.NT_VERSION,
-    // NameConstants.NT_VERSIONEDCHILD,
-    // NameConstants.NT_VERSIONHISTORY,
-    // NameConstants.NT_VERSIONLABELS,
-    // NameConstants.REP_NODETYPES,
-    // NameConstants.REP_SYSTEM,
-    // NameConstants.REP_VERSIONSTORAGE,
-    // // Supertypes
-    // NameConstants.NT_BASE,
-    // NameConstants.MIX_REFERENCEABLE
-    // }));
-
     private static final DefaultQueryNodeFactory DEFAULT_QUERY_NODE_FACTORY = new DefaultQueryNodeFactory();
 
     /** The logger instance for this class */
@@ -162,32 +144,10 @@ public class SearchIndex extends AbstractQueryHandler {
      */
     public static final int DEFAULT_TERM_INFOS_INDEX_DIVISOR = 1;
 
-    // /**
-    // * The path factory.
-    // */
-    // protected static final PathFactory PATH_FACTORY =
-    // PathFactoryImpl.getInstance();
-    //
-    // /**
-    // * The path of the root node.
-    // */
-    // private static final Path ROOT_PATH;
-    //
-    // /**
-    // * The path <code>/jcr:system</code>.
-    // */
-    // private static final Path JCR_SYSTEM_PATH;
-    //
-    // static {
-    // ROOT_PATH = PATH_FACTORY.create(NameConstants.ROOT);
-    // try {
-    // JCR_SYSTEM_PATH = PATH_FACTORY.create(ROOT_PATH,
-    // NameConstants.JCR_SYSTEM, false);
-    // } catch (RepositoryException e) {
-    // // should never happen, path is always valid
-    // throw new InternalError(e.getMessage());
-    // }
-    // }
+    /**
+     * Default name of the error log file
+     */
+    private static final String ERROR_LOG = "error.log";
 
     /**
      * The actual index
@@ -198,19 +158,6 @@ public class SearchIndex extends AbstractQueryHandler {
      * The analyzer we use for indexing.
      */
     private JcrStandartAnalyzer analyzer;
-
-    // /**
-    // * List of text extractor and text filter class names. The configured
-    // * classes will be instantiated and used to extract text content from
-    // * binary properties.
-    // */
-    // private String textFilterClasses =
-    // DefaultTextExtractor.class.getName();
-    //
-    // /**
-    // * Text extractor for extracting text content of binary properties.
-    // */
-    // private TextExtractor extractor;
 
     /**
      * The namespace mappings used internally.
@@ -380,8 +327,6 @@ public class SearchIndex extends AbstractQueryHandler {
      */
     private SynonymProvider synProvider;
 
-    // private File indexDirectory;
-
     /**
      * The configuration path for the synonym provider.
      */
@@ -451,15 +396,14 @@ public class SearchIndex extends AbstractQueryHandler {
      */
     private boolean closed = false;
 
-    // private QueryHandlerContext context;
-
     /**
      * Text extractor for extracting text content of binary properties.
      */
     private DocumentReaderService extractor;
 
-    // private final QueryHandlerEntryWrapper queryHandlerConfig;
+    public static final int DEFAULT_ERRORLOG_FILE_SIZE = 50; // Kb
 
+    private int errorLogfileSize = DEFAULT_ERRORLOG_FILE_SIZE;
     /**
      * The ErrorLog of this <code>MultiIndex</code>. All changes that must be in
      * index but interrupted by IOException are here.
@@ -601,6 +545,27 @@ public class SearchIndex extends AbstractQueryHandler {
 		    + "storage for optimal performance.", new Integer(
 		    getIndexFormatVersion().getVersion()));
 	}
+
+	File file = new File(indexDirectory, ERROR_LOG);
+	errorLog = new ErrorLog(file, errorLogfileSize);
+	// reprocess any notfinished notifies;
+	recoverErrorLog(errorLog);
+
+    }
+
+    /**
+     * @return the errorLogfileSize
+     */
+    public int getErrorLogfileSize() {
+	return errorLogfileSize;
+    }
+
+    /**
+     * @param errorLogfileSize
+     *            the errorLogfileSize to set
+     */
+    public void setErrorLogfileSize(int errorLogfileSize) {
+	this.errorLogfileSize = errorLogfileSize;
     }
 
     /**
@@ -1308,33 +1273,38 @@ public class SearchIndex extends AbstractQueryHandler {
      * @return the indexing configuration or <code>null</code> if there is none.
      */
     protected Element getIndexingConfigurationDOM() {
-	if (indexingConfiguration != null) {
-	    return indexingConfiguration;
-	}
-	if (indexingConfigPath == null) {
-	    return null;
-	}
-	File config = new File(indexingConfigPath);
-	if (!config.exists()) {
-	    log.warn("File does not exist: " + indexingConfigPath);
-	    return null;
-	} else if (!config.canRead()) {
-	    log.warn("Cannot read file: " + indexingConfigPath);
-	    return null;
-	}
-	try {
-	    DocumentBuilderFactory factory = DocumentBuilderFactory
-		    .newInstance();
-	    DocumentBuilder builder = factory.newDocumentBuilder();
-	    builder
-		    .setEntityResolver(new IndexingConfigurationEntityResolver());
-	    indexingConfiguration = builder.parse(config).getDocumentElement();
-	} catch (ParserConfigurationException e) {
-	    log.warn("Unable to create XML parser", e);
-	} catch (IOException e) {
-	    log.warn("Exception parsing " + indexingConfigPath, e);
-	} catch (SAXException e) {
-	    log.warn("Exception parsing " + indexingConfigPath, e);
+	if (indexingConfiguration == null) {
+	    if (indexingConfigPath != null) {
+
+		// File config = new File(indexingConfigPath);
+
+		InputStream is = SearchIndex.class
+			.getResourceAsStream(indexingConfigPath);
+		if (is == null) {
+		    try {
+			is = cfm.getInputStream(indexingConfigPath);
+		    } catch (Exception e1) {
+			log.warn("Unable to load configuration "
+				+ indexingConfigPath);
+		    }
+		}
+
+		try {
+		    DocumentBuilderFactory factory = DocumentBuilderFactory
+			    .newInstance();
+		    DocumentBuilder builder = factory.newDocumentBuilder();
+		    builder
+			    .setEntityResolver(new IndexingConfigurationEntityResolver());
+		    indexingConfiguration = builder.parse(is)
+			    .getDocumentElement();
+		} catch (ParserConfigurationException e) {
+		    log.warn("Unable to create XML parser", e);
+		} catch (IOException e) {
+		    log.warn("Exception parsing " + indexingConfigPath, e);
+		} catch (SAXException e) {
+		    log.warn("Exception parsing " + indexingConfigPath, e);
+		}
+	    }
 	}
 	return indexingConfiguration;
     }
@@ -2384,6 +2354,72 @@ public class SearchIndex extends AbstractQueryHandler {
 	errorLog.writeChanges(removed, added);
     }
 
+    private void recoverErrorLog(ErrorLog errlog) throws IOException,
+	    RepositoryException {
+	final Set<String> rem = new HashSet<String>();
+	final Set<String> add = new HashSet<String>();
+
+	errlog.readChanges(rem, add);
+
+	// check is any notifies in log
+	if (rem.isEmpty() && add.isEmpty()) {
+	    // there is no sense to continue
+	    return;
+	}
+
+	Iterator<String> removedStates = rem.iterator();
+
+	// make a new iterator;
+	Iterator<NodeData> addedStates = new Iterator<NodeData>() {
+	    private final Iterator<String> iter = add.iterator();
+
+	    public boolean hasNext() {
+		return iter.hasNext();
+	    }
+
+	    public NodeData next() {
+		String id;
+		// we have to iterrate through items till will meet ones
+		// existing in
+		// workspace
+		while (iter.hasNext()) {
+		    id = iter.next();
+
+		    try {
+			ItemData item = getContext().getItemStateManager()
+				.getItemData(id);
+			if (item != null) {
+			    if (item.isNode()) {
+				return (NodeData) item; // return node here
+			    } else
+				log
+					.warn("Node expected but property found with id "
+						+ id
+						+ ". Skipping "
+						+ item.getQPath().getAsString());
+			} else {
+			    log.warn("Unable to recovery node index " + id
+				    + ". Node not found.");
+			}
+		    } catch (RepositoryException e) {
+			log.error("ErrorLog recovery error. Item id " + id
+				+ ". " + e, e);
+		    }
+		}
+
+		return null;
+	    }
+
+	    public void remove() {
+		throw new UnsupportedOperationException();
+	    }
+	};
+
+	updateNodes(removedStates, addedStates);
+
+	errlog.clear();
+    }
+
     /**
      * @see org.exoplatform.services.jcr.impl.core.query.QueryHandler#executeQuery(org.apache.lucene.search.Query,
      *      boolean, org.exoplatform.services.jcr.datamodel.InternalQName[],
@@ -2398,4 +2434,5 @@ public class SearchIndex extends AbstractQueryHandler {
 
 	return new LuceneQueryHits(reader, searcher, query);
     }
+
 }

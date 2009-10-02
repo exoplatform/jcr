@@ -18,42 +18,21 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.WildcardQuery;
-import org.apache.lucene.search.BooleanClause.Occur;
 import org.exoplatform.services.jcr.dataflow.DataManager;
-import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
-import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.datamodel.PropertyData;
-import org.exoplatform.services.jcr.datamodel.QPath;
-import org.exoplatform.services.jcr.datamodel.ValueData;
-import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
-import org.exoplatform.services.jcr.impl.core.query.lucene.FieldNames;
-import org.exoplatform.services.jcr.impl.core.query.lucene.QueryHits;
-import org.exoplatform.services.jcr.impl.core.query.lucene.ScoreNode;
-import org.exoplatform.services.jcr.impl.core.value.NameValue;
-import org.exoplatform.services.jcr.impl.core.value.PathValue;
-import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
-import org.exoplatform.services.jcr.impl.dataflow.AbstractValueData;
+import org.exoplatform.services.jcr.impl.core.query.RepositoryIndexSearcherHolder;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.jcr.NamespaceException;
 import javax.jcr.PathNotFoundException;
-import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
-import javax.jcr.Value;
 
 /**
  * Created by The eXo Platform SAS.
@@ -115,7 +94,9 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry
 
    private Map<String, String> prefixes;
 
-   private HashSet<QueryHandler> queryHandlers;
+   // private HashSet<QueryHandler> queryHandlers;
+
+   private final RepositoryIndexSearcherHolder indexSearcherHolder;
 
    // private final NodeTypeDataManager nodeTypeDataManager;
 
@@ -126,18 +107,20 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry
    {
       this.namespaces = DEF_NAMESPACES;
       this.prefixes = DEF_PREFIXES;
-      this.queryHandlers = new HashSet<QueryHandler>();
+      this.indexSearcherHolder = new RepositoryIndexSearcherHolder();
+      // this.queryHandlers = new HashSet<QueryHandler>();
       // this.nodeTypeDataManager = null;
    }
 
-   public NamespaceRegistryImpl(NamespaceDataPersister persister)
+   public NamespaceRegistryImpl(NamespaceDataPersister persister, RepositoryIndexSearcherHolder indexSearcherHolder)
    {
 
+      this.indexSearcherHolder = indexSearcherHolder;
       // this.nodeTypeDataManager = nodeTypeDataManager;
       this.namespaces = new HashMap<String, String>(DEF_NAMESPACES);
       this.prefixes = new HashMap<String, String>(DEF_PREFIXES);
       this.persister = persister;
-      this.queryHandlers = new HashSet<QueryHandler>();
+      // this.queryHandlers = new HashSet<QueryHandler>();
    }
 
    /**
@@ -340,10 +323,10 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry
       }
    }
 
-   public void addQueryHandler(QueryHandler queryHandler)
-   {
-      queryHandlers.add(queryHandler);
-   }
+   //   public void addQueryHandler(QueryHandler queryHandler)
+   //   {
+   //      queryHandlers.add(queryHandler);
+   //   }
 
    /**
     * Return
@@ -356,118 +339,118 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry
    public Set<String> getNodes(String prefix) throws RepositoryException
    {
 
-      LocationFactory locationFactory = new LocationFactory(this);
-      ValueFactoryImpl valueFactory = new ValueFactoryImpl(locationFactory);
+      //      LocationFactory locationFactory = new LocationFactory(this);
+      //      ValueFactoryImpl valueFactory = new ValueFactoryImpl(locationFactory);
+      //
+      //      BooleanQuery query = new BooleanQuery();
+      //      // query.add(new MatchAllDocsQuery(), Occur.MUST);
+      //      // name of the node
+      //      query.add(new WildcardQuery(new Term(FieldNames.LABEL, prefix + ":*")), Occur.SHOULD);
+      //      // name of the property
+      //      query.add(new WildcardQuery(new Term(FieldNames.PROPERTIES_SET, prefix + ":*")), Occur.SHOULD);
+      //
+      //      Set<String> result = getNodes(query);
+      //
+      //      // value of the property
+      //      Set<String> propSet = getNodes(new WildcardQuery(new Term(FieldNames.PROPERTIES, "*" + prefix + ":*")));
+      //      // Manually check property values;
+      //      for (String uuid : propSet)
+      //      {
+      //         if (isPrefixMatch(valueFactory, uuid, prefix))
+      //            result.add(uuid);
+      //      }
 
-      BooleanQuery query = new BooleanQuery();
-      // query.add(new MatchAllDocsQuery(), Occur.MUST);
-      // name of the node
-      query.add(new WildcardQuery(new Term(FieldNames.LABEL, prefix + ":*")), Occur.SHOULD);
-      // name of the property
-      query.add(new WildcardQuery(new Term(FieldNames.PROPERTIES_SET, prefix + ":*")), Occur.SHOULD);
-
-      Set<String> result = getNodes(query);
-
-      // value of the property
-      Set<String> propSet = getNodes(new WildcardQuery(new Term(FieldNames.PROPERTIES, "*" + prefix + ":*")));
-      // Manually check property values;
-      for (String uuid : propSet)
-      {
-         if (isPrefixMatch(valueFactory, uuid, prefix))
-            result.add(uuid);
-      }
-
-      return result;
+      return indexSearcherHolder.getNodesByUri(prefix);
    }
 
-   /**
-    * @param valueFactory
-    * @param dm
-    * @param uuid
-    * @param prefix
-    * @throws RepositoryException
-    */
-   private boolean isPrefixMatch(ValueFactoryImpl valueFactory, String uuid, String prefix) throws RepositoryException
-   {
-      DataManager dm = persister.getDataManager();
-      ItemData node = dm.getItemData(uuid);
-      if (node != null && node.isNode())
-      {
-         List<PropertyData> props = dm.getChildPropertiesData((NodeData)node);
-         for (PropertyData propertyData : props)
-         {
-            if (propertyData.getType() == PropertyType.PATH || propertyData.getType() == PropertyType.NAME)
-            {
-               for (ValueData vdata : propertyData.getValues())
-               {
-                  Value val =
-                     valueFactory.loadValue(((AbstractValueData)vdata).createTransientCopy(), propertyData.getType());
-                  if (propertyData.getType() == PropertyType.PATH)
-                  {
-                     if (isPrefixMatch(((PathValue)val).getQPath(), prefix))
-                        return true;
-                  }
-                  else if (propertyData.getType() == PropertyType.NAME)
-                  {
-                     if (isPrefixMatch(((NameValue)val).getQName(), prefix))
-                        return true;
-                  }
-               }
-            }
-         }
-      }
-      return false;
-   }
+   //   /**
+   //    * @param valueFactory
+   //    * @param dm
+   //    * @param uuid
+   //    * @param prefix
+   //    * @throws RepositoryException
+   //    */
+   //   private boolean isPrefixMatch(ValueFactoryImpl valueFactory, String uuid, String prefix) throws RepositoryException
+   //   {
+   //      DataManager dm = persister.getDataManager();
+   //      ItemData node = dm.getItemData(uuid);
+   //      if (node != null && node.isNode())
+   //      {
+   //         List<PropertyData> props = dm.getChildPropertiesData((NodeData)node);
+   //         for (PropertyData propertyData : props)
+   //         {
+   //            if (propertyData.getType() == PropertyType.PATH || propertyData.getType() == PropertyType.NAME)
+   //            {
+   //               for (ValueData vdata : propertyData.getValues())
+   //               {
+   //                  Value val =
+   //                     valueFactory.loadValue(((AbstractValueData)vdata).createTransientCopy(), propertyData.getType());
+   //                  if (propertyData.getType() == PropertyType.PATH)
+   //                  {
+   //                     if (isPrefixMatch(((PathValue)val).getQPath(), prefix))
+   //                        return true;
+   //                  }
+   //                  else if (propertyData.getType() == PropertyType.NAME)
+   //                  {
+   //                     if (isPrefixMatch(((NameValue)val).getQName(), prefix))
+   //                        return true;
+   //                  }
+   //               }
+   //            }
+   //         }
+   //      }
+   //      return false;
+   //   }
+   //
+   //   private boolean isPrefixMatch(QPath value, String prefix) throws NamespaceException
+   //   {
+   //      for (int i = 0; i < value.getEntries().length; i++)
+   //      {
+   //         if (isPrefixMatch(value.getEntries()[i], prefix))
+   //            return true;
+   //      }
+   //      return false;
+   //   }
+   //
+   //   private boolean isPrefixMatch(InternalQName value, String prefix) throws NamespaceException
+   //   {
+   //      return (value.getNamespace().equals(getURI(prefix)));
+   //   }
 
-   private boolean isPrefixMatch(QPath value, String prefix) throws NamespaceException
-   {
-      for (int i = 0; i < value.getEntries().length; i++)
-      {
-         if (isPrefixMatch(value.getEntries()[i], prefix))
-            return true;
-      }
-      return false;
-   }
-
-   private boolean isPrefixMatch(InternalQName value, String prefix) throws NamespaceException
-   {
-      return (value.getNamespace().equals(getURI(prefix)));
-   }
-
-   /**
-    * @param query
-    * @return
-    * @throws RepositoryException
-    */
-   private Set<String> getNodes(Query query) throws RepositoryException
-   {
-      Set<String> result = new HashSet<String>();
-
-      Iterator<QueryHandler> it = queryHandlers.iterator();
-      try
-      {
-         while (it.hasNext())
-         {
-            QueryHandler queryHandler = it.next();
-            QueryHits hits = queryHandler.executeQuery(query);
-
-            ScoreNode sn;
-
-            while ((sn = hits.nextScoreNode()) != null)
-            {
-               result.add(sn.getNodeId());
-            }
-            //            for (int i = 0; i < hits.getSize(); i++)
-            //            {
-            //               result.add(hits.getFieldContent(i, FieldNames.UUID));
-            //            }
-         }
-      }
-      catch (IOException e)
-      {
-         throw new RepositoryException(e.getLocalizedMessage(), e);
-      }
-      return result;
-   }
+   //   /**
+   //    * @param query
+   //    * @return
+   //    * @throws RepositoryException
+   //    */
+   //   private Set<String> getNodes(Query query) throws RepositoryException
+   //   {
+   //      Set<String> result = new HashSet<String>();
+   //
+   //      Iterator<QueryHandler> it = queryHandlers.iterator();
+   //      try
+   //      {
+   //         while (it.hasNext())
+   //         {
+   //            QueryHandler queryHandler = it.next();
+   //            QueryHits hits = queryHandler.executeQuery(query);
+   //
+   //            ScoreNode sn;
+   //
+   //            while ((sn = hits.nextScoreNode()) != null)
+   //            {
+   //               result.add(sn.getNodeId());
+   //            }
+   //            //            for (int i = 0; i < hits.getSize(); i++)
+   //            //            {
+   //            //               result.add(hits.getFieldContent(i, FieldNames.UUID));
+   //            //            }
+   //         }
+   //      }
+   //      catch (IOException e)
+   //      {
+   //         throw new RepositoryException(e.getLocalizedMessage(), e);
+   //      }
+   //      return result;
+   //   }
 
 }

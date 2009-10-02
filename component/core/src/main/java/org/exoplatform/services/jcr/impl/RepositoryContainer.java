@@ -31,7 +31,6 @@ import org.exoplatform.services.jcr.access.AccessControlPolicy;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
-import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
@@ -49,6 +48,7 @@ import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeDataPersister;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
 import org.exoplatform.services.jcr.impl.core.observation.ObservationManagerRegistry;
 import org.exoplatform.services.jcr.impl.core.query.QueryManagerFactory;
+import org.exoplatform.services.jcr.impl.core.query.RepositoryIndexSearcherHolder;
 import org.exoplatform.services.jcr.impl.core.query.SearchManager;
 import org.exoplatform.services.jcr.impl.core.query.SystemSearchManager;
 import org.exoplatform.services.jcr.impl.core.query.SystemSearchManagerHolder;
@@ -449,28 +449,28 @@ public class RepositoryContainer extends ExoContainer
          WorkspaceContainer workspaceContainer = getWorkspaceContainer(ws.getName());
          SearchManager searchManager =
             (SearchManager)workspaceContainer.getComponentInstanceOfType(SearchManager.class);
-         if (searchManager != null)
-         {
-            typeManager.addQueryHandler(searchManager.getHandler());
-            namespaceRegistry.addQueryHandler(searchManager.getHandler());
-         }
-         else
-         {
-            log.warn("Search manager not configured for " + ws.getName());
-         }
+         //         if (searchManager != null)
+         //         {
+         //            typeManager.addQueryHandler(searchManager.getHandler());
+         //            namespaceRegistry.addQueryHandler(searchManager.getHandler());
+         //         }
+         //         else
+         //         {
+         //            log.warn("Search manager not configured for " + ws.getName());
+         //         }
       }
 
       SystemSearchManagerHolder searchManager =
          (SystemSearchManagerHolder)this.getComponentInstanceOfType(SystemSearchManagerHolder.class);
-      if (searchManager != null)
-      {
-         typeManager.addQueryHandler(searchManager.get().getHandler());
-         namespaceRegistry.addQueryHandler(searchManager.get().getHandler());
-      }
-      else
-      {
-         log.warn("System search manager not configured ");
-      }
+      //      if (searchManager != null)
+      //      {
+      //         typeManager.addQueryHandler(searchManager.get().getHandler());
+      //         namespaceRegistry.addQueryHandler(searchManager.get().getHandler());
+      //      }
+      //      else
+      //      {
+      //         log.warn("System search manager not configured ");
+      //      }
 
    }
 
@@ -602,6 +602,8 @@ public class RepositoryContainer extends ExoContainer
    {
 
       registerComponentImplementation(IdGenerator.class);
+
+      registerComponentImplementation(RepositoryIndexSearcherHolder.class);
 
       registerComponentImplementation(NamespaceDataPersister.class);
       registerComponentImplementation(NamespaceRegistryImpl.class);
