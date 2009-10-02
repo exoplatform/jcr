@@ -298,6 +298,7 @@
                      <property name="support-highlighting" value="true" />
                      <property name="indexing-configuration-path" value="../../indexing-configuration.xml" />
                      <property name="query-class" value="org.exoplatform.services.jcr.impl.core.query.QueryImpl" />
+                     <property name="excerptprovider-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.WeightedHTMLExcerpt" />
                      <property name="spellchecker-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" />
                   </properties>
                </query-handler>

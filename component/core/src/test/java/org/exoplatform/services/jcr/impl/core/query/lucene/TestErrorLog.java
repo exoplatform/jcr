@@ -26,158 +26,137 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Created by The eXo Platform SAS Author : Sergey Karpenko <sergey.karpenko@exoplatform.com.ua>
+ * Created by The eXo Platform SAS Author : Sergey Karpenko
+ * <sergey.karpenko@exoplatform.com.ua>
  * 
  * @version $Id: $
  */
-public class TestErrorLog extends BaseQueryTest
-{
-   ErrorLog log;
+public class TestErrorLog extends BaseQueryTest {
+    ErrorLog log;
 
-   File file;
+    File file;
 
-   private static final int SIZE = 100;
+    private static final int SIZE = 100;
 
-   public void setUp() throws Exception
-   {
-      super.setUp();
-      file = File.createTempFile("error", "log");
-      if (file.exists())
-      {
-         file.delete();
-      }
-   }
+    public void setUp() throws Exception {
+	super.setUp();
+	file = File.createTempFile("error", "log");
+	if (file.exists()) {
+	    file.delete();
+	}
+    }
 
-   public void tearDown() throws Exception
-   {
-      super.tearDown();
-      log.clear();
-      file.delete();
-   }
+    public void tearDown() throws Exception {
+	super.tearDown();
+	log.clear();
+	file.delete();
+    }
 
-   public void testConcurrentWrite() throws Exception
-   {
+    public void testConcurrentWrite() throws Exception {
 
-      class Loader extends Thread
-      {
-         private String name;
+	class Loader extends Thread {
+	    private String name;
 
-         public Loader(String n)
-         {
-            name = n;
-         }
+	    public Loader(String n) {
+		name = n;
+	    }
 
-         public void run()
-         {
-            /*
-             * try { for (int i = 0; i < SIZE; i++) { log.append(ErrorLog.ADD,name + i);
-             * //System.out.println(name + i); } log.flush(); } catch (Exception e) {
-             * System.out.println(e); }
-             */
+	    public void run() {
+		/*
+		 * try { for (int i = 0; i < SIZE; i++) {
+		 * log.append(ErrorLog.ADD,name + i); //System.out.println(name
+		 * + i); } log.flush(); } catch (Exception e) {
+		 * System.out.println(e); }
+		 */
 
-            try
-            {
-               HashSet<String> add = new HashSet<String>();
-               HashSet<String> rem = new HashSet<String>();
+		try {
+		    HashSet<String> add = new HashSet<String>();
+		    HashSet<String> rem = new HashSet<String>();
 
-               for (int j = 0; j < 10; j++)
-               {
-                  add.clear();
-                  for (int i = 0; i < 10; i++)
-                  {
-                     int el = j * 10 + i;
-                     add.add(name + el);
-                  }
-                  log.writeChanges(rem, add);
-               }
+		    for (int j = 0; j < 10; j++) {
+			add.clear();
+			for (int i = 0; i < 10; i++) {
+			    int el = j * 10 + i;
+			    add.add(name + el);
+			}
+			log.writeChanges(rem, add);
+		    }
 
-            }
-            catch (Exception e)
-            {
-               System.out.println(e);
-            }
-         }
-      }
+		} catch (Exception e) {
+		    System.out.println(e);
+		}
+	    }
+	}
 
-      log = new ErrorLog(file);
+	log = new ErrorLog(file, SearchIndex.DEFAULT_ERRORLOG_FILE_SIZE);
 
-      Thread one = new Loader("first");
-      Thread two = new Loader("second");
-      one.start();
-      two.start();
-      one.join();
-      two.join();
+	Thread one = new Loader("first");
+	Thread two = new Loader("second");
+	one.start();
+	two.start();
+	one.join();
+	two.join();
 
-      List<String> list = log.readList();
+	List<String> list = log.readList();
 
-      int lost_first = 0;
-      int lost_second = 0;
-      for (int i = 0; i < SIZE; i++)
-      {
-         String firstname = ErrorLog.ADD + " first" + i;
-         String secondname = ErrorLog.ADD + " second" + i;
-         int ffinded = 0;
-         int sfinded = 0;
-         for (int j = 0; j < list.size(); j++)
-         {
-            if (list.get(j).equals(firstname))
-            {
-               ffinded++;
-            }
-            if (list.get(j).equals(secondname))
-            {
-               sfinded++;
-            }
-         }
-         if (ffinded == 0)
-         {
-            System.out.println(firstname + " NOT FINDED");
-         }
-         if (ffinded > 1)
-         {
-            System.out.println(firstname + " DUPLICATED");
-         }
-         if (sfinded == 0)
-         {
-            System.out.println(secondname + " NOT FINDED");
-         }
-         if (sfinded > 1)
-         {
-            System.out.println(secondname + " DUPLICATED");
-         }
-      }
+	int lost_first = 0;
+	int lost_second = 0;
+	for (int i = 0; i < SIZE; i++) {
+	    String firstname = ErrorLog.ADD + " first" + i;
+	    String secondname = ErrorLog.ADD + " second" + i;
+	    int ffinded = 0;
+	    int sfinded = 0;
+	    for (int j = 0; j < list.size(); j++) {
+		if (list.get(j).equals(firstname)) {
+		    ffinded++;
+		}
+		if (list.get(j).equals(secondname)) {
+		    sfinded++;
+		}
+	    }
+	    if (ffinded == 0) {
+		System.out.println(firstname + " NOT FINDED");
+	    }
+	    if (ffinded > 1) {
+		System.out.println(firstname + " DUPLICATED");
+	    }
+	    if (sfinded == 0) {
+		System.out.println(secondname + " NOT FINDED");
+	    }
+	    if (sfinded > 1) {
+		System.out.println(secondname + " DUPLICATED");
+	    }
+	}
 
-      assertEquals("There is mismatch of expected writed messages count ", 200, list.size());
-      assertEquals("First thread has lost apdates", 0, lost_first);
-      assertEquals("Second thread has lost apdates", 0, lost_second);
-   }
+	assertEquals("There is mismatch of expected writed messages count ",
+		200, list.size());
+	assertEquals("First thread has lost apdates", 0, lost_first);
+	assertEquals("Second thread has lost apdates", 0, lost_second);
+    }
 
-   public void testExctractNotifyList() throws Exception
-   {
-      log = new ErrorLog(file);
+    public void testExctractNotifyList() throws Exception {
+	log = new ErrorLog(file, SearchIndex.DEFAULT_ERRORLOG_FILE_SIZE);
 
-      Set<String> removed = new HashSet<String>();
-      Set<String> added = new HashSet<String>();
+	Set<String> removed = new HashSet<String>();
+	Set<String> added = new HashSet<String>();
 
-      for (int i = 0; i < 10; i++)
-      {
-         added.add("uuidadd" + i);
-      }
+	for (int i = 0; i < 10; i++) {
+	    added.add("uuidadd" + i);
+	}
 
-      for (int i = 0; i < 5; i++)
-      {
-         removed.add("uuidrem" + i);
-      }
+	for (int i = 0; i < 5; i++) {
+	    removed.add("uuidrem" + i);
+	}
 
-      log.writeChanges(removed, added);
+	log.writeChanges(removed, added);
 
-      Set<String> rem = new HashSet<String>();
-      Set<String> add = new HashSet<String>();
+	Set<String> rem = new HashSet<String>();
+	Set<String> add = new HashSet<String>();
 
-      log.readChanges(rem, add);
+	log.readChanges(rem, add);
 
-      assertTrue(rem.containsAll(removed));
-      assertTrue(add.containsAll(added));
-   }
+	assertTrue(rem.containsAll(removed));
+	assertTrue(add.containsAll(added));
+    }
 
 }
