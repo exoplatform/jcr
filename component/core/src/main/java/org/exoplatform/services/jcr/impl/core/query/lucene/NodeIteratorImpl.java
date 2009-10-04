@@ -189,7 +189,7 @@ class NodeIteratorImpl implements TwoWayRangeIterator, NodeIterator
       {
          throw new IllegalArgumentException("skipNum must not be negative");
       }
-      scoreNodes.skipBack(skipNum - 1);
+      scoreNodes.skipBack(skipNum + 1);
       fetchNext();
 
    }
