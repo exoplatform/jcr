@@ -419,28 +419,10 @@
                         <include>**/impl/**/Test*.java</include>
                      </includes>
                <excludes>
-                  <exclude>**/ExcerptTest.java</exclude>
-                  <exclude>**/TestSearchManagerIndexing.java</exclude>
-                  <exclude>**/TestIndexRules.java</exclude>
-                  <exclude>**/TestNodeIndexer.java</exclude>
-                  <exclude>**/IndexingAggregateTest.java</exclude>
+                  <exclude>**/TestValueConstraints.java</exclude>
+                  <exclude>**/TestTwoWayRangeIterator.java</exclude>                  
                   <exclude>**/TestIndexingConfig.java</exclude>
-                  <exclude>**/TestNodeTypeRegistration.java</exclude>
-                  <exclude>**/TestExcerpt.java</exclude>
-                  <exclude>**/TestNodeTypeManager.java</exclude>
-                  <exclude>**/TestSuperTypeChanges.java</exclude>
-                  <exclude>**/TestTwoWayRangeIterator.java</exclude>
-                  <exclude>**/TestNamespaceRegistry.java</exclude>
-                  <exclude>**/TestAggregateRules.java</exclude>
-                  <exclude>**/IndexingAggregateTest.java</exclude>
-                  <exclude>**/IndexingRuleTest.java</exclude>
-                  <exclude>**/TestExcelFileSearch.java</exclude>
-                  <exclude>**/TestRewriteNode.java</exclude>
-                  <exclude>**/TestArabicSearch.java</exclude>
-                  <exclude>**/TestDateSearch.java</exclude>
-                  <exclude>**/TestBinarySearch.java</exclude>
-                  
-                  
+                  <exclude>**/TestExcerpt.java</exclude>                                    
                   
                   <exclude>**/TestImport.java</exclude>
                   <exclude>**/TestRollbackBigFiles.java</exclude>
