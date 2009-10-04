@@ -420,7 +420,6 @@
                      </includes>
                <excludes>
                   <exclude>**/TestValueConstraints.java</exclude>
-                  <exclude>**/TestTwoWayRangeIterator.java</exclude>                  
                   <exclude>**/TestIndexingConfig.java</exclude>
                   <exclude>**/TestExcerpt.java</exclude>                                    
                   
@@ -526,6 +525,8 @@
                               org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testSimpleVersionable
                               org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testActivity
                               org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testConfiguration
+                              org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testVersionable
+                              org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testVersion
                               org.apache.jackrabbit.test.api.NamespaceRegistryTest#testRegisterNamespace
                            </value>
                         </property>
