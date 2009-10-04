@@ -131,7 +131,7 @@ public class AddMetadataAction implements Action
                   new InternalQName(qname.getNamespace(), qname.getName()));
 
             PropertyDefinitionDatas pds =
-               parent.getSession().getWorkspace().getNodeTypesHolder().findPropertyDefinitions(
+               parent.getSession().getWorkspace().getNodeTypesHolder().getPropertyDefinitions(
                   jcrName.getInternalName(), ((NodeData)parent.getData()).getPrimaryTypeName(),
                   ((NodeData)parent.getData()).getMixinTypeNames());
             if (pds.getDefinition(true) != null)
