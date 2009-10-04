@@ -354,7 +354,7 @@ public class PropPatchResponseEntity implements StreamingOutput
          InternalQName propName =
             ((SessionImpl)node.getSession()).getLocationFactory().parseJCRName(propertyName).getInternalName();
          PropertyDefinitionDatas propdefs =
-            nodeTypeHolder.findPropertyDefinitions(propName, data.getPrimaryTypeName(), data.getMixinTypeNames());
+            nodeTypeHolder.getPropertyDefinitions(propName, data.getPrimaryTypeName(), data.getMixinTypeNames());
          if (propdefs == null)
          {
             throw new RepositoryException();
