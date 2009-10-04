@@ -21,9 +21,10 @@ package org.exoplatform.services.jcr.api.namespaces;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.lucene.search.BooleanQuery;
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.impl.core.ExtendedNamespaceRegistry;
-import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.jcr.impl.core.query.RepositoryIndexSearcherHolder;
 
 import java.util.Set;
 
@@ -43,6 +44,7 @@ public class TestNamespaceRegistry extends JcrAPIBaseTest
 {
 
    protected ExtendedNamespaceRegistry namespaceRegistry;
+   private RepositoryIndexSearcherHolder indexSearcherHolder;
 
    public void initRepository() throws RepositoryException
    {
@@ -57,6 +59,19 @@ public class TestNamespaceRegistry extends JcrAPIBaseTest
          // not found
          namespaceRegistry.registerNamespace("newMapping", "http://dumb.uri/jcr");
       }
+   }
+
+   @Override
+   public void setUp() throws Exception
+   {
+      // TODO Auto-generated method stub
+      super.setUp();
+      WorkspaceContainerFacade wsc = repository.getWorkspaceContainer(session.getWorkspace().getName());
+
+      indexSearcherHolder = (RepositoryIndexSearcherHolder)wsc.getComponent(RepositoryIndexSearcherHolder.class);
+      
+      //indexSearcherHolder = (RepositoryIndexSearcherHolder)container.getComponentInstanceOfType(RepositoryIndexSearcherHolder.class);
+
    }
 
    public void testGetPrefixes() throws RepositoryException
@@ -255,7 +270,7 @@ public class TestNamespaceRegistry extends JcrAPIBaseTest
       test3.setProperty("blahtesturi", "v2");
       session.save();
 
-      Set<String> nodes = ((NamespaceRegistryImpl)namespaceRegistry).getNodes("testuri");
+      Set<String> nodes = indexSearcherHolder.getNodesByUri("http://testquery.uri/www"); //((NamespaceRegistryImpl)namespaceRegistry).getNodes("testuri");
       assertEquals(1, nodes.size());
       assertFalse(nodes.contains(((NodeImpl)test1).getData().getIdentifier()));
       assertFalse(nodes.contains(((NodeImpl)test3).getData().getIdentifier()));
@@ -269,7 +284,7 @@ public class TestNamespaceRegistry extends JcrAPIBaseTest
       Node test3 = root.addNode("blahtesturiNodeName1");
       session.save();
 
-      Set<String> nodes = ((NamespaceRegistryImpl)namespaceRegistry).getNodes("testuri");
+      Set<String> nodes = indexSearcherHolder.getNodesByUri("http://testquery.uri/www"); //((NamespaceRegistryImpl)namespaceRegistry).getNodes("testuri");
       assertEquals(1, nodes.size());
       assertTrue(nodes.contains(((NodeImpl)test1).getData().getIdentifier()));
       assertFalse(nodes.contains(((NodeImpl)test2).getData().getIdentifier()));
@@ -285,7 +300,7 @@ public class TestNamespaceRegistry extends JcrAPIBaseTest
       test2.setProperty("prop", "v2");
       session.save();
 
-      Set<String> nodes = ((NamespaceRegistryImpl)namespaceRegistry).getNodes("testuri");
+      Set<String> nodes = indexSearcherHolder.getNodesByUri("http://testquery.uri/www"); //((NamespaceRegistryImpl)namespaceRegistry).getNodes("testuri");
       assertEquals(1, nodes.size());
       assertTrue(nodes.contains(((NodeImpl)test1).getData().getIdentifier()));
       assertFalse(nodes.contains(((NodeImpl)test2).getData().getIdentifier()));
@@ -301,8 +316,8 @@ public class TestNamespaceRegistry extends JcrAPIBaseTest
       Node test3 = root.addNode("nodeName2");
       test3.setProperty("prop", "blablatesturi:v2");
       session.save();
-
-      Set<String> nodes = ((NamespaceRegistryImpl)namespaceRegistry).getNodes("testuri");
+      
+      Set<String> nodes = indexSearcherHolder.getNodesByUri("http://testquery.uri/www"); //((NamespaceRegistryImpl)namespaceRegistry).getNodes("testuri");
       assertEquals(1, nodes.size());
       assertTrue(nodes.contains(((NodeImpl)test1).getData().getIdentifier()));
       assertFalse(nodes.contains(((NodeImpl)test2).getData().getIdentifier()));

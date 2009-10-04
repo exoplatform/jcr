@@ -18,9 +18,9 @@
  */
 package org.exoplatform.services.jcr.impl.core.nodetype;
 
-import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
 import org.exoplatform.services.jcr.core.nodetype.NodeDefinitionValue;
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeValue;
 import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionValue;
 import org.exoplatform.services.log.ExoLogger;
@@ -29,6 +29,7 @@ import org.exoplatform.services.log.Log;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import javax.jcr.Node;
@@ -44,7 +45,7 @@ import javax.jcr.nodetype.ConstraintViolationException;
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: $
  */
-public class TestNodeTypeRegistration extends JcrImplBaseTest
+public class TestNodeTypeRegistration extends AbstractNodeTypeTest
 {
    /**
     * Class logger.
@@ -56,8 +57,6 @@ public class TestNodeTypeRegistration extends JcrImplBaseTest
    private NodeTypeValue testNodeTypeValue2 = null;
 
    private NodeTypeValue testNtFileNodeTypeValue = null;
-
-   private NodeTypeManagerImpl nodeTypeManager;
 
    /**
     * 
@@ -88,13 +87,6 @@ public class TestNodeTypeRegistration extends JcrImplBaseTest
       testNtFileNodeTypeValue.setPrimaryItemName("");
       testNtFileNodeTypeValue.setDeclaredSupertypeNames(superType3);
 
-   }
-
-   @Override
-   public void setUp() throws Exception
-   {
-      super.setUp();
-      nodeTypeManager = (NodeTypeManagerImpl)session.getWorkspace().getNodeTypeManager();
    }
 
    public void testRemoveNodeTypeUnexisted()
@@ -246,7 +238,7 @@ public class TestNodeTypeRegistration extends JcrImplBaseTest
     * 
     * @throws Exception
     */
-   public void testReregisterProtected() throws Exception
+   public void _testReregisterProtected() throws Exception
    {
       NodeTypeValue testNValue = new NodeTypeValue();
 
@@ -276,19 +268,28 @@ public class TestNodeTypeRegistration extends JcrImplBaseTest
 
       tNode.addMixin("mix:versionable");
 
-      // chenge mandatory
+      // chenge protected
       List<PropertyDefinitionValue> props2 = new ArrayList<PropertyDefinitionValue>();
-      props2.add(new PropertyDefinitionValue("tt", true, true, 1, true, def, false, PropertyType.STRING,
+      props2.add(new PropertyDefinitionValue("tt", true, false, 1, true, def, false, PropertyType.STRING,
          new ArrayList<String>()));
       testNValue.setDeclaredPropertyDefinitionValues(props2);
+
+      nodeTypeManager.registerNodeType(testNValue, ExtendedNodeTypeManager.REPLACE_IF_EXISTS);
+
+      tNode.setProperty("tt", "tt");
+      session.save();
+
+      property = tNode.getProperty("tt");
+      assertEquals("tt", property.getString());
       try
       {
-         nodeTypeManager.registerNodeType(testNValue, ExtendedNodeTypeManager.REPLACE_IF_EXISTS);
+         property.remove();
+         session.save();
          fail();
       }
-      catch (RepositoryException e)
+      catch (ConstraintViolationException e)
       {
-         // ok;
+         // ok
       }
    }
 
@@ -323,7 +324,7 @@ public class TestNodeTypeRegistration extends JcrImplBaseTest
          nodeTypeManager.registerNodeType(testNTValue, ExtendedNodeTypeManager.REPLACE_IF_EXISTS);
          fail();
       }
-      catch (RepositoryException e)
+      catch (ConstraintViolationException e)
       {
          // ok
       }
@@ -379,6 +380,7 @@ public class TestNodeTypeRegistration extends JcrImplBaseTest
       {
          // ok;
       }
+
       tNode.setProperty("tt", "tt");
       session.save();
 
@@ -699,7 +701,8 @@ public class TestNodeTypeRegistration extends JcrImplBaseTest
       testNValue.setDeclaredSupertypeNames(superType);
 
       List<NodeDefinitionValue> nodes = new ArrayList<NodeDefinitionValue>();
-      nodes.add(new NodeDefinitionValue("*", false, false, 1, false, "nt:base", new ArrayList<String>(), false));
+      nodes
+         .add(new NodeDefinitionValue("*", false, false, 1, false, "nt:unstructured", new ArrayList<String>(), false));
       testNValue.setDeclaredChildNodeDefinitionValues(nodes);
 
       nodeTypeManager.registerNodeType(testNValue, ExtendedNodeTypeManager.FAIL_IF_EXISTS);
@@ -781,7 +784,8 @@ public class TestNodeTypeRegistration extends JcrImplBaseTest
       testNValue.setDeclaredSupertypeNames(superType);
 
       List<NodeDefinitionValue> nodes = new ArrayList<NodeDefinitionValue>();
-      nodes.add(new NodeDefinitionValue("child", false, false, 1, false, "nt:base", new ArrayList<String>(), false));
+      nodes.add(new NodeDefinitionValue("child", false, false, 1, false, "nt:unstructured", new ArrayList<String>(),
+         false));
       testNValue.setDeclaredChildNodeDefinitionValues(nodes);
 
       nodeTypeManager.registerNodeType(testNValue, ExtendedNodeTypeManager.FAIL_IF_EXISTS);
@@ -842,7 +846,8 @@ public class TestNodeTypeRegistration extends JcrImplBaseTest
       session.save();
 
       List<NodeDefinitionValue> nodes = new ArrayList<NodeDefinitionValue>();
-      nodes.add(new NodeDefinitionValue("child", false, true, 1, false, "nt:base", new ArrayList<String>(), false));
+      nodes.add(new NodeDefinitionValue("child", false, true, 1, false, "nt:unstructured", new ArrayList<String>(),
+         false));
       testNValue.setDeclaredChildNodeDefinitionValues(nodes);
 
       try
@@ -856,7 +861,8 @@ public class TestNodeTypeRegistration extends JcrImplBaseTest
       }
       testNValue = nodeTypeManager.getNodeTypeValue(testNValue.getName());
       nodes = new ArrayList<NodeDefinitionValue>();
-      nodes.add(new NodeDefinitionValue("child", false, false, 1, false, "nt:base", new ArrayList<String>(), false));
+      nodes.add(new NodeDefinitionValue("child", false, false, 1, false, "nt:unstructured", new ArrayList<String>(),
+         false));
       testNValue.setDeclaredChildNodeDefinitionValues(nodes);
       nodeTypeManager.registerNodeType(testNValue, ExtendedNodeTypeManager.REPLACE_IF_EXISTS);
 
@@ -864,7 +870,8 @@ public class TestNodeTypeRegistration extends JcrImplBaseTest
       session.save();
 
       nodes = new ArrayList<NodeDefinitionValue>();
-      nodes.add(new NodeDefinitionValue("child", false, true, 1, false, "nt:base", new ArrayList<String>(), false));
+      nodes.add(new NodeDefinitionValue("child", false, true, 1, false, "nt:unstructured", new ArrayList<String>(),
+         false));
       testNValue.setDeclaredChildNodeDefinitionValues(nodes);
       nodeTypeManager.registerNodeType(testNValue, ExtendedNodeTypeManager.REPLACE_IF_EXISTS);
 
@@ -885,7 +892,8 @@ public class TestNodeTypeRegistration extends JcrImplBaseTest
       testNValue.setDeclaredSupertypeNames(superType);
 
       List<NodeDefinitionValue> nodes = new ArrayList<NodeDefinitionValue>();
-      nodes.add(new NodeDefinitionValue("child", false, false, 1, false, "nt:base", new ArrayList<String>(), false));
+      nodes.add(new NodeDefinitionValue("child", false, false, 1, false, "nt:unstructured", new ArrayList<String>(),
+         false));
       testNValue.setDeclaredChildNodeDefinitionValues(nodes);
 
       nodeTypeManager.registerNodeType(testNValue, ExtendedNodeTypeManager.FAIL_IF_EXISTS);
@@ -895,7 +903,8 @@ public class TestNodeTypeRegistration extends JcrImplBaseTest
       session.save();
 
       nodes = new ArrayList<NodeDefinitionValue>();
-      nodes.add(new NodeDefinitionValue("child", false, true, 1, false, "nt:base", new ArrayList<String>(), false));
+      nodes.add(new NodeDefinitionValue("child", false, true, 1, false, "nt:unstructured", new ArrayList<String>(),
+         false));
       testNValue.setDeclaredChildNodeDefinitionValues(nodes);
 
       try
@@ -929,7 +938,8 @@ public class TestNodeTypeRegistration extends JcrImplBaseTest
       testNValue.setDeclaredSupertypeNames(superType);
 
       List<NodeDefinitionValue> nodes = new ArrayList<NodeDefinitionValue>();
-      nodes.add(new NodeDefinitionValue("child", false, false, 1, false, "nt:base", new ArrayList<String>(), false));
+      nodes.add(new NodeDefinitionValue("child", false, false, 1, false, "nt:unstructured", new ArrayList<String>(),
+         false));
       testNValue.setDeclaredChildNodeDefinitionValues(nodes);
 
       nodeTypeManager.registerNodeType(testNValue, ExtendedNodeTypeManager.FAIL_IF_EXISTS);
@@ -941,7 +951,8 @@ public class TestNodeTypeRegistration extends JcrImplBaseTest
       session.save();
 
       nodes = new ArrayList<NodeDefinitionValue>();
-      nodes.add(new NodeDefinitionValue("child", false, false, 1, true, "nt:base", new ArrayList<String>(), false));
+      nodes.add(new NodeDefinitionValue("child", false, false, 1, true, "nt:unstructured", new ArrayList<String>(),
+         false));
       testNValue.setDeclaredChildNodeDefinitionValues(nodes);
 
       try
@@ -974,8 +985,9 @@ public class TestNodeTypeRegistration extends JcrImplBaseTest
 
       List<NodeDefinitionValue> nodes = new ArrayList<NodeDefinitionValue>();
       List<String> requeredPrimaryType = new ArrayList<String>();
-      requeredPrimaryType.add("nt:base");
-      nodes.add(new NodeDefinitionValue("child", false, false, 1, false, "nt:base", requeredPrimaryType, false));
+      requeredPrimaryType.add("nt:hierarchyNode");
+      nodes
+         .add(new NodeDefinitionValue("child", false, false, 1, false, "nt:hierarchyNode", requeredPrimaryType, false));
       testNValue.setDeclaredChildNodeDefinitionValues(nodes);
 
       nodeTypeManager.registerNodeType(testNValue, ExtendedNodeTypeManager.FAIL_IF_EXISTS);
@@ -985,20 +997,25 @@ public class TestNodeTypeRegistration extends JcrImplBaseTest
 
       try
       {
-         testNode.addNode("wrongchild");
+         testNode.addNode("wrongchild", "nt:unstructured");
          fail();
       }
       catch (ConstraintViolationException e)
       {
          // ok
       }
-      Node child = testNode.addNode("child", "nt:base");
+      Node child = testNode.addNode("child", "nt:file");
+      Node cont = child.addNode("jcr:content", "nt:resource");
+      cont.setProperty("jcr:mimeType", "text");
+      cont.setProperty("jcr:lastModified", new GregorianCalendar(2011, 3, 4));
+      cont.setProperty("jcr:data", "test text");
       session.save();
 
       nodes = new ArrayList<NodeDefinitionValue>();
       requeredPrimaryType = new ArrayList<String>();
-      requeredPrimaryType.add("nt:unstructured");
-      nodes.add(new NodeDefinitionValue("child", false, false, 1, false, "nt:base", requeredPrimaryType, false));
+      requeredPrimaryType.add("nt:folder");
+      nodes
+         .add(new NodeDefinitionValue("child", false, false, 1, false, "nt:hierarchyNode", requeredPrimaryType, false));
       testNValue.setDeclaredChildNodeDefinitionValues(nodes);
 
       try
@@ -1014,7 +1031,7 @@ public class TestNodeTypeRegistration extends JcrImplBaseTest
       child.remove();
       session.save();
 
-      child = testNode.addNode("child", "nt:unstructured");
+      child = testNode.addNode("child", "nt:folder");
       session.save();
 
       nodeTypeManager.registerNodeType(testNValue, ExtendedNodeTypeManager.REPLACE_IF_EXISTS);
@@ -1044,7 +1061,11 @@ public class TestNodeTypeRegistration extends JcrImplBaseTest
       Node testNode = root.addNode("testNode", testNValue.getName());
       session.save();
 
-      Node child = testNode.addNode("child", "nt:base");
+      Node child = testNode.addNode("child", "nt:file");
+      Node cont = child.addNode("jcr:content", "nt:resource");
+      cont.setProperty("jcr:mimeType", "text");
+      cont.setProperty("jcr:lastModified", new GregorianCalendar(2011, 3, 4));
+      cont.setProperty("jcr:data", "test text");
       session.save();
 
       nodes = new ArrayList<NodeDefinitionValue>();
@@ -1198,7 +1219,12 @@ public class TestNodeTypeRegistration extends JcrImplBaseTest
       testNValue = nodeTypeManager.getNodeTypeValue(testNValue.getName());
 
       Node testNode = root.addNode("testNode", testNValue.getName());
-      Node child = testNode.addNode("child", "nt:base");
+      Node child = testNode.addNode("child", "nt:file");
+      Node cont = child.addNode("jcr:content", "nt:resource");
+      cont.setProperty("jcr:mimeType", "text");
+      cont.setProperty("jcr:lastModified", new GregorianCalendar(2011, 3, 4));
+      cont.setProperty("jcr:data", "test text");
+      session.save();
       session.save();
 
       nodes = new ArrayList<NodeDefinitionValue>();
@@ -1456,7 +1482,7 @@ public class TestNodeTypeRegistration extends JcrImplBaseTest
       InputStream xml =
          this.getClass().getResourceAsStream("/org/exoplatform/services/jcr/impl/core/nodetype/test-jcr589.xml");
       repositoryService.getCurrentRepository().getNodeTypeManager().registerNodeTypes(xml,
-         ExtendedNodeTypeManager.FAIL_IF_EXISTS);
+         ExtendedNodeTypeManager.FAIL_IF_EXISTS, NodeTypeDataManager.TEXT_XML);
 
       Node tr = root.addNode("testRoot");
       Node l1 = tr.addNode("t", "myNodeTypes");

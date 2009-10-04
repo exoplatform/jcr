@@ -36,7 +36,7 @@ public class TestNodeTypeConstraints extends JcrAPIBaseTest
    public void testRemoveProtectedProperty() throws Exception
    {
 
-      Node node1 = root.addNode("test", "nt:base");
+      Node node1 = root.addNode("test");
       // log.debug(">>> node "+node1.getPrimaryNodeType().canRemoveItem("jct:primaryType"));
       try
       {

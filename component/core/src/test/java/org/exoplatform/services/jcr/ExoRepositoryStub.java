@@ -180,12 +180,12 @@ public class ExoRepositoryStub extends RepositoryStub
 
       InternalQName testVersioable = session.getLocationFactory().parseJCRName("test:versionable").getInternalName();
       NodeTypeDataManager ntHolder = session.getWorkspace().getNodeTypesHolder();
-      if (ntHolder.findNodeType(testVersioable) == null)
+      if (ntHolder.getNodeType(testVersioable) == null)
       {
          InputStream xml = getResource("test-nodetypes.xml");
          try
          {
-            ntHolder.registerNodeTypes(xml, ExtendedNodeTypeManager.FAIL_IF_EXISTS);
+            ntHolder.registerNodeTypes(xml, ExtendedNodeTypeManager.FAIL_IF_EXISTS, NodeTypeDataManager.TEXT_XML);
          }
          finally
          {

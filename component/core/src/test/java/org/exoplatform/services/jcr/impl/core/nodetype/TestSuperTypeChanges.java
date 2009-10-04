@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.nodetype;
 
-import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeValue;
 import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionValue;
@@ -39,21 +38,12 @@ import javax.jcr.nodetype.ConstraintViolationException;
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: $
  */
-public class TestSuperTypeChanges extends JcrImplBaseTest
+public class TestSuperTypeChanges extends AbstractNodeTypeTest
 {
    /**
     * Class logger.
     */
    private static final Log LOG = ExoLogger.getLogger(TestSuperTypeChanges.class);
-
-   private NodeTypeManagerImpl nodeTypeManager;
-
-   @Override
-   public void setUp() throws Exception
-   {
-      super.setUp();
-      nodeTypeManager = (NodeTypeManagerImpl)session.getWorkspace().getNodeTypeManager();
-   }
 
    /**
     * @throws Exception

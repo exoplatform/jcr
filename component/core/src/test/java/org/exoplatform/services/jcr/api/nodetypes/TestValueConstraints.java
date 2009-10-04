@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.api.nodetypes;
 
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
 
 import java.io.ByteArrayInputStream;
@@ -30,6 +31,7 @@ import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.PropertyType;
 import javax.jcr.Value;
+import javax.jcr.nodetype.ConstraintViolationException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -43,8 +45,6 @@ public class TestValueConstraints extends JcrAPIBaseTest
    private NodeTypeManagerImpl ntManager = null;
 
    private Node refNodeNtUnstructured = null;
-
-   private Node refNodeNtBase = null;
 
    private String nodeTypeName = "jcr:testValueConstraints";
 
@@ -65,7 +65,7 @@ public class TestValueConstraints extends JcrAPIBaseTest
       byte[] xmlData = readXmlContent("/org/exoplatform/services/jcr/api/nodetypes/nodetypes-api-test.xml");
       ByteArrayInputStream xmlInput = new ByteArrayInputStream(xmlData);
       ntManager = (NodeTypeManagerImpl)session.getWorkspace().getNodeTypeManager();
-      ntManager.registerNodeTypes(xmlInput, 0);
+      ntManager.registerNodeTypes(xmlInput, 0, NodeTypeDataManager.TEXT_XML);
       assertNotNull(ntManager.getNodeType(nodeTypeName));
       Node ntRoot = (Node)repository.getSystemSession().getItem(NodeTypeManagerImpl.NODETYPES_ROOT);
       assertTrue(ntRoot.hasNode(nodeTypeName));
@@ -73,8 +73,6 @@ public class TestValueConstraints extends JcrAPIBaseTest
       testValueConstraintsNode.addMixin("mix:referenceable");
       refNodeNtUnstructured = root.addNode("testref", "nt:unstructured");
       refNodeNtUnstructured.addMixin("mix:referenceable");
-      refNodeNtBase = root.addNode("testref", "nt:base");
-      refNodeNtBase.addMixin("mix:referenceable");
       session.save();
    }
 
@@ -82,11 +80,11 @@ public class TestValueConstraints extends JcrAPIBaseTest
    {
 
       Property testProperty = testValueConstraintsNode.setProperty("jcr:testSTRING1", "abc");
-      root.save();
+      session.save();
       try
       {
          testProperty.setValue("abcd");
-         root.save();
+         session.save();
          fail("setValue(STRING value) must throw a ConstraintViolationException ");
       }
       catch (Exception e)
@@ -103,7 +101,7 @@ public class TestValueConstraints extends JcrAPIBaseTest
       testProperty.setValue("");
       testProperty.setValue("1234");
       testProperty.setValue("true");
-      root.save();
+      session.save();
    }
 
    public void testPATHProperty() throws Exception
@@ -113,11 +111,11 @@ public class TestValueConstraints extends JcrAPIBaseTest
          testValueConstraintsNode.setProperty("jcr:testPATH", valueFactory.createValue("/abc", PropertyType.PATH));
       Value value = valueFactory.createValue("../exojcrtest:def/ghi", PropertyType.PATH);
       testProperty.setValue(value);
-      root.save();
+      session.save();
       try
       {
          testProperty.setValue(valueFactory.createValue("/abcd", PropertyType.PATH));
-         root.save();
+         session.save();
          fail("setValue(PATH value) must throw a ConstraintViolationException ");
       }
       catch (Exception e)
@@ -127,7 +125,7 @@ public class TestValueConstraints extends JcrAPIBaseTest
       try
       {
          testProperty.setValue(valueFactory.createValue("../abc", PropertyType.PATH));
-         root.save();
+         session.save();
          fail("setValue(PATH value) must throw a ConstraintViolationException ");
       }
       catch (Exception e)
@@ -141,11 +139,11 @@ public class TestValueConstraints extends JcrAPIBaseTest
 
       Property testProperty = testValueConstraintsNode.setProperty("jcr:testNAME", valueFactory.createValue("abc:"));
       testProperty.setValue(valueFactory.createValue("abc:def"));
-      root.save();
+      session.save();
       try
       {
          testProperty.setValue(valueFactory.createValue("/abcd"));
-         root.save();
+         session.save();
          fail("setValue(NAME value) must throw a ConstraintViolationException ");
       }
       catch (Exception e)
@@ -155,25 +153,8 @@ public class TestValueConstraints extends JcrAPIBaseTest
       try
       {
          testProperty.setValue(valueFactory.createValue("abc:de"));
-         root.save();
+         session.save();
          fail("setValue(NAME value) must throw a ConstraintViolationException ");
-      }
-      catch (Exception e)
-      {
-         // success
-      }
-   }
-
-   public void testREFERENCEProperty() throws Exception
-   {
-
-      Property testProperty = testValueConstraintsNode.setProperty("jcr:testREFERENCE", refNodeNtUnstructured);
-      root.save();
-      try
-      {
-         testProperty.setValue(refNodeNtBase);
-         root.save();
-         fail("setValue(REFERENCE value) must throw a ConstraintViolationException ");
       }
       catch (Exception e)
       {
@@ -187,7 +168,7 @@ public class TestValueConstraints extends JcrAPIBaseTest
       Property testProperty =
          testValueConstraintsNode.setProperty("jcr:testBINARYINCLUSIVE", new FileInputStream(LOCAL_SMALL_FILE));
       testProperty.setValue(new FileInputStream(LOCAL_BIG_FILE));
-      root.save();
+      session.save();
    }
 
    public void testBINARYEXCLUSIVEProperty() throws Exception
@@ -198,7 +179,7 @@ public class TestValueConstraints extends JcrAPIBaseTest
          Property testProperty =
             testValueConstraintsNode.setProperty("jcr:testBINARYEXCLUSIVE", new FileInputStream(LOCAL_SMALL_FILE));
          testProperty.setValue(new FileInputStream(LOCAL_BIG_FILE));
-         root.save();
+         session.save();
          fail("setValue(BINARY value) must throw a ConstraintViolationException ");
       }
       catch (Exception e)
@@ -210,7 +191,7 @@ public class TestValueConstraints extends JcrAPIBaseTest
       {
          Property testProperty =
             testValueConstraintsNode.setProperty("jcr:testBINARYEXCLUSIVE", new FileInputStream(LOCAL_NORMAL_FILE));
-         root.save();
+         session.save();
          fail("setValue(BINARY value) must throw a ConstraintViolationException ");
       }
       catch (Exception e)
@@ -226,7 +207,7 @@ public class TestValueConstraints extends JcrAPIBaseTest
          testValueConstraintsNode.setProperty("jcr:testDATEINCLUSIVE", valueFactory.createValue(
             "1111-11-11T11:11:11.111Z", PropertyType.DATE));
       testProperty.setValue(valueFactory.createValue("1222-11-11T11:11:11.111Z", PropertyType.DATE));
-      root.save();
+      session.save();
    }
 
    public void testDATEEXCLUSIVEProperty() throws Exception
@@ -238,7 +219,7 @@ public class TestValueConstraints extends JcrAPIBaseTest
             testValueConstraintsNode.setProperty("jcr:testDATEEXCLUSIVE", valueFactory.createValue(
                "1111-11-11T11:11:11.111Z", PropertyType.DATE));
          testProperty.setValue(valueFactory.createValue("1222-11-11T11:11:11.111Z", PropertyType.DATE));
-         root.save();
+         session.save();
          fail("setValue(DATE value) must throw a ConstraintViolationException ");
       }
       catch (Exception e)
@@ -251,7 +232,7 @@ public class TestValueConstraints extends JcrAPIBaseTest
          Property testProperty =
             testValueConstraintsNode.setProperty("jcr:testDATEEXCLUSIVE", valueFactory.createValue(
                "1155-11-11T11:11:11.111Z", PropertyType.DATE));
-         root.save();
+         session.save();
          fail("setValue(DATE value) must throw a ConstraintViolationException ");
       }
       catch (Exception e)
@@ -265,7 +246,7 @@ public class TestValueConstraints extends JcrAPIBaseTest
 
       Property testProperty = testValueConstraintsNode.setProperty("jcr:testLONGINCLUSIVE", 100);
       testProperty.setValue(200);
-      root.save();
+      session.save();
    }
 
    public void testLONGEXCLUSIVEProperty() throws Exception
@@ -275,7 +256,7 @@ public class TestValueConstraints extends JcrAPIBaseTest
       {
          Property testProperty = testValueConstraintsNode.setProperty("jcr:testLONGEXCLUSIVE", 100);
          testProperty.setValue(200);
-         root.save();
+         session.save();
          fail("setValue(LONG value) must throw a ConstraintViolationException ");
       }
       catch (Exception e)
@@ -286,7 +267,7 @@ public class TestValueConstraints extends JcrAPIBaseTest
       try
       {
          Property testProperty = testValueConstraintsNode.setProperty("jcr:testLONGEXCLUSIVE", 150);
-         root.save();
+         session.save();
          fail("setValue(LONG value) must throw a ConstraintViolationException ");
       }
       catch (Exception e)
@@ -300,7 +281,7 @@ public class TestValueConstraints extends JcrAPIBaseTest
 
       Property testProperty = testValueConstraintsNode.setProperty("jcr:testDOUBLEINCLUSIVE", 100);
       testProperty.setValue(200);
-      root.save();
+      session.save();
    }
 
    public void testDOUBLEEXCLUSIVEProperty() throws Exception
@@ -310,7 +291,7 @@ public class TestValueConstraints extends JcrAPIBaseTest
       {
          Property testProperty = testValueConstraintsNode.setProperty("jcr:testDOUBLEEXCLUSIVE", 100);
          testProperty.setValue(200);
-         root.save();
+         session.save();
          fail("setValue(DOUBLE value) must throw a ConstraintViolationException ");
       }
       catch (Exception e)
@@ -321,7 +302,7 @@ public class TestValueConstraints extends JcrAPIBaseTest
       try
       {
          Property testProperty = testValueConstraintsNode.setProperty("jcr:testDOUBLEEXCLUSIVE", 150);
-         root.save();
+         session.save();
          fail("setValue(DOUBLE value) must throw a ConstraintViolationException ");
       }
       catch (Exception e)
@@ -334,15 +315,16 @@ public class TestValueConstraints extends JcrAPIBaseTest
    {
 
       Property testProperty = testValueConstraintsNode.setProperty("jcr:testBOOLEAN", true);
-      root.save();
+      session.save();
       try
       {
          testProperty.setValue(false);
-         root.save();
+         session.save();
+         fail();
       }
-      catch (Exception e)
+      catch (ConstraintViolationException e)
       {
-         fail("setValue(BOOLEAN value) here should be no Exception ");
+         // ok
       }
    }
 

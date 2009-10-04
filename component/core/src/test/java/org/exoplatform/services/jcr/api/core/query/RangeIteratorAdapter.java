@@ -16,6 +16,8 @@
  */
 package org.exoplatform.services.jcr.api.core.query;
 
+import org.exoplatform.services.jcr.impl.core.query.lucene.TwoWayRangeIterator;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -28,7 +30,7 @@ import javax.jcr.RangeIterator;
  * This helper class is used by the adapter classes in this package to
  * implement the JCR iterator interfaces on top of normal Java iterators.
  */
-public class RangeIteratorAdapter implements RangeIterator {
+public class RangeIteratorAdapter implements TwoWayRangeIterator {
 
     /**
      * Static instance of an empty {@link RangeIterator}.
@@ -175,5 +177,23 @@ public class RangeIteratorAdapter implements RangeIterator {
             size--;
         }
     }
+
+   public void skipBack(long skipNum)
+   {
+      if (skipNum < 0)
+      {
+         throw new IllegalArgumentException("skipNum must not be negative");
+      }
+      if ((position - skipNum) < 0)
+      {
+         throw new NoSuchElementException();
+      }
+      if (skipNum > 0)
+      {
+         position -= skipNum + 1;
+         next();
+      }
+      
+   }
 
 }

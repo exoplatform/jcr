@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.api.nodetypes;
 
 import org.exoplatform.services.jcr.JcrImplBaseTest;
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
 
 import java.io.ByteArrayInputStream;
@@ -35,8 +36,9 @@ import javax.jcr.nodetype.NoSuchNodeTypeException;
 import javax.jcr.version.VersionException;
 
 /**
- * Created by The eXo Platform SAS Author : Alex Reshetnyak alex.reshetnyak@exoplatform.com.ua
- * reshetnyak.alex@gmail.com 13.03.2007 18:00:03
+ * Created by The eXo Platform SAS Author : Alex Reshetnyak
+ * alex.reshetnyak@exoplatform.com.ua reshetnyak.alex@gmail.com 13.03.2007
+ * 18:00:03
  * 
  * @version $Id: TestAutoCreatedProperty.java 13.03.2007 18:00:03 rainfox
  */
@@ -52,7 +54,7 @@ public class TestAutoCreatedProperty extends JcrImplBaseTest
       byte[] xmlData = readXmlContent("/org/exoplatform/services/jcr/api/nodetypes/nodetypes-api-test.xml");
       ByteArrayInputStream xmlInput = new ByteArrayInputStream(xmlData);
       ntManager = (NodeTypeManagerImpl)session.getWorkspace().getNodeTypeManager();
-      ntManager.registerNodeTypes(xmlInput, 0);
+      ntManager.registerNodeTypes(xmlInput, 0, NodeTypeDataManager.TEXT_XML);
       assertNotNull(ntManager.getNodeType("exo:autoCreate"));
       assertNotNull(ntManager.getNodeType("exo:refRoot"));
       assertNotNull(ntManager.getNodeType("exo:autoCreate2"));
