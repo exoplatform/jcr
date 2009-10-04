@@ -16,19 +16,19 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import javax.jcr.RangeIterator;
 
 /**
  * A range iterator over {@link ScoreNode}[].
  */
-public interface ScoreNodeIterator extends RangeIterator {
+public interface ScoreNodeIterator extends  TwoWayRangeIterator
+{
 
-    /**
-     * Returns the next score nodes.
-     *
-     * @return the next score nodes.
-     * @throws java.util.NoSuchElementException
-     *          if there are no next score nodes.
-     */
-    ScoreNode[] nextScoreNodes();
+   /**
+    * Returns the next score nodes.
+    *
+    * @return the next score nodes.
+    * @throws java.util.NoSuchElementException
+    *          if there are no next score nodes.
+    */
+   ScoreNode[] nextScoreNodes();
 }

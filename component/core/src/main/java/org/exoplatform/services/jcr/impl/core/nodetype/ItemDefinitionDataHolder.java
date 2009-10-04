@@ -58,6 +58,15 @@ public class ItemDefinitionDataHolder
       this.defNodeDefinitions = new HashMap<DefaultNodeDefKey, NodeDefinitionData>();
    }
 
+   private ItemDefinitionDataHolder(HashMap<ChildNodeDefKey, NodeDefinitionData> nodeDefinitions,
+      HashMap<PropertyDefKey, PropertyDefinitionData> propertyDefinitions,
+      HashMap<DefaultNodeDefKey, NodeDefinitionData> defNodeDefinitions)
+   {
+      this.nodeDefinitions = nodeDefinitions;
+      this.propertyDefinitions = propertyDefinitions;
+      this.defNodeDefinitions = defNodeDefinitions;
+   }
+
    /**
     * @param parentNodeType - name of parent node type
     * @param childName name of child node
@@ -265,8 +274,21 @@ public class ItemDefinitionDataHolder
       return def;
    }
 
+   /**
+    * Create copy of holder.
+    * 
+    * @return
+    */
+   protected ItemDefinitionDataHolder createCopy()
+   {
+      return new ItemDefinitionDataHolder(new HashMap<ChildNodeDefKey, NodeDefinitionData>(nodeDefinitions),
+         new HashMap<PropertyDefKey, PropertyDefinitionData>(propertyDefinitions),
+         new HashMap<DefaultNodeDefKey, NodeDefinitionData>(defNodeDefinitions));
+   }
+
    private class ChildNodeDefKey extends ItemDefKey
    {
+      private int hashCode = -1;
 
       private final InternalQName childNodeType;
 
@@ -319,11 +341,16 @@ public class ItemDefinitionDataHolder
       @Override
       public int hashCode()
       {
-         final int prime = 31;
-         int result = super.hashCode();
-         result = prime * result + getOuterType().hashCode();
-         result = prime * result + ((childNodeType == null) ? 0 : childNodeType.hashCode());
-         return result;
+         if (hashCode == -1)
+         {
+            final int prime = 31;
+            int result = super.hashCode();
+            result = prime * result + getOuterType().hashCode();
+            result = prime * result + ((childNodeType == null) ? 0 : childNodeType.hashCode());
+            hashCode = result;
+         }
+
+         return hashCode;
       }
 
       /**
@@ -364,6 +391,8 @@ public class ItemDefinitionDataHolder
       private final InternalQName parentNodeType;
 
       private final InternalQName childName;
+
+      private int hashCode = -1;
 
       protected ItemDefKey(InternalQName parentNodeType, InternalQName childName)
       {
@@ -425,12 +454,16 @@ public class ItemDefinitionDataHolder
       @Override
       public int hashCode()
       {
-         final int prime = 31;
-         int result = 1;
-         result = prime * result + getOuterType().hashCode();
-         result = prime * result + ((childName == null) ? 0 : childName.hashCode());
-         result = prime * result + ((parentNodeType == null) ? 0 : parentNodeType.hashCode());
-         return result;
+         if (hashCode == -1)
+         {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + getOuterType().hashCode();
+            result = prime * result + ((childName == null) ? 0 : childName.hashCode());
+            result = prime * result + ((parentNodeType == null) ? 0 : parentNodeType.hashCode());
+            hashCode = result;
+         }
+         return hashCode;
       }
 
       /**
@@ -455,6 +488,8 @@ public class ItemDefinitionDataHolder
    {
 
       private final boolean multiValued;
+
+      private int hashCode = -1;
 
       private PropertyDefKey(InternalQName parentNodeType, InternalQName childName, boolean multiValued)
       {
@@ -498,11 +533,16 @@ public class ItemDefinitionDataHolder
       @Override
       public int hashCode()
       {
-         final int prime = 31;
-         int result = super.hashCode();
-         result = prime * result + getOuterType().hashCode();
-         result = prime * result + (multiValued ? 1231 : 1237);
-         return result;
+         if (hashCode == -1)
+         {
+            final int prime = 31;
+            int result = super.hashCode();
+            result = prime * result + getOuterType().hashCode();
+            result = prime * result + (multiValued ? 1231 : 1237);
+            hashCode = result;
+         }
+
+         return hashCode;
       }
 
       /**

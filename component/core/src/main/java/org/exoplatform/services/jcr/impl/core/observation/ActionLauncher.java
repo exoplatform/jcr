@@ -219,7 +219,7 @@ public class ActionLauncher implements ItemsPersistenceListener
       for (int i = 0; i < criteria.getNodeTypeName().length; i++)
       {
          InternalQName name = locationFactory.parseJCRName(criteria.getNodeTypeName()[i]).getInternalName();
-         NodeTypeData criteriaNT = ntManager.findNodeType(name);
+         NodeTypeData criteriaNT = ntManager.getNodeType(name);
          InternalQName[] testQNames;
          if (criteriaNT.isMixin())
          {

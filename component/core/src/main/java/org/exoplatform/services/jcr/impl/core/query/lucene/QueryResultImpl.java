@@ -505,6 +505,32 @@ public abstract class QueryResultImpl implements QueryResult
             }
          }
       }
+      /**
+       * 
+       * @see org.exoplatform.services.jcr.impl.core.query.lucene.TwoWayRangeIterator#skipBack(long)
+       */
+      public void skipBack(long skipNum)
+      {
+         initialize();
+         if (skipNum < 0)
+         {
+            throw new IllegalArgumentException("skipNum must not be negative");
+         }
+         if ((position - skipNum) < 0)
+         {
+            throw new NoSuchElementException();
+         }
+         if (skipNum == 0)
+         {
+            // do nothing
+         }
+         else
+         {
+            position -= skipNum + 1;
+            fetchNext();
+         }
+         
+      }
 
       /**
        * {@inheritDoc}

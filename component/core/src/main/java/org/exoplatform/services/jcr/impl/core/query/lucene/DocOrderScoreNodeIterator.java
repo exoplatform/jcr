@@ -104,8 +104,17 @@ class DocOrderScoreNodeIterator implements ScoreNodeIterator {
         initOrderedIterator();
         orderedNodes.skip(skipNum);
     }
-
     /**
+     * {@inheritDoc}
+     */
+    public void skipBack(long skipNum)
+   {
+       initOrderedIterator();
+       orderedNodes.skipBack(skipNum);
+      
+   }
+
+   /**
      * Returns the number of nodes in this iterator.
      * </p>
      * Note: The number returned by this method may differ from the number

@@ -20,9 +20,13 @@ package org.exoplatform.services.jcr.impl.core;
 
 import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.access.AccessControlList;
+import org.exoplatform.services.jcr.access.AccessControlPolicy;
+import org.exoplatform.services.jcr.config.RepositoryEntry;
+import org.exoplatform.services.jcr.core.ComponentPersister;
 import org.exoplatform.services.jcr.core.ExtendedPropertyType;
 import org.exoplatform.services.jcr.dataflow.DataManager;
 import org.exoplatform.services.jcr.dataflow.ItemState;
+import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
 import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
@@ -45,130 +49,38 @@ import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.jcr.InvalidItemStateException;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.
  * 
- * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov</a>
- * @version $Id: NamespaceDataPersister.java 13962 2008-05-07 16:00:48Z pnedonosko $
+ * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady
+ *         Azarenkov</a>
+ * @version $Id: NamespaceDataPersister.java 13962 2008-05-07 16:00:48Z
+ *          pnedonosko $
  */
 
-public class NamespaceDataPersister
+public class NamespaceDataPersister implements ComponentPersister
 {
 
-   public static Log log = ExoLogger.getLogger("jcr.NamespaceDataPersister");
+   public static Log log = ExoLogger.getLogger(NamespaceDataPersister.class.getName());
 
-   private DataManager dataManager;
-
-   private PlainChangesLog changesLog;
+   private final DataManager dataManager;
 
    private NodeData nsRoot;
 
-   public NamespaceDataPersister(DataManager dataManager)
+   private final RepositoryEntry repConfig;
+
+   private boolean started = false;
+
+   public NamespaceDataPersister(DataManager dataManager, RepositoryEntry repConfig) throws RepositoryException
    {
       this.dataManager = dataManager;
-      this.changesLog = new PlainChangesLogImpl();
-      try
-      {
-         NodeData jcrSystem = (NodeData)dataManager.getItemData(Constants.SYSTEM_UUID);
-         if (jcrSystem != null)
-            this.nsRoot = (NodeData)dataManager.getItemData(jcrSystem, new QPathEntry(Constants.EXO_NAMESPACES, 1));
-      }
-      catch (RepositoryException e)
-      {
-         log.warn("Namespace storage (/jcr:system/exo:namespaces node) is not initialized");
-      }
-   }
-
-   DataManager getDataManager()
-   {
-      return dataManager;
-   }
-
-   /**
-    * Creates namespaces storage and fill it with given namespaces.
-    * 
-    * @param nsSystem
-    * @param addACL
-    * @param namespaces
-    * @throws RepositoryException
-    */
-   public void initStorage(NodeData nsSystem, boolean addACL, Map<String, String> namespaces)
-      throws RepositoryException
-   {
-
-      TransientNodeData exoNamespaces =
-         TransientNodeData.createNodeData(nsSystem, Constants.EXO_NAMESPACES, Constants.NT_UNSTRUCTURED);
-
-      TransientPropertyData primaryType =
-         TransientPropertyData.createPropertyData(exoNamespaces, Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false);
-      primaryType.setValue(new TransientValueData(exoNamespaces.getPrimaryTypeName()));
-
-      changesLog.add(ItemState.createAddedState(exoNamespaces)).add(ItemState.createAddedState(primaryType));
-
-      if (addACL)
-      {
-         AccessControlList acl = new AccessControlList();
-
-         InternalQName[] mixins = new InternalQName[]{Constants.EXO_OWNEABLE, Constants.EXO_PRIVILEGEABLE};
-         exoNamespaces.setMixinTypeNames(mixins);
-
-         // jcr:mixinTypes
-         List<ValueData> mixValues = new ArrayList<ValueData>();
-         for (InternalQName mixin : mixins)
-         {
-            mixValues.add(new TransientValueData(mixin));
-         }
-         TransientPropertyData exoMixinTypes =
-            TransientPropertyData.createPropertyData(exoNamespaces, Constants.JCR_MIXINTYPES, PropertyType.NAME, true,
-               mixValues);
-
-         TransientPropertyData exoOwner =
-            TransientPropertyData.createPropertyData(exoNamespaces, Constants.EXO_OWNER, PropertyType.STRING, false,
-               new TransientValueData(acl.getOwner()));
-
-         List<ValueData> permsValues = new ArrayList<ValueData>();
-         for (int i = 0; i < acl.getPermissionEntries().size(); i++)
-         {
-            AccessControlEntry entry = acl.getPermissionEntries().get(i);
-            permsValues.add(new TransientValueData(entry));
-         }
-         TransientPropertyData exoPerms =
-            TransientPropertyData.createPropertyData(exoNamespaces, Constants.EXO_PERMISSIONS,
-               ExtendedPropertyType.PERMISSION, true, permsValues);
-
-         changesLog.add(ItemState.createAddedState(exoMixinTypes)).add(ItemState.createAddedState(exoOwner)).add(
-            ItemState.createAddedState(exoPerms));
-         changesLog.add(new ItemState(exoNamespaces, ItemState.MIXIN_CHANGED, false, null));
-      }
-
-      nsRoot = exoNamespaces;
-
-      Iterator<String> i = namespaces.keySet().iterator();
-      while (i.hasNext())
-      {
-         String nsKey = i.next();
-         if (nsKey != null)
-         {
-            if (log.isDebugEnabled())
-               log.debug("Namespace " + nsKey + " " + namespaces.get(nsKey));
-            addNamespace(nsKey, namespaces.get(nsKey));
-            if (log.isDebugEnabled())
-               log.debug("Namespace " + nsKey + " is initialized.");
-         }
-         else
-         {
-            log.warn("Namespace is " + nsKey + " " + namespaces.get(nsKey));
-         }
-      }
-      saveChanges();
+      this.repConfig = repConfig;
    }
 
    /**
@@ -183,13 +95,21 @@ public class NamespaceDataPersister
     */
    public void addNamespace(String prefix, String uri) throws RepositoryException
    {
-
-      if (!isInialized())
+      if (!started)
       {
-         log.warn("Namespace storage (/jcr:system/exo:namespaces node) is not initialized");
+         if(log.isDebugEnabled())
+         log.debug("Unable save namespace " + uri + "=" + prefix + " in to the storage. Storage not initialized");
          return;
       }
+      PlainChangesLog changesLog = new PlainChangesLogImpl();
+      internallAdd(changesLog, prefix, uri);
 
+      dataManager.save(new TransactionChangesLog(changesLog));
+
+   }
+
+   private PlainChangesLog internallAdd(PlainChangesLog changesLog, String prefix, String uri)
+   {
       TransientNodeData nsNode =
          TransientNodeData.createNodeData(nsRoot, new InternalQName("", prefix), Constants.EXO_NAMESPACE);
 
@@ -207,17 +127,65 @@ public class NamespaceDataPersister
 
       changesLog.add(ItemState.createAddedState(nsNode)).add(ItemState.createAddedState(primaryType)).add(
          ItemState.createAddedState(exoUri)).add(ItemState.createAddedState(exoPrefix));
+      return changesLog;
+   }
 
+   /**
+    * Add new namespace.
+    * 
+    * @param prefix NS prefix
+    * @param uri NS URI
+    * @throws RepositoryException Repository error
+    */
+   public void addNamespaces(Map<String, String> namespaceMap) throws RepositoryException
+   {
+      if (!started)
+      {
+         log.warn("Unable save namespaces in to the storage. Storage not initialized");
+         return;
+      }
+
+      PlainChangesLog changesLog = new PlainChangesLogImpl();
+      for (Map.Entry<String, String> entry : namespaceMap.entrySet())
+      {
+         String prefix = entry.getKey();
+         String uri = entry.getValue();
+
+         if (prefix != null)
+         {
+            if (log.isDebugEnabled())
+               log.debug("Namespace " + uri + ":" + prefix);
+            internallAdd(changesLog, prefix, uri);
+         }
+      }
+         dataManager.save(new TransactionChangesLog(changesLog));
+
+   }
+
+   public boolean isStorageFilled()
+   {
+      try
+      {
+         List<NodeData> storageContent = dataManager.getChildNodesData(nsRoot);
+         return storageContent.size() > 0;
+      }
+      catch (RepositoryException e)
+      {
+         log.error(e.getLocalizedMessage(), e);
+
+      }
+      return false;
    }
 
    public void removeNamespace(String prefix) throws RepositoryException
    {
 
-      if (!isInialized())
+      if (!started)
       {
-         log.warn("Namespace storage (/jcr:system/exo:namespaces node) is not initialized");
+         log.warn("Unable remove namspace "+prefix+" from the storage. Storage not initialized");
          return;
       }
+
       PlainChangesLogImpl plainChangesLogImpl = new PlainChangesLogImpl();
       ItemData prefData = dataManager.getItemData(nsRoot, new QPathEntry(new InternalQName("", prefix), 0));
 
@@ -237,7 +205,58 @@ public class NamespaceDataPersister
 
       }
 
-      dataManager.save(new TransactionChangesLog(plainChangesLogImpl));
+         dataManager.save(new TransactionChangesLog(plainChangesLogImpl));
+
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void start()
+   {
+      if (!started)
+      {
+         try
+         {
+            NodeData jcrSystem = (NodeData)dataManager.getItemData(Constants.SYSTEM_UUID);
+            if (jcrSystem != null)
+            {
+               NodeData exoNamespaces =
+                  (NodeData)dataManager.getItemData(jcrSystem, new QPathEntry(Constants.EXO_NAMESPACES, 1));
+               if (exoNamespaces == null)
+               {
+                  initStorage(jcrSystem, !repConfig.getAccessControl().equals(AccessControlPolicy.DISABLE));
+                  this.nsRoot =
+                     (NodeData)dataManager.getItemData(jcrSystem, new QPathEntry(Constants.EXO_NAMESPACES, 1));
+               }
+               else
+               {
+                  this.nsRoot = exoNamespaces;
+               }
+            }
+            else
+            {
+               throw new RepositoryException("Nodetypes storage (/jcr:systemnode) is not initialized.");
+
+            }
+         }
+         catch (RepositoryException e)
+         {
+            throw new RuntimeException(e.getLocalizedMessage(), e);
+         }
+
+         started = true;
+      }
+   }
+
+   public void stop()
+   {
+   }
+
+   @Deprecated
+   DataManager getDataManager()
+   {
+      return dataManager;
    }
 
    void loadNamespaces(Map<String, String> namespacesMap, Map<String, String> urisMap) throws RepositoryException
@@ -294,16 +313,6 @@ public class NamespaceDataPersister
          log.warn("Namespace storage (/jcr:system/exo:namespaces node) is not initialized. No namespaces loaded.");
    }
 
-   void saveChanges() throws RepositoryException, InvalidItemStateException
-   {
-      dataManager.save(new TransactionChangesLog(changesLog));
-      changesLog = new PlainChangesLogImpl();
-   }
-
-   private boolean isInialized()
-   {
-      return nsRoot != null;
-   }
 
    /**
     * Copy <code>PropertyData prop<code> to new TransientItemData
@@ -335,5 +344,72 @@ public class NamespaceDataPersister
       }
       newData.setValues(values);
       return newData;
+   }
+
+   /**
+    * Creates namespaces storage and fill it with given namespaces.
+    * 
+    * @param nsSystem
+    * @param addACL
+    * @param namespaces
+    * @throws RepositoryException
+    */
+   private void initStorage(NodeData nsSystem, boolean addACL) throws RepositoryException
+   {
+      PlainChangesLog changesLog = new PlainChangesLogImpl();
+      TransientNodeData exoNamespaces =
+         TransientNodeData.createNodeData(nsSystem, Constants.EXO_NAMESPACES, Constants.NT_UNSTRUCTURED);
+
+      TransientPropertyData primaryType =
+         TransientPropertyData.createPropertyData(exoNamespaces, Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false);
+      primaryType.setValue(new TransientValueData(exoNamespaces.getPrimaryTypeName()));
+
+      changesLog.add(ItemState.createAddedState(exoNamespaces)).add(ItemState.createAddedState(primaryType));
+
+      if (addACL)
+      {
+         AccessControlList acl = new AccessControlList();
+
+         InternalQName[] mixins = new InternalQName[]{Constants.EXO_OWNEABLE, Constants.EXO_PRIVILEGEABLE};
+         exoNamespaces.setMixinTypeNames(mixins);
+
+         // jcr:mixinTypes
+         List<ValueData> mixValues = new ArrayList<ValueData>();
+         for (InternalQName mixin : mixins)
+         {
+            mixValues.add(new TransientValueData(mixin));
+         }
+         TransientPropertyData exoMixinTypes =
+            TransientPropertyData.createPropertyData(exoNamespaces, Constants.JCR_MIXINTYPES, PropertyType.NAME, true,
+               mixValues);
+
+         TransientPropertyData exoOwner =
+            TransientPropertyData.createPropertyData(exoNamespaces, Constants.EXO_OWNER, PropertyType.STRING, false,
+               new TransientValueData(acl.getOwner()));
+
+         List<ValueData> permsValues = new ArrayList<ValueData>();
+         for (int i = 0; i < acl.getPermissionEntries().size(); i++)
+         {
+            AccessControlEntry entry = acl.getPermissionEntries().get(i);
+            permsValues.add(new TransientValueData(entry));
+         }
+         TransientPropertyData exoPerms =
+            TransientPropertyData.createPropertyData(exoNamespaces, Constants.EXO_PERMISSIONS,
+               ExtendedPropertyType.PERMISSION, true, permsValues);
+
+         changesLog.add(ItemState.createAddedState(exoMixinTypes)).add(ItemState.createAddedState(exoOwner)).add(
+            ItemState.createAddedState(exoPerms));
+         changesLog.add(new ItemState(exoNamespaces, ItemState.MIXIN_CHANGED, false, null));
+      }
+
+      nsRoot = exoNamespaces;
+      dataManager.save(new TransactionChangesLog(changesLog));
+   }
+
+   // TODO remove me
+   @Deprecated
+   private boolean isInialized()
+   {
+      return nsRoot != null;
    }
 }

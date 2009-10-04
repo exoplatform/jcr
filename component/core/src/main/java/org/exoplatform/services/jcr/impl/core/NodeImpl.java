@@ -44,6 +44,7 @@ import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.itemfilters.ItemFilter;
 import org.exoplatform.services.jcr.impl.core.itemfilters.NamePatternFilter;
 import org.exoplatform.services.jcr.impl.core.lock.LockImpl;
+import org.exoplatform.services.jcr.impl.core.nodetype.ItemAutocreator;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeDefinitionImpl;
 import org.exoplatform.services.jcr.impl.core.version.ItemDataMergeVisitor;
 import org.exoplatform.services.jcr.impl.core.version.VersionHistoryImpl;
@@ -183,7 +184,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          }
       }
 
-      NodeTypeData type = session.getWorkspace().getNodeTypesHolder().findNodeType(name);
+      NodeTypeData type = session.getWorkspace().getNodeTypesHolder().getNodeType(name);
 
       // Mixin or not
       if (type == null || !type.isMixin())
@@ -240,7 +241,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       // find node type
       NodeDefinitionData nodeDef =
-         session.getWorkspace().getNodeTypesHolder().findChildNodeDefinition(name, nodeData().getPrimaryTypeName(),
+         session.getWorkspace().getNodeTypesHolder().getChildNodeDefinition(name, nodeData().getPrimaryTypeName(),
             nodeData().getMixinTypeNames());
 
       if (nodeDef == null)
@@ -300,7 +301,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       checkValid();
 
       NodeTypeData type =
-         session.getWorkspace().getNodeTypesHolder().findNodeType(
+         session.getWorkspace().getNodeTypesHolder().getNodeType(
             locationFactory.parseJCRName(mixinName).getInternalName());
 
       if (type == null)
@@ -584,8 +585,11 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       dataManager.update(state, false);
 
       NodeTypeDataManager ntmanager = session.getWorkspace().getNodeTypesHolder();
+      ItemAutocreator itemAutocreator = new ItemAutocreator(ntmanager, valueFactory, dataManager);
+
       PlainChangesLog changes =
-         ntmanager.makeAutoCreatedItems(nodeData(), type.getName(), dataManager, session.getUserID());
+         itemAutocreator.makeAutoCreatedItems(nodeData(), type.getName(), dataManager, session.getUserID());
+
       for (ItemState autoCreatedState : changes.getAllStates())
       {
          dataManager.update(autoCreatedState, false);
@@ -833,9 +837,13 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
             {
                NodeType required =
                   nodeTypeManager.getNodeType(locationFactory.createJCRName(Constants.NT_BASE).getAsString());
+               InternalQName requiredName = sysLocFactory.parseJCRName(required.getName()).getInternalName();
+               NodeDefinitionData ntData =
+                  new NodeDefinitionData(null, null, true, true, OnParentVersionAction.ABORT, false,
+                     new InternalQName[]{requiredName}, null, true);
                this.nodeDefinition =
-                  new NodeDefinitionImpl(null, null, new NodeType[]{required}, null, true, true,
-                     OnParentVersionAction.ABORT, false, false);
+                  new NodeDefinitionImpl(ntData, nodeTypesHolder, nodeTypeManager, sysLocFactory, session
+                     .getValueFactory());
             }
          }
          else
@@ -844,7 +852,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
             NodeData parent = (NodeData)dataManager.getItemData(getParentIdentifier());
 
             this.definition =
-               nodeTypesHolder.findChildNodeDefinition(getInternalName(), parent.getPrimaryTypeName(), parent
+               nodeTypesHolder.getChildNodeDefinition(getInternalName(), parent.getPrimaryTypeName(), parent
                   .getMixinTypeNames());
 
             if (definition == null)
@@ -857,17 +865,10 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
                rnts[j] = nodeTypeManager.findNodeType(rnames[j]);
             }
 
-            String name =
-               locationFactory.createJCRName(
-                  definition.getName() != null ? definition.getName() : Constants.JCR_ANY_NAME).getAsString();
-            NodeType defType =
-               definition.getDefaultPrimaryType() != null ? nodeTypeManager.findNodeType(definition
-                  .getDefaultPrimaryType()) : null;
-            NodeType declaringNodeType = nodeTypeManager.findNodeType(definition.getDeclaringNodeType());
             nodeDefinition =
-               new NodeDefinitionImpl(name, declaringNodeType, rnts, defType, definition.isAutoCreated(), definition
-                  .isMandatory(), definition.getOnParentVersion(), definition.isProtected(), definition
-                  .isAllowsSameNameSiblings());
+               new NodeDefinitionImpl(definition, nodeTypesHolder, nodeTypeManager, sysLocFactory, session
+                  .getValueFactory());
+
          }
       }
 
@@ -1020,11 +1021,11 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       // load nodeDatas
       List<NodeTypeData> nodeTypes = new ArrayList<NodeTypeData>();
-      nodeTypes.add(nodeTypeDataManager.findNodeType(nodeData().getPrimaryTypeName()));
+      nodeTypes.add(nodeTypeDataManager.getNodeType(nodeData().getPrimaryTypeName()));
       InternalQName[] mixinNames = nodeData().getMixinTypeNames();
       for (int i = 0; i < mixinNames.length; i++)
       {
-         nodeTypes.add(nodeTypeDataManager.findNodeType(mixinNames[i]));
+         nodeTypes.add(nodeTypeDataManager.getNodeType(mixinNames[i]));
       }
 
       // Searching default
@@ -2088,7 +2089,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       // Check if nodeType exists and not mixin
       NodeTypeDataManager nodeTypeDataManager = session.getWorkspace().getNodeTypesHolder();
-      NodeTypeData nodeType = nodeTypeDataManager.findNodeType(primaryTypeName);
+      NodeTypeData nodeType = nodeTypeDataManager.getNodeType(primaryTypeName);
       if (nodeType == null)
          throw new NoSuchNodeTypeException("Nodetype not found "
             + sysLocFactory.createJCRName(primaryTypeName).getAsString());
@@ -2109,7 +2110,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       }
       // Check if node is not protected
       NodeDefinitionData childNodeDefinition =
-         session.getWorkspace().getNodeTypesHolder().findChildNodeDefinition(name, nodeData().getPrimaryTypeName(),
+         session.getWorkspace().getNodeTypesHolder().getChildNodeDefinition(name, nodeData().getPrimaryTypeName(),
             nodeData().getMixinTypeNames());
       if (childNodeDefinition == null)
          throw new ConstraintViolationException("Can't find child node definition for "
@@ -2518,8 +2519,10 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       NodeImpl node = (NodeImpl)dataManager.update(state, true);
 
       NodeTypeDataManager ntmanager = session.getWorkspace().getNodeTypesHolder();
+      ItemAutocreator itemAutocreator = new ItemAutocreator(ntmanager, valueFactory, dataManager);
+
       PlainChangesLog changes =
-         ntmanager.makeAutoCreatedItems(node.nodeData(), primaryTypeName, dataManager, session.getUserID());
+         itemAutocreator.makeAutoCreatedItems(node.nodeData(), primaryTypeName, dataManager, session.getUserID());
       for (ItemState autoCreatedState : changes.getAllStates())
       {
          dataManager.update(autoCreatedState, false);
@@ -2547,7 +2550,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          if (sibling.getQPath().getName().equals(nameToAdd))
          {
             NodeDefinitionData def =
-               session.getWorkspace().getNodeTypesHolder().findChildNodeDefinition(nameToAdd,
+               session.getWorkspace().getNodeTypesHolder().getChildNodeDefinition(nameToAdd,
                   parentNode.getPrimaryTypeName(), parentNode.getMixinTypeNames());
             if (LOG.isDebugEnabled())
                LOG.debug("Calculate index for " + nameToAdd + " " + sibling.getQPath().getAsString());
@@ -2617,7 +2620,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       NodeData parent = (NodeData)dataManager.getItemData(getParentIdentifier());
 
       this.definition =
-         session.getWorkspace().getNodeTypesHolder().findChildNodeDefinition(getInternalName(),
+         session.getWorkspace().getNodeTypesHolder().getChildNodeDefinition(getInternalName(),
             parent.getPrimaryTypeName(), parent.getMixinTypeNames());
 
       if (definition == null)

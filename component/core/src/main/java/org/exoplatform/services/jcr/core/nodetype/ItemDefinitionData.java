@@ -22,11 +22,12 @@ import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.impl.Constants;
 
 /**
- * Created by The eXo Platform SAS. <br/>Date: 25.11.2008
+ * Created by The eXo Platform SAS. <br/>
+ * Date: 25.11.2008
  * 
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter
  *         Nedonosko</a>
- * @version $Id: ItemDefinitionData.java 34801 2009-07-31 15:44:50Z dkatayev $
+ * @version $Id: ItemDefinitionData.java 26474 2009-01-09 16:15:25Z ksm $
  */
 public class ItemDefinitionData
 {
@@ -59,20 +60,6 @@ public class ItemDefinitionData
       return this.getName().equals(Constants.JCR_ANY_NAME);
    }
 
-   @Override
-   public boolean equals(Object obj)
-   {
-      if (this == obj)
-         return true;
-      if ((obj == null) || (obj.getClass() != this.getClass()))
-         return false;
-      // object must be Test at this point
-      ItemDefinitionData test = (ItemDefinitionData)obj;
-      return name == test.name && declaringNodeType == test.declaringNodeType && autoCreated == test.autoCreated
-         && mandatory == test.mandatory && onParentVersion == test.onParentVersion
-         && protectedItem == test.protectedItem;
-   }
-
    public InternalQName getName()
    {
       return name;
@@ -86,6 +73,83 @@ public class ItemDefinitionData
    public boolean isAutoCreated()
    {
       return autoCreated;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + (autoCreated ? 1231 : 1237);
+      result = prime * result + ((declaringNodeType == null) ? 0 : declaringNodeType.hashCode());
+      result = prime * result + (mandatory ? 1231 : 1237);
+      result = prime * result + ((name == null) ? 0 : name.hashCode());
+      result = prime * result + onParentVersion;
+      result = prime * result + (protectedItem ? 1231 : 1237);
+      return result;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+      {
+         return true;
+      }
+      if (obj == null)
+      {
+         return false;
+      }
+      if (!(obj instanceof ItemDefinitionData))
+      {
+         return false;
+      }
+      ItemDefinitionData other = (ItemDefinitionData)obj;
+      if (autoCreated != other.autoCreated)
+      {
+         return false;
+      }
+      if (declaringNodeType == null)
+      {
+         if (other.declaringNodeType != null)
+         {
+            return false;
+         }
+      }
+      else if (!declaringNodeType.equals(other.declaringNodeType))
+      {
+         return false;
+      }
+      if (mandatory != other.mandatory)
+      {
+         return false;
+      }
+      if (name == null)
+      {
+         if (other.name != null)
+         {
+            return false;
+         }
+      }
+      else if (!name.equals(other.name))
+      {
+         return false;
+      }
+      if (onParentVersion != other.onParentVersion)
+      {
+         return false;
+      }
+      if (protectedItem != other.protectedItem)
+      {
+         return false;
+      }
+      return true;
    }
 
    public boolean isMandatory()
@@ -108,5 +172,4 @@ public class ItemDefinitionData
    {
       return name.getAsString();
    }
-
 }

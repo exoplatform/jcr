@@ -374,7 +374,7 @@ class AggregateRuleImpl implements AggregateRule
                {
                   // check name
                   InternalQName name = nodeState.getQPath().getName();
-                  if (elements[e].getName().equals(name))
+                  if (elements[e].equals(name))
                   {
                      nodeState = parent;
                   }

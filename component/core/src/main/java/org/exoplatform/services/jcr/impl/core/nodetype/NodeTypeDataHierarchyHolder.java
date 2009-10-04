@@ -48,23 +48,33 @@ public class NodeTypeDataHierarchyHolder
 
    private final Map<InternalQName, NodeTypeHolder> nodeTypes;
 
-   class NodeTypeHolder
-   {
-
-      final NodeTypeData nodeType;
-
-      final Set<InternalQName> superTypes;
-
-      NodeTypeHolder(NodeTypeData nodeType, Set<InternalQName> superTypes)
-      {
-         this.nodeType = nodeType;
-         this.superTypes = superTypes;
-      }
-   }
-
    public NodeTypeDataHierarchyHolder()
    {
       nodeTypes = new ConcurrentHashMap<InternalQName, NodeTypeHolder>();
+   }
+
+   /**
+    * Helper counstructor for create copy method.
+    * 
+    * @param nodeTypes
+    */
+   public NodeTypeDataHierarchyHolder(Map<InternalQName, NodeTypeHolder> nodeTypes)
+   {
+      this.nodeTypes = nodeTypes;
+   }
+
+   /**
+    * @return
+    */
+   public List<NodeTypeData> getAllNodeTypes()
+   {
+      Collection<NodeTypeHolder> hs = nodeTypes.values();
+      List<NodeTypeData> nts = new ArrayList<NodeTypeData>(hs.size());
+      for (NodeTypeHolder nt : hs)
+      {
+         nts.add(nt.nodeType);
+      }
+      return nts;
    }
 
    /**
@@ -85,27 +95,6 @@ public class NodeTypeDataHierarchyHolder
          {
             if (nodeTypeName.equals(declaredSupertypeNames[i]))
                resultSet.add(entry.getKey());
-         }
-      }
-      return resultSet;
-   }
-
-   /**
-    * Returns all subtypes of this node type in the node type inheritance
-    * hierarchy.
-    * 
-    * @param nodeTypeName
-    * @return
-    */
-   public Set<InternalQName> getSubtypes(final InternalQName nodeTypeName)
-   {
-      // TODO Speed up this method
-      Set<InternalQName> resultSet = new HashSet<InternalQName>();
-      for (InternalQName ntName : nodeTypes.keySet())
-      {
-         if (getSupertypes(ntName).contains(nodeTypeName))
-         {
-            resultSet.add(ntName);
          }
       }
       return resultSet;
@@ -143,6 +132,27 @@ public class NodeTypeDataHierarchyHolder
    }
 
    /**
+    * Returns all subtypes of this node type in the node type inheritance
+    * hierarchy.
+    * 
+    * @param nodeTypeName
+    * @return
+    */
+   public Set<InternalQName> getSubtypes(final InternalQName nodeTypeName)
+   {
+      // TODO Speed up this method
+      Set<InternalQName> resultSet = new HashSet<InternalQName>();
+      for (InternalQName ntName : nodeTypes.keySet())
+      {
+         if (getSupertypes(ntName).contains(nodeTypeName))
+         {
+            resultSet.add(ntName);
+         }
+      }
+      return resultSet;
+   }
+
+   /**
     * @param nodeTypeName
     * @return
     */
@@ -172,20 +182,6 @@ public class NodeTypeDataHierarchyHolder
       final Set<InternalQName> supers = new HashSet<InternalQName>();
       mergeAllSupertypes(supers, nt.nodeType.getDeclaredSupertypeNames(), volatileNodeTypes);
       return supers;
-   }
-
-   /**
-    * @return
-    */
-   public List<NodeTypeData> getAllNodeTypes()
-   {
-      Collection<NodeTypeHolder> hs = nodeTypes.values();
-      List<NodeTypeData> nts = new ArrayList<NodeTypeData>(hs.size());
-      for (NodeTypeHolder nt : hs)
-      {
-         nts.add(nt.nodeType);
-      }
-      return nts;
    }
 
    /**
@@ -254,5 +250,27 @@ public class NodeTypeDataHierarchyHolder
          }
       }
 
+   }
+
+   /**
+    * @return copy of holder.
+    */
+   protected NodeTypeDataHierarchyHolder createCopy()
+   {
+      return new NodeTypeDataHierarchyHolder(new ConcurrentHashMap<InternalQName, NodeTypeHolder>(nodeTypes));
+   }
+
+   class NodeTypeHolder
+   {
+
+      final NodeTypeData nodeType;
+
+      final Set<InternalQName> superTypes;
+
+      NodeTypeHolder(NodeTypeData nodeType, Set<InternalQName> superTypes)
+      {
+         this.nodeType = nodeType;
+         this.superTypes = superTypes;
+      }
    }
 }

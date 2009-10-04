@@ -301,10 +301,9 @@ public class PropertyImpl extends ItemImpl implements Property
          }
       }
 
-      return new PropertyDefinitionImpl(name, nodeTypeManager.findNodeType(propertyDef.getDeclaringNodeType()),
-         propertyDef.getRequiredType(), propertyDef.getValueConstraints(), defaultValues, propertyDef.isAutoCreated(),
-         propertyDef.isMandatory(), propertyDef.getOnParentVersion(), propertyDef.isProtected(), propertyDef
-            .isMultiple());
+      return new PropertyDefinitionImpl(propertyDef, session.getWorkspace().getNodeTypesHolder(),
+         (ExtendedNodeTypeManager)session.getWorkspace().getNodeTypeManager(), session.getSystemLocationFactory(),
+         session.getValueFactory());
 
    }
 
@@ -318,7 +317,7 @@ public class PropertyImpl extends ItemImpl implements Property
       NodeData parent = parentData();
       InternalQName pname = getData().getQPath().getName();
       PropertyDefinitionDatas definitions =
-         session.getWorkspace().getNodeTypesHolder().findPropertyDefinitions(pname, parent.getPrimaryTypeName(),
+         session.getWorkspace().getNodeTypesHolder().getPropertyDefinitions(pname, parent.getPrimaryTypeName(),
             parent.getMixinTypeNames());
       if (definitions == null)
          throw new ConstraintViolationException("Definition for property " + getPath() + " not found.");

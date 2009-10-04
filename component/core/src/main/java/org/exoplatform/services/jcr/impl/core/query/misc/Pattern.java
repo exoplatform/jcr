@@ -457,7 +457,7 @@ public abstract class Pattern {
         }
 
         protected boolean matches(QPathEntry element) {
-            return name.equals(element.getName());
+            return name.equals(element);
         }
 
         public String toString() {

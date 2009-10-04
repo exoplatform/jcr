@@ -83,7 +83,7 @@ public class NodeTypeManagerImpl implements ExtendedNodeTypeManager
    public NodeType findNodeType(InternalQName nodeTypeName) throws NoSuchNodeTypeException, RepositoryException
    {
 
-      NodeTypeData ntdata = typesManager.findNodeType(nodeTypeName);
+      NodeTypeData ntdata = typesManager.getNodeType(nodeTypeName);
       if (ntdata != null)
          return new NodeTypeImpl(ntdata, typesManager, this, locationFactory, valueFactory);
 
@@ -131,22 +131,27 @@ public class NodeTypeManagerImpl implements ExtendedNodeTypeManager
     */
    public NodeType getNodeType(final String nodeTypeName) throws NoSuchNodeTypeException, RepositoryException
    {
-      NodeTypeData ntdata = typesManager.findNodeType(locationFactory.parseJCRName(nodeTypeName).getInternalName());
+      NodeTypeData ntdata = typesManager.getNodeType(locationFactory.parseJCRName(nodeTypeName).getInternalName());
       if (ntdata != null)
          return new NodeTypeImpl(ntdata, typesManager, this, locationFactory, valueFactory);
 
       throw new NoSuchNodeTypeException("Nodetype not found " + nodeTypeName);
    }
 
-   // JSR-170 stuff ================================
-   // Extended stuff ================================
+   /**
+    * {@inheritDoc}
+    */
+   public NodeTypeDataManager getNodeTypesHolder() throws RepositoryException
+   {
+      return typesManager;
+   }
 
    /**
     * {@inheritDoc}
     */
    public NodeTypeValue getNodeTypeValue(String nodeTypeName) throws NoSuchNodeTypeException, RepositoryException
    {
-      NodeTypeData ntdata = typesManager.findNodeType(locationFactory.parseJCRName(nodeTypeName).getInternalName());
+      NodeTypeData ntdata = typesManager.getNodeType(locationFactory.parseJCRName(nodeTypeName).getInternalName());
       if (ntdata != null)
       {
          NodeTypeValue nodeTypeValue = new NodeTypeValue();
@@ -210,6 +215,11 @@ public class NodeTypeManagerImpl implements ExtendedNodeTypeManager
       return ec;
    }
 
+   public boolean hasNodeType(String name) throws RepositoryException
+   {
+
+      return typesManager.getNodeType(locationFactory.parseJCRName(name).getInternalName()) != null;
+   }
    /**
     * {@inheritDoc}
     */
@@ -248,10 +258,29 @@ public class NodeTypeManagerImpl implements ExtendedNodeTypeManager
     * 
     * @return
     */
+   public NodeTypeIterator registerNodeTypes(InputStream xml, int alreadyExistsBehaviour, String contentType)
+      throws RepositoryException
+   {
+
+      Collection<NodeTypeData> nts = typesManager.registerNodeTypes(xml, alreadyExistsBehaviour, contentType);
+      EntityCollection types = new EntityCollection();
+      for (NodeTypeData ntdata : nts)
+         types.add(new NodeTypeImpl(ntdata, typesManager, this, locationFactory, valueFactory));
+
+      return types;
+   }
+   
+   /**
+    * {@inheritDoc}
+    * 
+    * @return
+    * @deprecated use   registerNodeTypes(InputStream xml, int alreadyExistsBehaviour, String contentType)
+    */
+   @Deprecated
    public NodeTypeIterator registerNodeTypes(InputStream xml, int alreadyExistsBehaviour) throws RepositoryException
    {
 
-      Collection<NodeTypeData> nts = typesManager.registerNodeTypes(xml, alreadyExistsBehaviour);
+      Collection<NodeTypeData> nts = typesManager.registerNodeTypes(xml, alreadyExistsBehaviour, NodeTypeDataManager.TEXT_XML);
       EntityCollection types = new EntityCollection();
       for (NodeTypeData ntdata : nts)
          types.add(new NodeTypeImpl(ntdata, typesManager, this, locationFactory, valueFactory));
@@ -266,7 +295,7 @@ public class NodeTypeManagerImpl implements ExtendedNodeTypeManager
       RepositoryException
    {
       InternalQName nodeTypeName = locationFactory.parseJCRName(name).getInternalName();
-      if (typesManager.findNodeType(nodeTypeName) == null)
+      if (typesManager.getNodeType(nodeTypeName) == null)
          throw new NoSuchNodeTypeException(name);
       typesManager.unregisterNodeType(nodeTypeName);
    }
@@ -355,29 +384,24 @@ public class NodeTypeManagerImpl implements ExtendedNodeTypeManager
       public int compare(NodeTypeData o1, NodeTypeData o2)
       {
 
-         return getIndex(o2.getName().getNamespace()) - getIndex(o1.getName().getNamespace());
+         return getIndex(o2) - getIndex(o1);
       }
 
-      private int getIndex(String nameSpace)
+      private int getIndex(NodeTypeData data)
       {
+         InternalQName name;
+         int result = OTHER;
+         name = data.getName();
+         String nameSpace = name.getNamespace();
          if (Constants.NS_NT_URI.equals(nameSpace))
-            return NT;
+            result = NT;
          else if (Constants.NS_MIX_URI.equals(nameSpace))
-            return MIX;
+            result = MIX;
          else if (Constants.NS_JCR_URI.equals(nameSpace))
-            return JCR;
+            result = JCR;
          else if (Constants.NS_EXO_URI.equals(nameSpace))
-            return EXO;
-         return OTHER;
+            result = EXO;
+         return result;
       }
    }
-
-   /**
-    * {@inheritDoc}
-    */
-   public NodeTypeDataManager getNodeTypesHolder() throws RepositoryException
-   {
-      return typesManager;
-   }
-
 }

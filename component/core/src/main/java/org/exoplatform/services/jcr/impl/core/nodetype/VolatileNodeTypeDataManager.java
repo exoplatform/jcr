@@ -38,41 +38,41 @@ import javax.jcr.RepositoryException;
 public class VolatileNodeTypeDataManager extends NodeTypeDataManagerImpl
 {
 
-   public VolatileNodeTypeDataManager(NodeTypeDataManagerImpl nodeTypeDataManagerImpl) throws RepositoryException
-   {
-      super(nodeTypeDataManagerImpl.accessControlPolicy, nodeTypeDataManagerImpl.locationFactory,
-         nodeTypeDataManagerImpl.namespaceRegistry, nodeTypeDataManagerImpl.persister,
-         nodeTypeDataManagerImpl.indexSearcherHolder);
-      this.superNodeTypeDataManager = nodeTypeDataManagerImpl;
-      //this.queryHandlers = new HashSet<QueryHandler>(nodeTypeDataManagerImpl.queryHandlers);
-
-      registerVolatileNodeTypes(superNodeTypeDataManager.getAllNodeTypes());
-   }
-
    /**
     * Class logger.
     */
    private final Log log = ExoLogger.getLogger(VolatileNodeTypeDataManager.class);
 
-   private final NodeTypeDataManagerImpl superNodeTypeDataManager;
-
-   public void registerVolatileNodeTypes(Collection<NodeTypeData> volatileNodeTypes) throws RepositoryException
+   public VolatileNodeTypeDataManager(final NodeTypeDataManagerImpl nodeTypeDataManagerImpl) throws RepositoryException
    {
-      Map<InternalQName, NodeTypeData> map = new HashMap<InternalQName, NodeTypeData>();
-      for (NodeTypeData nodeTypeData : volatileNodeTypes)
+      super(nodeTypeDataManagerImpl.accessControlPolicy, nodeTypeDataManagerImpl.locationFactory,
+         nodeTypeDataManagerImpl.namespaceRegistry,
+         null, // to be sure
+         nodeTypeDataManagerImpl.dataManager, nodeTypeDataManagerImpl.indexSearcherHolder,
+         nodeTypeDataManagerImpl.nodeTypeRepository.createCopy());
+
+   }
+
+   public void registerVolatileNodeTypes(final Collection<NodeTypeData> volatileNodeTypes) throws RepositoryException
+   {
+      final Map<InternalQName, NodeTypeData> map = new HashMap<InternalQName, NodeTypeData>();
+      for (final NodeTypeData nodeTypeData : volatileNodeTypes)
       {
          map.put(nodeTypeData.getName(), nodeTypeData);
       }
       registerVolatileNodeTypes(map);
    }
 
-   public void registerVolatileNodeTypes(Map<InternalQName, NodeTypeData> volatileNodeTypes) throws RepositoryException
+   public void registerVolatileNodeTypes(final Map<InternalQName, NodeTypeData> volatileNodeTypes)
+      throws RepositoryException
    {
-      for (Map.Entry<InternalQName, NodeTypeData> entry : volatileNodeTypes.entrySet())
+      for (final Map.Entry<InternalQName, NodeTypeData> entry : volatileNodeTypes.entrySet())
       {
-         if (findNodeType(entry.getKey()) != null)
-            internalUnregister(entry.getKey(), entry.getValue());
-         internalRegister(entry.getValue(), volatileNodeTypes);
+         if (getNodeType(entry.getKey()) != null)
+         {
+            this.nodeTypeRepository.removeNodeType(entry.getValue());
+         }
+         this.nodeTypeRepository.addNodeType(entry.getValue(), volatileNodeTypes);
       }
    }
 

@@ -178,7 +178,7 @@ public class QueryImpl extends AbstractQueryImpl {
 		ntName[0] = Constants.NT_BASE;
 	    }
 	    NodeTypeData nt = session.getWorkspace().getNodeTypesHolder()
-		    .findNodeType(ntName[0]);
+		    .getNodeType(ntName[0]);
 	    PropertyDefinitionData[] propDefs = nt
 		    .getDeclaredPropertyDefinitions();
 

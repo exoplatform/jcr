@@ -18,48 +18,63 @@
  */
 package org.exoplatform.services.jcr.impl.core.nodetype;
 
-import javax.jcr.nodetype.NodeDefinition;
+import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
+import org.exoplatform.services.jcr.core.nodetype.NodeDefinitionData;
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
+import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.impl.core.LocationFactory;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import javax.jcr.RepositoryException;
+import javax.jcr.ValueFactory;
 import javax.jcr.nodetype.NodeType;
 
 /**
  * Created by The eXo Platform SAS.
  * 
- * @author Gennady Azarenkov
- * @version $Id: NodeDefinitionImpl.java 11907 2008-03-13 15:36:21Z ksm $
+ * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
+ * @version $Id: $
  */
-
-public class NodeDefinitionImpl extends ItemDefinitionImpl implements NodeDefinition
+public class NodeDefinitionImpl extends ItemDefinitionImpl implements ExtendedNodeDefinition
 {
 
-   private final NodeType defaultNodeType;
+   /**
+    * Class logger.
+    */
+   private static final Log LOG = ExoLogger.getLogger(NodeDefinitionImpl.class);
 
-   private final NodeType[] requiredNodeTypes;
+   private final NodeDefinitionData nodeDefinitionData;
 
-   private final boolean multiple;
-
-   public NodeDefinitionImpl(String name, NodeType declaringNodeType, NodeType[] requiredNodeTypes,
-      NodeType defaultNodeType, boolean autoCreate, boolean mandatory, int onVersion, boolean readOnly, boolean multiple)
+   /**
+    * @param itemDefinitionData
+    * @param nodeTypeDataManager
+    * @param nodeTypeManager
+    * @param locationFactory
+    * @param valueFactory
+    */
+   public NodeDefinitionImpl(NodeDefinitionData nodeDefinitionData, NodeTypeDataManager nodeTypeDataManager,
+      ExtendedNodeTypeManager nodeTypeManager, LocationFactory locationFactory, ValueFactory valueFactory)
    {
+      super(nodeDefinitionData, nodeTypeDataManager, nodeTypeManager, locationFactory, valueFactory);
+      this.nodeDefinitionData = nodeDefinitionData;
 
-      super(name, declaringNodeType, autoCreate, onVersion, readOnly, mandatory);
-
-      this.requiredNodeTypes = requiredNodeTypes;
-      this.defaultNodeType = defaultNodeType;
-      this.multiple = multiple;
-
-      int hk = 31 * this.hashCode + requiredNodeTypes.hashCode();
-      if (defaultNodeType != null)
-         hk = 31 * hk + defaultNodeType.hashCode();
-      this.hashCode = 31 * hk + (multiple ? 0 : 1);
    }
+
+   /**
+    * @param itemDefinitionData
+    * @param nodeTypeDataManager
+    * @param locationFactory
+    * @param name
+    */
 
    /**
     * {@inheritDoc}
     */
-   public NodeType[] getRequiredPrimaryTypes()
+   public boolean allowsSameNameSiblings()
    {
-
-      return requiredNodeTypes;
+      return nodeDefinitionData.isAllowsSameNameSiblings();
    }
 
    /**
@@ -67,28 +82,88 @@ public class NodeDefinitionImpl extends ItemDefinitionImpl implements NodeDefini
     */
    public NodeType getDefaultPrimaryType()
    {
-      return defaultNodeType;
+      if (nodeDefinitionData.getDefaultPrimaryType() == null)
+         return null;
+      return new NodeTypeImpl(nodeTypeDataManager.getNodeType(nodeDefinitionData.getDefaultPrimaryType()),
+         nodeTypeDataManager, nodeTypeManager, locationFactory, valueFactory);
    }
 
    /**
     * {@inheritDoc}
     */
-   public boolean allowsSameNameSiblings()
+   public String getDefaultPrimaryTypeName()
    {
-      return multiple;
+      String result = null;
+      if (nodeDefinitionData.getDefaultPrimaryType() != null)
+      {
+         try
+         {
+            result = locationFactory.createJCRName(nodeDefinitionData.getDefaultPrimaryType()).getAsString();
+         }
+         catch (RepositoryException e)
+         {
+            LOG.error(e.getLocalizedMessage(), e);
+         }
+      }
+      return result;
    }
 
    /**
     * {@inheritDoc}
     */
-   public boolean equals(Object obj)
+   public InternalQName getDefaultPrimaryTypeQName()
    {
-      if (obj == null)
-         return false;
-      if (!(obj instanceof NodeDefinitionImpl))
-         return false;
-      if (this.getName() == null)
-         return ((NodeDefinitionImpl)obj).getName() == null;
-      return this.getName().equals(((NodeDefinitionImpl)obj).getName());
+      return nodeDefinitionData.getDefaultPrimaryType();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public String[] getRequiredPrimaryTypeNames()
+   {
+      InternalQName[] requiredPrimaryTypes = nodeDefinitionData.getRequiredPrimaryTypes();
+      String[] result = new String[requiredPrimaryTypes.length];
+      try
+      {
+         for (int i = 0; i < requiredPrimaryTypes.length; i++)
+         {
+            result[i] = locationFactory.createJCRName(requiredPrimaryTypes[i]).getAsString();
+         }
+
+      }
+      catch (RepositoryException e)
+      {
+         LOG.error(e.getLocalizedMessage(), e);
+      }
+      return result;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+
+   public InternalQName[] getRequiredPrimaryTypeQNames()
+   {
+      return nodeDefinitionData.getRequiredPrimaryTypes();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public NodeType[] getRequiredPrimaryTypes()
+   {
+      InternalQName[] requiredPrimaryTypes = nodeDefinitionData.getRequiredPrimaryTypes();
+      NodeType[] result = new NodeType[requiredPrimaryTypes.length];
+      for (int i = 0; i < requiredPrimaryTypes.length; i++)
+      {
+         NodeTypeData ntData = nodeTypeDataManager.getNodeType(requiredPrimaryTypes[i]);
+         if (ntData == null)
+         {
+            LOG.error("NODE TYPE NOT FOUND " + requiredPrimaryTypes[i].getAsString());
+         }
+         else
+            result[i] = new NodeTypeImpl(ntData, nodeTypeDataManager, nodeTypeManager, locationFactory, valueFactory);
+      }
+      return result;
    }
 }

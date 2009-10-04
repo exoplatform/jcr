@@ -95,7 +95,7 @@ public class PropertyTypeRegistry implements NodeTypeManagerListener
 
    public void nodeTypeRegistered(InternalQName ntName)
    {
-      NodeTypeData def = registry.findNodeType(ntName);
+      NodeTypeData def = registry.getNodeType(ntName);
       if (def != null)
       {
          PropertyDefinitionData[] propDefs = def.getDeclaredPropertyDefinitions();

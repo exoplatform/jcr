@@ -223,7 +223,7 @@ public abstract class BaseXmlImporter implements ContentImporter
       int newIndex = 1;
 
       NodeDefinitionData nodedef =
-         nodeTypeDataManager.findChildNodeDefinition(name, parentData.getPrimaryTypeName(), parentData
+         nodeTypeDataManager.getChildNodeDefinition(name, parentData.getPrimaryTypeName(), parentData
             .getMixinTypeNames());
 
       ItemData sameNameNode = null;

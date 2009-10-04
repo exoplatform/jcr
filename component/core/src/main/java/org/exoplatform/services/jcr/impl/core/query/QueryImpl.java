@@ -45,6 +45,7 @@ import org.exoplatform.services.jcr.impl.core.JCRPath;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.core.nodetype.ItemAutocreator;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
@@ -254,9 +255,13 @@ public class QueryImpl extends AbstractQueryImpl {
           (NodeImpl)session.getTransientNodesManager().update(ItemState.createAddedState(queryData), false);
 
        NodeTypeDataManager ntmanager = session.getWorkspace().getNodeTypesHolder();
+
+       ItemAutocreator itemAutocreator = new ItemAutocreator(ntmanager, session.getValueFactory(),session.getTransientNodesManager());
+
        PlainChangesLog changes =
-          ntmanager.makeAutoCreatedItems((NodeData)queryNode.getData(), Constants.NT_QUERY, session
+          itemAutocreator.makeAutoCreatedItems((NodeData)queryNode.getData(),  Constants.NT_QUERY, session
              .getTransientNodesManager(), session.getUserID());
+
        for (ItemState autoCreatedState : changes.getAllStates())
        {
           session.getTransientNodesManager().update(autoCreatedState, false);

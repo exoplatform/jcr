@@ -26,7 +26,6 @@ import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ExtendedPropertyType;
-import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.DataManager;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
@@ -37,7 +36,6 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeDataPersister;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
@@ -78,23 +76,17 @@ public class ScratchWorkspaceInitializer implements WorkspaceInitializer
 
    private final String accessControlType;
 
-   private final NamespaceDataPersister nsPersister;
-
-   private final NodeTypeDataPersister ntPersister;
+   // private final NamespaceDataPersister nsPersister;
 
    private final String rootPermissions;
 
    private final InternalQName rootNodeType;
 
-   private final NodeTypeDataManager nodeTypeDataManager;
-
    public ScratchWorkspaceInitializer(WorkspaceEntry config, RepositoryEntry repConfig,
-      CacheableWorkspaceDataManager dataManager, LocationFactory locationFactory, NamespaceDataPersister nsPersister,
-      NodeTypeDataManager nodeTypeDataManager, NodeTypeDataPersister ntPersister)
+      CacheableWorkspaceDataManager dataManager, LocationFactory locationFactory)
       throws RepositoryConfigurationException, PathNotFoundException, RepositoryException
    {
 
-      this.nodeTypeDataManager = nodeTypeDataManager;
       this.systemWorkspaceName = repConfig.getSystemWorkspaceName();
       this.accessControlType = repConfig.getAccessControl();
       this.workspaceName = config.getName();
@@ -147,9 +139,9 @@ public class ScratchWorkspaceInitializer implements WorkspaceInitializer
             : Constants.NT_UNSTRUCTURED;
 
       this.dataManager = dataManager;
-      this.nsPersister = nsPersister;
+      // this.nsPersister = nsPersister;
       // this.ntRegistry = ntRegistry;
-      this.ntPersister = ntPersister;
+
    }
 
    public NodeData initWorkspace() throws RepositoryException
@@ -329,13 +321,15 @@ public class ScratchWorkspaceInitializer implements WorkspaceInitializer
 
       dataManager.save(new TransactionChangesLog(changesLog));
 
-      nsPersister.initStorage(jcrSystem, addACL, NamespaceRegistryImpl.DEF_NAMESPACES);
+      //nsPersister.initStorage(jcrSystem, addACL, NamespaceRegistryImpl.DEF_NAMESPACES);
       // nodeTypes save
-      changesLog = new PlainChangesLogImpl();
-      changesLog.addAll(ntPersister.initNodetypesRoot(jcrSystem, addACL).getAllStates());
-      changesLog.addAll(ntPersister.initStorage(nodeTypeDataManager.getAllNodeTypes()).getAllStates());
-      ntPersister.saveChanges(changesLog);
+      // changesLog = new PlainChangesLogImpl();
+      // changesLog.addAll(ntPersister.initNodetypesRoot(jcrSystem,
+      // addACL).getAllStates());
+      // changesLog.addAll(ntPersister.initStorage(nodeTypeDataManager.getAllNodeTypes()).getAllStates());
+      // ntPersister.saveChanges(changesLog);
 
+      // nodeTypeDataManager.initDefaultNodeTypes(addACL);
       return jcrSystem;
    }
 

@@ -18,11 +18,15 @@
  */
 package org.exoplatform.services.jcr.core.nodetype;
 
+import org.exoplatform.services.jcr.impl.core.nodetype.NodeDefinitionImpl;
+
+import java.util.Arrays;
 import java.util.List;
 
+import javax.jcr.nodetype.NodeDefinition;
+
 /**
- * Created by The eXo Platform SAS.<br/>
- * NodeDefinition value object
+ * Created by The eXo Platform SAS.<br/> NodeDefinition value object
  * 
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady
  *         Azarenkov</a>
@@ -59,6 +63,14 @@ public final class NodeDefinitionValue extends ItemDefinitionValue
       this.defaultNodeTypeName = defaultNodeTypeName;
       this.requiredNodeTypeNames = requiredNodeTypeNames;
       this.sameNameSiblings = sameNameSiblings;
+   }
+
+   public NodeDefinitionValue(NodeDefinition nodeDefinition)
+   {
+      super(nodeDefinition);
+      this.defaultNodeTypeName = ((NodeDefinitionImpl)nodeDefinition).getDefaultPrimaryTypeName();
+      this.requiredNodeTypeNames = Arrays.asList(((NodeDefinitionImpl)nodeDefinition).getRequiredPrimaryTypeNames());
+      this.sameNameSiblings = nodeDefinition.allowsSameNameSiblings();
    }
 
    /**

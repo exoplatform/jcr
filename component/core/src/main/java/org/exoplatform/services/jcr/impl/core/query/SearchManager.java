@@ -630,6 +630,9 @@ public class SearchManager implements Startable,
 	    // name of the property
 	    query.add(new WildcardQuery(new Term(FieldNames.PROPERTIES_SET,
 		    prefix + ":*")), Occur.SHOULD);
+	    
+	    
+
 
 	    result = getNodes(query);
 

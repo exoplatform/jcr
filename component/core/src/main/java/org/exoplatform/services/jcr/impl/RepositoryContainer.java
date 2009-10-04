@@ -44,8 +44,8 @@ import org.exoplatform.services.jcr.impl.core.WorkspaceInitializer;
 import org.exoplatform.services.jcr.impl.core.access.DefaultAccessManagerImpl;
 import org.exoplatform.services.jcr.impl.core.lock.LockManagerImpl;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeDataManagerImpl;
-import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeDataPersister;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
+import org.exoplatform.services.jcr.impl.core.nodetype.registration.JcrNodeTypeDataPersister;
 import org.exoplatform.services.jcr.impl.core.observation.ObservationManagerRegistry;
 import org.exoplatform.services.jcr.impl.core.query.QueryManagerFactory;
 import org.exoplatform.services.jcr.impl.core.query.RepositoryIndexSearcherHolder;
@@ -570,7 +570,8 @@ public class RepositoryContainer extends ExoContainer
                }
                if (log.isDebugEnabled())
                   log.debug("Trying register node types from xml-file " + nodeTypeFilesName);
-               ntManager.registerNodeTypes(inXml, ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
+               ntManager.registerNodeTypes(inXml, ExtendedNodeTypeManager.IGNORE_IF_EXISTS,
+                  NodeTypeDataManager.TEXT_XML);
                if (log.isDebugEnabled())
                   log.debug("Node types is registered from xml-file " + nodeTypeFilesName);
             }
@@ -590,7 +591,8 @@ public class RepositoryContainer extends ExoContainer
                      throw new RepositoryException(e);
                   }
                   log.info("Trying register node types (" + this.getName() + ") from xml-file " + nodeTypeFilesName);
-                  ntManager.registerNodeTypes(inXml, ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
+                  ntManager.registerNodeTypes(inXml, ExtendedNodeTypeManager.IGNORE_IF_EXISTS,
+                     NodeTypeDataManager.TEXT_XML);
                   log.info("Node types is registered (" + this.getName() + ") from xml-file " + nodeTypeFilesName);
                }
             }
@@ -605,21 +607,24 @@ public class RepositoryContainer extends ExoContainer
 
       registerComponentImplementation(RepositoryIndexSearcherHolder.class);
 
-      registerComponentImplementation(NamespaceDataPersister.class);
-      registerComponentImplementation(NamespaceRegistryImpl.class);
-
-      addNamespaces();
-
       registerComponentImplementation(WorkspaceFileCleanerHolder.class);
       registerComponentImplementation(LocationFactory.class);
       registerComponentImplementation(ValueFactoryImpl.class);
 
-      registerComponentImplementation(NodeTypeDataPersister.class);
+
+      registerComponentImplementation(JcrNodeTypeDataPersister.class);
+      registerComponentImplementation(NamespaceDataPersister.class);
+      registerComponentImplementation(NamespaceRegistryImpl.class);
+
       registerComponentImplementation(NodeTypeManagerImpl.class);
       registerComponentImplementation(NodeTypeDataManagerImpl.class);
-
+      
+      
+      //node types first
+      addNamespaces();
       registerNodeTypes();
-
+      
+      
       registerComponentImplementation(DefaultAccessManagerImpl.class);
 
       registerComponentImplementation(SessionRegistry.class);
@@ -670,14 +675,23 @@ public class RepositoryContainer extends ExoContainer
     */
    private void load() throws RepositoryException
    {
-      NamespaceRegistryImpl nsRegistry = (NamespaceRegistryImpl)getNamespaceRegistry();
 
-      NodeTypeDataPersister nodeTypeDataPersister =
-         (NodeTypeDataPersister)getComponentInstanceOfType(NodeTypeDataPersister.class);
+      JcrNodeTypeDataPersister nodeTypePersister =
+         (JcrNodeTypeDataPersister)this.getComponentInstanceOfType(JcrNodeTypeDataPersister.class);
+      NamespaceDataPersister namespacePersister =
+         (NamespaceDataPersister)this.getComponentInstanceOfType(NamespaceDataPersister.class);
 
       // Load from persistence
-      nsRegistry.loadFromStorage();
-      nodeTypeDataPersister.loadFromStorage();
+      nodeTypePersister.start();
+      namespacePersister.start();
+
+      NamespaceRegistryImpl nsRegistry = (NamespaceRegistryImpl)getNamespaceRegistry();
+      NodeTypeDataManagerImpl ntManager =
+         (NodeTypeDataManagerImpl)this.getComponentInstanceOfType(NodeTypeDataManagerImpl.class);
+      // initialize internal components.
+      nsRegistry.start();
+      ntManager.start();
+
    }
 
    /**

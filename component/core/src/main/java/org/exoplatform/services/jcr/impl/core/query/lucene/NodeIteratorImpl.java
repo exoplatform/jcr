@@ -32,172 +32,204 @@ import org.slf4j.LoggerFactory;
  * Implements a {@link javax.jcr.NodeIterator} returned by
  * {@link javax.jcr.query.QueryResult#getNodes()}.
  */
-class NodeIteratorImpl implements NodeIterator {
+class NodeIteratorImpl implements TwoWayRangeIterator, NodeIterator
+{
 
-    /** Logger instance for this class */
-    private static final Logger log = LoggerFactory.getLogger(NodeIteratorImpl.class);
+   /** Logger instance for this class */
+   private static final Logger log = LoggerFactory.getLogger(NodeIteratorImpl.class);
 
-    /** The node ids of the nodes in the result set with their score value */
-    protected final ScoreNodeIterator scoreNodes;
+   /** The node ids of the nodes in the result set with their score value */
+   protected final ScoreNodeIterator scoreNodes;
 
-    /** The index for the default selector withing {@link #scoreNodes} */
-    private final int selectorIndex;
+   /** The index for the default selector withing {@link #scoreNodes} */
+   private final int selectorIndex;
 
-    /** ItemManager to turn UUIDs into Node instances */
-    protected final SessionDataManager itemMgr;
+   /** ItemManager to turn UUIDs into Node instances */
+   protected final SessionDataManager itemMgr;
 
-    /** Number of invalid nodes */
-    protected int invalid = 0;
+   /** Number of invalid nodes */
+   protected int invalid = 0;
 
-    /** Reference to the next node instance */
-    private NodeImpl next;
+   /** Reference to the next node instance */
+   private NodeImpl next;
 
-    /**
-     * Whether this iterator had been initialized.
-     */
-    private boolean initialized;
+   /**
+    * Whether this iterator had been initialized.
+    */
+   private boolean initialized;
 
-    /**
-     * Creates a new <code>NodeIteratorImpl</code> instance.
-     *
-     * @param itemMgr       the <code>ItemManager</code> to turn UUIDs into
-     *                      <code>Node</code> instances.
-     * @param scoreNodes    iterator over score nodes.
-     * @param selectorIndex the index for the default selector within
-     *                      <code>scoreNodes</code>.
-     */
-    NodeIteratorImpl(SessionDataManager itemMgr,
-                     ScoreNodeIterator scoreNodes,
-                     int selectorIndex) {
-        this.itemMgr = itemMgr;
-        this.scoreNodes = scoreNodes;
-        this.selectorIndex = selectorIndex;
-    }
+   /**
+    * Creates a new <code>NodeIteratorImpl</code> instance.
+    *
+    * @param itemMgr       the <code>ItemManager</code> to turn UUIDs into
+    *                      <code>Node</code> instances.
+    * @param scoreNodes    iterator over score nodes.
+    * @param selectorIndex the index for the default selector within
+    *                      <code>scoreNodes</code>.
+    */
+   NodeIteratorImpl(SessionDataManager itemMgr, ScoreNodeIterator scoreNodes, int selectorIndex)
+   {
+      this.itemMgr = itemMgr;
+      this.scoreNodes = scoreNodes;
+      this.selectorIndex = selectorIndex;
+   }
 
-    /**
-     * Returns the next <code>Node</code> in the result set.
-     * @return the next <code>Node</code> in the result set.
-     * @throws NoSuchElementException if iteration has no more
-     *   <code>Node</code>s.
-     */
-    public Node nextNode() throws NoSuchElementException {
-        initialize();
-        if (next == null) {
-            throw new NoSuchElementException();
-        }
-        NodeImpl n = next;
-        fetchNext();
-        return n;
-    }
+   /**
+    * Returns the current position in this <code>NodeIterator</code>.
+    * @return the current position in this <code>NodeIterator</code>.
+    */
+   public long getPosition()
+   {
+      initialize();
+      long position = scoreNodes.getPosition() - invalid;
+      // scoreNode.getPosition() is one ahead
+      // if there is a prefetched node
+      if (next != null)
+      {
+         position--;
+      }
+      return position;
+   }
 
-    /**
-     * Returns the next <code>Node</code> in the result set.
-     * @return the next <code>Node</code> in the result set.
-     * @throws NoSuchElementException if iteration has no more
-     *   <code>Node</code>s.
-     */
-    public Object next() throws NoSuchElementException {
-        initialize();
-        return nextNode();
-    }
+   /**
+    * Returns the number of nodes in this iterator.
+    * </p>
+    * Note: The number returned by this method may differ from the number
+    * of nodes actually returned by calls to hasNext() / getNextNode()! This
+    * is because this iterator works on a lazy instantiation basis and while
+    * iterating over the nodes some of them might have been deleted in the
+    * meantime. Those will not be returned by getNextNode(). As soon as an
+    * invalid node is detected, the size of this iterator is adjusted.
+    *
+    * @return the number of node in this iterator.
+    */
+   public long getSize()
+   {
+      long size = scoreNodes.getSize();
+      if (size == -1)
+      {
+         return size;
+      }
+      else
+      {
+         return size - invalid;
+      }
+   }
 
-    /**
-     * Skip a number of <code>Node</code>s in this iterator.
-     * @param skipNum the non-negative number of <code>Node</code>s to skip
-     * @throws NoSuchElementException
-     *          if skipped past the last <code>Node</code> in this iterator.
-     */
-    public void skip(long skipNum) throws NoSuchElementException {
-        initialize();
-        if (skipNum > 0) {
-            scoreNodes.skip(skipNum - 1);
-            fetchNext();
-        }
-    }
+   /**
+    * Returns <code>true</code> if there is another <code>Node</code>
+    * available; <code>false</code> otherwise.
+    * @return <code>true</code> if there is another <code>Node</code>
+    *  available; <code>false</code> otherwise.
+    */
+   public boolean hasNext()
+   {
+      initialize();
+      return next != null;
+   }
 
-    /**
-     * Returns the number of nodes in this iterator.
-     * </p>
-     * Note: The number returned by this method may differ from the number
-     * of nodes actually returned by calls to hasNext() / getNextNode()! This
-     * is because this iterator works on a lazy instantiation basis and while
-     * iterating over the nodes some of them might have been deleted in the
-     * meantime. Those will not be returned by getNextNode(). As soon as an
-     * invalid node is detected, the size of this iterator is adjusted.
-     *
-     * @return the number of node in this iterator.
-     */
-    public long getSize() {
-        long size = scoreNodes.getSize();
-        if (size == -1) {
-            return size;
-        } else {
-            return size - invalid;
-        }
-    }
+   /**
+    * Returns the next <code>Node</code> in the result set.
+    * @return the next <code>Node</code> in the result set.
+    * @throws NoSuchElementException if iteration has no more
+    *   <code>Node</code>s.
+    */
+   public Object next() throws NoSuchElementException
+   {
+      initialize();
+      return nextNode();
+   }
 
-    /**
-     * Returns the current position in this <code>NodeIterator</code>.
-     * @return the current position in this <code>NodeIterator</code>.
-     */
-    public long getPosition() {
-        initialize();
-        long position = scoreNodes.getPosition() - invalid;
-        // scoreNode.getPosition() is one ahead
-        // if there is a prefetched node
-        if (next != null) {
-            position--;
-        }
-        return position;
-    }
+   /**
+    * Returns the next <code>Node</code> in the result set.
+    * @return the next <code>Node</code> in the result set.
+    * @throws NoSuchElementException if iteration has no more
+    *   <code>Node</code>s.
+    */
+   public Node nextNode() throws NoSuchElementException
+   {
+      initialize();
+      if (next == null)
+      {
+         throw new NoSuchElementException();
+      }
+      NodeImpl n = next;
+      fetchNext();
+      return n;
+   }
 
-    /**
-     * Returns <code>true</code> if there is another <code>Node</code>
-     * available; <code>false</code> otherwise.
-     * @return <code>true</code> if there is another <code>Node</code>
-     *  available; <code>false</code> otherwise.
-     */
-    public boolean hasNext() {
-        initialize();
-        return next != null;
-    }
+   /**
+    * @throws UnsupportedOperationException always.
+    */
+   public void remove()
+   {
+      throw new UnsupportedOperationException("remove");
+   }
 
-    /**
-     * @throws UnsupportedOperationException always.
-     */
-    public void remove() {
-        throw new UnsupportedOperationException("remove");
-    }
+   /**
+    * Skip a number of <code>Node</code>s in this iterator.
+    * @param skipNum the non-negative number of <code>Node</code>s to skip
+    * @throws NoSuchElementException
+    *          if skipped past the last <code>Node</code> in this iterator.
+    */
+   public void skip(long skipNum) throws NoSuchElementException
+   {
+      initialize();
+      if (skipNum > 0)
+      {
+         scoreNodes.skip(skipNum - 1);
+         fetchNext();
+      }
+   }
 
-    /**
-     * Clears {@link #next} and tries to fetch the next Node instance.
-     * When this method returns {@link #next} refers to the next available
-     * node instance in this iterator. If {@link #next} is null when this
-     * method returns, then there are no more valid element in this iterator.
-     */
-    protected void fetchNext() {
-        // reset
-        next = null;
-        while (next == null && scoreNodes.hasNext()) {
-            ScoreNode[] sn = scoreNodes.nextScoreNodes();
-            try {
-                next = (NodeImpl) itemMgr.getItemByIdentifier(sn[selectorIndex].getNodeId(),true);
-                if(next == null){
-                   invalid++;
-                }
-            } catch (RepositoryException e) {
-                log.warn("Exception retrieving Node with UUID: "
-                        + sn[selectorIndex].getNodeId() + ": " + e.toString());
-                // try next
-                invalid++;
+   public void skipBack(long skipNum)
+   {
+      initialize();
+      if (skipNum < 0)
+      {
+         throw new IllegalArgumentException("skipNum must not be negative");
+      }
+      scoreNodes.skipBack(skipNum - 1);
+      fetchNext();
+
+   }
+
+   /**
+    * Clears {@link #next} and tries to fetch the next Node instance.
+    * When this method returns {@link #next} refers to the next available
+    * node instance in this iterator. If {@link #next} is null when this
+    * method returns, then there are no more valid element in this iterator.
+    */
+   protected void fetchNext()
+   {
+      // reset
+      next = null;
+      while (next == null && scoreNodes.hasNext())
+      {
+         ScoreNode[] sn = scoreNodes.nextScoreNodes();
+         try
+         {
+            next = (NodeImpl)itemMgr.getItemByIdentifier(sn[selectorIndex].getNodeId(), true);
+            if (next == null)
+            {
+               invalid++;
             }
-        }
-    }
+         }
+         catch (RepositoryException e)
+         {
+            log.warn("Exception retrieving Node with UUID: " + sn[selectorIndex].getNodeId() + ": " + e.toString());
+            // try next
+            invalid++;
+         }
+      }
+   }
 
-    protected void initialize() {
-        if (!initialized) {
-            fetchNext();
-            initialized = true;
-        }
-    }
+   protected void initialize()
+   {
+      if (!initialized)
+      {
+         fetchNext();
+         initialized = true;
+      }
+   }
 }

@@ -132,7 +132,7 @@ public class FrozenNodeInitializer extends ItemDataTraversingVisitor
          NodeData parent = (NodeData)dataManager.getItemData(property.getParentIdentifier());
 
          PropertyDefinitionData pdef =
-            ntManager.findPropertyDefinitions(qname, parent.getPrimaryTypeName(), parent.getMixinTypeNames())
+            ntManager.getPropertyDefinitions(qname, parent.getPrimaryTypeName(), parent.getMixinTypeNames())
                .getAnyDefinition();
 
          int action = pdef.getOnParentVersion();
@@ -227,7 +227,7 @@ public class FrozenNodeInitializer extends ItemDataTraversingVisitor
 
       NodeData parent = (NodeData)dataManager.getItemData(node.getParentIdentifier());
       NodeDefinitionData ndef =
-         ntManager.findChildNodeDefinition(qname, parent.getPrimaryTypeName(), parent.getMixinTypeNames());
+         ntManager.getChildNodeDefinition(qname, parent.getPrimaryTypeName(), parent.getMixinTypeNames());
       if (ndef == null)
       {
          throw new ConstraintViolationException("Definition not found for " + qname.getAsString());

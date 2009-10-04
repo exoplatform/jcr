@@ -18,112 +18,115 @@
  */
 package org.exoplatform.services.jcr.impl.core.nodetype;
 
+import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
+import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionData;
+import org.exoplatform.services.jcr.impl.core.LocationFactory;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import javax.jcr.PropertyType;
 import javax.jcr.Value;
-import javax.jcr.nodetype.NodeType;
+import javax.jcr.ValueFactory;
+import javax.jcr.ValueFormatException;
 import javax.jcr.nodetype.PropertyDefinition;
 
 /**
  * Created by The eXo Platform SAS.
  * 
- * @author Gennady Azarenkov
- * @version $Id: PropertyDefinitionImpl.java 11907 2008-03-13 15:36:21Z ksm $
+ * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
+ * @version $Id: $
  */
-
 public class PropertyDefinitionImpl extends ItemDefinitionImpl implements PropertyDefinition
 {
 
-   private final int requiredType;
+   private final PropertyDefinitionData propertyDefinitionData;
 
-   private String[] valueConstraints;
-
-   private Value[] defaultValues;
-
-   private final boolean multiple;
-
-   public PropertyDefinitionImpl(String name, NodeType declaringNodeType, int requiredType, String[] valueConstraints,
-      Value[] defaultValues, boolean autoCreate, boolean mandatory, int onVersion, boolean readOnly, boolean multiple)
+   /**
+    * @param propertyDefinitionData
+    * @param nodeTypeDataManager
+    * @param nodeTypeManager
+    * @param locationFactory
+    * @param valueFactory
+    */
+   public PropertyDefinitionImpl(PropertyDefinitionData propertyDefinitionData,
+      NodeTypeDataManager nodeTypeDataManager, ExtendedNodeTypeManager nodeTypeManager,
+      LocationFactory locationFactory, ValueFactory valueFactory)
    {
-
-      super(name, declaringNodeType, autoCreate, onVersion, readOnly, mandatory);
-
-      this.requiredType = requiredType;
-      this.valueConstraints = valueConstraints;
-      this.defaultValues = defaultValues;
-      this.multiple = multiple;
-
-      int hk = 31 * this.hashCode + requiredType;
-      hk = 31 * hk + valueConstraints.hashCode();
-      hk = 31 * hk + defaultValues.hashCode();
-      this.hashCode = 31 * hk + (multiple ? 0 : 1);
+      super(propertyDefinitionData, nodeTypeDataManager, nodeTypeManager, locationFactory, valueFactory);
+      this.propertyDefinitionData = propertyDefinitionData;
    }
 
    /**
-    * {@inheritDoc}
+    * Class logger.
     */
-   public int getRequiredType()
-   {
-      return requiredType;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public String[] getValueConstraints()
-   {
-      return valueConstraints;
-   }
+   private static final Log LOG = ExoLogger.getLogger(PropertyDefinitionImpl.class);
 
    /**
     * {@inheritDoc}
     */
    public Value[] getDefaultValues()
    {
-      if (defaultValues != null && defaultValues.length > 0)
-         return defaultValues;
-      else
+      String[] defaultValues = propertyDefinitionData.getDefaultValues();
+      if (defaultValues == null)
          return null;
+      Value[] vals = new Value[defaultValues.length];
+      for (int i = 0; i < defaultValues.length; i++)
+      {
+         if (propertyDefinitionData.getRequiredType() == PropertyType.UNDEFINED)
+         {
+            vals[i] = valueFactory.createValue(defaultValues[i]);
+         }
+         else
+            try
+            {
+               vals[i] = valueFactory.createValue(defaultValues[i], propertyDefinitionData.getRequiredType());
+            }
+            catch (ValueFormatException e)
+            {
+               LOG.error(e.getLocalizedMessage(), e);
+            }
+      }
+      return vals;
    }
 
-   /**
-    * {@inheritDoc}
-    */
+   public int getRequiredType()
+   {
+      return propertyDefinitionData.getRequiredType();
+   }
+
+   public String[] getValueConstraints()
+   {
+      return propertyDefinitionData.getValueConstraints();
+   }
+
    public boolean isMultiple()
    {
-      return multiple;
+      return propertyDefinitionData.isMultiple();
    }
+//
+//   /**
+//    * {@inheritDoc}
+//    */
+//   public String[] getAvailableQueryOperators()
+//   {
+//      return propertyDefinitionData.getAvailableQueryOperators();
+//   }
+//
+//   /**
+//    * {@inheritDoc}
+//    */
+//   public boolean isFullTextSearchable()
+//   {
+//      return propertyDefinitionData.isFullTextSearchable();
+//   }
+//
+//   /**
+//    * {@inheritDoc}
+//    */
+//   public boolean isQueryOrderable()
+//   {
+//      return propertyDefinitionData.isQueryOrderable();
+//   }
 
-   /**
-    * @param defaultValues
-    *          The defaultValues to set.
-    */
-   public void setDefaultValues(Value[] defaultValues)
-   {
-      this.defaultValues = defaultValues;
-   }
-
-   /**
-    * @param valueConstraints
-    *          The valueConstraints to set.
-    */
-   public void setValueConstraints(String[] valueConstraints)
-   {
-      this.valueConstraints = valueConstraints;
-   }
-
-   /**
-    * Compare property definitions for equality by name, required type and miltiplicity flag. NOTE:
-    * UNDEFINED is equals to UNDEFINED only. NOTE: PD without name is equals to PD without name
-    */
-   public boolean equals(Object obj)
-   {
-      if (obj == null)
-         return false;
-      if (super.equals(obj))
-         return true;
-      if (obj instanceof PropertyDefinitionImpl)
-      {
-         return obj.hashCode() == hashCode;
-      }
-      return false;
-   }
 }

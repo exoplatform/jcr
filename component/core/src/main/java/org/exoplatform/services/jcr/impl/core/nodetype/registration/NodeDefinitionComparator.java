@@ -21,7 +21,7 @@ package org.exoplatform.services.jcr.impl.core.nodetype.registration;
 import org.exoplatform.services.jcr.core.nodetype.NodeDefinitionData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
-import org.exoplatform.services.jcr.dataflow.DataManager;
+import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
@@ -29,13 +29,13 @@ import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.nodetype.ItemAutocreator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.ConstraintViolationException;
@@ -54,13 +54,25 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
     */
    private static final Log LOG = ExoLogger.getLogger(NodeDefinitionComparator.class);
 
+   private final List<NodeData> affectedNodes;
+
+   private final NodeTypeDataManager nodeTypeDataManager;
+
+   private final ItemDataConsumer dataConsumer;
+
+   private final ItemAutocreator itemAutocreator;
+
    /**
     * @param nodeTypeDataManager
     * @param persister
     */
-   public NodeDefinitionComparator(NodeTypeDataManager nodeTypeDataManager, DataManager persister)
+   public NodeDefinitionComparator(NodeTypeDataManager nodeTypeDataManager, ItemDataConsumer dataConsumer,
+      ItemAutocreator itemAutocreator, List<NodeData> affectedNodes)
    {
-      super(nodeTypeDataManager, persister);
+      this.nodeTypeDataManager = nodeTypeDataManager;
+      this.dataConsumer = dataConsumer;
+      this.itemAutocreator = itemAutocreator;
+      this.affectedNodes = affectedNodes;
    }
 
    public PlainChangesLog compare(NodeTypeData registeredNodeType, NodeDefinitionData[] ancestorDefinition,
@@ -76,18 +88,16 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
          removedDefinitionData);
       // create changes log
       PlainChangesLog changesLog = new PlainChangesLogImpl();
+
       // check removed
+      validateRemoved(registeredNodeType, removedDefinitionData, recipientDefinition, affectedNodes);
 
-      validateRemoved(registeredNodeType, removedDefinitionData, recipientDefinition);
-
-      Set<String> nodes = nodeTypeDataManager.getNodes(registeredNodeType.getName());
-
-      validateAdded(registeredNodeType.getName(), newDefinitionData, nodes, recipientDefinition);
+      validateAdded(registeredNodeType.getName(), newDefinitionData, affectedNodes, recipientDefinition);
       // changed
-      validateChanged(registeredNodeType.getName(), changedDefinitionData, nodes, recipientDefinition);
+      validateChanged(registeredNodeType.getName(), changedDefinitionData, affectedNodes, recipientDefinition);
 
       //
-      doAdd(newDefinitionData, changesLog, nodes, registeredNodeType);
+      doAdd(newDefinitionData, changesLog, affectedNodes, registeredNodeType);
 
       return changesLog;
 
@@ -99,13 +109,12 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
     * @throws RepositoryException
     * @throws ConstraintViolationException
     */
-   private void checkMandatoryItems(Set<String> nodes, NodeDefinitionData nodeDefinitionData)
+   private void checkMandatoryItems(List<NodeData> nodesData, NodeDefinitionData nodeDefinitionData)
       throws RepositoryException, ConstraintViolationException
    {
-      for (String uuid : nodes)
+      for (NodeData nodeData : nodesData)
       {
-         NodeData nodeData = (NodeData)persister.getItemData(uuid);
-         ItemData child = persister.getItemData(nodeData, new QPathEntry(nodeDefinitionData.getName(), 0));
+         ItemData child = dataConsumer.getItemData(nodeData, new QPathEntry(nodeDefinitionData.getName(), 0));
          if (child == null || !child.isNode())
          {
             throw new ConstraintViolationException("Fail to  add mandatory and not auto-created "
@@ -125,19 +134,19 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
     * @param recipientDefinitionData
     * @throws RepositoryException
     */
-   private void checkRequiredPrimaryType(InternalQName registeredNodeType, Set<String> nodes,
+   private void checkRequiredPrimaryType(InternalQName registeredNodeType, List<NodeData> nodesData,
       InternalQName[] ancestorRequiredPrimaryTypes, NodeDefinitionData recipientDefinitionData,
       NodeDefinitionData[] allRecipientDefinition) throws RepositoryException
    {
       // Required type change
       InternalQName[] requiredPrimaryTypes = recipientDefinitionData.getRequiredPrimaryTypes();
 
-      for (String uuid : nodes)
+      for (NodeData nodeData : nodesData)
       {
-         NodeData nodeData = (NodeData)persister.getItemData(uuid);
+
          if (recipientDefinitionData.getName().equals(Constants.JCR_ANY_NAME))
          {
-            List<NodeData> childs = persister.getChildNodesData(nodeData);
+            List<NodeData> childs = dataConsumer.getChildNodesData(nodeData);
             for (NodeData child : childs)
             {
                if (isResidualMatch(child.getQPath().getName(), allRecipientDefinition))
@@ -173,7 +182,7 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
          }
          else
          {
-            List<NodeData> childs = persister.getChildNodesData(nodeData);
+            List<NodeData> childs = dataConsumer.getChildNodesData(nodeData);
             for (NodeData child : childs)
             {
                if (child.getQPath().getName().equals(recipientDefinitionData.getName()))
@@ -217,23 +226,22 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
     * @param recipientDefinitionData
     * @throws RepositoryException
     */
-   private void checkSameNameSibling(InternalQName registeredNodeType, Set<String> nodes, InternalQName recipientName,
-      NodeDefinitionData[] allRecipientDefinition) throws RepositoryException
+   private void checkSameNameSibling(InternalQName registeredNodeType, List<NodeData> nodesData,
+      InternalQName recipientName, NodeDefinitionData[] allRecipientDefinition) throws RepositoryException
    {
 
-      for (String uuid : nodes)
+      for (NodeData nodeData : nodesData)
       {
-         NodeData nodeData = (NodeData)persister.getItemData(uuid);
 
          if (recipientName.equals(Constants.JCR_ANY_NAME))
          {
             // child of node type
-            List<NodeData> childs = persister.getChildNodesData(nodeData);
+            List<NodeData> childs = dataConsumer.getChildNodesData(nodeData);
             for (NodeData child : childs)
             {
                if (isResidualMatch(child.getQPath().getName(), allRecipientDefinition))
                {
-                  List<NodeData> childs2 = persister.getChildNodesData(child);
+                  List<NodeData> childs2 = dataConsumer.getChildNodesData(child);
 
                   for (NodeData child2 : childs2)
                   {
@@ -259,12 +267,12 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
          {
 
             // child of node type
-            List<NodeData> childs = persister.getChildNodesData(nodeData);
+            List<NodeData> childs = dataConsumer.getChildNodesData(nodeData);
             for (NodeData child : childs)
             {
                if (child.getQPath().getName().equals(recipientName))
                {
-                  List<NodeData> childs2 = persister.getChildNodesData(child);
+                  List<NodeData> childs2 = dataConsumer.getChildNodesData(child);
 
                   for (NodeData child2 : childs2)
                   {
@@ -299,21 +307,20 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
     * @param registeredNodeType
     * @throws RepositoryException
     */
-   private void doAdd(List<NodeDefinitionData> toAddList, PlainChangesLog changesLog, Set<String> nodes,
+   private void doAdd(List<NodeDefinitionData> toAddList, PlainChangesLog changesLog, List<NodeData> nodesData,
       NodeTypeData registeredNodeType) throws RepositoryException
    {
 
-      for (String uuid : nodes)
+      for (NodeData nodeData : nodesData)
       {
-         NodeData nodeData = (NodeData)persister.getItemData(uuid);
 
          // added properties
          for (NodeDefinitionData newNodeDefinitionData : toAddList)
          {
             if (!newNodeDefinitionData.getName().equals(Constants.JCR_ANY_NAME)
                && newNodeDefinitionData.isAutoCreated())
-               changesLog.addAll(nodeTypeDataManager.makeAutoCreatedNodes(nodeData, registeredNodeType.getName(),
-                  new NodeDefinitionData[]{newNodeDefinitionData}, persister, nodeData.getACL().getOwner())
+               changesLog.addAll(itemAutocreator.makeAutoCreatedNodes(nodeData, registeredNodeType.getName(),
+                  new NodeDefinitionData[]{newNodeDefinitionData}, dataConsumer, nodeData.getACL().getOwner())
                   .getAllStates());
          }
       }
@@ -327,7 +334,7 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
     * @throws RepositoryException
     */
    private void validateAdded(InternalQName nodeTypeName, List<NodeDefinitionData> newDefinitionData,
-      Set<String> nodes, NodeDefinitionData[] recipientDefinition) throws RepositoryException
+      List<NodeData> nodesData, NodeDefinitionData[] recipientDefinition) throws RepositoryException
    {
 
       for (NodeDefinitionData nodeDefinitionData : newDefinitionData)
@@ -336,22 +343,22 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
          if (nodeDefinitionData.getName().equals(Constants.JCR_ANY_NAME))
          {
 
-            checkRequiredPrimaryType(nodeTypeName, nodes, null, nodeDefinitionData, recipientDefinition);
+            checkRequiredPrimaryType(nodeTypeName, nodesData, null, nodeDefinitionData, recipientDefinition);
 
-            checkSameNameSibling(nodeTypeName, nodes, nodeDefinitionData.getName(), recipientDefinition);
+            checkSameNameSibling(nodeTypeName, nodesData, nodeDefinitionData.getName(), recipientDefinition);
 
          }
          else
          {
             // check existed nodes for new constraint
-            checkRequiredPrimaryType(nodeTypeName, nodes, null, nodeDefinitionData, recipientDefinition);
-            checkSameNameSibling(nodeTypeName, nodes, nodeDefinitionData.getName(), recipientDefinition);
+            checkRequiredPrimaryType(nodeTypeName, nodesData, null, nodeDefinitionData, recipientDefinition);
+            checkSameNameSibling(nodeTypeName, nodesData, nodeDefinitionData.getName(), recipientDefinition);
 
             // try to add mandatory or auto-created properties for
             // for already addded nodes.
             if (nodeDefinitionData.isMandatory() && !nodeDefinitionData.isAutoCreated())
             {
-               checkMandatoryItems(nodes, nodeDefinitionData);
+               checkMandatoryItems(nodesData, nodeDefinitionData);
             }
          }
       }
@@ -366,7 +373,7 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
     * @throws RepositoryException
     */
    private void validateChanged(InternalQName registeredNodeType,
-      List<RelatedDefinition<NodeDefinitionData>> changedDefinitionData, Set<String> nodes,
+      List<RelatedDefinition<NodeDefinitionData>> changedDefinitionData, List<NodeData> nodesData,
       NodeDefinitionData[] allRecipientDefinition) throws RepositoryException
    {
       for (RelatedDefinition<NodeDefinitionData> changedDefinitions : changedDefinitionData)
@@ -377,10 +384,11 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
          // TODO residual
          if (!ancestorDefinitionData.isMandatory() && recipientDefinitionData.isMandatory())
          {
-            for (String uuid : nodes)
+            for (NodeData nodeData : nodesData)
             {
-               NodeData nodeData = (NodeData)persister.getItemData(uuid);
-               ItemData child = persister.getItemData(nodeData, new QPathEntry(recipientDefinitionData.getName(), 0));
+
+               ItemData child =
+                  dataConsumer.getItemData(nodeData, new QPathEntry(recipientDefinitionData.getName(), 0));
                if (child == null || !child.isNode())
                {
                   String message =
@@ -389,7 +397,7 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
                         + " from mandatory=false to mandatory = true , because " + " node "
                         + nodeData.getQPath().getAsString() + " doesn't have child node with name "
                         + recipientDefinitionData.getName().getAsString();
-                  throw new RepositoryException(message);
+                  throw new ConstraintViolationException(message);
                }
             }
          }
@@ -398,32 +406,34 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
          if (!ancestorDefinitionData.isProtected() && recipientDefinitionData.isProtected())
          {
             // TODO residual
-            for (String uuid : nodes)
+            for (NodeData nodeData : nodesData)
             {
-               NodeData nodeData = (NodeData)persister.getItemData(uuid);
-               ItemData child = persister.getItemData(nodeData, new QPathEntry(recipientDefinitionData.getName(), 0));
+
+               ItemData child =
+                  dataConsumer.getItemData(nodeData, new QPathEntry(recipientDefinitionData.getName(), 0));
                if (child == null || !child.isNode())
                {
                   String message =
                      "Fail to  change " + recipientDefinitionData.getName().getAsString() + " node definition for "
                         + registeredNodeType.getAsString()
-                        + " node type  from rotected=false to Protected = true , because " + " node "
+                        + " node type  from protected=false to Protected = true , because " + " node "
                         + nodeData.getQPath().getAsString() + " doesn't have child node with name "
                         + recipientDefinitionData.getName().getAsString();
-                  throw new RepositoryException(message);
+                  throw new ConstraintViolationException(message);
                }
             }
          }
          if (!Arrays.deepEquals(ancestorDefinitionData.getRequiredPrimaryTypes(), recipientDefinitionData
             .getRequiredPrimaryTypes()))
          {
-            checkRequiredPrimaryType(registeredNodeType, nodes, ancestorDefinitionData.getRequiredPrimaryTypes(),
+            checkRequiredPrimaryType(registeredNodeType, nodesData, ancestorDefinitionData.getRequiredPrimaryTypes(),
                recipientDefinitionData, allRecipientDefinition);
          }
          // check sibling
          if (ancestorDefinitionData.isAllowsSameNameSiblings() && !recipientDefinitionData.isAllowsSameNameSiblings())
          {
-            checkSameNameSibling(registeredNodeType, nodes, recipientDefinitionData.getName(), allRecipientDefinition);
+            checkSameNameSibling(registeredNodeType, nodesData, recipientDefinitionData.getName(),
+               allRecipientDefinition);
          }
       }
    }
@@ -436,19 +446,17 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
     * @throws RepositoryException
     */
    private void validateRemoved(NodeTypeData registeredNodeType, List<NodeDefinitionData> removedDefinitionData,
-      NodeDefinitionData[] recipientDefinition) throws ConstraintViolationException, RepositoryException
+      NodeDefinitionData[] recipientDefinition, List<NodeData> nodesData) throws ConstraintViolationException,
+      RepositoryException
    {
 
       for (NodeDefinitionData removeNodeDefinitionData : removedDefinitionData)
       {
-         Set<String> nodes;
          if (removeNodeDefinitionData.getName().equals(Constants.JCR_ANY_NAME))
          {
-            nodes = nodeTypeDataManager.getNodes(registeredNodeType.getName());
-            for (String uuid : nodes)
+            for (NodeData nodeData : nodesData)
             {
-               NodeData nodeData = (NodeData)persister.getItemData(uuid);
-               List<NodeData> childs = persister.getChildNodesData(nodeData);
+               List<NodeData> childs = dataConsumer.getChildNodesData(nodeData);
                // more then mixin and primary type
                // TODO it could be possible, check add definitions
                if (childs.size() > 0)
@@ -472,12 +480,10 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
          {
             if (!isResidualMatch(removeNodeDefinitionData.getName(), recipientDefinition))
             {
-               nodes = nodeTypeDataManager.getNodes(registeredNodeType.getName());
-               for (String uuid : nodes)
+               for (NodeData nodeData : nodesData)
                {
-                  NodeData nodeData = (NodeData)persister.getItemData(uuid);
                   ItemData child =
-                     persister.getItemData(nodeData, new QPathEntry(removeNodeDefinitionData.getName(), 0));
+                     dataConsumer.getItemData(nodeData, new QPathEntry(removeNodeDefinitionData.getName(), 0));
                   if (child != null && child.isNode())
                   {
                      throw new ConstraintViolationException("Can't remove node definition "

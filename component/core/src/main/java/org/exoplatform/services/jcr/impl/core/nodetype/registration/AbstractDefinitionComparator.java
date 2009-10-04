@@ -20,8 +20,6 @@ package org.exoplatform.services.jcr.impl.core.nodetype.registration;
 
 import org.exoplatform.services.jcr.core.nodetype.ItemDefinitionData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
-import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
-import org.exoplatform.services.jcr.dataflow.DataManager;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.impl.Constants;
@@ -39,27 +37,6 @@ import javax.jcr.nodetype.ConstraintViolationException;
  */
 public abstract class AbstractDefinitionComparator<T extends ItemDefinitionData>
 {
-   /**
-    * Data manager
-    */
-   protected final DataManager persister;
-
-   /**
-    * Node type data manager
-    */
-   protected final NodeTypeDataManager nodeTypeDataManager;
-
-   /**
-    * @param nodeTypeDataManager
-    * @param persister
-    */
-   public AbstractDefinitionComparator(NodeTypeDataManager nodeTypeDataManager, DataManager persister)
-   {
-      super();
-      this.nodeTypeDataManager = nodeTypeDataManager;
-      this.persister = persister;
-   }
-
    public abstract PlainChangesLog compare(NodeTypeData registeredNodeType, T[] ancestorDefinition,
       T[] recipientDefinition) throws ConstraintViolationException, RepositoryException;
 

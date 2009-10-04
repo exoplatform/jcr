@@ -18,98 +18,59 @@
  */
 package org.exoplatform.services.jcr.impl.core.nodetype;
 
-import org.exoplatform.services.jcr.core.nodetype.ExtendedItemDefinition;
+import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
+import org.exoplatform.services.jcr.core.nodetype.ItemDefinitionData;
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
+import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.LocationFactory;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
+import javax.jcr.RepositoryException;
+import javax.jcr.ValueFactory;
 import javax.jcr.nodetype.NodeType;
 
 /**
  * Created by The eXo Platform SAS.
  * 
- * @author Gennady Azarenkov
- * @version $Id: ItemDefinitionImpl.java 11907 2008-03-13 15:36:21Z ksm $
+ * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
+ * @version $Id: $
  */
-
-public abstract class ItemDefinitionImpl implements ExtendedItemDefinition
+public class ItemDefinitionImpl implements ExtendedItemDefinition
 {
+   /**
+    * Class logger.
+    */
+   private static final Log LOG = ExoLogger.getLogger(ItemDefinitionImpl.class);
 
-   protected final NodeType declaringNodeType;
+   protected final NodeTypeDataManager nodeTypeDataManager;
 
-   protected final String name;
+   protected final LocationFactory locationFactory;
 
-   protected final boolean autoCreate;
+   protected final ExtendedNodeTypeManager nodeTypeManager;
 
-   protected final int onVersion;
+   protected final ValueFactory valueFactory;
 
-   protected final boolean readOnly;
-
-   protected final boolean mandatory;
-
-   protected int hashCode;
-
-   public ItemDefinitionImpl(String name, NodeType declaringNodeType, boolean autoCreate, int onVersion,
-      boolean readOnly, boolean mandatory)
-   {
-      this.declaringNodeType = declaringNodeType;
-      this.autoCreate = autoCreate;
-      this.onVersion = onVersion;
-      this.readOnly = readOnly;
-      this.mandatory = mandatory;
-      this.name = name;
-
-      int hk = 7;
-      hk = 31 * hk + (name != null ? name.hashCode() : 0);
-      hk = 31 * hk + (autoCreate ? 0 : 1);
-      hk = 31 * hk + (readOnly ? 0 : 1);
-      hk = 31 * hk + (mandatory ? 0 : 1);
-      hk = 31 * hk + onVersion;
-      this.hashCode = hk;
-   }
-
-   @Override
-   public int hashCode()
-   {
-      return hashCode;
-   }
+   private final ItemDefinitionData itemDefinitionData;
 
    /**
-    * {@inheritDoc}
+    * @param name
+    * @param declaringNodeType
+    * @param onParentVersion
+    * @param autoCreated
+    * @param mandatory
+    * @param protectedItem
     */
-   public String getName()
+   public ItemDefinitionImpl(ItemDefinitionData itemDefinitionData, NodeTypeDataManager nodeTypeDataManager,
+      ExtendedNodeTypeManager nodeTypeManager, LocationFactory locationFactory, ValueFactory valueFactory)
    {
-      return name;
-   }
 
-   /**
-    * {@inheritDoc}
-    */
-   public boolean isAutoCreated()
-   {
-      return autoCreate;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public int getOnParentVersion()
-   {
-      return onVersion;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public boolean isProtected()
-   {
-      return readOnly;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public boolean isMandatory()
-   {
-      return mandatory;
+      this.itemDefinitionData = itemDefinitionData;
+      this.nodeTypeDataManager = nodeTypeDataManager;
+      this.nodeTypeManager = nodeTypeManager;
+      this.locationFactory = locationFactory;
+      this.valueFactory = valueFactory;
    }
 
    /**
@@ -117,7 +78,74 @@ public abstract class ItemDefinitionImpl implements ExtendedItemDefinition
     */
    public NodeType getDeclaringNodeType()
    {
-      return declaringNodeType;
+
+      return new NodeTypeImpl(nodeTypeDataManager.getNodeType(itemDefinitionData.getDeclaringNodeType()),
+         nodeTypeDataManager, nodeTypeManager, locationFactory, valueFactory);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public String getName()
+   {
+      String result = "";
+      try
+      {
+         result = locationFactory.createJCRName(itemDefinitionData.getName()).getAsString();
+      }
+      catch (RepositoryException e)
+      {
+         LOG.error(e.getLocalizedMessage(), e);
+      }
+      return result;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public InternalQName getQName()
+   {
+      return itemDefinitionData.getName();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public InternalQName getDeclaringNodeTypeQName()
+   {
+      return itemDefinitionData.getDeclaringNodeType();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public int getOnParentVersion()
+   {
+      return itemDefinitionData.getOnParentVersion();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public boolean isAutoCreated()
+   {
+      return itemDefinitionData.isAutoCreated();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public boolean isMandatory()
+   {
+      return itemDefinitionData.isMandatory();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public boolean isProtected()
+   {
+      return itemDefinitionData.isProtected();
    }
 
    /**
@@ -125,6 +153,6 @@ public abstract class ItemDefinitionImpl implements ExtendedItemDefinition
     */
    public boolean isResidualSet()
    {
-      return this.name.equals(Constants.JCR_ANY_NAME.getName());
+      return getName().equals(Constants.JCR_ANY_NAME.getName());
    }
 }

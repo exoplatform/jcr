@@ -65,7 +65,20 @@ public interface ExtendedNodeTypeManager extends NodeTypeManager
     * @param alreadyExistsBehaviour a int
     * @throws RepositoryException
     */
+  @Deprecated
    NodeTypeIterator registerNodeTypes(InputStream xml, int alreadyExistsBehaviour) throws RepositoryException;
+
+
+
+   /**
+    * Registers all node types using XML binding value objects from xml stream.
+    * 
+    * @param xml a InputStream
+    * @param alreadyExistsBehaviour a int
+    * @throws RepositoryException
+    */
+   NodeTypeIterator registerNodeTypes(InputStream xml, int alreadyExistsBehaviour, String contentType)
+      throws RepositoryException;
 
    /**
     * @return

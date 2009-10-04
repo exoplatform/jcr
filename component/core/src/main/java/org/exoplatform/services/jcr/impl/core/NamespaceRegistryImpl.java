@@ -23,6 +23,7 @@ import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.impl.core.query.RepositoryIndexSearcherHolder;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.picocontainer.Startable;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -41,7 +42,7 @@ import javax.jcr.RepositoryException;
  * @version $Id: NamespaceRegistryImpl.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry
+public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry, Startable
 {
 
    public static final Map<String, String> DEF_NAMESPACES = new HashMap<String, String>();
@@ -52,6 +53,7 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry
 
    protected final static Log log = ExoLogger.getLogger("jcr.NamespaceRegistryImpl");
 
+   private boolean started = false;
    static
    {
 
@@ -88,39 +90,36 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry
 
    }
 
-   private Map<String, String> namespaces;
-
-   private NamespaceDataPersister persister;
-
-   private Map<String, String> prefixes;
-
-   // private HashSet<QueryHandler> queryHandlers;
+   private final DataManager dataManager;
 
    private final RepositoryIndexSearcherHolder indexSearcherHolder;
 
-   // private final NodeTypeDataManager nodeTypeDataManager;
+   private final Map<String, String> namespaces;
+
+   private final Map<String, String> prefixes;
+
+   private NamespaceDataPersister persister;
 
    /**
     * for tests.
     */
    public NamespaceRegistryImpl()
    {
-      this.namespaces = DEF_NAMESPACES;
-      this.prefixes = DEF_PREFIXES;
-      this.indexSearcherHolder = new RepositoryIndexSearcherHolder();
-      // this.queryHandlers = new HashSet<QueryHandler>();
-      // this.nodeTypeDataManager = null;
+      this.namespaces = new HashMap<String, String>(DEF_NAMESPACES);
+      this.prefixes = new HashMap<String, String>(DEF_PREFIXES);
+      this.dataManager = null;
+      this.indexSearcherHolder = null;
    }
 
-   public NamespaceRegistryImpl(NamespaceDataPersister persister, RepositoryIndexSearcherHolder indexSearcherHolder)
+   public NamespaceRegistryImpl(NamespaceDataPersister persister, DataManager dataManager,
+      RepositoryIndexSearcherHolder indexSearcherHolder)
    {
 
+      this.dataManager = dataManager;
       this.indexSearcherHolder = indexSearcherHolder;
-      // this.nodeTypeDataManager = nodeTypeDataManager;
       this.namespaces = new HashMap<String, String>(DEF_NAMESPACES);
       this.prefixes = new HashMap<String, String>(DEF_PREFIXES);
       this.persister = persister;
-      // this.queryHandlers = new HashSet<QueryHandler>();
    }
 
    /**
@@ -145,6 +144,22 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry
    public String getNamespaceURIByPrefix(String prefix) throws NamespaceException
    {
       return getURI(prefix);
+   }
+
+   /**
+    * Return
+    * 
+    * @param nodeType
+    * @return
+    * @throws RepositoryException
+    * @throws IOException
+    */
+   @Deprecated
+   public Set<String> getNodes(String uri) throws RepositoryException
+   {
+      validate();
+
+      return indexSearcherHolder.getNodesByUri(uri);
    }
 
    /**
@@ -209,21 +224,6 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry
       return prefixes.containsKey(uri);
    }
 
-   public void loadFromStorage() throws RepositoryException
-   {
-
-      try
-      {
-         persister.loadNamespaces(namespaces, prefixes);
-      }
-      catch (PathNotFoundException e)
-      {
-         log.info("Namespaces storage (/jcr:system/exo:namespaces) is not accessible."
-            + " Default namespaces only will be used. " + e);
-         return;
-      }
-   }
-
    // //////////////////// NamespaceAccessor
 
    /**
@@ -234,7 +234,6 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry
 
       validateNamespace(prefix, uri);
 
-      // if (namespaces.containsKey(prefix) || prefixes.containsKey(uri)) {
       if (namespaces.containsKey(prefix))
       {
          unregisterNamespace(prefix);
@@ -243,15 +242,49 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry
       {
          unregisterNamespace(prefixes.get(uri));
       }
-
-      persister.addNamespace(prefix, uri);
-      persister.saveChanges();
-
-      String newPrefix = new String(prefix);
-      String newUri = new String(uri);
+      if (persister != null)
+      {
+         persister.addNamespace(prefix, uri);
+         // persister.saveChanges();
+      }
+      final String newPrefix = new String(prefix);
+      final String newUri = new String(uri);
 
       namespaces.put(newPrefix, newUri);
       prefixes.put(newUri, newPrefix);
+   }
+
+   public void start()
+   {
+      if (!started)
+      {
+
+         // save default
+         if (persister != null)
+         {
+            // no save default
+            try
+            {
+               if (!persister.isStorageFilled())
+               {
+                  persister.addNamespaces(DEF_NAMESPACES);
+               }
+               else
+               {
+                  persister.loadNamespaces(namespaces, prefixes);
+               }
+            }
+            catch (final RepositoryException e)
+            {
+               throw new RuntimeException(e.getLocalizedMessage(), e);
+            }
+         }
+         started = true;
+      }
+   }
+
+   public void stop()
+   {
    }
 
    /**
@@ -269,37 +302,39 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry
       {
          throw new NamespaceException("Prefix " + prefix + " is protected");
       }
-
-      // throw new NamespaceException("Unregistration is not supported as"
-      // + " may cause integrity problems. (todo issue #46)");
-
-      Set<String> nodes = getNodes(prefix);
-      if (nodes.size() > 0)
+      String uri = getURI(prefix);
+      if (indexSearcherHolder != null)
       {
-         StringBuffer buffer = new StringBuffer();
-         buffer.append("Fail to unregister namespace");
-         buffer.append(prefix);
-         buffer.append(" because of following nodes:  ");
-         DataManager dm = persister.getDataManager();
-         for (String uuid : nodes)
+         final Set<String> nodes = indexSearcherHolder.getNodesByUri(uri);
+         if (nodes.size() > 0)
          {
-            ItemData item = dm.getItemData(uuid);
-            if (item != null && item.isNode())
-               buffer.append(item.getQPath().getAsString());
+            StringBuffer buffer = new StringBuffer();
+            buffer.append("Fail to unregister namespace");
+            buffer.append(prefix);
+            buffer.append(" because of following nodes:  ");
+
+            for (String uuid : nodes)
+            {
+               ItemData item = dataManager.getItemData(uuid);
+               if (item != null && item.isNode())
+               {
+                  buffer.append(item.getQPath().getAsString());
+               }
+            }
+            buffer.append(" contains whese prefix  ");
+            throw new NamespaceException(buffer.toString());
          }
-         buffer.append(" contains whese prefix  ");
-         throw new NamespaceException(buffer.toString());
       }
-
-      prefixes.remove(getURI(prefix));
+      prefixes.remove(uri);
       namespaces.remove(prefix);
-      persister.removeNamespace(prefix);
-
+      if (persister != null)
+      {
+         persister.removeNamespace(prefix);
+      }
    }
 
    public void validateNamespace(String prefix, String uri) throws NamespaceException, RepositoryException
    {
-
       if (prefix.indexOf(":") > 0)
       {
          throw new RepositoryException("Namespace prefix should not contain ':' " + prefix);
@@ -309,9 +344,9 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry
       {
          if (uri == null)
          {
-            throw new NamespaceException("Can not remove built-in namespace");
+            throw new NamespaceException("Can not remove built-in namespace " + prefix);
          }
-         throw new NamespaceException("Can not change built-in namespace");
+         throw new NamespaceException("Can not change built-in namespace " + prefix);
       }
       if (prefix.toLowerCase().startsWith("xml"))
       {
@@ -323,134 +358,17 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry
       }
    }
 
-   //   public void addQueryHandler(QueryHandler queryHandler)
-   //   {
-   //      queryHandlers.add(queryHandler);
-   //   }
-
-   /**
-    * Return
-    * 
-    * @param nodeType
-    * @return
-    * @throws RepositoryException
-    * @throws IOException
-    */
-   public Set<String> getNodes(String prefix) throws RepositoryException
+   private void validate() throws RepositoryException
    {
+      if (dataManager == null)
+      {
+         throw new RepositoryException("Datamanager not initialized");
+      }
+      if (indexSearcherHolder == null)
+      {
+         throw new RepositoryException("RepositoryIndexSearcherHolder not initialized");
+      }
 
-      //      LocationFactory locationFactory = new LocationFactory(this);
-      //      ValueFactoryImpl valueFactory = new ValueFactoryImpl(locationFactory);
-      //
-      //      BooleanQuery query = new BooleanQuery();
-      //      // query.add(new MatchAllDocsQuery(), Occur.MUST);
-      //      // name of the node
-      //      query.add(new WildcardQuery(new Term(FieldNames.LABEL, prefix + ":*")), Occur.SHOULD);
-      //      // name of the property
-      //      query.add(new WildcardQuery(new Term(FieldNames.PROPERTIES_SET, prefix + ":*")), Occur.SHOULD);
-      //
-      //      Set<String> result = getNodes(query);
-      //
-      //      // value of the property
-      //      Set<String> propSet = getNodes(new WildcardQuery(new Term(FieldNames.PROPERTIES, "*" + prefix + ":*")));
-      //      // Manually check property values;
-      //      for (String uuid : propSet)
-      //      {
-      //         if (isPrefixMatch(valueFactory, uuid, prefix))
-      //            result.add(uuid);
-      //      }
-
-      return indexSearcherHolder.getNodesByUri(prefix);
    }
-
-   //   /**
-   //    * @param valueFactory
-   //    * @param dm
-   //    * @param uuid
-   //    * @param prefix
-   //    * @throws RepositoryException
-   //    */
-   //   private boolean isPrefixMatch(ValueFactoryImpl valueFactory, String uuid, String prefix) throws RepositoryException
-   //   {
-   //      DataManager dm = persister.getDataManager();
-   //      ItemData node = dm.getItemData(uuid);
-   //      if (node != null && node.isNode())
-   //      {
-   //         List<PropertyData> props = dm.getChildPropertiesData((NodeData)node);
-   //         for (PropertyData propertyData : props)
-   //         {
-   //            if (propertyData.getType() == PropertyType.PATH || propertyData.getType() == PropertyType.NAME)
-   //            {
-   //               for (ValueData vdata : propertyData.getValues())
-   //               {
-   //                  Value val =
-   //                     valueFactory.loadValue(((AbstractValueData)vdata).createTransientCopy(), propertyData.getType());
-   //                  if (propertyData.getType() == PropertyType.PATH)
-   //                  {
-   //                     if (isPrefixMatch(((PathValue)val).getQPath(), prefix))
-   //                        return true;
-   //                  }
-   //                  else if (propertyData.getType() == PropertyType.NAME)
-   //                  {
-   //                     if (isPrefixMatch(((NameValue)val).getQName(), prefix))
-   //                        return true;
-   //                  }
-   //               }
-   //            }
-   //         }
-   //      }
-   //      return false;
-   //   }
-   //
-   //   private boolean isPrefixMatch(QPath value, String prefix) throws NamespaceException
-   //   {
-   //      for (int i = 0; i < value.getEntries().length; i++)
-   //      {
-   //         if (isPrefixMatch(value.getEntries()[i], prefix))
-   //            return true;
-   //      }
-   //      return false;
-   //   }
-   //
-   //   private boolean isPrefixMatch(InternalQName value, String prefix) throws NamespaceException
-   //   {
-   //      return (value.getNamespace().equals(getURI(prefix)));
-   //   }
-
-   //   /**
-   //    * @param query
-   //    * @return
-   //    * @throws RepositoryException
-   //    */
-   //   private Set<String> getNodes(Query query) throws RepositoryException
-   //   {
-   //      Set<String> result = new HashSet<String>();
-   //
-   //      Iterator<QueryHandler> it = queryHandlers.iterator();
-   //      try
-   //      {
-   //         while (it.hasNext())
-   //         {
-   //            QueryHandler queryHandler = it.next();
-   //            QueryHits hits = queryHandler.executeQuery(query);
-   //
-   //            ScoreNode sn;
-   //
-   //            while ((sn = hits.nextScoreNode()) != null)
-   //            {
-   //               result.add(sn.getNodeId());
-   //            }
-   //            //            for (int i = 0; i < hits.getSize(); i++)
-   //            //            {
-   //            //               result.add(hits.getFieldContent(i, FieldNames.UUID));
-   //            //            }
-   //         }
-   //      }
-   //      catch (IOException e)
-   //      {
-   //         throw new RepositoryException(e.getLocalizedMessage(), e);
-   //      }
-   //      return result;
-   //   }
 
 }

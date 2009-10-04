@@ -417,7 +417,7 @@ public abstract class ItemImpl implements Item
             return nullProperty;
          }
          defs =
-            ntm.findPropertyDefinitions(propertyName, parentData.getPrimaryTypeName(), parentData.getMixinTypeNames());
+            ntm.getPropertyDefinitions(propertyName, parentData.getPrimaryTypeName(), parentData.getMixinTypeNames());
 
          state = ItemState.ADDED;
       }
@@ -426,7 +426,7 @@ public abstract class ItemImpl implements Item
          oldProp = (PropertyImpl)oldItem;
          isMultiValue = oldProp.isMultiValued();
          defs =
-            ntm.findPropertyDefinitions(propertyName, parentData.getPrimaryTypeName(), parentData.getMixinTypeNames());
+            ntm.getPropertyDefinitions(propertyName, parentData.getPrimaryTypeName(), parentData.getMixinTypeNames());
 
          identifier = oldProp.getInternalIdentifier();
          version = oldProp.getData().getPersistedVersion();
@@ -725,10 +725,10 @@ public abstract class ItemImpl implements Item
       NodeTypeData[] nodeTypes = new NodeTypeData[mixinNames.length + 1];
 
       NodeTypeDataManager ntm = session.getWorkspace().getNodeTypesHolder();
-      nodeTypes[0] = ntm.findNodeType(primaryTypeName);
+      nodeTypes[0] = ntm.getNodeType(primaryTypeName);
       for (int i = 1; i <= mixinNames.length; i++)
       {
-         nodeTypes[i] = ntm.findNodeType(mixinNames[i - 1]);
+         nodeTypes[i] = ntm.getNodeType(mixinNames[i - 1]);
       }
 
       return nodeTypes;

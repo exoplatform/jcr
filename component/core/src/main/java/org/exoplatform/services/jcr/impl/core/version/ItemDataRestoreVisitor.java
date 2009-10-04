@@ -486,7 +486,7 @@ public class ItemDataRestoreVisitor extends ItemDataTraversingVisitor
          // current C in the workspace will be left unchanged.
 
          int action =
-            nodeTypeDataManager.findChildNodeDefinition(qname, currentNode().getPrimaryTypeName(),
+            nodeTypeDataManager.getChildNodeDefinition(qname, currentNode().getPrimaryTypeName(),
                currentNode().getMixinTypeNames()).getOnParentVersion();
 
          if (log.isDebugEnabled())
@@ -635,7 +635,7 @@ public class ItemDataRestoreVisitor extends ItemDataTraversingVisitor
             }
 
          int action =
-            nodeTypeDataManager.findPropertyDefinitions(qname, currentNode().getPrimaryTypeName(),
+            nodeTypeDataManager.getPropertyDefinitions(qname, currentNode().getPrimaryTypeName(),
                currentNode().getMixinTypeNames()).getAnyDefinition().getOnParentVersion();
 
          if (log.isDebugEnabled())

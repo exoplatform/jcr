@@ -71,7 +71,7 @@ public class ItemDataCopyIgnoredVisitor extends DefaultItemDataCopyVisitor
          NodeData existedParent = (NodeData)dataManager.getItemData(property.getParentIdentifier());
 
          PropertyDefinitionData pdef =
-            ntManager.findPropertyDefinitions(property.getQPath().getName(), existedParent.getPrimaryTypeName(),
+            ntManager.getPropertyDefinitions(property.getQPath().getName(), existedParent.getPrimaryTypeName(),
                existedParent.getMixinTypeNames()).getAnyDefinition();
 
          if (pdef.getOnParentVersion() == OnParentVersionAction.IGNORE)
@@ -118,7 +118,7 @@ public class ItemDataCopyIgnoredVisitor extends DefaultItemDataCopyVisitor
          {
             NodeData existedParent = (NodeData)dataManager.getItemData(node.getParentIdentifier());
             NodeDefinitionData ndef =
-               ntManager.findChildNodeDefinition(node.getQPath().getName(), existedParent.getPrimaryTypeName(),
+               ntManager.getChildNodeDefinition(node.getQPath().getName(), existedParent.getPrimaryTypeName(),
                   existedParent.getMixinTypeNames());
 
             // the node can be stored as IGNOREd in restore set, check an action

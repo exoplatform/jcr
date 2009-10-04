@@ -262,7 +262,7 @@ public class SystemViewImporter extends BaseXmlImporter
          String value = propertyInfo.getValues().get(i).toString();
 
          mixinNames[i] = locationFactory.parseJCRName(value).getInternalName();
-         currentNodeInfo.addNodeType((nodeTypeDataManager.findNodeType(mixinNames[i])));
+         currentNodeInfo.addNodeType((nodeTypeDataManager.getNodeType(mixinNames[i])));
          values.add(new TransientValueData(value.toString()));
       }
 
@@ -325,7 +325,7 @@ public class SystemViewImporter extends BaseXmlImporter
          }
       }
       //
-      nodeData.addNodeType((nodeTypeDataManager.findNodeType(primaryTypeName)));
+      nodeData.addNodeType((nodeTypeDataManager.getNodeType(primaryTypeName)));
       nodeData.setPrimaryTypeName(primaryTypeName);
 
       propertyData =
@@ -385,7 +385,7 @@ public class SystemViewImporter extends BaseXmlImporter
          boolean isMultivalue = true;
 
          PropertyDefinitionDatas defs =
-            nodeTypeDataManager.findPropertyDefinitions(propertyInfo.getName(), currentNodeInfo.getPrimaryTypeName(),
+            nodeTypeDataManager.getPropertyDefinitions(propertyInfo.getName(), currentNodeInfo.getPrimaryTypeName(),
                currentNodeInfo.getMixinTypeNames());
 
          if (defs == null)

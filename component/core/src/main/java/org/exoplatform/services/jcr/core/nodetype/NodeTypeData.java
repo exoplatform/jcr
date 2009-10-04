@@ -19,157 +19,85 @@
 package org.exoplatform.services.jcr.core.nodetype;
 
 import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.impl.core.nodetype.registration.NodeTypeReadException;
 
-import java.util.Arrays;
+import javax.jcr.RepositoryException;
 
 /**
- * Created by The eXo Platform SAS. Define base abstraction for NodeType data
- * used in core. <br/>Date: 25.11.2008
- * 
- * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter
- *         Nedonosko</a>
- * @version $Id: NodeTypeData.java 34801 2009-07-31 15:44:50Z dkatayev $
+ * @author <a href="mailto:Sergey.Kabashnyuk@exoplatform.org">Sergey Kabashnyuk</a>
+ * @version $Id: exo-jboss-codetemplates.xml 34360 2009-07-22 23:58:59Z ksm $
+ *
  */
-
-public class NodeTypeData
+public interface NodeTypeData
 {
-   protected InternalQName name;
 
-   protected InternalQName primaryItemName;
+//   /**
+//    * @return the isAbstract
+//    */
+//   public boolean isAbstract();
 
-   protected InternalQName[] declaredSupertypeNames;
+   /**
+    * 
+    * @return
+    * @throws RepositoryException
+    * @throws NodeTypeReadException
+    */
+   public NodeDefinitionData[] getDeclaredChildNodeDefinitions();;
 
-   protected PropertyDefinitionData[] declaredPropertyDefinitions;
+   /**
+    * 
+    * @return
+    * @throws RepositoryException
+    * @throws NodeTypeReadException
+    */
+   public PropertyDefinitionData[] getDeclaredPropertyDefinitions();
 
-   protected NodeDefinitionData[] declaredChildNodeDefinitions;
+   /**
+    * 
+    * @return
+    * @throws RepositoryException
+    * @throws NodeTypeReadException
+    */
+   public InternalQName[] getDeclaredSupertypeNames();
 
-   protected boolean hasOrderableChildNodes;
+   /**
+    * 
+    * @return
+    * @throws RepositoryException
+    * @throws NodeTypeReadException
+    */
+   public InternalQName getPrimaryItemName();
 
-   protected boolean mixin;
+   /**
+    * 
+    * @return
+    * @throws RepositoryException
+    * @throws NodeTypeReadException
+    */
+   public InternalQName getName();
 
-   public NodeTypeData(InternalQName name, InternalQName primaryItemName, boolean mixin,
-      boolean hasOrderableChildNodes, InternalQName[] declaredSupertypeNames,
-      PropertyDefinitionData[] declaredPropertyDefinitions, NodeDefinitionData[] declaredChildNodeDefinitions)
-   {
+   /**
+    * 
+    * @return
+    * @throws RepositoryException
+    * @throws NodeTypeReadException
+    */
+   public boolean hasOrderableChildNodes();
 
-      this.name = name;
-      this.primaryItemName = primaryItemName;
-      this.mixin = mixin;
-      this.hasOrderableChildNodes = hasOrderableChildNodes;
-      this.declaredSupertypeNames = declaredSupertypeNames;
-      this.declaredPropertyDefinitions = declaredPropertyDefinitions;
-      this.declaredChildNodeDefinitions = declaredChildNodeDefinitions;
-   }
+   /**
+    * 
+    * @return
+    * @throws RepositoryException
+    * @throws NodeTypeReadException
+    */
+   public boolean isMixin();
 
-   public NodeDefinitionData[] getDeclaredChildNodeDefinitions()
-   {
-      return declaredChildNodeDefinitions;
-   }
-
-   public PropertyDefinitionData[] getDeclaredPropertyDefinitions()
-   {
-      return declaredPropertyDefinitions;
-   }
-
-   @Override
-   public int hashCode()
-   {
-      final int prime = 31;
-      int result = 1;
-      result = prime * result + Arrays.hashCode(declaredChildNodeDefinitions);
-      result = prime * result + Arrays.hashCode(declaredPropertyDefinitions);
-      result = prime * result + Arrays.hashCode(declaredSupertypeNames);
-      result = prime * result + (hasOrderableChildNodes ? 1231 : 1237);
-      result = prime * result + (mixin ? 1231 : 1237);
-      result = prime * result + ((name == null) ? 0 : name.hashCode());
-      result = prime * result + ((primaryItemName == null) ? 0 : primaryItemName.hashCode());
-      return result;
-   }
-
-   @Override
-   public boolean equals(Object obj)
-   {
-      if (this == obj)
-      {
-         return true;
-      }
-      if (obj == null)
-      {
-         return false;
-      }
-      if (getClass() != obj.getClass())
-      {
-         return false;
-      }
-      NodeTypeData other = (NodeTypeData)obj;
-      if (!Arrays.equals(declaredChildNodeDefinitions, other.declaredChildNodeDefinitions))
-      {
-         return false;
-      }
-      if (!Arrays.equals(declaredPropertyDefinitions, other.declaredPropertyDefinitions))
-      {
-         return false;
-      }
-      if (!Arrays.equals(declaredSupertypeNames, other.declaredSupertypeNames))
-      {
-         return false;
-      }
-      if (hasOrderableChildNodes != other.hasOrderableChildNodes)
-      {
-         return false;
-      }
-      if (mixin != other.mixin)
-      {
-         return false;
-      }
-      if (name == null)
-      {
-         if (other.name != null)
-         {
-            return false;
-         }
-      }
-      else if (!name.equals(other.name))
-      {
-         return false;
-      }
-      if (primaryItemName == null)
-      {
-         if (other.primaryItemName != null)
-         {
-            return false;
-         }
-      }
-      else if (!primaryItemName.equals(other.primaryItemName))
-      {
-         return false;
-      }
-      return true;
-   }
-
-   public InternalQName[] getDeclaredSupertypeNames()
-   {
-      return declaredSupertypeNames;
-   }
-
-   public InternalQName getPrimaryItemName()
-   {
-      return primaryItemName;
-   }
-
-   public InternalQName getName()
-   {
-      return name;
-   }
-
-   public boolean hasOrderableChildNodes()
-   {
-      return hasOrderableChildNodes;
-   }
-
-   public boolean isMixin()
-   {
-      return mixin;
-   }
+//   /**
+//    * 
+//    * @return
+//    * @throws RepositoryException
+//    * @throws NodeTypeReadException
+//    */
+//   public boolean isQueryable();
 
 }

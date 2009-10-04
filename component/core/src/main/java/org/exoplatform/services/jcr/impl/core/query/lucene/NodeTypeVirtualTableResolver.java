@@ -66,7 +66,7 @@ public abstract class NodeTypeVirtualTableResolver<Q> implements
     protected boolean isMixin(final InternalQName nodeTypeName)
 	    throws RepositoryException {
 	final NodeTypeData nodeType = this.nodeTypeDataManager
-		.findNodeType(nodeTypeName);
+		.getNodeType(nodeTypeName);
 	if (nodeType == null) {
 	    throw new NoSuchNodeTypeException("Node type "
 		    + nodeTypeName.getAsString() + " not found");

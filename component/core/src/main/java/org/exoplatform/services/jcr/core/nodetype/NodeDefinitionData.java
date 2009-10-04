@@ -21,17 +21,19 @@ package org.exoplatform.services.jcr.core.nodetype;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 
 import java.util.Arrays;
+import java.util.Comparator;
 
 /**
- * Created by The eXo Platform SAS. <br/>Date: 25.11.2008
+ * Created by The eXo Platform SAS. <br/>
+ * Date: 25.11.2008
  * 
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter
  *         Nedonosko</a>
- * @version $Id: NodeDefinitionData.java 34801 2009-07-31 15:44:50Z dkatayev $
+ * @version $Id: NodeDefinitionData.java 25471 2008-12-19 08:34:01Z ksm $
  */
+
 public class NodeDefinitionData extends ItemDefinitionData
 {
-
    protected final InternalQName[] requiredPrimaryTypes;
 
    protected final InternalQName defaultPrimaryType;
@@ -46,6 +48,14 @@ public class NodeDefinitionData extends ItemDefinitionData
       this.requiredPrimaryTypes = requiredPrimaryTypes;
       this.defaultPrimaryType = defaultPrimaryType;
       this.allowsSameNameSiblings = allowsSameNameSiblings;
+      Arrays.sort(requiredPrimaryTypes, new Comparator<InternalQName>()
+      {
+
+         public int compare(InternalQName o1, InternalQName o2)
+         {
+            return o1.getAsString().compareTo(o2.getAsString());
+         }
+      });
    }
 
    public InternalQName[] getRequiredPrimaryTypes()
@@ -58,21 +68,77 @@ public class NodeDefinitionData extends ItemDefinitionData
       return defaultPrimaryType;
    }
 
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + (allowsSameNameSiblings ? 1231 : 1237);
+      result = prime * result + ((defaultPrimaryType == null) ? 0 : defaultPrimaryType.hashCode());
+      result = prime * result + Arrays.hashCode(requiredPrimaryTypes);
+      return result;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+      {
+         return true;
+      }
+      if (!super.equals(obj))
+      {
+         return false;
+      }
+      if (!(obj instanceof NodeDefinitionData))
+      {
+         return false;
+      }
+      NodeDefinitionData other = (NodeDefinitionData)obj;
+      if (allowsSameNameSiblings != other.allowsSameNameSiblings)
+      {
+         return false;
+      }
+      if (defaultPrimaryType == null)
+      {
+         if (other.defaultPrimaryType != null)
+         {
+            return false;
+         }
+      }
+      else if (!defaultPrimaryType.equals(other.defaultPrimaryType))
+      {
+         return false;
+      }
+      if (!Arrays.deepEquals(requiredPrimaryTypes, other.requiredPrimaryTypes))
+      {
+         return false;
+      }
+      return true;
+   }
+
    public boolean isAllowsSameNameSiblings()
    {
       return allowsSameNameSiblings;
    }
 
-   @Override
-   public boolean equals(Object obj)
-   {
-      if (this == obj)
-         return true;
-      if ((obj == null) || (obj.getClass() != this.getClass()))
-         return false;
-      // object must be Test at this point
-      NodeDefinitionData test = (NodeDefinitionData)obj;
-      return defaultPrimaryType == test.defaultPrimaryType && allowsSameNameSiblings == test.allowsSameNameSiblings
-         && super.equals(test) && Arrays.equals(this.requiredPrimaryTypes, test.requiredPrimaryTypes);
-   }
+   // @Override
+   // public boolean equals(Object obj) {
+   // if (this == obj)
+   // return true;
+   // if ((obj == null) || (obj.getClass() != this.getClass()))
+   // return false;
+   // // object must be Test at this point
+   // NodeDefinitionData test = (NodeDefinitionData) obj;
+   // return defaultPrimaryType == test.defaultPrimaryType
+   // && allowsSameNameSiblings == test.allowsSameNameSiblings &&
+   // super.equals(test)
+   // && Arrays.equals(this.requiredPrimaryTypes, test.requiredPrimaryTypes);
+   // }
 }

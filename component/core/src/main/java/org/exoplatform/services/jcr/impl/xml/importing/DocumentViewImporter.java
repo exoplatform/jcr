@@ -525,16 +525,16 @@ public class DocumentViewImporter extends BaseXmlImporter
          NodeData parent = getParent();
 
          NodeDefinitionData nodeNt =
-            nodeTypeDataManager.findChildNodeDefinition(nodeName, parent.getPrimaryTypeName(), parent
+            nodeTypeDataManager.getChildNodeDefinition(nodeName, parent.getPrimaryTypeName(), parent
                .getMixinTypeNames());
          NodeTypeData nodeType;
          if (nodeNt.getName().equals(Constants.JCR_ANY_NAME) && nodeNt.getDefaultPrimaryType() != null)
          {
-            nodeType = nodeTypeDataManager.findNodeType(nodeNt.getDefaultPrimaryType());
+            nodeType = nodeTypeDataManager.getNodeType(nodeNt.getDefaultPrimaryType());
          }
          else
          {
-            nodeType = nodeTypeDataManager.findNodeType(nodeNt.getName());
+            nodeType = nodeTypeDataManager.getNodeType(nodeNt.getName());
          }
 
          if (nodeType == null)
@@ -563,7 +563,7 @@ public class DocumentViewImporter extends BaseXmlImporter
             {
                String primaryNodeType = StringConverter.denormalizeString(attValue);
                InternalQName ntName = locationFactory.parseJCRName(primaryNodeType).getInternalName();
-               NodeTypeData nodeType = nodeTypeDataManager.findNodeType(ntName);
+               NodeTypeData nodeType = nodeTypeDataManager.getNodeType(ntName);
                if (nodeType == null)
                   throw new ConstraintViolationException("Can not find node type " + primaryNodeType);
                nodeTypes.add(nodeType);
@@ -577,7 +577,7 @@ public class DocumentViewImporter extends BaseXmlImporter
                   amTypes[mi] = StringConverter.denormalizeString(amTypes[mi]);
                   InternalQName name = locationFactory.parseJCRName(amTypes[mi]).getInternalName();
                   mixinNodeTypes.add(name);
-                  NodeTypeData nodeType = nodeTypeDataManager.findNodeType(name);
+                  NodeTypeData nodeType = nodeTypeDataManager.getNodeType(name);
                   if (nodeType == null)
                      throw new ConstraintViolationException("Can not find node type " + amTypes[mi]);
 
