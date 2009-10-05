@@ -18,6 +18,9 @@
  */
 package org.exoplatform.frameworks.jcr.command.web.fckeditor;
 
+import org.exoplatform.container.ExoContainer;
+import org.exoplatform.container.ExoContainerContext;
+import org.exoplatform.container.PortalContainer;
 import org.exoplatform.frameworks.jcr.command.web.GenericWebAppContext;
 
 /**
@@ -65,7 +68,18 @@ public abstract class AbstractFCKConnector
     */
    protected String makeRESTPath(String repoName, String workspace, String resource)
    {
-      return "/rest/jcr/" + repoName + "/" + workspace + resource;
+      final StringBuilder sb = new StringBuilder(512);
+      ExoContainer container = ExoContainerContext.getCurrentContainerIfPresent();
+      if (container instanceof PortalContainer)
+      {
+         PortalContainer pContainer = (PortalContainer)container;
+         sb.append('/').append(pContainer.getRestContextName()).append('/');
+      }
+      else
+      {
+         sb.append('/').append(PortalContainer.DEFAULT_REST_CONTEXT_NAME).append('/');
+      }
+      return sb.append("jcr/").append(repoName).append('/').append(workspace).append(resource).toString();
    }
 
 }
