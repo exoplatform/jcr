@@ -50,91 +50,95 @@ public class FtpClientCommandThread extends Thread
    public void run()
    {
 
-      String portalContainerName = clientSession.getFtpServer().getConfiguration().getPortalContainerName();
+      ExoContainer container = clientSession.getFtpServer().getConfiguration().getPortalContainer();
 
-      ExoContainer container = ExoContainerContext.getContainerByName(portalContainerName);
       if (container == null)
       {
          if (log.isDebugEnabled())
          {
-            log.debug("Container " + portalContainerName + " not found.");
+            log.debug("No Portal Container found.");
          }
          container = ExoContainerContext.getTopContainer();
       }
 
-      ExoContainerContext.setCurrentContainer(container);
-
-      while (true)
+      try
       {
-         try
-         {
-            String command = readLine();
+         ExoContainerContext.setCurrentContainer(container);
 
-            if (command == null)
+         while (true)
+         {
+            try
+            {
+               String command = readLine();
+
+               if (command == null)
+               {
+                  break;
+               }
+
+               if (!"".equals(command))
+               {
+                  String logStr = "";
+                  String[] comms = command.split(" ");
+
+                  FtpCommand curCommand = clientSession.getFtpServer().getCommand(comms[0].toUpperCase());
+
+                  logStr = comms[0].toUpperCase();
+
+                  if (curCommand != null)
+                  {
+                     if (comms.length > 1)
+                     {
+                        for (int i = 2; i < comms.length; i++)
+                        {
+                           if ("".equals(comms[i]))
+                           {
+                              comms[1] += " ";
+                           }
+                           else
+                           {
+                              comms[1] += " " + comms[i];
+                           }
+                        }
+
+                        logStr += " " + comms[1];
+                     }
+
+                     FtpContext ftpContext = new FtpContext(clientSession, comms);
+                     curCommand.execute(ftpContext);
+                  }
+                  else
+                  {
+                     clientSession.reply(String.format(FtpConst.Replyes.REPLY_500, comms[0].toUpperCase()));
+                     clientSession.setPrevCommand(null);
+                  }
+
+               }
+            }
+            catch (SocketException exc)
             {
                break;
             }
-
-            if (!"".equals(command))
+            catch (Exception exc)
             {
-               String logStr = "";
-               String[] comms = command.split(" ");
-
-               FtpCommand curCommand = clientSession.getFtpServer().getCommand(comms[0].toUpperCase());
-
-               logStr = comms[0].toUpperCase();
-
-               if (curCommand != null)
-               {
-                  if (comms.length > 1)
-                  {
-                     for (int i = 2; i < comms.length; i++)
-                     {
-                        if ("".equals(comms[i]))
-                        {
-                           comms[1] += " ";
-                        }
-                        else
-                        {
-                           comms[1] += " " + comms[i];
-                        }
-                     }
-
-                     logStr += " " + comms[1];
-                  }
-
-                  FtpContext ftpContext = new FtpContext(clientSession, comms);
-                  curCommand.execute(ftpContext);
-               }
-               else
-               {
-                  clientSession.reply(String.format(FtpConst.Replyes.REPLY_500, comms[0].toUpperCase()));
-                  clientSession.setPrevCommand(null);
-               }
-
+               log.info("Unhandled exception. " + exc.getMessage(), exc);
+               break;
             }
          }
-         catch (SocketException exc)
+
+         try
          {
-            break;
+            clientSession.logout();
          }
          catch (Exception exc)
          {
             log.info("Unhandled exception. " + exc.getMessage(), exc);
-            break;
          }
       }
-
-      try
+      finally
       {
-         clientSession.logout();
+         ExoContainerContext.setCurrentContainer(null);
       }
-      catch (Exception exc)
-      {
-         log.info("Unhandled exception. " + exc.getMessage(), exc);
-      }
-
-      ExoContainerContext.setCurrentContainer(null);
 
    }
 

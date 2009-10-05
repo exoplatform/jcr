@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.ftp;
 
+import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.command.impl.CommandService;
 import org.exoplatform.services.ftp.config.FtpConfig;
@@ -46,12 +47,13 @@ public class FtpServiceImpl implements FtpService, Startable
 
    private FtpConfig config = null;
 
-   public FtpServiceImpl(InitParams params, CommandService commandService, RepositoryService repositoryService)
+   public FtpServiceImpl(InitParams params, CommandService commandService, RepositoryService repositoryService,
+      ExoContainerContext context)
    {
 
       this.commandService = commandService;
       this.repositoryService = repositoryService;
-      config = new FtpConfigImpl(params);
+      config = new FtpConfigImpl(context, params);
    }
 
    public void start()

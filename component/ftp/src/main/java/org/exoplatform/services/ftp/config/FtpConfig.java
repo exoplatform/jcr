@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.ftp.config;
 
+import org.exoplatform.container.PortalContainer;
+
 /**
  * Created by The eXo Platform SAS Author : Vitaly Guly <gavrik-vetal@ukr.net/mail.ru>
  * 
@@ -57,6 +59,6 @@ public interface FtpConfig
 
    int getTimeOut();
 
-   String getPortalContainerName();
+   PortalContainer getPortalContainer();
 
 }

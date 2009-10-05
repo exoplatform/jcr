@@ -18,6 +18,9 @@
  */
 package org.exoplatform.services.ftp.config;
 
+import org.exoplatform.container.ExoContainer;
+import org.exoplatform.container.ExoContainerContext;
+import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ValueParam;
 import org.exoplatform.services.ftp.FtpConst;
@@ -93,11 +96,6 @@ public class FtpConfigImpl implements FtpConfig
     * "timeout".
     */
    public static final String INIT_PARAM_TIME_OUT = "timeout";
-
-   /**
-    * Portal container name.
-    */
-   public static final String PORTAL_CONTAINER_NAME = "portalContainerName";
 
    /**
     * Command port.
@@ -180,16 +178,16 @@ public class FtpConfigImpl implements FtpConfig
    protected boolean ENABLE_TRACE = true;
 
    /**
-    * Container name.
+    * Portal Container.
     */
-   protected String portalContainerName = null;
+   protected PortalContainer  _portalContainer;
 
    /**
     * Constructor.
     * 
     * @param InitParams
     */
-   public FtpConfigImpl(InitParams params)
+   public FtpConfigImpl(ExoContainerContext context, InitParams params)
    {
 
       ValueParam pCommandPort = params.getValueParam(INIT_PARAM_COMMAND_PORT);
@@ -267,8 +265,11 @@ public class FtpConfigImpl implements FtpConfig
          _timeOutValue = new Integer(pTimeOut.getValue());
       }
 
-      ValueParam pPortalContainerName = params.getValueParam(PORTAL_CONTAINER_NAME);
-      portalContainerName = pPortalContainerName != null ? pPortalContainerName.getValue() : "portal";
+      ExoContainer container = context.getContainer();
+      if (container instanceof PortalContainer)
+      {
+         _portalContainer = ((PortalContainer)container);
+      }
 
       if (log.isDebugEnabled())
       {
@@ -378,9 +379,9 @@ public class FtpConfigImpl implements FtpConfig
       return _timeOutValue;
    }
 
-   public String getPortalContainerName()
+   public PortalContainer getPortalContainer()
    {
-      return portalContainerName;
+      return _portalContainer;
    }
 
 }

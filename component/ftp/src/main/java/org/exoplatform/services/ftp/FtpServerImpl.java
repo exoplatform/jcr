@@ -32,6 +32,7 @@ import org.exoplatform.services.log.Log;
 
 import java.io.File;
 import java.io.InputStream;
+import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -109,7 +110,21 @@ public class FtpServerImpl implements FtpServer
       {
          prepareCache();
 
-         ServerSocket serverSocket = new ServerSocket(configuration.getCommandPort());
+         ServerSocket serverSocket = null;
+         int port = configuration.getCommandPort();
+         // Trying to find a port available
+         while (serverSocket == null)
+         {
+            try
+            {
+               serverSocket = new ServerSocket(port);
+               log.info("FTPServer started on port '" + port + "'");
+            }
+            catch (BindException e)
+            {
+               log.warn("Cannot launch the FTPServer on '" + (port++) + "', we try the next port number");
+            }
+         }
 
          dataChannelManager = new FtpDataChannelManagerImpl(configuration);
 
