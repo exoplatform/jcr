@@ -19,7 +19,7 @@
 package org.exoplatform.frameworks.jcr.web;
 
 import org.exoplatform.container.ExoContainer;
-import org.exoplatform.container.ExoContainerContext;
+import org.exoplatform.container.web.AbstractFilter;
 import org.exoplatform.services.jcr.ext.app.SessionProviderService;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
 import org.exoplatform.services.log.ExoLogger;
@@ -31,9 +31,7 @@ import org.exoplatform.services.security.web.HttpSessionStateKey;
 
 import java.io.IOException;
 
-import javax.servlet.Filter;
 import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -49,7 +47,7 @@ import javax.servlet.http.HttpSession;
  * @author Gennady Azarenkov
  * @version $Id: $
  */
-public class ThreadLocalSessionProviderInitializedFilter implements Filter
+public class ThreadLocalSessionProviderInitializedFilter extends AbstractFilter
 {
 
    private ConversationRegistry stateRegistry;
@@ -60,14 +58,6 @@ public class ThreadLocalSessionProviderInitializedFilter implements Filter
 
    /*
     * (non-Javadoc)
-    * @see javax.servlet.Filter#init(javax.servlet.FilterConfig)
-    */
-   public void init(FilterConfig config) throws ServletException
-   {
-   }
-
-   /*
-    * (non-Javadoc)
     * @see javax.servlet.Filter#doFilter(javax.servlet.ServletRequest, javax.servlet.ServletResponse,
     * javax.servlet.FilterChain)
     */
@@ -75,7 +65,7 @@ public class ThreadLocalSessionProviderInitializedFilter implements Filter
       ServletException
    {
 
-      ExoContainer container = ExoContainerContext.getCurrentContainer();
+      ExoContainer container = getContainer();
 
       providerService = (SessionProviderService)container.getComponentInstanceOfType(SessionProviderService.class);
       stateRegistry = (ConversationRegistry)container.getComponentInstanceOfType(ConversationRegistry.class);
