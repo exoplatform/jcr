@@ -28,11 +28,18 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
+import org.exoplatform.services.jcr.impl.core.query.lucene.FieldNames;
 import org.exoplatform.services.jcr.impl.core.query.lucene.IndexingConfigurationImpl;
+import org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.io.IOException;
+
 import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 
 /**
  * Created by The eXo Platform SAS.
@@ -42,6 +49,10 @@ import javax.jcr.Node;
  */
 public class TestIndexingConfig extends BaseQueryTest
 {
+   private final String workspaceName = "ws2";
+
+   private final String repositoryName = "db1tck";
+
    public final String testString1 = "The quick brown fox jumped over the lazy dogs";
 
    public final String testString2 = "XY&Z Corporation - xyz@example.com";
@@ -64,16 +75,33 @@ public class TestIndexingConfig extends BaseQueryTest
     */
    private final Log log = ExoLogger.getLogger("jcr.TestIndexingConfig");
 
+   private SearchManager searchManager;
+
+   private SearchIndex searchIndex;
+
+   private Session testSession;
+
    @Override
    public void setUp() throws Exception
    {
       super.setUp();
-      IndexingConfigurationImpl indexingConfigurationImpl =
-         (IndexingConfigurationImpl)defaultSearchIndex.getIndexingConfig();
-//      indexingConfigurationImpl.setPropertyAnalyzer("FULL:" + simple, new SimpleAnalyzer());
-//      indexingConfigurationImpl.setPropertyAnalyzer("FULL:" + whitespace, new WhitespaceAnalyzer());
-//      indexingConfigurationImpl.setPropertyAnalyzer("FULL:" + stop, new StopAnalyzer());
-      testRoot = root.addNode("testrootAnalyzers");
+
+      RepositoryImpl db1tckRepo = (RepositoryImpl)repositoryService.getRepository(repositoryName);
+      assertNotNull(db1tckRepo);
+      testSession = db1tckRepo.login(credentials, workspaceName);
+
+      searchManager = (SearchManager)db1tckRepo.getWorkspaceContainer(workspaceName).getComponent(SearchManager.class);
+      assertNotNull(searchManager);
+      searchIndex = (SearchIndex)(searchManager.getHandler());
+      assertNotNull(searchIndex);
+
+      IndexingConfigurationImpl indexingConfigurationImpl = (IndexingConfigurationImpl)searchIndex.getIndexingConfig();
+      assertNotNull(indexingConfigurationImpl);
+
+      indexingConfigurationImpl.addPropertyAnalyzer("FULL:" + simple, new SimpleAnalyzer());
+      indexingConfigurationImpl.addPropertyAnalyzer("FULL:" + whitespace, new WhitespaceAnalyzer());
+      indexingConfigurationImpl.addPropertyAnalyzer("FULL:" + stop, new StopAnalyzer());
+      testRoot = testSession.getRootNode().addNode("testrootAnalyzers");
       root.save();
    }
 
@@ -81,7 +109,7 @@ public class TestIndexingConfig extends BaseQueryTest
    public void tearDown() throws Exception
    {
       testRoot.remove();
-      root.save();
+      testSession.save();
       super.tearDown();
    }
 
@@ -95,14 +123,14 @@ public class TestIndexingConfig extends BaseQueryTest
          Node testNode2 = testRoot.addNode("node2");
          testNode2.setProperty(simple, testString2);
 
-         root.save();
+         testSession.save();
 
          // Test is there are all terms
          // There must be [the] [quick] [brown] [fox] [jumped] [over] [the] [lazy] [dogs]
          // in Node1
 
          Document doc = this.getDocument(testNode1.getInternalIdentifier(), false);
-         System.out.println(doc);
+         assertNotNull(doc);
 
          TermQuery the = new TermQuery(new Term("FULL:" + simple, "the"));
          TermQuery quick = new TermQuery(new Term("FULL:" + simple, "quick"));
@@ -123,7 +151,7 @@ public class TestIndexingConfig extends BaseQueryTest
          compl.add(lazy, Occur.MUST);
          compl.add(dogs, Occur.MUST);
 
-         IndexReader ir = defaultSearchIndex.getIndexReader();
+         IndexReader ir = searchIndex.getIndexReader();
          IndexSearcher is = new IndexSearcher(ir);
 
          Hits hits = is.search(compl);
@@ -171,7 +199,7 @@ public class TestIndexingConfig extends BaseQueryTest
          Node testNode2 = testRoot.addNode("node2");
          testNode2.setProperty(whitespace, testString2);
 
-         root.save();
+         testSession.save();
 
          // Test is there are all terms
          // There must be [The] [quick] [brown] [fox] [jumped] [over] [the] [lazy] [dogs]
@@ -198,7 +226,7 @@ public class TestIndexingConfig extends BaseQueryTest
          compl.add(lazy, Occur.MUST);
          compl.add(dogs, Occur.MUST);
 
-         IndexReader ir = defaultSearchIndex.getIndexReader();
+         IndexReader ir = searchIndex.getIndexReader();
          IndexSearcher is = new IndexSearcher(ir);
 
          Hits hits = is.search(compl);
@@ -241,7 +269,7 @@ public class TestIndexingConfig extends BaseQueryTest
          Node testNode2 = testRoot.addNode("node2");
          testNode2.setProperty(stop, testString2);
 
-         root.save();
+         testSession.save();
 
          // Test is there are all terms
          // There must be [quick] [brown] [fox] [jumped] [over] [lazy] [dogs]
@@ -264,7 +292,7 @@ public class TestIndexingConfig extends BaseQueryTest
          compl.add(lazy, Occur.MUST);
          compl.add(dogs, Occur.MUST);
 
-         IndexReader ir = defaultSearchIndex.getIndexReader();
+         IndexReader ir = searchIndex.getIndexReader();
          IndexSearcher is = new IndexSearcher(ir);
 
          Hits hits = is.search(compl);
@@ -313,7 +341,7 @@ public class TestIndexingConfig extends BaseQueryTest
          Node testNode2 = testRoot.addNode("node2");
          testNode2.setProperty(def, testString2);
 
-         root.save();
+         testSession.save();
 
          // Test is there are all terms
          // There must be [quick] [brown] [fox] [jumped] [over] [lazy] [dogs]
@@ -338,7 +366,7 @@ public class TestIndexingConfig extends BaseQueryTest
          compl.add(lazy, Occur.MUST);
          compl.add(dogs, Occur.MUST);
 
-         IndexReader ir = defaultSearchIndex.getIndexReader();
+         IndexReader ir = searchIndex.getIndexReader();
          IndexSearcher is = new IndexSearcher(ir);
 
          Hits hits = is.search(compl);
@@ -372,4 +400,20 @@ public class TestIndexingConfig extends BaseQueryTest
       }
    }
 
+   protected Document getDocument(String nodeIdentifer, boolean includeSystemIndex) throws IOException,
+      RepositoryException
+   {
+      IndexReader reader = ((SearchIndex)searchManager.getHandler()).getIndexReader();
+      IndexSearcher is = new IndexSearcher(reader);
+      TermQuery query = new TermQuery(new Term(FieldNames.UUID, nodeIdentifer));
+
+      Hits result = is.search(query);
+
+      if (result.length() == 1)
+         return result.doc(0);
+      else if (result.length() > 1)
+         throw new RepositoryException("Results more then one");
+
+      return null;
+   }
 }

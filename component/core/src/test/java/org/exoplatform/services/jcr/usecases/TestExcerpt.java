@@ -18,12 +18,14 @@
  */
 package org.exoplatform.services.jcr.usecases;
 
+import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
 
 import java.io.InputStream;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 import javax.jcr.Value;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
@@ -43,12 +45,25 @@ public class TestExcerpt extends BaseUsecasesTest
          + "org.exoplatform.services.jcr.impl.core.query.lucene.DefaultHTMLExcerpt. "
          + "the configuration parameter for this setting is:" + "This is the test for Excerpt query";
 
+   private String string1_excerpt =
+      "<div><span>the configuration parameter for this setting is:This is the "
+         + "<strong>test</strong> for Excerpt query</span></div>";
+
    private String s2 =
-      "It is a test for Excerpt query."
-         + "Searching with synonyms is integrated in the jcr:contains() function and uses the same syntax "
-         + "like synonym searches with Google. If a search term is prefixed with ~ also synonyms of the search term are considered. Example:";
+      "It is a test for Excerpt query.Searching with synonyms is integrated in the jcr:contains() "
+         + "function and uses the same syntax " + "like synonym searches with Google. If a search "
+         + "term is prefixed with ~ also synonyms of the search term are considered. Example:";
+
+   private String string2_excerpt =
+      "<div><span>Node2 It is a <strong>test</strong> for Excerpt query."
+         + "Searching with synonyms is integrated in the jcr:contains() function and "
+         + "uses the same syntax like synonym ...</span></div>";
 
    private String s3 = "JCR supports such features as Lucene Fuzzy Searches";
+
+   private Session testSession;
+
+   private Node testRoot;
 
    /**
     * Initialization flag.
@@ -72,43 +87,71 @@ public class TestExcerpt extends BaseUsecasesTest
       }
    }
 
+   /**
+    * @see org.exoplatform.services.jcr.BaseStandaloneTest#setUp()
+    */
+   @Override
+   public void setUp() throws Exception
+   {
+      // TODO Auto-generated method stub
+      super.setUp();
+      ManageableRepository db1tckRepo = repositoryService.getRepository("db1tck");
+      assertNotNull(db1tckRepo);
+      testSession = db1tckRepo.login(credentials, "ws2");
+      testRoot = testSession.getRootNode();
+   }
+
    public void testExcerpt() throws Exception
    {
-      System.out.println("\n\n----------Test Excerpt");
 
-      Node node1 = root.addNode("Node1", "exo:article");
+      Node node1 = testRoot.addNode("Node1", "exo:article");
       node1.setProperty("exo:title", "Node1");
       node1.setProperty("exo:text", s1);
 
-      Node node2 = root.addNode("Node2", "exo:article");
+      Node node2 = testRoot.addNode("Node2", "exo:article");
       node2.setProperty("exo:title", "Node2");
       node2.setProperty("exo:text", s2);
 
-      Node node3 = root.addNode("Node3", "exo:article");
+      Node node3 = testRoot.addNode("Node3", "exo:article");
       node3.setProperty("exo:title", "Node3");
       node3.setProperty("exo:text", s3);
 
-      session.save();
+      testSession.save();
 
-      System.out.println("\n\n-----Test with SQL");
-      QueryManager queryManager = session.getWorkspace().getQueryManager();
-      Query q1 = queryManager.createQuery("select excerpt(.) from exo:article where contains(., 'test')", Query.SQL);
+      QueryManager queryManager = testSession.getWorkspace().getQueryManager();
+      Query q1 =
+         queryManager.createQuery("select exo:text, excerpt(.) from exo:article where contains(., 'test')", Query.SQL);
       QueryResult result1 = q1.execute();
       for (RowIterator it = result1.getRows(); it.hasNext();)
       {
          Row r = it.nextRow();
          Value excerpt = r.getValue("rep:excerpt(.)");
-         System.out.println("\n\n---" + excerpt.getString());
+         Value text = r.getValue("exo:text");
+         if (text.getString().equals(s1))
+         {
+            assertEquals(string1_excerpt, excerpt.getString());
+         }
+         else if (text.getString().equals(s2))
+         {
+            assertEquals(string2_excerpt, excerpt.getString());
+         }
       }
 
-      System.out.println("\n\n-----Test with XPATH");
       Query q2 = queryManager.createQuery("//*[jcr:contains(., 'test')]/(@exo:text|rep:excerpt(.))", Query.XPATH);
       QueryResult result2 = q2.execute();
       for (RowIterator it = result2.getRows(); it.hasNext();)
       {
          Row r = it.nextRow();
          Value excerpt = r.getValue("rep:excerpt(.)");
-         System.out.println("\n\n---" + excerpt.getString());
+         Value text = r.getValue("exo:text");
+         if (text.getString().equals(s1))
+         {
+            assertEquals(string1_excerpt, excerpt.getString());
+         }
+         else if (text.getString().equals(s2))
+         {
+            assertEquals(string2_excerpt, excerpt.getString());
+         }
       }
    }
 }

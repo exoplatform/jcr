@@ -419,9 +419,6 @@
                         <include>**/impl/**/Test*.java</include>
                      </includes>
                <excludes>
-                  <exclude>**/TestIndexingConfig.java</exclude>
-                  <exclude>**/TestExcerpt.java</exclude>                                    
-                  
                   <exclude>**/TestImport.java</exclude>
                   <exclude>**/TestRollbackBigFiles.java</exclude>
                   <exclude>**/TestErrorMultithreading.java</exclude>
