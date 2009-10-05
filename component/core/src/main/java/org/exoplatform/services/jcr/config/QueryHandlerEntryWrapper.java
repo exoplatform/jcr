@@ -164,7 +164,8 @@ public class QueryHandlerEntryWrapper implements QueryHandlerParams {
 	entry.putBooleanParameter(PARAM_DOCUMENT_ORDER, DEFAULT_DOCUMENTORDER);
 	entry.putParameterValue(PARAM_EXCERPTPROVIDER_CLASS,
 		DEDAULT_EXCERPTPROVIDER_CLASS);
-	entry.putParameterValue(PARAM_EXCLUDED_NODE_IDENTIFERS, null);
+// Null value is forbidden according to the binding.xml, it prevents marshalling 
+//	entry.putParameterValue(PARAM_EXCLUDED_NODE_IDENTIFERS, null);
 	entry.putIntegerParameter(PARAM_EXTRACTOR_BACKLOG,
 		DEFAULT_EXTRACTOR_BACKLOG);
 	entry.putIntegerParameter(PARAM_EXTRACTOR_POOLSIZE,

@@ -19,6 +19,8 @@
 package org.exoplatform.services.jcr.config;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Created by The eXo Platform SAS .
@@ -68,4 +70,33 @@ public class RepositoryEntry extends RepositoryInfo
       workspaces.add(ws);
    }
 
+   /**
+    * Merges the current {@link RepositoryEntry} with the given one. The current {@link RepositoryEntry}
+    * has the highest priority thus only absent data will be overrode
+    * @param entry the entry to merge with the current {@link RepositoryEntry}
+    */
+   void merge(RepositoryEntry entry)
+   {
+      merge((RepositoryInfo)entry);
+      ArrayList<WorkspaceEntry> workspaceEntries = entry.workspaces;
+      if (workspaceEntries == null || workspaceEntries.isEmpty())
+      {
+         return;
+      }
+      if (workspaces == null || workspaces.isEmpty())
+      {
+         this.workspaces = workspaceEntries;
+         return;
+      }
+      Map<String, WorkspaceEntry> mWorkspaceEntries = new LinkedHashMap<String, WorkspaceEntry>();
+      for (WorkspaceEntry wkEntry : workspaceEntries)
+      {
+         mWorkspaceEntries.put(wkEntry.getName(), wkEntry);
+      }
+      for (WorkspaceEntry wkEntry : workspaces)
+      {
+         mWorkspaceEntries.put(wkEntry.getName(), wkEntry);
+      }
+      this.workspaces = new ArrayList<WorkspaceEntry>(mWorkspaceEntries.values());
+   }
 }

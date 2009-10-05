@@ -24,6 +24,9 @@ import org.jibx.runtime.IUnmarshallingContext;
 import org.jibx.runtime.JiBXException;
 
 import java.io.InputStream;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.jcr.RepositoryException;
 
@@ -66,11 +69,59 @@ public class RepositoryServiceConfiguration extends AbstractRepositoryServiceCon
       }
       catch (JiBXException e)
       {
-         e.printStackTrace();
-         throw new RepositoryConfigurationException("Error in config initialization " + e);
+         throw new RepositoryConfigurationException("Error in config initialization " + e, e);
       }
    }
 
+   protected final void merge(InputStream is) throws RepositoryConfigurationException
+   {
+      try
+      {
+         IBindingFactory factory = BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
+         IUnmarshallingContext uctx = factory.createUnmarshallingContext();
+         RepositoryServiceConfiguration conf = (RepositoryServiceConfiguration)uctx.unmarshalDocument(is, null);
+
+         if (defaultRepositoryName == null)
+         {
+            this.defaultRepositoryName = conf.getDefaultRepositoryName();            
+         }
+         
+         List<RepositoryEntry> repositoryEntries = conf.getRepositoryConfigurations();
+         if (repositoryEntries == null || repositoryEntries.isEmpty())
+         {
+            return;            
+         }
+         if (repositoryConfigurations == null || repositoryConfigurations.isEmpty())
+         {
+            this.repositoryConfigurations = repositoryEntries;
+            return;
+         }
+         Map<String, RepositoryEntry> mapRepoEntries = new LinkedHashMap<String, RepositoryEntry>();
+         for (RepositoryEntry entry : repositoryConfigurations)
+         {
+            mapRepoEntries.put(entry.getName(), entry);
+         }
+         for (RepositoryEntry entry : repositoryEntries)
+         {
+            RepositoryEntry currentEntry = mapRepoEntries.get(entry.getName());
+            if (currentEntry == null)
+            {
+               mapRepoEntries.put(entry.getName(), entry);
+            }
+            else
+            {
+               currentEntry.merge(entry);
+            }
+         }
+         getRepositoryConfigurations().clear();
+         getRepositoryConfigurations().addAll(mapRepoEntries.values());         
+      }
+      catch (JiBXException e)
+      {
+         throw new RepositoryConfigurationException("Error in config initialization " + e, e);
+      }
+   }
+   
    /**
     * Checks if current configuration can be saved.
     * 

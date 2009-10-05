@@ -29,6 +29,7 @@ import org.jibx.runtime.BindingDirectory;
 import org.jibx.runtime.IBindingFactory;
 import org.jibx.runtime.IMarshallingContext;
 import org.jibx.runtime.JiBXException;
+import org.picocontainer.Startable;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -41,6 +42,8 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.jcr.RepositoryException;
 
@@ -51,7 +54,7 @@ import javax.jcr.RepositoryException;
  * @version $Id: RepositoryServiceConfigurationImpl.java 12841 2007-02-16 08:58:38Z peterit $
  */
 
-public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfiguration
+public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfiguration implements Startable
 {
 
    private ValueParam param;
@@ -59,6 +62,8 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
    private ConfigurationManager configurationService;
 
    private ConfigurationPersister configurationPersister;
+   
+   private final List<String> configExtensionPaths = new CopyOnWriteArrayList<String>(); 
 
    public RepositoryServiceConfigurationImpl(InitParams params, ConfigurationManager configurationService,
       InitialContextInitializer initialContextInitializer) throws RepositoryConfigurationException
@@ -97,29 +102,6 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
          }
       }
       this.configurationService = configurationService;
-
-      InputStream jcrConfigurationInputStream;
-      try
-      {
-         jcrConfigurationInputStream = configurationService.getInputStream(param.getValue());
-         if (configurationPersister != null)
-         {
-            if (!configurationPersister.hasConfig())
-            {
-               configurationPersister.write(jcrConfigurationInputStream);
-            }
-            init(configurationPersister.read());
-         }
-         else
-         {
-            init(jcrConfigurationInputStream);
-            jcrConfigurationInputStream.close();
-         }
-      }
-      catch (Exception e)
-      {
-         throw new RepositoryConfigurationException("Fail to init from xml! Reason: " + e, e);
-      }
    }
 
    public RepositoryServiceConfigurationImpl(InputStream is) throws RepositoryConfigurationException
@@ -127,6 +109,14 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
       init(is);
    }
 
+   /**
+    * Allows to add new configuration paths
+    */
+   public void addConfig(RepositoryServiceConfigurationPlugin plugin)
+   {
+      configExtensionPaths.add(plugin.getConfPath());
+   }
+   
    /*
     * (non-Javadoc)
     * @see org.exoplatform.services.jcr.config.RepositoryServiceConfiguration#isRetainable()
@@ -219,5 +209,88 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
          throw new RepositoryException(e);
       }
 
+   }
+   
+   private void initFromStream(InputStream jcrConfigurationInputStream) throws RepositoryConfigurationException
+   {
+      try
+      {
+         if (configurationPersister != null)
+         {
+            if (!configurationPersister.hasConfig())
+            {
+               configurationPersister.write(jcrConfigurationInputStream);
+            }
+            init(configurationPersister.read());
+         }
+         else
+         {
+            init(jcrConfigurationInputStream);
+         }
+      }
+      finally
+      {
+         try
+         {
+            jcrConfigurationInputStream.close();
+         }
+         catch (IOException e)
+         {
+            // ignore me
+         }                     
+      }
+      
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void start()
+   {
+      try
+      {
+         if (configExtensionPaths.isEmpty())
+         {
+            initFromStream(configurationService.getInputStream(param.getValue()));            
+         }
+         else
+         {
+            
+            String[] paths = (String[]) configExtensionPaths.toArray(new String[configExtensionPaths.size()]);
+            for (int i = paths.length - 1 ; i >= 0 ; i--)
+            {
+               // We start from the last one because as it is the one with highest priority
+               if (i == paths.length - 1)
+               {
+                  init(configurationService.getInputStream(paths[i]));                  
+               }
+               else
+               {
+                  merge(configurationService.getInputStream(paths[i]));
+               }
+            }
+            merge(configurationService.getInputStream(param.getValue()));
+            // Store the merged configuration
+            if (configurationPersister != null && !configurationPersister.hasConfig())
+            {
+               retain();
+            }
+         }
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         throw new RuntimeException(e);
+      }
+      catch (Exception e)
+      {
+         throw new RuntimeException(new RepositoryConfigurationException("Fail to init from xml! Reason: " + e, e));
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void stop()
+   {
    }
 }

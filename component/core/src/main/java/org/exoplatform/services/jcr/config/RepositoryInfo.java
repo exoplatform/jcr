@@ -189,4 +189,18 @@ public class RepositoryInfo
       this.sessionTimeOut = sessionTimeOut;
    }
 
+   /**
+    * Merges the current {@link RepositoryInfo} with the given one. The current {@link RepositoryInfo}
+    * has the highest priority thus only absent data will be overrode
+    * @param entry the entry to merge with the current {@link RepositoryInfo}
+    */
+   void merge(RepositoryInfo entry)
+   {
+      if (systemWorkspaceName == null) setSystemWorkspaceName(entry.systemWorkspaceName);
+      if (defaultWorkspaceName == null) setDefaultWorkspaceName(entry.defaultWorkspaceName);
+      if (accessControl == null) setAccessControl(entry.accessControl);
+      if (securityDomain == null) setSecurityDomain(entry.securityDomain);
+      if (authenticationPolicy == null) setAuthenticationPolicy(entry.authenticationPolicy);
+      if (sessionTimeOut == 0) setSessionTimeOut(entry.sessionTimeOut);
+   }   
 }
