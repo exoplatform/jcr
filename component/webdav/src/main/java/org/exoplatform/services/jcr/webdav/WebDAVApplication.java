@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.webdav;
 
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
+import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.RootContainer;
 import org.exoplatform.services.rest.ext.provider.HierarchicalPropertyEntityProvider;
 
@@ -103,7 +104,7 @@ public final class WebDAVApplication extends Application
     */
    protected String getPortalContainerName()
    {
-      return "portal";
+      return PortalContainer.DEFAULT_PORTAL_CONTAINER_NAME;
    }
 
 }
