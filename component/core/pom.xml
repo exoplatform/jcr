@@ -419,7 +419,6 @@
                         <include>**/impl/**/Test*.java</include>
                      </includes>
                <excludes>
-                  <exclude>**/TestValueConstraints.java</exclude>
                   <exclude>**/TestIndexingConfig.java</exclude>
                   <exclude>**/TestExcerpt.java</exclude>                                    
                   
