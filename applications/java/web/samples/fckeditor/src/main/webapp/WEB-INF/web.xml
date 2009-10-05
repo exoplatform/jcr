@@ -32,12 +32,6 @@
   </context-param>
 
   <context-param>
-    <param-name>org.exoplatform.frameworks.web.repositoryMapping</param-name>
-    <param-value>/rest/jcr</param-value>
-    <description>Repository mapping path. If there are servlet/filter for desplaying internal images/links inside html documents it should have the same mapping</description>
-  </context-param>
-
-  <context-param>
     <param-name>org.exoplatform.frameworks.jcr.command.web.fckeditor.digitalAssetsWorkspace</param-name>
     <param-value>digital-assets</param-value>
     <description>Binary assets workspace name</description>
