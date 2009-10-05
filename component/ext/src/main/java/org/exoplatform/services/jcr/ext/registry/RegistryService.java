@@ -101,6 +101,8 @@ public class RegistryService extends Registry implements Startable
    private HashMap<String, String> appConfigurations = new HashMap<String, String>();
 
    private String entryLocation;
+   
+   private final PropertiesParam props;
 
    protected final RepositoryService repositoryService;
 
@@ -123,25 +125,9 @@ public class RegistryService extends Registry implements Startable
       this.regWorkspaces = new HashMap<String, String>();
       if (params == null)
          throw new RepositoryConfigurationException("Init parameters expected");
-      PropertiesParam props = params.getPropertiesParam("locations");
+      this.props = params.getPropertiesParam("locations");
       if (props == null)
          throw new RepositoryConfigurationException("Property parameters 'locations' expected");
-      for (RepositoryEntry repConfiguration : repConfigurations())
-      {
-         String repName = repConfiguration.getName();
-         String wsName = null;
-         if (props != null)
-         {
-            wsName = props.getProperty(repName);
-            if (wsName == null)
-               wsName = repConfiguration.getDefaultWorkspaceName();
-         }
-         else
-         {
-            wsName = repConfiguration.getDefaultWorkspaceName();
-         }
-         addRegistryLocation(repName, wsName);
-      }
    }
 
    /**
@@ -292,11 +278,36 @@ public class RegistryService extends Registry implements Startable
          {
             for (RepositoryEntry repConfiguration : repConfigurations())
             {
-               InputStream xml = getClass().getResourceAsStream(NT_FILE);
                String repName = repConfiguration.getName();
-               repositoryService.getRepository(repName).getNodeTypeManager().registerNodeTypes(xml,
-                  ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
-               xml.close();
+               String wsName = null;
+               if (props != null)
+               {
+                  wsName = props.getProperty(repName);
+                  if (wsName == null)
+                     wsName = repConfiguration.getDefaultWorkspaceName();
+               }
+               else
+               {
+                  wsName = repConfiguration.getDefaultWorkspaceName();
+               }
+               addRegistryLocation(repName, wsName);
+               InputStream xml = getClass().getResourceAsStream(NT_FILE);
+               try
+               {
+                  repositoryService.getRepository(repName).getNodeTypeManager().registerNodeTypes(xml,
+                     ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
+               }
+               finally
+               {
+                  try
+                  {
+                     xml.close();
+                  }
+                  catch (Exception e)
+                  {
+                     //ignore me
+                  }                  
+               }
             }
             initStorage(false);
 
@@ -308,11 +319,6 @@ public class RegistryService extends Registry implements Startable
             e.printStackTrace();
          }
          catch (RepositoryException e)
-         {
-            log.error(e.getLocalizedMessage());
-            e.printStackTrace();
-         }
-         catch (IOException e)
          {
             log.error(e.getLocalizedMessage());
             e.printStackTrace();
