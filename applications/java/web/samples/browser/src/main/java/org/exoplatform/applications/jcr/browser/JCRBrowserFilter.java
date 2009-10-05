@@ -19,7 +19,7 @@
 package org.exoplatform.applications.jcr.browser;
 
 import org.exoplatform.container.ExoContainer;
-import org.exoplatform.container.ExoContainerContext;
+import org.exoplatform.container.web.AbstractFilter;
 import org.exoplatform.frameworks.jcr.web.WebConstants;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
@@ -38,9 +38,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.servlet.Filter;
 import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -56,7 +54,7 @@ import javax.servlet.http.HttpServletRequest;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: JCRBrowserFilter.java 111 2008-11-11 11:11:11Z peterit $
  */
-public class JCRBrowserFilter implements Filter
+public class JCRBrowserFilter extends AbstractFilter
 {
 
    private static final Log LOG = ExoLogger.getLogger("jcr.JCRBrowserFilter");
@@ -73,8 +71,7 @@ public class JCRBrowserFilter implements Filter
          (ExoContainer)httpRequest.getSession().getServletContext().getAttribute(WebConstants.EXO_CONTAINER);
       if (container == null)
       {
-         String portalName = httpRequest.getSession().getServletContext().getServletContextName();
-         container = ExoContainerContext.getCurrentContainer();
+         container = getContainer();
       }
 
       SessionProviderService sessionProviderService =
@@ -257,11 +254,6 @@ public class JCRBrowserFilter implements Filter
       }
 
       chain.doFilter(servletRequest, servletResponse);
-   }
-
-   public void init(FilterConfig arg0) throws ServletException
-   {
-
    }
 
    public void destroy()
