@@ -30,7 +30,9 @@ import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.util.Set;
 
 import javax.jcr.RepositoryException;
@@ -150,21 +152,23 @@ public class PropFindResponseEntity implements StreamingOutput
     * @throws RepositoryException {@link RepositoryException}
     * @throws IllegalResourceTypeException {@link IllegalResourceTypeException}
     * @throws URISyntaxException {@link URISyntaxException}
+    * @throws UnsupportedEncodingException 
     */
    private void traverseResources(Resource resource, int counter) throws XMLStreamException, RepositoryException,
-      IllegalResourceTypeException, URISyntaxException
+      IllegalResourceTypeException, URISyntaxException, UnsupportedEncodingException
    {
 
       xmlStreamWriter.writeStartElement("DAV:", "response");
 
       xmlStreamWriter.writeStartElement("DAV:", "href");
+      String href = URLDecoder.decode(resource.getIdentifier().toASCIIString(), "UTF-8");
       if (resource.isCollection())
       {
-         xmlStreamWriter.writeCharacters(resource.getIdentifier().toASCIIString() + "/");
+         xmlStreamWriter.writeCharacters(href + "/");
       }
       else
       {
-         xmlStreamWriter.writeCharacters(resource.getIdentifier().toASCIIString());
+         xmlStreamWriter.writeCharacters(href);
       }
       xmlStreamWriter.writeEndElement();
 
@@ -176,11 +180,6 @@ public class PropFindResponseEntity implements StreamingOutput
       xmlStreamWriter.writeEndElement();
 
       int d = depth;
-
-      if (depth == -1)
-      {
-
-      }
 
       if (resource.isCollection())
       {

@@ -69,8 +69,10 @@ import org.exoplatform.services.rest.ext.webdav.method.VERSIONCONTROL;
 import org.exoplatform.services.rest.resource.ResourceContainer;
 
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -1151,7 +1153,42 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       {
          return repoPath.substring(0, repoPath.length() - 1);
       }
-      return repoPath;
+
+      String[] pathElements = repoPath.split("/");
+      StringBuffer escapedPath = new StringBuffer();
+      for (String element : pathElements)
+      {
+         try
+         {
+            if (element.contains(":"))
+            {
+               element = element.replaceAll(":", URLEncoder.encode(":", "UTF-8"));
+            }
+            if (element.contains("["))
+            {
+               element = element.replaceAll("\\[", URLEncoder.encode("[", "UTF-8"));
+            }
+            if (element.contains("]"))
+            {
+               element = element.replaceAll("]", URLEncoder.encode("]", "UTF-8"));
+            }
+            if (element.contains("'"))
+            {
+               element = element.replaceAll("'", URLEncoder.encode("'", "UTF-8"));
+            }
+            if (element.contains("\""))
+            {
+               element = element.replaceAll("\"", URLEncoder.encode("\"", "UTF-8"));
+            }
+            escapedPath.append(element + "/");
+         }
+         catch (Exception e)
+         {
+            log.warn(e.getMessage());
+         }
+      }
+
+      return escapedPath.toString().substring(0, escapedPath.length() - 1);
    }
 
    /**
