@@ -62,13 +62,7 @@
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
                   <properties>
                      <property name="index-dir" value="target/temp/index/db1/ws" />
-                     <property name="synonymprovider-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider" />
-                     <property name="synonymprovider-config-path" value="../../synonyms.properties" />
-                     <property name="support-highlighting" value="true" />
-                     <property name="indexing-configuration-path" value="../../indexing-configuration.xml" />
-                     <property name="query-class" value="org.exoplatform.services.jcr.impl.core.query.QueryImpl" />
-                     <property name="spellchecker-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" />
-                  </properties>
+                   </properties>
                </query-handler>
                <lock-manager>
                   <time-out>15m</time-out>
@@ -283,6 +277,7 @@
                      <property name="support-highlighting" value="true" />
                      <property name="indexing-configuration-path" value="../../indexing-configuration.xml" />
                      <property name="query-class" value="org.exoplatform.services.jcr.impl.core.query.QueryImpl" />
+                     <property name="excerptprovider-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.WeightedHTMLExcerpt" />
                      <property name="spellchecker-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" />
                   </properties>
                </query-handler>
@@ -379,13 +374,16 @@
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
                   <properties>
-                     <property name="index-dir" value="target/temp/index/db1/ws2tck" />
+                     <property name="index-dir" value="target/temp/index/db1tck/ws2" />
                      <property name="synonymprovider-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider" />
                      <property name="synonymprovider-config-path" value="../../synonyms.properties" />
                      <property name="support-highlighting" value="true" />
                      <property name="indexing-configuration-path" value="../../indexing-configuration.xml" />
                      <property name="query-class" value="org.exoplatform.services.jcr.impl.core.query.QueryImpl" />
                      <property name="spellchecker-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" />
+                     <property name="excerptprovider-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.WeightedHTMLExcerpt"/>
+                     <property name="extractorPoolSize" value="2"/>
+                     <property name="extractorTimeout" value="10"/>
                   </properties>
                </query-handler>
             </workspace>

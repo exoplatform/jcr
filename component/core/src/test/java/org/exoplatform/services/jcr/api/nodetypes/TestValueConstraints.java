@@ -31,7 +31,6 @@ import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.PropertyType;
 import javax.jcr.Value;
-import javax.jcr.nodetype.ConstraintViolationException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -319,12 +318,11 @@ public class TestValueConstraints extends JcrAPIBaseTest
       try
       {
          testProperty.setValue(false);
-         session.save();
-         fail();
+         root.save();
       }
-      catch (ConstraintViolationException e)
+      catch (Exception e)
       {
-         // ok
+         fail("setValue(BOOLEAN value) here should be no Exception ");
       }
    }
 
