@@ -145,8 +145,7 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
       if (repositoryContainers.containsKey(rEntry.getName()))
          throw new RepositoryConfigurationException("Repository container " + rEntry.getName() + " already started");
 
-      RepositoryContainer repositoryContainer =
-         new RepositoryContainer(parentContainer, rEntry, addNodeTypePlugins, addNamespacesPlugins);
+      RepositoryContainer repositoryContainer = new RepositoryContainer(parentContainer, rEntry);
 
       // Storing and starting the repository container under
       // key=repository_name
@@ -159,7 +158,8 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
          config.getRepositoryConfigurations().add(rEntry);
       }
 
-      // registration Namespaces and NodeTypes moved to RepositoryContainer [AB]
+      addNamespaces(rEntry.getName());
+      registerNodeTypes(rEntry.getName());
 
       // turn on Repository ONLINE
       ManageableRepository mr =
@@ -283,6 +283,53 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
       managerStartChanges.cleanup();
    }
 
+   private void addNamespaces() throws RepositoryException
+   {
+
+      for (RepositoryEntry repoConfig : config.getRepositoryConfigurations())
+      {
+         addNamespaces(repoConfig.getName());
+      }
+   }
+
+   private void addNamespaces(String repositoryName) throws RepositoryException
+   {
+
+      ManageableRepository repository = getRepository(repositoryName);
+      NamespaceRegistry nsRegistry = repository.getNamespaceRegistry();
+
+      for (int j = 0; j < addNamespacesPlugins.size(); j++)
+      {
+         AddNamespacesPlugin plugin = (AddNamespacesPlugin)addNamespacesPlugins.get(j);
+         Map<String, String> namespaces = plugin.getNamespaces();
+         try
+         {
+            for (Map.Entry<String, String> namespace : namespaces.entrySet())
+            {
+
+               String prefix = namespace.getKey();
+               String uri = namespace.getValue();
+
+               // register namespace if not found
+               try
+               {
+                  nsRegistry.getURI(prefix);
+               }
+               catch (NamespaceException e)
+               {
+                  nsRegistry.registerNamespace(prefix, uri);
+               }
+               if (log.isDebugEnabled())
+                  log.debug("Namespace is registered " + prefix + " = " + uri);
+            }
+         }
+         catch (Exception e)
+         {
+            log.error("Error load namespaces ", e);
+         }
+      }
+   }
+
    private void init(ExoContainer container) throws RepositoryConfigurationException, RepositoryException
    {
       this.parentContainer = container;
@@ -292,6 +339,69 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
          RepositoryEntry rEntry = rEntries.get(i);
          // Making new repository container as portal's subcontainer
          createRepository(rEntry);
+      }
+   }
+
+   private void registerNodeTypes() throws RepositoryException
+   {
+      for (RepositoryEntry repoConfig : config.getRepositoryConfigurations())
+      {
+         registerNodeTypes(repoConfig.getName());
+      }
+   }
+
+   private void registerNodeTypes(String repositoryName) throws RepositoryException
+   {
+      ConfigurationManager configService =
+         (ConfigurationManager)parentContainer.getComponentInstanceOfType(ConfigurationManager.class);
+
+      ExtendedNodeTypeManager ntManager = getRepository(repositoryName).getNodeTypeManager();
+      //
+      for (int j = 0; j < addNodeTypePlugins.size(); j++)
+      {
+         AddNodeTypePlugin plugin = (AddNodeTypePlugin)addNodeTypePlugins.get(j);
+         List<String> autoNodeTypesFiles = plugin.getNodeTypesFiles(AddNodeTypePlugin.AUTO_CREATED);
+         if (autoNodeTypesFiles != null && autoNodeTypesFiles.size() > 0)
+         {
+            for (String nodeTypeFilesName : autoNodeTypesFiles)
+            {
+
+               InputStream inXml;
+               try
+               {
+                  inXml = configService.getInputStream(nodeTypeFilesName);
+               }
+               catch (Exception e)
+               {
+                  throw new RepositoryException(e);
+               }
+               if (log.isDebugEnabled())
+                  log.debug("Trying register node types from xml-file " + nodeTypeFilesName);
+               ntManager.registerNodeTypes(inXml, ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
+               if (log.isDebugEnabled())
+                  log.debug("Node types is registered from xml-file " + nodeTypeFilesName);
+            }
+            List<String> defaultNodeTypesFiles = plugin.getNodeTypesFiles(repositoryName);
+            if (defaultNodeTypesFiles != null && defaultNodeTypesFiles.size() > 0)
+            {
+               for (String nodeTypeFilesName : defaultNodeTypesFiles)
+               {
+
+                  InputStream inXml;
+                  try
+                  {
+                     inXml = configService.getInputStream(nodeTypeFilesName);
+                  }
+                  catch (Exception e)
+                  {
+                     throw new RepositoryException(e);
+                  }
+                  log.info("Trying register node types (" + repositoryName + ") from xml-file " + nodeTypeFilesName);
+                  ntManager.registerNodeTypes(inXml, ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
+                  log.info("Node types is registered (" + repositoryName + ") from xml-file " + nodeTypeFilesName);
+               }
+            }
+         }
       }
    }
 
