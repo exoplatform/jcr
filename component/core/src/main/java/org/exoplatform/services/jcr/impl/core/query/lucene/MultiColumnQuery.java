@@ -35,7 +35,7 @@ public interface MultiColumnQuery {
      * @return the query hits.
      * @throws IOException if an error occurs while executing the query.
      */
-    public MultiColumnQueryHits execute(JackrabbitIndexSearcher searcher,
+    public MultiColumnQueryHits execute(JcrIndexSearcher searcher,
                                         Sort sort,
                                         long resultFetchHint)
             throws IOException;

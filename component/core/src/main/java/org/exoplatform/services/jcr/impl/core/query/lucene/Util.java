@@ -103,7 +103,7 @@ public class Util {
     public static Query createMatchAllQuery(String name, IndexFormatVersion version) {
         if (version.getVersion() >= IndexFormatVersion.V2.getVersion()) {
             // new index format style
-            return new JackrabbitTermQuery(new Term(FieldNames.PROPERTIES_SET, name));
+            return new JcrTermQuery(new Term(FieldNames.PROPERTIES_SET, name));
         } else {
             return new MatchAllQuery(name);
         }

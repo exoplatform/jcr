@@ -28,14 +28,14 @@ import org.exoplatform.services.jcr.impl.core.SessionImpl;
  * implementation the opportunity to execute in an optimized way returning
  * {@link QueryHits} instead of a result that is tied to Lucene.
  */
-public interface JackrabbitQuery {
+public interface JcrQuery {
 
     /**
      * Executes this query and returns {@link QueryHits} or <code>null</code> if
      * this query should be executed using the regular Lucene API.
      * <p/>
      * <b>Important note:</b> an implementation <b>must not</b> call
-     * {@link JackrabbitIndexSearcher#execute(Query, Sort, long)}
+     * {@link JcrIndexSearcher#execute(Query, Sort, long)}
      * with this query instance as a parameter, otherwise a stack overflow will
      * occur.
      *
@@ -47,7 +47,7 @@ public interface JackrabbitQuery {
      *         should be used by the caller.
      * @throws IOException if an error occurs while executing the query.
      */
-    public QueryHits execute(JackrabbitIndexSearcher searcher,
+    public QueryHits execute(JcrIndexSearcher searcher,
                              SessionImpl session,
                              Sort sort)
             throws IOException;

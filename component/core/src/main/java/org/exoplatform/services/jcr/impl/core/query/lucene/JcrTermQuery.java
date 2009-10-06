@@ -31,11 +31,11 @@ import org.apache.lucene.search.Weight;
  * <code>JackrabbitTermQuery</code> implements a {@link TermQuery} where score
  * values are retrieved on a per index segment basis using {@link MultiScorer}.
  */
-public class JackrabbitTermQuery extends TermQuery {
+public class JcrTermQuery extends TermQuery {
 
     private static final long serialVersionUID = 4244799812287335957L;
 
-    public JackrabbitTermQuery(Term t) {
+    public JcrTermQuery(Term t) {
         super(t);
     }
 
@@ -71,7 +71,7 @@ public class JackrabbitTermQuery extends TermQuery {
          * {@inheritDoc}
          */
         public Query getQuery() {
-            return JackrabbitTermQuery.this;
+            return JcrTermQuery.this;
         }
 
         /**

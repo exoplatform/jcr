@@ -39,7 +39,7 @@ import org.exoplatform.services.jcr.impl.core.SessionImpl;
  * <code>QueryHitsQuery</code> exposes a {@link QueryHits} implementation again
  * as a Lucene Query.
  */
-public class QueryHitsQuery extends Query implements JackrabbitQuery{
+public class QueryHitsQuery extends Query implements JcrQuery{
 
     /**
      * The underlying query hits.
@@ -81,7 +81,7 @@ public class QueryHitsQuery extends Query implements JackrabbitQuery{
     /**
      * {@inheritDoc}
      */
-    public QueryHits execute(JackrabbitIndexSearcher searcher,
+    public QueryHits execute(JcrIndexSearcher searcher,
                              SessionImpl session,
                              Sort sort) throws IOException {
         if (sort.getSort().length == 0) {

@@ -76,16 +76,16 @@ public class NameQuery extends Query {
         if (version.getVersion() >= IndexFormatVersion.V3.getVersion()) {
             // use LOCAL_NAME and NAMESPACE_URI field
             BooleanQuery name = new BooleanQuery();
-            name.add(new JackrabbitTermQuery(new Term(FieldNames.NAMESPACE_URI, nodeName.getNamespace())),
+            name.add(new JcrTermQuery(new Term(FieldNames.NAMESPACE_URI, nodeName.getNamespace())),
                     BooleanClause.Occur.MUST);
-            name.add(new JackrabbitTermQuery(new Term(FieldNames.LOCAL_NAME,
+            name.add(new JcrTermQuery(new Term(FieldNames.LOCAL_NAME,
                     nodeName.getName())),
                     BooleanClause.Occur.MUST);
             return name;
         } else {
             // use LABEL field
             try {
-                return new JackrabbitTermQuery(new Term(FieldNames.LABEL,
+                return new JcrTermQuery(new Term(FieldNames.LABEL,
                         nsMappings.translateName(nodeName)));
             } catch (IllegalNameException e) {
                 throw Util.createIOException(e);

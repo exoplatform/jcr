@@ -31,7 +31,7 @@ import org.exoplatform.services.jcr.impl.core.query.lucene.constraint.Evaluation
  * <code>JackrabbitIndexSearcher</code> implements an index searcher with
  * jackrabbit specific optimizations.
  */
-public class JackrabbitIndexSearcher
+public class JcrIndexSearcher
         extends IndexSearcher
         implements EvaluationContext {
 
@@ -57,7 +57,7 @@ public class JackrabbitIndexSearcher
      * @param r the index reader.
      * @param ism the shared item state manager.
      */
-    public JackrabbitIndexSearcher(SessionImpl s,
+    public JcrIndexSearcher(SessionImpl s,
                                    IndexReader r,
                                    ItemDataConsumer ism) {
         super(r);
@@ -98,8 +98,8 @@ public class JackrabbitIndexSearcher
             throws IOException {
         query = query.rewrite(reader);
         QueryHits hits = null;
-        if (query instanceof JackrabbitQuery) {
-            hits = ((JackrabbitQuery) query).execute(this, session, sort);
+        if (query instanceof JcrQuery) {
+            hits = ((JcrQuery) query).execute(this, session, sort);
         }
         if (hits == null) {
             if (sort == null) {

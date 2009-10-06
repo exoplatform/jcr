@@ -59,7 +59,7 @@ public final class SortedLuceneQueryHits extends AbstractQueryHits {
     /**
      * The index searcher.
      */
-    private final JackrabbitIndexSearcher searcher;
+    private final JcrIndexSearcher searcher;
 
     /**
      * The query to execute.
@@ -102,7 +102,7 @@ public final class SortedLuceneQueryHits extends AbstractQueryHits {
      * @throws IOException if an error occurs while reading from the index.
      */
     public SortedLuceneQueryHits(IndexReader reader,
-                                 JackrabbitIndexSearcher searcher,
+                                 JcrIndexSearcher searcher,
                                  Query query,
                                  Sort sort,
                                  long resultFetchHint) throws IOException {

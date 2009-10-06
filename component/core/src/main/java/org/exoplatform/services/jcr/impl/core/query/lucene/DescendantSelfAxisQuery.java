@@ -49,7 +49,7 @@ import org.slf4j.LoggerFactory;
  * whether the nodes selected by that sub query are descendants or self of
  * nodes selected by a context query.
  */
-class DescendantSelfAxisQuery extends Query implements JackrabbitQuery {
+class DescendantSelfAxisQuery extends Query implements JcrQuery {
 
     /**
      * The logger instance for this class.
@@ -229,7 +229,7 @@ class DescendantSelfAxisQuery extends Query implements JackrabbitQuery {
     /**
      * {@inheritDoc}
      */
-    public QueryHits execute(final JackrabbitIndexSearcher searcher,
+    public QueryHits execute(final JcrIndexSearcher searcher,
                              final SessionImpl session,
                              final Sort sort) throws IOException {
 //       Query  tt = ((BooleanClause)((BooleanQuery)subQuery).clauses().get(0)).getQuery();

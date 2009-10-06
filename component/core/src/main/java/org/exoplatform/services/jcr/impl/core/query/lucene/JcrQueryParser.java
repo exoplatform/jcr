@@ -29,7 +29,7 @@ import org.apache.lucene.search.Query;
  * <code>JackrabbitQueryParser</code> extends the standard lucene query parser
  * and adds JCR specific customizations.
  */
-public class JackrabbitQueryParser extends QueryParser {
+public class JcrQueryParser extends QueryParser {
 
     /**
      * The Jackrabbit synonym provider or <code>null</code> if there is none.
@@ -44,7 +44,7 @@ public class JackrabbitQueryParser extends QueryParser {
      * @param synonymProvider the synonym provider or <code>null</code> if none
      *                        is available.
      */
-    public JackrabbitQueryParser(String fieldName,
+    public JcrQueryParser(String fieldName,
                                  Analyzer analyzer,
                                  SynonymProvider synonymProvider) {
         super(fieldName, analyzer);

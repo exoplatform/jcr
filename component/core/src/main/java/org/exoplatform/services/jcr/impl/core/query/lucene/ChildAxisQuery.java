@@ -55,7 +55,7 @@ import org.slf4j.LoggerFactory;
  * Implements a lucene <code>Query</code> which returns the child nodes of the
  * nodes selected by another <code>Query</code>.
  */
-class ChildAxisQuery extends Query implements JackrabbitQuery
+class ChildAxisQuery extends Query implements JcrQuery
 {
 
    /**
@@ -269,7 +269,7 @@ class ChildAxisQuery extends Query implements JackrabbitQuery
    /**
     * {@inheritDoc}
     */
-   public QueryHits execute(JackrabbitIndexSearcher searcher, SessionImpl session, Sort sort) throws IOException
+   public QueryHits execute(JcrIndexSearcher searcher, SessionImpl session, Sort sort) throws IOException
    {
       if (sort.getSort().length == 0 && matchesAnyChildNode())
       {

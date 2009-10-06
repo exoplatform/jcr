@@ -132,13 +132,13 @@ public class LuceneVirtualTableResolver extends
 	    query = new BooleanQuery();
 
 	} else if (terms.size() == 1) {
-	    query = new JackrabbitTermQuery(terms.get(0));
+	    query = new JcrTermQuery(terms.get(0));
 
 	} else {
 	    final BooleanQuery b = new BooleanQuery();
 	    for (final Object element : terms) {
 		// b.add(new TermQuery((Term) element), Occur.SHOULD);
-		b.add(new JackrabbitTermQuery((Term) element), Occur.SHOULD);
+		b.add(new JcrTermQuery((Term) element), Occur.SHOULD);
 	    }
 	    query = b;
 	}

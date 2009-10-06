@@ -55,7 +55,7 @@ public class LocalNameQuery extends Query {
      */
     public Query rewrite(IndexReader reader) throws IOException {
         if (version.getVersion() >= IndexFormatVersion.V3.getVersion()) {
-            return new JackrabbitTermQuery(new Term(FieldNames.LOCAL_NAME, localName));
+            return new JcrTermQuery(new Term(FieldNames.LOCAL_NAME, localName));
         } else {
             throw new IOException("LocalNameQuery requires IndexFormatVersion V3");
         }

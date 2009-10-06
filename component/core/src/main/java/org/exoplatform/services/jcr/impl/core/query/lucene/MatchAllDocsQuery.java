@@ -25,16 +25,16 @@ import org.exoplatform.services.jcr.impl.core.SessionImpl;
 
 /**
  * <code>MatchAllDocsQuery</code> extends the lucene <code>MatchAllDocsQuery</code>
- * and in addition implements {@link JackrabbitQuery}.
+ * and in addition implements {@link JcrQuery}.
  */
 public class MatchAllDocsQuery
         extends org.apache.lucene.search.MatchAllDocsQuery
-        implements JackrabbitQuery {
+        implements JcrQuery {
 
     /**
      * {@inheritDoc}
      */
-    public QueryHits execute(JackrabbitIndexSearcher searcher,
+    public QueryHits execute(JcrIndexSearcher searcher,
                              SessionImpl session,
                              Sort sort) throws IOException {
         if (sort.getSort().length == 0) {

@@ -99,7 +99,7 @@ public class NameRangeQuery extends Query
       {
          RangeQuery localNames = new RangeQuery(getLowerLocalNameTerm(), getUpperLocalNameTerm(), inclusive);
          BooleanQuery query = new BooleanQuery();
-         query.add(new JackrabbitTermQuery(new Term(FieldNames.NAMESPACE_URI, getNamespaceURI())),
+         query.add(new JcrTermQuery(new Term(FieldNames.NAMESPACE_URI, getNamespaceURI())),
             BooleanClause.Occur.MUST);
          query.add(localNames, BooleanClause.Occur.MUST);
          return query.rewrite(reader);

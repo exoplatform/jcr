@@ -28,7 +28,7 @@ import org.apache.lucene.index.IndexReader;
  * when a client calls {@link #close()} on this reader. This allows reusing
  * of the underlying index reader instance.
  */
-public final class JackrabbitIndexReader
+public final class JcrIndexReader
         extends FilterIndexReader
         implements HierarchyResolver, MultiIndexReader {
 
@@ -52,7 +52,7 @@ public final class JackrabbitIndexReader
      *                                  {@link HierarchyResolver} and
      *                                  {@link MultiIndexReader}.
      */
-    public JackrabbitIndexReader(IndexReader in) {
+    public JcrIndexReader(IndexReader in) {
         super(in);
         if (!(in instanceof MultiIndexReader)) {
             throw new IllegalArgumentException("IndexReader must also implement MultiIndexReader");

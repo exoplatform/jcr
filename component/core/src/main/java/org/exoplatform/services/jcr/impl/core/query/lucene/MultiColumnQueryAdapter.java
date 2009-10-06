@@ -64,7 +64,7 @@ public class MultiColumnQueryAdapter implements MultiColumnQuery {
     /**
      * {@inheritDoc}
      */
-    public MultiColumnQueryHits execute(JackrabbitIndexSearcher searcher,
+    public MultiColumnQueryHits execute(JcrIndexSearcher searcher,
                                         Sort sort,
                                         long resultFetchHint)
             throws IOException {

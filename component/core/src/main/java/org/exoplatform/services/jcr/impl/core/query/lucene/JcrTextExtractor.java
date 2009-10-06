@@ -47,7 +47,7 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 // *   </li>
 // * </ul>
 // */
-public class JackrabbitTextExtractor
+public class JcrTextExtractor
 {
    //implements TextExtractor {
 

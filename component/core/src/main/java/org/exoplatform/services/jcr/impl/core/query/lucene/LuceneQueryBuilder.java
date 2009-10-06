@@ -336,7 +336,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor {
 	} catch (RepositoryException e) {
 	    // will never happen, prefixes are created when unknown
 	}
-	return new JackrabbitTermQuery(new Term(FieldNames.PROPERTIES,
+	return new JcrTermQuery(new Term(FieldNames.PROPERTIES,
 		FieldNames.createNamedValue(field, value)));
     }
 
@@ -434,7 +434,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor {
 			+ fieldname.substring(idx + 1);
 
 	    }
-	    QueryParser parser = new JackrabbitQueryParser(fieldname, analyzer,
+	    QueryParser parser = new JcrQueryParser(fieldname, analyzer,
 		    synonymProvider);
 	    Query context = parser.parse(node.getQuery());
 	    if (relPath != null
@@ -491,17 +491,17 @@ public class LuceneQueryBuilder implements QueryNodeVisitor {
 		InternalQName nameTest = steps[0].getNameTest();
 		if (nameTest == null) {
 		    // this is equivalent to the root node
-		    context = new JackrabbitTermQuery(new Term(FieldNames.UUID,
+		    context = new JcrTermQuery(new Term(FieldNames.UUID,
 			    Constants.ROOT_UUID));
 		} else if (nameTest.getName().length() == 0) {
 		    // root node
-		    context = new JackrabbitTermQuery(new Term(FieldNames.UUID,
+		    context = new JcrTermQuery(new Term(FieldNames.UUID,
 			    Constants.ROOT_UUID));
 		} else {
 		    // then this is a node != the root node
 		    // will never match anything!
 		    BooleanQuery and = new BooleanQuery();
-		    and.add(new JackrabbitTermQuery(new Term(FieldNames.UUID,
+		    and.add(new JcrTermQuery(new Term(FieldNames.UUID,
 			    Constants.ROOT_UUID)), Occur.MUST);
 		    and.add(new NameQuery(nameTest, indexFormatVersion,
 			    nsMappings), Occur.MUST);
@@ -513,7 +513,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor {
 	    } else {
 		// path is 1) relative or 2) descendant-or-self
 		// use root node as context
-		context = new JackrabbitTermQuery(new Term(FieldNames.UUID,
+		context = new JcrTermQuery(new Term(FieldNames.UUID,
 			Constants.ROOT_UUID));
 	    }
 	} else {
@@ -789,7 +789,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor {
 		    } else if (transform[0] == TransformConstants.TRANSFORM_LOWER_CASE) {
 			q = new CaseTermQuery.Lower(t);
 		    } else {
-			q = new JackrabbitTermQuery(t);
+			q = new JcrTermQuery(t);
 		    }
 		    or.add(q, Occur.SHOULD);
 		}
@@ -888,12 +888,12 @@ public class LuceneQueryBuilder implements QueryNodeVisitor {
 		    } else if (transform[0] == TransformConstants.TRANSFORM_LOWER_CASE) {
 			q = new CaseTermQuery.Lower(t);
 		    } else {
-			q = new JackrabbitTermQuery(t);
+			q = new JcrTermQuery(t);
 		    }
 		    notQuery.add(q, Occur.MUST_NOT);
 		}
 		// and exclude all nodes where 'field' is multi valued
-		notQuery.add(new JackrabbitTermQuery(new Term(FieldNames.MVP,
+		notQuery.add(new JcrTermQuery(new Term(FieldNames.MVP,
 			field)), Occur.MUST_NOT);
 		query = notQuery;
 		break;
@@ -913,7 +913,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor {
 		    // valued
 		    Term t = new Term(FieldNames.PROPERTIES, FieldNames
 			    .createNamedValue(field, stringValues[i]));
-		    Query svp = new NotQuery(new JackrabbitTermQuery(new Term(
+		    Query svp = new NotQuery(new JcrTermQuery(new Term(
 			    FieldNames.MVP, field)));
 		    BooleanQuery and = new BooleanQuery();
 		    Query q;
@@ -922,7 +922,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor {
 		    } else if (transform[0] == TransformConstants.TRANSFORM_LOWER_CASE) {
 			q = new CaseTermQuery.Lower(t);
 		    } else {
-			q = new JackrabbitTermQuery(t);
+			q = new JcrTermQuery(t);
 		    }
 		    and.add(q, Occur.MUST);
 		    and.add(svp, Occur.MUST);
@@ -1043,7 +1043,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor {
      */
     private Query createSingleValueConstraint(Query q, String propName) {
 	// get nodes with multi-values in propName
-	Query mvp = new JackrabbitTermQuery(new Term(FieldNames.MVP, propName));
+	Query mvp = new JcrTermQuery(new Term(FieldNames.MVP, propName));
 	// now negate, that gives the nodes that have propName as single
 	// values but also all others
 	Query svp = new NotQuery(mvp);

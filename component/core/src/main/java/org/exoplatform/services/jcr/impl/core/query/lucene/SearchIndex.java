@@ -804,7 +804,7 @@ public class SearchIndex extends AbstractQueryHandler {
 	Sort sort = new Sort(createSortFields(orderProps, orderSpecs));
 
 	final IndexReader reader = getIndexReader(queryImpl.needsSystemTree());
-	JackrabbitIndexSearcher searcher = new JackrabbitIndexSearcher(session,
+	JcrIndexSearcher searcher = new JcrIndexSearcher(session,
 		reader, getContext().getItemStateManager());
 	searcher.setSimilarity(getSimilarity());
 	return new FilterMultiColumnQueryHits(searcher.execute(query, sort,
@@ -848,7 +848,7 @@ public class SearchIndex extends AbstractQueryHandler {
 	Sort sort = new Sort(createSortFields(orderProps, orderSpecs));
 
 	final IndexReader reader = getIndexReader();
-	JackrabbitIndexSearcher searcher = new JackrabbitIndexSearcher(session,
+	JcrIndexSearcher searcher = new JcrIndexSearcher(session,
 		reader, getContext().getItemStateManager());
 	searcher.setSimilarity(getSimilarity());
 	return new FilterMultiColumnQueryHits(query.execute(searcher, sort,
@@ -1024,7 +1024,7 @@ public class SearchIndex extends AbstractQueryHandler {
 	} else {
 	    reader = index.getIndexReader();
 	}
-	return new JackrabbitIndexReader(reader);
+	return new JcrIndexReader(reader);
     }
 
     /**
