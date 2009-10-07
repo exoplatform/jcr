@@ -73,7 +73,9 @@
       <module>applications/java/web/rest</module>
       <module>applications/java/web/ear</module>
       <module>applications/java/standalone/backupconsole</module>
-   </modules>
+
+      <module>packaging/module</module>
+      </modules>
 
    <dependencyManagement>
       <dependencies>
