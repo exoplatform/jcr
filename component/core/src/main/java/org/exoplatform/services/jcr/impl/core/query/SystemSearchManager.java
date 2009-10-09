@@ -42,91 +42,96 @@ import javax.jcr.RepositoryException;
  * @version $Id: SystemSearchManager.java 13891 2008-05-05 16:02:30Z pnedonosko
  *          $
  */
-public class SystemSearchManager extends SearchManager {
+public class SystemSearchManager extends SearchManager
+{
 
-    /**
-     * Class logger.
-     */
-    private final Log log = ExoLogger.getLogger("jcr.SystemSearchManager");
+   /**
+    * Class logger.
+    */
+   private final Log log = ExoLogger.getLogger("jcr.SystemSearchManager");
 
-    /**
-     * Is started flag.
-     */
-    private boolean isStarted = false;
+   /**
+    * Is started flag.
+    */
+   private boolean isStarted = false;
 
-    /**
-     * ChangesLog Buffer (used for saves before start).
-     */
-    private List<ItemStateChangesLog> changesLogBuffer = new ArrayList<ItemStateChangesLog>();
+   /**
+    * ChangesLog Buffer (used for saves before start).
+    */
+   private List<ItemStateChangesLog> changesLogBuffer = new ArrayList<ItemStateChangesLog>();
 
-    public static final String INDEX_DIR_SUFFIX = "system";
+   public static final String INDEX_DIR_SUFFIX = "system";
 
-    public SystemSearchManager(QueryHandlerEntry config,
-	    NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
-	    WorkspacePersistentDataManager itemMgr,
-	    DocumentReaderService service, ConfigurationManager cfm,
-	    RepositoryIndexSearcherHolder indexSearcherHolder)
-	    throws RepositoryException, RepositoryConfigurationException {
-	super(config, nsReg, ntReg, itemMgr, null, service, cfm,
-		indexSearcherHolder);
-    }
+   public SystemSearchManager(QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
+      WorkspacePersistentDataManager itemMgr, DocumentReaderService service, ConfigurationManager cfm,
+      RepositoryIndexSearcherHolder indexSearcherHolder) throws RepositoryException, RepositoryConfigurationException
+   {
+      super(config, nsReg, ntReg, itemMgr, null, service, cfm, indexSearcherHolder);
+   }
 
-    @Override
-    public void onSaveItems(ItemStateChangesLog changesLog) {
-	if (!isStarted) {
-	    changesLogBuffer.add(changesLog);
-	} else {
-	    super.onSaveItems(changesLog);
-	}
-    }
+   @Override
+   public void onSaveItems(ItemStateChangesLog changesLog)
+   {
+      if (!isStarted)
+      {
+         changesLogBuffer.add(changesLog);
+      }
+      else
+      {
+         super.onSaveItems(changesLog);
+      }
+   }
 
-    @Override
-    public void start() {
+   @Override
+   public void start()
+   {
 
-	isStarted = true;
-	try {
-	    if (indexingTree == null) {
-		List<QPath> excludedPaths = new ArrayList<QPath>();
+      isStarted = true;
+      try
+      {
+         if (indexingTree == null)
+         {
+            List<QPath> excludedPaths = new ArrayList<QPath>();
 
-		NodeData indexingRootNodeData = (NodeData) itemMgr
-			.getItemData(Constants.SYSTEM_UUID);
+            NodeData indexingRootNodeData = (NodeData)itemMgr.getItemData(Constants.SYSTEM_UUID);
 
-		indexingTree = new IndexingTree(indexingRootNodeData,
-			excludedPaths);
-	    }
-	    initializeQueryHandler();
+            indexingTree = new IndexingTree(indexingRootNodeData, excludedPaths);
+         }
+         initializeQueryHandler();
 
-	}
+      }
 
-	catch (RepositoryException e) {
-	    log.error(e.getLocalizedMessage());
-	    handler = null;
-	    changesLogBuffer.clear();
-	    changesLogBuffer = null;
-	    throw new RuntimeException(e);
-	} catch (RepositoryConfigurationException e) {
-	    log.error(e.getLocalizedMessage());
-	    handler = null;
-	    changesLogBuffer.clear();
-	    changesLogBuffer = null;
-	    throw new RuntimeException(e);
-	}
-	for (ItemStateChangesLog bufferedChangesLog : changesLogBuffer) {
-	    super.onSaveItems(bufferedChangesLog);
-	}
-	changesLogBuffer.clear();
-	changesLogBuffer = null;
-    }
+      catch (RepositoryException e)
+      {
+         log.error(e.getLocalizedMessage());
+         handler = null;
+         changesLogBuffer.clear();
+         changesLogBuffer = null;
+         throw new RuntimeException(e);
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         log.error(e.getLocalizedMessage());
+         handler = null;
+         changesLogBuffer.clear();
+         changesLogBuffer = null;
+         throw new RuntimeException(e);
+      }
+      for (ItemStateChangesLog bufferedChangesLog : changesLogBuffer)
+      {
+         super.onSaveItems(bufferedChangesLog);
+      }
+      changesLogBuffer.clear();
+      changesLogBuffer = null;
+   }
 
-    @Override
-    protected QueryHandlerContext createQueryHandlerContext(
-	    QueryHandler parentHandler) throws RepositoryConfigurationException {
-	QueryHandlerContext context = new QueryHandlerContext(itemMgr,
-		indexingTree, nodeTypeDataManager, nsReg, parentHandler, config
-			.getIndexDir()
-			+ "_" + INDEX_DIR_SUFFIX, extractor, changesLogBuffer
-			.size() > 0
-			&& !isStarted, virtualTableResolver);
-	return context;
-    }
+   @Override
+   protected QueryHandlerContext createQueryHandlerContext(QueryHandler parentHandler)
+      throws RepositoryConfigurationException
+   {
+      QueryHandlerContext context =
+         new QueryHandlerContext(itemMgr, indexingTree, nodeTypeDataManager, nsReg, parentHandler, getIndexDir() + "_"
+            + INDEX_DIR_SUFFIX, extractor, changesLogBuffer.size() > 0 && !isStarted, virtualTableResolver);
+      return context;
+   }
 }

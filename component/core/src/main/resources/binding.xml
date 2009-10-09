@@ -49,7 +49,6 @@
     </structure>
 
     <structure name="query-handler" field="queryHandler" 
-    factory="org.exoplatform.services.jcr.config.QueryHandlerEntryWrapper.queryHandlerEntryFactory"
     usage="optional">
       <value name="class" field="type" style="attribute" />
       <collection name="properties" field="parameters" usage="optional"

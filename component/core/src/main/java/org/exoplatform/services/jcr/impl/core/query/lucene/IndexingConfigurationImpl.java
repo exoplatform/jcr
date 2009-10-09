@@ -18,7 +18,6 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.exoplatform.services.jcr.core.NamespaceAccessor;
-import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.IllegalNameException;
@@ -51,6 +50,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
@@ -114,7 +114,7 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
       // nsResolver);
 
       NodeTypeDataManager ntReg = context.getNodeTypeDataManager();
-      List<NodeTypeData> ntNames = ntReg.getAllNodeTypes();
+      //List<NodeTypeData> ntNames = ntReg.getAllNodeTypes();
       List<AggregateRuleImpl> idxAggregates = new ArrayList<AggregateRuleImpl>();
       NodeList indexingConfigs = config.getChildNodes();
       for (int i = 0; i < indexingConfigs.getLength(); i++)
@@ -125,21 +125,21 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
             IndexingRule element = new IndexingRule(configNode);
             // register under node type and all its sub types
             log.debug("Found rule '{}' for NodeType '{}'", element, element.getNodeTypeName());
-            for (NodeTypeData nodeTypeData : ntNames)
+            Set<InternalQName> subs = ntReg.getSubtypes(element.getNodeTypeName());
+            subs.add(element.getNodeTypeName());
+            for (InternalQName subTypeName : subs)
             {
-
-               if (ntReg.isNodeType(element.getNodeTypeName(), nodeTypeData.getName()))
+               List<IndexingRule> perNtConfig = configElements.get(subTypeName);
+               if (perNtConfig == null)
                {
-                  List<IndexingRule> perNtConfig = configElements.get(nodeTypeData);
-                  if (perNtConfig == null)
-                  {
-                     perNtConfig = new ArrayList<IndexingRule>();
-                     configElements.put(nodeTypeData.getName(), perNtConfig);
-                  }
-                  log.debug("Registering it for name '{}'", nodeTypeData);
-                  perNtConfig.add(new IndexingRule(element, nodeTypeData.getName()));
+                  perNtConfig = new ArrayList<IndexingRule>();
+                  configElements.put(subTypeName, perNtConfig);
                }
+               log.debug("Registering it for name '{}'", subTypeName);
+               perNtConfig.add(new IndexingRule(element, subTypeName));
+
             }
+
          }
          else if (configNode.getNodeName().equals("aggregate"))
          {

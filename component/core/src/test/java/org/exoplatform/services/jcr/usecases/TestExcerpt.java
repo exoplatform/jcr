@@ -46,7 +46,7 @@ public class TestExcerpt extends BaseUsecasesTest
          + "the configuration parameter for this setting is:" + "This is the test for Excerpt query";
 
    private String string1_excerpt =
-      "<div><span>Node1 Additionally there is a parameter that controls the format of the "
+      "<div><span>Additionally there is a parameter that controls the format of the "
          + "<strong>excerpt</strong> created. In JCR 1.9 the default is set ...</span><span>"
          + "the configuration parameter for this setting is:This is the test for "
          + "<strong>Excerpt</strong> query</span></div>";
@@ -58,7 +58,7 @@ public class TestExcerpt extends BaseUsecasesTest
 
    private String string2_excerpt =
    //      "<div><span>It is a test for <strong>excerpt</strong> query.Searching with synonyms is integrated in the jcr:contains() function and uses the same syntax like synonym searches ...</span></div>";
-      "<div><span>Node2 It is a test for <strong>excerpt</strong> query.Searching with synonyms is integrated in the jcr:contains() function and uses the same syntax like synonym ...</span></div>";
+      "<div><span>It is a test for <strong>excerpt</strong> query.Searching with synonyms is integrated in the jcr:contains() function and uses the same syntax like synonym searches ...</span></div>";
 
    private String s3 = "JCR supports such features as Lucene Fuzzy Searches";
 
@@ -104,40 +104,44 @@ public class TestExcerpt extends BaseUsecasesTest
 
    public void testExcerpt() throws Exception
    {
-
-      Node excerptTest = testRoot.addNode("testExcerpt");
-
-      Node node1 = excerptTest.addNode("Node1", "exo:article");
-      node1.setProperty("exo:title", "Node1");
-      node1.setProperty("exo:text", s1);
-
-      Node node2 = excerptTest.addNode("Node2", "exo:article");
-      node2.setProperty("exo:title", "Node2");
-      node2.setProperty("exo:text", s2);
-
-      Node node3 = excerptTest.addNode("Node3", "exo:article");
-      node3.setProperty("exo:title", "Node3");
-      node3.setProperty("exo:text", s3);
-
-      testSession.save();
-
-      QueryManager queryManager = testSession.getWorkspace().getQueryManager();
-      Query q1 =
-         queryManager.createQuery("select exo:text, excerpt(.) from exo:article where jcr:path LIKE '"
-            + excerptTest.getPath() + "/%' and contains(., 'excerpt') ORDER BY exo:title", Query.SQL);
-      for (int i = 0; i < 10; i++)
+      for (int z = 0; z < 1; z++)
       {
-         checkResult(q1);
-      }
 
-      Query q2 =
-         queryManager.createQuery("/jcr:root/" + excerptTest.getPath()
-            + "//*[jcr:contains(., 'excerpt')]/(@exo:text|rep:excerpt(.)) order by @exo:title", Query.XPATH);
-      for (int i = 0; i < 10; i++)
-      {
-         checkResult(q2);
-      }
+         Node excerptTest = testRoot.addNode("testExcerpt");
 
+         Node node1 = excerptTest.addNode("Node1", "exo:article");
+         node1.setProperty("exo:title", "");
+         node1.setProperty("exo:text", s1);
+
+         Node node2 = excerptTest.addNode("Node2", "exo:article");
+         node2.setProperty("exo:title", "");
+         node2.setProperty("exo:text", s2);
+
+         Node node3 = excerptTest.addNode("Node3", "exo:article");
+         node3.setProperty("exo:title", "");
+         node3.setProperty("exo:text", s3);
+
+         testSession.save();
+
+         QueryManager queryManager = testSession.getWorkspace().getQueryManager();
+         Query q1 =
+            queryManager.createQuery("select exo:text, excerpt(.) from exo:article where jcr:path LIKE '"
+               + excerptTest.getPath() + "/%' and contains(., 'excerpt') ORDER BY exo:title", Query.SQL);
+         for (int i = 0; i < 1; i++)
+         {
+            checkResult(q1);
+         }
+
+         Query q2 =
+            queryManager.createQuery("/jcr:root/" + excerptTest.getPath()
+               + "//*[jcr:contains(., 'excerpt')]/(@exo:text|rep:excerpt(.)) order by @exo:title", Query.XPATH);
+         for (int i = 0; i < 1; i++)
+         {
+            checkResult(q2);
+         }
+         excerptTest.remove();
+         testSession.save();
+      }
    }
 
    private void checkResult(Query query) throws RepositoryException
@@ -151,19 +155,15 @@ public class TestExcerpt extends BaseUsecasesTest
          Row r = it.nextRow();
          Value excerpt = r.getValue("rep:excerpt(.)");
          Value text = r.getValue("exo:text");
-         System.out.println(excerpt.getString());
-         System.out.println(text.getString());
 
          if (text.getString().equals(s1))
          {
-            System.out.println("s1" + string1_excerpt.equals(excerpt.getString()));
 
-            //assertEquals(string1_excerpt, excerpt.getString());
+            assertEquals(string1_excerpt, excerpt.getString());
          }
          else if (text.getString().equals(s2))
          {
-            System.out.println("s2" + string2_excerpt.equals(excerpt.getString()));
-            //assertEquals(string2_excerpt, excerpt.getString());
+            assertEquals(string2_excerpt, excerpt.getString());
          }
       }
    }

@@ -14,16 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.exoplatform.services.jcr.api.core.query.lucene;
+package org.exoplatform.services.jcr.api.core.query;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import org.exoplatform.services.jcr.api.core.query.lucene.hits.ArrayHitsTest;
+
 /**
  * Test suite that includes all testcases for the Search module.
  */
-public class TestAll extends TestCase
+public class TestApiQueryAll extends TestCase
 {
 
    /**
@@ -37,8 +39,28 @@ public class TestAll extends TestCase
    {
       TestSuite suite = new TestSuite("Search tests");
 
-      suite.addTestSuite(IndexingQueueTest.class);
-      suite.addTestSuite(IndexingAggregateTest.class);
+      suite.addTestSuite(SimpleQueryTest.class);
+      suite.addTestSuite(FulltextQueryTest.class);
+      suite.addTestSuite(SelectClauseTest.class);
+      suite.addTestSuite(SQLTest.class);
+      suite.addTestSuite(OrderByTest.class);
+      suite.addTestSuite(XPathAxisTest.class);
+      suite.addTestSuite(SkipDeletedNodesTest.class);
+      suite.addTestSuite(SkipDeniedNodesTest.class);
+      suite.addTestSuite(MixinTest.class);
+      suite.addTestSuite(DerefTest.class);
+      suite.addTestSuite(VersionStoreQueryTest.class);
+      suite.addTestSuite(UpperLowerCaseQueryTest.class);
+      suite.addTestSuite(ChildAxisQueryTest.class);
+      suite.addTestSuite(QueryResultTest.class);
+      suite.addTestSuite(FnNameQueryTest.class);
+      suite.addTestSuite(PathQueryNodeTest.class);
+      suite.addTestSuite(SynonymProviderTest.class);
+      suite.addTestSuite(ArrayHitsTest.class);
+      suite.addTestSuite(ExcerptTest.class);
+      suite.addTestSuite(IndexFormatVersionTest.class);
+      suite.addTestSuite(IndexingRuleTest.class);
+      suite.addTestSuite(ShareableNodeTest.class);
 
       return suite;
    }

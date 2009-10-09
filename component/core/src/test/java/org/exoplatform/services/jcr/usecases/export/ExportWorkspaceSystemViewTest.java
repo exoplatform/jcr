@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.usecases.export;
 
 import org.exoplatform.services.jcr.config.ContainerEntry;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
+import org.exoplatform.services.jcr.config.QueryHandlerParams;
 import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.config.WorkspaceInitializerEntry;
@@ -119,7 +120,7 @@ public class ExportWorkspaceSystemViewTest extends BaseUsecasesTest
 
       // Indexer
       ArrayList qParams = new ArrayList();
-      qParams.add(new SimpleParameterEntry("indexDir", "target" + File.separator + name));
+      qParams.add(new SimpleParameterEntry(QueryHandlerParams.PARAM_INDEX_DIR, "target" + File.separator + name));
       QueryHandlerEntry qEntry =
          new QueryHandlerEntry("org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex", qParams);
 
