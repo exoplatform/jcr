@@ -419,6 +419,7 @@
                         <include>**/impl/**/Test*.java</include>
                      </includes>
                <excludes>
+                  <exclude>**/TestQueryUsecases.java</exclude>
                   <exclude>**/TestImport.java</exclude>
                   <exclude>**/TestRollbackBigFiles.java</exclude>
                   <exclude>**/TestErrorMultithreading.java</exclude>
