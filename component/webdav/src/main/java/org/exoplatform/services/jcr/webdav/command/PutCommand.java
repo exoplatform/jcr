@@ -18,10 +18,6 @@
  */
 package org.exoplatform.services.jcr.webdav.command;
 
-import org.exoplatform.common.http.HTTPStatus;
-import org.exoplatform.services.jcr.webdav.lock.NullResourceLocksHolder;
-import org.exoplatform.services.jcr.webdav.util.TextUtil;
-
 import java.io.InputStream;
 import java.util.Calendar;
 import java.util.List;
@@ -33,6 +29,10 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.lock.LockException;
 import javax.ws.rs.core.Response;
+
+import org.exoplatform.common.http.HTTPStatus;
+import org.exoplatform.services.jcr.webdav.lock.NullResourceLocksHolder;
+import org.exoplatform.services.jcr.webdav.util.TextUtil;
 
 /**
  * Created by The eXo Platform SAS Author : <a
@@ -74,7 +74,7 @@ public class PutCommand
     * @return the instance of javax.ws.rs.core.Response
     */
    public Response put(Session session, String path, InputStream inputStream, String fileNodeType,
-      String contentNodeType, List<String> mixins, String mimeType, String updatePolicyType, List<String> tokens)
+      String contentNodeType, List<String> mixins, String mimeType, String encoding, String updatePolicyType, List<String> tokens)
    {
 
       try
@@ -96,7 +96,7 @@ public class PutCommand
             node = session.getRootNode().addNode(TextUtil.relativizePath(path), fileNodeType);
 
             node.addNode("jcr:content", contentNodeType);
-            updateContent(node, inputStream, mimeType, mixins);
+            updateContent(node, inputStream, mimeType, encoding, mixins);
          }
          else
          {
@@ -104,15 +104,15 @@ public class PutCommand
             {
                node = session.getRootNode().addNode(TextUtil.relativizePath(path), fileNodeType);
                node.addNode("jcr:content", contentNodeType);
-               updateContent(node, inputStream, mimeType, mixins);
+               updateContent(node, inputStream, mimeType, encoding, mixins);
             }
             else if ("create-version".equals(updatePolicyType))
             {
-               createVersion(node, inputStream, mimeType, mixins);
+               createVersion(node, inputStream, mimeType, encoding, mixins);
             }
             else
             {
-               updateContent(node, inputStream, mimeType, mixins);
+               updateContent(node, inputStream, mimeType, encoding, mixins);
             }
          }
 
@@ -146,7 +146,7 @@ public class PutCommand
     * @param mixins list of mixins
     * @throws RepositoryException {@link RepositoryException}
     */
-   private void createVersion(Node fileNode, InputStream inputStream, String mimeType, List<String> mixins)
+   private void createVersion(Node fileNode, InputStream inputStream, String mimeType, String encoding, List<String> mixins)
       throws RepositoryException
    {
       if (!fileNode.isNodeType("mix:versionable"))
@@ -166,7 +166,7 @@ public class PutCommand
          fileNode.getSession().save();
       }
 
-      updateContent(fileNode, inputStream, mimeType, mixins);
+      updateContent(fileNode, inputStream, mimeType, encoding, mixins);
       fileNode.getSession().save();
       fileNode.checkin();
       fileNode.getSession().save();
@@ -182,12 +182,15 @@ public class PutCommand
     * @param mixins list of mixins
     * @throws RepositoryException  {@link RepositoryException}
     */
-   private void updateContent(Node node, InputStream inputStream, String mimeType, List<String> mixins)
+   private void updateContent(Node node, InputStream inputStream, String mimeType, String encoding, List<String> mixins)
       throws RepositoryException
    {
 
       Node content = node.getNode("jcr:content");
       content.setProperty("jcr:mimeType", mimeType);
+      if (encoding != null) {
+         content.setProperty("jcr:encoding", encoding);
+      }
       content.setProperty("jcr:lastModified", Calendar.getInstance());
       content.setProperty("jcr:data", inputStream);
 

@@ -18,6 +18,33 @@
  */
 package org.exoplatform.services.jcr.webdav;
 
+import java.io.InputStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.jcr.NoSuchWorkspaceException;
+import javax.jcr.PathNotFoundException;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.nodetype.NoSuchNodeTypeException;
+import javax.jcr.nodetype.NodeType;
+import javax.jcr.nodetype.NodeTypeManager;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.HEAD;
+import javax.ws.rs.HeaderParam;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+
 import org.exoplatform.common.http.HTTPStatus;
 import org.exoplatform.common.util.HierarchicalProperty;
 import org.exoplatform.commons.utils.MimeTypeResolver;
@@ -67,34 +94,6 @@ import org.exoplatform.services.rest.ext.webdav.method.UNCHECKOUT;
 import org.exoplatform.services.rest.ext.webdav.method.UNLOCK;
 import org.exoplatform.services.rest.ext.webdav.method.VERSIONCONTROL;
 import org.exoplatform.services.rest.resource.ResourceContainer;
-
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.jcr.NoSuchWorkspaceException;
-import javax.jcr.PathNotFoundException;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.nodetype.NoSuchNodeTypeException;
-import javax.jcr.nodetype.NodeType;
-import javax.jcr.nodetype.NodeTypeManager;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.HEAD;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 
 /**
  * Created by The eXo Platform SARL .<br/>
@@ -897,7 +896,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       @HeaderParam(ExtHttpHeaders.FILE_NODETYPE) String fileNodeTypeHeader,
       @HeaderParam(ExtHttpHeaders.CONTENT_NODETYPE) String contentNodeTypeHeader,
       @HeaderParam(ExtHttpHeaders.CONTENT_MIXINTYPES) List<String> mixinTypes,
-      @HeaderParam(HttpHeaders.CONTENT_TYPE) String mimeType, InputStream inputStream)
+      @HeaderParam(ExtHttpHeaders.CONTENT_TYPE) MediaType mediatype,
+      InputStream inputStream)
    {
 
       if (log.isDebugEnabled())
@@ -909,6 +909,20 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
 
       try
       {
+         String mimeType = null;
+         String encoding = null;
+         
+         if (mediatype == null) {
+            MimeTypeResolver mimeTypeResolver = new MimeTypeResolver();
+            mimeTypeResolver.setDefaultMimeType(defaultFileMimeType);
+            mimeType = mimeTypeResolver.getMimeType(TextUtil.nameOnly(repoPath));
+         } else {
+            mimeType = mediatype.getType() + "/" + mediatype.getSubtype();
+            log.info(">>> MimeType: " + mimeType);
+            encoding = mediatype.getParameters().get("charset");
+            log.info(">>> Charset: " + encoding);                        
+         }
+         
          List<String> tokens = lockTokens(lockTokenHeader, ifHeader);
          Session session = session(repoName, workspaceName(repoPath), tokens);
 
@@ -923,15 +937,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          NodeType nodeType = ntm.getNodeType(contentNodeType);
          NodeTypeUtil.checkContentResourceType(nodeType);
 
-         if (mimeType == null)
-         {
-            MimeTypeResolver mimeTypeResolver = new MimeTypeResolver();
-            mimeTypeResolver.setDefaultMimeType(defaultFileMimeType);
-            mimeType = mimeTypeResolver.getMimeType(TextUtil.nameOnly(repoPath));
-         }
-
          return new PutCommand(nullResourceLocks).put(session, path(repoPath), inputStream, fileNodeType,
-            contentNodeType, NodeTypeUtil.getMixinTypes(mixinTypes), mimeType, updatePolicyType, tokens);
+            contentNodeType, NodeTypeUtil.getMixinTypes(mixinTypes), mimeType, encoding, updatePolicyType, tokens);
 
       }
       catch (NoSuchWorkspaceException exc)

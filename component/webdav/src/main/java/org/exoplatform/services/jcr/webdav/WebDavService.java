@@ -18,13 +18,14 @@
  */
 package org.exoplatform.services.jcr.webdav;
 
-import org.exoplatform.common.util.HierarchicalProperty;
-
 import java.io.InputStream;
 import java.util.List;
 
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+
+import org.exoplatform.common.util.HierarchicalProperty;
 
 /**
  * Created by The eXo Platform SARL .<br/>
@@ -82,7 +83,7 @@ public interface WebDavService
     * @return the instance of javax.ws.rs.core.Response
     */
    Response put(String repoName, String repoPath, String lockTokenHeader, String ifHeader, String fileNodeTypeHeader,
-      String contentNodeTypeHeader, List<String> mixinTypes, String mimeType, InputStream inputStream);
+      String contentNodeTypeHeader, List<String> mixinTypes, MediaType mediatype, InputStream inputStream);
 
    /**
     * @param repoName repository name
