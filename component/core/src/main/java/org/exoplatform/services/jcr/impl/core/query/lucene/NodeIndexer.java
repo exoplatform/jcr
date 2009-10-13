@@ -205,14 +205,7 @@ public class NodeIndexer
          else
          {
             addParentChildRelation(doc, node.getParentIdentifier());
-            //            } else {
-            // shareable node
-            //                for (Iterator it = node.getSharedSet().iterator(); it.hasNext(); ) {
-            //                    addParentChildRelation(doc, (NodeId) it.next());
-            //                }
-            // mark shareable nodes
-            //                doc.add(new Field(FieldNames.SHAREABLE_NODE, "",
-            //                        Field.Store.NO, Field.Index.NOT_ANALYZED_NO_NORMS));
+
          }
       }
       catch (NamespaceException e)
@@ -356,7 +349,9 @@ public class NodeIndexer
                         InputStream is = null;
                         try
                         {
-                           doc.add(createFulltextField(dreader.getContentAsText(is = pvd.getAsStream())));
+                           is = pvd.getAsStream();
+                           Reader reader = new StringReader(dreader.getContentAsText(is));
+                           doc.add(createFulltextField(reader));
                         }
                         finally
                         {
