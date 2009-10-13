@@ -74,7 +74,8 @@ public class PutCommand
     * @return the instance of javax.ws.rs.core.Response
     */
    public Response put(Session session, String path, InputStream inputStream, String fileNodeType,
-      String contentNodeType, List<String> mixins, String mimeType, String encoding, String updatePolicyType, List<String> tokens)
+      String contentNodeType, List<String> mixins, String mimeType, String encoding, String updatePolicyType,
+      String autoVersion, List<String> tokens)
    {
 
       try
@@ -103,8 +104,16 @@ public class PutCommand
             if ("add".equals(updatePolicyType))
             {
                node = session.getRootNode().addNode(TextUtil.relativizePath(path), fileNodeType);
-               node.addNode("jcr:content", contentNodeType);
-               updateContent(node, inputStream, mimeType, encoding, mixins);
+               if (!node.isNodeType("mix:versionable"))
+               {
+                  node.addNode("jcr:content", contentNodeType);
+                  updateContent(node, inputStream, mimeType, encoding, mixins);
+               }
+               else
+               {
+                  updateVersion(node, inputStream, mimeType, autoVersion, encoding, mixins);
+               }
+
             }
             else if ("create-version".equals(updatePolicyType))
             {
@@ -112,7 +121,14 @@ public class PutCommand
             }
             else
             {
-               updateContent(node, inputStream, mimeType, encoding, mixins);
+               if (!node.isNodeType("mix:versionable"))
+               {
+                  updateContent(node, inputStream, mimeType, encoding, mixins);
+               }
+               else
+               {
+                  updateVersion(node, inputStream, mimeType, autoVersion, encoding, mixins);
+               }
             }
          }
 
@@ -146,8 +162,8 @@ public class PutCommand
     * @param mixins list of mixins
     * @throws RepositoryException {@link RepositoryException}
     */
-   private void createVersion(Node fileNode, InputStream inputStream, String mimeType, String encoding, List<String> mixins)
-      throws RepositoryException
+   private void createVersion(Node fileNode, InputStream inputStream, String mimeType, String encoding,
+      List<String> mixins) throws RepositoryException
    {
       if (!fileNode.isNodeType("mix:versionable"))
       {
@@ -188,7 +204,8 @@ public class PutCommand
 
       Node content = node.getNode("jcr:content");
       content.setProperty("jcr:mimeType", mimeType);
-      if (encoding != null) {
+      if (encoding != null)
+      {
          content.setProperty("jcr:encoding", encoding);
       }
       content.setProperty("jcr:lastModified", Calendar.getInstance());
@@ -203,6 +220,38 @@ public class PutCommand
 
       }
 
+   }
+
+   /**
+    * Updates the content of the versionable file according to auto-version value.
+    * 
+    * @param fileNode Node to update
+    * @param inputStream input stream that contains the content of
+    *          file
+    * @param mimeType content type
+    * @param autoVersion auto-version value
+    * @param mixins list of mixins
+    * @throws RepositoryException {@link RepositoryException}
+    */
+   private void updateVersion(Node fileNode, InputStream inputStream, String mimeType, String encoding,
+      String autoVersion, List<String> mixins) throws RepositoryException
+   {
+      if (!fileNode.isCheckedOut())
+      {
+         fileNode.checkout();
+         fileNode.getSession().save();
+      }
+      if ("checkout".equals(autoVersion))
+      {
+         updateContent(fileNode, inputStream, mimeType, encoding, mixins);
+      }
+      else if ("checkout-checkin".equals(autoVersion))
+      {
+         updateContent(fileNode, inputStream, mimeType, encoding, mixins);
+         fileNode.getSession().save();
+         fileNode.checkin();
+      }
+      fileNode.getSession().save();
    }
 
 }

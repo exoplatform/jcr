@@ -125,6 +125,11 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
     * Initialization initialization "update-policy"-parameter value.
     */
    public static final String INIT_PARAM_UPDATE_POLICY = "update-policy";
+   
+   /**
+    * Initialization "auto-version"-parameter value.
+    */
+   public static final String INIT_PARAM_AUTO_VERSION = "auto-version";
 
    /**
     * Logger.
@@ -165,6 +170,11 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
     * Update policy.
     */
    private String updatePolicyType = "create-version";
+   
+   /**
+    * Auto-version default value.
+    */
+   private String autoVersionType = "checkout-checkin";
 
    /**
     * The list of allowed methods.
@@ -233,6 +243,13 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       {
          updatePolicyType = pUpdatePolicy.getValue();
          log.info(INIT_PARAM_UPDATE_POLICY + " = " + updatePolicyType);
+      }
+      
+      ValueParam pAutoVersion = params.getValueParam(INIT_PARAM_AUTO_VERSION);
+      if (pAutoVersion != null)
+      {
+         autoVersionType = pAutoVersion.getValue();
+         log.info(INIT_PARAM_AUTO_VERSION + " = " + autoVersionType);
       }
 
    }
@@ -938,7 +955,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          NodeTypeUtil.checkContentResourceType(nodeType);
 
          return new PutCommand(nullResourceLocks).put(session, path(repoPath), inputStream, fileNodeType,
-            contentNodeType, NodeTypeUtil.getMixinTypes(mixinTypes), mimeType, encoding, updatePolicyType, tokens);
+            contentNodeType, NodeTypeUtil.getMixinTypes(mixinTypes), mimeType, encoding, updatePolicyType, autoVersionType, tokens);
 
       }
       catch (NoSuchWorkspaceException exc)
