@@ -45,7 +45,7 @@ public class TestEncoding extends BaseStandaloneTest
    // UTF-8 content
    public static final String UTF_FILE = "/utfFile.txt";
 
-   public static final String UTF_CONTENT_TYPE = "text/plain;charset=UTF-8";
+   public static final String UTF_CONTENT_TYPE = "text/plain";
 
    public static final String UTF_CHARSET = "UTF8";
 
@@ -54,7 +54,7 @@ public class TestEncoding extends BaseStandaloneTest
    // windows-1251 content
    public static final String WIN_FILE = "/winFile.txt";
 
-   public static final String WIN_CONTENT_TYPE = "text/plain;charset=windows-1251";
+   public static final String WIN_CONTENT_TYPE = "text/plain";
 
    public static final String WIN_CHARSET = "Cp1251";
 
@@ -63,7 +63,7 @@ public class TestEncoding extends BaseStandaloneTest
    // ISO 8859-5 content
    public static final String ISO_FILE = "/isoFile.txt";
 
-   public static final String ISO_CONTENT_TYPE = "text/plain;charset=iso-8859-5";
+   public static final String ISO_CONTENT_TYPE = "text/plain";
 
    public static final String ISO_CHARSET = "ISO-8859-5";
 
