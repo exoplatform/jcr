@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.jcr.NamespaceException;
-import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 
 /**
@@ -73,7 +72,7 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry, Startab
       DEF_PREFIXES.put("http://www.jcp.org/jcr/1.0", "jcr");
       DEF_PREFIXES.put("http://www.jcp.org/jcr/nt/1.0", "nt");
       DEF_PREFIXES.put("http://www.jcp.org/jcr/mix/1.0", "mix");
-      DEF_PREFIXES.put("http://www.w3.org/XML/1998/namespace", "mix");
+      DEF_PREFIXES.put("http://www.w3.org/XML/1998/namespace", "xml");
       DEF_PREFIXES.put("http://www.jcp.org/jcr/sv/1.0", "sv");
       DEF_PREFIXES.put("http://www.exoplatform.com/jcr/exo/1.0", "exo");
       DEF_PREFIXES.put("http://www.w3.org/2001/XMLSchema", "xs");
