@@ -32,105 +32,109 @@ import java.io.IOException;
  * @version $Id: exo-jboss-codetemplates.xml 34360 2009-07-22 23:58:59Z ksm $
  * 
  */
-public class SearchIndexConfigurationHelper {
+public class SearchIndexConfigurationHelper
+{
 
-    private final SearchIndex searchIndex;
+   private final SearchIndex searchIndex;
 
-    /**
-     * @param searchIndex
-     */
-    public SearchIndexConfigurationHelper(SearchIndex searchIndex) {
-	super();
-	this.searchIndex = searchIndex;
-    }
+   /**
+    * @param searchIndex
+    */
+   public SearchIndexConfigurationHelper(SearchIndex searchIndex)
+   {
+      super();
+      this.searchIndex = searchIndex;
+   }
 
-    /**
-     * Initialize parameters
-     * 
-     * @param queryHandlerEntry
-     * @throws IOException
-     * @throws RepositoryConfigurationException
-     */
-    public void init(QueryHandlerEntry queryHandlerEntry) throws IOException,
-	    RepositoryConfigurationException {
-	// Path will be set using queryHandelContext
+   /**
+    * Initialize parameters
+    * 
+    * @param queryHandlerEntry
+    * @throws IOException
+    * @throws RepositoryConfigurationException
+    */
+   public void init(QueryHandlerEntry queryHandlerEntry) throws IOException, RepositoryConfigurationException
+   {
+      // Path will be set using queryHandelContext
 
-	for (SimpleParameterEntry parameter : queryHandlerEntry.getParameters()) {
-	    setParam(parameter.getName(), parameter.getValue());
-	}
+      for (SimpleParameterEntry parameter : queryHandlerEntry.getParameters())
+      {
+         setParam(parameter.getName(), parameter.getValue());
+      }
 
-    }
+   }
 
-    /**
-     * @param name
-     * @param value
-     */
-    private void setParam(String name, String value) {
+   /**
+    * @param name
+    * @param value
+    */
+   private void setParam(String name, String value)
+   {
 
-	if (QueryHandlerParams.PARAM_AUTO_REPAIR.equals(name))
-	    searchIndex.setAutoRepair(Boolean.parseBoolean(value));
-	else if (QueryHandlerParams.PARAM_BUFFER_SIZE.equals(name))
-	    searchIndex.setBufferSize(Integer.parseInt(value));
-	else if (QueryHandlerParams.PARAM_CACHE_SIZE.equals(name))
-	    searchIndex.setCacheSize(Integer.parseInt(value));
-	else if (QueryHandlerParams.PARAM_CONSISTENCY_CHECK_ENABLED
-		.equals(name))
-	    searchIndex.setEnableConsistencyCheck(Boolean.parseBoolean(value));
-	else if (QueryHandlerParams.PARAM_DOCUMENT_ORDER.equals(name))
-	    searchIndex.setRespectDocumentOrder(Boolean.parseBoolean(value));
-	else if (QueryHandlerParams.PARAM_EXCERPTPROVIDER_CLASS.equals(name))
-	    searchIndex.setExcerptProviderClass(value);
-	// else if
-	// (QueryHandlerParams.PARAM_EXCLUDED_NODE_IDENTIFERS.equals(name))
-	// searchIndex.setE
-	else if (QueryHandlerParams.PARAM_EXTRACTOR_BACKLOG.equals(name))
-	    searchIndex.setExtractorBackLogSize(Integer.parseInt(value));
-	else if (QueryHandlerParams.PARAM_EXTRACTOR_POOLSIZE.equals(name))
-	    searchIndex.setExtractorPoolSize(Integer.parseInt(value));
-	else if (QueryHandlerParams.PARAM_EXTRACTOR_TIMEOUT.equals(name))
-	    searchIndex.setExtractorTimeout(Long.parseLong(value));
-	else if (QueryHandlerParams.PARAM_FORCE_CONSISTENCYCHECK.equals(name))
-	    searchIndex.setForceConsistencyCheck(Boolean.parseBoolean(value));
-	else if (QueryHandlerParams.PARAM_ERRORLOG_SIZE.equals(name))
-	    searchIndex.setErrorLogfileSize(Integer.parseInt(value));
-	// else if (QueryHandlerParams.PARAM_INDEX_DIR.equals(name))
-	// searchIndex.setBufferSize(0);
-	// else if (OLD_PARAM_INDEX_DIR
-	else if (QueryHandlerParams.PARAM_INDEXING_CONFIGURATION_PATH
-		.equals(name))
-	    searchIndex.setIndexingConfiguration(value);
-	else if (QueryHandlerParams.PARAM_INDEXING_CONFIGURATION_CLASS
-		.equals(name))
-	    searchIndex.setIndexingConfigurationClass(value);
-	else if (QueryHandlerParams.PARAM_MAX_FIELD_LENGTH.equals(name))
-	    searchIndex.setMaxFieldLength(Integer.parseInt(value));
-	else if (QueryHandlerParams.PARAM_MAX_MERGE_DOCS.equals(name))
-	    searchIndex.setMaxMergeDocs(Integer.parseInt(value));
-	else if (QueryHandlerParams.PARAM_MERGE_FACTOR.equals(name))
-	    searchIndex.setMergeFactor(Integer.parseInt(value));
-	else if (QueryHandlerParams.PARAM_MIN_MERGE_DOCS.equals(name))
-	    searchIndex.setMinMergeDocs(Integer.parseInt(value));
-	else if (QueryHandlerParams.PARAM_QUERY_CLASS.equals(name))
-	    searchIndex.setQueryClass(value);
-	else if (QueryHandlerParams.PARAM_RESULT_FETCH_SIZE.equals(name))
-	    searchIndex.setResultFetchSize(Integer.parseInt(value));
-	// else if (QueryHandlerParams.PARAM_ROOT_NODE_ID.equals(name))
-	// searchIndex.setBufferSize(0);
-	else if (QueryHandlerParams.PARAM_SPELLCHECKER_CLASS.equals(name))
-	    searchIndex.setSpellCheckerClass(value);
-	else if (QueryHandlerParams.PARAM_SUPPORT_HIGHLIGHTING.equals(name))
-	    searchIndex.setSupportHighlighting(Boolean.parseBoolean(value));
-	else if (QueryHandlerParams.PARAM_SYNONYMPROVIDER_CLASS.equals(name))
-	    searchIndex.setSynonymProviderClass(value);
-	else if (QueryHandlerParams.PARAM_SYNONYMPROVIDER_CONFIG_PATH
-		.equals(name))
-	    searchIndex.setSynonymProviderConfigPath(value);
-	else if (QueryHandlerParams.PARAM_USE_COMPOUNDFILE.equals(name))
-	    searchIndex.setUseCompoundFile(Boolean.parseBoolean(value));
-	else if (QueryHandlerParams.PARAM_VOLATILE_IDLE_TIME.equals(name))
-	    searchIndex.setVolatileIdleTime(Integer.parseInt(value));
-	// else if (QueryHandlerParams.PARAM_UPGRADE_INDEX.equals(name))
-	// searchIndex.i
+      if (QueryHandlerParams.PARAM_AUTO_REPAIR.equals(name))
+         searchIndex.setAutoRepair(Boolean.parseBoolean(value));
+      else if (QueryHandlerParams.PARAM_BUFFER_SIZE.equals(name))
+         searchIndex.setBufferSize(Integer.parseInt(value));
+      else if (QueryHandlerParams.PARAM_CACHE_SIZE.equals(name))
+         searchIndex.setCacheSize(Integer.parseInt(value));
+      else if (QueryHandlerParams.PARAM_CONSISTENCY_CHECK_ENABLED.equals(name))
+         searchIndex.setEnableConsistencyCheck(Boolean.parseBoolean(value));
+      else if (QueryHandlerParams.PARAM_DOCUMENT_ORDER.equals(name))
+         searchIndex.setRespectDocumentOrder(Boolean.parseBoolean(value));
+      else if (QueryHandlerParams.PARAM_EXCERPTPROVIDER_CLASS.equals(name))
+         searchIndex.setExcerptProviderClass(value);
+      // else if
+      // (QueryHandlerParams.PARAM_EXCLUDED_NODE_IDENTIFERS.equals(name))
+      // searchIndex.setE
+      else if (QueryHandlerParams.PARAM_EXTRACTOR_BACKLOG.equals(name))
+         searchIndex.setExtractorBackLogSize(Integer.parseInt(value));
+      else if (QueryHandlerParams.PARAM_EXTRACTOR_POOLSIZE.equals(name))
+         searchIndex.setExtractorPoolSize(Integer.parseInt(value));
+      else if (QueryHandlerParams.PARAM_EXTRACTOR_TIMEOUT.equals(name))
+         searchIndex.setExtractorTimeout(Long.parseLong(value));
+      else if (QueryHandlerParams.PARAM_FORCE_CONSISTENCYCHECK.equals(name))
+         searchIndex.setForceConsistencyCheck(Boolean.parseBoolean(value));
+      else if (QueryHandlerParams.PARAM_ERRORLOG_SIZE.equals(name))
+         searchIndex.setErrorLogfileSize(Integer.parseInt(value));
+      // else if (QueryHandlerParams.PARAM_INDEX_DIR.equals(name))
+      // searchIndex.setBufferSize(0);
+      // else if (OLD_PARAM_INDEX_DIR
+      else if (QueryHandlerParams.PARAM_INDEXING_CONFIGURATION_PATH.equals(name))
+         searchIndex.setIndexingConfiguration(value);
+      else if (QueryHandlerParams.PARAM_INDEXING_CONFIGURATION_CLASS.equals(name))
+         searchIndex.setIndexingConfigurationClass(value);
+      else if (QueryHandlerParams.PARAM_MAX_FIELD_LENGTH.equals(name))
+         searchIndex.setMaxFieldLength(Integer.parseInt(value));
+      else if (QueryHandlerParams.PARAM_MAX_MERGE_DOCS.equals(name))
+         searchIndex.setMaxMergeDocs(Integer.parseInt(value));
+      else if (QueryHandlerParams.PARAM_MERGE_FACTOR.equals(name))
+         searchIndex.setMergeFactor(Integer.parseInt(value));
+      else if (QueryHandlerParams.PARAM_MIN_MERGE_DOCS.equals(name))
+         searchIndex.setMinMergeDocs(Integer.parseInt(value));
+      else if (QueryHandlerParams.PARAM_QUERY_CLASS.equals(name))
+         searchIndex.setQueryClass(value);
+      else if (QueryHandlerParams.PARAM_RESULT_FETCH_SIZE.equals(name))
+         searchIndex.setResultFetchSize(Integer.parseInt(value));
+      // else if (QueryHandlerParams.PARAM_ROOT_NODE_ID.equals(name))
+      // searchIndex.setBufferSize(0);
+      else if (QueryHandlerParams.PARAM_SPELLCHECKER_CLASS.equals(name))
+         searchIndex.setSpellCheckerClass(value);
+      else if (QueryHandlerParams.PARAM_SUPPORT_HIGHLIGHTING.equals(name))
+         searchIndex.setSupportHighlighting(Boolean.parseBoolean(value));
+      else if (QueryHandlerParams.PARAM_SYNONYMPROVIDER_CLASS.equals(name))
+         searchIndex.setSynonymProviderClass(value);
+      else if (QueryHandlerParams.PARAM_SYNONYMPROVIDER_CONFIG_PATH.equals(name))
+         searchIndex.setSynonymProviderConfigPath(value);
+      else if (QueryHandlerParams.PARAM_USE_COMPOUNDFILE.equals(name))
+         searchIndex.setUseCompoundFile(Boolean.parseBoolean(value));
+      else if (QueryHandlerParams.PARAM_VOLATILE_IDLE_TIME.equals(name))
+         searchIndex.setVolatileIdleTime(Integer.parseInt(value));
+      else if (QueryHandlerParams.PARAM_ANALYZER_CLASS.equals(name))
+      {
+         searchIndex.setAnalyzer(value);
+      }
+      // else if (QueryHandlerParams.PARAM_UPGRADE_INDEX.equals(name))
+      // searchIndex.i
 
-    }
+   }
 }

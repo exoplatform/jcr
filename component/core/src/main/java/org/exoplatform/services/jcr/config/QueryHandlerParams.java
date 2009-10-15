@@ -97,4 +97,6 @@ public interface QueryHandlerParams
 
    public static final String PARAM_UPGRADE_INDEX = "upgrade-index";
 
+   public static final String PARAM_ANALYZER_CLASS = "analyzer";
+
 }
