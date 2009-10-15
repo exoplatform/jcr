@@ -173,7 +173,7 @@ public class VersionHistoryImporter
       // remove version history
       dataKeeper.save(changesLog);
       // import new version history
-      userSession.importXML(path, versionHistoryStream, 0);
+      userSession.getWorkspace().importXML(path, versionHistoryStream, 0);
       userSession.save();
    }
 
