@@ -18,6 +18,16 @@
  */
 package org.exoplatform.services.jcr.impl.value;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FilenameFilter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import javax.jcr.Node;
+
 import org.exoplatform.services.jcr.BaseStandaloneTest;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
@@ -29,13 +39,6 @@ import org.exoplatform.services.jcr.dataflow.serialization.ObjectWriter;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectWriterImpl;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.TransactionChangesLogWriter;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FilenameFilter;
-
-import javax.jcr.Node;
 
 /**
  * Created by The eXo Platform SAS.
@@ -94,27 +97,27 @@ public class TestTransientValueDataSpooling extends BaseStandaloneTest implement
    {
       File tmpFile = createBLOBTempFile(250);
 
-      int countBefore = tmpdir.list(new FilenameFilter()
+      String[] countBefore = tmpdir.list(new FilenameFilter()
       {
          public boolean accept(File dir, String name)
          {
             return name.startsWith("jcrvd");
          }
-      }).length;
+      });
 
       NodeImpl node = (NodeImpl)root.addNode("testNode");
       node.setProperty("testProp", new FileInputStream(tmpFile));
       root.save();
 
-      int countAfter = tmpdir.list(new FilenameFilter()
+      String[] countAfter = tmpdir.list(new FilenameFilter()
       {
          public boolean accept(File dir, String name)
          {
             return name.startsWith("jcrvd");
          }
-      }).length;
+      });
 
-      assertEquals(countBefore + (haveValueStorage ? 0 : 1), countAfter);
+      assertFalse(isSpooling(countBefore, countAfter));
    }
 
    /**
@@ -127,28 +130,28 @@ public class TestTransientValueDataSpooling extends BaseStandaloneTest implement
    {
       File tmpFile = createBLOBTempFile(250);
 
-      int countBefore = tmpdir.list(new FilenameFilter()
+      String[] countBefore = tmpdir.list(new FilenameFilter()
       {
          public boolean accept(File dir, String name)
          {
             return name.startsWith("jcrvd");
          }
-      }).length;
+      });
 
       Node node = root.addNode("testNode");
       node.setProperty("testProp", new FileInputStream(tmpFile));
       node.getProperty("testProp").getStream().close();
       root.save();
 
-      int countAfter = tmpdir.list(new FilenameFilter()
+      String[] countAfter = tmpdir.list(new FilenameFilter()
       {
          public boolean accept(File dir, String name)
          {
             return name.startsWith("jcrvd");
          }
-      }).length;
+      });
 
-      assertEquals(countBefore + (haveValueStorage ? 0 : 1), countAfter);
+      assertFalse(isSpooling(countBefore, countAfter));
    }
 
    public void _testSerialization() throws Exception
@@ -179,5 +182,25 @@ public class TestTransientValueDataSpooling extends BaseStandaloneTest implement
    public void onSaveItems(ItemStateChangesLog itemStates)
    {
       cLog = (TransactionChangesLog)itemStates;
+   }
+   
+   private boolean isSpooling(String[] before, String[] after) {
+    int newFilecount = 0;
+    
+    List<String> lBefore = new ArrayList<String>();
+    for (String sBefore : before)
+      lBefore.add(sBefore);
+    
+    for (String sAfter : after) {
+      if (!lBefore.contains(sAfter)) {
+        if (haveValueStorage && newFilecount == 0 || newFilecount == 0)
+          newFilecount++;
+        else
+          return true;
+      }
+        
+    }
+    
+    return false;
    }
 }
