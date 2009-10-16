@@ -91,7 +91,8 @@ public class PutCommand
             nullResourceLocks.checkLock(session, path, tokens);
          }
 
-         if (node == null || "add".equals(updatePolicyType))
+         //if (node == null || "add".equals(updatePolicyType))
+         if (node == null)
          {
 
             node = session.getRootNode().addNode(TextUtil.relativizePath(path), fileNodeType);
@@ -103,15 +104,16 @@ public class PutCommand
          {
             if ("add".equals(updatePolicyType))
             {
-               node = session.getRootNode().addNode(TextUtil.relativizePath(path), fileNodeType);
+               node = session.getRootNode().getNode(TextUtil.relativizePath(path));
                if (!node.isNodeType("mix:versionable"))
                {
+                  node = session.getRootNode().addNode(TextUtil.relativizePath(path), fileNodeType);
                   node.addNode("jcr:content", contentNodeType);
                   updateContent(node, inputStream, mimeType, encoding, mixins);
                }
                else
                {
-                  updateVersion(node, inputStream, mimeType, autoVersion, encoding, mixins);
+                  updateVersion(node, inputStream, mimeType, encoding, autoVersion, mixins);
                }
 
             }
@@ -127,7 +129,7 @@ public class PutCommand
                }
                else
                {
-                  updateVersion(node, inputStream, mimeType, autoVersion, encoding, mixins);
+                  updateVersion(node, inputStream, mimeType, encoding, autoVersion, mixins);
                }
             }
          }
