@@ -38,7 +38,6 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
-
 import org.exoplatform.services.jcr.impl.core.nodetype.registration.NodeDefinitionComparator;
 import org.exoplatform.services.jcr.impl.core.nodetype.registration.NodeTypeConverter;
 import org.exoplatform.services.jcr.impl.core.nodetype.registration.NodeTypeDataPersister;
@@ -112,7 +111,8 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
 
    public NodeTypeDataManagerImpl(final RepositoryEntry config, final LocationFactory locationFactory,
       final NamespaceRegistry namespaceRegistry, final NodeTypeDataPersister persister,
-      final ItemDataConsumer dataManager, final RepositoryIndexSearcherHolder indexSearcherHolder) throws RepositoryException
+      final ItemDataConsumer dataManager, final RepositoryIndexSearcherHolder indexSearcherHolder)
+      throws RepositoryException
    {
 
       this.namespaceRegistry = namespaceRegistry;
@@ -128,7 +128,6 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       //this.nodeTypeRepository = new PersistedNodeTypeRepository(persister);
       this.listeners = Collections.synchronizedMap(new WeakHashMap<NodeTypeManagerListener, NodeTypeManagerListener>());
       this.buildInNodeTypesNames = new HashSet<InternalQName>();
-      initDefault();
    }
 
    /**
@@ -982,6 +981,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
 
       return changesLog;
    }
+
    protected void initDefault() throws RepositoryException
    {
       long start = System.currentTimeMillis();
@@ -990,7 +990,8 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
          InputStream xml = NodeTypeManagerImpl.class.getResourceAsStream(NODETYPES_FILE);
          if (xml != null)
          {
-            List<NodeTypeData> registerNodeTypes = registerNodeTypes(xml, ExtendedNodeTypeManager.IGNORE_IF_EXISTS,TEXT_XML);
+            List<NodeTypeData> registerNodeTypes =
+               registerNodeTypes(xml, ExtendedNodeTypeManager.IGNORE_IF_EXISTS, TEXT_XML);
             for (NodeTypeData nodeTypeData : registerNodeTypes)
             {
                buildInNodeTypesNames.add(nodeTypeData.getName());

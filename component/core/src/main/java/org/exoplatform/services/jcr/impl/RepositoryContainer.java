@@ -19,8 +19,6 @@
 package org.exoplatform.services.jcr.impl;
 
 import org.exoplatform.container.ExoContainer;
-import org.exoplatform.container.component.ComponentPlugin;
-import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.jmx.MX4JComponentAdapterFactory;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
@@ -64,13 +62,10 @@ import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.io.InputStream;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 
-import javax.jcr.NamespaceException;
 import javax.jcr.NamespaceRegistry;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeTypeManager;
@@ -557,21 +552,22 @@ public class RepositoryContainer extends ExoContainer
     */
    private void load() throws RepositoryException
    {
-
-      JcrNodeTypeDataPersister nodeTypePersister =
-         (JcrNodeTypeDataPersister)this.getComponentInstanceOfType(JcrNodeTypeDataPersister.class);
+      //Namespaces first
       NamespaceDataPersister namespacePersister =
          (NamespaceDataPersister)this.getComponentInstanceOfType(NamespaceDataPersister.class);
-
-      // Load from persistence
-      nodeTypePersister.start();
-      namespacePersister.start();
-
       NamespaceRegistryImpl nsRegistry = (NamespaceRegistryImpl)getNamespaceRegistry();
+
+      namespacePersister.start();
+      nsRegistry.start();
+
+      //Node types now.
+      JcrNodeTypeDataPersister nodeTypePersister =
+         (JcrNodeTypeDataPersister)this.getComponentInstanceOfType(JcrNodeTypeDataPersister.class);
+
       NodeTypeDataManagerImpl ntManager =
          (NodeTypeDataManagerImpl)this.getComponentInstanceOfType(NodeTypeDataManagerImpl.class);
-      // initialize internal components.
-      nsRegistry.start();
+
+      nodeTypePersister.start();
       ntManager.start();
 
    }
