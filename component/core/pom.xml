@@ -365,6 +365,8 @@
                      </includes>
                      <excludes>
                         <exclude>**/TestQueryUsecases.java</exclude>
+                        <exclude>**/SpellCheckerTest.java</exclude>
+                        <exclude>**/TestSimilarity.java</exclude>
                         <exclude>**/TestImport.java</exclude>
                         <exclude>**/TestRollbackBigFiles.java</exclude>
                         <exclude>**/TestErrorMultithreading.java</exclude>
@@ -600,7 +602,8 @@
                               <include>org/exoplatform/services/jcr/integration/PrepareTestRepository.java</include>
                            </includes>
                         </configuration>
-                     </execution-->
+                     </execution
+-->
                      <execution>
                         <id>execution4 - pause 10 sec</id>
                         <phase>test</phase>

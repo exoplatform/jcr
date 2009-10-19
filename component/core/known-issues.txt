@@ -1,0 +1,6 @@
+
+// https://jira.jboss.org/jira/browse/EXOJCR-193 
+org.exoplatform.services.jcr.impl.core.query.TestSimilarity.java
+
+//https://jira.jboss.org/jira/browse/EXOJCR-192
+org.exoplatform.services.jcr.api.core.query.lucene.spell.SpellCheckerTest.java

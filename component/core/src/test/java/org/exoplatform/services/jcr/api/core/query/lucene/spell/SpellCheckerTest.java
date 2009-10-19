@@ -17,7 +17,11 @@
 package org.exoplatform.services.jcr.api.core.query.lucene.spell;
 
 import org.apache.jackrabbit.test.AbstractJCRTest;
+import org.exoplatform.services.jcr.impl.core.NodeImpl;
 
+import java.util.Calendar;
+
+import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 import javax.jcr.query.Query;
@@ -30,49 +34,6 @@ import javax.jcr.query.RowIterator;
  */
 public class SpellCheckerTest extends AbstractJCRTest
 {
-
-   // protected void setUp() throws Exception {
-   // super.setUp();
-   // if (repository == null) {
-   // ClassLoader cl = getClass().getClassLoader();
-   // // PropertyConfigurator.configure(cl.getResource("log4j.properties"));
-   // // InputStream in = cl.getResourceAsStream("repository.xml");
-   // // RepositoryConfig config;
-   // // try {
-   // // config = RepositoryConfig.create(in, "target/repo-home");
-   // // } finally {
-   // // in.close();
-   // // }
-   // // repository = new TransientRepository(config);
-   // //session = repository.login(new SimpleCredentials("user",
-   // "password".toCharArray()));
-   // String text = "the quick brown fox jumps over the lazy dog";
-   // session.getRootNode().setProperty("prop", text);
-   // session.save();
-   // // wait a couple of seconds, refresh interval in test config is 5 seconds
-   // try {
-   // Thread.sleep(5 * 1000);
-   // // perform a dummy check
-   // performCheck("quick", "quick");
-   // // wait again because refresh is done asynchronous
-   // Thread.sleep(1 * 1000);
-   // } catch (InterruptedException e) {
-   // // ignore
-   // }
-   // }
-   // if (session == null) {
-   // session = repository.login(new SimpleCredentials("user",
-   // "password".toCharArray()));
-   // }
-   // }
-   //
-   // protected void tearDown() throws Exception {
-   // if (session != null) {
-   // session.logout();
-   // }
-   // session = null;
-   // super.tearDown();
-   // }
 
    public void testSpellChecker() throws RepositoryException
    {
@@ -116,6 +77,34 @@ public class SpellCheckerTest extends AbstractJCRTest
       performCheck("quik OR (-foo bar)", "quick OR (-fox bar)");
    }
 
+   public void testSpellCheckerComplexQuery2() throws RepositoryException
+   {
+
+      String text = "the quick brown fox jumps over the lazy dog";
+
+      Node doc = testRootNode.addNode("file", "nt:file");//.setProperty("prop", text);
+      NodeImpl cont = (NodeImpl)doc.addNode("jcr:content", "nt:resource");
+      cont.setProperty("jcr:mimeType", "text/plain");
+      cont.setProperty("jcr:lastModified", Calendar.getInstance());
+      cont.setProperty("jcr:data", text);
+
+      superuser.save();
+      // wait a couple of seconds, refresh interval in test config is 5 seconds
+      try
+      {
+         Thread.sleep(5 * 1000);
+         // perform a dummy check
+         performCheck("quick", "quick");
+         // wait again because refresh is done asynchronous
+         Thread.sleep(1 * 1000);
+      }
+      catch (InterruptedException e)
+      {
+         // ignore
+      }
+      performCheck("quik % # &&& AND (-foo bar)", "quick % # &&& AND (-fox bar)");
+   }
+
    public void testSpellCheckerCorrectWords() throws RepositoryException
    {
       String text = "the quick brown fox jumps over the lazy dog";
@@ -135,6 +124,44 @@ public class SpellCheckerTest extends AbstractJCRTest
          // ignore
       }
       performCheck("quick", "quick");
+   }
+
+   public void testSpellCheckerIncorrectWords() throws RepositoryException
+   {
+      String text = "the quick brown fox jumps over the lazy dog";
+      testRootNode.setProperty("prop", text);
+      superuser.save();
+      // wait a couple of seconds, refresh interval in test config is 5 seconds
+      try
+      {
+         Thread.sleep(5 * 1000);
+         // perform a dummy check
+         performCheck("quick", "quick");
+         // wait again because refresh is done asynchronous
+         Thread.sleep(1 * 1000);
+      }
+      catch (InterruptedException e)
+      {
+         // ignore
+      }
+
+      String statement = "gismeteo";
+      QueryManager qm = superuser.getWorkspace().getQueryManager();
+      Query query = qm.createQuery("/jcr:root[rep:spellcheck('" + statement + "')]/(rep:spellcheck())", Query.XPATH);
+      RowIterator rows = query.execute().getRows();
+      assertEquals("no results returned", 1, rows.getSize());
+      Row r = rows.nextRow();
+      Value v = r.getValue("rep:spellcheck()");
+      assertNull("must not return a suggestion", v);
+
+      query =
+         qm.createQuery("select rep:spellcheck() from nt:base where " + "jcr:path = '/' and spellcheck('" + statement
+            + "')", Query.SQL);
+      rows = query.execute().getRows();
+      assertEquals("no results returned", 1, rows.getSize());
+      r = rows.nextRow();
+      v = r.getValue("rep:spellcheck()");
+      assertNull("must not return a suggestion", v);
    }
 
    protected void performCheck(String statement, String expected) throws RepositoryException
