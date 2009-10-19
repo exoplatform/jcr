@@ -189,85 +189,85 @@
          <groupId>postgresql</groupId>
          <artifactId>postgresql</artifactId>
          <version>8.2-504.jdbc3</version>
-         <scope>compile</scope>
+         <scope>test</scope>
       </dependency>
 
       <!-- For Oracle 10g support (local-jcr repository) -->
-      <dependency>
+      <!-- dependency>
          <groupId>ojdbc</groupId>
          <artifactId>ojdbc</artifactId>
          <version>14</version>
-         <scope>compile</scope>
+         <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>ojdbc</groupId>
          <artifactId>orai18n</artifactId>
          <version>14</version>
-         <scope>compile</scope>
-      </dependency>
+         <scope>test</scope>
+      </dependency -->
 
       <!-- For IBM DB2 support (local-jcr repository) -->
-      <dependency>
+      <!-- dependency>
          <groupId>com.ibm.db2</groupId>
          <artifactId>db2jcc</artifactId>
          <version>9.1</version>
-         <scope>compile</scope>
+         <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>com.ibm.db2</groupId>
          <artifactId>db2jcc_license_cu</artifactId>
          <version>9.1</version>
-         <scope>compile</scope>
-      </dependency>
+         <scope>test</scope>
+      </dependency -->
 
       <!-- For MS SQL 7/2000/2005 and Sybase ASE/Anywhere support (jTDS driver) -->
       <dependency>
          <groupId>net.sourceforge.jtds</groupId>
          <artifactId>jtds</artifactId>
          <version>1.2</version>
-         <scope>compile</scope>
+         <scope>test</scope>
       </dependency>
 
       <!-- For MS SQL 2005 support (Microsoft JDBC driver) (local-jcr repository) -->
-      <dependency>
+      <!-- dependency>
          <groupId>com.microsoft.sqlserver</groupId>
          <artifactId>sqljdbc</artifactId>
          <version>9.0</version>
-         <scope>compile</scope>
-      </dependency>
-
-      <!-- For Sybase ASE/Anywhere support (jConnect driver) (local-jcr repository) -->
-      <dependency>
-         <groupId>com.sybase.jdbc3.jdbc</groupId>
-         <artifactId>jconn3</artifactId>
-         <version>6.05</version>
-         <scope>compile</scope>
-      </dependency>
+         <scope>test</scope>
+      </dependency -->
 
       <!-- For Apache Derby support (aka JavaDB) -->
       <dependency>
          <groupId>org.apache.derby</groupId>
          <artifactId>derby</artifactId>
          <version>10.2.2.0</version>
-         <scope>compile</scope>
-      </dependency>
-
-      <!-- Ingres Database (local repository) -->
-      <dependency>
-         <groupId>com.ingres.jdbc</groupId>
-         <artifactId>iijdbc</artifactId>
-         <version>9.2</version>
          <scope>test</scope>
       </dependency>
 
       <!-- H2 Database -->
-      <dependency>
+      <!-- dependency>
          <groupId>com.h2database</groupId>
          <artifactId>h2</artifactId>
          <version>1.0.74</version>
-         <scope>compile</scope>
-      </dependency>
+         <scope>test</scope>
+      </dependency -->
 
+      <!-- Ingres Database (local repository) -->
+      <!-- dependency>
+         <groupId>com.ingres.jdbc</groupId>
+         <artifactId>iijdbc</artifactId>
+         <version>9.2</version>
+         <scope>test</scope>
+      </dependency -->
+
+      <!-- For Sybase ASE/Anywhere support (jConnect driver) (local-jcr repository) -->
+      <!-- dependency>
+         <groupId>com.sybase.jdbc3.jdbc</groupId>
+         <artifactId>jconn3</artifactId>
+         <version>6.05</version>
+         <scope>test</scope>
+      </dependency -->
+      
       <!-- ======================================================================= -->
    </dependencies>
 
@@ -365,8 +365,6 @@
                      </includes>
                      <excludes>
                         <exclude>**/TestQueryUsecases.java</exclude>
-                        <exclude>**/SpellCheckerTest.java</exclude>
-                        <exclude>**/TestSimilarity.java</exclude>
                         <exclude>**/TestImport.java</exclude>
                         <exclude>**/TestRollbackBigFiles.java</exclude>
                         <exclude>**/TestErrorMultithreading.java</exclude>
@@ -532,7 +530,7 @@
       </profile>
       <!-- Use "mvn -Prun-its" to launch them -->
       <profile>
-         <id>run-its</id>
+         <id>run-tck</id>
          <dependencies>
             <!-- TCK binaries and deps for repo stub, some eXo API test -->
             <dependency>
@@ -602,9 +600,7 @@
                               <include>org/exoplatform/services/jcr/integration/PrepareTestRepository.java</include>
                            </includes>
                         </configuration>
-                     </execution
--->
-                     <execution>
+                     </execution>                     <execution>
                         <id>execution4 - pause 10 sec</id>
                         <phase>test</phase>
                         <goals>
@@ -615,7 +611,7 @@
                               <include>**/util/Sleeping10Seconds.java</include>
                            </includes>
                         </configuration>
-                     </execution>
+                     </execution -->
                      <execution>
                         <id>execution5 - integration tests (TCK)</id>
                         <phase>test</phase>
