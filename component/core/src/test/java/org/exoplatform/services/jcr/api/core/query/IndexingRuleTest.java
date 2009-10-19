@@ -83,9 +83,12 @@ public class IndexingRuleTest extends AbstractIndexingTest
       Node node2 = testRootNode.addNode(nodeName2, NT_UNSTRUCTURED);
       node2.setProperty("rule", "nsiFalse");
       node2.setProperty("text", TEXT);
+      Node node3 = testRootNode.addNode(nodeName3, NT_UNSTRUCTURED);
+      node3.setProperty("text", TEXT);
+
       testRootNode.save();
       String stmt = "/jcr:root" + testRootNode.getPath() + "/*[jcr:contains(., 'quick')]";
-      checkResult(executeQuery(stmt), new Node[]{node1});
+      checkResult(executeQuery(stmt), new Node[]{node1, node3});
    }
 
    public void testNodeType() throws RepositoryException
@@ -104,23 +107,22 @@ public class IndexingRuleTest extends AbstractIndexingTest
    {
       Node node = testRootNode.addNode(nodeName1, NT_UNSTRUCTURED);
       node.setProperty("rule", "excerpt");
-      node.setProperty("title", "Apache Jackrabbit");
-      node.setProperty("text", "Jackrabbit is a JCR implementation");
+      node.setProperty("title", "eXo Platform");
+      node.setProperty("text", "eXo is a JCR implementation");
       testRootNode.save();
-      String stmt =
-         "/jcr:root" + testRootNode.getPath() + "/*[jcr:contains(., 'jackrabbit implementation')]/rep:excerpt(.)";
+      String stmt = "/jcr:root" + testRootNode.getPath() + "/*[jcr:contains(., 'eXo implementation')]/rep:excerpt(.)";
       RowIterator rows = executeQuery(stmt).getRows();
       assertTrue("No results returned", rows.hasNext());
       Value excerpt = rows.nextRow().getValue("rep:excerpt(.)");
       assertNotNull("No excerpt created", excerpt);
-      assertTrue("Title must not be present in excerpt", excerpt.getString().indexOf("Apache") == -1);
+      assertTrue("Title must not be present in excerpt", excerpt.getString().indexOf("Platform") == -1);
       assertTrue("Missing highlight", excerpt.getString().indexOf("<strong>implementation</strong>") != -1);
 
-      stmt = "/jcr:root" + testRootNode.getPath() + "/*[jcr:contains(., 'apache')]/rep:excerpt(.)";
+      stmt = "/jcr:root" + testRootNode.getPath() + "/*[jcr:contains(., 'eXo implementation')]/rep:excerpt(.)";
       rows = executeQuery(stmt).getRows();
       assertTrue("No results returned", rows.hasNext());
       excerpt = rows.nextRow().getValue("rep:excerpt(.)");
       assertNotNull("No excerpt created", excerpt);
-      assertTrue("Title must not be present in excerpt", excerpt.getString().indexOf("Apache") == -1);
+      assertTrue("Title must not be present in excerpt", excerpt.getString().indexOf("Platform") == -1);
    }
 }

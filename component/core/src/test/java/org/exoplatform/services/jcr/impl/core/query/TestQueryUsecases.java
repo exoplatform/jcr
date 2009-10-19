@@ -21,9 +21,11 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import javax.jcr.Node;
@@ -420,6 +422,100 @@ public class TestQueryUsecases extends BaseQueryTest
       long xpathsize = xres.getNodes().getSize();
       assertEquals(2, xpathsize);
       checkResult(xres, new Node[]{doc2, doc3});
+   }
+
+   public void testUPPERConstraint() throws Exception
+   {
+      root.addNode("simplenode", "nt:unstructured");
+
+      Node doc1 = root.addNode("document1", "nt:unstructured");
+      doc1.addMixin("mix:title");
+      doc1.setProperty("jcr:title", "CaseSensitive");
+
+      Node doc2 = root.addNode("document2", "nt:unstructured");
+      doc2.addMixin("mix:title");
+      doc2.setProperty("jcr:title", "casesensitive");
+
+      Node doc3 = root.addNode("document3", "nt:unstructured");
+      doc3.addMixin("mix:title");
+      doc3.setProperty("jcr:title", "caseSENSITIVE");
+      session.save();
+
+      // make SQL query
+      QueryManager qman = this.workspace.getQueryManager();
+
+      Query q = qman.createQuery("SELECT * FROM mix:title WHERE UPPER(jcr:title) = 'CASESENSITIVE'", Query.SQL);
+      QueryResult res = q.execute();
+      long sqlsize = res.getNodes().getSize();
+      assertEquals(3, sqlsize);
+      checkResult(res, new Node[]{doc1, doc2, doc3});
+
+      q = qman.createQuery("SELECT * FROM mix:title WHERE LOWER(jcr:title) = 'casesensitive'", Query.SQL);
+      res = q.execute();
+      sqlsize = res.getNodes().getSize();
+      assertEquals(3, sqlsize);
+      checkResult(res, new Node[]{doc1, doc2, doc3});
+
+      //make XPath query
+      Query xq = qman.createQuery("//element(*,mix:title)[fn:upper-case(@jcr:title)='CASESENSITIVE']", Query.XPATH);
+      QueryResult xres = xq.execute();
+      long xpathsize = xres.getNodes().getSize();
+      assertEquals(3, xpathsize);
+      checkResult(xres, new Node[]{doc1, doc2, doc3});
+
+      xq = qman.createQuery("//element(*,mix:title)[fn:lower-case(@jcr:title)='casesensitive']", Query.XPATH);
+      xres = xq.execute();
+      xpathsize = xres.getNodes().getSize();
+      assertEquals(3, xpathsize);
+      checkResult(xres, new Node[]{doc1, doc2, doc3});
+   }
+
+   /**
+    * Find all mix:title nodes which title begins from 'P' symbol.
+    * 
+    * @throws Exception
+    */
+   public void testLikeWithEscapeSymbol() throws Exception
+   {
+      root.addNode("simplenode", "nt:unstructured");
+
+      Node doc1 = root.addNode("document1", "nt:unstructured");
+      doc1.addMixin("mix:title");
+      doc1.setProperty("jcr:title", "Porison break");//setProperty("jcr:title", "Star wars");
+      doc1.setProperty("jcr:description", "Dart rules!!");
+
+      Node doc2 = root.addNode("document2", "nt:file");
+      doc2.addMixin("mix:title");
+      doc2.setProperty("jcr:title", "P%rison break");
+      doc2.setProperty("jcr:description", "Run, Forest, run ))");
+
+      NodeImpl cont = (NodeImpl)doc2.addNode("jcr:content", "nt:resource");
+      cont.setProperty("jcr:mimeType", "text/plain");
+      cont.setProperty("jcr:lastModified", Calendar.getInstance());
+      cont.setProperty("jcr:data", "text");
+
+      Node doc3 = root.addNode("document3", "nt:unstructured");
+      doc3.addMixin("mix:title");
+      doc3.setProperty("jcr:title", "Panopticum");
+      doc3.setProperty("jcr:description", "It's imagine film )");
+
+      session.save();
+
+      // make SQL query
+      QueryManager qman = this.workspace.getQueryManager();
+
+      Query q = qman.createQuery("SELECT * FROM mix:title WHERE jcr:title LIKE 'P#%ri%' ESCAPE '#'", Query.SQL);
+      QueryResult res = q.execute();
+      long sqlsize = res.getNodes().getSize();
+      assertEquals(1, sqlsize);
+      checkResult(res, new Node[]{doc2});
+
+      //make XPath query
+      Query xq = qman.createQuery("//element(*,mix:title)[jcr:like(@jcr:title, 'P\\%ri%')]", Query.XPATH);
+      QueryResult xres = xq.execute();
+      long xpathsize = xres.getNodes().getSize();
+      assertEquals(1, xpathsize);
+      checkResult(xres, new Node[]{doc2});
    }
 
    /**
@@ -911,8 +1007,8 @@ public class TestQueryUsecases extends BaseQueryTest
       QueryManager qman = this.workspace.getQueryManager();
 
       Query q =
-         qman.createQuery(
-            "SELECT * FROM mix:title WHERE CONTAINS(*, 'brown OR fox OR jumps') ORDER BY jcr:score() DESC", Query.SQL);
+         qman.createQuery("SELECT * FROM mix:title WHERE CONTAINS(*, 'brown OR fox OR jumps') ORDER BY SCORE ASC",
+            Query.SQL);
       QueryResult res = q.execute();
       long sqlsize = res.getNodes().getSize();
       assertEquals(3, sqlsize);
@@ -921,7 +1017,7 @@ public class TestQueryUsecases extends BaseQueryTest
       //make XPath query
       Query xq =
          qman.createQuery(
-            "//element(*,mix:title)[jcr:contains(., 'brown OR fox OR jumps')] order by jcr:score() descending",
+            "//element(*,mix:title)[jcr:contains(., 'brown OR fox OR jumps')] order by jcr:score() ascending",
             Query.XPATH);
       QueryResult xres = xq.execute();
       long xpathsize = xres.getNodes().getSize();
@@ -1006,6 +1102,77 @@ public class TestQueryUsecases extends BaseQueryTest
       checkOrder(res, new Node[]{doc3, doc1, doc2});
    }
 
+   public void testSearchByName() throws Exception
+   {
+      Node doc1 = root.addNode("document1", "nt:file");
+      NodeImpl cont1 = (NodeImpl)doc1.addNode("jcr:content", "nt:resource");
+      cont1.setProperty("jcr:mimeType", "text/plain");
+      cont1.setProperty("jcr:lastModified", Calendar.getInstance());
+      cont1.setProperty("jcr:data", "The quick brown fox jump over the lazy dog");
+      session.save();
+
+      Node doc2 = root.addNode("document2", "nt:file");
+      NodeImpl cont2 = (NodeImpl)doc2.addNode("jcr:content", "nt:resource");
+      cont2.setProperty("jcr:mimeType", "text/plain");
+      cont2.setProperty("jcr:lastModified", Calendar.getInstance());
+      cont2.setProperty("jcr:data", "Dogs do not like cats.");
+
+      Node doc3 = root.addNode("document1", "nt:file");
+      NodeImpl cont3 = (NodeImpl)doc3.addNode("jcr:content", "nt:resource");
+      cont3.setProperty("jcr:mimeType", "text/plain");
+      cont3.setProperty("jcr:lastModified", Calendar.getInstance());
+      cont3.setProperty("jcr:data", "Cats jumping high.");
+      session.save();
+
+      // make SQL query
+      QueryManager qman = this.workspace.getQueryManager();
+
+      Query q = qman.createQuery("SELECT * FROM nt:file WHERE fn:name() = 'document1'", Query.SQL);
+      QueryResult res = q.execute();
+      long sqlsize = res.getNodes().getSize();
+      assertEquals(2, sqlsize);
+      checkResult(res, new Node[]{doc1, doc3});
+
+      //make XPath query
+      Query xq = qman.createQuery("//element(*,nt:file)[fn:name() = 'document1']", Query.XPATH);
+      QueryResult xres = xq.execute();
+      long xpathsize = xres.getNodes().getSize();
+      assertEquals(2, xpathsize);
+      checkResult(xres, new Node[]{doc1, doc3});
+   }
+
+   public void testMultivalueProperty() throws Exception
+   {
+      Node doc1 = root.addNode("node1", "nt:unstructured");
+      doc1.setProperty("multiprop", new String[]{"one", "two"});
+
+      Node doc2 = root.addNode("node2", "nt:unstructured");
+      doc2.setProperty("multiprop", new String[]{"one", "two", "three"});
+
+      Node doc3 = root.addNode("node3", "nt:unstructured");
+      doc3.setProperty("multiprop", new String[]{"one", "five"});
+      session.save();
+
+      // make SQL query
+      QueryManager qman = this.workspace.getQueryManager();
+
+      Query q =
+         qman.createQuery("SELECT * FROM nt:unstructured WHERE multiprop = 'one' AND multiprop = 'two'", Query.SQL);
+      QueryResult res = q.execute();
+      long sqlsize = res.getNodes().getSize();
+      assertEquals(2, sqlsize);
+      checkResult(res, new Node[]{doc1, doc2});
+
+      //make XPath query
+      Query xq =
+         qman.createQuery("//element(*,nt:unstructured)[@multiprop = 'one' and @multiprop = 'two']", Query.XPATH);
+      QueryResult xres = xq.execute();
+      long xpathsize = xres.getNodes().getSize();
+      assertEquals(2, xpathsize);
+      checkResult(xres, new Node[]{doc1, doc2});
+
+   }
+
    /**
     * Checks if the result set contains exactly the <code>nodes</code>.
     * 
@@ -1050,6 +1217,14 @@ public class TestQueryUsecases extends BaseQueryTest
    {
       NodeIterator ni = res.getNodes();
 
+      List<String> list = new ArrayList<String>();
+
+      while (ni.hasNext())
+      {
+         list.add(ni.nextNode().getPath());
+      }
+
+      ni = res.getNodes();
       for (int i = 0; i < expectedNodes.length; i++)
       {
          Node expNode = expectedNodes[i];
