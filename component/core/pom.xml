@@ -18,6 +18,7 @@
     02110-1301 USA, or see the FSF site: http://www.fsf.org.
 
 -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
    <modelVersion>4.0.0</modelVersion>
@@ -113,29 +114,18 @@
          <groupId>commons-dbcp</groupId>
          <artifactId>commons-dbcp</artifactId>
          <exclusions>
-                    <exclusion>
-                        <groupId>xerces</groupId>
-                        <artifactId>xercesImpl</artifactId>
-                    </exclusion>
+            <exclusion>
+               <groupId>xerces</groupId>
+               <artifactId>xercesImpl</artifactId>
+            </exclusion>
          </exclusions>
       </dependency>
 
       <!-- JOTM comes from exo.kernel.component.common -->
-      <!-- dependency>
-         <groupId>jotm</groupId>
-         <artifactId>jotm</artifactId>
-         <scope>compile</scope>
-         <exclusions>
-            <exclusion>
-               <groupId>javax.resource</groupId>
-               <artifactId>connector</artifactId>
-            </exclusion>
-            <exclusion>
-               <groupId>log4j</groupId>
-               <artifactId>log4j</artifactId>
-            </exclusion>
-         </exclusions>
-      </dependency -->
+      <!--
+         dependency> <groupId>jotm</groupId> <artifactId>jotm</artifactId> <scope>compile</scope> <exclusions> <exclusion> <groupId>javax.resource</groupId> <artifactId>connector</artifactId>
+         </exclusion> <exclusion> <groupId>log4j</groupId> <artifactId>log4j</artifactId> </exclusion> </exclusions> </dependency
+      -->
 
       <dependency>
          <groupId>javax.resource</groupId>
@@ -177,25 +167,6 @@
          </exclusions>
       </dependency>
 
-      <!-- TCK binaries and deps for repo stub, some eXo API test -->
-      <dependency>
-         <groupId>org.apache.jackrabbit</groupId>
-         <artifactId>jackrabbit-jcr-tests</artifactId>
-         <exclusions>
-            <exclusion>
-               <groupId>org.slf4j</groupId>
-               <artifactId>slf4j-api</artifactId>
-            </exclusion>
-         </exclusions>
-         <scope>test</scope>
-      </dependency>
-
-      <!-- slf4j-log4j12 for TCK sources -->
-      <dependency>
-         <groupId>org.slf4j</groupId>
-         <artifactId>slf4j-log4j12</artifactId>
-         <scope>test</scope>
-      </dependency>
 
       <!-- ===== Databases JDBC support for tests ===== -->
 
@@ -214,40 +185,21 @@
       </dependency -->
 
       <!-- For PostgresSQL support -->
-      <!-- dependency>
-         <groupId>postgresql</groupId>
-         <artifactId>postgresql</artifactId>
-         <version>8.2-504.jdbc3</version>
-         <scope>compile</scope>
-      </dependency -->
+      <!--
+         dependency> <groupId>postgresql</groupId> <artifactId>postgresql</artifactId> <version>8.2-504.jdbc3</version> <scope>compile</scope> </dependency
+      -->
 
       <!-- For Oracle 10g support (local-jcr repository) -->
-      <!-- dependency>
-         <groupId>ojdbc</groupId>
-         <artifactId>ojdbc</artifactId>
-         <version>14</version>
-         <scope>compile</scope>
-      </dependency>
-      <dependency>
-         <groupId>ojdbc</groupId>
-         <artifactId>orai18n</artifactId>
-         <version>14</version>
-         <scope>compile</scope>
-      </dependency -->
+      <!--
+         dependency> <groupId>ojdbc</groupId> <artifactId>ojdbc</artifactId> <version>14</version> <scope>compile</scope> </dependency> <dependency> <groupId>ojdbc</groupId>
+         <artifactId>orai18n</artifactId> <version>14</version> <scope>compile</scope> </dependency
+      -->
 
       <!-- For IBM DB2 support (local-jcr repository) -->
-      <!-- dependency>
-         <groupId>com.ibm.db2</groupId>
-         <artifactId>db2jcc</artifactId>
-         <version>9.1</version>
-         <scope>compile</scope>
-      </dependency>
-      <dependency>
-         <groupId>com.ibm.db2</groupId>
-         <artifactId>db2jcc_license_cu</artifactId>
-         <version>9.1</version>
-         <scope>compile</scope>
-      </dependency -->
+      <!--
+         dependency> <groupId>com.ibm.db2</groupId> <artifactId>db2jcc</artifactId> <version>9.1</version> <scope>compile</scope> </dependency> <dependency> <groupId>com.ibm.db2</groupId>
+         <artifactId>db2jcc_license_cu</artifactId> <version>9.1</version> <scope>compile</scope> </dependency
+      -->
 
       <!-- For MS SQL 7/2000/2005 and Sybase ASE/Anywhere support (jTDS driver) -->
       <!-- dependency>
@@ -258,12 +210,9 @@
       </dependency -->
 
       <!-- For MS SQL 2005 support (Microsoft JDBC driver) (local-jcr repository) -->
-      <!-- dependency>
-         <groupId>com.microsoft.sqlserver</groupId>
-         <artifactId>sqljdbc</artifactId>
-         <version>9.0</version>
-         <scope>compile</scope>
-      </dependency -->
+      <!--
+         dependency> <groupId>com.microsoft.sqlserver</groupId> <artifactId>sqljdbc</artifactId> <version>9.0</version> <scope>compile</scope> </dependency
+      -->
 
       <!-- For Sybase ASE/Anywhere support (jConnect driver) (local-jcr repository) -->
       <!-- dependency>
@@ -353,20 +302,14 @@
                <include>**/*.dtd</include>
             </includes>
          </testResource>
-         <testResource>
-            <directory>src/TCK/java</directory>
-            <includes>
-               <include>**/org/apache/jackrabbit/test/api/nodetype/spec/*.txt</include>
-            </includes>
-         </testResource>
       </testResources>
 
       <plugins>
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
-            <!-- normal mode: mvn -Dmaven.test.skip=false -Dexo.tck.skip=false clean install -->
-            <!-- debug  mode: mvn -Dmaven.test.skip=false -Dexo.tck.skip=false -DforkMode=never clean install -->
+            <!-- normal mode: mvn -Dmaven.test.skip=false clean install -->
+            <!-- debug  mode: mvn -Dmaven.test.skip=false -DforkMode=never clean install -->
             <!-- forking: to run both eXo test and TCK use forkMode=once, to run one of them (only) in Eclipse debug use forkMode=never -->
             <configuration>
                <skip>true</skip>
@@ -379,7 +322,6 @@
                      <goal>test</goal>
                   </goals>
                   <configuration>
-                     <skip>${exo.devtest.skip}</skip>
                      <systemProperties>
                         <property>
                            <name>jcr.test.configuration.file</name>
@@ -400,7 +342,6 @@
                      <goal>test</goal>
                   </goals>
                   <configuration>
-                     <skip>${exo.test.skip}</skip>
                      <argLine>-Xmx512M</argLine>
                      <systemProperties>
                         <property>
@@ -418,129 +359,29 @@
                         <include>**/usecases/**/*Test.java</include>
                         <include>**/impl/**/Test*.java</include>
                      </includes>
-               <excludes>
-                  <exclude>**/TestQueryUsecases.java</exclude>
-                  <exclude>**/TestImport.java</exclude>
-                  <exclude>**/TestRollbackBigFiles.java</exclude>
-                  <exclude>**/TestErrorMultithreading.java</exclude>
-                  <exclude>**/api/**/TestSameNameItems.java</exclude>
-                  <exclude>**/api/**/TestVersionRestore.java</exclude>
-                  <exclude>**/impl/**/TestWorkspaceManagement.java</exclude>
-                  <exclude>**/impl/**/TestRepositoryManagement.java</exclude>
-                  <exclude>**/impl/**/TestSaveConfiguration.java</exclude>
-                  <exclude>**/impl/**/ValueStoragePluginTest.java</exclude>
-                  <exclude>**/impl/**/TestWorkspaceRestore.java</exclude>
-                  <exclude>**/impl/**/TestSessionCleaner.java</exclude>
-                  <exclude>**/impl/**/Base*.java</exclude>
-                  <exclude>**/impl/**/TestJCRSerializationStream.java</exclude>
-                  <exclude>**/impl/**/TestJCRSerializationVersionRestore.java</exclude>
-                  <exclude>**/api/TestAll.java</exclude>
-                  <exclude>**/usecases/**/RemoveSameNameSiblingTest.java</exclude>
-                  <exclude>**/usecases/**/TestQueryWithNumberAndSpace.java</exclude>
-                  <exclude>**/usecases/BaseUsecasesTest.java</exclude>
-                  <exclude>**/apache/**</exclude>
-                  <exclude>**/api/**/TestSameNameItems.java</exclude>
-                  <exclude>**/api/**/TestVersionRestore.java</exclude>
-               </excludes>
-                  </configuration>
-               </execution>
-               <!-- execution>
-                  <id>execution2 - pause 10 sec</id>
-                  <phase>test</phase>
-                  <goals>
-                     <goal>test</goal>
-                  </goals>
-                  <configuration>
-                     <skip>${exo.tck.skip}</skip>
-                     <includes>
-                        <include>**/util/Sleeping10Seconds.java</include>
-                     </includes>
-                  </configuration>
-               </execution>
-               <execution>
-                  <id>execution3 - TCK init section</id>
-                  <phase>test</phase>
-                  <goals>
-                     <goal>test</goal>
-                  </goals>
-                  <configuration>
-                     <skip>${exo.tck.skip}</skip>
-                     <argLine>-Xmx512M</argLine>
-                     <systemProperties>
-                        <property>
-                           <name>jcr.test.configuration.file</name>
-                           <value>${jcr.test.configuration.file}</value>
-                        </property>
-                     </systemProperties>
-                     <includes>
-                        <include>org/exoplatform/services/jcr/integration/PrepareTestRepository.java</include>
-                     </includes>
-                  </configuration>
-               </execution -->
-               <execution>
-                  <id>execution4 - pause 10 sec</id>
-                  <phase>test</phase>
-                  <goals>
-                     <goal>test</goal>
-                  </goals>
-                  <configuration>
-                     <skip>${exo.tck.skip}</skip>
-                     <includes>
-                        <include>**/util/Sleeping10Seconds.java</include>
-                     </includes>
-                  </configuration>
-               </execution>
-               <execution>
-                  <id>execution5 - integration tests (TCK)</id>
-                  <phase>test</phase>
-                  <goals>
-                     <goal>test</goal>
-                  </goals>
-                  <configuration>
-                     <skip>${exo.tck.skip}</skip>
-                     <argLine>-Xmx512M</argLine>
-                     <systemProperties>
-                        <property>
-                           <name>jcr.test.configuration.file</name>
-                           <value>${jcr.test.configuration.file}</value>
-                        </property>
-                        <property>
-                           <name>emma.coverage.out.file</name>
-                           <value>target/emma/coverage.ec</value>
-                        </property>
-                        <property>
-                           <name>known.issues</name>
-                           <value>
-                              org.apache.jackrabbit.test.api.SetValueConstraintViolationExceptionTest#testBooleanProperty
-                              org.apache.jackrabbit.test.api.SetValueConstraintViolationExceptionTest#testMultipleBooleanProperty
-                              org.apache.jackrabbit.test.api.version.RestoreTest#testRestoreName
-                              org.apache.jackrabbit.test.api.version.RestoreTest#testRestoreOrder
-                              org.apache.jackrabbit.test.api.version.RestoreTest#testRestoreOrder2
-                              org.apache.jackrabbit.test.api.nodetype.PropertyDefTest#testIsRequiredType
-                              org.apache.jackrabbit.test.api.SetPropertyConstraintViolationExceptionTest#testBooleanProperty
-                              org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testShareable
-                              org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testSimpleVersionable
-                              org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testActivity
-                              org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testConfiguration
-                              org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testVersionable
-                              org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testVersion
-                              org.apache.jackrabbit.test.api.NamespaceRegistryTest#testRegisterNamespace
-                           </value>
-                        </property>
-                     </systemProperties>
-                     <includes>
-                        <include>**/api/*Test.java</include>
-                        <include>**/api/observation/*Test.java</include>
-                        <include>**/api/lock/*Test.java</include>
-                        <include>**/api/nodetype/*Test.java</include>
-                        <include>**/api/query/*Test.java</include>
-                        <include>**/api/version/*Test.java</include>
-                     </includes>
                      <excludes>
+                        <exclude>**/TestQueryUsecases.java</exclude>
+                        <exclude>**/TestImport.java</exclude>
+                        <exclude>**/TestRollbackBigFiles.java</exclude>
+                        <exclude>**/TestErrorMultithreading.java</exclude>
+                        <exclude>**/api/**/TestSameNameItems.java</exclude>
+                        <exclude>**/api/**/TestVersionRestore.java</exclude>
+                        <exclude>**/impl/**/TestWorkspaceManagement.java</exclude>
+                        <exclude>**/impl/**/TestRepositoryManagement.java</exclude>
+                        <exclude>**/impl/**/TestSaveConfiguration.java</exclude>
+                        <exclude>**/impl/**/ValueStoragePluginTest.java</exclude>
+                        <exclude>**/impl/**/TestWorkspaceRestore.java</exclude>
+                        <exclude>**/impl/**/TestSessionCleaner.java</exclude>
+                        <exclude>**/impl/**/Base*.java</exclude>
+                        <exclude>**/impl/**/TestJCRSerializationStream.java</exclude>
+                        <exclude>**/impl/**/TestJCRSerializationVersionRestore.java</exclude>
                         <exclude>**/api/TestAll.java</exclude>
-                        <exclude>**/api/**/Abstract*.java</exclude>
-                        <exclude>**/api/**/FrozenNodeTest.java</exclude>
-                        <exclude>**/exoplatform/**</exclude>
+                        <exclude>**/usecases/**/RemoveSameNameSiblingTest.java</exclude>
+                        <exclude>**/usecases/**/TestQueryWithNumberAndSpace.java</exclude>
+                        <exclude>**/usecases/BaseUsecasesTest.java</exclude>
+                        <exclude>**/apache/**</exclude>
+                        <exclude>**/api/**/TestSameNameItems.java</exclude>
+                        <exclude>**/api/**/TestVersionRestore.java</exclude>
                      </excludes>
                   </configuration>
                </execution>
@@ -644,4 +485,126 @@
          </plugin>
       </plugins>
    </build>
+   <profiles>
+      <!-- ***************** -->
+      <!-- INTEGRATION TESTS -->
+      <!-- ***************** -->
+      <!-- Use "mvn -Prun-its" to launch them -->
+      <profile>
+         <id>run-its</id>
+         <dependencies>
+            <!-- TCK binaries and deps for repo stub, some eXo API test -->
+            <dependency>
+               <groupId>org.apache.jackrabbit</groupId>
+               <artifactId>jackrabbit-jcr-tests</artifactId>
+               <exclusions>
+                  <exclusion>
+                     <groupId>org.slf4j</groupId>
+                     <artifactId>slf4j-api</artifactId>
+                  </exclusion>
+               </exclusions>
+               <scope>test</scope>
+            </dependency>
+            <!-- slf4j-log4j12 for TCK sources -->
+            <dependency>
+               <groupId>org.slf4j</groupId>
+               <artifactId>slf4j-log4j12</artifactId>
+               <scope>test</scope>
+            </dependency>
+         </dependencies>
+         <build>
+            <testResources>
+               <testResource>
+                  <directory>src/TCK/java</directory>
+                  <includes>
+                     <include>**/org/apache/jackrabbit/test/api/nodetype/spec/*.txt</include>
+                  </includes>
+               </testResource>
+            </testResources>
+            <plugins>
+               <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-surefire-plugin</artifactId>
+                  <!-- normal mode: mvn -Dmaven.test.skip=false -Dexo.tck.skip=false clean install -->
+                  <!-- debug  mode: mvn -Dmaven.test.skip=false -Dexo.tck.skip=false -DforkMode=never clean install -->
+                  <!-- forking: to run both eXo test and TCK use forkMode=once, to run one of them (only) in Eclipse debug use forkMode=never -->
+                  <executions>
+                     <!--
+                        execution> <id>execution2 - pause 10 sec</id> <phase>test</phase> <goals> <goal>test</goal> </goals> <configuration> <skip>${exo.tck.skip}</skip> <includes>
+                        <include>**/util/Sleeping10Seconds.java</include> </includes> </configuration> </execution> <execution> <id>execution3 - TCK init section</id> <phase>test</phase> <goals>
+                        <goal>test</goal> </goals> <configuration> <skip>${exo.tck.skip}</skip> <argLine>-Xmx512M</argLine> <systemProperties> <property> <name>jcr.test.configuration.file</name>
+                        <value>${jcr.test.configuration.file}</value> </property> </systemProperties> <includes> <include>org/exoplatform/services/jcr/integration/PrepareTestRepository.java</include>
+                        </includes> </configuration> </execution
+                     -->
+                     <execution>
+                        <id>execution4 - pause 10 sec</id>
+                        <phase>test</phase>
+                        <goals>
+                           <goal>test</goal>
+                        </goals>
+                        <configuration>
+                           <includes>
+                              <include>**/util/Sleeping10Seconds.java</include>
+                           </includes>
+                        </configuration>
+                     </execution>
+                     <execution>
+                        <id>execution5 - integration tests (TCK)</id>
+                        <phase>test</phase>
+                        <goals>
+                           <goal>test</goal>
+                        </goals>
+                        <configuration>
+                           <argLine>-Xmx512M</argLine>
+                           <systemProperties>
+                              <property>
+                                 <name>jcr.test.configuration.file</name>
+                                 <value>${jcr.test.configuration.file}</value>
+                              </property>
+                              <property>
+                                 <name>emma.coverage.out.file</name>
+                                 <value>target/emma/coverage.ec</value>
+                              </property>
+                              <property>
+                                 <name>known.issues</name>
+                                 <value>
+                                    org.apache.jackrabbit.test.api.SetValueConstraintViolationExceptionTest#testBooleanProperty
+                                    org.apache.jackrabbit.test.api.SetValueConstraintViolationExceptionTest#testMultipleBooleanProperty
+                                    org.apache.jackrabbit.test.api.version.RestoreTest#testRestoreName
+                                    org.apache.jackrabbit.test.api.version.RestoreTest#testRestoreOrder
+                                    org.apache.jackrabbit.test.api.version.RestoreTest#testRestoreOrder2
+                                    org.apache.jackrabbit.test.api.nodetype.PropertyDefTest#testIsRequiredType
+                                    org.apache.jackrabbit.test.api.SetPropertyConstraintViolationExceptionTest#testBooleanProperty
+                                    org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testShareable
+                                    org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testSimpleVersionable
+                                    org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testActivity
+                                    org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testConfiguration
+                                    org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testVersionable
+                                    org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testVersion
+                                    org.apache.jackrabbit.test.api.NamespaceRegistryTest#testRegisterNamespace
+                           </value>
+                              </property>
+                           </systemProperties>
+                           <includes>
+                              <include>**/api/*Test.java</include>
+                              <include>**/api/observation/*Test.java</include>
+                              <include>**/api/lock/*Test.java</include>
+                              <include>**/api/nodetype/*Test.java</include>
+                              <include>**/api/query/*Test.java</include>
+                              <include>**/api/version/*Test.java</include>
+                           </includes>
+                           <excludes>
+                              <exclude>**/api/TestAll.java</exclude>
+                              <exclude>**/api/**/Abstract*.java</exclude>
+                              <exclude>**/api/**/FrozenNodeTest.java</exclude>
+                              <exclude>**/exoplatform/**</exclude>
+                           </excludes>
+                        </configuration>
+                     </execution>
+                  </executions>
+               </plugin>
+            </plugins>
+         </build>
+      </profile>
+   </profiles>
 </project>
