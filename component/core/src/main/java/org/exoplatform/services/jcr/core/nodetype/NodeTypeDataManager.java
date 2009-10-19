@@ -116,15 +116,6 @@ public interface NodeTypeDataManager
    List<ItemDefinitionData> getManadatoryItemDefs(InternalQName primaryNodeType, InternalQName[] mixinTypes)
       throws RepositoryException;
 
-   //   /**
-   //    * @param nodeName
-   //    * @param nodeTypeName
-   //    * @param parentTypeName
-   //    * @return
-   //    */
-   //   NodeDefinitionData getChildNodeDefinition(InternalQName nodeName, InternalQName nodeTypeName,
-   //      InternalQName parentTypeName) throws RepositoryException;
-
    /**
     * @param typeName
     * @return

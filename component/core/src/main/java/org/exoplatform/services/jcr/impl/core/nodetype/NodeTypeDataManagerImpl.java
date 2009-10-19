@@ -125,7 +125,6 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       this.accessControlPolicy = config.getAccessControl();
 
       this.nodeTypeRepository = new InmemoryNodeTypeRepository(persister);
-      //this.nodeTypeRepository = new PersistedNodeTypeRepository(persister);
       this.listeners = Collections.synchronizedMap(new WeakHashMap<NodeTypeManagerListener, NodeTypeManagerListener>());
       this.buildInNodeTypesNames = new HashSet<InternalQName>();
    }
@@ -144,9 +143,6 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
    {
 
       this.namespaceRegistry = namespaceRegistry;
-
-      //this.persister = persister;
-
       this.locationFactory = locationFactory;
       this.dataManager = dataManager;
       this.indexSearcherHolder = indexSearcherHolder;
@@ -425,7 +421,6 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
    public boolean isChildNodePrimaryTypeAllowed(final InternalQName childNodeTypeName,
       final InternalQName parentNodeType, final InternalQName[] parentMixinNames) throws RepositoryException
    {
-      // NodeTypeData childDef = findNodeType(childNodeTypeName);
       final Set<InternalQName> testSuperTypesNames = this.nodeTypeRepository.getSupertypes(childNodeTypeName);
       NodeDefinitionData[] allChildNodeDefinitions = getAllChildNodeDefinitions(parentNodeType);
       for (final NodeDefinitionData cnd : allChildNodeDefinitions)
@@ -570,7 +565,6 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       // validate
       nodeTypeDataValidator.validateNodeType(nodeTypes);
 
-      //registerNodeType(nodeTypes, alreadyExistsBehaviour);
       nodeTypeRepository.registerNodeType(nodeTypes, this, accessControlPolicy, alreadyExistsBehaviour);
       return nodeTypes;
    }
@@ -590,7 +584,6 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       // validate
       nodeTypeDataValidator.validateNodeType(nodeTypes);
 
-      //registerNodeType(nodeTypes, alreadyExistsBehaviour);
       nodeTypeRepository.registerNodeType(nodeTypes, this, accessControlPolicy, alreadyExistsBehaviour);
 
       return nodeTypes;
@@ -698,64 +691,54 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       return changesLog;
    }
 
+   /**
+    * 
+    * @see org.picocontainer.Startable#start()
+    */
    public void start()
-
    {
       if (!started)
       {
          try
          {
-            final InputStream xml = NodeTypeManagerImpl.class.getResourceAsStream(NODETYPES_FILE);
 
-            if (xml != null)
+            // check if default node type saved
+            if (!nodeTypeRepository.isStorageFilled())
             {
+               final InputStream xml = NodeTypeManagerImpl.class.getResourceAsStream(NODETYPES_FILE);
 
-               final NodeTypeConverter nodeTypeConverter =
-                  new NodeTypeConverter(this.locationFactory, this.accessControlPolicy);
-               final NodeTypeDataValidator nodeTypeDataValidator = new NodeTypeDataValidator(this.nodeTypeRepository);
-               final NodeTypeDataPersister serializer = new XmlNodeTypeDataPersister(nodeTypeConverter, xml);
-
-               final List<NodeTypeData> defaultNodeTypes = serializer.getAllNodeTypes();
-
-               // validate
-               nodeTypeDataValidator.validateNodeType(defaultNodeTypes);
-
-               // check if default node type saved
-               if (!nodeTypeRepository.isStorageFilled())
+               if (xml != null)
                {
-
-                  //registerNodeType(defaultNodeTypes, ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
-                  nodeTypeRepository.registerNodeType(defaultNodeTypes, this, accessControlPolicy,
-                     ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
+                  List<NodeTypeData> registerNodeTypes =
+                     registerNodeTypes(xml, ExtendedNodeTypeManager.IGNORE_IF_EXISTS, TEXT_XML);
+                  for (NodeTypeData nodeTypeData : registerNodeTypes)
+                  {
+                     buildInNodeTypesNames.add(nodeTypeData.getName());
+                  }
                }
                else
                {
-                  final List<NodeTypeData> allNodeTypes = nodeTypeRepository.getAllNodeTypes();
-                  // register nodetypes in runtime
-                  final Map<InternalQName, NodeTypeData> volatileNodeTypes = new HashMap<InternalQName, NodeTypeData>();
-
-                  for (final NodeTypeData nodeTypeData : allNodeTypes)
-                  {
-                     volatileNodeTypes.put(nodeTypeData.getName(), nodeTypeData);
-                  }
-
-                  for (final NodeTypeData nodeTypeData : allNodeTypes)
-                  {
-                     this.nodeTypeRepository.addNodeType(nodeTypeData, volatileNodeTypes);
-                  }
+                  throw new RuntimeException("Resource file '" + NODETYPES_FILE
+                     + "' with NodeTypes configuration does not found. Can not create node type manager");
                }
-               // fill default node types map
-               for (final NodeTypeData nodeTypeData : defaultNodeTypes)
-               {
-                  this.buildInNodeTypesNames.add(nodeTypeData.getName());
-               }
-
             }
             else
             {
-               throw new RuntimeException("Resource file '" + NODETYPES_FILE
-                  + "' with NodeTypes configuration does not found. Can not create node type manager");
+               final List<NodeTypeData> allNodeTypes = nodeTypeRepository.getAllNodeTypes();
+               // register nodetypes in runtime
+               final Map<InternalQName, NodeTypeData> volatileNodeTypes = new HashMap<InternalQName, NodeTypeData>();
+               //create map from list
+               for (final NodeTypeData nodeTypeData : allNodeTypes)
+               {
+                  volatileNodeTypes.put(nodeTypeData.getName(), nodeTypeData);
+               }
+
+               for (final NodeTypeData nodeTypeData : allNodeTypes)
+               {
+                  this.nodeTypeRepository.addNodeType(nodeTypeData, volatileNodeTypes);
+               }
             }
+
          }
          catch (final RepositoryException e)
          {
@@ -765,6 +748,10 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       }
    }
 
+   /**
+    * 
+    * @see org.picocontainer.Startable#stop()
+    */
    public void stop()
    {
    }
@@ -980,43 +967,5 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       this.nodeTypeRepository.addNodeType(recipientDefinition, volatileNodeTypes);
 
       return changesLog;
-   }
-
-   protected void initDefault() throws RepositoryException
-   {
-      long start = System.currentTimeMillis();
-      try
-      {
-         InputStream xml = NodeTypeManagerImpl.class.getResourceAsStream(NODETYPES_FILE);
-         if (xml != null)
-         {
-            List<NodeTypeData> registerNodeTypes =
-               registerNodeTypes(xml, ExtendedNodeTypeManager.IGNORE_IF_EXISTS, TEXT_XML);
-            for (NodeTypeData nodeTypeData : registerNodeTypes)
-            {
-               buildInNodeTypesNames.add(nodeTypeData.getName());
-            }
-         }
-         else
-         {
-            String msg =
-               "Resource file '" + NODETYPES_FILE
-                  + "' with NodeTypes configuration does not found. Can not create node type manager";
-            log.error(msg);
-            throw new RepositoryException(msg);
-         }
-      }
-      catch (RepositoryException e)
-      {
-         String msg =
-            "Error of initialization default types. Resource file with NodeTypes configuration '" + NODETYPES_FILE
-               + "'. " + e;
-         log.error(msg);
-         throw new RepositoryException(msg, e);
-      }
-      finally
-      {
-         log.info("Initialization of default nodetypes done. " + (System.currentTimeMillis() - start) + " ms.");
-      }
    }
 }
