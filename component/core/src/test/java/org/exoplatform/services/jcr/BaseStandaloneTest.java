@@ -58,7 +58,7 @@ import javax.jcr.Workspace;
 public abstract class BaseStandaloneTest extends TestCase
 {
 
-   protected static org.apache.commons.logging.Log log = ExoLogger.getLogger("jcr.JCRTest");
+   protected static Log log = ExoLogger.getLogger("jcr.JCRTest");
 
    protected static String TEMP_PATH = "./temp/fsroot";
 
