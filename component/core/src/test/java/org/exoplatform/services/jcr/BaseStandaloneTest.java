@@ -58,7 +58,7 @@ import javax.jcr.Workspace;
 public abstract class BaseStandaloneTest extends TestCase
 {
 
-   protected static Log log = ExoLogger.getLogger("jcr.JCRTest");
+   protected static org.apache.commons.logging.Log log = ExoLogger.getLogger("jcr.JCRTest");
 
    protected static String TEMP_PATH = "./temp/fsroot";
 
@@ -380,7 +380,10 @@ public abstract class BaseStandaloneTest extends TestCase
       }
       tempOut.close();
       testFile.deleteOnExit(); // delete on test exit
-      log.info("Temp file created: " + testFile.getAbsolutePath() + " size: " + testFile.length());
+      if (log.isDebugEnabled())
+      {
+         log.debug("Temp file created: " + testFile.getAbsolutePath() + " size: " + testFile.length());
+      }
       return testFile;
    }
 
