@@ -291,22 +291,10 @@
    <build>
       <resources>
          <resource>
-            <directory>src/main/java</directory>
-            <includes>
-               <include>**/*.xml</include>
-               <include>**/*.properties</include>
-               <include>**/*.xsl</include>
-               <include>**/*.dtd</include>
-            </includes>
-         </resource>
-         <resource>
             <directory>src/main/resources</directory>
             <includes>
                <include>**/*.xml</include>
-               <include>**/*.properties</include>
-               <include>**/login.conf</include>
                <include>**/*.sql</include>
-               <include>**/META-INF/**/*.*</include>
                <include>**/*.dtd</include>
             </includes>
          </resource>
@@ -314,23 +302,10 @@
       
       <testResources>
          <testResource>
-            <directory>src/test/java</directory>
-            <includes>
-               <include>**/*.properties</include>
-               <include>**/*.xml</include>
-               <include>**/*.drl</include>
-               <include>**/*.vm</include>
-               <include>**/*.doc</include>
-               <include>**/*.xls</include>
-               <include>**/*.ppt</include>
-               <include>**/*.txt</include>
-               <include>**/*.dtd</include>
-            </includes>
-         </testResource>
-         <testResource>
             <directory>src/test/resources</directory>
             <includes>
                <include>**/*.properties</include>
+               <include>login.conf</include>
                <include>**/*.xml</include>
                <include>**/*.drl</include>
                <include>**/*.vm</include>
