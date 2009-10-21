@@ -26,11 +26,15 @@ import org.exoplatform.services.jcr.webdav.WebDavConstants.WebDAVMethods;
 import org.exoplatform.services.jcr.webdav.command.propfind.PropFindResponseEntity;
 import org.exoplatform.services.jcr.webdav.utils.TestUtils;
 import org.exoplatform.services.rest.impl.ContainerResponse;
+import org.exoplatform.services.rest.impl.InputHeadersMap;
+import org.exoplatform.services.rest.impl.MultivaluedMapImpl;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
 import javax.jcr.Node;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 /**
@@ -104,8 +108,10 @@ public class TestPropFind extends BaseStandaloneTest
       String file = TestUtils.getFileName();
       TestUtils.addContent(session, file, new ByteArrayInputStream(content.getBytes()), nt_webdave_file, "");
       TestUtils.addNodeProperty(session, file, authorProp, author);
+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+      headers.add(HttpHeaders.CONTENT_TYPE, "text/xml");
       ContainerResponse responseFind =
-         service(WebDAVMethods.PROPFIND, getPathWS() + file, "", null, propFindXML.getBytes());
+         service(WebDAVMethods.PROPFIND, getPathWS() + file, "", headers, propFindXML.getBytes());
       assertEquals(HTTPStatus.MULTISTATUS, responseFind.getStatus());
       ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
       PropFindResponseEntity entity = (PropFindResponseEntity)responseFind.getEntity();
