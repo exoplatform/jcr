@@ -603,7 +603,7 @@ InternalQName Identifier() :
       {
         try {
           String jcrName = t.image;
-          if (pseudoProperty) {
+          if (pseudoProperty && !jcrName.equals("jcr:score")) {
             jcrName += "()";
           }
           InternalQName internalQName = locationFactory.parseJCRName(jcrName).getInternalName();

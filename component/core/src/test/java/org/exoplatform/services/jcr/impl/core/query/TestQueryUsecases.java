@@ -1007,22 +1007,21 @@ public class TestQueryUsecases extends BaseQueryTest
       QueryManager qman = this.workspace.getQueryManager();
 
       Query q =
-         qman.createQuery("SELECT * FROM mix:title WHERE CONTAINS(*, 'brown OR fox OR jumps') ORDER BY SCORE ASC",
-            Query.SQL);
+         qman.createQuery(
+            "SELECT * FROM mix:title WHERE CONTAINS(*, 'brown OR fox OR jumps') ORDER BY jcr:score() ASC", Query.SQL);
       QueryResult res = q.execute();
       long sqlsize = res.getNodes().getSize();
       assertEquals(3, sqlsize);
-      checkOrder(res, new Node[]{doc1, doc2, doc3});
+      checkOrder(res, new Node[]{doc3, doc2, doc1});
 
       //make XPath query
       Query xq =
-         qman.createQuery(
-            "//element(*,mix:title)[jcr:contains(., 'brown OR fox OR jumps')] order by jcr:score() ascending",
+         qman.createQuery("//element(*,mix:title)[jcr:contains(., 'brown OR fox OR jumps')] order by jcr:score()",
             Query.XPATH);
       QueryResult xres = xq.execute();
       long xpathsize = xres.getNodes().getSize();
       assertEquals(3, xpathsize);
-      checkOrder(res, new Node[]{doc1, doc2, doc3});
+      checkOrder(res, new Node[]{doc3, doc2, doc1});
    }
 
    public void testOrderByLongDesc() throws Exception
