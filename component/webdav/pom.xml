@@ -72,7 +72,9 @@
                   </includes>
                   <excludes>
                      <exclude>**/TestUtils.java</exclude>
-                     <exclude>**/TestUnLock</exclude>
+                     <exclude>**/TestUtils.java</exclude>
+                     <!-- Related issue: http://jira.exoplatform.org/browse/JCR-1149 -->
+                     <exclude>**/TestEncoding.java</exclude>
                      <exclude>**/TestPropFindContent.java</exclude>
                      <exclude>**/TestPropPatchContent.java</exclude>
                   </excludes>
