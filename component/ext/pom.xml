@@ -83,42 +83,14 @@
       </dependency>
    </dependencies>
    <build>
-      <resources>
-         <resource>
-            <directory>src/main/java</directory>
-            <includes>
-               <include>**/*.xml</include>
-               <include>**/*.html</include>
-               <include>**/*.vm</include>
-               <include>**/*.css</include>
-               <include>**/*.ion</include>
-               <include>**/*.groovy</include>
-            </includes>
-         </resource>
-      </resources>
       <testResources>
          <testResource>
             <directory>src/test/resources</directory>
             <includes>
-               <include>**/*.properties</include>
-               <include>**/*.xml</include>
-               <include>**/*.drl</include>
-               <include>**/*.vm</include>
-               <include>**/*.doc</include>
-               <include>**/*.xls</include>
-               <include>**/*.ppt</include>
-               <include>**/*.txt</include>
-               <include>**/*.jar</include>
-               <include>**/*.pom</include>
-               <include>**/*.sha1</include>
-               <include>**/*.conf</include>
-               <include>**/*.groovy</include>
-            </includes>
-         </testResource>
-         <testResource>
-            <directory>src/test/java</directory>
-            <includes>
-               <include>**/*.xml</include>
+               <include>**/*.xml</include>              
+               <include>**/*.xls</include>              
+               <include>**/*.groovy</include>            
+               <include>**/login.conf</include>            
             </includes>
          </testResource>
       </testResources>

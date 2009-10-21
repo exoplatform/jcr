@@ -109,10 +109,11 @@ public abstract class BaseStandaloneTest extends TestCase
 
    public void setUp() throws Exception
    {
-      String containerConf = getClass().getResource("/conf/standalone/test-configuration.xml").toString();
+//      String containerConf = getClass().getResource("conf/standalone/test-configuration.xml").toString();
+      StandaloneContainer.addConfigurationPath("/conf/standalone/test-configuration.xml");
       String loginConf = Thread.currentThread().getContextClassLoader().getResource("login.conf").toString();
 
-      StandaloneContainer.addConfigurationURL(containerConf);
+//      StandaloneContainer.addConfigurationURL(containerConf);
       container = StandaloneContainer.getInstance();
 
       if (System.getProperty("java.security.auth.login.config") == null)
