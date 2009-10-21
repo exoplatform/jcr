@@ -109,20 +109,20 @@ public abstract class BaseStandaloneTest extends TestCase
 
    public void setUp() throws Exception
    {
-//      String containerConf = getClass().getResource("conf/standalone/test-configuration.xml").toString();
-      StandaloneContainer.addConfigurationPath("/conf/standalone/test-configuration.xml");
-      String loginConf = Thread.currentThread().getContextClassLoader().getResource("login.conf").toString();
+      String containerConf = BaseStandaloneTest.class.getResource("/conf/standalone/test-configuration.xml").toString();
 
-//      StandaloneContainer.addConfigurationURL(containerConf);
+      StandaloneContainer.addConfigurationURL(containerConf);
+
       container = StandaloneContainer.getInstance();
 
       if (System.getProperty("java.security.auth.login.config") == null)
-         System.setProperty("java.security.auth.login.config", loginConf);
+         System.setProperty("java.security.auth.login.config", Thread.currentThread().getContextClassLoader()
+            .getResource("login.conf").toString());
 
       credentials = new CredentialsImpl("root", "exo".toCharArray());
 
       repositoryService = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
-      // container.start();
+
       repository = (RepositoryImpl)repositoryService.getDefaultRepository();
 
       session = (SessionImpl)repository.login(credentials, WS_NAME);
