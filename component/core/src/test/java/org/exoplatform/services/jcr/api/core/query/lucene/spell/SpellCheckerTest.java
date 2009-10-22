@@ -59,7 +59,8 @@ public class SpellCheckerTest extends AbstractJCRTest
    public void testSpellCheckerComplexQuery() throws RepositoryException
    {
       String text = "the quick brown fox jumps over the lazy dog";
-      testRootNode.setProperty("prop", text);
+      Node n = testRootNode.addNode("testNode");
+      n.setProperty("prop", text);
       superuser.save();
       // wait a couple of seconds, refresh interval in test config is 5 seconds
       try
@@ -80,7 +81,7 @@ public class SpellCheckerTest extends AbstractJCRTest
    public void testSpellCheckerComplexQuery2() throws RepositoryException
    {
 
-      String text = "the quick brown fox jumps over the lazy dog";
+      String text = "the quick brown fox jumps over the lazy dog and something else";
 
       Node doc = testRootNode.addNode("file", "nt:file");//.setProperty("prop", text);
       NodeImpl cont = (NodeImpl)doc.addNode("jcr:content", "nt:resource");
