@@ -125,7 +125,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
     * Initialization initialization "update-policy"-parameter value.
     */
    public static final String INIT_PARAM_UPDATE_POLICY = "update-policy";
-   
+
    /**
     * Initialization "auto-version"-parameter value.
     */
@@ -170,7 +170,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
     * Update policy.
     */
    private String updatePolicyType = "create-version";
-   
+
    /**
     * Auto-version default value.
     */
@@ -244,7 +244,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          updatePolicyType = pUpdatePolicy.getValue();
          log.info(INIT_PARAM_UPDATE_POLICY + " = " + updatePolicyType);
       }
-      
+
       ValueParam pAutoVersion = params.getValueParam(INIT_PARAM_AUTO_VERSION);
       if (pAutoVersion != null)
       {
@@ -456,7 +456,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    @GET
    @Path("/{repoName}/{repoPath:.*}/")
    public Response get(@PathParam("repoName") String repoName, @PathParam("repoPath") String repoPath,
-      @HeaderParam(ExtHttpHeaders.RANGE) String rangeHeader, @QueryParam("version") String version,
+      @HeaderParam(ExtHttpHeaders.RANGE) String rangeHeader,
+      @HeaderParam(ExtHttpHeaders.IF_MODIFIED_SINCE) String ifModifiedSince, @QueryParam("version") String version,
       @Context UriInfo uriInfo)
    {
 
@@ -515,7 +516,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          String uri =
             uriInfo.getBaseUriBuilder().path(getClass()).path(repoName).path(workspaceName(repoPath)).build()
                .toString();
-         return new GetCommand().get(session, path(repoPath), version, uri, ranges);
+         return new GetCommand().get(session, path(repoPath), version, uri, ranges, ifModifiedSince);
 
       }
       catch (PathNotFoundException exc)
@@ -913,8 +914,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       @HeaderParam(ExtHttpHeaders.FILE_NODETYPE) String fileNodeTypeHeader,
       @HeaderParam(ExtHttpHeaders.CONTENT_NODETYPE) String contentNodeTypeHeader,
       @HeaderParam(ExtHttpHeaders.CONTENT_MIXINTYPES) List<String> mixinTypes,
-      @HeaderParam(ExtHttpHeaders.CONTENT_TYPE) MediaType mediatype,
-      InputStream inputStream)
+      @HeaderParam(ExtHttpHeaders.CONTENT_TYPE) MediaType mediatype, InputStream inputStream)
    {
 
       if (log.isDebugEnabled())
@@ -928,18 +928,19 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       {
          String mimeType = null;
          String encoding = null;
-         
-         if (mediatype == null) {
+
+         if (mediatype == null)
+         {
             MimeTypeResolver mimeTypeResolver = new MimeTypeResolver();
             mimeTypeResolver.setDefaultMimeType(defaultFileMimeType);
             mimeType = mimeTypeResolver.getMimeType(TextUtil.nameOnly(repoPath));
-         } else {
-            mimeType = mediatype.getType() + "/" + mediatype.getSubtype();
-            log.info(">>> MimeType: " + mimeType);
-            encoding = mediatype.getParameters().get("charset");
-            log.info(">>> Charset: " + encoding);                        
          }
-         
+         else
+         {
+            mimeType = mediatype.getType() + "/" + mediatype.getSubtype();
+            encoding = mediatype.getParameters().get("charset");
+         }
+
          List<String> tokens = lockTokens(lockTokenHeader, ifHeader);
          Session session = session(repoName, workspaceName(repoPath), tokens);
 
@@ -955,7 +956,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          NodeTypeUtil.checkContentResourceType(nodeType);
 
          return new PutCommand(nullResourceLocks).put(session, path(repoPath), inputStream, fileNodeType,
-            contentNodeType, NodeTypeUtil.getMixinTypes(mixinTypes), mimeType, encoding, updatePolicyType, autoVersionType, tokens);
+            contentNodeType, NodeTypeUtil.getMixinTypes(mixinTypes), mimeType, encoding, updatePolicyType,
+            autoVersionType, tokens);
 
       }
       catch (NoSuchWorkspaceException exc)

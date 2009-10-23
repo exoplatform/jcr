@@ -78,7 +78,7 @@ public class GetCommand
     * @param ranges ranges
     * @return the instance of javax.ws.rs.core.Response
     */
-   public Response get(Session session, String path, String version, String baseURI, List<Range> ranges)
+   public Response get(Session session, String path, String version, String baseURI, List<Range> ranges, String ifModifiedSince)
    {
 
       if (version == null)
@@ -124,6 +124,10 @@ public class GetCommand
 
             FileResource fileResource = new FileResource(uri, node, nsContext);
             HierarchicalProperty lastModifiedProperty = fileResource.getProperty(FileResource.GETLASTMODIFIED);
+            
+            if((ifModifiedSince != null) && (ifModifiedSince.equals(lastModifiedProperty.getValue()))){
+               return Response.notModified().build();
+            }
 
             // content length is not present
             if (contentLength == 0)
