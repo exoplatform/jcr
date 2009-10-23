@@ -23,6 +23,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.jcr.NoSuchWorkspaceException;
@@ -130,6 +131,10 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
     * Initialization "auto-version"-parameter value.
     */
    public static final String INIT_PARAM_AUTO_VERSION = "auto-version";
+   
+   public static final String INIT_PARAM_CACHE_CONTROL = "cache-control";
+   
+   private HashMap<String, String> cacheControlMap = new HashMap<String, String>();
 
    /**
     * Logger.
@@ -250,6 +255,25 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       {
          autoVersionType = pAutoVersion.getValue();
          log.info(INIT_PARAM_AUTO_VERSION + " = " + autoVersionType);
+      }
+      
+      
+//      <value-param>
+//         <name>cache-control</name>
+//         <value>^(gif|jpg|png)$:max-age=3600;^(image/jpeg|text/html)$:max-age=1800</value>
+//      </value-param>
+
+      ValueParam pCacheControl = params.getValueParam(INIT_PARAM_CACHE_CONTROL);
+      if (pCacheControl != null)
+      {
+         String cacheControlValue = pCacheControl.getValue();
+         for (String element : cacheControlValue.split(";"))
+         {
+            String mask = element.split(":")[0];
+            String value = element.split(":")[1];
+            cacheControlMap.put(mask, value);
+         }
+         log.info(INIT_PARAM_CACHE_CONTROL + " = " + pCacheControl);
       }
 
    }
