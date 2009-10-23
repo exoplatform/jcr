@@ -18,18 +18,28 @@
  */
 package org.exoplatform.services.jcr.webdav.command;
 
-import org.exoplatform.common.http.HTTPStatus;
-import org.exoplatform.services.jcr.webdav.BaseStandaloneTest;
-import org.exoplatform.services.jcr.webdav.WebDavConstants.WebDAVMethods;
-import org.exoplatform.services.jcr.webdav.utils.TestUtils;
-import org.exoplatform.services.rest.impl.ContainerResponse;
-
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
+import java.util.TimeZone;
+
+import javax.jcr.Node;
+import javax.jcr.Property;
+import javax.ws.rs.core.MultivaluedMap;
+
+import org.exoplatform.common.http.HTTPStatus;
+import org.exoplatform.services.jcr.webdav.BaseStandaloneTest;
+import org.exoplatform.services.jcr.webdav.WebDavConstants.WebDAVMethods;
+import org.exoplatform.services.jcr.webdav.utils.TestUtils;
+import org.exoplatform.services.rest.ExtHttpHeaders;
+import org.exoplatform.services.rest.impl.ContainerResponse;
+import org.exoplatform.services.rest.impl.InputHeadersMap;
+import org.exoplatform.services.rest.impl.MultivaluedMapImpl;
 
 /**
  * Created by The eXo Platform SAS Author : Dmytro Katayev
@@ -41,13 +51,15 @@ public class TestGet extends BaseStandaloneTest
    private String path = TestUtils.getFileName();
 
    private String fileContent = TestUtils.getFileContent();
+   
+   private Node node;
 
    @Override
    public void setUp() throws Exception
    {
       super.setUp();
       InputStream inputStream = new ByteArrayInputStream(fileContent.getBytes());
-      TestUtils.addContent(session, path, inputStream, defaultFileNodeType, "");
+      node = TestUtils.addContent(session, path, inputStream, defaultFileNodeType, "");
    }
 
    public void testSimpleGet() throws Exception
@@ -62,6 +74,19 @@ public class TestGet extends BaseStandaloneTest
          sw.write(buffer, 0, n);
       String str = sw.toString();
       assertEquals(fileContent, str);
+   }
+   
+   public void testIfModifiedSince() throws Exception{
+      Node contentNode = node.getNode("jcr:content");
+      Property lastModifiedProperty = contentNode.getProperty("jcr:lastModified");
+      String formatPattern = "EEE, dd MMM yyyy HH:mm:ss z";
+      SimpleDateFormat dateFormat = new SimpleDateFormat(formatPattern, Locale.ENGLISH);
+      dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+      String lastModified = dateFormat.format(lastModifiedProperty.getDate().getTime());
+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+      headers.add(ExtHttpHeaders.IF_MODIFIED_SINCE, lastModified);
+      ContainerResponse response = service(WebDAVMethods.GET, getPathWS() + path, "", headers, null);
+      assertEquals(HTTPStatus.NOT_MODIFIED, response.getStatus());
    }
 
    public void testNotFoundGet() throws Exception
