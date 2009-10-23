@@ -775,18 +775,27 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
       }, null);
 
       QPath relPath = node.getRelativePath();
+
+      InternalQName propName;
+
       if (node.getOperation() == QueryConstants.OPERATION_SIMILAR)
       {
          // this is a bit ugly:
          // add the name of a dummy property because relPath actually
          // references a property. whereas the relPath of the similar
          // operation references a node
-         relPath = QPath.makeChildPath(relPath, Constants.JCR_PRIMARYTYPE);
+         //relPath = QPath.makeChildPath(relPath, Constants.JCR_PRIMARYTYPE);
+         propName = Constants.JCR_PRIMARYTYPE;
       }
+      else
+      {
+         propName = relPath.getName();
+      }
+
       String field = "";
       try
       {
-         field = resolver.createJCRName(relPath.getName()).getAsString();
+         field = resolver.createJCRName(propName).getAsString();
       }
       catch (NamespaceException e)
       {
@@ -795,7 +804,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
       }
 
       // support for fn:name()
-      InternalQName propName = relPath.getName();
+      //InternalQName propName = relPath.getName();
       if (propName.getNamespace().equals(NS_FN_URI) && propName.getName().equals("name()"))
       {
          if (node.getValueType() != QueryConstants.TYPE_STRING)
@@ -1053,7 +1062,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
          }
       }
 
-      if (relPath.getEntries().length > 1)
+      if (relPath != null && relPath.getEntries().length > 1)
       {
          // child axis in relation
          QPathEntry[] elements = relPath.getEntries();

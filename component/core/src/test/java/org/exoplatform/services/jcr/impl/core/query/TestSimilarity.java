@@ -21,6 +21,7 @@ import org.exoplatform.services.jcr.api.core.query.AbstractIndexingTest;
 import java.util.Calendar;
 
 import javax.jcr.Node;
+import javax.jcr.RepositoryException;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
@@ -38,7 +39,7 @@ public class TestSimilarity extends AbstractIndexingTest
 
    public void testFindSimilarNodes() throws Exception
    {
-      // base node
+      //base node
       Node file = testRootNode.addNode("baseFile", "nt:file");
       Node resource = file.addNode("jcr:content", "nt:resource");
       resource.setProperty("jcr:lastModified", Calendar.getInstance());
@@ -54,47 +55,55 @@ public class TestSimilarity extends AbstractIndexingTest
                + "Only terms that occur in at least 5 nodes are considered.");
       session.save();
 
-      // target node
+      // target nodes
       Node target1 = testRootNode.addNode("target1", "nt:file");
       Node resource1 = target1.addNode("jcr:content", "nt:resource");
       resource1.setProperty("jcr:lastModified", Calendar.getInstance());
       resource1.setProperty("jcr:encoding", "UTF-8");
       resource1.setProperty("jcr:mimeType", "text/plain");
-      resource1.setProperty("jcr:data", "There is term word.");
+      resource1.setProperty("jcr:data", "Similarity is determined by looking up terms that are common to nodes.");
 
       Node target2 = testRootNode.addNode("target2", "nt:file");
       Node resource2 = target2.addNode("jcr:content", "nt:resource");
       resource2.setProperty("jcr:lastModified", Calendar.getInstance());
       resource2.setProperty("jcr:encoding", "UTF-8");
       resource2.setProperty("jcr:mimeType", "text/plain");
-      resource2.setProperty("jcr:data", "You know what is not here");
+      resource2.setProperty("jcr:data", "There is no you know what");
 
       Node target3 = testRootNode.addNode("target3", "nt:file");
       Node resource3 = target3.addNode("jcr:content", "nt:resource");
       resource3.setProperty("jcr:lastModified", Calendar.getInstance());
       resource3.setProperty("jcr:encoding", "UTF-8");
       resource3.setProperty("jcr:mimeType", "text/plain");
-      resource3.setProperty("jcr:data", "Term occures here");
+      resource3.setProperty("jcr:data", "Terms occures here terms");
 
       session.save();
 
-      //Lets find similar
+      //Lets find similar nodes - will return base and similar target nodes
 
       // make SQL query
       QueryManager qman = session.getWorkspace().getQueryManager();
 
-      //      Query q =
-      //         qman.createQuery("select * from nt:resource where similar(., '/jcr:root/baseFile/jcr:content')", Query.SQL);
-      //      QueryResult result = q.execute();
-      //      checkResult(result, new Node[]{resource1, resource3});
+      Query q =
+         qman.createQuery("select * from nt:resource where similar(.,'/testroot/baseFile/jcr:content')", Query.SQL);
+      QueryResult result = q.execute();
+      assertEquals(3, result.getNodes().getSize());
+      checkResult(result, new Node[]{resource, resource1, resource3});
 
       //make XPath query
 
       Query xq =
-         qman.createQuery("//element(*, nt:resource)[rep:similar(., '/jcr:root/baseFile/jcr:content')]", Query.XPATH);
+         qman.createQuery("//element(*, nt:resource)[rep:similar(., '/testroot/baseFile/jcr:content')]", Query.XPATH);
       QueryResult xres = xq.execute();
-      checkResult(xres, new Node[]{resource1, resource3});
+      assertEquals(3, xres.getNodes().getSize());
+      checkResult(xres, new Node[]{resource, resource1, resource3});
 
+   }
+
+   public void testSimilar() throws RepositoryException
+   {
+      executeQuery("//*[rep:similar(., '" + testRootNode.getPath() + "')]");
+      executeQuery("//*[rep:similar(node, '" + testRootNode.getPath() + "')]");
    }
 
 }
