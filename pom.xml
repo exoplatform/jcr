@@ -50,16 +50,16 @@
    </scm>
 
    <modules>
-      <module>component/core</module>
-      <module>component/ext</module>
-      <module>component/ftp</module>
-      <module>component/webdav</module>
+      <module>exo.jcr.component.core</module>
+      <module>exo.jcr.component.ext</module>
+      <module>exo.jcr.component.ftp</module>
+      <module>exo.jcr.component.webdav</module>
 
-      <module>connectors/jca</module>
+      <module>exo.jcr.connectors.localadapter</module>
 
-      <module>frameworks/command</module>
-      <module>frameworks/web</module>
-      <module>frameworks/ftpclient</module>
+      <module>exo.jcr.framework.command</module>
+      <module>exo.jcr.framework.web</module>
+      <module>exo.jcr.framework.ftpclient</module>
 
       <module>applications/config</module>
       <module>applications/java/web/samples/browser</module>
