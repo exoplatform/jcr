@@ -182,9 +182,13 @@
          <value-param>
             <name>update-policy</name>
             <value>create-version</value>
-            <!--value>replace</value -->
-            <!-- value>add</value -->
          </value-param>
+         
+         <value-param>
+            <name>cache-control</name>
+            <value>image/jpeg,image/png:max-age=3600;text/html,text/xml:max-age=1800</value>
+         </value-param>         
+         
       </init-params>
    </component>
 

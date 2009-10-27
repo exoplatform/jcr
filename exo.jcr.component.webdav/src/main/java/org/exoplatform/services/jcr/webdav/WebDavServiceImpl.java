@@ -134,7 +134,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    
    public static final String INIT_PARAM_CACHE_CONTROL = "cache-control";
    
-   private HashMap<String, String> cacheControlMap = new HashMap<String, String>();
+   public static HashMap<String, String> cacheControlMap = new HashMap<String, String>();
 
    /**
     * Logger.
@@ -256,12 +256,6 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          autoVersionType = pAutoVersion.getValue();
          log.info(INIT_PARAM_AUTO_VERSION + " = " + autoVersionType);
       }
-      
-      
-//      <value-param>
-//         <name>cache-control</name>
-//         <value>^(gif|jpg|png)$:max-age=3600;^(image/jpeg|text/html)$:max-age=1800</value>
-//      </value-param>
 
       ValueParam pCacheControl = params.getValueParam(INIT_PARAM_CACHE_CONTROL);
       if (pCacheControl != null)
@@ -269,9 +263,14 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          String cacheControlValue = pCacheControl.getValue();
          for (String element : cacheControlValue.split(";"))
          {
-            String mask = element.split(":")[0];
+            String contentTypes = element.split(":")[0];
             String value = element.split(":")[1];
-            cacheControlMap.put(mask, value);
+            String[] types = contentTypes.split(",");
+            for (String type : types)
+            {
+               cacheControlMap.put(type, value);
+            }
+            
          }
          log.info(INIT_PARAM_CACHE_CONTROL + " = " + pCacheControl);
       }
@@ -540,7 +539,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          String uri =
             uriInfo.getBaseUriBuilder().path(getClass()).path(repoName).path(workspaceName(repoPath)).build()
                .toString();
-         return new GetCommand().get(session, path(repoPath), version, uri, ranges, ifModifiedSince);
+         return new GetCommand().get(session, path(repoPath), version, uri, ranges, ifModifiedSince, cacheControlMap);
 
       }
       catch (PathNotFoundException exc)

@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.webdav.command;
 import org.exoplatform.common.http.HTTPStatus;
 import org.exoplatform.common.util.HierarchicalProperty;
 import org.exoplatform.services.jcr.webdav.Range;
+import org.exoplatform.services.jcr.webdav.WebDavServiceImpl;
 import org.exoplatform.services.jcr.webdav.WebDavConst.CacheConstants;
 import org.exoplatform.services.jcr.webdav.resource.CollectionResource;
 import org.exoplatform.services.jcr.webdav.resource.FileResource;
@@ -40,6 +41,7 @@ import org.exoplatform.services.rest.ext.provider.XSLTStreamingOutput;
 
 import java.io.InputStream;
 import java.net.URI;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.jcr.Node;
@@ -78,7 +80,7 @@ public class GetCommand
     * @param ranges ranges
     * @return the instance of javax.ws.rs.core.Response
     */
-   public Response get(Session session, String path, String version, String baseURI, List<Range> ranges, String ifModifiedSince)
+   public Response get(Session session, String path, String version, String baseURI, List<Range> ranges, String ifModifiedSince, HashMap<String, String> cahceControls)
    {
 
       if (version == null)
@@ -140,10 +142,11 @@ public class GetCommand
             if (ranges.size() == 0)
             {
 
+
                return Response.ok().header(HttpHeaders.CONTENT_LENGTH, Long.toString(contentLength)).header(
                   ExtHttpHeaders.ACCEPT_RANGES, "bytes").header(ExtHttpHeaders.LAST_MODIFIED,
                   lastModifiedProperty.getValue()).header(ExtHttpHeaders.CACHE_CONTROL,
-                  generateCacheControl(contentType)).entity(istream).type(contentType).build();
+                  generateCacheControl(cahceControls, contentType)).entity(istream).type(contentType).build();
 
             }
 
@@ -264,17 +267,18 @@ public class GetCommand
     * @param contentType content type
     * @return Cache-Control value
     */
-   private String generateCacheControl(String contentType)
+   private String generateCacheControl(HashMap<String, String> controls, String contentType)
    {
-      if (contentType.contains("image"))
+      
+      
+      if (controls.containsKey(contentType))
       {
-         return CacheConstants.IMAGE_CACHE;
+         return controls.get(contentType);
       }
-      else if (contentType.contains("audio"))
+      else
       {
-         return CacheConstants.AUDIO_CACHE;
+         return CacheConstants.NO_CACHE;
       }
-      return CacheConstants.NO_CACHE;
    }
 
 }

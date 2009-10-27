@@ -280,16 +280,6 @@ public final class WebDavConst
        */
       public static final String NO_CACHE = "no-cache";
 
-      /**
-       * Cache-Control value for images.
-       */
-      public static final String IMAGE_CACHE = "max-age=3600, must-revalidate";
-
-      /**
-       * Cache-Control value for audio-files.
-       */
-      public static final String AUDIO_CACHE = "max-age=118000, must-revalidate";
-
    }
 
    /**
