@@ -61,12 +61,12 @@
       <module>exo.jcr.framework.web</module>
       <module>exo.jcr.framework.ftpclient</module>
 
-      <module>applications/config</module>
-      <module>applications/java/web/samples/browser</module>
-      <module>applications/java/web/samples/fckeditor</module>
-      <module>applications/java/web/rest</module>
-      <module>applications/java/web/ear</module>
-      <module>applications/java/standalone/backupconsole</module>
+      <module>applications/exo.jcr.applications.config</module>
+      <module>applications/java/exo.jcr.applications.browser</module>
+      <module>applications/java/exo.jcr.applications.fckeditor</module>
+      <module>applications/java/exo.jcr.applications.rest</module>
+      <module>applications/java/exo.jcr.ear</module>
+      <module>applications/java/exo.jcr.applications.backupconsole</module>
 
       <module>packaging/module</module>
       </modules>
