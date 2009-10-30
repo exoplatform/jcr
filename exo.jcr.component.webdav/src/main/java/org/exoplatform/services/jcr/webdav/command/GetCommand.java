@@ -273,7 +273,11 @@ public class GetCommand
       
       ArrayList<MediaType> mediaTypesList = new ArrayList<MediaType>(cacheControlMap.keySet());
       Collections.sort(mediaTypesList, MediaTypeHelper.MEDIA_TYPE_COMPARATOR);
-      String cacheControlValue = "";
+      String cacheControlValue = "no-cache";
+      
+      if(contentType == null || contentType.equals("")){
+         return cacheControlValue;
+      }
       
       for (MediaType mediaType : mediaTypesList)
       {
