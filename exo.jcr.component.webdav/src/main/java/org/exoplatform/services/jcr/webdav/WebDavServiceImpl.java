@@ -131,10 +131,10 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
     * Initialization "auto-version"-parameter value.
     */
    public static final String INIT_PARAM_AUTO_VERSION = "auto-version";
-   
+
    public static final String INIT_PARAM_CACHE_CONTROL = "cache-control";
-   
-   public static HashMap<String, String> cacheControlMap = new HashMap<String, String>();
+
+   private HashMap<MediaType, String> cacheControlMap = new HashMap<MediaType, String>();
 
    /**
     * Logger.
@@ -260,19 +260,27 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       ValueParam pCacheControl = params.getValueParam(INIT_PARAM_CACHE_CONTROL);
       if (pCacheControl != null)
       {
-         String cacheControlValue = pCacheControl.getValue();
-         for (String element : cacheControlValue.split(";"))
+         String cacheControlConfigValue = pCacheControl.getValue();
+
+         try
          {
-            String contentTypes = element.split(":")[0];
-            String value = element.split(":")[1];
-            String[] types = contentTypes.split(",");
-            for (String type : types)
+            String[] elements = cacheControlConfigValue.split(";");
+            for (String element : elements)
             {
-               cacheControlMap.put(type, value);
+               String cacheValue = element.split(":")[1];
+               String keys = element.split(":")[0];
+               for (String key : keys.split(","))
+               {
+                  MediaType mediaType = new MediaType(key.split("/")[0], key.split("/")[1]);
+                  cacheControlMap.put(mediaType, cacheValue);
+               }
             }
-            
          }
-         log.info(INIT_PARAM_CACHE_CONTROL + " = " + pCacheControl);
+         catch (Exception e)
+         {
+            log.warn("Invalid " + INIT_PARAM_CACHE_CONTROL + " parameter");
+         }
+
       }
 
    }

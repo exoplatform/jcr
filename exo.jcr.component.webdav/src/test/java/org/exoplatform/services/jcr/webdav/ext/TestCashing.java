@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.webdav.ext;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -43,11 +44,10 @@ import org.exoplatform.services.rest.impl.MultivaluedMapImpl;
  */
 public class TestCashing extends BaseStandaloneTest
 {
-
    private String path = TestUtils.getFileName();
 
    private String fileContent = TestUtils.getFileContent();
-   
+
    private Node node;
 
    @Override
@@ -58,8 +58,8 @@ public class TestCashing extends BaseStandaloneTest
       node = TestUtils.addContent(session, path, inputStream, defaultFileNodeType, "");
    }
 
-   
-   public void testIfModifiedSince() throws Exception{
+   public void testIfModifiedSince() throws Exception
+   {
       Node contentNode = node.getNode("jcr:content");
       Property lastModifiedProperty = contentNode.getProperty("jcr:lastModified");
       String formatPattern = "EEE, dd MMM yyyy HH:mm:ss z";
@@ -71,20 +71,28 @@ public class TestCashing extends BaseStandaloneTest
       ContainerResponse response = service(WebDAVMethods.GET, getPathWS() + path, "", headers, null);
       assertEquals(HTTPStatus.NOT_MODIFIED, response.getStatus());
    }
-   
-   public void testCacheConf() throws Exception {
+
+   public void testCacheConf() throws Exception
+   {
+      ArrayList<CacheControlType> testValues = new ArrayList<CacheControlType>();
+      testValues.add(new CacheControlType("text/xml", "max-age=1800"));
+      testValues.add(new CacheControlType("text/pdf", "max-age=777"));
+      testValues.add(new CacheControlType("image/jpg", "max-age=3600"));
+      testValues.add(new CacheControlType("image/gif", "max-age=555"));
+      testValues.add(new CacheControlType("test/test", "no-cache"));
+      testValues.add(new CacheControlType("*/*", "no-cache"));
+
       Node contentNode = node.getNode("jcr:content");
-      contentNode.setProperty("jcr:mimeType", "text/xml");
-      contentNode.getSession().save();
-      ContainerResponse response = service(WebDAVMethods.GET, getPathWS() + path, "", null, null);
-      String cacheControlHeader = response.getHttpHeaders().get(HttpHeaders.CACHE_CONTROL).toString();
-      assertEquals(cacheControlHeader, "[max-age=1800]");
-      
-      contentNode.setProperty("jcr:mimeType", "image/jpeg");
-      contentNode.getSession().save();
-      response = service(WebDAVMethods.GET, getPathWS() + path, "", null, null);
-      cacheControlHeader = response.getHttpHeaders().get(HttpHeaders.CACHE_CONTROL).toString();
-      assertEquals(cacheControlHeader, "[max-age=3600]");
+
+      for (CacheControlType cacheControlType : testValues)
+      {
+         contentNode.setProperty("jcr:mimeType", cacheControlType.getContentType());
+         contentNode.getSession().save();
+         ContainerResponse response = service(WebDAVMethods.GET, getPathWS() + path, "", null, null);
+         String cacheControlHeader = response.getHttpHeaders().get(HttpHeaders.CACHE_CONTROL).toString();
+         cacheControlHeader = cacheControlHeader.substring(1, cacheControlHeader.length() - 1);
+         assertEquals(cacheControlHeader, cacheControlType.getCacheValue());
+      }
    }
 
    @Override

@@ -18,11 +18,25 @@
  */
 package org.exoplatform.services.jcr.webdav.command;
 
+import java.io.InputStream;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+
+import javax.jcr.Node;
+import javax.jcr.PathNotFoundException;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.xml.transform.stream.StreamSource;
+
 import org.exoplatform.common.http.HTTPStatus;
 import org.exoplatform.common.util.HierarchicalProperty;
 import org.exoplatform.services.jcr.webdav.Range;
-import org.exoplatform.services.jcr.webdav.WebDavServiceImpl;
-import org.exoplatform.services.jcr.webdav.WebDavConst.CacheConstants;
 import org.exoplatform.services.jcr.webdav.resource.CollectionResource;
 import org.exoplatform.services.jcr.webdav.resource.FileResource;
 import org.exoplatform.services.jcr.webdav.resource.Resource;
@@ -38,20 +52,7 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.rest.ExtHttpHeaders;
 import org.exoplatform.services.rest.ext.provider.XSLTStreamingOutput;
-
-import java.io.InputStream;
-import java.net.URI;
-import java.util.HashMap;
-import java.util.List;
-
-import javax.jcr.Node;
-import javax.jcr.PathNotFoundException;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.xml.transform.stream.StreamSource;
+import org.exoplatform.services.rest.impl.header.MediaTypeHelper;
 
 /**
  * Created by The eXo Platform SAS Author : <a
@@ -80,7 +81,7 @@ public class GetCommand
     * @param ranges ranges
     * @return the instance of javax.ws.rs.core.Response
     */
-   public Response get(Session session, String path, String version, String baseURI, List<Range> ranges, String ifModifiedSince, HashMap<String, String> cahceControls)
+   public Response get(Session session, String path, String version, String baseURI, List<Range> ranges, String ifModifiedSince, HashMap<MediaType, String> cahceControls)
    {
 
       if (version == null)
@@ -267,18 +268,24 @@ public class GetCommand
     * @param contentType content type
     * @return Cache-Control value
     */
-   private String generateCacheControl(HashMap<String, String> controls, String contentType)
+   private String generateCacheControl(HashMap<MediaType, String> cacheControlMap, String contentType)
    {
       
+      ArrayList<MediaType> mediaTypesList = new ArrayList<MediaType>(cacheControlMap.keySet());
+      Collections.sort(mediaTypesList, MediaTypeHelper.MEDIA_TYPE_COMPARATOR);
+      String cacheControlValue = "";
       
-      if (controls.containsKey(contentType))
+      for (MediaType mediaType : mediaTypesList)
       {
-         return controls.get(contentType);
+         if(contentType.equals(MediaType.WILDCARD)){
+            cacheControlValue = cacheControlMap.get(MediaType.WILDCARD_TYPE);
+            break;
+         } else if (mediaType.isCompatible(new MediaType(contentType.split("/")[0], contentType.split("/")[1]) )) {
+            cacheControlValue = cacheControlMap.get(mediaType);
+            break;
+         }
       }
-      else
-      {
-         return CacheConstants.NO_CACHE;
-      }
+      return cacheControlValue;    
    }
 
 }
