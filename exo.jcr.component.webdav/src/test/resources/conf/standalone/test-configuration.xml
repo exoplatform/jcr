@@ -186,7 +186,7 @@
          
          <value-param>
             <name>cache-control</name>
-            <value>image/jpeg,image/png:max-age=3600;text/html,text/xml:max-age=1800</value>
+            <value>text/xml,text/html:max-age=1800;text/*:max-age=777;image/png,image/jpg:max-age=3600;*/*:no-cache;image/*:max-age=555</value>
          </value-param>         
          
       </init-params>
