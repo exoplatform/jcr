@@ -55,6 +55,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
@@ -299,10 +300,13 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
       }
    }
 
-   protected class SVNodeData extends TransientNodeData
+   protected class SVNodeData
+      extends TransientNodeData
    {
 
-      List<InternalQName> childNodes = new LinkedList<InternalQName>();
+      int orderNumber = 0;
+
+      HashMap<InternalQName, Integer> childNodesMap = new HashMap<InternalQName, Integer>();
 
       SVNodeData(QPath path, String identifier, String parentIdentifier, int version, int orderNum)
       {
@@ -321,15 +325,16 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
        */
       int[] addChildNode(InternalQName childName)
       {
-         int orderNumber = childNodes.size();
-         int index = 1;
-         for (int i = 0; i < childNodes.size(); i++)
+         Integer count = childNodesMap.get(childName);
+         if (count != null)
          {
-            if (childName.equals(childNodes.get(i)))
-               index++;
+            childNodesMap.put(childName, count + 1);
          }
-         childNodes.add(childName);
-         return new int[]{orderNumber, index};
+         else
+            childNodesMap.put(childName, 1);
+
+         int index = childNodesMap.get(childName);
+         return new int[] {orderNumber++, index};
       }
    }
 
