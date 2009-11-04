@@ -64,7 +64,7 @@ abstract public class BaseAuthenticator implements AuthenticationPolicy
 
       if (state == null)
       {
-         log.warn("No current identity found, ANONYMOUS one will be used");
+         log.debug("No current identity found, ANONYMOUS one will be used");
          return new ConversationState(new Identity(SystemIdentity.ANONIM, new HashSet<MembershipEntry>()));
       }
 
