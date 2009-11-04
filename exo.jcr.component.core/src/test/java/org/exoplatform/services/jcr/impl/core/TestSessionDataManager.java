@@ -336,25 +336,4 @@ public class TestSessionDataManager extends JcrImplBaseTest
       assertNotNull(modificationManager.getItemData(QPath.makeChildPath(((NodeImpl)root).getData().getQPath(),
          new InternalQName("", "testgetitemNode"))));
    }
-   
-   public void testRemove() throws Exception
-   {
-      Node n = session.getRootNode().addNode("node", "nt:unstructured");
-      n.addMixin("mix:referenceable");
-      session.save();
-      String uuid = n.getUUID(); 
-      Node p = n.getParent();
-      n.remove();
-      p.save();
-      try
-      {
-         modificationManager.getItemByIdentifier(uuid, true);
-//         session.getNodeByUUID(uuid);
-         fail("Node must be removed.");
-      }
-      catch(ItemNotFoundException e)
-      {
-         
-      }
-   }
 }
