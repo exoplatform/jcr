@@ -94,18 +94,18 @@ public class UnLockCommand
                return Response.status(HTTPStatus.NO_CONTENT).build();
             }
 
-            return Response.status(HTTPStatus.NOT_FOUND).build();
+            return Response.status(HTTPStatus.NOT_FOUND).entity(exc.getMessage()).build();
          }
 
       }
       catch (LockException exc)
       {
-         return Response.status(HTTPStatus.LOCKED).build();
+         return Response.status(HTTPStatus.LOCKED).entity(exc.getMessage()).build();
       }
       catch (Exception exc)
       {
          log.error(exc.getMessage(), exc);
-         return Response.serverError().build();
+         return Response.serverError().entity(exc.getMessage()).build();
       }
 
    }

@@ -92,27 +92,27 @@ public class MkColCommand
       }
       catch (ItemExistsException exc)
       {
-         return Response.status(HTTPStatus.METHOD_NOT_ALLOWED).build();
+         return Response.status(HTTPStatus.METHOD_NOT_ALLOWED).entity(exc.getMessage()).build();
 
       }
       catch (PathNotFoundException exc)
       {
-         return Response.status(HTTPStatus.CONFLICT).build();
+         return Response.status(HTTPStatus.CONFLICT).entity(exc.getMessage()).build();
 
       }
       catch (AccessDeniedException exc)
       {
-         return Response.status(HTTPStatus.FORBIDDEN).build();
+         return Response.status(HTTPStatus.FORBIDDEN).entity(exc.getMessage()).build();
 
       }
       catch (LockException exc)
       {
-         return Response.status(HTTPStatus.LOCKED).build();
+         return Response.status(HTTPStatus.LOCKED).entity(exc.getMessage()).build();
 
       }
       catch (RepositoryException exc)
       {
-         return Response.serverError().build();
+         return Response.serverError().entity(exc.getMessage()).build();
       }
 
       return Response.status(HTTPStatus.CREATED).build();

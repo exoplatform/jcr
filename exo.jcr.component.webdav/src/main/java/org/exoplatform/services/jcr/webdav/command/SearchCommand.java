@@ -74,18 +74,18 @@ public class SearchCommand
       }
       catch (PathNotFoundException exc)
       {
-         return Response.status(HTTPStatus.NOT_FOUND).build();
+         return Response.status(HTTPStatus.NOT_FOUND).entity(exc.getMessage()).build();
 
       }
       catch (UnsupportedQueryException exc)
       {
-         return Response.status(HTTPStatus.BAD_REQUEST).build();
+         return Response.status(HTTPStatus.BAD_REQUEST).entity(exc.getMessage()).build();
 
       }
       catch (Exception exc)
       {
          log.error(exc.getMessage(), exc);
-         return Response.serverError().build();
+         return Response.serverError().entity(exc.getMessage()).build();
       }
 
    }

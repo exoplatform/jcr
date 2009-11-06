@@ -66,12 +66,12 @@ public class VersionControlCommand
       }
       catch (LockException exc)
       {
-         return Response.status(HTTPStatus.LOCKED).build();
+         return Response.status(HTTPStatus.LOCKED).entity(exc.getMessage()).build();
 
       }
       catch (PathNotFoundException exc)
       {
-         return Response.status(HTTPStatus.NOT_FOUND).build();
+         return Response.status(HTTPStatus.NOT_FOUND).entity(exc.getMessage()).build();
 
       }
       catch (Exception exc)

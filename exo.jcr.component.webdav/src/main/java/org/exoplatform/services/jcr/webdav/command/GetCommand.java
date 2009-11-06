@@ -129,7 +129,7 @@ public class GetCommand
             HierarchicalProperty lastModifiedProperty = fileResource.getProperty(FileResource.GETLASTMODIFIED);
             
             if((ifModifiedSince != null) && (ifModifiedSince.equals(lastModifiedProperty.getValue()))){
-               return Response.notModified().build();
+               return Response.notModified().entity("Not Modified").build();
             }
 
             // content length is not present
@@ -202,16 +202,16 @@ public class GetCommand
       }
       catch (PathNotFoundException exc)
       {
-         return Response.status(HTTPStatus.NOT_FOUND).build();
+         return Response.status(HTTPStatus.NOT_FOUND).entity(exc.getMessage()).build();
       }
       catch (RepositoryException exc)
       {
-         return Response.serverError().build();
+         return Response.serverError().entity(exc.getMessage()).build();
       }
       catch (Exception exc)
       {
          log.error(exc.getMessage(), exc);
-         return Response.serverError().build();
+         return Response.serverError().entity(exc.getMessage()).build();
       }
    }
 

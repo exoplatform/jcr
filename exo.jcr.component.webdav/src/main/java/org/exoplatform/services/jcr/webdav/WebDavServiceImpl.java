@@ -310,7 +310,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       catch (Exception exc)
       {
          log.error(exc.getMessage(), exc);
-         return Response.serverError().build();
+         return Response.serverError().entity(exc.getMessage()).build();
       }
    }
 
@@ -339,7 +339,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       catch (Exception exc)
       {
          log.error(exc.getMessage(), exc);
-         return Response.serverError().build();
+         return Response.serverError().entity(exc.getMessage()).build();
       }
    }
 
@@ -370,7 +370,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
 
          if (!destinationHeader.startsWith(serverURI))
          {
-            return Response.status(HTTPStatus.BAD_GATEWAY).build();
+            return Response.status(HTTPStatus.BAD_GATEWAY).entity("Bad Gateway").build();
          }
 
          String srcWorkspace = workspaceName(repoPath);
@@ -397,8 +397,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
             Response prpfind = new PropFindCommand().propfind(session, destNodePath, body, depth.getIntValue(), uri);
             if (prpfind.getStatus() != HTTPStatus.NOT_FOUND)
             {
-
-               return Response.status(HTTPStatus.PRECON_FAILED).build();
+               return Response.status(HTTPStatus.PRECON_FAILED).entity("Not Found").build();
             }
          }
 
@@ -429,18 +428,18 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          }
          else
          {
-            return Response.status(HTTPStatus.BAD_REQUEST).build();
+            return Response.status(HTTPStatus.BAD_REQUEST).entity("Bad Request").build();
          }
 
       }
       catch (PreconditionException exc)
       {
-         return Response.status(HTTPStatus.BAD_REQUEST).build();
+         return Response.status(HTTPStatus.BAD_REQUEST).entity(exc.getMessage()).build();
       }
       catch (Exception exc)
       {
          log.error(exc.getMessage(), exc);
-         return Response.serverError().build();
+         return Response.serverError().entity(exc.getMessage()).build();
       }
    }
 
@@ -472,12 +471,12 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       catch (NoSuchWorkspaceException exc)
       {
          log.error("NoSuchWorkspaceException " + exc.getMessage(), exc);
-         return Response.status(HTTPStatus.NOT_FOUND).build();
+         return Response.status(HTTPStatus.NOT_FOUND).entity(exc.getMessage()).build();
       }
       catch (Exception exc)
       {
          log.error(exc.getMessage(), exc);
-         return Response.serverError().build();
+         return Response.serverError().entity(exc.getMessage()).build();
       }
    }
 
@@ -525,7 +524,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
                   int dash = token.indexOf("-");
                   if (dash == -1)
                   {
-                     return Response.status(HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE).build();
+                     return Response.status(HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE).entity("Requested Range Not Satisfiable").build();
                   }
                   else if (dash == 0)
                   {
@@ -553,12 +552,12 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       catch (PathNotFoundException exc)
       {
          log.error("NoSuchWorkspaceException " + exc.getMessage(), exc);
-         return Response.status(HTTPStatus.NOT_FOUND).build();
+         return Response.status(HTTPStatus.NOT_FOUND).entity(exc.getMessage()).build();
       }
       catch (Exception exc)
       {
          log.error(exc.getMessage(), exc);
-         return Response.serverError().build();
+         return Response.serverError().entity(exc.getMessage()).build();
       }
    }
 
@@ -589,12 +588,12 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       catch (NoSuchWorkspaceException exc)
       {
          log.error("NoSuchWorkspaceException " + exc.getMessage(), exc);
-         return Response.status(HTTPStatus.NOT_FOUND).build();
+         return Response.status(HTTPStatus.NOT_FOUND).entity(exc.getMessage()).build();
       }
       catch (Exception exc)
       {
          log.error(exc.getMessage(), exc);
-         return Response.serverError().build();
+         return Response.serverError().entity(exc.getMessage()).build();
       }
    }
 
@@ -624,19 +623,19 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       catch (PreconditionException exc)
       {
          log.error("PreconditionException " + exc.getMessage(), exc);
-         return Response.status(HTTPStatus.PRECON_FAILED).build();
+         return Response.status(HTTPStatus.PRECON_FAILED).entity(exc.getMessage()).build();
 
       }
       catch (NoSuchWorkspaceException exc)
       {
          log.error("NoSuchWorkspaceException " + exc.getMessage(), exc);
-         return Response.status(HTTPStatus.NOT_FOUND).build();
+         return Response.status(HTTPStatus.NOT_FOUND).entity(exc.getMessage()).build();
 
       }
       catch (Exception exc)
       {
          log.error(exc.getMessage(), exc);
-         return Response.serverError().build();
+         return Response.serverError().entity(exc.getMessage()).build();
       }
    }
 
@@ -667,12 +666,12 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       catch (NoSuchWorkspaceException exc)
       {
          log.error("NoSuchWorkspaceException " + exc.getMessage(), exc);
-         return Response.status(HTTPStatus.NOT_FOUND).build();
+         return Response.status(HTTPStatus.NOT_FOUND).entity(exc.getMessage()).build();
       }
       catch (Exception exc)
       {
          log.error(exc.getMessage(), exc);
-         return Response.serverError().build();
+         return Response.serverError().entity(exc.getMessage()).build();
       }
    }
 
@@ -709,12 +708,12 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       catch (NoSuchWorkspaceException exc)
       {
          log.error("NoSuchWorkspaceException " + exc.getMessage(), exc);
-         return Response.status(HTTPStatus.NOT_FOUND).build();
+         return Response.status(HTTPStatus.NOT_FOUND).entity(exc.getMessage()).build();
       }
       catch (Exception exc)
       {
          log.error(exc.getMessage(), exc);
-         return Response.serverError().build();
+         return Response.serverError().entity(exc.getMessage()).build();
       }
    }
 
@@ -745,7 +744,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
 
          if (!destinationHeader.startsWith(serverURI))
          {
-            return Response.status(HTTPStatus.BAD_GATEWAY).build();
+            return Response.status(HTTPStatus.BAD_GATEWAY).entity("Bad Gateway").build();
          }
 
          String destPath = destinationHeader.substring(serverURI.length() + 1);
@@ -774,7 +773,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
             Response prpfind = new PropFindCommand().propfind(session, destNodePath, body, depth.getIntValue(), uri);
             if (prpfind.getStatus() != HTTPStatus.NOT_FOUND)
             {
-               return Response.status(HTTPStatus.PRECON_FAILED).build();
+               return Response.status(HTTPStatus.PRECON_FAILED).entity("Preconditions Failed").build();
             }
          }
 
@@ -792,14 +791,14 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          }
          else
          {
-            return Response.status(HTTPStatus.BAD_REQUEST).build();
+            return Response.status(HTTPStatus.BAD_REQUEST).entity("Bad Request").build();
          }
 
       }
       catch (Exception exc)
       {
          log.error(exc.getMessage(), exc);
-         return Response.serverError().build();
+         return Response.serverError().entity(exc.getMessage()).build();
       }
 
    }
@@ -855,7 +854,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       catch (Exception exc)
       {
          log.error(exc.getMessage(), exc);
-         return Response.serverError().build();
+         return Response.serverError().entity(exc.getMessage()).build();
       }
    }
 
@@ -885,16 +884,16 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       }
       catch (NoSuchWorkspaceException exc)
       {
-         return Response.status(HTTPStatus.NOT_FOUND).build();
+         return Response.status(HTTPStatus.NOT_FOUND).entity(exc.getMessage()).build();
       }
       catch (PreconditionException exc)
       {
-         return Response.status(HTTPStatus.BAD_REQUEST).build();
+         return Response.status(HTTPStatus.BAD_REQUEST).entity(exc.getMessage()).build();
       }
       catch (Exception exc)
       {
          log.error(exc.getMessage(), exc);
-         return Response.serverError().build();
+         return Response.serverError().entity(exc.getMessage()).build();
       }
    }
 
@@ -926,12 +925,12 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       catch (NoSuchWorkspaceException exc)
       {
          log.error("NoSuchWorkspace. " + exc.getMessage());
-         return Response.status(HTTPStatus.NOT_FOUND).build();
+         return Response.status(HTTPStatus.NOT_FOUND).entity(exc.getMessage()).build();
       }
       catch (Exception exc)
       {
          log.error(exc.getMessage(), exc);
-         return Response.serverError().build();
+         return Response.serverError().entity(exc.getMessage()).build();
       }
    }
 
@@ -994,18 +993,18 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       catch (NoSuchWorkspaceException exc)
       {
          log.error("NoSuchWorkspaceException " + exc.getMessage(), exc);
-         return Response.status(HTTPStatus.NOT_FOUND).build();
+         return Response.status(HTTPStatus.NOT_FOUND).entity(exc.getMessage()).build();
 
       }
       catch (NoSuchNodeTypeException exc)
       {
          log.error("NoSuchNodeTypeException " + exc.getMessage(), exc);
-         return Response.status(HTTPStatus.BAD_REQUEST).build();
+         return Response.status(HTTPStatus.BAD_REQUEST).entity(exc.getMessage()).build();
       }
       catch (Exception exc)
       {
          log.error(exc.getMessage(), exc);
-         return Response.serverError().build();
+         return Response.serverError().entity(exc.getMessage()).build();
       }
    }
 
@@ -1037,12 +1036,12 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       catch (NoSuchWorkspaceException exc)
       {
          log.error("NoSuchWorkspaceException " + exc.getMessage(), exc);
-         return Response.status(HTTPStatus.NOT_FOUND).build();
+         return Response.status(HTTPStatus.NOT_FOUND).entity(exc.getMessage()).build();
       }
       catch (Exception exc)
       {
          log.error(exc.getMessage(), exc);
-         return Response.serverError().build();
+         return Response.serverError().entity(exc.getMessage()).build();
       }
    }
 
@@ -1074,12 +1073,12 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       catch (NoSuchWorkspaceException exc)
       {
          log.error("NoSuchWorkspaceException " + exc.getMessage(), exc);
-         return Response.status(HTTPStatus.NOT_FOUND).build();
+         return Response.status(HTTPStatus.NOT_FOUND).entity(exc.getMessage()).build();
       }
       catch (Exception exc)
       {
          log.error(exc.getMessage(), exc);
-         return Response.serverError().build();
+         return Response.serverError().entity(exc.getMessage()).build();
       }
    }
 
@@ -1108,13 +1107,13 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       catch (NoSuchWorkspaceException exc)
       {
          log.error("NoSuchWorkspaceException " + exc.getMessage(), exc);
-         return Response.status(HTTPStatus.NOT_FOUND).build();
+         return Response.status(HTTPStatus.NOT_FOUND).entity(exc.getMessage()).build();
 
       }
       catch (Exception exc)
       {
          log.error(exc.getMessage(), exc);
-         return Response.serverError().build();
+         return Response.serverError().entity(exc.getMessage()).build();
       }
    }
 

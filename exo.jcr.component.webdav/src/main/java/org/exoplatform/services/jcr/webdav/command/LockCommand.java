@@ -125,16 +125,16 @@ public class LockCommand
       }
       catch (LockException exc)
       {
-         return Response.status(HTTPStatus.LOCKED).build();
+         return Response.status(HTTPStatus.LOCKED).entity(exc.getMessage()).build();
       }
       catch (AccessDeniedException exc)
       {
-         return Response.status(HTTPStatus.FORBIDDEN).build();
+         return Response.status(HTTPStatus.FORBIDDEN).entity(exc.getMessage()).build();
       }
       catch (Exception exc)
       {
          log.error(exc.getMessage(), exc);
-         return Response.serverError().build();
+         return Response.serverError().entity(exc.getMessage()).build();
       }
 
    }

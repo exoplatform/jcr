@@ -88,18 +88,18 @@ public class MoveCommand
       }
       catch (LockException exc)
       {
-         return Response.status(HTTPStatus.LOCKED).build();
+         return Response.status(HTTPStatus.LOCKED).entity(exc.getMessage()).build();
 
       }
       catch (PathNotFoundException exc)
       {
-         return Response.status(HTTPStatus.CONFLICT).build();
+         return Response.status(HTTPStatus.CONFLICT).entity(exc.getMessage()).build();
 
       }
       catch (RepositoryException exc)
       {
          log.error(exc.getMessage(), exc);
-         return Response.serverError().build();
+         return Response.serverError().entity(exc.getMessage()).build();
       }
 
    }
@@ -127,18 +127,18 @@ public class MoveCommand
       }
       catch (LockException exc)
       {
-         return Response.status(HTTPStatus.LOCKED).build();
+         return Response.status(HTTPStatus.LOCKED).entity(exc.getMessage()).build();
 
       }
       catch (PathNotFoundException exc)
       {
-         return Response.status(HTTPStatus.CONFLICT).build();
+         return Response.status(HTTPStatus.CONFLICT).entity(exc.getMessage()).build();
 
       }
       catch (RepositoryException exc)
       {
          log.error(exc.getMessage(), exc);
-         return Response.serverError().build();
+         return Response.serverError().entity(exc.getMessage()).build();
       }
 
    }

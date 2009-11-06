@@ -62,24 +62,24 @@ public class CopyCommand
       }
       catch (ItemExistsException e)
       {
-         return Response.status(HTTPStatus.METHOD_NOT_ALLOWED).build();
+         return Response.status(HTTPStatus.METHOD_NOT_ALLOWED).entity(e.getMessage()).build();
       }
       catch (PathNotFoundException e)
       {
-         return Response.status(HTTPStatus.CONFLICT).build();
+         return Response.status(HTTPStatus.CONFLICT).entity(e.getMessage()).build();
       }
       catch (AccessDeniedException e)
       {
-         return Response.status(HTTPStatus.FORBIDDEN).build();
+         return Response.status(HTTPStatus.FORBIDDEN).entity(e.getMessage()).build();
       }
       catch (LockException e)
       {
-         return Response.status(HTTPStatus.LOCKED).build();
+         return Response.status(HTTPStatus.LOCKED).entity(e.getMessage()).build();
       }
       catch (RepositoryException e)
       {
          log.error(e.getMessage(), e);
-         return Response.serverError().build();
+         return Response.serverError().entity(e.getMessage()).build();
       }
    }
 
@@ -101,23 +101,23 @@ public class CopyCommand
       }
       catch (ItemExistsException e)
       {
-         return Response.status(HTTPStatus.METHOD_NOT_ALLOWED).build();
+         return Response.status(HTTPStatus.METHOD_NOT_ALLOWED).entity(e.getMessage()).build();
       }
       catch (PathNotFoundException e)
       {
-         return Response.status(HTTPStatus.CONFLICT).build();
+         return Response.status(HTTPStatus.CONFLICT).entity(e.getMessage()).build();
       }
       catch (AccessDeniedException e)
       {
-         return Response.status(HTTPStatus.FORBIDDEN).build();
+         return Response.status(HTTPStatus.FORBIDDEN).entity(e.getMessage()).build();
       }
       catch (LockException e)
       {
-         return Response.status(HTTPStatus.LOCKED).build();
+         return Response.status(HTTPStatus.LOCKED).entity(e.getMessage()).build();
       }
       catch (RepositoryException e)
       {
-         return Response.serverError().build();
+         return Response.serverError().entity(e.getMessage()).build();
       }
    }
 }

@@ -139,17 +139,17 @@ public class PutCommand
       }
       catch (LockException exc)
       {
-         return Response.status(HTTPStatus.LOCKED).build();
+         return Response.status(HTTPStatus.LOCKED).entity(exc.getMessage()).build();
 
       }
-      catch (AccessDeniedException e)
+      catch (AccessDeniedException exc)
       {
-         return Response.status(HTTPStatus.FORBIDDEN).build();
+         return Response.status(HTTPStatus.FORBIDDEN).entity(exc.getMessage()).build();
 
       }
       catch (RepositoryException exc)
       {
-         return Response.status(HTTPStatus.CONFLICT).build();
+         return Response.status(HTTPStatus.CONFLICT).entity(exc.getMessage()).build();
       }
 
       return Response.status(HTTPStatus.CREATED).build();

@@ -76,12 +76,12 @@ public class DeleteCommand
       }
       catch (PathNotFoundException exc)
       {
-         return Response.status(HTTPStatus.NOT_FOUND).build();
+         return Response.status(HTTPStatus.NOT_FOUND).entity(exc.getMessage()).build();
 
       }
       catch (RepositoryException exc)
       {
-         return Response.status(HTTPStatus.FORBIDDEN).build();
+         return Response.status(HTTPStatus.FORBIDDEN).entity(exc.getMessage()).build();
       }
    }
 

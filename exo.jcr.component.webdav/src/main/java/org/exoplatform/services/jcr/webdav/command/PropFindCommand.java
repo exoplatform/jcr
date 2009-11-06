@@ -82,12 +82,12 @@ public class PropFindCommand
       }
       catch (PathNotFoundException e)
       {
-         return Response.status(HTTPStatus.NOT_FOUND).build();
+         return Response.status(HTTPStatus.NOT_FOUND).entity(e.getMessage()).build();
       }
       catch (RepositoryException exc)
       {
          log.error(exc.getMessage(), exc);
-         return Response.serverError().build();
+         return Response.serverError().entity(exc.getMessage()).build();
       }
 
       WebDavNamespaceContext nsContext;
@@ -154,7 +154,7 @@ public class PropFindCommand
       }
       else
       {
-         return Response.status(HTTPStatus.BAD_REQUEST).build();
+         return Response.status(HTTPStatus.BAD_REQUEST).entity("Bad Request").build();
       }
 
       return Response.status(HTTPStatus.MULTISTATUS).entity(response).header(ExtHttpHeaders.CONTENT_TYPE,
