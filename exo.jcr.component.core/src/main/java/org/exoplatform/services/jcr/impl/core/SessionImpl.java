@@ -622,6 +622,18 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    {
       return getNamespaceURI(prefix);
    }
+   
+   /**
+    * {@inheritDoc}
+    */
+   public Node getNodeByIdentifier(String identifier) throws ItemNotFoundException, RepositoryException
+   {
+      Item item = dataManager.getItemByIdentifier(identifier, true);
+      if (item != null && item.isNode())
+         return (Node)item;
+
+      throw new ItemNotFoundException("Node not found " + identifier + " at " + workspaceName);
+   }
 
    /**
     * {@inheritDoc}

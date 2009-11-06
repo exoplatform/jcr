@@ -26,6 +26,8 @@ import java.util.Map;
 
 import javax.jcr.InvalidSerializedDataException;
 import javax.jcr.ItemExistsException;
+import javax.jcr.ItemNotFoundException;
+import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -51,6 +53,16 @@ public interface ExtendedSession extends Session
     */
    LocationFactory getLocationFactory();
 
+   /**
+    * Get node by unique identifier.
+    * 
+    * @param identifier node identifier
+    * @return node with specified identifier
+    * @throws ItemNotFoundException id node with supplied identifier not found
+    * @throws RepositoryException if any repository errors occurs
+    */
+   Node getNodeByIdentifier(String identifier) throws ItemNotFoundException, RepositoryException;
+   
    /**
     * Deserialize an XML document and adds the resulting item subtree as a child of the node at
     * parentAbsPath.
