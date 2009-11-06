@@ -77,7 +77,7 @@ public class VersionControlCommand
       catch (Exception exc)
       {
          log.error(exc.getMessage(), exc);
-         return Response.serverError().build();
+         return Response.serverError().entity(exc.getMessage()).build();
       }
    }
 

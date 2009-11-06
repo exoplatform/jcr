@@ -1141,7 +1141,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       catch (Exception exc)
       {
          log.error(exc.getMessage(), exc);
-         return Response.serverError().build();
+         return Response.serverError().entity(exc.getMessage()).build();
       }
       return new VersionControlCommand().versionControl(session, path(repoPath));
    }
