@@ -956,6 +956,15 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
             + itemPath.getAsString(false));
       return (NodeImpl)node;
    }
+   
+   /**
+    * {@inheritDoc}
+    */
+   public String getIdentifier() throws RepositoryException
+   {
+      checkValid();
+      return this.getInternalIdentifier();
+   }
 
    /**
     * {@inheritDoc}

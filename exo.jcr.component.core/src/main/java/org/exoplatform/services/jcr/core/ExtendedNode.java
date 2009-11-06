@@ -55,6 +55,14 @@ public interface ExtendedNode extends Node
     * @return Access Control List
     */
    AccessControlList getACL() throws RepositoryException;
+   
+   /**
+    * Get unique node identifier.
+    * 
+    * @return node identifier
+    * @throws RepositoryException if any repository errors occurs
+    */
+   String getIdentifier() throws RepositoryException;
 
    /**
     * Clears Access Control List.
