@@ -219,8 +219,8 @@ public class PutCommand
          {
             content.addMixin(mixinName);
          }
-
       }
+      node.getSession().save();
 
    }
 
