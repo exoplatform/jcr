@@ -47,7 +47,7 @@ import javax.jcr.version.OnParentVersionAction;
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
- * @version $Id: $
+ * @version $Id: AbstractItemDefinitionAccessProvider.java 549 2009-11-10 15:25:10Z skabashnyuk $
  */
 public abstract class AbstractItemDefinitionAccessProvider
 {
@@ -361,7 +361,7 @@ public abstract class AbstractItemDefinitionAccessProvider
       InternalQName[] value)
    {
       TransientPropertyData propertyData =
-         TransientPropertyData.createPropertyData(parentNode, propertyName, PropertyType.NAME, false);
+         TransientPropertyData.createPropertyData(parentNode, propertyName, PropertyType.NAME, true);
 
       List<ValueData> parents = new ArrayList<ValueData>();
       for (InternalQName nt : value)
@@ -383,7 +383,7 @@ public abstract class AbstractItemDefinitionAccessProvider
       String[] value)
    {
       TransientPropertyData propertyData =
-         TransientPropertyData.createPropertyData(parentNode, propertyName, PropertyType.STRING, false);
+         TransientPropertyData.createPropertyData(parentNode, propertyName, PropertyType.STRING, true);
       List<ValueData> valueDatas = new ArrayList<ValueData>();
       for (String vc : value)
       {
