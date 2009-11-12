@@ -18,16 +18,6 @@
  */
 package org.exoplatform.services.jcr.ext.registry;
 
-import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
-import org.exoplatform.services.jcr.ext.common.SessionProvider;
-import org.exoplatform.services.jcr.ext.registry.Registry.RegistryNode;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
-import org.exoplatform.services.rest.ext.util.XlinkHref;
-import org.exoplatform.services.rest.resource.ResourceContainer;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
 import java.io.InputStream;
 import java.net.URI;
 
@@ -42,6 +32,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -49,6 +40,16 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.dom.DOMSource;
+
+import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
+import org.exoplatform.services.jcr.ext.common.SessionProvider;
+import org.exoplatform.services.jcr.ext.registry.Registry.RegistryNode;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+import org.exoplatform.services.rest.ext.util.XlinkHref;
+import org.exoplatform.services.rest.resource.ResourceContainer;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
  * @author <a href="mailto:andrew00x@gmail.com">Andrey Parfonov</a>
@@ -181,7 +182,7 @@ public class RESTRegistryService implements ResourceContainer
    @Path("/{groupName:.+}/")
    @Consumes(MediaType.APPLICATION_XML)
    public Response recreateEntry(InputStream entryStream, @PathParam("repository") String repository,
-      @PathParam("groupName") String groupName, @Context UriInfo uriInfo)
+      @PathParam("groupName") String groupName, @Context UriInfo uriInfo, @QueryParam("createIfNotExist") boolean createIfNotExist)
    {
 
       SessionProvider sessionProvider = sessionProviderService.getSessionProvider(null);
@@ -189,7 +190,10 @@ public class RESTRegistryService implements ResourceContainer
       {
          regService.getRepositoryService().setCurrentRepositoryName(repository);
          RegistryEntry entry = RegistryEntry.parse(entryStream);
-         regService.recreateEntry(sessionProvider, normalizePath(groupName), entry);
+         if (createIfNotExist)
+            regService.updateEntry(sessionProvider, normalizePath(groupName), entry);
+         else
+            regService.recreateEntry(sessionProvider, normalizePath(groupName), entry);
          URI location = uriInfo.getRequestUriBuilder().path(entry.getName()).build();
          return Response.created(location).build();
       }

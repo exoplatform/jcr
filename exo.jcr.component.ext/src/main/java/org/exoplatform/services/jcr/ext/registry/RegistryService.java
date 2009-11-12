@@ -239,6 +239,50 @@ public class RegistryService extends Registry implements Startable
          throw new RepositoryException("Can't get XML representation from stream " + te);
       }
    }
+   
+   
+   
+   /**
+    * {@inheritDoc}
+    */
+   public void updateEntry(final SessionProvider sessionProvider, final String groupPath, final RegistryEntry entry)
+      throws RepositoryException
+   {
+
+      final String entryRelPath = EXO_REGISTRY + "/" + groupPath + "/" + entry.getName();
+      final String parentFullPath = "/" + EXO_REGISTRY + "/" + groupPath;
+
+      try
+      {
+         Session session = session(sessionProvider, repositoryService.getCurrentRepository());
+
+         // Don't care about concurrency, Session should be dedicated to the Thread, see JCR-765
+         // synchronized (session) {
+         try { 
+            Node node = session.getRootNode().getNode(entryRelPath);
+         // delete existing entry...
+            node.remove();
+         // create same entry,
+            // [PN] no check we need here, as we have deleted this node before
+            // checkGroup(sessionProvider, fullParentPath);
+            session.importXML(parentFullPath, entry.getAsInputStream(), IMPORT_UUID_CREATE_NEW);
+         } catch (PathNotFoundException e) {
+            createEntry(sessionProvider, groupPath, entry);
+         }
+         // save recreated changes
+         session.save();
+         // }
+      }
+      catch (IOException ioe)
+      {
+         throw new RepositoryException("Item " + parentFullPath + "can't be created " + ioe);
+      }
+      catch (TransformerException te)
+      {
+         throw new RepositoryException("Can't get XML representation from stream " + te);
+      }
+   }
+
 
    /**
     * {@inheritDoc}
