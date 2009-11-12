@@ -160,6 +160,10 @@ public class StringNumberParser
       {
          return Long.valueOf(text.substring(0, text.length() - 2));
       }
+      else if (text.endsWith("s"))
+      {
+         return Long.valueOf(text) * 1000;
+      }
       else if (text.endsWith("m"))
       {
          return Long.valueOf(text.substring(0, text.length() - 1)) * 60000; // 1000 * 60
