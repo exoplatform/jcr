@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.db;
 
-import org.exoplatform.services.jcr.impl.storage.jdbc.monitor.ManagedConnection;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
@@ -43,6 +42,28 @@ import javax.sql.DataSource;
  */
 public class GenericConnectionFactory implements WorkspaceStorageConnectionFactory
 {
+   
+   public static final String JCR_JDBC_CONNECTION_MONITOR = "org.exoplatform.jcr.monitor.jdbcMonitor";
+
+   public static final String PREPARE_INTREST_NAME = "PREPARE";
+
+   public static final String COMMIT_INTEREST_NAME = "COMMIT";
+
+   public static final String CLOSE_INTEREST_NAME = "CLOSE";
+
+   public static final String OPEN_INTEREST_NAME = "OPEN";
+
+   public static final String EXECUTE_INTEREST_NAME = "EXECUTE";
+
+   public static final int PREPARE_INTREST = 1;
+
+   public static final int COMMIT_INTREST = 2;
+
+   public static final int CLOSE_INTREST = 4;
+
+   public static final int OPEN_INTREST = 8;
+
+   public static final int EXECUTE_INTREST = 16;
 
    protected final Log log = ExoLogger.getLogger("jcr.GenericConnectionFactory");
 
@@ -239,7 +260,7 @@ public class GenericConnectionFactory implements WorkspaceStorageConnectionFacto
          if (readOnly) // set this feature only if it asked
             conn.setReadOnly(readOnly);
 
-         return monitorInterest == 0 ? conn : new ManagedConnection(conn, monitorInterest);
+         return monitorInterest == 0 ? conn : null;
       }
       catch (SQLException e)
       {
@@ -264,7 +285,7 @@ public class GenericConnectionFactory implements WorkspaceStorageConnectionFacto
      */
    private void initMonitor()
    {
-      String monitor = System.getProperty(ManagedConnection.JCR_JDBC_CONNECTION_MONITOR);
+      String monitor = System.getProperty(JCR_JDBC_CONNECTION_MONITOR);
       if (monitor != null)
       {
          // parse
@@ -273,14 +294,14 @@ public class GenericConnectionFactory implements WorkspaceStorageConnectionFacto
          for (String s : ints)
          {
             s = s.trim();
-            if (s.equalsIgnoreCase(ManagedConnection.EXECUTE_INTEREST_NAME))
-               interest |= ManagedConnection.EXECUTE_INTREST;
-            else if (s.equalsIgnoreCase(ManagedConnection.COMMIT_INTEREST_NAME))
-               interest |= ManagedConnection.COMMIT_INTREST;
-            else if (s.equalsIgnoreCase(ManagedConnection.CLOSE_INTEREST_NAME))
-               interest |= ManagedConnection.CLOSE_INTREST;
-            else if (s.equalsIgnoreCase(ManagedConnection.OPEN_INTEREST_NAME))
-               interest |= ManagedConnection.OPEN_INTREST;
+            if (s.equalsIgnoreCase(EXECUTE_INTEREST_NAME))
+               interest |= EXECUTE_INTREST;
+            else if (s.equalsIgnoreCase(COMMIT_INTEREST_NAME))
+               interest |= COMMIT_INTREST;
+            else if (s.equalsIgnoreCase(CLOSE_INTEREST_NAME))
+               interest |= CLOSE_INTREST;
+            else if (s.equalsIgnoreCase(OPEN_INTEREST_NAME))
+               interest |= OPEN_INTREST;
          }
 
          this.monitorInterest = interest;
