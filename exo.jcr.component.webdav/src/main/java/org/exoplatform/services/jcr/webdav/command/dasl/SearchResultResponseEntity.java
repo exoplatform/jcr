@@ -89,6 +89,7 @@ public class SearchResultResponseEntity implements StreamingOutput
       properties.add(new QName("DAV:", "creationdate"));
       properties.add(new QName("DAV:", "getlastmodified"));
       properties.add(new QName("DAV:", "getcontentlength"));
+      properties.add(new QName("DAV:", "getcontenttype"));
    }
 
    /**
