@@ -50,71 +50,69 @@
          </exclusions>
          <scope>runtime</scope>
       </dependency>
-
+      <dependency>
+         <groupId>org.exoplatform.kernel</groupId>
+         <artifactId>exo.kernel.commons</artifactId>
+         <version>${org.exoplatform.kernel.version}</version>
+      </dependency>
       <dependency>
          <groupId>org.exoplatform.jcr</groupId>
          <artifactId>exo.jcr.component.ext</artifactId>
          <scope>runtime</scope>
       </dependency>
-
       <dependency>
          <groupId>org.exoplatform.jcr</groupId>
          <artifactId>exo.jcr.component.webdav</artifactId>
          <scope>runtime</scope>
       </dependency>
-
       <dependency>
          <groupId>org.exoplatform.jcr</groupId>
          <artifactId>exo.jcr.component.ftp</artifactId>
          <scope>runtime</scope>
       </dependency>
-
       <dependency>
          <groupId>org.exoplatform.jcr</groupId>
          <artifactId>exo.jcr.framework.command</artifactId>
          <scope>runtime</scope>
       </dependency>
-
       <dependency>
          <groupId>org.exoplatform.jcr</groupId>
          <artifactId>exo.jcr.framework.ftpclient</artifactId>
          <scope>runtime</scope>
       </dependency>
-
       <dependency>
          <groupId>org.exoplatform.jcr</groupId>
          <artifactId>exo.jcr.framework.web</artifactId>
          <scope>runtime</scope>
       </dependency>
-
       <dependency>
          <groupId>org.exoplatform.ws</groupId>
          <artifactId>exo.ws.frameworks.servlet</artifactId>
          <scope>runtime</scope>
       </dependency>
-
       <dependency>
          <groupId>com.sun.xml.bind</groupId>
          <artifactId>jaxb-impl</artifactId>
          <scope>runtime</scope>
       </dependency>
-
       <dependency>
          <groupId>commons-collections</groupId>
          <artifactId>commons-collections</artifactId>
          <scope>runtime</scope>
       </dependency>
-
       <dependency>
          <groupId>javax.resource</groupId>
          <artifactId>connector</artifactId>
       </dependency>
-
       <dependency>
-         <groupId>org.exoplatform.kernel</groupId>
-         <artifactId>exo.kernel.component.common</artifactId>
+         <groupId>javax.transaction</groupId>
+         <artifactId>jta</artifactId>
       </dependency>
-
+      <dependency>
+         <groupId>javax.resource</groupId>
+         <artifactId>connector-api</artifactId>
+         <version>1.5</version>
+      </dependency>        
       <dependency>
          <groupId>org.exoplatform.kernel</groupId>
          <artifactId>exo.kernel.container</artifactId>

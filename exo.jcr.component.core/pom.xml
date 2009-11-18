@@ -43,72 +43,54 @@
          <groupId>javax.jcr</groupId>
          <artifactId>jcr</artifactId>
       </dependency>
-
-      <!-- eXo dependencies (eXo JCR API) -->
       <dependency>
          <groupId>org.exoplatform.kernel</groupId>
          <artifactId>exo.kernel.container</artifactId>
       </dependency>
-
+      <dependency>
+         <groupId>org.exoplatform.kernel</groupId>
+         <artifactId>exo.kernel.commons</artifactId>
+      </dependency>
       <dependency>
          <groupId>org.exoplatform.kernel</groupId>
          <artifactId>exo.kernel.component.command</artifactId>
       </dependency>
-
       <dependency>
          <groupId>org.exoplatform.kernel</groupId>
          <artifactId>exo.kernel.component.common</artifactId>
       </dependency>
-
-      <!-- eXo dependencies (eXo JCR Impl) -->
-
       <dependency>
          <groupId>org.exoplatform.kernel</groupId>
          <artifactId>exo.kernel.component.cache</artifactId>
       </dependency>
-
       <dependency>
          <groupId>org.exoplatform.core</groupId>
          <artifactId>exo.core.component.organization.api</artifactId>
       </dependency>
-
       <dependency>
          <groupId>org.exoplatform.core</groupId>
          <artifactId>exo.core.component.document</artifactId>
       </dependency>
-
       <dependency>
          <groupId>org.exoplatform.core</groupId>
          <artifactId>exo.core.component.security.core</artifactId>
       </dependency>
-
-      <!-- Third party dependencies (eXo JCR Impl) -->
-
       <dependency>
          <groupId>org.apache.lucene</groupId>
          <artifactId>lucene-core</artifactId>
       </dependency>
-
       <dependency>
          <groupId>org.apache.lucene</groupId>
          <artifactId>lucene-spellchecker</artifactId>
       </dependency>
-
       <dependency>
          <groupId>org.apache.lucene</groupId>
          <artifactId>lucene-memory</artifactId>
       </dependency>
-
-      <dependency>
-         <groupId>javax.xml.stream</groupId>
-         <artifactId>stax-api</artifactId>
-      </dependency>
-
       <dependency>
          <groupId>com.sun.xml.stream</groupId>
          <artifactId>sjsxp</artifactId>
       </dependency>
-
       <dependency>
          <groupId>commons-dbcp</groupId>
          <artifactId>commons-dbcp</artifactId>
@@ -119,39 +101,50 @@
             </exclusion>
          </exclusions>
       </dependency>
-
-      <!-- JOTM comes from exo.kernel.component.common -->
-
-      <!--
-         dependency> <groupId>jotm</groupId> <artifactId>jotm</artifactId> <scope>compile</scope> <exclusions> <exclusion> <groupId>javax.resource</groupId>
-         <artifactId>connector</artifactId> </exclusion> <exclusion> <groupId>log4j</groupId> <artifactId>log4j</artifactId> </exclusion> </exclusions>
-         </dependency -->
-
+      <dependency>
+         <groupId>commons-lang</groupId>
+         <artifactId>commons-lang</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>commons-chain</groupId>
+         <artifactId>commons-chain</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>xml-apis</groupId>
+         <artifactId>xml-apis</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.slf4j</groupId>
+         <artifactId>slf4j-api</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>stax</groupId>
+         <artifactId>stax-api</artifactId>
+      </dependency> 
+      <dependency>
+         <groupId>org.jibx</groupId>
+         <artifactId>jibx-run</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>picocontainer</groupId>
+         <artifactId>picocontainer</artifactId>
+      </dependency>
       <dependency>
          <groupId>javax.resource</groupId>
          <artifactId>connector-api</artifactId>
       </dependency>
-
       <dependency>
          <groupId>javax.transaction</groupId>
          <artifactId>jta</artifactId>
       </dependency>
-
       <dependency>
          <groupId>concurrent</groupId>
          <artifactId>concurrent</artifactId>
       </dependency>
-
       <dependency>
          <groupId>commons-collections</groupId>
          <artifactId>commons-collections</artifactId>
       </dependency>
-
-      <dependency>
-         <groupId>commons-codec</groupId>
-         <artifactId>commons-codec</artifactId>
-      </dependency>
-
       <dependency>
          <groupId>org.apache.ws.commons</groupId>
          <artifactId>ws-commons-util</artifactId>
@@ -166,7 +159,6 @@
             </exclusion>
          </exclusions>
       </dependency>
-
       <!-- TCK binaries and deps for repo stub, some eXo API test -->
       <dependency>
          <groupId>org.apache.jackrabbit</groupId>
@@ -184,15 +176,12 @@
          <artifactId>slf4j-log4j12</artifactId>
          <scope>test</scope>
       </dependency>
-
       <!-- ===== Databases JDBC support for tests ===== -->
-
       <dependency>
          <groupId>hsqldb</groupId>
          <artifactId>hsqldb</artifactId>
          <scope>test</scope>
       </dependency>
-
       <!-- For MySQL support -->
       <dependency>
          <groupId>mysql</groupId>
@@ -200,7 +189,6 @@
          <version>5.0.5</version>
          <scope>test</scope>
       </dependency>
-
       <!-- For PostgresSQL support -->
       <dependency>
          <groupId>postgresql</groupId>
@@ -208,7 +196,6 @@
          <version>8.2-504.jdbc3</version>
          <scope>test</scope>
       </dependency>
-
       <!-- For Oracle 10g support (local-jcr repository) -->
       <!-- dependency>
          <groupId>ojdbc</groupId>
@@ -222,7 +209,6 @@
          <version>14</version>
          <scope>test</scope>
       </dependency -->
-
       <!-- For IBM DB2 support (local-jcr repository) -->
       <!-- dependency>
          <groupId>com.ibm.db2</groupId>
@@ -236,7 +222,6 @@
          <version>9.1</version>
          <scope>test</scope>
       </dependency -->
-
       <!-- For MS SQL 7/2000/2005 and Sybase ASE/Anywhere support (jTDS driver) -->
       <dependency>
          <groupId>net.sourceforge.jtds</groupId>
@@ -244,7 +229,6 @@
          <version>1.2</version>
          <scope>test</scope>
       </dependency>
-
       <!-- For MS SQL 2005 support (Microsoft JDBC driver) (local-jcr repository) -->
       <!-- dependency>
          <groupId>com.microsoft.sqlserver</groupId>
@@ -252,7 +236,6 @@
          <version>9.0</version>
          <scope>test</scope>
       </dependency -->
-
       <!-- For Apache Derby support (aka JavaDB) -->
       <dependency>
          <groupId>org.apache.derby</groupId>
@@ -260,7 +243,6 @@
          <version>10.2.2.0</version>
          <scope>test</scope>
       </dependency>
-
       <!-- H2 Database -->
       <!-- dependency>
          <groupId>com.h2database</groupId>
@@ -268,7 +250,6 @@
          <version>1.0.74</version>
          <scope>test</scope>
       </dependency -->
-
       <!-- Ingres Database (local repository) -->
       <!-- dependency>
          <groupId>com.ingres.jdbc</groupId>
@@ -276,7 +257,6 @@
          <version>9.2</version>
          <scope>test</scope>
       </dependency -->
-
       <!-- For Sybase ASE/Anywhere support (jConnect driver) (local-jcr repository) -->
       <!-- dependency>
          <groupId>com.sybase.jdbc3.jdbc</groupId>
@@ -284,7 +264,6 @@
          <version>6.05</version>
          <scope>test</scope>
       </dependency -->
-      
       <!-- ======================================================================= -->
    </dependencies>
 

@@ -38,12 +38,10 @@
    </properties>
 
    <dependencies>
-
       <dependency>
          <groupId>org.exoplatform.kernel</groupId>
-         <artifactId>exo.kernel.component.command</artifactId>
+         <artifactId>exo.kernel.commons</artifactId>
       </dependency>
-
    </dependencies>
 
    <build>

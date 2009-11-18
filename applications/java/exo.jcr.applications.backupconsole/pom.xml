@@ -39,26 +39,30 @@
 
    <dependencies>
       <dependency>
-         <groupId>org.exoplatform.ws</groupId>
-         <artifactId>exo.ws.commons</artifactId>
+         <groupId>org.exoplatform.jcr</groupId>
+         <artifactId>exo.jcr.component.core</artifactId>
       </dependency>
-
-      <dependency>
-         <groupId>org.apache.ws.commons</groupId>
-         <artifactId>ws-commons-util</artifactId>
-         <exclusions>
-            <exclusion>
-               <groupId>xml-apis</groupId>
-               <artifactId>xml-apis</artifactId>
-            </exclusion>
-         </exclusions>
-      </dependency>
-
       <dependency>
          <groupId>org.exoplatform.jcr</groupId>
          <artifactId>exo.jcr.component.ext</artifactId>
+      </dependency>      
+      <dependency>
+         <groupId>org.exoplatform.ws</groupId>
+         <artifactId>exo.ws.commons</artifactId>
       </dependency>
-
+      <dependency>
+         <groupId>org.exoplatform.ws</groupId>
+         <artifactId>exo.ws.frameworks.json</artifactId>
+         <version>${org.exoplatform.ws.version}</version>
+      </dependency>      
+      <dependency>
+         <groupId>org.jibx</groupId>
+         <artifactId>jibx-run</artifactId>
+      </dependency>      
+      <dependency>
+         <groupId>javax.ws.rs</groupId>
+         <artifactId>jsr311-api</artifactId>
+      </dependency>
    </dependencies>
 
    <build>

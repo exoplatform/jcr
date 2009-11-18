@@ -35,13 +35,11 @@
    <description>eXo JCR Rest web application</description>
 
    <dependencies>
-
       <dependency>
          <groupId>org.exoplatform.jcr</groupId>
          <artifactId>exo.jcr.framework.web</artifactId>
          <scope>provided</scope>
       </dependency>
-
    </dependencies>
 
    <build>
