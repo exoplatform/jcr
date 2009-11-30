@@ -600,6 +600,29 @@ abstract public class JDBCStorageConnection extends DBConstants implements Works
          throw new RepositoryException(e);
       }
    }
+   
+   /**
+    * {@inheritDoc}
+    */
+   public int getChildNodesCount(NodeData parent) throws RepositoryException {
+      checkIfOpened();
+      try
+      {
+         ResultSet count = findChildNodesCountByParentIdentifier(getInternalId(parent.getIdentifier()));
+         if (count.next()) 
+         {
+            return count.getInt(1);
+         }
+         else
+         {
+            throw new RepositoryException("FATAL No resulton childNodes count for " + parent.getQPath().getAsString());
+         }
+      }
+      catch (SQLException e)
+      {
+         throw new RepositoryException(e);
+      }
+   }   
 
    /**
     * {@inheritDoc}
@@ -1871,6 +1894,8 @@ abstract public class JDBCStorageConnection extends DBConstants implements Works
    protected abstract ResultSet findItemByName(String parentId, String name, int index) throws SQLException;
 
    protected abstract ResultSet findChildNodesByParentIdentifier(String parentIdentifier) throws SQLException;
+   
+   protected abstract ResultSet findChildNodesCountByParentIdentifier(String parentIdentifier) throws SQLException;
 
    protected abstract ResultSet findChildPropertiesByParentIdentifier(String parentIdentifier) throws SQLException;
 

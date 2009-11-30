@@ -69,16 +69,19 @@ public class ItemAutocreator
 
    private final ValueFactory valueFactory;
 
+   private final boolean avoidCheckExistedChildItems;
+
    /**
     * @param nodeTypeDataManager
     */
    public ItemAutocreator(NodeTypeDataManager nodeTypeDataManager, ValueFactory valueFactory,
-      ItemDataConsumer dataConsumer)
+      ItemDataConsumer dataConsumer, boolean avoidCheckExistedChildItems)
    {
       super();
       this.nodeTypeDataManager = nodeTypeDataManager;
       this.valueFactory = valueFactory;
       this.dataConsumer = dataConsumer;
+      this.avoidCheckExistedChildItems = avoidCheckExistedChildItems;
    }
 
    public PlainChangesLog makeAutoCreatedItems(final NodeData parent, final InternalQName nodeTypeName,
@@ -113,7 +116,9 @@ public class ItemAutocreator
       {
          if (ndef.isAutoCreated())
          {
-            final ItemData pdata = targetDataManager.getItemData(parent, new QPathEntry(ndef.getName(), 0));
+            final ItemData pdata =
+               avoidCheckExistedChildItems ? null : targetDataManager.getItemData(parent, new QPathEntry(
+                  ndef.getName(), 0));
             if (pdata == null && !addedNodes.contains(ndef.getName()) || pdata != null && !pdata.isNode())
             {
 
@@ -156,7 +161,9 @@ public class ItemAutocreator
          if (pdef.isAutoCreated())
          {
 
-            final ItemData pdata = targetDataManager.getItemData(parent, new QPathEntry(pdef.getName(), 0));
+            final ItemData pdata =
+               avoidCheckExistedChildItems ? null : targetDataManager.getItemData(parent, new QPathEntry(
+                  pdef.getName(), 0));
             if (pdata == null && !addedProperties.contains(pdef.getName()) || pdata != null && pdata.isNode())
             {
 

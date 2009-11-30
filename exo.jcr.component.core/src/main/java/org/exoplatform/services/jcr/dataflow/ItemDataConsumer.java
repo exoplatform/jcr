@@ -28,48 +28,72 @@ import java.util.List;
 import javax.jcr.RepositoryException;
 
 /**
- * Created by The eXo Platform SAS.
+ * Created by The eXo Platform SAS.<br/>
  * 
- * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov</a>
- * @version $Id: ItemDataConsumer.java 11907 2008-03-13 15:36:21Z ksm $
- * 
- *          Basic (Level 1) data flow inmemory operations
+ *          Basic (Level 1) data flow inmemory operations<br/>
  * 
  *          Common Rule for Read : If there is some storage in this manager � try to get the data
  *          from here first, if not found � call super.someMethod
+ *          
+ * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov</a>
+ * @version $Id$
  */
 public interface ItemDataConsumer
 {
 
    /**
-    * @param parent
-    * @param name
-    * @return data by parent and name
+    * Find Item by parent (id) and name (with path index).
+    * 
+    * @param parent NodeData
+    * @param name QPathEntry
+    * @return ItemData, data by parent and name
     * @throws RepositoryException
     */
    ItemData getItemData(NodeData parent, QPathEntry name) throws RepositoryException;
 
    /**
-    * @param identifier
-    * @return data by identifier
+    * Find Item by identifier.
+    * 
+    * @param String identifier
+    * @return ItemData, data by identifier
     */
    ItemData getItemData(String identifier) throws RepositoryException;
 
    /**
-    * @param parentIdentifier
-    * @return children data
+    * Get child Nodes of the parent node.
+    * 
+    * @param parent NodeData
+    * @return List of children Nodes
     */
    List<NodeData> getChildNodesData(NodeData parent) throws RepositoryException;
 
    /**
-    * @param parentIdentifier
-    * @return children data
+    * Get children nodes count of the parent node. 
+    * @param parent NodeData
+    * @return int, child nodes count
+    */
+   int getChildNodesCount(NodeData parent) throws RepositoryException;
+   
+   /**
+    * Get child Properties of the parent node.
+    * 
+    * @param parent NodeData
+    * @return List of children Properties
     */
    List<PropertyData> getChildPropertiesData(NodeData parent) throws RepositoryException;
 
-   List<PropertyData> listChildPropertiesData(final NodeData nodeData) throws RepositoryException;
+   /**
+    * List child Properties, returned list will contains Properties without actual Values.
+    *
+    * @param parent NodeData 
+    * @return List of PropertyData 
+    * @throws RepositoryException
+    */
+   List<PropertyData> listChildPropertiesData(final NodeData parent) throws RepositoryException;
 
    /**
+    * Get Referenced properties.
+    * 
     * @param identifier
     *          - referenceable id
     * @param skipVersionStorage

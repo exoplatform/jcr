@@ -290,6 +290,22 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
          con.close();
       }
    }
+   
+   /**
+    * {@inheritDoc}
+    */
+   public int getChildNodesCount(NodeData parent) throws RepositoryException
+   {
+      final WorkspaceStorageConnection con = dataContainer.openConnection();
+      try
+      {
+         return con.getChildNodesCount(parent);
+      }
+      finally
+      {
+         con.close();
+      }
+   }   
 
    /**
     * {@inheritDoc}

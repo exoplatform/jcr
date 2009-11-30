@@ -369,6 +369,18 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       }
    }
 
+   public int getChildNodesCount(NodeData parent) throws RepositoryException
+   {
+      if (cache.isEnabled())
+      {
+         List<NodeData> childNodes = cache.getChildNodes(parent);
+         if (childNodes != null)
+            return childNodes.size();
+      }
+
+      return super.getChildNodesCount(parent);
+   }
+
    /**
     * Get child PropertyData.
     * 
@@ -453,7 +465,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       }
       return propertiesList;
    }
-
+   
    /**
     * {@inheritDoc}
     */

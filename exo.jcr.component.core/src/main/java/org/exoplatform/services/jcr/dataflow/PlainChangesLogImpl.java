@@ -199,7 +199,6 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
       in.readFully(buf);
       sessionId = new String(buf, DEFAULT_ENCODING);
 
-      items = new ArrayList<ItemState>();
       int listSize = in.readInt();
       for (int i = 0; i < listSize; i++)
          add((ItemState)in.readObject());

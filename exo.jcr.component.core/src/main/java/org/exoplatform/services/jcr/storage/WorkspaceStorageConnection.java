@@ -93,6 +93,15 @@ public interface WorkspaceStorageConnection
     *           if connection is closed
     */
    List<NodeData> getChildNodesData(NodeData parent) throws RepositoryException, IllegalStateException;
+   
+   /**
+    * Reads count of <code>parent<code/> child nodes.
+    *
+    * @param parent NodeData
+    * @return long, childs count
+    * @throws RepositoryException if error occurs
+    */
+   int getChildNodesCount(NodeData parent) throws RepositoryException;
 
    /**
     * Reads <code>List</code> of <code>PropertyData</code> from the storage using item's parent

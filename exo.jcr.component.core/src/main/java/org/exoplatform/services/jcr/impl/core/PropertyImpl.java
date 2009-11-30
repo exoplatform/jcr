@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl.core;
 
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
+import org.exoplatform.services.jcr.core.nodetype.ItemDefinitionData;
 import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionData;
 import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionDatas;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
@@ -93,9 +94,37 @@ public class PropertyImpl extends ItemImpl implements Property
       this.propertyData = (TransientPropertyData)data;
       this.type = propertyData.getType();
 
-      this.location = session.getLocationFactory().createJCRPath(getData().getQPath());
-      this.propertyDef = null;
+      this.qpath = data.getQPath();
+      this.location = null;
+
       initDefinitions(this.propertyData.isMultiValued());
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   void loadData(ItemData data, ItemDefinitionData itemDefinitionData) throws RepositoryException,
+      ConstraintViolationException
+   {
+
+      if (!(data instanceof TransientPropertyData))
+         throw new RepositoryException("Load data: TransientPropertyData is expected, but have " + data);
+
+      this.data = data;
+      this.propertyData = (TransientPropertyData)data;
+      this.type = propertyData.getType();
+
+      this.location = null;
+      this.qpath = data.getQPath();
+      this.propertyDef = (PropertyDefinitionData)itemDefinitionData;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public ItemDefinitionData getItemDefinitionData()
+   {
+      return propertyDef;
    }
 
    /**
@@ -526,9 +555,10 @@ public class PropertyImpl extends ItemImpl implements Property
     */
    public String dump()
    {
-      String vals = "Property " + getPath() + " values: ";
+      String vals = "Property ";
       try
       {
+         vals = getPath() + " values: ";
          for (int i = 0; i < getValueArray().length; i++)
          {
             vals += new String(((BaseValue)getValueArray()[i]).getInternalData().getAsByteArray()) + ";";
@@ -564,19 +594,4 @@ public class PropertyImpl extends ItemImpl implements Property
       return false;
    }
 
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public int hashCode()
-   {
-      try
-      {
-         return getLocation().getAsString(false).hashCode();
-      }
-      catch (Exception e)
-      {
-         return super.hashCode();
-      }
-   }
 }

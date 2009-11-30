@@ -638,7 +638,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       final boolean recipientsMixVersionable = isNodeType(Constants.MIX_VERSIONABLE, recipienAllNodeTypeNames);
       final boolean ancestorIsMixVersionable = isNodeType(Constants.MIX_VERSIONABLE, ancestorAllNodeTypeNames);
 
-      ItemAutocreator itemAutocreator = new ItemAutocreator(this, valueFactory, dataManager);
+      ItemAutocreator itemAutocreator = new ItemAutocreator(this, valueFactory, dataManager, false);
       if (recipientsMixVersionable && !ancestorIsMixVersionable)
       {
 
@@ -838,7 +838,8 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
 
       volatileNodeTypeDataManager.registerVolatileNodeTypes(volatileNodeTypes);
 
-      ItemAutocreator itemAutocreator = new ItemAutocreator(volatileNodeTypeDataManager, valueFactory, dataManager);
+      ItemAutocreator itemAutocreator =
+         new ItemAutocreator(volatileNodeTypeDataManager, valueFactory, dataManager, false);
 
       final Set<String> nodes = this.indexSearcherHolder.getNodesByNodeType(recipientDefinition.getName());
       // check add mix:versionable super

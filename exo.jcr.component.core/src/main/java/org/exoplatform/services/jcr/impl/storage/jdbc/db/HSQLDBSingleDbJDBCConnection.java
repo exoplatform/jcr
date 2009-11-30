@@ -81,6 +81,8 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
             + " where I.PARENT_ID=? and I.I_CLASS=2 and I.CONTAINER_NAME=? and I.NAME=? and I.ID=V.PROPERTY_ID order by V.ORDER_NUM";
       FIND_NODES_BY_PARENTID =
          "select * from JCR_SITEM" + " where PARENT_ID=? and I_CLASS=1 and CONTAINER_NAME=?" + " order by N_ORDER_NUM";
+      FIND_NODES_COUNT_BY_PARENTID =
+         "select count(ID) from JCR_SITEM" + " where PARENT_ID=? and I_CLASS=1 and CONTAINER_NAME=?";
       FIND_PROPERTIES_BY_PARENTID =
          "select * from JCR_SITEM" + " where PARENT_ID=? and I_CLASS=2 and CONTAINER_NAME=?" + " order by ID";
    }
@@ -134,6 +136,22 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
       findNodesByParentId.setString(1, parentCid);
       findNodesByParentId.setString(2, containerName);
       return findNodesByParentId.executeQuery();
+   }
+   
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findChildNodesCountByParentIdentifier(String parentCid) throws SQLException
+   {
+      if (findNodesCountByParentId == null)
+         findNodesCountByParentId = dbConnection.prepareStatement(FIND_NODES_COUNT_BY_PARENTID);
+      else
+         findNodesCountByParentId.clearParameters();
+
+      findNodesCountByParentId.setString(1, parentCid);
+      findNodesCountByParentId.setString(2, containerName);
+      return findNodesCountByParentId.executeQuery();
    }
 
    /**

@@ -18,6 +18,12 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.jcr.InvalidItemStateException;
+import javax.jcr.RepositoryException;
+
 import org.exoplatform.services.jcr.dataflow.ChangesLogIterator;
 import org.exoplatform.services.jcr.dataflow.CompositeChangesLog;
 import org.exoplatform.services.jcr.dataflow.DataManager;
@@ -35,12 +41,6 @@ import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.jcr.InvalidItemStateException;
-import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS. Responsible for: *redirecting repository operations if item is
@@ -72,11 +72,8 @@ public class VersionableWorkspaceDataManager extends ACLInheritanceSupportedWork
       this.versionDataManager = (ACLInheritanceSupportedWorkspaceDataManager)systemDataManager;
    }
 
-   /*
-    * (non-Javadoc)
-    * 
-    * @see org.exoplatform.services.jcr.impl.core.WorkspaceDataManager#getChildNodes(org.exoplatform.services
-    *      .jcr.datamodel.NodeData)
+   /**
+    * {@inheritDoc}
     */
    @Override
    public List<NodeData> getChildNodesData(final NodeData nodeData) throws RepositoryException
@@ -87,12 +84,22 @@ public class VersionableWorkspaceDataManager extends ACLInheritanceSupportedWork
       }
       return super.getChildNodesData(nodeData);
    }
+   
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public int getChildNodesCount(final NodeData parent) throws RepositoryException 
+   {
+      if (isSystemDescendant(parent.getQPath()) && !this.equals(versionDataManager))
+      {
+         return versionDataManager.getChildNodesCount(parent);
+      }
+      return super.getChildNodesCount(parent);
+   }   
 
-   /*
-    * (non-Javadoc)
-    * 
-    * @see org.exoplatform.services.jcr.impl.core.WorkspaceDataManager#getChildProperties(org.exoplatform
-    *      .services.jcr.datamodel.NodeData)
+   /**
+    * {@inheritDoc}
     */
    @Override
    public List<PropertyData> getChildPropertiesData(final NodeData nodeData) throws RepositoryException
@@ -104,6 +111,10 @@ public class VersionableWorkspaceDataManager extends ACLInheritanceSupportedWork
       return super.getChildPropertiesData(nodeData);
    }
 
+   /**
+    * {@inheritDoc}
+    */
+   @Override
    public List<PropertyData> listChildPropertiesData(final NodeData nodeData) throws RepositoryException
    {
       if (isSystemDescendant(nodeData.getQPath()) && !this.equals(versionDataManager))
@@ -113,6 +124,10 @@ public class VersionableWorkspaceDataManager extends ACLInheritanceSupportedWork
       return super.listChildPropertiesData(nodeData);
    }
 
+   /**
+    * {@inheritDoc}
+    */
+   @Override
    public ItemData getItemData(NodeData parentData, QPathEntry name) throws RepositoryException
    {
       if (parentData != null)
@@ -127,8 +142,9 @@ public class VersionableWorkspaceDataManager extends ACLInheritanceSupportedWork
    }
 
    /**
-    * @see org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager#getItemData(java.lang.String)
+    * {@inheritDoc}
     */
+   @Override
    public ItemData getItemData(String identifier) throws RepositoryException
    {
       // from cache at first

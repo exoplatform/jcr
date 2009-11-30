@@ -97,6 +97,9 @@ public class LocalWorkspaceStorageDataManagerProxy implements WorkspaceStorageDa
       storageDataManager.save(newLog);
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public ItemData getItemData(NodeData parentData, QPathEntry name) throws RepositoryException
    {
       return copyItemData(storageDataManager.getItemData(parentData, name));
@@ -117,6 +120,14 @@ public class LocalWorkspaceStorageDataManagerProxy implements WorkspaceStorageDa
    {
       return copyNodes(storageDataManager.getChildNodesData(parent));
    }
+   
+   /**
+    * {@inheritDoc}
+    */
+   public int getChildNodesCount(final NodeData parent) throws RepositoryException 
+   {
+      return storageDataManager.getChildNodesCount(parent);
+   }   
 
    /**
     * {@inheritDoc}
@@ -126,6 +137,9 @@ public class LocalWorkspaceStorageDataManagerProxy implements WorkspaceStorageDa
       return copyProperties(storageDataManager.getChildPropertiesData(parent));
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public List<PropertyData> listChildPropertiesData(NodeData parent) throws RepositoryException
    {
       return copyPropertiesWithoutValues(storageDataManager.listChildPropertiesData(parent));

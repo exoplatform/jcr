@@ -629,7 +629,7 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
 
    }
 
-   public boolean isVersionBelongToThis(Version version)
+   public boolean isVersionBelongToThis(Version version) throws RepositoryException
    {
       return ((VersionImpl)version).getLocation().isDescendantOf(getLocation(), false);
    }

@@ -77,6 +77,8 @@ public class MultiDbJDBCConnection extends JDBCStorageConnection
    protected PreparedStatement findValueByPropertyIdOrderNumber;
 
    protected PreparedStatement findNodesByParentId;
+   
+   protected PreparedStatement findNodesCountByParentId;
 
    protected PreparedStatement findPropertiesByParentId;
 
@@ -185,6 +187,8 @@ public class MultiDbJDBCConnection extends JDBCStorageConnection
       FIND_VALUE_BY_PROPERTYID_OREDERNUMB = "select DATA from JCR_MVALUE where PROPERTY_ID=? and ORDER_NUM=?";
 
       FIND_NODES_BY_PARENTID = "select * from JCR_MITEM" + " where I_CLASS=1 and PARENT_ID=?" + " order by N_ORDER_NUM";
+      
+      FIND_NODES_COUNT_BY_PARENTID = "select count(ID) from JCR_MITEM" + " where I_CLASS=1 and PARENT_ID=?";
 
       FIND_PROPERTIES_BY_PARENTID = "select * from JCR_MITEM" + " where I_CLASS=2 and PARENT_ID=?" + " order by ID";
 
@@ -422,6 +426,21 @@ public class MultiDbJDBCConnection extends JDBCStorageConnection
 
       findNodesByParentId.setString(1, parentIdentifier);
       return findNodesByParentId.executeQuery();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findChildNodesCountByParentIdentifier(String parentIdentifier) throws SQLException
+   {
+      if (findNodesCountByParentId == null)
+         findNodesCountByParentId = dbConnection.prepareStatement(FIND_NODES_COUNT_BY_PARENTID);
+      else
+         findNodesCountByParentId.clearParameters();
+
+      findNodesCountByParentId.setString(1, parentIdentifier);
+      return findNodesCountByParentId.executeQuery();
    }
 
    /**

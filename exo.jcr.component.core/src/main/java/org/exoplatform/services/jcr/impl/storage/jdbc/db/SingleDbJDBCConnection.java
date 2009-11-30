@@ -75,6 +75,8 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
 
    protected PreparedStatement findNodesByParentId;
 
+   protected PreparedStatement findNodesCountByParentId;
+
    protected PreparedStatement findPropertiesByParentId;
 
    protected PreparedStatement insertItem;
@@ -192,6 +194,9 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
 
       FIND_NODES_BY_PARENTID =
          "select * from JCR_SITEM" + " where I_CLASS=1 and CONTAINER_NAME=? and PARENT_ID=?" + " order by N_ORDER_NUM";
+
+      FIND_NODES_COUNT_BY_PARENTID =
+         "select count(ID) from JCR_SITEM" + " where I_CLASS=1 and CONTAINER_NAME=? and PARENT_ID=?";
 
       FIND_PROPERTIES_BY_PARENTID =
          "select * from JCR_SITEM" + " where I_CLASS=2 and CONTAINER_NAME=? and PARENT_ID=?" + " order by ID";
@@ -333,6 +338,22 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
       findNodesByParentId.setString(1, containerName);
       findNodesByParentId.setString(2, parentCid);
       return findNodesByParentId.executeQuery();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findChildNodesCountByParentIdentifier(String parentCid) throws SQLException
+   {
+      if (findNodesCountByParentId == null)
+         findNodesCountByParentId = dbConnection.prepareStatement(FIND_NODES_COUNT_BY_PARENTID);
+      else
+         findNodesCountByParentId.clearParameters();
+
+      findNodesCountByParentId.setString(1, containerName);
+      findNodesCountByParentId.setString(2, parentCid);
+      return findNodesCountByParentId.executeQuery();
    }
 
    /**

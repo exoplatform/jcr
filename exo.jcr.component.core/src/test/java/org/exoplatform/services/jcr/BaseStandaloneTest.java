@@ -387,7 +387,7 @@ public abstract class BaseStandaloneTest extends TestCase
       return testFile;
    }
 
-   protected void checkMixins(String[] mixins, NodeImpl node)
+   protected void checkMixins(String[] mixins, NodeImpl node) throws RepositoryException
    {
       try
       {

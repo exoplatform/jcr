@@ -23,6 +23,7 @@ import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.access.AccessManager;
 import org.exoplatform.services.jcr.access.PermissionType;
 import org.exoplatform.services.jcr.core.ExtendedPropertyType;
+import org.exoplatform.services.jcr.core.nodetype.ItemDefinitionData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionData;
@@ -97,6 +98,11 @@ public abstract class ItemImpl implements Item
     */
    protected JCRPath location;
 
+   /**
+    * Item QPath.
+    */
+   protected QPath qpath;
+
    protected SessionDataManager dataManager;
 
    protected LocationFactory locationFactory;
@@ -104,32 +110,24 @@ public abstract class ItemImpl implements Item
    protected ValueFactoryImpl valueFactory;
 
    /**
-    * Hashcode.
-    */
-   protected final int itemHashCode;
-
-   /**
-    * ItemImpl constructor.
-    * 
-    * @param data
-    *          ItemData object
-    * @param session
-    *          Session object
-    * @throws RepositoryException
-    *           if any Exception is occurred
-    */
+   * ItemImpl constructor.
+   * 
+   * @param data
+   *          ItemData object
+   * @param session
+   *          Session object
+   * @throws RepositoryException
+   *           if any Exception is occurred
+   */
    ItemImpl(ItemData data, SessionImpl session) throws RepositoryException
    {
 
       this.session = session;
       this.data = data;
-      this.location = session.getLocationFactory().createJCRPath(data.getQPath());
 
       this.dataManager = session.getTransientNodesManager();
       this.locationFactory = session.getLocationFactory();
       this.valueFactory = session.getValueFactory();
-
-      itemHashCode = (session.getWorkspace().getName() + data.getIdentifier()).hashCode();
    }
 
    protected void invalidate()
@@ -165,7 +163,7 @@ public abstract class ItemImpl implements Item
    /**
     * {@inheritDoc}
     */
-   public String getPath()
+   public String getPath() throws RepositoryException
    {
       return getLocation().getAsString(false);
    }
@@ -173,7 +171,7 @@ public abstract class ItemImpl implements Item
    /**
     * {@inheritDoc}
     */
-   public String getName()
+   public String getName() throws RepositoryException
    {
       return getLocation().getName().getAsString();
    }
@@ -239,7 +237,7 @@ public abstract class ItemImpl implements Item
     */
    public int getDepth()
    {
-      return getLocation().getDepth();
+      return qpath.getDepth();
    }
 
    /**
@@ -749,8 +747,11 @@ public abstract class ItemImpl implements Item
     * 
     * @return item JCRPath
     */
-   public JCRPath getLocation()
+   public JCRPath getLocation() throws RepositoryException
    {
+      if (this.location == null)
+         this.location = session.getLocationFactory().createJCRPath(qpath);
+
       return this.location;
    }
 
@@ -764,7 +765,34 @@ public abstract class ItemImpl implements Item
       return data.getIdentifier().equals(Constants.ROOT_UUID);
    }
 
+   /**
+    * Loads data
+    *
+    * @param data
+    *          source item data
+    * @throws RepositoryException 
+    *          if errors occurs
+    */
    abstract void loadData(ItemData data) throws RepositoryException;
+
+   /**
+    * Loads data.
+    *
+    * @param data
+    *          source item data
+    * @param itemDefinitionData
+    *          source item definition data
+    * @throws RepositoryException
+    *          if errors occurs
+    */
+   abstract void loadData(ItemData data, ItemDefinitionData itemDefinitionData) throws RepositoryException;
+
+   /**
+    * Returns Item definition data.
+    *
+    * @return
+    */
+   abstract ItemDefinitionData getItemDefinitionData();
 
    public boolean hasPermission(String action) throws RepositoryException
    {
@@ -802,15 +830,6 @@ public abstract class ItemImpl implements Item
          }
       }
       return false;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public int hashCode()
-   {
-      return itemHashCode;
    }
 
    private ValueData valueData(Value value, int type) throws RepositoryException, ValueFormatException

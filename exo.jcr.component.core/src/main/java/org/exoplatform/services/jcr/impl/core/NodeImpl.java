@@ -24,6 +24,7 @@ import org.exoplatform.services.jcr.access.PermissionType;
 import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.core.ExtendedNode;
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
+import org.exoplatform.services.jcr.core.nodetype.ItemDefinitionData;
 import org.exoplatform.services.jcr.core.nodetype.NodeDefinitionData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
@@ -137,7 +138,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     * 
     * @param data
     *          Node data
-    * @param session
+    * @param session    
     *          Session
     * @throws RepositoryException
     *           if error occurs during the Node data loading
@@ -147,6 +148,25 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       super(data, session);
       this.sysLocFactory = session.getSystemLocationFactory();
       loadData(data);
+   }
+
+   /**
+    * NodeImpl constructor.
+    * 
+    * @param data
+    *          Node data
+    * @param parent
+    *          parent node data is used for simple calculation item definition
+    * @param session    
+    *          Session
+    * @throws RepositoryException
+    *           if error occurs during the Node data loading
+    */
+   public NodeImpl(NodeData data, NodeData parent, SessionImpl session) throws RepositoryException
+   {
+      super(data, session);
+      this.sysLocFactory = session.getSystemLocationFactory();
+      loadData(data, parent);
    }
 
    /**
@@ -585,7 +605,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       dataManager.update(state, false);
 
       NodeTypeDataManager ntmanager = session.getWorkspace().getNodeTypesHolder();
-      ItemAutocreator itemAutocreator = new ItemAutocreator(ntmanager, valueFactory, dataManager);
+      ItemAutocreator itemAutocreator = new ItemAutocreator(ntmanager, valueFactory, dataManager, false);
 
       PlainChangesLog changes =
          itemAutocreator.makeAutoCreatedItems(nodeData(), type.getName(), dataManager, session.getUserID());
@@ -956,7 +976,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
             + itemPath.getAsString(false));
       return (NodeImpl)node;
    }
-   
+
    /**
     * {@inheritDoc}
     */
@@ -1234,7 +1254,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       checkValid();
 
-      return dataManager.getChildNodesData(nodeData()).size() > 0;
+      return dataManager.getChildNodesCount(nodeData()) > 0;
    }
 
    /**
@@ -1357,9 +1377,95 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          throw new RepositoryException("ACL is NULL " + nodeData.getQPath().getAsString());
 
       this.data = nodeData;
-      this.location = session.getLocationFactory().createJCRPath(getData().getQPath());
+      this.qpath = nodeData.getQPath();
+      this.location = null;
 
       initDefinition();
+   }
+
+   /**
+    * Loads data.
+    *
+    * @param data
+    *          source item data for load 
+    * @param parent
+    *          parent node data is used for simple calculation item definition
+    * @throws RepositoryException 
+    *          if error occurs
+    */
+   private void loadData(ItemData data, NodeData parent) throws RepositoryException, InvalidItemStateException,
+      ConstraintViolationException
+   {
+
+      if (data == null)
+         throw new InvalidItemStateException("Data is null for " + this.getPath()
+            + " Probably was deleted by another session and can not be loaded from container ");
+
+      if (!data.isNode())
+         throw new RepositoryException("Load data failed: Node expected");
+
+      NodeData nodeData = (NodeData)data;
+
+      // TODO do we need this three checks here?
+      if (nodeData.getPrimaryTypeName() == null)
+         throw new RepositoryException("Load data: NodeData has no primaryTypeName. Null value found. "
+            + (nodeData.getQPath() != null ? nodeData.getQPath().getAsString() : "[null path node]") + " " + nodeData);
+
+      if (nodeData.getMixinTypeNames() == null)
+         throw new RepositoryException("Load data: NodeData has no mixinTypeNames. Null value found. "
+            + (nodeData.getQPath() != null ? nodeData.getQPath().getAsString() : "[null path node]"));
+
+      if (nodeData.getACL() == null)
+         throw new RepositoryException("ACL is NULL " + nodeData.getQPath().getAsString());
+
+      this.data = nodeData;
+      this.qpath = nodeData.getQPath();
+      this.location = null;
+
+      initDefinition(parent);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public void loadData(ItemData data, ItemDefinitionData itemDefinitionData) throws RepositoryException,
+      InvalidItemStateException, ConstraintViolationException
+   {
+
+      if (data == null)
+         throw new InvalidItemStateException("Data is null for " + this.getPath()
+            + " Probably was deleted by another session and can not be loaded from container ");
+
+      if (!data.isNode())
+         throw new RepositoryException("Load data failed: Node expected");
+
+      NodeData nodeData = (NodeData)data;
+
+      // TODO do we need this three checks here?
+      if (nodeData.getPrimaryTypeName() == null)
+         throw new RepositoryException("Load data: NodeData has no primaryTypeName. Null value found. "
+            + (nodeData.getQPath() != null ? nodeData.getQPath().getAsString() : "[null path node]") + " " + nodeData);
+
+      if (nodeData.getMixinTypeNames() == null)
+         throw new RepositoryException("Load data: NodeData has no mixinTypeNames. Null value found. "
+            + (nodeData.getQPath() != null ? nodeData.getQPath().getAsString() : "[null path node]"));
+
+      if (nodeData.getACL() == null)
+         throw new RepositoryException("ACL is NULL " + nodeData.getQPath().getAsString());
+
+      this.data = nodeData;
+      this.location = null;
+      this.qpath = nodeData.getQPath();
+      this.definition = (NodeDefinitionData)itemDefinitionData;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public ItemDefinitionData getItemDefinitionData()
+   {
+      return definition;
    }
 
    /**
@@ -2488,67 +2594,69 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
    // ----------------------------- ExtendedNode -----------------------------
 
-   private int getNextChildOrderNum(List<NodeData> siblings)
+   private int getNextChildOrderNum() throws RepositoryException
    {
-      int max = -1;
-      for (NodeData sibling : siblings)
-      {
-         int cur = sibling.getOrderNumber();
-         if (cur > max)
-            max = cur;
-      }
-      return ++max;
+      //      int max = -1;
+      //      for (NodeData sibling : siblings)
+      //      {
+      //         int cur = sibling.getOrderNumber();
+      //         if (cur > max)
+      //            max = cur;
+      //      }
+      //      return ++max;
+
+      //return siblings.size();
+
+      return dataManager.getChildNodesCount(nodeData());
    }
 
-   private NodeImpl doAddNode(NodeImpl parentNode, InternalQName name, InternalQName primaryTypeName)
-      throws ItemExistsException, RepositoryException, ConstraintViolationException, VersionException, LockException
+   private int getNextChildIndex(InternalQName nameToAdd, NodeData parentNode) throws RepositoryException,
+      ItemExistsException
    {
 
-      validateChildNode(name, primaryTypeName);
+      NodeDefinitionData def =
+         session.getWorkspace().getNodeTypesHolder().getChildNodeDefinition(nameToAdd, parentNode.getPrimaryTypeName(),
+            parentNode.getMixinTypeNames());
 
-      // Initialize data
-      InternalQName[] mixinTypeNames = new InternalQName[0];
-      String identifier = IdGenerator.generate();
+      boolean allowSns = def.isAllowsSameNameSiblings();
 
-      List<NodeData> siblings = dataManager.getChildNodesData(parentNode.nodeData());
-      int orderNum = parentNode.getNextChildOrderNum(siblings);
-      int index = parentNode.getNextChildIndex(name, siblings, parentNode.nodeData());
+      int ind = 1;
 
-      QPath path = QPath.makeChildPath(parentNode.getInternalPath(), name, index);
-
-      AccessControlList acl = parentNode.getACL();
-
-      // create new nodedata, [PN] fix of use index as persisted version
-      NodeData nodeData =
-         new TransientNodeData(path, identifier, -1, primaryTypeName, mixinTypeNames, orderNum, parentNode
-            .getInternalIdentifier(), acl);
-
-      // Create new Node
-      ItemState state = ItemState.createAddedState(nodeData, false);
-      NodeImpl node = (NodeImpl)dataManager.update(state, true);
-
-      NodeTypeDataManager ntmanager = session.getWorkspace().getNodeTypesHolder();
-      ItemAutocreator itemAutocreator = new ItemAutocreator(ntmanager, valueFactory, dataManager);
-
-      PlainChangesLog changes =
-         itemAutocreator.makeAutoCreatedItems(node.nodeData(), primaryTypeName, dataManager, session.getUserID());
-      for (ItemState autoCreatedState : changes.getAllStates())
+      NodeData sibling = (NodeData)dataManager.getItemData(parentNode, new QPathEntry(nameToAdd, ind));
+      while (sibling != null)
       {
-         dataManager.update(autoCreatedState, false);
-      }
-      // addAutoCreatedItems(node.nodeData(), primaryTypeName);
+         if (allowSns)
+         {
+            ind++;
+            sibling = (NodeData)dataManager.getItemData(parentNode, new QPathEntry(nameToAdd, ind));
+         }
+         else
+         {
+            throw new ItemExistsException("The node " + nameToAdd + " already exists in " + getPath()
+               + " and same name sibling is not allowed ");
+         }
+      };
 
-      if (LOG.isDebugEnabled())
-         LOG.debug("new node : " + node.getPath() + " name: " + " primaryType: " + node.getPrimaryNodeType().getName()
-            + " index: " + node.getIndex() + " parent: " + parentNode);
+      return ind;
 
-      // launch event
-      session.getActionHandler().postAddNode(node);
-
-      return node;
+      //      int ind = 0;
+      //      for (NodeData sibling : siblings)
+      //      {
+      //         if (sibling.getQPath().getName().equals(nameToAdd))
+      //         {
+      //            if (allowSns)
+      //               ind++;
+      //            else
+      //               throw new ItemExistsException("The node " + nameToAdd + " already exists in " + getPath()
+      //                  + " and same name sibling is not allowed ");
+      //         }
+      //      }
+      //      return ind + 1;
 
    }
 
+   // old impl
+   @Deprecated
    private int getNextChildIndex(InternalQName nameToAdd, List<NodeData> siblings, NodeData parentNode)
       throws RepositoryException, ItemExistsException
    {
@@ -2572,7 +2680,54 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          }
       }
       return ind + 1;
+   }
 
+   private NodeImpl doAddNode(NodeImpl parentNode, InternalQName name, InternalQName primaryTypeName)
+      throws ItemExistsException, RepositoryException, ConstraintViolationException, VersionException, LockException
+   {
+
+      validateChildNode(name, primaryTypeName);
+
+      // Initialize data
+      InternalQName[] mixinTypeNames = new InternalQName[0];
+      String identifier = IdGenerator.generate();
+
+      //List<NodeData> siblings = dataManager.getChildNodesData(parentNode.nodeData());
+      int orderNum = parentNode.getNextChildOrderNum();
+      int index = parentNode.getNextChildIndex(name, parentNode.nodeData());
+
+      QPath path = QPath.makeChildPath(parentNode.getInternalPath(), name, index);
+
+      AccessControlList acl = parentNode.getACL();
+
+      // create new nodedata, [PN] fix of use index as persisted version
+      NodeData nodeData =
+         new TransientNodeData(path, identifier, -1, primaryTypeName, mixinTypeNames, orderNum, parentNode
+            .getInternalIdentifier(), acl);
+
+      // Create new Node
+      ItemState state = ItemState.createAddedState(nodeData, false);
+      NodeImpl node = (NodeImpl)dataManager.update(state, true);
+
+      NodeTypeDataManager ntmanager = session.getWorkspace().getNodeTypesHolder();
+      ItemAutocreator itemAutocreator = new ItemAutocreator(ntmanager, valueFactory, dataManager, true);
+
+      PlainChangesLog changes =
+         itemAutocreator.makeAutoCreatedItems(node.nodeData(), primaryTypeName, dataManager, session.getUserID());
+      for (ItemState autoCreatedState : changes.getAllStates())
+      {
+         dataManager.update(autoCreatedState, false);
+      }
+      // addAutoCreatedItems(node.nodeData(), primaryTypeName);
+
+      if (LOG.isDebugEnabled())
+         LOG.debug("new node : " + node.getPath() + " name: " + " primaryType: " + node.getPrimaryNodeType().getName()
+            + " index: " + node.getIndex() + " parent: " + parentNode);
+
+      // launch event
+      session.getActionHandler().postAddNode(node);
+
+      return node;
    }
 
    private int getOrderNumber()
@@ -2627,6 +2782,33 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       }
 
       NodeData parent = (NodeData)dataManager.getItemData(getParentIdentifier());
+
+      this.definition =
+         session.getWorkspace().getNodeTypesHolder().getChildNodeDefinition(getInternalName(),
+            parent.getPrimaryTypeName(), parent.getMixinTypeNames());
+
+      if (definition == null)
+         throw new ConstraintViolationException("Node definition not found for " + getPath());
+   }
+
+   /**
+    * Init NodeDefinition.
+    * 
+    * @throws RepositoryException
+    *           if error occurs
+    * @throws ConstraintViolationException
+    *           if definition not found
+    */
+   private void initDefinition(NodeData parent) throws RepositoryException, ConstraintViolationException
+   {
+
+      if (this.isRoot())
+      { // root - no parent
+         this.definition =
+            new NodeDefinitionData(null, null, true, true, OnParentVersionAction.ABORT, true,
+               new InternalQName[]{Constants.NT_BASE}, null, false);
+         return;
+      }
 
       this.definition =
          session.getWorkspace().getNodeTypesHolder().getChildNodeDefinition(getInternalName(),

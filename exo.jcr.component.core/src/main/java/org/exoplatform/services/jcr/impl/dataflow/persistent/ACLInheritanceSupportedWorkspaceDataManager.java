@@ -18,6 +18,12 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
+import java.util.Calendar;
+import java.util.List;
+
+import javax.jcr.InvalidItemStateException;
+import javax.jcr.RepositoryException;
+
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.dataflow.SharedDataManager;
@@ -27,12 +33,6 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-
-import java.util.Calendar;
-import java.util.List;
-
-import javax.jcr.InvalidItemStateException;
-import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS. Data Manager supported ACL Inheritance
@@ -124,6 +124,9 @@ public class ACLInheritanceSupportedWorkspaceDataManager implements SharedDataMa
       return node;
    }
 
+   /**
+    * {@inheritDoc}
+    */
    // ------------ ItemDataConsumer impl ------------
 
    public List<NodeData> getChildNodesData(NodeData parent) throws RepositoryException
@@ -133,29 +136,52 @@ public class ACLInheritanceSupportedWorkspaceDataManager implements SharedDataMa
          initACL(parent, node);
       return nodes;
    }
+   
+   /**
+    * {@inheritDoc}
+    */
+   public int getChildNodesCount(final NodeData parent) throws RepositoryException 
+   {
+      return persistentManager.getChildNodesCount(parent);
+   }
 
+   /**
+    * {@inheritDoc}
+    */
    public ItemData getItemData(NodeData parent, QPathEntry name) throws RepositoryException
    {
       final ItemData item = persistentManager.getItemData(parent, name);
       return item != null && item.isNode() ? initACL(parent, (NodeData)item) : item;
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public ItemData getItemData(String identifier) throws RepositoryException
    {
       final ItemData item = persistentManager.getItemData(identifier);
       return item != null && item.isNode() ? initACL(null, (NodeData)item) : item;
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public List<PropertyData> getChildPropertiesData(NodeData parent) throws RepositoryException
    {
       return persistentManager.getChildPropertiesData(parent);
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public List<PropertyData> listChildPropertiesData(NodeData parent) throws RepositoryException
    {
       return persistentManager.listChildPropertiesData(parent);
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public List<PropertyData> getReferencesData(String identifier, boolean skipVersionStorage)
       throws RepositoryException
    {
@@ -164,12 +190,18 @@ public class ACLInheritanceSupportedWorkspaceDataManager implements SharedDataMa
 
    // ------------ SharedDataManager ----------------------
 
+   /**
+    * {@inheritDoc}
+    */
    public void save(ItemStateChangesLog changes) throws InvalidItemStateException, UnsupportedOperationException,
       RepositoryException
    {
       persistentManager.save(changes);
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public Calendar getCurrentTime()
    {
       return persistentManager.getCurrentTime();
