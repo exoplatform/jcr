@@ -33,6 +33,7 @@ import org.exoplatform.services.log.Log;
 
 import java.util.Calendar;
 
+import javax.jcr.InvalidItemStateException;
 import javax.jcr.RepositoryException;
 
 /**
@@ -173,28 +174,43 @@ public class JobWorkspaceRestore extends Thread
     */
    private void restore() throws Throwable
    {
+      boolean restored = true;
+      RepositoryImpl repository = (RepositoryImpl)repositoryService.getRepository(repositoryName);
       try
       {
-         RepositoryImpl repository = (RepositoryImpl)repositoryService.getRepository(repositoryName);
          RepositoryEntry reEntry = repository.getConfiguration();
-
-         try
-         {
-            backupManager.restore(backupChainLog, reEntry.getName(), wEntry, false);
-         }
-         catch (Throwable t)
-         {
-            removeWorkspace(repository, wEntry.getName());
-            throw new WorkspaceRestoreExeption("Can not be restored the workspace '" + "/" + repositoryName + "/"
-               + wEntry.getName() + "' :", t);
-         }
+         backupManager.restore(backupChainLog, reEntry.getName(), wEntry, false);
+      }
+      catch (InvalidItemStateException e)
+      {
+         restored = false;
+         throw new WorkspaceRestoreExeption("Workspace '" + "/" + repositoryName + "/" + wEntry.getName()
+            + "' can not be restored! There was database error!", e);
 
       }
       catch (Throwable t)
       {
-         throw new WorkspaceRestoreExeption("Can not be restored the workspace  '" + "/" + repositoryName + "/"
-            + wEntry.getName() + "' :", t);
+         restored = false;
+         throw new WorkspaceRestoreExeption("Workspace '" + "/" + repositoryName + "/" + wEntry.getName()
+            + "' can not be restored!", t);
+
       }
+      finally
+      {
+         if (!restored)
+         {
+            try
+            {
+               removeWorkspace(repository, wEntry.getName());
+            }
+            catch (Throwable thr)
+            {
+               throw new WorkspaceRestoreExeption("Workspace '" + "/" + repositoryName + "/"
+                  + wEntry.getName() + "' can not be restored!", thr);
+            }
+         }
+      }
+
    }
 
    /**

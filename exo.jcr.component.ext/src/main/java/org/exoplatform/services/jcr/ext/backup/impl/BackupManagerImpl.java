@@ -407,7 +407,6 @@ public class BackupManagerImpl
             throws BackupOperationException, RepositoryException, RepositoryConfigurationException,
             BackupConfigurationException
    {
-
       List<JobEntryInfo> list = log.getJobEntryInfos();
       BackupConfig config = log.getBackupConfig();
 
