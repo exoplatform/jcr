@@ -53,7 +53,7 @@ public abstract class BaseReplicationTest extends BaseStandaloneTest
    public void setUp() throws Exception
    {
 
-      String containerConf = "src/test/java/conf/standalone/test-configuration-replication.xml";
+      String containerConf = "src/test/resources/conf/standalone/test-configuration-replication.xml";
       String loginConf = Thread.currentThread().getContextClassLoader().getResource("login.conf").toString();
 
       if (!new File(containerConf).exists())
