@@ -535,6 +535,7 @@
                   <artifactId>maven-surefire-plugin</artifactId>
                   <configuration>
                      <phase>test</phase>
+                     <forkMode>${exo.test.forkMode}</forkMode>
                      <goals>
                         <goal>test</goal>
                      </goals>
@@ -547,7 +548,8 @@
                      <includes>
                         <include>**/**/TestErrorMultithreading__.java</include>
                         <include>**/**/TestConcurrentItems__.java</include>
-                        <include>**/**/TestInvalidItemState__.java</include>
+                        
+                        <include>**/**/TestValueImpl.java</include>
                      </includes>
                   </configuration>
                </plugin>

@@ -118,7 +118,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
     */
    public void save(final ItemStateChangesLog changesLog) throws RepositoryException
    {
-
+      //LOG.info(changesLog.dump())
       // check if this workspace container is not read-only
       if (readOnly && !(changesLog instanceof ReadOnlyThroughChanges))
          throw new ReadOnlyWorkspaceException("Workspace container '" + dataContainer.getName() + "' is read-only.");
