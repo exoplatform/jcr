@@ -95,6 +95,11 @@ public class DBConstants
    protected String FIND_ITEM_BY_NAME;
 
    /**
+    * FIND_NODE_BY_ID.
+    */
+   protected String FIND_NODE_BY_ID;
+
+   /**
     * FIND_CHILD_PROPERTY_BY_PATH.
     */
    protected String FIND_CHILD_PROPERTY_BY_PATH;
@@ -126,7 +131,7 @@ public class DBConstants
     * FIND_NODES_BY_PARENTID.
     */
    protected String FIND_NODES_BY_PARENTID;
-   
+
    /**
     * FIND_NODES_COUNT_BY_PARENTID.
     */

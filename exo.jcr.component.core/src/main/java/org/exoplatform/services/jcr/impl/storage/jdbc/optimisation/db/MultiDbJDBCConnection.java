@@ -23,7 +23,7 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.ValueDataConvertor;
-import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection;
+import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.NewJDBCStorageConnection;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 
@@ -48,10 +48,12 @@ import java.util.List;
  *          pnedonosko $
  */
 
-public class MultiDbJDBCConnection extends JDBCStorageConnection
+public class MultiDbJDBCConnection extends NewJDBCStorageConnection
 {
 
    protected PreparedStatement findItemById;
+
+   protected PreparedStatement findNodeById;
 
    protected PreparedStatement findItemByPath;
 
@@ -77,7 +79,7 @@ public class MultiDbJDBCConnection extends JDBCStorageConnection
    protected PreparedStatement findValueByPropertyIdOrderNumber;
 
    protected PreparedStatement findNodesByParentId;
-   
+
    protected PreparedStatement findNodesCountByParentId;
 
    protected PreparedStatement findPropertiesByParentId;
@@ -168,6 +170,10 @@ public class MultiDbJDBCConnection extends JDBCStorageConnection
 
       FIND_ITEM_BY_ID = "select * from JCR_MITEM where ID=?";
 
+      FIND_NODE_BY_ID =
+         "select I.*, P.DATA from JCR_MITEM I, (select I2.PARENT_ID, V.DATA from JCR_MITEM I2, JCR_MVALUE V where I2.I_CLASS=2 and I2.PARENT_ID=?"
+            + " and I2.NAME='[http://www.jcp.org/jcr/1.0]primaryType' and I2.ID=V.PROPERTY_ID) P"
+            + " where I.ID=P.PARENT_ID";
       FIND_ITEM_BY_NAME =
          "select * from JCR_MITEM" + " where PARENT_ID=? and NAME=? and I_INDEX=? order by I_CLASS, VERSION DESC";
 
@@ -187,7 +193,7 @@ public class MultiDbJDBCConnection extends JDBCStorageConnection
       FIND_VALUE_BY_PROPERTYID_OREDERNUMB = "select DATA from JCR_MVALUE where PROPERTY_ID=? and ORDER_NUM=?";
 
       FIND_NODES_BY_PARENTID = "select * from JCR_MITEM" + " where I_CLASS=1 and PARENT_ID=?" + " order by N_ORDER_NUM";
-      
+
       FIND_NODES_COUNT_BY_PARENTID = "select count(ID) from JCR_MITEM" + " where I_CLASS=1 and PARENT_ID=?";
 
       FIND_PROPERTIES_BY_PARENTID = "select * from JCR_MITEM" + " where I_CLASS=2 and PARENT_ID=?" + " order by ID";
@@ -567,5 +573,16 @@ public class MultiDbJDBCConnection extends JDBCStorageConnection
 
       findValuesStorageDescriptorsByPropertyId.setString(1, cid);
       return findValuesStorageDescriptorsByPropertyId.executeQuery();
+   }
+
+   @Override
+   protected ResultSet findNodeByIdentifier(String identifier) throws SQLException
+   {
+      if (findNodeById == null)
+         findNodeById = dbConnection.prepareStatement(FIND_NODE_BY_ID);
+      else
+         findNodeById.clearParameters();
+      findNodeById.setString(1, identifier);
+      return findNodeById.executeQuery();
    }
 }

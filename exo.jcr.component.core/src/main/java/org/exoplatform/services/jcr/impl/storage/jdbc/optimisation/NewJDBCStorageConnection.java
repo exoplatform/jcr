@@ -735,16 +735,17 @@ abstract public class NewJDBCStorageConnection extends DBConstants implements Wo
     * @throws IllegalStateException
     *           if connection is closed
     */
-   protected ItemData getItemByIdentifier(String cid) throws RepositoryException, IllegalStateException
+   protected ItemData getItemByIdentifier(String id) throws RepositoryException, IllegalStateException
    {
       checkIfOpened();
       ResultSet item = null;
       try
       {
-         item = findItemByIdentifier(cid);
+         item = findNodeByIdentifier(id);
          if (item.next())
          {
-            return itemData(null, item, item.getInt(COLUMN_CLASS), null);
+            //itemData(null, item, item.getInt(COLUMN_CLASS), null);
+            return loadNodeRecord(item, null);
          }
          return null;
       }
@@ -1115,6 +1116,139 @@ abstract public class NewJDBCStorageConnection extends DBConstants implements Wo
             qentries[qi++] = qrpath.get(i);
          }
          return new QPath(qentries);
+      }
+   }
+
+   protected PersistedNodeData loadNodeRecord(ResultSet item, QPath parentPath) throws RepositoryException,
+      SQLException, IOException
+   {
+
+      String cid = item.getString(COLUMN_ID);
+      String cname = item.getString(COLUMN_NAME);
+      int cversion = item.getInt(COLUMN_VERSION);
+      String cpid = item.getString(COLUMN_PARENTID);
+      int cindex = item.getInt(COLUMN_INDEX);
+      int cnordernumb = item.getInt(COLUMN_NORDERNUM);
+      AccessControlList parentACL = null;
+
+      try
+      {
+         InternalQName qname = InternalQName.parse(cname);
+
+         // TODO can't avoid QPath traverse
+         QPath qpath;
+         String parentCid;
+         if (parentPath != null)
+         {
+            // get by parent and name
+            qpath = QPath.makeChildPath(parentPath, qname, cindex);
+            parentCid = cpid;
+         }
+         else
+         {
+            // get by id
+            if (cpid.equals(Constants.ROOT_PARENT_UUID))
+            {
+               // root node
+               qpath = Constants.ROOT_PATH;
+               parentCid = null;
+            }
+            else
+            {
+               qpath = QPath.makeChildPath(traverseQPath(cpid), qname, cindex);
+               parentCid = cpid;
+            }
+         }
+
+         // PRIMARY
+         byte[] data = item.getBytes(COLUMN_VDATA);
+         InternalQName ptName = InternalQName.parse(new String((data != null ? data : new byte[]{})));
+
+         try
+         {
+            //            // PRIMARY
+            //            ResultSet ptProp = findPropertyByName(cid, Constants.JCR_PRIMARYTYPE.getAsString());
+            //
+            //            if (!ptProp.next())
+            //               throw new PrimaryTypeNotFoundException("FATAL ERROR primary type record not found. Node "
+            //                  + qpath.getAsString() + ", id " + cid + ", container " + this.containerName, null);
+            //
+            //            byte[] data = ptProp.getBytes(COLUMN_VDATA);
+            //            InternalQName ptName = InternalQName.parse(new String((data != null ? data : new byte[]{})));
+
+            // MIXIN
+            MixinInfo mixins = readMixins(cid);
+
+            // ACL
+            AccessControlList acl; // NO DEFAULT values!
+
+            if (mixins.hasOwneable())
+            {
+               // has own owner
+               if (mixins.hasPrivilegeable())
+               {
+                  // and permissions
+                  acl = new AccessControlList(readACLOwner(cid), readACLPermisions(cid));
+               }
+               else if (parentACL != null)
+               {
+                  // use permissions from existed parent
+                  acl =
+                     new AccessControlList(readACLOwner(cid), parentACL.hasPermissions() ? parentACL
+                        .getPermissionEntries() : null);
+               }
+               else
+               {
+                  // have to search nearest ancestor permissions in ACL manager
+                  // acl = new AccessControlList(readACLOwner(cid), traverseACLPermissions(cpid));
+                  acl = new AccessControlList(readACLOwner(cid), null);
+               }
+            }
+            else if (mixins.hasPrivilegeable())
+            {
+               // has own permissions
+               if (mixins.hasOwneable())
+               {
+                  // and owner
+                  acl = new AccessControlList(readACLOwner(cid), readACLPermisions(cid));
+               }
+               else if (parentACL != null)
+               {
+                  // use owner from existed parent
+                  acl = new AccessControlList(parentACL.getOwner(), readACLPermisions(cid));
+               }
+               else
+               {
+                  // have to search nearest ancestor owner in ACL manager
+                  // acl = new AccessControlList(traverseACLOwner(cpid), readACLPermisions(cid));
+                  acl = new AccessControlList(null, readACLPermisions(cid));
+               }
+            }
+            else
+            {
+               if (parentACL != null)
+                  // construct ACL from existed parent ACL
+                  acl =
+                     new AccessControlList(parentACL.getOwner(), parentACL.hasPermissions() ? parentACL
+                        .getPermissionEntries() : null);
+               else
+                  // have to search nearest ancestor owner and permissions in ACL manager
+                  // acl = traverseACL(cpid);
+                  acl = null;
+            }
+
+            return new PersistedNodeData(getIdentifier(cid), qpath, getIdentifier(parentCid), cversion, cnordernumb,
+               ptName, mixins.mixinNames(), acl);
+         }
+         catch (IllegalACLException e)
+         {
+            throw new RepositoryException("FATAL ERROR Node " + getIdentifier(cid) + " " + qpath.getAsString()
+               + " has wrong formed ACL. ", e);
+         }
+      }
+      catch (IllegalNameException e)
+      {
+         throw new RepositoryException(e);
       }
    }
 
@@ -1888,6 +2022,8 @@ abstract public class NewJDBCStorageConnection extends DBConstants implements Wo
    protected abstract int addNodeRecord(NodeData data) throws SQLException;
 
    protected abstract int addPropertyRecord(PropertyData prop) throws SQLException;
+
+   protected abstract ResultSet findNodeByIdentifier(String identifier) throws SQLException;
 
    protected abstract ResultSet findItemByIdentifier(String identifier) throws SQLException;
 
