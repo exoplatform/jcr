@@ -19,10 +19,12 @@
 package org.exoplatform.services.jcr.api.writing;
 
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.impl.core.NodeImpl;
 
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
+import javax.jcr.PropertyType;
 import javax.jcr.ReferentialIntegrityException;
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
@@ -56,9 +58,12 @@ public class TestNodeReference extends JcrAPIBaseTest
       Node n2 = root.addNode("n2", "nt:unstructured");
       Node n11 = root.addNode("n11", "nt:unstructured");
 
-      n1.setProperty("p1", testNode);
-      n2.setProperty("p1", testNode);
-      n11.setProperty("p1", testNode1);
+      n1.setProperty("p1", new String[]{((NodeImpl)testNode).getInternalIdentifier(),
+         ((NodeImpl)testNode1).getInternalIdentifier()}, PropertyType.REFERENCE);
+
+      //      n1.setProperty("p1", testNode);
+      // n2.setProperty("p1", testNode);
+      //      n11.setProperty("p1", testNode1);
 
       root.save();
 
@@ -68,7 +73,7 @@ public class TestNodeReference extends JcrAPIBaseTest
          {
             log.debug("ref >>>" + refs.nextProperty());
          }
-      assertEquals(2, testNode.getReferences().getSize());
+      assertEquals(1, testNode.getReferences().getSize());
       assertEquals(1, testNode1.getReferences().getSize());
 
       testNode.remove();
