@@ -179,7 +179,7 @@ public class MultiDbJDBCConnection extends NewJDBCStorageConnection
          //            + " where I2.ID=I.ID and I2.ID=I.PARENT_ID and I.NAME IN ('[http://www.jcp.org/jcr/1.0]primaryType')";// order by I.I_CLASS, I.N_ORDER_NUM"
 
          "select I.*, V.ORDER_NUM, V.DATA, V.STORAGE_DESC from JCR_MITEM I LEFT OUTER JOIN JCR_MVALUE V ON (V.PROPERTY_ID=I.ID)"
-            + " where (I.ID=?) or (I.PARENT_ID=? and I.I_CLASS=2 and I.NAME IN ('[http://www.jcp.org/jcr/1.0]primaryType')) order by I.I_CLASS, I.N_ORDER_NUM";// order by I.I_CLASS, I.N_ORDER_NUM"
+            + " where (I.ID=?) or (I.PARENT_ID=? and I.I_CLASS=2 and I.NAME IN ('[http://www.jcp.org/jcr/1.0]primaryType','[http://www.jcp.org/jcr/1.0]mixinTypes')) order by I.I_CLASS, I.N_ORDER_NUM";// order by I.I_CLASS, I.N_ORDER_NUM"
 
       FIND_ITEM_BY_NAME =
          "select * from JCR_MITEM" + " where PARENT_ID=? and NAME=? and I_INDEX=? order by I_CLASS, VERSION DESC";

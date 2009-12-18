@@ -1177,21 +1177,42 @@ abstract public class NewJDBCStorageConnection extends DBConstants implements Wo
          byte[] data = item.getBytes(COLUMN_VDATA);
          InternalQName ptName = InternalQName.parse(new String((data != null ? data : new byte[]{})));
 
+         //            // PRIMARY
+         //            ResultSet ptProp = findPropertyByName(cid, Constants.JCR_PRIMARYTYPE.getAsString());
+         //
+         //            if (!ptProp.next())
+         //               throw new PrimaryTypeNotFoundException("FATAL ERROR primary type record not found. Node "
+         //                  + qpath.getAsString() + ", id " + cid + ", container " + this.containerName, null);
+         //
+         //            byte[] data = ptProp.getBytes(COLUMN_VDATA);
+         //            InternalQName ptName = InternalQName.parse(new String((data != null ? data : new byte[]{})));
+
+         // MIXIN
+         MixinInfo mixins = null;
+         List<InternalQName> mts = null;
+         boolean owneable = false;
+         boolean privilegeable = false;
+         while (item.next() && item.getString(COLUMN_NAME).equals(Constants.JCR_MIXINTYPES.getAsString()))
+         {
+            mts = new ArrayList<InternalQName>();
+            byte[] mxnb = item.getBytes(COLUMN_VDATA);
+            if (mxnb != null)
+            {
+               InternalQName mxn = InternalQName.parse(new String(mxnb));
+               mts.add(mxn);
+
+               if (!privilegeable && Constants.EXO_PRIVILEGEABLE.equals(mxn))
+                  privilegeable = true;
+               else if (!owneable && Constants.EXO_OWNEABLE.equals(mxn))
+                  owneable = true;
+            } // else, if SQL NULL - skip it
+
+         }
+
+         mixins = new MixinInfo(mts, owneable, privilegeable);
+
          try
          {
-            //            // PRIMARY
-            //            ResultSet ptProp = findPropertyByName(cid, Constants.JCR_PRIMARYTYPE.getAsString());
-            //
-            //            if (!ptProp.next())
-            //               throw new PrimaryTypeNotFoundException("FATAL ERROR primary type record not found. Node "
-            //                  + qpath.getAsString() + ", id " + cid + ", container " + this.containerName, null);
-            //
-            //            byte[] data = ptProp.getBytes(COLUMN_VDATA);
-            //            InternalQName ptName = InternalQName.parse(new String((data != null ? data : new byte[]{})));
-
-            // MIXIN
-            MixinInfo mixins = readMixins(cid);
-
             // ACL
             AccessControlList acl; // NO DEFAULT values!
 
@@ -1252,6 +1273,7 @@ abstract public class NewJDBCStorageConnection extends DBConstants implements Wo
 
             return new PersistedNodeData(getIdentifier(cid), qpath, getIdentifier(parentCid), cversion, cnordernumb,
                ptName, mixins.mixinNames(), acl);
+
          }
          catch (IllegalACLException e)
          {
