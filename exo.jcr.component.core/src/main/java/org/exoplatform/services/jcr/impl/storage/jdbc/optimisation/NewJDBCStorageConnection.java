@@ -741,11 +741,19 @@ abstract public class NewJDBCStorageConnection extends DBConstants implements Wo
       ResultSet item = null;
       try
       {
-         item = findNodeByIdentifier(id);
+         item = findItemByIdentifierNew(id);
          if (item.next())
          {
-            //itemData(null, item, item.getInt(COLUMN_CLASS), null);
-            return loadNodeRecord(item, null);
+            int itemType = item.getInt(COLUMN_CLASS);
+            if (itemType == I_CLASS_NODE)
+            {
+               return loadNodeRecord(item, null);
+            }
+            else
+            {
+               return loadPropertyRecord(item, null);
+            }
+
          }
          return null;
       }
@@ -1161,6 +1169,11 @@ abstract public class NewJDBCStorageConnection extends DBConstants implements Wo
          }
 
          // PRIMARY
+         if (!item.next() || !item.getString(COLUMN_NAME).equals(Constants.JCR_PRIMARYTYPE.getAsString()))
+         {
+            throw new SQLException("Node finded but primaryType property not " + cid);
+         }
+
          byte[] data = item.getBytes(COLUMN_VDATA);
          InternalQName ptName = InternalQName.parse(new String((data != null ? data : new byte[]{})));
 
@@ -1249,6 +1262,60 @@ abstract public class NewJDBCStorageConnection extends DBConstants implements Wo
       catch (IllegalNameException e)
       {
          throw new RepositoryException(e);
+      }
+   }
+
+   protected PersistedPropertyData loadPropertyRecord(ResultSet item, QPath parentPath) throws RepositoryException,
+      SQLException, IOException
+   {
+      String cid = item.getString(COLUMN_ID);
+      String cname = item.getString(COLUMN_NAME);
+      int cversion = item.getInt(COLUMN_VERSION);
+
+      String cpid = item.getString(COLUMN_PARENTID);
+      // if parent ID is empty string - it's a root node
+      // cpid = cpid.equals(Constants.ROOT_PARENT_UUID) ? null : cpid;
+
+      try
+      {
+
+         int cptype = item.getInt(COLUMN_PTYPE);
+         boolean cpmultivalued = item.getBoolean(COLUMN_PMULTIVALUED);
+         try
+         {
+            QPath qpath =
+               QPath.makeChildPath(parentPath == null ? traverseQPath(cpid) : parentPath, InternalQName.parse(cname));
+
+            PersistedPropertyData pdata =
+               new PersistedPropertyData(getIdentifier(cid), qpath, getIdentifier(cpid), cversion, cptype,
+                  cpmultivalued);
+
+            List<ValueData> data = new ArrayList<ValueData>();
+
+            do
+            {
+               final int orderNum = item.getInt(COLUMN_VORDERNUM);
+               final String storageId = item.getString(COLUMN_VSTORAGE_DESC);
+               ValueData vdata =
+                  item.wasNull() ? readValueData(cid, orderNum, pdata.getPersistedVersion(), item
+                     .getBinaryStream(COLUMN_VDATA)) : readValueData(pdata, orderNum, storageId);
+               data.add(vdata);
+            }
+            while (item.next() && item.getString(COLUMN_ID) == cid);
+            //TODO avoid situation when there is valueDatas from another property (impossible but exception throwing need)
+
+            pdata.setValues(data);
+            return pdata;
+         }
+         catch (IllegalNameException e)
+         {
+            throw new RepositoryException(e);
+         }
+      }
+      catch (InvalidItemStateException e)
+      {
+         throw new InvalidItemStateException("FATAL: Can't build item path for name " + cname + " id: "
+            + getIdentifier(cid) + ". " + e);
       }
    }
 
@@ -2023,7 +2090,7 @@ abstract public class NewJDBCStorageConnection extends DBConstants implements Wo
 
    protected abstract int addPropertyRecord(PropertyData prop) throws SQLException;
 
-   protected abstract ResultSet findNodeByIdentifier(String identifier) throws SQLException;
+   protected abstract ResultSet findItemByIdentifierNew(String identifier) throws SQLException;
 
    protected abstract ResultSet findItemByIdentifier(String identifier) throws SQLException;
 

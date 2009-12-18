@@ -97,7 +97,7 @@ public class DBConstants
    /**
     * FIND_NODE_BY_ID.
     */
-   protected String FIND_NODE_BY_ID;
+   protected String FIND_ITEM_BY_ID_NEW;
 
    /**
     * FIND_CHILD_PROPERTY_BY_PATH.

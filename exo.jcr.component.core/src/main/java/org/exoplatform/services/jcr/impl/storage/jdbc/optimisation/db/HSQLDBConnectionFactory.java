@@ -17,7 +17,6 @@
 package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.GenericConnectionFactory;
-import org.exoplatform.services.jcr.impl.storage.jdbc.db.HSQLDBSingleDbJDBCConnection;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
