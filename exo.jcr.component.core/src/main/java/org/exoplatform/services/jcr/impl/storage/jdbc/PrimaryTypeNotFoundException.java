@@ -46,7 +46,7 @@ public class PrimaryTypeNotFoundException extends ItemNotFoundException
     * @param path
     *          - context path
     */
-   public PrimaryTypeNotFoundException(String message, QPath path)
+   PrimaryTypeNotFoundException(String message, QPath path)
    {
       super(message);
       this.path = path;
