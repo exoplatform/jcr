@@ -1216,25 +1216,9 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       {
          try
          {
-            if (element.contains(":"))
-            {
-               element = element.replaceAll(":", URLEncoder.encode(":", "UTF-8"));
-            }
-            if (element.contains("["))
-            {
-               element = element.replaceAll("\\[", URLEncoder.encode("[", "UTF-8"));
-            }
-            if (element.contains("]"))
-            {
-               element = element.replaceAll("]", URLEncoder.encode("]", "UTF-8"));
-            }
             if (element.contains("'"))
             {
                element = element.replaceAll("'", URLEncoder.encode("'", "UTF-8"));
-            }
-            if (element.contains("\""))
-            {
-               element = element.replaceAll("\"", URLEncoder.encode("\"", "UTF-8"));
             }
             escapedPath.append(element + "/");
          }
