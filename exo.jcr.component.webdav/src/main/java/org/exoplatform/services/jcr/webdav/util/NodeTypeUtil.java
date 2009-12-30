@@ -45,13 +45,12 @@ public class NodeTypeUtil
     */
    public static String getFileNodeType(String fileNodeTypeHeader) throws NoSuchNodeTypeException
    {
-      if (fileNodeTypeHeader != null)
-         return fileNodeTypeHeader;
+      if (fileNodeTypeHeader != null && !fileNodeTypeHeader.equals(WebDavConst.NodeTypes.NT_FILE))
+         throw new NoSuchNodeTypeException("Unsupported file node type: " + fileNodeTypeHeader);
       else
          // Default nodetype for the file.
-         return WebDavConst.NodeTypes.NT_FILE;
+         return null;
    }
-
    /**
     * Returns the NodeType of content node according to the Content-NodeType
     * header.
