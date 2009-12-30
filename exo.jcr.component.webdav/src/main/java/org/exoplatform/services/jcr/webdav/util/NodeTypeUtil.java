@@ -45,11 +45,11 @@ public class NodeTypeUtil
     */
    public static String getFileNodeType(String fileNodeTypeHeader) throws NoSuchNodeTypeException
    {
-      if (fileNodeTypeHeader != null && !fileNodeTypeHeader.equals(WebDavConst.NodeTypes.NT_FILE))
-         throw new NoSuchNodeTypeException("Unsupported file node type: " + fileNodeTypeHeader);
+      if (fileNodeTypeHeader != null)
+         return fileNodeTypeHeader;
       else
          // Default nodetype for the file.
-         return null;
+         return WebDavConst.NodeTypes.NT_FILE;
    }
 
    /**
