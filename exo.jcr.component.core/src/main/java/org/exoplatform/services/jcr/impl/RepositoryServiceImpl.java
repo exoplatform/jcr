@@ -156,6 +156,8 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
       if (!config.getRepositoryConfigurations().contains(rEntry))
       {
          config.getRepositoryConfigurations().add(rEntry);
+         // save config
+         config.retain();
       }
 
       addNamespaces(rEntry.getName());
