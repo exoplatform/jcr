@@ -18,7 +18,20 @@
  */
 package org.exoplatform.services.jcr.ext.repository;
 
-import java.net.URI;
+import org.exoplatform.common.http.HTTPStatus;
+import org.exoplatform.services.jcr.RepositoryService;
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.config.RepositoryEntry;
+import org.exoplatform.services.jcr.config.RepositoryServiceConfiguration;
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
+import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
+import org.exoplatform.services.jcr.impl.core.SessionRegistry;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+import org.exoplatform.services.rest.resource.ResourceContainer;
+
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,20 +51,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Response.Status;
 
-import org.exoplatform.common.http.HTTPStatus;
-import org.exoplatform.services.jcr.RepositoryService;
-import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
-import org.exoplatform.services.jcr.config.RepositoryEntry;
-import org.exoplatform.services.jcr.config.RepositoryServiceConfiguration;
-import org.exoplatform.services.jcr.config.WorkspaceEntry;
-import org.exoplatform.services.jcr.core.ManageableRepository;
-import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
-import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
-import org.exoplatform.services.jcr.impl.core.SessionRegistry;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
-import org.exoplatform.services.rest.resource.ResourceContainer;
-
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -63,8 +62,7 @@ import org.exoplatform.services.rest.resource.ResourceContainer;
  */
 
 @Path("/jcr-service")
-public class RestRepositoryService
-   implements ResourceContainer
+public class RestRepositoryService implements ResourceContainer
 {
 
    /**
@@ -186,8 +184,8 @@ public class RestRepositoryService
    {
       RepositoryServiceConfiguration configuration = repositoryService.getConfig();
       RepositoryServiceConf conf =
-               new RepositoryServiceConf(configuration.getRepositoryConfigurations(), configuration
-                        .getDefaultRepositoryName());
+         new RepositoryServiceConf(configuration.getRepositoryConfigurations(), configuration
+            .getDefaultRepositoryName());
       return Response.ok(conf, MediaType.APPLICATION_JSON_TYPE).cacheControl(NO_CACHE).build();
    }
 
@@ -209,33 +207,41 @@ public class RestRepositoryService
       try
       {
          String defaultWorkspaceName =
-                  repositoryService.getRepository(repositoryName).getConfiguration().getDefaultWorkspaceName();
+            repositoryService.getRepository(repositoryName).getConfiguration().getDefaultWorkspaceName();
 
          for (WorkspaceEntry wEntry : repositoryService.getRepository(repositoryName).getConfiguration()
-                  .getWorkspaceEntries())
+            .getWorkspaceEntries())
+         {
             if (defaultWorkspaceName.equals(wEntry.getName()))
+            {
                return Response.ok(wEntry).cacheControl(NO_CACHE).build();
+            }
+         }
 
          return Response.status(Response.Status.NOT_FOUND).entity("Can not get default workspace configuration.").type(
-                  MediaType.TEXT_PLAIN).cacheControl(NO_CACHE).build();
+            MediaType.TEXT_PLAIN).cacheControl(NO_CACHE).build();
       }
       catch (RepositoryException e)
       {
          if (log.isDebugEnabled())
+         {
             log.error(e.getMessage(), e);
+         }
          errorMessage = e.getMessage();
          status = Status.NOT_FOUND;
       }
       catch (Throwable e)
       {
          if (log.isDebugEnabled())
+         {
             log.error(e.getMessage(), e);
+         }
          errorMessage = e.getMessage();
          status = Status.INTERNAL_SERVER_ERROR;
       }
 
       return Response.status(status).entity(errorMessage).type(MediaType.TEXT_PLAIN_TYPE).cacheControl(NO_CACHE)
-               .build();
+         .build();
    }
 
    /**
@@ -259,33 +265,39 @@ public class RestRepositoryService
       try
       {
          repositoryService.createRepository(newRepository);
-         URI location = new URI(uriInfo.getBaseUri().toString() + uriInfo.getPath() + "/" + newRepository.getName());
+         repositoryService.getConfig().retain(); // save configuration to persistence (file or persister)
          return Response.ok().cacheControl(NO_CACHE).build();
       }
       catch (RepositoryException e)
       {
          if (log.isDebugEnabled())
+         {
             log.error(e.getMessage(), e);
+         }
          errorMessage = e.getMessage();
          status = Status.BAD_REQUEST;
       }
       catch (RepositoryConfigurationException e)
       {
          if (log.isDebugEnabled())
+         {
             log.error(e.getMessage(), e);
+         }
          errorMessage = e.getMessage();
          status = Status.BAD_REQUEST;
       }
       catch (Throwable e)
       {
          if (log.isDebugEnabled())
+         {
             log.error(e.getMessage(), e);
+         }
          errorMessage = e.getMessage();
          status = Status.INTERNAL_SERVER_ERROR;
       }
 
       return Response.status(status).entity(errorMessage).type(MediaType.TEXT_PLAIN_TYPE).cacheControl(NO_CACHE)
-               .build();
+         .build();
    }
 
    /**
@@ -305,41 +317,47 @@ public class RestRepositoryService
    @RolesAllowed("administrators")
    @Path("/create-workspace/{repositoryName}")
    public Response createWorkspace(@Context UriInfo uriInfo, @PathParam("repositoryName") String repositoryName,
-            WorkspaceEntry newWorkspace) throws URISyntaxException
+      WorkspaceEntry newWorkspace) throws URISyntaxException
    {
       String errorMessage = new String();
       Status status;
       try
       {
-         RepositoryImpl repository = (RepositoryImpl) repositoryService.getRepository(repositoryName);
+         RepositoryImpl repository = (RepositoryImpl)repositoryService.getRepository(repositoryName);
          repository.configWorkspace(newWorkspace);
          repository.createWorkspace(newWorkspace.getName());
-         URI location = new URI(uriInfo.getBaseUri().toString() + uriInfo.getPath() + "/" + newWorkspace.getName());
-         return Response.ok().build();
+         repositoryService.getConfig().retain(); // save configuration to persistence (file or persister)
+         return Response.ok().cacheControl(NO_CACHE).build();
       }
       catch (RepositoryException e)
       {
          if (log.isDebugEnabled())
+         {
             log.error(e.getMessage(), e);
+         }
          errorMessage = e.getMessage();
          status = Status.NOT_FOUND;
       }
       catch (RepositoryConfigurationException e)
       {
          if (log.isDebugEnabled())
+         {
             log.error(e.getMessage(), e);
+         }
          errorMessage = e.getMessage();
          status = Status.BAD_REQUEST;
       }
       catch (Throwable e)
       {
          if (log.isDebugEnabled())
+         {
             log.error(e.getMessage(), e);
+         }
          errorMessage = e.getMessage();
          status = Status.INTERNAL_SERVER_ERROR;
       }
       return Response.status(status).entity(errorMessage).type(MediaType.TEXT_PLAIN_TYPE).cacheControl(NO_CACHE)
-               .build();
+         .build();
    }
 
    /**
@@ -355,8 +373,8 @@ public class RestRepositoryService
    @POST
    @RolesAllowed("administrators")
    @Path("/remove-repository/{repositoryName}/{forseSessionClose}")
-   public Response removeRepository(@Context UriInfo uriInfo, @PathParam("repositoryName") String repositoryName, 
-            @PathParam("forseSessionClose") Boolean forseSessionClose)
+   public Response removeRepository(@Context UriInfo uriInfo, @PathParam("repositoryName") String repositoryName,
+      @PathParam("forseSessionClose") Boolean forseSessionClose)
    {
       String errorMessage = new String();
       Status status;
@@ -364,34 +382,43 @@ public class RestRepositoryService
       try
       {
          if (forseSessionClose)
-            for (WorkspaceEntry wsEntry : repositoryService.getConfig().getRepositoryConfiguration(repositoryName).getWorkspaceEntries())
-            forceCloseSession(repositoryName, wsEntry.getName());
-         
+         {
+            for (WorkspaceEntry wsEntry : repositoryService.getConfig().getRepositoryConfiguration(repositoryName)
+               .getWorkspaceEntries())
+            {
+               forceCloseSession(repositoryName, wsEntry.getName());
+            }
+         }
+
          if (repositoryService.canRemoveRepository(repositoryName))
          {
             repositoryService.removeRepository(repositoryName);
             return Response.noContent().build();
          }
          return Response.status(HTTPStatus.CONFLICT).entity("Can't remove repository " + repositoryName).cacheControl(
-                  NO_CACHE).build();
+            NO_CACHE).build();
       }
       catch (RepositoryException e)
       {
          if (log.isDebugEnabled())
+         {
             log.error(e.getMessage(), e);
+         }
          errorMessage = e.getMessage();
          status = Status.NOT_FOUND;
       }
       catch (Throwable e)
       {
          if (log.isDebugEnabled())
+         {
             log.error(e.getMessage(), e);
+         }
          errorMessage = e.getMessage();
          status = Status.INTERNAL_SERVER_ERROR;
       }
 
       return Response.status(status).entity(errorMessage).type(MediaType.TEXT_PLAIN_TYPE).cacheControl(NO_CACHE)
-               .build();
+         .build();
    }
 
    /**
@@ -410,7 +437,7 @@ public class RestRepositoryService
    @RolesAllowed("administrators")
    @Path("/remove-workspace/{repositoryName}/{workspaceName}/{forseSessionClose}/")
    public Response removeWorkspace(@Context UriInfo uriInfo, @PathParam("repositoryName") String repositoryName,
-            @PathParam("workspaceName") String workspaceName, @PathParam("forseSessionClose") Boolean forseSessionClose)
+      @PathParam("workspaceName") String workspaceName, @PathParam("forseSessionClose") Boolean forseSessionClose)
    {
       String errorMessage = new String();
       Status status;
@@ -418,43 +445,51 @@ public class RestRepositoryService
       try
       {
          ManageableRepository repository = repositoryService.getRepository(repositoryName);
-         
+
          if (forseSessionClose)
-           forceCloseSession(repositoryName, workspaceName);
-         
+         {
+            forceCloseSession(repositoryName, workspaceName);
+         }
+
          if (repository.canRemoveWorkspace(workspaceName))
-         {  
+         {
             repository.removeWorkspace(workspaceName);
             return Response.noContent().build();
          }
          return Response.status(Status.CONFLICT).entity(
-                  "Can't remove workspace " + workspaceName + " in repository " + repositoryName)
-                  .cacheControl(NO_CACHE).build();
+            "Can't remove workspace " + workspaceName + " in repository " + repositoryName).cacheControl(NO_CACHE)
+            .build();
       }
       catch (RepositoryException e)
       {
          if (log.isDebugEnabled())
+         {
             log.error(e.getMessage(), e);
+         }
          errorMessage = e.getMessage();
          status = Status.NOT_FOUND;
       }
       catch (RepositoryConfigurationException e)
       {
          if (log.isDebugEnabled())
+         {
             log.error(e.getMessage(), e);
+         }
          errorMessage = e.getMessage();
          status = Status.NOT_FOUND;
       }
       catch (Throwable e)
       {
          if (log.isDebugEnabled())
+         {
             log.error(e.getMessage(), e);
+         }
          errorMessage = e.getMessage();
          status = Status.INTERNAL_SERVER_ERROR;
       }
 
       return Response.status(status).entity(errorMessage).type(MediaType.TEXT_PLAIN_TYPE).cacheControl(NO_CACHE)
-               .build();
+         .build();
    }
 
    /**
@@ -497,31 +532,34 @@ public class RestRepositoryService
          List<String> workspaces = new ArrayList<String>();
 
          for (WorkspaceEntry wEntry : repositoryService.getRepository(repositoryName).getConfiguration()
-                  .getWorkspaceEntries())
+            .getWorkspaceEntries())
          {
             workspaces.add(wEntry.getName());
          }
 
          return Response.ok(new NamesList(workspaces)).cacheControl(NO_CACHE).build();
-
       }
       catch (RepositoryException e)
       {
          if (log.isDebugEnabled())
+         {
             log.error(e.getMessage(), e);
+         }
          errorMessage = e.getMessage();
          status = Status.NOT_FOUND;
       }
       catch (Throwable e)
       {
          if (log.isDebugEnabled())
+         {
             log.error(e.getMessage(), e);
+         }
          errorMessage = e.getMessage();
          status = Status.INTERNAL_SERVER_ERROR;
       }
 
       return Response.status(status).entity(errorMessage).type(MediaType.TEXT_PLAIN_TYPE).cacheControl(NO_CACHE)
-               .build();
+         .build();
    }
 
    /**
@@ -539,12 +577,12 @@ public class RestRepositoryService
    @RolesAllowed("administrators")
    @Path("/update-workspace-config/{repositoryName}/{workspaceName}")
    public Response updateWorkspaceConfiguration(@PathParam("repositoryName") String repositoryName,
-            @PathParam("workspaceName") String workspaceName, WorkspaceEntry workspaceEntry)
+      @PathParam("workspaceName") String workspaceName, WorkspaceEntry workspaceEntry)
    {
       return Response.status(Status.OK).entity("The method /update-workspace-config not implemented.").type(
-               MediaType.TEXT_PLAIN_TYPE).cacheControl(NO_CACHE).build();
+         MediaType.TEXT_PLAIN_TYPE).cacheControl(NO_CACHE).build();
    }
-   
+
    /**
     * forceCloseSession. Close sessions on specific workspace.
     * 
@@ -559,12 +597,12 @@ public class RestRepositoryService
     *           will be generate RepositoryException
     */
    private int forceCloseSession(String repositoryName, String workspaceName) throws RepositoryException,
-            RepositoryConfigurationException
+      RepositoryConfigurationException
    {
       ManageableRepository mr = repositoryService.getRepository(repositoryName);
       WorkspaceContainerFacade wc = mr.getWorkspaceContainer(workspaceName);
 
-      SessionRegistry sessionRegistry = (SessionRegistry) wc.getComponent(SessionRegistry.class);
+      SessionRegistry sessionRegistry = (SessionRegistry)wc.getComponent(SessionRegistry.class);
 
       return sessionRegistry.closeSessions(workspaceName);
    }
