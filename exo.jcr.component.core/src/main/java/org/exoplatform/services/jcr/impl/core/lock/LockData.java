@@ -101,7 +101,7 @@ public class LockData
       this.owner = owner;
       this.timeOut = timeOut;
       this.live = true;
-      this.birthday = System.currentTimeMillis() / 1000;
+      this.birthday = System.currentTimeMillis();
    }
 
    /**
@@ -166,7 +166,7 @@ public class LockData
     */
    public long getTimeToDeath()
    {
-      return birthday + timeOut - System.currentTimeMillis() / 1000;
+      return birthday + timeOut - System.currentTimeMillis();
    }
 
    /*
