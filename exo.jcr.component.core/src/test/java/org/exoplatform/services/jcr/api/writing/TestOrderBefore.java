@@ -21,6 +21,9 @@ package org.exoplatform.services.jcr.api.writing;
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
 import org.exoplatform.services.jcr.impl.util.EntityCollection;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.jcr.ItemExistsException;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
@@ -865,7 +868,7 @@ public class TestOrderBefore extends JcrAPIBaseTest
       // n1[100] -> n1[99] pos:99
       testBase.orderBefore("n1[2]", "n_21");
 
-      EntityCollection nodes = (EntityCollection)testBase.getNodes();
+      EntityCollection nodes = getEntityCollection(testBase.getNodes());
 
       assertEquals("Nodes must be equals ", n1__2, nodes.getList().get(119)); // pos
       // :
@@ -880,7 +883,7 @@ public class TestOrderBefore extends JcrAPIBaseTest
 
       testBase.save();
 
-      nodes = (EntityCollection)testBase.getNodes();
+      nodes = getEntityCollection(testBase.getNodes());
 
       assertEquals("Nodes must be equals ", n1__2, nodes.getList().get(119)); // pos
       // :
@@ -900,7 +903,7 @@ public class TestOrderBefore extends JcrAPIBaseTest
       // n_24 -> pos:120; n1[100] -> pos:121;
       testBase.orderBefore("n_24", "n1[100]");
 
-      nodes = (EntityCollection)testBase.getNodes();
+      nodes = getEntityCollection(testBase.getNodes());
 
       assertEquals("Nodes must be equals ", n1__100, nodes.getList().get(120)); // pos
       // :
@@ -960,5 +963,16 @@ public class TestOrderBefore extends JcrAPIBaseTest
       checkOrder(order);
       checkOrderAnotherSession(order);
 
+   }
+
+   private EntityCollection getEntityCollection(NodeIterator nodes)
+   {
+      List result = new ArrayList();
+      while (nodes.hasNext())
+      {
+         result.add(nodes.next());
+      }
+
+      return new EntityCollection(result);
    }
 }

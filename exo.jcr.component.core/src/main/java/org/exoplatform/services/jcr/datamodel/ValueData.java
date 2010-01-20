@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.datamodel;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Created by The eXo Platform SAS.
@@ -29,15 +30,6 @@ import java.io.InputStream;
  */
 public interface ValueData
 {
-
-   /**
-    * Set Value order number.
-    * 
-    * @param orderNum
-    *          int, Value order number
-    */
-   void setOrderNumber(int orderNum);
-
    /**
     * Return Value order number.
     * 
@@ -64,7 +56,7 @@ public interface ValueData
    byte[] getAsByteArray() throws IllegalStateException, IOException;
 
    /**
-    * Renders this value data as stream of bytes NOTE: client is responsible for closing this stream,
+    * Renders this value data as stream of bytes. <br/>NOTE: client is responsible for closing this stream,
     * else IllegalStateException occurs in close().
     * 
     * @return InputStream, this value data as stream of bytes
@@ -81,10 +73,31 @@ public interface ValueData
    long getLength();
 
    /**
-    * Tell if this ValueData is transient (not saved).<br/>
-    * It means this ValueData instance of <code>TransientValueData<code/>.
+    * Read <code>length</code> bytes from the binary value at <code>position</code> to the
+    * <code>stream</code>.
     * 
-    * @return boolean, true if ValueData is transient, false - otherwise
+    * @param stream
+    *          - destenation OutputStream
+    * @param length
+    *          - data length to be read
+    * @param position
+    *          - position in value data from which the read will be performed
+    * @return - The number of bytes, possibly zero, that were actually transferred
+    * @throws IOException
+    *           if read/write error occurs
     */
-   boolean isTransient();
+   long read(OutputStream stream, long length, long position) throws IOException;
+
+   /**
+    * Indicates whether some other ValueData is "equals to" this ValueData. Return "true" if <code>valueData</code>  
+    * can be treated as equal to this ValueData. Otherwise "false" returned.<p/>
+    * 
+    * This method assumes that ValueData.equals(Object) implemented also and uses this method to perform the check.  
+    * 
+    * @see java.lang.Object#equals(Object)
+    * 
+    * @param valueData, another ValueData 
+    * @return boolean, "true" if this ValueData equals to another ValueData
+    */
+   boolean equals(ValueData another);
 }

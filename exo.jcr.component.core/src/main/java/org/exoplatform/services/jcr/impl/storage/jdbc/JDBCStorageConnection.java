@@ -34,7 +34,8 @@ import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.ByteArrayPersistedValueData;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.CleanableFileStreamValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.CleanableFilePersistedValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
 import org.exoplatform.services.jcr.impl.storage.value.ValueStorageNotFoundException;
 import org.exoplatform.services.jcr.impl.storage.value.fs.operations.ValueFileIOHelper;
@@ -70,8 +71,22 @@ import javax.jcr.RepositoryException;
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov</a>
  * @version $Id: JDBCStorageConnection.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-abstract public class JDBCStorageConnection extends DBConstants implements WorkspaceStorageConnection
+public abstract class JDBCStorageConnection extends DBConstants implements WorkspaceStorageConnection
 {
+
+   /**
+    * Helper.
+    */
+   class WriteValueHelper extends ValueFileIOHelper
+   {
+      /**
+       * {@inheritDoc}
+       */
+      public void writeStreamedValue(File file, ValueData value) throws IOException
+      {
+         super.writeStreamedValue(file, value);
+      }
+   }
 
    /**
     * Connection logger.
@@ -103,6 +118,8 @@ abstract public class JDBCStorageConnection extends DBConstants implements Works
    protected final SQLExceptionHandler exceptionHandler;
 
    protected final List<ValueIOChannel> valueChanges;
+
+   protected final WriteValueHelper writeValueHelper = new WriteValueHelper();
 
    /**
     * Read-only flag, if true the connection is marked as READ-ONLY.
@@ -165,7 +182,9 @@ abstract public class JDBCStorageConnection extends DBConstants implements Works
    public boolean equals(Object obj)
    {
       if (obj == this)
+      {
          return true;
+      }
 
       if (obj instanceof JDBCStorageConnection)
       {
@@ -219,7 +238,9 @@ abstract public class JDBCStorageConnection extends DBConstants implements Works
    protected void checkIfOpened() throws IllegalStateException
    {
       if (!isOpened())
+      {
          throw new IllegalStateException("Connection is closed");
+      }
    }
 
    /**
@@ -251,7 +272,9 @@ abstract public class JDBCStorageConnection extends DBConstants implements Works
 
          // rollback from the end
          for (int p = valueChanges.size() - 1; p >= 0; p--)
+         {
             valueChanges.get(p).rollback();
+         }
       }
       catch (SQLException e)
       {
@@ -277,7 +300,9 @@ abstract public class JDBCStorageConnection extends DBConstants implements Works
       {
          // If READ-ONLY status back it to READ-WRITE (we assume it was original state)
          if (readOnly)
+         {
             dbConnection.setReadOnly(true);
+         }
 
          dbConnection.close();
       }
@@ -330,14 +355,17 @@ abstract public class JDBCStorageConnection extends DBConstants implements Works
       {
          addNodeRecord(data);
          if (LOG.isDebugEnabled())
+         {
             LOG.debug("Node added " + data.getQPath().getAsString() + ", " + data.getIdentifier() + ", "
                + data.getPrimaryTypeName().getAsString());
-
+         }
       }
       catch (SQLException e)
       {
          if (LOG.isDebugEnabled())
+         {
             LOG.error("Node add. Database error: " + e);
+         }
 
          exceptionHandler.handleAddException(e, data);
       }
@@ -371,20 +399,26 @@ abstract public class JDBCStorageConnection extends DBConstants implements Works
          addValues(getInternalId(data.getIdentifier()), data);
 
          if (LOG.isDebugEnabled())
+         {
             LOG.debug("Property added " + data.getQPath().getAsString() + ", " + data.getIdentifier()
                + (data.getValues() != null ? ", values count: " + data.getValues().size() : ", NULL data"));
+         }
 
       }
       catch (IOException e)
       {
          if (LOG.isDebugEnabled())
+         {
             LOG.error("Property add. IO error: " + e, e);
+         }
          throw new RepositoryException("Error of Property Value add " + e, e);
       }
       catch (SQLException e)
       {
          if (LOG.isDebugEnabled())
+         {
             LOG.error("Property add. Database error: " + e, e);
+         }
          exceptionHandler.handleAddException(e, data);
       }
    }
@@ -400,14 +434,18 @@ abstract public class JDBCStorageConnection extends DBConstants implements Works
       try
       {
          if (renameNode(data) <= 0)
+         {
             throw new JCRInvalidItemStateException("(rename) Node not found " + data.getQPath().getAsString() + " "
                + data.getIdentifier() + ". Probably was deleted by another session ", data.getIdentifier(),
                ItemState.RENAMED);
+         }
       }
       catch (SQLException e)
       {
          if (LOG.isDebugEnabled())
+         {
             LOG.error("Property add. Database error: " + e, e);
+         }
          exceptionHandler.handleAddException(e, data);
       }
    }
@@ -426,19 +464,25 @@ abstract public class JDBCStorageConnection extends DBConstants implements Works
       {
          int nc = deleteItemByIdentifier(cid);
          if (nc <= 0)
+         {
             throw new JCRInvalidItemStateException("(delete) Node not found " + data.getQPath().getAsString() + " "
                + data.getIdentifier() + ". Probably was deleted by another session ", data.getIdentifier(),
                ItemState.DELETED);
+         }
 
          if (LOG.isDebugEnabled())
+         {
             LOG.debug("Node deleted " + data.getQPath().getAsString() + ", " + data.getIdentifier() + ", "
                + ((NodeData)data).getPrimaryTypeName().getAsString());
+         }
 
       }
       catch (SQLException e)
       {
          if (LOG.isDebugEnabled())
+         {
             LOG.error("Node remove. Database error: " + e, e);
+         }
          exceptionHandler.handleDeleteException(e, data);
       }
    }
@@ -463,29 +507,37 @@ abstract public class JDBCStorageConnection extends DBConstants implements Works
          // delete item
          int nc = deleteItemByIdentifier(cid);
          if (nc <= 0)
+         {
             throw new JCRInvalidItemStateException("(delete) Property not found " + data.getQPath().getAsString() + " "
                + data.getIdentifier() + ". Probably was deleted by another session ", data.getIdentifier(),
                ItemState.DELETED);
+         }
 
          if (LOG.isDebugEnabled())
+         {
             LOG.debug("Property deleted "
                + data.getQPath().getAsString()
                + ", "
                + data.getIdentifier()
                + (((PropertyData)data).getValues() != null ? ", values count: "
                   + ((PropertyData)data).getValues().size() : ", NULL data"));
+         }
 
       }
       catch (IOException e)
       {
          if (LOG.isDebugEnabled())
+         {
             LOG.error("Property remove. IO error: " + e, e);
+         }
          throw new RepositoryException("Error of Property Value delete " + e, e);
       }
       catch (SQLException e)
       {
          if (LOG.isDebugEnabled())
+         {
             LOG.error("Property remove. Database error: " + e, e);
+         }
          exceptionHandler.handleDeleteException(e, data);
       }
    }
@@ -502,19 +554,25 @@ abstract public class JDBCStorageConnection extends DBConstants implements Works
          String cid = getInternalId(data.getIdentifier());
          // order numb update
          if (updateNodeByIdentifier(data.getPersistedVersion(), data.getQPath().getIndex(), data.getOrderNumber(), cid) <= 0)
+         {
             throw new JCRInvalidItemStateException("(update) Node not found " + data.getQPath().getAsString() + " "
                + data.getIdentifier() + ". Probably was deleted by another session ", data.getIdentifier(),
                ItemState.UPDATED);
+         }
 
          if (LOG.isDebugEnabled())
+         {
             LOG.debug("Node updated " + data.getQPath().getAsString() + ", " + data.getIdentifier() + ", "
                + data.getPrimaryTypeName().getAsString());
+         }
 
       }
       catch (SQLException e)
       {
          if (LOG.isDebugEnabled())
+         {
             LOG.error("Node update. Database error: " + e, e);
+         }
          exceptionHandler.handleUpdateException(e, data);
       }
    }
@@ -558,8 +616,10 @@ abstract public class JDBCStorageConnection extends DBConstants implements Works
          addValues(cid, data);
 
          if (LOG.isDebugEnabled())
+         {
             LOG.debug("Property updated " + data.getQPath().getAsString() + ", " + data.getIdentifier()
                + (data.getValues() != null ? ", values count: " + data.getValues().size() : ", NULL data"));
+         }
 
       }
       catch (IOException e)
@@ -587,7 +647,9 @@ abstract public class JDBCStorageConnection extends DBConstants implements Works
          ResultSet node = findChildNodesByParentIdentifier(getInternalId(parent.getIdentifier()));
          List<NodeData> childrens = new ArrayList<NodeData>();
          while (node.next())
+         {
             childrens.add((NodeData)itemData(parent.getQPath(), node, I_CLASS_NODE, parent.getACL()));
+         }
 
          return childrens;
       }
@@ -600,16 +662,17 @@ abstract public class JDBCStorageConnection extends DBConstants implements Works
          throw new RepositoryException(e);
       }
    }
-   
+
    /**
     * {@inheritDoc}
     */
-   public int getChildNodesCount(NodeData parent) throws RepositoryException {
+   public int getChildNodesCount(NodeData parent) throws RepositoryException
+   {
       checkIfOpened();
       try
       {
          ResultSet count = findChildNodesCountByParentIdentifier(getInternalId(parent.getIdentifier()));
-         if (count.next()) 
+         if (count.next())
          {
             return count.getInt(1);
          }
@@ -622,7 +685,7 @@ abstract public class JDBCStorageConnection extends DBConstants implements Works
       {
          throw new RepositoryException(e);
       }
-   }   
+   }
 
    /**
     * {@inheritDoc}
@@ -709,6 +772,47 @@ abstract public class JDBCStorageConnection extends DBConstants implements Works
             references.add((PropertyData)itemData(null, refProps, I_CLASS_PROPERTY, null));
          }
          return references;
+      }
+      catch (SQLException e)
+      {
+         throw new RepositoryException(e);
+      }
+      catch (IOException e)
+      {
+         throw new RepositoryException(e);
+      }
+   }
+
+   /**
+    * Reads Property Value from persistent storage.
+    * 
+    * @param propertyId String, Property id
+    * @param orderNumb int, Value order number (in list of values)
+    * @param persistedVersion int 
+    * @return ValueData
+    * @throws RepositoryException if read error occurs
+    */
+   public ValueData getValue(String propertyId, int orderNumb, int persistedVersion) throws RepositoryException
+   {
+      try
+      {
+         String cid = getInternalId(propertyId);
+         ResultSet valueRecord = findValueByPropertyIdOrderNumber(cid, orderNumb);
+         try
+         {
+            if (valueRecord.next())
+            {
+               String storageId = valueRecord.getString(COLUMN_VSTORAGE_DESC);
+               return valueRecord.wasNull() ? readValueData(cid, orderNumb, persistedVersion, valueRecord
+                  .getBinaryStream(COLUMN_VDATA)) : readValueData(propertyId, orderNumb, storageId);
+            }
+         }
+         finally
+         {
+            valueRecord.close();
+         }
+
+         return null;
       }
       catch (SQLException e)
       {
@@ -830,9 +934,9 @@ abstract public class JDBCStorageConnection extends DBConstants implements Works
     * @throws IllegalNameException
     *           - if name on the path is wrong
     */
-   private QPath traverseQPath(String cpid) throws SQLException, InvalidItemStateException, IllegalNameException
+   protected QPath traverseQPath(String cpid) throws SQLException, InvalidItemStateException, IllegalNameException
    {
-      // get item by Identifier usecase
+      // get item by Identifier usecase 
       List<QPathEntry> qrpath = new ArrayList<QPathEntry>(); // reverted path
       String caid = cpid; // container ancestor id
       do
@@ -1198,9 +1302,9 @@ abstract public class JDBCStorageConnection extends DBConstants implements Works
          QPath qpath = QPath.makeChildPath(parentPath == null ? traverseQPath(cpid) : parentPath, qname);
 
          PersistedPropertyData pdata =
-            new PersistedPropertyData(getIdentifier(cid), qpath, getIdentifier(cpid), cversion, cptype, cpmultivalued);
+            new PersistedPropertyData(getIdentifier(cid), qpath, getIdentifier(cpid), cversion, cptype, cpmultivalued,
+               new ArrayList<ValueData>());
 
-         pdata.setValues(new ArrayList<ValueData>());
          return pdata;
       }
       catch (InvalidItemStateException e)
@@ -1218,7 +1322,7 @@ abstract public class JDBCStorageConnection extends DBConstants implements Works
     * Mixin types description (internal use).
     * 
     */
-   class MixinInfo
+   public class MixinInfo
    {
 
       /**
@@ -1266,7 +1370,7 @@ abstract public class JDBCStorageConnection extends DBConstants implements Works
        * @param privilegeable
        *          exo:privilegeable flag
        */
-      MixinInfo(List<InternalQName> mixinTypes, boolean owneable, boolean privilegeable)
+      public MixinInfo(List<InternalQName> mixinTypes, boolean owneable, boolean privilegeable)
       {
          this.mixinTypes = mixinTypes;
          this.owneable = owneable;
@@ -1278,7 +1382,7 @@ abstract public class JDBCStorageConnection extends DBConstants implements Works
        * 
        * @return InternalQName[] Mixin names array
        */
-      InternalQName[] mixinNames()
+      public InternalQName[] mixinNames()
       {
          if (mixinTypes != null)
          {
@@ -1295,7 +1399,7 @@ abstract public class JDBCStorageConnection extends DBConstants implements Works
        * 
        * @return boolean
        */
-      boolean hasPrivilegeable()
+      public boolean hasPrivilegeable()
       {
          return privilegeable;
       }
@@ -1305,9 +1409,14 @@ abstract public class JDBCStorageConnection extends DBConstants implements Works
        * 
        * @return boolean
        */
-      boolean hasOwneable()
+      public boolean hasOwneable()
       {
          return owneable;
+      }
+
+      public String getParentId()
+      {
+         return parentId;
       }
    }
 
@@ -1606,10 +1715,11 @@ abstract public class JDBCStorageConnection extends DBConstants implements Works
          QPath qpath =
             QPath.makeChildPath(parentPath == null ? traverseQPath(cpid) : parentPath, InternalQName.parse(cname));
 
+         String identifier = getIdentifier(cid);
+         List<ValueData> values = readValues(cid, identifier, cversion);
          PersistedPropertyData pdata =
-            new PersistedPropertyData(getIdentifier(cid), qpath, getIdentifier(cpid), cversion, cptype, cpmultivalued);
+            new PersistedPropertyData(identifier, qpath, getIdentifier(cpid), cversion, cptype, cpmultivalued, values);
 
-         pdata.setValues(readValues(cid, pdata));
          return pdata;
       }
       catch (IllegalNameException e)
@@ -1675,6 +1785,8 @@ abstract public class JDBCStorageConnection extends DBConstants implements Works
    /**
     * Read Property Values.
     * 
+    * @param identifier
+    *          property identifier
     * @param cid
     *          Property id
     * @param pdata
@@ -1687,7 +1799,7 @@ abstract public class JDBCStorageConnection extends DBConstants implements Works
     * @throws ValueStorageNotFoundException
     *           if no such storage found with Value storageId
     */
-   private List<ValueData> readValues(String cid, PropertyData pdata) throws IOException, SQLException,
+   private List<ValueData> readValues(String cid, String identifier, int cversion) throws IOException, SQLException,
       ValueStorageNotFoundException
    {
 
@@ -1701,8 +1813,8 @@ abstract public class JDBCStorageConnection extends DBConstants implements Works
             final int orderNum = valueRecords.getInt(COLUMN_VORDERNUM);
             final String storageId = valueRecords.getString(COLUMN_VSTORAGE_DESC);
             ValueData vdata =
-               valueRecords.wasNull() ? readValueData(cid, orderNum, pdata.getPersistedVersion(), valueRecords
-                  .getBinaryStream(COLUMN_VDATA)) : readValueData(pdata, orderNum, storageId);
+               valueRecords.wasNull() ? readValueData(cid, orderNum, cversion, valueRecords
+                  .getBinaryStream(COLUMN_VDATA)) : readValueData(identifier, orderNum, storageId);
             data.add(vdata);
          }
       }
@@ -1731,13 +1843,13 @@ abstract public class JDBCStorageConnection extends DBConstants implements Works
     * @throws ValueStorageNotFoundException
     *           if no such storage found with Value storageId
     */
-   protected ValueData readValueData(PropertyData pdata, int orderNumber, String storageId) throws SQLException,
+   protected ValueData readValueData(String identifier, int orderNumber, String storageId) throws SQLException,
       IOException, ValueStorageNotFoundException
    {
       ValueIOChannel channel = valueStorageProvider.getChannel(storageId);
       try
       {
-         return channel.read(pdata.getIdentifier(), orderNumber, maxBufferSize);
+         return channel.read(identifier, orderNumber, maxBufferSize);
       }
       finally
       {
@@ -1826,9 +1938,11 @@ abstract public class JDBCStorageConnection extends DBConstants implements Works
       }
 
       if (buffer == null)
-         return new CleanableFileStreamValueData(swapFile, orderNumber, swapCleaner);
+      {
+         return new CleanableFilePersistedValueData(orderNumber, swapFile, swapCleaner);
+      }
 
-      return new ByteArrayPersistedValueData(buffer, orderNumber);
+      return new ByteArrayPersistedValueData(orderNumber, buffer);
    }
 
    /**
@@ -1840,15 +1954,15 @@ abstract public class JDBCStorageConnection extends DBConstants implements Works
     *           database error
     * @throws IOException
     *           I/O error
+    * @thorws RepositoryException if Value data large of JDBC accepted (Integer.MAX_VALUE)
     */
-   protected void addValues(String cid, PropertyData data) throws IOException, SQLException
+   protected void addValues(String cid, PropertyData data) throws IOException, SQLException, RepositoryException
    {
       List<ValueData> vdata = data.getValues();
 
       for (int i = 0; i < vdata.size(); i++)
       {
          ValueData vd = vdata.get(i);
-         vd.setOrderNumber(i);
          ValueIOChannel channel = valueStorageProvider.getApplicableChannel(data, i);
          InputStream stream;
          int streamLength;
@@ -1864,9 +1978,30 @@ abstract public class JDBCStorageConnection extends DBConstants implements Works
             }
             else
             {
-               // will spool TransienValueData to a temp file
-               stream = vd.getAsStream();
-               streamLength = stream.available(); // ask on FileInputStream actually
+               StreamPersistedValueData streamData = (StreamPersistedValueData)vd;
+
+               SwapFile swapFile = SwapFile.get(swapDirectory, cid + i + "." + data.getPersistedVersion());
+               try
+               {
+                  writeValueHelper.writeStreamedValue(swapFile, streamData);
+               }
+               finally
+               {
+                  swapFile.spoolDone();
+               }
+
+               long vlen = swapFile.length();
+               if (vlen <= Integer.MAX_VALUE)
+               {
+                  streamLength = (int)vlen;
+               }
+               else
+               {
+                  throw new RepositoryException("Value data large of allowed by JDBC (Integer.MAX_VALUE) " + vlen
+                     + ". Property " + data.getQPath().getAsString());
+               }
+
+               stream = streamData.getAsStream();
             }
             storageId = null;
          }
@@ -1894,7 +2029,7 @@ abstract public class JDBCStorageConnection extends DBConstants implements Works
    protected abstract ResultSet findItemByName(String parentId, String name, int index) throws SQLException;
 
    protected abstract ResultSet findChildNodesByParentIdentifier(String parentIdentifier) throws SQLException;
-   
+
    protected abstract ResultSet findChildNodesCountByParentIdentifier(String parentIdentifier) throws SQLException;
 
    protected abstract ResultSet findChildPropertiesByParentIdentifier(String parentIdentifier) throws SQLException;
@@ -1924,6 +2059,5 @@ abstract public class JDBCStorageConnection extends DBConstants implements Works
 
    protected abstract ResultSet findValuesStorageDescriptorsByPropertyId(String cid) throws SQLException;
 
-   @Deprecated
    protected abstract ResultSet findValueByPropertyIdOrderNumber(String cid, int orderNumb) throws SQLException;
 }

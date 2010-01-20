@@ -40,6 +40,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
+import java.net.URL;
 import java.util.Random;
 
 import javax.jcr.Node;
@@ -102,22 +103,35 @@ public abstract class BaseStandaloneTest extends TestCase
 
    public void setUp() throws Exception
    {
+      String configPath = System.getProperty("jcr.test.configuration.file");
+      if (configPath == null)
+      {
+         fail("System property jcr.test.configuration.file not found");
+      }
 
-      String containerConf =
-         BaseStandaloneTest.class.getResource(System.getProperty("jcr.test.configuration.file")).toString();
-      String loginConf = BaseStandaloneTest.class.getResource("/login.conf").toString();
-
-      StandaloneContainer.addConfigurationURL(containerConf);
+      URL configUrl = BaseStandaloneTest.class.getResource(configPath);
+      if (configUrl != null)
+      {
+         StandaloneContainer.addConfigurationURL(configUrl.toString());
+      }
+      else
+      {
+         StandaloneContainer.addConfigurationPath(configPath);
+      }
       // .addConfigurationPath("src/test/java/conf/standalone/test-configuration.xml");
       // .addConfigurationPath("src/test/java/conf/standalone/test-configuration-sjdbc.xml");
       // .addConfigurationPath("src/test/java/conf/standalone/test-configuration-sjdbc.pgsql.xml");
       // .addConfigurationPath("src/test/java/conf/standalone/test-configuration-sjdbc.ora.xml");
-      // .addConfigurationPath("src/test/java/conf/standalone/test-configuration-mjdbc.mysql.xml");
+      // .addConfigurationPath("src/test/java/conf/standalone/test-configuration-mjdbc.mysql.xml");         
+
+      String loginConf = BaseStandaloneTest.class.getResource("/login.conf").toString();
 
       container = StandaloneContainer.getInstance();
 
       if (System.getProperty("java.security.auth.login.config") == null)
+      {
          System.setProperty("java.security.auth.login.config", loginConf);
+      }
 
       credentials = new CredentialsImpl("admin", "admin".toCharArray());
 
@@ -143,12 +157,10 @@ public abstract class BaseStandaloneTest extends TestCase
          (WorkspaceFileCleanerHolder)wsc.getComponent(WorkspaceFileCleanerHolder.class);
       fileCleaner = wfcleaner.getFileCleaner();
       holder = new ReaderSpoolFileHolder();
-
    }
 
    protected void tearDown() throws Exception
    {
-
       if (session != null)
       {
          try
@@ -180,8 +192,6 @@ public abstract class BaseStandaloneTest extends TestCase
          }
       }
       super.tearDown();
-
-      // log.info("tearDown() END " + getClass().getName() + "." + getName());
    }
 
    protected abstract String getRepositoryName();
@@ -289,7 +299,6 @@ public abstract class BaseStandaloneTest extends TestCase
    protected void compareStream(InputStream etalon, InputStream data, long etalonPos, long dataPos, long length)
       throws IOException, CompareStreamException
    {
-
       int dindex = 0;
 
       skipStream(etalon, etalonPos);
@@ -300,7 +309,6 @@ public abstract class BaseStandaloneTest extends TestCase
 
       while ((eread = etalon.read(ebuff)) > 0)
       {
-
          byte[] dbuff = new byte[eread];
          int erindex = 0;
          while (erindex < eread)
@@ -317,22 +325,28 @@ public abstract class BaseStandaloneTest extends TestCase
             }
 
             if (dread == -1)
+            {
                throw new CompareStreamException(
                   "Streams is not equals by length. Data end-of-stream reached at position " + dindex);
+            }
 
             for (int i = 0; i < dread; i++)
             {
                byte eb = ebuff[i];
                byte db = dbuff[i];
                if (eb != db)
+               {
                   throw new CompareStreamException("Streams is not equals. Wrong byte stored at position " + dindex
                      + " of data stream. Expected 0x" + Integer.toHexString(eb) + " '" + new String(new byte[]{eb})
                      + "' but found 0x" + Integer.toHexString(db) + " '" + new String(new byte[]{db}) + "'");
+               }
 
                erindex++;
                dindex++;
                if (length > 0 && dindex >= length)
+               {
                   return; // tested length reached
+               }
             }
 
             if (dread < eread)
@@ -341,8 +355,10 @@ public abstract class BaseStandaloneTest extends TestCase
       }
 
       if (data.available() > 0)
+      {
          throw new CompareStreamException("Streams is not equals by length. Data stream contains more data. Were read "
             + dindex);
+      }
    }
 
    protected void skipStream(InputStream stream, long pos) throws IOException
@@ -353,10 +369,15 @@ public abstract class BaseStandaloneTest extends TestCase
       {
          curPos -= sk;
       };
+
       if (sk < 0)
+      {
          fail("Can not read the stream (skip bytes)");
+      }
       if (curPos != 0)
+      {
          fail("Can not skip bytes from the stream (" + pos + " bytes)");
+      }
    }
 
    protected File createBLOBTempFile(int sizeInKb) throws IOException

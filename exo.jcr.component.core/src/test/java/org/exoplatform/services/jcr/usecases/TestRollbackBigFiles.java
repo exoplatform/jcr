@@ -80,13 +80,10 @@ public class TestRollbackBigFiles extends JcrImplBaseTest
       // added big file property
       JCRPath propPath = session.getLocationFactory().parseRelPath("bigProp");
 
+      File f = this.createBLOBTempFile(1024);
       TransientPropertyData newProperty =
          new TransientPropertyData(propPath.getInternalPath(), IdGenerator.generate(), -1, PropertyType.BINARY, newNode
-            .getIdentifier(), false);
-
-      File f = this.createBLOBTempFile(1024);
-      TransientValueData value = new TransientValueData(new FileInputStream(f));
-      newProperty.setValue(value);
+            .getIdentifier(), false, new TransientValueData(new FileInputStream(f)));
 
       list.add(new ItemState(newProperty, ItemState.ADDED, false, parent.getQPath()));
 
@@ -119,5 +116,4 @@ public class TestRollbackBigFiles extends JcrImplBaseTest
 
       assertNull("Item should not be found", dm.getItemData(id));
    }
-
 }

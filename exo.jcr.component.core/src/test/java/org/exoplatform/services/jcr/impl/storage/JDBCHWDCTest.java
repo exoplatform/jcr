@@ -23,6 +23,7 @@ import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.dataflow.CompositeChangesLog;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
+import org.exoplatform.services.jcr.dataflow.SharedDataManager;
 import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
@@ -67,7 +68,7 @@ public class JDBCHWDCTest extends JcrImplBaseTest
    {
       SessionDataManager sdm = session.getTransientNodesManager();
       TransactionableDataManager trm = sdm.getTransactManager();
-      WorkspaceStorageDataManagerProxy wdm = trm.getStorageDataManager();
+      SharedDataManager wdm = trm.getStorageDataManager();
 
       CompositeChangesLog clog = new TransactionChangesLog();
       PlainChangesLogImpl changes = new PlainChangesLogImpl();
@@ -86,7 +87,7 @@ public class JDBCHWDCTest extends JcrImplBaseTest
    {
       SessionDataManager sdm = session.getTransientNodesManager();
       TransactionableDataManager trm = sdm.getTransactManager();
-      WorkspaceStorageDataManagerProxy wdm = trm.getStorageDataManager();
+      SharedDataManager wdm = trm.getStorageDataManager();
 
       NodeData rootData = (NodeData)wdm.getItemData(Constants.ROOT_UUID);
 
@@ -159,7 +160,7 @@ public class JDBCHWDCTest extends JcrImplBaseTest
    {
       SessionDataManager sdm = session.getTransientNodesManager();
       TransactionableDataManager trm = sdm.getTransactManager();
-      WorkspaceStorageDataManagerProxy wdm = trm.getStorageDataManager();
+      SharedDataManager wdm = trm.getStorageDataManager();
 
       NodeData rootData = (NodeData)wdm.getItemData(Constants.ROOT_UUID);
 

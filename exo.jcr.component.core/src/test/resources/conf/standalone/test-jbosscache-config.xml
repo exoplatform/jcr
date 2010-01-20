@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jbosscache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:jboss:jbosscache-core:config:3.1">
+
+   <locking useLockStriping="false" concurrencyLevel="50000" lockParentForChildInsertRemove="false" lockAcquisitionTimeout="20000"/>
+   
+   <!-- Configure the TransactionManager -->
+   <transaction transactionManagerLookupClass="org.jboss.cache.transaction.JBossStandaloneJTAManagerLookup" />
+
+   <!-- Enable batching -->
+   <invocationBatching enabled="true" />
+
+   <!-- Eviction configuration -->
+   <eviction wakeUpInterval="5000">
+      <default algorithmClass="org.jboss.cache.eviction.FIFOAlgorithm" eventQueueSize="1000000">
+         <property name="maxNodes" value="5000" />
+         <property name="minTimeToLive" value="60000" />
+      </default>
+   </eviction>
+
+</jbosscache>

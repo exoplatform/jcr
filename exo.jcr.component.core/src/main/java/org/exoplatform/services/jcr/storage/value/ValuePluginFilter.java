@@ -65,7 +65,10 @@ public final class ValuePluginFilter
       throws RepositoryConfigurationException
    {
       if (propertyType == PropertyType.UNDEFINED)
+      {
          throw new RepositoryConfigurationException("Property type is obligatory");
+      }
+      
       this.propertyType = propertyType;
       this.ancestorPath = ancestorPath;
       this.propertyName = propertyName;
@@ -98,9 +101,13 @@ public final class ValuePluginFilter
          && (ancestorPath == null || prop.getQPath().isDescendantOf(ancestorPath))
          && (minValueSize == -1 || (prop.getValues().get(valueOrderNumer).getLength() > minValueSize && minValueSize > 0))
          && (propertyName == null || prop.getQPath().getName().equals(propertyName)))
+      {
          return true;
+      }
       else
+      {
          return false;
+      }
    }
 
    /**

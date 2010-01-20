@@ -68,21 +68,19 @@ import javax.xml.stream.XMLStreamException;
  * 
  * @version $Id: BackupWorkspaceInitializer.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class BackupWorkspaceInitializer
-   extends SysViewWorkspaceInitializer
+public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
 {
    private final String restoreDir;
 
    private FileCleaner fileCleaner;
 
    public BackupWorkspaceInitializer(WorkspaceEntry config, RepositoryEntry repConfig,
-            CacheableWorkspaceDataManager dataManager, NamespaceRegistryImpl namespaceRegistry,
-            LocationFactory locationFactory, NodeTypeManagerImpl nodeTypeManager, ValueFactoryImpl valueFactory,
-            AccessManager accessManager) throws RepositoryConfigurationException, PathNotFoundException,
-            RepositoryException
+      CacheableWorkspaceDataManager dataManager, NamespaceRegistryImpl namespaceRegistry,
+      LocationFactory locationFactory, NodeTypeManagerImpl nodeTypeManager, ValueFactoryImpl valueFactory,
+      AccessManager accessManager) throws RepositoryConfigurationException, PathNotFoundException, RepositoryException
    {
       super(config, repConfig, dataManager, namespaceRegistry, locationFactory, nodeTypeManager, valueFactory,
-               accessManager);
+         accessManager);
 
       this.fileCleaner = new FileCleaner();
 
@@ -101,7 +99,7 @@ public class BackupWorkspaceInitializer
 
       if (isWorkspaceInitialized())
       {
-         return (NodeData) dataManager.getItemData(Constants.ROOT_UUID);
+         return (NodeData)dataManager.getItemData(Constants.ROOT_UUID);
       }
 
       try
@@ -119,10 +117,10 @@ public class BackupWorkspaceInitializer
          // restore from incremental backup
          incrementalRead();
 
-         final NodeData root = (NodeData) dataManager.getItemData(Constants.ROOT_UUID);
+         final NodeData root = (NodeData)dataManager.getItemData(Constants.ROOT_UUID);
 
          log.info("Workspace " + workspaceName + " restored from file " + restorePath + " in "
-                  + (System.currentTimeMillis() - start) * 1d / 1000 + "sec");
+            + (System.currentTimeMillis() - start) * 1d / 1000 + "sec");
 
          return root;
       }
@@ -166,7 +164,7 @@ public class BackupWorkspaceInitializer
    }
 
    private void incrementalRestore(File incrementalBackupFile) throws FileNotFoundException, IOException,
-            ClassNotFoundException, RepositoryException
+      ClassNotFoundException, RepositoryException
    {
       ObjectInputStream ois = null;
       try
@@ -203,24 +201,24 @@ public class BackupWorkspaceInitializer
       catch (JCRInvalidItemStateException e)
       {
          TransactionChangesLog normalizeChangesLog =
-                  getNormalizedChangesLog(e.getIdentifier(), e.getState(), changesLog);
+            getNormalizedChangesLog(e.getIdentifier(), e.getState(), changesLog);
          if (normalizeChangesLog != null)
             saveChangesLog(normalizeChangesLog);
          else
             throw new RepositoryException(
-                     "Collisions found during save of restore changes log, but caused item is not found by ID "
-                              + e.getIdentifier() + ". " + e, e);
+               "Collisions found during save of restore changes log, but caused item is not found by ID "
+                  + e.getIdentifier() + ". " + e, e);
       }
       catch (JCRItemExistsException e)
       {
          TransactionChangesLog normalizeChangesLog =
-                  getNormalizedChangesLog(e.getIdentifier(), e.getState(), changesLog);
+            getNormalizedChangesLog(e.getIdentifier(), e.getState(), changesLog);
          if (normalizeChangesLog != null)
             saveChangesLog(normalizeChangesLog);
          else
             throw new RepositoryException(
-                     "Collisions found during save of restore changes log, but caused item is not found by ID "
-                              + e.getIdentifier() + ". " + e, e);
+               "Collisions found during save of restore changes log, but caused item is not found by ID "
+                  + e.getIdentifier() + ". " + e, e);
       }
 
    }
@@ -250,7 +248,7 @@ public class BackupWorkspaceInitializer
                   {
                      // Node... by ID and desc path
                      if (!item.getIdentifier().equals(collisionID)
-                              && !item.getQPath().isDescendantOf(citem.getData().getQPath()))
+                        && !item.getQPath().isDescendantOf(citem.getData().getQPath()))
                         normalized.add(change);
                   }
                   else if (!item.getIdentifier().equals(collisionID))
@@ -288,8 +286,7 @@ public class BackupWorkspaceInitializer
       return list;
    }
 
-   class BackupFilesFilter
-      implements FileFilter
+   class BackupFilesFilter implements FileFilter
    {
       public boolean accept(File pathname)
       {
@@ -324,7 +321,7 @@ public class BackupWorkspaceInitializer
       {
 
          // read ChangesLog
-         transactionChangesLog = (TransactionChangesLog) in.readObject();
+         transactionChangesLog = (TransactionChangesLog)in.readObject();
 
          // read FixupStream count
          int iFixupStream = in.readInt();
@@ -354,7 +351,7 @@ public class BackupWorkspaceInitializer
          }
 
          RestoreChangesLog restoreChangesLog =
-                  new RestoreChangesLog(transactionChangesLog, listFixupStreams, listFiles, fileCleaner);
+            new RestoreChangesLog(transactionChangesLog, listFixupStreams, listFiles, fileCleaner);
 
          restoreChangesLog.restore();
 
@@ -363,7 +360,7 @@ public class BackupWorkspaceInitializer
       }
       else if (changesLogType == RestoreChangesLog.Type.ItemDataChangesLog_without_Streams)
       {
-         transactionChangesLog = (TransactionChangesLog) in.readObject();
+         transactionChangesLog = (TransactionChangesLog)in.readObject();
       }
 
       return transactionChangesLog;
@@ -388,8 +385,8 @@ public class BackupWorkspaceInitializer
          }
          else if (readBytes < bufferSize)
          {
-            ois.readFully(buf, 0, (int) readBytes);
-            fos.write(buf, 0, (int) readBytes);
+            ois.readFully(buf, 0, (int)readBytes);
+            fos.write(buf, 0, (int)readBytes);
          }
          readBytes -= bufferSize;
       }
@@ -418,7 +415,7 @@ public class BackupWorkspaceInitializer
       private FileCleaner fileCleaner;
 
       public RestoreChangesLog(TransactionChangesLog transactionChangesLog, List<FixupStream> listFixupStreams,
-               List<File> listFiles, FileCleaner fileCleaner)
+         List<File> listFiles, FileCleaner fileCleaner)
       {
          this.itemDataChangesLog = transactionChangesLog;
          this.listFixupStream = listFixupStreams;
@@ -431,7 +428,7 @@ public class BackupWorkspaceInitializer
          return itemDataChangesLog;
       }
 
-      public void restore() throws FileNotFoundException
+      public void restore() throws IOException
       {
          for (int i = 0; i < this.listFixupStream.size(); i++)
          {
@@ -439,21 +436,18 @@ public class BackupWorkspaceInitializer
             ItemState itemState = listItemState.get(listFixupStream.get(i).getItemSateId());
             ItemData itemData = itemState.getData();
 
-            TransientPropertyData propertyData = (TransientPropertyData) itemData;
-            TransientValueData transientValueData =
-                     (TransientValueData) (propertyData.getValues().get(listFixupStream.get(i).getValueDataId()));
-            transientValueData.setStream(new FileInputStream(listFile.get(i)));
-            transientValueData.setFileCleaner(fileCleaner);
-            transientValueData.isByteArray();
-         }
+            TransientPropertyData propertyData = (TransientPropertyData)itemData;
+            TransientValueData tvd =
+               (TransientValueData)(propertyData.getValues().get(listFixupStream.get(i).getValueDataId()));
 
-         for (int i = 0; i < listFile.size(); i++)
-            fileCleaner.addFile(listFile.get(i));
+            // re-init the value
+            tvd.delegate(new TransientValueData(tvd.getOrderNumber(), null, null, listFile.get(i), fileCleaner, -1,
+               null, true));
+         }
       }
    }
 
-   class FixupStream
-      implements Externalizable
+   class FixupStream implements Externalizable
    {
       int iItemStateId = -1;
 

@@ -1877,4 +1877,30 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
 
       return res.toString();
    }
+
+   public void beginTransaction()
+   {
+      // TODO Auto-generated method stub
+
+   }
+
+   public void commitTransaction()
+   {
+      // TODO Auto-generated method stub
+
+   }
+
+   public void rollbackTransaction()
+   {
+      // TODO Auto-generated method stub
+
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public boolean isTXAware()
+   {
+      return true;
+   }
 }

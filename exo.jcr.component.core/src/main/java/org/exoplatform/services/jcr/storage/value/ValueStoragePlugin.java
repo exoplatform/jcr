@@ -30,15 +30,14 @@ import java.util.Properties;
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov</a>
- * @version $Id: ValueStoragePlugin.java 11907 2008-03-13 15:36:21Z ksm $
+ * @version $Id$
  */
 
 public abstract class ValueStoragePlugin
 {
-
    protected List<ValuePluginFilter> filters;
 
-   protected String id;
+   protected String id = null;
 
    /**
     * Initialize this plugin. Used at start time.
@@ -87,7 +86,7 @@ public abstract class ValueStoragePlugin
    }
 
    /**
-    * Get Stirage Id.
+    * Get Storage Id.
     * 
     * @return String
     */
@@ -97,14 +96,17 @@ public abstract class ValueStoragePlugin
    }
 
    /**
-    * Set Storage Id.
+    * Set Storage Id. Id can be set once only. 
     * 
     * @param id
     *          String
     */
    public final void setId(String id)
    {
-      this.id = id;
+      if (this.id == null)
+      {
+         this.id = id;
+      }
    }
 
    /**

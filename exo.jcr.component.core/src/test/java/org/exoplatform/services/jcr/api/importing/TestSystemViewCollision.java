@@ -119,8 +119,8 @@ public class TestSystemViewCollision extends AbstractCollisionTest
             "nodeWithPredefUuid"), Constants.NT_UNSTRUCTURED, "id_uuidNode1");
       changesLog.add(ItemState.createAddedState(testNodeData));
       TransientPropertyData primaryType =
-         TransientPropertyData.createPropertyData(testNodeData, Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false);
-      primaryType.setValue(new TransientValueData(testNodeData.getPrimaryTypeName()));
+         TransientPropertyData.createPropertyData(testNodeData, Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false,
+            new TransientValueData(testNodeData.getPrimaryTypeName()));
       changesLog.add(ItemState.createAddedState(primaryType));
 
       session.getTransientNodesManager().getTransactManager().save(changesLog);

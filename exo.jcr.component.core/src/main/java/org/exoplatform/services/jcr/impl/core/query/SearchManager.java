@@ -50,10 +50,10 @@ import org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex;
 import org.exoplatform.services.jcr.impl.core.value.NameValue;
 import org.exoplatform.services.jcr.impl.core.value.PathValue;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
-import org.exoplatform.services.jcr.impl.dataflow.AbstractValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.jboss.cache.factories.annotations.NonVolatile;
 import org.picocontainer.Startable;
 
 import java.io.IOException;
@@ -61,7 +61,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -78,8 +77,14 @@ import javax.jcr.query.InvalidQueryException;
 import javax.jcr.query.Query;
 
 /**
- * Acts as a global entry point to execute queries and index nodes.
+ * Created by The eXo Platform SAS.
+ * 
+ * <br/>Date: 
+ *
+ * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
+ * @version $Id: SearchManager.java 1008 2009-12-11 15:14:51Z nzamosenchuk $
  */
+@NonVolatile
 public class SearchManager implements Startable, MandatoryItemsPersistenceListener
 {
 
@@ -98,6 +103,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    /**
     * QueryHandler where query execution is delegated to
     */
+
    protected QueryHandler handler;
 
    /**
@@ -121,15 +127,13 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     */
    protected final SearchManager parentSearchManager;
 
-   // protected QPath indexingRoot;
-   //
-   // protected List<QPath> excludedPaths = new ArrayList<QPath>();
-
    protected IndexingTree indexingTree;
 
    private final ConfigurationManager cfm;
 
    protected LuceneVirtualTableResolver virtualTableResolver;
+
+   protected IndexerChangesFilter changesFilter;
 
    /**
     * Creates a new <code>SearchManager</code>.
@@ -154,6 +158,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     *             if the search manager cannot be initialized
     * @throws RepositoryConfigurationException
     */
+
    public SearchManager(QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
       WorkspacePersistentDataManager itemMgr, SystemSearchManagerHolder parentSearchManager,
       DocumentReaderService extractor, ConfigurationManager cfm, final RepositoryIndexSearcherHolder indexSearcherHolder)
@@ -169,7 +174,22 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       this.cfm = cfm;
       this.virtualTableResolver = new LuceneVirtualTableResolver(nodeTypeDataManager, nsReg);
       this.parentSearchManager = parentSearchManager != null ? parentSearchManager.get() : null;
-      itemMgr.addItemPersistenceListener(this);
+      if (parentSearchManager != null)
+      {
+         ((WorkspacePersistentDataManager)this.itemMgr).addItemPersistenceListener(this);
+      }
+   }
+
+   public void createNewOrAdd(String key, ItemState state, Map<String, List<ItemState>> updatedNodes)
+   {
+      List<ItemState> list = updatedNodes.get(key);
+      if (list == null)
+      {
+         list = new ArrayList<ItemState>();
+         updatedNodes.put(key, list);
+      }
+      list.add(state);
+
    }
 
    /**
@@ -225,440 +245,6 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    }
 
    /**
-    * just for test use only
-    */
-   public QueryHandler getHandler()
-   {
-
-      return handler;
-   }
-
-   public void onSaveItems(ItemStateChangesLog changesLog)
-   {
-      if (handler == null)
-         return;
-
-      long time = System.currentTimeMillis();
-
-      // nodes that need to be removed from the index.
-      final Set<String> removedNodes = new HashSet<String>();
-      // nodes that need to be added to the index.
-      final Set<String> addedNodes = new HashSet<String>();
-
-      final Map<String, List<ItemState>> updatedNodes = new HashMap<String, List<ItemState>>();
-
-      for (Iterator<ItemState> iter = changesLog.getAllStates().iterator(); iter.hasNext();)
-      {
-         ItemState itemState = iter.next();
-
-         if (!indexingTree.isExcluded(itemState))
-         {
-            String uuid =
-               itemState.isNode() ? itemState.getData().getIdentifier() : itemState.getData().getParentIdentifier();
-
-            if (itemState.isAdded())
-            {
-               if (itemState.isNode())
-               {
-                  addedNodes.add(uuid);
-               }
-               else
-               {
-                  if (!addedNodes.contains(uuid))
-                  {
-                     createNewOrAdd(uuid, itemState, updatedNodes);
-                  }
-               }
-            }
-            else if (itemState.isRenamed())
-            {
-               if (itemState.isNode())
-               {
-                  addedNodes.add(uuid);
-               }
-               else
-               {
-                  createNewOrAdd(uuid, itemState, updatedNodes);
-               }
-            }
-            else if (itemState.isUpdated())
-            {
-               createNewOrAdd(uuid, itemState, updatedNodes);
-            }
-            else if (itemState.isMixinChanged())
-            {
-               createNewOrAdd(uuid, itemState, updatedNodes);
-            }
-            else if (itemState.isDeleted())
-            {
-               if (itemState.isNode())
-               {
-                  if (addedNodes.contains(uuid))
-                  {
-                     addedNodes.remove(uuid);
-                     removedNodes.remove(uuid);
-                  }
-                  else
-                  {
-                     removedNodes.add(uuid);
-                  }
-                  // remove all changes after node remove
-                  updatedNodes.remove(uuid);
-               }
-               else
-               {
-                  if (!removedNodes.contains(uuid) && !addedNodes.contains(uuid))
-                  {
-                     createNewOrAdd(uuid, itemState, updatedNodes);
-                  }
-               }
-            }
-         }
-      }
-      // TODO make quick changes
-      for (String uuid : updatedNodes.keySet())
-      {
-         removedNodes.add(uuid);
-         addedNodes.add(uuid);
-      }
-
-      Iterator<NodeData> addedStates = new Iterator<NodeData>()
-      {
-         private final Iterator<String> iter = addedNodes.iterator();
-
-         public boolean hasNext()
-         {
-            return iter.hasNext();
-         }
-
-         public NodeData next()
-         {
-
-            // cycle till find a next or meet the end of set
-            do
-            {
-               String id = iter.next();
-               try
-               {
-                  ItemData item = itemMgr.getItemData(id);
-                  if (item != null)
-                  {
-                     if (item.isNode())
-                        return (NodeData)item; // return node
-                     else
-                        log.warn("Node not found, but property " + id + ", " + item.getQPath().getAsString()
-                           + " found. ");
-                  }
-                  else
-                     log.warn("Unable to index node with id " + id + ", node does not exist.");
-
-               }
-               catch (RepositoryException e)
-               {
-                  log.error("Can't read next node data " + id, e);
-               }
-            }
-            while (iter.hasNext()); // get next if error or node not found
-
-            return null; // we met the end of iterator set
-         }
-
-         public void remove()
-         {
-            throw new UnsupportedOperationException();
-         }
-      };
-
-      Iterator<String> removedIds = new Iterator<String>()
-      {
-         private final Iterator<String> iter = removedNodes.iterator();
-
-         public boolean hasNext()
-         {
-            return iter.hasNext();
-         }
-
-         public String next()
-         {
-            return nextNodeId();
-         }
-
-         public String nextNodeId() throws NoSuchElementException
-         {
-            return iter.next();
-         }
-
-         public void remove()
-         {
-            throw new UnsupportedOperationException();
-
-         }
-      };
-
-      if (removedNodes.size() > 0 || addedNodes.size() > 0)
-      {
-         try
-         {
-            handler.updateNodes(removedIds, addedStates);
-         }
-         catch (RepositoryException e)
-         {
-            log.error("Error indexing changes " + e, e);
-         }
-         catch (IOException e)
-         {
-            log.error("Error indexing changes " + e, e);
-            try
-            {
-               handler.logErrorChanges(removedNodes, addedNodes);
-            }
-            catch (IOException ioe)
-            {
-               log.warn("Exception occure when errorLog writed. Error log is not complete. " + ioe, ioe);
-            }
-         }
-      }
-
-      if (log.isDebugEnabled())
-      {
-         log.debug("onEvent: indexing finished in " + String.valueOf(System.currentTimeMillis() - time) + " ms.");
-      }
-   }
-
-   public void createNewOrAdd(String key, ItemState state, Map<String, List<ItemState>> updatedNodes)
-   {
-      List<ItemState> list = updatedNodes.get(key);
-      if (list == null)
-      {
-         list = new ArrayList<ItemState>();
-         updatedNodes.put(key, list);
-      }
-      list.add(state);
-
-   }
-
-   public void start()
-   {
-
-      if (log.isDebugEnabled())
-         log.debug("start");
-      try
-      {
-         if (indexingTree == null)
-         {
-            List<QPath> excludedPath = new ArrayList<QPath>();
-            // Calculating excluded node identifiers
-            excludedPath.add(Constants.JCR_SYSTEM_PATH);
-
-            //if (config.getExcludedNodeIdentifers() != null)
-            String excludedNodeIdentifer =
-               config.getParameterValue(QueryHandlerParams.PARAM_EXCLUDED_NODE_IDENTIFERS, null);
-            if (excludedNodeIdentifer != null)
-            {
-               StringTokenizer stringTokenizer = new StringTokenizer(excludedNodeIdentifer);
-               while (stringTokenizer.hasMoreTokens())
-               {
-
-                  try
-                  {
-                     ItemData excludeData = itemMgr.getItemData(stringTokenizer.nextToken());
-                     if (excludeData != null)
-                        excludedPath.add(excludeData.getQPath());
-                  }
-                  catch (RepositoryException e)
-                  {
-                     log.warn(e.getLocalizedMessage());
-                  }
-               }
-            }
-
-            NodeData indexingRootData = null;
-            String rootNodeIdentifer = config.getParameterValue(QueryHandlerParams.PARAM_ROOT_NODE_ID, null);
-            if (rootNodeIdentifer != null)
-            {
-               try
-               {
-                  ItemData indexingRootDataItem = itemMgr.getItemData(rootNodeIdentifer);
-                  if (indexingRootDataItem != null && indexingRootDataItem.isNode())
-                     indexingRootData = (NodeData)indexingRootDataItem;
-               }
-               catch (RepositoryException e)
-               {
-                  log.warn(e.getLocalizedMessage() + " Indexing root set to " + Constants.ROOT_PATH.getAsString());
-
-               }
-
-            }
-            else
-            {
-               try
-               {
-                  indexingRootData = (NodeData)itemMgr.getItemData(Constants.ROOT_UUID);
-               }
-               catch (RepositoryException e)
-               {
-                  log.error("Fail to load root node data");
-               }
-            }
-
-            indexingTree = new IndexingTree(indexingRootData, excludedPath);
-         }
-
-         initializeQueryHandler();
-      }
-      catch (RepositoryException e)
-      {
-         log.error(e.getLocalizedMessage());
-         handler = null;
-         throw new RuntimeException(e.getLocalizedMessage(), e.getCause());
-      }
-      catch (RepositoryConfigurationException e)
-      {
-         log.error(e.getLocalizedMessage());
-         handler = null;
-         throw new RuntimeException(e.getLocalizedMessage(), e.getCause());
-      }
-   }
-
-   public void stop()
-   {
-      handler.close();
-      log.info("Search manager stopped");
-   }
-
-   // /**
-   // * Checks if the given event should be excluded based on the
-   // * {@link #excludePath} setting.
-   // *
-   // * @param event
-   // * observation event
-   // * @return <code>true</code> if the event should be excluded,
-   // * <code>false</code> otherwise
-   // */
-   // protected boolean isExcluded(ItemState event) {
-   //
-   // for (QPath excludedPath : excludedPaths) {
-   // if (event.getData().getQPath().isDescendantOf(excludedPath)
-   // || event.getData().getQPath().equals(excludedPath))
-   // return true;
-   // }
-   //
-   // return !event.getData().getQPath().isDescendantOf(indexingRoot)
-   // && !event.getData().getQPath().equals(indexingRoot);
-   // }
-
-   protected QueryHandlerContext createQueryHandlerContext(QueryHandler parentHandler)
-      throws RepositoryConfigurationException
-   {
-
-      QueryHandlerContext context =
-         new QueryHandlerContext(itemMgr, indexingTree, nodeTypeDataManager, nsReg, parentHandler, getIndexDir(),
-            extractor, true, virtualTableResolver);
-      return context;
-   }
-
-   protected String getIndexDir() throws RepositoryConfigurationException
-   {
-      String dir = config.getParameterValue(QueryHandlerParams.PARAM_INDEX_DIR, null);
-      if (dir == null)
-      {
-         log.warn(QueryHandlerParams.PARAM_INDEX_DIR + " parameter not found. Using outdated parameter name "
-            + QueryHandlerParams.OLD_PARAM_INDEX_DIR);
-         dir = config.getParameterValue(QueryHandlerParams.OLD_PARAM_INDEX_DIR);
-      }
-      return dir;
-   }
-
-   /**
-    * Initializes the query handler.
-    * 
-    * @throws RepositoryException
-    *             if the query handler cannot be initialized.
-    * @throws RepositoryConfigurationException
-    * @throws ClassNotFoundException
-    */
-   protected void initializeQueryHandler() throws RepositoryException, RepositoryConfigurationException
-   {
-      // initialize query handler
-      String className = config.getType();
-      if (className == null)
-         throw new RepositoryConfigurationException("Content hanler       configuration fail");
-
-      try
-      {
-         Class qHandlerClass = Class.forName(className, true, this.getClass().getClassLoader());
-         Constructor constuctor = qHandlerClass.getConstructor(QueryHandlerEntry.class, ConfigurationManager.class);
-         handler = (QueryHandler)constuctor.newInstance(config, cfm);
-         QueryHandler parentHandler = (this.parentSearchManager != null) ? parentSearchManager.getHandler() : null;
-         QueryHandlerContext context = createQueryHandlerContext(parentHandler);
-         handler.init(context);
-
-      }
-      catch (SecurityException e)
-      {
-         throw new RepositoryException(e.getMessage(), e);
-      }
-      catch (IllegalArgumentException e)
-      {
-         throw new RepositoryException(e.getMessage(), e);
-      }
-      catch (ClassNotFoundException e)
-      {
-         throw new RepositoryException(e.getMessage(), e);
-      }
-      catch (NoSuchMethodException e)
-      {
-         throw new RepositoryException(e.getMessage(), e);
-      }
-      catch (InstantiationException e)
-      {
-         throw new RepositoryException(e.getMessage(), e);
-      }
-      catch (IllegalAccessException e)
-      {
-         throw new RepositoryException(e.getMessage(), e);
-      }
-      catch (InvocationTargetException e)
-      {
-         throw new RepositoryException(e.getMessage(), e);
-      }
-      catch (IOException e)
-      {
-         throw new RepositoryException(e.getMessage(), e);
-      }
-   }
-
-   /**
-    * Creates a new instance of an {@link AbstractQueryImpl} which is not
-    * initialized.
-    * 
-    * @return an new query instance.
-    * @throws RepositoryException
-    *             if an error occurs while creating a new query instance.
-    */
-   protected AbstractQueryImpl createQueryInstance() throws RepositoryException
-   {
-      try
-      {
-         String queryImplClassName = handler.getQueryClass();
-         Object obj = Class.forName(queryImplClassName).newInstance();
-         if (obj instanceof AbstractQueryImpl)
-         {
-            return (AbstractQueryImpl)obj;
-         }
-         else
-         {
-            throw new IllegalArgumentException(queryImplClassName + " is not of type "
-               + AbstractQueryImpl.class.getName());
-         }
-      }
-      catch (Throwable t)
-      {
-         throw new RepositoryException("Unable to create query: " + t.toString(), t);
-      }
-   }
-
-   /**
     * {@inheritDoc}
     */
    public Set<String> getFieldNames() throws IndexException
@@ -695,6 +281,15 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
 
       }
       return fildsSet;
+   }
+
+   /**
+    * just for test use only
+    */
+   public QueryHandler getHandler()
+   {
+
+      return handler;
    }
 
    public Set<String> getNodesByNodeType(final InternalQName nodeType) throws RepositoryException
@@ -769,6 +364,416 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       return result;
    }
 
+   /**
+    * @see org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener#onSaveItems(org.exoplatform.services.jcr.dataflow.ItemStateChangesLog)
+    */
+   public void onSaveItems(ItemStateChangesLog itemStates)
+   {
+      //skip empty
+      if (itemStates.getSize() > 0)
+      {
+         //Check if SearchManager started and filter configured
+         if (changesFilter != null)
+         {
+            changesFilter.onSaveItems(itemStates);
+         }
+      }
+   }
+
+   public void start()
+   {
+
+      if (log.isDebugEnabled())
+         log.debug("start");
+      try
+      {
+         if (indexingTree == null)
+         {
+            List<QPath> excludedPath = new ArrayList<QPath>();
+            // Calculating excluded node identifiers
+            excludedPath.add(Constants.JCR_SYSTEM_PATH);
+
+            //if (config.getExcludedNodeIdentifers() != null)
+            String excludedNodeIdentifer =
+               config.getParameterValue(QueryHandlerParams.PARAM_EXCLUDED_NODE_IDENTIFERS, null);
+            if (excludedNodeIdentifer != null)
+            {
+               StringTokenizer stringTokenizer = new StringTokenizer(excludedNodeIdentifer);
+               while (stringTokenizer.hasMoreTokens())
+               {
+
+                  try
+                  {
+                     ItemData excludeData = itemMgr.getItemData(stringTokenizer.nextToken());
+                     if (excludeData != null)
+                        excludedPath.add(excludeData.getQPath());
+                  }
+                  catch (RepositoryException e)
+                  {
+                     log.warn(e.getLocalizedMessage());
+                  }
+               }
+            }
+
+            NodeData indexingRootData = null;
+            String rootNodeIdentifer = config.getParameterValue(QueryHandlerParams.PARAM_ROOT_NODE_ID, null);
+            if (rootNodeIdentifer != null)
+            {
+               try
+               {
+                  ItemData indexingRootDataItem = itemMgr.getItemData(rootNodeIdentifer);
+                  if (indexingRootDataItem != null && indexingRootDataItem.isNode())
+                     indexingRootData = (NodeData)indexingRootDataItem;
+               }
+               catch (RepositoryException e)
+               {
+                  log.warn(e.getLocalizedMessage() + " Indexing root set to " + Constants.ROOT_PATH.getAsString());
+
+               }
+
+            }
+            else
+            {
+               try
+               {
+                  indexingRootData = (NodeData)itemMgr.getItemData(Constants.ROOT_UUID);
+                  //               indexingRootData =
+                  //                  new TransientNodeData(Constants.ROOT_PATH, Constants.ROOT_UUID, 1, Constants.NT_UNSTRUCTURED,
+                  //                     new InternalQName[0], 0, null, new AccessControlList());
+               }
+               catch (RepositoryException e)
+               {
+                  log.error("Fail to load root node data");
+               }
+            }
+
+            indexingTree = new IndexingTree(indexingRootData, excludedPath);
+         }
+         initializeQueryHandler();
+
+      }
+      catch (RepositoryException e)
+      {
+         log.error(e.getLocalizedMessage());
+         handler = null;
+         throw new RuntimeException(e.getLocalizedMessage(), e.getCause());
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         log.error(e.getLocalizedMessage());
+         handler = null;
+         throw new RuntimeException(e.getLocalizedMessage(), e.getCause());
+      }
+   }
+
+   public void stop()
+   {
+      handler.close();
+      log.info("Search manager stopped");
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void updateIndex(final Set<String> removedNodes, final Set<String> addedNodes) throws RepositoryException,
+      IOException
+   {
+      if (handler != null)
+      {
+         Iterator<NodeData> addedStates = new Iterator<NodeData>()
+         {
+            private final Iterator<String> iter = addedNodes.iterator();
+
+            public boolean hasNext()
+            {
+               return iter.hasNext();
+            }
+
+            public NodeData next()
+            {
+
+               // cycle till find a next or meet the end of set
+               do
+               {
+                  String id = iter.next();
+                  try
+                  {
+                     ItemData item = itemMgr.getItemData(id);
+                     if (item != null)
+                     {
+                        if (item.isNode())
+                        {
+                           if (!indexingTree.isExcluded(item))
+                              return (NodeData)item;
+                        }
+                        else
+                           log.warn("Node not found, but property " + id + ", " + item.getQPath().getAsString()
+                              + " found. ");
+                     }
+                     else
+                        log.warn("Unable to index node with id " + id + ", node does not exist.");
+
+                  }
+                  catch (RepositoryException e)
+                  {
+                     log.error("Can't read next node data " + id, e);
+                  }
+               }
+               while (iter.hasNext()); // get next if error or node not found
+
+               return null; // we met the end of iterator set
+            }
+
+            public void remove()
+            {
+               throw new UnsupportedOperationException();
+            }
+         };
+
+         Iterator<String> removedIds = new Iterator<String>()
+         {
+            private final Iterator<String> iter = removedNodes.iterator();
+
+            public boolean hasNext()
+            {
+               return iter.hasNext();
+            }
+
+            public String next()
+            {
+               return nextNodeId();
+            }
+
+            public String nextNodeId() throws NoSuchElementException
+            {
+               return iter.next();
+            }
+
+            public void remove()
+            {
+               throw new UnsupportedOperationException();
+
+            }
+         };
+
+         if (removedNodes.size() > 0 || addedNodes.size() > 0)
+         {
+            handler.updateNodes(removedIds, addedStates);
+         }
+      }
+
+   }
+
+   protected QueryHandlerContext createQueryHandlerContext(QueryHandler parentHandler)
+      throws RepositoryConfigurationException
+   {
+
+      QueryHandlerContext context =
+         new QueryHandlerContext(itemMgr, indexingTree, nodeTypeDataManager, nsReg, parentHandler, getIndexDir(),
+            extractor, true, virtualTableResolver);
+      return context;
+   }
+
+   /**
+    * Creates a new instance of an {@link AbstractQueryImpl} which is not
+    * initialized.
+    * 
+    * @return an new query instance.
+    * @throws RepositoryException
+    *             if an error occurs while creating a new query instance.
+    */
+   protected AbstractQueryImpl createQueryInstance() throws RepositoryException
+   {
+      try
+      {
+         String queryImplClassName = handler.getQueryClass();
+         Object obj = Class.forName(queryImplClassName).newInstance();
+         if (obj instanceof AbstractQueryImpl)
+         {
+            return (AbstractQueryImpl)obj;
+         }
+         else
+         {
+            throw new IllegalArgumentException(queryImplClassName + " is not of type "
+               + AbstractQueryImpl.class.getName());
+         }
+      }
+      catch (Throwable t)
+      {
+         throw new RepositoryException("Unable to create query: " + t.toString(), t);
+      }
+   }
+
+   protected String getIndexDir() throws RepositoryConfigurationException
+   {
+      String dir = config.getParameterValue(QueryHandlerParams.PARAM_INDEX_DIR, null);
+      if (dir == null)
+      {
+         log.warn(QueryHandlerParams.PARAM_INDEX_DIR + " parameter not found. Using outdated parameter name "
+            + QueryHandlerParams.OLD_PARAM_INDEX_DIR);
+         dir = config.getParameterValue(QueryHandlerParams.OLD_PARAM_INDEX_DIR);
+      }
+      return dir;
+   }
+
+   /**
+    * @return the indexingTree
+    */
+   protected IndexingTree getIndexingTree()
+   {
+      return indexingTree;
+   }
+
+   /**
+    * Initialize changes filter.
+    * @throws RepositoryException
+    * @throws RepositoryConfigurationException
+    * @throws ClassNotFoundException 
+    * @throws NoSuchMethodException 
+    * @throws SecurityException 
+    */
+   protected IndexerChangesFilter initializeChangesFilter() throws RepositoryException,
+      RepositoryConfigurationException
+
+   {
+      IndexerChangesFilter newChangesFilter = null;
+      Class<? extends IndexerChangesFilter> changesFilterClass = DefaultChangesFilter.class;
+      String changesFilterClassName = config.getParameterValue(QueryHandlerParams.PARAM_CHANGES_FILTER_CLASS, null);
+      try
+      {
+         if (changesFilterClassName != null)
+         {
+            changesFilterClass =
+               (Class<? extends IndexerChangesFilter>)Class.forName(changesFilterClassName, true, this.getClass()
+                  .getClassLoader());
+         }
+         Constructor<? extends IndexerChangesFilter> constuctor =
+            changesFilterClass.getConstructor(SearchManager.class, SearchManager.class, QueryHandlerEntry.class,
+               IndexingTree.class, IndexingTree.class, QueryHandler.class, QueryHandler.class);
+         if (parentSearchManager != null)
+         {
+            newChangesFilter =
+               constuctor.newInstance(this, parentSearchManager, config, indexingTree, parentSearchManager
+                  .getIndexingTree(), handler, parentSearchManager.getHandler());
+         }
+      }
+      catch (SecurityException e)
+      {
+         throw new RepositoryException(e.getMessage(), e);
+      }
+      catch (IllegalArgumentException e)
+      {
+         throw new RepositoryException(e.getMessage(), e);
+      }
+      catch (ClassNotFoundException e)
+      {
+         throw new RepositoryException(e.getMessage(), e);
+      }
+      catch (NoSuchMethodException e)
+      {
+         throw new RepositoryException(e.getMessage(), e);
+      }
+      catch (InstantiationException e)
+      {
+         throw new RepositoryException(e.getMessage(), e);
+      }
+      catch (IllegalAccessException e)
+      {
+         throw new RepositoryException(e.getMessage(), e);
+      }
+      catch (InvocationTargetException e)
+      {
+         throw new RepositoryException(e.getMessage(), e);
+      }
+      return newChangesFilter;
+   }
+
+   /**
+    * Initializes the query handler.
+    * 
+    * @throws RepositoryException
+    *             if the query handler cannot be initialized.
+    * @throws RepositoryConfigurationException
+    * @throws ClassNotFoundException
+    */
+   protected void initializeQueryHandler() throws RepositoryException, RepositoryConfigurationException
+   {
+      // initialize query handler
+      String className = config.getType();
+      if (className == null)
+         throw new RepositoryConfigurationException("Content hanler       configuration fail");
+
+      try
+      {
+         Class qHandlerClass = Class.forName(className, true, this.getClass().getClassLoader());
+         Constructor constuctor = qHandlerClass.getConstructor(QueryHandlerEntry.class, ConfigurationManager.class);
+         handler = (QueryHandler)constuctor.newInstance(config, cfm);
+         QueryHandler parentHandler = (this.parentSearchManager != null) ? parentSearchManager.getHandler() : null;
+         QueryHandlerContext context = createQueryHandlerContext(parentHandler);
+         handler.setContext(context);
+
+         if (parentSearchManager != null)
+         {
+            changesFilter = initializeChangesFilter();
+         }
+      }
+      catch (SecurityException e)
+      {
+         throw new RepositoryException(e.getMessage(), e);
+      }
+      catch (IllegalArgumentException e)
+      {
+         throw new RepositoryException(e.getMessage(), e);
+      }
+      catch (ClassNotFoundException e)
+      {
+         throw new RepositoryException(e.getMessage(), e);
+      }
+      catch (NoSuchMethodException e)
+      {
+         throw new RepositoryException(e.getMessage(), e);
+      }
+      catch (InstantiationException e)
+      {
+         throw new RepositoryException(e.getMessage(), e);
+      }
+      catch (IllegalAccessException e)
+      {
+         throw new RepositoryException(e.getMessage(), e);
+      }
+      catch (InvocationTargetException e)
+      {
+         throw new RepositoryException(e.getMessage(), e);
+      }
+   }
+
+   /**
+    * @param query
+    * @return
+    * @throws RepositoryException
+    */
+   private Set<String> getNodes(final org.apache.lucene.search.Query query) throws RepositoryException
+   {
+      Set<String> result = new HashSet<String>();
+      try
+      {
+         QueryHits hits = handler.executeQuery(query);
+
+         ScoreNode sn;
+
+         while ((sn = hits.nextScoreNode()) != null)
+         {
+            // Node node = session.getNodeById(sn.getNodeId());
+            result.add(sn.getNodeId());
+         }
+      }
+      catch (IOException e)
+      {
+         throw new RepositoryException(e.getLocalizedMessage(), e);
+      }
+      return result;
+   }
+
    private boolean isPrefixMatch(final InternalQName value, final String prefix) throws RepositoryException
    {
       return value.getNamespace().equals(nsReg.getNamespaceURIByPrefix(prefix));
@@ -807,8 +812,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
             {
                for (final ValueData vdata : propertyData.getValues())
                {
-                  final Value val =
-                     valueFactory.loadValue(((AbstractValueData)vdata).createTransientCopy(), propertyData.getType());
+                  final Value val = valueFactory.loadValue(vdata, propertyData.getType());
                   if (propertyData.getType() == PropertyType.PATH)
                   {
                      if (isPrefixMatch(((PathValue)val).getQPath(), prefix))
@@ -831,30 +835,11 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    }
 
    /**
-    * @param query
-    * @return
-    * @throws RepositoryException
+    * {@inheritDoc}
     */
-   private Set<String> getNodes(final org.apache.lucene.search.Query query) throws RepositoryException
+   public boolean isTXAware()
    {
-      Set<String> result = new HashSet<String>();
-      try
-      {
-         QueryHits hits = handler.executeQuery(query);
-
-         ScoreNode sn;
-
-         while ((sn = hits.nextScoreNode()) != null)
-         {
-            // Node node = session.getNodeById(sn.getNodeId());
-            result.add(sn.getNodeId());
-         }
-      }
-      catch (IOException e)
-      {
-         throw new RepositoryException(e.getLocalizedMessage(), e);
-      }
-      return result;
+      return false;
    }
 
 }

@@ -21,7 +21,6 @@ import org.exoplatform.services.document.DocumentReaderService;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
-import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.Constants;
@@ -55,10 +54,16 @@ public class SystemSearchManager extends SearchManager
     */
    private boolean isStarted = false;
 
-   /**
-    * ChangesLog Buffer (used for saves before start).
-    */
-   private List<ItemStateChangesLog> changesLogBuffer = new ArrayList<ItemStateChangesLog>();
+   //
+   //   /**
+   //    * ChangesLog Buffer (used for saves before start).
+   //    */
+   //   private List<ItemStateChangesLog> changesLogBuffer = new ArrayList<ItemStateChangesLog>();
+   //
+   //   /**
+   //    * ChangesLog Buffer (used for saves before start).
+   //    */
+   //   private List<List<WriteCommand>> writeCommandBuffer = new ArrayList<List<WriteCommand>>();
 
    public static final String INDEX_DIR_SUFFIX = "system";
 
@@ -69,61 +74,141 @@ public class SystemSearchManager extends SearchManager
       super(config, nsReg, ntReg, itemMgr, null, service, cfm, indexSearcherHolder);
    }
 
-   @Override
-   public void onSaveItems(ItemStateChangesLog changesLog)
-   {
-      if (!isStarted)
-      {
-         changesLogBuffer.add(changesLog);
-      }
-      else
-      {
-         super.onSaveItems(changesLog);
-      }
-   }
+   //   @Override
+   //   public void onSaveItems(ItemStateChangesLog changesLog)
+   //   {
+   //      if (!isStarted)
+   //      {
+   //         changesLogBuffer.add(changesLog);
+   //      }
+   //      else
+   //      {
+   //         super.onSaveItems(changesLog);
+   //      }
+   //   }
 
    @Override
    public void start()
    {
-
-      isStarted = true;
-      try
+      if (!isStarted)
       {
-         if (indexingTree == null)
+
+         try
          {
-            List<QPath> excludedPaths = new ArrayList<QPath>();
+            if (indexingTree == null)
+            {
+               List<QPath> excludedPaths = new ArrayList<QPath>();
 
-            NodeData indexingRootNodeData = (NodeData)itemMgr.getItemData(Constants.SYSTEM_UUID);
+               NodeData indexingRootNodeData = (NodeData)itemMgr.getItemData(Constants.SYSTEM_UUID);
 
-            indexingTree = new IndexingTree(indexingRootNodeData, excludedPaths);
+               indexingTree = new IndexingTree(indexingRootNodeData, excludedPaths);
+            }
+            initializeQueryHandler();
+
          }
-         initializeQueryHandler();
 
+         catch (RepositoryException e)
+         {
+            log.error(e.getLocalizedMessage());
+            handler = null;
+            //freeBuffers();
+            throw new RuntimeException(e);
+         }
+         catch (RepositoryConfigurationException e)
+         {
+            log.error(e.getLocalizedMessage());
+            handler = null;
+            //freeBuffers();
+            throw new RuntimeException(e);
+         }
+         isStarted = true;
       }
-
-      catch (RepositoryException e)
-      {
-         log.error(e.getLocalizedMessage());
-         handler = null;
-         changesLogBuffer.clear();
-         changesLogBuffer = null;
-         throw new RuntimeException(e);
-      }
-      catch (RepositoryConfigurationException e)
-      {
-         log.error(e.getLocalizedMessage());
-         handler = null;
-         changesLogBuffer.clear();
-         changesLogBuffer = null;
-         throw new RuntimeException(e);
-      }
-      for (ItemStateChangesLog bufferedChangesLog : changesLogBuffer)
-      {
-         super.onSaveItems(bufferedChangesLog);
-      }
-      changesLogBuffer.clear();
-      changesLogBuffer = null;
+      //      if (changesLogBuffer.size() > 0)
+      //      {
+      //         for (ItemStateChangesLog bufferedChangesLog : changesLogBuffer)
+      //         {
+      //            super.onSaveItems(bufferedChangesLog);
+      //         }
+      //
+      //      }
+      //
+      //      if (writeCommandBuffer.size() > 0)
+      //      {
+      //         try
+      //         {
+      //            for (List<WriteCommand> bufferedWriteLog : writeCommandBuffer)
+      //            {
+      //               super.onSaveItems(bufferedWriteLog);
+      //            }
+      //         }
+      //         catch (RepositoryException e)
+      //         {
+      //            freeBuffers();
+      //            throw new RuntimeException(e);
+      //
+      //         }
+      //      }
+      //      freeBuffers();
    }
+
+   //   /**
+   //    * @see org.exoplatform.services.jcr.impl.core.query.SearchManager#initializeChangesFilter()
+   //    */
+   //   @Override
+   //   protected void initializeChangesFilter() throws RepositoryException, RepositoryConfigurationException
+   //   {
+   //      Class<? extends IndexerChangesFilter> changesFilterClass = DefaultChangesFilter.class;
+   //      String changesFilterClassName = config.getParameterValue(QueryHandlerParams.PARAM_CHANGES_FILTER_CLASS, null);
+   //      try
+   //      {
+   //         if (changesFilterClassName != null)
+   //         {
+   //            changesFilterClass =
+   //               (Class<? extends IndexerChangesFilter>)Class.forName(changesFilterClassName, true, this.getClass()
+   //                  .getClassLoader());
+   //         }
+   //         Constructor<? extends IndexerChangesFilter> constuctor =
+   //            changesFilterClass.getConstructor(SearchManager.class, QueryHandlerEntry.class, Boolean.class,
+   //               IndexingTree.class);
+   //         changesFilter = constuctor.newInstance(this, config, true, indexingTree);
+   //      }
+   //      catch (SecurityException e)
+   //      {
+   //         throw new RepositoryException(e.getMessage(), e);
+   //      }
+   //      catch (IllegalArgumentException e)
+   //      {
+   //         throw new RepositoryException(e.getMessage(), e);
+   //      }
+   //      catch (ClassNotFoundException e)
+   //      {
+   //         throw new RepositoryException(e.getMessage(), e);
+   //      }
+   //      catch (NoSuchMethodException e)
+   //      {
+   //         throw new RepositoryException(e.getMessage(), e);
+   //      }
+   //      catch (InstantiationException e)
+   //      {
+   //         throw new RepositoryException(e.getMessage(), e);
+   //      }
+   //      catch (IllegalAccessException e)
+   //      {
+   //         throw new RepositoryException(e.getMessage(), e);
+   //      }
+   //      catch (InvocationTargetException e)
+   //      {
+   //         throw new RepositoryException(e.getMessage(), e);
+   //      }
+   //   }
+
+   //   private void freeBuffers()
+   //   {
+   //      changesLogBuffer.clear();
+   //      changesLogBuffer = null;
+   //      writeCommandBuffer.clear();
+   //      writeCommandBuffer = null;
+   //   }
 
    @Override
    protected QueryHandlerContext createQueryHandlerContext(QueryHandler parentHandler)
@@ -131,7 +216,24 @@ public class SystemSearchManager extends SearchManager
    {
       QueryHandlerContext context =
          new QueryHandlerContext(itemMgr, indexingTree, nodeTypeDataManager, nsReg, parentHandler, getIndexDir() + "_"
-            + INDEX_DIR_SUFFIX, extractor, changesLogBuffer.size() > 0 && !isStarted, virtualTableResolver);
+            + INDEX_DIR_SUFFIX, extractor, true, virtualTableResolver);
       return context;
    }
+   //
+   //   /* (non-Javadoc)
+   //    * @see org.exoplatform.services.jcr.impl.core.query.SearchManager#onSaveItems(java.util.List)
+   //    */
+   //   @Override
+   //   public void onSaveItems(List<WriteCommand> modifications) throws RepositoryException
+   //   {
+   //      if (!isStarted)
+   //      {
+   //         writeCommandBuffer.add(modifications);
+   //      }
+   //      else
+   //      {
+   //         super.onSaveItems(modifications);
+   //      }
+   //
+   //   }
 }

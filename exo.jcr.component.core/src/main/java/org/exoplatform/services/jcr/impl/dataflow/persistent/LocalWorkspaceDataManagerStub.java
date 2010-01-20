@@ -18,14 +18,21 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
+import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+
+import java.util.Collections;
+import java.util.List;
+
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.
  * 
  * @author Gennady Azarenkov
- * @version $Id: LocalWorkspaceDataManagerStub.java 11907 2008-03-13 15:36:21Z ksm $
+ * @version $Id$
  */
 
 public class LocalWorkspaceDataManagerStub extends VersionableWorkspaceDataManager
@@ -36,5 +43,42 @@ public class LocalWorkspaceDataManagerStub extends VersionableWorkspaceDataManag
    public LocalWorkspaceDataManagerStub(CacheableWorkspaceDataManager persistentManager)
    {
       super(persistentManager);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public List<NodeData> getChildNodesData(NodeData nodeData) throws RepositoryException
+   {
+      return Collections.unmodifiableList(super.getChildNodesData(nodeData));
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public List<PropertyData> getChildPropertiesData(NodeData parent) throws RepositoryException
+   {
+      return Collections.unmodifiableList(super.getChildPropertiesData(parent));
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public List<PropertyData> listChildPropertiesData(final NodeData parent) throws RepositoryException
+   {
+      return Collections.unmodifiableList(super.listChildPropertiesData(parent));
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public List<PropertyData> getReferencesData(String identifier, boolean skipVersionStorage)
+      throws RepositoryException
+   {
+      return Collections.unmodifiableList(super.getReferencesData(identifier, skipVersionStorage));
    }
 }

@@ -18,7 +18,10 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
+import org.exoplatform.services.jcr.impl.dataflow.AbstractPersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.FilePersistedValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -49,7 +52,7 @@ public class JCRSerializationVSJavaSerializationTestLoad extends JcrImplSerializ
    public void testSerialization() throws Exception
    {
 
-      List<TransientValueData> list = new ArrayList<TransientValueData>();
+      List<AbstractPersistedValueData> list = new ArrayList<AbstractPersistedValueData>();
       // Random random = new Random();
 
       ByteArrayInputStream bin;
@@ -57,10 +60,10 @@ public class JCRSerializationVSJavaSerializationTestLoad extends JcrImplSerializ
       for (int i = 0; i < nodes; i++)
       {
          bin = new ByteArrayInputStream(createBLOBTempData(20));
-         list.add(new TransientValueData(bin));
+         list.add(new StreamPersistedValueData(0, bin));
       }
 
-      Iterator<TransientValueData> it;
+      Iterator<AbstractPersistedValueData> it;
       // Serialize with JCR
 
       long jcrwrite = 0;
@@ -75,7 +78,7 @@ public class JCRSerializationVSJavaSerializationTestLoad extends JcrImplSerializ
          ObjectWriterImpl jcrout = new ObjectWriterImpl(new FileOutputStream(jcrfile));
 
          long t1 = System.currentTimeMillis();
-         TransientValueDataWriter wr = new TransientValueDataWriter();
+         PersistedValueDataWriter wr = new PersistedValueDataWriter();
          while (it.hasNext())
          {
             wr.write(jcrout, it.next());
@@ -90,10 +93,10 @@ public class JCRSerializationVSJavaSerializationTestLoad extends JcrImplSerializ
 
          long t3 = System.currentTimeMillis();
 
-         TransientValueDataReader rdr = new TransientValueDataReader(fileCleaner, maxBufferSize, holder);
+         PersistedValueDataReader rdr = new PersistedValueDataReader(fileCleaner, maxBufferSize, holder);
          for (int i = 0; i < nodes; i++)
          {
-            TransientValueData obj = rdr.read(jcrin);
+            AbstractPersistedValueData obj = rdr.read(jcrin);
          }
          t3 = System.currentTimeMillis() - t3;
          jcrread += t3;

@@ -42,8 +42,8 @@ import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.core.itemfilters.ItemFilter;
-import org.exoplatform.services.jcr.impl.core.itemfilters.NamePatternFilter;
+import org.exoplatform.services.jcr.impl.core.itemfilters.ItemDataFilter;
+import org.exoplatform.services.jcr.impl.core.itemfilters.ItemDataNamePatternFilter;
 import org.exoplatform.services.jcr.impl.core.lock.LockImpl;
 import org.exoplatform.services.jcr.impl.core.nodetype.ItemAutocreator;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeDefinitionImpl;
@@ -74,6 +74,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import javax.jcr.AccessDeniedException;
 import javax.jcr.InvalidItemStateException;
@@ -89,6 +90,7 @@ import javax.jcr.PathNotFoundException;
 import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
 import javax.jcr.PropertyType;
+import javax.jcr.RangeIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.UnsupportedRepositoryOperationException;
 import javax.jcr.Value;
@@ -155,9 +157,8 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     * 
     * @param data
     *          Node data
-    * @param parent
-    *          parent node data is used for simple calculation item definition
-    * @param session    
+    * @param parent NodeData Nodes's parent 
+    * @param session   
     *          Session
     * @throws RepositoryException
     *           if error occurs during the Node data loading
@@ -482,7 +483,9 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       checkValid();
 
       if (!session.getAccessManager().hasPermission(getACL(), actions, session.getUserState().getIdentity()))
+      {
          throw new AccessControlException("Permission denied " + getPath() + " : " + actions);
+      }
    }
 
    /**
@@ -494,7 +497,8 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     * @throws AccessDeniedException
     *           if Nodes cannot be listed due to permissions on this Node
     */
-   public List<NodeImpl> childNodes() throws RepositoryException, AccessDeniedException
+   @Deprecated
+   private List<NodeImpl> childNodes() throws RepositoryException, AccessDeniedException
    {
 
       List<NodeImpl> storedNodes = dataManager.getChildNodes(nodeData(), true);
@@ -511,7 +515,8 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     * @throws AccessDeniedException
     *           if Properties cannot be listed due to permissions on this Node
     */
-   public List<PropertyImpl> childProperties() throws RepositoryException, AccessDeniedException
+   @Deprecated
+   private List<PropertyImpl> childProperties() throws RepositoryException, AccessDeniedException
    {
 
       List<PropertyImpl> storedProperties = dataManager.getChildProperties(nodeData(), true);
@@ -577,18 +582,15 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       newMixin.add(type.getName());
       values.add(new TransientValueData(type.getName()));
 
-      TransientPropertyData prop =
-         (TransientPropertyData)dataManager.getItemData(((NodeData)getData()), new QPathEntry(Constants.JCR_MIXINTYPES,
-            0));
+      PropertyData prop =
+         (PropertyData)dataManager.getItemData(((NodeData)getData()), new QPathEntry(Constants.JCR_MIXINTYPES, 0));
       ItemState state;
 
       if (prop != null)
       {// there was mixin prop
          prop =
             new TransientPropertyData(prop.getQPath(), prop.getIdentifier(), prop.getPersistedVersion(),
-               prop.getType(), prop.getParentIdentifier(), prop.isMultiValued());
-
-         prop.setValues(values);
+               prop.getType(), prop.getParentIdentifier(), prop.isMultiValued(), values);
 
          state = ItemState.createUpdatedState(prop);
       }
@@ -600,11 +602,24 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          state = ItemState.createAddedState(prop);
       }
 
-      // Should register jcr:mixinTypes and autocreated items if node is not added
+      NodeTypeDataManager ntmanager = session.getWorkspace().getNodeTypesHolder();
+
+      // change ACL
+      for (PropertyDefinitionData def : ntmanager.getAllPropertyDefinitions(type.getName()))
+      {
+         if (ntmanager.isNodeType(Constants.EXO_OWNEABLE, new InternalQName[]{type.getName()})
+            && def.getName().equals(Constants.EXO_OWNER))
+         {
+            AccessControlList acl =
+               new AccessControlList(session.getUserID(), ((NodeData)data).getACL().getPermissionEntries());
+            setACL(acl);
+         }
+      }
+
       updateMixin(newMixin);
       dataManager.update(state, false);
 
-      NodeTypeDataManager ntmanager = session.getWorkspace().getNodeTypesHolder();
+      // Should register jcr:mixinTypes and autocreated items if node is not added
       ItemAutocreator itemAutocreator = new ItemAutocreator(ntmanager, valueFactory, dataManager, false);
 
       PlainChangesLog changes =
@@ -791,7 +806,9 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       {
          NodeData corrNode = (NodeData)corrDataManager.getItemData(getUUID());
          if (corrNode != null)
+         {
             return corrNode;
+         }
       }
       else
       {
@@ -816,7 +833,9 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       }
       NodeData corrNode = (NodeData)corrDataManager.getItemData(myPath);
       if (corrNode != null)
+      {
          return corrNode;
+      }
 
       throw new ItemNotFoundException("No corresponding path for " + getPath() + " in "
          + corrSession.getWorkspace().getName());
@@ -876,7 +895,10 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
                   .getMixinTypeNames());
 
             if (definition == null)
+            {
                throw new ConstraintViolationException("Node definition not found for " + getPath());
+            }
+
             // TODO same functionality in NodeTypeImpl
             InternalQName[] rnames = definition.getRequiredPrimaryTypes();
             NodeType[] rnts = new NodeType[rnames.length];
@@ -888,7 +910,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
             nodeDefinition =
                new NodeDefinitionImpl(definition, nodeTypesHolder, nodeTypeManager, sysLocFactory, session
                   .getValueFactory());
-
          }
       }
 
@@ -917,7 +938,10 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       LockImpl lock = session.getLockManager().getLock(this);
       if (lock == null)
+      {
          throw new LockException("Lock not found " + getPath());
+      }
+
       return lock;
 
    }
@@ -932,7 +956,9 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       // should not be null
       if (nodeData().getMixinTypeNames() == null)
+      {
          throw new RepositoryException("Data Container implementation error getMixinTypeNames == null");
+      }
 
       ExtendedNodeTypeManager nodeTypeManager = (ExtendedNodeTypeManager)session.getWorkspace().getNodeTypeManager();
       NodeType[] mixinNodeTypes = new NodeType[nodeData().getMixinTypeNames().length];
@@ -956,7 +982,10 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       NodeType[] mixinTypes = getMixinNodeTypes();
       String[] mtNames = new String[mixinTypes.length];
       for (int i = 0; i < mtNames.length; i++)
+      {
          mtNames[i] = mixinTypes[i].getName();
+      }
+
       return mtNames;
    }
 
@@ -972,8 +1001,11 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       ItemImpl node = dataManager.getItem(nodeData(), itemPath.getInternalPath().getEntries(), true);
       if (node == null || !node.isNode())
+      {
          throw new PathNotFoundException("Node not found " + (isRoot() ? "" : getLocation().getAsString(false)) + "/"
             + itemPath.getAsString(false));
+      }
+
       return (NodeImpl)node;
    }
 
@@ -983,6 +1015,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public String getIdentifier() throws RepositoryException
    {
       checkValid();
+
       return this.getInternalIdentifier();
    }
 
@@ -994,17 +1027,43 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       long start = System.currentTimeMillis();
       if (LOG.isDebugEnabled())
+      {
          LOG.debug("getNodes() >>>>>");
+      }
 
       checkValid();
       try
       {
-         return new EntityCollection(childNodes());
+         List<NodeData> childs = childNodesData();
+
+         if (childs.size() < session.getLazyReadThreshold())
+         {
+            // full iterator 
+            List<NodeImpl> nodes = new ArrayList<NodeImpl>();
+            for (NodeData child : childs)
+            {
+               if (session.getAccessManager().hasPermission(child.getACL(), new String[]{PermissionType.READ},
+                  session.getUserState().getIdentity()))
+               {
+                  NodeImpl item = (NodeImpl)dataManager.readItem(child, nodeData(), true, false);
+                  session.getActionHandler().postRead(item);
+                  nodes.add(item);
+               }
+            }
+            return new EntityCollection(nodes);
+         }
+         else
+         {
+            // lazy iterator
+            return new LazyNodeIterator(childs);
+         }
       }
       finally
       {
          if (LOG.isDebugEnabled())
+         {
             LOG.debug("getNodes() <<<<< " + ((System.currentTimeMillis() - start) / 1000d) + "sec");
+         }
       }
    }
 
@@ -1016,25 +1075,47 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       long start = System.currentTimeMillis();
       if (LOG.isDebugEnabled())
+      {
          LOG.debug("getNodes(String) >>>>>");
+      }
 
       checkValid();
 
       try
       {
-         ItemFilter filter = new NamePatternFilter(namePattern);
-         ArrayList<NodeImpl> list = new ArrayList<NodeImpl>();
-         for (NodeImpl item : childNodes())
+         List<NodeData> childs = childNodesData();
+
+         ItemDataFilter filter = new ItemDataNamePatternFilter(namePattern, session);
+
+         if (childs.size() < session.getLazyReadThreshold())
          {
-            if (filter.accept(item))
-               list.add(item);
+            // full iterator 
+            List<NodeImpl> nodes = new ArrayList<NodeImpl>();
+            for (NodeData child : childs)
+            {
+               if (filter.accept(child)
+                  && session.getAccessManager().hasPermission(child.getACL(), new String[]{PermissionType.READ},
+                     session.getUserState().getIdentity()))
+               {
+                  NodeImpl item = (NodeImpl)dataManager.readItem(child, nodeData(), true, false);
+                  session.getActionHandler().postRead(item);
+                  nodes.add(item);
+               }
+            }
+            return new EntityCollection(nodes);
          }
-         return new EntityCollection(list);
+         else
+         {
+            // lazy iterator
+            return new LazyNodeIterator(childNodesData(), filter);
+         }
       }
       finally
       {
          if (LOG.isDebugEnabled())
+         {
             LOG.debug("getNodes(String) <<<<< " + ((System.currentTimeMillis() - start) / 1000d) + "sec");
+         }
       }
    }
 
@@ -1097,12 +1178,42 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       try
       {
-         return new EntityCollection(childProperties());
+         List<PropertyData> childs = childPropertiesData();
+
+         if (session.getAccessManager().hasPermission(nodeData().getACL(), new String[]{PermissionType.READ},
+            session.getUserState().getIdentity()))
+         {
+            if (childs.size() < session.getLazyReadThreshold())
+            {
+               // full iterator 
+               List<PropertyImpl> props = new ArrayList<PropertyImpl>();
+               for (PropertyData child : childs)
+               {
+                  PropertyImpl item = (PropertyImpl)dataManager.readItem(child, nodeData(), true, false);
+                  session.getActionHandler().postRead(item);
+                  props.add(item);
+
+               }
+               return new EntityCollection(props);
+            }
+            else
+            {
+               // lazy iterator
+               return new LazyPropertyIterator(childs);
+            }
+         }
+         else
+         {
+            // return empty
+            return new EntityCollection();
+         }
       }
       finally
       {
          if (LOG.isDebugEnabled())
+         {
             LOG.debug("getProperties() <<<<< " + ((System.currentTimeMillis() - start) / 1000d) + "sec");
+         }
       }
    }
 
@@ -1111,29 +1222,57 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     */
    public PropertyIterator getProperties(String namePattern) throws RepositoryException
    {
-
       long start = System.currentTimeMillis();
       if (LOG.isDebugEnabled())
+      {
          LOG.debug("getProperties(String) >>>>>");
+      }
 
       checkValid();
 
       try
       {
-         ItemFilter filter = new NamePatternFilter(namePattern);
-         ArrayList<PropertyImpl> list = new ArrayList<PropertyImpl>();
-         for (PropertyImpl item : childProperties())
-         {
-            if (filter.accept(item))
-               list.add(item);
-         }
+         List<PropertyData> childs = childPropertiesData();
 
-         return new EntityCollection(list);
+         ItemDataFilter filter = new ItemDataNamePatternFilter(namePattern, session);
+
+         if (session.getAccessManager().hasPermission(nodeData().getACL(), new String[]{PermissionType.READ},
+            session.getUserState().getIdentity()))
+         {
+            if (childs.size() < session.getLazyReadThreshold())
+            {
+               // full iterator 
+               List<PropertyImpl> props = new ArrayList<PropertyImpl>();
+               for (PropertyData child : childs)
+               {
+                  if (filter.accept(child))
+                  {
+                     PropertyImpl item = (PropertyImpl)dataManager.readItem(child, nodeData(), true, false);
+                     session.getActionHandler().postRead(item);
+                     props.add(item);
+                  }
+
+               }
+               return new EntityCollection(props);
+            }
+            else
+            {
+               // lazy iterator
+               return new LazyPropertyIterator(childPropertiesData(), filter);
+            }
+         }
+         else
+         {
+            // return empty
+            return new EntityCollection();
+         }
       }
       finally
       {
          if (LOG.isDebugEnabled())
+         {
             LOG.debug("getProperties(String) <<<<< " + ((System.currentTimeMillis() - start) / 1000d) + "sec");
+         }
       }
    }
 
@@ -1354,110 +1493,84 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public void loadData(ItemData data) throws RepositoryException, InvalidItemStateException,
       ConstraintViolationException
    {
-
-      if (data == null)
-         throw new InvalidItemStateException("Data is null for " + this.getPath()
-            + " Probably was deleted by another session and can not be loaded from container ");
-
-      if (!data.isNode())
-         throw new RepositoryException("Load data failed: Node expected");
-
-      NodeData nodeData = (NodeData)data;
-
-      // TODO do we need this three checks here?
-      if (nodeData.getPrimaryTypeName() == null)
-         throw new RepositoryException("Load data: NodeData has no primaryTypeName. Null value found. "
-            + (nodeData.getQPath() != null ? nodeData.getQPath().getAsString() : "[null path node]") + " " + nodeData);
-
-      if (nodeData.getMixinTypeNames() == null)
-         throw new RepositoryException("Load data: NodeData has no mixinTypeNames. Null value found. "
-            + (nodeData.getQPath() != null ? nodeData.getQPath().getAsString() : "[null path node]"));
-
-      if (nodeData.getACL() == null)
-         throw new RepositoryException("ACL is NULL " + nodeData.getQPath().getAsString());
-
-      this.data = nodeData;
-      this.qpath = nodeData.getQPath();
-      this.location = null;
-
-      initDefinition();
-   }
-
-   /**
-    * Loads data.
-    *
-    * @param data
-    *          source item data for load 
-    * @param parent
-    *          parent node data is used for simple calculation item definition
-    * @throws RepositoryException 
-    *          if error occurs
-    */
-   private void loadData(ItemData data, NodeData parent) throws RepositoryException, InvalidItemStateException,
-      ConstraintViolationException
-   {
-
-      if (data == null)
-         throw new InvalidItemStateException("Data is null for " + this.getPath()
-            + " Probably was deleted by another session and can not be loaded from container ");
-
-      if (!data.isNode())
-         throw new RepositoryException("Load data failed: Node expected");
-
-      NodeData nodeData = (NodeData)data;
-
-      // TODO do we need this three checks here?
-      if (nodeData.getPrimaryTypeName() == null)
-         throw new RepositoryException("Load data: NodeData has no primaryTypeName. Null value found. "
-            + (nodeData.getQPath() != null ? nodeData.getQPath().getAsString() : "[null path node]") + " " + nodeData);
-
-      if (nodeData.getMixinTypeNames() == null)
-         throw new RepositoryException("Load data: NodeData has no mixinTypeNames. Null value found. "
-            + (nodeData.getQPath() != null ? nodeData.getQPath().getAsString() : "[null path node]"));
-
-      if (nodeData.getACL() == null)
-         throw new RepositoryException("ACL is NULL " + nodeData.getQPath().getAsString());
-
-      this.data = nodeData;
-      this.qpath = nodeData.getQPath();
-      this.location = null;
-
-      initDefinition(parent);
+      loadData(data, (NodeData)null);
    }
 
    /**
     * {@inheritDoc}
     */
-   @Override
-   public void loadData(ItemData data, ItemDefinitionData itemDefinitionData) throws RepositoryException,
-      InvalidItemStateException, ConstraintViolationException
+   public void loadData(ItemData data, NodeData parent) throws RepositoryException, InvalidItemStateException,
+      ConstraintViolationException
    {
 
-      if (data == null)
-         throw new InvalidItemStateException("Data is null for " + this.getPath()
-            + " Probably was deleted by another session and can not be loaded from container ");
+      if (data.isNode())
+      {
+         NodeData nodeData = (NodeData)data;
 
-      if (!data.isNode())
+         // TODO do we need this three checks here?
+         if (nodeData.getPrimaryTypeName() == null)
+         {
+            throw new RepositoryException("Load data: NodeData has no primaryTypeName. Null value found. "
+               + (nodeData.getQPath() != null ? nodeData.getQPath().getAsString() : "[null path node]") + " "
+               + nodeData);
+         }
+
+         if (nodeData.getMixinTypeNames() == null)
+         {
+            throw new RepositoryException("Load data: NodeData has no mixinTypeNames. Null value found. "
+               + (nodeData.getQPath() != null ? nodeData.getQPath().getAsString() : "[null path node]"));
+         }
+
+         if (nodeData.getACL() == null)
+         {
+            throw new RepositoryException("ACL is NULL " + nodeData.getQPath().getAsString());
+         }
+
+         this.data = nodeData;
+         this.qpath = nodeData.getQPath();
+         this.location = null;
+
+         initDefinition(parent);
+      }
+      else
+      {
          throw new RepositoryException("Load data failed: Node expected");
+      }
+   }
 
-      NodeData nodeData = (NodeData)data;
+   /**
+    * Init NodeDefinition.
+    * 
+    * @param parent NodeData 
+    * @throws RepositoryException
+    *           if error occurs
+    * @throws ConstraintViolationException
+    *           if definition not found
+    */
+   private void initDefinition(NodeData parent) throws RepositoryException, ConstraintViolationException
+   {
+      if (this.isRoot())
+      {
+         // root - no parent
+         this.definition =
+            new NodeDefinitionData(null, null, true, true, OnParentVersionAction.ABORT, true,
+               new InternalQName[]{Constants.NT_BASE}, null, false);
+         return;
+      }
 
-      // TODO do we need this three checks here?
-      if (nodeData.getPrimaryTypeName() == null)
-         throw new RepositoryException("Load data: NodeData has no primaryTypeName. Null value found. "
-            + (nodeData.getQPath() != null ? nodeData.getQPath().getAsString() : "[null path node]") + " " + nodeData);
+      if (parent == null)
+      {
+         parent = (NodeData)dataManager.getItemData(getParentIdentifier());
+      }
 
-      if (nodeData.getMixinTypeNames() == null)
-         throw new RepositoryException("Load data: NodeData has no mixinTypeNames. Null value found. "
-            + (nodeData.getQPath() != null ? nodeData.getQPath().getAsString() : "[null path node]"));
+      this.definition =
+         session.getWorkspace().getNodeTypesHolder().getChildNodeDefinition(getInternalName(),
+            parent.getPrimaryTypeName(), parent.getMixinTypeNames());
 
-      if (nodeData.getACL() == null)
-         throw new RepositoryException("ACL is NULL " + nodeData.getQPath().getAsString());
-
-      this.data = nodeData;
-      this.location = null;
-      this.qpath = nodeData.getQPath();
-      this.definition = (NodeDefinitionData)itemDefinitionData;
+      if (definition == null)
+      {
+         throw new ConstraintViolationException("Node definition not found for " + getPath());
+      }
    }
 
    /**
@@ -1483,7 +1596,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       if (dataManager.hasPendingChanges(getInternalPath()))
          throw new InvalidItemStateException("Node has pending unsaved changes " + getPath());
 
-      Lock newLock = session.getLockManager().addPendingLock(this, isDeep, isSessionScoped, -1);
+      Lock newLock = session.getLockManager().addLock(this, isDeep, isSessionScoped, -1);
 
       PlainChangesLog changesLog =
          new PlainChangesLogImpl(new ArrayList<ItemState>(), session.getId(), ExtendedEvent.LOCK);
@@ -1519,7 +1632,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       if (dataManager.hasPendingChanges(getInternalPath()))
          throw new InvalidItemStateException("Node has pending unsaved changes " + getPath());
 
-      Lock newLock = session.getLockManager().addPendingLock(this, isDeep, false, timeOut);
+      Lock newLock = session.getLockManager().addLock(this, isDeep, false, timeOut);
 
       PlainChangesLog changesLog =
          new PlainChangesLogImpl(new ArrayList<ItemState>(), session.getId(), ExtendedEvent.LOCK);
@@ -1644,10 +1757,13 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       session.getActionHandler().preRemoveMixin(this, name);
 
-      TransientPropertyData prop =
-         (TransientPropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_MIXINTYPES, 0));
+      PropertyData propData =
+         (PropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_MIXINTYPES, 0));
 
-      prop.setValues(values);
+      // create new property data with new values
+      TransientPropertyData prop =
+         new TransientPropertyData(propData.getQPath(), propData.getIdentifier(), propData.getPersistedVersion(),
+            propData.getType(), propData.getParentIdentifier(), propData.isMultiValued(), values);
 
       NodeTypeDataManager ntmanager = session.getWorkspace().getNodeTypesHolder();
 
@@ -1711,9 +1827,8 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       AccessControlList acl = new AccessControlList(getACL().getOwner(), getACL().getPermissionEntries());
       acl.removePermissions(identity);
-      updatePermissions(acl);
       setACL(acl);
-
+      updatePermissions(acl);
    }
 
    /**
@@ -1729,9 +1844,8 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       AccessControlList acl = new AccessControlList(getACL().getOwner(), getACL().getPermissionEntries());
       acl.removePermissions(identity, permission);
-      updatePermissions(acl);
       setACL(acl);
-
+      updatePermissions(acl);
    }
 
    /**
@@ -1877,8 +1991,8 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       AccessControlList acl = new AccessControlList(getACL().getOwner(), getACL().getPermissionEntries());
       acl.removePermissions(identity);
       acl.addPermissions(identity, permission);
-      updatePermissions(acl);
       setACL(acl);
+      updatePermissions(acl);
    }
 
    // //////////////////////// OPTIONAL
@@ -1918,8 +2032,8 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          }
       }
       AccessControlList acl = new AccessControlList(getACL().getOwner(), aces);
-      updatePermissions(acl);
       setACL(acl);
+      updatePermissions(acl);
    }
 
    /**
@@ -2289,10 +2403,14 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    protected void doOrderBefore(QPath srcPath, QPath destPath) throws RepositoryException
    {
       if (!getPrimaryNodeType().hasOrderableChildNodes())
+      {
          throw new UnsupportedRepositoryOperationException("child node ordering not supported on node " + getPath());
+      }
 
       if (srcPath.equals(destPath))
+      {
          return;
+      }
 
       // check existence
       if (dataManager.getItemData(srcPath) == null)
@@ -2307,16 +2425,23 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       }
 
       if (!checkedOut())
+      {
          throw new VersionException(" cannot change child node ordering of a checked-in node ");
+      }
 
       if (destPath != null && srcPath.getDepth() != destPath.getDepth())
+      {
          throw new ItemNotFoundException("Source and destenation is not relative paths of depth one, "
             + "i.e. is not a childs of same parent node");
+      }
 
-      List<NodeData> siblings = dataManager.getChildNodesData(nodeData());
-      Collections.sort(siblings, new NodeDataOrderComparator());
+      List<NodeData> siblings = new ArrayList<NodeData>(dataManager.getChildNodesData(nodeData()));
       if (siblings.size() < 2)
+      {
          throw new UnsupportedRepositoryOperationException("Nothing to order Count of child nodes " + siblings.size());
+      }
+
+      Collections.sort(siblings, new NodeDataOrderComparator());
 
       // calculating source and destination position
       int srcInd = -1, destInd = -1;
@@ -2409,10 +2534,22 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          // change same name index
          if (sdata.getQPath().getName().equals(srcPath.getName()) && sdata.getQPath().getIndex() != sameNameIndex)
          {
-            newData = ((TransientNodeData)sdata).cloneAsSibling(sameNameIndex);
+            // update with new index
+            QPath siblingPath =
+               QPath.makeChildPath(newData.getQPath().makeParentPath(), newData.getQPath().getName(), sameNameIndex);
+
+            newData =
+               new TransientNodeData(siblingPath, newData.getIdentifier(), newData.getPersistedVersion(), newData
+                  .getPrimaryTypeName(), newData.getMixinTypeNames(), j, newData.getParentIdentifier(), newData
+                  .getACL());
          }
-         // crate update
-         ((TransientNodeData)newData).setOrderNumber(j);
+         else
+         {
+            newData =
+               new TransientNodeData(newData.getQPath(), newData.getIdentifier(), newData.getPersistedVersion(),
+                  newData.getPrimaryTypeName(), newData.getMixinTypeNames(), j, newData.getParentIdentifier(), newData
+                     .getACL());
+         }
 
          /*
           * 8.3.7.8 Re-ordering a set of Child Nodes. When an orderBefore(A, B) is
@@ -2506,14 +2643,13 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          throw new RepositoryException("Property data is not found " + name.getAsString() + " for node "
             + nodeData().getQPath().getAsString());
 
-      TransientPropertyData tdata =
-         new TransientPropertyData(QPath.makeChildPath(getInternalPath(), name), existed.getIdentifier(), existed
-            .getPersistedVersion(), existed.getType(), existed.getParentIdentifier(), existed.isMultiValued());
-
       if (!existed.isMultiValued())
          throw new ValueFormatException("An existed property is single-valued " + name.getAsString());
 
-      tdata.setValues(values);
+      TransientPropertyData tdata =
+         new TransientPropertyData(QPath.makeChildPath(getInternalPath(), name), existed.getIdentifier(), existed
+            .getPersistedVersion(), existed.getType(), existed.getParentIdentifier(), existed.isMultiValued(), values);
+
       return tdata;
    }
 
@@ -2528,11 +2664,45 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       TransientPropertyData tdata =
          new TransientPropertyData(QPath.makeChildPath(getInternalPath(), name), existed.getIdentifier(), existed
-            .getPersistedVersion(), existed.getType(), existed.getParentIdentifier(), existed.isMultiValued());
-
-      tdata.setValue(value);
+            .getPersistedVersion(), existed.getType(), existed.getParentIdentifier(), existed.isMultiValued(), value);
       return tdata;
 
+   }
+
+   /**
+    * Return child Properties list.
+    * 
+    * @return List of child Properties
+    * @throws RepositoryException
+    *           if error occurs
+    * @throws AccessDeniedException
+    *           if Nodes cannot be listed due to permissions on this Node
+    */
+   private List<PropertyData> childPropertiesData() throws RepositoryException, AccessDeniedException
+   {
+
+      List<PropertyData> storedProps = new ArrayList<PropertyData>(dataManager.getChildPropertiesData(nodeData()));
+
+      // TODO we should not sort here!
+      Collections.sort(storedProps, new PropertiesDataOrderComparator<PropertyData>());
+
+      return storedProps;
+   }
+
+   /**
+    * Return child Nodes list.
+    * 
+    * @return List of child Nodes
+    * @throws RepositoryException
+    *           if error occurs
+    * @throws AccessDeniedException
+    *           if Nodes cannot be listed due to permissions on this Node
+    */
+   private List<NodeData> childNodesData() throws RepositoryException, AccessDeniedException
+   {
+      List<NodeData> storedNodes = new ArrayList<NodeData>(dataManager.getChildNodesData(nodeData()));
+      Collections.sort(storedNodes, new NodeDataOrderComparator());
+      return storedNodes;
    }
 
    private EntityCollection createMergeFailed(Map<String, String> failed, SessionChangesLog changes)
@@ -2548,7 +2718,11 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       int state = 0;
       if (mergeFailed != null)
       {
-         mergeFailed = mergeFailed.clone();
+         mergeFailed =
+            new TransientPropertyData(mergeFailed.getQPath(), mergeFailed.getIdentifier(), mergeFailed
+               .getPersistedVersion(), mergeFailed.getType(), mergeFailed.getParentIdentifier(), mergeFailed
+               .isMultiValued(), mergeFailed.getValues());
+
          mergeFailedRefs = mergeFailed.getValues();
          state = ItemState.UPDATED;
       }
@@ -2596,17 +2770,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
    private int getNextChildOrderNum() throws RepositoryException
    {
-      //      int max = -1;
-      //      for (NodeData sibling : siblings)
-      //      {
-      //         int cur = sibling.getOrderNumber();
-      //         if (cur > max)
-      //            max = cur;
-      //      }
-      //      return ++max;
-
-      //return siblings.size();
-
       return dataManager.getChildNodesCount(nodeData());
    }
 
@@ -2692,7 +2855,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       InternalQName[] mixinTypeNames = new InternalQName[0];
       String identifier = IdGenerator.generate();
 
-      //List<NodeData> siblings = dataManager.getChildNodesData(parentNode.nodeData());
       int orderNum = parentNode.getNextChildOrderNum();
       int index = parentNode.getNextChildIndex(name, parentNode.nodeData());
 
@@ -2716,7 +2878,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          itemAutocreator.makeAutoCreatedItems(node.nodeData(), primaryTypeName, dataManager, session.getUserID());
       for (ItemState autoCreatedState : changes.getAllStates())
       {
-         dataManager.update(autoCreatedState, false);
+         dataManager.updateItemState(autoCreatedState);
       }
       // addAutoCreatedItems(node.nodeData(), primaryTypeName);
 
@@ -2762,67 +2924,11 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       return false;
    }
 
-   /**
-    * Init NodeDefinition.
-    * 
-    * @throws RepositoryException
-    *           if error occurs
-    * @throws ConstraintViolationException
-    *           if definition not found
-    */
-   private void initDefinition() throws RepositoryException, ConstraintViolationException
-   {
-
-      if (this.isRoot())
-      { // root - no parent
-         this.definition =
-            new NodeDefinitionData(null, null, true, true, OnParentVersionAction.ABORT, true,
-               new InternalQName[]{Constants.NT_BASE}, null, false);
-         return;
-      }
-
-      NodeData parent = (NodeData)dataManager.getItemData(getParentIdentifier());
-
-      this.definition =
-         session.getWorkspace().getNodeTypesHolder().getChildNodeDefinition(getInternalName(),
-            parent.getPrimaryTypeName(), parent.getMixinTypeNames());
-
-      if (definition == null)
-         throw new ConstraintViolationException("Node definition not found for " + getPath());
-   }
-
-   /**
-    * Init NodeDefinition.
-    * 
-    * @throws RepositoryException
-    *           if error occurs
-    * @throws ConstraintViolationException
-    *           if definition not found
-    */
-   private void initDefinition(NodeData parent) throws RepositoryException, ConstraintViolationException
-   {
-
-      if (this.isRoot())
-      { // root - no parent
-         this.definition =
-            new NodeDefinitionData(null, null, true, true, OnParentVersionAction.ABORT, true,
-               new InternalQName[]{Constants.NT_BASE}, null, false);
-         return;
-      }
-
-      this.definition =
-         session.getWorkspace().getNodeTypesHolder().getChildNodeDefinition(getInternalName(),
-            parent.getPrimaryTypeName(), parent.getMixinTypeNames());
-
-      if (definition == null)
-         throw new ConstraintViolationException("Node definition not found for " + getPath());
-   }
-
    private void removeMergeFailed(Version version, PlainChangesLog changesLog) throws RepositoryException
    {
 
-      TransientPropertyData mergeFailed =
-         (TransientPropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_MERGEFAILED, 0));
+      PropertyData mergeFailed =
+         (PropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_MERGEFAILED, 0));
 
       if (mergeFailed == null)
          return;
@@ -2855,20 +2961,34 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          // to jcr:predecessors (with doneMerge) or just removed from
          // jcr:mergeFailed (with cancelMerge) the jcr:mergeFailed
          // property is automatically remove
-         changesLog.add(ItemState.createDeletedState(mergeFailed.clone(), true));
+         changesLog.add(ItemState.createDeletedState(new TransientPropertyData(mergeFailed.getQPath(), mergeFailed
+            .getIdentifier(), mergeFailed.getPersistedVersion(), mergeFailed.getType(), mergeFailed
+            .getParentIdentifier(), mergeFailed.isMultiValued(), mergeFailed.getValues()), true));
       }
    }
 
    private void setACL(AccessControlList acl)
    {
-      ((NodeData)data).setACL(acl);
+      NodeData nodeData = (NodeData)data;
+      data =
+         new TransientNodeData(nodeData.getQPath(), nodeData.getIdentifier(), nodeData.getPersistedVersion(), nodeData
+            .getPrimaryTypeName(), nodeData.getMixinTypeNames(), nodeData.getOrderNumber(), nodeData
+            .getParentIdentifier(), acl);
    }
 
    private void updateMixin(List<InternalQName> newMixin) throws RepositoryException
    {
       InternalQName[] mixins = new InternalQName[newMixin.size()];
       newMixin.toArray(mixins);
-      ((TransientNodeData)data).setMixinTypeNames(mixins);
+
+      NodeData nodeData = (NodeData)data;
+
+      data =
+         new TransientNodeData(nodeData.getQPath(), nodeData.getIdentifier(), nodeData.getPersistedVersion(), nodeData
+            .getPrimaryTypeName(), mixins, nodeData.getOrderNumber(), nodeData.getParentIdentifier(), nodeData.getACL());
+
+      //      ((TransientNodeData)data).setMixinTypeNames(mixins);
+
       dataManager.update(new ItemState(data, ItemState.MIXIN_CHANGED, false, null), false);
    }
 
@@ -2885,14 +3005,12 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          permValues.add(vd);
       }
 
-      TransientPropertyData permProp =
-         (TransientPropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.EXO_PERMISSIONS, 0));
+      PropertyData permProp =
+         (PropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.EXO_PERMISSIONS, 0));
 
       permProp =
          new TransientPropertyData(permProp.getQPath(), permProp.getIdentifier(), permProp.getPersistedVersion(),
-            permProp.getType(), permProp.getParentIdentifier(), permProp.isMultiValued());
-
-      permProp.setValues(permValues);
+            permProp.getType(), permProp.getParentIdentifier(), permProp.isMultiValued(), permValues);
 
       dataManager.update(new ItemState(data, ItemState.MIXIN_CHANGED, false, null, true), false);
       dataManager.update(ItemState.createUpdatedState(permProp, true), false);
@@ -2960,6 +3078,258 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
             LOG.error("PropertiesOrderComparator error: " + e, e);
          }
          return r;
+      }
+   }
+
+   private static class PropertiesDataOrderComparator<P extends PropertyData> implements Comparator<P>
+   {
+      public int compare(P p1, P p2)
+      {
+         int r = 0;
+         try
+         {
+            InternalQName qname1 = p1.getQPath().getName();
+            InternalQName qname2 = p2.getQPath().getName();
+            if (qname1.equals(Constants.JCR_PRIMARYTYPE))
+            {
+               r = Integer.MIN_VALUE;
+            }
+            else if (qname2.equals(Constants.JCR_PRIMARYTYPE))
+            {
+               r = Integer.MAX_VALUE;
+            }
+            else if (qname1.equals(Constants.JCR_MIXINTYPES))
+            {
+               r = Integer.MIN_VALUE + 1;
+            }
+            else if (qname2.equals(Constants.JCR_MIXINTYPES))
+            {
+               r = Integer.MAX_VALUE - 1;
+            }
+            else if (qname1.equals(Constants.JCR_UUID))
+            {
+               r = Integer.MIN_VALUE + 2;
+            }
+            else if (qname2.equals(Constants.JCR_UUID))
+            {
+               r = Integer.MAX_VALUE - 2;
+            }
+            else
+            {
+               r = qname1.getAsString().compareTo(qname2.getAsString());
+            }
+         }
+         catch (Exception e)
+         {
+            LOG.error("PropertiesDataOrderComparator error: " + e, e);
+         }
+         return r;
+      }
+   }
+
+   protected abstract class LazyItemsIterator implements RangeIterator
+   {
+
+      protected final ItemDataFilter filter;
+
+      protected Iterator<? extends ItemData> iter;
+
+      protected int size = -1;
+
+      protected ItemImpl next;
+
+      protected int pos = 0;
+
+      LazyItemsIterator(List<? extends ItemData> items, ItemDataFilter filter) throws RepositoryException
+      {
+         this.iter = items.iterator();
+         this.filter = filter;
+         fetchNext();
+      }
+
+      protected void fetchNext() throws RepositoryException
+      {
+         if (iter.hasNext())
+         {
+            ItemData item = iter.next();
+
+            // check read conditions 
+            if (canRead(item))
+            {
+               next = (ItemImpl)session.getTransientNodesManager().readItem(item, nodeData(), true, false);
+            }
+            else
+            {
+               // try next
+               next = null;
+               fetchNext();
+            }
+         }
+         else
+         {
+            next = null;
+         }
+      }
+
+      protected boolean canRead(ItemData item)
+      {
+         // TODO check if deleted // if (session.getTransientNodesManager().isDeleted(item.getQPath()))
+         return (filter != null ? filter.accept(item) : true)
+            && session.getAccessManager().hasPermission(
+               item.isNode() ? ((NodeData)item).getACL() : nodeData().getACL(), new String[]{PermissionType.READ},
+               session.getUserState().getIdentity());
+      }
+
+      public ItemImpl nextItem()
+      {
+         if (next != null)
+         {
+            try
+            {
+               ItemImpl i = next;
+               fetchNext();
+               pos++;
+
+               // fire action post-READ
+               session.getActionHandler().postRead(i);
+               return i;
+            }
+            catch (RepositoryException e)
+            {
+               LOG.error(e);
+               throw new NoSuchElementException(e.toString());
+            }
+         }
+
+         throw new NoSuchElementException();
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public boolean hasNext()
+      {
+         return next != null;
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public Object next()
+      {
+         return nextItem();
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public void skip(long skipNum)
+      {
+         pos += skipNum;
+         while (skipNum-- > 1)
+         {
+            iter.next();
+         }
+
+         try
+         {
+            fetchNext();
+         }
+         catch (RepositoryException e)
+         {
+            LOG.error(e);
+            throw new NoSuchElementException(e.toString());
+         }
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public long getSize()
+      {
+         if (size == -1)
+         {
+            // calc size
+
+            int sz = pos + (next != null ? 1 : 0);
+            if (iter.hasNext())
+            {
+               List<ItemData> itemsLeft = new ArrayList<ItemData>();
+               do
+               {
+                  ItemData item = iter.next();
+                  if (canRead(item))
+                  {
+                     itemsLeft.add(item);
+                     sz++;
+                  }
+               }
+               while (iter.hasNext());
+
+               iter = itemsLeft.iterator();
+            }
+            size = sz;
+         }
+
+         return size;
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public long getPosition()
+      {
+         return pos;
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public void remove()
+      {
+         LOG.warn("Remove not supported");
+      }
+   }
+
+   protected class LazyNodeIterator extends LazyItemsIterator implements NodeIterator
+   {
+      LazyNodeIterator(List<? extends ItemData> nodes) throws RepositoryException
+      {
+         super(nodes, null);
+      }
+
+      LazyNodeIterator(List<? extends ItemData> nodes, ItemDataFilter filter) throws RepositoryException
+      {
+         super(nodes, filter);
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public Node nextNode()
+      {
+         return (Node)nextItem();
+      }
+   }
+
+   protected class LazyPropertyIterator extends LazyItemsIterator implements PropertyIterator
+   {
+      LazyPropertyIterator(List<? extends ItemData> props) throws RepositoryException
+      {
+         super(props, null);
+      }
+
+      LazyPropertyIterator(List<? extends ItemData> props, ItemDataFilter filter) throws RepositoryException
+      {
+         super(props, filter);
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public Property nextProperty()
+      {
+         return (Property)nextItem();
       }
    }
 }

@@ -219,4 +219,12 @@ public class WorkspaceDataTransmitter implements ItemsPersistenceListener
    {
       return channelManager;
    }
+
+   /**
+    * {@inheritDoc}
+    */
+   public boolean isTXAware()
+   {
+      return true;
+   }
 }

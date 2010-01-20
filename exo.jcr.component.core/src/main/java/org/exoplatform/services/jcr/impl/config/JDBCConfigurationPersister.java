@@ -22,6 +22,8 @@ import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.services.jcr.config.ConfigurationPersister;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -39,13 +41,13 @@ import javax.sql.DataSource;
 /**
  * Repository service configuration persister.
  * 
- * TODO use log.
- * 
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: JDBCConfigurationPersister.java 11907 2008-03-13 15:36:21Z ksm $
  */
 public class JDBCConfigurationPersister implements ConfigurationPersister
 {
+
+   protected static Log LOG = ExoLogger.getLogger("jcr.JDBCConfigurationPersister");
 
    public final static String PARAM_SOURCE_NAME = "source-name";
 
@@ -112,8 +114,10 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
       {
          sourceNameParam = params.getProperty("sourceName"); // try old, pre 1.9 name
          if (sourceNameParam == null)
+         {
             throw new RepositoryConfigurationException("Repository service configuration. Source name ("
                + PARAM_SOURCE_NAME + ") is expected");
+         }
       }
 
       String dialectParam = params.getProperty(PARAM_DIALECT);
@@ -154,8 +158,10 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
    protected void checkInitialized() throws RepositoryConfigurationException
    {
       if (sourceName == null)
+      {
          throw new RepositoryConfigurationException(
             "Repository service configuration persister isn not initialized. Call init() before.");
+      }
    }
 
    protected Connection openConnection() throws NamingException, SQLException
@@ -322,9 +328,8 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
 
                if (ps.executeUpdate() <= 0)
                {
-                  System.out
-                     .println(this.getClass().getCanonicalName()
-                        + " [WARN] Repository service configuration doesn't stored ok. No rows was affected in JDBC operation. Datasource "
+                  LOG
+                     .warn("Repository service configuration doesn't stored ok. No rows was affected in JDBC operation. Datasource "
                         + sourceName + ". SQL: " + sql);
                }
             }

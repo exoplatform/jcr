@@ -21,7 +21,6 @@ package org.exoplatform.services.jcr.impl.dataflow;
 import org.exoplatform.services.jcr.datamodel.IllegalPathException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
-import org.exoplatform.services.jcr.datamodel.MutableItemData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.log.ExoLogger;
@@ -38,7 +37,7 @@ import java.io.ObjectOutput;
  * @author Gennady Azarenkov
  * @version $Id: TransientItemData.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public abstract class TransientItemData implements MutableItemData, Externalizable
+public abstract class TransientItemData implements ItemData, Externalizable
 {
 
    protected static final Log LOG = ExoLogger.getLogger("jcr.TransientItemData");
@@ -145,16 +144,9 @@ public abstract class TransientItemData implements MutableItemData, Externalizab
       return qpath;
    }
 
-   /*
-    * (non-Javadoc)
-    * 
-    * @see org.exoplatform.services.jcr.datamodel.MutableItemData#increasePersistedVersion()
+   /**
+    * {@inheritDoc}
     */
-   public void increasePersistedVersion()
-   {
-      this.persistedVersion++;
-   }
-
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
    {
       byte[] buf;
@@ -197,6 +189,9 @@ public abstract class TransientItemData implements MutableItemData, Externalizab
       persistedVersion = in.readInt();
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void writeExternal(ObjectOutput out) throws IOException
    {
       byte[] buf = qpath.getAsString().getBytes(Constants.DEFAULT_ENCODING);

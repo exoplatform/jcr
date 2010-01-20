@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl.core.value;
 
 import org.exoplatform.services.jcr.datamodel.Identifier;
+import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 
 import java.io.IOException;
@@ -47,7 +48,7 @@ public class ReferenceValue extends BaseValue
       this.identifier = identifier;
    }
 
-   public ReferenceValue(TransientValueData data) throws IOException, RepositoryException
+   public ReferenceValue(ValueData data) throws IOException, RepositoryException
    {
       super(TYPE, data);
       this.identifier = new Identifier(getInternalString());

@@ -42,29 +42,6 @@ import javax.sql.DataSource;
  */
 public class GenericConnectionFactory implements WorkspaceStorageConnectionFactory
 {
-   
-   public static final String JCR_JDBC_CONNECTION_MONITOR = "org.exoplatform.jcr.monitor.jdbcMonitor";
-
-   public static final String PREPARE_INTREST_NAME = "PREPARE";
-
-   public static final String COMMIT_INTEREST_NAME = "COMMIT";
-
-   public static final String CLOSE_INTEREST_NAME = "CLOSE";
-
-   public static final String OPEN_INTEREST_NAME = "OPEN";
-
-   public static final String EXECUTE_INTEREST_NAME = "EXECUTE";
-
-   public static final int PREPARE_INTREST = 1;
-
-   public static final int COMMIT_INTREST = 2;
-
-   public static final int CLOSE_INTREST = 4;
-
-   public static final int OPEN_INTREST = 8;
-
-   public static final int EXECUTE_INTREST = 16;
-
    protected final Log log = ExoLogger.getLogger("jcr.GenericConnectionFactory");
 
    protected final DataSource dbDataSource;
@@ -88,8 +65,6 @@ public class GenericConnectionFactory implements WorkspaceStorageConnectionFacto
    protected final File swapDirectory;
 
    protected final FileCleaner swapCleaner;
-
-   protected int monitorInterest = 0;
 
    /**
     * GenericConnectionFactory constructor.
@@ -134,8 +109,6 @@ public class GenericConnectionFactory implements WorkspaceStorageConnectionFacto
       this.dbUrl = dbUrl;
       this.dbUserName = dbUserName;
       this.dbPassword = dbPassword;
-
-      initMonitor();
    }
 
    /**
@@ -257,10 +230,13 @@ public class GenericConnectionFactory implements WorkspaceStorageConnectionFacto
             dbDataSource != null ? dbDataSource.getConnection() : (dbUserName != null ? DriverManager.getConnection(
                dbUrl, dbUserName, dbPassword) : DriverManager.getConnection(dbUrl));
 
-         if (readOnly) // set this feature only if it asked
+         if (readOnly)
+         {
+            // set this feature only if it asked
             conn.setReadOnly(readOnly);
+         }
 
-         return monitorInterest == 0 ? conn : null;
+         return conn;
       }
       catch (SQLException e)
       {
@@ -278,34 +254,4 @@ public class GenericConnectionFactory implements WorkspaceStorageConnectionFacto
    {
       return getJdbcConnection(false);
    }
-
-   /**
-     * JDBC monitor init procedure.
-     *
-     */
-   private void initMonitor()
-   {
-      String monitor = System.getProperty(JCR_JDBC_CONNECTION_MONITOR);
-      if (monitor != null)
-      {
-         // parse
-         int interest = 0;
-         String[] ints = monitor.split(",");
-         for (String s : ints)
-         {
-            s = s.trim();
-            if (s.equalsIgnoreCase(EXECUTE_INTEREST_NAME))
-               interest |= EXECUTE_INTREST;
-            else if (s.equalsIgnoreCase(COMMIT_INTEREST_NAME))
-               interest |= COMMIT_INTREST;
-            else if (s.equalsIgnoreCase(CLOSE_INTEREST_NAME))
-               interest |= CLOSE_INTREST;
-            else if (s.equalsIgnoreCase(OPEN_INTEREST_NAME))
-               interest |= OPEN_INTREST;
-         }
-
-         this.monitorInterest = interest;
-      }
-   }
-
 }

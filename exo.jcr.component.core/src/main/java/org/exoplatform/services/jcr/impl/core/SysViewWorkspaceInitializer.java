@@ -56,8 +56,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Stack;
 
 import javax.jcr.NamespaceException;
@@ -77,7 +75,7 @@ import javax.xml.stream.events.StartElement;
  * Should be configured with restore-path parameter. The path to a backup result file.
  * 
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
- * @version $Id: SysViewWorkspaceInitializer.java 34801 2009-07-31 15:44:50Z dkatayev $
+ * @version $Id$
  */
 
 public class SysViewWorkspaceInitializer implements WorkspaceInitializer
@@ -300,8 +298,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
       }
    }
 
-   protected class SVNodeData
-      extends TransientNodeData
+   protected class SVNodeData extends TransientNodeData
    {
 
       int orderNumber = 0;
@@ -316,6 +313,11 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
       void setPrimartTypeName(InternalQName primaryTypeName)
       {
          this.primaryTypeName = primaryTypeName;
+      }
+
+      public void setMixinTypeNames(InternalQName[] mixinTypeNames)
+      {
+         this.mixinTypeNames = mixinTypeNames;
       }
 
       /**
@@ -334,7 +336,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
             childNodesMap.put(childName, 1);
 
          int index = childNodesMap.get(childName);
-         return new int[] {orderNumber++, index};
+         return new int[]{orderNumber++, index};
       }
    }
 
@@ -670,8 +672,10 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
 
                case StartElement.CHARACTERS : {
                   if (propertyValue != null)
+                  {
                      // read property value text
                      propertyValue.write(reader.getText());
+                  }
 
                   break;
                }
@@ -685,8 +689,12 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
                      {
                         // change current context
                         // - pop parent from the stack
-                        parents.pop();
-
+                        SVNodeData parent = parents.pop();
+                        if (parent.getMixinTypeNames() == null)
+                        {
+                           // mixins cannot be null
+                           parent.setMixinTypeNames(new InternalQName[0]);
+                        }
                      }
                      else if (Constants.SV_PROPERTY.equals(lname))
                      {
@@ -732,41 +740,48 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
                         if (propertyType == PropertyType.NAME)
                         {
                            vdata =
-                              new TransientValueData(locationFactory.parseJCRName(propertyValue.getText())
-                                 .getInternalName());
+                              new TransientValueData(currentProperty.getValues().size(), locationFactory.parseJCRName(
+                                 propertyValue.getText()).getInternalName());
                         }
                         else if (propertyType == PropertyType.PATH)
                         {
                            vdata =
-                              new TransientValueData(locationFactory.parseJCRPath(propertyValue.getText())
-                                 .getInternalPath());
+                              new TransientValueData(currentProperty.getValues().size(), locationFactory.parseJCRPath(
+                                 propertyValue.getText()).getInternalPath());
                         }
                         else if (propertyType == PropertyType.DATE)
                         {
-                           vdata = new TransientValueData(JCRDateFormat.parse(propertyValue.getText()));
+                           vdata =
+                              new TransientValueData(currentProperty.getValues().size(), JCRDateFormat
+                                 .parse(propertyValue.getText()));
                         }
                         else if (propertyType == PropertyType.BINARY)
                         {
                            if (propertyValue.isText())
-                              vdata = new TransientValueData(propertyValue.getText());
+                           {
+                              vdata =
+                                 new TransientValueData(currentProperty.getValues().size(), propertyValue.getText());
+                           }
                            else
                            {
                               File pfile = propertyValue.getFile();
                               if (pfile != null)
                               {
                                  vdata =
-                                    new TransientValueData(0, null, null, pfile, fileCleaner, maxBufferSize, null, true);
+                                    new TransientValueData(currentProperty.getValues().size(), null, null, pfile,
+                                       fileCleaner, maxBufferSize, null, true);
                               }
                               else
-                                 vdata = new TransientValueData(new byte[]{}, 0);
+                              {
+                                 vdata = new TransientValueData(currentProperty.getValues().size(), new byte[]{});
+                              }
                            }
                         }
                         else
                         {
-                           vdata = new TransientValueData(propertyValue.getText()); // other like String
+                           vdata = new TransientValueData(currentProperty.getValues().size(), propertyValue.getText()); // other like String
                         }
 
-                        vdata.setOrderNumber(currentProperty.getValues().size());
                         currentProperty.getValues().add(vdata);
 
                         // reset value context

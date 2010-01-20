@@ -24,6 +24,7 @@ import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
 import org.exoplatform.services.jcr.datamodel.Identifier;
 import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.PropertyImpl;
@@ -37,6 +38,8 @@ import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
@@ -134,23 +137,22 @@ public class VersionHistoryImporter
       // jcr:versionHistory
       TransientPropertyData vh =
          TransientPropertyData.createPropertyData(versionable, Constants.JCR_VERSIONHISTORY, PropertyType.REFERENCE,
-            false);
-      vh.setValue(new TransientValueData(new Identifier(versionHistory)));
+            false, new TransientValueData(new Identifier(versionHistory)));
 
       // jcr:baseVersion
       TransientPropertyData bv =
-         TransientPropertyData
-            .createPropertyData(versionable, Constants.JCR_BASEVERSION, PropertyType.REFERENCE, false);
-      bv.setValue(new TransientValueData(new Identifier(baseVersionUuid)));
+         TransientPropertyData.createPropertyData(versionable, Constants.JCR_BASEVERSION, PropertyType.REFERENCE,
+            false, new TransientValueData(new Identifier(baseVersionUuid)));
 
       // jcr:predecessors
-      TransientPropertyData pd =
-         TransientPropertyData
-            .createPropertyData(versionable, Constants.JCR_PREDECESSORS, PropertyType.REFERENCE, true);
+      List<ValueData> values = new ArrayList<ValueData>();
       for (int i = 0; i < predecessors.length; i++)
       {
-         pd.setValue(new TransientValueData(new Identifier(predecessors[i])));
+         values.add(new TransientValueData(new Identifier(predecessors[i])));
       }
+      TransientPropertyData pd =
+         TransientPropertyData.createPropertyData(versionable, Constants.JCR_PREDECESSORS, PropertyType.REFERENCE,
+            true, values);
 
       PlainChangesLog changesLog = new PlainChangesLogImpl();
       RemoveVisitor rv = new RemoveVisitor();

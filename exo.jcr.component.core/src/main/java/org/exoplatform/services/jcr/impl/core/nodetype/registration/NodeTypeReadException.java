@@ -39,7 +39,6 @@ public class NodeTypeReadException extends RepositoryException
    public NodeTypeReadException()
    {
       super();
-      // TODO Auto-generated constructor stub
    }
 
    /**
@@ -49,7 +48,6 @@ public class NodeTypeReadException extends RepositoryException
    public NodeTypeReadException(String message, Throwable rootCause)
    {
       super(message, rootCause);
-      // TODO Auto-generated constructor stub
    }
 
    /**
@@ -58,7 +56,6 @@ public class NodeTypeReadException extends RepositoryException
    public NodeTypeReadException(String message)
    {
       super(message);
-      // TODO Auto-generated constructor stub
    }
 
    /**
@@ -67,7 +64,6 @@ public class NodeTypeReadException extends RepositoryException
    public NodeTypeReadException(Throwable rootCause)
    {
       super(rootCause);
-      // TODO Auto-generated constructor stub
    }
 
 }

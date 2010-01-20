@@ -41,9 +41,10 @@ import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.jcr.impl.core.WorkspaceInitializer;
 import org.exoplatform.services.jcr.impl.core.access.DefaultAccessManagerImpl;
 import org.exoplatform.services.jcr.impl.core.lock.LockManagerImpl;
+import org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManager;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeDataManagerImpl;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
-import org.exoplatform.services.jcr.impl.core.nodetype.registration.JcrNodeTypeDataPersister;
+import org.exoplatform.services.jcr.impl.core.nodetype.registration.JCRNodeTypeDataPersister;
 import org.exoplatform.services.jcr.impl.core.observation.ObservationManagerRegistry;
 import org.exoplatform.services.jcr.impl.core.query.QueryManagerFactory;
 import org.exoplatform.services.jcr.impl.core.query.RepositoryIndexSearcherHolder;
@@ -265,8 +266,25 @@ public class RepositoryContainer extends ExoContainer
                   + " : " + e);
             }
          }
-         workspaceContainer.registerComponentImplementation(LockManagerImpl.class);
 
+         
+         if (wsConfig.getLockManager() != null && wsConfig.getLockManager().getType() != null) 
+         {
+            try
+            {
+               Class<?> lockManagerType = Class.forName(wsConfig.getLockManager().getType());
+               workspaceContainer.registerComponentImplementation(lockManagerType);
+            } catch (ClassNotFoundException e) {
+               throw new RepositoryConfigurationException("Class not found for workspace lock manager "
+                        + wsConfig.getLockManager().getType() + ", container " + wsConfig.getUniqueName()
+                        + " : " + e);
+            }
+         }
+         else
+         {
+            workspaceContainer.registerComponentImplementation(LockManagerImpl.class);
+         }
+         
          // Query handler
          if (wsConfig.getQueryHandler() != null)
          {
@@ -495,7 +513,7 @@ public class RepositoryContainer extends ExoContainer
       registerComponentImplementation(LocationFactory.class);
       registerComponentImplementation(ValueFactoryImpl.class);
 
-      registerComponentImplementation(JcrNodeTypeDataPersister.class);
+      registerComponentImplementation(JCRNodeTypeDataPersister.class);
       registerComponentImplementation(NamespaceDataPersister.class);
       registerComponentImplementation(NamespaceRegistryImpl.class);
 
@@ -561,8 +579,8 @@ public class RepositoryContainer extends ExoContainer
       nsRegistry.start();
 
       //Node types now.
-      JcrNodeTypeDataPersister nodeTypePersister =
-         (JcrNodeTypeDataPersister)this.getComponentInstanceOfType(JcrNodeTypeDataPersister.class);
+      JCRNodeTypeDataPersister nodeTypePersister =
+         (JCRNodeTypeDataPersister)this.getComponentInstanceOfType(JCRNodeTypeDataPersister.class);
 
       NodeTypeDataManagerImpl ntManager =
          (NodeTypeDataManagerImpl)this.getComponentInstanceOfType(NodeTypeDataManagerImpl.class);

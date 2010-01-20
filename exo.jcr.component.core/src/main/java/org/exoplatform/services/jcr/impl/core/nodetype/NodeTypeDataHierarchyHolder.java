@@ -191,7 +191,6 @@ public class NodeTypeDataHierarchyHolder
     */
    public boolean isNodeType(final InternalQName testTypeName, final InternalQName... typesNames)
    {
-
       for (InternalQName typeName : typesNames)
       {
          if (testTypeName.equals(typeName))

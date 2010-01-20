@@ -73,7 +73,6 @@ public class MultiDbJDBCConnection extends JDBCStorageConnection
 
    protected PreparedStatement findValuesStorageDescriptorsByPropertyId;
 
-   @Deprecated
    protected PreparedStatement findValueByPropertyIdOrderNumber;
 
    protected PreparedStatement findNodesByParentId;
@@ -184,7 +183,7 @@ public class MultiDbJDBCConnection extends JDBCStorageConnection
 
       FIND_VALUES_VSTORAGE_DESC_BY_PROPERTYID = "select distinct STORAGE_DESC from JCR_MVALUE where PROPERTY_ID=?";
 
-      FIND_VALUE_BY_PROPERTYID_OREDERNUMB = "select DATA from JCR_MVALUE where PROPERTY_ID=? and ORDER_NUM=?";
+      FIND_VALUE_BY_PROPERTYID_OREDERNUMB = "select DATA, STORAGE_DESC from JCR_MVALUE where PROPERTY_ID=? and ORDER_NUM=?";
 
       FIND_NODES_BY_PARENTID = "select * from JCR_MITEM" + " where I_CLASS=1 and PARENT_ID=?" + " order by N_ORDER_NUM";
       

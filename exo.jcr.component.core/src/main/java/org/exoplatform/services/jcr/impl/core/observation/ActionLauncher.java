@@ -124,7 +124,7 @@ public class ActionLauncher implements ItemsPersistenceListener
                   }
                }
          }
-         if (events.size() > 0)
+         if (events.getSize() > 0)
          {
             // TCK says, no events - no onEvent() action
             listener.onEvent(events);
@@ -263,5 +263,13 @@ public class ActionLauncher implements ItemsPersistenceListener
       }
       throw new RepositoryException("Unexpected ItemState for Node " + ItemState.nameFromValue(state.getState()) + " "
          + state.getData().getQPath().getAsString());
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public boolean isTXAware()
+   {
+      return true;
    }
 }

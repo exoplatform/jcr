@@ -44,7 +44,7 @@ import javax.jcr.RepositoryException;
  * <b>ItemDeletedExistingStates</b> list for remove existing nodes if <code>removeExisting</code> is
  * true.
  * 
- * @version $Id: ItemDataCloneVisitor.java 12306 2008-03-24 10:25:55Z ksm $
+ * @version $Id$
  */
 public class ItemDataCloneVisitor extends DefaultItemDataCopyVisitor
 {
@@ -104,18 +104,20 @@ public class ItemDataCloneVisitor extends DefaultItemDataCopyVisitor
       {
          Collections.reverse(itemDeletedExistingStates);
       }
-      return itemDeletedExistingStates;
 
+      return itemDeletedExistingStates;
    }
 
-   @Override
    protected int calculateNewNodeOrderNumber() throws RepositoryException
    {
       NodeData parent = curParent();
       List<NodeData> existedChilds = getMargedChildNodesData(parent);
       int orderNum = 0;
       if (existedChilds.size() > 0)
+      {
          orderNum = existedChilds.get(existedChilds.size() - 1).getOrderNumber() + 1;
+      }
+
       return orderNum;
    }
 
@@ -131,7 +133,7 @@ public class ItemDataCloneVisitor extends DefaultItemDataCopyVisitor
       if (level == 0)
       {
          qname = destNodeName;
-         // [PN] 12.01.07 Calculate SNS index for dest root
+         // Calculate SNS index for dest root
          for (NodeData child : existedChilds)
          {
             if (child.getQPath().getName().equals(qname))
@@ -145,6 +147,7 @@ public class ItemDataCloneVisitor extends DefaultItemDataCopyVisitor
          qname = node.getQPath().getName();
          newIndex = node.getQPath().getIndex();
       }
+
       return QPath.makeChildPath(parent.getQPath(), qname, newIndex);
    }
 
@@ -155,6 +158,7 @@ public class ItemDataCloneVisitor extends DefaultItemDataCopyVisitor
       boolean isMixReferenceable =
          ntManager.isNodeType(Constants.MIX_REFERENCEABLE, node.getPrimaryTypeName(), node.getMixinTypeNames());
       deletedExistingPropery = false;
+
       if (isMixReferenceable)
       {
          String identifier = node.getIdentifier();
@@ -222,6 +226,7 @@ public class ItemDataCloneVisitor extends DefaultItemDataCopyVisitor
             }
          }
       }
+
       super.entering(property, level);
    };
 
@@ -245,6 +250,7 @@ public class ItemDataCloneVisitor extends DefaultItemDataCopyVisitor
             break;
          }
       }
+
       return retval;
    }
 
@@ -253,12 +259,14 @@ public class ItemDataCloneVisitor extends DefaultItemDataCopyVisitor
       if (itemInItemStateList(itemDeletedExistingStates, item.getIdentifier(), ItemState.DELETED))
          return true;
       ItemState changesItemState = null;
+
       if (changes != null)
       {
          changesItemState = changes.getItemState(item.getIdentifier());
          if (changesItemState != null && changesItemState.isDeleted())
             return true;
       }
+
       return false;
    }
 
@@ -269,8 +277,11 @@ public class ItemDataCloneVisitor extends DefaultItemDataCopyVisitor
       for (NodeData nodeData : existedChilds)
       {
          if (!isItemDeleted(nodeData))
+         {
             result.add(nodeData);
+         }
       }
+
       return result;
    }
 }

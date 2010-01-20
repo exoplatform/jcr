@@ -16,14 +16,19 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.impl.core.query.lucene.DefaultIndexUpdateMonitor;
+import org.exoplatform.services.jcr.impl.core.query.lucene.IndexInfos;
+import org.exoplatform.services.jcr.impl.core.query.lucene.IndexUpdateMonitor;
+import org.exoplatform.services.jcr.impl.core.query.lucene.MultiIndex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.util.Iterator;
 
 import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Implements default behaviour for some methods of {@link QueryHandler}.
@@ -40,6 +45,8 @@ public abstract class AbstractQueryHandler implements QueryHandler
     * The context for this query handler.
     */
    private QueryHandlerContext context;
+
+   protected boolean initialized = false;
 
    /**
     * The {@link OnWorkspaceInconsistency} handler. Defaults to 'fail'.
@@ -58,16 +65,45 @@ public abstract class AbstractQueryHandler implements QueryHandler
    private String idleTime;
 
    /**
-    * Initializes this query handler by setting all properties in this class
-    * with appropriate parameter values.
-    *
-    * @param context the context for this query handler.
-    * @throws RepositoryException 
+    * The handler of the Indexer io mode
     */
-   public final void init(QueryHandlerContext context) throws IOException, RepositoryException
+   protected IndexerIoModeHandler modeHandler;
+
+   /**
+    * {@link IndexInfos} instance that is passed to {@link MultiIndex}
+    */
+   protected IndexInfos indexInfos;
+
+   private IndexUpdateMonitor indexUpdateMonitor;
+
+   public boolean isInitialized()
+   {
+      return initialized;
+   }
+
+   /**
+    * @see org.exoplatform.services.jcr.impl.core.query.QueryHandler#setIndexerIoModeHandler(org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler)
+    */
+   public void setIndexerIoModeHandler(IndexerIoModeHandler modeHandler) throws IOException
+   {
+      this.modeHandler = modeHandler;
+   }   
+   /**
+    * @see org.exoplatform.services.jcr.impl.core.query.QueryHandler#setContext(org.exoplatform.services.jcr.impl.core.query.QueryHandlerContext)
+    */
+   public void setContext(QueryHandlerContext context)
    {
       this.context = context;
+   }
+
+   /**
+    * Initializes QueryHandler with given IoMode (RW/RO)
+    */
+   public void init() throws IOException, RepositoryException, RepositoryConfigurationException
+   {
+      // TODO Auto-generated method stub
       doInit();
+      initialized = true;
    }
 
    /**
@@ -187,4 +223,35 @@ public abstract class AbstractQueryHandler implements QueryHandler
       return idleTime;
    }
 
+   /**
+    * @see org.exoplatform.services.jcr.impl.core.query.QueryHandler#setIndexInfos(org.exoplatform.services.jcr.impl.core.query.lucene.IndexInfos)
+    */
+   public void setIndexInfos(IndexInfos indexInfos)
+   {
+      this.indexInfos = indexInfos;
+   }
+
+   /**
+    * @see org.exoplatform.services.jcr.impl.core.query.QueryHandler#getIndexInfos()
+    */
+   public IndexInfos getIndexInfos()
+   {
+      return indexInfos == null ? new IndexInfos() : indexInfos;
+   }
+
+   /**
+    * @return the indexUpdateMonitor
+    */
+   public IndexUpdateMonitor getIndexUpdateMonitor()
+   {
+      return indexUpdateMonitor == null ? new DefaultIndexUpdateMonitor() : indexUpdateMonitor;
+   }
+
+   /**
+    * @param indexUpdateMonitor the indexUpdateMonitor to set
+    */
+   public void setIndexUpdateMonitor(IndexUpdateMonitor indexUpdateMonitor)
+   {
+      this.indexUpdateMonitor = indexUpdateMonitor;
+   }
 }

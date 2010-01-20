@@ -62,8 +62,8 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
    private ConfigurationManager configurationService;
 
    private ConfigurationPersister configurationPersister;
-   
-   private final List<String> configExtensionPaths = new CopyOnWriteArrayList<String>(); 
+
+   private final List<String> configExtensionPaths = new CopyOnWriteArrayList<String>();
 
    public RepositoryServiceConfigurationImpl(InitParams params, ConfigurationManager configurationService,
       InitialContextInitializer initialContextInitializer) throws RepositoryConfigurationException
@@ -75,9 +75,10 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
       {
          String cn = params.getPropertiesParam("working-conf").getProperty("persister-class-name");
          if (cn == null)
-            cn = params.getPropertiesParam("working-conf").getProperty("persisterClassName"); // try old
-         // name,
-         // pre 1.9
+         {
+            cn = params.getPropertiesParam("working-conf").getProperty("persisterClassName"); // try old name, pre 1.9
+         }
+
          if (cn != null)
          {
             try
@@ -116,7 +117,7 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
    {
       configExtensionPaths.add(plugin.getConfPath());
    }
-   
+
    /*
     * (non-Javadoc)
     * @see org.exoplatform.services.jcr.config.RepositoryServiceConfiguration#isRetainable()
@@ -127,12 +128,12 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
       {
          return true;
       }
+      
       String strfileUri = param.getValue();
       URL fileURL;
       try
       {
          fileURL = configurationService.getURL(strfileUri);
-
       }
       catch (Exception e)
       {
@@ -156,7 +157,7 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
             throw new RepositoryException("Unsupported  configuration place "
                + configurationService.getURL(param.getValue())
                + " If you want to save configuration, start repository from standalone file."
-               + " Or persisterClassName not configured");
+               + " Or persister-class-name not configured");
 
          OutputStream saveStream = null;
 
@@ -184,6 +185,7 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
          // writing configuration in to the persister
          if (configurationPersister != null)
          {
+            // TODO file output stream
             configurationPersister.write(new ByteArrayInputStream(((ByteArrayOutputStream)saveStream).toByteArray()));
          }
 
@@ -210,7 +212,7 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
       }
 
    }
-   
+
    private void initFromStream(InputStream jcrConfigurationInputStream) throws RepositoryConfigurationException
    {
       try
@@ -237,9 +239,9 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
          catch (IOException e)
          {
             // ignore me
-         }                     
+         }
       }
-      
+
    }
 
    /**
@@ -251,18 +253,18 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
       {
          if (configExtensionPaths.isEmpty())
          {
-            initFromStream(configurationService.getInputStream(param.getValue()));            
+            initFromStream(configurationService.getInputStream(param.getValue()));
          }
          else
          {
-            
-            String[] paths = (String[]) configExtensionPaths.toArray(new String[configExtensionPaths.size()]);
-            for (int i = paths.length - 1 ; i >= 0 ; i--)
+
+            String[] paths = (String[])configExtensionPaths.toArray(new String[configExtensionPaths.size()]);
+            for (int i = paths.length - 1; i >= 0; i--)
             {
                // We start from the last one because as it is the one with highest priority
                if (i == paths.length - 1)
                {
-                  init(configurationService.getInputStream(paths[i]));                  
+                  init(configurationService.getInputStream(paths[i]));
                }
                else
                {

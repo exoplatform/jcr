@@ -43,7 +43,7 @@ import javax.jcr.RepositoryException;
  * list of <code>List&lt;ItemState&gt;</code> for copying new nodes and their properties and
  * <b>itemDeletedStates</b> for deleting existing nodes and properties.
  * 
- * @version $Id: ItemDataMoveVisitor.java 11907 2008-03-13 15:36:21Z ksm $
+ * @version $Id$
  */
 public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
 {
@@ -224,25 +224,21 @@ public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
          .getMixinTypeNames())
          && qname.equals(Constants.JCR_UUID))
       {
-
          values = new ArrayList<ValueData>(1);
          values.add(new TransientValueData(curParent().getIdentifier()));
       }
       else
       {
+         // we don't copy ValueDatas here as it's move (i.e. VS files will not be relocated)  
          values = property.getValues();
       }
 
       TransientPropertyData newProperty =
          new TransientPropertyData(QPath.makeChildPath(curParent().getQPath(), qname), keepIdentifiers ? property
             .getIdentifier() : IdGenerator.generate(), -1, property.getType(), curParent().getIdentifier(), property
-            .isMultiValued());
+            .isMultiValued(), values);
 
-      newProperty.setValues(values);
       addStates.add(new ItemState(newProperty, ItemState.RENAMED, false, ancestorToSave, false, false));
-
-      // get last from super.entering(property, level)
-      // ItemState copy = itemAddStates.get(itemAddStates.size() - 1);
 
       deleteStates.add(new ItemState(property, ItemState.DELETED, false, ancestorToSave, false, false));
    }

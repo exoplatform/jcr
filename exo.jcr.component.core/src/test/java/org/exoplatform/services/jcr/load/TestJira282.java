@@ -33,6 +33,7 @@ import java.util.Random;
 import java.util.Set;
 
 import javax.jcr.Node;
+import javax.jcr.NodeIterator;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 
@@ -234,11 +235,9 @@ public class TestJira282 extends JcrAPIBaseTest
             try
             {
                NodeImpl node = (NodeImpl)agentSession.getItem(validName);
-               List<NodeImpl> list = node.childNodes();
-               // log.info("Node:" + node.getPath() + " child count" + list.size());
-               for (NodeImpl nodeImpl : list)
+               for (NodeIterator iter = node.getNodes(); iter.hasNext();)
                {
-                  String name = nodeImpl.getPath();
+                  String name = iter.nextNode().getPath();
                }
             }
             catch (PathNotFoundException e)

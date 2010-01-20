@@ -29,8 +29,6 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.nodetype.PropertyDefinitionImpl;
 import org.exoplatform.services.jcr.impl.core.value.BaseValue;
-import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
-import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 
 import java.io.InputStream;
 import java.util.Calendar;
@@ -63,7 +61,7 @@ public class PropertyImpl extends ItemImpl implements Property
 
    private PropertyDefinitionData propertyDef;
 
-   private TransientPropertyData propertyData;
+   private PropertyData propertyData;
 
    /**
     * PropertyImpl constructor.
@@ -82,36 +80,60 @@ public class PropertyImpl extends ItemImpl implements Property
    }
 
    /**
-    * {@inheritDoc}
+    * PropertyImpl constructor.
+    * 
+    * @param data
+    *          ItemData object
+    * @param parent NodeData Property's parent
+    * @param session
+    *          Session object
+    * @throws RepositoryException
+    * @throws ConstraintViolationException
     */
-   void loadData(ItemData data) throws RepositoryException, ConstraintViolationException
+   PropertyImpl(ItemData data, NodeData parent, SessionImpl session) throws RepositoryException,
+      ConstraintViolationException
    {
-
-      if (!(data instanceof TransientPropertyData))
-         throw new RepositoryException("Load data: TransientPropertyData is expected, but have " + data);
-
-      this.data = data;
-      this.propertyData = (TransientPropertyData)data;
-      this.type = propertyData.getType();
-
-      this.qpath = data.getQPath();
-      this.location = null;
-
-      initDefinitions(this.propertyData.isMultiValued());
+      super(data, session);
+      loadData(data, parent);
    }
 
    /**
     * {@inheritDoc}
     */
+   void loadData(ItemData data) throws RepositoryException, ConstraintViolationException
+   {
+      loadData(data, (NodeData)null);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   void loadData(ItemData data, NodeData parent) throws RepositoryException, ConstraintViolationException
+   {
+      if (data.isNode())
+      {
+         throw new RepositoryException("Load data failed: Property expected");
+      }
+
+      this.data = data;
+      this.propertyData = (PropertyData)data;
+      this.type = propertyData.getType();
+
+      this.qpath = data.getQPath();
+      this.location = null;
+
+      initDefinitions(this.propertyData.isMultiValued(), parent);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Deprecated
    void loadData(ItemData data, ItemDefinitionData itemDefinitionData) throws RepositoryException,
       ConstraintViolationException
    {
-
-      if (!(data instanceof TransientPropertyData))
-         throw new RepositoryException("Load data: TransientPropertyData is expected, but have " + data);
-
       this.data = data;
-      this.propertyData = (TransientPropertyData)data;
+      this.propertyData = (PropertyData)data;
       this.type = propertyData.getType();
 
       this.location = null;
@@ -136,12 +158,16 @@ public class PropertyImpl extends ItemImpl implements Property
       checkValid();
 
       if (isMultiValued())
+      {
          throw new ValueFormatException("The property " + getPath() + " is multi-valued (6.2.4)");
+      }
 
       if (propertyData.getValues() != null && propertyData.getValues().size() == 0)
+      {
          throw new ValueFormatException("The single valued property " + getPath() + " is empty");
+      }
 
-      return valueFactory.loadValue((TransientValueData)propertyData.getValues().get(0), propertyData.getType());
+      return valueFactory.loadValue(propertyData.getValues().get(0), propertyData.getType());
 
    }
 
@@ -337,19 +363,30 @@ public class PropertyImpl extends ItemImpl implements Property
    }
 
    /**
+    * @param multiple
+    * @param parent
     * @throws RepositoryException
     * @throws ConstraintViolationException
     */
-   private void initDefinitions(boolean multiple) throws RepositoryException, ConstraintViolationException
+   private void initDefinitions(boolean multiple, NodeData parent) throws RepositoryException,
+      ConstraintViolationException
    {
 
-      NodeData parent = parentData();
       InternalQName pname = getData().getQPath().getName();
+
+      if (parent == null)
+      {
+         parent = parentData();
+      }
+
       PropertyDefinitionDatas definitions =
          session.getWorkspace().getNodeTypesHolder().getPropertyDefinitions(pname, parent.getPrimaryTypeName(),
             parent.getMixinTypeNames());
+
       if (definitions == null)
+      {
          throw new ConstraintViolationException("Definition for property " + getPath() + " not found.");
+      }
 
       propertyDef = definitions.getDefinition(multiple);
    }
@@ -542,8 +579,7 @@ public class PropertyImpl extends ItemImpl implements Property
       Value[] values = new Value[propertyData.getValues().size()];
       for (int i = 0; i < values.length; i++)
       {
-         values[i] =
-            valueFactory.loadValue((TransientValueData)propertyData.getValues().get(i), propertyData.getType());
+         values[i] = valueFactory.loadValue(propertyData.getValues().get(i), propertyData.getType());
       }
       return values;
    }

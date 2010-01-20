@@ -25,7 +25,6 @@ import org.exoplatform.management.jmx.annotations.Property;
 import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ExtendedSession;
-import org.exoplatform.services.jcr.core.SessionLifecycleListener;
 import org.exoplatform.services.jcr.dataflow.ChangesLogIterator;
 import org.exoplatform.services.jcr.dataflow.CompositeChangesLog;
 import org.exoplatform.services.jcr.dataflow.DataManager;
@@ -40,11 +39,9 @@ import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
-import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
-import org.exoplatform.services.jcr.impl.dataflow.AbstractValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientItemData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
@@ -77,7 +74,7 @@ import javax.jcr.lock.LockException;
  */
 @Managed
 @NameTemplate(@Property(key = "service", value = "lockmanager"))
-public class LockManagerImpl implements ItemsPersistenceListener, SessionLifecycleListener, LockManager, Startable
+public class LockManagerImpl extends AbstractLockManager implements ItemsPersistenceListener, Startable
 {
    /**
     * Default lock time out. 30min
@@ -531,7 +528,7 @@ public class LockManagerImpl implements ItemsPersistenceListener, SessionLifecyc
    /**
     * Remove expired locks. Used from LockRemover.
     */
-   synchronized void removeExpired()
+   public synchronized void removeExpired()
    {
       final List<String> removeLockList = new ArrayList<String>();
 
@@ -575,22 +572,11 @@ public class LockManagerImpl implements ItemsPersistenceListener, SessionLifecyc
       if (prop == null)
          return null;
 
-      // make a copy
+      // make a copy, value may be null for deleting items
       TransientPropertyData newData =
          new TransientPropertyData(prop.getQPath(), prop.getIdentifier(), prop.getPersistedVersion(), prop.getType(),
-            prop.getParentIdentifier(), prop.isMultiValued());
+            prop.getParentIdentifier(), prop.isMultiValued(), prop.getValues());
 
-      List<ValueData> values = null;
-      // null is possible for deleting items
-      if (prop.getValues() != null)
-      {
-         values = new ArrayList<ValueData>();
-         for (ValueData val : prop.getValues())
-         {
-            values.add(((AbstractValueData)val).createTransientCopy());
-         }
-      }
-      newData.setValues(values);
       return newData;
    }
 
@@ -798,5 +784,18 @@ public class LockManagerImpl implements ItemsPersistenceListener, SessionLifecyc
    public void cleanExpiredLocks()
    {
       removeExpired();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public boolean isTXAware()
+   {
+      return true;
+   }
+
+   public SessionLockManager getSessionLockManager(String sessionId)
+   {
+      return new SessionLockManagerImpl(sessionId, this);
    }
 }

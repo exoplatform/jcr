@@ -166,8 +166,7 @@ public class TestLinkedCacheMultithread extends JcrImplBaseTest
                      TransientPropertyData pd =
                         new TransientPropertyData(QPath.makeChildPath(rndNode.getQPath(), InternalQName
                            .parse("[]property-" + next)), IdGenerator.generate(), 1, PropertyType.STRING, rndNode
-                           .getIdentifier(), false);
-                     pd.setValue(new TransientValueData("prop data"));
+                           .getIdentifier(), false, new TransientValueData("prop data"));
                      cache.put(pd);
                   }
                   itemsProcessed++;
@@ -347,8 +346,8 @@ public class TestLinkedCacheMultithread extends JcrImplBaseTest
       {
          TransientPropertyData pd =
             new TransientPropertyData(QPath.makeChildPath(parent.getQPath(), InternalQName.parse("[]property-" + i)),
-               IdGenerator.generate(), 1, PropertyType.STRING, parent.getIdentifier(), false);
-         pd.setValue(new TransientValueData("prop data"));
+               IdGenerator.generate(), 1, PropertyType.STRING, parent.getIdentifier(), false, new TransientValueData(
+                  "prop data"));
          props.add(pd);
       }
 

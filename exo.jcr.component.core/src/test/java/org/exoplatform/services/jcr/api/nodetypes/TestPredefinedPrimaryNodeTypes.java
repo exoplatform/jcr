@@ -20,7 +20,6 @@ package org.exoplatform.services.jcr.api.nodetypes;
 
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
 import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.util.EntityCollection;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -47,8 +46,8 @@ public class TestPredefinedPrimaryNodeTypes extends JcrAPIBaseTest
       NodeDefinition def = node.getDefinition();
       NodeType type = node.getPrimaryNodeType();
 
-      assertTrue("have child ", ((EntityCollection)node.getNodes()).size() == 0);
-      assertTrue("prop num !=1 ", ((EntityCollection)node.getProperties()).size() == 1);
+      assertTrue("have child ", node.getNodes().getSize() == 0);
+      assertTrue("prop num !=1 ", node.getProperties().getSize() == 1);
       assertEquals("Prop not default ", "nt:unstructured", node.getProperty("jcr:primaryType").getString());
 
       assertEquals("Type!= nt:unstructured", type.getName(), "nt:unstructured");
@@ -82,9 +81,8 @@ public class TestPredefinedPrimaryNodeTypes extends JcrAPIBaseTest
       NodeDefinition def = node.getDefinition();
       NodeType type = node.getPrimaryNodeType();
 
-      assertTrue("have child ", ((EntityCollection)node.getNodes()).size() == 0);
-      assertTrue("prop num !=2 ==" + ((EntityCollection)node.getProperties()).size(), ((EntityCollection)node
-         .getProperties()).size() == 2);
+      assertTrue("have child ", node.getNodes().getSize() == 0);
+      assertTrue("prop num !=2 ==" + node.getProperties().getSize(), node.getProperties().getSize() == 2);
 
       PropertyDefinition[] propertyDefinitions = type.getPropertyDefinitions();
       assertTrue("typePropDefs != 3", propertyDefinitions.length == 3);

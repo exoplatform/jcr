@@ -20,7 +20,6 @@ package org.exoplatform.services.jcr.impl.core.version;
 
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.DataManager;
-import org.exoplatform.services.jcr.dataflow.ItemDataTraversingVisitor;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.NodeData;
@@ -31,6 +30,7 @@ import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.dataflow.AbstractItemDataCopyVisitor;
 import org.exoplatform.services.jcr.impl.dataflow.ItemDataCopyVisitor;
 import org.exoplatform.services.jcr.impl.dataflow.ItemDataRemoveVisitor;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
@@ -53,12 +53,10 @@ import javax.jcr.RepositoryException;
  * Created by The eXo Platform SAS 06.02.2007 Traverse through merging nodes
  * (destenation) and do merge to correspondent version states.
  * 
- * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter
- *         Nedonosko</a>
- * @version $Id: ItemDataMergeVisitor.java 14100 2008-05-12 10:53:47Z gazarenkov
- *          $
+ * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
+ * @version $Id: ItemDataMergeVisitor.java 14100 2008-05-12 10:53:47Z gazarenkov $
  */
-public class ItemDataMergeVisitor extends ItemDataTraversingVisitor
+public class ItemDataMergeVisitor extends AbstractItemDataCopyVisitor
 {
 
    protected static int NONE = -1;
@@ -108,7 +106,6 @@ public class ItemDataMergeVisitor extends ItemDataTraversingVisitor
 
    protected class RemoveVisitor extends ItemDataRemoveVisitor
    {
-
       RemoveVisitor() throws RepositoryException
       {
          super(mergeSession.getTransientNodesManager(), null, mergeSession.getWorkspace().getNodeTypesHolder(),
@@ -185,7 +182,7 @@ public class ItemDataMergeVisitor extends ItemDataTraversingVisitor
       if (level == 0)
       {
          // initial - merge root node
-         doMerge((TransientNodeData)mergeNode);
+         doMerge(mergeNode);
       }
       else if (parents.size() > 0)
       {
@@ -197,21 +194,23 @@ public class ItemDataMergeVisitor extends ItemDataTraversingVisitor
             {
                // let C be the set of nodes in S and in S'
                // for each child node m of n in C domerge(m).
-               doMerge((TransientNodeData)mergeNode);
+               doMerge(mergeNode);
             }
             else
             {
                // let D be the set of nodes in S but not in S'.
                // remove from n all child nodes in D.
-               changes.add(new ItemState(((TransientNodeData)mergeNode).clone(), ItemState.DELETED, true, context
-                  .getParent().getQPath(), true));
+               changes.add(new ItemState(new TransientNodeData(mergeNode.getQPath(), mergeNode.getIdentifier(),
+                  mergeNode.getPersistedVersion(), mergeNode.getPrimaryTypeName(), mergeNode.getMixinTypeNames(),
+                  mergeNode.getOrderNumber(), mergeNode.getParentIdentifier(), mergeNode.getACL()), ItemState.DELETED,
+                  true, context.getParent().getQPath(), true));
             }
          }
          else if (context.getResult() == LEAVE)
          {
             // doLeave() work...
             // for each child node c of n domerge(c).
-            doMerge((TransientNodeData)mergeNode);
+            doMerge(mergeNode);
          }
          else
          {
@@ -251,8 +250,7 @@ public class ItemDataMergeVisitor extends ItemDataTraversingVisitor
             SessionDataManager mergeDataManager = mergeSession.getTransientNodesManager();
             for (NodeData corrNode : context.getCorrChildNodes())
             {
-               TransientNodeData existedSameIdentifier =
-                  (TransientNodeData)mergeDataManager.getItemData(corrNode.getIdentifier());
+               NodeData existedSameIdentifier = (NodeData)mergeDataManager.getItemData(corrNode.getIdentifier());
                if (existedSameIdentifier != null)
                {
                   // if an incoming node has the same
@@ -278,20 +276,20 @@ public class ItemDataMergeVisitor extends ItemDataTraversingVisitor
 
    // -------------------- merge actions ------------
 
-   protected void doMerge(TransientNodeData mergeNode) throws RepositoryException
+   protected void doMerge(NodeData mergeNode) throws RepositoryException
    {
       // let n' be the corresponding node of n in ws'.
       // find corr node for this node
-      TransientNodeData corrNode = getCorrNodeData(mergeNode);
+      NodeData corrNode = getCorrNodeData(mergeNode);
       if (corrNode != null)
       {
 
-         TransientNodeData mergeVersion = getBaseVersionData(mergeNode, mergeSession);
+         NodeData mergeVersion = getBaseVersionData(mergeNode, mergeSession);
 
          if (mergeVersion != null)
          {
 
-            TransientNodeData corrVersion = getBaseVersionData(corrNode, corrSession);
+            NodeData corrVersion = getBaseVersionData(corrNode, corrSession);
 
             if (corrVersion != null)
             {
@@ -348,14 +346,14 @@ public class ItemDataMergeVisitor extends ItemDataTraversingVisitor
       }
    }
 
-   protected void doLeave(TransientNodeData mergeNode) throws RepositoryException
+   protected void doLeave(NodeData mergeNode) throws RepositoryException
    {
       // for each child node c of n domerge(c).
       // ...back to visitor
       parents.push(new ContextParent(mergeNode, LEAVE));
    }
 
-   protected void doUpdate(TransientNodeData mergeNode, TransientNodeData corrNode) throws RepositoryException
+   protected void doUpdate(NodeData mergeNode, NodeData corrNode) throws RepositoryException
    {
 
       DataManager mergeDataManager = mergeSession.getTransientNodesManager().getTransactManager();
@@ -370,8 +368,7 @@ public class ItemDataMergeVisitor extends ItemDataTraversingVisitor
       if (!mergeNode.getIdentifier().equals(corrNode.getIdentifier()))
       {
 
-         TransientNodeData existedSameIdentifier =
-            (TransientNodeData)mergeDataManager.getItemData(corrNode.getIdentifier());
+         NodeData existedSameIdentifier = (NodeData)mergeDataManager.getItemData(corrNode.getIdentifier());
          if (existedSameIdentifier != null)
          {
             // if an incoming node has the same
@@ -385,8 +382,7 @@ public class ItemDataMergeVisitor extends ItemDataTraversingVisitor
          }
       }
 
-      changes.add(new ItemState(mergedNode, ItemState.UPDATED, true, mergeNode.getQPath(), true));// XXX
-      // UPDATE
+      changes.add(new ItemState(mergedNode, ItemState.UPDATED, true, mergeNode.getQPath(), true));
 
       // replace set of properties of n with those of n'.
       DataManager corrDataManager = corrSession.getTransientNodesManager().getTransactManager();
@@ -396,7 +392,9 @@ public class ItemDataMergeVisitor extends ItemDataTraversingVisitor
       Map<InternalQName, PropertyData> existedProps = new HashMap<InternalQName, PropertyData>();
       for (PropertyData cp : mergeChildProps)
       {
-         TransientPropertyData existed = ((TransientPropertyData)cp).clone();
+         TransientPropertyData existed =
+            new TransientPropertyData(cp.getQPath(), cp.getIdentifier(), cp.getPersistedVersion(), cp.getType(), cp
+               .getParentIdentifier(), cp.isMultiValued(), copyValues(cp));
          changes.add(new ItemState(existed, ItemState.DELETED, true, mergedNode.getQPath(), true));
 
          existedProps.put(existed.getQPath().getName(), existed);
@@ -408,8 +406,7 @@ public class ItemDataMergeVisitor extends ItemDataTraversingVisitor
          TransientPropertyData mcp =
             new TransientPropertyData(QPath.makeChildPath(mergePath, cp.getQPath().getName()), existed != null
                ? existed.getIdentifier() : cp.getIdentifier(), existed != null ? existed.getPersistedVersion() : cp
-               .getPersistedVersion(), cp.getType(), mergedNode.getIdentifier(), cp.isMultiValued());
-         mcp.setValues(cp.getValues());
+               .getPersistedVersion(), cp.getType(), mergedNode.getIdentifier(), cp.isMultiValued(), copyValues(cp));
 
          changes.add(new ItemState(mcp, ItemState.ADDED, true, mergedNode.getQPath(), true));
       }
@@ -434,7 +431,7 @@ public class ItemDataMergeVisitor extends ItemDataTraversingVisitor
       // for each child node m of n in C domerge(m).
    }
 
-   protected void doFail(TransientNodeData mergeNode, TransientNodeData corrVersion) throws RepositoryException
+   protected void doFail(NodeData mergeNode, NodeData corrVersion) throws RepositoryException
    {
       if (bestEffort)
       {
@@ -455,8 +452,7 @@ public class ItemDataMergeVisitor extends ItemDataTraversingVisitor
 
    // -------------------- utils --------------------
 
-   protected TransientNodeData getBaseVersionData(final TransientNodeData node, final SessionImpl session)
-      throws RepositoryException
+   protected NodeData getBaseVersionData(final NodeData node, final SessionImpl session) throws RepositoryException
    {
 
       NodeTypeDataManager ntManager = session.getWorkspace().getNodeTypesHolder();
@@ -470,7 +466,7 @@ public class ItemDataMergeVisitor extends ItemDataTraversingVisitor
 
          try
          {
-            return (TransientNodeData)dmanager.getItemData(new String(bvProperty.getValues().get(0).getAsByteArray()));
+            return (NodeData)dmanager.getItemData(new String(bvProperty.getValues().get(0).getAsByteArray()));
          }
          catch (IOException e)
          {
@@ -481,7 +477,7 @@ public class ItemDataMergeVisitor extends ItemDataTraversingVisitor
       return null; // non versionable
    }
 
-   protected TransientNodeData getCorrNodeData(final TransientNodeData mergeNode) throws RepositoryException
+   protected NodeData getCorrNodeData(final NodeData mergeNode) throws RepositoryException
    {
 
       final QPath mergePath = mergeNode.getQPath();
@@ -494,7 +490,7 @@ public class ItemDataMergeVisitor extends ItemDataTraversingVisitor
          .getMixinTypeNames()))
       {
          // by UUID
-         return (TransientNodeData)corrDataManager.getItemData(mergeNode.getIdentifier());
+         return (NodeData)corrDataManager.getItemData(mergeNode.getIdentifier());
       }
 
       // by location
@@ -511,19 +507,18 @@ public class ItemDataMergeVisitor extends ItemDataTraversingVisitor
             if (corrAncestor != null)
             {
                QPathEntry[] relPathEntries = mergePath.getRelPath(mergePath.getDepth() - i);
-               return (TransientNodeData)corrDataManager.getItemData(corrAncestor, relPathEntries);
+               return (NodeData)corrDataManager.getItemData(corrAncestor, relPathEntries);
             }
          }
       }
 
-      return (TransientNodeData)corrDataManager.getItemData(mergePath);
+      return (NodeData)corrDataManager.getItemData(mergePath);
    }
 
    /**
     * Is a predecessor of the merge version
     */
-   protected boolean isPredecessor(TransientNodeData mergeVersion, TransientNodeData corrVersion)
-      throws RepositoryException
+   protected boolean isPredecessor(NodeData mergeVersion, NodeData corrVersion) throws RepositoryException
    {
       SessionDataManager mergeDataManager = mergeSession.getTransientNodesManager();
 
@@ -541,7 +536,7 @@ public class ItemDataMergeVisitor extends ItemDataTraversingVisitor
                   return true; // got it
 
                // search in predecessors of the predecessor
-               TransientNodeData predecessor = (TransientNodeData)mergeDataManager.getItemData(pidentifier);
+               NodeData predecessor = (NodeData)mergeDataManager.getItemData(pidentifier);
                if (predecessor != null)
                {
                   if (isPredecessor(predecessor, corrVersion))
@@ -568,8 +563,7 @@ public class ItemDataMergeVisitor extends ItemDataTraversingVisitor
    /**
     * Is a successor of the merge version
     */
-   protected boolean isSuccessor(TransientNodeData mergeVersion, TransientNodeData corrVersion)
-      throws RepositoryException
+   protected boolean isSuccessor(NodeData mergeVersion, NodeData corrVersion) throws RepositoryException
    {
       SessionDataManager mergeDataManager = mergeSession.getTransientNodesManager();
 
@@ -587,7 +581,7 @@ public class ItemDataMergeVisitor extends ItemDataTraversingVisitor
                   return true; // got it
 
                // search in successors of the successor
-               TransientNodeData successor = (TransientNodeData)mergeDataManager.getItemData(sidentifier);
+               NodeData successor = (NodeData)mergeDataManager.getItemData(sidentifier);
                if (successor != null)
                {
                   if (isSuccessor(successor, corrVersion))

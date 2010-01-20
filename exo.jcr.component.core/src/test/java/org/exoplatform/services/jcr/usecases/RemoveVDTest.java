@@ -21,11 +21,14 @@ package org.exoplatform.services.jcr.usecases;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectWriter;
 import org.exoplatform.services.jcr.dataflow.serialization.UnknownClassIdException;
+import org.exoplatform.services.jcr.impl.dataflow.AbstractPersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.FilePersistedValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectReaderImpl;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectWriterImpl;
-import org.exoplatform.services.jcr.impl.dataflow.serialization.TransientValueDataReader;
-import org.exoplatform.services.jcr.impl.dataflow.serialization.TransientValueDataWriter;
+import org.exoplatform.services.jcr.impl.dataflow.serialization.PersistedValueDataReader;
+import org.exoplatform.services.jcr.impl.dataflow.serialization.PersistedValueDataWriter;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 
 import java.io.File;
@@ -48,20 +51,15 @@ public class RemoveVDTest extends BaseUsecasesTest
 
       File f = this.createBLOBTempFile("tempFile", 300);
 
-      TransientValueData vd = new TransientValueData(new FileInputStream(f));
+      FilePersistedValueData vd = new FilePersistedValueData(0, f);
       // vd.setMaxBufferSize(200*1024);
-
-      FileCleaner cleaner = new FileCleaner();
-
-      vd.setFileCleaner(cleaner);
-
-      assertNull(vd.getSpoolFile()); // not spooling by default until getAsStream() will be call
+      //      assertNull(vd.getFile()); // not spooling by default until getAsStream() will be call
 
       File serf = File.createTempFile("serialization", "test");
 
       ObjectWriter wr = new ObjectWriterImpl(new FileOutputStream(serf));
 
-      TransientValueDataWriter vdw = new TransientValueDataWriter();
+      PersistedValueDataWriter vdw = new PersistedValueDataWriter();
       vdw.write(wr, vd);
       wr.flush();
       wr.close();
@@ -71,12 +69,12 @@ public class RemoveVDTest extends BaseUsecasesTest
       // read first time
       ObjectReader or = new ObjectReaderImpl(new FileInputStream(serf));
 
-      TransientValueData vd1 = new TransientValueData();
+      FilePersistedValueData vd1 = null;
 
-      TransientValueDataReader vdr = new TransientValueDataReader(fileCleaner, maxBufferSize, holder);
+      PersistedValueDataReader vdr = new PersistedValueDataReader(fileCleaner, maxBufferSize, holder);
       try
       {
-         vd1 = vdr.read(or);
+         vd1 = (FilePersistedValueData)vdr.read(or);
       }
       catch (UnknownClassIdException e)
       {
@@ -87,11 +85,11 @@ public class RemoveVDTest extends BaseUsecasesTest
 
       // read second time
       or = new ObjectReaderImpl(new FileInputStream(serf));
-      TransientValueData vd2 = new TransientValueData();
+      FilePersistedValueData vd2 = null;
 
       try
       {
-         vd2 = vdr.read(or);
+         vd2 = (FilePersistedValueData)vdr.read(or);
       }
       catch (UnknownClassIdException e)
       {
@@ -99,8 +97,8 @@ public class RemoveVDTest extends BaseUsecasesTest
       }
       or.close();
 
-      assertTrue(vd1.getSpoolFile().exists());
-      assertTrue(vd2.getSpoolFile().exists());
+      assertTrue(vd1.getFile().exists());
+      assertTrue(vd2.getFile().exists());
 
       // remove first one
       vd1 = null;
@@ -113,9 +111,8 @@ public class RemoveVDTest extends BaseUsecasesTest
          // TODO Auto-generated catch block
          e.printStackTrace();
       }
-      assertTrue(vd2.getSpoolFile().exists());
+      assertTrue(vd2.getFile().exists());
 
-      // f.delete();
+      f.delete();
    }
-
 }

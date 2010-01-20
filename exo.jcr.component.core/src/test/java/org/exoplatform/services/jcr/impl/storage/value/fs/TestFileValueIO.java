@@ -23,7 +23,7 @@ import junit.framework.TestCase;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.ByteArrayPersistedValueData;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.FileStreamPersistedValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.FilePersistedValueData;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 
 import java.io.ByteArrayInputStream;
@@ -116,17 +116,17 @@ public class TestFileValueIO extends TestCase
       // max buffer size = 5 - so File will be created
       ValueData vd = FileValueIOUtil.testReadValue(file, 0, 5);
 
-      assertTrue(vd instanceof FileStreamPersistedValueData);
+      assertTrue(vd instanceof FilePersistedValueData);
       assertFalse(vd.isByteArray());
       assertEquals(10, vd.getLength());
       assertEquals(0, vd.getOrderNumber());
       try
       {
          vd.getAsByteArray();
-         fail("IllegalStateException should have been thrown!");
       }
       catch (IllegalStateException e)
       {
+         fail("IllegalStateException should not have been thrown!");
       }
       assertTrue(vd.getAsStream() instanceof FileInputStream);
    }

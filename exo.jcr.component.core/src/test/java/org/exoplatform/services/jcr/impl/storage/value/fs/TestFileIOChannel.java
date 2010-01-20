@@ -110,10 +110,10 @@ public class TestFileIOChannel extends TestCase
       try
       {
          v1.getAsByteArray();
-         fail("IllegalStateException should have been thrown");
       }
       catch (IllegalStateException e)
       {
+         fail("IllegalStateException should not have been thrown");
       }
       channel.delete("testReadFromIOChannel");
       channel.commit();

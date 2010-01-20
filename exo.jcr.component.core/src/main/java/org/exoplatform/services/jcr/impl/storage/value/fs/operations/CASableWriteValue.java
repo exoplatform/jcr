@@ -19,7 +19,7 @@
 package org.exoplatform.services.jcr.impl.storage.value.fs.operations;
 
 import org.exoplatform.services.jcr.datamodel.ValueData;
-import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.storage.value.cas.RecordAlreadyExistsException;
 import org.exoplatform.services.jcr.impl.storage.value.cas.VCASException;
@@ -175,14 +175,19 @@ public class CASableWriteValue extends WriteValue
 
                // make sure parent dir exists
                vcasFile.getParentFile().mkdirs();
-               if (!tempFile.renameTo(vcasFile)) // rename propetynamed file to hashnamed one
+               // rename propetynamed file to hashnamed one
+               if (!tempFile.renameTo(vcasFile))
+               {
                   throw new VCASException("File " + tempFile.getAbsolutePath() + " can't be renamed to VCAS-named "
                      + vcasFile.getAbsolutePath());
+               }
             } // else - CASed Value already exists
 
-            // set new spool file as persisted
-            if (value.isTransient() && !value.isByteArray())
-               ((TransientValueData)value).setPersistedFile(vcasFile);
+            if (!value.isByteArray() && value instanceof StreamPersistedValueData)
+            {
+               // set persisted file
+               ((StreamPersistedValueData)value).setPersistedFile(vcasFile);
+            }
 
          }
          finally

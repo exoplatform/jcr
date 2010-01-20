@@ -83,4 +83,12 @@ public class TesterItemsPersistenceListener implements ItemsPersistenceListener
    {
       logsList.clear();
    }
+
+   /**
+    * {@inheritDoc}
+    */
+   public boolean isTXAware()
+   {
+      return true;
+   }
 }

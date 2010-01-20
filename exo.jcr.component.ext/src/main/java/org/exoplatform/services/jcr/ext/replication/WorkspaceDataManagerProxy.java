@@ -72,9 +72,15 @@ public class WorkspaceDataManagerProxy implements ItemDataKeeper
       this.listeners = new ArrayList<ItemsPersistenceListener>();
       listeners.add(dataManager.getCache());
       if (searchIndex != null)
+      {
          listeners.add(searchIndex);
+      }
+
       if (lockManager != null)
+      {
          listeners.add(lockManager);
+      }
+
       log.info("WorkspaceDataManagerProxy is instantiated");
    }
 
@@ -98,7 +104,10 @@ public class WorkspaceDataManagerProxy implements ItemDataKeeper
       {
          listener.onSaveItems(changesLog);
       }
+      
       if (log.isDebugEnabled())
+      {
          log.debug("ChangesLog sent to " + listeners);
+      }
    }
 }

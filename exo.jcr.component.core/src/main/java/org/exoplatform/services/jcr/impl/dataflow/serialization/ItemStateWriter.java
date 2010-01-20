@@ -19,11 +19,11 @@
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
 import org.exoplatform.services.jcr.dataflow.ItemState;
+import org.exoplatform.services.jcr.dataflow.persistent.PersistedNodeData;
+import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectWriter;
 import org.exoplatform.services.jcr.dataflow.serialization.SerializationConstants;
 import org.exoplatform.services.jcr.datamodel.ItemData;
-import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
-import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 
 import java.io.IOException;
 
@@ -61,17 +61,17 @@ public class ItemStateWriter
       // write flag isNodeData and ItemData
       ItemData data = itemState.getData();
 
-      boolean isNodeData = (data instanceof TransientNodeData);
+      boolean isNodeData = (data instanceof PersistedNodeData);
       out.writeBoolean(isNodeData);
       if (isNodeData)
       {
-         TransientNodeDataWriter wr = new TransientNodeDataWriter();
-         wr.write(out, (TransientNodeData)data);
+         PersistedNodeDataWriter wr = new PersistedNodeDataWriter();
+         wr.write(out, (PersistedNodeData)data);
       }
       else
       {
-         TransientPropertyDataWriter wr = new TransientPropertyDataWriter();
-         wr.write(out, (TransientPropertyData)data);
+         PersistedPropertyDataWriter wr = new PersistedPropertyDataWriter();
+         wr.write(out, (PersistedPropertyData)data);
       }
    }
 

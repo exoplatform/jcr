@@ -19,9 +19,9 @@
 package org.exoplatform.services.jcr.impl.storage.value.fs.operations;
 
 import org.exoplatform.services.jcr.datamodel.ValueData;
-import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.ByteArrayPersistedValueData;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.FileStreamPersistedValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.FilePersistedValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -75,16 +75,16 @@ public class ValueFileIOHelper
    protected ValueData readValue(File file, int orderNum, int maxBufferSize) throws IOException
    {
 
-      FileInputStream is = new FileInputStream(file);
-      try
-      {
-         long fileSize = file.length();
+      long fileSize = file.length();
 
-         if (fileSize > maxBufferSize)
-         {
-            return new FileStreamPersistedValueData(file, orderNum);
-         }
-         else
+      if (fileSize > maxBufferSize)
+      {
+         return new FilePersistedValueData(orderNum, file);
+      }
+      else
+      {
+         FileInputStream is = new FileInputStream(file);
+         try
          {
             int buffSize = (int)fileSize;
             byte[] res = new byte[buffSize];
@@ -96,13 +96,12 @@ public class ValueFileIOHelper
                System.arraycopy(buff, 0, res, rpos, r);
                rpos += r;
             }
-
-            return new ByteArrayPersistedValueData(res, orderNum);
+            return new ByteArrayPersistedValueData(orderNum, res);
          }
-      }
-      finally
-      {
-         is.close();
+         finally
+         {
+            is.close();
+         }
       }
    }
 
@@ -118,50 +117,95 @@ public class ValueFileIOHelper
     */
    protected void writeValue(File file, ValueData value) throws IOException
    {
-      TransientValueData tvalue = (TransientValueData)value;
-
-      if (tvalue.isByteArray())
+      if (value.isByteArray())
       {
-         OutputStream out = new FileOutputStream(file);
-         try
+         writeByteArrayValue(file, value);
+      }
+      else
+      {
+         writeStreamedValue(file, value);
+      }
+   }
+
+   /**
+    * Write value array of bytes to a file.
+    * 
+    * @param file
+    *          File
+    * @param value
+    *          ValueData
+    * @throws IOException
+    *           if error occurs
+    */
+   protected void writeByteArrayValue(File file, ValueData value) throws IOException
+   {
+      OutputStream out = new FileOutputStream(file);
+      try
+      {
+         out.write(value.getAsByteArray());
+      }
+      finally
+      {
+         out.close();
+      }
+   }
+
+   /**
+    * Write streamed value to a file.
+    * 
+    * @param file
+    *          File
+    * @param value
+    *          ValueData
+    * @throws IOException
+    *           if error occurs
+    */
+   protected void writeStreamedValue(File file, ValueData value) throws IOException
+   {
+      // stream Value
+      if (value instanceof StreamPersistedValueData)
+      {
+         StreamPersistedValueData streamed = (StreamPersistedValueData)value;
+
+         if (streamed.isPersisted())
          {
-            out.write(value.getAsByteArray());
+            // already persisted in another Value, copy it to this Value
+            copyClose(streamed.getAsStream(), new FileOutputStream(file));
          }
-         finally
+         else
          {
-            out.close();
+            // the Value not yet persisted, i.e. or in client stream or spooled to a temp file
+            File tempFile;
+            if ((tempFile = streamed.getTempFile()) != null)
+            {
+               // it's spooled Value, try move its file to VS
+               if (!tempFile.renameTo(file))
+               {
+                  // not succeeded - copy bytes, temp file will be deleted by transient ValueData
+                  if (LOG.isDebugEnabled())
+                  {
+                     LOG
+                        .debug("Value spool file move (rename) to Values Storage is not succeeded. Trying bytes copy. Spool file: "
+                           + tempFile.getAbsolutePath() + ". Destination: " + file.getAbsolutePath());
+                  }
+
+                  copyClose(new FileInputStream(tempFile), new FileOutputStream(file));
+               }
+            }
+            else
+            {
+               // not spooled, use client InputStream
+               copyClose(streamed.getStream(), new FileOutputStream(file));
+            }
+
+            // link this Value to file in VS
+            streamed.setPersistedFile(file);
          }
       }
       else
       {
-         if (tvalue.isTransient())
-         {
-            // transient Value
-            File spoolFile;
-            if ((spoolFile = tvalue.getSpoolFile()) != null)
-            {
-               // it's spooled Value, try move its file to VS
-               if (!spoolFile.renameTo(file))
-               {
-                  // not succeeded - copy bytes
-                  if (LOG.isDebugEnabled())
-                     LOG
-                        .debug("Value spool file move (rename) to Values Storage is not succeeded. Trying bytes copy. Spool file: "
-                           + spoolFile.getAbsolutePath() + ". Destination: " + file.getAbsolutePath());
-
-                  copyClose(new FileInputStream(spoolFile), new FileOutputStream(file));
-               }
-            }
-            else
-               // not spooled, use InputStream
-               copyClose(tvalue.getAsStream(false), new FileOutputStream(file));
-
-            // map this transient Value to file in VS
-            ((TransientValueData)value).setPersistedFile(file);
-         }
-         else
-            // persisted Value returned from Session, use InputStream on file from VS
-            copyClose(tvalue.getAsStream(false), new FileOutputStream(file));
+         // copy from Value stream to the file, e.g. from FilePersistedValueData to this Value
+         copyClose(value.getAsStream(), new FileOutputStream(file));
       }
    }
 
@@ -184,7 +228,30 @@ public class ValueFileIOHelper
       }
       else
       {
-         InputStream in = ((TransientValueData)value).getAsStream(false);
+         InputStream in;
+         if (value instanceof StreamPersistedValueData)
+         {
+
+            StreamPersistedValueData streamed = (StreamPersistedValueData)value;
+            if (streamed.isPersisted())
+            {
+               // already persisted in another Value, copy it to this Value
+               in = streamed.getAsStream();
+            }
+            else
+            {
+               in = streamed.getStream();
+               if (in == null)
+               {
+                  in = new FileInputStream(streamed.getTempFile());
+               }
+            }
+         }
+         else
+         {
+            in = value.getAsStream();
+         }
+
          try
          {
             copy(in, out);

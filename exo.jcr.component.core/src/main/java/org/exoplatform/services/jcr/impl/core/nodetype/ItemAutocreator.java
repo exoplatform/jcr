@@ -19,7 +19,6 @@
 package org.exoplatform.services.jcr.impl.core.nodetype;
 
 import org.exoplatform.services.jcr.access.AccessControlEntry;
-import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.core.nodetype.NodeDefinitionData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
@@ -241,8 +240,6 @@ public class ItemAutocreator
       {
          // String owner = session.getUserID();
          vals.add(new TransientValueData(owner));
-         parent.setACL(new AccessControlList(owner, parent.getACL().getPermissionEntries()));
-
       }
       else if (nodeTypeDataManager.isNodeType(Constants.EXO_PRIVILEGEABLE, new InternalQName[]{typeName})
          && def.getName().equals(Constants.EXO_PERMISSIONS))

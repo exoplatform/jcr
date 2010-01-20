@@ -32,7 +32,7 @@ public interface SharedDataManager extends DataManager
 {
 
    /**
-    * Return current time of a persistent data manager
+    * Return current time of a persistent data manager.
     */
    Calendar getCurrentTime();
 

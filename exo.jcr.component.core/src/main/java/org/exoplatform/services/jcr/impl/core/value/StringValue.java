@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.core.value;
 
+import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 
 import java.io.IOException;
@@ -47,7 +48,7 @@ public class StringValue extends BaseValue
     * @param data
     * @throws IOException
     */
-   public StringValue(TransientValueData data) throws IOException
+   public StringValue(ValueData data) throws IOException
    {
       super(TYPE, data);
    }

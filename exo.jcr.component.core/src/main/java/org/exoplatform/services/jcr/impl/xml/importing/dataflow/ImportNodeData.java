@@ -22,6 +22,7 @@ import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.log.ExoLogger;
@@ -266,6 +267,26 @@ public class ImportNodeData extends TransientNodeData implements ImportItemData
       return exoPrivileges != null;
    }
 
+   public void setOrderNumber(int orderNum)
+   {
+      this.orderNum = orderNum;
+   }
+
+   public void setMixinTypeNames(InternalQName[] mixinTypeNames)
+   {
+      this.mixinTypeNames = mixinTypeNames;
+   }
+
+   public void setIdentifier(String identifier)
+   {
+      this.identifier = identifier;
+   }
+
+   public void setACL(AccessControlList acl)
+   {
+      this.acl = acl;
+   }
+
    public void setIsNewIdentifer(boolean newIdentifer)
    {
       this.newIdentifer = newIdentifer;
@@ -325,7 +346,7 @@ public class ImportNodeData extends TransientNodeData implements ImportItemData
       this.versionHistoryIdentifier = versionHistoryIdentifier;
    }
 
-   public static ImportNodeData createCopy(TransientNodeData source)
+   public static ImportNodeData createCopy(NodeData source)
    {
       return new ImportNodeData(source.getQPath(), source.getIdentifier(), source.getPersistedVersion(), source
          .getPrimaryTypeName(), source.getMixinTypeNames(), source.getOrderNumber(), source.getParentIdentifier(),

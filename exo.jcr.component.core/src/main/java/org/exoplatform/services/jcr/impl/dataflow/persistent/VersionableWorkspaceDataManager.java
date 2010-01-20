@@ -18,12 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.jcr.InvalidItemStateException;
-import javax.jcr.RepositoryException;
-
 import org.exoplatform.services.jcr.dataflow.ChangesLogIterator;
 import org.exoplatform.services.jcr.dataflow.CompositeChangesLog;
 import org.exoplatform.services.jcr.dataflow.DataManager;
@@ -42,13 +36,19 @@ import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.jcr.InvalidItemStateException;
+import javax.jcr.RepositoryException;
+
 /**
  * Created by The eXo Platform SAS. Responsible for: *redirecting repository operations if item is
  * descendant of /jcr:system/jcr:versionStorage *adding version history for newly added/assigned
  * mix:versionable
  * 
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov</a>
- * @version $Id: VersionableWorkspaceDataManager.java 11907 2008-03-13 15:36:21Z ksm $
+ * @version $Id$
  */
 
 public class VersionableWorkspaceDataManager extends ACLInheritanceSupportedWorkspaceDataManager
@@ -83,20 +83,20 @@ public class VersionableWorkspaceDataManager extends ACLInheritanceSupportedWork
          return versionDataManager.getChildNodesData(nodeData);
       }
       return super.getChildNodesData(nodeData);
-   }
-   
+   } 
+
    /**
     * {@inheritDoc}
     */
    @Override
-   public int getChildNodesCount(final NodeData parent) throws RepositoryException 
+   public int getChildNodesCount(final NodeData parent) throws RepositoryException
    {
       if (isSystemDescendant(parent.getQPath()) && !this.equals(versionDataManager))
       {
          return versionDataManager.getChildNodesCount(parent);
       }
       return super.getChildNodesCount(parent);
-   }   
+   }
 
    /**
     * {@inheritDoc}
@@ -177,15 +177,13 @@ public class VersionableWorkspaceDataManager extends ACLInheritanceSupportedWork
       return null;
    }
 
-   public void save(CompositeChangesLog changesLog) throws RepositoryException, InvalidItemStateException
+   public void save(final CompositeChangesLog changesLog) throws RepositoryException, InvalidItemStateException
    {
 
-      ChangesLogIterator logIterator = changesLog.getLogIterator();
+      final ChangesLogIterator logIterator = changesLog.getLogIterator();
 
-      boolean saveVersions = false;
-      TransactionChangesLog versionLog = new TransactionChangesLog();
-      boolean saveNonVersions = false;
-      TransactionChangesLog nonVersionLog = new TransactionChangesLog();
+      final TransactionChangesLog versionLogs = new TransactionChangesLog();
+      final TransactionChangesLog nonVersionLogs = new TransactionChangesLog();
 
       while (logIterator.hasNextLog())
       {
@@ -196,40 +194,46 @@ public class VersionableWorkspaceDataManager extends ACLInheritanceSupportedWork
          for (ItemState change : changes.getAllStates())
          {
             if (isSystemDescendant(change.getData().getQPath()) && !this.equals(versionDataManager))
+            {
                vstates.add(change);
+            }
             else
+            {
                nvstates.add(change);
-         }
-
-         String pairId = null;
-         if (vstates.size() > 0 && nvstates.size() > 0)
-         {
-            pairId = IdGenerator.generate();
+            }
          }
 
          if (vstates.size() > 0)
          {
-            versionLog.addLog((pairId != null) ? new PairChangesLog(vstates, changes.getSessionId(), changes
-               .getEventType(), pairId) : new PlainChangesLogImpl(vstates, changes.getSessionId(), changes
-               .getEventType()));
-            saveVersions = true;
+            if (nvstates.size() > 0)
+            {
+               // we have pair of logs for system and non-system (this) workspaces
+               final String pairId = IdGenerator.generate();
+
+               versionLogs.addLog(new PairChangesLog(vstates, changes.getSessionId(), changes.getEventType(), pairId));
+               nonVersionLogs.addLog(new PairChangesLog(nvstates, changes.getSessionId(), changes.getEventType(),
+                  pairId));
+            }
+            else
+            {
+               versionLogs.addLog(new PlainChangesLogImpl(vstates, changes.getSessionId(), changes.getEventType()));
+            }
          }
-
-         if (nvstates.size() > 0)
+         else if (nvstates.size() > 0)
          {
-            nonVersionLog.addLog((pairId != null) ? new PairChangesLog(nvstates, changes.getSessionId(), changes
-               .getEventType(), pairId) : new PlainChangesLogImpl(nvstates, changes.getSessionId(), changes
-               .getEventType()));
-
-            saveNonVersions = true;
+            nonVersionLogs.addLog(new PlainChangesLogImpl(nvstates, changes.getSessionId(), changes.getEventType()));
          }
       }
 
-      if (saveVersions)
-         versionDataManager.save(versionLog);
+      if (versionLogs.getSize() > 0)
+      {
+         versionDataManager.save(versionLogs);
+      }
 
-      if (saveNonVersions)
-         super.save(nonVersionLog);
+      if (nonVersionLogs.getSize() > 0)
+      {
+         super.save(nonVersionLogs);
+      }
    }
 
    private boolean isSystemDescendant(QPath path)

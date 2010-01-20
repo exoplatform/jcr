@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.core.value;
 
+import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 
 import java.io.IOException;
@@ -44,7 +45,7 @@ public class DoubleValue extends BaseValue
       super(TYPE, new TransientValueData(dbl));
    }
 
-   DoubleValue(TransientValueData data) throws IOException
+   DoubleValue(ValueData data) throws IOException
    {
       super(TYPE, data);
    }

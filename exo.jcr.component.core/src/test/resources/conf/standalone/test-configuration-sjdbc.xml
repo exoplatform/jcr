@@ -265,33 +265,6 @@
           </properties-param>
         </init-params>
       </component-plugin>      
-    <!-- Resource configuration for UserTransaction
-       use JOTM
-    -->
-      <component-plugin>
-        <name>jotm.tx</name>
-        <set-method>addPlugin</set-method>
-        <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-        <init-params>
-          <value-param>
-            <name>bind-name</name>
-            <value>UserTransaction</value>
-          </value-param>
-          <value-param>
-            <name>class-name</name>
-            <value>javax.transaction.UserTransaction</value>
-          </value-param>
-          <value-param>
-            <name>factory</name>
-            <value>org.objectweb.jotm.UserTransactionFactory</value>
-          </value-param>
-          <properties-param>
-            <name>ref-addresses</name>
-            <description>ref-addresses</description>
-            <property name="jotm.timeout" value="60"/>
-          </properties-param>
-        </init-params>
-     </component-plugin>
      <component-plugin>
         <name>bind.jcr</name>
         <set-method>addPlugin</set-method>

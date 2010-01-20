@@ -25,7 +25,6 @@ import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionData;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.impl.Constants;
 
-
 import java.util.LinkedList;
 import java.util.List;
 

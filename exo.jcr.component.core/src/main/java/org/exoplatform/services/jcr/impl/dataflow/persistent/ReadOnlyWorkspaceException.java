@@ -37,4 +37,9 @@ public class ReadOnlyWorkspaceException extends RepositoryException
    {
       super(message);
    }
+   
+   public ReadOnlyWorkspaceException(Throwable e)
+   {
+      super(e);
+   }
 }

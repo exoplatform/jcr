@@ -471,6 +471,8 @@ public class PendingChangesLog
     */
    public void restore() throws IOException
    {
+      // TODO same code as in BackupWorkspaceInitializer?
+      
       List<ItemState> listItemState = itemDataChangesLog.getAllStates();
       for (int i = 0; i < this.listFixupStream.size(); i++)
       {
@@ -478,11 +480,12 @@ public class PendingChangesLog
          ItemData itemData = itemState.getData();
 
          TransientPropertyData propertyData = (TransientPropertyData)itemData;
-         TransientValueData transientValueData =
+         TransientValueData tvd =
             (TransientValueData)(propertyData.getValues().get(listFixupStream.get(i).getValueDataId()));
-         transientValueData.setStream(new FileInputStream(listFile.get(i)));
-         transientValueData.setFileCleaner(fileCleaner);
-         transientValueData.isByteArray();
+
+         // re-init the value
+         tvd.delegate(new TransientValueData(tvd.getOrderNumber(), null, null, listFile.get(i), fileCleaner, -1,
+            null, true));
       }
 
       if (listRandomAccessFile != null)

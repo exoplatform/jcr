@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.core;
 
+import org.exoplatform.services.transaction.TransactionException;
+
 import javax.jcr.Session;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
@@ -50,4 +52,11 @@ public interface XASession extends Session
     * @throws XAException
     */
    void delistResource() throws XAException;
+   
+   /**
+    * Returns TransactionException of a last commit XA intransaction context. Can be null. For information purpose.
+    *
+    * @return TransactionException commit exception
+    */
+   TransactionException getCommitException();
 }

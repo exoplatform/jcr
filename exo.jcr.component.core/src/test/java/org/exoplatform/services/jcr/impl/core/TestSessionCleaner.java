@@ -22,8 +22,10 @@ import org.exoplatform.services.jcr.JcrImplBaseTest;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.WeakHashMap;
 
 import javax.jcr.LoginException;
 import javax.jcr.NoSuchWorkspaceException;
@@ -402,5 +404,44 @@ public class TestSessionCleaner extends JcrImplBaseTest
       {
          assertTrue(agent2.result);
       }
+   }
+
+   public void testManySessionRemove() throws LoginException, NoSuchWorkspaceException, RepositoryException,
+      InterruptedException
+   {
+      int sessionCount = 100000;
+      WeakReference<SessionImpl> refSessions[] = new WeakReference[100000];
+      SessionImpl sessions[] = new SessionImpl[100000];
+
+      for (int i = 0; i < sessionCount; i++)
+      {
+         sessions[i] = (SessionImpl)repository.login(credentials, "ws");
+         refSessions[i] = new WeakReference<SessionImpl>(sessions[i]);
+      }
+
+      assertNotNull(sessionRegistry);
+
+      Thread.sleep(SessionRegistry.DEFAULT_CLEANER_TIMEOUT + 120000);
+
+      for (SessionImpl session : sessions)
+      {
+         assertFalse(session.isLive());
+      }
+
+      // Dereference the session explicitely
+      for (int i = 0; i < sessionCount; i++)
+      {
+         sessions[i] = null;
+      }
+
+      // Make a GC
+      forceGC();
+
+      // The weak reference must now be null
+      for (WeakReference ref : refSessions)
+      {
+         assertNull(ref.get());
+      }
+
    }
 }

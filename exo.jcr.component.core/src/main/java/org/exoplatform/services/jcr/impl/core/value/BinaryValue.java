@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl.core.value;
 
 import org.exoplatform.services.jcr.core.value.EditableBinaryValue;
+import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.EditableValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
@@ -26,6 +27,7 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -75,7 +77,7 @@ public class BinaryValue extends BaseValue implements EditableBinaryValue
    public BinaryValue(InputStream stream, FileCleaner fileCleaner, File tempDirectory, int maxFufferSize)
       throws IOException
    {
-      this(new TransientValueData(stream), fileCleaner, tempDirectory, maxFufferSize);
+      this(new TransientValueData(0, null, stream, null, fileCleaner, maxFufferSize, tempDirectory, true, false));
    }
 
    BinaryValue(TransientValueData data) throws IOException
@@ -83,27 +85,28 @@ public class BinaryValue extends BaseValue implements EditableBinaryValue
       super(TYPE, data);
    }
 
-   /** used in ValueFactory.loadValue */
-   BinaryValue(TransientValueData data, FileCleaner fileCleaner, File tempDirectory, int maxFufferSize)
-      throws IOException
+   /** 
+    * For ValueFactory.loadValue(). 
+    * 
+    * */
+   BinaryValue(ValueData data)
    {
       super(TYPE, data);
-      internalData.setFileCleaner(fileCleaner);
-      internalData.setTempDirectory(tempDirectory);
-      internalData.setMaxBufferSize(maxFufferSize);
    }
 
    @Override
-   public TransientValueData getInternalData()
+   public ValueData getInternalData()
    {
       if (changedData != null)
+      {
          return changedData;
+      }
 
       return super.getInternalData();
    }
 
    @Override
-   protected LocalTransientValueData getLocalData(boolean asStream) throws IOException
+   protected LocalSessionValueData getLocalData(boolean asStream) throws IOException
    {
 
       if (this.changed)
@@ -136,11 +139,10 @@ public class BinaryValue extends BaseValue implements EditableBinaryValue
    {
       if (changedData == null)
       {
-         changedData = this.getInternalData().createEditableCopy();
+         changedData = createEditableCopy(this.getInternalData());
       }
 
       this.changedData.update(stream, length, position);
-
       this.changed = true;
    }
 
@@ -154,12 +156,59 @@ public class BinaryValue extends BaseValue implements EditableBinaryValue
    {
       if (changedData == null)
       {
-         changedData = this.getInternalData().createEditableCopy();
+         changedData = createEditableCopy(this.getInternalData());
       }
 
       this.changedData.setLength(size);
-
       this.changed = true;
+   }
+
+   /**
+    * Create editable ValueData copy.
+    * 
+    * @return EditableValueData
+    * @throws RepositoryException
+    *           if error occurs
+    * @throws IOException 
+    * @throws IllegalStateException 
+    */
+   private EditableValueData createEditableCopy(ValueData oldValue) throws RepositoryException, IllegalStateException,
+      IOException
+   {
+      if (oldValue.isByteArray())
+      {
+         // bytes, make a copy of real data
+         byte[] oldBytes = oldValue.getAsByteArray();
+         byte[] newBytes = new byte[oldBytes.length];
+         System.arraycopy(oldBytes, 0, newBytes, 0, newBytes.length);
+
+         try
+         {
+            return new EditableValueData(newBytes, oldValue.getOrderNumber(), null, -1, null);
+         }
+         catch (IOException e)
+         {
+            throw new RepositoryException(e);
+         }
+      }
+      else
+      {
+         // edited BLOB file, make a copy
+         try
+         {
+            EditableValueData copy =
+               new EditableValueData(oldValue.getAsStream(), oldValue.getOrderNumber(), null, -1, null);
+            return copy;
+         }
+         catch (FileNotFoundException e)
+         {
+            throw new RepositoryException("Create editable copy error. " + e, e);
+         }
+         catch (IOException e)
+         {
+            throw new RepositoryException("Create editable copy error. " + e, e);
+         }
+      }
    }
 
 }

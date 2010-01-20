@@ -125,10 +125,7 @@ public class StandaloneStoragePluginProvider extends ArrayList<ValueStoragePlugi
    }
 
    /**
-    * @param property
-    * @return ValueIOChannel appropriate for this property (by path, id etc) or null if no such
-    *         channel found
-    * @throws IOException
+    * {@inheritDoc}
     */
    public ValueIOChannel getApplicableChannel(PropertyData property, int valueOrderNumer) throws IOException
    {
@@ -146,6 +143,9 @@ public class StandaloneStoragePluginProvider extends ArrayList<ValueStoragePlugi
       return null;
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void checkConsistency(WorkspaceStorageConnection dataConnection)
    {
       Iterator<ValueStoragePlugin> plugins = iterator();
@@ -156,6 +156,9 @@ public class StandaloneStoragePluginProvider extends ArrayList<ValueStoragePlugi
       }
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public ValueIOChannel getChannel(String storageId) throws IOException, ValueStorageNotFoundException
    {
       Iterator<ValueStoragePlugin> plugins = iterator();

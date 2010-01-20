@@ -36,6 +36,7 @@ import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.value.BaseValue;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataConvertor;
 import org.exoplatform.services.jcr.impl.xml.DecodedValue;
 import org.exoplatform.services.jcr.impl.xml.importing.dataflow.ImportNodeData;
 import org.exoplatform.services.jcr.impl.xml.importing.dataflow.ImportPropertyData;
@@ -471,7 +472,7 @@ public class SystemViewImporter extends BaseXmlImporter
          if (propertyInfo.getName().equals(Constants.JCR_VERSIONHISTORY))
          {
             String versionHistoryIdentifier = null;
-            versionHistoryIdentifier = ((TransientValueData)values.get(0)).getString();
+            versionHistoryIdentifier = ValueDataConvertor.readString(values.get(0));
 
             currentNodeInfo.setVersionHistoryIdentifier(versionHistoryIdentifier);
             currentNodeInfo.setContainsVersionhistory(dataConsumer.getItemData(versionHistoryIdentifier) != null);
@@ -479,7 +480,7 @@ public class SystemViewImporter extends BaseXmlImporter
          }
          else if (propertyInfo.getName().equals(Constants.JCR_BASEVERSION))
          {
-            currentNodeInfo.setBaseVersionIdentifier(((TransientValueData)values.get(0)).getString());
+            currentNodeInfo.setBaseVersionIdentifier(ValueDataConvertor.readString(values.get(0)));
          }
       }
       catch (IOException e)

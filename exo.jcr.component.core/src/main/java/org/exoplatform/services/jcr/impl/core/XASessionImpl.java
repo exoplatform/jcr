@@ -75,6 +75,11 @@ public class XASessionImpl extends SessionImpl implements XASession, XAResource,
    private Object payload;
 
    /**
+    * TransactionException of a last commit in context of a transaction. Can be set on commit and will be restet on enlist/delist resource or rollback. 
+    */
+   private TransactionException commitException = null;
+
+   /**
     * XASessionImpl constructor.
     * 
     * @param workspaceName
@@ -97,7 +102,16 @@ public class XASessionImpl extends SessionImpl implements XASession, XAResource,
       this.txTimeout = tService.getDefaultTimeout();
       this.tService = tService;
       this.txResourceManager = txResourceManager;
-      this.txResourceManager.add(this);
+
+      // enlist on login instead of this.txResourceManager.add(this);
+      try
+      {
+         this.enlistResource();
+      }
+      catch (XAException e)
+      {
+         throw new RepositoryException(e);
+      }
    }
 
    /**
@@ -113,19 +127,35 @@ public class XASessionImpl extends SessionImpl implements XASession, XAResource,
     */
    public void delistResource() throws XAException
    {
+      // TODO if session is dead? can we delist it?
       try
       {
          if (LOG.isDebugEnabled())
+         {
             LOG.debug("Delist session: " + getSessionInfo() + ", " + this);
+         }
+
+         commitException = null;
+         txResourceManager.remove(this);
          tService.delistResource(this);
       }
       catch (RollbackException e)
       {
-         throw new XAException(e.getMessage());
+         if (LOG.isDebugEnabled())
+         {
+            LOG.debug("Delist error, session: " + getSessionInfo() + ", " + this, e);
+         }
+
+         throw new XASessionException("Cannot delist resource XASession " + getSessionInfo() + ". " + e);
       }
       catch (SystemException e)
       {
-         throw new XAException(e.getMessage());
+         if (LOG.isDebugEnabled())
+         {
+            LOG.debug("Delist error, session: " + getSessionInfo() + ", " + this, e);
+         }
+
+         throw new XASessionException("Cannot delist resource XASession " + getSessionInfo() + ". " + e);
       }
    }
 
@@ -134,19 +164,35 @@ public class XASessionImpl extends SessionImpl implements XASession, XAResource,
     */
    public void enlistResource() throws XAException
    {
+      // TODO if session is dead? can we enlist it?
       try
       {
          if (LOG.isDebugEnabled())
+         {
             LOG.debug("Enlist session: " + getSessionInfo() + ", " + this);
+         }
+
+         commitException = null;
+         txResourceManager.add(this);
          tService.enlistResource(this);
       }
       catch (RollbackException e)
       {
-         throw new XAException(e.getMessage());
+         if (LOG.isDebugEnabled())
+         {
+            LOG.debug("Enlist error, session: " + getSessionInfo() + ", " + this, e);
+         }
+
+         throw new XASessionException("Cannot enlist resource XASession " + getSessionInfo() + ". " + e);
       }
       catch (SystemException e)
       {
-         throw new XAException(e.getMessage());
+         if (LOG.isDebugEnabled())
+         {
+            LOG.debug("Enlist error, session: " + getSessionInfo() + ", " + this, e);
+         }
+
+         throw new XASessionException("Cannot enlist resource XASession " + getSessionInfo() + ". " + e);
       }
    }
 
@@ -157,15 +203,37 @@ public class XASessionImpl extends SessionImpl implements XASession, XAResource,
    {
       try
       {
-         txResourceManager.commit(this);
+         txResourceManager.commit(this, onePhase);
       }
       catch (TransactionException e)
       {
-         throw new XAException(XAException.XA_RBOTHER);
+         commitException = e;
+         if (LOG.isDebugEnabled())
+         {
+            LOG.debug("Commit Error. Xid:" + xid + ", session: " + getSessionInfo() + ", " + this, e);
+         }
+
+         throw new XASessionException(e.toString(), e.getErrorCode());
       }
 
       if (LOG.isDebugEnabled())
+      {
          LOG.debug("Commit. Xid:" + xid + ", session: " + getSessionInfo() + ", " + this);
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void start(Xid xid, int flags) throws XAException
+   {
+      txResourceManager.start(this);
+      startFlags = flags;
+
+      if (LOG.isDebugEnabled())
+      {
+         LOG.debug("Start. Xid:" + xid + ", " + flags + ", session: " + getSessionInfo() + ", " + this);
+      }
    }
 
    /**
@@ -173,9 +241,12 @@ public class XASessionImpl extends SessionImpl implements XASession, XAResource,
     */
    public void end(Xid xid, int flags) throws XAException
    {
-      if (LOG.isDebugEnabled())
-         LOG.debug("End. Xid:" + xid + ", " + flags + ", session: " + getSessionInfo() + ", " + this);
       startFlags = flags;
+
+      if (LOG.isDebugEnabled())
+      {
+         LOG.debug("End. Xid:" + xid + ", " + flags + ", session: " + getSessionInfo() + ", " + this);
+      }
    }
 
    /**
@@ -183,6 +254,13 @@ public class XASessionImpl extends SessionImpl implements XASession, XAResource,
     */
    public void forget(Xid xid) throws XAException
    {
+      // TODO forget = rollback?
+      //txResourceManager.rollback(this);
+
+      //if (LOG.isDebugEnabled())
+      //{
+      //   LOG.debug("Forget. Xid:" + xid + ", session: " + getSessionInfo() + ", " + this);
+      //}
    }
 
    /**
@@ -203,8 +281,11 @@ public class XASessionImpl extends SessionImpl implements XASession, XAResource,
          XASessionImpl session = (XASessionImpl)resource;
          boolean isSame = getUserID().equals(session.getUserID());
          if (LOG.isDebugEnabled())
+         {
             LOG.debug("isSameRM: " + getSessionInfo() + " -- " + session.getSessionInfo() + " : " + isSame + ", "
                + this + " -- " + session + ", Flags:" + startFlags);
+         }
+
          return isSame;
       }
       return false;
@@ -216,7 +297,10 @@ public class XASessionImpl extends SessionImpl implements XASession, XAResource,
    public int prepare(Xid xid) throws XAException
    {
       if (LOG.isDebugEnabled())
+      {
          LOG.debug("Prepare. Xid:" + xid + ", session: " + getSessionInfo() + ", " + this);
+      }
+
       return XA_OK;
    }
 
@@ -234,8 +318,12 @@ public class XASessionImpl extends SessionImpl implements XASession, XAResource,
    public void rollback(Xid xid) throws XAException
    {
       txResourceManager.rollback(this);
+      commitException = null;
+
       if (LOG.isDebugEnabled())
+      {
          LOG.debug("Rollback. Xid:" + xid + ", session: " + getSessionInfo() + ", " + this);
+      }
    }
 
    /**
@@ -249,21 +337,16 @@ public class XASessionImpl extends SessionImpl implements XASession, XAResource,
       }
       catch (SystemException e)
       {
-         throw new XAException(e.getMessage());
+         if (LOG.isDebugEnabled())
+         {
+            LOG.debug("Cannot set transaction timeout " + seconds + "sec via XASession " + getSessionInfo() + ". ", e);
+         }
+
+         throw new XASessionException("Cannot set transaction timeout " + seconds + "sec via XASession "
+            + getSessionInfo() + ". " + e);
       }
       this.txTimeout = seconds;
       return true;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public void start(Xid xid, int flags) throws XAException
-   {
-      txResourceManager.start(this);
-      startFlags = flags;
-      if (LOG.isDebugEnabled())
-         LOG.debug("Start. Xid:" + xid + ", " + flags + ", session: " + getSessionInfo() + ", " + this);
    }
 
    /**
@@ -273,23 +356,30 @@ public class XASessionImpl extends SessionImpl implements XASession, XAResource,
    public void logout()
    {
       if (LOG.isDebugEnabled())
+      {
          LOG.debug("Logout. Session: " + getSessionInfo() + ", " + this);
+      }
 
-      // Rolling back this session only
-      getTransientNodesManager().getTransactManager().rollback();
-
-      // Remove session from this user sessions list
-      txResourceManager.remove(this);
-
-      super.logout();
       try
       {
-         delistResource();
-         startFlags = TMNOFLAGS;
+         // Rolling back this session only
+         getTransientNodesManager().getTransactManager().rollback();
+
+         super.logout();
       }
-      catch (XAException e)
+      finally
       {
-         LOG.error("Logut error " + e, e);
+         // Delist and remove session from this user sessions list in TransactionableDataManager
+         // txResourceManager.remove(this) will be called in delistResource()
+         try
+         {
+            delistResource();
+            startFlags = TMNOFLAGS;
+         }
+         catch (XAException e)
+         {
+            LOG.error("Logout error " + e, e);
+         }
       }
    }
 
@@ -303,13 +393,27 @@ public class XASessionImpl extends SessionImpl implements XASession, XAResource,
       return getUserID() + "@" + workspaceName;
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public Object getPayload()
    {
       return payload;
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void setPayload(Object payload)
    {
       this.payload = payload;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public TransactionException getCommitException()
+   {
+      return commitException;
    }
 }

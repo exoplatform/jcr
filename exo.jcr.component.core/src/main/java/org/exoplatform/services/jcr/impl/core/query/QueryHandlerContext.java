@@ -28,175 +28,184 @@ import org.exoplatform.services.jcr.impl.core.query.lucene.LuceneVirtualTableRes
  * stable. This class provides access to the environment where the query handler
  * is running in.
  */
-public class QueryHandlerContext {
-    /**
-     * The persistent <code>ItemStateManager</code>
-     */
-    private final ItemDataConsumer stateMgr;
+public class QueryHandlerContext
+{
+   /**
+    * The persistent <code>ItemStateManager</code>
+    */
+   private final ItemDataConsumer stateMgr;
 
-    /**
-     * The node type registry of the repository
-     */
-    private final NodeTypeDataManager nodeTypeDataManager;
+   /**
+    * The node type registry of the repository
+    */
+   private final NodeTypeDataManager nodeTypeDataManager;
 
-    /**
-     * The namespace registry of the repository.
-     */
-    private final NamespaceRegistryImpl nsRegistry;
+   /**
+    * The namespace registry of the repository.
+    */
+   private final NamespaceRegistryImpl nsRegistry;
 
-    /**
-     * The id of the root node.
-     */
-    private final IndexingTree indexingTree;
+   /**
+    * The id of the root node.
+    */
+   private final IndexingTree indexingTree;
 
-    /**
-     * PropertyType registry to look up the type of a property with a given
-     * name.
-     */
-    private final PropertyTypeRegistry propRegistry;
+   /**
+    * PropertyType registry to look up the type of a property with a given
+    * name.
+    */
+   private final PropertyTypeRegistry propRegistry;
 
-    /**
-     * The query handler for the jcr:system tree
-     */
-    private final QueryHandler parentHandler;
+   /**
+    * The query handler for the jcr:system tree
+    */
+   private final QueryHandler parentHandler;
 
-    /**
-     * Text extractor for extracting text content of binary properties.
-     */
-    private final DocumentReaderService extractor;
+   /**
+    * Text extractor for extracting text content of binary properties.
+    */
+   private final DocumentReaderService extractor;
 
-    private final String indexDirectory;
+   private final String indexDirectory;
 
-    private final boolean createInitialIndex;
+   private final boolean createInitialIndex;
 
-    private final LuceneVirtualTableResolver virtualTableResolver;
+   private final LuceneVirtualTableResolver virtualTableResolver;
 
-    /**
-     * Creates a new context instance.
-     * 
-     * @param fs
-     *            a this <code>QueryHandler</code> may use to store its index.
-     *            If no <code>FileSystem</code> has been configured
-     *            <code>fs</code> is <code>null</code>.
-     * @param stateMgr
-     *            provides persistent item states.
-     * @param rootId
-     *            the id of the root node.
-     * @param ntRegistry
-     *            the node type registry.
-     * @param nsRegistry
-     *            the namespace registry.
-     * @param parentHandler
-     *            the parent query handler or <code>null</code> it there is no
-     *            parent handler.
-     * @param virtualTableResolver
-     * @param excludedNodeId
-     *            id of the node that should be excluded from indexing. Any
-     *            descendant of that node is also excluded from indexing.
-     */
-    public QueryHandlerContext(ItemDataConsumer stateMgr,
-	    IndexingTree indexingTree, NodeTypeDataManager nodeTypeDataManager,
-	    NamespaceRegistryImpl nsRegistry, QueryHandler parentHandler,
-	    String indexDirectory, DocumentReaderService extractor,
-	    boolean createInitialIndex,
-	    LuceneVirtualTableResolver virtualTableResolver) {
-	this.stateMgr = stateMgr;
-	this.indexingTree = indexingTree;
-	this.nodeTypeDataManager = nodeTypeDataManager;
-	this.nsRegistry = nsRegistry;
-	this.indexDirectory = indexDirectory;
-	this.extractor = extractor;
-	this.createInitialIndex = createInitialIndex;
-	this.virtualTableResolver = virtualTableResolver;
-	this.propRegistry = new PropertyTypeRegistry(nodeTypeDataManager);
-	this.parentHandler = parentHandler;
-	((NodeTypeDataManagerImpl) this.nodeTypeDataManager)
-		.addListener(propRegistry);
-    }
+   /**
+    * Creates a new context instance.
+    * 
+    * @param fs
+    *            a this <code>QueryHandler</code> may use to store its index.
+    *            If no <code>FileSystem</code> has been configured
+    *            <code>fs</code> is <code>null</code>.
+    * @param stateMgr
+    *            provides persistent item states.
+    * @param rootId
+    *            the id of the root node.
+    * @param ntRegistry
+    *            the node type registry.
+    * @param nsRegistry
+    *            the namespace registry.
+    * @param parentHandler
+    *            the parent query handler or <code>null</code> it there is no
+    *            parent handler.
+    * @param virtualTableResolver
+    * @param excludedNodeId
+    *            id of the node that should be excluded from indexing. Any
+    *            descendant of that node is also excluded from indexing.
+    */
+   public QueryHandlerContext(ItemDataConsumer stateMgr, IndexingTree indexingTree,
+      NodeTypeDataManager nodeTypeDataManager, NamespaceRegistryImpl nsRegistry, QueryHandler parentHandler,
+      String indexDirectory, DocumentReaderService extractor, boolean createInitialIndex,
+      LuceneVirtualTableResolver virtualTableResolver)
+   {
+      this.stateMgr = stateMgr;
+      this.indexingTree = indexingTree;
+      this.nodeTypeDataManager = nodeTypeDataManager;
+      this.nsRegistry = nsRegistry;
+      this.indexDirectory = indexDirectory;
+      this.extractor = extractor;
+      this.createInitialIndex = createInitialIndex;
+      this.virtualTableResolver = virtualTableResolver;
+      this.propRegistry = new PropertyTypeRegistry(nodeTypeDataManager);
+      this.parentHandler = parentHandler;
+      ((NodeTypeDataManagerImpl)this.nodeTypeDataManager).addListener(propRegistry);
+   }
 
-    /**
-     * @return the virtualTableResolver
-     */
-    public LuceneVirtualTableResolver getVirtualTableResolver() {
-	return virtualTableResolver;
-    }
+   /**
+    * @return the virtualTableResolver
+    */
+   public LuceneVirtualTableResolver getVirtualTableResolver()
+   {
+      return virtualTableResolver;
+   }
 
-    /**
-     * @return the createInitialIndex
-     */
-    public boolean isCreateInitialIndex() {
-	return createInitialIndex;
-    }
+   /**
+    * @return the createInitialIndex
+    */
+   public boolean isCreateInitialIndex()
+   {
+      return createInitialIndex;
+   }
 
-    /**
-     * Returns the persistent {@link ItemStateManager} of the workspace this
-     * <code>QueryHandler</code> is based on.
-     * 
-     * @return the persistent <code>ItemStateManager</code> of the current
-     *         workspace.
-     */
-    public ItemDataConsumer getItemStateManager() {
-	return stateMgr;
-    }
+   /**
+    * Returns the persistent {@link ItemStateManager} of the workspace this
+    * <code>QueryHandler</code> is based on.
+    * 
+    * @return the persistent <code>ItemStateManager</code> of the current
+    *         workspace.
+    */
+   public ItemDataConsumer getItemStateManager()
+   {
+      return stateMgr;
+   }
 
-    /**
-     * Returns the id of the root node.
-     * 
-     * @return the idof the root node.
-     */
-    public IndexingTree getIndexingTree() {
-	return indexingTree;
-    }
+   /**
+    * Returns the id of the root node.
+    * 
+    * @return the idof the root node.
+    */
+   public IndexingTree getIndexingTree()
+   {
+      return indexingTree;
+   }
 
-    /**
-     * Returns the PropertyTypeRegistry for this repository.
-     * 
-     * @return the PropertyTypeRegistry for this repository.
-     */
-    public PropertyTypeRegistry getPropertyTypeRegistry() {
-	return propRegistry;
-    }
+   /**
+    * Returns the PropertyTypeRegistry for this repository.
+    * 
+    * @return the PropertyTypeRegistry for this repository.
+    */
+   public PropertyTypeRegistry getPropertyTypeRegistry()
+   {
+      return propRegistry;
+   }
 
-    /**
-     * Returns the NodeTypeRegistry for this repository.
-     * 
-     * @return the NodeTypeRegistry for this repository.
-     */
-    public NodeTypeDataManager getNodeTypeDataManager() {
-	return nodeTypeDataManager;
-    }
+   /**
+    * Returns the NodeTypeRegistry for this repository.
+    * 
+    * @return the NodeTypeRegistry for this repository.
+    */
+   public NodeTypeDataManager getNodeTypeDataManager()
+   {
+      return nodeTypeDataManager;
+   }
 
-    /**
-     * Returns the NamespaceRegistryImpl for this repository.
-     * 
-     * @return the NamespaceRegistryImpl for this repository.
-     */
-    public NamespaceRegistryImpl getNamespaceRegistry() {
-	return nsRegistry;
-    }
+   /**
+    * Returns the NamespaceRegistryImpl for this repository.
+    * 
+    * @return the NamespaceRegistryImpl for this repository.
+    */
+   public NamespaceRegistryImpl getNamespaceRegistry()
+   {
+      return nsRegistry;
+   }
 
-    /**
-     * Returns the parent query handler.
-     * 
-     * @return the parent query handler.
-     */
-    public QueryHandler getParentHandler() {
-	return parentHandler;
-    }
+   /**
+    * Returns the parent query handler.
+    * 
+    * @return the parent query handler.
+    */
+   public QueryHandler getParentHandler()
+   {
+      return parentHandler;
+   }
 
-    /**
-     * Destroys this context and releases resources.
-     */
-    public void destroy() {
-	((NodeTypeDataManagerImpl) this.nodeTypeDataManager)
-		.removeListener(propRegistry);
-    }
+   /**
+    * Destroys this context and releases resources.
+    */
+   public void destroy()
+   {
+      ((NodeTypeDataManagerImpl)this.nodeTypeDataManager).removeListener(propRegistry);
+   }
 
-    public DocumentReaderService getExtractor() {
-	return extractor;
-    }
+   public DocumentReaderService getExtractor()
+   {
+      return extractor;
+   }
 
-    public String getIndexDirectory() {
-	return indexDirectory;
-    }
+   public String getIndexDirectory()
+   {
+      return indexDirectory;
+   }
 }

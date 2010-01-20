@@ -22,6 +22,7 @@ import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.access.PermissionType;
 import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.core.ExtendedPropertyType;
+import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 
 import java.io.IOException;
@@ -46,7 +47,7 @@ public class PermissionValue extends BaseValue
 
    private String permission;
 
-   public PermissionValue(TransientValueData data) throws IOException
+   public PermissionValue(ValueData data) throws IOException
    {
       super(TYPE, data);
 
@@ -108,6 +109,9 @@ public class PermissionValue extends BaseValue
       return persArray;
    }
 
+   /**
+    * {@inheritDoc}
+    */
    protected String getInternalString() throws ValueFormatException
    {
       return asString(identity, permission);

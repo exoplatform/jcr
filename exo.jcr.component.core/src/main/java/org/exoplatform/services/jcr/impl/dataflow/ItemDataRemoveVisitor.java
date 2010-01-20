@@ -46,7 +46,7 @@ import javax.jcr.RepositoryException;
  * Created by The eXo Platform SAS 15.12.2006
  * 
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
- * @version $Id: ItemDataRemoveVisitor.java 14100 2008-05-12 10:53:47Z gazarenkov $
+ * @version $Id$
  */
 public class ItemDataRemoveVisitor extends ItemDataTraversingVisitor
 {
@@ -135,7 +135,9 @@ public class ItemDataRemoveVisitor extends ItemDataTraversingVisitor
 
       // 2. check ReferentialIntegrityException - REFERENCE property target
       if (nodeTypeManager.isNodeType(Constants.MIX_REFERENCEABLE, node.getPrimaryTypeName(), node.getMixinTypeNames()))
+      {
          validateReferential(node);
+      }
 
       // 3. check ConstraintViolationException - NodeDefinition for
       // mandatory/protected flags
@@ -222,7 +224,9 @@ public class ItemDataRemoveVisitor extends ItemDataTraversingVisitor
    protected void entering(PropertyData property, int level) throws RepositoryException
    {
       if (log.isDebugEnabled())
+      {
          log.debug("Entering property " + property.getQPath().getAsString());
+      }
 
       if (validate)
       {
@@ -234,17 +238,23 @@ public class ItemDataRemoveVisitor extends ItemDataTraversingVisitor
             .getQPath());
 
       if (!itemRemovedStates.contains(state))
+      {
          itemRemovedStates.add(state);
+      }
       else if (log.isDebugEnabled())
+      {
          // REFERENCE props usecase, see validateReferential(NodeData)
          log.debug("A property " + property.getQPath().getAsString() + " is already listed for remove");
+      }
    }
 
    @Override
    protected void entering(NodeData node, int level) throws RepositoryException
    {
       if (log.isDebugEnabled())
+      {
          log.debug("Entering node " + node.getQPath().getAsString());
+      }
 
       // this node is not taken in account
       if (level == 0)
@@ -260,6 +270,7 @@ public class ItemDataRemoveVisitor extends ItemDataTraversingVisitor
       {
          node = (NodeData)copyItemDataDelete(node);
       }
+
       ItemState state =
          new ItemState(node, ItemState.DELETED, true, ancestorToSave != null ? ancestorToSave : removedRoot.getQPath());
       itemRemovedStates.add(state);
@@ -282,6 +293,7 @@ public class ItemDataRemoveVisitor extends ItemDataTraversingVisitor
          Collections.reverse(itemRemovedStates);
          reversedItemRemovedStates = itemRemovedStates;
       }
+
       return reversedItemRemovedStates;
    }
 
@@ -298,12 +310,13 @@ public class ItemDataRemoveVisitor extends ItemDataTraversingVisitor
    {
 
       if (item == null)
+      {
          return null;
+      }
 
       // make a copy
       if (item.isNode())
       {
-
          final NodeData node = (NodeData)item;
 
          // the node ACL can't be are null as ACL manager does care about this
@@ -313,19 +326,19 @@ public class ItemDataRemoveVisitor extends ItemDataTraversingVisitor
             throw new RepositoryException("Node ACL is null. " + node.getQPath().getAsString() + " "
                + node.getIdentifier());
          }
+         
          return new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(), node
             .getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(), node.getParentIdentifier(), acl);
       }
 
       // else - property
       final PropertyData prop = (PropertyData)item;
-      // make a copy
+
+      // make a copy, value wil be null for deleting items
       TransientPropertyData newData =
          new TransientPropertyData(prop.getQPath(), prop.getIdentifier(), prop.getPersistedVersion(), prop.getType(),
             prop.getParentIdentifier(), prop.isMultiValued());
 
-      // set null as it's delete state, was set list of createTransientCopy()
-      newData.setValues(null);
       return newData;
    }
 }

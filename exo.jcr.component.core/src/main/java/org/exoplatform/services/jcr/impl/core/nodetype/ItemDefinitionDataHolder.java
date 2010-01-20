@@ -28,6 +28,8 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Created by The eXo Platform SAS. <br/>
@@ -45,22 +47,23 @@ public class ItemDefinitionDataHolder
 
    private static Log LOG = ExoLogger.getLogger("jcr.ItemDefinitionDataHolder");
 
-   private final HashMap<ChildNodeDefKey, NodeDefinitionData> nodeDefinitions;
+   private final Map<InternalQName, Map<InternalQName, Map<InternalQName, NodeDefinitionData>>> nodeDefinitions;
 
-   private final HashMap<PropertyDefKey, PropertyDefinitionData> propertyDefinitions;
+   private final Map<InternalQName, Map<InternalQName, Map<Boolean, PropertyDefinitionData>>> propertyDefinitions;
 
-   private final HashMap<DefaultNodeDefKey, NodeDefinitionData> defNodeDefinitions;
+   private final Map<InternalQName, Map<InternalQName, NodeDefinitionData>> defNodeDefinitions;
 
    public ItemDefinitionDataHolder()
    {
-      this.nodeDefinitions = new HashMap<ChildNodeDefKey, NodeDefinitionData>();
-      this.propertyDefinitions = new HashMap<PropertyDefKey, PropertyDefinitionData>();
-      this.defNodeDefinitions = new HashMap<DefaultNodeDefKey, NodeDefinitionData>();
+      this.nodeDefinitions = new HashMap<InternalQName, Map<InternalQName, Map<InternalQName, NodeDefinitionData>>>();
+      this.propertyDefinitions = new HashMap<InternalQName, Map<InternalQName, Map<Boolean, PropertyDefinitionData>>>();
+      this.defNodeDefinitions = new HashMap<InternalQName, Map<InternalQName, NodeDefinitionData>>();
    }
 
-   private ItemDefinitionDataHolder(HashMap<ChildNodeDefKey, NodeDefinitionData> nodeDefinitions,
-      HashMap<PropertyDefKey, PropertyDefinitionData> propertyDefinitions,
-      HashMap<DefaultNodeDefKey, NodeDefinitionData> defNodeDefinitions)
+   private ItemDefinitionDataHolder(
+      Map<InternalQName, Map<InternalQName, Map<InternalQName, NodeDefinitionData>>> nodeDefinitions,
+      Map<InternalQName, Map<InternalQName, Map<Boolean, PropertyDefinitionData>>> propertyDefinitions,
+      Map<InternalQName, Map<InternalQName, NodeDefinitionData>> defNodeDefinitions)
    {
       this.nodeDefinitions = nodeDefinitions;
       this.propertyDefinitions = propertyDefinitions;
@@ -92,7 +95,7 @@ public class ItemDefinitionDataHolder
 
       for (InternalQName parentNodeType : nodeTypes)
       {
-         NodeDefinitionData def = defNodeDefinitions.get(new DefaultNodeDefKey(parentNodeType, childName));
+         NodeDefinitionData def = getNodeDefinitionDataInternal(parentNodeType, childName);
          if (def != null)
             return def;
       }
@@ -100,7 +103,7 @@ public class ItemDefinitionDataHolder
       // residual
       for (InternalQName parentNodeType : nodeTypes)
       {
-         NodeDefinitionData def = defNodeDefinitions.get(new DefaultNodeDefKey(parentNodeType, Constants.JCR_ANY_NAME));
+         NodeDefinitionData def = getNodeDefinitionDataInternal(parentNodeType, Constants.JCR_ANY_NAME);
          if (def != null)
             return def;
       }
@@ -118,13 +121,12 @@ public class ItemDefinitionDataHolder
       InternalQName parentNodeType)
    {
 
-      PropertyDefKey key = new PropertyDefKey(parentNodeType, childName, multiValued);
-      PropertyDefinitionData def = propertyDefinitions.get(key);
+      PropertyDefinitionData def = getPropertyDefinitionInternal(parentNodeType, childName, multiValued);
 
       // try residual def
       if (def == null)
       {
-         return propertyDefinitions.get(new PropertyDefKey(parentNodeType, Constants.JCR_ANY_NAME, multiValued));
+         return getPropertyDefinitionInternal(parentNodeType, Constants.JCR_ANY_NAME, multiValued);
       }
 
       return def;
@@ -145,12 +147,12 @@ public class ItemDefinitionDataHolder
       for (InternalQName nt : nodeTypes)
       {
          // single-valued
-         PropertyDefinitionData def = propertyDefinitions.get(new PropertyDefKey(nt, propertyName, false));
+         PropertyDefinitionData def = getPropertyDefinitionInternal(nt, propertyName, false);
          if (def != null && pdefs.getDefinition(def.isMultiple()) == null)
             pdefs.setDefinition(def); // set if same is not exists
 
          // multi-valued
-         def = propertyDefinitions.get(new PropertyDefKey(nt, propertyName, true));
+         def = getPropertyDefinitionInternal(nt, propertyName, true);
          if (def != null && pdefs.getDefinition(def.isMultiple()) == null)
             pdefs.setDefinition(def); // set if same is not exists
 
@@ -177,25 +179,21 @@ public class ItemDefinitionDataHolder
          // put required node type defs
          for (InternalQName rnt : nodeDef.getRequiredPrimaryTypes())
          {
-            ChildNodeDefKey nodeDefKey = new ChildNodeDefKey(name, nodeDef.getName(), rnt);
-            nodeDefinitions.put(nodeDefKey, nodeDef);
-
+            addNodeDefinitionDataInternal(name, nodeDef.getName(), rnt, nodeDef);
             if (LOG.isDebugEnabled())
             {
                LOG.debug("NodeDef added: parent NT: " + name.getAsString() + " child nodeName: "
-                  + nodeDef.getName().getAsString() + " childNT: " + rnt.getAsString() + " hash: "
-                  + nodeDefKey.hashCode());
+                  + nodeDef.getName().getAsString() + " childNT: " + rnt.getAsString());
             }
          }
 
          // put default node definition
-         DefaultNodeDefKey defNodeDefKey = new DefaultNodeDefKey(name, nodeDef.getName());
-         defNodeDefinitions.put(defNodeDefKey, nodeDef);
+         addNodeDefinitionDataInternal(name, nodeDef.getName(), nodeDef);
 
          if (LOG.isDebugEnabled())
          {
             LOG.debug("Default NodeDef added: parent NT: " + name.getAsString() + " child nodeName: "
-               + nodeDef.getName() + " hash: " + defNodeDefKey.hashCode());
+               + nodeDef.getName());
          }
       }
 
@@ -203,14 +201,12 @@ public class ItemDefinitionDataHolder
       PropertyDefinitionData[] propDefs = nodeType.getDeclaredPropertyDefinitions();
       for (PropertyDefinitionData propDef : propDefs)
       {
-         PropertyDefKey propDefKey = new PropertyDefKey(name, propDef.getName(), propDef.isMultiple());
-         propertyDefinitions.put(propDefKey, propDef);
-
+         addPropertyDefinitionInternal(name, propDef.getName(), propDef.isMultiple(), propDef);
+         
          if (LOG.isDebugEnabled())
          {
             LOG.debug("PropDef added: parent NT: " + name.getAsString() + " child propName: "
-               + propDef.getName().getAsString() + " isMultiple: " + propDef.isMultiple() + " hash: "
-               + propDefKey.hashCode());
+               + propDef.getName().getAsString() + " isMultiple: " + propDef.isMultiple());
          }
       }
 
@@ -225,40 +221,32 @@ public class ItemDefinitionDataHolder
          // remove required node type defs
          for (InternalQName rnt : nodeDef.getRequiredPrimaryTypes())
          {
-            ChildNodeDefKey nodeDefKey = new ChildNodeDefKey(name, nodeDef.getName(), rnt);
-            nodeDefinitions.remove(nodeDefKey);
-
+            removeNodeDefinitionDataInternal(name, nodeDef.getName(), rnt);
             if (LOG.isDebugEnabled())
             {
                LOG.debug("NodeDef removed: parent NT: " + name.getAsString() + " child nodeName: "
-                  + nodeDef.getName().getAsString() + " childNT: " + rnt.getAsString() + " hash: "
-                  + nodeDefKey.hashCode());
+                  + nodeDef.getName().getAsString() + " childNT: " + rnt.getAsString());
             }
          }
 
          // remove default node definition
-         DefaultNodeDefKey defNodeDefKey = new DefaultNodeDefKey(name, nodeDef.getName());
-         defNodeDefinitions.remove(defNodeDefKey);
-
+         removeNodeDefinitionDataInternal(name, nodeDef.getName());
          if (LOG.isDebugEnabled())
          {
             LOG.debug("Default NodeDef removed: parent NT: " + name.getAsString() + " child nodeName: "
-               + nodeDef.getName() + " hash: " + defNodeDefKey.hashCode());
-         }
+               + nodeDef.getName());
+         }         
       }
 
       // remove defs
       PropertyDefinitionData[] propDefs = nodeType.getDeclaredPropertyDefinitions();
       for (PropertyDefinitionData propDef : propDefs)
       {
-         PropertyDefKey propDefKey = new PropertyDefKey(name, propDef.getName(), propDef.isMultiple());
-         propertyDefinitions.remove(propDefKey);
-
+         removePropertyDefinitionInternal(name, propDef.getName(), propDef.isMultiple());
          if (LOG.isDebugEnabled())
          {
             LOG.debug("PropDef remode: parent NT: " + name.getAsString() + " child propName: "
-               + propDef.getName().getAsString() + " isMultiple: " + propDef.isMultiple() + " hash: "
-               + propDefKey.hashCode());
+               + propDef.getName().getAsString() + " isMultiple: " + propDef.isMultiple());
          }
       }
    }
@@ -267,13 +255,148 @@ public class ItemDefinitionDataHolder
       InternalQName childName, InternalQName childNodeType)
    {
 
-      NodeDefinitionData def = nodeDefinitions.get(new ChildNodeDefKey(parentNodeType, childName, childNodeType));
+      NodeDefinitionData def = getNodeDefinitionDataInternal(parentNodeType, childName, childNodeType);
       if (def != null)
          return def;
 
       return def;
    }
 
+   private NodeDefinitionData getNodeDefinitionDataInternal(InternalQName parentNodeType, InternalQName childName)
+   {
+      Map<InternalQName, NodeDefinitionData> defs = defNodeDefinitions.get(parentNodeType);
+      if (defs == null)
+      {
+         return null;
+      }
+      return defs.get(childName);
+   }
+
+   private void addNodeDefinitionDataInternal(InternalQName parentNodeType, InternalQName childName,
+      NodeDefinitionData nodeDef)
+   {
+      Map<InternalQName, NodeDefinitionData> defs = defNodeDefinitions.get(parentNodeType);
+      if (defs == null)
+      {
+         defs = new HashMap<InternalQName, NodeDefinitionData>();
+         defNodeDefinitions.put(parentNodeType, defs);
+      }
+
+      defs.put(childName, nodeDef);
+   }
+
+   private void removeNodeDefinitionDataInternal(InternalQName parentNodeType, InternalQName childName)
+   {
+      Map<InternalQName, NodeDefinitionData> defs = defNodeDefinitions.get(parentNodeType);
+      if (defs == null)
+      {
+         return;
+      }
+      defs.remove(childName);
+   }
+
+   private PropertyDefinitionData getPropertyDefinitionInternal(InternalQName parentNodeType, InternalQName childName,
+      boolean multiValued)
+   {
+      Map<InternalQName, Map<Boolean, PropertyDefinitionData>> defs = propertyDefinitions.get(parentNodeType);
+      if (defs == null)
+      {
+         return null;
+      }
+      Map<Boolean, PropertyDefinitionData> def = defs.get(childName);
+      if (def == null)
+      {
+         return null;
+      }
+      return def.get(multiValued);
+   }
+
+   private void addPropertyDefinitionInternal(InternalQName parentNodeType, InternalQName childName,
+      boolean multiValued, PropertyDefinitionData propDef)
+   {
+      Map<InternalQName, Map<Boolean, PropertyDefinitionData>> defs = propertyDefinitions.get(parentNodeType);
+      if (defs == null)
+      {
+         defs = new HashMap<InternalQName, Map<Boolean, PropertyDefinitionData>>();
+         propertyDefinitions.put(parentNodeType, defs);
+      }
+      Map<Boolean, PropertyDefinitionData> def = defs.get(childName);
+      if (def == null)
+      {
+         def = new HashMap<Boolean, PropertyDefinitionData>();
+         defs.put(childName, def);         
+      }
+
+      def.put(multiValued, propDef);      
+   }
+   
+   private void removePropertyDefinitionInternal(InternalQName parentNodeType, InternalQName childName,
+      boolean multiValued)
+   {
+      Map<InternalQName, Map<Boolean, PropertyDefinitionData>> defs = propertyDefinitions.get(parentNodeType);
+      if (defs == null)
+      {
+         return;
+      }
+      Map<Boolean, PropertyDefinitionData> def = defs.get(childName);
+      if (def == null)
+      {
+         return;
+      }
+      def.remove(multiValued);      
+   }
+   
+   private NodeDefinitionData getNodeDefinitionDataInternal(InternalQName parentNodeType, InternalQName childName,
+      InternalQName childNodeType)
+   {
+      Map<InternalQName, Map<InternalQName, NodeDefinitionData>> defs = nodeDefinitions.get(parentNodeType);
+      if (defs == null)
+      {
+         return null;
+      }
+      Map<InternalQName, NodeDefinitionData> def = defs.get(childName);
+      if (def == null)
+      {
+         return null;
+      }
+      return def.get(childNodeType);
+   }
+   
+   private void addNodeDefinitionDataInternal(InternalQName parentNodeType, InternalQName childName,
+      InternalQName childNodeType, NodeDefinitionData nodeDef)
+   {
+      Map<InternalQName, Map<InternalQName, NodeDefinitionData>> defs = nodeDefinitions.get(parentNodeType);
+      if (defs == null)
+      {
+         defs = new HashMap<InternalQName, Map<InternalQName, NodeDefinitionData>>();
+         nodeDefinitions.put(parentNodeType, defs);
+      }
+      Map<InternalQName, NodeDefinitionData> def = defs.get(childName);
+      if (def == null)
+      {
+         def = new HashMap<InternalQName, NodeDefinitionData>();
+         defs.put(childName, def);         
+      }
+
+      def.put(childNodeType, nodeDef);           
+   }
+   
+   private void removeNodeDefinitionDataInternal(InternalQName parentNodeType, InternalQName childName,
+      InternalQName childNodeType)
+   {
+      Map<InternalQName, Map<InternalQName, NodeDefinitionData>> defs = nodeDefinitions.get(parentNodeType);
+      if (defs == null)
+      {
+         return;
+      }
+      Map<InternalQName, NodeDefinitionData> def = defs.get(childName);
+      if (def == null)
+      {
+         return;
+      }
+      def.remove(childNodeType);      
+   }
+   
    /**
     * Create copy of holder.
     * 
@@ -281,285 +404,22 @@ public class ItemDefinitionDataHolder
     */
    protected ItemDefinitionDataHolder createCopy()
    {
-      return new ItemDefinitionDataHolder(new HashMap<ChildNodeDefKey, NodeDefinitionData>(nodeDefinitions),
-         new HashMap<PropertyDefKey, PropertyDefinitionData>(propertyDefinitions),
-         new HashMap<DefaultNodeDefKey, NodeDefinitionData>(defNodeDefinitions));
+      return new ItemDefinitionDataHolder(cloneMap(nodeDefinitions), cloneMap(propertyDefinitions),
+         cloneMap(defNodeDefinitions));
    }
-
-   private class ChildNodeDefKey extends ItemDefKey
+   
+   @SuppressWarnings("unchecked")
+   private static <K,V> Map<K,V> cloneMap(Map<? extends K, ? extends V> map) 
    {
-      private int hashCode = -1;
-
-      private final InternalQName childNodeType;
-
-      private ChildNodeDefKey(InternalQName parentNodeType, InternalQName childName, InternalQName childNodeType)
+      Map<K,V> copyMap = (Map<K,V>)((HashMap<K, V>)map).clone();
+      
+      for (Entry<K, V> entry : copyMap.entrySet())
       {
-         super(parentNodeType, childName);
-         this.childNodeType = childNodeType;
+         if (entry.getValue() instanceof Map<?, ?>)
+         {
+            entry.setValue((V)cloneMap((Map<?, ?>)entry.getValue()));
+         }
       }
-
-      /**
-       * {@inheritDoc}
-       */
-      @Override
-      public boolean equals(Object obj)
-      {
-         if (this == obj)
-         {
-            return true;
-         }
-         if (!super.equals(obj))
-         {
-            return false;
-         }
-         if (!(obj instanceof ChildNodeDefKey))
-         {
-            return false;
-         }
-         ChildNodeDefKey other = (ChildNodeDefKey)obj;
-         if (!getOuterType().equals(other.getOuterType()))
-         {
-            return false;
-         }
-         if (childNodeType == null)
-         {
-            if (other.childNodeType != null)
-            {
-               return false;
-            }
-         }
-         else if (!childNodeType.equals(other.childNodeType))
-         {
-            return false;
-         }
-         return true;
-      }
-
-      /**
-       * {@inheritDoc}
-       */
-      @Override
-      public int hashCode()
-      {
-         if (hashCode == -1)
-         {
-            final int prime = 31;
-            int result = super.hashCode();
-            result = prime * result + getOuterType().hashCode();
-            result = prime * result + ((childNodeType == null) ? 0 : childNodeType.hashCode());
-            hashCode = result;
-         }
-
-         return hashCode;
-      }
-
-      /**
-       * {@inheritDoc}
-       */
-      @Override
-      public String toString()
-      {
-         String result = super.toString();
-         result += ((childNodeType == null) ? "" : childNodeType.getAsString());
-
-         return result;
-      }
-
-      private ItemDefinitionDataHolder getOuterType()
-      {
-         return ItemDefinitionDataHolder.this;
-      }
-
+      return copyMap;
    }
-
-   private class DefaultNodeDefKey extends ItemDefKey
-   {
-
-      private DefaultNodeDefKey(InternalQName parentNodeType, InternalQName childName)
-      {
-         super(parentNodeType, childName);
-      }
-   }
-
-   /**
-    * @see about hash code generation:
-    *      http://www.geocities.com/technofundo/tech/java/equalhash.html
-    */
-   private abstract class ItemDefKey
-   {
-
-      private final InternalQName parentNodeType;
-
-      private final InternalQName childName;
-
-      private int hashCode = -1;
-
-      protected ItemDefKey(InternalQName parentNodeType, InternalQName childName)
-      {
-         this.parentNodeType = parentNodeType;
-         this.childName = childName;
-      }
-
-      /**
-       * {@inheritDoc}
-       */
-      @Override
-      public boolean equals(Object obj)
-      {
-         if (this == obj)
-         {
-            return true;
-         }
-         if (obj == null)
-         {
-            return false;
-         }
-         if (!(obj instanceof ItemDefKey))
-         {
-            return false;
-         }
-         ItemDefKey other = (ItemDefKey)obj;
-         if (!getOuterType().equals(other.getOuterType()))
-         {
-            return false;
-         }
-         if (childName == null)
-         {
-            if (other.childName != null)
-            {
-               return false;
-            }
-         }
-         else if (!childName.equals(other.childName))
-         {
-            return false;
-         }
-         if (parentNodeType == null)
-         {
-            if (other.parentNodeType != null)
-            {
-               return false;
-            }
-         }
-         else if (!parentNodeType.equals(other.parentNodeType))
-         {
-            return false;
-         }
-         return true;
-      }
-
-      /**
-       * {@inheritDoc}
-       */
-      @Override
-      public int hashCode()
-      {
-         if (hashCode == -1)
-         {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + getOuterType().hashCode();
-            result = prime * result + ((childName == null) ? 0 : childName.hashCode());
-            result = prime * result + ((parentNodeType == null) ? 0 : parentNodeType.hashCode());
-            hashCode = result;
-         }
-         return hashCode;
-      }
-
-      /**
-       * {@inheritDoc}
-       */
-      @Override
-      public String toString()
-      {
-         String result = "";
-         result += ((childName == null) ? 0 : childName.getAsString());
-         result += ((parentNodeType == null) ? 0 : parentNodeType.getAsString());
-         return result;
-      }
-
-      private ItemDefinitionDataHolder getOuterType()
-      {
-         return ItemDefinitionDataHolder.this;
-      }
-   }
-
-   private class PropertyDefKey extends ItemDefKey
-   {
-
-      private final boolean multiValued;
-
-      private int hashCode = -1;
-
-      private PropertyDefKey(InternalQName parentNodeType, InternalQName childName, boolean multiValued)
-      {
-         super(parentNodeType, childName);
-         this.multiValued = multiValued;
-      }
-
-      /**
-       * {@inheritDoc}
-       */
-      @Override
-      public boolean equals(Object obj)
-      {
-         if (this == obj)
-         {
-            return true;
-         }
-         if (!super.equals(obj))
-         {
-            return false;
-         }
-         if (!(obj instanceof PropertyDefKey))
-         {
-            return false;
-         }
-         PropertyDefKey other = (PropertyDefKey)obj;
-         if (!getOuterType().equals(other.getOuterType()))
-         {
-            return false;
-         }
-         if (multiValued != other.multiValued)
-         {
-            return false;
-         }
-         return true;
-      }
-
-      /**
-       * {@inheritDoc}
-       */
-      @Override
-      public int hashCode()
-      {
-         if (hashCode == -1)
-         {
-            final int prime = 31;
-            int result = super.hashCode();
-            result = prime * result + getOuterType().hashCode();
-            result = prime * result + (multiValued ? 1231 : 1237);
-            hashCode = result;
-         }
-
-         return hashCode;
-      }
-
-      /**
-       * {@inheritDoc}
-       */
-      @Override
-      public String toString()
-      {
-         String result = super.toString();
-         result += " multiValued=" + multiValued;
-         return result;
-      }
-
-      private ItemDefinitionDataHolder getOuterType()
-      {
-         return ItemDefinitionDataHolder.this;
-      }
-   }
-
 }

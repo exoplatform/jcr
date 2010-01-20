@@ -70,8 +70,7 @@ public class TestSessionDataManager extends JcrImplBaseTest
       testRoot = (NodeImpl)modificationManager.update(ItemState.createAddedState(data), false);
       TransientPropertyData prop =
          TransientPropertyData.createPropertyData(data, new InternalQName(Constants.NS_JCR_URI, "primaryType"),
-            PropertyType.NAME, false);
-      prop.setValue(new TransientValueData(new InternalQName(Constants.NS_NT_URI, "unstructured")));
+            PropertyType.NAME, false, new TransientValueData(new InternalQName(Constants.NS_NT_URI, "unstructured")));
       PropertyImpl prop1 = (PropertyImpl)modificationManager.update(ItemState.createAddedState(prop), false);
 
       // System.out.println("Test root >>>>>> "+testRoot+" "+prop1);
@@ -125,7 +124,7 @@ public class TestSessionDataManager extends JcrImplBaseTest
       System.out.println("item >" + node1.getPath());
       assertTrue(pool.contains(uuid));
       // return the same value
-      assertEquals(node1, pool.get(node1));
+      assertEquals(node1, pool.get(node1.getData()));
 
       // add one more node
       data =
@@ -152,7 +151,6 @@ public class TestSessionDataManager extends JcrImplBaseTest
       List<PropertyImpl> testProps = pool.getProperties(props);
       assertEquals(1, testProps.size());
       assertEquals(prop1, testProps.get(0));
-      prop.setValue(new TransientValueData(new InternalQName(Constants.NS_NT_URI, "unstructured")));
 
       pool.remove(uuid);
       // in case for GC
@@ -212,9 +210,7 @@ public class TestSessionDataManager extends JcrImplBaseTest
       // ... add property to the node1
       TransientPropertyData prop =
          TransientPropertyData.createPropertyData((NodeData)node1.getData(), new InternalQName(null,
-            "testSessionChangesLogP1"), PropertyType.STRING, false);
-      TransientValueData vData = new TransientValueData(false);
-      prop.setValue(vData);
+            "testSessionChangesLogP1"), PropertyType.STRING, false, new TransientValueData(false));
       PropertyImpl prop1 = (PropertyImpl)modificationManager.update(ItemState.createAddedState(prop), true);
 
       assertTrue(changesLog.getItemState(node1.getInternalIdentifier()).isAdded());
@@ -247,9 +243,7 @@ public class TestSessionDataManager extends JcrImplBaseTest
       // ... add property
       TransientPropertyData prop =
          TransientPropertyData.createPropertyData(parent, new InternalQName(null, "testReadMethodsP1"),
-            PropertyType.STRING, false);
-      TransientValueData vData = new TransientValueData(false);
-      prop.setValue(vData);
+            PropertyType.STRING, false, new TransientValueData(false));
       PropertyImpl prop1 = (PropertyImpl)modificationManager.update(ItemState.createAddedState(prop), true);
 
       assertNotNull(modificationManager.getItemData(data.getQPath()));
@@ -294,8 +288,7 @@ public class TestSessionDataManager extends JcrImplBaseTest
       NodeImpl node1 = (NodeImpl)modificationManager.update(ItemState.createAddedState(data1), true);
       TransientPropertyData nt =
          TransientPropertyData.createPropertyData(data1, new InternalQName(Constants.NS_JCR_URI, "primaryType"),
-            PropertyType.NAME, false);
-      nt.setValue(new TransientValueData(new InternalQName(Constants.NS_NT_URI, "unstructured")));
+            PropertyType.NAME, false, new TransientValueData(new InternalQName(Constants.NS_NT_URI, "unstructured")));
       modificationManager.update(ItemState.createAddedState(nt), true);
       assertEquals(1, modificationManager.getChildPropertiesData(data1).size());
 
@@ -311,8 +304,7 @@ public class TestSessionDataManager extends JcrImplBaseTest
       // ... add property
       TransientPropertyData prop =
          TransientPropertyData.createPropertyData(parent, new InternalQName(null, "testCommitAndRefreshP1"),
-            PropertyType.STRING, false);
-      prop.setValue(new TransientValueData("test"));
+            PropertyType.STRING, false, new TransientValueData("test"));
       modificationManager.update(ItemState.createAddedState(prop), true);
       assertEquals("test", ((PropertyImpl)modificationManager.getItem(prop.getQPath(), true)).getString());
    }

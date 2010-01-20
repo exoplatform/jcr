@@ -31,7 +31,8 @@ import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.core.lock.LockManagerImpl;
+import org.exoplatform.services.jcr.impl.core.lock.AbstractLockManager;
+import org.exoplatform.services.jcr.impl.core.lock.SessionLockManager;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeImpl;
 import org.exoplatform.services.jcr.impl.core.observation.ObservationManagerImpl;
 import org.exoplatform.services.jcr.impl.core.observation.ObservationManagerRegistry;
@@ -98,6 +99,8 @@ import javax.xml.stream.XMLStreamException;
 public class SessionImpl implements ExtendedSession, NamespaceAccessor
 {
 
+   public static final int DEFAULT_LAZY_READ_THRESHOLD = 100;
+
    private final RepositoryImpl repository;
 
    private final ConversationState userState;
@@ -118,7 +121,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
 
    private final LocationFactory systemLocationFactory;
 
-   private final LockManagerImpl lockManager;
+   private final SessionLockManager lockManager;
 
    protected final String workspaceName;
 
@@ -132,6 +135,8 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
 
    private long lastAccessTime;
 
+   private final int lazyReadThreshold;
+
    private final SessionRegistry sessionRegistry;
 
    protected final SessionDataManager dataManager;
@@ -141,7 +146,6 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    public SessionImpl(String workspaceName, ConversationState userState, ExoContainer container)
       throws RepositoryException
    {
-
       this.workspaceName = workspaceName;
       this.container = container;
       this.live = true;
@@ -152,8 +156,14 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       this.systemLocationFactory = (LocationFactory)container.getComponentInstanceOfType(LocationFactory.class);
 
       this.accessManager = (AccessManager)container.getComponentInstanceOfType(AccessManager.class);
-      this.lockManager = (LockManagerImpl)container.getComponentInstanceOfType(LockManagerImpl.class);
+      this.lockManager =
+         ((AbstractLockManager)container.getComponentInstanceOfType(AbstractLockManager.class))
+            .getSessionLockManager(id);
       WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
+
+      this.lazyReadThreshold =
+         wsConfig.getLazyReadThreshold() > 0 ? wsConfig.getLazyReadThreshold() : DEFAULT_LAZY_READ_THRESHOLD;
+
       WorkspaceFileCleanerHolder cleanerHolder =
          (WorkspaceFileCleanerHolder)container.getComponentInstanceOfType(WorkspaceFileCleanerHolder.class);
 
@@ -197,7 +207,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
     */
    public void addLockToken(String lt)
    {
-      getLockManager().addLockToken(getId(), lt);
+      getLockManager().addLockToken(lt);
    }
 
    /**
@@ -543,7 +553,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       return locationFactory;
    }
 
-   public LockManagerImpl getLockManager()
+   public SessionLockManager getLockManager()
    {
       return lockManager;
    }
@@ -553,7 +563,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
     */
    public String[] getLockTokens()
    {
-      return getLockManager().getLockTokens(getId());
+      return getLockManager().getLockTokens();
    }
 
    /**
@@ -609,9 +619,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
          if (uri != null)
             return uri;
       }
-      // uri = ;
-      // if (namespaces.values().contains(uri))
-      // return null;
+
       return workspace.getNamespaceRegistry().getURI(prefix);
    }
 
@@ -622,7 +630,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    {
       return getNamespaceURI(prefix);
    }
-   
+
    /**
     * {@inheritDoc}
     */
@@ -913,7 +921,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
     */
    public void removeLockToken(String lt)
    {
-      getLockManager().removeLockToken(getId(), lt);
+      getLockManager().removeLockToken(lt);
    }
 
    /**
@@ -962,6 +970,11 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    public ConversationState getUserState()
    {
       return this.userState;
+   }
+
+   int getLazyReadThreshold()
+   {
+      return lazyReadThreshold;
    }
 
 }

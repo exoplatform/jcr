@@ -38,6 +38,11 @@ public class LockImpl implements ExtendedLock
 
    private SessionImpl session;
 
+   // TODO remove this constructor, need refactor lock classes ierarchy
+   public LockImpl()
+   {
+   }
+
    public LockImpl(SessionImpl session, LockData lockData)
    {
       this.lockData = lockData;
@@ -95,7 +100,7 @@ public class LockImpl implements ExtendedLock
       return lockData.getTimeToDeath();
    }
 
-   protected void setTimeOut(long timeOut)
+   protected void setTimeOut(long timeOut) throws LockException
    {
       lockData.setTimeOut(timeOut);
    }

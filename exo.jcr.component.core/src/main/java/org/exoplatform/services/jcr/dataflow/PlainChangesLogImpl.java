@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.dataflow;
 
+import org.exoplatform.services.jcr.impl.Constants;
+
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -29,7 +31,7 @@ import java.util.List;
  * Created by The eXo Platform SAS.
  * 
  * @author Gennady Azarenkov
- * @version $Id: PlainChangesLogImpl.java 14464 2008-05-19 11:05:20Z pnedonosko $
+ * @version $Id$
  *          Stores collection of ItemStates
  */
 public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
@@ -44,11 +46,32 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
    protected int eventType;
 
    /**
-    * full qualified constructor
+    * Identifier of system and non-system logs pair. Null if no pair found. 
+    */
+   protected String pairId = null;
+
+   /**
+    * Full qualified constructor.
     * 
-    * @param items
-    * @param sessionId
-    * @param eventType
+    * @param items List of ItemState
+    * @param sessionId String 
+    * @param eventType int
+    * @param pairId String
+    */
+   public PlainChangesLogImpl(List<ItemState> items, String sessionId, int eventType, String pairId)
+   {
+      this.items = items;
+      this.sessionId = sessionId;
+      this.eventType = eventType;
+      this.pairId = pairId;
+   }
+
+   /**
+    * Constructor.
+    * 
+    * @param items List of ItemState
+    * @param sessionId String 
+    * @param eventType int
     */
    public PlainChangesLogImpl(List<ItemState> items, String sessionId, int eventType)
    {
@@ -58,10 +81,10 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
    }
 
    /**
-    * constructor with undefined event type
+    * Constructor with undefined event type.
     * 
-    * @param items
-    * @param sessionId
+    * @param items List of ItemState
+    * @param sessionId String 
     */
    public PlainChangesLogImpl(List<ItemState> items, String sessionId)
    {
@@ -69,9 +92,9 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
    }
 
    /**
-    * an empty log
+    * An empty log.
     * 
-    * @param sessionId
+    * @param sessionId String
     */
    public PlainChangesLogImpl(String sessionId)
    {
@@ -159,6 +182,17 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
       items.clear();
    }
 
+   /**
+    * Return pair Id for linked logs (when original log splitted into two, for system and non-system workspaces).
+    *
+    * @return String
+    *           pair identifier 
+    */
+   public String getPairId()
+   {
+      return pairId;
+   }
+
    public String dump()
    {
       String str = "ChangesLog: \n";
@@ -179,29 +213,39 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
    {
       out.writeInt(eventType);
 
-      out.writeInt(sessionId.getBytes().length);
-      out.write(sessionId.getBytes());
+      byte[] buff = sessionId.getBytes(Constants.DEFAULT_ENCODING);
+      out.writeInt(buff.length);
+      out.write(buff);
 
       int listSize = items.size();
       out.writeInt(listSize);
       for (int i = 0; i < listSize; i++)
+      {
          out.writeObject(items.get(i));
+      }
+
+      buff = pairId.getBytes(Constants.DEFAULT_ENCODING);
+      out.writeInt(buff.length);
+      out.write(buff);
    }
 
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
    {
       eventType = in.readInt();
 
-      String DEFAULT_ENCODING = "UTF-8";
-      byte[] buf;
-
-      buf = new byte[in.readInt()];
+      byte[] buf = new byte[in.readInt()];
       in.readFully(buf);
-      sessionId = new String(buf, DEFAULT_ENCODING);
+      sessionId = new String(buf, Constants.DEFAULT_ENCODING);
 
       int listSize = in.readInt();
       for (int i = 0; i < listSize; i++)
+      {
          add((ItemState)in.readObject());
+      }
+      
+      buf = new byte[in.readInt()];
+      in.readFully(buf);
+      pairId = new String(buf, Constants.DEFAULT_ENCODING);
    }
    // ------------------ [ END ] ------------------
 }

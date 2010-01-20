@@ -18,12 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
-import java.util.Calendar;
-import java.util.List;
-
-import javax.jcr.InvalidItemStateException;
-import javax.jcr.RepositoryException;
-
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.dataflow.SharedDataManager;
@@ -31,8 +25,15 @@ import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
+import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+
+import java.util.Calendar;
+import java.util.List;
+
+import javax.jcr.InvalidItemStateException;
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS. Data Manager supported ACL Inheritance
@@ -43,7 +44,7 @@ import org.exoplatform.services.log.Log;
 public class ACLInheritanceSupportedWorkspaceDataManager implements SharedDataManager
 {
 
-   private static Log log = ExoLogger.getLogger("jcr.ACLInheritanceSupportedWorkspaceDataManager");
+   private static Log LOG = ExoLogger.getLogger("jcr.ACLInheritanceSupportedWorkspaceDataManager");
 
    protected final CacheableWorkspaceDataManager persistentManager;
 
@@ -99,25 +100,40 @@ public class ACLInheritanceSupportedWorkspaceDataManager implements SharedDataMa
             if (parent != null)
             {
                // use parent ACL
-               node.setACL(parent.getACL());
+               node =
+                  new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(), node
+                     .getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(),
+                     node.getParentIdentifier(), parent.getACL());
             }
             else
             {
                // use nearest ancestor ACL... case of get by id
-               node.setACL(getNearestACAncestorAcl(node));
+               node =
+                  new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(), node
+                     .getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(),
+                     node.getParentIdentifier(), getNearestACAncestorAcl(node));
             }
          }
          else if (!acl.hasPermissions())
          {
             // use nearest ancestor permissions
             AccessControlList ancestorAcl = getNearestACAncestorAcl(node);
-            node.setACL(new AccessControlList(acl.getOwner(), ancestorAcl.getPermissionEntries()));
+
+            node =
+               new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(), node
+                  .getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(), node.getParentIdentifier(),
+                  new AccessControlList(acl.getOwner(), ancestorAcl.getPermissionEntries()));
          }
          else if (!acl.hasOwner())
          {
             // use nearest ancestor owner
             AccessControlList ancestorAcl = getNearestACAncestorAcl(node);
-            node.setACL(new AccessControlList(ancestorAcl.getOwner(), acl.getPermissionEntries()));
+
+            node =
+               new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(), node
+                  .getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(), node.getParentIdentifier(),
+                  new AccessControlList(ancestorAcl.getOwner(), acl.getPermissionEntries()));
+
          }
       }
 
@@ -128,19 +144,20 @@ public class ACLInheritanceSupportedWorkspaceDataManager implements SharedDataMa
     * {@inheritDoc}
     */
    // ------------ ItemDataConsumer impl ------------
-
    public List<NodeData> getChildNodesData(NodeData parent) throws RepositoryException
    {
       final List<NodeData> nodes = persistentManager.getChildNodesData(parent);
-      for (NodeData node : nodes)
-         initACL(parent, node);
+      for (int i = 0; i < nodes.size(); i++)
+      {
+         nodes.set(i, (NodeData)initACL(parent, nodes.get(i)));
+      }
       return nodes;
    }
-   
+
    /**
     * {@inheritDoc}
     */
-   public int getChildNodesCount(final NodeData parent) throws RepositoryException 
+   public int getChildNodesCount(final NodeData parent) throws RepositoryException
    {
       return persistentManager.getChildNodesCount(parent);
    }

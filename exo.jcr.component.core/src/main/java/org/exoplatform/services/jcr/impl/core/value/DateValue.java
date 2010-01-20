@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.core.value;
 
+import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
@@ -54,7 +55,7 @@ public class DateValue extends BaseValue
       super(TYPE, new TransientValueData(date));
    }
 
-   DateValue(TransientValueData data) throws IOException
+   DateValue(ValueData data) throws IOException
    {
       super(TYPE, data);
    }
@@ -146,7 +147,7 @@ public class DateValue extends BaseValue
             String inernalString = getInternalString();
 
             // force replace of data
-            data = new LocalTransientValueData(true);
+            data = new LocalSessionValueData(true);
 
             // Replace internall stram
             data.stream = new ByteArrayInputStream(inernalString.getBytes(Constants.DEFAULT_ENCODING));

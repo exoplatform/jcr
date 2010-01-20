@@ -96,6 +96,7 @@ public class SwapFile extends SpoolFile
          {
             CountDownLatch spoolLatch = swapped.spoolLatch;
             if (spoolLatch != null)
+            {
                try
                {
                   spoolLatch.await(); // wait till the file will be done
@@ -112,6 +113,8 @@ public class SwapFile extends SpoolFile
                      }
                   };
                }
+            }
+            swapped.spoolLatch = new CountDownLatch(1);
             return swapped;
          }
 

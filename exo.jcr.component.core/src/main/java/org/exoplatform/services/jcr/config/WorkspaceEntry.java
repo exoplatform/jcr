@@ -29,6 +29,8 @@ public class WorkspaceEntry
 {
 
    protected String name;
+   
+   protected int lazyReadThreshold;
 
    @Deprecated
    protected String autoInitializedRootNt;
@@ -192,5 +194,15 @@ public class WorkspaceEntry
    {
       this.initializer = initializer;
    }
+   
+   public int getLazyReadThreshold()
+   {
+      return lazyReadThreshold;
+   }
+
+   public void setLazyReadThreshold(int lazyReadThreshold)
+   {
+      this.lazyReadThreshold = lazyReadThreshold;
+   }   
 
 }

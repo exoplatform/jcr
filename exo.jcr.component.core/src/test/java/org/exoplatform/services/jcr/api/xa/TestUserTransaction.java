@@ -46,13 +46,7 @@ public class TestUserTransaction extends JcrAPIBaseTest
 
    public void setUp() throws Exception
    {
-
-      // StandaloneContainer.setConfigurationPath("src/java/conf/standalone/test-configuration.xml");
-      //    
-      // container = StandaloneContainer.getInstance();
-
       super.setUp();
-
       txService = (TransactionService)container.getComponentInstanceOfType(TransactionService.class);
    }
 
@@ -120,6 +114,8 @@ public class TestUserTransaction extends JcrAPIBaseTest
       log.info("before begin");
       ut.begin();
       log.info("after begin");
+      // we need to create the session within the transaction to ensure that it will be enlisted
+      Session session = (SessionImpl)repository.login(credentials, "ws");
       session.getRootNode().addNode("txcommit");
       session.save();
       assertNotNull(session.getItem("/txcommit"));
@@ -146,6 +142,8 @@ public class TestUserTransaction extends JcrAPIBaseTest
       UserTransaction ut = txService.getUserTransaction();
 
       ut.begin();
+      // we need to create the session within the transaction to ensure that it will be enlisted
+      Session session = (SessionImpl)repository.login(credentials, "ws");
       session.getRootNode().addNode("txrollback");
       session.save();
       assertNotNull(session.getItem("/txrollback"));
@@ -163,9 +161,11 @@ public class TestUserTransaction extends JcrAPIBaseTest
       }
    }
 
-   public void testUserTransactionFromJndi() throws Exception
+   // we don't have JNID for JBossTS in standalone now  
+   public void _testUserTransactionFromJndi() throws Exception
    {
       assertNotNull(txService);
+
       InitialContext ctx = new InitialContext();
       Object obj = ctx.lookup("UserTransaction");
       UserTransaction ut = (UserTransaction)obj;
@@ -177,27 +177,31 @@ public class TestUserTransaction extends JcrAPIBaseTest
       s1.save();
       ut.commit();
       assertNotNull(session.getItem("/txcommit1"));
-
    }
 
    public void testReuseUT() throws Exception
    {
       assertNotNull(txService);
-      InitialContext ctx = new InitialContext();
-      Object obj = ctx.lookup("UserTransaction");
-      UserTransaction ut = (UserTransaction)obj;
+      // TODO in JNDI only JOTM today
+      //InitialContext ctx = new InitialContext();
+      //Object obj = ctx.lookup("UserTransaction");
+      //UserTransaction ut = (UserTransaction)obj;
+
+      UserTransaction ut = txService.getUserTransaction();
+
+      ut.begin();
 
       Session s1 =
          repository.login(new SimpleCredentials("admin", "admin".toCharArray()), session.getWorkspace().getName());
 
-      ut.begin();
       Node tx2 = s1.getRootNode().addNode("txcommit2");
       ut.commit();
+
+      ut.begin();
 
       // In a case of reusing Have to enlist the resource once again!
       ((XASession)s1).enlistResource();
 
-      ut.begin();
       tx2.addNode("txcommit21");
       s1.save();
       ut.commit();
@@ -205,4 +209,56 @@ public class TestUserTransaction extends JcrAPIBaseTest
 
    }
 
+   public void testSaveException() throws Exception
+   {
+      assertNotNull(txService);
+      // TODO in JNDI only JOTM today
+      //InitialContext ctx = new InitialContext();
+      //Object obj = ctx.lookup("UserTransaction");
+      //UserTransaction ut = (UserTransaction)obj;
+
+      UserTransaction ut = txService.getUserTransaction();
+
+      Session s0 =
+         repository.login(new SimpleCredentials("root", "exo".toCharArray()), session.getWorkspace().getName());
+      Node pretx = s0.getRootNode().addNode("pretx");
+      s0.save();
+
+      pretx.remove(); // don't save now
+
+      ut.begin();
+
+      Session s1 =
+         repository.login(new SimpleCredentials("admin", "admin".toCharArray()), session.getWorkspace().getName());
+
+      Session s2 =
+         repository.login(new SimpleCredentials("admin", "admin".toCharArray()), session.getWorkspace().getName());
+      
+      Node tx1 = s1.getRootNode().getNode("pretx").addNode("tx1");
+      s1.save();
+      
+      Node tx2 = s2.getRootNode().getNode("pretx").addNode("tx2");
+      s2.save();
+
+      s0.save(); // save that parent of tx1 removed
+
+      try
+      {
+         ut.commit();
+         // internally XAException should be thrown
+         fail("Exception should occurs");
+      }
+      catch (Exception e)
+      {
+         // ok
+         assertNotNull(((XASession) s1).getCommitException());
+      }
+
+      try {
+         session.getItem("/pretx/tx1");
+         fail("PathNotFoundException should be thrown");
+      } catch(PathNotFoundException e) {
+         // ok
+      }
+   }
 }

@@ -137,11 +137,11 @@ public class StorageUpdateTest extends JcrImplBaseTest
       // =============================================================
       PropertyData jcrUuid = (PropertyData)((PropertyImpl)node_V.getProperty("jcr:uuid")).getData();
 
+      // Set a uuid of source node in Workspace.copy()
       TransientPropertyData bugData =
          new TransientPropertyData(jcrUuid.getQPath(), jcrUuid.getIdentifier(), jcrUuid.getPersistedVersion(), jcrUuid
-            .getType(), jcrUuid.getParentIdentifier(), jcrUuid.isMultiValued());
-      // Set a uuid of source node in Workspace.copy()
-      bugData.setValue(new TransientValueData(node_R.getProperty("jcr:uuid").getString()));
+            .getType(), jcrUuid.getParentIdentifier(), jcrUuid.isMultiValued(), new TransientValueData(node_R
+            .getProperty("jcr:uuid").getString()));
 
       WorkspaceStorageConnection conn = dataContainer.openConnection();
       if (conn instanceof JDBCStorageConnection)

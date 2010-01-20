@@ -92,6 +92,10 @@ public interface QueryHandlerParams
    public static final String PARAM_USE_COMPOUNDFILE = "use-compoundfile";
 
    public static final String PARAM_VOLATILE_IDLE_TIME = "volatile-idle-time";
+   
+   public static final String PARAM_MAX_VOLATILE_SIZE = "max-volatile-size";
+   
+   public static final String PARAM_MAX_VOLATILE_TIME = "max-volatile-time";
 
    //since https://jira.jboss.org/jira/browse/EXOJCR-17
 
@@ -99,4 +103,7 @@ public interface QueryHandlerParams
 
    public static final String PARAM_ANALYZER_CLASS = "analyzer";
 
+   public static final String PARAM_CHANGES_FILTER_CLASS = "changesfilter-class";
+
+   public static final String PARAM_CHANGES_FILTER_CONFIG_PATH = "changesfilter-config-path";
 }

@@ -32,7 +32,7 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
-import org.exoplatform.services.jcr.impl.dataflow.AbstractValueData;
+import org.exoplatform.services.jcr.impl.dataflow.AbstractPersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientItemData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
@@ -52,6 +52,8 @@ import javax.jcr.RepositoryException;
  * WorkspaceStorageDataManagerProxy can be pluggable in a case of other storage-session transport
  * applied (for ex RMI) this implementation is responsible for making copy of persisted (shared)
  * data objects for session data manager and pass it on top (to TransactionableDM) (and vice versa?)
+ * 
+ * <p>TODO not used since optimization EXOJCR-272.</p>
  * 
  * @author Gennady Azarenkov
  * @version $Id: LocalWorkspaceStorageDataManagerProxy.java 11907 2008-03-13 15:36:21Z ksm $
@@ -120,14 +122,14 @@ public class LocalWorkspaceStorageDataManagerProxy implements WorkspaceStorageDa
    {
       return copyNodes(storageDataManager.getChildNodesData(parent));
    }
-   
+
    /**
     * {@inheritDoc}
     */
-   public int getChildNodesCount(final NodeData parent) throws RepositoryException 
+   public int getChildNodesCount(final NodeData parent) throws RepositoryException
    {
       return storageDataManager.getChildNodesCount(parent);
-   }   
+   }
 
    /**
     * {@inheritDoc}
@@ -166,7 +168,9 @@ public class LocalWorkspaceStorageDataManagerProxy implements WorkspaceStorageDa
    {
 
       if (item == null)
+      {
          return null;
+      }
 
       // make a copy
       if (item.isNode())
@@ -181,28 +185,29 @@ public class LocalWorkspaceStorageDataManagerProxy implements WorkspaceStorageDa
             throw new RepositoryException("Node ACL is null. " + node.getQPath().getAsString() + " "
                + node.getIdentifier());
          }
+
          return new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(), node
             .getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(), node.getParentIdentifier(), acl);
       }
 
       // else - property
       final PropertyData prop = (PropertyData)item;
-      // make a copy
-      TransientPropertyData newData =
-         new TransientPropertyData(prop.getQPath(), prop.getIdentifier(), prop.getPersistedVersion(), prop.getType(),
-            prop.getParentIdentifier(), prop.isMultiValued());
 
+      // make a copy, value may be null for deleting items
       List<ValueData> values = null;
-      // null is possible for deleting items
       if (prop.getValues() != null)
       {
          values = new ArrayList<ValueData>();
          for (ValueData val : prop.getValues())
          {
-            values.add(((AbstractValueData)val).createTransientCopy());
+            values.add(((AbstractPersistedValueData)val).createTransientCopy());
          }
       }
-      newData.setValues(values);
+
+      TransientPropertyData newData =
+         new TransientPropertyData(prop.getQPath(), prop.getIdentifier(), prop.getPersistedVersion(), prop.getType(),
+            prop.getParentIdentifier(), prop.isMultiValued(), values);
+
       return newData;
    }
 
@@ -210,40 +215,43 @@ public class LocalWorkspaceStorageDataManagerProxy implements WorkspaceStorageDa
    {
 
       if (property == null)
+      {
          return null;
+      }
 
       // make a copy
       TransientPropertyData newData =
          new TransientPropertyData(property.getQPath(), property.getIdentifier(), property.getPersistedVersion(),
-            property.getType(), property.getParentIdentifier(), property.isMultiValued());
+            property.getType(), property.getParentIdentifier(), property.isMultiValued(), new ArrayList<ValueData>());
 
-      newData.setValues(new ArrayList<ValueData>());
       return newData;
    }
 
    private List<NodeData> copyNodes(final List<NodeData> childNodes) throws RepositoryException
    {
       final List<NodeData> copyOfChildsNodes = new LinkedList<NodeData>();
-      synchronized (childNodes)
+      synchronized (childNodes) // TODO EXOJCR-273
       {
          for (NodeData nodeData : childNodes)
          {
             copyOfChildsNodes.add((NodeData)copyItemData(nodeData));
          }
       }
+
       return copyOfChildsNodes;
    }
 
    private List<PropertyData> copyProperties(final List<PropertyData> traverseProperties) throws RepositoryException
    {
       final List<PropertyData> copyOfChildsProperties = new LinkedList<PropertyData>();
-      synchronized (traverseProperties)
+      synchronized (traverseProperties) // TODO EXOJCR-273
       {
          for (PropertyData nodeProperty : traverseProperties)
          {
             copyOfChildsProperties.add((PropertyData)copyItemData(nodeProperty));
          }
       }
+
       return copyOfChildsProperties;
    }
 
@@ -251,13 +259,14 @@ public class LocalWorkspaceStorageDataManagerProxy implements WorkspaceStorageDa
       throws RepositoryException
    {
       final List<PropertyData> copyOfChildsProperties = new LinkedList<PropertyData>();
-      synchronized (traverseProperties)
+      synchronized (traverseProperties) // TODO EXOJCR-273
       {
          for (PropertyData nodeProperty : traverseProperties)
          {
             copyOfChildsProperties.add((PropertyData)copyPropertyDataWithoutValue(nodeProperty));
          }
       }
+
       return copyOfChildsProperties;
    }
 }

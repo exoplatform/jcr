@@ -26,7 +26,6 @@ import org.exoplatform.services.jcr.core.ComponentPersister;
 import org.exoplatform.services.jcr.core.ExtendedPropertyType;
 import org.exoplatform.services.jcr.dataflow.DataManager;
 import org.exoplatform.services.jcr.dataflow.ItemState;
-import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
 import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
@@ -37,7 +36,6 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.dataflow.AbstractValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientItemData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
@@ -97,8 +95,8 @@ public class NamespaceDataPersister implements ComponentPersister
    {
       if (!started)
       {
-         if(log.isDebugEnabled())
-         log.debug("Unable save namespace " + uri + "=" + prefix + " in to the storage. Storage not initialized");
+         if (log.isDebugEnabled())
+            log.debug("Unable save namespace " + uri + "=" + prefix + " in to the storage. Storage not initialized");
          return;
       }
       PlainChangesLog changesLog = new PlainChangesLogImpl();
@@ -114,16 +112,16 @@ public class NamespaceDataPersister implements ComponentPersister
          TransientNodeData.createNodeData(nsRoot, new InternalQName("", prefix), Constants.EXO_NAMESPACE);
 
       TransientPropertyData primaryType =
-         TransientPropertyData.createPropertyData(nsNode, Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false);
-      primaryType.setValue(new TransientValueData(nsNode.getPrimaryTypeName()));
+         TransientPropertyData.createPropertyData(nsNode, Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false,
+            new TransientValueData(nsNode.getPrimaryTypeName()));
 
       TransientPropertyData exoUri =
-         TransientPropertyData.createPropertyData(nsNode, Constants.EXO_URI_NAME, PropertyType.STRING, false);
-      exoUri.setValue(new TransientValueData(uri));
+         TransientPropertyData.createPropertyData(nsNode, Constants.EXO_URI_NAME, PropertyType.STRING, false,
+            new TransientValueData(uri));
 
       TransientPropertyData exoPrefix =
-         TransientPropertyData.createPropertyData(nsNode, Constants.EXO_PREFIX, PropertyType.STRING, false);
-      exoPrefix.setValue(new TransientValueData(prefix));
+         TransientPropertyData.createPropertyData(nsNode, Constants.EXO_PREFIX, PropertyType.STRING, false,
+            new TransientValueData(prefix));
 
       changesLog.add(ItemState.createAddedState(nsNode)).add(ItemState.createAddedState(primaryType)).add(
          ItemState.createAddedState(exoUri)).add(ItemState.createAddedState(exoPrefix));
@@ -158,7 +156,7 @@ public class NamespaceDataPersister implements ComponentPersister
             internallAdd(changesLog, prefix, uri);
          }
       }
-         dataManager.save(new TransactionChangesLog(changesLog));
+      dataManager.save(new TransactionChangesLog(changesLog));
 
    }
 
@@ -182,7 +180,7 @@ public class NamespaceDataPersister implements ComponentPersister
 
       if (!started)
       {
-         log.warn("Unable remove namspace "+prefix+" from the storage. Storage not initialized");
+         log.warn("Unable remove namspace " + prefix + " from the storage. Storage not initialized");
          return;
       }
 
@@ -205,7 +203,7 @@ public class NamespaceDataPersister implements ComponentPersister
 
       }
 
-         dataManager.save(new TransactionChangesLog(plainChangesLogImpl));
+      dataManager.save(new TransactionChangesLog(plainChangesLogImpl));
 
    }
 
@@ -313,7 +311,6 @@ public class NamespaceDataPersister implements ComponentPersister
          log.warn("Namespace storage (/jcr:system/exo:namespaces node) is not initialized. No namespaces loaded.");
    }
 
-
    /**
     * Copy <code>PropertyData prop<code> to new TransientItemData
     * 
@@ -327,22 +324,11 @@ public class NamespaceDataPersister implements ComponentPersister
       if (prop == null)
          return null;
 
-      // make a copy
+      // make a copy, value may be null for deleting items
       TransientPropertyData newData =
          new TransientPropertyData(prop.getQPath(), prop.getIdentifier(), prop.getPersistedVersion(), prop.getType(),
-            prop.getParentIdentifier(), prop.isMultiValued());
+            prop.getParentIdentifier(), prop.isMultiValued(), prop.getValues());
 
-      List<ValueData> values = null;
-      // null is possible for deleting items
-      if (prop.getValues() != null)
-      {
-         values = new ArrayList<ValueData>();
-         for (ValueData val : prop.getValues())
-         {
-            values.add(((AbstractValueData)val).createTransientCopy());
-         }
-      }
-      newData.setValues(values);
       return newData;
    }
 
@@ -357,21 +343,21 @@ public class NamespaceDataPersister implements ComponentPersister
    private void initStorage(NodeData nsSystem, boolean addACL) throws RepositoryException
    {
       PlainChangesLog changesLog = new PlainChangesLogImpl();
-      TransientNodeData exoNamespaces =
-         TransientNodeData.createNodeData(nsSystem, Constants.EXO_NAMESPACES, Constants.NT_UNSTRUCTURED);
-
-      TransientPropertyData primaryType =
-         TransientPropertyData.createPropertyData(exoNamespaces, Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false);
-      primaryType.setValue(new TransientValueData(exoNamespaces.getPrimaryTypeName()));
-
-      changesLog.add(ItemState.createAddedState(exoNamespaces)).add(ItemState.createAddedState(primaryType));
+      TransientNodeData exoNamespaces;
 
       if (addACL)
       {
          AccessControlList acl = new AccessControlList();
-
          InternalQName[] mixins = new InternalQName[]{Constants.EXO_OWNEABLE, Constants.EXO_PRIVILEGEABLE};
-         exoNamespaces.setMixinTypeNames(mixins);
+
+         exoNamespaces =
+            TransientNodeData.createNodeData(nsSystem, Constants.EXO_NAMESPACES, Constants.NT_UNSTRUCTURED, mixins);
+
+         TransientPropertyData primaryType =
+            TransientPropertyData.createPropertyData(exoNamespaces, Constants.JCR_PRIMARYTYPE, PropertyType.NAME,
+               false, new TransientValueData(exoNamespaces.getPrimaryTypeName()));
+
+         changesLog.add(ItemState.createAddedState(exoNamespaces)).add(ItemState.createAddedState(primaryType));
 
          // jcr:mixinTypes
          List<ValueData> mixValues = new ArrayList<ValueData>();
@@ -401,13 +387,22 @@ public class NamespaceDataPersister implements ComponentPersister
             ItemState.createAddedState(exoPerms));
          changesLog.add(new ItemState(exoNamespaces, ItemState.MIXIN_CHANGED, false, null));
       }
+      else
+      {
+         exoNamespaces =
+            TransientNodeData.createNodeData(nsSystem, Constants.EXO_NAMESPACES, Constants.NT_UNSTRUCTURED);
+
+         TransientPropertyData primaryType =
+            TransientPropertyData.createPropertyData(exoNamespaces, Constants.JCR_PRIMARYTYPE, PropertyType.NAME,
+               false, new TransientValueData(exoNamespaces.getPrimaryTypeName()));
+
+         changesLog.add(ItemState.createAddedState(exoNamespaces)).add(ItemState.createAddedState(primaryType));
+      }
 
       nsRoot = exoNamespaces;
       dataManager.save(new TransactionChangesLog(changesLog));
    }
 
-   // TODO remove me
-   @Deprecated
    private boolean isInialized()
    {
       return nsRoot != null;

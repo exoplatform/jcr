@@ -190,7 +190,7 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
 
       FIND_VALUES_VSTORAGE_DESC_BY_PROPERTYID = "select distinct STORAGE_DESC from JCR_SVALUE where PROPERTY_ID=?";
 
-      FIND_VALUE_BY_PROPERTYID_OREDERNUMB = "select DATA from JCR_SVALUE where PROPERTY_ID=? and ORDER_NUM=?";
+      FIND_VALUE_BY_PROPERTYID_OREDERNUMB = "select DATA, STORAGE_DESC from JCR_SVALUE where PROPERTY_ID=? and ORDER_NUM=?";
 
       FIND_NODES_BY_PARENTID =
          "select * from JCR_SITEM" + " where I_CLASS=1 and CONTAINER_NAME=? and PARENT_ID=?" + " order by N_ORDER_NUM";
@@ -551,13 +551,16 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
    /**
     * {@inheritDoc}
     */
-   @Deprecated
    protected ResultSet findValueByPropertyIdOrderNumber(String cid, int orderNumb) throws SQLException
    {
       if (findValueByPropertyIdOrderNumber == null)
+      {
          findValueByPropertyIdOrderNumber = dbConnection.prepareStatement(FIND_VALUE_BY_PROPERTYID_OREDERNUMB);
+      }
       else
+      {
          findValueByPropertyIdOrderNumber.clearParameters();
+      }
 
       findValueByPropertyIdOrderNumber.setString(1, cid);
       findValueByPropertyIdOrderNumber.setInt(2, orderNumb);
@@ -571,9 +574,13 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
    protected int renameNode(NodeData data) throws SQLException
    {
       if (renameNode == null)
+      {
          renameNode = dbConnection.prepareStatement(RENAME_NODE);
+      }
       else
+      {
          renameNode.clearParameters();
+      }
 
       renameNode.setString(1, data.getParentIdentifier() == null ? Constants.ROOT_PARENT_UUID : getInternalId(data
          .getParentIdentifier()));

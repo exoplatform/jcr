@@ -190,21 +190,10 @@ public class ScratchWorkspaceInitializer implements WorkspaceInitializer
    private NodeData initRootNode(InternalQName rootNodeType) throws RepositoryException
    {
 
-      PlainChangesLog changesLog = new PlainChangesLogImpl();
-
-      TransientNodeData rootNode =
-         new TransientNodeData(Constants.ROOT_PATH, Constants.ROOT_UUID, -1, rootNodeType, new InternalQName[0], 0,
-            null, new AccessControlList());
-      changesLog.add(new ItemState(rootNode, ItemState.ADDED, false, null));
-
-      TransientPropertyData primaryType =
-         new TransientPropertyData(QPath.makeChildPath(rootNode.getQPath(), Constants.JCR_PRIMARYTYPE), IdGenerator
-            .generate(), -1, PropertyType.NAME, rootNode.getIdentifier(), false);
-      primaryType.setValue(new TransientValueData(rootNodeType));
-
-      changesLog.add(new ItemState(primaryType, ItemState.ADDED, false, null)); // 
-
       boolean addACL = !accessControlType.equals(AccessControlPolicy.DISABLE);
+
+      PlainChangesLog changesLog = new PlainChangesLogImpl();
+      TransientNodeData rootNode;
 
       if (addACL)
       {
@@ -216,10 +205,18 @@ public class ScratchWorkspaceInitializer implements WorkspaceInitializer
             acl.addPermissions(rootPermissions);
          }
 
-         rootNode.setACL(acl);
-
          InternalQName[] mixins = new InternalQName[]{Constants.EXO_OWNEABLE, Constants.EXO_PRIVILEGEABLE};
-         rootNode.setMixinTypeNames(mixins);
+
+         rootNode =
+            new TransientNodeData(Constants.ROOT_PATH, Constants.ROOT_UUID, -1, rootNodeType, mixins, 0, null, acl);
+         changesLog.add(new ItemState(rootNode, ItemState.ADDED, false, null));
+
+         TransientPropertyData primaryType =
+            new TransientPropertyData(QPath.makeChildPath(rootNode.getQPath(), Constants.JCR_PRIMARYTYPE), IdGenerator
+               .generate(), -1, PropertyType.NAME, rootNode.getIdentifier(), false,
+               new TransientValueData(rootNodeType));
+
+         changesLog.add(new ItemState(primaryType, ItemState.ADDED, false, null)); // 
 
          // jcr:mixinTypes
          List<ValueData> mixValues = new ArrayList<ValueData>();
@@ -249,34 +246,45 @@ public class ScratchWorkspaceInitializer implements WorkspaceInitializer
             ItemState.createAddedState(exoPerms));
          changesLog.add(new ItemState(rootNode, ItemState.MIXIN_CHANGED, false, null));
       }
+      else
+      {
+         rootNode =
+            new TransientNodeData(Constants.ROOT_PATH, Constants.ROOT_UUID, -1, rootNodeType, new InternalQName[0], 0,
+               null, new AccessControlList());
+         changesLog.add(new ItemState(rootNode, ItemState.ADDED, false, null));
+
+         TransientPropertyData primaryType =
+            new TransientPropertyData(QPath.makeChildPath(rootNode.getQPath(), Constants.JCR_PRIMARYTYPE), IdGenerator
+               .generate(), -1, PropertyType.NAME, rootNode.getIdentifier(), false,
+               new TransientValueData(rootNodeType));
+         changesLog.add(new ItemState(primaryType, ItemState.ADDED, false, null)); // 
+      }
 
       dataManager.save(new TransactionChangesLog(changesLog));
-
       return rootNode;
    }
 
    private NodeData initJcrSystemNode(NodeData root) throws RepositoryException
    {
+      boolean addACL = !accessControlType.equals(AccessControlPolicy.DISABLE);
 
       PlainChangesLog changesLog = new PlainChangesLogImpl();
-
-      TransientNodeData jcrSystem =
-         TransientNodeData.createNodeData(root, Constants.JCR_SYSTEM, Constants.NT_UNSTRUCTURED, Constants.SYSTEM_UUID);
-
-      TransientPropertyData primaryType =
-         TransientPropertyData.createPropertyData(jcrSystem, Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false);
-      primaryType.setValue(new TransientValueData(jcrSystem.getPrimaryTypeName()));
-
-      changesLog.add(ItemState.createAddedState(jcrSystem)).add(ItemState.createAddedState(primaryType));
-
-      boolean addACL = !accessControlType.equals(AccessControlPolicy.DISABLE);
+      TransientNodeData jcrSystem;
 
       if (addACL)
       {
          AccessControlList acl = new AccessControlList();
-
          InternalQName[] mixins = new InternalQName[]{Constants.EXO_OWNEABLE, Constants.EXO_PRIVILEGEABLE};
-         jcrSystem.setMixinTypeNames(mixins);
+
+         jcrSystem =
+            TransientNodeData.createNodeData(root, Constants.JCR_SYSTEM, Constants.NT_UNSTRUCTURED, mixins,
+               Constants.SYSTEM_UUID);
+
+         TransientPropertyData primaryType =
+            TransientPropertyData.createPropertyData(jcrSystem, Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false,
+               new TransientValueData(jcrSystem.getPrimaryTypeName()));
+
+         changesLog.add(ItemState.createAddedState(jcrSystem)).add(ItemState.createAddedState(primaryType));
 
          // jcr:mixinTypes
          List<ValueData> mixValues = new ArrayList<ValueData>();
@@ -306,6 +314,18 @@ public class ScratchWorkspaceInitializer implements WorkspaceInitializer
             ItemState.createAddedState(exoPerms));
          changesLog.add(new ItemState(jcrSystem, ItemState.MIXIN_CHANGED, false, null));
       }
+      else
+      {
+         jcrSystem =
+            TransientNodeData.createNodeData(root, Constants.JCR_SYSTEM, Constants.NT_UNSTRUCTURED,
+               Constants.SYSTEM_UUID);
+
+         TransientPropertyData primaryType =
+            TransientPropertyData.createPropertyData(jcrSystem, Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false,
+               new TransientValueData(jcrSystem.getPrimaryTypeName()));
+
+         changesLog.add(ItemState.createAddedState(jcrSystem)).add(ItemState.createAddedState(primaryType));
+      }
 
       // init version storage
       TransientNodeData versionStorageNodeData =
@@ -314,8 +334,7 @@ public class ScratchWorkspaceInitializer implements WorkspaceInitializer
 
       TransientPropertyData vsPrimaryType =
          TransientPropertyData.createPropertyData(versionStorageNodeData, Constants.JCR_PRIMARYTYPE, PropertyType.NAME,
-            false);
-      vsPrimaryType.setValue(new TransientValueData(versionStorageNodeData.getPrimaryTypeName()));
+            false, new TransientValueData(versionStorageNodeData.getPrimaryTypeName()));
 
       changesLog.add(ItemState.createAddedState(versionStorageNodeData)).add(ItemState.createAddedState(vsPrimaryType));
 

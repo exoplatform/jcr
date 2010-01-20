@@ -41,23 +41,22 @@ import javax.transaction.xa.XAException;
 public class SessionFactory
 {
 
-   protected static Log log = ExoLogger.getLogger("jcr.SessionFactory");
+   protected static Log LOG = ExoLogger.getLogger("jcr.SessionFactory");
 
-   // private OrganizationService organizationService;
+   private final ExoContainer container;
 
-   private ExoContainer container;
+   private final TransactionService tService;
 
-   private TransactionService tService;
+   private final String workspaceName;
 
-   private String workspaceName;
-
-   private TransactionableResourceManager txResourceManager = null;
+   private final TransactionableResourceManager txResourceManager;
 
    /**
-    * @param orgService
-    * @param tService
-    * @param config
-    * @param containerContext
+    * JCR Session factory.
+    * 
+    * @param tService TransactionService
+    * @param config WorkspaceEntry
+    * @param containerContext ExoContainerContext
     */
    public SessionFactory(TransactionService tService, WorkspaceEntry config, ExoContainerContext containerContext)
    {
@@ -67,7 +66,6 @@ public class SessionFactory
       this.tService = tService;
       this.txResourceManager = new TransactionableResourceManager();
 
-      //
       boolean tracking = "true".equalsIgnoreCase(System.getProperty("exo.jcr.session.tracking.active", "false"));
       if (tracking)
       {
@@ -103,9 +101,10 @@ public class SessionFactory
    }
 
    /**
-    * @param orgService
-    * @param config
-    * @param containerContext
+    * JCR Session factory.
+    * 
+    * @param config WorkspaceEntry
+    * @param containerContext ExoContainerContext
     */
    public SessionFactory(WorkspaceEntry config, ExoContainerContext containerContext)
    {
@@ -121,10 +120,6 @@ public class SessionFactory
     */
    SessionImpl createSession(ConversationState user) throws RepositoryException, LoginException
    {
-
-      // Check privilegies to access workspace first?
-      // ....
-
       if (tService == null)
       {
          if (SessionReference.isStarted())
@@ -137,26 +132,14 @@ public class SessionFactory
          }
       }
 
-      XASessionImpl xaSession;
       if (SessionReference.isStarted())
       {
-         xaSession = new TrackedXASession(workspaceName, user, container, tService, txResourceManager);
+         return new TrackedXASession(workspaceName, user, container, tService, txResourceManager);
       }
       else
       {
-         xaSession = new XASessionImpl(workspaceName, user, container, tService, txResourceManager);
+         return new XASessionImpl(workspaceName, user, container, tService, txResourceManager);
       }
-
-      try
-      {
-         xaSession.enlistResource();
-
-      }
-      catch (XAException e)
-      {
-         throw new RepositoryException(e);
-      }
-      return xaSession;
    }
 
 }

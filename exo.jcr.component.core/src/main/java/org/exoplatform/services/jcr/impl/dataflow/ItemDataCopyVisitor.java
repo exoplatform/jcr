@@ -52,10 +52,6 @@ public class ItemDataCopyVisitor extends DefaultItemDataCopyVisitor
    @Override
    protected void entering(PropertyData property, int level) throws RepositoryException
    {
-
-      if (log.isDebugEnabled())
-         log.debug("entering " + property.getQPath().getAsString());
-
       // don't using super
       InternalQName qname = property.getQPath().getName();
 
@@ -123,27 +119,22 @@ public class ItemDataCopyVisitor extends DefaultItemDataCopyVisitor
          }
          else if (qname.equals(Constants.JCR_UUID))
          {
-            values.add(new TransientValueData(curParent().getIdentifier())); // uuid
-            // of
-            // the
-            // parent
+            values.add(new TransientValueData(curParent().getIdentifier())); // uuid of the parent
          }
          else
          {
-            values = property.getValues(); // copy the property
+            values = copyValues(property); // copy the property
          }
       }
       else if (ntManager.isNodeType(Constants.MIX_REFERENCEABLE, curParent().getPrimaryTypeName(), curParent()
          .getMixinTypeNames())
          && qname.equals(Constants.JCR_UUID))
       {
-
          values = new ArrayList<ValueData>(1);
          values.add(new TransientValueData(curParent().getIdentifier()));
       }
       else
       {
-         // http://jira.exoplatform.org/browse/JCR-294
          if (qname.equals(Constants.JCR_LOCKISDEEP))
          {
             return;
@@ -152,19 +143,18 @@ public class ItemDataCopyVisitor extends DefaultItemDataCopyVisitor
          {
             return;
          }
-         values = property.getValues();
+         values = copyValues(property); 
       }
 
       TransientPropertyData newProperty =
          new TransientPropertyData(QPath.makeChildPath(curParent().getQPath(), qname), keepIdentifiers ? property
             .getIdentifier() : IdGenerator.generate(), -1, property.getType(), curParent().getIdentifier(), property
-            .isMultiValued());
+            .isMultiValued(), values);
 
-      newProperty.setValues(values);
-
-      if (log.isDebugEnabled())
+      if (log.isDebugEnabled()) {
          log.debug("entering COPY " + newProperty.getQPath().getAsString() + "; pidentifier: "
             + newProperty.getParentIdentifier() + "; identifier: " + newProperty.getIdentifier());
+      }
 
       itemAddStates.add(new ItemState(newProperty, ItemState.ADDED, true, ancestorToSave, level != 0));
    }

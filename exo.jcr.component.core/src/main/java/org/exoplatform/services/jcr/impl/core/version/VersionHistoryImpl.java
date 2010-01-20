@@ -75,19 +75,20 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
       super(data, session);
 
       if (!this.isNodeType(Constants.NT_VERSIONHISTORY))
+      {
          throw new RepositoryException("Node " + getLocation().getAsString(true) + " is not nt:versionHistory type");
+      }
    }
 
    /**
     * {@inheritDoc}
     */
    @Override
-   public void loadData(ItemData vhData) throws RepositoryException, InvalidItemStateException,
+   public void loadData(ItemData vhData, NodeData parent) throws RepositoryException, InvalidItemStateException,
       ConstraintViolationException
    {
-
       super.loadData(new VersionHistoryDataHelper((NodeData)vhData, session.getTransientNodesManager()
-         .getTransactManager(), session.getWorkspace().getNodeTypesHolder()));
+         .getTransactManager(), session.getWorkspace().getNodeTypesHolder()), parent);
    }
 
    /**
@@ -147,7 +148,6 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
     */
    public VersionIterator getAllVersions() throws RepositoryException
    {
-
       checkValid();
 
       List<NodeData> versionsDataList = getData().getAllVersionsData();
@@ -168,7 +168,6 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
     */
    public Version getVersion(String versionName) throws VersionException, RepositoryException
    {
-
       checkValid();
 
       return version(versionName, true);
@@ -196,7 +195,6 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
     */
    public Version getVersionByLabel(String label) throws RepositoryException
    {
-
       checkValid();
 
       NodeData versionData = getVersionDataByLabel(label);
@@ -218,7 +216,6 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
     */
    public boolean hasVersionLabel(String label) throws RepositoryException
    {
-
       checkValid();
 
       if (this.getVersionDataByLabel(label) == null)
@@ -232,7 +229,6 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
     */
    public boolean hasVersionLabel(Version version, String label) throws VersionException, RepositoryException
    {
-
       checkValid();
 
       NodeData versionData = getVersionDataByLabel(label);
@@ -247,7 +243,6 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
     */
    public String[] getVersionLabels() throws RepositoryException
    {
-
       checkValid();
 
       List<PropertyData> versionLabels = getData().getVersionLabels();
@@ -263,8 +258,10 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
    protected List<String> getVersionLabelsList(Version version) throws VersionException, RepositoryException
    {
       if (!isVersionBelongToThis(version))
+      {
          throw new VersionException("There are no version '" + version.getPath() + "' in the version history "
             + getPath());
+      }
 
       List<PropertyData> labelsList = getData().getVersionLabels();
       List<String> vlabels = new ArrayList<String>();
@@ -293,7 +290,6 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
     */
    public String[] getVersionLabels(Version version) throws VersionException, RepositoryException
    {
-
       checkValid();
 
       List<String> vlabels = getVersionLabelsList(version);
@@ -310,7 +306,6 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
    public void removeVersion(String versionName) throws ReferentialIntegrityException, AccessDeniedException,
       UnsupportedRepositoryOperationException, VersionException, RepositoryException
    {
-
       // get version (pool it to be able to invalidate the version on final)
       VersionImpl version = (VersionImpl)version(versionName, true);
 
@@ -364,7 +359,7 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
             {// V2's successor
                if (successorsData != null)
                {// to redirect V2's successor
-                  // case of VH graph merge
+                // case of VH graph merge
                   for (ValueData svalue : successorsData.getValues())
                   {
                      predecessor.removeAddSuccessor(version.getInternalIdentifier(),
@@ -444,14 +439,15 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
    {
       NodeData labels = getData().getVersionLabelsData();
       if (labels == null)
+      {
          throw new VersionException("Mandatory node jcr:versionLabels is not found for version history " + getPath());
+      }
 
       return labels;
    }
 
    protected NodeData getVersionDataByLabel(String labelName) throws VersionException, RepositoryException
    {
-
       JCRName jcrLabelName = locationFactory.parseJCRName(labelName);
       InternalQName labelQName = jcrLabelName.getInternalName();
 
@@ -460,10 +456,11 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
 
    protected NodeData getVersionDataByIdentifier(String versionIdentifier) throws VersionException, RepositoryException
    {
-
       NodeData version = (NodeData)dataManager.getItemData(versionIdentifier);
       if (version == null)
+      {
          throw new VersionException("Version is not found, uuid: " + versionIdentifier);
+      }
 
       return version;
    }
@@ -474,7 +471,6 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
    public void addVersionLabel(String versionName, String label, boolean moveLabel) throws VersionException,
       RepositoryException
    {
-
       checkValid();
 
       JCRName jcrLabelName = locationFactory.parseJCRName(label);
@@ -514,7 +510,6 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
     */
    public void removeVersionLabel(String labelName) throws VersionException, RepositoryException
    {
-
       checkValid();
 
       JCRName jcrLabelName = locationFactory.parseJCRName(labelName);
@@ -539,7 +534,6 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
    public void addVersion(NodeData versionableNodeData, String uuid, SessionChangesLog changesLog)
       throws RepositoryException
    {
-
       // nt:version
       NodeData versionData =
          TransientNodeData.createNodeData(nodeData(), new InternalQName(null, nextVersionName()), Constants.NT_VERSION,
@@ -616,14 +610,14 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
             new TransientValueData(frozenData.getIdentifier()));
       changesLog.add(ItemState.createAddedState(propData));
 
-      // NodeTypeManagerImpl ntManager =
-      // session.getWorkspace().getNodeTypesHolder();
       FrozenNodeInitializer visitor =
          new FrozenNodeInitializer(frozenData, session.getTransientNodesManager(), session.getWorkspace()
             .getNodeTypesHolder(), changesLog, session.getValueFactory());
 
       if (LOG.isDebugEnabled())
+      {
          LOG.debug("Before frozen visitor: " + changesLog.dump());
+      }
 
       versionableNodeData.accept(visitor);
 

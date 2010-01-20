@@ -22,7 +22,15 @@ import org.exoplatform.services.jcr.dataflow.ItemDataVisitor;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.dataflow.AbstractPersistedValueData;
+import org.exoplatform.services.jcr.impl.dataflow.TransientItemData;
+import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.jcr.RepositoryException;
@@ -33,91 +41,128 @@ import javax.jcr.RepositoryException;
  * Persisted PropertyData
  * 
  * @author Gennady Azarenkov
- * @version $Id: PersistedPropertyData.java 11907 2008-03-13 15:36:21Z ksm $
+ * @version $Id$
  */
 
-public class PersistedPropertyData extends PersistedItemData implements PropertyData
+public class PersistedPropertyData extends PersistedItemData implements PropertyData, Externalizable
 {
+
+   /**
+    * serialVersionUID to serialization. 
+    */
+   private static final long serialVersionUID = 2035566403758848232L;
+
+   protected final static int NULL_VALUES = -1;
 
    protected List<ValueData> values;
 
-   protected final int type;
+   protected int type;
 
-   protected final boolean multiValued;
+   protected boolean multiValued;
 
-   public PersistedPropertyData(String id, QPath qpath, String parentId, int version, int type, boolean multiValued)
+   /**
+    * Empty constructor to serialization.
+    */
+   public PersistedPropertyData()
+   {
+      super();
+   }
+
+   public PersistedPropertyData(String id, QPath qpath, String parentId, int version, int type, boolean multiValued,
+      List<ValueData> values)
    {
       super(id, qpath, parentId, version);
-      this.values = null;
+      this.values = values;
       this.type = type;
       this.multiValued = multiValued;
    }
 
-   /*
-    * (non-Javadoc)
-    * @see org.exoplatform.services.jcr.datamodel.PropertyData#getType()
+   /**
+    * {@inheritDoc}
     */
    public int getType()
    {
       return type;
    }
 
-   /*
-    * (non-Javadoc)
-    * @see org.exoplatform.services.jcr.datamodel.PropertyData#getValues()
+   /**
+    * {@inheritDoc}
     */
    public List<ValueData> getValues()
    {
       return values;
    }
 
-   /*
-    * (non-Javadoc)
-    * @see org.exoplatform.services.jcr.datamodel.PropertyData#isMultiValued()
+   /**
+    * {@inheritDoc}
     */
    public boolean isMultiValued()
    {
       return multiValued;
    }
 
-   /*
-    * (non-Javadoc)
-    * @see org.exoplatform.services.jcr.datamodel.ItemData#isNode()
+   /**
+    * {@inheritDoc}
     */
    public boolean isNode()
    {
       return false;
    }
 
-   /*
-    * (non-Javadoc)
-    * @see
-    * org.exoplatform.services.jcr.datamodel.ItemData#accept(org.exoplatform.services.jcr.dataflow
-    * .ItemDataVisitor)
+   /**
+    * {@inheritDoc}
     */
    public void accept(ItemDataVisitor visitor) throws RepositoryException
    {
       visitor.visit(this);
    }
 
-   /**
-    * @param type
-    */
-   public void setType(int type)
-   {
-      throw new RuntimeException("DO NOT call setType! ");
-   }
+   // ----------------- Externalizable
 
    /**
-    * @param values
-    * @throws RepositoryException
+    * {@inheritDoc}
     */
-   public void setValues(List values) throws RepositoryException
+   public void writeExternal(ObjectOutput out) throws IOException
    {
-      if (this.values == null)
-         this.values = values;
+      super.writeExternal(out);
+
+      out.writeInt(type);
+      out.writeBoolean(multiValued);
+
+      if (values != null)
+      {
+         int listSize = values.size();
+         out.writeInt(listSize);
+         for (int i = 0; i < listSize; i++)
+         {
+            out.writeObject(values.get(i));
+         }
+      }
       else
-         throw new RuntimeException("The values can not be changed ");
+      {
+         out.writeInt(NULL_VALUES);
+      }
    }
 
+   /**
+    * {@inheritDoc}
+    */
+   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+   {
+      super.readExternal(in);
+
+      type = in.readInt();
+
+      multiValued = in.readBoolean();
+
+      int listSize = in.readInt();
+      if (listSize != NULL_VALUES)
+      {
+         values = new ArrayList<ValueData>();
+         for (int i = 0; i < listSize; i++)
+         {
+            values.add((ValueData)in.readObject());
+         }
+      }
+   }
 }

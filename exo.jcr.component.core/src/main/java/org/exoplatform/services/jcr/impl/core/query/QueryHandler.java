@@ -21,6 +21,9 @@ import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.core.query.lucene.IndexInfos;
+import org.exoplatform.services.jcr.impl.core.query.lucene.IndexUpdateMonitor;
+import org.exoplatform.services.jcr.impl.core.query.lucene.MultiIndex;
 import org.exoplatform.services.jcr.impl.core.query.lucene.QueryHits;
 
 import java.io.IOException;
@@ -41,7 +44,7 @@ public interface QueryHandler
 
    /**
     * Returns the query handler context that passed in {@link
-    * #init(QueryHandlerContext)}.
+    * #setContext(QueryHandlerContext)}.
     *
     * @return the query handler context.
     */
@@ -81,7 +84,29 @@ public interface QueryHandler
     */
    void close();
 
-   void init(QueryHandlerContext context) throws IOException, RepositoryException, RepositoryConfigurationException;
+   /**
+    * Sets QueryHandlerContext
+    * @param context
+    */
+   void setContext(QueryHandlerContext context);
+
+   /**
+    * 
+    * initializes QueryHandler
+    * 
+    * @param ioMode
+    * @throws IOException
+    * @throws RepositoryException
+    * @throws RepositoryConfigurationException
+    */
+   void init() throws IOException, RepositoryException, RepositoryConfigurationException;
+
+   /**
+    * Checks whether QueryHandler is initialized or not
+    * 
+    * @return
+    */
+   boolean isInitialized();
 
    /**
     * Creates a new query by specifying the query statement itself and the
@@ -110,22 +135,7 @@ public interface QueryHandler
     */
    void logErrorChanges(Set<String> removed, Set<String> added) throws IOException;
 
-   //    /**
-   //     * Creates a new query by specifying the query object model. If the query
-   //     * object model is considered invalid for the implementing class, an
-   //     * InvalidQueryException is thrown.
-   //     *
-   //     * @param session the session of the current user creating the query
-   //     *                object.
-   //     * @param itemMgr the item manager of the current user.
-   //     * @param qomTree query query object model tree.
-   //     * @return A <code>Query</code> object.
-   //     * @throws InvalidQueryException if the query object model tree is invalid.
-   //     */
-   //    ExecutableQuery createExecutableQuery(SessionImpl session,
-   //                                          ItemManager itemMgr,
-   //                                          QueryObjectModelTree qomTree)
-   //            throws InvalidQueryException;
+   void setIndexerIoModeHandler(IndexerIoModeHandler handler) throws IOException;
 
    /**
     * @return the name of the query class to use.
@@ -143,6 +153,29 @@ public interface QueryHandler
     * @return the lucene Hits object.
     * @throws IOException if an error occurs while searching the index.
     */
-   public QueryHits executeQuery(Query query) throws IOException;
+   QueryHits executeQuery(Query query) throws IOException;
+
+   /**
+    * Sets {@link IndexInfos} instance into QueryHandler, which is later passed to {@link MultiIndex}.
+    * 
+    * @param indexInfos
+    */
+   void setIndexInfos(IndexInfos indexInfos);
+   
+   /**
+    * Returns {@link IndexInfos} instance that was set into QueryHandler.
+    * @return
+    */
+   IndexInfos getIndexInfos();
+
+   /**
+    * @return the indexUpdateMonitor
+    */
+   IndexUpdateMonitor getIndexUpdateMonitor();
+
+   /**
+    * @param indexUpdateMonitor the indexUpdateMonitor to set
+    */
+   void setIndexUpdateMonitor(IndexUpdateMonitor indexUpdateMonitor);
 
 }

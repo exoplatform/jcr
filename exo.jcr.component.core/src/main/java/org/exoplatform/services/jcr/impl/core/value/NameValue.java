@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.impl.core.value;
 
 import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.core.JCRName;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
@@ -49,15 +50,14 @@ public class NameValue extends BaseValue
       this.locationFactory = locationFactory;
    }
 
-   public NameValue(TransientValueData data, LocationFactory locationFactory) throws IOException
+   public NameValue(ValueData data, LocationFactory locationFactory) throws IOException
    {
       super(TYPE, data);
       this.locationFactory = locationFactory;
    }
 
-   /*
-    * (non-Javadoc)
-    * @see org.exoplatform.services.jcr.impl.core.value.BaseValue#getString()
+   /**
+    * {@inheritDoc}
     */
    public String getString() throws ValueFormatException, IllegalStateException, RepositoryException
    {
@@ -65,36 +65,32 @@ public class NameValue extends BaseValue
       return name.getAsString();
    }
 
-   /*
-    * (non-Javadoc)
-    * @see org.exoplatform.services.jcr.impl.core.value.BaseValue#getDate()
+   /**
+    * {@inheritDoc}
     */
    public Calendar getDate() throws ValueFormatException, IllegalStateException, RepositoryException
    {
       throw new ValueFormatException("conversion to date failed: inconvertible types");
    }
 
-   /*
-    * (non-Javadoc)
-    * @see org.exoplatform.services.jcr.impl.core.value.BaseValue#getLong()
+   /**
+    * {@inheritDoc}
     */
    public long getLong() throws ValueFormatException, IllegalStateException, RepositoryException
    {
       throw new ValueFormatException("conversion to long failed: inconvertible types");
    }
 
-   /*
-    * (non-Javadoc)
-    * @see org.exoplatform.services.jcr.impl.core.value.BaseValue#getBoolean()
+   /**
+    * {@inheritDoc}
     */
    public boolean getBoolean() throws ValueFormatException, IllegalStateException, RepositoryException
    {
       throw new ValueFormatException("conversion to boolean failed: inconvertible types");
    }
 
-   /*
-    * (non-Javadoc)
-    * @see org.exoplatform.services.jcr.impl.core.value.BaseValue#getDouble()
+   /**
+    * {@inheritDoc}
     */
    public double getDouble() throws ValueFormatException, IllegalStateException, RepositoryException
    {
@@ -102,7 +98,9 @@ public class NameValue extends BaseValue
    }
 
    /**
-    * @return qname
+    * Return name value.
+    * 
+    * @return qname InternalQName
     * @throws ValueFormatException
     * @throws IllegalStateException
     * @throws RepositoryException

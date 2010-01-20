@@ -21,7 +21,6 @@ package org.exoplatform.services.jcr.impl.core.version;
 import org.exoplatform.services.jcr.core.nodetype.NodeDefinitionData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionData;
-import org.exoplatform.services.jcr.dataflow.ItemDataTraversingVisitor;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
@@ -33,6 +32,7 @@ import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.value.BaseValue;
+import org.exoplatform.services.jcr.impl.dataflow.AbstractItemDataCopyVisitor;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
@@ -40,7 +40,6 @@ import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
@@ -58,7 +57,7 @@ import javax.jcr.version.VersionException;
  * @version $Id: FrozenNodeInitializer.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class FrozenNodeInitializer extends ItemDataTraversingVisitor
+public class FrozenNodeInitializer extends AbstractItemDataCopyVisitor
 {
 
    private static Log log = ExoLogger.getLogger("jcr.FrozenNodeInitializer");
@@ -91,21 +90,19 @@ public class FrozenNodeInitializer extends ItemDataTraversingVisitor
    protected void entering(PropertyData property, int level) throws RepositoryException
    {
 
-      if (log.isDebugEnabled())
+      if (log.isDebugEnabled()) {
          log.debug("Entering property " + property.getQPath().getAsString());
-
-      if (currentNode() == null)
+      }
+      
+      if (currentNode() == null) {
          // skip if no parent - parent is COMPUTE, INITIALIZE
          return;
+      }
 
       PropertyData frozenProperty = null;
       InternalQName qname = property.getQPath().getName();
 
-      List<ValueData> values = new ArrayList<ValueData>();
-      for (ValueData valueData : property.getValues())
-      {
-         values.add(((TransientValueData)valueData).createTransientCopy());
-      }
+      List<ValueData> values = copyValues(property);
 
       boolean mv = property.isMultiValued();
 
@@ -166,7 +163,7 @@ public class FrozenNodeInitializer extends ItemDataTraversingVisitor
                   values.clear();
                   for (String defValue : pdef.getDefaultValues())
                   {
-                     TransientValueData defData;
+                     ValueData defData;
                      if (PropertyType.UNDEFINED == pdef.getRequiredType())
                      {
                         defData = ((BaseValue)valueFactory.createValue(defValue)).getInternalData();
@@ -199,13 +196,13 @@ public class FrozenNodeInitializer extends ItemDataTraversingVisitor
          else
             throw new RepositoryException("Unknown OnParentVersion value " + action);
       }
+      
       changesLog.add(ItemState.createAddedState(frozenProperty));
    }
 
    @Override
    protected void entering(NodeData node, int level) throws RepositoryException
    {
-
       // this node is not taken in account
       if (level == 0)
       {

@@ -24,7 +24,7 @@ import org.exoplatform.services.jcr.access.AccessControlList;
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov</a>
- * @version $Id: NodeData.java 11907 2008-03-13 15:36:21Z ksm $
+ * @version $Id$
  */
 
 public interface NodeData extends ItemData
@@ -51,10 +51,4 @@ public interface NodeData extends ItemData
     * @return access control list either this node's data or nearest ancestor's data
     */
    AccessControlList getACL();
-
-   /**
-    * @param acl
-    */
-   void setACL(AccessControlList acl);
-
 }

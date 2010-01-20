@@ -395,4 +395,12 @@ public class TestSetProperty extends JcrAPIBaseTest implements ItemsPersistenceL
    {
       cLog = (TransactionChangesLog)itemStates;
    }
+
+   /**
+    * {@inheritDoc}
+    */
+   public boolean isTXAware()
+   {
+      return true;
+   }
 }

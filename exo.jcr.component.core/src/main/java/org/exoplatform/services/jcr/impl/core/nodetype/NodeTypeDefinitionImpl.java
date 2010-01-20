@@ -28,7 +28,6 @@ import org.exoplatform.services.log.Log;
 import javax.jcr.RepositoryException;
 import javax.jcr.ValueFactory;
 import javax.jcr.nodetype.NodeDefinition;
-
 import javax.jcr.nodetype.PropertyDefinition;
 
 /**

@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.impl.core.value;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ExtendedPropertyType;
 import org.exoplatform.services.jcr.datamodel.Identifier;
+import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.JCRName;
 import org.exoplatform.services.jcr.impl.core.JCRPath;
@@ -376,14 +377,14 @@ public class ValueFactoryImpl implements ValueFactory
     * Creates new Value object using ValueData
     * 
     * @param data
-    *          TransientValueData
+    *          ValueData
     * @param type
     *          int
     * @return Value
     * @throws RepositoryException
     *           if error
     */
-   public Value loadValue(TransientValueData data, int type) throws RepositoryException
+   public Value loadValue(ValueData data, int type) throws RepositoryException
    {
 
       try
@@ -393,7 +394,7 @@ public class ValueFactoryImpl implements ValueFactory
             case PropertyType.STRING :
                return new StringValue(data);
             case PropertyType.BINARY :
-               return new BinaryValue(data, fileCleaner, tempDirectory, maxBufferSize);
+               return new BinaryValue(data);
             case PropertyType.BOOLEAN :
                return new BooleanValue(data);
             case PropertyType.LONG :

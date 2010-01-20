@@ -256,24 +256,25 @@ public class VersionHistoryDataHelper extends TransientNodeData
       InternalQName vhName = new InternalQName(null, versionHistoryIdentifier);
 
       TransientNodeData versionHistory =
-         TransientNodeData.createNodeData(versionStorageData, vhName, Constants.NT_VERSIONHISTORY);
-      versionHistory.setIdentifier(versionHistoryIdentifier);
+         TransientNodeData.createNodeData(versionStorageData, vhName, Constants.NT_VERSIONHISTORY,
+            versionHistoryIdentifier);
 
       // jcr:primaryType
       TransientPropertyData vhPrimaryType =
-         TransientPropertyData.createPropertyData(versionHistory, Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false);
-      vhPrimaryType.setValue(new TransientValueData(versionHistory.getPrimaryTypeName()));
+         TransientPropertyData.createPropertyData(versionHistory, Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false,
+            new TransientValueData(versionHistory.getPrimaryTypeName()));
 
       // jcr:uuid
       TransientPropertyData vhUuid =
-         TransientPropertyData.createPropertyData(versionHistory, Constants.JCR_UUID, PropertyType.STRING, false);
-      vhUuid.setValue(new TransientValueData(versionHistoryIdentifier));
+         TransientPropertyData.createPropertyData(versionHistory, Constants.JCR_UUID, PropertyType.STRING, false,
+            new TransientValueData(versionHistoryIdentifier));
 
       // jcr:versionableUuid
-      TransientPropertyData vhVersionableUuid = TransientPropertyData
-      // [PN] 10.04.07 VERSIONABLEUUID isn't referenceable!!!
-         .createPropertyData(versionHistory, Constants.JCR_VERSIONABLEUUID, PropertyType.STRING, false);
-      vhVersionableUuid.setValue(new TransientValueData(new Identifier(versionable.getIdentifier())));
+      TransientPropertyData vhVersionableUuid =
+         TransientPropertyData
+         // [PN] 10.04.07 VERSIONABLEUUID isn't referenceable!!!
+            .createPropertyData(versionHistory, Constants.JCR_VERSIONABLEUUID, PropertyType.STRING, false,
+               new TransientValueData(new Identifier(versionable.getIdentifier())));
 
       // ------ jcr:versionLabels ------
       NodeData vhVersionLabels =
@@ -281,8 +282,8 @@ public class VersionHistoryDataHelper extends TransientNodeData
 
       // jcr:primaryType
       TransientPropertyData vlPrimaryType =
-         TransientPropertyData.createPropertyData(vhVersionLabels, Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false);
-      vlPrimaryType.setValue(new TransientValueData(vhVersionLabels.getPrimaryTypeName()));
+         TransientPropertyData.createPropertyData(vhVersionLabels, Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false,
+            new TransientValueData(vhVersionLabels.getPrimaryTypeName()));
 
       // ------ jcr:rootVersion ------
       NodeData rootVersionData =
@@ -291,47 +292,43 @@ public class VersionHistoryDataHelper extends TransientNodeData
 
       // jcr:primaryType
       TransientPropertyData rvPrimaryType =
-         TransientPropertyData.createPropertyData(rootVersionData, Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false);
-      rvPrimaryType.setValue(new TransientValueData(rootVersionData.getPrimaryTypeName()));
+         TransientPropertyData.createPropertyData(rootVersionData, Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false,
+            new TransientValueData(rootVersionData.getPrimaryTypeName()));
 
       // jcr:uuid
       TransientPropertyData rvUuid =
-         TransientPropertyData.createPropertyData(rootVersionData, Constants.JCR_UUID, PropertyType.STRING, false);
-      rvUuid.setValue(new TransientValueData(baseVersionIdentifier));
+         TransientPropertyData.createPropertyData(rootVersionData, Constants.JCR_UUID, PropertyType.STRING, false,
+            new TransientValueData(baseVersionIdentifier));
 
       // jcr:mixinTypes
       TransientPropertyData rvMixinTypes =
-         TransientPropertyData.createPropertyData(rootVersionData, Constants.JCR_MIXINTYPES, PropertyType.NAME, true);
-      rvMixinTypes.setValue(new TransientValueData(Constants.MIX_REFERENCEABLE));
+         TransientPropertyData.createPropertyData(rootVersionData, Constants.JCR_MIXINTYPES, PropertyType.NAME, true,
+            new TransientValueData(Constants.MIX_REFERENCEABLE));
 
       // jcr:created
-      TransientPropertyData rvCreated =
-         TransientPropertyData.createPropertyData(rootVersionData, Constants.JCR_CREATED, PropertyType.DATE, false);
-
       // TODO Current time source was
       // rvCreated.setValue(new
       // TransientValueData(dataManager.getTransactManager().getStorageDataManager
       // ().getCurrentTime()));
-      rvCreated.setValue(new TransientValueData(Calendar.getInstance()));
+      TransientPropertyData rvCreated =
+         TransientPropertyData.createPropertyData(rootVersionData, Constants.JCR_CREATED, PropertyType.DATE, false,
+            new TransientValueData(Calendar.getInstance()));
 
       // ----- VERSIONABLE properties -----
       // jcr:versionHistory
       TransientPropertyData vh =
          TransientPropertyData.createPropertyData(versionable, Constants.JCR_VERSIONHISTORY, PropertyType.REFERENCE,
-            false);
-      vh.setValue(new TransientValueData(new Identifier(versionHistoryIdentifier)));
+            false, new TransientValueData(new Identifier(versionHistoryIdentifier)));
 
       // jcr:baseVersion
       TransientPropertyData bv =
-         TransientPropertyData
-            .createPropertyData(versionable, Constants.JCR_BASEVERSION, PropertyType.REFERENCE, false);
-      bv.setValue(new TransientValueData(new Identifier(baseVersionIdentifier)));
+         TransientPropertyData.createPropertyData(versionable, Constants.JCR_BASEVERSION, PropertyType.REFERENCE,
+            false, new TransientValueData(new Identifier(baseVersionIdentifier)));
 
       // jcr:predecessors
       TransientPropertyData pd =
-         TransientPropertyData
-            .createPropertyData(versionable, Constants.JCR_PREDECESSORS, PropertyType.REFERENCE, true);
-      pd.setValue(new TransientValueData(new Identifier(baseVersionIdentifier)));
+         TransientPropertyData.createPropertyData(versionable, Constants.JCR_PREDECESSORS, PropertyType.REFERENCE,
+            true, new TransientValueData(new Identifier(baseVersionIdentifier)));
 
       // update all
       QPath vpath = versionable.getQPath();

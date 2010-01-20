@@ -18,8 +18,22 @@
  */
 package org.exoplatform.services.jcr.dataflow.persistent;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+
+import org.exoplatform.services.jcr.datamodel.IllegalPathException;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.QPath;
+import org.exoplatform.services.jcr.impl.Constants;
+
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS. </br>
@@ -27,19 +41,35 @@ import org.exoplatform.services.jcr.datamodel.QPath;
  * Immutable ItemData from persistent storage
  * 
  * @author Gennady Azarenkov
- * @version $Id: PersistedItemData.java 11907 2008-03-13 15:36:21Z ksm $
+ * @version $Id$
  */
 
-public abstract class PersistedItemData implements ItemData
+public abstract class PersistedItemData implements ItemData, Externalizable
 {
 
-   protected final String id;
+   /**
+    * SerialVersionUID to serialization.
+    */
+   private static final long serialVersionUID = -3845740801904303663L;
 
-   protected final QPath qpath;
+   protected String id;
 
-   protected final String parentId;
+   protected QPath qpath;
 
-   protected final int version;
+   protected String parentId;
+
+   protected int version;
+
+   private final static int NOT_NULL_VALUE = 1;
+
+   private final static int NULL_VALUE = -1;
+
+   /**
+    *  Empty constructor to serialization.
+    */
+   public PersistedItemData()
+   {
+   }
 
    public PersistedItemData(String id, QPath qpath, String parentId, int version)
    {
@@ -49,8 +79,7 @@ public abstract class PersistedItemData implements ItemData
       this.version = version;
    }
 
-   /*
-    * (non-Javadoc)
+   /**
     * @see org.exoplatform.services.jcr.datamodel.ItemData#getQPath()
     */
    public QPath getQPath()
@@ -58,8 +87,7 @@ public abstract class PersistedItemData implements ItemData
       return qpath;
    }
 
-   /*
-    * (non-Javadoc)
+   /**
     * @see org.exoplatform.services.jcr.datamodel.ItemData#getIdentifier()
     */
    public String getIdentifier()
@@ -67,8 +95,7 @@ public abstract class PersistedItemData implements ItemData
       return id;
    }
 
-   /*
-    * (non-Javadoc)
+   /**
     * @see org.exoplatform.services.jcr.datamodel.ItemData#getPersistedVersion()
     */
    public int getPersistedVersion()
@@ -76,8 +103,7 @@ public abstract class PersistedItemData implements ItemData
       return version;
    }
 
-   /*
-    * (non-Javadoc)
+   /**
     * @see org.exoplatform.services.jcr.datamodel.ItemData#getParentIdentifier()
     */
    public String getParentIdentifier()
@@ -85,8 +111,7 @@ public abstract class PersistedItemData implements ItemData
       return parentId;
    }
 
-   /*
-    * (non-Javadoc)
+   /**
     * @see java.lang.Object#equals(java.lang.Object)
     */
    public boolean equals(Object obj)
@@ -103,5 +128,70 @@ public abstract class PersistedItemData implements ItemData
       }
 
       return false;
+   }
+
+   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+   {
+      byte[] buf;
+
+      try
+      {
+         buf = new byte[in.readInt()];
+         in.readFully(buf);
+         String sQPath = new String(buf, Constants.DEFAULT_ENCODING);
+         qpath = QPath.parse(sQPath);
+      }
+      catch (final IllegalPathException e)
+      {
+         throw new IOException("Deserialization error. " + e)
+         {
+
+            /**
+             * {@inheritDoc}
+             */
+            @Override
+            public Throwable getCause()
+            {
+               return e;
+            }
+         };
+      }
+
+      buf = new byte[in.readInt()];
+      in.readFully(buf);
+      id = new String(buf);
+
+      int isNull = in.readInt();
+      if (isNull == NOT_NULL_VALUE)
+      {
+         buf = new byte[in.readInt()];
+         in.readFully(buf);
+         parentId = new String(buf);
+      }
+
+      version = in.readInt();
+   }
+
+   public void writeExternal(ObjectOutput out) throws IOException
+   {
+      byte[] buf = qpath.getAsString().getBytes(Constants.DEFAULT_ENCODING);
+      out.writeInt(buf.length);
+      out.write(buf);
+
+      out.writeInt(id.getBytes().length);
+      out.write(id.getBytes());
+
+      if (parentId != null)
+      {
+         out.writeInt(NOT_NULL_VALUE);
+         out.writeInt(parentId.getBytes().length);
+         out.write(parentId.getBytes());
+      }
+      else
+      {
+         out.writeInt(NULL_VALUE);
+      }
+
+      out.writeInt(version);
    }
 }

@@ -39,16 +39,6 @@ import javax.jcr.Value;
 public class TestCorrespondingNode extends JcrAPIBaseTest
 {
 
-   public void setUp() throws Exception
-   {
-      super.setUp();
-
-      // TODO
-      // if(!((RepositoryImpl) repository).isWorkspaceInitialized("ws2"));
-      // ((RepositoryImpl) repository).initWorkspace("ws2", "nt:unstructured");
-
-   }
-
    public void testDifferentWs() throws RepositoryException
    {
 

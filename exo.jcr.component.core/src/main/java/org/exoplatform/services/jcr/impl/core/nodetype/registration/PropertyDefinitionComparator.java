@@ -35,7 +35,6 @@ import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.nodetype.ItemAutocreator;
 import org.exoplatform.services.jcr.impl.core.value.ValueConstraintsMatcher;
-import org.exoplatform.services.jcr.impl.dataflow.AbstractValueData;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -345,7 +344,7 @@ public class PropertyDefinitionComparator extends AbstractDefinitionComparator<P
 
       for (ValueData value : propertyData.getValues())
       {
-         if (!constraints.match(((AbstractValueData)value).createTransientCopy(), propertyData.getType()))
+         if (!constraints.match(value, propertyData.getType()))
          {
             String strVal = null;
             try

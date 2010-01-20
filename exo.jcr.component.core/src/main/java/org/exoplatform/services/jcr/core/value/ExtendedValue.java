@@ -40,13 +40,6 @@ public interface ExtendedValue extends Value
    public int getOrderNumber();
 
    /**
-    * Set order value in the list
-    * 
-    * @return order value in the list
-    */
-   public void setOrderNumber(int orderNumber);
-
-   /**
     * Return length of the value .
     * 
     * @return length

@@ -35,9 +35,11 @@ public class TestGetNodesPerf extends JcrAPIBaseTest
 {
    private static final String testName = "testRoot";
 
-   private static final int sessionCount = 10;
+   private static final int sessionCount = 100;
 
-   private static final int tryCount = 5;
+   private static final int nodesCount = 50000;
+
+   private static final int timesCount = 5;
 
    private Session[] sessions = new Session[sessionCount];
 
@@ -54,7 +56,6 @@ public class TestGetNodesPerf extends JcrAPIBaseTest
       session.save();
 
       log.info("adding...");
-      int nodesCount = 50000;
       for (int i = 0; i < nodesCount; i++)
       {
          testRoot.addNode("_" + i + "_node");
@@ -70,7 +71,7 @@ public class TestGetNodesPerf extends JcrAPIBaseTest
       long usedMemory = rt.totalMemory() - rt.freeMemory();
 
       log.info("getting nodes...");
-      for (int k = 0; k < tryCount; k++)
+      for (int k = 0; k < timesCount; k++)
       {
          for (int i = 0; i < sessionCount; i++)
          {
@@ -92,6 +93,7 @@ public class TestGetNodesPerf extends JcrAPIBaseTest
             break;
          }
 
+         log.info("Memory used: " + (rt.totalMemory() - rt.freeMemory() - usedMemory) / 1024 / 1024 + "Mb");
          log.info("waiting for 10 seconds...");
          Thread.sleep(10000);
       }
@@ -118,6 +120,10 @@ public class TestGetNodesPerf extends JcrAPIBaseTest
 
             long startTime = System.currentTimeMillis();
             nodes = testRoot.getNodes();
+            while (nodes.hasNext())
+            {
+               nodes.next();
+            }
             log.info("Total time: " + (System.currentTimeMillis() - startTime) + "ms");
 
          }
@@ -126,5 +132,21 @@ public class TestGetNodesPerf extends JcrAPIBaseTest
             e.printStackTrace();
          }
       }
+   }
+
+   public void _testNodeItetatorPerfomance() throws Exception
+   {
+      Node testRoot = session.getRootNode().getNode(testName);
+
+      // Test iterator perfomance
+      NodeIterator nodes = testRoot.getNodes();
+      log.info(nodes.getSize() + " nodes");
+
+      long startTime = System.currentTimeMillis();
+      while (nodes.hasNext())
+      {
+         nodes.nextNode();
+      }
+      log.info("Iterating all nodes consumes : " + (System.currentTimeMillis() - startTime) + "ms");
    }
 }

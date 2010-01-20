@@ -194,17 +194,33 @@
   <component>
     <type>org.exoplatform.services.jcr.impl.ext.action.SessionActionCatalog</type>
   </component>
-  
+
   <component>
+     <key>org.jboss.cache.transaction.TransactionManagerLookup</key>
+     <type>org.jboss.cache.transaction.JBossStandaloneJTAManagerLookup</type>
+  </component>
+   
+  <component>
+    <key>org.exoplatform.services.transaction.TransactionService</key>
+    <type>org.exoplatform.services.transaction.jbosscache.ArjunaTransactionService</type>
+    <init-params>
+      <value-param>
+        <name>timeout</name>
+        <value>3000</value>
+      </value-param>
+    </init-params>   
+  </component>
+  
+  <!-- component>
     <key>org.exoplatform.services.transaction.TransactionService</key>
     <type>org.exoplatform.services.transaction.impl.jotm.TransactionServiceJotmImpl</type>
     <init-params>
       <value-param>
         <name>timeout</name>
-        <value>5</value>
+        <value>300</value>
       </value-param>
     </init-params>
-  </component>
+  </component -->
   
   <external-component-plugins>
     <target-component>org.exoplatform.services.naming.InitialContextInitializer</target-component>
@@ -502,33 +518,6 @@
           <property name="url" value="jdbc:hsqldb:file:target/temp/data/jdbcjcr2export3"/>
           <property name="username" value="sa"/>
           <property name="password" value=""/>
-        </properties-param>
-      </init-params>
-    </component-plugin>
-    <!-- Resource configuration for UserTransaction
-    use JOTM
-    -->
-    <component-plugin>
-      <name>jotm.tx</name>
-      <set-method>addPlugin</set-method>
-      <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-      <init-params>
-        <value-param>
-          <name>bind-name</name>
-          <value>UserTransaction</value>
-        </value-param>
-        <value-param>
-          <name>class-name</name>
-          <value>javax.transaction.UserTransaction</value>
-        </value-param>
-        <value-param>
-          <name>factory</name>
-          <value>org.objectweb.jotm.UserTransactionFactory</value>
-        </value-param>
-        <properties-param>
-          <name>ref-addresses</name>
-          <description>ref-addresses</description>
-          <property name="jotm.timeout" value="60"/>
         </properties-param>
       </init-params>
     </component-plugin>

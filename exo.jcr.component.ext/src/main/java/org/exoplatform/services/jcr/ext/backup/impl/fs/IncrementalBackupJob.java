@@ -224,4 +224,12 @@ public class IncrementalBackupJob extends AbstractIncrementalBackupJob
       return isSessionNull;
    }
 
+   /**
+    * {@inheritDoc}
+    */
+   public boolean isTXAware()
+   {
+      return true;
+   }
+
 }

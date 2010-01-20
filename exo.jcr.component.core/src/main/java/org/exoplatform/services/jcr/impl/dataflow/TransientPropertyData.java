@@ -20,8 +20,9 @@ package org.exoplatform.services.jcr.impl.dataflow;
 
 import org.exoplatform.services.jcr.dataflow.ItemDataVisitor;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
-import org.exoplatform.services.jcr.datamodel.MutablePropertyData;
+import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.util.IdGenerator;
@@ -39,11 +40,10 @@ import javax.jcr.RepositoryException;
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov</a>
- * @version $Id: TransientPropertyData.java 13962 2008-05-07 16:00:48Z
- *          pnedonosko $
+ * @version $Id: TransientPropertyData.java 13962 2008-05-07 16:00:48Z pnedonosko $
  */
 
-public class TransientPropertyData extends TransientItemData implements MutablePropertyData, Externalizable
+public class TransientPropertyData extends TransientItemData implements PropertyData, ItemData, Externalizable
 {
 
    private static final long serialVersionUID = -8224902483861330191L;
@@ -70,137 +70,138 @@ public class TransientPropertyData extends TransientItemData implements MutableP
       super(path, identifier, version, parentIdentifier);
       this.type = type;
       this.multiValued = multiValued;
+      this.values = null;
    }
 
-   /*
-    * (non-Javadoc)
-    * 
-    * @see org.exoplatform.services.jcr.datamodel.ItemData#isNode()
+   /**
+    * @param path qpath
+    * @param identifier id
+    * @param version persisted version
+    * @param type property type
+    * @param parentIdentifier parentId
+    * @param multiValued multi-valued state
+    */
+   public TransientPropertyData(QPath path, String identifier, int version, int type, String parentIdentifier,
+      boolean multiValued, List<ValueData> values)
+   {
+      super(path, identifier, version, parentIdentifier);
+      this.type = type;
+      this.multiValued = multiValued;
+      this.values = values;
+   }
+
+   /**
+    * @param path qpath
+    * @param identifier id
+    * @param version persisted version
+    * @param type property type
+    * @param parentIdentifier parentId
+    * @param multiValued multi-valued state
+    */
+   public TransientPropertyData(QPath path, String identifier, int version, int type, String parentIdentifier,
+      boolean multiValued, ValueData value)
+   {
+      super(path, identifier, version, parentIdentifier);
+      this.type = type;
+      this.multiValued = multiValued;
+      this.values = new ArrayList<ValueData>();
+      values.add(value);
+   }
+
+   /**
+    * {@inheritDoc}
     */
    public boolean isNode()
    {
       return false;
    }
 
-   /*
-    * (non-Javadoc)
-    * 
-    * @see org.exoplatform.services.jcr.datamodel.PropertyData#getType()
+   /**
+    * {@inheritDoc}
     */
    public int getType()
    {
       return type;
    }
 
-   /*
-    * (non-Javadoc)
-    * 
-    * @see org.exoplatform.services.jcr.datamodel.PropertyData#getValues()
+   /**
+    * {@inheritDoc}
     */
    public List<ValueData> getValues()
    {
       return values;
    }
 
-   /*
-    * (non-Javadoc)
-    * 
-    * @see org.exoplatform.services.jcr.datamodel.PropertyData#isMultiValued()
+   /**
+    * {@inheritDoc}
     */
    public boolean isMultiValued()
    {
       return multiValued;
    }
 
-   /*
-    * (non-Javadoc)
-    * 
-    * @see org.exoplatform.services.jcr.datamodel.MutablePropertyData#setValues(java.util.List)
-    */
-   public void setValues(List<ValueData> values)
-   {
-      this.values = values;
-   }
-
-   /*
-    * (non-Javadoc)
-    * 
-    * @see org.exoplatform.services.jcr.datamodel.MutablePropertyData#setType(int)
-    */
-   public void setType(int type)
-   {
-      this.type = type;
-   }
-
    /**
-    * Shortcut for single-valued property data initialization
-    * 
-    * @param value
+    * Factory method.
+    *
+    * @param parent NodeData
+    * @param name InternalQName
+    * @param type int
+    * @param multiValued boolean
+    * @return TransientPropertyData
     */
-   public void setValue(ValueData value)
-   {
-      this.values = new ArrayList<ValueData>();
-      values.add(value);
-   }
-
    public static TransientPropertyData createPropertyData(NodeData parent, InternalQName name, int type,
       boolean multiValued)
    {
-      TransientPropertyData propData = null;
       QPath path = QPath.makeChildPath(parent.getQPath(), name);
-      propData = new TransientPropertyData(path, IdGenerator.generate(), -1, type, parent.getIdentifier(), multiValued);
+      TransientPropertyData propData =
+         new TransientPropertyData(path, IdGenerator.generate(), -1, type, parent.getIdentifier(), multiValued);
 
       return propData;
    }
 
+   /**
+    * Factory method.
+    *
+    * @param parent NodeData
+    * @param name InternalQName
+    * @param type int
+    * @param multiValued boolean
+    * @param value ValueData
+    * @return TransientPropertyData
+    */
    public static TransientPropertyData createPropertyData(NodeData parent, InternalQName name, int type,
       boolean multiValued, ValueData value)
    {
-      TransientPropertyData propData = createPropertyData(parent, name, type, multiValued);
-      propData.setValue(value);
+      QPath path = QPath.makeChildPath(parent.getQPath(), name);
+      TransientPropertyData propData =
+         new TransientPropertyData(path, IdGenerator.generate(), -1, type, parent.getIdentifier(), multiValued, value);
+
       return propData;
    }
 
+   /**
+    * Factory method.
+    *
+    * @param parent NodeData
+    * @param name InternalQName
+    * @param type int
+    * @param multiValued boolean
+    * @param values List<ValueData>
+    * @return TransientPropertyData
+    */
    public static TransientPropertyData createPropertyData(NodeData parent, InternalQName name, int type,
       boolean multiValued, List<ValueData> values)
    {
-      TransientPropertyData propData = createPropertyData(parent, name, type, multiValued);
-      propData.setValues(values);
+      QPath path = QPath.makeChildPath(parent.getQPath(), name);
+      TransientPropertyData propData =
+         new TransientPropertyData(path, IdGenerator.generate(), -1, type, parent.getIdentifier(), multiValued, values);
+
       return propData;
    }
 
    public void accept(ItemDataVisitor visitor) throws RepositoryException
    {
       visitor.visit(this);
-   }
-
-   // ------------ Cloneable ------------------
-
-   /**
-    * Clone node data without value data!!!
-    */
-   @Override
-   public TransientPropertyData clone()
-   {
-      TransientPropertyData dataCopy =
-         new TransientPropertyData(getQPath(), getIdentifier(), getPersistedVersion(), getType(),
-            getParentIdentifier(), isMultiValued());
-
-      List<ValueData> copyValues = new ArrayList<ValueData>();
-      try
-      {
-         for (ValueData vdata : getValues())
-         {
-            copyValues.add(((TransientValueData)vdata).createTransientCopy());
-         }
-      }
-      catch (RepositoryException e)
-      {
-         throw new RuntimeException(e);
-      }
-      dataCopy.setValues(copyValues);
-
-      return dataCopy;
    }
 
    // ----------------- Externalizable

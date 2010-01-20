@@ -25,7 +25,6 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.Identity;
-import org.exoplatform.services.security.MembershipEntry;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -176,8 +175,9 @@ public abstract class AccessManager
 
    private boolean isPermissionMatch(List<AccessControlEntry> existedPermission, String testPermission, Identity user)
    {
-      for (AccessControlEntry ace : existedPermission)
+      for (int i = 0, length = existedPermission.size(); i < length; i++)
       {
+         AccessControlEntry ace = existedPermission.get(i);
          // match action
          if (ace.getPermission().equals(testPermission))
          {
@@ -191,7 +191,7 @@ public abstract class AccessManager
                   return true;
 
             }
-            else if (user.isMemberOf(MembershipEntry.parse(ace.getIdentity())))
+            else if (user.isMemberOf(ace.getMembershipEntry()))
                return true;
          }
       }

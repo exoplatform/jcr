@@ -59,14 +59,16 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
 
    public VersionImpl(NodeData data, SessionImpl session) throws PathNotFoundException, RepositoryException
    {
-
       super(data, session);
 
       if (!this.isNodeType(Constants.NT_VERSION))
+      {
          throw new RepositoryException("Node " + getLocation().getAsString(true) + " is not nt:version type");
+      }
    }
 
    @Override
+   /* needed for VersionHistoryImpl.removeVersion */
    protected void invalidate()
    {
       super.invalidate();
@@ -77,17 +79,16 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
     */
    public Calendar getCreated() throws RepositoryException
    {
-
       checkValid();
 
       PropertyData pdata = (PropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_CREATED, 0));
 
       if (pdata == null)
+      {
          throw new VersionException("jcr:created property is not found for version " + getPath());
+      }
 
-      Value created =
-         session.getValueFactory().loadValue((TransientValueData)pdata.getValues().get(0), pdata.getType());
-
+      Value created = session.getValueFactory().loadValue(pdata.getValues().get(0), pdata.getType());
       return created.getDate();
    }
 
@@ -96,14 +97,15 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
     */
    public Version[] getSuccessors() throws RepositoryException
    {
-
       checkValid();
 
       PropertyData successorsData =
          (PropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_SUCCESSORS, 0));
 
       if (successorsData == null)
+      {
          return new Version[0];
+      }
 
       List<ValueData> successorsValues = successorsData.getValues();
       Version[] successors = new Version[successorsValues.size()];
@@ -127,7 +129,6 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
       }
 
       return successors;
-
    }
 
    /**
@@ -135,7 +136,6 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
     */
    public Version[] getPredecessors() throws RepositoryException
    {
-
       checkValid();
 
       PropertyData predecessorsData =
@@ -166,15 +166,14 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
       }
 
       return predecessors;
-
    }
 
    public void addSuccessor(String successorIdentifier, PlainChangesLog changesLog) throws RepositoryException
    {
       ValueData successorRef = new TransientValueData(new Identifier(successorIdentifier));
 
-      TransientPropertyData successorsProp =
-         (TransientPropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_SUCCESSORS, 0));
+      PropertyData successorsProp =
+         (PropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_SUCCESSORS, 0));
 
       if (successorsProp == null)
       {
@@ -188,20 +187,29 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
       }
       else
       {
-         // add successor in existed one
-         TransientPropertyData newSuccessorsProp = successorsProp.clone();
-         newSuccessorsProp.getValues().add(successorRef);
+         // add successor 
+         List<ValueData> newSuccessorsValue = new ArrayList<ValueData>();
+         for (ValueData svd : successorsProp.getValues())
+         {
+            newSuccessorsValue.add(svd);
+         }
+         newSuccessorsValue.add(successorRef);
+
+         TransientPropertyData newSuccessorsProp =
+            new TransientPropertyData(successorsProp.getQPath(), successorsProp.getIdentifier(), successorsProp
+               .getPersistedVersion(), successorsProp.getType(), successorsProp.getParentIdentifier(), successorsProp
+               .isMultiValued(), newSuccessorsValue);
+
          changesLog.add(ItemState.createUpdatedState(newSuccessorsProp));
       }
    }
 
    public void addPredecessor(String predeccessorIdentifier, PlainChangesLog changesLog) throws RepositoryException
    {
-
       ValueData predeccessorRef = new TransientValueData(new Identifier(predeccessorIdentifier));
 
-      TransientPropertyData predeccessorsProp =
-         (TransientPropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_PREDECESSORS, 0));
+      PropertyData predeccessorsProp =
+         (PropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_PREDECESSORS, 0));
 
       if (predeccessorsProp == null)
       {
@@ -214,17 +222,27 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
       }
       else
       {
-         // add successor in existed one
-         TransientPropertyData newPredeccessorsProp = predeccessorsProp.clone();
-         newPredeccessorsProp.getValues().add(predeccessorRef);
+         // add predeccessor
+         List<ValueData> newPredeccessorValue = new ArrayList<ValueData>();
+         for (ValueData svd : predeccessorsProp.getValues())
+         {
+            newPredeccessorValue.add(svd);
+         }
+         newPredeccessorValue.add(predeccessorRef);
+
+         TransientPropertyData newPredeccessorsProp =
+            new TransientPropertyData(predeccessorsProp.getQPath(), predeccessorsProp.getIdentifier(),
+               predeccessorsProp.getPersistedVersion(), predeccessorsProp.getType(), predeccessorsProp
+                  .getParentIdentifier(), predeccessorsProp.isMultiValued(), newPredeccessorValue);
+
          changesLog.add(ItemState.createUpdatedState(newPredeccessorsProp));
       }
    }
 
    void removeSuccessor(String successorIdentifier, PlainChangesLog changesLog) throws RepositoryException
    {
-      TransientPropertyData successorsProp =
-         (TransientPropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_SUCCESSORS, 0));
+      PropertyData successorsProp =
+         (PropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_SUCCESSORS, 0));
       if (successorsProp != null)
       {
          List<ValueData> newSuccessors = new ArrayList<ValueData>();
@@ -234,7 +252,9 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
             for (ValueData sdata : successorsProp.getValues())
             {
                if (!successorIdentifier.equals(new String(sdata.getAsByteArray())))
+               {
                   newSuccessors.add(sdata);
+               }
             }
          }
          catch (IOException e)
@@ -245,8 +265,8 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
          TransientPropertyData newSuccessorsProp =
             new TransientPropertyData(QPath.makeChildPath(nodeData().getQPath(), Constants.JCR_SUCCESSORS,
                successorsProp.getQPath().getIndex()), successorsProp.getIdentifier(), successorsProp
-               .getPersistedVersion(), PropertyType.REFERENCE, nodeData().getIdentifier(), true);
-         newSuccessorsProp.setValues(newSuccessors);
+               .getPersistedVersion(), PropertyType.REFERENCE, nodeData().getIdentifier(), true, newSuccessors);
+
          changesLog.add(ItemState.createUpdatedState(newSuccessorsProp));
       }
       else
@@ -259,8 +279,8 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
       PlainChangesLog changesLog) throws RepositoryException
    {
 
-      TransientPropertyData successorsProp =
-         (TransientPropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_SUCCESSORS, 0));
+      PropertyData successorsProp =
+         (PropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_SUCCESSORS, 0));
 
       if (successorsProp != null)
       {
@@ -271,7 +291,9 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
             for (ValueData sdata : successorsProp.getValues())
             {
                if (!removedSuccessorIdentifier.equals(new String(sdata.getAsByteArray())))
+               {
                   newSuccessors.add(sdata);
+               }
             }
          }
          catch (IOException e)
@@ -284,8 +306,8 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
          TransientPropertyData newSuccessorsProp =
             new TransientPropertyData(QPath.makeChildPath(nodeData().getQPath(), Constants.JCR_SUCCESSORS,
                successorsProp.getQPath().getIndex()), successorsProp.getIdentifier(), successorsProp
-               .getPersistedVersion(), PropertyType.REFERENCE, nodeData().getIdentifier(), true);
-         newSuccessorsProp.setValues(newSuccessors);
+               .getPersistedVersion(), PropertyType.REFERENCE, nodeData().getIdentifier(), true, newSuccessors);
+
          changesLog.add(ItemState.createUpdatedState(newSuccessorsProp));
       }
       else
@@ -296,8 +318,8 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
 
    void removePredecessor(String predecessorIdentifier, PlainChangesLog changesLog) throws RepositoryException
    {
-      TransientPropertyData predeccessorsProp =
-         (TransientPropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_PREDECESSORS, 0));
+      PropertyData predeccessorsProp =
+         (PropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_PREDECESSORS, 0));
 
       if (predeccessorsProp != null)
       {
@@ -308,7 +330,9 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
             for (ValueData sdata : predeccessorsProp.getValues())
             {
                if (!predecessorIdentifier.equals(new String(sdata.getAsByteArray())))
+               {
                   newPredeccessors.add(sdata);
+               }
             }
          }
          catch (IOException e)
@@ -319,8 +343,8 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
          TransientPropertyData newPredecessorsProp =
             new TransientPropertyData(QPath.makeChildPath(nodeData().getQPath(), Constants.JCR_PREDECESSORS,
                predeccessorsProp.getQPath().getIndex()), predeccessorsProp.getIdentifier(), predeccessorsProp
-               .getPersistedVersion(), PropertyType.REFERENCE, nodeData().getIdentifier(), true);
-         newPredecessorsProp.setValues(newPredeccessors);
+               .getPersistedVersion(), PropertyType.REFERENCE, nodeData().getIdentifier(), true, newPredeccessors);
+
          changesLog.add(ItemState.createUpdatedState(newPredecessorsProp));
       }
       else
@@ -333,8 +357,8 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
       PlainChangesLog changesLog) throws RepositoryException
    {
 
-      TransientPropertyData predeccessorsProp =
-         (TransientPropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_PREDECESSORS, 0));
+      PropertyData predeccessorsProp =
+         (PropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_PREDECESSORS, 0));
 
       if (predeccessorsProp != null)
       {
@@ -345,7 +369,9 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
             for (ValueData sdata : predeccessorsProp.getValues())
             {
                if (!removedPredecessorIdentifier.equals(new String(sdata.getAsByteArray())))
+               {
                   newPredeccessors.add(sdata);
+               }
             }
          }
          catch (IOException e)
@@ -358,8 +384,8 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
          TransientPropertyData newPredecessorsProp =
             new TransientPropertyData(QPath.makeChildPath(nodeData().getQPath(), Constants.JCR_PREDECESSORS,
                predeccessorsProp.getQPath().getIndex()), predeccessorsProp.getIdentifier(), predeccessorsProp
-               .getPersistedVersion(), PropertyType.REFERENCE, nodeData().getIdentifier(), true);
-         newPredecessorsProp.setValues(newPredeccessors);
+               .getPersistedVersion(), PropertyType.REFERENCE, nodeData().getIdentifier(), true, newPredeccessors);
+
          changesLog.add(ItemState.createUpdatedState(newPredecessorsProp));
       }
       else
@@ -380,7 +406,9 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
          (VersionHistoryImpl)dataManager.getItemByIdentifier(nodeData().getParentIdentifier(), true);
 
       if (vhistory == null)
+      {
          throw new VersionException("Version history item is not found for version " + getPath());
+      }
 
       return vhistory;
    }

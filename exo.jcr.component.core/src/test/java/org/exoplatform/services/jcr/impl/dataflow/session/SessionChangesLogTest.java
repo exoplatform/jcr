@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.impl.dataflow.session;
 
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.dataflow.ItemState;
+import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.impl.Constants;
@@ -205,8 +206,8 @@ public class SessionChangesLogTest extends JcrImplBaseTest
 
          // jcr:primaryType
          TransientPropertyData ndpt =
-            TransientPropertyData.createPropertyData(ndata, Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false);
-         ndpt.setValue(new TransientValueData(ndata.getPrimaryTypeName()));
+            TransientPropertyData.createPropertyData(ndata, Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false,
+               new TransientValueData(ndata.getPrimaryTypeName()));
 
          slog.add(ItemState.createAddedState(ndata));
          slog.add(ItemState.createAddedState(ndpt));
@@ -243,5 +244,19 @@ public class SessionChangesLogTest extends JcrImplBaseTest
       // assertEquals("No session should be linked ", 0, registry.linkedSessionsCount());
 
       // assertEquals("No session should be linked ", 0, linked);
+   }
+
+   public void testAddRootChanges() throws Exception
+   {
+      SessionChangesLog changesLog = new SessionChangesLog(session.getId());
+      try
+      {
+         changesLog.add(new ItemState(new TransientPropertyData(Constants.ROOT_PATH, Constants.ROOT_UUID, 0,
+            PropertyType.STRING, null, false), ItemState.ADDED, false, Constants.ROOT_PATH));
+      }
+      catch (Exception e)
+      {
+         fail("Exception should not be thrown");
+      }
    }
 }

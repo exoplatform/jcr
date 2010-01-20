@@ -46,6 +46,7 @@ import org.exoplatform.services.jcr.impl.core.value.ValueConstraintsMatcher;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataConvertor;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -389,19 +390,20 @@ public abstract class ItemImpl implements Item
    {
 
       QPath qpath = QPath.makeChildPath(parentNode.getInternalPath(), propertyName);
+
       int state;
 
       String identifier;
       int version;
-      PropertyImpl oldProp = null;
-      ItemImpl oldItem = dataManager.getItem(parentNode.nodeData(), new QPathEntry(propertyName, 0), true);
-      PropertyDefinitionDatas defs = null;
+      PropertyImpl prevProp;
+      PropertyDefinitionDatas defs;
+      ItemImpl prevItem = dataManager.getItem(parentNode.nodeData(), new QPathEntry(propertyName, 0), true);
 
       NodeTypeDataManager ntm = session.getWorkspace().getNodeTypesHolder();
       NodeData parentData = (NodeData)parentNode.getData();
       boolean isMultiValue = multiValue;
-      if (oldItem == null || oldItem.isNode())
-      { // new prop
+      if (prevItem == null || prevItem.isNode())
+      { // new property
          identifier = IdGenerator.generate();
          version = -1;
          if (propertyValues == null)
@@ -416,18 +418,19 @@ public abstract class ItemImpl implements Item
          }
          defs =
             ntm.getPropertyDefinitions(propertyName, parentData.getPrimaryTypeName(), parentData.getMixinTypeNames());
-
+         prevProp = null;
          state = ItemState.ADDED;
       }
       else
       {
-         oldProp = (PropertyImpl)oldItem;
-         isMultiValue = oldProp.isMultiValued();
+         // update of the property
+         prevProp = (PropertyImpl)prevItem;
+         isMultiValue = prevProp.isMultiValued();
          defs =
             ntm.getPropertyDefinitions(propertyName, parentData.getPrimaryTypeName(), parentData.getMixinTypeNames());
 
-         identifier = oldProp.getInternalIdentifier();
-         version = oldProp.getData().getPersistedVersion();
+         identifier = prevProp.getInternalIdentifier();
+         version = prevProp.getData().getPersistedVersion();
          if (propertyValues == null)
             state = ItemState.DELETED;
          else
@@ -435,6 +438,7 @@ public abstract class ItemImpl implements Item
             state = ItemState.UPDATED;
          }
       }
+
       if (defs == null || defs.getAnyDefinition() == null)
          throw new RepositoryException("Property definition '" + propertyName.getAsString() + "' is not found.");
 
@@ -443,22 +447,23 @@ public abstract class ItemImpl implements Item
          throw new ConstraintViolationException("Can not set protected property "
             + locationFactory.createJCRPath(qpath).getAsString(false));
 
-      if (multiValue && (def == null || (oldProp != null && !oldProp.isMultiValued())))
+      if (multiValue && (def == null || (prevProp != null && !prevProp.isMultiValued())))
       {
          throw new ValueFormatException("Can not assign multiple-values Value to a single-valued property "
             + locationFactory.createJCRPath(qpath).getAsString(false));
       }
 
-      if (!multiValue && (def == null || (oldProp != null && oldProp.isMultiValued())))
+      if (!multiValue && (def == null || (prevProp != null && prevProp.isMultiValued())))
       {
          throw new ValueFormatException("Can not assign single-value Value to a multiple-valued property "
             + locationFactory.createJCRPath(qpath).getAsString(false));
       }
 
+      // Check if checked-in (versionable)
       if (!parentNode.checkedOut())
          throw new VersionException("Node " + parentNode.getPath() + " or its nearest ancestor is checked-in");
 
-      // Check locking
+      // Check is locked
       if (!parentNode.checkLocking())
          throw new LockException("Node " + parentNode.getPath() + " is locked ");
 
@@ -524,9 +529,6 @@ public abstract class ItemImpl implements Item
       // Check value constraints
       checkValueConstraints(def, valueDataList, propType);
 
-      TransientPropertyData newData =
-         new TransientPropertyData(qpath, identifier, version, propType, parentNode.getInternalIdentifier(), multiValue);
-
       if (requiredType != PropertyType.UNDEFINED && expectedType != PropertyType.UNDEFINED
          && requiredType != expectedType)
       {
@@ -535,15 +537,19 @@ public abstract class ItemImpl implements Item
             + "type of the property do not match required type" + ExtendedPropertyType.nameFromValue(requiredType));
       }
 
-      PropertyImpl prop = null;
+      PropertyImpl prop;
       if (state != ItemState.DELETED)
       {
-         newData.setValues(valueDataList);
+         // add or update
+         TransientPropertyData newData =
+            new TransientPropertyData(qpath, identifier, version, propType, parentNode.getInternalIdentifier(),
+               multiValue, valueDataList);
+
          ItemState itemState = new ItemState(newData, state, true, qpath, false);
          prop = (PropertyImpl)dataManager.update(itemState, true);
-         // launch event
-         session.getActionHandler().postSetProperty(prop, state);
 
+         // launch event: post-set 
+         session.getActionHandler().postSetProperty(prop, state);
       }
       else
       {
@@ -552,10 +558,16 @@ public abstract class ItemImpl implements Item
             throw new ConstraintViolationException("Can not remove (by setting null value) mandatory property "
                + locationFactory.createJCRPath(qpath).getAsString(false));
          }
-         // launch event
-         session.getActionHandler().preRemoveItem(oldProp);
+
+         TransientPropertyData newData =
+            new TransientPropertyData(qpath, identifier, version, propType, parentNode.getInternalIdentifier(),
+               multiValue);
+
+         // launch event: pre-remove
+         session.getActionHandler().preRemoveItem(prevProp);
+
          dataManager.delete(newData);
-         prop = oldProp;
+         prop = prevProp;
       }
 
       return prop;
@@ -694,8 +706,11 @@ public abstract class ItemImpl implements Item
    {
       NodeImpl parent = (NodeImpl)item(getParentIdentifier());
       if (parent == null)
+      {
          throw new ItemNotFoundException("FATAL: Parent is null for " + getPath() + " parent UUID: "
             + getParentIdentifier());
+      }
+
       return parent;
    }
 
@@ -710,8 +725,11 @@ public abstract class ItemImpl implements Item
    {
       NodeData parent = (NodeData)dataManager.getItemData(getData().getParentIdentifier());
       if (parent == null)
+      {
          throw new ItemNotFoundException("FATAL: Parent is null for " + getPath() + " parent UUID: "
             + getData().getParentIdentifier());
+      }
+
       return parent;
    }
 
@@ -766,7 +784,7 @@ public abstract class ItemImpl implements Item
    }
 
    /**
-    * Loads data
+    * Loads data.
     *
     * @param data
     *          source item data
@@ -776,16 +794,16 @@ public abstract class ItemImpl implements Item
    abstract void loadData(ItemData data) throws RepositoryException;
 
    /**
-    * Loads data.
+    * Loads data using existing parent data (used primary and mixin types for Item Definition discovery).
     *
     * @param data
     *          source item data
-    * @param itemDefinitionData
-    *          source item definition data
-    * @throws RepositoryException
+    * @param parent NodeData 
+    *          Items's parent
+    * @throws RepositoryException 
     *          if errors occurs
     */
-   abstract void loadData(ItemData data, ItemDefinitionData itemDefinitionData) throws RepositoryException;
+   abstract void loadData(ItemData data, NodeData parent) throws RepositoryException;
 
    /**
     * Returns Item definition data.
@@ -798,11 +816,13 @@ public abstract class ItemImpl implements Item
    {
       NodeData ndata;
       if (isNode())
+      {
          ndata = (NodeData)getData();
+      }
       else
-         ndata = parentData(); // (NodeData)
-      // dataManager.getItemData(data.getParentIdentifier
-      // ())
+      {
+         ndata = parentData();
+      }
 
       return session.getAccessManager().hasPermission(ndata.getACL(), action, session.getUserState().getIdentity());
    }
@@ -843,15 +863,10 @@ public abstract class ItemImpl implements Item
          case PropertyType.STRING :
             return new TransientValueData(value.getString());
          case PropertyType.BINARY :
-            TransientValueData vd = null;
-            if (value instanceof BaseValue)
+            ValueData vd;
+            if (value instanceof BaseValue || value instanceof ExtendedValue)
             {
-               // if the value is normaly created in JCR API
-               vd = ((BaseValue)value).getInternalData().createTransientCopy();
-            }
-            else if (value instanceof ExtendedValue)
-            {
-               // if te value comes from outside the JCR API scope, e.g. RMI invocation
+               // create Transient copy 
                vd = ((BaseValue)getSession().getValueFactory().createValue(value.getStream())).getInternalData();
             }
             else
@@ -871,17 +886,17 @@ public abstract class ItemImpl implements Item
          case PropertyType.DATE :
             return new TransientValueData(value.getDate());
          case PropertyType.PATH :
-            TransientValueData tvd = null;
+            ValueData pvd;
             if (value instanceof PathValue)
             {
-               tvd = ((PathValue)value).getInternalData().createTransientCopy();
+               pvd = ((PathValue)value).getInternalData();
             }
             else
             {
                QPath pathValue = locationFactory.parseJCRPath(value.getString()).getInternalPath();
-               tvd = new TransientValueData(pathValue);
+               pvd = new TransientValueData(pathValue);
             }
-            return tvd;
+            return pvd;
          case PropertyType.NAME :
             InternalQName nameValue = locationFactory.parseJCRName(value.getString()).getInternalName();
             return new TransientValueData(nameValue);
@@ -913,9 +928,8 @@ public abstract class ItemImpl implements Item
             try
             {
                if (type != PropertyType.BINARY)
-               {// [VO]20.06.07, PropertyType.BINARY
-                  // may have large size
-                  strVal = ((TransientValueData)value).getString();
+               {
+                  strVal = ValueDataConvertor.readString(value);
                }
                else
                {

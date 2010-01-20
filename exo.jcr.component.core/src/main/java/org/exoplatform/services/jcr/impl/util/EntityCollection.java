@@ -80,6 +80,7 @@ public class EntityCollection implements NodeIterator, PropertyIterator, NodeTyp
       this.pos = 0;
    }
 
+   @Deprecated
    public void reverse()
    {
       Collections.reverse(list);
@@ -236,6 +237,7 @@ public class EntityCollection implements NodeIterator, PropertyIterator, NodeTyp
       iter = list.iterator();
    }
 
+   @Deprecated
    public void remove(Object obj)
    {
       pos = 0;
@@ -243,11 +245,17 @@ public class EntityCollection implements NodeIterator, PropertyIterator, NodeTyp
       iter = list.iterator();
    }
 
+   @Deprecated
    public long size()
    {
       return getSize();
    }
 
+   /**
+    * For TESTs only.
+    * 
+    * @return List backed the iterator
+    */
    public List getList()
    {
       return list;

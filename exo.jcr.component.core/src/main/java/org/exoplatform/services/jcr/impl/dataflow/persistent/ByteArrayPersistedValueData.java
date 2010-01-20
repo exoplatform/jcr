@@ -18,12 +18,18 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
-import org.exoplatform.services.jcr.impl.dataflow.AbstractValueData;
+import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.dataflow.AbstractPersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 
 import java.io.ByteArrayInputStream;
+import java.io.Externalizable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.io.OutputStream;
+import java.util.Arrays;
 
 import javax.jcr.RepositoryException;
 
@@ -31,22 +37,34 @@ import javax.jcr.RepositoryException;
  * Created by The eXo Platform SAS.
  * 
  * @author Gennady Azarenkov
- * @version $Id: ByteArrayPersistedValueData.java 11907 2008-03-13 15:36:21Z ksm $
+ * @version $Id$
  */
-public class ByteArrayPersistedValueData extends AbstractValueData
+public class ByteArrayPersistedValueData extends AbstractPersistedValueData implements Externalizable
 {
 
+   /**
+    * The serialVersionUID.
+    */
+   private static final long serialVersionUID = -9131328056670315388L;
+   
    protected byte[] data;
+   
+   /**
+    * Empty constructor to serialization.
+    */
+   public ByteArrayPersistedValueData()
+   {
+      super(0);
+   }
 
    /**
     * ByteArrayPersistedValueData constructor.
-    * 
-    * @param data
-    *          byte[]
     * @param orderNumber
     *          int
+    * @param data
+    *          byte[]
     */
-   public ByteArrayPersistedValueData(byte[] data, int orderNumber)
+   public ByteArrayPersistedValueData(int orderNumber, byte[] data)
    {
       super(orderNumber);
       this.data = data;
@@ -79,6 +97,29 @@ public class ByteArrayPersistedValueData extends AbstractValueData
    /**
     * {@inheritDoc}
     */
+   public long read(OutputStream stream, long length, long position) throws IOException
+   {
+      if (position < 0)
+         throw new IOException("Position must be higher or equals 0. But given " + position);
+
+      if (length < 0)
+         throw new IOException("Length must be higher or equals 0. But given " + length);
+
+      // validation
+      if (position >= data.length && position > 0)
+         throw new IOException("Position " + position + " out of value size " + data.length);
+
+      if (position + length >= data.length)
+         length = data.length - position;
+
+      stream.write(data, (int)position, (int)length);
+
+      return length;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public boolean isByteArray()
    {
       return true;
@@ -87,25 +128,59 @@ public class ByteArrayPersistedValueData extends AbstractValueData
    /**
     * {@inheritDoc}
     */
-   @Override
-   public TransientValueData createTransientCopy() throws RepositoryException
+   public boolean equals(ValueData another)
    {
-      try
+      if (this == another)
       {
-         return new TransientValueData(orderNumber, data, null, null, null, -1, null, false);
+         return true;
       }
-      catch (IOException e)
+
+      if (isByteArray() && another.isByteArray())
       {
-         throw new RepositoryException(e);
+         // by content
+         try
+         {
+            return Arrays.equals(getAsByteArray(), another.getAsByteArray());
+         }
+         catch (IOException e)
+         {
+            LOG.error("Read error", e);
+            return false;
+         }
       }
+
+      return false;
    }
 
    /**
     * {@inheritDoc}
     */
-   public boolean isTransient()
+   @Override
+   public TransientValueData createTransientCopy() throws RepositoryException
    {
-      return false;
+      return new TransientValueData(orderNumber, data);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+   {
+      orderNumber = in.readInt();
+      
+      data = new byte[in.readInt()];
+      in.readFully(data);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void writeExternal(ObjectOutput out) throws IOException
+   {
+      out.writeInt(orderNumber);
+      
+      out.writeInt(data.length);
+      out.write(data);
    }
 
 }

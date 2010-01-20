@@ -40,7 +40,6 @@ import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.ItemDataRemoveVisitor;
-import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.version.VersionHistoryDataHelper;
 import org.exoplatform.services.jcr.impl.xml.VersionHistoryRemover;
 import org.exoplatform.services.jcr.impl.xml.importing.dataflow.ImportItemData;
@@ -580,7 +579,7 @@ public abstract class BaseXmlImporter implements ContentImporter
                   case ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING :
                      removeExisted(sameUuidItem);
                      ItemData parentOfsameUuidItem = dataConsumer.getItemData(sameUuidItem.getParentIdentifier());
-                     tree.push(ImportNodeData.createCopy((TransientNodeData)parentOfsameUuidItem));
+                     tree.push(ImportNodeData.createCopy((NodeData)parentOfsameUuidItem));
                      break;
                   case ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW :
                      // If an incoming referenceable node has the same UUID as a node

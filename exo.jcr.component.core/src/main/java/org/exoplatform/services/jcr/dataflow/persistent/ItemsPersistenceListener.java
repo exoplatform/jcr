@@ -29,9 +29,15 @@ import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 public interface ItemsPersistenceListener
 {
    /**
-    * Will be called wnen data is permanently saved.
+    * Will be called when data is permanently saved.
     * 
     * @param itemStates ItemStateChangesLog
     */
    void onSaveItems(ItemStateChangesLog itemStates);
+
+   /**
+    * Return true if listener must be called in transaction, false if not.
+    * @return boolean
+    */
+   boolean isTXAware();
 }

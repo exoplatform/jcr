@@ -26,38 +26,22 @@ import java.util.List;
  * <br/>Date: 04.03.2009
  *
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a> 
- * @version $Id: PairChangesLog.java 111 2008-11-11 11:11:11Z rainf0x $
+ * @version $Id$
  */
 public class PairChangesLog extends PlainChangesLogImpl
 {
 
    /**
-    * Pair identifier.
-    */
-   private final String pairId;
-
-   /**
-    * full qualified constructor
+    * Pair log constructor.
     * 
-    * @param items
-    * @param sessionId
-    * @param eventType
-    * @param pairId
+    * @param items List of ItemStates
+    * @param sessionId String
+    * @param eventType int
+    * @param pairId String
     */
    public PairChangesLog(List<ItemState> items, String sessionId, int eventType, String pairId)
    {
       super(items, sessionId, eventType);
       this.pairId = pairId;
-   }
-
-   /**
-    * getPairId.
-    *
-    * @return String
-    *           pair identifier 
-    */
-   public String getPairId()
-   {
-      return pairId;
    }
 }

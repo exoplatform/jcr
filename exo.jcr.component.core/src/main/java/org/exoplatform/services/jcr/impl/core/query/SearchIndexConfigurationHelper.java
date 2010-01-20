@@ -27,14 +27,12 @@ import org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex;
 import java.io.IOException;
 
 /**
- * @author <a href="mailto:Sergey.Kabashnyuk@exoplatform.org">Sergey
- *         Kabashnyuk</a>
- * @version $Id: exo-jboss-codetemplates.xml 34360 2009-07-22 23:58:59Z ksm $
+ * @author <a href="mailto:Sergey.Kabashnyuk@exoplatform.org">Sergey Kabashnyuk</a>
+ * @version $Id: SearchIndexConfigurationHelper.java 1053 2009-12-15 09:27:30Z nzamosenchuk $
  * 
  */
 public class SearchIndexConfigurationHelper
 {
-
    private final SearchIndex searchIndex;
 
    /**
@@ -55,13 +53,11 @@ public class SearchIndexConfigurationHelper
     */
    public void init(QueryHandlerEntry queryHandlerEntry) throws IOException, RepositoryConfigurationException
    {
-      // Path will be set using queryHandelContext
-
+      // TODO: support human-readable values ( https://jira.jboss.org/jira/browse/EXOJCR-419 )
       for (SimpleParameterEntry parameter : queryHandlerEntry.getParameters())
       {
          setParam(parameter.getName(), parameter.getValue());
       }
-
    }
 
    /**
@@ -83,9 +79,6 @@ public class SearchIndexConfigurationHelper
          searchIndex.setRespectDocumentOrder(Boolean.parseBoolean(value));
       else if (QueryHandlerParams.PARAM_EXCERPTPROVIDER_CLASS.equals(name))
          searchIndex.setExcerptProviderClass(value);
-      // else if
-      // (QueryHandlerParams.PARAM_EXCLUDED_NODE_IDENTIFERS.equals(name))
-      // searchIndex.setE
       else if (QueryHandlerParams.PARAM_EXTRACTOR_BACKLOG.equals(name))
          searchIndex.setExtractorBackLogSize(Integer.parseInt(value));
       else if (QueryHandlerParams.PARAM_EXTRACTOR_POOLSIZE.equals(name))
@@ -96,9 +89,6 @@ public class SearchIndexConfigurationHelper
          searchIndex.setForceConsistencyCheck(Boolean.parseBoolean(value));
       else if (QueryHandlerParams.PARAM_ERRORLOG_SIZE.equals(name))
          searchIndex.setErrorLogfileSize(Integer.parseInt(value));
-      // else if (QueryHandlerParams.PARAM_INDEX_DIR.equals(name))
-      // searchIndex.setBufferSize(0);
-      // else if (OLD_PARAM_INDEX_DIR
       else if (QueryHandlerParams.PARAM_INDEXING_CONFIGURATION_PATH.equals(name))
          searchIndex.setIndexingConfiguration(value);
       else if (QueryHandlerParams.PARAM_INDEXING_CONFIGURATION_CLASS.equals(name))
@@ -115,8 +105,6 @@ public class SearchIndexConfigurationHelper
          searchIndex.setQueryClass(value);
       else if (QueryHandlerParams.PARAM_RESULT_FETCH_SIZE.equals(name))
          searchIndex.setResultFetchSize(Integer.parseInt(value));
-      // else if (QueryHandlerParams.PARAM_ROOT_NODE_ID.equals(name))
-      // searchIndex.setBufferSize(0);
       else if (QueryHandlerParams.PARAM_SPELLCHECKER_CLASS.equals(name))
          searchIndex.setSpellCheckerClass(value);
       else if (QueryHandlerParams.PARAM_SUPPORT_HIGHLIGHTING.equals(name))
@@ -129,12 +117,13 @@ public class SearchIndexConfigurationHelper
          searchIndex.setUseCompoundFile(Boolean.parseBoolean(value));
       else if (QueryHandlerParams.PARAM_VOLATILE_IDLE_TIME.equals(name))
          searchIndex.setVolatileIdleTime(Integer.parseInt(value));
+      else if (QueryHandlerParams.PARAM_MAX_VOLATILE_SIZE.equals(name))
+         searchIndex.setMaxVolatileIndexSize(Integer.parseInt(value));
+      else if (QueryHandlerParams.PARAM_MAX_VOLATILE_TIME.equals(name))
+         searchIndex.setMaxVolatileTime(Integer.parseInt(value));
       else if (QueryHandlerParams.PARAM_ANALYZER_CLASS.equals(name))
       {
          searchIndex.setAnalyzer(value);
       }
-      // else if (QueryHandlerParams.PARAM_UPGRADE_INDEX.equals(name))
-      // searchIndex.i
-
    }
 }

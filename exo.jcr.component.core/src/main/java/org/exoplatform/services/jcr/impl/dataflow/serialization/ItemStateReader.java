@@ -98,12 +98,12 @@ public class ItemStateReader
 
          if (isNodeData)
          {
-            TransientNodeDataReader rdr = new TransientNodeDataReader();
+            PresistedNodeDataReader rdr = new PresistedNodeDataReader();
             is = new ItemState(rdr.read(in), state, eventFire, null, false, isPersisted);
          }
          else
          {
-            TransientPropertyDataReader rdr = new TransientPropertyDataReader(fileCleaner, maxBufferSize, holder);
+            PersistedPropertyDataReader rdr = new PersistedPropertyDataReader(fileCleaner, maxBufferSize, holder);
             is = new ItemState(rdr.read(in), state, eventFire, null, false, isPersisted);
          }
          return is;

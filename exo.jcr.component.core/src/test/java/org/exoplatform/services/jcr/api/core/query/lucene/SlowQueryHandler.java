@@ -78,7 +78,7 @@ public class SlowQueryHandler extends AbstractQueryHandler
 
    }
 
-   public void setContext(QueryHandlerContext context) throws IOException
+   public void setContext(QueryHandlerContext context)
    {
       // TODO Auto-generated method stub
 
@@ -92,5 +92,4 @@ public class SlowQueryHandler extends AbstractQueryHandler
       // TODO Auto-generated method stub
       return null;
    }
-
 }

@@ -76,11 +76,9 @@ public class TestTransientValueData extends TestCase
       out.close();
 
       FileInputStream fs1 = new FileInputStream(file);
-      TransientValueData vd = new TransientValueData(fs1);
+      TransientValueData vd = new TransientValueData(0, null, fs1, null, new FileCleaner(), 5, new File("target"), true);
 
       // spool to file
-      vd.setMaxBufferSize(5);
-      vd.setFileCleaner(new FileCleaner());
       InputStream fs2 = vd.getAsStream();
       assertEquals(10, vd.getLength());
       assertTrue(fs2 instanceof FileInputStream);
@@ -117,11 +115,11 @@ public class TestTransientValueData extends TestCase
    {
       // byte[] buf = "0123456789".getBytes();
       TransientValueData vd = new TransientValueData("0123456789");
-
-      // // not influenced here as will be spooled to byte array anyway
-      vd.setMaxBufferSize(5);
-      vd.setFileCleaner(new FileCleaner());
-      // //
+      // TODO not influenced here as will be spooled to byte array anyway
+      //vd.setMaxBufferSize(5);
+      //vd.setFileCleaner(new FileCleaner());
+      
+      //
       InputStream fs2 = vd.getAsStream();
       assertEquals(10, vd.getLength());
       assertTrue(fs2 instanceof ByteArrayInputStream);

@@ -21,8 +21,8 @@ package org.exoplatform.services.jcr.impl.value;
 import junit.framework.TestCase;
 
 import org.exoplatform.services.jcr.impl.dataflow.persistent.ByteArrayPersistedValueData;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.CleanableFileStreamValueData;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.FileStreamPersistedValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.CleanableFilePersistedValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.FilePersistedValueData;
 import org.exoplatform.services.jcr.impl.storage.value.fs.Probe;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.SwapFile;
@@ -45,7 +45,7 @@ public class TestPersistedValueData extends TestCase
    public void testCreateByteArrayValueData() throws Exception
    {
       byte[] buf = "0123456789".getBytes();
-      ByteArrayPersistedValueData vd = new ByteArrayPersistedValueData(buf, 0);
+      ByteArrayPersistedValueData vd = new ByteArrayPersistedValueData(0, buf);
       assertTrue(vd.isByteArray());
       assertEquals(10, vd.getLength());
       assertEquals(0, vd.getOrderNumber());
@@ -64,17 +64,17 @@ public class TestPersistedValueData extends TestCase
       out.write(buf);
       out.close();
 
-      FileStreamPersistedValueData vd = new FileStreamPersistedValueData(file, 0);
+      FilePersistedValueData vd = new FilePersistedValueData(0, file);
       assertFalse(vd.isByteArray());
       assertEquals(10, vd.getLength());
       assertEquals(0, vd.getOrderNumber());
       try
       {
          vd.getAsByteArray();
-         fail("IllegalStateException should have been thrown!");
       }
       catch (IllegalStateException e)
       {
+         fail("IllegalStateException should not have been thrown!");
       }
       assertTrue(vd.getAsStream() instanceof FileInputStream);
    }
@@ -91,7 +91,7 @@ public class TestPersistedValueData extends TestCase
       out.write(buf);
       out.close();
 
-      CleanableFileStreamValueData vd = new CleanableFileStreamValueData(file, 0, new FileCleaner(1000, true));
+      CleanableFilePersistedValueData vd = new CleanableFilePersistedValueData(0, file, new FileCleaner(1000, true));
       assertTrue(file.exists());
 
       vd = null;

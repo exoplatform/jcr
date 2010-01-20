@@ -63,8 +63,10 @@ public class ItemDataCopyIgnoredVisitor extends DefaultItemDataCopyVisitor
       if (level == 1
          && (property.getQPath().getName().equals(Constants.JCR_BASEVERSION) || property.getQPath().getName().equals(
             Constants.JCR_ISCHECKEDOUT)))
+      {
          // skip versionable specific props
          return;
+      }
 
       if (curParent() == null)
       {
@@ -99,7 +101,9 @@ public class ItemDataCopyIgnoredVisitor extends DefaultItemDataCopyVisitor
       {
          // copy as IGNOREd parent child, i.e. OnParentVersionAction is any
          if (log.isDebugEnabled())
+         {
             log.debug("A property " + property.getQPath().getAsString() + " is IGNOREd node descendant");
+         }
          super.entering(property, level);
       }
    }
@@ -148,17 +152,23 @@ public class ItemDataCopyIgnoredVisitor extends DefaultItemDataCopyVisitor
          {
             // copy as IGNOREd parent child, i.e. OnParentVersionAction is any
             if (log.isDebugEnabled())
+            {
                log.debug("A node " + node.getQPath().getAsString() + " is IGNOREd node descendant");
+            }
+
             super.entering(node, level);
             return;
          }
       }
+
       parents.push(null); // skip this node as we hasn't parent in restore result
    }
 
    protected void leaving(NodeData node, int level) throws RepositoryException
    {
       if (parents.size() > 0)
+      {
          parents.pop();
+      }
    }
 }

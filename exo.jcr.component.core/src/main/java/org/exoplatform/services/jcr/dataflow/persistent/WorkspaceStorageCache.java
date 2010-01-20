@@ -136,5 +136,23 @@ public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
     * @return long value
     */
    long getSize();
+   
+   /**
+    * Start buffering process.
+    */
+   public void beginTransaction();
+
+
+   /**
+    * Sort changes and commit data to the cache.
+    */
+   public void commitTransaction();
+
+
+   /**
+    * Forget about changes
+    */
+   public void rollbackTransaction();
+
 
 }

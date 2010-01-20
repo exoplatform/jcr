@@ -31,12 +31,12 @@ import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.NodeDataOrderComparator;
 import org.exoplatform.services.jcr.impl.dataflow.PropertyDataOrderComparator;
-import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.dataflow.ValueDataConvertor;
 import org.exoplatform.services.jcr.impl.util.ISO9075;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -162,9 +162,10 @@ public abstract class BaseXmlExporter extends ItemDataTraversingVisitor
          {
             currentLevel++;
 
-            List<PropertyData> properies = dataManager.getChildPropertiesData(node);
+            List<PropertyData> properies = new ArrayList<PropertyData>(dataManager.getChildPropertiesData(node));
             // Sorting properties
             Collections.sort(properies, new PropertyDataOrderComparator());
+
             for (PropertyData data : properies)
             {
                InternalQName propName = data.getQPath().getName();
@@ -180,7 +181,7 @@ public abstract class BaseXmlExporter extends ItemDataTraversingVisitor
             }
             if (!isNoRecurse() && (currentLevel > 0))
             {
-               List<NodeData> nodes = dataManager.getChildNodesData(node);
+               List<NodeData> nodes = new ArrayList<NodeData>(dataManager.getChildNodesData(node));
                // Sorting nodes
                Collections.sort(nodes, new NodeDataOrderComparator());
                for (NodeData data : nodes)
@@ -269,7 +270,7 @@ public abstract class BaseXmlExporter extends ItemDataTraversingVisitor
             // TODO namespace mapping for values
             try
             {
-               charValue = systemValueFactory.loadValue((TransientValueData)data, type).getString();
+               charValue = systemValueFactory.loadValue(data, type).getString();
             }
             catch (ValueFormatException e)
             {

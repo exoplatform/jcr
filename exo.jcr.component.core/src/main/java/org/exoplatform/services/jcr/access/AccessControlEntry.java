@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.access;
 
+import org.exoplatform.services.security.MembershipEntry;
+
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -27,9 +29,11 @@ package org.exoplatform.services.jcr.access;
 public class AccessControlEntry
 {
 
-   private String identity;
+   private final String identity;
 
-   private String permission;
+   private final String permission;
+
+   private volatile MembershipEntry membership;
 
    public static final String DELIMITER = " ";
 
@@ -49,6 +53,21 @@ public class AccessControlEntry
       return permission;
    }
 
+   public MembershipEntry getMembershipEntry()
+   {
+      if (membership == null)
+      {
+         synchronized (this)
+         {
+            if (membership == null)
+            {
+               membership = MembershipEntry.parse(getIdentity());
+            }
+         }
+      }
+      return membership;
+   }
+   
    public String getAsString()
    {
       return identity + AccessControlEntry.DELIMITER + permission;

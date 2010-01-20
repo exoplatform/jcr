@@ -417,16 +417,6 @@ public class TestRandomValueIO extends JcrImplBaseTest
 
          exv.update(new ByteArrayInputStream(update1String.getBytes()), update1String.length(), pos);
 
-         // test the value for correct stream
-         BufferedInputStream vstream = new BufferedInputStream(exv.getStream());
-         vstream.mark((int)exv.getLength() + 1);
-
-         // first 2M of stream data must be same as on setProperty()
-         compareStream(new FileInputStream(testFile), vstream, 0, 0, testFile.length());
-
-         vstream.reset();
-         compareStream(new ByteArrayInputStream(update1String.getBytes()), vstream, 0, pos, update1String.length());
-
          // apply to the Property and save
          p.setValue(exv);
          testRoot.save();

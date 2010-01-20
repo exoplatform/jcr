@@ -52,6 +52,7 @@ import org.exoplatform.services.jcr.impl.core.query.AbstractQueryHandler;
 import org.exoplatform.services.jcr.impl.core.query.DefaultQueryNodeFactory;
 import org.exoplatform.services.jcr.impl.core.query.ErrorLog;
 import org.exoplatform.services.jcr.impl.core.query.ExecutableQuery;
+import org.exoplatform.services.jcr.impl.core.query.IndexerIoMode;
 import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
 import org.exoplatform.services.jcr.impl.core.query.QueryHandlerContext;
 import org.exoplatform.services.jcr.impl.core.query.SearchIndexConfigurationHelper;
@@ -142,6 +143,20 @@ public class SearchIndex extends AbstractQueryHandler
    public static final long DEFAULT_EXTRACTOR_TIMEOUT = 100;
 
    /**
+    * The maximum volatile index size in bytes until it is written to disk. The
+    * default value is 1048576 (1MB).
+    */
+   public static final long DEFAULT_MAX_VOLATILE_INDEX_SIZE = 1024 * 1024;
+
+   /**
+    * volatileTime config parameter.
+    * Max age of volatile. It is guaranteed that in any case volatile index will 
+    * be flush to FS not later then in maxVolatileTime seconds.
+    * Default is (-1) that means no maximal timeout set
+    */
+   public static final int DEFAULT_MAX_VOLATILE_TIME = -1;
+
+   /**
     * The default value for {@link #termInfosIndexDivisor}.
     */
    public static final int DEFAULT_TERM_INFOS_INDEX_DIVISOR = 1;
@@ -182,7 +197,14 @@ public class SearchIndex extends AbstractQueryHandler
     * The maximum volatile index size in bytes until it is written to disk. The
     * default value is 1048576 (1MB).
     */
-   private long maxVolatileIndexSize = 1024 * 1024;
+   private long maxVolatileIndexSize = DEFAULT_MAX_VOLATILE_INDEX_SIZE;
+
+   /**
+    * volatileTime config parameter.
+    * Max age of volatile. It is guaranteed that in any case volatile index will 
+    * be flush to FS not later then in maxVolatileTime seconds.
+    */
+   private int maxVolatileTime = DEFAULT_MAX_VOLATILE_TIME;
 
    /**
     * volatileIdleTime config parameter.
@@ -465,8 +487,12 @@ public class SearchIndex extends AbstractQueryHandler
 
          indexDirectory = new File(path);
          if (!indexDirectory.exists())
+         {
             if (!indexDirectory.mkdirs())
+            {
                throw new RepositoryException("fail to create index dir " + path);
+            }
+         }
       }
       else
       {
@@ -514,42 +540,44 @@ public class SearchIndex extends AbstractQueryHandler
       indexingConfig = createIndexingConfiguration(nsMappings);
       analyzer.setIndexingConfig(indexingConfig);
 
-      index = new MultiIndex(this, context.getIndexingTree());
-      if (index.numDocs() == 0 && context.isCreateInitialIndex())
+      index = new MultiIndex(this, context.getIndexingTree(), modeHandler, getIndexInfos(), getIndexUpdateMonitor());
+      // if RW mode, create initial index and start check
+      if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
       {
-
-         index.createInitialIndex(context.getItemStateManager());
-      }
-      if (consistencyCheckEnabled && (index.getRedoLogApplied() || forceConsistencyCheck))
-      {
-         log.info("Running consistency check...");
-         try
+         if (index.numDocs() == 0 && context.isCreateInitialIndex())
          {
-            ConsistencyCheck check = ConsistencyCheck.run(index, context.getItemStateManager());
-            if (autoRepair)
+            index.createInitialIndex(context.getItemStateManager());
+         }
+         if (consistencyCheckEnabled && (index.getRedoLogApplied() || forceConsistencyCheck))
+         {
+            log.info("Running consistency check...");
+            try
             {
-               check.repair(true);
+               ConsistencyCheck check = ConsistencyCheck.run(index, context.getItemStateManager());
+               if (autoRepair)
+               {
+                  check.repair(true);
+               }
+               else
+               {
+                  List<ConsistencyCheckError> errors = check.getErrors();
+                  if (errors.size() == 0)
+                  {
+                     log.info("No errors detected.");
+                  }
+                  for (Iterator<ConsistencyCheckError> it = errors.iterator(); it.hasNext();)
+                  {
+                     ConsistencyCheckError err = it.next();
+                     log.info(err.toString());
+                  }
+               }
             }
-            else
+            catch (Exception e)
             {
-               List<ConsistencyCheckError> errors = check.getErrors();
-               if (errors.size() == 0)
-               {
-                  log.info("No errors detected.");
-               }
-               for (Iterator<ConsistencyCheckError> it = errors.iterator(); it.hasNext();)
-               {
-                  ConsistencyCheckError err = it.next();
-                  log.info(err.toString());
-               }
+               log.warn("Failed to run consistency check on index: " + e);
             }
          }
-         catch (Exception e)
-         {
-            log.warn("Failed to run consistency check on index: " + e);
-         }
       }
-
       // initialize spell checker
       spellChecker = createSpellChecker();
 
@@ -563,7 +591,10 @@ public class SearchIndex extends AbstractQueryHandler
       File file = new File(indexDirectory, ERROR_LOG);
       errorLog = new ErrorLog(file, errorLogfileSize);
       // reprocess any notfinished notifies;
-      recoverErrorLog(errorLog);
+      if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
+      {
+         recoverErrorLog(errorLog);
+      }
 
    }
 
@@ -1629,9 +1660,13 @@ public class SearchIndex extends AbstractQueryHandler
                         String uuid = doc.get(FieldNames.UUID);
                         ItemData itd = ism.getItemData(uuid);
                         if (itd == null)
+                        {
                            continue;
+                        }
                         if (!itd.isNode())
+                        {
                            throw new RepositoryException("Item with id:" + uuid + " is not a node");
+                        }
                         map.put(uuid, (NodeData)itd);
                         found++;
                      }
@@ -2457,6 +2492,22 @@ public class SearchIndex extends AbstractQueryHandler
    }
 
    /**
+    * @return maxVolatileTime in seconds
+    */
+   public int getMaxVolatileTime()
+   {
+      return maxVolatileTime;
+   }
+
+   /**
+    * @param maxVolatileTime in seconds
+    */
+   public void setMaxVolatileTime(int maxVolatileTime)
+   {
+      this.maxVolatileTime = maxVolatileTime;
+   }
+
+   /**
     * @return the name of the directory manager class.
     */
    public String getDirectoryManagerClass()
@@ -2595,8 +2646,10 @@ public class SearchIndex extends AbstractQueryHandler
                         return (NodeData)item; // return node here
                      }
                      else
+                     {
                         log.warn("Node expected but property found with id " + id + ". Skipping "
                            + item.getQPath().getAsString());
+                     }
                   }
                   else
                   {
@@ -2638,5 +2691,4 @@ public class SearchIndex extends AbstractQueryHandler
 
       return new LuceneQueryHits(reader, searcher, query);
    }
-
 }

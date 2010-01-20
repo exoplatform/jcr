@@ -27,33 +27,44 @@ import java.util.List;
  * inside)
  * 
  * @author Gennady Azarenkov
- * @version $Id: PlainChangesLog.java 11907 2008-03-13 15:36:21Z ksm $
+ * @version $Id$
  */
 public interface PlainChangesLog extends ItemStateChangesLog
 {
 
    /**
+    * Return Sesion Id.
+    * 
     * @return sessionId of a session produced this changes log
     */
    String getSessionId();
+   
+   /**
+    * Return pair Id of system and non-system logs.
+    * 
+    * @return pairId of a pair, null if no pair found.
+    */
+   String getPairId();
 
    /**
-    * @return event type produced this log
+    * Return this log event type.
+    * 
+    * @return int, event type produced this log
     * @see ExtendedEventType
     */
    int getEventType();
 
    /**
-    * adds an item state object to the bottom of this log
+    * Adds an item state object to the bottom of this log.
     * 
-    * @param state
+    * @param state ItemState
     */
    PlainChangesLog add(ItemState state);
 
    /**
-    * adds list of states object to the bottom of this log
-    * 
-    * @param states
+    * Adds list of states object to the bottom of this log.
+    *  
+    * @param states List of ItemState
     */
    PlainChangesLog addAll(List<ItemState> states);
 }

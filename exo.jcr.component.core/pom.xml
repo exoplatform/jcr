@@ -102,6 +102,10 @@
          </exclusions>
       </dependency>
       <dependency>
+         <groupId>commons-pool</groupId>
+         <artifactId>commons-pool</artifactId>
+      </dependency>      
+      <dependency>
          <groupId>commons-lang</groupId>
          <artifactId>commons-lang</artifactId>
       </dependency>
@@ -143,7 +147,15 @@
       </dependency>
       <dependency>
          <groupId>commons-collections</groupId>
-         <artifactId>commons-collections</artifactId>
+            <artifactId>commons-collections</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>jboss.jbossts</groupId>
+         <artifactId>jbossjts</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>jboss.jbossts</groupId>
+         <artifactId>jbossts-common</artifactId>
       </dependency>
       <dependency>
          <groupId>org.apache.ws.commons</groupId>
@@ -159,7 +171,16 @@
             </exclusion>
          </exclusions>
       </dependency>
+      <dependency>
+         <groupId>org.exoplatform.jcr</groupId>
+         <artifactId>exo.jcr.component.cluster.test.client</artifactId>
+         <scope>test</scope>
+      </dependency>
       <!-- TCK binaries and deps for repo stub, some eXo API test -->
+      <dependency>
+         <groupId>org.jboss.cache</groupId>
+         <artifactId>jbosscache-core</artifactId>
+      </dependency>
       <dependency>
          <groupId>org.apache.jackrabbit</groupId>
          <artifactId>jackrabbit-jcr-tests</artifactId>
@@ -329,8 +350,12 @@
                   <exclude>org/exoplatform/services/jcr/**/TestImport.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/TestRollbackBigFiles.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/TestErrorMultithreading.java</exclude>
+                  <exclude>org/exoplatform/services/jcr/**/api/TestAll.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/api/**/TestSameNameItems.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/api/**/TestVersionRestore.java</exclude>
+                  <exclude>org/exoplatform/services/jcr/**/api/**/TestSameNameItems.java</exclude>
+                  <exclude>org/exoplatform/services/jcr/**/api/**/TestVersionRestore.java</exclude>
+                  
                   <exclude>org/exoplatform/services/jcr/**/impl/**/TestWorkspaceManagement.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/TestRepositoryManagement.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/TestSaveConfiguration.java</exclude>
@@ -340,14 +365,15 @@
                   <exclude>org/exoplatform/services/jcr/**/impl/**/Base*.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/TestJCRSerializationStream.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/TestJCRSerializationVersionRestore.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/api/TestAll.java</exclude>
+                  
                   <exclude>org/exoplatform/services/jcr/**/usecases/**/RemoveSameNameSiblingTest.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/usecases/**/TestQueryWithNumberAndSpace.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/usecases/BaseUsecasesTest.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/api/**/TestSameNameItems.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/api/**/TestVersionRestore.java</exclude>
+                  <exclude>org/exoplatform/services/jcr/**/usecases/**/ExportWorkspaceSystemViewTest.java</exclude>
                   
                   <exclude>org/exoplatform/services/jcr/**/impl/**/TestSessionDataManager.java</exclude>
+                  <exclude>org/exoplatform/services/jcr/**/impl/**/TestLinkedWorkspaceStorageCacheMetrics.java</exclude>
+                  <exclude>org/exoplatform/services/jcr/**/impl/**/SQLBenchmarkTest.java</exclude>
                </excludes>
             </configuration>
          </plugin>
@@ -536,6 +562,7 @@
                   <configuration>
                      <phase>test</phase>
                      <forkMode>${exo.test.forkMode}</forkMode>
+                     <argLine>${env.MAVEN_OPTS}</argLine>
                      <goals>
                         <goal>test</goal>
                      </goals>
@@ -546,10 +573,13 @@
                         </property>
                      </systemProperties>
                      <includes>
-                        <include>**/**/TestErrorMultithreading__.java</include>
-                        <include>**/**/TestConcurrentItems__.java</include>
+                        <include>**/**/reading_/Test*.java</include>
+                        <include>**/**/writing_/Test*.java</include>
+                                                
+                        <include>**/**/TestJBossCacheWorkspaceStorageCache_.java</include>
+                        <include>**/**/TestSVNodeDataOptimization_.java</include>
                         
-                        <include>**/**/TestValueImpl.java</include>
+                        <include>**/**/ExportWorkspaceSystemViewTest.java</include>       
                      </includes>
                   </configuration>
                </plugin>

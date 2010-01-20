@@ -96,6 +96,11 @@ public class MultipleDeserializationTestLoad extends JcrImplSerializationBaseTes
       {
          logsList.clear();
       }
+
+      public boolean isTXAware()
+      {
+         return true;
+      }
    }
 
    public void testSerialization() throws Exception
@@ -166,4 +171,11 @@ public class MultipleDeserializationTestLoad extends JcrImplSerializationBaseTes
       return data;
    }
 
+   /**
+    * {@inheritDoc}
+    */
+   public boolean isTXAware()
+   {
+      return true;
+   }
 }

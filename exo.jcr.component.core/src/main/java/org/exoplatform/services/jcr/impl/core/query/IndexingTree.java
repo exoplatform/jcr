@@ -29,90 +29,97 @@ import java.util.List;
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@exoplatform.org">Sergey
  *         Kabashnyuk</a>
- * @version $Id: exo-jboss-codetemplates.xml 34360 2009-07-22 23:58:59Z ksm $
+ * @version $Id: IndexingTree.java 790 2009-11-20 13:45:40Z skabashnyuk $
  * 
  */
-public class IndexingTree {
-    private final QPath indexingRootQpath;
-    private final NodeData indexingRoot;
+public class IndexingTree
+{
+   private final QPath indexingRootQpath;
 
-    private final List<QPath> excludedPaths;
+   private final NodeData indexingRoot;
 
-    /**
-     * @param indexingRoot
-     * @param excludedPaths
-     */
-    public IndexingTree(NodeData indexingRoot, List<QPath> excludedPaths) {
-	super();
-	this.indexingRoot = indexingRoot;
-	this.indexingRootQpath = indexingRoot.getQPath();
-	this.excludedPaths = excludedPaths;
-    }
+   private final List<QPath> excludedPaths;
 
-    /**
-     * @param indexingRoot
-     * @param excludedPaths
-     */
-    public IndexingTree(NodeData indexingRoot) {
-	super();
-	this.indexingRoot = indexingRoot;
-	this.indexingRootQpath = indexingRoot.getQPath();
-	this.excludedPaths = new ArrayList<QPath>();
-    }
+   /**
+    * @param indexingRoot
+    * @param excludedPaths
+    */
+   public IndexingTree(NodeData indexingRoot, List<QPath> excludedPaths)
+   {
+      super();
+      this.indexingRoot = indexingRoot;
+      this.indexingRootQpath = indexingRoot.getQPath();
+      this.excludedPaths = excludedPaths;
+   }
 
-    /**
-     * @return the excludedPaths
-     */
-    public List<QPath> getExcludedPaths() {
-	return excludedPaths;
-    }
+   /**
+    * @param indexingRoot
+    * @param excludedPaths
+    */
+   public IndexingTree(NodeData indexingRoot)
+   {
+      super();
+      this.indexingRoot = indexingRoot;
+      this.indexingRootQpath = indexingRoot.getQPath();
+      this.excludedPaths = new ArrayList<QPath>();
+   }
 
-    /**
-     * @return the indexingRoot
-     */
-    public NodeData getIndexingRoot() {
-	return indexingRoot;
-    }
+   /**
+    * @return the excludedPaths
+    */
+   public List<QPath> getExcludedPaths()
+   {
+      return excludedPaths;
+   }
 
-    /**
-     * Checks if the given event should be excluded based on the
-     * {@link #excludePath} setting.
-     * 
-     * @param event
-     *            observation event
-     * @return <code>true</code> if the event should be excluded,
-     *         <code>false</code> otherwise
-     */
-    public boolean isExcluded(ItemState event) {
+   /**
+    * @return the indexingRoot
+    */
+   public NodeData getIndexingRoot()
+   {
+      return indexingRoot;
+   }
 
-	for (QPath excludedPath : excludedPaths) {
-	    if (event.getData().getQPath().isDescendantOf(excludedPath)
-		    || event.getData().getQPath().equals(excludedPath))
-		return true;
-	}
+   /**
+    * Checks if the given event should be excluded based on the
+    * {@link #excludePath} setting.
+    * 
+    * @param event
+    *            observation event
+    * @return <code>true</code> if the event should be excluded,
+    *         <code>false</code> otherwise
+    */
+   public boolean isExcluded(ItemState event)
+   {
 
-	return !event.getData().getQPath().isDescendantOf(indexingRootQpath)
-		&& !event.getData().getQPath().equals(indexingRootQpath);
-    }
+      for (QPath excludedPath : excludedPaths)
+      {
+         if (event.getData().getQPath().isDescendantOf(excludedPath) || event.getData().getQPath().equals(excludedPath))
+            return true;
+      }
 
-    /**
-     * Checks if the given event should be excluded based on the
-     * {@link #excludePath} setting.
-     * 
-     * @param event
-     *            observation event
-     * @return <code>true</code> if the event should be excluded,
-     *         <code>false</code> otherwise
-     */
-    public boolean isExcluded(ItemData eventData) {
+      return !event.getData().getQPath().isDescendantOf(indexingRootQpath)
+         && !event.getData().getQPath().equals(indexingRootQpath);
+   }
 
-	for (QPath excludedPath : excludedPaths) {
-	    if (eventData.getQPath().isDescendantOf(excludedPath)
-		    || eventData.getQPath().equals(excludedPath))
-		return true;
-	}
+   /**
+    * Checks if the given event should be excluded based on the
+    * {@link #excludePath} setting.
+    * 
+    * @param event
+    *            observation event
+    * @return <code>true</code> if the event should be excluded,
+    *         <code>false</code> otherwise
+    */
+   public boolean isExcluded(ItemData eventData)
+   {
 
-	return !eventData.getQPath().isDescendantOf(indexingRootQpath)
-		&& !eventData.getQPath().equals(indexingRootQpath);
-    }
+      for (QPath excludedPath : excludedPaths)
+      {
+         if (eventData.getQPath().isDescendantOf(excludedPath) || eventData.getQPath().equals(excludedPath))
+            return true;
+      }
+
+      return !eventData.getQPath().isDescendantOf(indexingRootQpath) && !eventData.getQPath().equals(indexingRootQpath);
+   }
 }

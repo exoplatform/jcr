@@ -26,6 +26,7 @@ import org.exoplatform.services.jcr.dataflow.DataManager;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
+import org.exoplatform.services.jcr.dataflow.SharedDataManager;
 import org.exoplatform.services.jcr.datamodel.IllegalPathException;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
@@ -42,7 +43,6 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.LocalWorkspaceDataManagerStub;
 import org.exoplatform.services.jcr.impl.dataflow.session.SessionChangesLog;
 import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableDataManager;
-import org.exoplatform.services.jcr.impl.dataflow.session.WorkspaceStorageDataManagerProxy;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -113,7 +113,7 @@ public class SessionDataManager implements ItemDataConsumer
    /**
     * @return Returns the workspDataManager.
     */
-   public WorkspaceStorageDataManagerProxy getWorkspaceDataManager()
+   public SharedDataManager getWorkspaceDataManager()
    {
       return transactionableManager.getStorageDataManager();
    }
@@ -176,31 +176,37 @@ public class SessionDataManager implements ItemDataConsumer
          item = getItemData(parent, relPathEntries[i]);
 
          if (item == null)
+         {
             break;
+         }
 
          if (item.isNode())
+         {
             parent = (NodeData)item;
+         }
          else if (i < relPathEntries.length - 1)
+         {
             throw new IllegalPathException("Path can not contains a property as the intermediate element");
+         }
       }
       return item;
    }
 
-   /*
-    * (non-Javadoc)
-    * @see
-    * org.exoplatform.services.jcr.dataflow.ItemDataConsumer#getItemData(org.
-    * exoplatform.services .jcr.datamodel.NodeData,
-    * org.exoplatform.services.jcr.datamodel.QPathEntry)
+   /**
+    * {@inheritDoc}
     */
    public ItemData getItemData(NodeData parent, QPathEntry name) throws RepositoryException
    {
       if (name.getName().equals(JCRPath.PARENT_RELPATH) && name.getNamespace().equals(Constants.NS_DEFAULT_URI))
       {
          if (parent.getIdentifier().equals(Constants.ROOT_UUID))
+         {
             return null;
+         }
          else
+         {
             return getItemData(parent.getParentIdentifier());
+         }
       }
 
       ItemData data = null;
@@ -260,35 +266,23 @@ public class SessionDataManager implements ItemDataConsumer
    {
       long start = System.currentTimeMillis();
       if (log.isDebugEnabled())
+      {
          log.debug("getItem(" + parent.getQPath().getAsString() + " + " + name.getAsString() + " ) >>>>>");
+      }
 
       ItemImpl item = null;
       try
       {
-         ItemData itemData = getItemData(parent, name);
-         if (itemData == null)
-            return null;
-
-         item = itemFactory.createItem(itemData);
-         session.getActionHandler().postRead(item);
-         if (!item.hasPermission(PermissionType.READ))
-         {
-            throw new AccessDeniedException("Access denied "
-               + QPath.makeChildPath(parent.getQPath(), name).getAsString() + " for " + session.getUserID()
-               + " (get item by path)");
-         }
-
-         if (pool)
-            return itemsPool.get(item);
-
-         return item;
+         return item = readItem(getItemData(parent, name), pool);
       }
       finally
       {
          if (log.isDebugEnabled())
+         {
             log.debug("getItem(" + parent.getQPath().getAsString() + " + " + name.getAsString() + ") --> "
                + (item != null ? item.getPath() : "null") + " <<<<< " + ((System.currentTimeMillis() - start) / 1000d)
                + "sec");
+         }
       }
    }
 
@@ -321,23 +315,7 @@ public class SessionDataManager implements ItemDataConsumer
       ItemImpl item = null;
       try
       {
-         ItemData itemData = getItemData(parent, relPath);
-         if (itemData == null)
-            return null;
-
-         item = itemFactory.createItem(itemData);
-         session.getActionHandler().postRead(item);
-         if (!item.hasPermission(PermissionType.READ))
-         {
-            throw new AccessDeniedException("Access denied "
-               + session.getLocationFactory().createJCRPath(QPath.makeChildPath(parent.getQPath(), relPath))
-                  .getAsString(false) + " for " + session.getUserID() + " (get item by path)");
-         }
-
-         if (pool)
-            return itemsPool.get(item);
-
-         return item;
+         return item = readItem(getItemData(parent, relPath), pool);
       }
       finally
       {
@@ -369,32 +347,83 @@ public class SessionDataManager implements ItemDataConsumer
    {
       long start = System.currentTimeMillis();
       if (log.isDebugEnabled())
+      {
          log.debug("getItem(" + path.getAsString() + " ) >>>>>");
+      }
 
       ItemImpl item = null;
       try
       {
-         ItemData itemData = getItemData(path);
-         if (itemData == null)
-            return null;
-         item = itemFactory.createItem(itemData);
-         session.getActionHandler().postRead(item);
-         if (!item.hasPermission(PermissionType.READ))
-         {
-            throw new AccessDeniedException("Access denied " + path.getAsString() + " for " + session.getUserID()
-               + " (get item by path)");
-         }
-
-         if (pool)
-            return itemsPool.get(item);
-
-         return item;
+         return item = readItem(getItemData(path), pool);
       }
       finally
       {
          if (log.isDebugEnabled())
+         {
             log.debug("getItem(" + path.getAsString() + ") --> " + (item != null ? item.getPath() : "null") + " <<<<< "
                + ((System.currentTimeMillis() - start) / 1000d) + "sec");
+         }
+      }
+   }
+
+   /**
+    * Read ItemImpl of given ItemData.
+    * Will call postRead Action and check permissions.
+    * 
+    * @param itemData ItemData
+    * @param pool boolean, if true will reload pooled ItemImpl
+    * @return ItemImpl
+    * @throws RepositoryException if errro occurs
+    */
+   protected ItemImpl readItem(ItemData itemData, boolean pool) throws RepositoryException
+   {
+      return readItem(itemData, null, pool, true);
+   }
+
+   /**
+    * Create or reload pooled ItemImpl with the given ItemData.
+    * 
+    * @param itemData ItemData, data to create ItemImpl
+    * @param parent NodeData, this item parent data, can be null. Not null used for getChildXXX() 
+    * @param pool boolean, if true will reload pooled ItemImpl
+    * @param apiRead boolean, if true will call postRead Action and check permissions 
+    * @return ItemImpl
+    * @throws RepositoryException if errro occurs
+    */
+   protected ItemImpl readItem(ItemData itemData, NodeData parent, boolean pool, boolean apiRead)
+      throws RepositoryException
+   {
+      if (itemData != null)
+      {
+         ItemImpl item;
+         ItemImpl pooledItem;
+         if (pool && (pooledItem = itemsPool.get(itemData, parent)) != null)
+         {
+            // use pooled & reloaded
+            item = pooledItem;
+         }
+         else
+         {
+            // create new
+            item = itemFactory.createItem(itemData, parent);
+         }
+
+         if (apiRead)
+         {
+            // TODO post read will be logically to call after the permissions check
+            session.getActionHandler().postRead(item);
+            if (!item.hasPermission(PermissionType.READ))
+            {
+               throw new AccessDeniedException("Access denied " + itemData.getQPath().getAsString() + " for "
+                  + session.getUserID());
+            }
+         }
+
+         return item;
+      }
+      else
+      {
+         return null;
       }
    }
 
@@ -412,32 +441,22 @@ public class SessionDataManager implements ItemDataConsumer
    {
       long start = System.currentTimeMillis();
       if (log.isDebugEnabled())
+      {
          log.debug("getItemByIdentifier(" + identifier + " ) >>>>>");
+      }
 
       ItemImpl item = null;
       try
       {
-         ItemData itemData = getItemData(identifier);
-         if (itemData == null)
-            return null;
-
-         item = itemFactory.createItem(itemData);
-         session.getActionHandler().postRead(item);
-         if (!item.hasPermission(PermissionType.READ))
-         {
-            throw new AccessDeniedException("Access denied, item with id : " + item.getPath()
-               + " (get item by id), user " + session.getUserID() + " has no privileges on reading");
-         }
-         if (pool)
-            return itemsPool.get(item);
-
-         return item;
+         return item = readItem(getItemData(identifier), pool);
       }
       finally
       {
          if (log.isDebugEnabled())
+         {
             log.debug("getItemByIdentifier(" + identifier + ") --> " + (item != null ? item.getPath() : "null")
                + "  <<<<< " + ((System.currentTimeMillis() - start) / 1000d) + "sec");
+         }
       }
    }
 
@@ -469,9 +488,54 @@ public class SessionDataManager implements ItemDataConsumer
       ItemState lastState = changesLog.getItemState(identifier);
 
       if (lastState == null || lastState.isDeleted())
+      {
          return false;
+      }
 
       return changesLog.getItemState(identifier, ItemState.ADDED) != null;
+   }
+
+   /**
+    * Returns true if the item with <code>identifier</code> was deleted in this session. Within a transaction,
+    * isDelete on an Item may return false (because the item has been saved) even if that Item is not in
+    * persistent storage (because the transaction has not yet been committed).
+    * 
+    * @param identifier
+    *          of the item
+    * @return boolean, true if the item was deleted
+    */
+   public boolean isDeleted(String identifier)
+   {
+
+      ItemState lastState = changesLog.getItemState(identifier);
+
+      if (lastState != null && lastState.isDeleted())
+      {
+         return true;
+      }
+
+      return false;
+   }
+
+   /**
+    * Returns true if the item with <code>itemPath</code> was deleted in this session. Within a transaction,
+    * isDelete on an Item may return false (because the item has been saved) even if that Item is not in
+    * persistent storage (because the transaction has not yet been committed).
+    * 
+    * @param itemPath QPath, path of the item
+    * @return boolean, true if the item was deleted
+    */
+   public boolean isDeleted(QPath itemPath)
+   {
+
+      ItemState lastState = changesLog.getItemState(itemPath);
+
+      if (lastState != null && lastState.isDeleted())
+      {
+         return true;
+      }
+
+      return false;
    }
 
    /**
@@ -521,27 +585,33 @@ public class SessionDataManager implements ItemDataConsumer
     */
    public List<PropertyImpl> getReferences(String identifier) throws RepositoryException
    {
-      List<PropertyImpl> refs = new ArrayList<PropertyImpl>();
-      for (PropertyData data : transactionableManager.getReferencesData(identifier, true))
+      List<PropertyData> refDatas = transactionableManager.getReferencesData(identifier, true);
+      List<PropertyImpl> refs = new ArrayList<PropertyImpl>(refDatas.size());
+      for (int i = 0, length = refDatas.size(); i < length; i++)
       {
+         PropertyData data = refDatas.get(i);
          // check for permission for read
-         // [PN] 21.12.07 use item data
          NodeData parent = (NodeData)getItemData(data.getParentIdentifier());
          // skip not permitted
          if (accessManager.hasPermission(parent.getACL(), new String[]{PermissionType.READ}, session.getUserState()
             .getIdentity()))
          {
-            PropertyImpl item = null;
+            PropertyImpl item;
             ItemState state = changesLog.getItemState(identifier);
             if (state != null)
             {
-               if (state.isDeleted()) // skip deleted
+               if (state.isDeleted())
+               {
+                  // skip deleted
                   continue;
+               }
 
-               item = (PropertyImpl)itemFactory.createItem(state.getData());
+               item = (PropertyImpl)readItem(state.getData(), null, true, false);
             }
             else
-               item = (PropertyImpl)itemFactory.createItem(data);
+            {
+               item = (PropertyImpl)readItem(data, null, true, false);
+            }
 
             refs.add(item);
             session.getActionHandler().postRead(item);
@@ -563,31 +633,30 @@ public class SessionDataManager implements ItemDataConsumer
     * @throws AccessDeniedException
     *           if it's no permissions for childs listing
     */
+   @Deprecated
    public List<NodeImpl> getChildNodes(NodeData parent, boolean pool) throws RepositoryException, AccessDeniedException
    {
 
       long start = System.currentTimeMillis();
       if (log.isDebugEnabled())
+      {
          log.debug("getChildNodes(" + parent.getQPath().getAsString() + ") >>>>>");
+      }
 
       try
       {
          // merge data from changesLog with data from txManager
-         List<NodeImpl> nodes = new ArrayList<NodeImpl>();
          List<NodeData> nodeDatas = getChildNodesData(parent);
+         List<NodeImpl> nodes = new ArrayList<NodeImpl>(nodeDatas.size());
 
-         for (NodeData data : nodeDatas)
+         for (int i = 0, length = nodeDatas.size(); i < length; i++)
          {
-            NodeImpl item = itemFactory.createNode(data, parent);
-
-            session.getActionHandler().postRead(item);
-
+            NodeData data = nodeDatas.get(i);
             if (accessManager.hasPermission(data.getACL(), new String[]{PermissionType.READ}, session.getUserState()
                .getIdentity()))
             {
-               if (pool)
-                  item = (NodeImpl)itemsPool.get(item);
-
+               NodeImpl item = (NodeImpl)readItem(data, parent, pool, false);
+               session.getActionHandler().postRead(item);
                nodes.add(item);
             }
          }
@@ -596,8 +665,10 @@ public class SessionDataManager implements ItemDataConsumer
       finally
       {
          if (log.isDebugEnabled())
+         {
             log.debug("getChildNodes(" + parent.getQPath().getAsString() + ") <<<<< "
                + ((System.currentTimeMillis() - start) / 1000d) + "sec");
+         }
       }
    }
 
@@ -614,26 +685,29 @@ public class SessionDataManager implements ItemDataConsumer
     * @throws AccessDeniedException
     *           if it's no permissions for childs listing
     */
+   @Deprecated
    public List<PropertyImpl> getChildProperties(NodeData parent, boolean pool) throws RepositoryException,
       AccessDeniedException
    {
 
       long start = System.currentTimeMillis();
       if (log.isDebugEnabled())
+      {
          log.debug("getChildProperties(" + parent.getQPath().getAsString() + ") >>>>>");
+      }
 
       try
       {
-         List<PropertyImpl> props = new ArrayList<PropertyImpl>();
-         for (PropertyData data : getChildPropertiesData(parent))
+         List<PropertyData> propDatas = getChildPropertiesData(parent);
+         List<PropertyImpl> props = new ArrayList<PropertyImpl>(propDatas.size());
+         for (int i = 0, length = propDatas.size(); i < length; i++)
          {
-            ItemImpl item = itemFactory.createItem(data);
-            session.getActionHandler().postRead(item);
+            PropertyData data = propDatas.get(i);
             if (accessManager.hasPermission(parent.getACL(), new String[]{PermissionType.READ}, session.getUserState()
                .getIdentity()))
             {
-               if (pool)
-                  item = itemsPool.get(item);
+               ItemImpl item = readItem(data, parent, pool, false);
+               session.getActionHandler().postRead(item);
                props.add((PropertyImpl)item);
             }
          }
@@ -642,8 +716,10 @@ public class SessionDataManager implements ItemDataConsumer
       finally
       {
          if (log.isDebugEnabled())
+         {
             log.debug("getChildProperties(" + parent.getQPath().getAsString() + ") <<<<< "
                + ((System.currentTimeMillis() - start) / 1000d) + "sec");
+         }
       }
    }
 
@@ -654,17 +730,21 @@ public class SessionDataManager implements ItemDataConsumer
    {
       long start = System.currentTimeMillis();
       if (log.isDebugEnabled())
+      {
          log.debug("getChildNodesData(" + parent.getQPath().getAsString() + ") >>>>>");
+      }
 
       try
       {
-         return (List<NodeData>)merge(parent, transactionableManager, false, MERGE_NODES);
+         return (List<NodeData>)mergeNodes(parent, transactionableManager);
       }
       finally
       {
          if (log.isDebugEnabled())
+         {
             log.debug("getChildNodesData(" + parent.getQPath().getAsString() + ") <<<<< "
                + ((System.currentTimeMillis() - start) / 1000d) + "sec");
+         }
       }
    }
 
@@ -698,13 +778,15 @@ public class SessionDataManager implements ItemDataConsumer
 
       try
       {
-         return (List<PropertyData>)merge(parent, transactionableManager, false, MERGE_PROPS);
+         return (List<PropertyData>)mergeProps(parent, transactionableManager);
       }
       finally
       {
          if (log.isDebugEnabled())
+         {
             log.debug("getChildPropertiesData(" + parent.getQPath().getAsString() + ") <<<<< "
                + ((System.currentTimeMillis() - start) / 1000d) + "sec");
+         }
       }
    }
 
@@ -722,13 +804,15 @@ public class SessionDataManager implements ItemDataConsumer
 
       try
       {
-         return (List<PropertyData>)mergeList(parent, transactionableManager, false, MERGE_PROPS);
+         return (List<PropertyData>)mergeProps(parent, transactionableManager);
       }
       finally
       {
          if (log.isDebugEnabled())
+         {
             log.debug("listChildPropertiesData(" + parent.getQPath().getAsString() + ") <<<<< "
                + ((System.currentTimeMillis() - start) / 1000d) + "sec");
+         }
       }
    }
 
@@ -769,17 +853,23 @@ public class SessionDataManager implements ItemDataConsumer
          }
 
          if (item != null && item.isNode())
+         {
             // node ACL
             return ((NodeData)item).getACL();
+         }
          else
+         {
             // item not found or it's a property - return parent ACL
             return parent.getACL();
+         }
       }
       finally
       {
          if (log.isDebugEnabled())
+         {
             log.debug("getACL(" + path.getAsString() + ") <<<<< " + ((System.currentTimeMillis() - start) / 1000d)
                + "sec");
+         }
       }
    }
 
@@ -817,15 +907,32 @@ public class SessionDataManager implements ItemDataConsumer
          {
             ItemData ri = getItemData(item.getInternalIdentifier());
             if (ri != null)
+            {
                itemsPool.reload(ri);
+            }
             else
+            {
                // the item is invalid, case of version restore - the item from non
                // current version
                item.invalidate();
+            }
 
             invalidated.add(item);
          }
       }
+   }
+
+   /**
+    * Reloads item in pool.
+    *
+    * @param data
+    *          item data
+    * @return
+    * @throws RepositoryException
+    */
+   ItemImpl reloadItem(ItemData data) throws RepositoryException
+   {
+      return itemsPool.reload(data);
    }
 
    public void rename(NodeData srcData, ItemDataMoveVisitor initializer) throws RepositoryException
@@ -1037,9 +1144,10 @@ public class SessionDataManager implements ItemDataConsumer
 
       NodeData parentNodeData = (NodeData)dataManager.getItemData(cause.getParentIdentifier());
 
-      TransientNodeData nextSibling =
-         (TransientNodeData)dataManager.getItemData(parentNodeData, new QPathEntry(cause.getQPath().getName(), cause
-            .getQPath().getIndex() + 1));
+      NodeData nextSibling =
+         (NodeData)dataManager.getItemData(parentNodeData, new QPathEntry(cause.getQPath().getName(), cause.getQPath()
+            .getIndex() + 1));
+
       String reindexedId = null;
       // repeat till next sibling exists and it's not a caused Node (deleted or moved to) or just
       // reindexed
@@ -1047,7 +1155,15 @@ public class SessionDataManager implements ItemDataConsumer
          && !nextSibling.getIdentifier().equals(reindexedId))
       {
          // update with new index
-         NodeData reindexed = nextSibling.cloneAsSibling(nextSibling.getQPath().getIndex() - 1);
+         QPath siblingPath =
+            QPath.makeChildPath(nextSibling.getQPath().makeParentPath(), nextSibling.getQPath().getName(), nextSibling
+               .getQPath().getIndex() - 1);
+
+         NodeData reindexed =
+            new TransientNodeData(siblingPath, nextSibling.getIdentifier(), nextSibling.getPersistedVersion(),
+               nextSibling.getPrimaryTypeName(), nextSibling.getMixinTypeNames(), nextSibling.getOrderNumber(),
+               nextSibling.getParentIdentifier(), nextSibling.getACL());
+
          reindexedId = reindexed.getIdentifier();
 
          ItemState reindexedState = ItemState.createUpdatedState(reindexed);
@@ -1061,7 +1177,7 @@ public class SessionDataManager implements ItemDataConsumer
 
          // next...
          nextSibling =
-            (TransientNodeData)dataManager.getItemData(parentNodeData, new QPathEntry(nextSibling.getQPath().getName(),
+            (NodeData)dataManager.getItemData(parentNodeData, new QPathEntry(nextSibling.getQPath().getName(),
                nextSibling.getQPath().getIndex() + 1));
       }
 
@@ -1069,7 +1185,7 @@ public class SessionDataManager implements ItemDataConsumer
    }
 
    /**
-    * Updates (adds or modifies) item state in the session transient storage
+    * Updates (adds or modifies) item state in the session transient storage.
     * 
     * @param itemState
     *          - the state
@@ -1083,18 +1199,33 @@ public class SessionDataManager implements ItemDataConsumer
     */
    public ItemImpl update(ItemState itemState, boolean pool) throws RepositoryException
    {
-
       if (itemState.isDeleted())
          throw new RepositoryException("Illegal state DELETED. Use delete(...) method");
 
       changesLog.add(itemState);
 
-      ItemImpl item = itemFactory.createItem(itemState.getData());
+      return readItem(itemState.getData(), null, pool, false);
+   }
 
-      if (pool)
-         item = itemsPool.get(item);
+   /**
+    * Updates (adds or modifies) item state in the session transient storage without creation ItemImpl.
+    * 
+    * @param itemState
+    *          - the state
+    * @param pool
+    *          - if true Manager force pooling this State so next calling will returna the same
+    *          object Common rule: use pool = true if the Item supposed to be returned by JCR API
+    *          (Node.addNode(), Node.setProperty() for ex) (NOTE: independently of pooling the
+    *          Manager always return actual Item state)
+    * @return
+    * @throws RepositoryException
+    */
+   public void updateItemState(ItemState itemState) throws RepositoryException
+   {
+      if (itemState.isDeleted())
+         throw new RepositoryException("Illegal state DELETED. Use delete(...) method");
 
-      return item;
+      changesLog.add(itemState);
    }
 
    /**
@@ -1214,6 +1345,7 @@ public class SessionDataManager implements ItemDataConsumer
                         + " has wrong formed ACL.");
                   }
                }
+               validateMandatoryItem(itemState);
             }
          }
          else
@@ -1318,7 +1450,7 @@ public class SessionDataManager implements ItemDataConsumer
     */
    private void validateMandatoryItem(ItemState changedItem) throws ConstraintViolationException, AccessDeniedException
    {
-      if (changedItem.getData().isNode() && changedItem.isAdded()
+      if (changedItem.getData().isNode() && (changedItem.isAdded() || changedItem.isMixinChanged())
          && !changesLog.getItemState(changedItem.getData().getQPath()).isDeleted())
       {
          // Node not in delete state. It might be a wrong
@@ -1413,20 +1545,26 @@ public class SessionDataManager implements ItemDataConsumer
                   .getQPath().getEntries().length - 1]);
 
             if (persisted != null)
+            {
                // reload item data
                removed.loadData(persisted);
+            }
          } // else it's transient item
 
          removedIter.remove();
       }
 
       if (exceptions.length() > 0 && log.isDebugEnabled())
+      {
          log.warn(exceptions);
+      }
    }
 
-   /*
-    * (non-Javadoc)
+   /**
     * @see javax.jcr.Item#refresh(boolean)
+    * @param item ItemData
+    * @throws InvalidItemStateException
+    * @throws RepositoryException
     */
    void refresh(ItemData item) throws InvalidItemStateException, RepositoryException
    {
@@ -1494,53 +1632,92 @@ public class SessionDataManager implements ItemDataConsumer
    }
 
    /**
-    * merges incoming data with changes stored in this log i.e: 1. incoming data still not modified
+    * Merges incoming node with changes stored in this log i.e: 1. incoming data still not modified
     * if there are no corresponding changes 2. incoming data is refreshed with corresponding changes
     * if any 3. new datas is added from changes 4. if chaged data is marked as "deleted" it removes
-    * from outgoing list WARN. THIS METHOD HAS SIBLING - mergeList, see below
+    * from outgoing list WARN. THIS METHOD HAS SIBLING - mergeList, see below.
     * 
     * @param rootData
-    * @param deep
-    *          if true - traverses
-    * @param action
-    *          : MERGE_NODES | MERGE_PROPS | MERGE_ITEMS
     * @return
     */
-   protected List<? extends ItemData> merge(ItemData rootData, DataManager dataManager, boolean deep, int action)
-      throws RepositoryException
+   protected List<? extends ItemData> mergeNodes(ItemData rootData, DataManager dataManager) throws RepositoryException
    {
       // 1 get all transient descendants
-      List<ItemState> transientDescendants = new ArrayList<ItemState>();
-      traverseTransientDescendants(rootData, false, action, transientDescendants);
+      Collection<ItemState> transientDescendants = changesLog.getLastChildrenStates(rootData, true);
 
-      // 2 get ALL persisted descendants
-      Map<String, ItemData> descendants = new LinkedHashMap<String, ItemData>();
-      traverseStoredDescendants(rootData, dataManager, false, action, descendants, false, transientDescendants);
-
-      // merge data
-      for (ItemState state : transientDescendants)
+      if (!transientDescendants.isEmpty())
       {
-         ItemData data = state.getData();
-         if (!state.isDeleted())
-            descendants.put(data.getIdentifier(), data);
-         else
-            descendants.remove(data.getIdentifier());
-      }
-      List<ItemData> retval = new ArrayList<ItemData>();
-      Collection<ItemData> desc = descendants.values();
+         // 2 get ALL persisted descendants
+         Map<String, ItemData> descendants = new LinkedHashMap<String, ItemData>();
+         traverseStoredDescendants(rootData, dataManager, MERGE_NODES, descendants, false, transientDescendants);
 
-      for (ItemData itemData : desc)
-      {
-         retval.add(itemData);
-         if (deep)
-            retval.addAll(merge(itemData, dataManager, true, action));
+         // merge data
+         for (ItemState state : transientDescendants)
+         {
+            ItemData data = state.getData();
+            if (!state.isDeleted())
+            {
+               descendants.put(data.getIdentifier(), data);
+            }
+            else
+            {
+               descendants.remove(data.getIdentifier());
+            }
+         }
+         Collection<ItemData> desc = descendants.values();
+         return new ArrayList<ItemData>(desc);
       }
-      return retval;
+      else
+      {
+         return dataManager.getChildNodesData((NodeData)rootData);
+      }
+   }
+
+   /**
+    * Merges incoming property data with changes stored in this log i.e: 1. incoming data still not modified
+    * if there are no corresponding changes 2. incoming data is refreshed with corresponding changes
+    * if any 3. new datas is added from changes 4. if chaged data is marked as "deleted" it removes
+    * from outgoing list WARN. THIS METHOD HAS SIBLING - mergeList, see below.
+    * 
+    * @param rootData
+    * @return
+    */
+   protected List<? extends ItemData> mergeProps(ItemData rootData, DataManager dataManager) throws RepositoryException
+   {
+      // 1 get all transient descendants
+      Collection<ItemState> transientDescendants = changesLog.getLastChildrenStates(rootData, false);
+
+      if (!transientDescendants.isEmpty())
+      {
+         // 2 get ALL persisted descendants
+         Map<String, ItemData> descendants = new LinkedHashMap<String, ItemData>();
+         traverseStoredDescendants(rootData, dataManager, MERGE_PROPS, descendants, false, transientDescendants);
+
+         // merge data
+         for (ItemState state : transientDescendants)
+         {
+            ItemData data = state.getData();
+            if (!state.isDeleted())
+            {
+               descendants.put(data.getIdentifier(), data);
+            }
+            else
+            {
+               descendants.remove(data.getIdentifier());
+            }
+         }
+         Collection<ItemData> desc = descendants.values();
+         return new ArrayList<ItemData>(desc);
+      }
+      else
+      {
+         return dataManager.getChildPropertiesData((NodeData)rootData);
+      }
    }
 
    /**
     * Merge a list of nodes and properties of root data. NOTE. Properties in the list will have empty
-    * value data. I.e. for operations not changes properties content. USED FOR DELETE
+    * value data. I.e. for operations not changes properties content. USED FOR DELETE.
     * 
     * @param rootData
     * @param dataManager
@@ -1555,31 +1732,53 @@ public class SessionDataManager implements ItemDataConsumer
 
       // 1 get all transient descendants
       List<ItemState> transientDescendants = new ArrayList<ItemState>();
-      traverseTransientDescendants(rootData, false, action, transientDescendants);
+      traverseTransientDescendants(rootData, action, transientDescendants);
 
-      // 2 get ALL persisted descendants
-      Map<String, ItemData> descendants = new LinkedHashMap<String, ItemData>();
-      traverseStoredDescendants(rootData, dataManager, false, action, descendants, true, transientDescendants);
-
-      // merge data
-      for (ItemState state : transientDescendants)
+      if (deep || !transientDescendants.isEmpty())
       {
-         ItemData data = state.getData();
-         if (!state.isDeleted())
-            descendants.put(data.getIdentifier(), data);
-         else
-            descendants.remove(data.getIdentifier());
-      }
-      List<ItemData> retval = new ArrayList<ItemData>();
-      Collection<ItemData> desc = descendants.values();
+         // 2 get ALL persisted descendants
+         Map<String, ItemData> descendants = new LinkedHashMap<String, ItemData>();
+         traverseStoredDescendants(rootData, dataManager, action, descendants, true, transientDescendants);
 
-      for (ItemData itemData : desc)
-      {
-         retval.add(itemData);
+         // merge data
+         for (ItemState state : transientDescendants)
+         {
+            ItemData data = state.getData();
+            if (!state.isDeleted())
+            {
+               descendants.put(data.getIdentifier(), data);
+            }
+            else
+            {
+               descendants.remove(data.getIdentifier());
+            }
+         }
+         Collection<ItemData> desc = descendants.values();
+         List<ItemData> retval;
          if (deep)
-            retval.addAll(mergeList(itemData, dataManager, true, action));
+         {
+            int size = desc.size();
+            retval = new ArrayList<ItemData>(size < 10 ? 10 : size);
+
+            for (ItemData itemData : desc)
+            {
+               retval.add(itemData);
+               if (deep)
+               {
+                  retval.addAll(mergeList(itemData, dataManager, true, action));
+               }
+            }
+         }
+         else
+         {
+            retval = new ArrayList<ItemData>(desc);
+         }
+         return retval;
       }
-      return retval;
+      else
+      {
+         return getStoredDescendants(rootData, dataManager, action);
+      }
    }
 
    /**
@@ -1592,8 +1791,9 @@ public class SessionDataManager implements ItemDataConsumer
     * @param ret
     * @throws RepositoryException
     */
-   private void traverseStoredDescendants(ItemData parent, DataManager dataManager, boolean deep, int action,
-      Map<String, ItemData> ret, boolean listOnly, List<ItemState> transientDescendants) throws RepositoryException
+   private void traverseStoredDescendants(ItemData parent, DataManager dataManager, int action,
+      Map<String, ItemData> ret, boolean listOnly, Collection<ItemState> transientDescendants)
+      throws RepositoryException
    {
 
       if (parent.isNode())
@@ -1604,13 +1804,6 @@ public class SessionDataManager implements ItemDataConsumer
             for (NodeData childNode : childNodes)
             {
                ret.put(childNode.getIdentifier(), childNode);
-
-               if (log.isDebugEnabled())
-                  log.debug("Traverse stored (N) " + childNode.getQPath().getAsString());
-
-               // TODO [PN] Not used
-               if (deep)
-                  traverseStoredDescendants(childNode, dataManager, deep, action, ret, listOnly, transientDescendants);
             }
          }
          if (action != MERGE_NODES)
@@ -1630,12 +1823,49 @@ public class SessionDataManager implements ItemDataConsumer
                   }
                }
                ret.put(childProp.getIdentifier(), childProp);
-
-               if (log.isDebugEnabled())
-                  log.debug("Traverse stored (P) " + childProp.getQPath().getAsString());
             }
          }
       }
+   }
+
+   /**
+    * Get all stored descendants for the given parent node
+    * 
+    * @param parent
+    * @param dataManager
+    * @param action
+    * @throws RepositoryException
+    */
+   private List<? extends ItemData> getStoredDescendants(ItemData parent, DataManager dataManager, int action)
+      throws RepositoryException
+   {
+      if (parent.isNode())
+      {
+         List<ItemData> childItems = null;
+
+         List<NodeData> childNodes = dataManager.getChildNodesData((NodeData)parent);
+         if (action != MERGE_NODES)
+         {
+            childItems = new ArrayList<ItemData>(childNodes);
+         }
+         else
+         {
+            return childNodes;
+         }
+
+         List<PropertyData> childProps = dataManager.getChildPropertiesData((NodeData)parent);
+         if (action != MERGE_PROPS)
+         {
+            childItems.addAll(childProps);
+         }
+         else
+         {
+            return childProps;
+         }
+
+         return childItems;
+      }
+      return null;
    }
 
    /**
@@ -1647,7 +1877,7 @@ public class SessionDataManager implements ItemDataConsumer
     * @param ret
     * @throws RepositoryException
     */
-   private void traverseTransientDescendants(ItemData parent, boolean deep, int action, List<ItemState> ret)
+   private void traverseTransientDescendants(ItemData parent, int action, List<ItemState> ret)
       throws RepositoryException
    {
 
@@ -1659,9 +1889,6 @@ public class SessionDataManager implements ItemDataConsumer
             for (ItemState childNode : childNodes)
             {
                ret.add(childNode);
-
-               if (deep)
-                  traverseTransientDescendants(childNode.getData(), deep, action, ret);
             }
          }
          if (action != MERGE_NODES)
@@ -1683,13 +1910,17 @@ public class SessionDataManager implements ItemDataConsumer
 
       private WeakHashMap<String, ItemImpl> items;
 
+      //private WeakHashMap<String, ItemData> datas;
+
       ItemReferencePool()
       {
          items = new WeakHashMap<String, ItemImpl>();
+         //datas = new WeakHashMap<String, ItemData>();
       }
 
       ItemImpl remove(String identifier)
       {
+         //datas.remove(identifier);
          return items.remove(identifier);
       }
 
@@ -1714,24 +1945,47 @@ public class SessionDataManager implements ItemDataConsumer
       }
 
       /**
-       * @param newItem
-       * @return the item
+       * Get ItemImpl from the pool using given data.   
+       * 
+       * @param newData ItemData
+       * @return ItemImpl item
        * @throws RepositoryException
        */
-      ItemImpl get(ItemImpl newItem) throws RepositoryException
+      ItemImpl get(final ItemData newData) throws RepositoryException
       {
-         String identifier = newItem.getInternalIdentifier();
+         return get(newData, null);
+      }
+
+      /**
+       * Get ItemImpl from the pool using given data.   
+       * 
+       * @param newData ItemData
+       * @param parent nodeData
+       * @return ItemImpl item
+       * @throws RepositoryException
+       */
+      ItemImpl get(final ItemData newData, final NodeData parent) throws RepositoryException
+      {
+         final String identifier = newData.getIdentifier();
          ItemImpl item = items.get(identifier);
-         if (item == null)
+         if (item != null)
          {
-            items.put(identifier, newItem);
-            return newItem;
+            item.loadData(newData, parent);
          }
          else
          {
-            item.loadData(newItem.getData(), newItem.getItemDefinitionData());
-            return item;
+            //            ItemData preloaded = datas.remove(identifier);
+            //            item =
+            //               itemFactory.createItem(preloaded != null
+            //                  && preloaded.getPersistedVersion() > newData.getPersistedVersion() ? preloaded : newData);
+            //datas.remove(identifier);
+
+            // TODO if (changesLog.get) check if DELETED!!
+
+            item = itemFactory.createItem(newData, parent);
+            items.put(item.getInternalIdentifier(), item);
          }
+         return item;
       }
 
       /**
@@ -1755,6 +2009,10 @@ public class SessionDataManager implements ItemDataConsumer
             item.loadData(newItemData);
             return item;
          }
+         //         else
+         //         {
+         //            datas.put(identifier, newItemData);
+         //         }
          return null;
       }
 
@@ -1867,9 +2125,26 @@ public class SessionDataManager implements ItemDataConsumer
       {
 
          if (data.isNode())
+         {
             return createNode((NodeData)data);
+         }
          else
+         {
             return createProperty(data);
+         }
+      }
+
+      private ItemImpl createItem(ItemData data, NodeData parent) throws RepositoryException
+      {
+
+         if (data.isNode())
+         {
+            return createNode((NodeData)data, parent);
+         }
+         else
+         {
+            return createProperty(data, parent);
+         }
       }
 
       private NodeImpl createNode(NodeData data) throws RepositoryException
@@ -1907,6 +2182,10 @@ public class SessionDataManager implements ItemDataConsumer
          return new PropertyImpl(data, session);
       }
 
+      private PropertyImpl createProperty(ItemData data, NodeData parent) throws RepositoryException
+      {
+         return new PropertyImpl(data, parent, session);
+      }
    }
 
    /**

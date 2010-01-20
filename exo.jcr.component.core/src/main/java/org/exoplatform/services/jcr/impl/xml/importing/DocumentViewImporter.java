@@ -43,6 +43,7 @@ import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataConvertor;
 import org.exoplatform.services.jcr.impl.util.ISO9075;
 import org.exoplatform.services.jcr.impl.util.StringConverter;
 import org.exoplatform.services.jcr.impl.xml.importing.dataflow.ImportNodeData;
@@ -142,8 +143,7 @@ public class DocumentViewImporter extends BaseXmlImporter
       {
          TransientNodeData nodeData =
             TransientNodeData.createNodeData(getParent(), Constants.JCR_XMLTEXT, Constants.NT_UNSTRUCTURED,
-               getNodeIndex(getParent(), Constants.JCR_XMLTEXT, null));
-         nodeData.setOrderNumber(getNextChildOrderNum(getParent()));
+               getNodeIndex(getParent(), Constants.JCR_XMLTEXT, null), getNextChildOrderNum(getParent()));
 
          changesLog.add(new ItemState(nodeData, ItemState.ADDED, true, getAncestorToSave()));
          if (log.isDebugEnabled())
@@ -431,7 +431,7 @@ public class DocumentViewImporter extends BaseXmlImporter
       {
          newProperty =
             TransientPropertyData.createPropertyData(getParent(), propName, PropertyType.BINARY, false,
-               new TransientValueData(Base64.decode(propertiesMap.get(propName)), 0));
+               new TransientValueData(0, Base64.decode(propertiesMap.get(propName))));
       }
       catch (DecodingException e)
       {
@@ -492,7 +492,7 @@ public class DocumentViewImporter extends BaseXmlImporter
             try
             {
 
-               nodeData.setVersionHistoryIdentifier(((TransientValueData)values.get(0)).getString());
+               nodeData.setVersionHistoryIdentifier(ValueDataConvertor.readString(values.get(0)));
             }
             catch (IOException e)
             {
@@ -506,7 +506,7 @@ public class DocumentViewImporter extends BaseXmlImporter
          {
             try
             {
-               nodeData.setBaseVersionIdentifier(((TransientValueData)values.get(0)).getString());
+               nodeData.setBaseVersionIdentifier(ValueDataConvertor.readString(values.get(0)));
             }
             catch (IOException e)
             {

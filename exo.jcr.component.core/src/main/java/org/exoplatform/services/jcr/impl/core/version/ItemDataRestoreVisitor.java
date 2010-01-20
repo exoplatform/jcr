@@ -19,7 +19,6 @@
 package org.exoplatform.services.jcr.impl.core.version;
 
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
-import org.exoplatform.services.jcr.dataflow.ItemDataTraversingVisitor;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
@@ -31,6 +30,7 @@ import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.dataflow.AbstractItemDataCopyVisitor;
 import org.exoplatform.services.jcr.impl.dataflow.ItemDataCopyVisitor;
 import org.exoplatform.services.jcr.impl.dataflow.ItemDataRemoveVisitor;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
@@ -53,14 +53,14 @@ import javax.jcr.RepositoryException;
 import javax.jcr.version.OnParentVersionAction;
 
 /**
- * Created by The eXo Platform SAS 14.12.2006
+ * Created by The eXo Platform SAS. 
  * 
- * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter
- *         Nedonosko</a>
- * @version $Id: ItemDataRestoreVisitor.java 14100 2008-05-12 10:53:47Z
- *          gazarenkov $
+ * 14.12.2006
+ * 
+ * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
+ * @version $Id: ItemDataRestoreVisitor.java 14100 2008-05-12 10:53:47Z gazarenkov $
  */
-public class ItemDataRestoreVisitor extends ItemDataTraversingVisitor
+public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
 {
 
    private final Log log = ExoLogger.getLogger("jcr.ItemDataRestoreVisitor");
@@ -76,8 +76,6 @@ public class ItemDataRestoreVisitor extends ItemDataTraversingVisitor
    protected final InternalQName destName;
 
    protected NodeData restored;
-
-   // protected final NodeTypeDataManager ntManager;
 
    protected final SessionImpl userSession;
 
@@ -125,9 +123,8 @@ public class ItemDataRestoreVisitor extends ItemDataTraversingVisitor
    {
       RemoveVisitor() throws RepositoryException
       {
-         super(userSession.getTransientNodesManager(), null,
-         // userSession.getWorkspace().getNodeTypeManager(),
-            nodeTypeDataManager, userSession.getAccessManager(), userSession.getUserState());
+         super(userSession.getTransientNodesManager(), null, nodeTypeDataManager, userSession.getAccessManager(),
+            userSession.getUserState());
       }
 
       protected void validateReferential(NodeData node) throws RepositoryException
@@ -171,22 +168,28 @@ public class ItemDataRestoreVisitor extends ItemDataTraversingVisitor
    private ItemData findDelegated(String identifier)
    {
       if (delegatedChanges != null)
+      {
          for (ItemState state : delegatedChanges.getAllStates())
          {
             if (state.getData().getIdentifier().equals(identifier))
                return state.getData();
          }
+      }
+
       return null;
    }
 
    private ItemData findDelegated(QPath path)
    {
       if (delegatedChanges != null)
+      {
          for (ItemState state : delegatedChanges.getAllStates())
          {
             if (state.getData().getQPath().equals(path))
                return state.getData();
          }
+      }
+
       return null;
    }
 
@@ -379,19 +382,23 @@ public class ItemDataRestoreVisitor extends ItemDataTraversingVisitor
 
       if (frozen == null)
       {
-         if (log.isDebugEnabled())
-            log.debug("Visit node " + frozen.getQPath().getAsString() + ", HAS NULL FROZEN NODE");
          return;
+      }
+
+      if (log.isDebugEnabled())
+      {
+         log.debug("Visit node " + frozen.getQPath().getAsString() + ", HAS NULL FROZEN NODE");
       }
 
       InternalQName qname = frozen.getQPath().getName();
 
       if (qname.equals(Constants.JCR_FROZENNODE) && level == 0)
       {
-
          // child props/nodes will be restored
          if (log.isDebugEnabled())
+         {
             log.debug("jcr:frozenNode " + frozen.getQPath().getAsString());
+         }
 
          // init destenation node
          initRestoreRoot(currentNode(), destName, frozen);
@@ -405,7 +412,9 @@ public class ItemDataRestoreVisitor extends ItemDataTraversingVisitor
          QPath cvhpPropPath = QPath.makeChildPath(frozen.getQPath(), Constants.JCR_CHILDVERSIONHISTORY);
 
          if (log.isDebugEnabled())
+         {
             log.debug("Versioned child node " + cvhpPropPath.getAsString());
+         }
 
          VersionHistoryDataHelper childHistory = null;
          try
@@ -490,8 +499,10 @@ public class ItemDataRestoreVisitor extends ItemDataTraversingVisitor
                currentNode().getMixinTypeNames()).getOnParentVersion();
 
          if (log.isDebugEnabled())
+         {
             log.debug("Stored node " + frozen.getQPath().getAsString() + ", "
                + OnParentVersionAction.nameFromValue(action));
+         }
 
          if (action == OnParentVersionAction.COPY || action == OnParentVersionAction.VERSION)
          {
@@ -606,10 +617,8 @@ public class ItemDataRestoreVisitor extends ItemDataTraversingVisitor
    {
 
       // TODO what to do if REFERENCE property target doesn't exists in workspace
-
       if (currentNode() != null)
       {
-
          NodeData frozenParent = (NodeData)dataManager.getItemData(property.getParentIdentifier());
 
          InternalQName qname = property.getQPath().getName();
@@ -660,16 +669,14 @@ public class ItemDataRestoreVisitor extends ItemDataTraversingVisitor
             {
                tagetProperty =
                   TransientPropertyData.createPropertyData(currentNode(), qname, property.getType(), property
-                     .isMultiValued(), property.getValues());
+                     .isMultiValued(), copyValues(property));
             }
 
             changes.add(ItemState.createAddedState(tagetProperty));
-
-            // else - nothing to do, i.e. left unchanged
-
          }
          else if (log.isDebugEnabled())
          {
+            // else - nothing to do, i.e. left unchanged
             log.debug("Visit property " + property.getQPath().getAsString() + " HAS "
                + OnParentVersionAction.nameFromValue(action) + " action");
          }
@@ -684,14 +691,15 @@ public class ItemDataRestoreVisitor extends ItemDataTraversingVisitor
    @Override
    protected void leaving(NodeData frozen, int level) throws RepositoryException
    {
-
       InternalQName qname = frozen.getQPath().getName();
 
       if (qname.equals(Constants.JCR_FROZENNODE) && level == 0)
       {
 
          if (log.isDebugEnabled())
+         {
             log.debug("leaving jcr:frozenNode " + frozen.getQPath().getAsString());
+         }
 
          // post init of a restored node
 
@@ -721,7 +729,9 @@ public class ItemDataRestoreVisitor extends ItemDataTraversingVisitor
       }
 
       if (parents.size() <= 0)
+      {
          log.error("Empty parents stack");
+      }
 
       parents.pop();
    }

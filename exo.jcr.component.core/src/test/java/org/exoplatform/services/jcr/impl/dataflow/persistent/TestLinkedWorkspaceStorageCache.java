@@ -25,7 +25,7 @@ import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
- * @version $Id: TestLinkedWorkspaceStorageCache.java 34801 2009-07-31 15:44:50Z dkatayev $
+ * @version $Id$
  */
 public class TestLinkedWorkspaceStorageCache extends WorkspaceStorageCacheBaseCase
 {
@@ -33,7 +33,12 @@ public class TestLinkedWorkspaceStorageCache extends WorkspaceStorageCacheBaseCa
    @Override
    public WorkspaceStorageCache getCacheImpl() throws Exception
    {
-      return new LinkedWorkspaceStorageCacheImpl((WorkspaceEntry)session.getContainer().getComponentInstanceOfType(
-         WorkspaceEntry.class));
-   }
+      /*String name, boolean enabled, int maxSize, long liveTimeSec,
+      long cleanerPeriodMillis, long statisticPeriodMillis, boolean deepDelete, boolean cleanStatistics,
+      int blockingUsers, boolean showStatistic*/
+      return new LinkedWorkspaceStorageCacheImpl("test_WorkspaceStorageCacheBaseCase", true, 
+         100 * 1024, 120, 5 * 60000, 30000, false, true, 0, false);
+      //return new LinkedWorkspaceStorageCacheImpl((WorkspaceEntry)session.getContainer().getComponentInstanceOfType(
+      //   WorkspaceEntry.class));
+   }   
 }

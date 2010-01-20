@@ -20,8 +20,9 @@ package org.exoplatform.services.jcr.impl.storage.value.fs;
 
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.datamodel.ValueData;
-import org.exoplatform.services.jcr.impl.dataflow.TesterTransientValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.FilePersistedValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 import org.exoplatform.services.jcr.impl.storage.value.cas.RecordAlreadyExistsException;
 import org.exoplatform.services.jcr.impl.storage.value.cas.RecordNotFoundException;
 import org.exoplatform.services.jcr.impl.storage.value.cas.ValueContentAddressStorage;
@@ -57,14 +58,10 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
 
    protected File testFile;
 
-   protected TesterTransientValueData testerTransientValueData;
-
    @Override
    public void setUp() throws Exception
    {
       super.setUp();
-
-      testerTransientValueData = new TesterTransientValueData();
 
       if (fileCleaner == null)
          fileCleaner = new FileCleaner();
@@ -115,7 +112,7 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
       FileIOChannel fch = openCASChannel(digestType);
 
       String propertyId = IdGenerator.generate();
-      ValueData value = testerTransientValueData.getTransientValueData(new FileInputStream(testFile), 0);
+      ValueData value = new StreamPersistedValueData(0, new FileInputStream(testFile));
 
       fch.write(propertyId, value);
       fch.commit();
@@ -146,7 +143,7 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
 
       // prepare
       String propertyId = IdGenerator.generate();
-      ValueData value = testerTransientValueData.getTransientValueData(new FileInputStream(testFile), 0);
+      ValueData value = new StreamPersistedValueData(0, new FileInputStream(testFile));
       fch.write(propertyId, value);
       fch.commit();
 
@@ -155,8 +152,7 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
       try
       {
          fch = openCASChannel(digestType);
-         fch.write(new String(propertyId), testerTransientValueData.getTransientValueData(
-            new FileInputStream(testFile), 0));
+         fch.write(new String(propertyId), new StreamPersistedValueData(0, new FileInputStream(testFile)));
          fch.commit();
 
          fail("RecordAlreadyExistsException should be thrown, record exists");
@@ -186,10 +182,10 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
       String propertyId = IdGenerator.generate();
       try
       {
-         ValueData value = testerTransientValueData.getTransientValueData(new FileInputStream(testFile), 0);
+         ValueData value = new StreamPersistedValueData(0, new FileInputStream(testFile));
          fch.write(propertyId, value);
          fch.delete(propertyId);
-         fch.write(propertyId, testerTransientValueData.getTransientValueData(new FileInputStream(testFile), 0));
+         fch.write(propertyId, new StreamPersistedValueData(0, new FileInputStream(testFile)));
          fch.commit();
 
          // long initialSize = calcDirSize(rootDir);
@@ -213,7 +209,7 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
       FileIOChannel fch = openCASChannel(digestType);
 
       String propertyId = IdGenerator.generate();
-      ValueData value = testerTransientValueData.getTransientValueData(new FileInputStream(testFile), 0);
+      ValueData value = new StreamPersistedValueData(0, new FileInputStream(testFile));
       fch.write(propertyId, value);
       fch.commit();
 
@@ -236,7 +232,7 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
       FileIOChannel fch = openCASChannel(digestType);
 
       String propertyId = IdGenerator.generate();
-      ValueData value = testerTransientValueData.getTransientValueData(new FileInputStream(testFile), 0);
+      ValueData value = new StreamPersistedValueData(0, new FileInputStream(testFile));
       fch.write(propertyId, value);
       fch.commit();
 
@@ -320,7 +316,7 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
 
       for (int i = 0; i < 20; i++)
       {
-         fch.write(propertyId, testerTransientValueData.getTransientValueData(new FileInputStream(testFile), i));
+         fch.write(propertyId, new StreamPersistedValueData(i, new FileInputStream(testFile)));
       }
       fch.commit();
 
@@ -350,7 +346,7 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
       {
          File f = createBLOBTempFile(300);
          addedSize += f.length();
-         fch.write(propertyId, testerTransientValueData.getTransientValueData(new FileInputStream(f), i));
+         fch.write(propertyId, new StreamPersistedValueData(i, new FileInputStream(f)));
       }
       fch.commit();
 
@@ -379,7 +375,7 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
          propertyId = IdGenerator.generate();
 
          FileIOChannel fch = openCASChannel(digestType);
-         fch.write(propertyId, testerTransientValueData.getTransientValueData(new FileInputStream(testFile), 0));
+         fch.write(propertyId, new StreamPersistedValueData(0, new FileInputStream(testFile)));
          fch.commit();
       }
 
@@ -408,7 +404,7 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
          addedSize += f.length();
 
          FileIOChannel fch = openCASChannel(digestType);
-         fch.write(propertyId, testerTransientValueData.getTransientValueData(new FileInputStream(f), 0));
+         fch.write(propertyId, new StreamPersistedValueData(i, new FileInputStream(f)));
          fch.commit();
       }
 
@@ -438,7 +434,7 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
             propertyId = pid;
 
          FileIOChannel fch = openCASChannel(digestType);
-         fch.write(pid, testerTransientValueData.getTransientValueData(new FileInputStream(testFile), 0));
+         fch.write(pid, new StreamPersistedValueData(0, new FileInputStream(testFile)));
          fch.commit();
       }
 
@@ -479,7 +475,7 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
          addedSize += (fileSize = f.length());
 
          FileIOChannel fch = openCASChannel(digestType);
-         fch.write(pid, testerTransientValueData.getTransientValueData(new FileInputStream(f), 0));
+         fch.write(pid, new StreamPersistedValueData(i, new FileInputStream(f)));
          fch.commit();
       }
 
@@ -508,7 +504,7 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
 
       final String property1MultivaluedId = IdGenerator.generate();
 
-      TransientValueData sharedValue = null;
+      StreamPersistedValueData sharedValue = null;
 
       // add multivaued property
       long m1fileSize = 0;
@@ -519,7 +515,7 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
          File f = createBLOBTempFile(450);
          addedSize += (m1fileSize = f.length());
 
-         TransientValueData v = testerTransientValueData.getTransientValueData(new FileInputStream(f), i);
+         StreamPersistedValueData v = new StreamPersistedValueData(i, new FileInputStream(f));
 
          if (i == 1)
             sharedValue = v;
@@ -541,8 +537,8 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
          if (i == 2)
          {
             // use shared
+            sharedValue = new StreamPersistedValueData(i, sharedValue.getAsStream());
             v = sharedValue;
-            sharedValue.setOrderNumber(i);
          }
          else
          {
@@ -550,7 +546,7 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
             m2filesCount++;
             File f = createBLOBTempFile(350);
             addedSize += (m2fileSize = f.length()); // add size
-            v = testerTransientValueData.getTransientValueData(new FileInputStream(f), i);
+            v = new StreamPersistedValueData(i, new FileInputStream(f));
          }
          fch.write(property2MultivaluedId, v);
       }
@@ -559,7 +555,7 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
       // add some single valued properties, two new property will have shared value too
       String property1Id = null;
       String property2Id = null;
-      sharedValue.setOrderNumber(0);
+      sharedValue = new StreamPersistedValueData(0, sharedValue.getAsStream());
       for (int i = 0; i < 10; i++)
       {
          String pid = IdGenerator.generate();
@@ -578,7 +574,7 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
          {
             File f = createBLOBTempFile(425);
             addedSize += f.length();
-            v = testerTransientValueData.getTransientValueData(new FileInputStream(f), 0);
+            v = new StreamPersistedValueData(i, new FileInputStream(f));
          }
          FileIOChannel vfch = openCASChannel(digestType);
          vfch.write(pid, v);

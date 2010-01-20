@@ -325,8 +325,8 @@ public abstract class AbstractItemDefinitionAccessProvider
       boolean value)
    {
       TransientPropertyData propertyData =
-         TransientPropertyData.createPropertyData(parentNode, propertyName, PropertyType.BOOLEAN, false);
-      propertyData.setValue(new TransientValueData(value));
+         TransientPropertyData.createPropertyData(parentNode, propertyName, PropertyType.BOOLEAN, false,
+            new TransientValueData(value));
       changesLog.add(ItemState.createAddedState(propertyData));
    }
 
@@ -352,38 +352,35 @@ public abstract class AbstractItemDefinitionAccessProvider
       InternalQName value)
    {
       TransientPropertyData propertyData =
-         TransientPropertyData.createPropertyData(parentNode, propertyName, PropertyType.NAME, false);
-      propertyData.setValue(new TransientValueData(value));
+         TransientPropertyData.createPropertyData(parentNode, propertyName, PropertyType.NAME, false,
+            new TransientValueData(value));
       changesLog.add(ItemState.createAddedState(propertyData));
    }
 
    protected void writeNames(PlainChangesLog changesLog, NodeData parentNode, InternalQName propertyName,
       InternalQName[] value)
    {
-      TransientPropertyData propertyData =
-         TransientPropertyData.createPropertyData(parentNode, propertyName, PropertyType.NAME, true);
-
       List<ValueData> parents = new ArrayList<ValueData>();
       for (InternalQName nt : value)
          parents.add(new TransientValueData(nt));
 
-      propertyData.setValues(parents);
+      TransientPropertyData propertyData =
+         TransientPropertyData.createPropertyData(parentNode, propertyName, PropertyType.NAME, true, parents);
+
       changesLog.add(ItemState.createAddedState(propertyData));
    }
 
    protected void writeString(PlainChangesLog changesLog, NodeData parentNode, InternalQName propertyName, String value)
    {
       TransientPropertyData propertyData =
-         TransientPropertyData.createPropertyData(parentNode, propertyName, PropertyType.STRING, false);
-      propertyData.setValue(new TransientValueData(value));
+         TransientPropertyData.createPropertyData(parentNode, propertyName, PropertyType.STRING, false,
+            new TransientValueData(value));
       changesLog.add(ItemState.createAddedState(propertyData));
    }
 
    protected void writeStrings(PlainChangesLog changesLog, NodeData parentNode, InternalQName propertyName,
       String[] value)
    {
-      TransientPropertyData propertyData =
-         TransientPropertyData.createPropertyData(parentNode, propertyName, PropertyType.STRING, true);
       List<ValueData> valueDatas = new ArrayList<ValueData>();
       for (String vc : value)
       {
@@ -391,7 +388,9 @@ public abstract class AbstractItemDefinitionAccessProvider
             valueDatas.add(new TransientValueData(vc));
       }
 
-      propertyData.setValues(valueDatas);
+      TransientPropertyData propertyData =
+         TransientPropertyData.createPropertyData(parentNode, propertyName, PropertyType.STRING, true, valueDatas);
+
       changesLog.add(ItemState.createAddedState(propertyData));
    }
 }

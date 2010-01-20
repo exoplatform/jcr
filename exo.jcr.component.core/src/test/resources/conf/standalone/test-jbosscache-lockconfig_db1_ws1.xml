@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jbosscache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:jboss:jbosscache-core:config:3.1">
+
+   <locking useLockStriping="false" concurrencyLevel="50000" lockParentForChildInsertRemove="false" lockAcquisitionTimeout="20000"/>
+      
+   <loaders passivation="false" shared="true">  
+   
+      <loader class="org.jboss.cache.loader.JDBCCacheLoader" async="false" fetchPersistentState="true"
+              ignoreModifications="false" purgeOnStartup="false">
+         <properties>
+            cache.jdbc.table.name=jdbcjcr_db1_ws1
+            cache.jdbc.table.create=true
+            cache.jdbc.table.drop=false
+            cache.jdbc.table.primarykey=exojcr_pk
+            cache.jdbc.fqn.column=fqn
+            cache.jdbc.fqn.type=VARCHAR(512)
+            cache.jdbc.node.column=node
+            cache.jdbc.node.type=OBJECT
+            cache.jdbc.parent.column=parent
+            cache.jdbc.datasource=jdbcjcr
+          </properties>
+      </loader>  
+      
+   </loaders>
+   
+</jbosscache>

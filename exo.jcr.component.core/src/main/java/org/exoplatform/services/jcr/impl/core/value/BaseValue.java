@@ -20,9 +20,9 @@ package org.exoplatform.services.jcr.impl.core.value;
 
 import org.exoplatform.services.jcr.core.value.ExtendedValue;
 import org.exoplatform.services.jcr.core.value.ReadableBinaryValue;
+import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.dataflow.AbstractValueData;
-import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+import org.exoplatform.services.jcr.impl.dataflow.AbstractSessionValueData;
 import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 import java.util.Calendar;
 
 import javax.jcr.PropertyType;
@@ -43,7 +44,7 @@ import javax.jcr.ValueFormatException;
  * 
  * @author Gennady Azarenkov
  * 
- * @version $Id: BaseValue.java 34801 2009-07-31 15:44:50Z dkatayev $
+ * @version $Id$
  */
 public abstract class BaseValue implements ExtendedValue, ReadableBinaryValue
 {
@@ -52,9 +53,9 @@ public abstract class BaseValue implements ExtendedValue, ReadableBinaryValue
 
    protected final int type;
 
-   protected LocalTransientValueData data;
+   protected LocalSessionValueData data;
 
-   protected TransientValueData internalData;
+   protected ValueData internalData;
 
    /**
     * Package-private default constructor.
@@ -64,7 +65,7 @@ public abstract class BaseValue implements ExtendedValue, ReadableBinaryValue
     * @param data
     *          TransientValueData
     */
-   BaseValue(int type, TransientValueData data)
+   BaseValue(int type, ValueData data)
    {
       this.type = type;
       this.internalData = data;
@@ -75,14 +76,16 @@ public abstract class BaseValue implements ExtendedValue, ReadableBinaryValue
     * 
     * @param asStream
     *          boolean
-    * @return LocalTransientValueData
+    * @return LocalSessionValueData
     * @throws IOException
     *           if error
     */
-   protected LocalTransientValueData getLocalData(boolean asStream) throws IOException
+   protected LocalSessionValueData getLocalData(boolean asStream) throws IOException
    {
       if (data == null)
-         data = new LocalTransientValueData(asStream);
+      {
+         data = new LocalSessionValueData(asStream);
+      }
 
       return data;
    }
@@ -239,7 +242,7 @@ public abstract class BaseValue implements ExtendedValue, ReadableBinaryValue
    /**
     * @return Returns the data TransientValueData.
     */
-   public TransientValueData getInternalData()
+   public ValueData getInternalData()
    {
       return internalData;
    }
@@ -294,23 +297,8 @@ public abstract class BaseValue implements ExtendedValue, ReadableBinaryValue
    }
 
    /**
-    * {@inheritDoc}
-    */
-   public void setOrderNumber(int order)
-   {
-      try
-      {
-         getLocalData(type == PropertyType.BINARY).setOrderNumber(order);
-      }
-      catch (IOException e)
-      {
-         throw new RuntimeException(e);
-      }
-   }
-
-   /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
    public long read(OutputStream stream, long length, long position) throws IOException, RepositoryException
    {
       return getInternalData().read(stream, length, position);
@@ -319,7 +307,7 @@ public abstract class BaseValue implements ExtendedValue, ReadableBinaryValue
    /**
     * Session scope ValueData.
     */
-   protected class LocalTransientValueData extends AbstractValueData
+   protected class LocalSessionValueData extends AbstractSessionValueData
    {
 
       protected InputStream stream;
@@ -336,21 +324,43 @@ public abstract class BaseValue implements ExtendedValue, ReadableBinaryValue
        * @throws IOException
        *           if error
        */
-      public LocalTransientValueData(boolean asStream) throws IOException
+      public LocalSessionValueData(boolean asStream) throws IOException
       {
          super(getInternalData().getOrderNumber());
-         TransientValueData idata = getInternalData();
-         if (!asStream)
-         {
-            bytes = idata.getAsByteArray();
-            stream = null;
-         }
-         else
+         ValueData idata = getInternalData();
+         if (asStream)
          {
             stream = idata.getAsStream();
             bytes = null;
          }
+         else
+         {
+            bytes = idata.getAsByteArray();
+            stream = null;
+         }
          length = idata.getLength();
+      }
+
+      public boolean equals(ValueData another)
+      {
+         if (bytes != null)
+         {
+            // by content
+            try
+            {
+               return Arrays.equals(getAsByteArray(), another.getAsByteArray());
+            }
+            catch (IOException e)
+            {
+               log.error("Read error", e);
+               return false;
+            }
+         }
+         else
+         {
+            // TODO by stream... not equals
+            return false;
+         }
       }
 
       /**
@@ -369,7 +379,9 @@ public abstract class BaseValue implements ExtendedValue, ReadableBinaryValue
       public InputStream getAsStream() throws IOException, IllegalStateException
       {
          if (bytesConsumed())
+         {
             throw new IllegalStateException("non-stream value has already been consumed");
+         }
          return stream;
       }
 
@@ -379,6 +391,16 @@ public abstract class BaseValue implements ExtendedValue, ReadableBinaryValue
       public long getLength()
       {
          return length;
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public long read(OutputStream stream, long length, long position) throws IOException
+      {
+         // it's extra feature of eXoJCR, so
+         // read direct from the ValueData, i.e. don't respecting the consumed stream etc.
+         return getInternalData().read(stream, length, position);
       }
 
       /**
@@ -397,23 +419,6 @@ public abstract class BaseValue implements ExtendedValue, ReadableBinaryValue
       private boolean bytesConsumed()
       {
          return bytes != null;
-      }
-
-      /**
-       * {@inheritDoc}
-       */
-      @Override
-      public TransientValueData createTransientCopy()
-      {
-         throw new RuntimeException("LocalTransientValueData.createTransientCopy() is out of contract");
-      }
-
-      /**
-       * {@inheritDoc}
-       */
-      public boolean isTransient()
-      {
-         return true;
       }
    }
 }

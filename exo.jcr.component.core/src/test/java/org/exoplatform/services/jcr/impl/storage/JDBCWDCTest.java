@@ -163,11 +163,12 @@ public class JDBCWDCTest extends TestCase
       NodeData node =
          new TransientNodeData(rootPath, Constants.ROOT_UUID, 1, nt, new InternalQName[0], 0, null,
             new AccessControlList());
+
+      ValueData vd = new TransientValueData(Constants.NT_UNSTRUCTURED.getAsString());
       TransientPropertyData ntProp =
          new TransientPropertyData(QPath.makeChildPath(rootPath, Constants.JCR_PRIMARYTYPE), "1", 1, PropertyType.NAME,
-            Constants.ROOT_UUID, false);
-      ValueData vd = new TransientValueData(Constants.NT_UNSTRUCTURED.getAsString());
-      ntProp.setValue(vd);
+            Constants.ROOT_UUID, false, vd);
+
       conn.add(node);
       conn.add(ntProp);
       conn.commit();
@@ -176,5 +177,4 @@ public class JDBCWDCTest extends TestCase
       // assertEquals("nt:unstructured",
       // locationFactory.createJCRName(root.getPrimaryTypeName()).getAsString());
    }
-
 }

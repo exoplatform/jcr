@@ -18,13 +18,18 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
+import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
+import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache;
 import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
+import org.exoplatform.services.transaction.TransactionService;
 
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +37,12 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import javax.jcr.RepositoryException;
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.NotSupportedException;
+import javax.transaction.RollbackException;
+import javax.transaction.SystemException;
+import javax.transaction.TransactionManager;
 
 /**
  * Created by The eXo Platform SAS. 
@@ -40,7 +51,7 @@ import javax.jcr.RepositoryException;
  * Author : Peter Nedonosko peter.nedonosko@exoplatform.com.ua
  * 13.04.2006
  * 
- * @version $Id: CacheableWorkspaceDataManager.java 34801 2009-07-31 15:44:50Z dkatayev $
+ * @version $Id$
  */
 public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManager
 {
@@ -55,13 +66,15 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     */
    protected final Map<Integer, DataRequest> requestCache;
 
+   private TransactionManager transactionManager;
+
    /**
     * ItemData request, used on get operations.
     * 
     */
    protected class DataRequest
    {
-
+      /**
       /**
        * GET_NODES type.
        */
@@ -178,13 +191,11 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
        */
       DataRequest waitSame()
       {
-         DataRequest prev = null;
-         synchronized (requestCache)
-         {
-            prev = requestCache.get(this.hashCode());
-         }
+         DataRequest prev = requestCache.get(this.hashCode());
          if (prev != null)
+         {
             prev.await();
+         }
          return this;
       }
 
@@ -193,10 +204,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
        */
       void start()
       {
-         synchronized (requestCache)
-         {
-            requestCache.put(this.hashCode(), this);
-         }
+         requestCache.put(this.hashCode(), this);
       }
 
       /**
@@ -206,10 +214,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       void done()
       {
          this.ready.countDown();
-         synchronized (requestCache)
-         {
-            requestCache.remove(this.hashCode());
-         }
+         requestCache.remove(this.hashCode());
       }
 
       /**
@@ -247,6 +252,63 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       }
    }
 
+   protected class SaveInTransaction extends TxIsolatedOperation
+   {
+      final ItemStateChangesLog changes;
+
+      SaveInTransaction(ItemStateChangesLog changes)
+      {
+         super(transactionManager);
+         this.changes = changes;
+      }
+
+      @Override
+      protected void action() throws RepositoryException
+      {
+         CacheableWorkspaceDataManager.super.save(changes);
+      }
+
+      @Override
+      protected void txAction() throws RepositoryException
+      {
+         super.txAction();
+
+         // notify listeners after transaction commit but before the current resume!
+         try
+         {
+            notifySaveItems(changes, false);
+         }
+         catch (Throwable th)
+         {
+            // TODO XA layer can throws runtime exceptions
+            throw new RepositoryException(th);
+         }
+      }
+   }
+
+   /**
+    * CacheableWorkspaceDataManager constructor.
+    * 
+    * @param dataContainer
+    *          Workspace data container (persistent level)
+    * @param cache
+    *          Items cache
+    * @param systemDataContainerHolder
+    *          System Workspace data container (persistent level)
+    * @param transactionService TransactionService         
+    */
+   public CacheableWorkspaceDataManager(WorkspaceDataContainer dataContainer, WorkspaceStorageCache cache,
+      SystemDataContainerHolder systemDataContainerHolder, TransactionService transactionService)
+   {
+      super(dataContainer, systemDataContainerHolder);
+      this.cache = cache;
+
+      this.requestCache = new HashMap<Integer, DataRequest>();
+      addItemPersistenceListener(cache);
+
+      transactionManager = transactionService.getTransactionManager();
+   }
+
    /**
     * CacheableWorkspaceDataManager constructor.
     * 
@@ -262,24 +324,67 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    {
       super(dataContainer, systemDataContainerHolder);
       this.cache = cache;
+
       this.requestCache = new HashMap<Integer, DataRequest>();
       addItemPersistenceListener(cache);
+
+      if (cache instanceof JBossCacheWorkspaceStorageCache)
+      {
+         transactionManager = ((JBossCacheWorkspaceStorageCache)cache).getTransactionManager();
+      }
+      else
+      {
+         transactionManager = null;
+      }
+   }
+
+   /**
+    * Get Items Cache.
+    * 
+    * @return WorkspaceStorageCache
+    */
+   public WorkspaceStorageCache getCache()
+   {
+      return cache;
    }
 
    /**
     * {@inheritDoc}
     */
-   public ItemData getItemData(String identifier) throws RepositoryException
+   public int getChildNodesCount(NodeData parent) throws RepositoryException
    {
-      // 2. Try from cache
-      ItemData data = getCachedItemData(identifier);
-
-      // 3. Try from container
-      if (data == null)
+      if (cache.isEnabled())
       {
-         return getPersistedItemData(identifier);
+         List<NodeData> childNodes = cache.getChildNodes(parent);
+         if (childNodes != null)
+         {
+            return childNodes.size();
+         }
       }
-      return data;
+
+      return super.getChildNodesCount(parent);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public List<NodeData> getChildNodesData(NodeData nodeData) throws RepositoryException
+   {
+      return getChildNodesData(nodeData, false);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public List<PropertyData> getChildPropertiesData(NodeData nodeData) throws RepositoryException
+   {
+      List<PropertyData> childs = getChildPropertiesData(nodeData, false);
+      for (PropertyData prop: childs)
+      {
+         fixPropertyValues(prop);
+      }
+
+      return childs;
    }
 
    /**
@@ -296,6 +401,10 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       {
          data = getPersistedItemData(parentData, name);
       }
+      else if (!data.isNode())
+      {
+         fixPropertyValues((PropertyData)data);
+      }
 
       return data;
    }
@@ -303,17 +412,31 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    /**
     * {@inheritDoc}
     */
-   public List<NodeData> getChildNodesData(NodeData nodeData) throws RepositoryException
+   public ItemData getItemData(String identifier) throws RepositoryException
    {
-      return getChildNodesData(nodeData, false);
+      // 2. Try from cache
+      ItemData data = getCachedItemData(identifier);
+
+      // 3. Try from container
+      if (data == null)
+      {
+         return getPersistedItemData(identifier);
+      }
+      else if (!data.isNode())
+      {
+         fixPropertyValues((PropertyData)data);
+      }
+
+      return data;
    }
 
    /**
     * {@inheritDoc}
     */
-   public List<PropertyData> getChildPropertiesData(NodeData nodeData) throws RepositoryException
+   public List<PropertyData> getReferencesData(String identifier, boolean skipVersionStorage)
+      throws RepositoryException
    {
-      return getChildPropertiesData(nodeData, false);
+      return super.getReferencesData(identifier, skipVersionStorage);
    }
 
    /**
@@ -322,6 +445,57 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    public List<PropertyData> listChildPropertiesData(NodeData nodeData) throws RepositoryException
    {
       return listChildPropertiesData(nodeData, false);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public void save(final ItemStateChangesLog changesLog) throws RepositoryException
+   {
+      if (isTxAware())
+      {
+         // save in dedicated XA transaction
+         new SaveInTransaction(changesLog).perform();
+      }
+      else
+      {
+         // save normaly 
+         super.save(changesLog);
+
+         // notify listeners after storage commit
+         notifySaveItems(changesLog, false);
+      }
+   }
+
+   /**
+    * Get cached ItemData.
+    * 
+    * @param parentData
+    *          parent
+    * @param name
+    *          Item name
+    * @return ItemData
+    * @throws RepositoryException
+    *           error
+    */
+   protected ItemData getCachedItemData(NodeData parentData, QPathEntry name) throws RepositoryException
+   {
+      return cache.get(parentData.getIdentifier(), name);
+   }
+
+   /**
+    * Returns an item from cache by Identifier or null if the item don't cached.
+    * 
+    * @param identifier
+    *          Item id
+    * @return ItemData
+    * @throws RepositoryException
+    *           error
+    */
+   protected ItemData getCachedItemData(String identifier) throws RepositoryException
+   {
+      return cache.get(identifier);
    }
 
    /**
@@ -347,7 +521,9 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          request.waitSame();
          childNodes = cache.getChildNodes(nodeData);
          if (childNodes != null)
+         {
             return childNodes;
+         }
       }
 
       try
@@ -358,8 +534,16 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          {
             NodeData parentData = (NodeData)cache.get(nodeData.getIdentifier());
             if (parentData == null)
+            {
                parentData = (NodeData)super.getItemData(nodeData.getIdentifier());
-            cache.addChildNodes(parentData, childNodes);
+            }
+
+            if (parentData != null)
+            {
+               {
+                  cache.addChildNodes(parentData, childNodes);
+               }
+            }
          }
          return childNodes;
       }
@@ -367,18 +551,6 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       {
          request.done();
       }
-   }
-
-   public int getChildNodesCount(NodeData parent) throws RepositoryException
-   {
-      if (cache.isEnabled())
-      {
-         List<NodeData> childNodes = cache.getChildNodes(parent);
-         if (childNodes != null)
-            return childNodes.size();
-      }
-
-      return super.getChildNodesCount(parent);
    }
 
    /**
@@ -404,7 +576,9 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          request.waitSame();
          childProperties = cache.getChildProperties(nodeData);
          if (childProperties != null)
+         {
             return childProperties;
+         }
       }
 
       try
@@ -417,8 +591,16 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          {
             NodeData parentData = (NodeData)cache.get(nodeData.getIdentifier());
             if (parentData == null)
+            {
                parentData = (NodeData)super.getItemData(nodeData.getIdentifier());
-            cache.addChildProperties(parentData, childProperties);
+            }
+
+            if (parentData != null)
+            {
+               {
+                  cache.addChildProperties(parentData, childProperties);
+               }
+            }
          }
          return childProperties;
       }
@@ -426,6 +608,48 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       {
          request.done();
       }
+   }
+
+   /**
+    * Get persisted ItemData.
+    * 
+    * @param parentData
+    *          parent
+    * @param name
+    *          Item name
+    * @return ItemData
+    * @throws RepositoryException
+    *           error
+    */
+   protected ItemData getPersistedItemData(NodeData parentData, QPathEntry name) throws RepositoryException
+   {
+      ItemData data = super.getItemData(parentData, name);
+      if (data != null && cache.isEnabled())
+      {
+         {
+            cache.put(data);
+         }
+      }
+      return data;
+   }
+
+   /**
+    * Call
+    * {@link org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager#getItemData(java.lang.String)
+    * WorkspaceDataManager.getItemDataByIdentifier(java.lang.String)} and cache result if non null returned.
+    * 
+    * @see org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager#getItemData(java.lang.String)
+    */
+   protected ItemData getPersistedItemData(String identifier) throws RepositoryException
+   {
+      ItemData data = super.getItemData(identifier);
+      if (data != null && cache.isEnabled())
+      {
+         {
+            cache.put(data);
+         }
+      }
+      return data;
    }
 
    /**
@@ -451,7 +675,9 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          request.waitSame(); // wait if getChildProp... working somewhere
          propertiesList = cache.listChildProperties(nodeData);
          if (propertiesList != null)
+         {
             return propertiesList;
+         }
       }
 
       propertiesList = super.listChildPropertiesData(nodeData);
@@ -460,100 +686,80 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       {
          NodeData parentData = (NodeData)cache.get(nodeData.getIdentifier());
          if (parentData == null)
+         {
             parentData = (NodeData)super.getItemData(nodeData.getIdentifier());
-         cache.addChildPropertiesList(parentData, propertiesList);
+         }
+
+         if (parentData != null)
+         {
+            {
+               cache.addChildPropertiesList(parentData, propertiesList);
+            }
+         }
       }
       return propertiesList;
    }
-   
-   /**
-    * {@inheritDoc}
-    */
-   public List<PropertyData> getReferencesData(String identifier, boolean skipVersionStorage)
-      throws RepositoryException
+
+   protected boolean isTxAware()
    {
-      return super.getReferencesData(identifier, skipVersionStorage);
+      return transactionManager != null;
    }
 
    /**
-    * Get Items Cache.
+    * Fix Property BLOB Values if someone has null file (swap actually) by reading the content from the storage (VS or JDBC no matter).
     * 
-    * @return WorkspaceStorageCache
-    */
-   public WorkspaceStorageCache getCache()
-   {
-      return cache;
-   }
-
-   /**
-    * Get cached ItemData.
-    * 
-    * @param parentData
-    *          parent
-    * @param name
-    *          Item name
-    * @return ItemData
+    * @param prop PropertyData
     * @throws RepositoryException
-    *           error
     */
-   protected ItemData getCachedItemData(NodeData parentData, QPathEntry name) throws RepositoryException
+   protected void fixPropertyValues(PropertyData prop) throws RepositoryException
    {
-      return cache.get(parentData.getIdentifier(), name);
-   }
-
-   /**
-    * Get persisted ItemData.
-    * 
-    * @param parentData
-    *          parent
-    * @param name
-    *          Item name
-    * @return ItemData
-    * @throws RepositoryException
-    *           error
-    */
-   protected ItemData getPersistedItemData(NodeData parentData, QPathEntry name) throws RepositoryException
-   {
-
-      ItemData data = null;
-      data = super.getItemData(parentData, name);
-      if (data != null && cache.isEnabled())
+      final List<ValueData> vals = prop.getValues();
+      for (int i = 0; i < vals.size(); i++)
       {
-         cache.put(data);
+         ValueData vd = vals.get(i);
+         if (!vd.isByteArray())
+         {
+            // check if file is correct
+            FilePersistedValueData fpvd = (FilePersistedValueData)vd;
+            if (fpvd.getFile() == null)
+            {
+               // need read from storage
+               ValueData svd = getPropertyValue(prop.getIdentifier(), vd.getOrderNumber(), prop.getPersistedVersion());
+
+               if (svd == null)
+               {
+                  // error, value not found
+                  throw new RepositoryException("Value cannot be found in storage for cached Property "
+                     + prop.getQPath().getAsString() + ", orderNumb:" + vd.getOrderNumber() + ", pversion:"
+                     + prop.getPersistedVersion());
+               }
+
+               vals.set(i, svd);
+            }
+         }
       }
-      return data;
    }
 
    /**
-    * Returns an item from cache by Identifier or null if the item don't cached.
+    * Fill Property Value from persistent storage.
     * 
-    * @param identifier
-    *          Item id
-    * @return ItemData
-    * @throws RepositoryException
-    *           error
+    * @param prop PropertyData, original Property data
+    * @return PropertyData
+    * @throws IllegalStateException
+    * @throws RepositoryException 
     */
-   protected ItemData getCachedItemData(String identifier) throws RepositoryException
+   protected ValueData getPropertyValue(String propertyId, int orderNumb, int persistedVersion)
+      throws IllegalStateException, RepositoryException
    {
-      return cache.get(identifier);
-   }
-
-   /**
-    * Call
-    * {@link org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager#getItemData(java.lang.String)
-    * WorkspaceDataManager.getItemDataByIdentifier(java.lang.String)} and cache result if non null
-    * returned.
-    * 
-    * @see org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager#getItemData(java.lang.String)
-    */
-   protected ItemData getPersistedItemData(String identifier) throws RepositoryException
-   {
-      ItemData data = super.getItemData(identifier);
-      if (data != null && cache.isEnabled())
+      // TODO use interface not JDBC
+      JDBCStorageConnection conn = (JDBCStorageConnection)dataContainer.openConnection();
+      try
       {
-         cache.put(data);
+         return conn.getValue(propertyId, orderNumb, persistedVersion);
       }
-      return data;
+      finally
+      {
+         conn.close();
+      }
    }
-
 }

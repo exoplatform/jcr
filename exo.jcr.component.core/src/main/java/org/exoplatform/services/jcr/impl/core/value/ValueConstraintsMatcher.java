@@ -27,7 +27,6 @@ import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.JCRPath;
 import org.exoplatform.services.jcr.impl.core.JCRPathMatcher;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
-import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -85,7 +84,7 @@ public class ValueConstraintsMatcher
       boolean invalid = true;
 
       // do not use getString because of string consuming
-      TransientValueData valueData = (TransientValueData)value;
+      ValueData valueData = (ValueData)value;
       if (type == PropertyType.STRING)
       {
          try

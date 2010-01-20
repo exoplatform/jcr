@@ -34,7 +34,6 @@ import java.util.Map;
 
 import javax.jcr.RepositoryException;
 
-
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@exoplatform.org">Sergey Kabashnyuk</a>
  * @version $Id: exo-jboss-codetemplates.xml 34360 2009-07-22 23:58:59Z ksm $
@@ -58,22 +57,19 @@ public abstract class AbstractNodeTypeRepository implements NodeTypeRepository
     */
    public List<NodeTypeData> getAllNodeTypes() throws RepositoryException
    {
-      // TODO Auto-generated method stub
       return nodeTypeDataPersister.getAllNodeTypes();
    }
 
    /**
-    * @see org.exoplatform.services.jcr.core.ComponentPersister#isStorageFilled()
+    * {@inheritDoc}
     */
    public boolean isStorageFilled()
    {
-      // TODO Auto-generated method stub
       return nodeTypeDataPersister.isStorageFilled();
    }
 
    /**
-    * @throws RepositoryException 
-    * @see org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeRepository#update(java.util.List, org.exoplatform.services.jcr.impl.core.nodetype.registration.UpdateNodeTypeObserver)
+    * {@inheritDoc}
     */
    public void registerNodeType(final List<NodeTypeData> nodeTypes, final NodeTypeDataManager nodeTypeDataManager,
       final String accessControlPolicy, final int alreadyExistsBehaviour) throws RepositoryException
@@ -163,7 +159,6 @@ public abstract class AbstractNodeTypeRepository implements NodeTypeRepository
     */
    public void start()
    {
-      // TODO Auto-generated method stub
 
    }
 
@@ -172,7 +167,6 @@ public abstract class AbstractNodeTypeRepository implements NodeTypeRepository
     */
    public void stop()
    {
-      // TODO Auto-generated method stub
 
    }
 }

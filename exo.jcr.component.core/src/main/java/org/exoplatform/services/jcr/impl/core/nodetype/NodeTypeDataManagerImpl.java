@@ -665,8 +665,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
 
       final TransientPropertyData primaryTypeData =
          new TransientPropertyData(item.getQPath(), item.getIdentifier(), item.getPersistedVersion(), item.getType(),
-            item.getParentIdentifier(), item.isMultiValued());
-      primaryTypeData.setValue(new TransientValueData(nodeTypeName));
+            item.getParentIdentifier(), item.isMultiValued(), new TransientValueData(nodeTypeName));
 
       changesLog.add(ItemState.createUpdatedState(primaryTypeData, true));
 

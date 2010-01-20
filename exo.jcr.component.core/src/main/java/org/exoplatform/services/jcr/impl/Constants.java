@@ -667,7 +667,7 @@ public class Constants
     * eXo JCR default Strings encoding.
     */
    public static final String DEFAULT_ENCODING = "UTF-8";
-
+   
    /**
     * System identifier for remote workspace initializer changes.
     */

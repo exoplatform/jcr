@@ -27,7 +27,6 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.dataflow.TransientItemData;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -406,7 +405,7 @@ public final class SessionChangesLog extends PlainChangesLogImpl
 
       for (int i = 0; i < items.size(); i++)
       {
-         TransientItemData item = (TransientItemData)items.get(i).getData();
+         ItemData item = items.get(i).getData();
          if (item.getIdentifier().equals(rootData.getIdentifier()))
          {
             // the node
@@ -756,7 +755,7 @@ public final class SessionChangesLog extends PlainChangesLogImpl
          result = prime * result + name.getName().hashCode();
          result = prime * result + name.getNamespace().hashCode();
          result = prime * result + name.getIndex();
-         result = prime * result + parentIdentifier.hashCode();
+         result = prime * result + (parentIdentifier == null ? 0 : parentIdentifier.hashCode());
 
          return result;
       }

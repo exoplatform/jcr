@@ -18,45 +18,70 @@
  */
 package org.exoplatform.services.jcr.load.perf;
 
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.PrintWriter;
 import java.util.Calendar;
 
 import javax.jcr.Node;
+
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
 
 /**
  * Created by The eXo Platform SAS Author : Peter Nedonosko peter.nedonosko@exoplatform.com.ua
  * 20.07.2006
  * 
- * @version $Id: TestBulkItemsAdd.java 34801 2009-07-31 15:44:50Z dkatayev $
+ * @version $Id: TestBulkItemsAdd.java 352 2009-10-23 09:28:36Z pnedonosko $
  */
 public class TestBulkItemsAdd extends JcrAPIBaseTest
 {
 
    public void testNodeAdd() throws Exception
    {
+      StringBuilder stats = new StringBuilder();
+
       Node testRoot = session.getRootNode().addNode("testRoot");
       session.save();
       long startTime = System.currentTimeMillis();
-      int nodesCount = 250;
+      int nodesCount = 10000;
       for (int i = 0; i < nodesCount; i++)
       {
          long addTime = System.currentTimeMillis();
          String nodeName = "_" + i + "_node";
          Node n = testRoot.addNode(nodeName);
-         long finishTime = System.currentTimeMillis();
-         log.info("add node " + nodeName + ", " + (System.currentTimeMillis() - addTime) + "ms, "
-            + (finishTime - startTime) + "ms");
+         //log.info("add node " + nodeName + ", " + (System.currentTimeMillis() - addTime) + "ms, "
+         //   + (finishTime - startTime) + "ms");
+         //String stat = (System.currentTimeMillis() - addTime) + ";" + (finishTime - startTime);
+         if ((i % 100) == 0)
+         {
+            stats.append(i);
+            stats.append(";");
+            stats.append((System.currentTimeMillis() - addTime));
+            //            stats.append(";");
+            //            stats.append((System.currentTimeMillis() - startTime));
+            stats.append("\r\n");
+         }
       }
+      //      stats.append(nodesCount);
+      //      stats.append(";");
+      //      stats.append((System.currentTimeMillis() - startTime));
+      //      stats.append("\r\n");
+
       log.info("Nodes added " + nodesCount + ", " + (System.currentTimeMillis() - startTime) + "ms");
       startTime = System.currentTimeMillis();
       log.info("Nodes will be saved, wait few minutes...");
       testRoot.save();
       log.info("Nodes saved " + nodesCount + ", " + (System.currentTimeMillis() - startTime) + "ms");
+
+      // save stats
+      PrintWriter statFile = new PrintWriter(new File("stats.txt"));
+      statFile.write(stats.toString());
+      statFile.close();
+
+      log.info("Test done");
    }
 
-   public void testNtFileAdd() throws Exception
+   public void _testNtFileAdd() throws Exception
    {
       Node testRoot = session.getRootNode().addNode("testRoot");
       session.save();

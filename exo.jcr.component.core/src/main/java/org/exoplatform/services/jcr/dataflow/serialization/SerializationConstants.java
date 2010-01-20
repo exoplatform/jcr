@@ -71,6 +71,21 @@ public class SerializationConstants
    public static final int TRANSIENT_PROPERTY_DATA = 8;
 
    /**
+    * PersistedNodeData class.
+    */
+   public static final int PERSISTED_NODE_DATA = 9;
+
+   /**
+    * PersistedPropertyData class.
+    */
+   public static final int PERSISTED_PROPERTY_DATA = 10;
+
+   /**
+    * PersistedValueData class.
+    */
+   public static final int PERSISTED_VALUE_DATA = 11;
+
+   /**
     * Null data.
     */
    public static final byte NULL_DATA = 0;

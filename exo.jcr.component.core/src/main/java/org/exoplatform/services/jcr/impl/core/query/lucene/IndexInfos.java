@@ -16,6 +16,10 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
+import org.apache.lucene.store.Directory;
+import org.exoplatform.services.jcr.impl.core.query.lucene.directory.IndexInputStream;
+import org.exoplatform.services.jcr.impl.core.query.lucene.directory.IndexOutputStream;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -26,189 +30,287 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.lucene.store.Directory;
-import org.exoplatform.services.jcr.impl.core.query.lucene.directory.IndexInputStream;
-import org.exoplatform.services.jcr.impl.core.query.lucene.directory.IndexOutputStream;
-
 /**
  * Stores a sequence of index names.
  */
-class IndexInfos {
+public class IndexInfos
+{
 
-    /**
-     * For new segment names.
-     */
-    private int counter = 0;
+   /**
+    * Default file name, that is used if not defined;
+    */
+   public final static String DEFALUT_NAME = "indexes";
 
-    /**
-     * Flag that indicates if index infos needs to be written to disk.
-     */
-    private boolean dirty = false;
+   /**
+    * For new segment names.
+    */
+   private int counter = 0;
 
-    /**
-     * List of index names
-     */
-    private List indexes = new ArrayList();
+   /**
+    * Flag that indicates if index infos needs to be written to disk.
+    */
+   private boolean dirty = false;
 
-    /**
-     * Set of names for quick lookup.
-     */
-    private Set names = new HashSet();
+   /**
+    * List of index names
+    */
+   private List<String> indexes = new ArrayList<String>();
 
-    /**
-     * Name of the file where the infos are stored.
-     */
-    private final String name;
+   /**
+    * Set of names for quick lookup.
+    */
+   private Set<String> names = new HashSet<String>();
 
-    /**
-     * Creates a new IndexInfos using <code>fileName</code>.
-     *
-     * @param fileName the name of the file where infos are stored.
-     */
-    IndexInfos(String fileName) {
-        this.name = fileName;
-    }
+   /**
+    * Name of the file where the infos are stored.
+    */
+   private final String name;
 
-    /**
-     * Returns <code>true</code> if this index infos exists in
-     * <code>dir</code>.
-     *
-     * @param dir the directory where to look for the index infos.
-     * @return <code>true</code> if it exists; <code>false</code> otherwise.
-     * @throws IOException if an error occurs while reading from the directory.
-     */
-    boolean exists(Directory dir) throws IOException {
-        return dir.fileExists(name);
-    }
+   /**
+    * Directory, where index names file is stored.
+    */
+   private Directory dir;
 
-    /**
-     * Returns the name of the file where infos are stored.
-     *
-     * @return the name of the file where infos are stored.
-     */
-    String getFileName() {
-        return name;
-    }
+   /**
+    * {@link MultiIndex} instance for callbacking when list of indexes changed 
+    */
+   private MultiIndex multiIndex;
 
-    /**
-     * Reads the index infos.
-     *
-     * @param dir the directory from where to read the index infos.
-     * @throws IOException if an error occurs.
-     */
-    void read(Directory dir) throws IOException {
-        InputStream in = new IndexInputStream(dir.openInput(name));
-        try {
+   /**
+    * Creates a new IndexInfos using <code>"indexes"</code> as a filename.
+    */
+   public IndexInfos()
+   {
+      this(DEFALUT_NAME);
+   }
+
+   /**
+    * Creates a new IndexInfos using <code>fileName</code>.
+    *
+    * @param fileName the name of the file where infos are stored.
+    */
+   public IndexInfos(String fileName)
+   {
+      this.name = fileName;
+   }
+
+   /**
+    * Returns the name of the file where infos are stored.
+    *
+    * @return the name of the file where infos are stored.
+    */
+   public String getFileName()
+   {
+      return name;
+   }
+
+   /**
+    * Reads the index infos. Before reading it checks if file exists
+    *
+    * @param dir the directory from where to read the index infos.
+    * @throws IOException if an error occurs.
+    */
+   public void read() throws IOException
+   {
+      names.clear();
+      indexes.clear();
+      if (dir.fileExists(name))
+      {
+         // clear current lists
+         InputStream in = new IndexInputStream(dir.openInput(name));
+         try
+         {
             DataInputStream di = new DataInputStream(in);
             counter = di.readInt();
-            for (int i = di.readInt(); i > 0; i--) {
-                String indexName = di.readUTF();
-                indexes.add(indexName);
-                names.add(indexName);
+            for (int i = di.readInt(); i > 0; i--)
+            {
+               String indexName = di.readUTF();
+               indexes.add(indexName);
+               names.add(indexName);
             }
-        } finally {
+         }
+         finally
+         {
             in.close();
-        }
-    }
+         }
+      }
+   }
 
-    /**
-     * Writes the index infos to disk if they are dirty.
-     *
-     * @param dir the directory where to write the index infos.
-     * @throws IOException if an error occurs.
-     */
-    void write(Directory dir) throws IOException {
-        // do not write if not dirty
-        if (!dirty) {
-            return;
-        }
+   /**
+    * Writes the index infos to disk if they are dirty.
+    *
+    * @param dir the directory where to write the index infos.
+    * @throws IOException if an error occurs.
+    */
+   public void write() throws IOException
+   {
+      // do not write if not dirty
+      if (!dirty)
+      {
+         return;
+      }
 
-        OutputStream out = new IndexOutputStream(dir.createOutput(name + ".new"));
-        try {
-            DataOutputStream dataOut = new DataOutputStream(out);
-            dataOut.writeInt(counter);
-            dataOut.writeInt(indexes.size());
-            for (int i = 0; i < indexes.size(); i++) {
-                dataOut.writeUTF(getName(i));
-            }
-        } finally {
-            out.close();
-        }
-        // delete old
-        if (dir.fileExists(name)) {
-            dir.deleteFile(name);
-        }
-        dir.renameFile(name + ".new", name);
-        dirty = false;
-    }
+      OutputStream out = new IndexOutputStream(dir.createOutput(name + ".new"));
+      try
+      {
+         DataOutputStream dataOut = new DataOutputStream(out);
+         dataOut.writeInt(counter);
+         dataOut.writeInt(indexes.size());
+         for (int i = 0; i < indexes.size(); i++)
+         {
+            dataOut.writeUTF(getName(i));
+         }
+      }
+      finally
+      {
+         out.close();
+      }
+      // delete old
+      if (dir.fileExists(name))
+      {
+         dir.deleteFile(name);
+      }
+      dir.renameFile(name + ".new", name);
+      dirty = false;
+   }
 
-    /**
-     * Returns the index name at position <code>i</code>.
-     * @param i the position.
-     * @return the index name.
-     */
-    String getName(int i) {
-        return (String) indexes.get(i);
-    }
+   /**
+    * Returns the index name at position <code>i</code>.
+    * @param i the position.
+    * @return the index name.
+    */
+   public String getName(int i)
+   {
+      return (String)indexes.get(i);
+   }
 
-    /**
-     * Returns the number of index names.
-     * @return the number of index names.
-     */
-    int size() {
-        return indexes.size();
-    }
+   /**
+    * Returns the index name at position <code>i</code>.
+    * @param i the position.
+    * @return the index name.
+    */
+   public Set<String> getNames()
+   {
+      return new HashSet<String>(indexes);
+   }
 
-    /**
-     * Adds a name to the index infos.
-     * @param name the name to add.
-     */
-    void addName(String name) {
-        if (names.contains(name)) {
-            throw new IllegalArgumentException("already contains: " + name);
-        }
-        indexes.add(name);
-        names.add(name);
-        dirty = true;
-    }
+   /**
+    * Returns the number of index names.
+    * @return the number of index names.
+    */
+   public int size()
+   {
+      return indexes.size();
+   }
 
-    /**
-     * Removes the name from the index infos.
-     * @param name the name to remove.
-     */
-    void removeName(String name) {
-        indexes.remove(name);
-        names.remove(name);
-        dirty = true;
-    }
+   /**
+    * Adds a name to the index infos.
+    * @param name the name to add.
+    */
+   public void addName(String name)
+   {
+      if (names.contains(name))
+      {
+         throw new IllegalArgumentException("already contains: " + name);
+      }
+      indexes.add(name);
+      names.add(name);
+      dirty = true;
+   }
 
-    /**
-     * Removes the name from the index infos.
-     * @param i the position.
-     */
-    void removeName(int i) {
-        Object name = indexes.remove(i);
-        names.remove(name);
-        dirty = true;
-    }
+   /**
+    * Removes the name from the index infos.
+    * @param name the name to remove.
+    */
+   public void removeName(String name)
+   {
+      indexes.remove(name);
+      names.remove(name);
+      dirty = true;
+   }
 
-    /**
-     * Returns <code>true</code> if <code>name</code> exists in this
-     * <code>IndexInfos</code>; <code>false</code> otherwise.
-     *
-     * @param name the name to test existence.
-     * @return <code>true</code> it is exists in this <code>IndexInfos</code>.
-     */
-    boolean contains(String name) {
-        return names.contains(name);
-    }
+   /**
+    * Removes the name from the index infos.
+    * @param i the position.
+    */
+   public void removeName(int i)
+   {
+      Object name = indexes.remove(i);
+      names.remove(name);
+      dirty = true;
+   }
 
-    /**
-     * Returns a new unique name for an index folder.
-     * @return a new unique name for an index folder.
-     */
-    String newName() {
-        dirty = true;
-        return "_" + Integer.toString(counter++, Character.MAX_RADIX);
-    }
+   /**
+    * Returns <code>true</code> if <code>name</code> exists in this
+    * <code>IndexInfos</code>; <code>false</code> otherwise.
+    *
+    * @param name the name to test existence.
+    * @return <code>true</code> it is exists in this <code>IndexInfos</code>.
+    */
+   public boolean contains(String name)
+   {
+      return names.contains(name);
+   }
+
+   /**
+    * Returns a new unique name for an index folder.
+    * @return a new unique name for an index folder.
+    */
+   public String newName()
+   {
+      dirty = true;
+      return "_" + Integer.toString(counter++, Character.MAX_RADIX);
+   }
+
+   /**
+    * Sets directory, where file with index names is stored. 
+    * @param dir
+    */
+   public void setDirectory(Directory dir)
+   {
+      this.dir = dir;
+   }
+
+   /**
+    * Sets new names, clearing existing. It is thought to be used when list of indexes can
+    * be externally changed.
+    * 
+    * @param names
+    */
+   protected void setNames(Set<String> names)
+   {
+      this.names.clear();
+      this.indexes.clear();
+      this.names.addAll(names);
+      this.indexes.addAll(names);
+      // new list of indexes if thought to be up to date
+      dirty = false;
+   }
+
+   /**
+    * Sets {@link MultiIndex} instance. 
+    * @param multiIndex
+    */
+   public void setMultiIndex(MultiIndex multiIndex)
+   {
+      this.multiIndex = multiIndex;
+   }
+
+   /**
+    * Returns multiIndex instance 
+    * @return
+    */
+   public MultiIndex getMultiIndex()
+   {
+      return multiIndex;
+   }
+
+   /**
+    * Returns true, if changes weren't saved to FS. 
+    * @return
+    */
+   protected boolean isDirty()
+   {
+      return dirty;
+   }
 }

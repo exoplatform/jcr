@@ -192,95 +192,43 @@ public abstract class WorkspaceStorageCacheBaseCase extends JcrImplBaseTest
 
    private void initDataAsPersisted()
    {
-      propertyData11 =
-         new PersistedPropertyData(propertyUuid11, propertyPath11, nodeUuid1, 1, PropertyType.STRING, false);
       List<ValueData> stringData = new ArrayList<ValueData>();
-      stringData.add(new ByteArrayPersistedValueData("property data 1".getBytes(), 0));
-      stringData.add(new ByteArrayPersistedValueData("property data 2".getBytes(), 1));
-      stringData.add(new ByteArrayPersistedValueData("property data 3".getBytes(), 2));
-      try
-      {
-         ((PersistedPropertyData)propertyData11).setValues(stringData);
-      }
-      catch (RepositoryException e)
-      {
-         e.printStackTrace();
-         fail(e.getMessage());
-      }
+      stringData.add(new ByteArrayPersistedValueData(0, "property data 1".getBytes()));
+      stringData.add(new ByteArrayPersistedValueData(1, "property data 2".getBytes()));
+      stringData.add(new ByteArrayPersistedValueData(2, "property data 3".getBytes()));
+      propertyData11 =
+         new PersistedPropertyData(propertyUuid11, propertyPath11, nodeUuid1, 1, PropertyType.STRING, false, stringData);
 
-      propertyData12 =
-         new PersistedPropertyData(propertyUuid12, propertyPath12, nodeUuid1, 1, PropertyType.BINARY, false);
       List<ValueData> binData = new ArrayList<ValueData>();
-      binData.add(new ByteArrayPersistedValueData("property data bin 1".getBytes(), 0));
-      try
-      {
-         ((PersistedPropertyData)propertyData12).setValues(binData);
-      }
-      catch (RepositoryException e)
-      {
-         e.printStackTrace();
-         fail(e.getMessage());
-      }
+      binData.add(new ByteArrayPersistedValueData(0, "property data bin 1".getBytes()));
+      propertyData12 =
+         new PersistedPropertyData(propertyUuid12, propertyPath12, nodeUuid1, 1, PropertyType.BINARY, false, binData);
 
-      propertyData21 =
-         new PersistedPropertyData(propertyUuid21, propertyPath21, nodeUuid2, 1, PropertyType.STRING, true);
       List<ValueData> stringData1 = new ArrayList<ValueData>();
-      stringData1.add(new ByteArrayPersistedValueData("property data 1".getBytes(), 0));
-      stringData1.add(new ByteArrayPersistedValueData("property data 2".getBytes(), 1));
-      stringData1.add(new ByteArrayPersistedValueData("property data 3".getBytes(), 2));
-      try
-      {
-         ((PersistedPropertyData)propertyData21).setValues(stringData1);
-      }
-      catch (RepositoryException e)
-      {
-         e.printStackTrace();
-         fail(e.getMessage());
-      }
+      stringData1.add(new ByteArrayPersistedValueData(0, "property data 1".getBytes()));
+      stringData1.add(new ByteArrayPersistedValueData(1, "property data 2".getBytes()));
+      stringData1.add(new ByteArrayPersistedValueData(2, "property data 3".getBytes()));
+      propertyData21 =
+         new PersistedPropertyData(propertyUuid21, propertyPath21, nodeUuid2, 1, PropertyType.STRING, true, stringData);
 
-      propertyData22 =
-         new PersistedPropertyData(propertyUuid22, propertyPath22, nodeUuid2, 1, PropertyType.BOOLEAN, false);
       List<ValueData> booleanData = new ArrayList<ValueData>();
-      booleanData.add(new ByteArrayPersistedValueData("true".getBytes(), 0));
-      try
-      {
-         ((PersistedPropertyData)propertyData22).setValues(booleanData);
-      }
-      catch (RepositoryException e)
-      {
-         e.printStackTrace();
-         fail(e.getMessage());
-      }
+      booleanData.add(new ByteArrayPersistedValueData(0, "true".getBytes()));
+      propertyData22 =
+         new PersistedPropertyData(propertyUuid22, propertyPath22, nodeUuid2, 1, PropertyType.BOOLEAN, false,
+            booleanData);
 
-      propertyData311 =
-         new PersistedPropertyData(propertyUuid311, propertyPath311, nodeUuid31, 1, PropertyType.LONG, false);
       List<ValueData> longData = new ArrayList<ValueData>();
-      longData.add(new ByteArrayPersistedValueData(new Long(123456).toString().getBytes(), 0));
-      try
-      {
-         ((PersistedPropertyData)propertyData311).setValues(longData);
-      }
-      catch (RepositoryException e)
-      {
-         e.printStackTrace();
-         fail(e.getMessage());
-      }
+      longData.add(new ByteArrayPersistedValueData(0, new Long(123456).toString().getBytes()));
+      propertyData311 =
+         new PersistedPropertyData(propertyUuid311, propertyPath311, nodeUuid31, 1, PropertyType.LONG, false, longData);
 
-      propertyData312 =
-         new PersistedPropertyData(propertyUuid312, propertyPath312, nodeUuid31, 1, PropertyType.REFERENCE, true);
       List<ValueData> refData = new ArrayList<ValueData>();
-      refData.add(new ByteArrayPersistedValueData(nodeUuid1.getBytes(), 0));
-      refData.add(new ByteArrayPersistedValueData(nodeUuid2.getBytes(), 1));
-      refData.add(new ByteArrayPersistedValueData(nodeUuid3.getBytes(), 2));
-      try
-      {
-         ((PersistedPropertyData)propertyData312).setValues(refData);
-      }
-      catch (RepositoryException e)
-      {
-         e.printStackTrace();
-         fail(e.getMessage());
-      }
+      refData.add(new ByteArrayPersistedValueData(0, nodeUuid1.getBytes()));
+      refData.add(new ByteArrayPersistedValueData(1, nodeUuid2.getBytes()));
+      refData.add(new ByteArrayPersistedValueData(2, nodeUuid3.getBytes()));
+      propertyData312 =
+         new PersistedPropertyData(propertyUuid312, propertyPath312, nodeUuid31, 1, PropertyType.REFERENCE, true,
+            refData);
    }
 
    public void testGetItem_Persisted() throws Exception
@@ -289,10 +237,19 @@ public abstract class WorkspaceStorageCacheBaseCase extends JcrImplBaseTest
       initNodesData();
       initDataAsPersisted();
 
-      cache.put(nodeData1);
-      cache.put(nodeData2);
-      cache.put(propertyData12);
-
+      try
+      {
+         cache.beginTransaction();
+         cache.put(nodeData1);
+         cache.put(nodeData2);
+         cache.put(propertyData12);
+         cache.commitTransaction();
+      }
+      catch (Exception e)
+      {
+         cache.rollbackTransaction();
+         throw e;
+      }
       assertEquals("Cached node " + nodeData1.getQPath().getAsString() + " is not equals", cache.get(rootUuid,
          nodePath1.getEntries()[nodePath1.getEntries().length - 1]), nodeData1);
       assertEquals("Cached node " + nodeData2.getQPath().getAsString() + " is not equals", cache.get(rootUuid,
@@ -316,22 +273,31 @@ public abstract class WorkspaceStorageCacheBaseCase extends JcrImplBaseTest
       List<NodeData> nodes = new ArrayList<NodeData>();
       nodes.add(nodeData31);
       nodes.add(nodeData32);
-      cache.addChildNodes(nodeData3, nodes);
+      try
+      {
+         cache.beginTransaction();
+         cache.addChildNodes(nodeData3, nodes);
 
-      cache.put(nodeData1);
-      cache.put(nodeData2);
-      cache.put(propertyData12);
+         cache.put(nodeData1);
+         cache.put(nodeData2);
+         cache.put(propertyData12);
 
-      List<PropertyData> properties2 = new ArrayList<PropertyData>();
-      properties2.add(propertyData21);
-      properties2.add(propertyData22);
-      cache.addChildProperties(nodeData2, properties2);
+         List<PropertyData> properties2 = new ArrayList<PropertyData>();
+         properties2.add(propertyData21);
+         properties2.add(propertyData22);
+         cache.addChildProperties(nodeData2, properties2);
 
-      List<PropertyData> properties1 = new ArrayList<PropertyData>();
-      properties1.add(propertyData11);
-      properties1.add(propertyData12);
-      cache.addChildProperties(nodeData1, properties1);
-
+         List<PropertyData> properties1 = new ArrayList<PropertyData>();
+         properties1.add(propertyData11);
+         properties1.add(propertyData12);
+         cache.addChildProperties(nodeData1, properties1);
+         cache.commitTransaction();
+      }
+      catch (Exception e)
+      {
+         cache.rollbackTransaction();
+         throw e;
+      }
       // prev stuff
       assertEquals("Cached " + nodeData1.getQPath().getAsString() + " is not equals", cache.get(rootUuid, nodePath1
          .getEntries()[nodePath1.getEntries().length - 1]), nodeData1);
@@ -400,22 +366,31 @@ public abstract class WorkspaceStorageCacheBaseCase extends JcrImplBaseTest
       List<NodeData> nodes = new ArrayList<NodeData>();
       nodes.add(nodeData31);
       nodes.add(nodeData32);
-      cache.addChildNodes(nodeData3, nodes);
+      try
+      {
+         cache.beginTransaction();
+         cache.addChildNodes(nodeData3, nodes);
 
-      cache.put(nodeData1);
-      cache.put(nodeData2);
-      cache.put(propertyData12);
+         cache.put(nodeData1);
+         cache.put(nodeData2);
+         cache.put(propertyData12);
 
-      List<PropertyData> properties2 = new ArrayList<PropertyData>();
-      properties2.add(propertyData21);
-      properties2.add(propertyData22);
-      cache.addChildProperties(nodeData2, properties2);
+         List<PropertyData> properties2 = new ArrayList<PropertyData>();
+         properties2.add(propertyData21);
+         properties2.add(propertyData22);
+         cache.addChildProperties(nodeData2, properties2);
 
-      List<PropertyData> properties1 = new ArrayList<PropertyData>();
-      properties1.add(propertyData11);
-      properties1.add(propertyData12);
-      cache.addChildProperties(nodeData1, properties1);
-
+         List<PropertyData> properties1 = new ArrayList<PropertyData>();
+         properties1.add(propertyData11);
+         properties1.add(propertyData12);
+         cache.addChildProperties(nodeData1, properties1);
+         cache.commitTransaction();
+      }
+      catch (Exception e)
+      {
+         cache.rollbackTransaction();
+         throw e;
+      }
       // props, prev stuff
       assertEquals("Cached child property " + propertyData11.getQPath().getAsString() + " is not equals", cache.get(
          nodeUuid1, propertyPath11.getEntries()[propertyPath11.getEntries().length - 1]), propertyData11);
@@ -448,7 +423,9 @@ public abstract class WorkspaceStorageCacheBaseCase extends JcrImplBaseTest
       assertEquals("Cached child properties count is wrong", cache.getChildProperties(nodeData2).size(), 2);
 
       // remove
+      cache.beginTransaction();
       cache.remove(propertyData12);
+      cache.commitTransaction();
 
       // check
       assertEquals("Cached child property " + propertyData11.getQPath().getAsString() + " is not equals", cache.get(
@@ -494,32 +471,40 @@ public abstract class WorkspaceStorageCacheBaseCase extends JcrImplBaseTest
 
       initNodesData();
       initDataAsPersisted();
+      try
+      {
+         cache.beginTransaction();
+         // the case here
+         cache.put(nodeData3);
+         List<NodeData> n3childNodes = new ArrayList<NodeData>();
+         n3childNodes.add(nodeData31);
+         n3childNodes.add(nodeData32);
+         cache.addChildNodes(nodeData3, n3childNodes);
 
-      // the case here
-      cache.put(nodeData3);
-      List<NodeData> n3childNodes = new ArrayList<NodeData>();
-      n3childNodes.add(nodeData31);
-      n3childNodes.add(nodeData32);
-      cache.addChildNodes(nodeData3, n3childNodes);
+         // any stuff
+         cache.put(nodeData1);
+         cache.put(nodeData2);
+         cache.put(propertyData12);
 
-      // any stuff
-      cache.put(nodeData1);
-      cache.put(nodeData2);
-      cache.put(propertyData12);
+         List<PropertyData> properties2 = new ArrayList<PropertyData>();
+         properties2.add(propertyData21);
+         properties2.add(propertyData22);
+         cache.addChildProperties(nodeData2, properties2);
 
-      List<PropertyData> properties2 = new ArrayList<PropertyData>();
-      properties2.add(propertyData21);
-      properties2.add(propertyData22);
-      cache.addChildProperties(nodeData2, properties2);
+         List<PropertyData> properties1 = new ArrayList<PropertyData>();
+         properties1.add(propertyData11);
+         properties1.add(propertyData12);
+         cache.addChildProperties(nodeData1, properties1);
 
-      List<PropertyData> properties1 = new ArrayList<PropertyData>();
-      properties1.add(propertyData11);
-      properties1.add(propertyData12);
-      cache.addChildProperties(nodeData1, properties1);
-
-      // remove
-      cache.remove(nodeData3); // remove node3 and its childs (31, 32)
-
+         // remove
+         cache.remove(nodeData3); // remove node3 and its childs (31, 32)
+         cache.commitTransaction();
+      }
+      catch (Exception e)
+      {
+         cache.rollbackTransaction();
+         throw e;
+      }
       // check
       assertNull("Node " + nodeData3.getQPath().getAsString() + " in the cache", cache.get(nodeUuid3));
       assertNull("Node " + nodeData3.getQPath().getAsString() + " childs in the cache", cache.getChildNodes(nodeData3));
@@ -535,20 +520,29 @@ public abstract class WorkspaceStorageCacheBaseCase extends JcrImplBaseTest
       List<PropertyData> properties2 = new ArrayList<PropertyData>();
       properties2.add(propertyData21);
       properties2.add(propertyData22);
-      cache.addChildProperties(nodeData2, properties2);
+      try
+      {
+         cache.beginTransaction();
+         cache.addChildProperties(nodeData2, properties2);
 
-      // any stuff
-      cache.put(nodeData3);
-      cache.put(nodeData31);
+         // any stuff
+         cache.put(nodeData3);
+         cache.put(nodeData31);
 
-      List<PropertyData> properties1 = new ArrayList<PropertyData>();
-      properties1.add(propertyData11);
-      properties1.add(propertyData12);
-      cache.addChildProperties(nodeData1, properties1);
+         List<PropertyData> properties1 = new ArrayList<PropertyData>();
+         properties1.add(propertyData11);
+         properties1.add(propertyData12);
+         cache.addChildProperties(nodeData1, properties1);
 
-      // remove
-      cache.remove(nodeData2); // remove node2 and its childs (21, 22)
-
+         // remove
+         cache.remove(nodeData2); // remove node2 and its childs (21, 22)
+         cache.commitTransaction();
+      }
+      catch (Exception e)
+      {
+         cache.rollbackTransaction();
+         throw e;
+      }
       // check
       assertNull("Node " + nodeData2.getQPath().getAsString() + " in the cache", cache.get(nodeUuid2));
       assertNull("Node " + nodeData2.getQPath().getAsString() + " properties in the cache", cache
@@ -565,33 +559,41 @@ public abstract class WorkspaceStorageCacheBaseCase extends JcrImplBaseTest
       List<PropertyData> properties2 = new ArrayList<PropertyData>();
       properties2.add(propertyData21);
       properties2.add(propertyData22);
-      cache.addChildProperties(nodeData2, properties2);
+      try
+      {
+         cache.addChildProperties(nodeData2, properties2);
 
-      List<NodeData> nodes2 = new ArrayList<NodeData>();
-      nodes2.add(nodeData21);
-      nodes2.add(nodeData22);
-      cache.addChildNodes(nodeData2, nodes2);
+         List<NodeData> nodes2 = new ArrayList<NodeData>();
+         nodes2.add(nodeData21);
+         nodes2.add(nodeData22);
+         cache.addChildNodes(nodeData2, nodes2);
 
-      // any stuff
-      cache.put(nodeData3);
-      cache.put(nodeData31);
-      cache.put(nodeData32);
+         // any stuff
+         cache.put(nodeData3);
+         cache.put(nodeData31);
+         cache.put(nodeData32);
 
-      List<PropertyData> properties1 = new ArrayList<PropertyData>();
-      properties1.add(propertyData11);
-      properties1.add(propertyData12);
-      cache.addChildProperties(nodeData1, properties1);
+         List<PropertyData> properties1 = new ArrayList<PropertyData>();
+         properties1.add(propertyData11);
+         properties1.add(propertyData12);
+         cache.addChildProperties(nodeData1, properties1);
 
-      // remove
-      PlainChangesLog chlog = new PlainChangesLogImpl();
-      chlog.add(ItemState.createDeletedState(propertyData21));
-      chlog.add(ItemState.createDeletedState(propertyData22));
-      chlog.add(ItemState.createDeletedState(nodeData21));
-      chlog.add(ItemState.createDeletedState(nodeData22));
-      chlog.add(ItemState.createDeletedState(nodeData2));
-      // cache.remove(nodeData2); // remove node2 and its childs and properties (21, 22)
-      cache.onSaveItems(chlog);
+         // remove
+         PlainChangesLog chlog = new PlainChangesLogImpl();
+         chlog.add(ItemState.createDeletedState(propertyData21));
+         chlog.add(ItemState.createDeletedState(propertyData22));
+         chlog.add(ItemState.createDeletedState(nodeData21));
+         chlog.add(ItemState.createDeletedState(nodeData22));
+         chlog.add(ItemState.createDeletedState(nodeData2));
+         // cache.remove(nodeData2); // remove node2 and its childs and properties (21, 22)
+         cache.onSaveItems(chlog);
 
+      }
+      catch (Exception e)
+      {
+         cache.rollbackTransaction();
+         throw e;
+      }
       // check
       assertNull("Node " + nodeData2.getQPath().getAsString() + " in the cache", cache.get(nodeUuid2));
 

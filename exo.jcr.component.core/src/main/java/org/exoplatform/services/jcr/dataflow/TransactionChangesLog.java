@@ -76,10 +76,8 @@ public class TransactionChangesLog implements CompositeChangesLog, Externalizabl
       return new ChangesLogIterator(changesLogs);
    }
 
-   /*
-    * (non-Javadoc)
-    * 
-    * @see org.exoplatform.services.jcr.dataflow.ItemStateChangesLog#getAllStates()
+   /**
+    * {@inheritDoc}
     */
    public List<ItemState> getAllStates()
    {
@@ -98,10 +96,8 @@ public class TransactionChangesLog implements CompositeChangesLog, Externalizabl
       return states;
    }
 
-   /*
-    * (non-Javadoc)
-    * 
-    * @see org.exoplatform.services.jcr.dataflow.ItemStateChangesLog#getSize()
+   /**
+    * {@inheritDoc}
     */
    public int getSize()
    {
@@ -168,68 +164,6 @@ public class TransactionChangesLog implements CompositeChangesLog, Externalizabl
       return list;
    }
 
-   /**
-    * Find if the node ancestor was renamed in this changes log.
-    * 
-    * @param item - target node
-    * @return - the pair of states of item ancestor, ItemState[] {DELETED,
-    *         RENAMED} or null if renaming is not detected.
-    * @throws IllegalPathException
-    */
-   @Deprecated
-   public ItemState[] findRenamed(ItemData item) throws IllegalPathException
-   {
-      List<ItemState> allStates = getAllStates();
-      // search from the end for DELETED state.
-      // RENAMED comes after the DELETED in the log immediately
-      for (int i = allStates.size() - 1; i >= 0; i--)
-      {
-         ItemState state = allStates.get(i);
-         if (state.getState() == ItemState.DELETED && !state.isPersisted()
-            && item.getQPath().isDescendantOf(state.getData().getQPath()))
-         {
-            // 1. if it's a parent or the parent is descendant of logged data
-            try
-            {
-               ItemState delete = state;
-               ItemState rename = allStates.get(i + 1);
-
-               if (rename.getState() == ItemState.RENAMED && rename.isPersisted()
-                  && rename.getData().getIdentifier().equals(delete.getData().getIdentifier()))
-               {
-
-                  // 2. search of most fresh state of rename for searched rename state
-                  // (i.e. for ancestor
-                  // state of the given node)
-                  for (int bi = allStates.size() - 1; bi >= i + 2; bi--)
-                  {
-                     state = allStates.get(bi);
-                     if (state.getState() == ItemState.RENAMED && state.isPersisted()
-                        && state.getData().getIdentifier().equals(rename.getData().getIdentifier()))
-                     {
-                        // got much fresh
-                        rename = state;
-                        delete = allStates.get(i - 1); // try the fresh delete state
-                        if (delete.getData().getIdentifier().equals(rename.getData().getIdentifier()))
-                           return new ItemState[]{delete, rename}; // 3. ok, got it
-                     }
-                  }
-
-                  return new ItemState[]{delete, rename}; // 4. ok, there are no
-                  // more fresh we have
-                  // found before p.2
-               } // else, it's not a rename, search deeper
-            }
-            catch (IndexOutOfBoundsException e)
-            {
-               // the pair not found
-               return null;
-            }
-         }
-      }
-      return null;
-   }
-
    public String dump()
    {
       String str = "ChangesLog: size" + changesLogs.size() + "\n ";
@@ -251,8 +185,10 @@ public class TransactionChangesLog implements CompositeChangesLog, Externalizabl
       if (systemId != null)
       {
          out.writeInt(1);
-         out.writeInt(systemId.getBytes().length);
-         out.write(systemId.getBytes());
+
+         byte[] buff = systemId.getBytes(Constants.DEFAULT_ENCODING);
+         out.writeInt(buff.length);
+         out.write(buff);
       }
       else
       {
@@ -262,7 +198,9 @@ public class TransactionChangesLog implements CompositeChangesLog, Externalizabl
       int listSize = changesLogs.size();
       out.writeInt(listSize);
       for (int i = 0; i < listSize; i++)
+      {
          out.writeObject(changesLogs.get(i));
+      }
    }
 
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
@@ -277,7 +215,9 @@ public class TransactionChangesLog implements CompositeChangesLog, Externalizabl
 
       int listSize = in.readInt();
       for (int i = 0; i < listSize; i++)
+      {
          changesLogs.add((PlainChangesLogImpl)in.readObject());
+      }
    }
 
    // ------------------ [ END ] ------------------

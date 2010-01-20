@@ -19,9 +19,13 @@
 package org.exoplatform.services.jcr.impl.xml.importing.dataflow;
 
 import org.exoplatform.services.jcr.datamodel.QPath;
+import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by The eXo Platform SAS.
@@ -86,6 +90,40 @@ public class ImportPropertyData extends TransientPropertyData implements ImportI
    public void setQPath(QPath path)
    {
       this.qpath = path;
+   }
+
+   /**
+    * Set property values.
+    *
+    * @param values
+    *          values property
+    */
+   public void setValues(List<ValueData> values)
+   {
+      this.values = values;
+   }
+
+   /**
+    * Set type of property
+    *
+    * @param type
+    *          property type
+    */
+   public void setType(int type)
+   {
+      this.type = type;
+   }
+
+   /**
+    * Set property value.
+    * 
+    * @param value
+    *          property value
+    */
+   public void setValue(ValueData value)
+   {
+      this.values = new ArrayList<ValueData>();
+      values.add(value);
    }
 
 }

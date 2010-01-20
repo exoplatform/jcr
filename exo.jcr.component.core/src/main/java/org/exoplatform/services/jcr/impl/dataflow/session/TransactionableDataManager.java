@@ -22,6 +22,7 @@ import org.exoplatform.services.jcr.dataflow.DataManager;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
+import org.exoplatform.services.jcr.dataflow.SharedDataManager;
 import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
@@ -34,6 +35,8 @@ import org.exoplatform.services.log.Log;
 import org.exoplatform.services.transaction.TransactionException;
 import org.exoplatform.services.transaction.TransactionResource;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.jcr.InvalidItemStateException;
@@ -48,9 +51,11 @@ import javax.jcr.RepositoryException;
 public class TransactionableDataManager implements TransactionResource, DataManager
 {
 
-   private WorkspaceStorageDataManagerProxy storageDataManager;
+   // use LocalWorkspaceDataManagerStub, otherwise JVM will use save(ItemStateChangesLog changes) instead of
+   // VersionableWorkspaceDataManager.save(CompositeChangesLog changesLog) 
+   private LocalWorkspaceDataManagerStub storageDataManager;
 
-   protected static Log log = ExoLogger.getLogger("jcr.TransactionableDataManager");
+   protected static Log LOG = ExoLogger.getLogger("jcr.TransactionableDataManager");
 
    private TransactionChangesLog transactionLog;
 
@@ -58,15 +63,18 @@ public class TransactionableDataManager implements TransactionResource, DataMana
       throws RepositoryException
    {
       super();
-      try
-      {
-         this.storageDataManager = new LocalWorkspaceStorageDataManagerProxy(dataManager, session.getValueFactory());
-      }
-      catch (Exception e1)
-      {
-         String infoString = "[Error of read value factory: " + e1.getMessage() + "]";
-         throw new RepositoryException(infoString);
-      }
+      this.storageDataManager = dataManager;
+
+      // TODO EXOJCR-272
+      //      try
+      //      {
+      //         this.storageDataManager = new LocalWorkspaceStorageDataManagerProxy(dataManager, session.getValueFactory());
+      //      }
+      //      catch (Exception e1)
+      //      {
+      //         String infoString = "[Error of read value factory: " + e1.getMessage() + "]";
+      //         throw new RepositoryException(infoString);
+      //      }
    }
 
    // --------------- ItemDataConsumer --------
@@ -78,16 +86,27 @@ public class TransactionableDataManager implements TransactionResource, DataMana
    {
       List<NodeData> nodes = storageDataManager.getChildNodesData(parent);
 
-      // merge data
       if (txStarted())
       {
-         for (ItemState state : transactionLog.getChildrenChanges(parent.getIdentifier(), true))
+         // merge data
+         List<ItemState> txChanges = transactionLog.getChildrenChanges(parent.getIdentifier(), true);
+         if (txChanges.size() > 0)
          {
-            nodes.remove(state.getData());
-            if (!state.isDeleted())
-               nodes.add((NodeData)state.getData());
+            List<NodeData> res = new ArrayList<NodeData>(nodes);
+
+            for (ItemState state : txChanges)
+            {
+               res.remove(state.getData());
+               if (!state.isDeleted())
+               {
+                  res.add((NodeData)state.getData());
+               }
+            }
+
+            return Collections.unmodifiableList(res);
          }
       }
+
       return nodes;
    }
 
@@ -121,7 +140,7 @@ public class TransactionableDataManager implements TransactionResource, DataMana
             throw new InvalidItemStateException("Node's child nodes were changed in another Transaction "
                + parent.getQPath().getAsString());
          }
-         
+
          return childsCount;
       }
       else
@@ -137,16 +156,26 @@ public class TransactionableDataManager implements TransactionResource, DataMana
    {
       List<PropertyData> props = storageDataManager.getChildPropertiesData(parent);
 
-      // merge data
       if (txStarted())
       {
-         for (ItemState state : transactionLog.getChildrenChanges(parent.getIdentifier(), false))
+         // merge data
+         List<ItemState> txChanges = transactionLog.getChildrenChanges(parent.getIdentifier(), false);
+         if (txChanges.size() > 0)
          {
-            props.remove(state.getData());
-            if (!state.isDeleted())
-               props.add((PropertyData)state.getData());
+            List<PropertyData> res = new ArrayList<PropertyData>(props);
+            for (ItemState state : txChanges)
+            {
+               res.remove(state.getData());
+               if (!state.isDeleted())
+               {
+                  res.add((PropertyData)state.getData());
+               }
+            }
+
+            return Collections.unmodifiableList(res);
          }
       }
+
       return props;
    }
 
@@ -157,16 +186,26 @@ public class TransactionableDataManager implements TransactionResource, DataMana
    {
       List<PropertyData> props = storageDataManager.listChildPropertiesData(parent);
 
-      // merge data
       if (txStarted())
       {
-         for (ItemState state : transactionLog.getChildrenChanges(parent.getIdentifier(), false))
+         // merge data
+         List<ItemState> txChanges = transactionLog.getChildrenChanges(parent.getIdentifier(), false);
+         if (txChanges.size() > 0)
          {
-            props.remove(state.getData());
-            if (!state.isDeleted())
-               props.add((PropertyData)state.getData());
+            List<PropertyData> res = new ArrayList<PropertyData>(props);
+            for (ItemState state : txChanges)
+            {
+               res.remove(state.getData());
+               if (!state.isDeleted())
+               {
+                  res.add((PropertyData)state.getData());
+               }
+            }
+
+            return Collections.unmodifiableList(res);
          }
       }
+
       return props;
    }
 
@@ -180,12 +219,18 @@ public class TransactionableDataManager implements TransactionResource, DataMana
       {
          ItemState state = transactionLog.getItemState(parentData, name);
          if (state != null)
+         {
             data = state.getData();
+         }
       }
       if (data != null)
+      {
          return data;
+      }
       else
+      {
          return storageDataManager.getItemData(parentData, name);
+      }
    }
 
    /**
@@ -198,12 +243,18 @@ public class TransactionableDataManager implements TransactionResource, DataMana
       {
          ItemState state = transactionLog.getItemState(identifier);
          if (state != null)
+         {
             data = state.getData();
+         }
       }
       if (data != null)
+      {
          return data;
+      }
       else
+      {
          return storageDataManager.getItemData(identifier);
+      }
    }
 
    /**
@@ -222,9 +273,15 @@ public class TransactionableDataManager implements TransactionResource, DataMana
     */
    public void start()
    {
-      log.debug("tx start() " + this + " txStarted(): " + txStarted());
+      if (LOG.isDebugEnabled())
+      {
+         LOG.debug("tx start() " + this + " txStarted(): " + txStarted());
+      }
+
       if (!txStarted())
+      {
          transactionLog = new TransactionChangesLog();
+      }
    }
 
    /**
@@ -234,20 +291,24 @@ public class TransactionableDataManager implements TransactionResource, DataMana
    {
       if (txStarted())
       {
-         if (log.isDebugEnabled())
-            log.debug("tx commit() " + this + "\n" + transactionLog.dump());
+         if (LOG.isDebugEnabled())
+         {
+            LOG.debug("tx commit() " + this + "\n" + transactionLog.dump());
+         }
+
          try
          {
-            storageDataManager.save(transactionLog);
+            TransactionChangesLog tl = transactionLog;
             transactionLog = null;
+            storageDataManager.save(tl);
          }
          catch (InvalidItemStateException e)
          {
-            throw new TransactionException(e);
+            throw new TransactionException(e.getMessage(), e);
          }
          catch (RepositoryException e)
          {
-            throw new TransactionException(e);
+            throw new TransactionException(e.getMessage(), e);
          }
       }
    }
@@ -257,10 +318,15 @@ public class TransactionableDataManager implements TransactionResource, DataMana
     */
    public void rollback()
    {
-      if (log.isDebugEnabled())
-         log.debug("tx rollback() " + this + (transactionLog != null ? "\n" + transactionLog.dump() : "[NULL]"));
+      if (LOG.isDebugEnabled())
+      {
+         LOG.debug("tx rollback() " + this + (transactionLog != null ? "\n" + transactionLog.dump() : "[NULL]"));
+      }
+
       if (txStarted())
+      {
          transactionLog = null;
+      }
    }
 
    /**
@@ -276,13 +342,20 @@ public class TransactionableDataManager implements TransactionResource, DataMana
 
       PlainChangesLog statesLog = (PlainChangesLog)changes;
 
-      if (log.isDebugEnabled())
-         log.debug("save() " + this + " txStarted: " + txStarted() + "\n====== Changes ======\n"
+      if (LOG.isDebugEnabled())
+      {
+         LOG.debug("save() " + this + " txStarted: " + txStarted() + "\n====== Changes ======\n"
             + (statesLog != null ? "\n" + statesLog.dump() : "[NULL]") + "=====================");
+      }
+
       if (txStarted())
+      {
          transactionLog.addLog(statesLog);
+      }
       else
+      {
          storageDataManager.save(new TransactionChangesLog(statesLog));
+      }
 
    }
 
@@ -296,7 +369,7 @@ public class TransactionableDataManager implements TransactionResource, DataMana
       return txStarted() && transactionLog.getSize() > 0;
    }
 
-   public WorkspaceStorageDataManagerProxy getStorageDataManager()
+   public SharedDataManager getStorageDataManager()
    {
       return storageDataManager;
    }

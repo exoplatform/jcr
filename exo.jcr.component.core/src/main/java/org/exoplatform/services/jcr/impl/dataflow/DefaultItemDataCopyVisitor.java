@@ -19,7 +19,6 @@
 package org.exoplatform.services.jcr.impl.dataflow;
 
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
-import org.exoplatform.services.jcr.dataflow.ItemDataTraversingVisitor;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.NodeData;
@@ -42,10 +41,10 @@ import javax.jcr.RepositoryException;
  * list of <code>List&lt;ItemState&gt;</code> for copying new nodes and their properties.
  * 
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
- * @version $Id: DefaultItemDataCopyVisitor.java 12306 2008-03-24 10:25:55Z ksm $
+ * @version $Id$
  */
 
-public abstract class DefaultItemDataCopyVisitor extends ItemDataTraversingVisitor
+public abstract class DefaultItemDataCopyVisitor extends AbstractItemDataCopyVisitor
 {
 
    /**
@@ -119,21 +118,19 @@ public abstract class DefaultItemDataCopyVisitor extends ItemDataTraversingVisit
          .getMixinTypeNames())
          && qname.equals(Constants.JCR_UUID))
       {
-
          values = new ArrayList<ValueData>(1);
          values.add(new TransientValueData(curParent().getIdentifier()));
       }
       else
       {
-         values = property.getValues();
+         values = copyValues(property);
       }
 
       TransientPropertyData newProperty =
          new TransientPropertyData(QPath.makeChildPath(curParent().getQPath(), qname), keepIdentifiers ? property
             .getIdentifier() : IdGenerator.generate(), -1, property.getType(), curParent().getIdentifier(), property
-            .isMultiValued());
+            .isMultiValued(), values);
 
-      newProperty.setValues(values);
       itemAddStates.add(new ItemState(newProperty, ItemState.ADDED, true, ancestorToSave, level != 0));
    }
 
@@ -148,19 +145,21 @@ public abstract class DefaultItemDataCopyVisitor extends ItemDataTraversingVisit
       {
          ancestorToSave = curParent().getQPath();
       }
+
       NodeData parent = curParent();
       QPath qpath = calculateNewNodePath(node, level);
-      // [PN] 05.01.07 Calc order number if parent supports orderable nodes...
+      // Calc order number if parent supports orderable nodes...
       // If ordering is supported by the node type of the parent node of the new
-      // location, then the
-      // newly moved node is appended to the end of the child node list.
+      // location, then the newly moved node is appended to the end of the child node list.
       int orderNum = 0;
       if (ntManager.isOrderableChildNodesSupported(parent.getPrimaryTypeName(), parent.getMixinTypeNames()))
       {
          orderNum = calculateNewNodeOrderNumber();
       }
       else
+      {
          orderNum = node.getOrderNumber(); // has no matter
+      }
 
       String id = keepIdentifiers ? node.getIdentifier() : IdGenerator.generate();
 
@@ -243,6 +242,11 @@ public abstract class DefaultItemDataCopyVisitor extends ItemDataTraversingVisit
       return null;
    }
 
+   protected int calculateNewNodeOrderNumber() throws RepositoryException
+   {
+      return dataManager.getChildNodesCount(curParent());
+   }
+
    protected QPath calculateNewNodePath(NodeData node, int level) throws RepositoryException
    {
       NodeData parent = curParent();
@@ -254,7 +258,7 @@ public abstract class DefaultItemDataCopyVisitor extends ItemDataTraversingVisit
       if (level == 0)
       {
          qname = destNodeName;
-         // [PN] 12.01.07 Calculate SNS index for dest root
+         // Calculate SNS index for dest root
          for (NodeData child : existedChilds)
          {
             if (child.getQPath().getName().equals(qname))
@@ -269,15 +273,5 @@ public abstract class DefaultItemDataCopyVisitor extends ItemDataTraversingVisit
          newIndex = node.getQPath().getIndex();
       }
       return QPath.makeChildPath(parent.getQPath(), qname, newIndex);
-   }
-
-   protected int calculateNewNodeOrderNumber() throws RepositoryException
-   {
-      NodeData parent = curParent();
-      List<NodeData> existedChilds = dataManager.getChildNodesData(parent);
-      int orderNum = 0;
-      if (existedChilds.size() > 0)
-         orderNum = existedChilds.get(existedChilds.size() - 1).getOrderNumber() + 1;
-      return orderNum;
    }
 }

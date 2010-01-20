@@ -33,7 +33,6 @@ import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
-import org.exoplatform.services.jcr.impl.dataflow.AbstractValueData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -402,8 +401,7 @@ public class NodeIndexer
             // WARN. DON'T USE access item BY PATH - it's may be a node in case of
             // residual definitions in NT
             List<ValueData> data =
-               prop.getValues().size() > 0 ? prop.getValues() : ((PropertyData)stateProvider.getItemData(prop
-                  .getIdentifier())).getValues();
+               prop.getValues().size() > 0 ? prop.getValues() : ((PropertyData)stateProvider.getItemData(prop.getIdentifier())).getValues();
 
             if (data == null)
                log.warn("null value found at property " + prop.getQPath().getAsString());
@@ -413,7 +411,7 @@ public class NodeIndexer
 
             for (ValueData value : data)
             {
-               val = (ExtendedValue)vFactory.loadValue(((AbstractValueData)value).createTransientCopy(), propType);
+               val = (ExtendedValue)vFactory.loadValue(value, propType);
 
                switch (propType)
                {
