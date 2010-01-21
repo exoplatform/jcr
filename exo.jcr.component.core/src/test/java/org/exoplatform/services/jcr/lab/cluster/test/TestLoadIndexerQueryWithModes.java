@@ -32,6 +32,7 @@ import java.util.Random;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
@@ -86,19 +87,11 @@ public class TestLoadIndexerQueryWithModes extends JcrAPIBaseTest
 
    private class QueryTask implements Runnable
    {
-      private SessionImpl sessionLocal;
-
-      private Node rootLocal;
 
       private Random random;
 
       public QueryTask() throws RepositoryException
       {
-         // login
-         CredentialsImpl credentials = new CredentialsImpl("admin", "admin".toCharArray());
-         sessionLocal = (SessionImpl)repository.login(credentials, "ws");
-         // prepare nodes
-         rootLocal = sessionLocal.getRootNode();
          random = new Random();
       }
 
@@ -110,8 +103,14 @@ public class TestLoadIndexerQueryWithModes extends JcrAPIBaseTest
 
          while (!stop)
          {
+            Session sessionLocal = null;            
             try
             {
+               // login
+               CredentialsImpl credentials = new CredentialsImpl("admin", "admin".toCharArray());
+               sessionLocal = (SessionImpl)repository.login(credentials, "ws");
+               // prepare nodes
+               Node rootLocal = sessionLocal.getRootNode();
                Node threadNode = getRandomChild(rootLocal, "Thread*");
                if (threadNode != null)
                {
@@ -143,16 +142,19 @@ public class TestLoadIndexerQueryWithModes extends JcrAPIBaseTest
                   }
                }
             }
-            catch (RepositoryException e)
-            {
-               log.error(e);
-            }
             catch (Exception e)
             {
                log.error(e);
             }
+            finally
+            {
+               if (sessionLocal != null)
+               {
+                  sessionLocal.logout();
+                  sessionLocal = null;                  
+               }
+            }            
          }
-
       }
 
       private Node getRandomChild(Node parent, String pattern) throws RepositoryException

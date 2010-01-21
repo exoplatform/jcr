@@ -26,6 +26,7 @@ import java.util.Random;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 
 /**
  * @author <a href="mailto:nikolazius@gmail.com">Nikolay Zamosenchuk</a>
@@ -77,12 +78,6 @@ public class TestLoadIndexerWriter extends JcrAPIBaseTest
 
       private int id;
 
-      private SessionImpl sessionLocal;
-
-      private Node statisticNode;
-
-      private Node contentNode;
-
       private Random random;
 
       public WriterTask(int id) throws RepositoryException
@@ -90,14 +85,16 @@ public class TestLoadIndexerWriter extends JcrAPIBaseTest
          this.id = id;
          // login
          CredentialsImpl credentials = new CredentialsImpl("admin", "admin".toCharArray());
-         sessionLocal = (SessionImpl)repository.login(credentials, "ws");
+         Session sessionLocal = (SessionImpl)repository.login(credentials, "ws");
          // prepare nodes
          Node root = sessionLocal.getRootNode();
          Node threadNode = root.addNode("Thread" + id);
-         statisticNode = threadNode.addNode(STATISTIC);
-         contentNode = threadNode.addNode(CONTENT);
+         threadNode.addNode(STATISTIC);
+         threadNode.addNode(CONTENT);
          random = new Random();
          sessionLocal.save();
+         sessionLocal.logout();
+         sessionLocal = null;
       }
 
       /**
@@ -105,32 +102,44 @@ public class TestLoadIndexerWriter extends JcrAPIBaseTest
        */
       public void run()
       {
-         try
+         while (!stop)
          {
-            while (!stop)
+            // get any word
+            int i = random.nextInt(WORDS.length);
+            String word = WORDS[i] + id; // "hello12" if thread#12 is creating it
+            Session sessionLocal = null;
+            try
             {
-               // get any word
-               int i = random.nextInt(WORDS.length);
-               String word = WORDS[i] + id; // "hello12" if thread#12 is creating it
+               CredentialsImpl credentials = new CredentialsImpl("admin", "admin".toCharArray());
+               sessionLocal = (SessionImpl)repository.login(credentials, "ws");  
+               long time = System.currentTimeMillis();
                // update statistic
-               updateStatistic(word);
+               updateStatistic((Node)sessionLocal.getItem("/Thread" + id + "/" + STATISTIC),word);
                // add actual node
-               createTree().addNode(word);
+               createTree((Node)sessionLocal.getItem("/Thread" + id + "/" + CONTENT)).addNode(word);
                sessionLocal.save();
-               System.out.print("#");
-               
-               try
+               log.info("Time : " + (System.currentTimeMillis() - time));
+            }
+            catch (RepositoryException e)
+            {
+               log.error(e);
+            }
+            finally
+            {
+               if (sessionLocal != null)
                {
-                  Thread.sleep(300);
-               }
-               catch (InterruptedException e)
-               {
+                  sessionLocal.logout();
+                  sessionLocal = null;                  
                }
             }
-         }
-         catch (RepositoryException e)
-         {
-            log.error(e);
+            
+            try
+            {
+               Thread.sleep(300);
+            }
+            catch (InterruptedException e)
+            {
+            }
          }
       }
 
@@ -140,7 +149,7 @@ public class TestLoadIndexerWriter extends JcrAPIBaseTest
        * @param word
        * @throws RepositoryException
        */
-      private void updateStatistic(String word) throws RepositoryException
+      private void updateStatistic(Node statisticNode, String word) throws RepositoryException
       {
          Node wordNode;
          long count = 0;
@@ -163,7 +172,7 @@ public class TestLoadIndexerWriter extends JcrAPIBaseTest
        * @return
        * @throws RepositoryException
        */
-      private Node createTree() throws RepositoryException
+      private Node createTree(Node contentNode) throws RepositoryException
       {
          // created node tree like: "./content/n123456/n1234567/n12345678"
          Node end;

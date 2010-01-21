@@ -30,6 +30,7 @@ import java.util.Random;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
@@ -73,19 +74,10 @@ public class TestLoadIndexerQuery extends JcrAPIBaseTest
 
    private class QueryTask implements Runnable
    {
-      private SessionImpl sessionLocal;
-
-      private Node rootLocal;
-
       private Random random;
 
       public QueryTask() throws RepositoryException
       {
-         // login
-         CredentialsImpl credentials = new CredentialsImpl("admin", "admin".toCharArray());
-         sessionLocal = (SessionImpl)repository.login(credentials, "ws");
-         // prepare nodes
-         rootLocal = sessionLocal.getRootNode();
          random = new Random();
       }
 
@@ -94,10 +86,16 @@ public class TestLoadIndexerQuery extends JcrAPIBaseTest
        */
       public void run()
       {
-         try
+         while (!stop)
          {
-            while (!stop)
+            Session sessionLocal = null;            
+            try
             {
+               // login
+               CredentialsImpl credentials = new CredentialsImpl("admin", "admin".toCharArray());
+               sessionLocal = (SessionImpl)repository.login(credentials, "ws");
+               // prepare nodes
+               Node rootLocal = sessionLocal.getRootNode();
                Node threadNode = getRandomChild(rootLocal, "Thread*");
                if (threadNode != null)
                {
@@ -116,7 +114,7 @@ public class TestLoadIndexerQuery extends JcrAPIBaseTest
                      catch (InterruptedException e1)
                      {
                      }
-
+                     long time = System.currentTimeMillis();
                      QueryManager qman = sessionLocal.getWorkspace().getQueryManager();
 
                      Query q =
@@ -124,21 +122,23 @@ public class TestLoadIndexerQuery extends JcrAPIBaseTest
                            + "/%' and fn:name() = '" + word + "'", Query.SQL);
                      QueryResult res = q.execute();
                      long sqlsize = res.getNodes().getSize();
-                     log.info("Exp: " + count + "\t found:" + sqlsize);
+                     log.info("Exp: " + count + "\t found:" + sqlsize + " time: " + (System.currentTimeMillis() - time));
                   }
                }
             }
-
+            catch (Exception e)
+            {
+               log.error("An error occurs", e);
+            }
+            finally
+            {
+               if (sessionLocal != null)
+               {
+                  sessionLocal.logout();
+                  sessionLocal = null;                  
+               }
+            }            
          }
-         catch (RepositoryException e)
-         {
-            log.error(e);
-         }
-         catch (Exception e)
-         {
-            log.error(e);
-         }
-
       }
 
       private Node getRandomChild(Node parent, String pattern) throws RepositoryException

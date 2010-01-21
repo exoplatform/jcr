@@ -30,6 +30,7 @@ import java.util.concurrent.CountDownLatch;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
@@ -54,7 +55,7 @@ public class TestReadNWrite extends JcrAPIBaseTest
    private int threadReaderCount = 20;
 
    private final CountDownLatch doneSignal = new CountDownLatch(threadReaderCount + threadWriterCount);
-   
+
    private static final String[] words =
       new String[]{"private", "branch", "final", "string", "logging", "bottle", "property", "node", "repository",
          "exception", "cycle", "value", "index", "meaning", "strange", "words", "hello", "outline", "finest",
@@ -79,11 +80,13 @@ public class TestReadNWrite extends JcrAPIBaseTest
       // wait 4 minutes
       try
       {
-         //Thread.sleep(60000 * 4);
+         Thread.sleep(60000 * 4);
+         /*
          synchronized (this)
          {
             wait();
          }
+         */
       }
       catch (InterruptedException e)
       {
@@ -92,19 +95,13 @@ public class TestReadNWrite extends JcrAPIBaseTest
 
       stop = true;
       doneSignal.await();
-      System.exit(0);      
+      System.exit(0);
    }
 
    private class WriterTask implements Runnable
    {
 
       private int id;
-
-      private SessionImpl sessionLocal;
-
-      private Node statisticNode;
-
-      private Node contentNode;
 
       private Random random;
 
@@ -113,14 +110,16 @@ public class TestReadNWrite extends JcrAPIBaseTest
          this.id = id;
          // login
          CredentialsImpl credentials = new CredentialsImpl("admin", "admin".toCharArray());
-         sessionLocal = (SessionImpl)repository.login(credentials, "ws");
+         Session sessionLocal = (SessionImpl)repository.login(credentials, "ws");
          // prepare nodes
          Node root = sessionLocal.getRootNode();
          Node threadNode = root.addNode("Thread" + id);
-         statisticNode = threadNode.addNode(STATISTIC);
-         contentNode = threadNode.addNode(CONTENT);
+         threadNode.addNode(STATISTIC);
+         threadNode.addNode(CONTENT);
          random = new Random();
          sessionLocal.save();
+         sessionLocal.logout();
+         sessionLocal = null;
       }
 
       /**
@@ -132,22 +131,33 @@ public class TestReadNWrite extends JcrAPIBaseTest
          {
             while (!stop)
             {
-               long time = System.currentTimeMillis();
                // get any word
                int i = random.nextInt(words.length);
                String word = words[i] + id; // "hello12" if thread#12 is creating it
+               Session sessionLocal = null;
                try
                {
+                  CredentialsImpl credentials = new CredentialsImpl("admin", "admin".toCharArray());
+                  sessionLocal = (SessionImpl)repository.login(credentials, "ws");
+                  long time = System.currentTimeMillis();
                   // update statistic
-                  updateStatistic(word);
+                  updateStatistic((Node)sessionLocal.getItem("/Thread" + id + "/" + STATISTIC), word);
                   // add actual node
-                  createTree().addNode(word);
+                  createTree((Node)sessionLocal.getItem("/Thread" + id + "/" + CONTENT)).addNode(word);
                   sessionLocal.save();
-                  System.out.println(Thread.currentThread() + " time : " + (System.currentTimeMillis() - time));
+                  log.info("Time : " + (System.currentTimeMillis() - time));
                }
-               catch (Exception e1)
+               catch (RepositoryException e)
                {
-                  log.error("An error occurs", e1);
+                  log.error(e);
+               }
+               finally
+               {
+                  if (sessionLocal != null)
+                  {
+                     sessionLocal.logout();
+                     sessionLocal = null;
+                  }
                }
 
                try
@@ -175,7 +185,7 @@ public class TestReadNWrite extends JcrAPIBaseTest
        * @param word
        * @throws RepositoryException
        */
-      private void updateStatistic(String word) throws RepositoryException
+      private void updateStatistic(Node statisticNode, String word) throws RepositoryException
       {
          Node wordNode;
          long count = 0;
@@ -198,7 +208,7 @@ public class TestReadNWrite extends JcrAPIBaseTest
        * @return
        * @throws RepositoryException
        */
-      private Node createTree() throws RepositoryException
+      private Node createTree(Node contentNode) throws RepositoryException
       {
          // created node tree like: "./content/n123456/n1234567/n12345678"
          Node end;
@@ -233,19 +243,11 @@ public class TestReadNWrite extends JcrAPIBaseTest
 
    private class QueryTask implements Runnable
    {
-      private SessionImpl sessionLocal;
-
-      private Node rootLocal;
 
       private Random random;
 
       public QueryTask() throws RepositoryException
       {
-         // login
-         CredentialsImpl credentials = new CredentialsImpl("admin", "admin".toCharArray());
-         sessionLocal = (SessionImpl)repository.login(credentials, "ws");
-         // prepare nodes
-         rootLocal = sessionLocal.getRootNode();
          random = new Random();
       }
 
@@ -256,8 +258,14 @@ public class TestReadNWrite extends JcrAPIBaseTest
       {
          while (!stop)
          {
+            Session sessionLocal = null;
             try
             {
+               // login
+               CredentialsImpl credentials = new CredentialsImpl("admin", "admin".toCharArray());
+               sessionLocal = (SessionImpl)repository.login(credentials, "ws");
+               // prepare nodes
+               Node rootLocal = sessionLocal.getRootNode();
                Node threadNode = getRandomChild(rootLocal, "Thread*");
                if (threadNode != null)
                {
@@ -284,14 +292,11 @@ public class TestReadNWrite extends JcrAPIBaseTest
                      try
                      {
                         assertTrue("Exp: " + count + "\t found:" + sqlsize, sqlsize >= count);
-                        System.out.println(Thread.currentThread() + " size : " + sqlsize + " time : "
-                           + (System.currentTimeMillis() - time));
+                        log.info("Size : " + sqlsize + " time : " + (System.currentTimeMillis() - time));
                      }
                      catch (AssertionFailedError e)
                      {
-                        System.out
-                           .println((Thread.currentThread() + " error : " + e.getMessage() + " time : " + (System
-                              .currentTimeMillis() - time)));
+                        log.info("Error : " + e.getMessage() + " time : " + (System.currentTimeMillis() - time));
                      }
                   }
                }
@@ -299,6 +304,14 @@ public class TestReadNWrite extends JcrAPIBaseTest
             catch (Exception e)
             {
                log.error("An error occurs", e);
+            }
+            finally
+            {
+               if (sessionLocal != null)
+               {
+                  sessionLocal.logout();
+                  sessionLocal = null;
+               }
             }
          }
          doneSignal.countDown();

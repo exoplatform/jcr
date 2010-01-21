@@ -20,6 +20,8 @@ package org.exoplatform.services.jcr.lab.cluster.prepare;
 
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
+import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
+import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 
 import java.io.BufferedReader;
@@ -31,6 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 
 /**
  * @author <a href="mailto:nikolazius@gmail.com">Nikolay Zamosenchuk</a>
@@ -64,8 +67,12 @@ public class TestLoadIndexerWriterWithModes extends JcrAPIBaseTest
          "exception", "cycle", "value", "index", "meaning", "strange", "words", "hello", "outline", "finest",
          "basetest", "writer"};
 
+   private WorkspaceStorageCache cache;
+   
    public void testWrite() throws Exception
    {
+      WorkspaceContainerFacade wsc = repository.getWorkspaceContainer("ws");
+      this.cache = (WorkspaceStorageCache)wsc.getComponent(WorkspaceStorageCache.class);
       log.info("Skip (y/n) :");
       BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
       String line = reader.readLine();
@@ -115,12 +122,6 @@ public class TestLoadIndexerWriterWithModes extends JcrAPIBaseTest
 
       private int id;
 
-      private SessionImpl sessionLocal;
-
-      private Node statisticNode;
-
-      private Node contentNode;
-
       private Random random;
 
       public WriterTask(int id) throws RepositoryException
@@ -128,14 +129,16 @@ public class TestLoadIndexerWriterWithModes extends JcrAPIBaseTest
          this.id = id;
          // login
          CredentialsImpl credentials = new CredentialsImpl("admin", "admin".toCharArray());
-         sessionLocal = (SessionImpl)repository.login(credentials, "ws");
+         Session sessionLocal = (SessionImpl)repository.login(credentials, "ws");
          // prepare nodes
          Node root = sessionLocal.getRootNode();
          Node threadNode = root.addNode("Thread" + id);
-         statisticNode = threadNode.addNode(STATISTIC);
-         contentNode = threadNode.addNode(CONTENT);
+         threadNode.addNode(STATISTIC);
+         threadNode.addNode(CONTENT);
          random = new Random();
          sessionLocal.save();
+         sessionLocal.logout();
+         sessionLocal = null;
       }
 
       /**
@@ -148,32 +151,45 @@ public class TestLoadIndexerWriterWithModes extends JcrAPIBaseTest
             startSignal.await();
             while (!stop)
             {
-               long time = System.currentTimeMillis();
                // get any word
                int i = random.nextInt(words.length);
                String word = words[i] + id; // "hello12" if thread#12 is creating it
+               Session sessionLocal = null;
                try
                {
+                  CredentialsImpl credentials = new CredentialsImpl("admin", "admin".toCharArray());
+                  sessionLocal = (SessionImpl)repository.login(credentials, "ws");                  
+                  long time = System.currentTimeMillis();
                   // update statistic
-                  updateStatistic(word);
+                  updateStatistic((Node)sessionLocal.getItem("/Thread" + id + "/" + STATISTIC),word);
                   // add actual node
-                  createTree().addNode(word);
+                  createTree((Node)sessionLocal.getItem("/Thread" + id + "/" + CONTENT)).addNode(word);
                   sessionLocal.save();
-                  System.out.println(Thread.currentThread() + " time : " + (System.currentTimeMillis() - time));
+                  log.info("Time : " + (System.currentTimeMillis() - time));
                }
                catch (Exception e1)
                {
-                  // discard session changes 
-                  sessionLocal.refresh(false);
+                  if (sessionLocal != null)
+                  {
+                     // discard session changes 
+                     sessionLocal.refresh(false);                     
+                  }
                   log.error("An error occurs", e1);
                }
-
+               finally
+               {
+                  if (sessionLocal != null)
+                  {
+                     sessionLocal.logout();
+                     sessionLocal = null;                  
+                  }
+               }
                try
                {
                   if (makeThemWait.get())
                   {
                      barrier.await();
-                     log.info("The threads are waiting for the go signal");
+                     log.info("The threads are waiting for the go signal, the current size of the cache is " + cache.getSize());
                      goSignal.await();
                   }
                   else
@@ -202,7 +218,7 @@ public class TestLoadIndexerWriterWithModes extends JcrAPIBaseTest
        * @param word
        * @throws RepositoryException
        */
-      private void updateStatistic(String word) throws RepositoryException
+      private void updateStatistic(Node statisticNode, String word) throws RepositoryException
       {
          Node wordNode;
          long count = 0;
@@ -225,7 +241,7 @@ public class TestLoadIndexerWriterWithModes extends JcrAPIBaseTest
        * @return
        * @throws RepositoryException
        */
-      private Node createTree() throws RepositoryException
+      private Node createTree(Node contentNode) throws RepositoryException
       {
          // created node tree like: "./content/n123456/n1234567/n12345678"
          Node end;
