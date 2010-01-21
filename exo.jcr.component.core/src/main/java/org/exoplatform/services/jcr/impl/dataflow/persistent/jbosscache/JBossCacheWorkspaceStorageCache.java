@@ -313,6 +313,11 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
          cache.getInvocationContext().getOptionOverrides().setCacheModeLocal(true);
          cacheRoot.addChild(fqn).setResident(true);
       }
+      else
+      {
+         cache.getNode(fqn).setResident(true);
+      }
+      
    }
 
    protected static String readJBCConfig(final WorkspaceEntry wsConfig) throws RepositoryConfigurationException
