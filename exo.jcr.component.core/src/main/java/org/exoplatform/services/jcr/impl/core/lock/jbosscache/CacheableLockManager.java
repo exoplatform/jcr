@@ -44,7 +44,6 @@ import org.exoplatform.services.jcr.impl.core.lock.LockRemover;
 import org.exoplatform.services.jcr.impl.core.lock.SessionLockManager;
 import org.exoplatform.services.jcr.impl.dataflow.TransientItemData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.TxIsolatedOperation;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
 import org.exoplatform.services.jcr.observation.ExtendedEvent;
@@ -64,7 +63,6 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -164,7 +162,7 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
    private final Fqn<String> lockRoot;
 
    private Map<String, CacheableSessionLockManager> sessionLockManagers;
-   
+
    /**
     * Constructor.
     * 
@@ -176,12 +174,11 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
     * @throws RepositoryConfigurationException
     */
    public CacheableLockManager(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
-            InitialContextInitializer context, TransactionService transactionService)
-            throws RepositoryConfigurationException
+      InitialContextInitializer context, TransactionService transactionService) throws RepositoryConfigurationException
    {
       this(dataManager, config, context, transactionService.getTransactionManager());
    }
-   
+
    /**
     * Constructor.
     * 
@@ -191,12 +188,11 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
     * @throws RepositoryConfigurationException
     */
    public CacheableLockManager(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
-            InitialContextInitializer context)
-            throws RepositoryConfigurationException
+      InitialContextInitializer context) throws RepositoryConfigurationException
    {
       this(dataManager, config, context, (TransactionManager)null);
    }
-   
+
    /**
     * Constructor.
     * 
@@ -211,7 +207,7 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
       InitialContextInitializer context, TransactionManager transactionManager) throws RepositoryConfigurationException
    {
       lockRoot = Fqn.fromElements(LOCKS);
-      
+
       List<SimpleParameterEntry> paramenerts = config.getLockManager().getParameters();
 
       this.dataManager = dataManager;
@@ -252,15 +248,15 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
          CacheFactory<Serializable, Object> factory = new DefaultCacheFactory<Serializable, Object>();
 
          cache = factory.createCache(pathToConfig, false);
-         
+
          if (transactionManager != null)
          {
             cache.getConfiguration().getRuntimeConfig().setTransactionManager(transactionManager);
          }
-         
+
          cache.create();
          cache.start();
-         
+
          createStructuredNode(lockRoot);
 
          // Context recall is a workaround of JDBCCacheLoader starting. 
@@ -338,7 +334,7 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
     */
    public boolean isLockLive(String nodeId)
    {
-      if (pendingLocks.containsKey(nodeId) ||  cache.getRoot().hasChild(makeLockFqn(nodeId)))
+      if (pendingLocks.containsKey(nodeId) || cache.getRoot().hasChild(makeLockFqn(nodeId)))
       {
          return true;
       }
@@ -382,7 +378,9 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
             chengesLogList.add(iter.nextLog());
          }
       }
-      
+
+      List<LockOperationContainer> containers = new ArrayList<LockOperationContainer>();
+
       for (PlainChangesLog currChangesLog : chengesLogList)
       {
          String nodeIdentifier;
@@ -394,30 +392,31 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
                   if (currChangesLog.getSize() < 2)
                   {
                      log.error("Incorrect changes log  of type ExtendedEvent.LOCK size=" + currChangesLog.getSize()
-                              + "<2 \n" + currChangesLog.dump());
+                        + "<2 \n" + currChangesLog.dump());
                      break;
                   }
                   nodeIdentifier = currChangesLog.getAllStates().get(0).getData().getParentIdentifier();
 
                   if (pendingLocks.containsKey(nodeIdentifier))
                   {
-                     internalLock(nodeIdentifier);
+                     containers.add(new LockOperationContainer(nodeIdentifier, currChangesLog.getSessionId(),
+                        ExtendedEvent.LOCK));
                   }
                   else
                   {
-                     throw new LockException("Lock must exist in pending locks.");
+                     log.error("Lock must exist in pending locks.");
                   }
                   break;
                case ExtendedEvent.UNLOCK :
                   if (currChangesLog.getSize() < 2)
                   {
                      log.error("Incorrect changes log  of type ExtendedEvent.UNLOCK size=" + currChangesLog.getSize()
-                              + "<2 \n" + currChangesLog.dump());
+                        + "<2 \n" + currChangesLog.dump());
                      break;
                   }
 
-                  internalUnLock(currChangesLog.getSessionId(), currChangesLog.getAllStates().get(0).getData()
-                           .getParentIdentifier());
+                  containers.add(new LockOperationContainer(currChangesLog.getAllStates().get(0).getData()
+                     .getParentIdentifier(), currChangesLog.getSessionId(), ExtendedEvent.UNLOCK));
                   break;
                default :
                   HashSet<String> removedLock = new HashSet<String>();
@@ -439,19 +438,86 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
                   }
                   for (String identifier : removedLock)
                   {
-                     internalUnLock(currChangesLog.getSessionId(), identifier);
+                     containers.add(new LockOperationContainer(identifier, currChangesLog.getSessionId(),
+                        ExtendedEvent.UNLOCK));
                   }
                   break;
             }
-         }
-         catch (LockException e)
-         {
-            log.error(e.getLocalizedMessage(), e);
          }
          catch (IllegalStateException e)
          {
             log.error(e.getLocalizedMessage(), e);
          }
+      }
+      
+      // sort locking and unlocking operations to avoid deadlocks in JBossCache
+      Collections.sort(containers);
+      for (LockOperationContainer container : containers)
+      {
+         try
+         {
+            container.apply();
+         }
+         catch (LockException e)
+         {
+            log.error(e.getMessage(), e);
+         }
+      }
+   }
+
+   /**
+    * Class containing operation type (LOCK or UNLOCK) and all the needed information like node uuid and session id 
+    */
+   private class LockOperationContainer implements Comparable<LockOperationContainer>
+   {
+
+      private String identifier;
+
+      private String sessionId;
+
+      private int type;
+
+      /**
+       * @param identifier node identifier 
+       * @param sessionId id of session
+       * @param type ExtendedEvent type specifying the operation (LOCK or UNLOCK)
+       */
+      public LockOperationContainer(String identifier, String sessionId, int type)
+      {
+         super();
+         this.identifier = identifier;
+         this.sessionId = sessionId;
+         this.type = type;
+      }
+
+      /**
+       * @return node identifier
+       */
+      public String getIdentifier()
+      {
+         return identifier;
+      }
+
+      public void apply() throws LockException
+      {
+         // invoke internalLock in LOCK operation
+         if (type == ExtendedEvent.LOCK)
+         {
+            internalLock(identifier);
+         }
+         // invoke internalUnLock in UNLOCK operation
+         else if (type == ExtendedEvent.UNLOCK)
+         {
+            internalUnLock(sessionId, identifier);
+         }
+      }
+
+      /**
+       * @see java.lang.Comparable#compareTo(java.lang.Object)
+       */
+      public int compareTo(LockOperationContainer o)
+      {
+         return identifier.compareTo(o.getIdentifier());
       }
    }
 
@@ -498,7 +564,7 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
       }
 
       Collections.sort(removeLockList);
-      
+
       for (String rLock : removeLockList)
       {
          removeLock(rLock);
@@ -699,7 +765,7 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
 
    protected LockData getLockDataById(String nodeId)
    {
-      return (LockData) cache.get(makeLockFqn(nodeId), LOCK_DATA);
+      return (LockData)cache.get(makeLockFqn(nodeId), LOCK_DATA);
    }
 
    protected synchronized List<LockData> getLockList()
@@ -709,7 +775,7 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
       List<LockData> locksData = new ArrayList<LockData>();
       for (Object nodeId : nodesId)
       {
-         LockData lockData = (LockData) cache.get(makeLockFqn((String) nodeId), LOCK_DATA);;
+         LockData lockData = (LockData)cache.get(makeLockFqn((String)nodeId), LOCK_DATA);;
          if (lockData != null)
          {
             locksData.add(lockData);
@@ -728,14 +794,14 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
       try
       {
          NodeData nData = (NodeData)dataManager.getItemData(nodeIdentifier);
-         
+
          //TODO EXOJCR-412, should be refactored in future.
          //Skip removing, because that node was removed in other node of cluster.  
          if (nData == null)
          {
             return;
          }
-         
+
          PlainChangesLog changesLog =
             new PlainChangesLogImpl(new ArrayList<ItemState>(), SystemIdentity.SYSTEM, ExtendedEvent.UNLOCK);
 
@@ -794,7 +860,7 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
    {
       sessionLockManagers.remove(sessionID);
    }
-   
+
    /**
     * Make lock absolute Fqn, i.e. /$LOCKS/nodeID.
     *
@@ -805,17 +871,18 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
    {
       return Fqn.fromRelativeElements(lockRoot, nodeId);
    }
-   
+
    /**
     *  Will be created structured node in cache, like /$LOCKS
     */
-   private void createStructuredNode(Fqn fqn) {
-      Node<Serializable, Object> node = cache.getRoot().getChild(fqn); 
-      if (node == null) 
-      { 
-      cache.getInvocationContext().getOptionOverrides().setCacheModeLocal(true); 
-      node = cache.getRoot().addChild(fqn); 
-      } 
+   private void createStructuredNode(Fqn fqn)
+   {
+      Node<Serializable, Object> node = cache.getRoot().getChild(fqn);
+      if (node == null)
+      {
+         cache.getInvocationContext().getOptionOverrides().setCacheModeLocal(true);
+         node = cache.getRoot().addChild(fqn);
+      }
       node.setResident(true);
    }
 }
