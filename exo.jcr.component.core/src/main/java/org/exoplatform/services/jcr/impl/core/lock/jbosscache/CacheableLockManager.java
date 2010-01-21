@@ -171,10 +171,29 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
     * @param dataManager - workspace persistent data manager
     * @param config - workspace entry
     * @param context InitialContextInitializer, needed to reload context after JBoss cache creation
+    * @param transactionService 
+    *          the transaction service
     * @throws RepositoryConfigurationException
     */
    public CacheableLockManager(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
-      InitialContextInitializer context, TransactionService transactionService) throws RepositoryConfigurationException
+            InitialContextInitializer context, TransactionService transactionService)
+            throws RepositoryConfigurationException
+   {
+      this(dataManager, config, context, transactionService.getTransactionManager());
+   }
+   
+   /**
+    * Constructor.
+    * 
+    * @param dataManager - workspace persistent data manager
+    * @param config - workspace entry
+    * @param context InitialContextInitializer, needed to reload context after JBoss cache creation
+    * @param transactionManager 
+    *          the transaction manager
+    * @throws RepositoryConfigurationException
+    */
+   public CacheableLockManager(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
+      InitialContextInitializer context, TransactionManager transactionManager) throws RepositoryConfigurationException
    {
       lockRoot = Fqn.fromElements(LOCKS);
       
@@ -216,19 +235,12 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
          CacheFactory<Serializable, Object> factory = new DefaultCacheFactory<Serializable, Object>();
 
          cache = factory.createCache(pathToConfig, false);
-         
-         if (transactionService.getTransactionManager() != null)
-         {
-            cache.getConfiguration().getRuntimeConfig().setTransactionManager(transactionService.getTransactionManager());
-         }
+         cache.getConfiguration().getRuntimeConfig().setTransactionManager(transactionManager);
          
          cache.create();
          cache.start();
          
-         if (!cache.getRoot().hasChild(lockRoot)) 
-         {
-            cache.getRoot().addChild(lockRoot);
-         }
+         createStructuredNode(lockRoot);
 
          // Context recall is a workaround of JDBCCacheLoader starting. 
          context.recall();
@@ -771,5 +783,18 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
    private Fqn<String> makeLockFqn(String nodeId)
    {
       return Fqn.fromRelativeElements(lockRoot, nodeId);
+   }
+   
+   /**
+    *  Will be created structured node in cache, like /$LOCKS
+    */
+   private void createStructuredNode(Fqn fqn) {
+      Node<Serializable, Object> node = cache.getRoot().getChild(fqn); 
+      if (node == null) 
+      { 
+      cache.getInvocationContext().getOptionOverrides().setCacheModeLocal(true); 
+      node = cache.getRoot().addChild(fqn); 
+      } 
+      node.setResident(true);
    }
 }
