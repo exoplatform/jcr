@@ -188,6 +188,21 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
     * @param dataManager - workspace persistent data manager
     * @param config - workspace entry
     * @param context InitialContextInitializer, needed to reload context after JBoss cache creation
+    * @throws RepositoryConfigurationException
+    */
+   public CacheableLockManager(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
+            InitialContextInitializer context)
+            throws RepositoryConfigurationException
+   {
+      this(dataManager, config, context, (TransactionManager)null);
+   }
+   
+   /**
+    * Constructor.
+    * 
+    * @param dataManager - workspace persistent data manager
+    * @param config - workspace entry
+    * @param context InitialContextInitializer, needed to reload context after JBoss cache creation
     * @param transactionManager 
     *          the transaction manager
     * @throws RepositoryConfigurationException
@@ -215,7 +230,9 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
 
       }
       else
+      {
          lockTimeOut = DEFAULT_LOCK_TIMEOUT;
+      }
 
       pendingLocks = new HashMap<String, LockData>();
       sessionLockManagers = new HashMap<String, CacheableSessionLockManager>();
@@ -235,7 +252,11 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
          CacheFactory<Serializable, Object> factory = new DefaultCacheFactory<Serializable, Object>();
 
          cache = factory.createCache(pathToConfig, false);
-         cache.getConfiguration().getRuntimeConfig().setTransactionManager(transactionManager);
+         
+         if (transactionManager != null)
+         {
+            cache.getConfiguration().getRuntimeConfig().setTransactionManager(transactionManager);
+         }
          
          cache.create();
          cache.start();
