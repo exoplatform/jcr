@@ -148,7 +148,7 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
     * 
     * @throws RepositoryException
     */
-   public void retain() throws RepositoryException
+   public synchronized void retain() throws RepositoryException
    {
       try
       {
