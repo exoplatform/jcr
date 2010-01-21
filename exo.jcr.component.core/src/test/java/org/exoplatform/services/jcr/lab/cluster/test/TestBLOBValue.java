@@ -7,27 +7,18 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Calendar;
 
-import javax.jcr.ItemExistsException;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
-import javax.jcr.PathNotFoundException;
 import javax.jcr.Property;
-import javax.jcr.RepositoryException;
 import javax.jcr.Session;
-import javax.jcr.lock.LockException;
-import javax.jcr.nodetype.ConstraintViolationException;
-import javax.jcr.nodetype.NoSuchNodeTypeException;
-import javax.jcr.version.VersionException;
 
 public class TestBLOBValue extends JcrAPIBaseTest
 {
    private static final String TEST_ROOT_NAME = "TestBLOBValue";
 
-   private static final int FILE_SIZE_KB = 10 * 1024;
+   private static final int FILE_SIZE_KB = 512;
 
-   private static final int FILES_COUNT = 1024;
-
-   private static final String FILE_PATH = "F:/Books/jboss/Manning JBoss in Action Jan 2009.pdf";
+   private static final int FILES_COUNT = 10;
 
    private static File testFile;
 
@@ -71,7 +62,6 @@ public class TestBLOBValue extends JcrAPIBaseTest
       if (testFile == null)
       {
          testFile = createBLOBTempFile(FILE_SIZE_KB);
-         //testFile = new File(FILE_PATH);
       }
    }
 
@@ -95,13 +85,13 @@ public class TestBLOBValue extends JcrAPIBaseTest
          testRoot.save();
       }
 
-      //testRoot.remove();
-      //root.save();
+      testRoot.remove();
+      root.save();
 
-      //super.tearDown();
+      super.tearDown();
    }
 
-   public void _testAddProperty() throws Exception
+   public void testAddProperty() throws Exception
    {
       // write
       Property text = testRoot.setProperty("text", "string property");
@@ -129,6 +119,7 @@ public class TestBLOBValue extends JcrAPIBaseTest
       assertEquals(testFile.length(), size);
    }
 
+   // for read on another node of a cluster 
    public void _testReadProperty() throws Exception
    {
       // read
@@ -154,7 +145,7 @@ public class TestBLOBValue extends JcrAPIBaseTest
       for (int i = 0; i < FILES_COUNT; i++)
       {
          File blob = createBLOBTempFile(size);
-         addNTFile("node" + i, blob);
+         addNTFile("file" + i, blob);
 
          size += 1;
       }
@@ -164,7 +155,8 @@ public class TestBLOBValue extends JcrAPIBaseTest
       // it's ready for read
    }
 
-   public void testReadNTFiles() throws Exception
+   // for read on another node of a cluster
+   public void _testReadNTFiles() throws Exception
    {
       // read series of FILES_COUNT were added each with size + 1K bytes
       int size = FILE_SIZE_KB;
@@ -189,10 +181,5 @@ public class TestBLOBValue extends JcrAPIBaseTest
          size += 1;
       }
    }
-
-   public void testUpdateProperty() throws Exception
-   {
-
-   }
-
 }
+
