@@ -108,6 +108,10 @@ public class JBossCacheIndexInfos extends IndexInfos implements IndexerIoModeLis
          cache.getInvocationContext().getOptionOverrides().setCacheModeLocal(true);
          cacheRoot.addChild(namesFqn).setResident(true);
       }
+      else
+      {
+         cache.getNode(namesFqn).setResident(true);
+      }
       if (modeHandler.getMode() == IndexerIoMode.READ_ONLY)
       {
          // Currently READ_ONLY is set, so new lists should be fired to multiIndex.
