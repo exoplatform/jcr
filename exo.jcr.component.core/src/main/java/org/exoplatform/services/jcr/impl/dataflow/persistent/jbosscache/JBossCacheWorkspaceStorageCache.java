@@ -33,7 +33,6 @@ import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.TxIsolatedOperation;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.transaction.TransactionService;
@@ -41,7 +40,6 @@ import org.jboss.cache.CacheFactory;
 import org.jboss.cache.DefaultCacheFactory;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.Node;
-import org.jboss.cache.UnversionedNode;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -665,7 +663,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
    public long getSize()
    {
       // Total number of JBC nodes in the cache - the total amount of resident nodes
-      return cache.getNumberOfNodes() - 6;
+      return cache.getNumberOfNodes() - 5;
    }
 
    /**
