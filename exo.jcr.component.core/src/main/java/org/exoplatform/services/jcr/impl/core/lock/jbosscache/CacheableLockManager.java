@@ -72,6 +72,7 @@ import java.util.Set;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.lock.LockException;
+import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
 /**
@@ -157,6 +158,11 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
     */
    private LockRemover lockRemover;
 
+   /**
+    * The current Transaction Manager
+    */
+   private TransactionManager tm;
+   
    private Cache<Serializable, Object> cache;
 
    private final Fqn<String> lockRoot;
@@ -249,6 +255,7 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
 
          cache = factory.createCache(pathToConfig, false);
 
+         this.tm = transactionManager;
          if (transactionManager != null)
          {
             cache.getConfiguration().getRuntimeConfig().setTransactionManager(transactionManager);
@@ -309,11 +316,27 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
       return lData;
    }
 
+   private final LockActionNonTxAware<Integer, Object> getNumLocks = new LockActionNonTxAware<Integer, Object>()
+   {
+      public Integer execute(Object arg)
+      {
+         return cache.getChildrenNames(lockRoot).size();
+      }
+   };
+   
    @Managed
    @ManagedDescription("The number of active locks")
    public int getNumLocks()
    {
-      return cache.getChildrenNames(lockRoot).size();
+      try
+      {
+         return executeLockActionNonTxAware(getNumLocks, null);
+      }
+      catch (LockException e)
+      {
+         // ignore me will never occur
+      }
+      return -1;
    }
 
    /**
@@ -326,6 +349,19 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
       return sessionManager;
    }
 
+   private final LockActionNonTxAware<Boolean, String> isLockLive = new LockActionNonTxAware<Boolean, String>()
+   {
+      public Boolean execute(String nodeId)
+      {
+         if (pendingLocks.containsKey(nodeId) || cache.getRoot().hasChild(makeLockFqn(nodeId)))
+         {
+            return true;
+         }
+
+         return false;
+      }  
+   };
+   
    /**
     * Check is LockManager contains lock. No matter it is in pending or persistent state.
     * 
@@ -334,11 +370,14 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
     */
    public boolean isLockLive(String nodeId)
    {
-      if (pendingLocks.containsKey(nodeId) || cache.getRoot().hasChild(makeLockFqn(nodeId)))
+      try
       {
-         return true;
+         return executeLockActionNonTxAware(isLockLive, nodeId);
       }
-
+      catch (LockException e)
+      {
+         // ignore me will never occur
+      }  
       return false;
    }
 
@@ -521,6 +560,32 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
       }
    }
 
+   private final LockActionNonTxAware<Object, LockData> refresh = new LockActionNonTxAware<Object, LockData>()
+   {
+      public Object execute(LockData newLockData) throws LockException
+      {
+         //first look pending locks
+         if (pendingLocks.containsKey(newLockData.getNodeIdentifier()))
+         {
+            pendingLocks.put(newLockData.getNodeIdentifier(), newLockData);
+         }
+         else
+         {
+            Fqn<String> fqn = makeLockFqn(newLockData.getNodeIdentifier());
+            if (cache.getRoot().hasChild(fqn))
+            {
+               cache.getRoot().addChild(fqn);
+            }
+            else
+            {
+               throw new LockException("Can't refresh lock for node " + newLockData.getNodeIdentifier()
+                  + " since lock is not exist");
+            }
+         }
+         return null;
+      }
+   };
+   
    /**
     * Refreshed lock data in cache
     * 
@@ -528,24 +593,7 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
     */
    public void refresh(LockData newLockData) throws LockException
    {
-      //first look pending locks
-      if (pendingLocks.containsKey(newLockData.getNodeIdentifier()))
-      {
-         pendingLocks.put(newLockData.getNodeIdentifier(), newLockData);
-      }
-      else
-      {
-         Fqn<String> fqn = makeLockFqn(newLockData.getNodeIdentifier());
-         if (cache.getRoot().hasChild(fqn))
-         {
-            cache.getRoot().addChild(fqn);
-         }
-         else
-         {
-            throw new LockException("Can't refresh lock for node " + newLockData.getNodeIdentifier()
-               + " since lock is not exist");
-         }
-      }
+      executeLockActionNonTxAware(refresh, newLockData);
    }
 
    /**
@@ -674,9 +722,25 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
       }
    }
 
+   private final LockActionNonTxAware<Boolean, String> lockExist = new LockActionNonTxAware<Boolean, String>()
+   {
+      public Boolean execute(String nodeId) throws LockException
+      {
+         return cache.getRoot().hasChild(makeLockFqn(nodeId));
+      }
+   };
+   
    private boolean lockExist(String nodeId)
    {
-      return cache.getRoot().hasChild(makeLockFqn(nodeId));
+      try
+      {
+         return executeLockActionNonTxAware(lockExist, nodeId);
+      }
+      catch (LockException e)
+      {
+         // ignore me will never occur
+      }
+      return false;
    }
 
    /**
@@ -763,25 +827,57 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
       return retval;
    }
 
+   private final LockActionNonTxAware<LockData, String> getLockDataById = new LockActionNonTxAware<LockData, String>()
+   {
+      public LockData execute(String nodeId) throws LockException
+      {
+         return (LockData)cache.get(makeLockFqn(nodeId), LOCK_DATA);
+      }
+   };
+   
    protected LockData getLockDataById(String nodeId)
    {
-      return (LockData)cache.get(makeLockFqn(nodeId), LOCK_DATA);
+      try
+      {
+         return executeLockActionNonTxAware(getLockDataById, nodeId);
+      }
+      catch (LockException e)
+      {
+         // ignore me will never occur
+      }
+      return null;
    }
 
+   private final LockActionNonTxAware<List<LockData>, Object> getLockList = new LockActionNonTxAware<List<LockData>, Object>()
+   {
+      public List<LockData> execute(Object arg) throws LockException
+      {
+         Set<Object> nodesId = cache.getChildrenNames(lockRoot);
+
+         List<LockData> locksData = new ArrayList<LockData>();
+         for (Object nodeId : nodesId)
+         {
+            LockData lockData = (LockData)cache.get(makeLockFqn((String)nodeId), LOCK_DATA);
+            if (lockData != null)
+            {
+               locksData.add(lockData);
+            }
+         }
+         return locksData;
+      }
+   };
+   
    protected synchronized List<LockData> getLockList()
    {
-      Set<Object> nodesId = cache.getChildrenNames(lockRoot);
-
-      List<LockData> locksData = new ArrayList<LockData>();
-      for (Object nodeId : nodesId)
+      try
       {
-         LockData lockData = (LockData)cache.get(makeLockFqn((String)nodeId), LOCK_DATA);;
-         if (lockData != null)
-         {
-            locksData.add(lockData);
-         }
+         return executeLockActionNonTxAware(getLockList, null);
       }
-      return locksData;
+      catch (LockException e)
+      {
+         // ignore me will never occur
+      }
+      return null;
    }
 
    /**
@@ -884,5 +980,56 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
          node = cache.getRoot().addChild(fqn);
       }
       node.setResident(true);
+   }
+   
+   /**
+    * Execute the given action outside a transaction
+    * @throws LockException 
+    */
+   private <R, A> R executeLockActionNonTxAware(LockActionNonTxAware<R, A> action, A arg) throws LockException
+   {
+      Transaction tx = null;
+      try
+      {
+         if (tm != null)
+         {
+            try
+            {
+               tx = tm.suspend();
+            }
+            catch (Exception e)
+            {
+               log.warn("Cannot suspend the current transaction", e);
+            }
+         }
+         return action.execute(arg);
+      }
+      finally
+      {
+         if (tx != null)
+         {
+            try
+            {
+               tm.resume(tx);
+            }
+            catch (Exception e)
+            {
+               log.warn("Cannot resume the current transaction", e);
+            }
+         }
+      }       
+   }
+   
+   /**
+    * Actions that are not supposed to be called within a transaction
+    * 
+    * Created by The eXo Platform SAS
+    * Author : Nicolas Filotto 
+    *          nicolas.filotto@exoplatform.com
+    * 21 janv. 2010
+    */
+   private static interface LockActionNonTxAware<R, A>
+   {
+      R execute(A arg) throws LockException;
    }
 }
