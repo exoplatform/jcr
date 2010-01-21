@@ -215,9 +215,6 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
                   .getCacheConfig();
          CacheFactory<Serializable, Object> factory = new DefaultCacheFactory<Serializable, Object>();
 
-         // Context recall is a workaround of JDBCCacheLoader starting. 
-         context.recall();
-
          cache = factory.createCache(pathToConfig, false);
          
          if (transactionService.getTransactionManager() != null)
@@ -226,6 +223,15 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
          }
          
          cache.create();
+         cache.start();
+         
+         if (!cache.getRoot().hasChild(lockRoot)) 
+         {
+            cache.getRoot().addChild(lockRoot);
+         }
+
+         // Context recall is a workaround of JDBCCacheLoader starting. 
+         context.recall();
       }
       else
       {
@@ -477,15 +483,6 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
     */
    public void start()
    {
-      cache.start();
-      
-      if (!cache.getRoot().hasChild(lockRoot)) 
-      {
-         cache.getRoot().addChild(lockRoot);
-      }
-
-      // Context recall is a workaround of JDBCCacheLoader starting. 
-      context.recall();
       lockRemover = new LockRemover(this);
    }
 
