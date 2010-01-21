@@ -156,6 +156,11 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       this.local.set(local);
    }
 
+   public int getNumberOfNodes()
+   {
+      return ((CacheSPI<Serializable, Object>)parentCache).getNumberOfNodes();
+   }
+   
    /* (non-Javadoc)
     * @see org.jboss.cache.Cache#addCacheListener(java.lang.Object)
     */

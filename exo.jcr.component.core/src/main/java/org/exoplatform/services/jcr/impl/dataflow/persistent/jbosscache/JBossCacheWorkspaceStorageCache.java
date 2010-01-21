@@ -664,8 +664,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
     */
    public long getSize()
    {
-      // TODO, cache seems doesn't have a methods to calculate it's size
-      return -1;
+      // Total number of JBC nodes in the cache - the total amount of resident nodes
+      return cache.getNumberOfNodes() - 6;
    }
 
    /**
