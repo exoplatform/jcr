@@ -492,6 +492,8 @@ public class BackupManagerImpl
                {
                   throw new BackupOperationException("Restore of full backup file I/O error " + e, e);
                }
+               
+               repoService.getConfig().retain(); // save configuration to persistence (file or persister)
             }
             else
             {
