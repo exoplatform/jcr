@@ -79,8 +79,11 @@ public class JbossCacheIndexUpdateMonitor implements IndexUpdateMonitor, Indexer
       Node<Serializable, Object> cacheRoot = cache.getRoot();
 
       // prepare cache structures
-
-      cacheRoot.addChild(PARAMETER_ROOT).setResident(true);
+      if (!cacheRoot.hasChild(PARAMETER_ROOT))
+      {
+         cache.getInvocationContext().getOptionOverrides().setCacheModeLocal(true);
+         cacheRoot.addChild(PARAMETER_ROOT).setResident(true);
+      }
 
       if (IndexerIoMode.READ_WRITE == modeHandler.getMode())
       {
