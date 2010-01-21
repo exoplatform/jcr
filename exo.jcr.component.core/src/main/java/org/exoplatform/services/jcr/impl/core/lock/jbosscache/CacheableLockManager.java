@@ -44,12 +44,14 @@ import org.exoplatform.services.jcr.impl.core.lock.LockRemover;
 import org.exoplatform.services.jcr.impl.core.lock.SessionLockManager;
 import org.exoplatform.services.jcr.impl.dataflow.TransientItemData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.TxIsolatedOperation;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
 import org.exoplatform.services.jcr.observation.ExtendedEvent;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.naming.InitialContextInitializer;
+import org.exoplatform.services.transaction.TransactionService;
 import org.jboss.cache.Cache;
 import org.jboss.cache.CacheFactory;
 import org.jboss.cache.DefaultCacheFactory;
@@ -62,6 +64,8 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -70,6 +74,7 @@ import java.util.Set;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.lock.LockException;
+import javax.transaction.TransactionManager;
 
 /**
  * Created by The eXo Platform SAS.
@@ -159,7 +164,7 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
    private final Fqn<String> lockRoot;
 
    private Map<String, CacheableSessionLockManager> sessionLockManagers;
-
+   
    /**
     * Constructor.
     * 
@@ -169,7 +174,7 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
     * @throws RepositoryConfigurationException
     */
    public CacheableLockManager(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
-      InitialContextInitializer context) throws RepositoryConfigurationException
+      InitialContextInitializer context, TransactionService transactionService) throws RepositoryConfigurationException
    {
       lockRoot = Fqn.fromElements(LOCKS);
       
@@ -214,6 +219,12 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
          context.recall();
 
          cache = factory.createCache(pathToConfig, false);
+         
+         if (transactionService.getTransactionManager() != null)
+         {
+            cache.getConfiguration().getRuntimeConfig().setTransactionManager(transactionService.getTransactionManager());
+         }
+         
          cache.create();
       }
       else
@@ -332,7 +343,7 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
             chengesLogList.add(iter.nextLog());
          }
       }
-
+      
       for (PlainChangesLog currChangesLog : chengesLogList)
       {
          String nodeIdentifier;
@@ -344,7 +355,7 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
                   if (currChangesLog.getSize() < 2)
                   {
                      log.error("Incorrect changes log  of type ExtendedEvent.LOCK size=" + currChangesLog.getSize()
-                        + "<2 \n" + currChangesLog.dump());
+                              + "<2 \n" + currChangesLog.dump());
                      break;
                   }
                   nodeIdentifier = currChangesLog.getAllStates().get(0).getData().getParentIdentifier();
@@ -362,12 +373,12 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
                   if (currChangesLog.getSize() < 2)
                   {
                      log.error("Incorrect changes log  of type ExtendedEvent.UNLOCK size=" + currChangesLog.getSize()
-                        + "<2 \n" + currChangesLog.dump());
+                              + "<2 \n" + currChangesLog.dump());
                      break;
                   }
 
                   internalUnLock(currChangesLog.getSessionId(), currChangesLog.getAllStates().get(0).getData()
-                     .getParentIdentifier());
+                           .getParentIdentifier());
                   break;
                default :
                   HashSet<String> removedLock = new HashSet<String>();
@@ -447,6 +458,8 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
          }
       }
 
+      Collections.sort(removeLockList);
+      
       for (String rLock : removeLockList)
       {
          removeLock(rLock);
