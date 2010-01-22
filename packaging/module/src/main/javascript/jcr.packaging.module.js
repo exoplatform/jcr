@@ -21,7 +21,7 @@ function getModule(params) {
     addDependency(core.component.documents) .
     addDependency(new Project("jcr", "jcr", "jar", "1.0")).
     addDependency(new Project("concurrent", "concurrent", "jar", "1.3.4")).
-    addDependency(new Project("javagroups", "jgroups-all", "jar", "2.5.2")).
+    addDependency(new Project("javagroups", "jgroups-all", "jar", "2.6.13.GA")).
     addDependency(new Project("stax", "stax-api", "jar", "1.0")).
 //		addDependency(new Project("stax", "stax", "jar", "1.2.0")).
 		addDependency(new Project("org.apache.ws.commons","ws-commons-util","jar","1.0.1")).		
