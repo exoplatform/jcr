@@ -366,6 +366,7 @@ public class HTTPBackupAgent
 
          RepositoryImpl repositoryImpl = (RepositoryImpl) repositoryService.getRepository(repository);
          repositoryImpl.removeWorkspace(workspace);
+         repositoryService.getConfig().retain(); // save configuration to persistence (file or persister)
 
          return Response.ok().cacheControl(noCache).build();
 

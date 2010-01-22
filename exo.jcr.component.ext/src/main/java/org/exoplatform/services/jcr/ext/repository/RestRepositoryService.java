@@ -393,6 +393,7 @@ public class RestRepositoryService implements ResourceContainer
          if (repositoryService.canRemoveRepository(repositoryName))
          {
             repositoryService.removeRepository(repositoryName);
+            repositoryService.getConfig().retain(); // save configuration to persistence (file or persister)
             return Response.noContent().build();
          }
          return Response.status(HTTPStatus.CONFLICT).entity("Can't remove repository " + repositoryName).cacheControl(
@@ -454,6 +455,7 @@ public class RestRepositoryService implements ResourceContainer
          if (repository.canRemoveWorkspace(workspaceName))
          {
             repository.removeWorkspace(workspaceName);
+            repositoryService.getConfig().retain(); // save configuration to persistence (file or persister)
             return Response.noContent().build();
          }
          return Response.status(Status.CONFLICT).entity(
