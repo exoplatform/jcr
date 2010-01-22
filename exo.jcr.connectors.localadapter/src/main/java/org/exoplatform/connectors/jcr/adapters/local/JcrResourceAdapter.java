@@ -60,7 +60,7 @@ public class JcrResourceAdapter implements ResourceAdapter
       try
       {
 
-         if (containerConfig != null)
+         if (containerConfig != null && containerConfig.length() > 0)
          {
             String url = Thread.currentThread().getContextClassLoader().getResource(containerConfig).toString();
             StandaloneContainer.addConfigurationURL(url);
