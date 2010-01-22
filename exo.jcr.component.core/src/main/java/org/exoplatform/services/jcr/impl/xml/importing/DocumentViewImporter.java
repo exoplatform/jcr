@@ -181,7 +181,6 @@ public class DocumentViewImporter extends BaseXmlImporter
    public void startElement(String namespaceURI, String localName, String qName, Map<String, String> atts)
       throws RepositoryException
    {
-
       String nodeName = ISO9075.decode(qName);
 
       if ("jcr:root".equals(nodeName))
@@ -240,18 +239,14 @@ public class DocumentViewImporter extends BaseXmlImporter
 
             }
             newProperty = endPrimaryType(nodeData.getPrimaryTypeName());
-
          }
          else if (propName.equals(Constants.JCR_MIXINTYPES))
          {
-
             newProperty = endMixinTypes(mixinNodeTypes, propName);
-
          }
          else if (nodeData.isMixReferenceable() && propName.equals(Constants.JCR_UUID))
          {
             newProperty = endUuid(nodeData, propName);
-
          }
          else
          {
@@ -268,7 +263,6 @@ public class DocumentViewImporter extends BaseXmlImporter
                   continue;
                }
                throw new RepositoryException("Property definition not found for " + propName.getAsString());
-
             }
 
             pDef = defs.getAnyDefinition();
@@ -281,7 +275,6 @@ public class DocumentViewImporter extends BaseXmlImporter
             if (pDef.getRequiredType() == PropertyType.BINARY)
             {
                newProperty = endBinary(propertiesMap, newProperty, propName);
-
             }
             else
             {
@@ -292,7 +285,6 @@ public class DocumentViewImporter extends BaseXmlImporter
 
                if ("".equals(propertiesMap.get(propName)))
                {
-
                   // Skip empty non string values
                   if (pType != PropertyType.STRING)
                   {

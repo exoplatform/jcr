@@ -128,22 +128,6 @@ public class PropertyImpl extends ItemImpl implements Property
    /**
     * {@inheritDoc}
     */
-   @Deprecated
-   void loadData(ItemData data, ItemDefinitionData itemDefinitionData) throws RepositoryException,
-      ConstraintViolationException
-   {
-      this.data = data;
-      this.propertyData = (PropertyData)data;
-      this.type = propertyData.getType();
-
-      this.location = null;
-      this.qpath = data.getQPath();
-      this.propertyDef = (PropertyDefinitionData)itemDefinitionData;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
    public ItemDefinitionData getItemDefinitionData()
    {
       return propertyDef;
@@ -337,10 +321,6 @@ public class PropertyImpl extends ItemImpl implements Property
          throw new RepositoryException("FATAL: property definition is NULL " + getPath() + " "
             + propertyData.getValues());
       }
-      String name =
-         locationFactory.createJCRName(propertyDef.getName() != null ? propertyDef.getName() : Constants.JCR_ANY_NAME)
-            .getAsString();
-      ExtendedNodeTypeManager nodeTypeManager = (ExtendedNodeTypeManager)session.getWorkspace().getNodeTypeManager();
 
       Value[] defaultValues = new Value[propertyDef.getDefaultValues().length];
       String[] propVal = propertyDef.getDefaultValues();

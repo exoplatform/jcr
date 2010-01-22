@@ -163,7 +163,7 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
     * The current Transaction Manager
     */
    private TransactionManager tm;
-   
+
    private Cache<Serializable, Object> cache;
 
    private final Fqn<String> lockRoot;
@@ -324,7 +324,7 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
          return cache.getChildrenNames(lockRoot).size();
       }
    };
-   
+
    @Managed
    @ManagedDescription("The number of active locks")
    public int getNumLocks()
@@ -360,9 +360,9 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
          }
 
          return false;
-      }  
+      }
    };
-   
+
    /**
     * Check is LockManager contains lock. No matter it is in pending or persistent state.
     * 
@@ -378,7 +378,7 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
       catch (LockException e)
       {
          // ignore me will never occur
-      }  
+      }
       return false;
    }
 
@@ -489,7 +489,7 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
             log.error(e.getLocalizedMessage(), e);
          }
       }
-      
+
       // sort locking and unlocking operations to avoid deadlocks in JBossCache
       Collections.sort(containers);
       for (LockOperationContainer container : containers)
@@ -586,7 +586,7 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
          return null;
       }
    };
-   
+
    /**
     * Refreshed lock data in cache
     * 
@@ -656,9 +656,10 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
     */
    private TransientItemData copyItemData(PropertyData prop) throws RepositoryException
    {
-
       if (prop == null)
+      {
          return null;
+      }
 
       // make a copy, value may be null for deleting items
       TransientPropertyData newData =
@@ -730,7 +731,7 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
          return cache.getRoot().hasChild(makeLockFqn(nodeId));
       }
    };
-   
+
    private boolean lockExist(String nodeId)
    {
       try
@@ -835,7 +836,7 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
          return (LockData)cache.get(makeLockFqn(nodeId), LOCK_DATA);
       }
    };
-   
+
    protected LockData getLockDataById(String nodeId)
    {
       try
@@ -849,25 +850,26 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
       return null;
    }
 
-   private final LockActionNonTxAware<List<LockData>, Object> getLockList = new LockActionNonTxAware<List<LockData>, Object>()
-   {
-      public List<LockData> execute(Object arg) throws LockException
+   private final LockActionNonTxAware<List<LockData>, Object> getLockList =
+      new LockActionNonTxAware<List<LockData>, Object>()
       {
-         Set<Object> nodesId = cache.getChildrenNames(lockRoot);
-
-         List<LockData> locksData = new ArrayList<LockData>();
-         for (Object nodeId : nodesId)
+         public List<LockData> execute(Object arg) throws LockException
          {
-            LockData lockData = (LockData)cache.get(makeLockFqn((String)nodeId), LOCK_DATA);
-            if (lockData != null)
+            Set<Object> nodesId = cache.getChildrenNames(lockRoot);
+
+            List<LockData> locksData = new ArrayList<LockData>();
+            for (Object nodeId : nodesId)
             {
-               locksData.add(lockData);
+               LockData lockData = (LockData)cache.get(makeLockFqn((String)nodeId), LOCK_DATA);
+               if (lockData != null)
+               {
+                  locksData.add(lockData);
+               }
             }
+            return locksData;
          }
-         return locksData;
-      }
-   };
-   
+      };
+
    protected synchronized List<LockData> getLockList()
    {
       try
@@ -928,9 +930,11 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
 
          // lock probably removed by other thread
          if (lockOwner == null && lockIsDeep == null)
+         {
             return;
-         dataManager.save(new TransactionChangesLog(changesLog));
+         }
 
+         dataManager.save(new TransactionChangesLog(changesLog));
       }
       catch (JCRInvalidItemStateException e)
       {
@@ -982,7 +986,7 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
       }
       node.setResident(true);
    }
-   
+
    /**
     * Execute the given action outside a transaction. This is needed since the {@link Cache} used by {@link CacheableLockManager}
     * manages the persistence of its locks thanks to a {@link CacheLoader} and a {@link CacheLoader} lock the JBoss cache {@link Node}
@@ -1020,9 +1024,9 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
                log.warn("Cannot resume the current transaction", e);
             }
          }
-      }       
+      }
    }
-   
+
    /**
     * Actions that are not supposed to be called within a transaction
     * 

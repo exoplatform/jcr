@@ -362,7 +362,9 @@ public abstract class AbstractItemDefinitionAccessProvider
    {
       List<ValueData> parents = new ArrayList<ValueData>();
       for (InternalQName nt : value)
+      {
          parents.add(new TransientValueData(nt));
+      }
 
       TransientPropertyData propertyData =
          TransientPropertyData.createPropertyData(parentNode, propertyName, PropertyType.NAME, true, parents);
@@ -385,7 +387,9 @@ public abstract class AbstractItemDefinitionAccessProvider
       for (String vc : value)
       {
          if (vc != null)
+         {
             valueDatas.add(new TransientValueData(vc));
+         }
       }
 
       TransientPropertyData propertyData =

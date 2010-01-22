@@ -358,7 +358,7 @@ public abstract class BaseValue implements ExtendedValue, ReadableBinaryValue
          }
          else
          {
-            // TODO by stream... not equals
+            // by stream... not equals
             return false;
          }
       }

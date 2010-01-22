@@ -197,8 +197,7 @@ public class FilePersistedValueData extends AbstractPersistedValueData implement
     */
    private byte[] fileToByteArray() throws IOException
    {
-      // TODO do refactor of work with NIO
-
+      // TODO do refactor of work with NIO and java6
       FileChannel fch = new FileInputStream(file).getChannel();
 
       try

@@ -569,25 +569,28 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
       List<ValueData> predecessors =
          ((PropertyData)dataManager.getItemData(versionableNodeData, new QPathEntry(Constants.JCR_PREDECESSORS, 0)))
             .getValues();
+      List<ValueData> predecessorsNew = new ArrayList<ValueData>();
       for (ValueData predecessorValue : predecessors)
       {
-         String predecessorIdentifier;
+         byte[] pib;
          try
          {
-            predecessorIdentifier = new String(predecessorValue.getAsByteArray());
+            pib = predecessorValue.getAsByteArray();
          }
          catch (IOException e)
          {
             throw new RepositoryException(e);
          }
-         VersionImpl predecessor = (VersionImpl)dataManager.getItemByIdentifier(predecessorIdentifier, false);
+         VersionImpl predecessor = (VersionImpl)dataManager.getItemByIdentifier(new String(pib), false);
          predecessor.addSuccessor(versionData.getIdentifier(), changesLog);
+         
+         predecessorsNew.add(new TransientValueData(pib));
       }
 
       // jcr:predecessors
       propData =
          TransientPropertyData.createPropertyData(versionData, Constants.JCR_PREDECESSORS, PropertyType.REFERENCE,
-            true, predecessors);
+            true, predecessorsNew);
       changesLog.add(ItemState.createAddedState(propData));
 
       // jcr:frozenNode

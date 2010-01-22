@@ -35,7 +35,7 @@ import javax.jcr.version.OnParentVersionAction;
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
- * @version $Id: $
+ * @version $Id$
  */
 public class PropertyDefinitionAccessProvider extends AbstractItemDefinitionAccessProvider
 {
@@ -43,16 +43,13 @@ public class PropertyDefinitionAccessProvider extends AbstractItemDefinitionAcce
    public PropertyDefinitionAccessProvider(DataManager dataManager)
    {
       super(dataManager);
-
    }
 
    public PropertyDefinitionData read(NodeData nodeData, InternalQName declaringNodeType) throws NodeTypeReadException,
       RepositoryException
-
    {
       if (Constants.NT_PROPERTYDEFINITION.equals(nodeData.getPrimaryTypeName()))
       {
-
          // null if residual;
          InternalQName name = readName(nodeData, Constants.JCR_NAME);
          boolean protectedItem = readMandatoryBoolean(nodeData, Constants.JCR_PROTECTED);
@@ -66,10 +63,10 @@ public class PropertyDefinitionAccessProvider extends AbstractItemDefinitionAcce
 
          boolean multiple = readMandatoryBoolean(nodeData, Constants.JCR_MULTIPLE);
 
-         //3 Query atributes
-//         boolean isQueryOrderable = readMandatoryBoolean(nodeData, Constants.JCR_QUERYORDERABLE);
-//         String[] availableQueryOperators = readMandatoryStrings(nodeData, Constants.JCR_AVAILABLEQUERYOPERATORS);
-//         boolean isFullTextSearchable = readMandatoryBoolean(nodeData, Constants.JCR_ISFULLTEXTSEARCHABLE);
+         // TODO 3 Query atributes
+         //         boolean isQueryOrderable = readMandatoryBoolean(nodeData, Constants.JCR_QUERYORDERABLE);
+         //         String[] availableQueryOperators = readMandatoryStrings(nodeData, Constants.JCR_AVAILABLEQUERYOPERATORS);
+         //         boolean isFullTextSearchable = readMandatoryBoolean(nodeData, Constants.JCR_ISFULLTEXTSEARCHABLE);
 
          String[] valueConstraints = readStrings(nodeData, Constants.JCR_VALUECONSTRAINTS);
          String[] defaultValues = readStrings(nodeData, Constants.JCR_DEFAULTVALUES);
@@ -83,7 +80,6 @@ public class PropertyDefinitionAccessProvider extends AbstractItemDefinitionAcce
    public void write(PlainChangesLog changesLog, NodeData declaredNodeType,
       PropertyDefinitionData propertyDefinitionData, int index)
    {
-
       NodeData propertyDefinition =
          TransientNodeData.createNodeData(declaredNodeType, Constants.JCR_PROPERTYDEFINITION,
             Constants.NT_PROPERTYDEFINITION, index);
@@ -98,13 +94,13 @@ public class PropertyDefinitionAccessProvider extends AbstractItemDefinitionAcce
 
       writeBoolean(changesLog, propertyDefinition, Constants.JCR_MULTIPLE, propertyDefinitionData.isMultiple());
 
-      //3 Query atributes
-//      writeBoolean(changesLog, propertyDefinition, Constants.JCR_QUERYORDERABLE, propertyDefinitionData
-//         .isQueryOrderable());
-//      writeStrings(changesLog, propertyDefinition, Constants.JCR_AVAILABLEQUERYOPERATORS, propertyDefinitionData
-//         .getAvailableQueryOperators());
-//      writeBoolean(changesLog, propertyDefinition, Constants.JCR_ISFULLTEXTSEARCHABLE, propertyDefinitionData
-//         .isFullTextSearchable());
+      //TODO 3 Query atributes
+      //      writeBoolean(changesLog, propertyDefinition, Constants.JCR_QUERYORDERABLE, propertyDefinitionData
+      //         .isQueryOrderable());
+      //      writeStrings(changesLog, propertyDefinition, Constants.JCR_AVAILABLEQUERYOPERATORS, propertyDefinitionData
+      //         .getAvailableQueryOperators());
+      //      writeBoolean(changesLog, propertyDefinition, Constants.JCR_ISFULLTEXTSEARCHABLE, propertyDefinitionData
+      //         .isFullTextSearchable());
 
       if (propertyDefinitionData.getValueConstraints() != null
          && propertyDefinitionData.getValueConstraints().length != 0)
@@ -119,8 +115,6 @@ public class PropertyDefinitionAccessProvider extends AbstractItemDefinitionAcce
 
          writeStrings(changesLog, propertyDefinition, Constants.JCR_DEFAULTVALUES, propertyDefinitionData
             .getDefaultValues());
-
       }
    }
-
 }

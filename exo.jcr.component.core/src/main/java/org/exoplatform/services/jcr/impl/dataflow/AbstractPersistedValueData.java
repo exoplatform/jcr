@@ -70,7 +70,7 @@ public abstract class AbstractPersistedValueData implements ValueData
    }
 
    /**
-    * Create transient copy of persisted data.
+    * Create transient copy of persisted data. Used for LocalWorkspaceStorageDataManagerProxy only.
     * 
     * @return TransientValueData
     * @throws RepositoryException if error ocurs

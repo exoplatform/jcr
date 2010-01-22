@@ -257,7 +257,6 @@ public class TransientValueData implements ValueData
       public long getLength()
       {
          // TODO try ask on FileChannel (via FileInputStream if have such stream).
-
          if (isByteArrayAfterSpool())
          {
             return data.length;
@@ -359,7 +358,7 @@ public class TransientValueData implements ValueData
 
             MappedByteBuffer bb = spoolChannel.map(FileChannel.MapMode.READ_ONLY, position, length);
 
-            WritableByteChannel ch = Channels.newChannel(stream); // TODO don't use Channels.newChannel
+            WritableByteChannel ch = Channels.newChannel(stream); // TODO don't use Channels.newChannel on java5
             ch.write(bb);
             ch.close();
 
@@ -656,8 +655,7 @@ public class TransientValueData implements ValueData
 
          try
          {
-            //TODO do refactor of work with NIO
-
+            //TODO do refactor of work with NIO and java6
             ByteBuffer bb = ByteBuffer.allocate((int)fch.size());
             fch.read(bb);
             if (bb.hasArray())
@@ -832,6 +830,16 @@ public class TransientValueData implements ValueData
          new NewValueData(orderNumber, null, null, spoolFile, fileCleaner, -1, null, deleteSpoolFile, true);
    }
 
+   /**
+    * Creates TransientValueData with incoming byte array.
+    * @param value
+    *          byte[]
+    */
+   public TransientValueData(byte[] value)
+   {
+      this(0, value);
+   }
+   
    /**
     * Creates TransientValueData with incoming byte array.
     * @param orderNumber
@@ -1101,8 +1109,7 @@ public class TransientValueData implements ValueData
     * @param orderNumber
     *          int
     */
-   // TODO make it protected
-   TransientValueData()
+   protected TransientValueData()
    {
    }
 

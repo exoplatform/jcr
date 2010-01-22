@@ -501,12 +501,9 @@ public class EditableValueData extends TransientValueData
    public EditableValueData(byte[] bytes, int orderNumber, FileCleaner fileCleaner, int maxBufferSize,
       File tempDirectory) throws IOException
    {
-
       this.delegate = new NewEditableValueData(bytes, orderNumber, fileCleaner, maxBufferSize, tempDirectory);
-
    }
 
-   //TODO use InputStream instead of spoolFile and use Channel.transferFrom.
    public EditableValueData(File spoolFile, int orderNumber, FileCleaner fileCleaner, int maxBufferSize,
       File tempDirectory) throws IOException
    {
