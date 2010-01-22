@@ -56,6 +56,7 @@ import org.jboss.cache.CacheFactory;
 import org.jboss.cache.DefaultCacheFactory;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.Node;
+import org.jboss.cache.loader.CacheLoader;
 import org.picocontainer.Startable;
 
 import java.io.Serializable;
@@ -983,8 +984,10 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
    }
    
    /**
-    * Execute the given action outside a transaction
-    * @throws LockException 
+    * Execute the given action outside a transaction. This is needed since the {@link Cache} used by {@link CacheableLockManager}
+    * manages the persistence of its locks thanks to a {@link CacheLoader} and a {@link CacheLoader} lock the JBoss cache {@link Node}
+    * even for read operations which cause deadlock issue when a XA {@link Transaction} is already opened
+    * @throws LockException when a exception occurs
     */
    private <R, A> R executeLockActionNonTxAware(LockActionNonTxAware<R, A> action, A arg) throws LockException
    {
