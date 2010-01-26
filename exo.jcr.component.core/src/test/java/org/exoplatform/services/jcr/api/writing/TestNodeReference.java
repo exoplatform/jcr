@@ -69,10 +69,12 @@ public class TestNodeReference extends JcrAPIBaseTest
 
       PropertyIterator refs = testNode.getReferences();
       if (log.isDebugEnabled())
+      {
          while (refs.hasNext())
          {
             log.debug("ref >>>" + refs.nextProperty());
          }
+      }
       assertEquals(1, testNode.getReferences().getSize());
       assertEquals(1, testNode1.getReferences().getSize());
 
@@ -150,32 +152,38 @@ public class TestNodeReference extends JcrAPIBaseTest
 
          PropertyIterator refs = testNode.getReferences();
          if (log.isDebugEnabled())
+         {
             while (refs.hasNext())
             {
                Property p = refs.nextProperty();
 
                log.debug(testNode.getPath() + " ref >>> " + p.getPath());
             }
+         }
          assertEquals(4, testNode.getReferences().getSize());
 
          refs = testNode1.getReferences();
          if (log.isDebugEnabled())
+         {
             while (refs.hasNext())
             {
                Property p = refs.nextProperty();
 
                log.debug(testNode1.getPath() + " ref >>> " + p.getPath());
             }
+         }
          assertEquals(5, testNode1.getReferences().getSize());
 
          refs = testNode2.getReferences();
          if (log.isDebugEnabled())
+         {
             while (refs.hasNext())
             {
                Property p = refs.nextProperty();
 
                log.debug(testNode2.getPath() + " ref >>> " + p.getPath());
             }
+         }
          assertEquals(2, testNode2.getReferences().getSize());
 
          testNode.remove();
@@ -232,32 +240,38 @@ public class TestNodeReference extends JcrAPIBaseTest
 
          refs = testNode.getReferences();
          if (log.isDebugEnabled())
+         {
             while (refs.hasNext())
             {
                Property p = refs.nextProperty();
 
                log.debug(testNode.getPath() + " ref >>> " + p.getPath());
             }
+         }
          assertEquals(0, testNode.getReferences().getSize());
 
          refs = testNode1.getReferences();
          if (log.isDebugEnabled())
+         {
             while (refs.hasNext())
             {
                Property p = refs.nextProperty();
 
                log.debug(testNode1.getPath() + " ref >>> " + p.getPath());
             }
+         }
          assertEquals(5, testNode1.getReferences().getSize());
 
          refs = testNode2.getReferences();
          if (log.isDebugEnabled())
+         {
             while (refs.hasNext())
             {
                Property p = refs.nextProperty();
 
                log.debug(testNode2.getPath() + " ref >>> " + p.getPath());
             }
+         }
          assertEquals(2, testNode2.getReferences().getSize());
 
          testNode.remove();
@@ -311,4 +325,23 @@ public class TestNodeReference extends JcrAPIBaseTest
       }
    }
 
+   public void testGetRegerencesOnChangedNode() throws Exception
+   {
+
+      Node testNode = root.addNode("testGetReferences", "nt:unstructured");
+      Node refNode = root.addNode("refNode", "nt:unstructured");
+      assertTrue(testNode.canAddMixin("mix:referenceable"));
+
+      testNode.addMixin("mix:referenceable");
+      refNode.setProperty("p", refNode.getSession().getValueFactory().createValue(testNode));
+      session.save();
+
+      // change node
+      assertTrue(testNode.canAddMixin("mix:lockable"));
+      testNode.addMixin("mix:lockable");
+
+      PropertyIterator refs = testNode.getReferences();
+      assertEquals(1, refs.getSize());
+
+   }
 }

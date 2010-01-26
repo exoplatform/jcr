@@ -151,7 +151,9 @@ public class SessionDataManager implements ItemDataConsumer
       NodeData parent = (NodeData)getItemData(Constants.ROOT_UUID);
 
       if (path.equals(Constants.ROOT_PATH))
+      {
          return parent;
+      }
 
       QPathEntry[] relPathEntries = path.getRelPath(path.getDepth());
 
@@ -564,7 +566,9 @@ public class SessionDataManager implements ItemDataConsumer
       {
          ItemState lastState = states.get(states.size() - 1);
          if (lastState.isAdded() || lastState.isDeleted())
+         {
             return false;
+         }
 
          return true;
       }
@@ -597,7 +601,7 @@ public class SessionDataManager implements ItemDataConsumer
             .getIdentity()))
          {
             PropertyImpl item;
-            ItemState state = changesLog.getItemState(identifier);
+            ItemState state = changesLog.getItemState(data.getIdentifier());
             if (state != null)
             {
                if (state.isDeleted())
@@ -829,13 +833,17 @@ public class SessionDataManager implements ItemDataConsumer
    {
       long start = System.currentTimeMillis();
       if (log.isDebugEnabled())
+      {
          log.debug("getACL(" + path.getAsString() + " ) >>>>>");
+      }
 
       try
       {
          NodeData parent = (NodeData)getItemData(Constants.ROOT_UUID);
          if (path.equals(Constants.ROOT_PATH))
+         {
             return parent.getACL();
+         }
 
          ItemData item = null;
          QPathEntry[] relPathEntries = path.getRelPath(path.getDepth());
@@ -844,12 +852,18 @@ public class SessionDataManager implements ItemDataConsumer
             item = getItemData(parent, relPathEntries[i]);
 
             if (item == null)
+            {
                break;
+            }
 
             if (item.isNode())
+            {
                parent = (NodeData)item;
+            }
             else if (i < relPathEntries.length - 1)
+            {
                throw new IllegalPathException("Get ACL. Path can not contains a property as the intermediate element");
+            }
          }
 
          if (item != null && item.isNode())
@@ -877,23 +891,31 @@ public class SessionDataManager implements ItemDataConsumer
    {
       long start = System.currentTimeMillis();
       if (log.isDebugEnabled())
+      {
          log.debug("getACL(" + parent.getQPath().getAsString() + " + " + name.getAsString() + " ) >>>>>");
+      }
 
       try
       {
          ItemData item = getItemData(parent, name);
          if (item != null && item.isNode())
+         {
             // node ACL
             return ((NodeData)item).getACL();
+         }
          else
+         {
             // item not found or it's a property - return parent ACL
             return parent.getACL();
+         }
       }
       finally
       {
          if (log.isDebugEnabled())
+         {
             log.debug("getACL(" + parent.getQPath().getAsString() + " + " + name.getAsString() + ") <<<<< "
                + ((System.currentTimeMillis() - start) / 1000d) + "sec");
+         }
       }
    }
 
@@ -983,7 +1005,9 @@ public class SessionDataManager implements ItemDataConsumer
       for (ItemData data : list)
       {
          if (data.equals(itemData))
+         {
             rootAdded = true;
+         }
          deletes.add(new ItemState(data, ItemState.DELETED, fireEvent, ancestorToSave, false));
          // if subnode contains JCR_VERSIONHISTORY property
          // we should remove version storage manually
@@ -1036,14 +1060,18 @@ public class SessionDataManager implements ItemDataConsumer
       Collections.sort(deletes, new PathSorter());
 
       if (!fireEvent)
+      {
          // 7 erase evenFire flag if it's a new item
          changesLog.eraseEventFire(itemData.getIdentifier());
+      }
 
       changesLog.addAll(deletes);
       // log.info(changesLog.dump())
       if (itemData.isNode())
+      {
          // 8 reindex same-name siblings
          changesLog.addAll(reindexSameNameSiblings((NodeData)itemData, this));
+      }
    }
 
    /**
@@ -1064,12 +1092,14 @@ public class SessionDataManager implements ItemDataConsumer
       {
          ItemState vhState = changesLog.getItemState(vhID);
          if (vhState != null && vhState.isDeleted())
+         {
             // [PN] TODO check why we here if VH already isn't exists.
             // usecase: child version remove when child versionable node is located
             // as child
             // of its containing history versionable node.
             // We may check this case in ChildVersionRemoveVisitor.
             return;
+         }
 
          throw new RepositoryException("Version history is not found. UUID: " + vhID
             + ". Context item (ancestor to save) " + ancestorToSave.getAsString());
@@ -1094,12 +1124,14 @@ public class SessionDataManager implements ItemDataConsumer
                {
                   if (!sref.getQPath().isDescendantOf(vhnode.getQPath())
                      && (containingHistory != null ? !sref.getQPath().isDescendantOf(containingHistory) : true))
+                  {
                      // has a reference to the VH in version storage,
                      // it's a REFERENCE property jcr:childVersionHistory of
                      // nt:versionedChild
                      // i.e. this VH is a child history in an another history.
                      // We can't remove this VH now.
                      return;
+                  }
                }
                else if (wsSession != session)
                {
@@ -1115,7 +1147,9 @@ public class SessionDataManager implements ItemDataConsumer
          finally
          {
             if (wsSession != session)
+            {
                wsSession.logout();
+            }
          }
       }
 
@@ -1200,7 +1234,9 @@ public class SessionDataManager implements ItemDataConsumer
    public ItemImpl update(ItemState itemState, boolean pool) throws RepositoryException
    {
       if (itemState.isDeleted())
+      {
          throw new RepositoryException("Illegal state DELETED. Use delete(...) method");
+      }
 
       changesLog.add(itemState);
 
@@ -1223,7 +1259,9 @@ public class SessionDataManager implements ItemDataConsumer
    public void updateItemState(ItemState itemState) throws RepositoryException
    {
       if (itemState.isDeleted())
+      {
          throw new RepositoryException("Illegal state DELETED. Use delete(...) method");
+      }
 
       changesLog.add(itemState);
    }
@@ -1247,7 +1285,9 @@ public class SessionDataManager implements ItemDataConsumer
       PlainChangesLog cLog = changesLog.pushLog(path);
 
       if (log.isDebugEnabled())
+      {
          log.debug(" ----- commit -------- \n" + cLog.dump());
+      }
 
       try
       {
@@ -1292,7 +1332,9 @@ public class SessionDataManager implements ItemDataConsumer
    {
       changesLog.addAll(cLog.getAllStates());
       if (log.isDebugEnabled())
+      {
          log.debug(" ----- rollback ----- \n" + cLog.dump());
+      }
    }
 
    /**
@@ -1308,7 +1350,7 @@ public class SessionDataManager implements ItemDataConsumer
       List<PropertyData> sessionTransient = new ArrayList<PropertyData>();
       for (PropertyData p : persisted)
       {
-         sessionTransient.add((PropertyData)p);
+         sessionTransient.add(p);
       }
       return sessionTransient;
    }
@@ -1384,7 +1426,9 @@ public class SessionDataManager implements ItemDataConsumer
       {
          node = (NodeData)getItemData(changedItem.getData().getParentIdentifier());
          if (node == null)
+         {
             return; // parent was deleted
+         }
       }
 
       if (node.getACL().getPermissionsSize() < 1)
@@ -1411,9 +1455,11 @@ public class SessionDataManager implements ItemDataConsumer
          {
             if (!accessManager.hasPermission(parent.getACL(), new String[]{PermissionType.REMOVE}, session
                .getUserState().getIdentity()))
+            {
                throw new AccessDeniedException("Access denied: REMOVE "
                   + changedItem.getData().getQPath().getAsString() + " for: " + session.getUserID() + " item owner "
                   + parent.getACL().getOwner());
+            }
          }
          else if (changedItem.getData().isNode())
          {
@@ -1434,9 +1480,11 @@ public class SessionDataManager implements ItemDataConsumer
             // add or update property
             if (!accessManager.hasPermission(parent.getACL(), new String[]{PermissionType.SET_PROPERTY}, session
                .getUserState().getIdentity()))
+            {
                throw new AccessDeniedException("Access denied: SET_PROPERTY "
                   + changedItem.getData().getQPath().getAsString() + " for: " + session.getUserID() + " item owner "
                   + parent.getACL().getOwner());
+            }
          }
       } // else - parent not found, deleted in this session or from another
    }
@@ -1488,9 +1536,11 @@ public class SessionDataManager implements ItemDataConsumer
       {
 
          if (getItemData(nData, new QPathEntry(itemDefinitionData.getName(), 0)) == null)
+         {
             throw new ConstraintViolationException("Mandatory item " + itemDefinitionData.getName()
                + " not found. Node [" + nData.getQPath().getAsString() + " primary type: "
                + nData.getPrimaryTypeName().getAsString() + "]");
+         }
 
       }
    }
@@ -2088,7 +2138,9 @@ public class SessionDataManager implements ItemDataConsumer
          for (ItemImpl pitem : snapshort)
          {
             if (pitem.getData().getQPath().isDescendantOf(parentPath))
+            {
                desc.add(pitem);
+            }
          }
 
          return desc;
@@ -2159,7 +2211,9 @@ public class SessionDataManager implements ItemDataConsumer
             return new VersionHistoryImpl(data, session);
          }
          else
+         {
             return node;
+         }
       }
 
       private NodeImpl createNode(NodeData data, NodeData parent) throws RepositoryException
@@ -2174,7 +2228,9 @@ public class SessionDataManager implements ItemDataConsumer
             return new VersionHistoryImpl(data, session);
          }
          else
+         {
             return node;
+         }
       }
 
       private PropertyImpl createProperty(ItemData data) throws RepositoryException
