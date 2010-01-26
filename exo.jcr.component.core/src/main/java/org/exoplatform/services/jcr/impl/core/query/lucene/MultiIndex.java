@@ -166,7 +166,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     * The time this index was last flushed or a transaction was committed.
     */
    private long lastFileSystemFlushTime;
-   
+
    /**
     * The <code>IndexMerger</code> for this <code>MultiIndex</code>.
     */
@@ -889,54 +889,57 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    void close()
    {
-
-      // stop index merger
-      // when calling this method we must not lock this MultiIndex, otherwise
-      // a deadlock might occur
-      merger.dispose();
-
-      synchronized (this)
+      if (modeHandler.getMode().equals(IndexerIoMode.READ_WRITE))
       {
-         // stop timer
-         if (flushTask != null)
-         {
-            flushTask.cancel();
-         }
 
-         // commit / close indexes
-         try
-         {
-            releaseMultiReader();
-         }
-         catch (IOException e)
-         {
-            log.error("Exception while closing search index.", e);
-         }
-         try
-         {
-            flush();
-         }
-         catch (IOException e)
-         {
-            log.error("Exception while closing search index.", e);
-         }
-         volatileIndex.close();
-         for (int i = 0; i < indexes.size(); i++)
-         {
-            ((PersistentIndex)indexes.get(i)).close();
-         }
+         // stop index merger
+         // when calling this method we must not lock this MultiIndex, otherwise
+         // a deadlock might occur
+         merger.dispose();
 
-         // close indexing queue
-         indexingQueue.close();
+         synchronized (this)
+         {
+            // stop timer
+            if (flushTask != null)
+            {
+               flushTask.cancel();
+            }
 
-         // finally close directory
-         try
-         {
-            indexDir.close();
-         }
-         catch (IOException e)
-         {
-            log.error("Exception while closing directory.", e);
+            // commit / close indexes
+            try
+            {
+               releaseMultiReader();
+            }
+            catch (IOException e)
+            {
+               log.error("Exception while closing search index.", e);
+            }
+            try
+            {
+               flush();
+            }
+            catch (IOException e)
+            {
+               log.error("Exception while closing search index.", e);
+            }
+            volatileIndex.close();
+            for (int i = 0; i < indexes.size(); i++)
+            {
+               ((PersistentIndex)indexes.get(i)).close();
+            }
+
+            // close indexing queue
+            indexingQueue.close();
+
+            // finally close directory
+            try
+            {
+               indexDir.close();
+            }
+            catch (IOException e)
+            {
+               log.error("Exception while closing directory.", e);
+            }
          }
       }
    }
@@ -989,9 +992,13 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    {
       ItemData data = handler.getContext().getItemStateManager().getItemData(id);
       if (data == null)
+      {
          throw new ItemNotFoundException("Item id=" + id + " not found");
+      }
       if (!data.isNode())
+      {
          throw new RepositoryException("Item with id " + id + " is not a node");
+      }
       return createDocument((NodeData)data);
 
    }
@@ -1065,7 +1072,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             }
          }
          executeAndLog(new Commit(getTransactionId()));
-         
+
          indexNames.write();
 
          // reset redo log
@@ -2465,11 +2472,11 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          while (iterator.hasNext())
          {
             PersistentIndex index = iterator.next();
-            String name = ((PersistentIndex)index).getName();
+            String name = index.getName();
             // if current index not in new list, close it, cause it is deleted.
             if (!newList.contains(name))
             {
-               ((PersistentIndex)index).close();
+               index.close();
                iterator.remove();
             }
             else
