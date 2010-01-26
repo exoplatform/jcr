@@ -153,10 +153,11 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
    public List<NodeData> getChildNodesData(NodeData parent) throws RepositoryException, IllegalStateException
    {
       checkIfOpened();
+      ResultSet resultSet = null;
       try
       {
          // query will return nodes and properties in same result set
-         ResultSet resultSet = findChildNodesByParentIdentifierCQ(getInternalId(parent.getIdentifier()));
+         resultSet = findChildNodesByParentIdentifierCQ(getInternalId(parent.getIdentifier()));
          TempNodeData data = null;
          List<NodeData> childNodes = new ArrayList<NodeData>();
          while (resultSet.next())
@@ -196,6 +197,20 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
       {
          throw new RepositoryException(e);
       }
+      finally
+      {
+         if (resultSet != null)
+         {
+            try
+            {
+               resultSet.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error(e.getMessage(), e);
+            }
+         }
+      }
    }
 
    /**
@@ -204,14 +219,71 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
    public List<PropertyData> getChildPropertiesData(NodeData parent) throws RepositoryException, IllegalStateException
    {
       checkIfOpened();
+      ResultSet resultSet = null;
       try
       {
-         ResultSet resultSet = findChildPropertiesByParentIdentifierCQ(getInternalId(parent.getIdentifier()));
+         resultSet = findChildPropertiesByParentIdentifierCQ(getInternalId(parent.getIdentifier()));
          List<PropertyData> children = new ArrayList<PropertyData>();
+
+         QPath parentPath = parent.getQPath();
+
          if (resultSet.next())
          {
-            while (!resultSet.isAfterLast())
-               children.add(loadPropertyRecord(resultSet, parent.getQPath()));
+            boolean isNotLast = true;
+
+            do
+            {
+               // read property data
+               String cid = resultSet.getString(COLUMN_ID);
+               String identifier = getIdentifier(cid);
+
+               String cname = resultSet.getString(COLUMN_NAME);
+               int cversion = resultSet.getInt(COLUMN_VERSION);
+
+               String cpid = resultSet.getString(COLUMN_PARENTID);
+               // if parent ID is empty string - it's a root node
+
+               int cptype = resultSet.getInt(COLUMN_PTYPE);
+               boolean cpmultivalued = resultSet.getBoolean(COLUMN_PMULTIVALUED);
+               QPath qpath;
+               try
+               {
+                  qpath =
+                     QPath.makeChildPath(parentPath == null ? traverseQPath(cpid) : parentPath, InternalQName
+                        .parse(cname));
+               }
+               catch (IllegalNameException e)
+               {
+                  throw new RepositoryException(e.getMessage(), e);
+               }
+
+               // read values
+               List<ValueData> data = new ArrayList<ValueData>();
+               do
+               {
+                  int orderNum = resultSet.getInt(COLUMN_VORDERNUM);
+                  // check is there value columns
+                  if (!resultSet.wasNull())
+                  {
+                     final String storageId = resultSet.getString(COLUMN_VSTORAGE_DESC);
+                     ValueData vdata =
+                        resultSet.wasNull() ? readValueData(cid, orderNum, cversion, resultSet
+                           .getBinaryStream(COLUMN_VDATA)) : readValueData(identifier, orderNum, storageId);
+                     data.add(vdata);
+                  }
+
+                  isNotLast = resultSet.next();
+               }
+               while (isNotLast && resultSet.getString(COLUMN_ID).equals(cid));
+
+               //create property
+               PersistedPropertyData pdata =
+                  new PersistedPropertyData(identifier, qpath, getIdentifier(cpid), cversion, cptype, cpmultivalued,
+                     data);
+
+               children.add(pdata);
+            }
+            while (isNotLast);
          }
          return children;
       }
@@ -223,6 +295,21 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
       {
          throw new RepositoryException(e);
       }
+      finally
+      {
+         if (resultSet != null)
+         {
+            try
+            {
+               resultSet.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error(e.getMessage(), e);
+            }
+         }
+      }
+
    }
 
    /**
@@ -231,9 +318,10 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
    public List<PropertyData> getReferencesData(String nodeIdentifier) throws RepositoryException, IllegalStateException
    {
       checkIfOpened();
+      ResultSet refProps = null;
       try
       {
-         ResultSet refProps = findReferencePropertiesCQ(getInternalId(nodeIdentifier));
+         refProps = findReferencePropertiesCQ(getInternalId(nodeIdentifier));
          return loadReferences(refProps);
       }
       catch (SQLException e)
@@ -244,6 +332,21 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
       {
          throw new RepositoryException(e);
       }
+      finally
+      {
+         if (refProps != null)
+         {
+            try
+            {
+               refProps.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error(e.getMessage(), e);
+            }
+         }
+      }
+
    }
 
    /**
@@ -585,67 +688,6 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
       catch (IllegalNameException e)
       {
          throw new RepositoryException(e);
-      }
-   }
-
-   /**
-    * Load property record from result set. Result set must be ordered by property id.
-    * In other way there may be mistaces.
-    * 
-    * @param resultSet - Result set
-    * @param parentPath - parent qpath - needed to create property qpath. May be null.
-    * @return PersistedPropertyData
-    * @throws RepositoryException
-    * @throws SQLException
-    * @throws IOException
-    */
-   protected PersistedPropertyData loadPropertyRecord(ResultSet resultSet, QPath parentPath)
-      throws RepositoryException, SQLException, IOException
-   {
-      String cid = resultSet.getString(COLUMN_ID);
-      String cname = resultSet.getString(COLUMN_NAME);
-      int cversion = resultSet.getInt(COLUMN_VERSION);
-
-      String cpid = resultSet.getString(COLUMN_PARENTID);
-      // if parent ID is empty string - it's a root node
-      try
-      {
-         int cptype = resultSet.getInt(COLUMN_PTYPE);
-         boolean cpmultivalued = resultSet.getBoolean(COLUMN_PMULTIVALUED);
-         QPath qpath =
-            QPath.makeChildPath(parentPath == null ? traverseQPath(cpid) : parentPath, InternalQName.parse(cname));
-
-         List<ValueData> data = new ArrayList<ValueData>();
-         String identifier = getIdentifier(cid);
-
-         do
-         {
-            int orderNum = resultSet.getInt(COLUMN_VORDERNUM);
-            //check is there value columns
-            if (!resultSet.wasNull())
-            {
-               final String storageId = resultSet.getString(COLUMN_VSTORAGE_DESC);
-               ValueData vdata =
-                  resultSet.wasNull() ? readValueData(cid, orderNum, cversion, resultSet.getBinaryStream(COLUMN_VDATA))
-                     : readValueData(identifier, orderNum, storageId);
-               data.add(vdata);
-            }
-         }
-         while (resultSet.next() && resultSet.getString(COLUMN_ID).equals(cid));
-
-         PersistedPropertyData pdata =
-            new PersistedPropertyData(identifier, qpath, getIdentifier(cpid), cversion, cptype, cpmultivalued, data);
-
-         return pdata;
-      }
-      catch (IllegalNameException e)
-      {
-         throw new RepositoryException(e);
-      }
-      catch (InvalidItemStateException e)
-      {
-         throw new InvalidItemStateException("FATAL: Can't build item path for name " + cname + " id: "
-            + getIdentifier(cid) + ". " + e);
       }
    }
 
