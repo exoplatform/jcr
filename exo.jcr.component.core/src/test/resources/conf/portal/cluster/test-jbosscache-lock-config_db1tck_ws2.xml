@@ -3,7 +3,7 @@
 
 	<locking useLockStriping="false" concurrencyLevel="50000" lockParentForChildInsertRemove="false" lockAcquisitionTimeout="20000" />
 
-	<clustering mode="replication" clusterName="JBoss-Cache-Lock-Cluster_db1tck_ws">
+	<clustering mode="replication" clusterName="JBoss-Cache-Lock-Cluster_db1tck_ws2">
 		<stateRetrieval timeout="20000" fetchInMemoryState="false" nonBlocking="true" />
 		<jgroupsConfig>
 

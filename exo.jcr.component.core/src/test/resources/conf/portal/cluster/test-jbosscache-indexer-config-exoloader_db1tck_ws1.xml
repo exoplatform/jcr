@@ -7,7 +7,7 @@
 	<transaction
 		transactionManagerLookupClass="org.jboss.cache.transaction.JBossStandaloneJTAManagerLookup" />
 
-	<clustering mode="replication" clusterName="JBoss-Cache-Indexer-Cluster_db1tck_ws">
+	<clustering mode="replication" clusterName="JBoss-Cache-Indexer-Cluster_db1tck_ws1">
 		<stateRetrieval timeout="20000" fetchInMemoryState="false"  nonBlocking="true"/>
 		<jgroupsConfig>
 			<TCP bind_addr="127.0.0.1" start_port="9750" loopback="true"
