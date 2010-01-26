@@ -53,6 +53,7 @@ import org.exoplatform.services.jcr.impl.core.query.DefaultQueryNodeFactory;
 import org.exoplatform.services.jcr.impl.core.query.ErrorLog;
 import org.exoplatform.services.jcr.impl.core.query.ExecutableQuery;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoMode;
+import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeListener;
 import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
 import org.exoplatform.services.jcr.impl.core.query.QueryHandlerContext;
 import org.exoplatform.services.jcr.impl.core.query.SearchIndexConfigurationHelper;
@@ -88,7 +89,7 @@ import javax.xml.parsers.ParserConfigurationException;
  * Implements a {@link org.apache.jackrabbit.core.query.QueryHandler} using
  * Lucene.
  */
-public class SearchIndex extends AbstractQueryHandler
+public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeListener
 {
 
    private static final DefaultQueryNodeFactory DEFAULT_QUERY_NODE_FACTORY = new DefaultQueryNodeFactory();
@@ -595,7 +596,8 @@ public class SearchIndex extends AbstractQueryHandler
       {
          recoverErrorLog(errorLog);
       }
-
+      
+      modeHandler.addIndexerIoModeListener(this);
    }
 
    /**
@@ -2690,5 +2692,29 @@ public class SearchIndex extends AbstractQueryHandler
       searcher.setSimilarity(getSimilarity());
 
       return new LuceneQueryHits(reader, searcher, query);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void onChangeMode(IndexerIoMode mode)
+   {
+      try
+      {
+         if (mode == IndexerIoMode.READ_WRITE)
+         {
+            // reprocess any notfinished notifies;
+            log.info("Proceessing eroor log ...");
+            recoverErrorLog(errorLog);
+         }
+      }
+      catch (IOException e)
+      {
+         log.error("Can not recover error log. On changed mode " +  mode , e);
+      }
+      catch (RepositoryException e)
+      {
+         log.error("Can not recover error log.", e);
+      }      
    }
 }
