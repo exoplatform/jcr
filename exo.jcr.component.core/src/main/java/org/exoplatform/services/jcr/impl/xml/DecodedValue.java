@@ -49,6 +49,11 @@ public class DecodedValue
    private StringBuffer stringBuffer;
 
    /**
+    * true if DecodedValue is completed
+    */
+   private boolean complete;
+
+   /**
     * Dafault constructor.
     */
    public DecodedValue()
@@ -109,6 +114,26 @@ public class DecodedValue
          decoder.remove();
          decoder = null;
       }
+   }
+
+   /**
+    * Used to determine the end of value tag in system view import.
+    * 
+    * @param complete
+    */
+   public void setComplete(boolean complete)
+   {
+      this.complete = complete;
+   }
+
+   /**
+    * Used to determine the end of value tag in system view import.
+    * 
+    * @return
+    */
+   public boolean isComplete()
+   {
+      return complete;
    }
 
    /**
