@@ -79,10 +79,9 @@
                      
                    </properties>
                </query-handler>
-               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManager">
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.LockManagerImpl">
                   <properties>
                      <property name="time-out" value="15m" />
-                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lockconfig_db1_ws.xml" />
                   </properties>
                </lock-manager>
             </workspace>
@@ -124,10 +123,9 @@
                      <property name="spellchecker-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" />
                   </properties>
                </query-handler>
-               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManager">
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.LockManagerImpl">
                   <properties>
                      <property name="time-out" value="15m" />
-                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lockconfig_db1_ws1.xml" />
                   </properties>
                </lock-manager>
             </workspace>
@@ -169,10 +167,9 @@
                      <property name="spellchecker-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" />
                   </properties>
                </query-handler>
-               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManager">
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.LockManagerImpl">
                   <properties>
                      <property name="time-out" value="15m" />
-                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lockconfig.xml" />
                   </properties>
                </lock-manager>
             </workspace>
@@ -246,10 +243,9 @@
 								value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" />
 						</properties>
 					</query-handler>
-                    <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManager">
+                    <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.LockManagerImpl">
                       <properties>
                          <property name="time-out" value="15m" />
-                         <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lockconfig.xml" />
                       </properties>
                     </lock-manager>
 				</workspace>
@@ -308,10 +304,9 @@
                      <property name="spellchecker-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" />
                   </properties>
                </query-handler>
-               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManager">
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.LockManagerImpl">
                   <properties>
                      <property name="time-out" value="15m" />
-                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lockconfig.xml" />
                   </properties>
                </lock-manager>
             </workspace>
@@ -359,10 +354,9 @@
                      <property name="spellchecker-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" />
                   </properties>
                </query-handler>
-               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManager">
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.LockManagerImpl">
                   <properties>
                      <property name="time-out" value="15m" />
-                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lockconfig.xml" />
                   </properties>
                </lock-manager>
             </workspace>
@@ -413,10 +407,9 @@
                      <property name="extractorTimeout" value="10"/>
                   </properties>
                </query-handler>
-               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManager">
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.LockManagerImpl">
                   <properties>
                      <property name="time-out" value="15m" />
-                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lockconfig.xml" />
                   </properties>
                </lock-manager>
             </workspace>
