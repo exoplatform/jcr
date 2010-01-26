@@ -175,7 +175,7 @@
                <!-- for system storage -->
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer">
                   <properties>
-                     <property name="source-name" value="jdbcjcr2" />
+                     <property name="source-name" value="jdbcjcr3" />
                      <property name="dialect" value="mysql" />
                      <property name="multi-db" value="true" />
                      <property name="update-storage" value="false" />
