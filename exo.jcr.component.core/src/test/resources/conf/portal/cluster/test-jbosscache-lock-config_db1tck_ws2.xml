@@ -39,10 +39,10 @@
 		</preload>
 		<loader class="org.jboss.cache.loader.JDBCCacheLoader" async="false" fetchPersistentState="false" ignoreModifications="false" purgeOnStartup="false">
 			<properties>
-				cache.jdbc.table.name=jcrlocks_db1_ws
+				cache.jdbc.table.name=jcrlocks_db1tck_ws2
 				cache.jdbc.table.create=true
 				cache.jdbc.table.drop=false
-				cache.jdbc.table.primarykey=jcrlocks_db1_ws_pk
+				cache.jdbc.table.primarykey=jcrlocks_db1tck_ws2_pk
 				cache.jdbc.fqn.column=fqn
 				cache.jdbc.fqn.type=VARCHAR(512)
 				cache.jdbc.node.column=node
