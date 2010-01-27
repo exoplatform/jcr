@@ -171,7 +171,7 @@
       <value-param>
         <name>conf-path</name>
         <description>JCR configuration file</description>
-        <value>jar:/conf/portal/cluster/test-jcr-config.xml</value>
+        <value>jar:/conf/standalone/cluster/test-jcr-config.xml</value>
       </value-param>
       <!-- properties-param>
         <name>working-conf</name>
@@ -246,9 +246,9 @@
           <name>ref-addresses</name>
           <description>ref-addresses</description>
           <property name="driverClassName" value="com.mysql.jdbc.Driver" />
-          <property name="url" value="jdbc:mysql://localhost/portal"/>
+          <property name="url" value="jdbc:mysql://db2.exoua-int/portal"/>
           <property name="username" value="root"/>
-          <property name="password" value="24635457"/>
+          <property name="password" value="eXoAdmin"/>
           <property name="maxActive" value="100" />
           <property name="maxIdle" value="5" />
           <property name="initialSize" value="5" />
@@ -276,9 +276,9 @@
           <name>ref-addresses</name>
           <description>ref-addresses</description>
           <property name="driverClassName" value="com.mysql.jdbc.Driver" />
-          <property name="url" value="jdbc:mysql://localhost/jcr"/>
+          <property name="url" value="jdbc:mysql://db2.exoua-int/jcr"/>
           <property name="username" value="root"/>
-          <property name="password" value="24635457"/>
+          <property name="password" value="eXoAdmin"/>
           <property name="maxActive" value="100" />
           <property name="maxIdle" value="5" />
           <property name="initialSize" value="5" />
@@ -306,9 +306,9 @@
           <name>ref-addresses</name>
           <description>ref-addresses</description>
           <property name="driverClassName" value="com.mysql.jdbc.Driver" />
-          <property name="url" value="jdbc:mysql://localhost/jcr2"/>
+          <property name="url" value="jdbc:mysql://db2.exoua-int/jcr2"/>
           <property name="username" value="root"/>
-          <property name="password" value="24635457"/>
+          <property name="password" value="eXoAdmin"/>
           <property name="maxActive" value="100" />
           <property name="maxIdle" value="5" />
           <property name="initialSize" value="5" />
@@ -336,9 +336,9 @@
           <name>ref-addresses</name>
           <description>ref-addresses</description>
           <property name="driverClassName" value="com.mysql.jdbc.Driver" />
-          <property name="url" value="jdbc:mysql://localhost/jcr3"/>
+          <property name="url" value="jdbc:mysql://db2.exoua-int/jcr3"/>
           <property name="username" value="root"/>
-          <property name="password" value="24635457"/>
+          <property name="password" value="eXoAdmin"/>
           <property name="maxActive" value="100" />
           <property name="maxIdle" value="5" />
           <property name="initialSize" value="5" />
@@ -393,9 +393,9 @@
           <name>ref-addresses</name>
           <description>ref-addresses</description>
           <property name="driverClassName" value="com.mysql.jdbc.Driver" />
-          <property name="url" value="jdbc:mysql://localhost/portaltck"/>
+          <property name="url" value="jdbc:mysql://db2.exoua-int/portaltck"/>
           <property name="username" value="root"/>
-          <property name="password" value="24635457"/>
+          <property name="password" value="eXoAdmin"/>
           <property name="maxActive" value="100" />
           <property name="maxIdle" value="5" />
           <property name="initialSize" value="5" />
@@ -423,9 +423,9 @@
           <name>ref-addresses</name>
           <description>ref-addresses</description>
           <property name="driverClassName" value="com.mysql.jdbc.Driver" />
-          <property name="url" value="jdbc:mysql://localhost/jcrtck"/>
+          <property name="url" value="jdbc:mysql://db2.exoua-int/jcrtck"/>
           <property name="username" value="root"/>
-          <property name="password" value="24635457"/>
+          <property name="password" value="eXoAdmin"/>
           <property name="maxActive" value="100" />
           <property name="maxIdle" value="5" />
           <property name="initialSize" value="5" />
@@ -453,9 +453,9 @@
           <name>ref-addresses</name>
           <description>ref-addresses</description>
           <property name="driverClassName" value="com.mysql.jdbc.Driver" />
-          <property name="url" value="jdbc:mysql://localhost/jcr2tck"/>
+          <property name="url" value="jdbc:mysql://db2.exoua-int/jcr2tck"/>
           <property name="username" value="root"/>
-          <property name="password" value="24635457"/>
+          <property name="password" value="eXoAdmin"/>
           <property name="maxActive" value="100" />
           <property name="maxIdle" value="5" />
           <property name="initialSize" value="5" />
