@@ -35,7 +35,7 @@ import java.util.List;
  * Created by The eXo Platform SAS.
  * 
  * @author Gennady Azarenkov
- * @version $Id: TestFileIOChannel.java 34801 2009-07-31 15:44:50Z dkatayev $
+ * @version $Id$
  */
 
 public class TestFileIOChannel extends TestCase

@@ -44,7 +44,7 @@ import java.nio.channels.WritableByteChannel;
  * Date: 28.05.2009
  * 
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
- * @version $Id: TestValueFileIOHelper.java 111 2008-11-11 11:11:11Z pnedonosko $
+ * @version $Id$
  */
 public class TestValueFileIOHelper extends JcrImplBaseTest
 {

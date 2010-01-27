@@ -41,7 +41,7 @@ import javax.jcr.Value;
  * cases.
  * 
  * @author Nikolay Zamosenchuk
- * @version $Id: $
+ * @version $Id$
  */
 public class TestRemoveFromValueStorage extends BaseStandaloneTest
 {

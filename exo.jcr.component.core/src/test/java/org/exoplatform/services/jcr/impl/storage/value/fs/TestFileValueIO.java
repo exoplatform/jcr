@@ -36,7 +36,7 @@ import java.io.IOException;
  * Created by The eXo Platform SAS.
  * 
  * @author Gennady Azarenkov
- * @version $Id: TestFileValueIO.java 11907 2008-03-13 15:36:21Z ksm $
+ * @version $Id$
  */
 
 public class TestFileValueIO extends TestCase

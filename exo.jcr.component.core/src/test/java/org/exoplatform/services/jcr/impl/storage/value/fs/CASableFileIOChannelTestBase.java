@@ -41,7 +41,7 @@ import java.io.InputStream;
  * Date: 19.07.2008
  * 
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
- * @version $Id: CASableFileIOChannelTestBase.java 34801 2009-07-31 15:44:50Z dkatayev $
+ * @version $Id$
  */
 public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
 {//
