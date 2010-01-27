@@ -194,11 +194,9 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       try
       {
          pDbDialect = validateDialect(wsConfig.getContainer().getParameterValue(DB_DIALECT));
-         LOG.info("Using a dialect '" + pDbDialect + "'");
       }
       catch (RepositoryConfigurationException e)
       {
-         LOG.info("Using a default dialect '" + DBConstants.DB_DIALECT_GENERIC + "'");
          pDbDialect = DBConstants.DB_DIALECT_GENERIC;
       }
 
@@ -332,6 +330,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
             this.dbDialect = pDbDialect;
          }
       }
+      LOG.info("Using a dialect '" + pDbDialect + "'");
 
       // ------------- Values swap config ------------------
       try
