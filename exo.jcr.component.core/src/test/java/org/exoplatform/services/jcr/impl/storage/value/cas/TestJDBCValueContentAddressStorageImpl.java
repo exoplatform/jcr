@@ -55,15 +55,20 @@ public class TestJDBCValueContentAddressStorageImpl extends JcrImplBaseTest
          if (wse.getName().equals(session.getWorkspace().getName()))
          {
             jdbcSourceName = wse.getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME);
-            jdbcDialect = wse.getContainer().getParameterValue(JDBCWorkspaceDataContainer.DB_DIALECT);
+            jdbcDialect = wse.getContainer().getParameterValue(JDBCWorkspaceDataContainer.DB_DIALECT, null);
          }
       }
 
       if (jdbcSourceName == null)
+      {
          fail(JDBCWorkspaceDataContainer.SOURCE_NAME + " required in workspace container config");
+      }
 
       props.put(JDBCValueContentAddressStorageImpl.JDBC_SOURCE_NAME_PARAM, jdbcSourceName);
-      props.put(JDBCValueContentAddressStorageImpl.JDBC_DIALECT_PARAM, jdbcDialect);
+      if (jdbcDialect != null)
+      {
+         props.put(JDBCValueContentAddressStorageImpl.JDBC_DIALECT_PARAM, jdbcDialect);
+      }
       props.put(JDBCValueContentAddressStorageImpl.TABLE_NAME_PARAM,
          JDBCValueContentAddressStorageImpl.DEFAULT_TABLE_NAME + "_TEST");
 
