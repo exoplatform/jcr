@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
+import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.log.ExoLogger;
@@ -50,9 +51,9 @@ public class DefaultChangesFilter extends IndexerChangesFilter
     */
    public DefaultChangesFilter(SearchManager searchManager, SearchManager parentSearchManager,
       QueryHandlerEntry config, IndexingTree indexingTree, IndexingTree parentIndexingTree, QueryHandler handler,
-      QueryHandler parentHandler) throws IOException, RepositoryConfigurationException, RepositoryException
+      QueryHandler parentHandler, ConfigurationManager cfm) throws IOException, RepositoryConfigurationException, RepositoryException
    {
-      super(searchManager, parentSearchManager, config, indexingTree, parentIndexingTree, handler, parentHandler);
+      super(searchManager, parentSearchManager, config, indexingTree, parentIndexingTree, handler, parentHandler, cfm);
       IndexerIoModeHandler modeHandler = new IndexerIoModeHandler(IndexerIoMode.READ_WRITE);
       handler.setIndexerIoModeHandler(modeHandler);
       parentHandler.setIndexerIoModeHandler(modeHandler);

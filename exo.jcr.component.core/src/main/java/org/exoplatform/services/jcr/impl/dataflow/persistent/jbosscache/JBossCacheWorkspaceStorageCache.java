@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache;
 
+import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.SimpleParameterEntry;
@@ -256,7 +257,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
     * @throws RepositoryException if error of initialization
     * @throws RepositoryConfigurationException if error of configuration
     */
-   public JBossCacheWorkspaceStorageCache(WorkspaceEntry wsConfig, TransactionService transactionService)
+   public JBossCacheWorkspaceStorageCache(WorkspaceEntry wsConfig, TransactionService transactionService, ConfigurationManager cfm)
       throws RepositoryException, RepositoryConfigurationException
    {
       if (wsConfig.getCache() == null)
@@ -269,7 +270,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
       LOG.info("JBoss Cache configuration used: " + jbcConfig);
 
       // initialize template 
-      TemplateConfigurationHelper configurationHelper = TemplateConfigurationHelper.createJBossCacheHelper();
+      TemplateConfigurationHelper configurationHelper = TemplateConfigurationHelper.createJBossCacheHelper(cfm);
       InputStream configStream;
       try
       {
@@ -310,10 +311,10 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
     * @throws RepositoryException if error of initialization
     * @throws RepositoryConfigurationException if error of configuration
     */
-   public JBossCacheWorkspaceStorageCache(WorkspaceEntry wsConfig) throws RepositoryException,
+   public JBossCacheWorkspaceStorageCache(WorkspaceEntry wsConfig, ConfigurationManager cfm) throws RepositoryException,
       RepositoryConfigurationException
    {
-      this(wsConfig, null);
+      this(wsConfig, null, cfm);
    }
 
    /**

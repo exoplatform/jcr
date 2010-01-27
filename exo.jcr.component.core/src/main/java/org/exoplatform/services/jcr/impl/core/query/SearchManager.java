@@ -649,12 +649,12 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          }
          Constructor<? extends IndexerChangesFilter> constuctor =
             changesFilterClass.getConstructor(SearchManager.class, SearchManager.class, QueryHandlerEntry.class,
-               IndexingTree.class, IndexingTree.class, QueryHandler.class, QueryHandler.class);
+               IndexingTree.class, IndexingTree.class, QueryHandler.class, QueryHandler.class, ConfigurationManager.class);
          if (parentSearchManager != null)
          {
             newChangesFilter =
                constuctor.newInstance(this, parentSearchManager, config, indexingTree, parentSearchManager
-                  .getIndexingTree(), handler, parentSearchManager.getHandler());
+                  .getIndexingTree(), handler, parentSearchManager.getHandler(), cfm);
          }
       }
       catch (SecurityException e)

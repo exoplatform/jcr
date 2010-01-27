@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.config;
 
+import org.exoplatform.container.configuration.ConfigurationManager;
+
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -46,6 +48,8 @@ public class TemplateConfigurationHelper
    // list with exclude-patterns
    private List<Pattern> excludes = new ArrayList<Pattern>();
 
+   private ConfigurationManager cfm;
+
    /**
     * Creates instance of template configuration helper with given lists of filtering 
     * patterns. Parameter will be included only if it matches any include-pattern and
@@ -57,10 +61,12 @@ public class TemplateConfigurationHelper
     * 
     * @param includes Array with string representation of include reg-exp patterns
     * @param excludes Array with string representation of exclude reg-exp patterns
+    * @param ConfigurationManager instance for looking up resources
     */
-   public TemplateConfigurationHelper(String[] includes, String[] excludes)
+   public TemplateConfigurationHelper(String[] includes, String[] excludes, ConfigurationManager cfm)
    {
       super();
+      this.cfm = cfm;
       // compile include patterns
       for (String regex : includes)
       {
@@ -77,12 +83,13 @@ public class TemplateConfigurationHelper
     * Creates instance of TemplateConfigurationHelper pre-configured for JBossCache parameters,<br>
     * including: "jbosscache-*" and "jgroups-configuration", and excluding "jbosscache-configuration"
     * 
+    * @param ConfigurationManager instance for looking up resources
     * @return
     */
-   public static TemplateConfigurationHelper createJBossCacheHelper()
+   public static TemplateConfigurationHelper createJBossCacheHelper(ConfigurationManager cfm)
    {
       return new TemplateConfigurationHelper(new String[]{"^jbosscache-.*", "^jgroups-configuration"},
-         new String[]{"^jbosscache-configuration"});
+         new String[]{"^jbosscache-configuration"}, cfm);
    }
 
    /**
@@ -124,16 +131,45 @@ public class TemplateConfigurationHelper
     */
    public InputStream fillTemplate(String filename, Map<String, String> parameters) throws IOException
    {
+      // try to get resource by class loader
       ClassLoader cl = Thread.currentThread().getContextClassLoader();
       InputStream inputStream = cl == null ? null : cl.getResourceAsStream(filename);
+
+      // check system class loader
       if (inputStream == null)
       {
-         // check system class loader
          inputStream = getClass().getClassLoader().getResourceAsStream(filename);
       }
+
+      // try to get as file stream
       if (inputStream == null)
       {
-         inputStream = new FileInputStream(filename);
+         try
+         {
+            inputStream = new FileInputStream(filename);
+         }
+         catch (IOException e)
+         {
+            // we'll try to get it through configuration manager also
+         }
+      }
+
+      // try to get using configuration manager
+      if (inputStream == null)
+      {
+         try
+         {
+            inputStream = cfm.getInputStream(filename);
+         }
+         catch (Exception e)
+         {
+            // Stream still remains to be null, exception will be thrown below
+         }
+      }
+      // inputStream still remains null, so file was not opened
+      if (inputStream == null)
+      {
+         throw new IOException("Can't find or open file:" + filename);
       }
       return fillTemplate(inputStream, parameters);
    }

@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
+import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
@@ -67,7 +68,7 @@ public abstract class IndexerChangesFilter implements ItemsPersistenceListener
     */
    public IndexerChangesFilter(SearchManager searchManager, SearchManager parentSearchManager,
       QueryHandlerEntry config, IndexingTree indexingTree, IndexingTree parentIndexingTree, QueryHandler handler,
-      QueryHandler parentHandler)
+      QueryHandler parentHandler, ConfigurationManager cfm)
    {
       super();
       this.searchManager = searchManager;

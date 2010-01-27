@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.jbosscache;
 
+import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.config.QueryHandlerParams;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
@@ -72,13 +73,13 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
     */
    public JBossCacheIndexChangesFilter(SearchManager searchManager, SearchManager parentSearchManager,
       QueryHandlerEntry config, IndexingTree indexingTree, IndexingTree parentIndexingTree, QueryHandler handler,
-      QueryHandler parentHandler) throws IOException, RepositoryException, RepositoryConfigurationException
+      QueryHandler parentHandler, ConfigurationManager cfm) throws IOException, RepositoryException, RepositoryConfigurationException
    {
-      super(searchManager, parentSearchManager, config, indexingTree, parentIndexingTree, handler, parentHandler);
+      super(searchManager, parentSearchManager, config, indexingTree, parentIndexingTree, handler, parentHandler, cfm);
       String jbcConfig = config.getParameterValue(QueryHandlerParams.PARAM_JBOSSCACHE_CONFIGURATION);
 
       // initialize template 
-      TemplateConfigurationHelper configurationHelper = TemplateConfigurationHelper.createJBossCacheHelper();
+      TemplateConfigurationHelper configurationHelper = TemplateConfigurationHelper.createJBossCacheHelper(cfm);
       InputStream configStream;
       try
       {

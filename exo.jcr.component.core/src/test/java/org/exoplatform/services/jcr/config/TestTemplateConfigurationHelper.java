@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.config;
 
+import org.exoplatform.container.configuration.ConfigurationManagerImpl;
+
 import junit.framework.TestCase;
 
 import java.io.ByteArrayInputStream;
@@ -37,7 +39,8 @@ public class TestTemplateConfigurationHelper extends TestCase
    public void testFilters()
    {
       // create helper with predefined include and exclude patterns
-      TemplateConfigurationHelper helper = TemplateConfigurationHelper.createJBossCacheHelper();
+      TemplateConfigurationHelper helper =
+         TemplateConfigurationHelper.createJBossCacheHelper(new ConfigurationManagerImpl());
       Map<String, String> parameters = new HashMap<String, String>();
       parameters.put("jbosscache-configuration", "");
       parameters.put("jbosscache-cache.loader", "");
@@ -51,11 +54,11 @@ public class TestTemplateConfigurationHelper extends TestCase
       assertTrue(preparedParameters.containsKey("${jbosscache-cache.loader}"));
       assertTrue(preparedParameters.containsKey("${jbosscache-clustername}"));
    }
-   
+
    public void testFilters2()
    {
       // create helper with predefined include and exclude patterns
-      TemplateConfigurationHelper helper = TemplateConfigurationHelper.createJBossCacheHelper();
+      TemplateConfigurationHelper helper = TemplateConfigurationHelper.createJBossCacheHelper(new ConfigurationManagerImpl());
       Map<String, String> parameters = new HashMap<String, String>();
       parameters.put("jgroups-configuration", "");
       parameters.put("jbosscache-cache.loader", "");
@@ -71,7 +74,7 @@ public class TestTemplateConfigurationHelper extends TestCase
 
    public void testTemplating() throws IOException
    {
-      TemplateConfigurationHelper helper = TemplateConfigurationHelper.createJBossCacheHelper();
+      TemplateConfigurationHelper helper = TemplateConfigurationHelper.createJBossCacheHelper(new ConfigurationManagerImpl());
       String template = "configuration in any format, containing ${jbosscache-template-variable} and many others";
       String expectedConfig = "configuration in any format, containing pretty good parameter and many others";
 

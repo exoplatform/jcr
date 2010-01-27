@@ -16,6 +16,7 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock.jbosscache;
 
+import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
@@ -184,9 +185,9 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
     * @throws RepositoryConfigurationException
     */
    public CacheableLockManager(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
-      InitialContextInitializer context, TransactionService transactionService) throws RepositoryConfigurationException
+      InitialContextInitializer context, TransactionService transactionService,ConfigurationManager cfm) throws RepositoryConfigurationException
    {
-      this(dataManager, config, context, transactionService.getTransactionManager());
+      this(dataManager, config, context, transactionService.getTransactionManager(), cfm);
    }
 
    /**
@@ -198,9 +199,9 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
     * @throws RepositoryConfigurationException
     */
    public CacheableLockManager(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
-      InitialContextInitializer context) throws RepositoryConfigurationException
+      InitialContextInitializer context,ConfigurationManager cfm) throws RepositoryConfigurationException
    {
-      this(dataManager, config, context, (TransactionManager)null);
+      this(dataManager, config, context, (TransactionManager)null,cfm);
    }
 
    /**
@@ -214,7 +215,7 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
     * @throws RepositoryConfigurationException
     */
    public CacheableLockManager(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
-      InitialContextInitializer context, TransactionManager transactionManager) throws RepositoryConfigurationException
+      InitialContextInitializer context, TransactionManager transactionManager, ConfigurationManager cfm) throws RepositoryConfigurationException
    {
       lockRoot = Fqn.fromElements(LOCKS);
 
@@ -257,7 +258,7 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
                   .getCacheConfig();
 
          // initialize template 
-         TemplateConfigurationHelper configurationHelper = TemplateConfigurationHelper.createJBossCacheHelper();
+         TemplateConfigurationHelper configurationHelper = TemplateConfigurationHelper.createJBossCacheHelper(cfm);
          InputStream configStream;
          try
          {
