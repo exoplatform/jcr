@@ -246,7 +246,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
                   dbUserName != null ? DriverManager.getConnection(dbUrl, dbUserName, dbPassword) : DriverManager
                      .getConnection(dbUrl);
 
-               this.dbDialect = detectDialect(jdbcConn.getMetaData());
+               this.dbDialect = DialectDetecter.detect(jdbcConn.getMetaData());
             }
             catch (SQLException e)
             {
@@ -301,7 +301,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
                try
                {
                   jdbcConn = ds.getConnection();
-                  this.dbDialect = detectDialect(jdbcConn.getMetaData());
+                  this.dbDialect = DialectDetecter.detect(jdbcConn.getMetaData());
                }
                catch (SQLException e)
                {
@@ -377,100 +377,6 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
             enableStorageUpdate);
 
       LOG.info(getInfo());
-   }
-
-   /**
-    * Detect databse dialect using JDBC metadata. Based on code of 
-    * http://svn.jboss.org/repos/hibernate/core/trunk/core/src/main/java/org/hibernate/dialect/resolver/StandardDialectResolver.java 
-    * 
-    * @param jdbcConn Connection 
-    * @return String
-    * @throws SQLException if error occurs
-    */
-   protected String detectDialect(DatabaseMetaData metaData) throws SQLException
-   {
-      String databaseName = metaData.getDatabaseProductName();
-
-      if ("HSQL Database Engine".equals(databaseName))
-      {
-         return DBConstants.DB_DIALECT_HSQLDB;
-      }
-
-      if ("H2".equals(databaseName))
-      {
-         return DBConstants.DB_DIALECT_H2;
-      }
-
-      if ("MySQL".equals(databaseName))
-      {
-         // TODO doesn't detect MySQL_UTF8
-         return DBConstants.DB_DIALECT_MYSQL;
-      }
-
-      if ("PostgreSQL".equals(databaseName))
-      {
-         return DBConstants.DB_DIALECT_PGSQL;
-      }
-
-      if ("Apache Derby".equals(databaseName))
-      {
-         return DBConstants.DB_DIALECT_DERBY;
-      }
-
-      if ("ingres".equalsIgnoreCase(databaseName))
-      {
-         return DBConstants.DB_DIALECT_INGRES;
-      }
-
-      if (databaseName.startsWith("Microsoft SQL Server"))
-      {
-         return DBConstants.DB_DIALECT_MSSQL;
-      }
-
-      if ("Sybase SQL Server".equals(databaseName) || "Adaptive Server Enterprise".equals(databaseName))
-      {
-         return DBConstants.DB_DIALECT_SYBASE;
-      }
-
-      if (databaseName.startsWith("Adaptive Server Anywhere"))
-      {
-         // TODO not implemented anything special for
-         return DBConstants.DB_DIALECT_SYBASE;
-      }
-
-      // TODO Informix not supported now
-      //if ( "Informix Dynamic Server".equals( databaseName ) ) {
-      //   return new InformixDialect();
-      //}
-
-      if (databaseName.startsWith("DB2/"))
-      {
-         // TODO doesn't detect DB2 v8 
-         return DBConstants.DB_DIALECT_DB2;
-      }
-
-      if ("Oracle".equals(databaseName))
-      {
-         // TODO doesn't detect Oracle OCI (experimental support still)
-         return DBConstants.DB_DIALECT_ORACLE;
-
-         //         int databaseMajorVersion = metaData.getDatabaseMajorVersion();
-         //         switch ( databaseMajorVersion ) {
-         //            case 11:
-         //               log.warn( "Oracle 11g is not yet fully supported; using 10g dialect" );
-         //               return new Oracle10gDialect();
-         //            case 10:
-         //               return new Oracle10gDialect();
-         //            case 9:
-         //               return new Oracle9iDialect();
-         //            case 8:
-         //               return new Oracle8iDialect();
-         //            default:
-         //               log.warn( "unknown Oracle major version [" + databaseMajorVersion + "]" );
-         //         }
-      }
-
-      return DBConstants.DB_DIALECT_GENERIC;
    }
 
    /**

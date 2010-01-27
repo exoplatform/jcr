@@ -191,7 +191,6 @@
                            <property name="digest-algo" value="MD5" />
                            <property name="vcas-type" value="org.exoplatform.services.jcr.impl.storage.value.cas.JDBCValueContentAddressStorageImpl" />
                            <property name="jdbc-source-name" value="jdbcjcr" />
-                           <property name="jdbc-dialect" value="hsqldb" />
                         </properties>
                         <filters>
                            <filter property-type="Binary" />

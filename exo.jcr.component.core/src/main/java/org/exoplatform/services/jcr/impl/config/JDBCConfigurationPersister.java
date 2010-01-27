@@ -22,6 +22,7 @@ import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.services.jcr.config.ConfigurationPersister;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
+import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -34,6 +35,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import javax.jcr.RepositoryException;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
@@ -119,36 +121,65 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
                + PARAM_SOURCE_NAME + ") is expected");
          }
       }
-
-      String dialectParam = params.getProperty(PARAM_DIALECT);
-
       this.sourceName = sourceNameParam;
 
+      String dialect = params.getProperty(PARAM_DIALECT);
+      if (dialect == null)
+      {
+         Connection conn = null;
+         try
+         {
+            conn = openConnection();
+            dialect = DialectDetecter.detect(conn.getMetaData());
+         }
+         catch (NamingException e)
+         {
+            throw new RepositoryConfigurationException(e);
+         }
+         catch (SQLException e)
+         {
+            throw new RepositoryConfigurationException(e);
+         }
+         finally
+         {
+            if (conn != null)
+            {
+               try
+               {
+                  conn.close();
+               }
+               catch (SQLException e)
+               {
+                  throw new RepositoryConfigurationException(e);
+               }
+            }
+         }
+      }
+
       String binType = "BLOB";
-      if (dialectParam != null)
-         if (dialectParam.equalsIgnoreCase(DBConstants.DB_DIALECT_GENERIC)
-            || dialectParam.equalsIgnoreCase(DBConstants.DB_DIALECT_HSQLDB))
-         {
-            binType = "VARBINARY(102400)"; // 100Kb
-         }
-         else if (dialectParam.equalsIgnoreCase(DBConstants.DB_DIALECT_PGSQL))
-         {
-            configTableName = configTableName.toUpperCase().toLowerCase(); // postgres needs it
-            binType = "BYTEA";
-         }
-         else if (dialectParam.equalsIgnoreCase(DBConstants.DB_DIALECT_MSSQL))
-         {
-            binType = "VARBINARY(max)";
-         }
-         else if (dialectParam.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE))
-         {
-            binType = "VARBINARY(255)";
-         }
-         else if (dialectParam.equalsIgnoreCase(DBConstants.DB_DIALECT_INGRES))
-         {
-            configTableName = configTableName.toUpperCase().toLowerCase(); // ingres needs it
-            binType = "LONG BYTE";
-         }
+      if (DBConstants.DB_DIALECT_GENERIC.equalsIgnoreCase(dialect)
+         || DBConstants.DB_DIALECT_HSQLDB.equalsIgnoreCase(dialect))
+      {
+         binType = "VARBINARY(102400)"; // 100Kb
+      }
+      else if (DBConstants.DB_DIALECT_PGSQL.equalsIgnoreCase(dialect))
+      {
+         configTableName = configTableName.toUpperCase().toLowerCase(); // postgres needs it
+         binType = "BYTEA";
+      }
+      else if (DBConstants.DB_DIALECT_MSSQL.equalsIgnoreCase(dialect))
+      {
+         binType = "VARBINARY(max)";
+      }
+      else if (DBConstants.DB_DIALECT_SYBASE.equalsIgnoreCase(dialect))
+      {
+         binType = "VARBINARY(255)";
+      }
+      else if (DBConstants.DB_DIALECT_INGRES.equalsIgnoreCase(dialect))
+      {
+         configTableName = configTableName.toUpperCase().toLowerCase(); // ingres needs it
+         binType = "LONG BYTE";
+      }
 
       this.initSQL =
          "CREATE TABLE " + configTableName + " (" + "NAME VARCHAR(64) NOT NULL, " + "CONFIG " + binType + " NOT NULL, "

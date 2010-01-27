@@ -30,7 +30,6 @@
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr" />
-                     <property name="dialect" value="hsqldb" />
                      <property name="multi-db" value="false" />
                      <property name="update-storage" value="false" />
                      <property name="max-buffer-size" value="200k" />
@@ -77,7 +76,6 @@
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr" />
-                     <property name="dialect" value="hsqldb" />
                      <property name="multi-db" value="false" />
                      <property name="update-storage" value="false" />
                      <property name="max-buffer-size" value="200k" />
@@ -116,7 +114,6 @@
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr" />
-                     <property name="dialect" value="hsqldb" />
                      <property name="multi-db" value="false" />
                      <property name="update-storage" value="false" />
                      <property name="max-buffer-size" value="200k" />

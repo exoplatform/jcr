@@ -176,7 +176,6 @@
         <name>working-conf</name>
         <description>working-conf</description>
         <property name="source-name" value="jdbcjcr"/>
-        <property name="dialect" value="hsqldb"/>
         <property name="persister-class-name" value="org.exoplatform.services.jcr.impl.config.JDBCConfigurationPersister"/>
       </properties-param>
     </init-params>

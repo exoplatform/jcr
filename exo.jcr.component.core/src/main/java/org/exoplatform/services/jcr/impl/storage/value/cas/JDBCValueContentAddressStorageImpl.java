@@ -20,10 +20,12 @@ package org.exoplatform.services.jcr.impl.storage.value.cas;
 
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
+import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -86,8 +88,8 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
    /**
     * MYSQL_PK_CONSTRAINT_DETECT.
     */
-   private static final Pattern MYSQL_PK_CONSTRAINT_DETECT =
-      Pattern.compile(MYSQL_PK_CONSTRAINT_DETECT_PATTERN, Pattern.CASE_INSENSITIVE);
+   private static final Pattern MYSQL_PK_CONSTRAINT_DETECT = Pattern.compile(MYSQL_PK_CONSTRAINT_DETECT_PATTERN,
+      Pattern.CASE_INSENSITIVE);
 
    protected DataSource dataSource;
 
@@ -118,97 +120,118 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
     */
    public void init(Properties props) throws RepositoryConfigurationException, VCASException
    {
-      // init database metadata
-      final String tn = props.getProperty(TABLE_NAME_PARAM);
-      if (tn != null)
-         tableName = tn;
-      else
-         tableName = DEFAULT_TABLE_NAME;
-
-      dialect = props.getProperty(JDBC_DIALECT_PARAM, DBConstants.DB_DIALECT_GENERIC);
-
-      sqlConstraintPK = tableName + "_PK";
-
-      sqlVCASIDX = tableName + "_IDX";
-
-      if (DBConstants.DB_DIALECT_PGSQL.equalsIgnoreCase(dialect)
-         || DBConstants.DB_DIALECT_INGRES.equalsIgnoreCase(dialect))
+      final String sn = props.getProperty(JDBC_SOURCE_NAME_PARAM);
+      if (sn == null)
       {
-         // use lowercase for postgres/ingres metadata.getTable(), HSQLDB wants UPPERCASE
-         // for other seems not matter
-         tableName = tableName.toUpperCase().toLowerCase();
-         sqlConstraintPK = sqlConstraintPK.toUpperCase().toLowerCase();
-         sqlVCASIDX = sqlVCASIDX.toUpperCase().toLowerCase();
+         throw new RepositoryConfigurationException(JDBC_SOURCE_NAME_PARAM + " parameter expected!");
       }
 
-      sqlAddRecord = "INSERT INTO " + tableName + " (PROPERTY_ID, ORDER_NUM, CAS_ID) VALUES(?,?,?)";
-      sqlDeleteRecord = "DELETE FROM " + tableName + " WHERE PROPERTY_ID=?";
-      sqlDeleteValueRecord = "DELETE FROM " + tableName + " WHERE PROPERTY_ID=? AND ORDER_NUM=?";
-      sqlSelectRecord = "SELECT CAS_ID FROM " + tableName + " WHERE PROPERTY_ID=? AND ORDER_NUM=?";
-      sqlSelectRecords = "SELECT CAS_ID, ORDER_NUM FROM " + tableName + " WHERE PROPERTY_ID=? ORDER BY ORDER_NUM";
-
-      sqlSelectOwnRecords =
-         "SELECT P.CAS_ID, P.ORDER_NUM, S.CAS_ID as SHARED_ID " + "FROM " + tableName + " P LEFT JOIN " + tableName
-            + " S ON P.PROPERTY_ID<>S.PROPERTY_ID AND P.CAS_ID=S.CAS_ID "
-            + "WHERE P.PROPERTY_ID=? GROUP BY P.CAS_ID, P.ORDER_NUM, S.CAS_ID ORDER BY P.ORDER_NUM";
-
-      sqlSelectSharingProps =
-         "SELECT DISTINCT C.PROPERTY_ID AS PROPERTY_ID FROM " + tableName + " C, " + tableName + " P "
-            + "WHERE C.CAS_ID=P.CAS_ID AND C.PROPERTY_ID<>P.PROPERTY_ID AND P.PROPERTY_ID=?";
-
-      // init database objects
-      final String sn = props.getProperty(JDBC_SOURCE_NAME_PARAM);
-      if (sn != null)
+      try
       {
+         dataSource = (DataSource)new InitialContext().lookup(sn);
+         Connection conn = null;
          try
          {
-            dataSource = (DataSource)new InitialContext().lookup(sn);
-            try
+            conn = dataSource.getConnection();
+            DatabaseMetaData dbMetaData = conn.getMetaData();
+
+            String dialect = props.getProperty(JDBC_DIALECT_PARAM);
+            if (dialect == null)
             {
-               Connection con = dataSource.getConnection();
+               dialect = DialectDetecter.detect(dbMetaData);
+            }
+
+            dialect = props.getProperty(JDBC_DIALECT_PARAM, DBConstants.DB_DIALECT_GENERIC);
+
+            // init database metadata
+            final String tn = props.getProperty(TABLE_NAME_PARAM);
+            if (tn != null)
+            {
+               tableName = tn;
+            }
+            else
+            {
+               tableName = DEFAULT_TABLE_NAME;
+            }
+
+            sqlConstraintPK = tableName + "_PK";
+
+            sqlVCASIDX = tableName + "_IDX";
+
+            if (DBConstants.DB_DIALECT_PGSQL.equalsIgnoreCase(dialect)
+               || DBConstants.DB_DIALECT_INGRES.equalsIgnoreCase(dialect))
+            {
+               // use lowercase for postgres/ingres metadata.getTable(), HSQLDB wants UPPERCASE
+               // for other seems not matter
+               tableName = tableName.toUpperCase().toLowerCase();
+               sqlConstraintPK = sqlConstraintPK.toUpperCase().toLowerCase();
+               sqlVCASIDX = sqlVCASIDX.toUpperCase().toLowerCase();
+            }
+
+            sqlAddRecord = "INSERT INTO " + tableName + " (PROPERTY_ID, ORDER_NUM, CAS_ID) VALUES(?,?,?)";
+            sqlDeleteRecord = "DELETE FROM " + tableName + " WHERE PROPERTY_ID=?";
+            sqlDeleteValueRecord = "DELETE FROM " + tableName + " WHERE PROPERTY_ID=? AND ORDER_NUM=?";
+            sqlSelectRecord = "SELECT CAS_ID FROM " + tableName + " WHERE PROPERTY_ID=? AND ORDER_NUM=?";
+            sqlSelectRecords = "SELECT CAS_ID, ORDER_NUM FROM " + tableName + " WHERE PROPERTY_ID=? ORDER BY ORDER_NUM";
+
+            sqlSelectOwnRecords =
+               "SELECT P.CAS_ID, P.ORDER_NUM, S.CAS_ID as SHARED_ID " + "FROM " + tableName + " P LEFT JOIN "
+                  + tableName + " S ON P.PROPERTY_ID<>S.PROPERTY_ID AND P.CAS_ID=S.CAS_ID "
+                  + "WHERE P.PROPERTY_ID=? GROUP BY P.CAS_ID, P.ORDER_NUM, S.CAS_ID ORDER BY P.ORDER_NUM";
+
+            sqlSelectSharingProps =
+               "SELECT DISTINCT C.PROPERTY_ID AS PROPERTY_ID FROM " + tableName + " C, " + tableName + " P "
+                  + "WHERE C.CAS_ID=P.CAS_ID AND C.PROPERTY_ID<>P.PROPERTY_ID AND P.PROPERTY_ID=?";
+
+            // init database objects
+            ResultSet trs = dbMetaData.getTables(null, null, tableName, null);
+            // check if table already exists
+            if (!trs.next())
+            {
+               // create table
+               conn.createStatement().executeUpdate(
+                  "CREATE TABLE " + tableName
+                     + " (PROPERTY_ID VARCHAR(96) NOT NULL, ORDER_NUM INTEGER NOT NULL, CAS_ID VARCHAR(512) NOT NULL, "
+                     + "CONSTRAINT " + sqlConstraintPK + " PRIMARY KEY(PROPERTY_ID, ORDER_NUM))");
+
+               // create index on hash (CAS_ID)
+               conn.createStatement().executeUpdate(
+                  "CREATE INDEX " + sqlVCASIDX + " ON " + tableName + "(CAS_ID, PROPERTY_ID, ORDER_NUM)");
+
+               if (LOG.isDebugEnabled())
+               {
+                  LOG.debug("JDBC Value Content Address Storage initialized in database " + sn);
+               }
+            }
+            else if (LOG.isDebugEnabled())
+            {
+               LOG.debug("JDBC Value Content Address Storage already initialized in database " + sn);
+            }
+         }
+         catch (SQLException e)
+         {
+            throw new VCASException("VCAS INIT database error: " + e, e);
+         }
+         finally
+         {
+            if (conn != null)
+            {
                try
                {
-                  ResultSet trs = con.getMetaData().getTables(null, null, tableName, null);
-                  // check if table already exists
-                  if (!trs.next())
-                  {
-                     // create table
-                     con
-                        .createStatement()
-                        .executeUpdate(
-                           "CREATE TABLE "
-                              + tableName
-                              + " (PROPERTY_ID VARCHAR(96) NOT NULL, ORDER_NUM INTEGER NOT NULL, CAS_ID VARCHAR(512) NOT NULL, "
-                              + "CONSTRAINT " + sqlConstraintPK + " PRIMARY KEY(PROPERTY_ID, ORDER_NUM))");
-
-                     // create index on hash (CAS_ID)
-                     con.createStatement().executeUpdate(
-                        "CREATE INDEX " + sqlVCASIDX + " ON " + tableName + "(CAS_ID, PROPERTY_ID, ORDER_NUM)");
-
-                     if (LOG.isDebugEnabled())
-                        LOG.debug("JDBC Value Content Address Storage initialized in database " + sn);
-                  }
-                  else if (LOG.isDebugEnabled())
-                     LOG.debug("JDBC Value Content Address Storage already initialized in database " + sn);
+                  conn.close();
                }
-               finally
+               catch (SQLException e)
                {
-                  con.close();
+                  throw new VCASException("VCAS INIT database error on Connection close: " + e, e);
                }
             }
-            catch (SQLException e)
-            {
-               throw new VCASException("VCAS INIT database error: " + e, e);
-            }
-         }
-         catch (final NamingException e)
-         {
-            throw new RepositoryConfigurationException("JDBC data source is not available in JNDI with name '" + sn
-               + "'. Error: " + e);
          }
       }
-      else
-         throw new RepositoryConfigurationException(JDBC_SOURCE_NAME_PARAM + " parameter should be set");
+      catch (NamingException e)
+      {
+         throw new RepositoryConfigurationException("JDBC data source is not available in JNDI with name '" + sn
+            + "'. Error: " + e);
+      }
    }
 
    /**
@@ -274,8 +297,10 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
          return MYSQL_PK_CONSTRAINT_DETECT.matcher(err).find();
       }
       else if (err.toLowerCase().toUpperCase().indexOf(sqlConstraintPK.toLowerCase().toUpperCase()) >= 0)
+      {
          // most of supported dbs prints PK name in exception
          return true;
+      }
 
       // NOTICE! As an additional check we may ask the database for property currently processed in
       // VCAS

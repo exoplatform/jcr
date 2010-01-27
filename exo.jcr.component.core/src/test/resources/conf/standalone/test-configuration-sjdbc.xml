@@ -99,63 +99,64 @@
 
     </init-params>
   </component>
-    <component>
-      <key>org.exoplatform.services.jcr.RepositoryService</key>
-      <type>org.exoplatform.services.jcr.impl.RepositoryServiceImpl</type>
-      <component-plugins>
-        <component-plugin>
-            <name>add.namespaces</name>
-            <set-method>addPlugin</set-method>
-            <type>org.exoplatform.services.jcr.impl.AddNamespacesPlugin</type>
-            <init-params>
-              <properties-param>
-                <name>namespaces</name>
-                <property name="test" value="http://www.apache.org/jackrabbit/test"/>
-                <property name="exojcrtest" value="http://www.exoplatform.org/jcr/test/1.0"/>
-                <property name="rma" value="http://www.rma.com/jcr/"/>
-                <property name="metadata" value="http://www.exoplatform.com/jcr/metadata/1.1/"/>
-              </properties-param>
-            </init-params>
-        </component-plugin>
-        <component-plugin>
-          <name>add.nodeType</name>
-          <set-method>addPlugin</set-method>
-          <type>org.exoplatform.services.jcr.impl.AddNodeTypePlugin</type>
-          <init-params>
-          <values-param>
-            <name>autoCreatedInNewRepository</name>
-            <description>Node types configuration file</description>
-            <value>jar:/conf/test/nodetypes-tck.xml</value>
-            <value>jar:/conf/test/nodetypes-impl.xml</value>
-            <value>jar:/conf/test/nodetypes-usecase.xml</value>
-            <value>jar:/conf/test/nodetypes-config.xml</value>
-            <value>jar:/conf/test/nodetypes-config-extended.xml</value>    
-          </values-param>
-          <values-param>
-            <name>testInitNodeTypesRepository</name>
-            <description>Node types configuration file for repository with name testInitNodeTypesRepository</description>
-            <value>jar:/conf/test/nodetypes-test.xml</value>
-          </values-param>
-          <values-param>
-            <name>testInitNodeTypesRepositoryTest2</name>
-            <description>Node types configuration file for repository with name testInitNodeTypesRepositoryTest2</description>
-            <value>jar:/conf/test/nodetypes-test2.xml</value>
-          </values-param>
-        </init-params>
-        </component-plugin>
-      </component-plugins>
-    </component>
+  
+  <component>
+     <key>org.exoplatform.services.jcr.RepositoryService</key>
+     <type>org.exoplatform.services.jcr.impl.RepositoryServiceImpl</type>
+     <component-plugins>
+       <component-plugin>
+           <name>add.namespaces</name>
+           <set-method>addPlugin</set-method>
+           <type>org.exoplatform.services.jcr.impl.AddNamespacesPlugin</type>
+           <init-params>
+             <properties-param>
+               <name>namespaces</name>
+               <property name="test" value="http://www.apache.org/jackrabbit/test"/>
+               <property name="exojcrtest" value="http://www.exoplatform.org/jcr/test/1.0"/>
+               <property name="rma" value="http://www.rma.com/jcr/"/>
+               <property name="metadata" value="http://www.exoplatform.com/jcr/metadata/1.1/"/>
+             </properties-param>
+           </init-params>
+       </component-plugin>
+       <component-plugin>
+         <name>add.nodeType</name>
+         <set-method>addPlugin</set-method>
+         <type>org.exoplatform.services.jcr.impl.AddNodeTypePlugin</type>
+         <init-params>
+         <values-param>
+           <name>autoCreatedInNewRepository</name>
+           <description>Node types configuration file</description>
+           <value>jar:/conf/test/nodetypes-tck.xml</value>
+           <value>jar:/conf/test/nodetypes-impl.xml</value>
+           <value>jar:/conf/test/nodetypes-usecase.xml</value>
+           <value>jar:/conf/test/nodetypes-config.xml</value>
+           <value>jar:/conf/test/nodetypes-config-extended.xml</value>    
+         </values-param>
+         <values-param>
+           <name>testInitNodeTypesRepository</name>
+           <description>Node types configuration file for repository with name testInitNodeTypesRepository</description>
+           <value>jar:/conf/test/nodetypes-test.xml</value>
+         </values-param>
+         <values-param>
+           <name>testInitNodeTypesRepositoryTest2</name>
+           <description>Node types configuration file for repository with name testInitNodeTypesRepositoryTest2</description>
+           <value>jar:/conf/test/nodetypes-test2.xml</value>
+         </values-param>
+       </init-params>
+       </component-plugin>
+     </component-plugins>
+  </component>
 
-    <component>
-	    <key>org.exoplatform.services.jcr.config.RepositoryServiceConfiguration</key>
-	    <type>org.exoplatform.services.jcr.impl.config.RepositoryServiceConfigurationImpl</type>
-	    <init-params>
-	      <value-param>
-	        <name>conf-path</name>
-	        <description>JCR configuration file</description>
-	        <value>jar:/conf/standalone/test-jcr-config-sjdbc.xml</value>
-	        </value-param>
-	    </init-params>
+  <component>
+    <key>org.exoplatform.services.jcr.config.RepositoryServiceConfiguration</key>
+    <type>org.exoplatform.services.jcr.impl.config.RepositoryServiceConfigurationImpl</type>
+    <init-params>
+      <value-param>
+        <name>conf-path</name>
+        <description>JCR configuration file</description>
+        <value>jar:/conf/standalone/test-jcr-config-sjdbc.xml</value>
+        </value-param>
+    </init-params>
   </component>
 
   <component>
