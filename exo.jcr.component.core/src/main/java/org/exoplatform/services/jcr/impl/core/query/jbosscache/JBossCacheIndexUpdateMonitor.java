@@ -47,12 +47,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *
  */
 @CacheListener
-public class JbossCacheIndexUpdateMonitor implements IndexUpdateMonitor, IndexerIoModeListener
+public class JBossCacheIndexUpdateMonitor implements IndexUpdateMonitor, IndexerIoModeListener
 {
    /**
     * Logger instance for this class
     */
-   private final Log log = ExoLogger.getLogger(JbossCacheIndexUpdateMonitor.class);
+   private final Log log = ExoLogger.getLogger(JBossCacheIndexUpdateMonitor.class);
 
    private final Cache<Serializable, Object> cache;
 
@@ -70,7 +70,7 @@ public class JbossCacheIndexUpdateMonitor implements IndexUpdateMonitor, Indexer
    /**
     * @param cache instance of JbossCache that is used to deliver index names
     */
-   public JbossCacheIndexUpdateMonitor(Cache<Serializable, Object> cache, IndexerIoModeHandler modeHandler)
+   public JBossCacheIndexUpdateMonitor(Cache<Serializable, Object> cache, IndexerIoModeHandler modeHandler)
    {
       this.cache = cache;
       this.modeHandler = modeHandler;

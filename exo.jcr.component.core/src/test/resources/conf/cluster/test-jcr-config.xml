@@ -74,7 +74,7 @@
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
                   <properties>
                      <property name="index-dir" value="${java.io.tmpdir}/cluster_nfs/db1/ws" />
-                     <property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JbossCacheIndexChangesFilter" />
+                     <property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter" />
                      <property name="changesfilter-config-path" value="conf/cluster/test-jbosscache-indexer-config-exoloader_db1_ws.xml" />
                      <property name="max-volatile-time" value="60" />
 
@@ -117,7 +117,7 @@
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
                   <properties>
                      <property name="index-dir" value="${java.io.tmpdir}/cluster_nfs/db1/ws1" />
-                     <property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JbossCacheIndexChangesFilter" />
+                     <property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter" />
                      <property name="changesfilter-config-path" value="conf/cluster/test-jbosscache-indexer-config-exoloader_db1_ws1.xml" />
                      <property name="max-volatile-time" value="60" />
                   </properties>

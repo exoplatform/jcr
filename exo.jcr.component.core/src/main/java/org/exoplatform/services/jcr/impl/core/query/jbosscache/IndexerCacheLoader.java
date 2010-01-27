@@ -86,7 +86,7 @@ public class IndexerCacheLoader extends AbstractWriteOnlyCacheLoader
     */
    public Object put(Fqn name, Object key, Object value) throws Exception
    {
-      if (key.equals(JbossCacheIndexChangesFilter.LISTWRAPPER) && value instanceof ChangesFilterListsWrapper)
+      if (key.equals(JBossCacheIndexChangesFilter.LISTWRAPPER) && value instanceof ChangesFilterListsWrapper)
       {
          if (log.isDebugEnabled())
          {

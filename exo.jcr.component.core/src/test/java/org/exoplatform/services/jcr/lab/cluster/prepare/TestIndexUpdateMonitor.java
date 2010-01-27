@@ -22,7 +22,7 @@ import junit.framework.TestCase;
 
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoMode;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
-import org.exoplatform.services.jcr.impl.core.query.jbosscache.JbossCacheIndexUpdateMonitor;
+import org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexUpdateMonitor;
 import org.exoplatform.services.jcr.impl.core.query.lucene.IndexUpdateMonitor;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -59,7 +59,7 @@ public class TestIndexUpdateMonitor extends TestCase
       // TODO Auto-generated method stub
       super.setUp();
       cache = createCache();
-      indexUpdateMonitor = new JbossCacheIndexUpdateMonitor(cache, new IndexerIoModeHandler(IndexerIoMode.READ_WRITE));
+      indexUpdateMonitor = new JBossCacheIndexUpdateMonitor(cache, new IndexerIoModeHandler(IndexerIoMode.READ_WRITE));
    }
 
    /**

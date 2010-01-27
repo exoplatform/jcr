@@ -51,12 +51,12 @@ import javax.jcr.RepositoryException;
  * @version $Id: exo-jboss-codetemplates.xml 34360 2009-07-22 23:58:59Z ksm $
  *
  */
-public class JbossCacheIndexChangesFilter extends IndexerChangesFilter
+public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
 {
    /**
     * Logger instance for this class
     */
-   private final Log log = ExoLogger.getLogger(JbossCacheIndexChangesFilter.class);
+   private final Log log = ExoLogger.getLogger(JBossCacheIndexChangesFilter.class);
 
    private final Cache<Serializable, Object> cache;
 
@@ -68,7 +68,7 @@ public class JbossCacheIndexChangesFilter extends IndexerChangesFilter
     * @param indexingTree
     * @throws RepositoryConfigurationException 
     */
-   public JbossCacheIndexChangesFilter(SearchManager searchManager, SearchManager parentSearchManager,
+   public JBossCacheIndexChangesFilter(SearchManager searchManager, SearchManager parentSearchManager,
       QueryHandlerEntry config, IndexingTree indexingTree, IndexingTree parentIndexingTree, QueryHandler handler,
       QueryHandler parentHandler) throws IOException, RepositoryException, RepositoryConfigurationException
    {
@@ -122,14 +122,14 @@ public class JbossCacheIndexChangesFilter extends IndexerChangesFilter
       {
          // TODO: uncomment it, when JbossCacheIndexInfos is finished.
          parentHandler.setIndexInfos(new JBossCacheIndexInfos(cache, true, modeHandler));
-         parentHandler.setIndexUpdateMonitor(new JbossCacheIndexUpdateMonitor(cache, modeHandler));
+         parentHandler.setIndexUpdateMonitor(new JBossCacheIndexUpdateMonitor(cache, modeHandler));
          parentHandler.init();
       }
       if (!handler.isInitialized())
       {
          // TODO: uncomment it, when JbossCacheIndexInfos is finished.
          handler.setIndexInfos(new JBossCacheIndexInfos(cache, false, modeHandler));
-         handler.setIndexUpdateMonitor(new JbossCacheIndexUpdateMonitor(cache, modeHandler));
+         handler.setIndexUpdateMonitor(new JBossCacheIndexUpdateMonitor(cache, modeHandler));
          handler.init();
       }
 

@@ -76,7 +76,7 @@ public class IndexerSingletonStoreCacheLoader extends SingletonStoreCacheLoader
             for (NodeSPI aChildren : children)
             {
                Fqn<?> fqn = aChildren.getFqn();
-               Object value = cache.get(fqn, JbossCacheIndexChangesFilter.LISTWRAPPER);
+               Object value = cache.get(fqn, JBossCacheIndexChangesFilter.LISTWRAPPER);
                if (value != null && value instanceof ChangesFilterListsWrapper)
                {
                   // get wrapper object
@@ -91,7 +91,7 @@ public class IndexerSingletonStoreCacheLoader extends SingletonStoreCacheLoader
             }
             //TODO: recover logic is here, lists are: removedNodes and addedNodes      String id = IdGenerator.generate();
             String id = IdGenerator.generate();
-            cache.put(id, JbossCacheIndexChangesFilter.LISTWRAPPER, new ChangesFilterListsWrapper(addedNodes,
+            cache.put(id, JBossCacheIndexChangesFilter.LISTWRAPPER, new ChangesFilterListsWrapper(addedNodes,
                removedNodes, parentAddedNodes, parentRemovedNodes));
             if (debugEnabled)
                log.debug("in-memory state passed to cache cacheLoader successfully");
