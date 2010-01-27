@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.config;
 
 import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -95,6 +96,10 @@ public class TemplateConfigurationHelper
     */
    public InputStream fillTemplate(InputStream inputStream, Map<String, String> parameters) throws IOException
    {
+      if (inputStream == null || parameters == null || parameters.size() == 0)
+      {
+         return inputStream;
+      }
       // parameters filtering
       Map<String, String> preparedParams = prepareParameters(parameters);
       // read stream
@@ -103,9 +108,72 @@ public class TemplateConfigurationHelper
       {
          configuration = configuration.replace(entry.getKey(), entry.getValue());
       }
-      // create new stream 
+      // create new stream
       InputStream configurationStream = new ByteArrayInputStream(configuration.getBytes());
       return configurationStream;
+   }
+
+   /**
+    * Reads configuration file from a stream and replaces all the occurrences of template-variables 
+    * (like : "${parameter.name}") with values provided in the map. 
+    * 
+    * @param filename
+    * @param parameters
+    * @return
+    * @throws IOException
+    */
+   public InputStream fillTemplate(String filename, Map<String, String> parameters) throws IOException
+   {
+      ClassLoader cl = Thread.currentThread().getContextClassLoader();
+      InputStream inputStream = cl == null ? null : cl.getResourceAsStream(filename);
+      if (inputStream == null)
+      {
+         // check system class loader
+         inputStream = getClass().getClassLoader().getResourceAsStream(filename);
+      }
+      if (inputStream == null)
+      {
+         inputStream = new FileInputStream(filename);
+      }
+      return fillTemplate(inputStream, parameters);
+   }
+
+   /**
+    * Reads configuration file from a stream and replaces all the occurrences of template-variables 
+    * (like : "${parameter.name}") with values provided in the map. 
+    * 
+    * @param inputStream
+    * @param parameters
+    * @return
+    * @throws IOException
+    */
+   public InputStream fillTemplate(InputStream inputStream, List<SimpleParameterEntry> parameters) throws IOException
+   {
+      Map<String, String> map = new HashMap<String, String>();
+      for (SimpleParameterEntry parameterEntry : parameters)
+      {
+         map.put(parameterEntry.getName(), parameterEntry.getValue());
+      }
+      return fillTemplate(inputStream, map);
+   }
+
+   /**
+    * Reads configuration file from file-system and replaces all the occurrences of template-variables 
+    * (like : "${parameter.name}") with values provided in the map. 
+    * 
+    * @param filename
+    * @param parameters
+    * @return
+    * @throws IOException
+    */
+   public InputStream fillTemplate(String filename, List<SimpleParameterEntry> parameters) throws IOException
+   {
+      Map<String, String> map = new HashMap<String, String>();
+      for (SimpleParameterEntry parameterEntry : parameters)
+      {
+         map.put(parameterEntry.getName(), parameterEntry.getValue());
+      }
+      return fillTemplate(filename, map);
    }
 
    /**
