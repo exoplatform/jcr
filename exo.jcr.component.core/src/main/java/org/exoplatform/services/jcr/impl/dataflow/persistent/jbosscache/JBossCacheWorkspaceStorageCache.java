@@ -20,6 +20,8 @@ package org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache;
 
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.config.SimpleParameterEntry;
+import org.exoplatform.services.jcr.config.TemplateConfigurationHelper;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
@@ -41,6 +43,9 @@ import org.jboss.cache.DefaultCacheFactory;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.Node;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -254,35 +259,32 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
    public JBossCacheWorkspaceStorageCache(WorkspaceEntry wsConfig, TransactionService transactionService)
       throws RepositoryException, RepositoryConfigurationException
    {
-      this(readJBCConfig(wsConfig), transactionService.getTransactionManager());
-   }
+      if (wsConfig.getCache() == null)
+      {
+         throw new RepositoryConfigurationException("Cache configuration not found");
+      }
+      String jbcConfig = wsConfig.getCache().getParameterValue(JBOSSCACHE_CONFIG);
 
-   /**
-    * Cache constructor with JBossCache JTA transaction support.
-    * 
-    * @param wsConfig WorkspaceEntry workspace config 
-    * @throws RepositoryException if error of initialization
-    * @throws RepositoryConfigurationException if error of configuration
-    */
-   public JBossCacheWorkspaceStorageCache(WorkspaceEntry wsConfig) throws RepositoryException,
-      RepositoryConfigurationException
-   {
-      this(readJBCConfig(wsConfig), null);
-   }
-
-   /**
-    * JBossCacheWorkspaceStorageCache  constructor.
-    *
-    */
-   public JBossCacheWorkspaceStorageCache(String jbcConfig, TransactionManager transactionManager)
-      throws RepositoryException
-   {
       CacheFactory<Serializable, Object> factory = new DefaultCacheFactory<Serializable, Object>();
       LOG.info("JBoss Cache configuration used: " + jbcConfig);
-      this.cache = new BufferedJBossCache(factory.createCache(jbcConfig, false));
-      if (transactionManager != null)
+
+      // initialize template 
+      TemplateConfigurationHelper configurationHelper = TemplateConfigurationHelper.createJBossCacheHelper();
+      InputStream configStream;
+      try
       {
-         cache.getConfiguration().getRuntimeConfig().setTransactionManager(transactionManager);
+         // fill template
+         configStream = configurationHelper.fillTemplate(jbcConfig, wsConfig.getCache().getParameters());
+      }
+      catch (IOException e)
+      {
+         throw new RepositoryConfigurationException(e);
+      }
+      
+      this.cache = new BufferedJBossCache(factory.createCache(configStream, false));
+      if (transactionService.getTransactionManager() != null)
+      {
+         cache.getConfiguration().getRuntimeConfig().setTransactionManager(transactionService.getTransactionManager());
       }
 
       this.itemsRoot = Fqn.fromElements(ITEMS);
@@ -302,6 +304,19 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
    }
 
    /**
+    * Cache constructor with JBossCache JTA transaction support.
+    * 
+    * @param wsConfig WorkspaceEntry workspace config 
+    * @throws RepositoryException if error of initialization
+    * @throws RepositoryConfigurationException if error of configuration
+    */
+   public JBossCacheWorkspaceStorageCache(WorkspaceEntry wsConfig) throws RepositoryException,
+      RepositoryConfigurationException
+   {
+      this(wsConfig, null);
+   }
+
+   /**
     * Checks if node with give FQN not exists and creates resident node.
     * @param fqn
     */
@@ -317,7 +332,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
       {
          cache.getNode(fqn).setResident(true);
       }
-      
+
    }
 
    protected static String readJBCConfig(final WorkspaceEntry wsConfig) throws RepositoryConfigurationException

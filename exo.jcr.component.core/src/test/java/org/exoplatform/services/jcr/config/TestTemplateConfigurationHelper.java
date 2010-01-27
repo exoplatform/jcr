@@ -51,6 +51,23 @@ public class TestTemplateConfigurationHelper extends TestCase
       assertTrue(preparedParameters.containsKey("${jbosscache-cache.loader}"));
       assertTrue(preparedParameters.containsKey("${jbosscache-clustername}"));
    }
+   
+   public void testFilters2()
+   {
+      // create helper with predefined include and exclude patterns
+      TemplateConfigurationHelper helper = TemplateConfigurationHelper.createJBossCacheHelper();
+      Map<String, String> parameters = new HashMap<String, String>();
+      parameters.put("jgroups-configuration", "");
+      parameters.put("jbosscache-cache.loader", "");
+      parameters.put("jbosscache-clustername", "");
+      parameters.put("max-volatile-size", "");
+      Map<String, String> preparedParameters = helper.prepareParameters(parameters);
+      assertEquals(3, preparedParameters.size());
+      // "jbosscache-configuration" and "max-volatile-size" should be excluded
+      assertFalse(preparedParameters.containsKey("${max-volatile-size}"));
+      assertTrue(preparedParameters.containsKey("${jbosscache-cache.loader}"));
+      assertTrue(preparedParameters.containsKey("${jbosscache-clustername}"));
+   }
 
    public void testTemplating() throws IOException
    {

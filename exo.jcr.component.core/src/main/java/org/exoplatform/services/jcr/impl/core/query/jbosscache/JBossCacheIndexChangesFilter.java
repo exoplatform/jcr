@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.impl.core.query.jbosscache;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.config.QueryHandlerParams;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.config.TemplateConfigurationHelper;
 import org.exoplatform.services.jcr.impl.core.query.IndexerChangesFilter;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoMode;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
@@ -40,6 +41,7 @@ import org.jboss.cache.config.CacheLoaderConfig.IndividualCacheLoaderConfig;
 import org.jboss.cache.config.CacheLoaderConfig.IndividualCacheLoaderConfig.SingletonStoreConfig;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Properties;
 import java.util.Set;
@@ -73,10 +75,24 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
       QueryHandler parentHandler) throws IOException, RepositoryException, RepositoryConfigurationException
    {
       super(searchManager, parentSearchManager, config, indexingTree, parentIndexingTree, handler, parentHandler);
-      String jbcConfig = config.getParameterValue(QueryHandlerParams.PARAM_CHANGES_FILTER_CONFIG_PATH);
+      String jbcConfig = config.getParameterValue(QueryHandlerParams.PARAM_JBOSSCACHE_CONFIGURATION);
+
+      // initialize template 
+      TemplateConfigurationHelper configurationHelper = TemplateConfigurationHelper.createJBossCacheHelper();
+      InputStream configStream;
+      try
+      {
+         // fill template
+         configStream = configurationHelper.fillTemplate(jbcConfig, config.getParameters());
+      }
+      catch (IOException e)
+      {
+         throw new RepositoryConfigurationException(e);
+      }
+
       CacheFactory<Serializable, Object> factory = new DefaultCacheFactory<Serializable, Object>();
       log.info("JBoss Cache configuration used: " + jbcConfig);
-      this.cache = factory.createCache(jbcConfig, false);
+      this.cache = factory.createCache(configStream, false);
 
       // initialize IndexerCacheLoader 
       IndexerCacheLoader indexerCacheLoader = new IndexerCacheLoader();

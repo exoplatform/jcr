@@ -105,5 +105,5 @@ public interface QueryHandlerParams
 
    public static final String PARAM_CHANGES_FILTER_CLASS = "changesfilter-class";
 
-   public static final String PARAM_CHANGES_FILTER_CONFIG_PATH = "changesfilter-config-path";
+   public static final String PARAM_JBOSSCACHE_CONFIGURATION = "jbosscache-configuration";
 }

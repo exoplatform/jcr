@@ -18,9 +18,14 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
+import org.exoplatform.services.jcr.config.CacheEntry;
+import org.exoplatform.services.jcr.config.SimpleParameterEntry;
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache;
 import org.exoplatform.services.transaction.TransactionService;
+
+import java.util.ArrayList;
 
 /**
  * Created by The eXo Platform SAS.
@@ -36,6 +41,13 @@ public class TestJBossCacheWorkspaceStorageCache extends WorkspaceStorageCacheBa
    {
       TransactionService transactionService =
          (TransactionService)container.getComponentInstanceOfType(TransactionService.class);
-      return new JBossCacheWorkspaceStorageCache("conf/standalone/test-jbosscache-config.xml", transactionService == null ? null : transactionService.getTransactionManager());
+      
+      ArrayList<SimpleParameterEntry> list = new ArrayList<SimpleParameterEntry>();
+      list.add(new SimpleParameterEntry(JBossCacheWorkspaceStorageCache.JBOSSCACHE_CONFIG, "conf/standalone/test-jbosscache-config.xml"));
+      
+      CacheEntry entry = new CacheEntry(list);
+      WorkspaceEntry workspaceEntry = new WorkspaceEntry();
+      workspaceEntry.setCache(entry);
+      return new JBossCacheWorkspaceStorageCache(workspaceEntry, transactionService == null ? null : transactionService);
    }
 }

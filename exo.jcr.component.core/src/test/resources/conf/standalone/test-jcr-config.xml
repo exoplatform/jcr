@@ -75,7 +75,7 @@
                   <properties>
                      <property name="index-dir" value="target/temp/index/db1/ws" />
                      <!-- property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JbossCacheIndexChangesFilter" />
-                     <property name="changesfilter-config-path" value="conf/standalone/test-jbosscache-config.xml" /-->
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" /-->
                      
                    </properties>
                </query-handler>
