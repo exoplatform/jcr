@@ -29,6 +29,7 @@ import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
 import org.exoplatform.services.jcr.impl.core.query.IndexingTree;
 import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
 import org.exoplatform.services.jcr.impl.core.query.SearchManager;
+import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -77,24 +78,9 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
       RepositoryConfigurationException
    {
       super(searchManager, parentSearchManager, config, indexingTree, parentIndexingTree, handler, parentHandler, cfm);
-      String jbcConfig = config.getParameterValue(QueryHandlerParams.PARAM_JBOSSCACHE_CONFIGURATION);
-
-      // initialize template 
-      TemplateConfigurationHelper configurationHelper = TemplateConfigurationHelper.createJBossCacheHelper(cfm);
-      InputStream configStream;
-      try
-      {
-         // fill template
-         configStream = configurationHelper.fillTemplate(jbcConfig, config.getParameters());
-      }
-      catch (IOException e)
-      {
-         throw new RepositoryConfigurationException(e);
-      }
-
-      CacheFactory<Serializable, Object> factory = new DefaultCacheFactory<Serializable, Object>();
-      log.info("JBoss Cache configuration used: " + jbcConfig);
-      this.cache = factory.createCache(configStream, false);
+      // create cache using custom factory
+      ExoJBossCacheFactory<Serializable, Object> factory = new ExoJBossCacheFactory<Serializable, Object>(cfm);
+      this.cache = factory.createCache(config);
 
       // initialize IndexerCacheLoader 
       IndexerCacheLoader indexerCacheLoader = new IndexerCacheLoader();

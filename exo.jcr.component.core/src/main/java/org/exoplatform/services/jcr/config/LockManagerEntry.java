@@ -29,8 +29,6 @@ public class LockManagerEntry extends MappedParametrizedObjectEntry
 
    private LockPersisterEntry persister;
 
-   private String cacheConfig;
-
    public long getTimeout()
    {
       return timeout;
@@ -49,16 +47,6 @@ public class LockManagerEntry extends MappedParametrizedObjectEntry
    public void setPersister(LockPersisterEntry persister)
    {
       this.persister = persister;
-   }
-
-   public String getCacheConfig()
-   {
-      return cacheConfig;
-   }
-
-   public void steCacheConfig(String cacheConfig)
-   {
-      this.cacheConfig = cacheConfig;
    }
 
 }

@@ -36,6 +36,7 @@ import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
+import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.transaction.TransactionService;
@@ -257,36 +258,18 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
     * @throws RepositoryException if error of initialization
     * @throws RepositoryConfigurationException if error of configuration
     */
-   public JBossCacheWorkspaceStorageCache(WorkspaceEntry wsConfig, TransactionService transactionService, ConfigurationManager cfm)
-      throws RepositoryException, RepositoryConfigurationException
+   public JBossCacheWorkspaceStorageCache(WorkspaceEntry wsConfig, TransactionService transactionService,
+      ConfigurationManager cfm) throws RepositoryException, RepositoryConfigurationException
    {
       if (wsConfig.getCache() == null)
       {
          throw new RepositoryConfigurationException("Cache configuration not found");
       }
-      String jbcConfig = wsConfig.getCache().getParameterValue(JBOSSCACHE_CONFIG);
-
-      CacheFactory<Serializable, Object> factory = new DefaultCacheFactory<Serializable, Object>();
-      LOG.info("JBoss Cache configuration used: " + jbcConfig);
-
-      // initialize template 
-      TemplateConfigurationHelper configurationHelper = TemplateConfigurationHelper.createJBossCacheHelper(cfm);
-      InputStream configStream;
-      try
-      {
-         // fill template
-         configStream = configurationHelper.fillTemplate(jbcConfig, wsConfig.getCache().getParameters());
-      }
-      catch (IOException e)
-      {
-         throw new RepositoryConfigurationException(e);
-      }
       
-      this.cache = new BufferedJBossCache(factory.createCache(configStream, false));
-      if (transactionService.getTransactionManager() != null)
-      {
-         cache.getConfiguration().getRuntimeConfig().setTransactionManager(transactionService.getTransactionManager());
-      }
+      // create cache using custom factory
+      ExoJBossCacheFactory<Serializable, Object> factory =
+         new ExoJBossCacheFactory<Serializable, Object>(cfm, transactionService.getTransactionManager());
+      this.cache = new BufferedJBossCache(factory.createCache(wsConfig.getCache()));
 
       this.itemsRoot = Fqn.fromElements(ITEMS);
       this.childNodes = Fqn.fromElements(CHILD_NODES);
@@ -311,8 +294,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
     * @throws RepositoryException if error of initialization
     * @throws RepositoryConfigurationException if error of configuration
     */
-   public JBossCacheWorkspaceStorageCache(WorkspaceEntry wsConfig, ConfigurationManager cfm) throws RepositoryException,
-      RepositoryConfigurationException
+   public JBossCacheWorkspaceStorageCache(WorkspaceEntry wsConfig, ConfigurationManager cfm)
+      throws RepositoryException, RepositoryConfigurationException
    {
       this(wsConfig, null, cfm);
    }

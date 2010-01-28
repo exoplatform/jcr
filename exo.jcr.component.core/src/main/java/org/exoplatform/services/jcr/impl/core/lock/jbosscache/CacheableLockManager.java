@@ -24,7 +24,6 @@ import org.exoplatform.management.jmx.annotations.Property;
 import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.SimpleParameterEntry;
-import org.exoplatform.services.jcr.config.TemplateConfigurationHelper;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.dataflow.ChangesLogIterator;
 import org.exoplatform.services.jcr.dataflow.CompositeChangesLog;
@@ -48,21 +47,18 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientItemData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
+import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory;
 import org.exoplatform.services.jcr.observation.ExtendedEvent;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.naming.InitialContextInitializer;
 import org.exoplatform.services.transaction.TransactionService;
 import org.jboss.cache.Cache;
-import org.jboss.cache.CacheFactory;
-import org.jboss.cache.DefaultCacheFactory;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.Node;
 import org.jboss.cache.loader.CacheLoader;
 import org.picocontainer.Startable;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.MessageDigest;
@@ -185,7 +181,8 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
     * @throws RepositoryConfigurationException
     */
    public CacheableLockManager(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
-      InitialContextInitializer context, TransactionService transactionService,ConfigurationManager cfm) throws RepositoryConfigurationException
+      InitialContextInitializer context, TransactionService transactionService, ConfigurationManager cfm)
+      throws RepositoryConfigurationException
    {
       this(dataManager, config, context, transactionService.getTransactionManager(), cfm);
    }
@@ -199,9 +196,9 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
     * @throws RepositoryConfigurationException
     */
    public CacheableLockManager(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
-      InitialContextInitializer context,ConfigurationManager cfm) throws RepositoryConfigurationException
+      InitialContextInitializer context, ConfigurationManager cfm) throws RepositoryConfigurationException
    {
-      this(dataManager, config, context, (TransactionManager)null,cfm);
+      this(dataManager, config, context, (TransactionManager)null, cfm);
    }
 
    /**
@@ -215,7 +212,8 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
     * @throws RepositoryConfigurationException
     */
    public CacheableLockManager(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
-      InitialContextInitializer context, TransactionManager transactionManager, ConfigurationManager cfm) throws RepositoryConfigurationException
+      InitialContextInitializer context, TransactionManager transactionManager, ConfigurationManager cfm)
+      throws RepositoryConfigurationException
    {
       lockRoot = Fqn.fromElements(LOCKS);
 
@@ -248,38 +246,16 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
       dataManager.addItemPersistenceListener(this);
 
       // make cache
-      if (config.getLockManager() != null
-         && (config.getLockManager().getCacheConfig() != null || (paramenerts != null && config.getLockManager()
-            .getParameterValue(JBOSSCACCHE_CONFIG, null) != null)))
+      if (config.getLockManager() != null)
       {
-         String jbcConfig =
-            (paramenerts != null && config.getLockManager().getParameterValue(JBOSSCACCHE_CONFIG, null) != null)
-               ? config.getLockManager().getParameterValue(JBOSSCACCHE_CONFIG) : config.getLockManager()
-                  .getCacheConfig();
-
-         // initialize template 
-         TemplateConfigurationHelper configurationHelper = TemplateConfigurationHelper.createJBossCacheHelper(cfm);
-         InputStream configStream;
-         try
-         {
-            // fill template
-            configStream = configurationHelper.fillTemplate(jbcConfig, config.getLockManager().getParameters());
-         }
-         catch (IOException e)
-         {
-            throw new RepositoryConfigurationException(e);
-         }
-
-         CacheFactory<Serializable, Object> factory = new DefaultCacheFactory<Serializable, Object>();
-
-         cache = factory.createCache(configStream, false);
-
          this.tm = transactionManager;
-         if (transactionManager != null)
-         {
-            cache.getConfiguration().getRuntimeConfig().setTransactionManager(transactionManager);
-         }
 
+         // create cache using custom factory
+         ExoJBossCacheFactory<Serializable, Object> factory =
+            new ExoJBossCacheFactory<Serializable, Object>(cfm, transactionManager);
+
+         cache = factory.createCache(config.getLockManager());
+         
          cache.create();
          cache.start();
 

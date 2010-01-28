@@ -71,7 +71,6 @@
         factory="org.jibx.runtime.Utility.arrayListFactory" />
       <value name="time-out" field="timeout" usage="optional" 
 			  deserializer="org.exoplatform.services.jcr.util.ConfigurationFormat.parseTime" />
-      <value name="jbosscache-configuration" field="cacheConfig" usage="optional" />
       
       <structure name="persister" field="persister" usage="optional">
         <value name="class" field="type" style="attribute" />
