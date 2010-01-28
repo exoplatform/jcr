@@ -69,16 +69,16 @@
                <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
                      <property name="jbosscache-configuration" value="conf/templateBased/test-jbosscache-data.tpl.xml" />
-                     <property name="jgroups-configuration" value="udp.xml" />
+                     <property name="jgroups-configuration" value="conf/templateBased/tcp-data-db1-ws.xml" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-db1-ws" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
                   <properties>
-                     <property name="index-dir" value="${java.io.tmpdir}/cluster_nfs/db1/ws" />
+                     <property name="index-dir" value="target/temp/index/db1/ws" />
                      <property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter" />
                      <property name="jbosscache-configuration" value="conf/templateBased/test-jbosscache-indexer.tpl.xml" />
-                     <property name="jgroups-configuration" value="udp.xml" />
+                     <property name="jgroups-configuration" value="conf/templateBased/tcp-index-db1-ws.xml" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-indexer-db1-ws" />
                      <property name="max-volatile-time" value="60" />
                    </properties>
@@ -87,7 +87,7 @@
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="jbosscache-configuration" value="conf/templateBased/test-jbosscache-lock.tpl.xml" />
-                     <property name="jgroups-configuration" value="udp.xml" />
+                     <property name="jgroups-configuration" value="conf/templateBased/tcp-lock-db1-ws.xml" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-locks-db1-ws" />
                      <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1_ws"/>
                      <property name="jbosscache-cl-cache.jdbc.table.create" value="true"/>
@@ -127,7 +127,7 @@
                <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
                      <property name="jbosscache-configuration" value="conf/templateBased/test-jbosscache-data.tpl.xml" />
-                     <property name="jgroups-configuration" value="udp.xml" />
+                     <property name="jgroups-configuration" value="conf/templateBased/tcp-data-db1-ws1.xml" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-db1-ws1" />
                   </properties>
                </cache>
@@ -136,7 +136,7 @@
                      <property name="index-dir" value="target/temp/index/db1/ws1" />
                      <property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter" />
                      <property name="jbosscache-configuration" value="conf/templateBased/test-jbosscache-indexer.tpl.xml" />
-                     <property name="jgroups-configuration" value="udp.xml" />
+                     <property name="jgroups-configuration" value="conf/templateBased/tcp-index-db1-ws1.xml" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-indexer-db1-ws1" />
                      <property name="max-volatile-time" value="60" />
                      
@@ -153,7 +153,7 @@
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="jbosscache-configuration" value="conf/templateBased/test-jbosscache-lock.tpl.xml" />
-                     <property name="jgroups-configuration" value="udp.xml" />
+                     <property name="jgroups-configuration" value="conf/templateBased/tcp-lock-db1-ws1.xml" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-locks-db1-ws1" />
                      <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1_ws1"/>
                      <property name="jbosscache-cl-cache.jdbc.table.create" value="true"/>
@@ -192,7 +192,7 @@
                <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
                      <property name="jbosscache-configuration" value="conf/templateBased/test-jbosscache-data.tpl.xml" />
-                     <property name="jgroups-configuration" value="udp.xml" />
+                     <property name="jgroups-configuration" value="conf/templateBased/tcp-data-db1-ws2.xml" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-db1-ws2" />
                   </properties>
                </cache>
@@ -201,7 +201,7 @@
                      <property name="index-dir" value="target/temp/index/db1/ws2" />
                      <property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter" />
                      <property name="jbosscache-configuration" value="conf/templateBased/test-jbosscache-indexer.tpl.xml" />
-                     <property name="jgroups-configuration" value="udp.xml" />
+                     <property name="jgroups-configuration" value="conf/templateBased/tcp-index-db1-ws2.xml" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-indexer-db1-ws2" />
                      <property name="max-volatile-time" value="60" />
                      
@@ -218,7 +218,7 @@
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="jbosscache-configuration" value="conf/templateBased/test-jbosscache-lock.tpl.xml" />
-                     <property name="jgroups-configuration" value="udp.xml" />
+                     <property name="jgroups-configuration" value="conf/templateBased/tcp-lock-db1-ws2.xml" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-locks-db1-ws2" />
                      <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1_ws2"/>
                      <property name="jbosscache-cl-cache.jdbc.table.create" value="true"/>
@@ -276,7 +276,7 @@
                <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
                      <property name="jbosscache-configuration" value="conf/templateBased/test-jbosscache-data.tpl.xml" />
-                     <property name="jgroups-configuration" value="udp.xml" />
+                     <property name="jgroups-configuration" value="conf/templateBased/tcp-data-db1-ws3.xml" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-db1-ws3" />
                   </properties>
                </cache>
@@ -285,19 +285,16 @@
                      <property name="index-dir" value="target/temp/index/db1/ws3" />
                      <property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter" />
                      <property name="jbosscache-configuration" value="conf/templateBased/test-jbosscache-indexer.tpl.xml" />
-                     <property name="jgroups-configuration" value="udp.xml" />
+                     <property name="jgroups-configuration" value="conf/templateBased/tcp-index-db1-ws3.xml" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-indexer-db1-ws3" />
                      <property name="max-volatile-time" value="60" />
                      
-					 <property name="synonymprovider-class"
-								value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider" />
-					 <property name="synonymprovider-config-path" value="../../synonyms.properties" />
-					 <property name="support-highlighting" value="true" />
-					 <property name="indexing-configuration-path" value="../../indexing-configuration.xml" />
-					 <property name="query-class"
-								value="org.exoplatform.services.jcr.impl.core.query.QueryImpl" />
-					 <property name="spellchecker-class"
-								value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" />
+                     <property name="synonymprovider-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider" />
+                     <property name="synonymprovider-config-path" value="../../synonyms.properties" />
+                     <property name="support-highlighting" value="true" />
+                     <property name="indexing-configuration-path" value="../../indexing-configuration.xml" />
+                     <property name="query-class" value="org.exoplatform.services.jcr.impl.core.query.QueryImpl" />
+                     <property name="spellchecker-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" />
                      
                   </properties>
                </query-handler>
@@ -305,7 +302,7 @@
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="jbosscache-configuration" value="conf/templateBased/test-jbosscache-lock.tpl.xml" />
-                     <property name="jgroups-configuration" value="udp.xml" />
+                     <property name="jgroups-configuration" value="conf/templateBased/tcp-lock-db1-ws3.xml" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-locks-db1-ws3" />
                      <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1_ws3"/>
                      <property name="jbosscache-cl-cache.jdbc.table.create" value="true"/>
@@ -363,7 +360,7 @@
                <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
                      <property name="jbosscache-configuration" value="conf/templateBased/test-jbosscache-data.tpl.xml" />
-                     <property name="jgroups-configuration" value="udp.xml" />
+                     <property name="jgroups-configuration" value="conf/templateBased/tcp-data-db1tck-ws.xml" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-db1tck-ws" />
                   </properties>
                </cache>
@@ -372,7 +369,7 @@
                      <property name="index-dir" value="target/temp/index/db1tck/ws" />
                      <property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter" />
                      <property name="jbosscache-configuration" value="conf/templateBased/test-jbosscache-indexer.tpl.xml" />
-                     <property name="jgroups-configuration" value="udp.xml" />
+                     <property name="jgroups-configuration" value="conf/templateBased/tcp-index-db1tck-ws.xml" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-indexer-db1tck-ws" />
                      <property name="max-volatile-time" value="60" />
                      
@@ -389,7 +386,7 @@
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="jbosscache-configuration" value="conf/templateBased/test-jbosscache-lock.tpl.xml" />
-                     <property name="jgroups-configuration" value="udp.xml" />
+                     <property name="jgroups-configuration" value="conf/templateBased/tcp-lock-db1tck-ws.xml" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-locks-db1tck-ws" />
                      <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1tck_ws"/>
                      <property name="jbosscache-cl-cache.jdbc.table.create" value="true"/>
@@ -435,7 +432,7 @@
                <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
                      <property name="jbosscache-configuration" value="conf/templateBased/test-jbosscache-data.tpl.xml" />
-                     <property name="jgroups-configuration" value="udp.xml" />
+                     <property name="jgroups-configuration" value="conf/templateBased/tcp-data-db1tck-ws1.xml" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-db1tck-ws1" />
                   </properties>
                </cache>
@@ -444,7 +441,7 @@
                      <property name="index-dir" value="target/temp/index/db1tck/ws1" />
                      <property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter" />
                      <property name="jbosscache-configuration" value="conf/templateBased/test-jbosscache-indexer.tpl.xml" />
-                     <property name="jgroups-configuration" value="udp.xml" />
+                     <property name="jgroups-configuration" value="conf/templateBased/tcp-index-db1tck-ws1.xml" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-indexer-db1tck-ws1" />
                      <property name="max-volatile-time" value="60" />
                      <property name="synonymprovider-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider" />
@@ -459,7 +456,7 @@
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="jbosscache-configuration" value="conf/templateBased/test-jbosscache-lock.tpl.xml" />
-                     <property name="jgroups-configuration" value="udp.xml" />
+                     <property name="jgroups-configuration" value="conf/templateBased/tcp-lock-db1tck-ws1.xml" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-locks-db1tck-ws1" />
                      <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1tck_ws1"/>
                      <property name="jbosscache-cl-cache.jdbc.table.create" value="true"/>
@@ -505,7 +502,7 @@
                <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
                      <property name="jbosscache-configuration" value="conf/templateBased/test-jbosscache-data.tpl.xml" />
-                     <property name="jgroups-configuration" value="udp.xml" />
+                     <property name="jgroups-configuration" value="conf/templateBased/tcp-data-db1tck-ws2.xml" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-db1tck-ws2" />
                   </properties>
                </cache>
@@ -514,7 +511,7 @@
                      <property name="index-dir" value="target/temp/index/db1tck/ws2" />
                      <property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter" />
                      <property name="jbosscache-configuration" value="conf/templateBased/test-jbosscache-indexer.tpl.xml" />
-                     <property name="jgroups-configuration" value="udp.xml" />
+                     <property name="jgroups-configuration" value="conf/templateBased/tcp-index-db1tck-ws2.xml" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-indexer-db1tck-ws2" />
                      <property name="max-volatile-time" value="60" />
                      <property name="synonymprovider-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider" />
@@ -532,7 +529,7 @@
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="jbosscache-configuration" value="conf/templateBased/test-jbosscache-lock.tpl.xml" />
-                     <property name="jgroups-configuration" value="udp.xml" />
+                     <property name="jgroups-configuration" value="conf/templateBased/tcp-lock-db1tck-ws2.xml" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-locks-db1tck-ws2" />
                      <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1tck_ws2"/>
                      <property name="jbosscache-cl-cache.jdbc.table.create" value="true"/>
