@@ -106,4 +106,8 @@ public interface QueryHandlerParams
    public static final String PARAM_CHANGES_FILTER_CLASS = "changesfilter-class";
 
    public static final String PARAM_JBOSSCACHE_CONFIGURATION = "jbosscache-configuration";
+   
+   public static final String PARAM_JBOSSCACHE_PUSHSTATE = "jbosscache-sscl-push.state.enabled";
+   
+   public static final String PARAM_JBOSSCACHE_PUSHSTATE_TIMEOUT = "jbosscache-sscl-push.state.timeout";
 }

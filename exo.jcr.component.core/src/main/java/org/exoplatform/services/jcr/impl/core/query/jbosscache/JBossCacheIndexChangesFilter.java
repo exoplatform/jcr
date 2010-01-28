@@ -73,7 +73,8 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
     */
    public JBossCacheIndexChangesFilter(SearchManager searchManager, SearchManager parentSearchManager,
       QueryHandlerEntry config, IndexingTree indexingTree, IndexingTree parentIndexingTree, QueryHandler handler,
-      QueryHandler parentHandler, ConfigurationManager cfm) throws IOException, RepositoryException, RepositoryConfigurationException
+      QueryHandler parentHandler, ConfigurationManager cfm) throws IOException, RepositoryException,
+      RepositoryConfigurationException
    {
       super(searchManager, parentSearchManager, config, indexingTree, parentIndexingTree, handler, parentHandler, cfm);
       String jbcConfig = config.getParameterValue(QueryHandlerParams.PARAM_JBOSSCACHE_CONFIGURATION);
@@ -104,8 +105,13 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
       singletonStoreConfig.setSingletonStoreClass(IndexerSingletonStoreCacheLoader.class.getName());
       //singletonStoreConfig.setSingletonStoreClass(SingletonStoreCacheLoader.class.getName());
       Properties singletonStoreProperties = new Properties();
-      singletonStoreProperties.setProperty("pushStateWhenCoordinator", "false");
-      singletonStoreProperties.setProperty("pushStateWhenCoordinatorTimeout", "10000");
+
+      // try to get pushState parameters, since they are set programmatically only
+      Boolean pushState = config.getParameterBoolean(QueryHandlerParams.PARAM_JBOSSCACHE_PUSHSTATE, false);
+      Integer pushStateTimeOut = config.getParameterInteger(QueryHandlerParams.PARAM_JBOSSCACHE_PUSHSTATE, 10000);
+
+      singletonStoreProperties.setProperty("pushStateWhenCoordinator", pushState.toString());
+      singletonStoreProperties.setProperty("pushStateWhenCoordinatorTimeout", pushStateTimeOut.toString());
       singletonStoreConfig.setProperties(singletonStoreProperties);
       singletonStoreConfig.setSingletonStoreEnabled(true);
       // create CacheLoaderConfig
@@ -137,14 +143,12 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
 
       if (!parentHandler.isInitialized())
       {
-         // TODO: uncomment it, when JbossCacheIndexInfos is finished.
          parentHandler.setIndexInfos(new JBossCacheIndexInfos(cache, true, modeHandler));
          parentHandler.setIndexUpdateMonitor(new JBossCacheIndexUpdateMonitor(cache, modeHandler));
          parentHandler.init();
       }
       if (!handler.isInitialized())
       {
-         // TODO: uncomment it, when JbossCacheIndexInfos is finished.
          handler.setIndexInfos(new JBossCacheIndexInfos(cache, false, modeHandler));
          handler.setIndexUpdateMonitor(new JBossCacheIndexUpdateMonitor(cache, modeHandler));
          handler.init();
