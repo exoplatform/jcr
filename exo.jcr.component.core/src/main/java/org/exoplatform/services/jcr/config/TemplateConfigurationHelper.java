@@ -131,10 +131,24 @@ public class TemplateConfigurationHelper
     */
    public InputStream fillTemplate(String filename, Map<String, String> parameters) throws IOException
    {
-      // try to get resource by class loader
-      ClassLoader cl = Thread.currentThread().getContextClassLoader();
-      InputStream inputStream = cl == null ? null : cl.getResourceAsStream(filename);
+      InputStream inputStream = null;
+      // try to get using configuration manager
+      try
+      {
+         inputStream = cfm.getInputStream(filename);
+      }
+      catch (Exception e)
+      {
+         // will try to use another resolve mechanism 
+      }
 
+      // try to get resource by class loader
+      if (inputStream == null)
+      {
+         ClassLoader cl = Thread.currentThread().getContextClassLoader();
+         inputStream = cl == null ? null : cl.getResourceAsStream(filename);
+      }
+      
       // check system class loader
       if (inputStream == null)
       {
@@ -150,20 +164,7 @@ public class TemplateConfigurationHelper
          }
          catch (IOException e)
          {
-            // we'll try to get it through configuration manager also
-         }
-      }
-
-      // try to get using configuration manager
-      if (inputStream == null)
-      {
-         try
-         {
-            inputStream = cfm.getInputStream(filename);
-         }
-         catch (Exception e)
-         {
-            // Stream still remains to be null, exception will be thrown below
+            // Still can't resolve
          }
       }
       // inputStream still remains null, so file was not opened
