@@ -330,7 +330,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
             this.dbDialect = pDbDialect;
          }
       }
-      LOG.info("Using a dialect '" + pDbDialect + "'");
+      LOG.info("Using a dialect '" + this.dbDialect + "'");
 
       // ------------- Values swap config ------------------
       try
