@@ -68,8 +68,8 @@
 -->
                <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
-                     <property name="jbosscache-configuration" value="conf/mux/test-jbosscache-data.xml" />
-                     <property name="jgroups-configuration" value="conf/mux/udp.xml" />
+                     <property name="jbosscache-configuration" value="conf/standalone/mux/test-jbosscache-data.xml" />
+                     <property name="jgroups-configuration" value="conf/standalone/mux/udp.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-db1-ws" />
                   </properties>
@@ -78,8 +78,8 @@
                   <properties>
                      <property name="index-dir" value="target/temp/index/db1/ws" />
                      <property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter" />
-                     <property name="jbosscache-configuration" value="conf/mux/test-jbosscache-indexer.xml" />
-                     <property name="jgroups-configuration" value="conf/mux/udp.xml" />
+                     <property name="jbosscache-configuration" value="conf/standalone/mux/test-jbosscache-indexer.xml" />
+                     <property name="jgroups-configuration" value="conf/standalone/mux/udp.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-indexer-db1-ws" />
                      <property name="max-volatile-time" value="60" />
@@ -88,8 +88,8 @@
                <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManager">
                   <properties>
                      <property name="time-out" value="15m" />
-                     <property name="jbosscache-configuration" value="conf/mux/test-jbosscache-lock.xml" />
-                     <property name="jgroups-configuration" value="conf/mux/udp.xml" />
+                     <property name="jbosscache-configuration" value="conf/standalone/mux/test-jbosscache-lock.xml" />
+                     <property name="jgroups-configuration" value="conf/standalone/mux/udp.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-locks-db1-ws" />
                      <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1_ws"/>
@@ -129,8 +129,8 @@
                </container>
                <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
-                     <property name="jbosscache-configuration" value="conf/mux/test-jbosscache-data.xml" />
-                     <property name="jgroups-configuration" value="conf/mux/udp.xml" />
+                     <property name="jbosscache-configuration" value="conf/standalone/mux/test-jbosscache-data.xml" />
+                     <property name="jgroups-configuration" value="conf/standalone/mux/udp.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-db1-ws1" />
                   </properties>
@@ -139,16 +139,16 @@
                   <properties>
                      <property name="index-dir" value="target/temp/index/db1/ws1" />
                      <property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter" />
-                     <property name="jbosscache-configuration" value="conf/mux/test-jbosscache-indexer.xml" />
-                     <property name="jgroups-configuration" value="conf/mux/udp.xml" />
+                     <property name="jbosscache-configuration" value="conf/standalone/mux/test-jbosscache-indexer.xml" />
+                     <property name="jgroups-configuration" value="conf/standalone/mux/udp.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-indexer-db1-ws1" />
                      <property name="max-volatile-time" value="60" />
                      
                      <property name="synonymprovider-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider" />
-                     <property name="synonymprovider-config-path" value="../../synonyms.properties" />
+                     <property name="synonymprovider-config-path" value="../../../synonyms.properties" />
                      <property name="support-highlighting" value="true" />
-                     <property name="indexing-configuration-path" value="../../indexing-configuration.xml" />
+                     <property name="indexing-configuration-path" value="../../../indexing-configuration.xml" />
                      <property name="query-class" value="org.exoplatform.services.jcr.impl.core.query.QueryImpl" />
                      <property name="spellchecker-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" />
                      
@@ -157,8 +157,8 @@
                <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManager">
                   <properties>
                      <property name="time-out" value="15m" />
-                     <property name="jbosscache-configuration" value="conf/mux/test-jbosscache-lock.xml" />
-                     <property name="jgroups-configuration" value="conf/mux/udp.xml" />
+                     <property name="jbosscache-configuration" value="conf/standalone/mux/test-jbosscache-lock.xml" />
+                     <property name="jgroups-configuration" value="conf/standalone/mux/udp.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-locks-db1-ws1" />
                      <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1_ws1"/>
@@ -197,8 +197,8 @@
                </container>
                <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
-                     <property name="jbosscache-configuration" value="conf/mux/test-jbosscache-data.xml" />
-                     <property name="jgroups-configuration" value="conf/mux/udp.xml" />
+                     <property name="jbosscache-configuration" value="conf/standalone/mux/test-jbosscache-data.xml" />
+                     <property name="jgroups-configuration" value="conf/standalone/mux/udp.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-db1-ws2" />
                   </properties>
@@ -207,16 +207,16 @@
                   <properties>
                      <property name="index-dir" value="target/temp/index/db1/ws2" />
                      <property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter" />
-                     <property name="jbosscache-configuration" value="conf/mux/test-jbosscache-indexer.xml" />
-                     <property name="jgroups-configuration" value="conf/mux/udp.xml" />
+                     <property name="jbosscache-configuration" value="conf/standalone/mux/test-jbosscache-indexer.xml" />
+                     <property name="jgroups-configuration" value="conf/standalone/mux/udp.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-indexer-db1-ws2" />
                      <property name="max-volatile-time" value="60" />
                      
                      <property name="synonymprovider-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider" />
-                     <property name="synonymprovider-config-path" value="../../synonyms.properties" />
+                     <property name="synonymprovider-config-path" value="../../../synonyms.properties" />
                      <property name="support-highlighting" value="true" />
-                     <property name="indexing-configuration-path" value="../../indexing-configuration.xml" />
+                     <property name="indexing-configuration-path" value="../../../indexing-configuration.xml" />
                      <property name="query-class" value="org.exoplatform.services.jcr.impl.core.query.QueryImpl" />
                      <property name="spellchecker-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" />
                      
@@ -225,8 +225,8 @@
                <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManager">
                   <properties>
                      <property name="time-out" value="15m" />
-                     <property name="jbosscache-configuration" value="conf/mux/test-jbosscache-lock.xml" />
-                     <property name="jgroups-configuration" value="conf/mux/udp.xml" />
+                     <property name="jbosscache-configuration" value="conf/standalone/mux/test-jbosscache-lock.xml" />
+                     <property name="jgroups-configuration" value="conf/standalone/mux/udp.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-locks-db1-ws2" />
                      <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1_ws2"/>
@@ -284,8 +284,8 @@
                </container>
                <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
-                     <property name="jbosscache-configuration" value="conf/mux/test-jbosscache-data.xml" />
-                     <property name="jgroups-configuration" value="conf/mux/udp.xml" />
+                     <property name="jbosscache-configuration" value="conf/standalone/mux/test-jbosscache-data.xml" />
+                     <property name="jgroups-configuration" value="conf/standalone/mux/udp.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-db1-ws3" />
                   </properties>
@@ -294,16 +294,16 @@
                   <properties>
                      <property name="index-dir" value="target/temp/index/db1/ws3" />
                      <property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter" />
-                     <property name="jbosscache-configuration" value="conf/mux/test-jbosscache-indexer.xml" />
-                     <property name="jgroups-configuration" value="conf/mux/udp.xml" />
+                     <property name="jbosscache-configuration" value="conf/standalone/mux/test-jbosscache-indexer.xml" />
+                     <property name="jgroups-configuration" value="conf/standalone/mux/udp.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-indexer-db1-ws3" />
                      <property name="max-volatile-time" value="60" />
                      
                      <property name="synonymprovider-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider" />
-                     <property name="synonymprovider-config-path" value="../../synonyms.properties" />
+                     <property name="synonymprovider-config-path" value="../../../synonyms.properties" />
                      <property name="support-highlighting" value="true" />
-                     <property name="indexing-configuration-path" value="../../indexing-configuration.xml" />
+                     <property name="indexing-configuration-path" value="../../../indexing-configuration.xml" />
                      <property name="query-class" value="org.exoplatform.services.jcr.impl.core.query.QueryImpl" />
                      <property name="spellchecker-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" />
                      
@@ -312,8 +312,8 @@
                <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManager">
                   <properties>
                      <property name="time-out" value="15m" />
-                     <property name="jbosscache-configuration" value="conf/mux/test-jbosscache-lock.xml" />
-                     <property name="jgroups-configuration" value="conf/mux/udp.xml" />
+                     <property name="jbosscache-configuration" value="conf/standalone/mux/test-jbosscache-lock.xml" />
+                     <property name="jgroups-configuration" value="conf/standalone/mux/udp.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-locks-db1-ws3" />
                      <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1_ws3"/>
@@ -371,8 +371,8 @@
                </initializer>
                <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
-                     <property name="jbosscache-configuration" value="conf/mux/test-jbosscache-data.xml" />
-                     <property name="jgroups-configuration" value="conf/mux/udp.xml" />
+                     <property name="jbosscache-configuration" value="conf/standalone/mux/test-jbosscache-data.xml" />
+                     <property name="jgroups-configuration" value="conf/standalone/mux/udp.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-db1tck-ws" />
                   </properties>
@@ -381,16 +381,16 @@
                   <properties>
                      <property name="index-dir" value="target/temp/index/db1tck/ws" />
                      <property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter" />
-                     <property name="jbosscache-configuration" value="conf/mux/test-jbosscache-indexer.xml" />
-                     <property name="jgroups-configuration" value="conf/mux/udp.xml" />
+                     <property name="jbosscache-configuration" value="conf/standalone/mux/test-jbosscache-indexer.xml" />
+                     <property name="jgroups-configuration" value="conf/standalone/mux/udp.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-indexer-db1tck-ws" />
                      <property name="max-volatile-time" value="60" />
                      
                      <property name="synonymprovider-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider" />
-                     <property name="synonymprovider-config-path" value="../../synonyms.properties" />
+                     <property name="synonymprovider-config-path" value="../../../synonyms.properties" />
                      <property name="support-highlighting" value="true" />
-                     <property name="indexing-configuration-path" value="../../indexing-configuration.xml" />
+                     <property name="indexing-configuration-path" value="../../../indexing-configuration.xml" />
                      <property name="query-class" value="org.exoplatform.services.jcr.impl.core.query.QueryImpl" />
                      <property name="excerptprovider-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.WeightedHTMLExcerpt" />
                      <property name="spellchecker-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" />
@@ -399,8 +399,8 @@
                <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManager">
                   <properties>
                      <property name="time-out" value="15m" />
-                     <property name="jbosscache-configuration" value="conf/mux/test-jbosscache-lock.xml" />
-                     <property name="jgroups-configuration" value="conf/mux/udp.xml" />
+                     <property name="jbosscache-configuration" value="conf/standalone/mux/test-jbosscache-lock.xml" />
+                     <property name="jgroups-configuration" value="conf/standalone/mux/udp.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-locks-db1tck-ws" />
                      <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1tck_ws"/>
@@ -446,8 +446,8 @@
                </initializer>
                <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
-                     <property name="jbosscache-configuration" value="conf/mux/test-jbosscache-data.xml" />
-                     <property name="jgroups-configuration" value="conf/mux/udp.xml" />
+                     <property name="jbosscache-configuration" value="conf/standalone/mux/test-jbosscache-data.xml" />
+                     <property name="jgroups-configuration" value="conf/standalone/mux/udp.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-db1tck-ws1" />
                   </properties>
@@ -456,15 +456,15 @@
                   <properties>
                      <property name="index-dir" value="target/temp/index/db1tck/ws1" />
                      <property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter" />
-                     <property name="jbosscache-configuration" value="conf/mux/test-jbosscache-indexer.xml" />
-                     <property name="jgroups-configuration" value="conf/mux/udp.xml" />
+                     <property name="jbosscache-configuration" value="conf/standalone/mux/test-jbosscache-indexer.xml" />
+                     <property name="jgroups-configuration" value="conf/standalone/mux/udp.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-indexer-db1tck-ws1" />
                      <property name="max-volatile-time" value="60" />
                      <property name="synonymprovider-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider" />
-                     <property name="synonymprovider-config-path" value="../../synonyms.properties" />
+                     <property name="synonymprovider-config-path" value="../../../synonyms.properties" />
                      <property name="support-highlighting" value="true" />
-                     <property name="indexing-configuration-path" value="../../indexing-configuration.xml" />
+                     <property name="indexing-configuration-path" value="../../../indexing-configuration.xml" />
                      <property name="query-class" value="org.exoplatform.services.jcr.impl.core.query.QueryImpl" />
                      <property name="spellchecker-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" />
                   </properties>
@@ -472,8 +472,8 @@
                <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManager">
                   <properties>
                      <property name="time-out" value="15m" />
-                     <property name="jbosscache-configuration" value="conf/mux/test-jbosscache-lock.xml" />
-                     <property name="jgroups-configuration" value="conf/mux/udp.xml" />
+                     <property name="jbosscache-configuration" value="conf/standalone/mux/test-jbosscache-lock.xml" />
+                     <property name="jgroups-configuration" value="conf/standalone/mux/udp.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-locks-db1tck-ws1" />
                      <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1tck_ws1"/>
@@ -519,8 +519,8 @@
                </initializer>
                <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
-                     <property name="jbosscache-configuration" value="conf/mux/test-jbosscache-data.xml" />
-                     <property name="jgroups-configuration" value="conf/mux/udp.xml" />
+                     <property name="jbosscache-configuration" value="conf/standalone/mux/test-jbosscache-data.xml" />
+                     <property name="jgroups-configuration" value="conf/standalone/mux/udp.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-db1tck-ws2" />
                   </properties>
@@ -529,15 +529,15 @@
                   <properties>
                      <property name="index-dir" value="target/temp/index/db1tck/ws2" />
                      <property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter" />
-                     <property name="jbosscache-configuration" value="conf/mux/test-jbosscache-indexer.xml" />
-                     <property name="jgroups-configuration" value="conf/mux/udp.xml" />
+                     <property name="jbosscache-configuration" value="conf/standalone/mux/test-jbosscache-indexer.xml" />
+                     <property name="jgroups-configuration" value="conf/standalone/mux/udp.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-indexer-db1tck-ws2" />
                      <property name="max-volatile-time" value="60" />
                      <property name="synonymprovider-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider" />
-                     <property name="synonymprovider-config-path" value="../../synonyms.properties" />
+                     <property name="synonymprovider-config-path" value="../../../synonyms.properties" />
                      <property name="support-highlighting" value="true" />
-                     <property name="indexing-configuration-path" value="../../indexing-configuration.xml" />
+                     <property name="indexing-configuration-path" value="../../../indexing-configuration.xml" />
                      <property name="query-class" value="org.exoplatform.services.jcr.impl.core.query.QueryImpl" />
                      <property name="spellchecker-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" />
                      <property name="excerptprovider-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.WeightedHTMLExcerpt"/>
@@ -548,8 +548,8 @@
                <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManager">
                   <properties>
                      <property name="time-out" value="15m" />
-                     <property name="jbosscache-configuration" value="conf/mux/test-jbosscache-lock.xml" />
-                     <property name="jgroups-configuration" value="conf/mux/udp.xml" />
+                     <property name="jbosscache-configuration" value="conf/standalone/mux/test-jbosscache-lock.xml" />
+                     <property name="jgroups-configuration" value="conf/standalone/mux/udp.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-locks-db1tck-ws2" />
                      <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1tck_ws2"/>
