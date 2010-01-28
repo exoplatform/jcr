@@ -1,11 +1,10 @@
+DEPRECATED, use multiplexer-based configuration!
+
 INFO
 
 This is new, template-based configuration of JCR with JBossCache. 
 This configuration uses MySQL database (sql script for creating
 and deleting all needed DBs is shown below).
-
-Currently JBossCache cluster-groups use the same "udp.xml" config
-so lots of warnings can appear on system out from JGroups.
 
 TEMPLATING
 Configuration templates should use variables like:
