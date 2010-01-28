@@ -88,8 +88,8 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
    /**
     * MYSQL_PK_CONSTRAINT_DETECT.
     */
-   private static final Pattern MYSQL_PK_CONSTRAINT_DETECT =
-      Pattern.compile(MYSQL_PK_CONSTRAINT_DETECT_PATTERN, Pattern.CASE_INSENSITIVE);
+   private static final Pattern MYSQL_PK_CONSTRAINT_DETECT = Pattern.compile(MYSQL_PK_CONSTRAINT_DETECT_PATTERN,
+      Pattern.CASE_INSENSITIVE);
 
    /**
     * DB2_PK_CONSTRAINT_DETECT_PATTERN.
@@ -155,7 +155,7 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
             this.dialect = dialect;
 
             // init database metadata
-            final String tn = props.getProperty(TABLE_NAME_PARAM);
+            String tn = props.getProperty(TABLE_NAME_PARAM);
             if (tn != null)
             {
                tableName = tn;
@@ -278,8 +278,10 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
          // check is it a primary key vioaltion or smth else
          // if primary key - it's record already exists issue, VCAS error otherwise.
          if (isRecordAlreadyExistsException(e))
+         {
             throw new RecordAlreadyExistsException("Record already exists, propertyId=" + propertyId + " orderNum="
                + orderNum + ". Error: " + e, e);
+         }
 
          throw new VCASException("VCAS ADD database error: " + e, e);
       }
@@ -345,7 +347,9 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
             ps.close();
 
             if (res <= 0)
+            {
                throw new RecordNotFoundException("Record not found, propertyId=" + propertyId);
+            }
          }
          finally
          {
@@ -375,8 +379,10 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
             ps.close();
 
             if (res <= 0)
+            {
                throw new RecordNotFoundException("Value record not found, propertyId=" + propertyId + " orderNumb="
                   + orderNumb);
+            }
          }
          finally
          {
@@ -409,8 +415,10 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
                return rs.getString("CAS_ID");
             }
             else
+            {
                throw new RecordNotFoundException("No record found with propertyId=" + propertyId + " orderNum="
                   + orderNum);
+            }
          }
          finally
          {
@@ -453,7 +461,9 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
                   return ids;
                }
                else
+               {
                   throw new RecordNotFoundException("No records found with propertyId=" + propertyId);
+               }
             }
             else
             {
@@ -471,7 +481,9 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
                   return ids;
                }
                else
+               {
                   throw new RecordNotFoundException("No records found with propertyId=" + propertyId);
+               }
             }
          }
          finally
