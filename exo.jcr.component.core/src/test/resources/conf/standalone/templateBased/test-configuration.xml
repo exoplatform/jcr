@@ -171,7 +171,7 @@
       <value-param>
         <name>conf-path</name>
         <description>JCR configuration file</description>
-        <value>jar:/conf/templateBased/test-jcr-config.xml</value>
+        <value>jar:/conf/standalone/templateBased/test-jcr-config.xml</value>
       </value-param>
       <!-- properties-param>
         <name>working-conf</name>
