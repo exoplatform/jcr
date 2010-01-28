@@ -62,6 +62,8 @@ public class ExoJBossCacheFactory<K, V>
 
    private final TransactionManager transactionManager;
 
+   private ConfigurationManager configurationManager;
+
    private final Log log = ExoLogger.getLogger(ExoJBossCacheFactory.class);
 
    /**
@@ -73,6 +75,7 @@ public class ExoJBossCacheFactory<K, V>
     */
    public ExoJBossCacheFactory(ConfigurationManager configurationManager, TransactionManager transactionManager)
    {
+      this.configurationManager = configurationManager;
       this.configurationHelper = TemplateConfigurationHelper.createJBossCacheHelper(configurationManager);
       this.transactionManager = transactionManager;
    }
@@ -84,8 +87,7 @@ public class ExoJBossCacheFactory<K, V>
     */
    public ExoJBossCacheFactory(ConfigurationManager configurationManager)
    {
-      this.configurationHelper = TemplateConfigurationHelper.createJBossCacheHelper(configurationManager);
-      this.transactionManager = null;
+      this(configurationManager, null);
    }
 
    /**
@@ -142,7 +144,7 @@ public class ExoJBossCacheFactory<K, V>
             {
                // Create and inject multiplexer fatory
                JChannelFactory muxFactory = new JChannelFactory();
-               muxFactory.setMultiplexerConfig(jgroupsConfigurationFilePath);
+               muxFactory.setMultiplexerConfig(configurationManager.getResource(jgroupsConfigurationFilePath));
                cache.getConfiguration().getRuntimeConfig().setMuxChannelFactory(muxFactory);
                log.info("Multiplexer stack successfully inabled for the cache.");
             }

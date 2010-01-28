@@ -1,5 +1,5 @@
 <protocol_stacks>
-	<stack name="grid.jgroups.stack">
+	<stack name="jcr.stack">
 		<config>
 			<UDP mcast_addr="228.10.10.10" mcast_port="45588" tos="8"
 				ucast_recv_buf_size="20000000" ucast_send_buf_size="640000"
