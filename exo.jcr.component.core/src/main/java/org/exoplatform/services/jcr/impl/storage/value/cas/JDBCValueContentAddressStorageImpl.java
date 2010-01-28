@@ -88,8 +88,20 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
    /**
     * MYSQL_PK_CONSTRAINT_DETECT.
     */
-   private static final Pattern MYSQL_PK_CONSTRAINT_DETECT = Pattern.compile(MYSQL_PK_CONSTRAINT_DETECT_PATTERN,
-      Pattern.CASE_INSENSITIVE);
+   private static final Pattern MYSQL_PK_CONSTRAINT_DETECT =
+      Pattern.compile(MYSQL_PK_CONSTRAINT_DETECT_PATTERN, Pattern.CASE_INSENSITIVE);
+
+   /**
+    * DB2_PK_CONSTRAINT_DETECT_PATTERN.
+    * %tableName% must be replaced with original table name before compile Pattern.
+    */
+   private static final String DB2_PK_CONSTRAINT_DETECT_PATTERN =
+      "(.*DB2 SQL error+.*SQLCODE: -803+.*SQLSTATE: 23505+.*%tableName%.*)+?";
+
+   /**
+    * DB2_PK_CONSTRAINT_DETECT.
+    */
+   private Pattern DB2_PK_CONSTRAINT_DETECT;
 
    protected DataSource dataSource;
 
@@ -135,7 +147,7 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
             conn = dataSource.getConnection();
             DatabaseMetaData dbMetaData = conn.getMetaData();
 
-            String dialect = props.getProperty(JDBC_DIALECT_PARAM);
+            dialect = props.getProperty(JDBC_DIALECT_PARAM);
             if (dialect == null)
             {
                dialect = DialectDetecter.detect(dbMetaData);
@@ -151,6 +163,11 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
             {
                tableName = DEFAULT_TABLE_NAME;
             }
+
+            // make error pattern for DB2
+            String pattern = DB2_PK_CONSTRAINT_DETECT_PATTERN.replaceAll("%tableName%", tableName);
+
+            DB2_PK_CONSTRAINT_DETECT = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
 
             sqlConstraintPK = tableName + "_PK";
 
@@ -298,6 +315,16 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
       {
          // most of supported dbs prints PK name in exception
          return true;
+      }
+
+      // check DB2 dialect
+
+      if (DBConstants.DB_DIALECT_DB2.equalsIgnoreCase(dialect))
+      {
+         if (DB2_PK_CONSTRAINT_DETECT.matcher(err).find())
+         {
+            return true;
+         }
       }
 
       // NOTICE! As an additional check we may ask the database for property currently processed in
