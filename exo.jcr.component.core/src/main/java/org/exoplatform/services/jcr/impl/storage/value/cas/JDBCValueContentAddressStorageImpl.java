@@ -88,15 +88,15 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
    /**
     * MYSQL_PK_CONSTRAINT_DETECT.
     */
-   private static final Pattern MYSQL_PK_CONSTRAINT_DETECT = Pattern.compile(MYSQL_PK_CONSTRAINT_DETECT_PATTERN,
-      Pattern.CASE_INSENSITIVE);
+   private static final Pattern MYSQL_PK_CONSTRAINT_DETECT =
+      Pattern.compile(MYSQL_PK_CONSTRAINT_DETECT_PATTERN, Pattern.CASE_INSENSITIVE);
 
    /**
     * DB2_PK_CONSTRAINT_DETECT_PATTERN.
-    * %tableName% must be replaced with original table name before compile Pattern.
+    * %s must be replaced with original table name before compile Pattern.
     */
    private static final String DB2_PK_CONSTRAINT_DETECT_PATTERN =
-      "(.*DB2 SQL error+.*SQLCODE: -803+.*SQLSTATE: 23505+.*%tableName%.*)+?";
+      "(.*DB2 SQL error+.*SQLCODE: -803+.*SQLSTATE: 23505+.*%s.*)+?";
 
    /**
     * DB2_PK_CONSTRAINT_DETECT.
@@ -166,7 +166,7 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
             }
 
             // make error pattern for DB2
-            String pattern = DB2_PK_CONSTRAINT_DETECT_PATTERN.replaceAll("%tableName%", tableName);
+            String pattern = String.format(DB2_PK_CONSTRAINT_DETECT_PATTERN, tableName);
 
             DB2_PK_CONSTRAINT_DETECT = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
 
@@ -317,15 +317,9 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
          // most of supported dbs prints PK name in exception
          return true;
       }
-
-      // check DB2 dialect
-
-      if (DBConstants.DB_DIALECT_DB2.equalsIgnoreCase(dialect))
+      else if (DBConstants.DB_DIALECT_DB2.equalsIgnoreCase(dialect))
       {
-         if (DB2_PK_CONSTRAINT_DETECT.matcher(err).find())
-         {
-            return true;
-         }
+         return DB2_PK_CONSTRAINT_DETECT.matcher(err).find();
       }
 
       // NOTICE! As an additional check we may ask the database for property currently processed in
