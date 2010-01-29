@@ -165,10 +165,10 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       // if conn.setAutoCommit(false) called twise or more times with value
       // 'false'.
       // TODO remove workaround for Sybase, jconn 6.05 Build 26564
-      //      if (dbConnection.getAutoCommit())
-      //      {
-      //                dbConnection.setAutoCommit(false);
-      //      }
+      if (dbConnection.getAutoCommit())
+      {
+         dbConnection.setAutoCommit(false);
+      }
 
       prepareQueries();
       this.exceptionHandler = new SQLExceptionHandler(containerName, this);
