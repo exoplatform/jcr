@@ -109,7 +109,7 @@ public class ExoJBossCacheFactory<K, V>
    {
       // get JBossCache configuration file path
       String jBossCacheConfigurationPath = parameterEntry.getParameterValue(JBOSSCACHE_CONFIG);
-      log.info("JBoss Cache configuration/template used: " + jBossCacheConfigurationPath);
+      log.info("JBoss Cache configuration used: " + jBossCacheConfigurationPath);
 
       // prepare configuration
       InputStream configStream;
@@ -142,11 +142,11 @@ public class ExoJBossCacheFactory<K, V>
             String jgroupsConfigurationFilePath = parameterEntry.getParameterValue(JGROUPS_CONFIG);
             if (jgroupsConfigurationFilePath != null)
             {
-               // Create and inject multiplexer fatory
+               // Create and inject multiplexer factory
                JChannelFactory muxFactory = new JChannelFactory();
                muxFactory.setMultiplexerConfig(configurationManager.getResource(jgroupsConfigurationFilePath));
                cache.getConfiguration().getRuntimeConfig().setMuxChannelFactory(muxFactory);
-               log.info("Multiplexer stack successfully inabled for the cache.");
+               log.info("Multiplexer stack successfully enabled for the cache.");
             }
          }
          catch (Exception e)
