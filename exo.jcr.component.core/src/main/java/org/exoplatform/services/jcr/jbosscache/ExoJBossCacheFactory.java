@@ -156,6 +156,25 @@ public class ExoJBossCacheFactory<K, V>
             throw new RepositoryConfigurationException("Error setting multiplexer configuration.", e);
          }
       }
+      else
+      {
+         // Multiplexer is not enabled. If jGroups configuration preset it is applied
+         String jgroupsConfigurationFilePath = parameterEntry.getParameterValue(JGROUPS_CONFIG, null);
+         if (jgroupsConfigurationFilePath != null)
+         {
+            try
+            {
+               cache.getConfiguration().setJgroupsConfigFile(
+                  configurationManager.getResource(jgroupsConfigurationFilePath));
+               log.info("Custom JGroups configuration set:"
+                  + configurationManager.getResource(jgroupsConfigurationFilePath));
+            }
+            catch (Exception e)
+            {
+               throw new RepositoryConfigurationException("Error setting JGroups configuration.", e);
+            }
+         }
+      }
       return cache;
    }
 }
