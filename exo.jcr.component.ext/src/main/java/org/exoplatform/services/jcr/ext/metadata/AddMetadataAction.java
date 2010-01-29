@@ -27,11 +27,11 @@ import org.exoplatform.services.document.HandlerNotFoundException;
 import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionDatas;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.JCRName;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.PropertyImpl;
-import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -65,7 +65,9 @@ public class AddMetadataAction implements Action
       PropertyImpl property = (PropertyImpl)ctx.get("currentItem");
       NodeImpl parent = (NodeImpl)property.getParent();
       if (!parent.isNodeType("nt:resource"))
+      {
          throw new Exception("incoming node is not nt:resource type");
+      }
 
       InputStream data = null;
       String mimeType;
@@ -74,7 +76,7 @@ public class AddMetadataAction implements Action
       {
          if (property.getInternalName().equals(Constants.JCR_DATA))
          {
-            data = ((TransientPropertyData)property.getData()).getValues().get(0).getAsStream();
+            data = ((PropertyData)property.getData()).getValues().get(0).getAsStream();
             try
             {
                mimeType = parent.getProperty("jcr:mimeType").getString();
@@ -90,7 +92,7 @@ public class AddMetadataAction implements Action
             try
             {
                PropertyImpl propertyImpl = (PropertyImpl)parent.getProperty("jcr:data");
-               data = ((TransientPropertyData)propertyImpl.getData()).getValues().get(0).getAsStream();
+               data = ((PropertyData)propertyImpl.getData()).getValues().get(0).getAsStream();
             }
             catch (PathNotFoundException e)
             {
@@ -103,7 +105,9 @@ public class AddMetadataAction implements Action
          }
 
          if (!parent.isNodeType("dc:elementSet"))
+         {
             parent.addMixin("dc:elementSet");
+         }
 
          DocumentReaderService readerService =
             (DocumentReaderService)((ExoContainer)ctx.get("exocontainer"))
