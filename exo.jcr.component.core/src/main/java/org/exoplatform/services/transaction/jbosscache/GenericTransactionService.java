@@ -19,12 +19,14 @@
 package org.exoplatform.services.transaction.jbosscache;
 
 import org.exoplatform.container.xml.InitParams;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
 import org.exoplatform.services.transaction.ExoResource;
 import org.exoplatform.services.transaction.TransactionService;
 import org.jboss.cache.transaction.TransactionManagerLookup;
 
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.InvalidTransactionException;
+import javax.transaction.NotSupportedException;
 import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
@@ -39,35 +41,31 @@ import javax.transaction.xa.Xid;
  */
 public class GenericTransactionService implements TransactionService
 {
+
    /**
-    * The logger 
+    * The default value of a transaction timeout in seconds
     */
-   private final Log log = ExoLogger.getLogger(GenericTransactionService.class);
-   
-   /**
-    * The default timeout value of a transaction set to 20s
-    */
-   private static final int DEFAULT_TIME_OUT = 20;
-   
+   private static final int DEFAULT_TIME_OUT = 60;
+
    /**
     * TransactionManagerLookup.
     */
    protected final TransactionManagerLookup tmLookup;
-   
+
    /**
     * The default timeout
     */
    protected final int defaultTimeout;
-   
+
    /**
     * Indicates if the timeout has to be enforced
     */
    protected final boolean forceTimeout;
-   
+
    /**
     * The current Transaction Manager
     */
-   private volatile TransactionManager tm; 
+   private volatile TransactionManager tm;
 
    /**
     * JBossTransactionManagerLookup  constructor.
@@ -78,7 +76,7 @@ public class GenericTransactionService implements TransactionService
    {
       this(tmLookup, null);
    }
-   
+
    public GenericTransactionService(TransactionManagerLookup tmLookup, InitParams params)
    {
       this.tmLookup = tmLookup;
@@ -99,7 +97,7 @@ public class GenericTransactionService implements TransactionService
     */
    public Xid createXid()
    {
-      throw new UnsupportedOperationException("Method createXid() not supported");         
+      throw new UnsupportedOperationException("Method createXid() not supported");
    }
 
    /**
@@ -128,7 +126,7 @@ public class GenericTransactionService implements TransactionService
       Transaction tx = tm.getTransaction();
       if (tx != null)
       {
-         tx.enlistResource(exores.getXAResource());         
+         tx.enlistResource(exores.getXAResource());
       }
       else
       {
@@ -169,14 +167,7 @@ public class GenericTransactionService implements TransactionService
                   // Only set the timeout when a timeout has been given into the
                   // configuration otherwise we assume that the value will be
                   // set at the AS level
-                  try
-                  {
-                     tm.setTransactionTimeout(defaultTimeout);
-                  }
-                  catch (Exception e)
-                  {
-                     log.warn("Cannot set the transaction timeout", e);
-                  }                  
+                  tm = new TransactionManagerTxTimeoutAware(tm, defaultTimeout);
                }
                this.tm = tm;
             }
@@ -201,20 +192,124 @@ public class GenericTransactionService implements TransactionService
       TransactionManager tm = getTransactionManager();
       tm.setTransactionTimeout(seconds);
    }
-   
+
    /**
     * Allows to execute an action when we try to enlist a resource when there is no active 
     * transaction
     */
-   protected void enlistResourceOnTxMissing(TransactionManager tm, ExoResource exores) throws RollbackException, SystemException
+   protected void enlistResourceOnTxMissing(TransactionManager tm, ExoResource exores) throws RollbackException,
+      SystemException
    {
    }
-   
+
    /**
     * Allows to execute an action when we try to delist a resource when there is no active 
     * transaction
     */
-   protected void delistResourceOnTxMissing(TransactionManager tm, ExoResource exores) throws RollbackException, SystemException
+   protected void delistResourceOnTxMissing(TransactionManager tm, ExoResource exores) throws RollbackException,
+      SystemException
    {
+   }
+
+   /**
+    * This class is used to enforce the {@link Transaction} timeout when a new transaction is created through the nested {@link TransactionManager}
+    * 
+    * Created by The eXo Platform SAS
+    * Author : Nicolas Filotto 
+    *          nicolas.filotto@exoplatform.com
+    * 1 févr. 2010
+    */
+   private static class TransactionManagerTxTimeoutAware implements TransactionManager
+   {
+      /**
+       * The nested {@link TransactionManager}
+       */
+      private final TransactionManager tm;
+
+      /**
+       * The default timeout of the {@link Transaction}
+       */
+      private final int defaultTimeout;
+
+      public TransactionManagerTxTimeoutAware(TransactionManager tm, int defaultTimeout)
+      {
+         this.tm = tm;
+         this.defaultTimeout = defaultTimeout;
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public void begin() throws NotSupportedException, SystemException
+      {
+         tm.begin();
+         // Set the default transaction timeout
+         tm.setTransactionTimeout(defaultTimeout);
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public void commit() throws RollbackException, HeuristicMixedException, HeuristicRollbackException,
+         SecurityException, IllegalStateException, SystemException
+      {
+         tm.commit();
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public int getStatus() throws SystemException
+      {
+         return tm.getStatus();
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public Transaction getTransaction() throws SystemException
+      {
+         return tm.getTransaction();
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public void resume(Transaction tx) throws InvalidTransactionException, IllegalStateException, SystemException
+      {
+         tm.resume(tx);
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public void rollback() throws IllegalStateException, SecurityException, SystemException
+      {
+         tm.rollback();
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public void setRollbackOnly() throws IllegalStateException, SystemException
+      {
+         tm.setRollbackOnly();
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public void setTransactionTimeout(int timeout) throws SystemException
+      {
+         tm.setTransactionTimeout(timeout);
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public Transaction suspend() throws SystemException
+      {
+         return tm.suspend();
+      }
    }
 }
