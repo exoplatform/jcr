@@ -19,6 +19,7 @@ package org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jboss.cache.Cache;
+import org.jboss.cache.CacheSPI;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.eviction.DefaultEvictionActionPolicy;
 import org.jboss.cache.eviction.EvictionActionPolicy;
@@ -74,7 +75,10 @@ public class ParentNodeEvictionActionPolicy implements EvictionActionPolicy
          {
             // The expected data structure is of type $CHILD_NODES/${node-id}/${sub-node-name} or
             // $CHILD_PROPS/${node-id}/${sub-property-name}
-            Set<Object> names = cache.getChildrenNames(parentFqn);
+            
+            // We use the method getChildrenNamesDirect to avoid going through 
+            // the interceptor chain (EXOJCR-460)
+            Set<Object> names = ((CacheSPI)cache).getNode(parentFqn).getChildrenNamesDirect();
             if (names.isEmpty() || (names.size() == 1 && names.contains(fqn.get(2))))
             {
                if (log.isTraceEnabled())
