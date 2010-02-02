@@ -80,7 +80,7 @@ public class InmemoryNodeTypeRepository extends AbstractNodeTypeRepository
    {
 
       hierarchy.addNodeType(nodeType, volatileNodeTypes);
-      defsHolder.putDefinitions(nodeType.getName(), nodeType);
+      
       // put supers
       final Set<InternalQName> supers = hierarchy.getSupertypes(nodeType.getName(), volatileNodeTypes);
 
@@ -89,6 +89,9 @@ public class InmemoryNodeTypeRepository extends AbstractNodeTypeRepository
          defsHolder.putDefinitions(nodeType.getName(), hierarchy.getNodeType(superName, volatileNodeTypes));
       }
       haveTypes = true;
+      
+      // put prop def
+      defsHolder.putDefinitions(nodeType.getName(), nodeType);
    }
 
    /**

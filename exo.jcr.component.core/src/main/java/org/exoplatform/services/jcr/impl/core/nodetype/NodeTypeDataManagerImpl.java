@@ -224,27 +224,69 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
    public PropertyDefinitionData[] getAllPropertyDefinitions(final InternalQName... nodeTypeNames)
 
    {
-      final Collection<PropertyDefinitionData> defs = new HashSet<PropertyDefinitionData>();
+      class Key
+      {
+         private InternalQName name;
 
+         private boolean isMulti;
+
+         public Key(InternalQName name, boolean isMulti)
+         {
+            this.name = name;
+            this.isMulti = isMulti;
+         }
+
+         /**
+          * {@inheritDoc}
+          */
+         public int hashCode()
+         {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((name == null) ? 0 : name.hashCode());
+            result = prime * result + (isMulti ? 1231 : 1237);
+            return result;
+         }
+
+         /**
+          * {@inheritDoc}
+          */
+         public boolean equals(Object obj)
+         {
+            if (!(obj instanceof Key))
+            {
+               return false;
+            }
+
+            Key k = (Key) obj;
+
+            return name.equals(k.name) && isMulti == k.isMulti;
+         }
+      }
+      
+      final HashMap<Key, PropertyDefinitionData> defs = new HashMap<Key, PropertyDefinitionData>();
+      
       for (final InternalQName ntname : nodeTypeNames)
       {
-         for (final PropertyDefinitionData pd : this.nodeTypeRepository.getNodeType(ntname)
-            .getDeclaredPropertyDefinitions())
-         {
-            defs.add(pd);
-         }
 
          for (final InternalQName suname : this.nodeTypeRepository.getSupertypes(ntname))
          {
             for (final PropertyDefinitionData pd : this.nodeTypeRepository.getNodeType(suname)
-               .getDeclaredPropertyDefinitions())
+                     .getDeclaredPropertyDefinitions())
             {
-               defs.add(pd);
+               
+               defs.put(new Key(pd.getName(), pd.isMultiple()), pd);
             }
          }
-      }
 
-      return defs.toArray(new PropertyDefinitionData[defs.size()]);
+         for (final PropertyDefinitionData pd : this.nodeTypeRepository.getNodeType(ntname)
+                  .getDeclaredPropertyDefinitions())
+         {
+            defs.put(new Key(pd.getName(), pd.isMultiple()), pd);
+         }
+      }
+      
+      return defs.values().toArray(new PropertyDefinitionData[defs.size()]);
    }
 
    /**
@@ -360,6 +402,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
 
       PropertyDefinitionDatas propertyDefinitions =
          this.nodeTypeRepository.getPropertyDefinitions(propertyName, nodeTypeNames);
+      
       // Try super
       if (propertyDefinitions == null)
       {
