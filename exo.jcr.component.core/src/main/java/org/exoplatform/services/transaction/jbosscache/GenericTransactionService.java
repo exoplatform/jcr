@@ -19,6 +19,8 @@
 package org.exoplatform.services.transaction.jbosscache;
 
 import org.exoplatform.container.xml.InitParams;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 import org.exoplatform.services.transaction.ExoResource;
 import org.exoplatform.services.transaction.TransactionService;
 import org.jboss.cache.transaction.TransactionManagerLookup;
@@ -41,7 +43,11 @@ import javax.transaction.xa.Xid;
  */
 public class GenericTransactionService implements TransactionService
 {
-
+   /**
+    * The logger 
+    */
+   private static final Log LOG = ExoLogger.getLogger(GenericTransactionService.class);
+   
    /**
     * The default value of a transaction timeout in seconds
     */
@@ -230,6 +236,11 @@ public class GenericTransactionService implements TransactionService
        * The default timeout of the {@link Transaction}
        */
       private final int defaultTimeout;
+      
+      /**
+       * This is used to know if a timeout has already been set for the next transaction
+       */
+      private final ThreadLocal<Boolean> timeoutHasBeenSet = new ThreadLocal<Boolean>();
 
       public TransactionManagerTxTimeoutAware(TransactionManager tm, int defaultTimeout)
       {
@@ -242,9 +253,25 @@ public class GenericTransactionService implements TransactionService
        */
       public void begin() throws NotSupportedException, SystemException
       {
+         if (timeoutHasBeenSet.get() != null)
+         {
+            // clean the ThreadLocal
+            timeoutHasBeenSet.set(null);
+         }
+         else
+         {
+            try
+            {
+               // Set the default transaction timeout
+               tm.setTransactionTimeout(defaultTimeout);
+            }
+            catch (Exception e)
+            {
+               LOG.warn("Cannot set the transaction timeout", e);
+            }            
+         }
+         // Start the transaction
          tm.begin();
-         // Set the default transaction timeout
-         tm.setTransactionTimeout(defaultTimeout);
       }
 
       /**
@@ -302,6 +329,7 @@ public class GenericTransactionService implements TransactionService
       public void setTransactionTimeout(int timeout) throws SystemException
       {
          tm.setTransactionTimeout(timeout);
+         timeoutHasBeenSet.set(true);
       }
 
       /**
