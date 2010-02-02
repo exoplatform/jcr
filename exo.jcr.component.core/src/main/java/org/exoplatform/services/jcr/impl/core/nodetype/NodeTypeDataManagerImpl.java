@@ -176,27 +176,44 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
    public NodeDefinitionData[] getAllChildNodeDefinitions(final InternalQName... nodeTypeNames)
 
    {
-      final Collection<NodeDefinitionData> defs = new HashSet<NodeDefinitionData>();
+      final Collection<NodeDefinitionData> defsAny = new ArrayList<NodeDefinitionData>();
+      final HashMap<InternalQName, NodeDefinitionData> defs = new HashMap<InternalQName, NodeDefinitionData>();
 
       for (final InternalQName ntname : nodeTypeNames)
       {
-         for (final NodeDefinitionData cnd : this.nodeTypeRepository.getNodeType(ntname)
-            .getDeclaredChildNodeDefinitions())
-         {
-            defs.add(cnd);
-         }
-
          for (final InternalQName suname : this.nodeTypeRepository.getSupertypes(ntname))
          {
             for (final NodeDefinitionData cnd : this.nodeTypeRepository.getNodeType(suname)
                .getDeclaredChildNodeDefinitions())
             {
-               defs.add(cnd);
+               if (cnd.getName().equals(Constants.JCR_ANY_NAME))
+               {
+                  defsAny.add(cnd);
+               }
+               else
+               {
+                  defs.put(cnd.getName(), cnd);
+               }
+            }
+         }
+         
+         for (final NodeDefinitionData cnd : this.nodeTypeRepository.getNodeType(ntname)
+            .getDeclaredChildNodeDefinitions())
+         {
+            if (cnd.getName().equals(Constants.JCR_ANY_NAME))
+            {
+               defsAny.add(cnd);
+            }
+            else
+            {
+               defs.put(cnd.getName(), cnd);
             }
          }
       }
+      
+      defsAny.addAll(defs.values());
 
-      return defs.toArray(new NodeDefinitionData[defs.size()]);
+      return defsAny.toArray(new NodeDefinitionData[defsAny.size()]);
    }
 
    /**
@@ -224,47 +241,8 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
    public PropertyDefinitionData[] getAllPropertyDefinitions(final InternalQName... nodeTypeNames)
 
    {
-      class Key
-      {
-         private InternalQName name;
-
-         private boolean isMulti;
-
-         public Key(InternalQName name, boolean isMulti)
-         {
-            this.name = name;
-            this.isMulti = isMulti;
-         }
-
-         /**
-          * {@inheritDoc}
-          */
-         public int hashCode()
-         {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + ((name == null) ? 0 : name.hashCode());
-            result = prime * result + (isMulti ? 1231 : 1237);
-            return result;
-         }
-
-         /**
-          * {@inheritDoc}
-          */
-         public boolean equals(Object obj)
-         {
-            if (!(obj instanceof Key))
-            {
-               return false;
-            }
-
-            Key k = (Key) obj;
-
-            return name.equals(k.name) && isMulti == k.isMulti;
-         }
-      }
-      
-      final HashMap<Key, PropertyDefinitionData> defs = new HashMap<Key, PropertyDefinitionData>();
+      final Collection<PropertyDefinitionData> defsAny = new ArrayList<PropertyDefinitionData>();
+      final HashMap<InternalQName, PropertyDefinitionData> defs = new HashMap<InternalQName, PropertyDefinitionData>();
       
       for (final InternalQName ntname : nodeTypeNames)
       {
@@ -274,19 +252,34 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
             for (final PropertyDefinitionData pd : this.nodeTypeRepository.getNodeType(suname)
                      .getDeclaredPropertyDefinitions())
             {
-               
-               defs.put(new Key(pd.getName(), pd.isMultiple()), pd);
+               if (pd.getName().equals(Constants.JCR_ANY_NAME))
+               {
+                  defsAny.add(pd);
+               }
+               else
+               {
+                  defs.put(pd.getName(), pd);
+               }
             }
          }
 
          for (final PropertyDefinitionData pd : this.nodeTypeRepository.getNodeType(ntname)
                   .getDeclaredPropertyDefinitions())
          {
-            defs.put(new Key(pd.getName(), pd.isMultiple()), pd);
+            if (pd.getName().equals(Constants.JCR_ANY_NAME))
+            {
+               defsAny.add(pd);
+            }
+            else
+            {
+               defs.put(pd.getName(), pd);
+            }
          }
       }
       
-      return defs.values().toArray(new PropertyDefinitionData[defs.size()]);
+      defsAny.addAll(defs.values());
+
+      return defsAny.toArray(new PropertyDefinitionData[defsAny.size()]);
    }
 
    /**
