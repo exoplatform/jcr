@@ -36,6 +36,9 @@ import java.util.List;
  */
 public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
 {
+   private static final int NULL_VALUE = -1;
+   
+   private static final int NOT_NULL_VALUE = 1;
 
    private static final long serialVersionUID = 5624550860372364084L;
 
@@ -224,9 +227,17 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
          out.writeObject(items.get(i));
       }
 
-      buff = pairId.getBytes(Constants.DEFAULT_ENCODING);
-      out.writeInt(buff.length);
-      out.write(buff);
+      if (pairId != null) 
+      {
+         out.writeInt(NOT_NULL_VALUE);
+         buff = pairId.getBytes(Constants.DEFAULT_ENCODING);
+         out.writeInt(buff.length);
+         out.write(buff);
+      }
+      else
+      {
+         out.writeInt(NULL_VALUE);
+      }
    }
 
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
@@ -243,9 +254,12 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
          add((ItemState)in.readObject());
       }
       
-      buf = new byte[in.readInt()];
-      in.readFully(buf);
-      pairId = new String(buf, Constants.DEFAULT_ENCODING);
+      if (in.readInt() == NOT_NULL_VALUE)
+      {
+         buf = new byte[in.readInt()];
+         in.readFully(buf);
+         pairId = new String(buf, Constants.DEFAULT_ENCODING);
+      }
    }
    // ------------------ [ END ] ------------------
 }
