@@ -1346,6 +1346,7 @@ public class SessionDataManager implements ItemDataConsumer
       throws RepositoryException
    {
       // simple locate now
+      // TODO list copy?
       List<PropertyData> persisted = transactionableManager.getReferencesData(identifier, skipVersionStorage);
       List<PropertyData> sessionTransient = new ArrayList<PropertyData>();
       for (PropertyData p : persisted)
