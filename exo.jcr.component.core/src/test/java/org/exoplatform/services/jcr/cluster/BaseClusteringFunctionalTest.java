@@ -59,7 +59,7 @@ public abstract class BaseClusteringFunctionalTest extends TestCase
    {
       super.setUp();
 
-      JCRWebdavConnection[] connections =
+      connections =
          new JCRWebdavConnection[]{new JCRWebdavConnection("localhost", 8080, "root", "exo", realm, workspacePath)
          /**,
          new JCRWebdavConnection("localhost", 8082, "root", "exo", realm, workspacePath),
