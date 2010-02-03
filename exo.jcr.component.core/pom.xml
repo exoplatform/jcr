@@ -214,9 +214,15 @@
       <dependency>
          <groupId>postgresql</groupId>
          <artifactId>postgresql</artifactId>
-         <version>8.2-504.jdbc3</version>
+         <version>8.3-603.jdbc3</version> 
          <scope>test</scope>
       </dependency>
+      <!-- dependency>
+         <groupId>postgresql</groupId>
+         <artifactId>postgresql</artifactId>
+         <version>8.2-504.jdbc3</version>
+         <scope>test</scope>
+      </dependency -->
       <!-- For Oracle 10g support (local-jcr repository) -->
       <!-- dependency>
          <groupId>ojdbc</groupId>
@@ -244,12 +250,12 @@
          <scope>test</scope>
       </dependency -->
       <!-- For MS SQL 7/2000/2005 and Sybase ASE/Anywhere support (jTDS driver) -->
-      <dependency>
+      <!-- dependency>
          <groupId>net.sourceforge.jtds</groupId>
          <artifactId>jtds</artifactId>
          <version>1.2</version>
          <scope>test</scope>
-      </dependency>
+      </dependency -->
       <!-- For MS SQL 2005 support (Microsoft JDBC driver) (local-jcr repository) -->
       <!-- dependency>
          <groupId>com.microsoft.sqlserver</groupId>
@@ -257,14 +263,20 @@
          <version>9.0</version>
          <scope>test</scope>
       </dependency -->
+      <!-- dependency>
+         <groupId>com.microsoft</groupId>
+         <artifactId>sqljdbc</artifactId>
+         <version>2.0</version>
+         <scope>test</scope>
+      </dependency -->
       <!-- For Apache Derby support (aka JavaDB) -->
-      <dependency>
+      <!-- dependency>
          <groupId>org.apache.derby</groupId>
          <artifactId>derby</artifactId>
          <version>10.2.2.0</version>
          <scope>test</scope>
-      </dependency>
-      <!-- H2 Database -->
+      </dependency -->
+      <!-- H2 Database (not supported now) -->
       <!-- dependency>
          <groupId>com.h2database</groupId>
          <artifactId>h2</artifactId>
@@ -562,7 +574,7 @@
                   <configuration>
                      <phase>test</phase>
                      <forkMode>${exo.test.forkMode}</forkMode>
-                     <argLine>${env.MAVEN_OPTS}</argLine>
+                     <!-- argLine>${env.MAVEN_OPTS}</argLine -->
                      <goals>
                         <goal>test</goal>
                      </goals>
@@ -579,7 +591,7 @@
                         <include>**/**/TestJBossCacheWorkspaceStorageCache_.java</include>
                         <include>**/**/TestSVNodeDataOptimization_.java</include>
                         
-                        <include>**/**/ExportWorkspaceSystemViewTest.java</include>       
+                        <include>**/**/TestValueConstraints.java</include>       
                      </includes>
                   </configuration>
                </plugin>
