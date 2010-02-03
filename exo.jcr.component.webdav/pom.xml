@@ -25,7 +25,7 @@
    <parent>
       <groupId>org.exoplatform.jcr</groupId>
       <artifactId>jcr-parent</artifactId>
-      <version>1.12.0-CR1-SNAPSHOT</version>
+      <version>1.12.0-CR1</version>
    </parent>
    
    <artifactId>exo.jcr.component.webdav</artifactId>

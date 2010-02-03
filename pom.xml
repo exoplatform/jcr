@@ -30,7 +30,7 @@
 
    <groupId>org.exoplatform.jcr</groupId>
    <artifactId>jcr-parent</artifactId>
-   <version>1.12.0-CR1-SNAPSHOT</version>
+   <version>1.12.0-CR1</version>
    <packaging>pom</packaging>
 
    <name>eXo JCR</name>
@@ -44,9 +44,9 @@
    </properties>
 
    <scm>
-      <connection>scm:svn:http://anonsvn.jboss.org/repos/exo-jcr/jcr/trunk</connection>
-      <developerConnection>scm:svn:https://svn.jboss.org/repos/exo-jcr/jcr/trunk</developerConnection>
-      <url>https://svn.jboss.org/repos/exo-jcr/jcr/trunk</url>
+      <connection>scm:svn:http://anonsvn.jboss.org/repos/exo-jcr/jcr/tags/1.12.0-CR1</connection>
+      <developerConnection>scm:svn:https://svn.jboss.org/repos/exo-jcr/jcr/tags/1.12.0-CR1</developerConnection>
+      <url>https://svn.jboss.org/repos/exo-jcr/jcr/tags/1.12.0-CR1</url>
    </scm>
 
    <modules>
