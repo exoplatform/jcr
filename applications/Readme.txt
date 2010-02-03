@@ -3,7 +3,7 @@
 1. Make sure you have correct: 
 1.1. settings.xml. There should be the correct application server version (e.g <exo.projects.app.tomcat.version>) etc.
 1.2. exo directory structure.
-1.3. Maven version 2.0.8 (or higher).
+1.3. Maven version 2.2.1 (or higher).
 1.4. Make sure you have run mvn insctal within ./config folder.  
 2. Run "mvn -f product-exo-jcr-as-tomcat6.xml clean install antrun:run" command.
 3. If the command has executed successfully, go to exo-tomcat and run "eXo run" command.
