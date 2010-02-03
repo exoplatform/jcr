@@ -41,20 +41,14 @@ import javax.xml.stream.events.StartElement;
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a> 
  * @version $Id$
  */
-public abstract class BaseClusteringFunctionalTest
-   extends TestCase
+public abstract class BaseClusteringFunctionalTest extends TestCase
 {
 
    private String realm = "eXo REST services";
 
    private String workspacePath = "/rest/jcr/repository/production/";
 
-   private JCRWebdavConnection[] connections = new JCRWebdavConnection[]
-   {new JCRWebdavConnection("localhost", 8080, "root", "exo", realm, workspacePath)/*,
-                                                                                   new JCRWebdavConnection("localhost", 8082, "root", "exo", realm, workspacePath),
-                                                                                   new JCRWebdavConnection("localhost", 8083, "root", "exo", realm, workspacePath),
-                                                                                   new JCRWebdavConnection("localhost", 8084, "root", "exo", realm, workspacePath)*/
-   };
+   private JCRWebdavConnection[] connections;
 
    protected String nodeName;
 
@@ -64,6 +58,15 @@ public abstract class BaseClusteringFunctionalTest
    protected void setUp() throws Exception
    {
       super.setUp();
+
+      JCRWebdavConnection[] connections =
+         new JCRWebdavConnection[]{new JCRWebdavConnection("localhost", 8080, "root", "exo", realm, workspacePath)
+         /**,
+         new JCRWebdavConnection("localhost", 8082, "root", "exo", realm, workspacePath),
+         new JCRWebdavConnection("localhost", 8083, "root", "exo", realm, workspacePath),
+         new JCRWebdavConnection("localhost", 8084, "root", "exo", realm, workspacePath)
+         */
+         };
 
       nodeName = generateUniqueName("removed_node_over_webdav");
    }
@@ -91,7 +94,7 @@ public abstract class BaseClusteringFunctionalTest
 
    protected JCRWebdavConnection getConnection()
    {
-      return connections[(int) (Math.random() * 100) % connections.length];
+      return connections[(int)(Math.random() * 100) % connections.length];
    }
 
    /**
@@ -122,7 +125,7 @@ public abstract class BaseClusteringFunctionalTest
    }
 
    protected String getPropertyValue(byte[] responseData, String propertyName) throws XMLStreamException,
-            FactoryConfigurationError, IOException
+      FactoryConfigurationError, IOException
    {
       InputStream input = new ByteArrayInputStream(responseData);
 
