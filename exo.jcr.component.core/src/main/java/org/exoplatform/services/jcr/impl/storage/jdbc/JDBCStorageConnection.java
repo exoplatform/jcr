@@ -268,7 +268,11 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       checkIfOpened();
       try
       {
-         dbConnection.rollback();
+         if (!this.readOnly)
+         {
+            dbConnection.rollback();
+         }
+
          dbConnection.close();
 
          // rollback from the end
@@ -321,14 +325,19 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       checkIfOpened();
       try
       {
-         dbConnection.commit();
+         if (!this.readOnly)
+         {
+            dbConnection.commit();
+         }
+
          dbConnection.close();
 
          try
          {
             for (ValueIOChannel vo : valueChanges)
+            {
                vo.commit();
-
+            }
          }
          catch (IOException e)
          {

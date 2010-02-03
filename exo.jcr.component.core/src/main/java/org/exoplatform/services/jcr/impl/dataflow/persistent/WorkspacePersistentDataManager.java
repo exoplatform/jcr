@@ -570,7 +570,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
             }
             finally
             {
-               acon.rollback();
+               acon.close();
             }
          }
       }

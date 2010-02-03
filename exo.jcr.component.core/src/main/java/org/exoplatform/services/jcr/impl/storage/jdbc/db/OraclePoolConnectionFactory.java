@@ -163,8 +163,11 @@ public class OraclePoolConnectionFactory extends GenericConnectionFactory
          {
             Connection conn = getPoolConnection();
 
-            if (readOnly) // set this feature only if it asked
+            if (readOnly)
+            {
+               // set this feature only if it asked
                conn.setReadOnly(true);
+            }
 
             return conn;
          }

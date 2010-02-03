@@ -177,8 +177,11 @@ public class OracleConnectionFactory extends GenericCQConnectionFactory
          {
             Connection conn = getCachedConnection();
 
-            if (readOnly) // set this feature only if it asked
+            if (readOnly)
+            {
+               // set this feature only if it asked
                conn.setReadOnly(true);
+            }
 
             return conn;
          }

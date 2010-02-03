@@ -17,6 +17,7 @@
 package org.exoplatform.services.jcr.impl.storage.jdbc.db;
 
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCConnectionTestBase;
+import org.exoplatform.services.jcr.impl.storage.jdbc.init.DBInitializer;
 
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -32,16 +33,18 @@ import java.sql.Statement;
 public class TestSingleDbJDBCConnection extends JDBCConnectionTestBase
 {
 
-   /* (non-Javadoc)
-    * @see org.exoplatform.services.jcr.BaseStandaloneTest#setUp()
-    */
+   private void setUp(String scriptPath, boolean multiDB) throws Exception
+   {
+      super.setUp();
+      new DBInitializer("ws3", getJNDIConnection(), scriptPath, multiDB).init();
+   }
+   
    @Override
    public void setUp() throws Exception
    {
-      super.setUp("/conf/storage/jcr-sjdbc.sql", false);
+      setUp("/conf/storage/jcr-sjdbc.sql", false);
       try
       {
-
          Statement st = getJNDIConnection().createStatement();
          st.executeUpdate("insert into JCR_SITEM values" + "('A','A','test1',20090525,'ws3',2,1233,1,10,5)");
          st.executeUpdate("insert into JCR_SITEM values" + "('B','A','test2',20090625,'ws3',1,1233,5,10,4)");
@@ -56,7 +59,6 @@ public class TestSingleDbJDBCConnection extends JDBCConnectionTestBase
          st.close();
          jdbcConn = new SingleDbJDBCConnection(getJNDIConnection(), false, "ws3", null, 10, null, null);
          tableType = "S";
-
       }
       catch (SQLException se)
       {

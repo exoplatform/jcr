@@ -47,13 +47,6 @@ abstract public class JDBCConnectionTestBase extends JcrAPIBaseTest
 
    private Connection connect = null;
 
-   public void setUp(String scriptPath, boolean multiDB) throws Exception
-   {
-
-      super.setUp();
-      new DBInitializer("ws3", getJNDIConnection(), scriptPath, multiDB).init();
-   }
-
    protected void tearDown() throws Exception
    {
 

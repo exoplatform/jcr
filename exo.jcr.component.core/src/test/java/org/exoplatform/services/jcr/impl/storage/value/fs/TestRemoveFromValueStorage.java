@@ -60,9 +60,9 @@ public class TestRemoveFromValueStorage extends BaseStandaloneTest
 
    private int smallValueSize = 1000 * 1024;
 
-   private SessionImpl my_session;
+   private SessionImpl mySession;
 
-   private Node my_root;
+   private Node myRoot;
 
    @Override
    public void setUp() throws Exception
@@ -70,11 +70,11 @@ public class TestRemoveFromValueStorage extends BaseStandaloneTest
       super.setUp();
       // This test uses special workspace ("ws3"), with complex value storage. So
       // we need to login into another workspace.
-      my_session = (SessionImpl)repository.login(credentials, "ws3");
-      my_root = my_session.getRootNode();
+      mySession = (SessionImpl)repository.login(credentials, "ws3");
+      myRoot = mySession.getRootNode();
 
       // creating property with binary values.
-      testRoot = my_root.addNode("TestRoot");
+      testRoot = myRoot.addNode("TestRoot");
 
       values = new Value[largeCount + smallCount];
 
@@ -98,6 +98,7 @@ public class TestRemoveFromValueStorage extends BaseStandaloneTest
          generator.nextBytes(smallValue);
          values[i] = testRoot.getSession().getValueFactory().createValue(new ByteArrayInputStream(smallValue));
       }
+      
       if (values.length == 1)
       {
          prop = testRoot.setProperty("binaryProperty", values[0]);
@@ -106,7 +107,7 @@ public class TestRemoveFromValueStorage extends BaseStandaloneTest
       {
          prop = testRoot.setProperty("binaryProperty", values);
       }
-      my_session.save();
+      mySession.save();
    }
 
    public void testRemoveValue() throws Exception
@@ -114,7 +115,7 @@ public class TestRemoveFromValueStorage extends BaseStandaloneTest
       // reading values directly from value storage
       PropertyImpl propertyImpl = (PropertyImpl)prop;
       ValueStoragePluginProvider storageProvider =
-         (ValueStoragePluginProvider)my_session.getContainer().getComponentInstanceOfType(
+         (ValueStoragePluginProvider)mySession.getContainer().getComponentInstanceOfType(
             ValueStoragePluginProvider.class);
 
       String propertyId = propertyImpl.getInternalIdentifier();
@@ -143,7 +144,7 @@ public class TestRemoveFromValueStorage extends BaseStandaloneTest
       }
 
       prop.remove();
-      my_session.save();
+      mySession.save();
 
       // checking whether values are still in value storage.
       for (int i = 0; i < count; i++)
@@ -170,10 +171,10 @@ public class TestRemoveFromValueStorage extends BaseStandaloneTest
    @Override
    protected void tearDown() throws Exception
    {
-      if (my_session != null)
+      if (mySession != null)
       {
          testRoot.remove();
-         my_session.logout();
+         mySession.logout();
       }
       super.tearDown();
    }
