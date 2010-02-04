@@ -22,6 +22,7 @@ import org.exoplatform.services.log.Log;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Set;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.lock.LockException;
@@ -136,6 +137,22 @@ public class LockJDBCConnection
       {
          throw new LockException(e);
       }
+   }
+
+   /**
+    * Refreshes given lockData
+    */
+   public int refreshLockData(LockData data) throws LockException
+   {
+      return 0;
+   }
+
+   /**
+    * Returns set of locked nodes identifiers
+    */
+   public Set<String> getLockedNodes() throws LockException
+   {
+      return null;
    }
 
    /**

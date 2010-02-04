@@ -51,7 +51,7 @@ public class LockPersistentDataManager
     * @param tableName Name of DB table
     * @throws RepositoryException 
     */
-   public LockPersistentDataManager(String dataSourceName, String wsName) throws RepositoryException, IOException
+   public LockPersistentDataManager(String dataSourceName, String wsName) throws RepositoryException
    {
       this.wsName = wsName;
 
@@ -73,6 +73,9 @@ public class LockPersistentDataManager
             }
             catch (SQLException e)
             {
+               throw new RepositoryException(e);
+            }
+            catch (IOException e) {
                throw new RepositoryException(e);
             }
             finally
