@@ -22,7 +22,7 @@ package org.exoplatform.services.jcr.impl.core.lock;
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: LockManager.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public interface LockManager
+public interface WorkspaceLockManager
 {
    /**
     * Remove expired locks. Called by LockRemover timer.
@@ -32,8 +32,14 @@ public interface LockManager
    /**
     * Returns session lock manager that interact with this LockManager.
     * 
-    * @param sessionId - sessionId
+    * @param sessionId - session ID
     * @return
     */
    SessionLockManager getSessionLockManager(String sessionId);
+
+   /**
+    * Release resources associated with previously opened SessionLockManager.
+    * @param sessionId - session ID
+    */
+   void closeSessionLockManager(String sessionId);
 }

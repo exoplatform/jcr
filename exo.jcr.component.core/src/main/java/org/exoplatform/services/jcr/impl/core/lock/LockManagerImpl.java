@@ -74,7 +74,7 @@ import javax.jcr.lock.LockException;
  */
 @Managed
 @NameTemplate(@Property(key = "service", value = "lockmanager"))
-public class LockManagerImpl extends AbstractLockManager implements ItemsPersistenceListener, Startable
+public class LockManagerImpl implements WorkspaceLockManager, ItemsPersistenceListener, Startable
 {
    /**
     * Default lock time out. 30min
@@ -100,7 +100,7 @@ public class LockManagerImpl extends AbstractLockManager implements ItemsPersist
    /**
     * Logger
     */
-   private final Log log = ExoLogger.getLogger("jcr.lock.LockManager");
+   private final Log log = ExoLogger.getLogger("jcr.lock.LockManagerImpl");
 
    /**
     * Map NodeIdentifier -- lockData
@@ -797,5 +797,10 @@ public class LockManagerImpl extends AbstractLockManager implements ItemsPersist
    public SessionLockManager getSessionLockManager(String sessionId)
    {
       return new SessionLockManagerImpl(sessionId, this);
+   }
+
+   public void closeSessionLockManager(String sessionId)
+   {
+      //do nothing
    }
 }

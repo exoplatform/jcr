@@ -31,7 +31,7 @@ import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.core.lock.AbstractLockManager;
+import org.exoplatform.services.jcr.impl.core.lock.WorkspaceLockManager;
 import org.exoplatform.services.jcr.impl.core.lock.SessionLockManager;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeImpl;
 import org.exoplatform.services.jcr.impl.core.observation.ObservationManagerImpl;
@@ -157,8 +157,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
 
       this.accessManager = (AccessManager)container.getComponentInstanceOfType(AccessManager.class);
       this.lockManager =
-         ((AbstractLockManager)container.getComponentInstanceOfType(AbstractLockManager.class))
-            .getSessionLockManager(id);
+         ((WorkspaceLockManager)container.getComponentInstanceOfType(WorkspaceLockManager.class)).getSessionLockManager(id);
       WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
 
       this.lazyReadThreshold =

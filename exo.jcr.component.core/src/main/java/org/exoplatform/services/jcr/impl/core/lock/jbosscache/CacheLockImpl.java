@@ -113,6 +113,7 @@ public class CacheLockImpl extends LockImpl
       }
       catch (RepositoryException e)
       {
+         //TODO
          e.printStackTrace();
       }
       return null;

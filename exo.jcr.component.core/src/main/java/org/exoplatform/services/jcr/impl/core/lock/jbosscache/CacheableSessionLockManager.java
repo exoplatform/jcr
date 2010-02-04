@@ -28,7 +28,9 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.jcr.AccessDeniedException;
 import javax.jcr.RepositoryException;
@@ -69,6 +71,11 @@ public class CacheableSessionLockManager implements SessionLockManager
    private final Map<String, LockData> lockedNodes;
 
    /**
+    * Set of pending locked nodes identifiers.
+    */
+   private final Set<String> pendingLocks;
+
+   /**
     * Workspace lock manager
     */
    private final CacheableLockManager lockManager;
@@ -84,6 +91,7 @@ public class CacheableSessionLockManager implements SessionLockManager
       this.sessionID = sessionID;
       this.tokens = new HashMap<String, String>();
       this.lockedNodes = new HashMap<String, LockData>();
+      this.pendingLocks = new HashSet<String>();
       this.lockManager = lockManager;
    }
 
@@ -94,42 +102,19 @@ public class CacheableSessionLockManager implements SessionLockManager
       RepositoryException
    {
 
-      String nodeIdentifier = node.getInternalIdentifier();
-      LockData lData =
-         lockManager.getLockData((NodeData)node.getData(), CacheableLockManager.SEARCH_EXECMATCH
-            | CacheableLockManager.SEARCH_CLOSEDPARENT);
-      if (lData != null)
-      {
-         if (lData.getNodeIdentifier().equals(node.getInternalIdentifier()))
-         {
-            throw new LockException("Node already locked: " + node.getData().getQPath());
-         }
-         else if (lData.isDeep())
-         {
-            throw new LockException("Parent node has deep lock.");
-         }
-      }
-
-      if (isDeep && lockManager.getLockData((NodeData)node.getData(), CacheableLockManager.SEARCH_CLOSEDCHILD) != null)
-      {
-         throw new LockException("Some child node is locked.");
-      }
-
       String lockToken = IdGenerator.generate();
-      String lockTokenHash = lockManager.getHash(lockToken);
 
-      lData =
-         new LockData(nodeIdentifier, lockTokenHash, isDeep, isSessionScoped, node.getSession().getUserID(),
-            timeOut > 0 ? timeOut : lockManager.getDefaultLockTimeOut());
+      LockData lData =
+         lockManager.createLockData((NodeData)node.getData(), lockToken, isDeep, isSessionScoped, node.getSession()
+            .getUserID(), timeOut);
 
       lockedNodes.put(node.getInternalIdentifier(), lData);
-      lockManager.addPendingLock(nodeIdentifier, lData);
-      tokens.put(lockToken, lockTokenHash);
+      pendingLocks.add(node.getInternalIdentifier());
+      tokens.put(lockToken, lData.getTokenHash());
 
       LockImpl lock = new CacheLockImpl(node.getSession(), lData, this);
 
       return lock;
-
    }
 
    /**
@@ -145,9 +130,7 @@ public class CacheableSessionLockManager implements SessionLockManager
     */
    public LockImpl getLock(NodeImpl node) throws LockException, RepositoryException
    {
-      LockData lData =
-         lockManager.getLockData((NodeData)node.getData(), CacheableLockManager.SEARCH_EXECMATCH
-            | CacheableLockManager.SEARCH_CLOSEDPARENT);
+      LockData lData = lockManager.getExactOrCloseParentLock((NodeData)node.getData());
 
       if (lData == null || (!node.getInternalIdentifier().equals(lData.getNodeIdentifier()) && !lData.isDeep()))
       {
@@ -171,7 +154,7 @@ public class CacheableSessionLockManager implements SessionLockManager
     */
    public boolean holdsLock(NodeData node) throws RepositoryException
    {
-      return lockManager.getLockData(node, CacheableLockManager.SEARCH_EXECMATCH) != null;
+      return lockManager.exactLockExist(node);
    }
 
    /**
@@ -179,9 +162,7 @@ public class CacheableSessionLockManager implements SessionLockManager
     */
    public boolean isLocked(NodeData node)
    {
-      LockData lData =
-         lockManager
-            .getLockData(node, CacheableLockManager.SEARCH_EXECMATCH | CacheableLockManager.SEARCH_CLOSEDPARENT);
+      LockData lData = lockManager.getExactOrCloseParentLock(node);
 
       if (lData == null || (!node.getIdentifier().equals(lData.getNodeIdentifier()) && !lData.isDeep()))
       {
@@ -195,9 +176,7 @@ public class CacheableSessionLockManager implements SessionLockManager
     */
    public boolean isLockHolder(NodeImpl node) throws RepositoryException
    {
-      LockData lData =
-         lockManager.getLockData((NodeData)node.getData(), CacheableLockManager.SEARCH_EXECMATCH
-            | CacheableLockManager.SEARCH_CLOSEDPARENT);
+      LockData lData = lockManager.getExactOrCloseParentLock((NodeData)node.getData());
 
       return lData != null && isLockHolder(lData);
    }
@@ -216,7 +195,7 @@ public class CacheableSessionLockManager implements SessionLockManager
       {
          LockData lock = lockedNodes.remove(nodeId);
 
-         if (lock.isSessionScoped())
+         if (lock.isSessionScoped() && !pendingLocks.contains(nodeId))
          {
             try
             {
@@ -247,25 +226,13 @@ public class CacheableSessionLockManager implements SessionLockManager
                log.error(e.getLocalizedMessage());
             }
          }
-         else
-         {
-            lockManager.removePendingLock(nodeId);
-
-            lockedNodes.remove(nodeId);
-
-            //remove token
-            String hash = lock.getTokenHash();
-            for (String token : tokens.keySet())
-            {
-               if (tokens.get(token).equals(hash))
-               {
-                  tokens.remove(token);
-                  break;
-               }
-            }
-         }
       }
-      lockManager.closeSession(sessionID);
+
+      pendingLocks.clear();
+      tokens.clear();
+      lockedNodes.clear();
+
+      lockManager.closeSessionLockManager(sessionID);
    }
 
    /**
@@ -313,7 +280,15 @@ public class CacheableSessionLockManager implements SessionLockManager
     */
    protected boolean isLockLive(String nodeIdentifier)
    {
-      return lockManager.isLockLive(nodeIdentifier);
+
+      if (lockManager.isLockLive(nodeIdentifier))
+      {
+         return true;
+      }
+      else
+      {
+         return pendingLocks.contains(nodeIdentifier);
+      }
    }
 
    /**
@@ -324,7 +299,7 @@ public class CacheableSessionLockManager implements SessionLockManager
     */
    protected void refresh(LockData newLockData) throws LockException
    {
-      lockManager.refresh(newLockData);
+      lockManager.refreshLockData(newLockData);
    }
 
    /**
@@ -335,6 +310,29 @@ public class CacheableSessionLockManager implements SessionLockManager
    protected void notifyLockRemoved(String nodeIdentifier)
    {
       lockedNodes.remove(nodeIdentifier);
+   }
+
+   protected void notifyLockPersisted(String nodeIdentifier)
+   {
+      pendingLocks.remove(nodeIdentifier);
+   }
+
+   protected boolean cotainsPendingLock(String nodeId)
+   {
+      return pendingLocks.contains(nodeId);
+   }
+
+   protected LockData getPendingLock(String nodeId)
+   {
+      //TODO check it 
+      if (pendingLocks.contains(nodeId))
+      {
+         return lockedNodes.get(nodeId);
+      }
+      else
+      {
+         return null;
+      }
    }
 
 }

@@ -37,14 +37,14 @@ public class LockRemover extends WorkerThread
 
    // sec
 
-   private final LockManager lockManagerImpl;
+   private final WorkspaceLockManager lockManagerImpl;
 
-   public LockRemover(LockManager lockManagerImpl)
+   public LockRemover(WorkspaceLockManager lockManagerImpl)
    {
       this(lockManagerImpl, DEFAULT_THREAD_TIMEOUT);
    }
 
-   private LockRemover(LockManager lockManagerImpl, long timeout)
+   private LockRemover(WorkspaceLockManager lockManagerImpl, long timeout)
    {
       super(timeout);
       this.lockManagerImpl = lockManagerImpl;
