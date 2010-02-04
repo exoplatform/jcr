@@ -44,9 +44,17 @@ public class LockJDBCConnection
 
    protected String REMOVE_LOCK_DATA;
 
+   protected String REFRESH_LOCK_DATA;
+
+   protected String GET_LOCKED_NODES;
+
    private PreparedStatement insertLockData;
 
    private PreparedStatement removeLockData;
+
+   private PreparedStatement refreshLockData;
+
+   private PreparedStatement getLockedNodes;
 
    private Connection dbConnection;
 
@@ -83,6 +91,12 @@ public class LockJDBCConnection
             + " ,?,?,?,?,?,?,?)";
 
       REMOVE_LOCK_DATA = "delete from JCR_LOCKS where WS_NAME=" + wsName + " and NODE_ID=?";
+
+      REFRESH_LOCK_DATA =
+      // TODO check list of updated columns
+         "update JCR_LOCKS set OWNER=?, IS_SESSIONSCOPED=?, IS_DEEP=?, BIRTHDAY=?, TIMEOUT=? where NODE_ID=?";
+
+      GET_LOCKED_NODES = "select NODE_ID from JCR_LOCKS where WS_NAME=" + wsName;
 
    }
 
@@ -144,7 +158,32 @@ public class LockJDBCConnection
     */
    public int refreshLockData(LockData data) throws LockException
    {
-      return 0;
+      if (!isOpened())
+      {
+         throw new IllegalStateException("Connection is closed");
+      }
+      try
+      {
+         if (refreshLockData == null)
+            refreshLockData = dbConnection.prepareStatement(REFRESH_LOCK_DATA);
+         else
+            refreshLockData.clearParameters();
+
+         //update JCR_LOCKS set OWNER=?, IS_SESSIONSCOPED=?, IS_DEEP=?, BIRTHDAY=?, TIMEOUT=? where NODE_ID=?;         
+
+         refreshLockData.setString(1, data.getOwner());
+         refreshLockData.setBoolean(2, data.isSessionScoped());
+         refreshLockData.setBoolean(3, data.isDeep());
+         refreshLockData.setLong(4, data.getBirthDay());
+         refreshLockData.setLong(5, data.getTimeOut());
+         refreshLockData.setString(6, data.getNodeIdentifier());
+
+         return removeLockData.executeUpdate();
+      }
+      catch (SQLException e)
+      {
+         throw new LockException(e);
+      }
    }
 
    /**

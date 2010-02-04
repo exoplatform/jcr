@@ -29,6 +29,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import javax.jcr.RepositoryException;
+import javax.jcr.lock.LockException;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
 
@@ -75,7 +76,8 @@ public class LockPersistentDataManager
             {
                throw new RepositoryException(e);
             }
-            catch (IOException e) {
+            catch (IOException e)
+            {
                throw new RepositoryException(e);
             }
             finally
@@ -106,7 +108,7 @@ public class LockPersistentDataManager
 
    }
 
-   public LockJDBCConnection openConnection(boolean readOnly) throws RepositoryException
+   public LockJDBCConnection openConnection(boolean readOnly) throws LockException
    {
       try
       {
@@ -114,7 +116,7 @@ public class LockPersistentDataManager
       }
       catch (SQLException e)
       {
-         throw new RepositoryException(e);
+         throw new LockException(e);
       }
    }
 
@@ -126,20 +128,20 @@ public class LockPersistentDataManager
     * @throws RepositoryException 
     * @throws RepositoryException
     */
-   private Connection getJDBCConnection() throws RepositoryException
+   private Connection getJDBCConnection() throws LockException
    {
       try
       {
          //TODO make connection as in GenericConnectionFactory
-         final Connection conn = dataSource.getConnection();
-         return conn;
+         return dataSource.getConnection();
+
       }
       catch (SQLException e)
       {
          String err =
             "Error of JDBC connection open. SQLException: " + e.getMessage() + ", SQLState: " + e.getSQLState()
                + ", VendorError: " + e.getErrorCode();
-         throw new RepositoryException(err, e);
+         throw new LockException(err, e);
       }
    }
 
