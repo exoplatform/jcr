@@ -39,9 +39,9 @@
   <properties>
     <exo.product.name>exo-jcr</exo.product.name>
     <exo.product.specification>1.12</exo.product.specification>
-    <org.exoplatform.kernel.version>2.2.0-CR1</org.exoplatform.kernel.version>
-    <org.exoplatform.core.version>2.3.0-CR1</org.exoplatform.core.version>
-    <org.exoplatform.ws.version>2.1.0-CR1</org.exoplatform.ws.version>
+    <org.exoplatform.kernel.version>2.2.0-GA-SNAPSHOT</org.exoplatform.kernel.version>
+    <org.exoplatform.core.version>2.3.0-GA-SNAPSHOT</org.exoplatform.core.version>
+    <org.exoplatform.ws.version>2.1.0-GA-SNAPSHOT</org.exoplatform.ws.version>
   </properties>
   <dependencyManagement>
     <dependencies>
