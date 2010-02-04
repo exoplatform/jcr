@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 
     Copyright (C) 2009 eXo Platform SAS.
@@ -18,107 +19,98 @@
     02110-1301 USA, or see the FSF site: http://www.fsf.org.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
-   <modelVersion>4.0.0</modelVersion>
-
-   <parent>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.exoplatform.jcr</groupId>
+    <artifactId>jcr-parent</artifactId>
+    <version>1.12.0-GA-SNAPSHOT</version>
+  </parent>
+  <artifactId>exo.jcr.ear</artifactId>
+  <packaging>ear</packaging>
+  <name>eXo JCR :: EAR</name>
+  <dependencies>
+    <dependency>
       <groupId>org.exoplatform.jcr</groupId>
-      <artifactId>jcr-parent</artifactId>
-      <version>1.12.0-GA-SNAPSHOT</version>
-   </parent>
-
-   <artifactId>exo.jcr.ear</artifactId>
-   <packaging>ear</packaging>
-
-   <name>eXo JCR :: EAR</name>
-
-   <dependencies>
-      <dependency>
-         <groupId>org.exoplatform.jcr</groupId>
-         <artifactId>exo.jcr.connectors.localadapter</artifactId>
-         <type>rar</type>
-         <scope>runtime</scope>
-      </dependency>
-      <dependency>
-         <groupId>org.exoplatform.jcr</groupId>
-         <artifactId>exo.jcr.applications.rest</artifactId>
-         <type>war</type>
-         <scope>runtime</scope>
-      </dependency>
-      <dependency>
-         <groupId>org.exoplatform.jcr</groupId>
-         <artifactId>exo.jcr.applications.browser</artifactId>
-         <type>war</type>
-         <scope>runtime</scope>
-      </dependency>
-      <dependency>
-         <groupId>org.exoplatform.jcr</groupId>
-         <artifactId>exo.jcr.applications.fckeditor</artifactId>
-         <type>war</type>
-         <scope>runtime</scope>
-      </dependency>
-      <dependency>
-         <groupId>org.exoplatform.jcr</groupId>
-         <artifactId>exo.jcr.component.webdav</artifactId>
-         <scope>runtime</scope>
-      </dependency>
-   </dependencies>
-
-   <build>
-      <finalName>exo-jcr-ear</finalName>
-      <plugins>
-         <plugin>
-            <artifactId>maven-ear-plugin</artifactId>
-            <configuration>
-
-               <security>
-                  <security-role id="ID_EXO_USER">
-                     <description>a simple user role</description>
-                     <role-name>users</role-name>
-                  </security-role>
-                  <security-role id="ID_EXO_ADMIN">
-                     <description>a simple admin role</description>
-                     <role-name>administrators</role-name>
-                  </security-role>
-               </security>
-
-               <!-- all deps jars inside the rar, so copy all jars in-self -->
-               <defaultLibBundleDir>../APP-INF/lib</defaultLibBundleDir>
-               <archive>
-                  <manifest>
-                     <addClasspath>true</addClasspath>
-                  </manifest>
-               </archive>
-               <modules>
-                  <rarModule>
-                     <groupId>org.exoplatform.jcr</groupId>
-                     <artifactId>exo.jcr.connectors.localadapter</artifactId>
-                     <bundleFileName>exo-jcr.rar</bundleFileName>
-                  </rarModule>
-                  <webModule>
-                     <groupId>org.exoplatform.jcr</groupId>
-                     <artifactId>exo.jcr.applications.rest</artifactId>
-                     <bundleFileName>rest.war</bundleFileName>
-                     <contextRoot>rest</contextRoot>
-                  </webModule>
-                  <webModule>
-                     <groupId>org.exoplatform.jcr</groupId>
-                     <artifactId>exo.jcr.applications.browser</artifactId>
-                     <bundleFileName>browser.war</bundleFileName>
-                     <contextRoot>browser</contextRoot>
-                  </webModule>
-                  <webModule>
-                     <groupId>org.exoplatform.jcr</groupId>
-                     <artifactId>exo.jcr.applications.fckeditor</artifactId>
-                     <bundleFileName>fckeditor.war</bundleFileName>
-                     <contextRoot>fckeditor</contextRoot>
-                     <excluded>false</excluded>
-                  </webModule>
-               </modules>
-            </configuration>
-         </plugin>
-      </plugins>
-   </build>
-
+      <artifactId>exo.jcr.connectors.localadapter</artifactId>
+      <scope>runtime</scope>
+      <type>rar</type>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.jcr</groupId>
+      <artifactId>exo.jcr.applications.rest</artifactId>
+      <scope>runtime</scope>
+      <type>war</type>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.jcr</groupId>
+      <artifactId>exo.jcr.applications.browser</artifactId>
+      <scope>runtime</scope>
+      <type>war</type>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.jcr</groupId>
+      <artifactId>exo.jcr.applications.fckeditor</artifactId>
+      <scope>runtime</scope>
+      <type>war</type>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.jcr</groupId>
+      <artifactId>exo.jcr.component.webdav</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+  </dependencies>
+  <build>
+    <finalName>exo-jcr-ear</finalName>
+    <plugins>
+      <plugin>
+        <artifactId>maven-ear-plugin</artifactId>
+        <configuration>
+          <security>
+            <security-role id="ID_EXO_USER">
+              <description>a simple user role</description>
+              <role-name>users</role-name>
+            </security-role>
+            <security-role id="ID_EXO_ADMIN">
+              <description>a simple admin role</description>
+              <role-name>administrators</role-name>
+            </security-role>
+          </security>
+          <!-- all deps jars inside the rar, so copy all jars in-self -->
+          <defaultLibBundleDir>../APP-INF/lib</defaultLibBundleDir>
+          <archive>
+            <manifest>
+              <addClasspath>true</addClasspath>
+            </manifest>
+          </archive>
+          <modules>
+            <rarModule>
+              <groupId>org.exoplatform.jcr</groupId>
+              <artifactId>exo.jcr.connectors.localadapter</artifactId>
+              <bundleFileName>exo-jcr.rar</bundleFileName>
+            </rarModule>
+            <webModule>
+              <groupId>org.exoplatform.jcr</groupId>
+              <artifactId>exo.jcr.applications.rest</artifactId>
+              <bundleFileName>rest.war</bundleFileName>
+              <contextRoot>rest</contextRoot>
+            </webModule>
+            <webModule>
+              <groupId>org.exoplatform.jcr</groupId>
+              <artifactId>exo.jcr.applications.browser</artifactId>
+              <bundleFileName>browser.war</bundleFileName>
+              <contextRoot>browser</contextRoot>
+            </webModule>
+            <webModule>
+              <groupId>org.exoplatform.jcr</groupId>
+              <artifactId>exo.jcr.applications.fckeditor</artifactId>
+              <bundleFileName>fckeditor.war</bundleFileName>
+              <contextRoot>fckeditor</contextRoot>
+              <excluded>false</excluded>
+            </webModule>
+          </modules>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>

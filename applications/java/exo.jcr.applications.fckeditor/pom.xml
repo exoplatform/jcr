@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 
     Copyright (C) 2009 eXo Platform SAS.
@@ -18,51 +19,44 @@
     02110-1301 USA, or see the FSF site: http://www.fsf.org.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
-   <modelVersion>4.0.0</modelVersion>
-
-   <parent>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.exoplatform.jcr</groupId>
+    <artifactId>jcr-parent</artifactId>
+    <version>1.12.0-GA-SNAPSHOT</version>
+  </parent>
+  <artifactId>exo.jcr.applications.fckeditor</artifactId>
+  <packaging>war</packaging>
+  <name>eXo JCR :: Application :: FCKeditor Sample</name>
+  <description>eXo simple CMS web app</description>
+  <dependencies>
+    <dependency>
       <groupId>org.exoplatform.jcr</groupId>
-      <artifactId>jcr-parent</artifactId>
-      <version>1.12.0-GA-SNAPSHOT</version>
-   </parent>
-
-   <artifactId>exo.jcr.applications.fckeditor</artifactId>
-   <packaging>war</packaging>
-   
-   <name>eXo JCR :: Application :: FCKeditor Sample</name>
-   <description>eXo simple CMS web app</description>
-
-   <dependencies>
-      <dependency>
-         <groupId>org.exoplatform.jcr</groupId>
-         <artifactId>exo.jcr.component.core</artifactId>
-         <scope>provided</scope>
-      </dependency>
-      <dependency>
-         <groupId>org.exoplatform.jcr</groupId>
-         <artifactId>exo.jcr.framework.web</artifactId>
-         <scope>provided</scope>
-      </dependency>
-   </dependencies>
-
-   <build>
-      <finalName>fckeditor</finalName>
-      <plugins>
-         <plugin>
-            <artifactId>maven-war-plugin</artifactId>
-            <configuration>
-               <!-- This is broken in maven-war-plugin 2.0, works in 2.0.1 -->
-               <warSourceExcludes>WEB-INF/*.jar</warSourceExcludes>
-               <archive>
-                  <manifest>
-                     <addClasspath>false</addClasspath>
-                  </manifest>
-               </archive>
-            </configuration>
-         </plugin>
-      </plugins>
-   </build>
-
+      <artifactId>exo.jcr.component.core</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.jcr</groupId>
+      <artifactId>exo.jcr.framework.web</artifactId>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+  <build>
+    <finalName>fckeditor</finalName>
+    <plugins>
+      <plugin>
+        <artifactId>maven-war-plugin</artifactId>
+        <configuration>
+          <!-- This is broken in maven-war-plugin 2.0, works in 2.0.1 -->
+          <warSourceExcludes>WEB-INF/*.jar</warSourceExcludes>
+          <archive>
+            <manifest>
+              <addClasspath>false</addClasspath>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>

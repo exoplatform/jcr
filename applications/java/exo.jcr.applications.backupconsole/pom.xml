@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 
     Copyright (C) 2009 eXo Platform SAS.
@@ -18,91 +19,83 @@
     02110-1301 USA, or see the FSF site: http://www.fsf.org.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
-   <modelVersion>4.0.0</modelVersion>
-
-   <parent>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.exoplatform.jcr</groupId>
+    <artifactId>jcr-parent</artifactId>
+    <version>1.12.0-GA-SNAPSHOT</version>
+  </parent>
+  <artifactId>exo.jcr.applications.backupconsole</artifactId>
+  <name>eXo JCR :: Application :: Backup Console</name>
+  <properties>
+    <exo.test.includes>*</exo.test.includes>
+    <childDelegation>true</childDelegation>
+  </properties>
+  <dependencies>
+    <dependency>
       <groupId>org.exoplatform.jcr</groupId>
-      <artifactId>jcr-parent</artifactId>
-      <version>1.12.0-GA-SNAPSHOT</version>
-   </parent>
-
-   <artifactId>exo.jcr.applications.backupconsole</artifactId>
-
-   <name>eXo JCR :: Application :: Backup Console</name>
-
-   <properties>
-      <exo.test.includes>*</exo.test.includes>
-      <childDelegation>true</childDelegation>
-   </properties>
-
-   <dependencies>
-      <dependency>
-         <groupId>org.exoplatform.jcr</groupId>
-         <artifactId>exo.jcr.component.core</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.exoplatform.jcr</groupId>
-         <artifactId>exo.jcr.component.ext</artifactId>
-      </dependency>      
-      <dependency>
-         <groupId>org.exoplatform.ws</groupId>
-         <artifactId>exo.ws.commons</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.exoplatform.ws</groupId>
-         <artifactId>exo.ws.frameworks.json</artifactId>
-         <version>${org.exoplatform.ws.version}</version>
-      </dependency>      
-      <dependency>
-         <groupId>org.jibx</groupId>
-         <artifactId>jibx-run</artifactId>
-      </dependency>      
-      <dependency>
-         <groupId>javax.ws.rs</groupId>
-         <artifactId>jsr311-api</artifactId>
-      </dependency>
-   </dependencies>
-
-   <build>
-     <pluginManagement>
-        <plugins>
-            <plugin>
-               <groupId>org.apache.maven.plugins</groupId>
-               <artifactId>maven-jar-plugin</artifactId>
-               <configuration>
-                  <archive>
-                     <manifest>
-                        <addClasspath>true</addClasspath>
-                        <classpathPrefix>lib</classpathPrefix>
-                        <mainClass>org.exoplatform.jcr.backupconsole.BackupConsole</mainClass>
-                     </manifest>
-                  </archive>
-               </configuration>
-            </plugin>
-        </plugins>
-     </pluginManagement>
+      <artifactId>exo.jcr.component.core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.jcr</groupId>
+      <artifactId>exo.jcr.component.ext</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.ws</groupId>
+      <artifactId>exo.ws.commons</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.ws</groupId>
+      <artifactId>exo.ws.frameworks.json</artifactId>
+      <version>${org.exoplatform.ws.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jibx</groupId>
+      <artifactId>jibx-run</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>javax.ws.rs</groupId>
+      <artifactId>jsr311-api</artifactId>
+    </dependency>
+  </dependencies>
+  <build>
+    <pluginManagement>
       <plugins>
-         <plugin>
-            <artifactId>maven-assembly-plugin</artifactId>
-            <executions>
-               <execution>
-                  <id>binary</id>
-                  <phase>package</phase>
-                  <goals>
-                     <goal>directory-single</goal>
-                  </goals>
-               </execution>
-            </executions>
-            <configuration>
-               <descriptors>
-                  <descriptor>${basedir}/src/main/assemblies/binary-assembly.xml</descriptor>
-               </descriptors>
-               <finalName>backupconsole</finalName>
-            </configuration>
-         </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <configuration>
+            <archive>
+              <manifest>
+                <addClasspath>true</addClasspath>
+                <classpathPrefix>lib</classpathPrefix>
+                <mainClass>org.exoplatform.jcr.backupconsole.BackupConsole</mainClass>
+              </manifest>
+            </archive>
+          </configuration>
+        </plugin>
       </plugins>
-   </build>
-
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <descriptors>
+            <descriptor>${basedir}/src/main/assemblies/binary-assembly.xml</descriptor>
+          </descriptors>
+          <finalName>backupconsole</finalName>
+        </configuration>
+        <executions>
+          <execution>
+            <id>binary</id>
+            <phase>package</phase>
+            <goals>
+              <goal>directory-single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>

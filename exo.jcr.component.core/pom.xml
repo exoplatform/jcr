@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 
     Copyright (C) 2009 eXo Platform SAS.
@@ -19,212 +19,208 @@
     02110-1301 USA, or see the FSF site: http://www.fsf.org.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-   <modelVersion>4.0.0</modelVersion>
-
-   <parent>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.exoplatform.jcr</groupId>
+    <artifactId>jcr-parent</artifactId>
+    <version>1.12.0-GA-SNAPSHOT</version>
+  </parent>
+  <artifactId>exo.jcr.component.core</artifactId>
+  <name>eXo JCR :: Component :: Core Service</name>
+  <description>eXo JCR Service core component</description>
+  <properties>
+    <jcr.test.configuration.file>/conf/standalone/test-configuration.xml</jcr.test.configuration.file>
+  </properties>
+  <dependencies>
+    <!-- JCR API -->
+    <dependency>
+      <groupId>javax.jcr</groupId>
+      <artifactId>jcr</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.kernel</groupId>
+      <artifactId>exo.kernel.container</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.kernel</groupId>
+      <artifactId>exo.kernel.commons</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.kernel</groupId>
+      <artifactId>exo.kernel.component.command</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.kernel</groupId>
+      <artifactId>exo.kernel.component.common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.kernel</groupId>
+      <artifactId>exo.kernel.component.cache</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.core</groupId>
+      <artifactId>exo.core.component.organization.api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.core</groupId>
+      <artifactId>exo.core.component.document</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.core</groupId>
+      <artifactId>exo.core.component.security.core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-spellchecker</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-memory</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.xml.stream</groupId>
+      <artifactId>sjsxp</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>commons-dbcp</groupId>
+      <artifactId>commons-dbcp</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>xerces</groupId>
+          <artifactId>xercesImpl</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>commons-pool</groupId>
+      <artifactId>commons-pool</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>commons-lang</groupId>
+      <artifactId>commons-lang</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>commons-chain</groupId>
+      <artifactId>commons-chain</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>xml-apis</groupId>
+      <artifactId>xml-apis</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>stax</groupId>
+      <artifactId>stax-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jibx</groupId>
+      <artifactId>jibx-run</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>picocontainer</groupId>
+      <artifactId>picocontainer</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>javax.resource</groupId>
+      <artifactId>connector-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>javax.transaction</groupId>
+      <artifactId>jta</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>concurrent</groupId>
+      <artifactId>concurrent</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>commons-collections</groupId>
+      <artifactId>commons-collections</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>jboss.jbossts</groupId>
+      <artifactId>jbossjts</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>jboss.jbossts</groupId>
+      <artifactId>jbossts-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.ws.commons</groupId>
+      <artifactId>ws-commons-util</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>xml-apis</groupId>
+          <artifactId>xml-apis</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
       <groupId>org.exoplatform.jcr</groupId>
-      <artifactId>jcr-parent</artifactId>
-      <version>1.12.0-GA-SNAPSHOT</version>
-   </parent>
-
-   <artifactId>exo.jcr.component.core</artifactId>
-
-   <name>eXo JCR :: Component :: Core Service</name>
-   <description>eXo JCR Service core component</description>
-
-   <properties>
-      <jcr.test.configuration.file>/conf/standalone/test-configuration.xml</jcr.test.configuration.file>
-   </properties>
-
-   <dependencies>
-      <!-- JCR API -->
-      <dependency>
-         <groupId>javax.jcr</groupId>
-         <artifactId>jcr</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.exoplatform.kernel</groupId>
-         <artifactId>exo.kernel.container</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.exoplatform.kernel</groupId>
-         <artifactId>exo.kernel.commons</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.exoplatform.kernel</groupId>
-         <artifactId>exo.kernel.component.command</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.exoplatform.kernel</groupId>
-         <artifactId>exo.kernel.component.common</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.exoplatform.kernel</groupId>
-         <artifactId>exo.kernel.component.cache</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.exoplatform.core</groupId>
-         <artifactId>exo.core.component.organization.api</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.exoplatform.core</groupId>
-         <artifactId>exo.core.component.document</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.exoplatform.core</groupId>
-         <artifactId>exo.core.component.security.core</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.apache.lucene</groupId>
-         <artifactId>lucene-core</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.apache.lucene</groupId>
-         <artifactId>lucene-spellchecker</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.apache.lucene</groupId>
-         <artifactId>lucene-memory</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>com.sun.xml.stream</groupId>
-         <artifactId>sjsxp</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>commons-dbcp</groupId>
-         <artifactId>commons-dbcp</artifactId>
-         <exclusions>
-            <exclusion>
-               <groupId>xerces</groupId>
-               <artifactId>xercesImpl</artifactId>
-            </exclusion>
-         </exclusions>
-      </dependency>
-      <dependency>
-         <groupId>commons-pool</groupId>
-         <artifactId>commons-pool</artifactId>
-      </dependency>      
-      <dependency>
-         <groupId>commons-lang</groupId>
-         <artifactId>commons-lang</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>commons-chain</groupId>
-         <artifactId>commons-chain</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>xml-apis</groupId>
-         <artifactId>xml-apis</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.slf4j</groupId>
-         <artifactId>slf4j-api</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>stax</groupId>
-         <artifactId>stax-api</artifactId>
-      </dependency> 
-      <dependency>
-         <groupId>org.jibx</groupId>
-         <artifactId>jibx-run</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>picocontainer</groupId>
-         <artifactId>picocontainer</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>javax.resource</groupId>
-         <artifactId>connector-api</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>javax.transaction</groupId>
-         <artifactId>jta</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>concurrent</groupId>
-         <artifactId>concurrent</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>commons-collections</groupId>
-            <artifactId>commons-collections</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>jboss.jbossts</groupId>
-         <artifactId>jbossjts</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>jboss.jbossts</groupId>
-         <artifactId>jbossts-common</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.apache.ws.commons</groupId>
-         <artifactId>ws-commons-util</artifactId>
-         <exclusions>
-            <exclusion>
-               <groupId>xml-apis</groupId>
-               <artifactId>xml-apis</artifactId>
-            </exclusion>
-            <exclusion>
-               <groupId>junit</groupId>
-               <artifactId>junit</artifactId>
-            </exclusion>
-         </exclusions>
-      </dependency>
-      <dependency>
-         <groupId>org.exoplatform.jcr</groupId>
-         <artifactId>exo.jcr.component.cluster.test.client</artifactId>
-         <scope>test</scope>
-      </dependency>
-      <!-- TCK binaries and deps for repo stub, some eXo API test -->
-      <dependency>
-         <groupId>org.jboss.cache</groupId>
-         <artifactId>jbosscache-core</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.apache.jackrabbit</groupId>
-         <artifactId>jackrabbit-jcr-tests</artifactId>
-         <exclusions>
-            <exclusion>
-               <groupId>org.slf4j</groupId>
-               <artifactId>slf4j-api</artifactId>
-            </exclusion>
-         </exclusions>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>org.slf4j</groupId>
-         <artifactId>slf4j-log4j12</artifactId>
-         <scope>test</scope>
-      </dependency>
-      <!-- ===== Databases JDBC support for tests ===== -->
-      <dependency>
-         <groupId>hsqldb</groupId>
-         <artifactId>hsqldb</artifactId>
-         <scope>test</scope>
-      </dependency>
-      <!-- For MySQL support -->
-      <dependency>
-         <groupId>mysql</groupId>
-         <artifactId>mysql-connector-java</artifactId>
-         <version>5.1.8</version>
-         <scope>test</scope>
-      </dependency>      
-      <!-- For PostgresSQL support -->
-      <dependency>
-         <groupId>postgresql</groupId>
-         <artifactId>postgresql</artifactId>
-         <version>8.3-603.jdbc3</version> 
-         <scope>test</scope>
-      </dependency>
-      <!-- dependency>
+      <artifactId>exo.jcr.component.cluster.test.client</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <!-- TCK binaries and deps for repo stub, some eXo API test -->
+    <dependency>
+      <groupId>org.jboss.cache</groupId>
+      <artifactId>jbosscache-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.jackrabbit</groupId>
+      <artifactId>jackrabbit-jcr-tests</artifactId>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <!-- ===== Databases JDBC support for tests ===== -->
+    <dependency>
+      <groupId>hsqldb</groupId>
+      <artifactId>hsqldb</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <!-- For MySQL support -->
+    <dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+      <version>5.1.8</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- For PostgresSQL support -->
+    <dependency>
+      <groupId>postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>8.3-603.jdbc3</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  <!-- dependency>
          <groupId>postgresql</groupId>
          <artifactId>postgresql</artifactId>
          <version>8.2-504.jdbc3</version>
          <scope>test</scope>
       </dependency -->
-      <!-- For Oracle 10g support (local-jcr repository) -->
-      <!-- dependency>
+  <!-- For Oracle 10g support (local-jcr repository) -->
+  <!-- dependency>
          <groupId>ojdbc</groupId>
          <artifactId>ojdbc</artifactId>
          <version>14</version>
@@ -236,8 +232,8 @@
          <version>14</version>
          <scope>test</scope>
       </dependency -->
-      <!-- For IBM DB2 support (local-jcr repository) -->
-      <!-- dependency>
+  <!-- For IBM DB2 support (local-jcr repository) -->
+  <!-- dependency>
          <groupId>com.ibm.db2</groupId>
          <artifactId>db2jcc</artifactId>
          <version>9.1</version>
@@ -249,285 +245,273 @@
          <version>9.1</version>
          <scope>test</scope>
       </dependency -->
-      <!-- For MS SQL 7/2000/2005 and Sybase ASE/Anywhere support (jTDS driver) -->
-      <!-- dependency>
+  <!-- For MS SQL 7/2000/2005 and Sybase ASE/Anywhere support (jTDS driver) -->
+  <!-- dependency>
          <groupId>net.sourceforge.jtds</groupId>
          <artifactId>jtds</artifactId>
          <version>1.2</version>
          <scope>test</scope>
       </dependency -->
-      <!-- For MS SQL 2005 support (Microsoft JDBC driver) (local-jcr repository) -->
-      <!-- dependency>
+  <!-- For MS SQL 2005 support (Microsoft JDBC driver) (local-jcr repository) -->
+  <!-- dependency>
          <groupId>com.microsoft.sqlserver</groupId>
          <artifactId>sqljdbc</artifactId>
          <version>9.0</version>
          <scope>test</scope>
       </dependency -->
-      <!-- dependency>
+  <!-- dependency>
          <groupId>com.microsoft</groupId>
          <artifactId>sqljdbc</artifactId>
          <version>2.0</version>
          <scope>test</scope>
       </dependency -->
-      <!-- For Apache Derby support (aka JavaDB) -->
-      <!-- dependency>
+  <!-- For Apache Derby support (aka JavaDB) -->
+  <!-- dependency>
          <groupId>org.apache.derby</groupId>
          <artifactId>derby</artifactId>
          <version>10.2.2.0</version>
          <scope>test</scope>
       </dependency -->
-      <!-- H2 Database (not supported now) -->
-      <!-- dependency>
+  <!-- H2 Database (not supported now) -->
+  <!-- dependency>
          <groupId>com.h2database</groupId>
          <artifactId>h2</artifactId>
          <version>1.0.74</version>
          <scope>test</scope>
       </dependency -->
-      <!-- Ingres Database (local repository) -->
-      <!-- dependency>
+  <!-- Ingres Database (local repository) -->
+  <!-- dependency>
          <groupId>com.ingres.jdbc</groupId>
          <artifactId>iijdbc</artifactId>
          <version>9.2</version>
          <scope>test</scope>
       </dependency -->
-      <!-- For Sybase ASE/Anywhere support (jConnect driver) (local-jcr repository) -->
-      <!-- dependency>
+  <!-- For Sybase ASE/Anywhere support (jConnect driver) (local-jcr repository) -->
+  <!-- dependency>
          <groupId>com.sybase.jdbc3.jdbc</groupId>
          <artifactId>jconn3</artifactId>
          <version>6.05</version>
          <scope>test</scope>
       </dependency -->
-      <!-- ======================================================================= -->
-   </dependencies>
-
-   <build>
-      <resources>
-         <resource>
-            <directory>src/main/resources</directory>
+  <!-- ======================================================================= -->
+  <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <includes>
+          <include>**/*.xml</include>
+          <include>**/*.sql</include>
+          <include>**/*.dtd</include>
+        </includes>
+      </resource>
+    </resources>
+    <testResources>
+      <testResource>
+        <directory>src/test/resources</directory>
+        <includes>
+          <include>**/*.properties</include>
+          <include>login.conf</include>
+          <include>**/*.xml</include>
+          <include>**/*.drl</include>
+          <include>**/*.vm</include>
+          <include>**/*.doc</include>
+          <include>**/*.xls</include>
+          <include>**/*.ppt</include>
+          <include>**/*.txt</include>
+          <include>**/*.tiff</include>
+          <include>**/*.pdf</include>
+          <include>**/*.dtd</include>
+        </includes>
+      </testResource>
+    </testResources>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <!-- normal mode: mvn -Dmaven.test.skip=false clean install -->
+        <!-- debug  mode: mvn -Dmaven.test.skip=false -DforkMode=never clean install -->
+        <!-- forking: to run both eXo test and TCK use forkMode=once, to run one of them (only) in Eclipse debug use forkMode=never -->
+        <configuration>
+          <argLine>${env.MAVEN_OPTS}</argLine>
+          <systemProperties>
+            <property>
+              <name>jcr.test.configuration.file</name>
+              <value>${jcr.test.configuration.file}</value>
+            </property>
+            <property>
+              <name>emma.coverage.out.file</name>
+              <value>target/emma/coverage.ec</value>
+            </property>
+          </systemProperties>
+          <includes>
+            <include>org/exoplatform/services/jcr/api/**/Test*.java</include>
+            <include>org/exoplatform/services/jcr/usecases/**/Test*.java</include>
+            <include>org/exoplatform/services/jcr/usecases/**/*Test.java</include>
+            <include>org/exoplatform/services/jcr/impl/**/Test*.java</include>
+          </includes>
+          <excludes>
+            <exclude>org/exoplatform/services/jcr/**/TestQueryUsecases.java</exclude>
+            <exclude>org/exoplatform/services/jcr/**/TestImport.java</exclude>
+            <exclude>org/exoplatform/services/jcr/**/TestRollbackBigFiles.java</exclude>
+            <exclude>org/exoplatform/services/jcr/**/TestErrorMultithreading.java</exclude>
+            <exclude>org/exoplatform/services/jcr/**/api/TestAll.java</exclude>
+            <exclude>org/exoplatform/services/jcr/**/api/**/TestSameNameItems.java</exclude>
+            <exclude>org/exoplatform/services/jcr/**/api/**/TestVersionRestore.java</exclude>
+            <exclude>org/exoplatform/services/jcr/**/api/**/TestSameNameItems.java</exclude>
+            <exclude>org/exoplatform/services/jcr/**/api/**/TestVersionRestore.java</exclude>
+            <exclude>org/exoplatform/services/jcr/**/impl/**/TestWorkspaceManagement.java</exclude>
+            <exclude>org/exoplatform/services/jcr/**/impl/**/TestRepositoryManagement.java</exclude>
+            <exclude>org/exoplatform/services/jcr/**/impl/**/TestSaveConfiguration.java</exclude>
+            <exclude>org/exoplatform/services/jcr/**/impl/**/ValueStoragePluginTest.java</exclude>
+            <exclude>org/exoplatform/services/jcr/**/impl/**/TestWorkspaceRestore.java</exclude>
+            <exclude>org/exoplatform/services/jcr/**/impl/**/TestSessionCleaner.java</exclude>
+            <exclude>org/exoplatform/services/jcr/**/impl/**/Base*.java</exclude>
+            <exclude>org/exoplatform/services/jcr/**/impl/**/TestJCRSerializationStream.java</exclude>
+            <exclude>org/exoplatform/services/jcr/**/impl/**/TestJCRSerializationVersionRestore.java</exclude>
+            <exclude>org/exoplatform/services/jcr/**/usecases/**/RemoveSameNameSiblingTest.java</exclude>
+            <exclude>org/exoplatform/services/jcr/**/usecases/**/TestQueryWithNumberAndSpace.java</exclude>
+            <exclude>org/exoplatform/services/jcr/**/usecases/BaseUsecasesTest.java</exclude>
+            <exclude>org/exoplatform/services/jcr/**/usecases/**/ExportWorkspaceSystemViewTest.java</exclude>
+            <exclude>org/exoplatform/services/jcr/**/impl/**/TestSessionDataManager.java</exclude>
+            <exclude>org/exoplatform/services/jcr/**/impl/**/TestLinkedWorkspaceStorageCacheMetrics.java</exclude>
+            <exclude>org/exoplatform/services/jcr/**/impl/**/SQLBenchmarkTest.java</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.jibx</groupId>
+        <artifactId>maven-jibx-plugin</artifactId>
+        <configuration>
+          <directory>src/main/resources</directory>
+          <includes>
+            <includes>binding*.xml</includes>
+          </includes>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>bind</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>delete-sources</id>
+            <phase>process-sources</phase>
+            <configuration>
+              <tasks>
+                <echo>Remove files that have been customized</echo>
+                <delete>
+                  <fileset dir="${project.build.directory}/generated-sources/javacc/org/exoplatform/services/jcr/impl/core/query">
+                    <include name="sql/ASTLiteral.java"/>
+                    <include name="sql/ASTContainsExpression.java"/>
+                    <include name="sql/ASTPredicate.java"/>
+                    <include name="sql/ASTIdentifier.java"/>
+                    <include name="xpath/SimpleNode.java"/>
+                  </fileset>
+                </delete>
+              </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>ant</groupId>
+            <artifactId>ant-optional</artifactId>
+            <version>1.5.3-1</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>javacc-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>fulltext</id>
+            <configuration>
+              <sourceDirectory>${basedir}/src/main/javacc/fulltext</sourceDirectory>
+            </configuration>
+            <goals>
+              <goal>jjtree-javacc</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>sql</id>
+            <configuration>
+              <sourceDirectory>${basedir}/src/main/javacc/sql</sourceDirectory>
+            </configuration>
+            <goals>
+              <goal>jjtree-javacc</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>xpath</id>
+            <configuration>
+              <sourceDirectory>${basedir}/src/main/javacc/xpath</sourceDirectory>
+            </configuration>
+            <goals>
+              <goal>jjtree-javacc</goal>
+            </goals>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>net.java.dev.javacc</groupId>
+            <artifactId>javacc</artifactId>
+            <version>3.2</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>taglist-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+  <profiles>
+    <!-- ***************** -->
+    <!-- INTEGRATION TESTS -->
+    <!-- ***************** -->
+    <!-- Use "mvn -Prun-tck" to launch them -->
+    <profile>
+      <id>run-tck</id>
+      <build>
+        <testResources>
+          <testResource>
+            <directory>src/TCK/java</directory>
             <includes>
-               <include>**/*.xml</include>
-               <include>**/*.sql</include>
-               <include>**/*.dtd</include>
+              <include>**/org/apache/jackrabbit/test/api/nodetype/spec/*.txt</include>
             </includes>
-         </resource>
-      </resources>
-      
-      <testResources>
-         <testResource>
-            <directory>src/test/resources</directory>
-            <includes>
-               <include>**/*.properties</include>
-               <include>login.conf</include>
-               <include>**/*.xml</include>
-               <include>**/*.drl</include>
-               <include>**/*.vm</include>
-               <include>**/*.doc</include>
-               <include>**/*.xls</include>
-               <include>**/*.ppt</include>
-               <include>**/*.txt</include>
-               <include>**/*.tiff</include>
-               <include>**/*.pdf</include>
-               <include>**/*.dtd</include>
-            </includes>
-         </testResource>
-      </testResources>
-
-      <plugins>
-         <plugin>
+          </testResource>
+        </testResources>
+        <plugins>
+          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
-            <!-- normal mode: mvn -Dmaven.test.skip=false clean install -->
-            <!-- debug  mode: mvn -Dmaven.test.skip=false -DforkMode=never clean install -->
-            <!-- forking: to run both eXo test and TCK use forkMode=once, to run one of them (only) in Eclipse debug use forkMode=never -->
             <configuration>
-               <argLine>${env.MAVEN_OPTS}</argLine>
-               <systemProperties>
-                  <property>
-                     <name>jcr.test.configuration.file</name>
-                     <value>${jcr.test.configuration.file}</value>
-                  </property>
-                  <property>
-                     <name>emma.coverage.out.file</name>
-                     <value>target/emma/coverage.ec</value>
-                  </property>
-               </systemProperties>
-               <includes>
-                  <include>org/exoplatform/services/jcr/api/**/Test*.java</include>
-                  <include>org/exoplatform/services/jcr/usecases/**/Test*.java</include>
-                  <include>org/exoplatform/services/jcr/usecases/**/*Test.java</include>
-                  <include>org/exoplatform/services/jcr/impl/**/Test*.java</include>
-               </includes>
-               <excludes>
-                  <exclude>org/exoplatform/services/jcr/**/TestQueryUsecases.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/TestImport.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/TestRollbackBigFiles.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/TestErrorMultithreading.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/api/TestAll.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/api/**/TestSameNameItems.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/api/**/TestVersionRestore.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/api/**/TestSameNameItems.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/api/**/TestVersionRestore.java</exclude>
-                  
-                  <exclude>org/exoplatform/services/jcr/**/impl/**/TestWorkspaceManagement.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/impl/**/TestRepositoryManagement.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/impl/**/TestSaveConfiguration.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/impl/**/ValueStoragePluginTest.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/impl/**/TestWorkspaceRestore.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/impl/**/TestSessionCleaner.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/impl/**/Base*.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/impl/**/TestJCRSerializationStream.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/impl/**/TestJCRSerializationVersionRestore.java</exclude>
-                  
-                  <exclude>org/exoplatform/services/jcr/**/usecases/**/RemoveSameNameSiblingTest.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/usecases/**/TestQueryWithNumberAndSpace.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/usecases/BaseUsecasesTest.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/usecases/**/ExportWorkspaceSystemViewTest.java</exclude>
-                  
-                  <exclude>org/exoplatform/services/jcr/**/impl/**/TestSessionDataManager.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/impl/**/TestLinkedWorkspaceStorageCacheMetrics.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/impl/**/SQLBenchmarkTest.java</exclude>
-               </excludes>
-            </configuration>
-         </plugin>
-
-         <plugin>
-            <groupId>org.jibx</groupId>
-            <artifactId>maven-jibx-plugin</artifactId>
-            <configuration>
-               <directory>src/main/resources</directory>
-               <includes>
-                  <includes>binding*.xml</includes>
-               </includes>
-            </configuration>
-            <executions>
-               <execution>
-                  <goals>
-                     <goal>bind</goal>
-                  </goals>
-               </execution>
-            </executions>
-         </plugin>
-
-         <plugin>
-            <artifactId>maven-antrun-plugin</artifactId>
-            <executions>
-               <execution>
-                  <id>delete-sources</id>
-                  <phase>process-sources</phase>
-                  <configuration>
-                     <tasks>
-                        <echo>Remove files that have been customized</echo>
-                        <delete>
-                           <fileset dir="${project.build.directory}/generated-sources/javacc/org/exoplatform/services/jcr/impl/core/query">
-                              <include name="sql/ASTLiteral.java" />
-                              <include name="sql/ASTContainsExpression.java" />
-                              <include name="sql/ASTPredicate.java" />
-                              <include name="sql/ASTIdentifier.java" />
-                              <include name="xpath/SimpleNode.java" />
-                           </fileset>
-                        </delete>
-                     </tasks>
-                  </configuration>
-                  <goals>
-                     <goal>run</goal>
-                  </goals>
-               </execution>
-            </executions>
-            <dependencies>
-               <dependency>
-                  <groupId>ant</groupId>
-                  <artifactId>ant-optional</artifactId>
-                  <version>1.5.3-1</version>
-               </dependency>
-            </dependencies>
-         </plugin>
-         
-         <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>javacc-maven-plugin</artifactId>
-            <executions>
-               <execution>
-                  <id>fulltext</id>
-                  <configuration>
-                     <sourceDirectory>${basedir}/src/main/javacc/fulltext</sourceDirectory>
-                  </configuration>
-                  <goals>
-                     <goal>jjtree-javacc</goal>
-                  </goals>
-               </execution>
-               <execution>
-                  <id>sql</id>
-                  <configuration>
-                     <sourceDirectory>${basedir}/src/main/javacc/sql</sourceDirectory>
-                  </configuration>
-                  <goals>
-                     <goal>jjtree-javacc</goal>
-                  </goals>
-               </execution>
-               <execution>
-                  <id>xpath</id>
-                  <configuration>
-                     <sourceDirectory>${basedir}/src/main/javacc/xpath</sourceDirectory>
-                  </configuration>
-                  <goals>
-                     <goal>jjtree-javacc</goal>
-                  </goals>
-               </execution>
-            </executions>
-            <dependencies>
-               <dependency>
-                  <groupId>net.java.dev.javacc</groupId>
-                  <artifactId>javacc</artifactId>
-                  <version>3.2</version>
-               </dependency>
-            </dependencies>
-         </plugin>
-         <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>taglist-maven-plugin</artifactId>
-         </plugin>
-      </plugins>
-   </build>
-   
-   <profiles>
-      <!-- ***************** -->
-      <!-- INTEGRATION TESTS -->
-      <!-- ***************** -->
-      <!-- Use "mvn -Prun-tck" to launch them -->
-      <profile>
-         <id>run-tck</id>
-         <build>
-            <testResources>
-               <testResource>
-                  <directory>src/TCK/java</directory>
-                  <includes>
-                     <include>**/org/apache/jackrabbit/test/api/nodetype/spec/*.txt</include>
-                  </includes>
-               </testResource>
-            </testResources>
-            <plugins>
-               <plugin>
-                  <groupId>org.apache.maven.plugins</groupId>
-                  <artifactId>maven-surefire-plugin</artifactId>
-                  <configuration>
-                     <argLine>${env.MAVEN_OPTS}</argLine>
-                     <phase>test</phase>
-                     <goals>
-                        <goal>test</goal>
-                     </goals>
-                     <systemProperties>
-                        <property>
-                           <name>jcr.test.configuration.file</name>
-                           <value>${jcr.test.configuration.file}</value>
-                        </property>
-                        <property>
-                           <name>emma.coverage.out.file</name>
-                           <value>target/emma/coverage.ec</value>
-                        </property>
-                        <property>
-                           <name>known.issues</name>
-                           <value>
-                              org.apache.jackrabbit.test.api.SetValueConstraintViolationExceptionTest#testBooleanProperty
+              <argLine>${env.MAVEN_OPTS}</argLine>
+              <phase>test</phase>
+              <goals>
+                <goal>test</goal>
+              </goals>
+              <systemProperties>
+                <property>
+                  <name>jcr.test.configuration.file</name>
+                  <value>${jcr.test.configuration.file}</value>
+                </property>
+                <property>
+                  <name>emma.coverage.out.file</name>
+                  <value>target/emma/coverage.ec</value>
+                </property>
+                <property>
+                  <name>known.issues</name>
+                  <value>org.apache.jackrabbit.test.api.SetValueConstraintViolationExceptionTest#testBooleanProperty
                               org.apache.jackrabbit.test.api.SetValueConstraintViolationExceptionTest#testMultipleBooleanProperty
                               org.apache.jackrabbit.test.api.version.RestoreTest#testRestoreName
                               org.apache.jackrabbit.test.api.version.RestoreTest#testRestoreOrder
@@ -540,63 +524,59 @@
                               org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testConfiguration
                               org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testVersionable
                               org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testVersion
-                              org.apache.jackrabbit.test.api.NamespaceRegistryTest#testRegisterNamespace
-                           </value>
-                        </property>
-                     </systemProperties>
-                     <includes>
-                        <include>org/apache/jackrabbit/test/api/*Test.java</include>
-                        <include>org/apache/jackrabbit/test/api/observation/*Test.java</include>
-                        <include>org/apache/jackrabbit/test/api/lock/*Test.java</include>
-                        <include>org/apache/jackrabbit/test/api/nodetype/*Test.java</include>
-                        <include>org/apache/jackrabbit/test/api/query/*Test.java</include>
-                        <include>org/apache/jackrabbit/test/api/version/*Test.java</include>
-                     </includes>
-                     <excludes>
-                        <exclude>org/apache/jackrabbit/test/api/TestAll.java</exclude>
-                        <exclude>org/apache/jackrabbit/test/api/**/Abstract*.java</exclude>
-                        <exclude>org/apache/jackrabbit/test/api/**/FrozenNodeTest.java</exclude>
-                     </excludes>
-                  </configuration>
-               </plugin>
-            </plugins>
-         </build>
-      </profile>
-      
-      <!-- Use "mvn -Prun-devtests" to launch them -->
-      <profile>
-         <id>run-devtests</id>
-         <build>
-            <plugins>
-               <plugin>
-                  <groupId>org.apache.maven.plugins</groupId>
-                  <artifactId>maven-surefire-plugin</artifactId>
-                  <configuration>
-                     <phase>test</phase>
-                     <forkMode>${exo.test.forkMode}</forkMode>
-                     <!-- argLine>${env.MAVEN_OPTS}</argLine -->
-                     <goals>
-                        <goal>test</goal>
-                     </goals>
-                     <systemProperties>
-                        <property>
-                           <name>jcr.test.configuration.file</name>
-                           <value>${jcr.test.configuration.file}</value>
-                        </property>
-                     </systemProperties>
-                     <includes>
-                        <include>**/**/reading_/Test*.java</include>
-                        <include>**/**/writing_/Test*.java</include>
-                                                
-                        <include>**/**/TestJBossCacheWorkspaceStorageCache_.java</include>
-                        <include>**/**/TestSVNodeDataOptimization_.java</include>
-                        
-                        <include>**/**/TestValueConstraints.java</include>       
-                     </includes>
-                  </configuration>
-               </plugin>
-            </plugins>
-         </build>
-      </profile>
-   </profiles>
+                              org.apache.jackrabbit.test.api.NamespaceRegistryTest#testRegisterNamespace</value>
+                </property>
+              </systemProperties>
+              <includes>
+                <include>org/apache/jackrabbit/test/api/*Test.java</include>
+                <include>org/apache/jackrabbit/test/api/observation/*Test.java</include>
+                <include>org/apache/jackrabbit/test/api/lock/*Test.java</include>
+                <include>org/apache/jackrabbit/test/api/nodetype/*Test.java</include>
+                <include>org/apache/jackrabbit/test/api/query/*Test.java</include>
+                <include>org/apache/jackrabbit/test/api/version/*Test.java</include>
+              </includes>
+              <excludes>
+                <exclude>org/apache/jackrabbit/test/api/TestAll.java</exclude>
+                <exclude>org/apache/jackrabbit/test/api/**/Abstract*.java</exclude>
+                <exclude>org/apache/jackrabbit/test/api/**/FrozenNodeTest.java</exclude>
+              </excludes>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <!-- Use "mvn -Prun-devtests" to launch them -->
+    <profile>
+      <id>run-devtests</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <phase>test</phase>
+              <forkMode>${exo.test.forkMode}</forkMode>
+              <!-- argLine>${env.MAVEN_OPTS}</argLine -->
+              <goals>
+                <goal>test</goal>
+              </goals>
+              <systemProperties>
+                <property>
+                  <name>jcr.test.configuration.file</name>
+                  <value>${jcr.test.configuration.file}</value>
+                </property>
+              </systemProperties>
+              <includes>
+                <include>**/**/reading_/Test*.java</include>
+                <include>**/**/writing_/Test*.java</include>
+                <include>**/**/TestJBossCacheWorkspaceStorageCache_.java</include>
+                <include>**/**/TestSVNodeDataOptimization_.java</include>
+                <include>**/**/TestValueConstraints.java</include>
+              </includes>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
