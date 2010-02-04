@@ -147,7 +147,7 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
    /**
     * Context recall is a workaround of JDBCCacheLoader starting. 
     */
-   private final InitialContextInitializer context;
+   //private final InitialContextInitializer context;
 
    /**
     * Run time lock time out.
@@ -241,7 +241,7 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
 
       pendingLocks = new HashMap<String, LockData>();
       sessionLockManagers = new HashMap<String, CacheableSessionLockManager>();
-      this.context = context;
+      //this.context = context;
 
       dataManager.addItemPersistenceListener(this);
 
@@ -255,7 +255,7 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
             new ExoJBossCacheFactory<Serializable, Object>(cfm, transactionManager);
 
          cache = factory.createCache(config.getLockManager());
-         
+
          cache.create();
          cache.start();
 
@@ -567,11 +567,8 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
          else
          {
             Fqn<String> fqn = makeLockFqn(newLockData.getNodeIdentifier());
-            if (cache.getRoot().hasChild(fqn))
-            {
-               cache.getRoot().addChild(fqn);
-            }
-            else
+            Object oldValue = cache.put(fqn, LOCK_DATA, newLockData);
+            if (oldValue == null)
             {
                throw new LockException("Can't refresh lock for node " + newLockData.getNodeIdentifier()
                   + " since lock is not exist");
@@ -970,7 +967,7 @@ public class CacheableLockManager extends AbstractLockManager implements ItemsPe
    /**
     *  Will be created structured node in cache, like /$LOCKS
     */
-   private void createStructuredNode(Fqn fqn)
+   private void createStructuredNode(Fqn<String> fqn)
    {
       Node<Serializable, Object> node = cache.getRoot().getChild(fqn);
       if (node == null)

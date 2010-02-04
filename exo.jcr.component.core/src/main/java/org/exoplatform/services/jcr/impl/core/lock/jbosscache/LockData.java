@@ -235,6 +235,11 @@ public class LockData implements Externalizable
       return timeOut;
    }
 
+   protected long getBirthDay()
+   {
+      return birthday;
+   }
+
    public void setTimeOut(long timeOut)
    {
       this.timeOut = timeOut;
