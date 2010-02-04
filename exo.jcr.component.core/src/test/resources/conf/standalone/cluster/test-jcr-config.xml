@@ -66,7 +66,7 @@
                      <property name="max-volatile-time" value="60" />
                   </properties>
                </query-handler>
-               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManager">
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="jbosscache-configuration" value="test-jbosscache-lock.xml" />
@@ -80,7 +80,7 @@
                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
                      <property name="jbosscache-cl-cache.jdbc.fqn.type" value="VARCHAR(512)" />
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
-                     <property name="jbosscache-cl-cache.jdbc.node.type" value="LONGBLOB" />
+                     <property name="jbosscache-cl-cache.jdbc.node.type" value="OBJECT" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
                      <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
                   </properties>
@@ -139,7 +139,7 @@
 
                   </properties>
                </query-handler>
-               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManager">
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="jbosscache-configuration" value="test-jbosscache-lock.xml" />
@@ -153,7 +153,7 @@
                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
                      <property name="jbosscache-cl-cache.jdbc.fqn.type" value="VARCHAR(512)" />
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
-                     <property name="jbosscache-cl-cache.jdbc.node.type" value="LONGBLOB" />
+                     <property name="jbosscache-cl-cache.jdbc.node.type" value="OBJECT" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
                      <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
                   </properties>
@@ -212,7 +212,7 @@
 
                   </properties>
                </query-handler>
-               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManager">
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="jbosscache-configuration" value="test-jbosscache-lock.xml" />
@@ -226,7 +226,7 @@
                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
                      <property name="jbosscache-cl-cache.jdbc.fqn.type" value="VARCHAR(512)" />
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
-                     <property name="jbosscache-cl-cache.jdbc.node.type" value="LONGBLOB" />
+                     <property name="jbosscache-cl-cache.jdbc.node.type" value="OBJECT" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
                      <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
                   </properties>
@@ -244,10 +244,6 @@
                      <property name="swap-directory" value="target/temp/swap/ws3" />
                   </properties>
                   <value-storages>
-                     <!--
-                        This storage is used to check whether properties are removed correctly from each value-storage
-                        (TestRemoveFromValueStorage.java)
-                     -->
                      <value-storage id="ws3_big"
                         class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
                         <properties>
@@ -303,7 +299,7 @@
 
                   </properties>
                </query-handler>
-               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManager">
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="jbosscache-configuration" value="test-jbosscache-lock.xml" />
@@ -317,7 +313,7 @@
                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
                      <property name="jbosscache-cl-cache.jdbc.fqn.type" value="VARCHAR(512)" />
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
-                     <property name="jbosscache-cl-cache.jdbc.node.type" value="LONGBLOB" />
+                     <property name="jbosscache-cl-cache.jdbc.node.type" value="OBJECT" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
                      <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
                   </properties>
@@ -395,7 +391,7 @@
                         value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" />
                   </properties>
                </query-handler>
-               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManager">
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="jbosscache-configuration" value="test-jbosscache-lock.xml" />
@@ -409,7 +405,7 @@
                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
                      <property name="jbosscache-cl-cache.jdbc.fqn.type" value="VARCHAR(512)" />
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
-                     <property name="jbosscache-cl-cache.jdbc.node.type" value="LONGBLOB" />
+                     <property name="jbosscache-cl-cache.jdbc.node.type" value="OBJECT" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
                      <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
                   </properties>
@@ -473,7 +469,7 @@
                         value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" />
                   </properties>
                </query-handler>
-               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManager">
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="jbosscache-configuration" value="test-jbosscache-lock.xml" />
@@ -487,7 +483,7 @@
                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
                      <property name="jbosscache-cl-cache.jdbc.fqn.type" value="VARCHAR(512)" />
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
-                     <property name="jbosscache-cl-cache.jdbc.node.type" value="LONGBLOB" />
+                     <property name="jbosscache-cl-cache.jdbc.node.type" value="OBJECT" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
                      <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
                   </properties>
@@ -554,7 +550,7 @@
                      <property name="extractorTimeout" value="10" />
                   </properties>
                </query-handler>
-               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManager">
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="jbosscache-configuration" value="test-jbosscache-lock.xml" />
@@ -568,7 +564,7 @@
                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
                      <property name="jbosscache-cl-cache.jdbc.fqn.type" value="VARCHAR(512)" />
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
-                     <property name="jbosscache-cl-cache.jdbc.node.type" value="LONGBLOB" />
+                     <property name="jbosscache-cl-cache.jdbc.node.type" value="OBJECT" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
                      <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
                   </properties>

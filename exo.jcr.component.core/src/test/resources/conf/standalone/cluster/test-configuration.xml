@@ -54,9 +54,18 @@
         <property name="log4j.appender.file.layout.ConversionPattern"
           value="%d{dd.MM.yyyy HH:mm:ss} *%-5p* [%t] %c{1}: %m (%F, line %L) %n"/>
         
-        <property name="log4j.category.jcr.JBossCacheStorageConnection1" value="DEBUG"/>
+        <property name="log4j.category.jcr.FileCleaner" value="DEBUG"/>
         
-        <!-- property name="log4j.category.jcr.NodeImpl" value="DEBUG"/ -->        
+        <!-- property name="log4j.category.jcr.JDBCStorageConnection" value="DEBUG"/>
+        <property name="log4j.category.jcr.NodeImpl" value="DEBUG"/ -->
+        
+        <!-- property name="log4j.category.jcr.WorkspaceStorageCacheImpl" value="DEBUG"/ -->
+        <!-- property name="log4j.category.database.DBSchemaCreator" value="DEBUG"/ -->
+        <!-- property name="log4j.category.jcr.WorkspaceDataReplicator" value="DEBUG"/ -->
+        
+        <!-- property name="log4j.category.jcr.WorkspaceStorageCacheImpl" value="DEBUG"/ -->
+        <!-- property name="log4j.category.jcr.WorkspacePersistentDataManager" value="DEBUG"/ -->
+        <!-- property name="log4j.category.jcr.SessionDataManager" value="DEBUG"/ -->
       </properties-param>
       
       <!-- value-param>
@@ -92,16 +101,6 @@
       
     </init-params>
   </component>
-
-   <!-- component>
-      <type>org.exoplatform.services.jbosscache.JBossCacheService</type>
-      <init-params>
-         <value-param>
-            <name>jbosscache-configuration</name>
-            <value>conf/portal/exojcr-jboss-cache-conf.xml</value>
-         </value-param>
-      </init-params>
-   </component -->
 
   <component>
     <key>org.exoplatform.services.jcr.RepositoryService</key>
@@ -173,13 +172,12 @@
         <description>JCR configuration file</description>
         <value>jar:/conf/standalone/cluster/test-jcr-config.xml</value>
       </value-param>
-      <!-- properties-param>
+      <properties-param>
         <name>working-conf</name>
         <description>working-conf</description>
         <property name="source-name" value="jdbcjcr"/>
-        <property name="dialect" value="mysql"/>
         <property name="persister-class-name" value="org.exoplatform.services.jcr.impl.config.JDBCConfigurationPersister"/>
-      </properties-param -->
+      </properties-param>
     </init-params>
   </component>
   
@@ -195,7 +193,7 @@
   <component>
     <type>org.exoplatform.services.jcr.impl.ext.action.SessionActionCatalog</type>
   </component>
-  
+
   <component>
      <key>org.jboss.cache.transaction.TransactionManagerLookup</key>
      <type>org.jboss.cache.transaction.JBossStandaloneJTAManagerLookup</type>
@@ -207,9 +205,9 @@
     <init-params>
       <value-param>
         <name>timeout</name>
-        <value>300</value>
+        <value>3000</value>
       </value-param>
-    </init-params>    
+    </init-params>   
   </component>
   
   <!-- component>
@@ -218,10 +216,10 @@
     <init-params>
       <value-param>
         <name>timeout</name>
-        <value>5</value>
+        <value>300</value>
       </value-param>
     </init-params>
-  </component-->
+  </component -->
   
   <external-component-plugins>
     <target-component>org.exoplatform.services.naming.InitialContextInitializer</target-component>
@@ -245,17 +243,14 @@
         <properties-param>
           <name>ref-addresses</name>
           <description>ref-addresses</description>
-          <property name="driverClassName" value="com.mysql.jdbc.Driver" />
-          <property name="url" value="jdbc:mysql://localhost/portal"/>
-          <property name="username" value="root"/>
-          <property name="password" value="admin"/>
-          <property name="maxActive" value="100" />
-          <property name="maxIdle" value="5" />
-          <property name="initialSize" value="5" />
+          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+          <property name="url" value="jdbc:hsqldb:file:target/temp/data/portal"/>
+          <property name="username" value="sa"/>
+          <property name="password" value=""/>
         </properties-param>
       </init-params>
     </component-plugin>
-    <component-plugin>
+	<component-plugin>
       <name>bind.datasource</name>
       <set-method>addPlugin</set-method>
       <type>org.exoplatform.services.naming.BindReferencePlugin</type>
@@ -275,13 +270,10 @@
         <properties-param>
           <name>ref-addresses</name>
           <description>ref-addresses</description>
-          <property name="driverClassName" value="com.mysql.jdbc.Driver" />
-          <property name="url" value="jdbc:mysql://localhost/jcr"/>
-          <property name="username" value="root"/>
-          <property name="password" value="admin"/>
-          <property name="maxActive" value="100" />
-          <property name="maxIdle" value="5" />
-          <property name="initialSize" value="5" />
+          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+          <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr"/>
+          <property name="username" value="sa"/>
+          <property name="password" value=""/>
         </properties-param>
       </init-params>
     </component-plugin>
@@ -305,17 +297,14 @@
         <properties-param>
           <name>ref-addresses</name>
           <description>ref-addresses</description>
-          <property name="driverClassName" value="com.mysql.jdbc.Driver" />
-          <property name="url" value="jdbc:mysql://localhost/jcr2"/>
-          <property name="username" value="root"/>
-          <property name="password" value="admin"/>
-          <property name="maxActive" value="100" />
-          <property name="maxIdle" value="5" />
-          <property name="initialSize" value="5" />
+          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+          <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr2"/>
+          <property name="username" value="sa"/>
+          <property name="password" value=""/>
         </properties-param>
       </init-params>
     </component-plugin>
-    <component-plugin>
+        <component-plugin>
       <name>bind.datasource</name>
       <set-method>addPlugin</set-method>
       <type>org.exoplatform.services.naming.BindReferencePlugin</type>
@@ -335,17 +324,14 @@
         <properties-param>
           <name>ref-addresses</name>
           <description>ref-addresses</description>
-          <property name="driverClassName" value="com.mysql.jdbc.Driver" />
-          <property name="url" value="jdbc:mysql://localhost/jcr3"/>
-          <property name="username" value="root"/>
-          <property name="password" value="admin"/>
-          <property name="maxActive" value="100" />
-          <property name="maxIdle" value="5" />
-          <property name="initialSize" value="5" />
+          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+          <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr3"/>
+          <property name="username" value="sa"/>
+          <property name="password" value=""/>
         </properties-param>
       </init-params>
     </component-plugin>
-    <component-plugin>
+	<component-plugin>
       <name>bind.datasource</name>
       <set-method>addPlugin</set-method>
       <type>org.exoplatform.services.naming.BindReferencePlugin</type>
@@ -392,13 +378,10 @@
         <properties-param>
           <name>ref-addresses</name>
           <description>ref-addresses</description>
-          <property name="driverClassName" value="com.mysql.jdbc.Driver" />
-          <property name="url" value="jdbc:mysql://localhost/portaltck"/>
-          <property name="username" value="root"/>
-          <property name="password" value="admin"/>
-          <property name="maxActive" value="100" />
-          <property name="maxIdle" value="5" />
-          <property name="initialSize" value="5" />
+          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+          <property name="url" value="jdbc:hsqldb:file:target/temp/data/portaltck"/>
+          <property name="username" value="sa"/>
+          <property name="password" value=""/>
         </properties-param>
       </init-params>
     </component-plugin>
@@ -422,13 +405,10 @@
         <properties-param>
           <name>ref-addresses</name>
           <description>ref-addresses</description>
-          <property name="driverClassName" value="com.mysql.jdbc.Driver" />
-          <property name="url" value="jdbc:mysql://localhost/jcrtck"/>
-          <property name="username" value="root"/>
-          <property name="password" value="admin"/>
-          <property name="maxActive" value="100" />
-          <property name="maxIdle" value="5" />
-          <property name="initialSize" value="5" />
+          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+          <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcrtck"/>
+          <property name="username" value="sa"/>
+          <property name="password" value=""/>
         </properties-param>
       </init-params>
     </component-plugin>
@@ -452,13 +432,10 @@
         <properties-param>
           <name>ref-addresses</name>
           <description>ref-addresses</description>
-          <property name="driverClassName" value="com.mysql.jdbc.Driver" />
-          <property name="url" value="jdbc:mysql://localhost/jcr2tck"/>
-          <property name="username" value="root"/>
-          <property name="password" value="admin"/>
-          <property name="maxActive" value="100" />
-          <property name="maxIdle" value="5" />
-          <property name="initialSize" value="5" />
+          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+          <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr2tck"/>
+          <property name="username" value="sa"/>
+          <property name="password" value=""/>
         </properties-param>
       </init-params>
     </component-plugin>
@@ -542,34 +519,6 @@
           <property name="password" value=""/>
         </properties-param>
       </init-params>
-    </component-plugin>
- 
-    <!-- Resource configuration for UserTransaction
-    use JOTM
-    -->
-    <component-plugin>
-      <name>jotm.tx</name>
-      <set-method>addPlugin</set-method>
-      <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-      <init-params>
-        <value-param>
-          <name>bind-name</name>
-          <value>UserTransaction</value>
-        </value-param>
-        <value-param>
-          <name>class-name</name>
-          <value>javax.transaction.UserTransaction</value>
-        </value-param>
-        <value-param>
-          <name>factory</name>
-          <value>org.objectweb.jotm.UserTransactionFactory</value>
-        </value-param>
-        <properties-param>
-          <name>ref-addresses</name>
-          <description>ref-addresses</description>
-          <property name="jotm.timeout" value="60"/>
-        </properties-param>
-      </init-params>
     </component-plugin>
     <component-plugin>
       <name>bind.jcr</name>
@@ -621,4 +570,7 @@
       </init-params>
     </component-plugin>
   </external-component-plugins>
+  
+  <remove-configuration>org.exoplatform.services.scheduler.JobSchedulerService</remove-configuration>
+  <!--<import>jar:/conf/database-configuration.hsql.xml</import> -->
 </configuration>
