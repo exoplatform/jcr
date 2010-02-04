@@ -179,6 +179,7 @@
     <dependency>
       <groupId>org.apache.jackrabbit</groupId>
       <artifactId>jackrabbit-jcr-tests</artifactId>
+      <classifier>sources</classifier>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -325,6 +326,31 @@
       </testResource>
     </testResources>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>unpack</id>
+            <phase>generate-test-sources</phase>
+            <goals>
+              <goal>unpack</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>org.apache.jackrabbit</groupId>
+                  <artifactId>jackrabbit-jcr-tests</artifactId>
+                  <classifier>sources</classifier>
+                  <type>jar</type>
+                  <overWrite>false</overWrite>
+                </artifactItem>
+              </artifactItems>
+              <outputDirectory>${project.build.testSourceDirectory}</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
