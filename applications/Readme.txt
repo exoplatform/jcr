@@ -12,5 +12,5 @@
 Application server's specific configs is placed in product-patches/as/ folder.
 
 exo-configuration.xml - the main config file for the samles.
-For now you may automatically deploy our samples for tomcat (WARs, JARs should be in tomcat/lib), jboss (EAR) and jonas (EAR) application servers.  
-Deployment procedure has been tested with tomcat6.0.16, jboss-4.2.3.GA and JONAS_4_8_5.
+For now you may automatically deploy our samples for tomcat (WARs, JARs should be in tomcat/lib) and jboss (EAR) application server.  
+Deployment procedure has been tested with tomcat-6.0.24, jboss-5.1.0.GA.
