@@ -1,3 +1,3 @@
-@set MAVEN_OPTS=-Duser.language=en -Duser.region=us %MAVEN_OPTS% -Dmaven.test.skip=false -DforkMode=once
+@set MAVEN_OPTS=-Duser.language=en -Duser.region=us %MAVEN_OPTS%
 
-@start mvn clean test -Prun-tck
+@start mvn clean test -Prun-all
