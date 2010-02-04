@@ -37,7 +37,7 @@ public class TestLockPerstistentDataManager extends JcrImplBaseTest
 {
    public void testAddLockData() throws RepositoryException
    {
-      LockPersistentDataManager dataManager = new LockPersistentDataManager("jdbcjcr", "ws");
+      LockPersistentDataManager dataManager = new LockPersistentDataManager("jdbcjcrtest", "ws");
       LockJDBCConnection connection = null;
       try
       {
@@ -67,7 +67,7 @@ public class TestLockPerstistentDataManager extends JcrImplBaseTest
 
    public void testRemoveLockData() throws RepositoryException
    {
-      LockPersistentDataManager dataManager = new LockPersistentDataManager("jdbcjcr", "ws");
+      LockPersistentDataManager dataManager = new LockPersistentDataManager("jdbcjcrtest", "ws");
       LockJDBCConnection connection = null;
       try
       {
@@ -104,7 +104,7 @@ public class TestLockPerstistentDataManager extends JcrImplBaseTest
 
    public void testRefreshLockData() throws RepositoryException
    {
-      LockPersistentDataManager dataManager = new LockPersistentDataManager("jdbcjcr", "ws");
+      LockPersistentDataManager dataManager = new LockPersistentDataManager("jdbcjcrtest", "ws");
       LockJDBCConnection connection = null;
       try
       {
@@ -149,8 +149,8 @@ public class TestLockPerstistentDataManager extends JcrImplBaseTest
 
    public void testgetLockedNodes() throws RepositoryException
    {
-      LockPersistentDataManager dataManager = new LockPersistentDataManager("jdbcjcr", "test_workspace");
-      LockPersistentDataManager dataManagerAnotherWS = new LockPersistentDataManager("jdbcjcr", "another_workspace");
+      LockPersistentDataManager dataManager = new LockPersistentDataManager("jdbcjcrtest", "test_workspace");
+      LockPersistentDataManager dataManagerAnotherWS = new LockPersistentDataManager("jdbcjcrtest", "another_workspace");
       LockJDBCConnection connection = null;
       try
       {
@@ -163,7 +163,7 @@ public class TestLockPerstistentDataManager extends JcrImplBaseTest
          connection.addLockData(new LockData("identifier4-listTest", "hash4", false, false, "owner", 100));
          // commit also closes connection
          connection.commit();
-         
+
          // Adding lock data to another workspace
          connection = dataManagerAnotherWS.openConnection(false);
          // this lock data is from another workspace and shouldn't be in result set
@@ -183,10 +183,10 @@ public class TestLockPerstistentDataManager extends JcrImplBaseTest
          }
       }
    }
-   
+
    public void testAddLockDataTwice() throws RepositoryException
    {
-      LockPersistentDataManager dataManager = new LockPersistentDataManager("jdbcjcr", "ws");
+      LockPersistentDataManager dataManager = new LockPersistentDataManager("jdbcjcrtest", "ws");
       LockJDBCConnection connection = null;
       try
       {
@@ -202,7 +202,8 @@ public class TestLockPerstistentDataManager extends JcrImplBaseTest
          connection.addLockData(new LockData("identifier", "hash", false, false, "owner", 100));
          fail("exception expected!");
       }
-      catch (LockException e) {
+      catch (LockException e)
+      {
          // it's ok
       }
       finally
@@ -213,5 +214,5 @@ public class TestLockPerstistentDataManager extends JcrImplBaseTest
          }
       }
    }
-   
+
 }

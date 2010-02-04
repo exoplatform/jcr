@@ -328,7 +328,7 @@ public class LockJDBCConnection
    }
 
    /**
-    * Closes database connectio
+    * Closes database connection
     * 
     * @throws IllegalStateException
     * @throws RepositoryException
