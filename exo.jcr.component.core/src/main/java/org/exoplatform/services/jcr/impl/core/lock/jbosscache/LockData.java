@@ -94,13 +94,29 @@ public class LockData implements Externalizable
    public LockData(String nodeIdentifier, String lockTokenHash, boolean deep, boolean sessionScoped, String owner,
       long timeOut)
    {
+      this(nodeIdentifier, lockTokenHash, deep, sessionScoped, owner, timeOut, System.currentTimeMillis());
+   }
+   
+   /**
+    * @param nodeIdentifier
+    * @param lockToken
+    * @param deep
+    * @param sessionScoped
+    * @param owner
+    * @param timeOut
+    *       is seconds!
+    * @param birthday
+    */
+   protected LockData(String nodeIdentifier, String lockTokenHash, boolean deep, boolean sessionScoped, String owner,
+      long timeOut, long birthday)
+   {
       this.nodeIdentifier = nodeIdentifier;
       this.tokenHash = lockTokenHash;
       this.deep = deep;
       this.sessionScoped = sessionScoped;
       this.owner = owner;
       this.timeOut = timeOut;
-      this.birthday = System.currentTimeMillis();
+      this.birthday = birthday;
    }
 
    /*

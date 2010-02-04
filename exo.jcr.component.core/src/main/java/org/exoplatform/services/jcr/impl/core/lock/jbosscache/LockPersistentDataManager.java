@@ -63,13 +63,13 @@ public class LockPersistentDataManager
          if (dataSource != null)
          {
             // initialize DB table if needed
-            Connection jdbcConn = null;
             try
             {
                log.info("Creating LockManager DB tables.");
-               jdbcConn = dataSource.getConnection();
+               Connection jdbcConn = dataSource.getConnection();
                String dialect = DialectDetecter.detect(jdbcConn.getMetaData());
                // if table not exists, create it  
+               // connection is closed by DB initializer
                initDatabase(dataSourceName, jdbcConn, dialect);
             }
             catch (SQLException e)
@@ -79,21 +79,6 @@ public class LockPersistentDataManager
             catch (IOException e)
             {
                throw new RepositoryException(e);
-            }
-            finally
-            {
-               // close connection even if exception
-               if (jdbcConn != null)
-               {
-                  try
-                  {
-                     jdbcConn.close();
-                  }
-                  catch (SQLException e)
-                  {
-                     throw new RepositoryException(e);
-                  }
-               }
             }
          }
          else

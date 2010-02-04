@@ -21,7 +21,9 @@ import org.exoplatform.services.log.Log;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.jcr.RepositoryException;
@@ -40,6 +42,7 @@ public class LockJDBCConnection
 
    private final Log LOG = ExoLogger.getLogger(LockPersistentDataManager.class);
 
+   // queries
    protected String ADD_LOCK_DATA;
 
    protected String REMOVE_LOCK_DATA;
@@ -48,6 +51,26 @@ public class LockJDBCConnection
 
    protected String GET_LOCKED_NODES;
 
+   protected String GET_LOCK_DATA;
+
+   // column names
+   protected static String COLUMN_WS_NAME = "WS_NAME";
+
+   protected static String COLUMN_NODE_ID = "NODE_ID";
+
+   protected static String COLUMN_TOKEN_HASH = "TOKEN_HASH";
+
+   protected static String COLUMN_OWNER = "OWNER";
+
+   protected static String COLUMN_IS_SESSIONSCOPED = "IS_SESSIONSCOPED";
+
+   protected static String COLUMN_IS_DEEP = "IS_DEEP";
+
+   protected static String COLUMN_BIRTHDAY = "BIRTHDAY";
+
+   protected static String COLUMN_TIMEOUT = "TIMEOUT";
+
+   // prepared statements
    private PreparedStatement insertLockData;
 
    private PreparedStatement removeLockData;
@@ -56,53 +79,51 @@ public class LockJDBCConnection
 
    private PreparedStatement getLockedNodes;
 
+   private PreparedStatement getLockData;
+
    private Connection dbConnection;
 
+   private String wsName;
+
+   /**
+    * Creates LockJDBCConnection instance based on given connection to 
+    * database with specified workspace name.
+    * 
+    * @param dbConnection Connection to database.
+    * @param wsName Current workspace's name.
+    * @throws SQLException if database exception occurs.
+    */
    public LockJDBCConnection(Connection dbConnection, String wsName) throws SQLException
    {
-
       this.dbConnection = dbConnection;
 
       if (dbConnection.getAutoCommit())
       {
          dbConnection.setAutoCommit(false);
       }
-
-      prepareQueries(wsName);
-   }
-
-   protected void prepareQueries(String wsName) throws SQLException
-   {
-      // Table structure
-      // CREATE TABLE JCR_LOCKS(
-      //      WS_NAME VARCHAR(96) NOT NULL,
-      //      NODE_ID VARCHAR(96) NOT NULL,
-      //      TOKEN_HASH VARCHAR(32) NOT NULL,
-      //      OWNER VARCHAR(96) NOT NULL,
-      //      IS_SESSIONSCOPED CHAR NOT NULL,
-      //      IS_DEEP CHAR NOT NULL,
-      //      BIRTHDAY LONG NOT NULL,
-      //      TIMEOUT LONG NOT NULL
-      // )
+      this.wsName = wsName;
 
       ADD_LOCK_DATA =
-         "insert into JCR_LOCKS"
-            + "(WS_NAME, NODE_ID, TOKEN_HASH, OWNER, IS_SESSIONSCOPED, IS_DEEP, BIRTHDAY, TIMEOUT) VALUES( " + wsName
-            + " ,?,?,?,?,?,?,?)";
+         "insert into JCR_LOCKS(WS_NAME, NODE_ID, TOKEN_HASH, OWNER, IS_SESSIONSCOPED, IS_DEEP, BIRTHDAY, TIMEOUT) VALUES(?,?,?,?,?,?,?,?)";
 
-      REMOVE_LOCK_DATA = "delete from JCR_LOCKS where WS_NAME=" + wsName + " and NODE_ID=?";
+      REMOVE_LOCK_DATA = "delete from JCR_LOCKS where NODE_ID=? and WS_NAME=?";
 
-      REFRESH_LOCK_DATA =
-      // TODO check list of updated columns
-         "update JCR_LOCKS set OWNER=?, IS_SESSIONSCOPED=?, IS_DEEP=?, BIRTHDAY=?, TIMEOUT=? where NODE_ID=?";
+      REFRESH_LOCK_DATA = "update JCR_LOCKS set BIRTHDAY=? where NODE_ID=? and WS_NAME=?";
 
-      GET_LOCKED_NODES = "select NODE_ID from JCR_LOCKS where WS_NAME=" + wsName;
+      GET_LOCKED_NODES = "select NODE_ID from JCR_LOCKS where WS_NAME=?";
 
+      GET_LOCK_DATA = "select * from JCR_LOCKS where NODE_ID=? and WS_NAME=?";
    }
 
+   /**
+    * Inserts new lock data into DB 
+    * 
+    * @param data
+    * @return
+    * @throws LockException
+    */
    public int addLockData(LockData data) throws LockException
    {
-
       if (!isOpened())
       {
          throw new IllegalStateException("Connection is closed");
@@ -110,17 +131,21 @@ public class LockJDBCConnection
       try
       {
          if (insertLockData == null)
+         {
             insertLockData = dbConnection.prepareStatement(ADD_LOCK_DATA);
+         }
          else
+         {
             insertLockData.clearParameters();
-
-         insertLockData.setString(1, data.getNodeIdentifier());
-         insertLockData.setString(2, data.getTokenHash());
-         insertLockData.setString(3, data.getOwner());
-         insertLockData.setBoolean(4, data.isSessionScoped());
-         insertLockData.setBoolean(5, data.isDeep());
-         insertLockData.setLong(6, data.getBirthDay());
-         insertLockData.setLong(7, data.getTimeOut());
+         }
+         insertLockData.setString(1, wsName);
+         insertLockData.setString(2, data.getNodeIdentifier());
+         insertLockData.setString(3, data.getTokenHash());
+         insertLockData.setString(4, data.getOwner());
+         insertLockData.setBoolean(5, data.isSessionScoped());
+         insertLockData.setBoolean(6, data.isDeep());
+         insertLockData.setLong(7, data.getBirthDay());
+         insertLockData.setLong(8, data.getTimeOut());
 
          return insertLockData.executeUpdate();
       }
@@ -130,6 +155,13 @@ public class LockJDBCConnection
       }
    }
 
+   /**
+    * Removes LockData for given node identifier from database
+    * 
+    * @param nodeID
+    * @return
+    * @throws LockException
+    */
    public int removeLockData(String nodeID) throws LockException
    {
       if (!isOpened())
@@ -139,11 +171,16 @@ public class LockJDBCConnection
       try
       {
          if (removeLockData == null)
-            removeLockData = dbConnection.prepareStatement(ADD_LOCK_DATA);
+         {
+            removeLockData = dbConnection.prepareStatement(REMOVE_LOCK_DATA);
+         }
          else
+         {
             removeLockData.clearParameters();
-
+         }
+         // REMOVE_LOCK_DATA = "delete from JCR_LOCKS where NODE_ID=? and WS_NAME=?";
          removeLockData.setString(1, nodeID);
+         removeLockData.setString(2, wsName);
 
          return removeLockData.executeUpdate();
       }
@@ -154,7 +191,11 @@ public class LockJDBCConnection
    }
 
    /**
-    * Refreshes given lockData
+    * Refreshes given LockData (updates birthday column)
+    * 
+    * @param data
+    * @return
+    * @throws LockException
     */
    public int refreshLockData(LockData data) throws LockException
    {
@@ -165,20 +206,20 @@ public class LockJDBCConnection
       try
       {
          if (refreshLockData == null)
+         {
             refreshLockData = dbConnection.prepareStatement(REFRESH_LOCK_DATA);
+         }
          else
+         {
             refreshLockData.clearParameters();
+         }
 
-         //update JCR_LOCKS set OWNER=?, IS_SESSIONSCOPED=?, IS_DEEP=?, BIRTHDAY=?, TIMEOUT=? where NODE_ID=?;         
+         // REFRESH_LOCK_DATA = "update JCR_LOCKS set BIRTHDAY=? where NODE_ID=? and WS_NAME=?";
+         refreshLockData.setLong(1, data.getBirthDay());
+         refreshLockData.setString(2, data.getNodeIdentifier());
+         refreshLockData.setString(3, wsName);
 
-         refreshLockData.setString(1, data.getOwner());
-         refreshLockData.setBoolean(2, data.isSessionScoped());
-         refreshLockData.setBoolean(3, data.isDeep());
-         refreshLockData.setLong(4, data.getBirthDay());
-         refreshLockData.setLong(5, data.getTimeOut());
-         refreshLockData.setString(6, data.getNodeIdentifier());
-
-         return removeLockData.executeUpdate();
+         return refreshLockData.executeUpdate();
       }
       catch (SQLException e)
       {
@@ -187,16 +228,92 @@ public class LockJDBCConnection
    }
 
    /**
-    * Returns set of locked nodes identifiers
+    * Returns the set of locked nodes identifiers
+    * 
+    * @return
+    * @throws LockException
     */
    public Set<String> getLockedNodes() throws LockException
    {
-      return null;
+      if (!isOpened())
+      {
+         throw new IllegalStateException("Connection is closed");
+      }
+      try
+      {
+         if (getLockedNodes == null)
+         {
+            getLockedNodes = dbConnection.prepareStatement(GET_LOCKED_NODES);
+         }
+         else
+         {
+            getLockedNodes.clearParameters();
+         }
+         // GET_LOCKED_NODES = "select NODE_ID from JCR_LOCKS where WS_NAME=?";
+         getLockedNodes.setString(1, wsName);
+         // get result set
+         ResultSet result = getLockedNodes.executeQuery();
+         Set<String> identifiers = new HashSet<String>();
+         // traverse result set
+         while (result.next())
+         {
+            identifiers.add(new String(result.getString(COLUMN_NODE_ID)));
+         }
+         return identifiers;
+      }
+      catch (SQLException e)
+      {
+         throw new LockException(e);
+      }
    }
 
    /**
-   * {@inheritDoc}
-   */
+    * Returns LockData for given node identifier from database
+    * or null if not exists
+    * 
+    * @param identifier
+    * @return
+    * @throws LockException
+    */
+   public LockData getLockData(String identifier) throws LockException
+   {
+      if (!isOpened())
+      {
+         throw new IllegalStateException("Connection is closed");
+      }
+      try
+      {
+         if (getLockData == null)
+         {
+            getLockData = dbConnection.prepareStatement(GET_LOCK_DATA);
+         }
+         else
+         {
+            getLockData.clearParameters();
+         }
+         // GET_LOCK_DATA = "select * from JCR_LOCKS where NODE_ID=? and WS_NAME=?";
+         getLockData.setString(1, identifier);
+         getLockData.setString(2, wsName);
+         // get result set
+         ResultSet result = getLockData.executeQuery();
+         if (result.next())
+         {
+            return new LockData(result.getString(COLUMN_NODE_ID), result.getString(COLUMN_TOKEN_HASH), result
+               .getBoolean(COLUMN_IS_DEEP), result.getBoolean(COLUMN_IS_SESSIONSCOPED), result.getString(COLUMN_OWNER),
+               result.getLong(COLUMN_TIMEOUT), result.getLong(COLUMN_BIRTHDAY));
+         }
+         return null;
+      }
+      catch (SQLException e)
+      {
+         throw new LockException(e);
+      }
+   }
+
+   /**
+    * Check if connection is alive and opened 
+    * @return
+    */
    public boolean isOpened()
    {
       try
@@ -211,7 +328,10 @@ public class LockJDBCConnection
    }
 
    /**
-    * {@inheritDoc}
+    * Closes database connectio
+    * 
+    * @throws IllegalStateException
+    * @throws RepositoryException
     */
    public final void close() throws IllegalStateException, RepositoryException
    {
@@ -231,7 +351,10 @@ public class LockJDBCConnection
    }
 
    /**
-    * {@inheritDoc}
+    * Commits and closes database connection
+    * 
+    * @throws IllegalStateException
+    * @throws RepositoryException
     */
    public final void commit() throws IllegalStateException, RepositoryException
    {
@@ -239,7 +362,6 @@ public class LockJDBCConnection
       {
          throw new IllegalStateException("Connection is closed");
       }
-
       try
       {
          if (!dbConnection.isReadOnly())
