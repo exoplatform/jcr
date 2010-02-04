@@ -51,9 +51,7 @@ public class ThreadLocalSessionProviderService implements SessionProviderService
     */
    public SessionProvider getSessionProvider(Object key)
    {
-      if (sessionProviderKeeper.get() != null)
-         return sessionProviderKeeper.get();
-      return null;
+      return sessionProviderKeeper.get();
    }
 
    /**
@@ -86,8 +84,11 @@ public class ThreadLocalSessionProviderService implements SessionProviderService
     */
    public void removeSessionProvider(Object key)
    {
-      getSessionProvider(key).close();
-      sessionProviderKeeper.set(null);
+      if (sessionProviderKeeper.get() != null)
+      {
+         sessionProviderKeeper.get().close();
+         sessionProviderKeeper.set(null);
+      }
 
       if (systemSessionProviderKeeper.get() != null)
       {
