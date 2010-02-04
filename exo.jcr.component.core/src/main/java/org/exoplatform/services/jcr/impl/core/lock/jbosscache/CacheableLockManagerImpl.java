@@ -54,7 +54,10 @@ import org.exoplatform.services.transaction.TransactionService;
 import org.jboss.cache.Cache;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.Node;
+import org.jboss.cache.config.CacheLoaderConfig;
+import org.jboss.cache.config.CacheLoaderConfig.IndividualCacheLoaderConfig;
 import org.jboss.cache.loader.CacheLoader;
+import org.jboss.cache.lock.TimeoutException;
 import org.picocontainer.Startable;
 
 import java.io.Serializable;
@@ -250,6 +253,8 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
 
          cache = factory.createCache(config.getLockManager());
 
+         // Add the cache loader needed to prevent TimeoutException
+         addCacheLoaders();
          cache.create();
          cache.start();
 
@@ -264,6 +269,52 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
       }
    }
 
+   /**
+    * This methods adds programmatically the required {@link CacheLoader} needed to prevent 
+    * any {@link TimeoutException}
+    */
+   private void addCacheLoaders()
+   {
+      CacheLoaderConfig config = cache.getConfiguration().getCacheLoaderConfig();
+      List<IndividualCacheLoaderConfig> oldConfigs;
+      if (config == null || (oldConfigs = config.getIndividualCacheLoaderConfigs()) == null || oldConfigs.isEmpty())
+      {
+         if (log.isInfoEnabled())
+         {
+            log.info("No cache loader has been defined, thus no pre and post cache loader will be added");
+         }
+         return;
+      }
+      PreNPostCacheLoader preCL = new PreNPostCacheLoader(true);
+      // create CacheLoaderConfig
+      IndividualCacheLoaderConfig preCLConfig = new IndividualCacheLoaderConfig();
+      // set CacheLoader
+      preCLConfig.setCacheLoader(preCL);
+      // set parameters
+      preCLConfig.setFetchPersistentState(false);
+      preCLConfig.setAsync(false);
+      preCLConfig.setIgnoreModifications(true);
+      preCLConfig.setPurgeOnStartup(false);
+      PreNPostCacheLoader postCL = new PreNPostCacheLoader(false);
+      // create CacheLoaderConfig
+      IndividualCacheLoaderConfig postCLConfig = new IndividualCacheLoaderConfig();
+      // set CacheLoader
+      postCLConfig.setCacheLoader(postCL);
+      // set parameters
+      postCLConfig.setFetchPersistentState(false);
+      postCLConfig.setAsync(false);
+      postCLConfig.setIgnoreModifications(true);
+      postCLConfig.setPurgeOnStartup(false);
+      List<IndividualCacheLoaderConfig> newConfigs = new ArrayList<IndividualCacheLoaderConfig>(oldConfigs);
+      newConfigs.add(0, preCLConfig);
+      newConfigs.add(postCLConfig);
+      config.setIndividualCacheLoaderConfigs(newConfigs);
+      if (log.isInfoEnabled())
+      {
+         log.info("The pre and post cache loaders have been added");
+      }      
+   }
+   
    /*
     * (non-Javadoc)
     * @see
@@ -342,7 +393,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
    {
       public Boolean execute(String nodeId)
       {
-         if (/*pendingLocks.containsKey(nodeId) || */cache.getRoot().hasChild(makeLockFqn(nodeId)))
+         if (/*pendingLocks.containsKey(nodeId) || */cache.get(makeLockFqn(nodeId), LOCK_DATA) != null)
          {
             return true;
          }
@@ -704,7 +755,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
    {
       public Boolean execute(String nodeId) throws LockException
       {
-         return cache.getRoot().hasChild(makeLockFqn(nodeId));
+         return cache.get(makeLockFqn(nodeId), LOCK_DATA) != null;
       }
    };
 

@@ -4,12 +4,6 @@
    <locking useLockStriping="false" concurrencyLevel="50000" lockParentForChildInsertRemove="false"
       lockAcquisitionTimeout="20000" />
 
-   <clustering mode="replication" clusterName="${jbosscache-cluster-name}">
-      <stateRetrieval timeout="20000" fetchInMemoryState="false" />
-      <jgroupsConfig multiplexerStack="jcr.stack" />
-      <sync />
-   </clustering>
-
    <loaders passivation="false" shared="true">
       <!--
 			For another cache-loader class you should use another template with
