@@ -24,6 +24,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import javax.jcr.RepositoryException;
+import javax.jcr.lock.LockException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -48,7 +49,7 @@ public class LockJDBCConnection
 
    private Connection dbConnection;
 
-   public LockJDBCConnection(Connection dbConnection, String tableName) throws SQLException
+   public LockJDBCConnection(Connection dbConnection, String wsName) throws SQLException
    {
 
       this.dbConnection = dbConnection;
@@ -58,13 +59,14 @@ public class LockJDBCConnection
          dbConnection.setAutoCommit(false);
       }
 
-      prepareQueries(tableName);
+      prepareQueries(wsName);
    }
 
-   protected void prepareQueries(String tableName) throws SQLException
+   protected void prepareQueries(String wsName) throws SQLException
    {
       // Table structure
-      // CREATE TABLE ${table.name}(
+      // CREATE TABLE JCR_LOCKS(
+      //      WS_NAME VARCHAR(96) NOT NULL,
       //      NODE_ID VARCHAR(96) NOT NULL,
       //      TOKEN_HASH VARCHAR(32) NOT NULL,
       //      OWNER VARCHAR(96) NOT NULL,
@@ -75,14 +77,15 @@ public class LockJDBCConnection
       // )
 
       ADD_LOCK_DATA =
-         "insert into " + tableName
-            + "(NODE_ID, TOKEN_HASH, OWNER, IS_SESSIONSCOPED, IS_DEEP, BIRTHDAY, TIMEOUT) VALUES(?,?,?,?,?,?,?)";
+         "insert into JCR_LOCKS"
+            + "(WS_NAME, NODE_ID, TOKEN_HASH, OWNER, IS_SESSIONSCOPED, IS_DEEP, BIRTHDAY, TIMEOUT) VALUES( " + wsName
+            + " ,?,?,?,?,?,?,?)";
 
-      REMOVE_LOCK_DATA = "delete from " + tableName + " where NODE_ID=?";
+      REMOVE_LOCK_DATA = "delete from JCR_LOCKS where WS_NAME=" + wsName + " and NODE_ID=?";
 
    }
 
-   public int addLockData(LockData data) throws RepositoryException
+   public int addLockData(LockData data) throws LockException
    {
 
       if (!isOpened())
@@ -108,11 +111,11 @@ public class LockJDBCConnection
       }
       catch (SQLException e)
       {
-         throw new RepositoryException(e);
+         throw new LockException(e);
       }
    }
 
-   public int removeLockData(String nodeID) throws RepositoryException
+   public int removeLockData(String nodeID) throws LockException
    {
       if (!isOpened())
       {
@@ -131,13 +134,13 @@ public class LockJDBCConnection
       }
       catch (SQLException e)
       {
-         throw new RepositoryException(e);
+         throw new LockException(e);
       }
    }
 
    /**
-    * {@inheritDoc}
-    */
+   * {@inheritDoc}
+   */
    public boolean isOpened()
    {
       try

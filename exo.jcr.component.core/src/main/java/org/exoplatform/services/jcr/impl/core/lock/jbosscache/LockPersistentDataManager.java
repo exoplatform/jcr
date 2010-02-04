@@ -44,16 +44,16 @@ public class LockPersistentDataManager
 
    private DataSource dataSource;
 
-   private String tableName;
+   private String wsName;
 
    /**
     * @param dataSourceName DataSource name
     * @param tableName Name of DB table
     * @throws RepositoryException 
     */
-   public LockPersistentDataManager(String dataSourceName, String tableName) throws RepositoryException, IOException
+   public LockPersistentDataManager(String dataSourceName, String wsName) throws RepositoryException, IOException
    {
-      this.tableName = tableName;
+      this.wsName = wsName;
 
       // try to resolve DataSource
       try
@@ -69,7 +69,7 @@ public class LockPersistentDataManager
                jdbcConn = dataSource.getConnection();
                String dialect = DialectDetecter.detect(jdbcConn.getMetaData());
                // if table not exists, create it  
-               initDatabase(dataSourceName, jdbcConn, dialect, tableName);
+               initDatabase(dataSourceName, jdbcConn, dialect);
             }
             catch (SQLException e)
             {
@@ -107,7 +107,7 @@ public class LockPersistentDataManager
    {
       try
       {
-         return new LockJDBCConnection(getJDBCConnection(readOnly), tableName);
+         return new LockJDBCConnection(getJDBCConnection(), wsName);
       }
       catch (SQLException e)
       {
@@ -123,19 +123,12 @@ public class LockPersistentDataManager
     * @throws RepositoryException 
     * @throws RepositoryException
     */
-   private Connection getJDBCConnection(boolean readOnly) throws RepositoryException
+   private Connection getJDBCConnection() throws RepositoryException
    {
       try
       {
          //TODO make connection as in GenericConnectionFactory
          final Connection conn = dataSource.getConnection();
-
-         if (readOnly)
-         {
-            // set this feature only if it asked
-            conn.setReadOnly(readOnly);
-         }
-
          return conn;
       }
       catch (SQLException e)
@@ -154,8 +147,8 @@ public class LockPersistentDataManager
     * @throws IOException 
     * @throws DBInitializerException 
     */
-   protected void initDatabase(String dataSource, Connection jdbcConn, String dialect, String tableName)
-      throws IOException, DBInitializerException
+   protected void initDatabase(String dataSource, Connection jdbcConn, String dialect) throws IOException,
+      DBInitializerException
    {
       LockDBInitializer dbInitializer = null;
 
@@ -164,13 +157,13 @@ public class LockPersistentDataManager
       {
          // oracle preparation script
          String sqlPath = "/conf/storage/lock-jdbc.ora.sql";
-         dbInitializer = new OracleLockDBInitializer(dataSource, jdbcConn, sqlPath, tableName);
+         dbInitializer = new OracleLockDBInitializer(dataSource, jdbcConn, sqlPath);
       }
       else
       {
          // generic preparation script
          String sqlPath = "/conf/storage/lock-jdbc.default.sql";
-         dbInitializer = new LockDBInitializer(dataSource, jdbcConn, sqlPath, tableName);
+         dbInitializer = new LockDBInitializer(dataSource, jdbcConn, sqlPath);
       }
 
       // init DB

@@ -32,10 +32,9 @@ import java.sql.SQLException;
 public class OracleLockDBInitializer extends LockDBInitializer
 {
 
-   public OracleLockDBInitializer(String containerName, Connection connection, String script, String tableName)
-      throws IOException
+   public OracleLockDBInitializer(String containerName, Connection connection, String script) throws IOException
    {
-      super(containerName, connection, script, tableName);
+      super(containerName, connection, script);
    }
 
    @Override

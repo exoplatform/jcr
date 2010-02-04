@@ -88,12 +88,8 @@ public class LockDBInitializer
 
    protected final Pattern dbTriggerNamePattern;
 
-   private final String tableName;
-
-   public LockDBInitializer(String containerName, Connection connection, String scriptPath, String tableName)
-      throws IOException
+   public LockDBInitializer(String containerName, Connection connection, String scriptPath) throws IOException
    {
-      this.tableName = tableName;
       this.connection = connection;
       this.script = script(scriptPath);
       this.containerName = containerName;
@@ -110,12 +106,7 @@ public class LockDBInitializer
 
    protected String script(String scriptPath) throws IOException
    {
-      String script = readScriptResource(scriptPath);
-
-      //replace table name pattern
-      // TODO make correct replacement
-      script.replaceAll(SQL_TABLE_NAME_PATTERN, tableName);
-      return script;
+      return readScriptResource(scriptPath);
    }
 
    protected String readScriptResource(String path) throws IOException
