@@ -336,18 +336,17 @@ public class LockJDBCConnection
     */
    public final void close() throws IllegalStateException, RepositoryException
    {
-      if (!isOpened())
+      if (isOpened())
       {
-         throw new IllegalStateException("Connection is closed");
-      }
 
-      try
-      {
-         dbConnection.close();
-      }
-      catch (SQLException e)
-      {
-         throw new RepositoryException(e);
+         try
+         {
+            dbConnection.close();
+         }
+         catch (SQLException e)
+         {
+            throw new RepositoryException(e);
+         }
       }
    }
 
