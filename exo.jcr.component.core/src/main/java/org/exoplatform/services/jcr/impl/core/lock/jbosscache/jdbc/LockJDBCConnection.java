@@ -28,7 +28,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.jcr.RepositoryException;
-import javax.jcr.lock.LockException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -121,9 +120,9 @@ public class LockJDBCConnection
     * 
     * @param data
     * @return
-    * @throws LockException
+    * @throws RepositoryException
     */
-   public int addLockData(LockData data) throws LockException
+   public int addLockData(LockData data) throws RepositoryException
    {
       if (!isOpened())
       {
@@ -152,7 +151,7 @@ public class LockJDBCConnection
       }
       catch (SQLException e)
       {
-         throw new LockException(e);
+         throw new RepositoryException(e);
       }
    }
 
@@ -161,9 +160,9 @@ public class LockJDBCConnection
     * 
     * @param nodeID
     * @return
-    * @throws LockException
+    * @throws RepositoryException
     */
-   public int removeLockData(String nodeID) throws LockException
+   public int removeLockData(String nodeID) throws RepositoryException
    {
       if (!isOpened())
       {
@@ -187,7 +186,7 @@ public class LockJDBCConnection
       }
       catch (SQLException e)
       {
-         throw new LockException(e);
+         throw new RepositoryException(e);
       }
    }
 
@@ -196,9 +195,9 @@ public class LockJDBCConnection
     * 
     * @param data
     * @return
-    * @throws LockException
+    * @throws RepositoryException
     */
-   public int refreshLockData(LockData data) throws LockException
+   public int refreshLockData(LockData data) throws RepositoryException
    {
       if (!isOpened())
       {
@@ -224,7 +223,7 @@ public class LockJDBCConnection
       }
       catch (SQLException e)
       {
-         throw new LockException(e);
+         throw new RepositoryException(e);
       }
    }
 
@@ -232,9 +231,9 @@ public class LockJDBCConnection
     * Returns the set of locked nodes identifiers
     * 
     * @return
-    * @throws LockException
+    * @throws RepositoryException
     */
-   public Set<String> getLockedNodes() throws LockException
+   public Set<String> getLockedNodes() throws RepositoryException
    {
       if (!isOpened())
       {
@@ -264,7 +263,7 @@ public class LockJDBCConnection
       }
       catch (SQLException e)
       {
-         throw new LockException(e);
+         throw new RepositoryException(e);
       }
    }
 
@@ -272,11 +271,11 @@ public class LockJDBCConnection
     * Returns LockData for given node identifier from database
     * or null if not exists
     * 
-    * @param identifier
-    * @return
-    * @throws LockException
+    * @param identifier - locked node identifier
+    * @return LockData
+    * @throws RepositoryException
     */
-   public LockData getLockData(String identifier) throws LockException
+   public LockData getLockData(String identifier) throws RepositoryException
    {
       if (!isOpened())
       {
@@ -307,7 +306,7 @@ public class LockJDBCConnection
       }
       catch (SQLException e)
       {
-         throw new LockException(e);
+         throw new RepositoryException(e);
       }
    }
 
@@ -338,7 +337,6 @@ public class LockJDBCConnection
    {
       if (isOpened())
       {
-
          try
          {
             dbConnection.close();

@@ -137,11 +137,6 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
     */
    private LockRemover lockRemover;
 
-   /**
-    * The current Transaction Manager
-    */
-   private TransactionManager tm;
-
    private Cache<Serializable, Object> cache;
 
    private LockJDBCContainer lockJDBCContainer;
@@ -231,7 +226,7 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
       // make cache
       if (config.getLockManager() != null)
       {
-         this.tm = transactionManager;
+
          String dataSourceName = config.getLockManager().getParameterValue(DATA_SOURCE);
          lockJDBCContainer = new LockJDBCContainer(dataSourceName, config.getName());
 
@@ -273,14 +268,33 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
    public int getNumLocks()
    {
       int lockNum = -1;
+      LockJDBCConnection connection = null;
       try
       {
-         LockJDBCConnection connection = this.lockJDBCContainer.openConnection();
+         connection = this.lockJDBCContainer.openConnection();
          lockNum = connection.getLockedNodes().size();
       }
-      catch (LockException e)
+      catch (RepositoryException e)
       {
          // skip
+      }
+      finally
+      {
+         if (connection != null)
+         {
+            try
+            {
+               connection.close();
+            }
+            catch (IllegalStateException e)
+            {
+               // do nothing
+            }
+            catch (RepositoryException e)
+            {
+               // do nothing 
+            }
+         }
       }
       return lockNum;
    }
@@ -303,7 +317,14 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
     */
    public boolean isLockLive(String nodeId) throws LockException
    {
-      return this.lockExist(nodeId);
+      try
+      {
+         return this.lockExist(nodeId);
+      }
+      catch (RepositoryException e)
+      {
+         throw new LockException(e.getMessage(), e);
+      }
    }
 
    /**
@@ -415,7 +436,7 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
          {
             log.error(e.getLocalizedMessage(), e);
          }
-         catch (LockException e)
+         catch (RepositoryException e)
          {
             log.error(e.getLocalizedMessage(), e);
          }
@@ -471,15 +492,22 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
 
       public void apply() throws LockException
       {
-         // invoke internalLock in LOCK operation
-         if (type == ExtendedEvent.LOCK)
+         try
          {
-            internalLock(sessionId, identifier);
+            // invoke internalLock in LOCK operation
+            if (type == ExtendedEvent.LOCK)
+            {
+               internalLock(sessionId, identifier);
+            }
+            // invoke internalUnLock in UNLOCK operation
+            else if (type == ExtendedEvent.UNLOCK)
+            {
+               internalUnLock(sessionId, identifier);
+            }
          }
-         // invoke internalUnLock in UNLOCK operation
-         else if (type == ExtendedEvent.UNLOCK)
+         catch (RepositoryException e)
          {
-            internalUnLock(sessionId, identifier);
+            throw new LockException(e.getMessage(), e);
          }
       }
 
@@ -499,7 +527,6 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
     */
    public void refreshLockData(LockData newLockData) throws LockException
    {
-      // TODO
       // Write to DB
       LockJDBCConnection connection = null;
       try
@@ -541,7 +568,6 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
     */
    public synchronized void removeExpired()
    {
-      // TODO
       final List<String> removeLockList = new ArrayList<String>();
       try
       {
@@ -561,8 +587,9 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
             removeLock(rLock);
          }
       }
-      catch (LockException e)
+      catch (RepositoryException e)
       {
+         // Used from LockRemover thread, so no exception must be thrown.
          log.error("Exception removing expired locks", e);
       }
    }
@@ -589,10 +616,10 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
    }
 
    /**
-    * Copy <code>PropertyData prop<code> to new TransientItemData
+    * Copy <code>PropertyData prop<code> to new TransientItemData.
     * 
-    * @param prop
-    * @return
+    * @param prop - PropertyData
+    * @return TransientItemData
     * @throws RepositoryException
     */
    private TransientItemData copyItemData(PropertyData prop) throws RepositoryException
@@ -616,14 +643,13 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
     * @param nodeIdentifier
     * @throws LockException
     */
-   private synchronized void internalLock(String sessionId, String nodeIdentifier) throws LockException
+   private synchronized void internalLock(String sessionId, String nodeIdentifier) throws RepositoryException
    {
       CacheableSessionLockManager sessionLockManager = sessionLockManagers.get(sessionId);
       if (sessionLockManager != null && sessionLockManager.cotainsPendingLock(nodeIdentifier))
       {
          LockData lockData = sessionLockManager.getPendingLock(nodeIdentifier);
 
-         //TODO
          // add to DB for first
          LockJDBCConnection connection = null;
          try
@@ -635,14 +661,10 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
 
             // if any SQL exception, that nothing should be placed to cache
             Fqn<String> lockPath = makeLockFqn(lockData.getNodeIdentifier());
-            Node<Serializable, Object> node = cache.getRoot().addChild(lockPath);
+
             cache.put(lockPath, LOCK_DATA, lockData);
 
             sessionLockManager.notifyLockPersisted(nodeIdentifier);
-         }
-         catch (RepositoryException e)
-         {
-            throw new LockException(e);
          }
          finally
          {
@@ -677,13 +699,12 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
     * @param nodeIdentifier
     * @throws LockException
     */
-   private synchronized void internalUnLock(String sessionId, String nodeIdentifier) throws LockException
+   private synchronized void internalUnLock(String sessionId, String nodeIdentifier) throws RepositoryException
    {
       LockData lData = getLockDataById(nodeIdentifier);
 
       if (lData != null)
       {
-         //TODO
          LockJDBCConnection connection = null;
          try
          {
@@ -725,9 +746,8 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
       }
    }
 
-   private boolean lockExist(String nodeId) throws LockException
+   private boolean lockExist(String nodeId) throws RepositoryException
    {
-      //TODO
       //if present in cache - then exists
       if (cache.get(makeLockFqn(nodeId), LOCK_DATA) != null)
       {
@@ -788,7 +808,7 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
    /**
     * {@inheritDoc}
     */
-   public LockData getLockData(NodeData data, int searchType)
+   public LockData getLockData(NodeData data, int searchType) throws LockException
    {
       if (data == null)
          return null;
@@ -837,17 +857,14 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
       }
       catch (RepositoryException e)
       {
-         //TODO 
-         log.error(e.getMessage(), e);
-         return null;
+         throw new LockException(e.getMessage(), e);
       }
 
       return retval;
    }
 
-   protected LockData getLockDataById(String nodeId) throws LockException
+   protected LockData getLockDataById(String nodeId) throws RepositoryException
    {
-      //TODO
       LockData lData = (LockData)cache.get(makeLockFqn(nodeId), LOCK_DATA);
 
       if (lData != null)
@@ -883,11 +900,8 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
       }
    }
 
-   protected synchronized List<LockData> getLockList() throws LockException
+   protected synchronized List<LockData> getLockList() throws RepositoryException
    {
-
-      //TODO
-
       LockJDBCConnection connection = null;
       try
       {
@@ -905,7 +919,6 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
             {
                locksData.add(connection.getLockData(nodeId));
             }
-
          }
          return locksData;
       }
@@ -919,13 +932,11 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
             }
             catch (IllegalStateException e)
             {
-               // TODO Auto-generated catch block
-               e.printStackTrace();
+               log.error(e.getMessage(), e);
             }
             catch (RepositoryException e)
             {
-               // TODO Auto-generated catch block
-               e.printStackTrace();
+               log.error(e.getMessage(), e);
             }
          }
       }

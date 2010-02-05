@@ -94,7 +94,7 @@ public class LockJDBCContainer
 
    }
 
-   public LockJDBCConnection openConnection() throws LockException
+   public LockJDBCConnection openConnection() throws RepositoryException
    {
       try
       {
@@ -102,7 +102,7 @@ public class LockJDBCContainer
       }
       catch (SQLException e)
       {
-         throw new LockException(e);
+         throw new RepositoryException(e);
       }
    }
 

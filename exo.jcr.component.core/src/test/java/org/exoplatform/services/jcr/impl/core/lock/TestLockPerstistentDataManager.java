@@ -26,7 +26,6 @@ import org.exoplatform.services.jcr.impl.core.lock.jbosscache.jdbc.LockJDBCConta
 import java.util.Set;
 
 import javax.jcr.RepositoryException;
-import javax.jcr.lock.LockException;
 
 /**
  * @author <a href="mailto:nikolazius@gmail.com">Nikolay Zamosenchuk</a>
@@ -202,7 +201,7 @@ public class TestLockPerstistentDataManager extends JcrImplBaseTest
          connection.addLockData(new LockData("identifier", "hash", false, false, "owner", 100));
          fail("exception expected!");
       }
-      catch (LockException e)
+      catch (RepositoryException e)
       {
          // it's ok
       }
