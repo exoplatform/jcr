@@ -343,7 +343,7 @@ public class LockJDBCConnection
          isLockDataExist.setString(1, identifier);
          isLockDataExist.setString(2, wsName);
          // get result set
-         ResultSet result = getLockData.executeQuery();
+         ResultSet result = isLockDataExist.executeQuery();
          return result.next();
       }
       catch (SQLException e)
