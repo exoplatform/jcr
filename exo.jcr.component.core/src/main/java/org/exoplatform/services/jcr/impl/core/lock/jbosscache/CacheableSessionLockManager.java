@@ -104,9 +104,33 @@ public class CacheableSessionLockManager implements SessionLockManager
 
       String lockToken = IdGenerator.generate();
 
+      NodeData data = (NodeData)node.getData();
+
       LockData lData =
-         lockManager.createLockData((NodeData)node.getData(), lockToken, isDeep, isSessionScoped, node.getSession()
-            .getUserID(), timeOut);
+         lockManager
+            .getLockData(data, CacheableLockManager.SEARCH_EXECMATCH | CacheableLockManager.SEARCH_CLOSEDPARENT);
+      if (lData != null)
+      {
+         if (lData.getNodeIdentifier().equals(node.getIdentifier()))
+         {
+            throw new LockException("Node already locked: " + data.getQPath());
+         }
+         else if (lData.isDeep())
+         {
+            throw new LockException("Parent node has deep lock.");
+         }
+      }
+
+      if (isDeep && lockManager.getLockData(data, CacheableLockManager.SEARCH_CLOSEDCHILD) != null)
+      {
+         throw new LockException("Some child node is locked.");
+      }
+
+      String lockTokenHash = lockManager.getLockTokenHash(lockToken);
+
+      lData =
+         new LockData(node.getIdentifier(), lockTokenHash, isDeep, isSessionScoped, node.getSession().getUserID(),
+            timeOut > 0 ? timeOut : lockManager.getDefaultLockTimeOut());
 
       lockedNodes.put(node.getInternalIdentifier(), lData);
       pendingLocks.add(node.getInternalIdentifier());
@@ -122,7 +146,7 @@ public class CacheableSessionLockManager implements SessionLockManager
     */
    public void addLockToken(String lt)
    {
-      tokens.put(lt, lockManager.getHash(lt));
+      tokens.put(lt, lockManager.getLockTokenHash(lt));
    }
 
    /**
@@ -130,7 +154,9 @@ public class CacheableSessionLockManager implements SessionLockManager
     */
    public LockImpl getLock(NodeImpl node) throws LockException, RepositoryException
    {
-      LockData lData = lockManager.getExactOrCloseParentLock((NodeData)node.getData());
+      LockData lData =
+         lockManager.getLockData((NodeData)node.getData(), CacheableLockManager.SEARCH_EXECMATCH
+            | CacheableLockManager.SEARCH_CLOSEDPARENT);
 
       if (lData == null || (!node.getInternalIdentifier().equals(lData.getNodeIdentifier()) && !lData.isDeep()))
       {
@@ -154,7 +180,7 @@ public class CacheableSessionLockManager implements SessionLockManager
     */
    public boolean holdsLock(NodeData node) throws RepositoryException
    {
-      return lockManager.exactLockExist(node);
+      return lockManager.getLockData(node, CacheableLockManager.SEARCH_EXECMATCH) != null;
    }
 
    /**
@@ -162,7 +188,9 @@ public class CacheableSessionLockManager implements SessionLockManager
     */
    public boolean isLocked(NodeData node)
    {
-      LockData lData = lockManager.getExactOrCloseParentLock(node);
+      LockData lData =
+         lockManager
+            .getLockData(node, CacheableLockManager.SEARCH_EXECMATCH | CacheableLockManager.SEARCH_CLOSEDPARENT);
 
       if (lData == null || (!node.getIdentifier().equals(lData.getNodeIdentifier()) && !lData.isDeep()))
       {
@@ -176,7 +204,9 @@ public class CacheableSessionLockManager implements SessionLockManager
     */
    public boolean isLockHolder(NodeImpl node) throws RepositoryException
    {
-      LockData lData = lockManager.getExactOrCloseParentLock((NodeData)node.getData());
+      LockData lData =
+         lockManager.getLockData((NodeData)node.getData(), CacheableLockManager.SEARCH_EXECMATCH
+            | CacheableLockManager.SEARCH_CLOSEDPARENT);
 
       return lData != null && isLockHolder(lData);
    }
@@ -255,10 +285,20 @@ public class CacheableSessionLockManager implements SessionLockManager
    }
 
    /**
-    * Returns real token, if session has it
+    * Is session contains pending lock for node by nodeId.
+    * @param nodeId - node ID string
+    * @return boolean
+    */
+   protected boolean cotainsPendingLock(String nodeId)
+   {
+      return pendingLocks.contains(nodeId);
+   }
+
+   /**
+    * Returns real token, if session has it.
     * 
-    * @param lockData
-    * @return
+    * @param tokenHash - token hash string
+    * @return lock token string
     */
    protected String getLockToken(String tokenHash)
    {
@@ -270,6 +310,24 @@ public class CacheableSessionLockManager implements SessionLockManager
          }
       }
       return null;
+   }
+
+   /**
+    * Return pending lock.
+    * 
+    * @param nodeId - ID of locked node
+    * @return pending lock or null
+    */
+   protected LockData getPendingLock(String nodeId)
+   {
+      if (pendingLocks.contains(nodeId))
+      {
+         return lockedNodes.get(nodeId);
+      }
+      else
+      {
+         return null;
+      }
    }
 
    /**
@@ -291,15 +349,9 @@ public class CacheableSessionLockManager implements SessionLockManager
       }
    }
 
-   /**
-    * Refresh lockData. 
-    * 
-    * @param newLockData
-    * @throws LockException
-    */
-   protected void refresh(LockData newLockData) throws LockException
+   protected void notifyLockPersisted(String nodeIdentifier)
    {
-      lockManager.refreshLockData(newLockData);
+      pendingLocks.remove(nodeIdentifier);
    }
 
    /**
@@ -312,27 +364,15 @@ public class CacheableSessionLockManager implements SessionLockManager
       lockedNodes.remove(nodeIdentifier);
    }
 
-   protected void notifyLockPersisted(String nodeIdentifier)
+   /**
+    * Refresh lockData. 
+    * 
+    * @param newLockData
+    * @throws LockException
+    */
+   protected void refresh(LockData newLockData) throws LockException
    {
-      pendingLocks.remove(nodeIdentifier);
-   }
-
-   protected boolean cotainsPendingLock(String nodeId)
-   {
-      return pendingLocks.contains(nodeId);
-   }
-
-   protected LockData getPendingLock(String nodeId)
-   {
-      //TODO check it 
-      if (pendingLocks.contains(nodeId))
-      {
-         return lockedNodes.get(nodeId);
-      }
-      else
-      {
-         return null;
-      }
+      lockManager.refreshLockData(newLockData);
    }
 
 }

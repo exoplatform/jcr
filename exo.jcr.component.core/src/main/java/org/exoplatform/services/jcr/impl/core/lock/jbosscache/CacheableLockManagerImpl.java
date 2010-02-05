@@ -104,22 +104,6 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
     */
    public static final long DEFAULT_LOCK_TIMEOUT = 1000 * 60 * 30;
 
-   // Search constants
-   /**
-    * The exact lock token.
-    */
-   protected static final int SEARCH_EXECMATCH = 1;
-
-   /**
-    * Lock token of closed parent
-    */
-   protected static final int SEARCH_CLOSEDPARENT = 2;
-
-   /**
-    * Lock token of closed child
-    */
-   protected static final int SEARCH_CLOSEDCHILD = 4;
-
    /**
     * Name of lock root in jboss-cache.
     */
@@ -133,17 +117,12 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
    /**
     * Logger
     */
-   private final Log log = ExoLogger.getLogger("jcr.lock.CacheableLockManager");
+   private final Log log = ExoLogger.getLogger("jcr.lock.CacheableLockManagerImpl");
 
    /**
     * Data manager.
     */
    private final DataManager dataManager;
-
-   /**
-    * Context recall is a workaround of JDBCCacheLoader starting. 
-    */
-   //private final InitialContextInitializer context;
 
    /**
     * Run time lock time out.
@@ -164,6 +143,9 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
 
    private final Fqn<String> lockRoot;
 
+   /**
+    * SessionLockManagers that uses this LockManager.
+    */
    private Map<String, CacheableSessionLockManager> sessionLockManagers;
 
    /**
@@ -229,16 +211,13 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
             lockTimeOut =
                config.getLockManager().getTimeout() > 0 ? config.getLockManager().getTimeout() : DEFAULT_LOCK_TIMEOUT;
          }
-
       }
       else
       {
          lockTimeOut = DEFAULT_LOCK_TIMEOUT;
       }
 
-      //pendingLocks = new HashMap<String, LockData>();
       sessionLockManagers = new HashMap<String, CacheableSessionLockManager>();
-      //this.context = context;
 
       dataManager.addItemPersistenceListener(this);
 
@@ -312,19 +291,8 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
       if (log.isInfoEnabled())
       {
          log.info("The pre and post cache loaders have been added");
-      }      
+      }
    }
-   
-   /*
-    * (non-Javadoc)
-    * @see
-    * org.exoplatform.services.jcr.impl.core.lock.LockManager#addPendingLock(org.exoplatform.services
-    * .jcr.impl.core.NodeImpl, boolean, boolean, long)
-    */
-   //   public synchronized void addPendingLock(String nodeIdentifier, LockData lData)
-   //   {
-   //      pendingLocks.put(nodeIdentifier, lData);
-   //   }
 
    @Managed
    @ManagedDescription("Remove the expired locks")
@@ -337,24 +305,6 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
    {
       return lockTimeOut;
    }
-
-   /*
-    * (non-Javadoc)
-    * @see
-    * org.exoplatform.services.jcr.impl.core.lock.LockManager#getLock(org.exoplatform.services.jcr
-    * .impl.core.NodeImpl)
-    */
-   //   public LockData getLockData(NodeImpl node) throws LockException, RepositoryException
-   //   {
-   //
-   //      LockData lData = getLockData((NodeData)node.getData(), SEARCH_EXECMATCH | SEARCH_CLOSEDPARENT);
-   //
-   //      if (lData == null || (!node.getInternalIdentifier().equals(lData.getNodeIdentifier()) && !lData.isDeep()))
-   //      {
-   //         throw new LockException("Node not locked: " + node.getData().getQPath());
-   //      }
-   //      return lData;
-   //   }
 
    private final LockActionNonTxAware<Integer, Object> getNumLocks = new LockActionNonTxAware<Integer, Object>()
    {
@@ -393,7 +343,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
    {
       public Boolean execute(String nodeId)
       {
-         if (/*pendingLocks.containsKey(nodeId) || */cache.get(makeLockFqn(nodeId), LOCK_DATA) != null)
+         if (cache.get(makeLockFqn(nodeId), LOCK_DATA) != null) //pendingLocks.containsKey(nodeId) || 
          {
             return true;
          }
@@ -548,7 +498,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
    }
 
    /**
-    * Class containing operation type (LOCK or UNLOCK) and all the needed information like node uuid and session id 
+    * Class containing operation type (LOCK or UNLOCK) and all the needed information like node uuid and session id.
     */
    private class LockOperationContainer implements Comparable<LockOperationContainer>
    {
@@ -778,7 +728,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
     * @param token
     * @return
     */
-   public String getHash(String token)
+   public String getLockTokenHash(String token)
    {
       String hash = "";
       try
@@ -795,11 +745,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
    }
 
    /**
-    * Search lock in maps.
-    * 
-    * @param data
-    * @param searchType
-    * @return
+    * {@inheritDoc}
     */
    public LockData getLockData(NodeData data, int searchType)
    {
@@ -850,7 +796,8 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
       }
       catch (RepositoryException e)
       {
-         //TODO
+         //TODO 
+         log.error(e.getMessage(), e);
          return null;
       }
 
@@ -981,9 +928,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
    }
 
    /**
-    * Release all resources associated with CacheableSessionLockManager.
-    * 
-    * @param sessionID - session identifier
+    * {@inheritDoc}
     */
    public void closeSessionLockManager(String sessionID)
    {
@@ -1067,48 +1012,6 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
    private static interface LockActionNonTxAware<R, A>
    {
       R execute(A arg) throws LockException;
-   }
-
-   public LockData createLockData(NodeData node, String lockToken, boolean isDeep, boolean isSessionScoped,
-      String owner, long timeOut) throws LockException
-   {
-
-      LockData lData =
-         getLockData(node, CacheableLockManagerImpl.SEARCH_EXECMATCH | CacheableLockManagerImpl.SEARCH_CLOSEDPARENT);
-      if (lData != null)
-      {
-         if (lData.getNodeIdentifier().equals(node.getIdentifier()))
-         {
-            throw new LockException("Node already locked: " + node.getQPath());
-         }
-         else if (lData.isDeep())
-         {
-            throw new LockException("Parent node has deep lock.");
-         }
-      }
-
-      if (isDeep && getLockData(node, CacheableLockManagerImpl.SEARCH_CLOSEDCHILD) != null)
-      {
-         throw new LockException("Some child node is locked.");
-      }
-
-      String lockTokenHash = getHash(lockToken);
-
-      lData =
-         new LockData(node.getIdentifier(), lockTokenHash, isDeep, isSessionScoped, owner, timeOut > 0 ? timeOut
-            : getDefaultLockTimeOut());
-      return lData;
-   }
-
-   public LockData getExactOrCloseParentLock(NodeData node)
-   {
-      return getLockData(node, CacheableLockManagerImpl.SEARCH_EXECMATCH | CacheableLockManagerImpl.SEARCH_CLOSEDPARENT);
-
-   }
-
-   public boolean exactLockExist(NodeData node)
-   {
-      return getLockData(node, CacheableLockManagerImpl.SEARCH_EXECMATCH) != null;
    }
 
 }

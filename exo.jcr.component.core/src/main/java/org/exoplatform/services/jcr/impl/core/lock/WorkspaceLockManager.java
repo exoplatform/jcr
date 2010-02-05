@@ -33,13 +33,14 @@ public interface WorkspaceLockManager
     * Returns session lock manager that interact with this LockManager.
     * 
     * @param sessionId - session ID
-    * @return
+    * @return new SessionLockManager
     */
    SessionLockManager getSessionLockManager(String sessionId);
 
    /**
-    * Release resources associated with previously opened SessionLockManager.
-    * @param sessionId - session ID
+    * Release all resources associated with CacheableSessionLockManager.
+    * 
+    * @param sessionID - session identifier
     */
    void closeSessionLockManager(String sessionId);
 }

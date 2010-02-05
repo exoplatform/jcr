@@ -32,45 +32,40 @@ import javax.jcr.lock.LockException;
 public interface CacheableLockManager extends WorkspaceLockManager
 {
 
+   // Search constants
    /**
-    * Returns new LockData object or throw LockException if can't place lock here.
-    * 
-    * @param node
-    * @param lockToken
-    * @param isDeep
-    * @param isSessionScoped
-    * @param timeOut
-    * @return LockData object 
-    * @throws LockException - if node can not be locked
+    * The exact lock token.
     */
-   LockData createLockData(NodeData node, String lockToken, boolean isDeep, boolean isSessionScoped, String owner,
-      long timeOut) throws LockException;
+   public static final int SEARCH_EXECMATCH = 1;
 
    /**
-    * Is lock assigned exactly for node exist.
-    * 
-    * @param node
-    * @return 
+    * Lock token of closed parent
     */
-   boolean exactLockExist(NodeData node);
+   public static final int SEARCH_CLOSEDPARENT = 2;
 
    /**
-    * Returns lock data that is assigned to this node or its parent.
-    * 
-    * @param node
-    * @return
+    * Lock token of closed child
     */
-   LockData getExactOrCloseParentLock(NodeData node);
-
-   String getHash(String lockToken);
+   public static final int SEARCH_CLOSEDCHILD = 4;
 
    /**
-    * Is lock live
+    * Is lock live for node by nodeIdentifier.
     * 
     * @param nodeIdentifier
-    * @return
+    * 
+    * @return boolean
     */
    boolean isLockLive(String nodeIdentifier);
+
+   /**
+    * Search lock in storage. SearchType shows which locks should be returned.
+    * See SEARCH_EXECMATCH, SEARCH_CLOSEDPARENT, SEARCH_CLOSEDCHILD. SearchTypes may be combined.
+    * 
+    * @param node - base node to search locks 
+    * @param searchType - combination of SEARCH_EXECMATCH, SEARCH_CLOSEDPARENT, SEARCH_CLOSEDCHILD search types
+    * @return LockData or null
+    */
+   public LockData getLockData(NodeData node, int searchType);
 
    /**
     * Replace old lockData with new one. Node ID, token can't be replaced.
@@ -80,4 +75,18 @@ public interface CacheableLockManager extends WorkspaceLockManager
     */
    void refreshLockData(LockData newLockData) throws LockException;
 
+   /**
+    * Get default lock timeout.
+    * 
+    * @return long value of timeout
+    */
+   long getDefaultLockTimeOut();
+
+   /**
+    * Return hash for lock token.
+    * 
+    * @param lockToken - lock token string 
+    * @return - hash string
+    */
+   String getLockTokenHash(String lockToken);
 }
