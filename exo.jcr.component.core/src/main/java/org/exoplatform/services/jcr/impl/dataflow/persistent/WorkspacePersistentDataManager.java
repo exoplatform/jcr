@@ -554,7 +554,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
          else
          {
             // check in persistence
-            final WorkspaceStorageConnection acon = dataContainer.openConnection();
+            final WorkspaceStorageConnection acon = con; //dataContainer.openConnection();
             try
             {
                NodeData parent = (NodeData)acon.getItemData(node.getParentIdentifier());
@@ -570,7 +570,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
             }
             finally
             {
-               acon.close();
+               //acon.close();
             }
          }
       }

@@ -20,7 +20,8 @@ package org.exoplatform.services.jcr.impl.core.lock.jbosscache.jdbc;
 
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
-import org.exoplatform.services.jcr.impl.storage.jdbc.init.DBInitializerException;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializer;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerException;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -64,14 +65,14 @@ public class LockJDBCContainer
          if (dataSource != null)
          {
             // initialize DB table if needed
+            Connection jdbcConn = null;
             try
             {
                log.info("Creating LockManager DB tables.");
-               Connection jdbcConn = dataSource.getConnection();
-               String dialect = DialectDetecter.detect(jdbcConn.getMetaData());
+               jdbcConn = dataSource.getConnection();
                // if table not exists, create it  
                // connection is closed by DB initializer
-               initDatabase(dataSourceName, jdbcConn, dialect);
+               initDatabase(dataSourceName, jdbcConn, DialectDetecter.detect(jdbcConn.getMetaData()));
             }
             catch (SQLException e)
             {
@@ -80,6 +81,20 @@ public class LockJDBCContainer
             catch (IOException e)
             {
                throw new RepositoryException(e);
+            }
+            finally
+            {
+               if (jdbcConn != null)
+               {
+                  try
+                  {
+                     jdbcConn.close();
+                  }
+                  catch (SQLException e)
+                  {
+                     log.error("Error of connection close", e);
+                  }
+               }
             }
          }
          else
@@ -141,21 +156,7 @@ public class LockJDBCContainer
    protected void initDatabase(String dataSource, Connection jdbcConn, String dialect) throws IOException,
       DBInitializerException
    {
-      LockDBInitializer dbInitializer = null;
-
-      // prepare DB
-      if (DBConstants.DB_DIALECT_ORACLE.equals(dialect))
-      {
-         // oracle preparation script
-         String sqlPath = "/conf/storage/lock-jdbc.ora.sql";
-         dbInitializer = new OracleLockDBInitializer(dataSource, jdbcConn, sqlPath);
-      }
-      else
-      {
-         // generic preparation script
-         String sqlPath = "/conf/storage/lock-jdbc.default.sql";
-         dbInitializer = new LockDBInitializer(dataSource, jdbcConn, sqlPath);
-      }
+      DBInitializer dbInitializer = new DBInitializer(dataSource, jdbcConn, "/conf/storage/jcr-lock-jdbc.sql");
 
       // init DB
       dbInitializer.init();

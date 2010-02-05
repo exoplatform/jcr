@@ -27,13 +27,13 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.db.HSQLDBConnectionFactory
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.MySQLConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.OracleConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.WorkspaceStorageConnectionFactory;
-import org.exoplatform.services.jcr.impl.storage.jdbc.init.DBInitializer;
-import org.exoplatform.services.jcr.impl.storage.jdbc.init.DBInitializerException;
+import org.exoplatform.services.jcr.impl.storage.jdbc.init.StorageDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.IngresSQLDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.OracleDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.PgSQLDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.update.StorageUpdateManager;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerException;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
@@ -409,7 +409,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     * 
     * @param sqlPath
     *          - path to SQL script (database creation script)
-    * @return DBInitializer instance
+    * @return StorageDBInitializer instance
     * @throws NamingException
     *           on JNDI error
     * @throws RepositoryException
@@ -417,10 +417,10 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     * @throws IOException
     *           on I/O error
     */
-   protected DBInitializer defaultDBInitializer(String sqlPath) throws NamingException, RepositoryException,
+   protected StorageDBInitializer defaultDBInitializer(String sqlPath) throws NamingException, RepositoryException,
       IOException
    {
-      return new DBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
+      return new StorageDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
    }
 
    /**
@@ -538,7 +538,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    protected void initDatabase() throws NamingException, RepositoryException, IOException
    {
 
-      DBInitializer dbInitilizer = null;
+      StorageDBInitializer dbInitilizer = null;
       String sqlPath = null;
       if (dbDialect == DBConstants.DB_DIALECT_ORACLEOCI)
       {

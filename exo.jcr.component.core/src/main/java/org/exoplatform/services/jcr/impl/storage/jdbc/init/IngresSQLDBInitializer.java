@@ -34,7 +34,7 @@ import java.sql.SQLException;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: IngresSQLDBInitializer.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class IngresSQLDBInitializer extends DBInitializer
+public class IngresSQLDBInitializer extends StorageDBInitializer
 {
 
    public IngresSQLDBInitializer(String containerName, Connection connection, String scriptPath, boolean multiDb)

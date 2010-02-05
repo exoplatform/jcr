@@ -24,8 +24,7 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.GenericConnectionFactory;
-import org.exoplatform.services.jcr.impl.storage.jdbc.init.DBInitializer;
-import org.exoplatform.services.jcr.impl.storage.jdbc.init.DBInitializerException;
+import org.exoplatform.services.jcr.impl.storage.jdbc.init.StorageDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.IngresSQLDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.OracleDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.PgSQLDBInitializer;
@@ -33,6 +32,7 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.GenericCQC
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.HSQLDBConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.MySQLConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.OracleConnectionFactory;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerException;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 import org.exoplatform.services.naming.InitialContextInitializer;
 import org.picocontainer.Startable;
@@ -85,7 +85,7 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
    protected void initDatabase() throws NamingException, RepositoryException, IOException
    {
 
-      DBInitializer dbInitilizer = null;
+      StorageDBInitializer dbInitilizer = null;
       String sqlPath = null;
       if (dbDialect == DBConstants.DB_DIALECT_ORACLEOCI)
       {

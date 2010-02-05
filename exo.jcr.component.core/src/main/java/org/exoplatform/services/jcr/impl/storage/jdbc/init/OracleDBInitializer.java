@@ -34,7 +34,7 @@ import java.sql.SQLException;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: OracleDBInitializer.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class OracleDBInitializer extends DBInitializer
+public class OracleDBInitializer extends StorageDBInitializer
 {
 
    public OracleDBInitializer(String containerName, Connection connection, String scriptPath, boolean multiDb)

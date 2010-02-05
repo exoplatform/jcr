@@ -17,7 +17,7 @@
 package org.exoplatform.services.jcr.impl.storage.jdbc.db;
 
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCConnectionTestBase;
-import org.exoplatform.services.jcr.impl.storage.jdbc.init.DBInitializer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.init.StorageDBInitializer;
 
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -36,7 +36,7 @@ public class TestSingleDbJDBCConnection extends JDBCConnectionTestBase
    private void setUp(String scriptPath, boolean multiDB) throws Exception
    {
       super.setUp();
-      new DBInitializer("ws3", getJNDIConnection(), scriptPath, multiDB).init();
+      new StorageDBInitializer("ws3", getJNDIConnection(), scriptPath, multiDB).init();
    }
    
    @Override

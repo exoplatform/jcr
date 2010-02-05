@@ -16,9 +16,8 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.services.jcr.impl.storage.jdbc.init;
+package org.exoplatform.services.jcr.impl.util.jdbc;
 
-import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -33,10 +32,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Created by The eXo Platform SAS 12.03.2007 Generic db initializer.
+ * Generic DB initializer.
+ * Created by The eXo Platform SAS 12.03.2007.
  * 
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
- * @version $Id: DBInitializer.java 34801 2009-07-31 15:44:50Z dkatayev $
+ * @version $Id: StorageDBInitializer.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
 public class DBInitializer
 {
@@ -61,15 +61,13 @@ public class DBInitializer
 
    static public String SQL_TRIGGERNAME = "(([A-Z_]+JCR_[A-Z_]+){1}(\\s*?|(\\(\\))*?)+)+?";
 
-   protected final Log log = ExoLogger.getLogger("jcr.DBInitializer");
+   protected final Log LOG = ExoLogger.getLogger("jcr.DBInitializer");
 
    protected final Connection connection;
 
    protected final String containerName;
 
    protected final String script;
-
-   protected final boolean multiDb;
 
    protected final Pattern creatTablePattern;
 
@@ -87,14 +85,13 @@ public class DBInitializer
 
    protected final Pattern dbTriggerNamePattern;
 
-   public DBInitializer(String containerName, Connection connection, String scriptPath, boolean multiDb)
+   public DBInitializer(String containerName, Connection connection, String scriptPath)
       throws IOException
    {
       this.connection = connection;
       this.containerName = containerName;
       this.script = script(scriptPath);
-      this.multiDb = multiDb;
-
+      
       this.creatTablePattern = Pattern.compile(SQL_CREATETABLE, Pattern.CASE_INSENSITIVE);
       this.creatViewPattern = Pattern.compile(SQL_CREATEVIEW, Pattern.CASE_INSENSITIVE);
       this.dbObjectNamePattern = Pattern.compile(SQL_OBJECTNAME, Pattern.CASE_INSENSITIVE);
@@ -202,8 +199,8 @@ public class DBInitializer
             String tableName = sql.substring(tMatcher.start(), tMatcher.end());
             if (isTableExists(conn, tableName))
             {
-               if (log.isDebugEnabled())
-                  log.debug("Table is already exists " + tableName);
+               if (LOG.isDebugEnabled())
+                  LOG.debug("Table is already exists " + tableName);
                return true;
             }
          }
@@ -218,8 +215,8 @@ public class DBInitializer
             String tableName = sql.substring(tMatcher.start(), tMatcher.end());
             if (isTableExists(conn, tableName))
             {
-               if (log.isDebugEnabled())
-                  log.debug("View is already exists " + tableName);
+               if (LOG.isDebugEnabled())
+                  LOG.debug("View is already exists " + tableName);
                return true;
             }
          }
@@ -240,24 +237,24 @@ public class DBInitializer
                   String tableName = onTableName.substring(tMatcher.start(), tMatcher.end());
                   if (isIndexExists(conn, tableName, indexName))
                   {
-                     if (log.isDebugEnabled())
-                        log.debug("Index is already exists " + indexName);
+                     if (LOG.isDebugEnabled())
+                        LOG.debug("Index is already exists " + indexName);
                      return true;
                   }
                }
                else
                {
-                  log.warn("Index found but $TABLE_NAME is not detected '" + sql + "'");
+                  LOG.warn("Index found but $TABLE_NAME is not detected '" + sql + "'");
                }
             }
             else
             {
-               log.warn("Index found but ON $TABLE_NAME clause is not detected '" + sql + "'");
+               LOG.warn("Index found but ON $TABLE_NAME clause is not detected '" + sql + "'");
             }
          }
          else
          {
-            log.warn("Create index clause found but $INDEX_NAME is not detected '" + sql + "'");
+            LOG.warn("Create index clause found but $INDEX_NAME is not detected '" + sql + "'");
          }
       }
       else if ((tMatcher = creatSequencePattern.matcher(sql)).find())
@@ -269,8 +266,8 @@ public class DBInitializer
             String sequenceName = sql.substring(tMatcher.start(), tMatcher.end());
             if (isSequenceExists(conn, sequenceName))
             {
-               if (log.isDebugEnabled())
-                  log.debug("Sequence is already exists " + sequenceName);
+               if (LOG.isDebugEnabled())
+                  LOG.debug("Sequence is already exists " + sequenceName);
                return true;
             }
          }
@@ -284,16 +281,16 @@ public class DBInitializer
             String triggerName = sql.substring(tMatcher.start(), tMatcher.end());
             if (isTriggerExists(conn, triggerName))
             {
-               if (log.isDebugEnabled())
-                  log.debug("Trigger is already exists " + triggerName);
+               if (LOG.isDebugEnabled())
+                  LOG.debug("Trigger is already exists " + triggerName);
                return true;
             }
          }
       }
       else
       {
-         if (log.isDebugEnabled())
-            log.debug("Command is not detected for check '" + sql + "'");
+         if (LOG.isDebugEnabled())
+            LOG.debug("Command is not detected for check '" + sql + "'");
       }
 
       return false;
@@ -315,10 +312,10 @@ public class DBInitializer
          }
          catch (IndexOutOfBoundsException e)
          {
-            log.warn("Error of parse SQL-script file. Invalid DELIMITER configuration. Valid format is '"
+            LOG.warn("Error of parse SQL-script file. Invalid DELIMITER configuration. Valid format is '"
                + SQL_DELIMITER_COMMENT_PREFIX + "XXX*/' at begin of the SQL-script file, where XXX - DELIMITER string."
                + " Spaces will be trimed. ", e);
-            log.info("Using DELIMITER:[" + SQL_DELIMITER + "]");
+            LOG.info("Using DELIMITER:[" + SQL_DELIMITER + "]");
             scripts = script.split(SQL_DELIMITER);
          }
       }
@@ -340,19 +337,19 @@ public class DBInitializer
                if (isObjectExists(connection, sql = s))
                   continue;
 
-               if (log.isDebugEnabled())
-                  log.debug("Execute script: \n[" + sql + "]");
+               if (LOG.isDebugEnabled())
+               {
+                  LOG.debug("Execute script: \n[" + sql + "]");
+               }
 
                connection.createStatement().executeUpdate(sql);
             }
          }
 
-         rootInit(connection);
-
-         optionalInit();
+         postInit(connection);
 
          connection.commit();
-         log.info("DB schema of DataSource: '" + containerName + "' initialized succesfully");
+         LOG.info("DB schema of DataSource: '" + containerName + "' initialized succesfully");
       }
       catch (SQLException e)
       {
@@ -362,7 +359,7 @@ public class DBInitializer
          }
          catch (SQLException re)
          {
-            log.error("Rollback error " + e, e);
+            LOG.error("Rollback error " + e, e);
          }
 
          SQLException next = e.getNextException();
@@ -387,38 +384,16 @@ public class DBInitializer
          }
          catch (SQLException e)
          {
-            log.error("Error of a connection closing. " + e, e);
+            LOG.error("Error of a connection closing. " + e, e);
          }
       }
    }
 
    /**
-    * Empty here but may be overriden
+    * Place to perform additional operations in overriden classes.
     */
-   protected void optionalInit() throws DBInitializerException
+   protected void postInit(Connection connection) throws SQLException
    {
 
-   }
-
-   /**
-    * Init root node parent record
-    */
-   protected void rootInit(Connection connection) throws SQLException
-   {
-      final String MDB = (multiDb ? "M" : "S");
-      String select =
-         "select * from JCR_" + MDB + "ITEM where ID='" + Constants.ROOT_PARENT_UUID + "' and PARENT_ID='"
-            + Constants.ROOT_PARENT_UUID + "'";
-
-      if (!connection.createStatement().executeQuery(select).next())
-      {
-         String insert =
-            "insert into JCR_" + MDB + "ITEM(ID, PARENT_ID, NAME, " + (multiDb ? "" : "CONTAINER_NAME, ")
-               + "VERSION, I_CLASS, I_INDEX, N_ORDER_NUM)" + " VALUES('" + Constants.ROOT_PARENT_UUID + "', '"
-               + Constants.ROOT_PARENT_UUID + "', '__root_parent', " + (multiDb ? "" : "'__root_parent_container', ")
-               + "0, 0, 0, 0)";
-
-         connection.createStatement().executeUpdate(insert);
-      }
    }
 }
