@@ -177,8 +177,7 @@ public class CacheableSessionLockManager implements SessionLockManager
     */
    public boolean holdsLock(NodeData node) throws RepositoryException
    {
-      //TODO optimise it
-      return lockManager.getExactNodeLock(node) != null;
+      return lockManager.lockExist(node.getIdentifier());//.getExactNodeLock(node) != null;
    }
 
    /**

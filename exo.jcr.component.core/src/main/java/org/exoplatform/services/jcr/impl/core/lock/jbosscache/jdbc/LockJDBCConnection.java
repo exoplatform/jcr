@@ -53,6 +53,8 @@ public class LockJDBCConnection
 
    protected String GET_LOCK_DATA;
 
+   protected String IS_LOCK_DATA_EXIST;
+
    // column names
    protected static String COLUMN_WS_NAME = "WS_NAME";
 
@@ -80,6 +82,8 @@ public class LockJDBCConnection
    private PreparedStatement getLockedNodes;
 
    private PreparedStatement getLockData;
+
+   private PreparedStatement isLockDataExist;
 
    private Connection dbConnection;
 
@@ -113,6 +117,9 @@ public class LockJDBCConnection
       GET_LOCKED_NODES = "select NODE_ID from JCR_LOCKS where WS_NAME=?";
 
       GET_LOCK_DATA = "select * from JCR_LOCKS where NODE_ID=? and WS_NAME=?";
+
+      IS_LOCK_DATA_EXIST = "select NODE_ID from JCR_LOCKS where NODE_ID=? and WS_NAME=?";
+
    }
 
    /**
@@ -311,8 +318,43 @@ public class LockJDBCConnection
    }
 
    /**
-    * Check if connection is alive and opened 
+    * Check is LockData by node identifier exist.
+    * 
+    * @param identifier
     * @return
+    * @throws RepositoryException
+    */
+   public boolean isLockDataExist(String identifier) throws RepositoryException
+   {
+      if (!isOpened())
+      {
+         throw new IllegalStateException("Connection is closed");
+      }
+      try
+      {
+         if (isLockDataExist == null)
+         {
+            isLockDataExist = dbConnection.prepareStatement(IS_LOCK_DATA_EXIST);
+         }
+         else
+         {
+            isLockDataExist.clearParameters();
+         }
+         isLockDataExist.setString(1, identifier);
+         isLockDataExist.setString(2, wsName);
+         // get result set
+         ResultSet result = getLockData.executeQuery();
+         return result.next();
+      }
+      catch (SQLException e)
+      {
+         throw new RepositoryException(e);
+      }
+   }
+
+   /**
+    * Check if connection is alive and opened 
+    * @return boolean
     */
    public boolean isOpened()
    {

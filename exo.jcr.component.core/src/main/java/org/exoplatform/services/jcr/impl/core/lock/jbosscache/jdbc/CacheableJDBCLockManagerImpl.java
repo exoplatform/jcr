@@ -746,7 +746,10 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
       }
    }
 
-   private boolean lockExist(String nodeId) throws RepositoryException
+   /**
+    * {@inheritDoc}
+    */
+   public boolean lockExist(String nodeId) throws RepositoryException
    {
       //if present in cache - then exists
       if (cache.get(makeLockFqn(nodeId), LOCK_DATA) != null)
@@ -760,7 +763,7 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
          try
          {
             connection = this.lockJDBCContainer.openConnection();
-            return connection.getLockData(nodeId) != null;
+            return connection.isLockDataExist(nodeId);
          }
          finally
          {
@@ -863,6 +866,9 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
    //      return retval;
    //   }
 
+   /**
+    * {@inheritDoc}
+    */
    public LockData getExactNodeOrCloseParentLock(NodeData node) throws RepositoryException
    {
       if (node == null)
@@ -880,16 +886,22 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
       return retval;
    }
 
-   public LockData getExactNodeLock(NodeData node) throws RepositoryException
-   {
-      LockData retval = null;
-      if (node != null)
-      {
-         retval = getLockDataById(node.getIdentifier());
-      }
-      return retval;
-   }
+   /**
+    * {@inheritDoc}
+    */
+   //   public LockData getExactNodeLock(NodeData node) throws RepositoryException
+   //   {
+   //      LockData retval = null;
+   //      if (node != null)
+   //      {
+   //         retval = getLockDataById(node.getIdentifier());
+   //      }
+   //      return retval;
+   //   }
 
+   /**
+    * {@inheritDoc}
+    */
    public LockData getClosedChild(NodeData node) throws RepositoryException
    {
       LockData retval = null;

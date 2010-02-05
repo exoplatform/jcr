@@ -32,42 +32,15 @@ import javax.jcr.lock.LockException;
  */
 public interface CacheableLockManager extends WorkspaceLockManager
 {
-
-   // Search constants
-   /**
-    * The exact lock token.
-    */
-   public static final int SEARCH_EXECMATCH = 1;
-
-   /**
-    * Lock token of closed parent
-    */
-   public static final int SEARCH_CLOSEDPARENT = 2;
-
-   /**
-    * Lock token of closed child
-    */
-   public static final int SEARCH_CLOSEDCHILD = 4;
-
    /**
     * Is lock live for node by nodeIdentifier.
     * 
     * @param nodeIdentifier
     * 
     * @return boolean
-    * @throws LockException TODO
+    * @throws LockException 
     */
    boolean isLockLive(String nodeIdentifier) throws LockException;
-
-   /**
-    * Search lock in storage. SearchType shows which locks should be returned.
-    * See SEARCH_EXECMATCH, SEARCH_CLOSEDPARENT, SEARCH_CLOSEDCHILD. SearchTypes may be combined.
-    * 
-    * @param node - base node to search locks 
-    * @param searchType - combination of SEARCH_EXECMATCH, SEARCH_CLOSEDPARENT, SEARCH_CLOSEDCHILD search types
-    * @return LockData or null
-    */
-   // public LockData getLockData(NodeData node, int searchType) throws LockException;
 
    /**
     * Replace old lockData with new one. Node ID, token can't be replaced.
@@ -92,9 +65,33 @@ public interface CacheableLockManager extends WorkspaceLockManager
     */
    String getLockTokenHash(String lockToken);
 
-   LockData getExactNodeLock(NodeData node) throws RepositoryException;
+   /**
+    * Return lock holding node.
+    * 
+    * @param node NodeData
+    * @return LockData for node or null;
+    * @throws RepositoryException
+    */
+   //LockData getExactNodeLock(NodeData node) throws RepositoryException;
 
+   /**
+    * Return Lock holding node or its parent.
+    * 
+    * @param node - NodeData
+    * @return LockData for node or null;
+    * @throws RepositoryException
+    */
    LockData getExactNodeOrCloseParentLock(NodeData node) throws RepositoryException;
 
+   /**
+    * Return Lock holding any nodes child.
+    * 
+    * @param node - NodeData
+    * @return LockData for node or null;
+    * @throws RepositoryException
+    */
    LockData getClosedChild(NodeData node) throws RepositoryException;
+
+   boolean lockExist(String nodeId) throws RepositoryException;
+
 }

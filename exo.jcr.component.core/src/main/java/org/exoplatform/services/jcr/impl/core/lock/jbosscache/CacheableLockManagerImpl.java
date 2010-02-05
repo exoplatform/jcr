@@ -709,7 +709,10 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
       }
    };
 
-   private boolean lockExist(String nodeId)
+   /**
+    * {@inheritDoc}
+    */
+   public boolean lockExist(String nodeId)
    {
       try
       {
@@ -723,10 +726,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
    }
 
    /**
-    * Calculates md5 hash of string.
-    * 
-    * @param token
-    * @return
+    * {@inheritDoc}
     */
    public String getLockTokenHash(String token)
    {
@@ -744,6 +744,9 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
       return hash;
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public LockData getExactNodeOrCloseParentLock(NodeData node) throws RepositoryException
    {
       if (node == null)
@@ -761,6 +764,9 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
       return retval;
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public LockData getExactNodeLock(NodeData node) throws RepositoryException
    {
       LockData retval = null;
@@ -771,6 +777,9 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
       return retval;
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public LockData getClosedChild(NodeData node) throws RepositoryException
    {
       LockData retval = null;
@@ -920,7 +929,6 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
     */
    public void closeSessionLockManager(String sessionID)
    {
-
       sessionLockManagers.remove(sessionID);
    }
 
