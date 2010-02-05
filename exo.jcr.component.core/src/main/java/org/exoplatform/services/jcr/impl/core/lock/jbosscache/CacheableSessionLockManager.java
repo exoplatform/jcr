@@ -106,9 +106,8 @@ public class CacheableSessionLockManager implements SessionLockManager
 
       NodeData data = (NodeData)node.getData();
 
-      LockData lData =
-         lockManager
-            .getLockData(data, CacheableLockManager.SEARCH_EXECMATCH | CacheableLockManager.SEARCH_CLOSEDPARENT);
+      LockData lData = lockManager.getExactNodeOrCloseParentLock(data);
+      //.getLockData(data, CacheableLockManager.SEARCH_EXECMATCH | CacheableLockManager.SEARCH_CLOSEDPARENT);
       if (lData != null)
       {
          if (lData.getNodeIdentifier().equals(node.getIdentifier()))
@@ -121,7 +120,7 @@ public class CacheableSessionLockManager implements SessionLockManager
          }
       }
 
-      if (isDeep && lockManager.getLockData(data, CacheableLockManager.SEARCH_CLOSEDCHILD) != null)
+      if (isDeep && lockManager.getClosedChild(data) != null)
       {
          throw new LockException("Some child node is locked.");
       }
@@ -154,9 +153,7 @@ public class CacheableSessionLockManager implements SessionLockManager
     */
    public LockImpl getLock(NodeImpl node) throws LockException, RepositoryException
    {
-      LockData lData =
-         lockManager.getLockData((NodeData)node.getData(), CacheableLockManager.SEARCH_EXECMATCH
-            | CacheableLockManager.SEARCH_CLOSEDPARENT);
+      LockData lData = lockManager.getExactNodeOrCloseParentLock((NodeData)node.getData());
 
       if (lData == null || (!node.getInternalIdentifier().equals(lData.getNodeIdentifier()) && !lData.isDeep()))
       {
@@ -180,7 +177,8 @@ public class CacheableSessionLockManager implements SessionLockManager
     */
    public boolean holdsLock(NodeData node) throws RepositoryException
    {
-      return lockManager.getLockData(node, CacheableLockManager.SEARCH_EXECMATCH) != null;
+      //TODO optimise it
+      return lockManager.getExactNodeLock(node) != null;
    }
 
    /**
@@ -188,9 +186,15 @@ public class CacheableSessionLockManager implements SessionLockManager
     */
    public boolean isLocked(NodeData node) throws LockException
    {
-      LockData lData =
-         lockManager
-            .getLockData(node, CacheableLockManager.SEARCH_EXECMATCH | CacheableLockManager.SEARCH_CLOSEDPARENT);
+      LockData lData = null;
+      try
+      {
+         lData = lockManager.getExactNodeOrCloseParentLock(node);
+      }
+      catch (RepositoryException e)
+      {
+         throw new LockException(e.getMessage(), e);
+      }
 
       if (lData == null || (!node.getIdentifier().equals(lData.getNodeIdentifier()) && !lData.isDeep()))
       {
@@ -204,9 +208,8 @@ public class CacheableSessionLockManager implements SessionLockManager
     */
    public boolean isLockHolder(NodeImpl node) throws RepositoryException
    {
-      LockData lData =
-         lockManager.getLockData((NodeData)node.getData(), CacheableLockManager.SEARCH_EXECMATCH
-            | CacheableLockManager.SEARCH_CLOSEDPARENT);
+      //TODO optimise it
+      LockData lData = lockManager.getExactNodeOrCloseParentLock((NodeData)node.getData());
 
       return lData != null && isLockHolder(lData);
    }

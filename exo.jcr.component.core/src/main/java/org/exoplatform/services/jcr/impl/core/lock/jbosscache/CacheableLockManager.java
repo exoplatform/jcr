@@ -19,6 +19,7 @@ package org.exoplatform.services.jcr.impl.core.lock.jbosscache;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.impl.core.lock.WorkspaceLockManager;
 
+import javax.jcr.RepositoryException;
 import javax.jcr.lock.LockException;
 
 /**
@@ -66,7 +67,7 @@ public interface CacheableLockManager extends WorkspaceLockManager
     * @param searchType - combination of SEARCH_EXECMATCH, SEARCH_CLOSEDPARENT, SEARCH_CLOSEDCHILD search types
     * @return LockData or null
     */
-   public LockData getLockData(NodeData node, int searchType) throws LockException;
+   // public LockData getLockData(NodeData node, int searchType) throws LockException;
 
    /**
     * Replace old lockData with new one. Node ID, token can't be replaced.
@@ -90,4 +91,10 @@ public interface CacheableLockManager extends WorkspaceLockManager
     * @return - hash string
     */
    String getLockTokenHash(String lockToken);
+
+   LockData getExactNodeLock(NodeData node) throws RepositoryException;
+
+   LockData getExactNodeOrCloseParentLock(NodeData node) throws RepositoryException;
+
+   LockData getClosedChild(NodeData node) throws RepositoryException;
 }

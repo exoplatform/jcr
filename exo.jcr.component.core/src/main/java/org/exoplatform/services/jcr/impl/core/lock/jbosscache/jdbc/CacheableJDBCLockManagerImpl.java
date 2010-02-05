@@ -808,58 +808,106 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
    /**
     * {@inheritDoc}
     */
-   public LockData getLockData(NodeData data, int searchType) throws LockException
+   //   public LockData getLockData(NodeData data, int searchType) throws LockException
+   //   {
+   //      if (data == null)
+   //         return null;
+   //      LockData retval = null;
+   //      try
+   //      {
+   //         if ((searchType & SEARCH_EXECMATCH) != 0)
+   //         {
+   //            retval = getLockDataById(data.getIdentifier());
+   //         }
+   //         if (retval == null && (searchType & SEARCH_CLOSEDPARENT) != 0)
+   //         {
+   //
+   //            NodeData parentData = (NodeData)dataManager.getItemData(data.getParentIdentifier());
+   //            if (parentData != null)
+   //            {
+   //               retval = getLockDataById(parentData.getIdentifier());
+   //               // parent not found try to fo upper
+   //               if (retval == null)
+   //               {
+   //                  retval = getLockData(parentData, SEARCH_CLOSEDPARENT);
+   //               }
+   //            }
+   //         }
+   //         if (retval == null && (searchType & SEARCH_CLOSEDCHILD) != 0)
+   //         {
+   //
+   //            List<NodeData> childData = dataManager.getChildNodesData(data);
+   //            for (NodeData nodeData : childData)
+   //            {
+   //               retval = getLockDataById(nodeData.getIdentifier());
+   //               if (retval != null)
+   //                  break;
+   //            }
+   //            if (retval == null)
+   //            {
+   //               // child not found try to find diper
+   //               for (NodeData nodeData : childData)
+   //               {
+   //                  retval = getLockData(nodeData, SEARCH_CLOSEDCHILD);
+   //                  if (retval != null)
+   //                     break;
+   //               }
+   //            }
+   //         }
+   //      }
+   //      catch (RepositoryException e)
+   //      {
+   //         throw new LockException(e.getMessage(), e);
+   //      }
+   //
+   //      return retval;
+   //   }
+
+   public LockData getExactNodeOrCloseParentLock(NodeData node) throws RepositoryException
    {
-      if (data == null)
+      if (node == null)
          return null;
       LockData retval = null;
-      try
+      retval = getLockDataById(node.getIdentifier());
+      if (retval == null)
       {
-         if ((searchType & SEARCH_EXECMATCH) != 0)
+         NodeData parentData = (NodeData)dataManager.getItemData(node.getParentIdentifier());
+         if (parentData != null)
          {
-            retval = getLockDataById(data.getIdentifier());
-         }
-         if (retval == null && (searchType & SEARCH_CLOSEDPARENT) != 0)
-         {
-
-            NodeData parentData = (NodeData)dataManager.getItemData(data.getParentIdentifier());
-            if (parentData != null)
-            {
-               retval = getLockDataById(parentData.getIdentifier());
-               // parent not found try to fo upper
-               if (retval == null)
-               {
-                  retval = getLockData(parentData, SEARCH_CLOSEDPARENT);
-               }
-            }
-         }
-         if (retval == null && (searchType & SEARCH_CLOSEDCHILD) != 0)
-         {
-
-            List<NodeData> childData = dataManager.getChildNodesData(data);
-            for (NodeData nodeData : childData)
-            {
-               retval = getLockDataById(nodeData.getIdentifier());
-               if (retval != null)
-                  break;
-            }
-            if (retval == null)
-            {
-               // child not found try to find diper
-               for (NodeData nodeData : childData)
-               {
-                  retval = getLockData(nodeData, SEARCH_CLOSEDCHILD);
-                  if (retval != null)
-                     break;
-               }
-            }
+            retval = getExactNodeOrCloseParentLock(parentData);
          }
       }
-      catch (RepositoryException e)
-      {
-         throw new LockException(e.getMessage(), e);
-      }
+      return retval;
+   }
 
+   public LockData getExactNodeLock(NodeData node) throws RepositoryException
+   {
+      LockData retval = null;
+      if (node != null)
+      {
+         retval = getLockDataById(node.getIdentifier());
+      }
+      return retval;
+   }
+
+   public LockData getClosedChild(NodeData node) throws RepositoryException
+   {
+      LockData retval = null;
+
+      List<NodeData> childData = dataManager.getChildNodesData(node);
+      for (NodeData nodeData : childData)
+      {
+         retval = getLockDataById(nodeData.getIdentifier());
+         if (retval != null)
+            return retval;
+      }
+      // child not found try to find dipper
+      for (NodeData nodeData : childData)
+      {
+         retval = getClosedChild(nodeData);
+         if (retval != null)
+            return retval;
+      }
       return retval;
    }
 
