@@ -59,7 +59,7 @@ public class LockImpl implements ExtendedLock
       return lockData.getLockToken(session.getId());
    }
 
-   public boolean isLive()
+   public boolean isLive() throws LockException
    {
       return lockData.isLive();
    }

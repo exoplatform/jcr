@@ -100,7 +100,7 @@ public class SessionLockManagerImpl implements SessionLockManager
    /**
     * {@inheritDoc}
     */
-   public boolean isLocked(NodeData node)
+   public boolean isLocked(NodeData node) throws LockException
    {
       return lockManager.isLocked(node);
    }

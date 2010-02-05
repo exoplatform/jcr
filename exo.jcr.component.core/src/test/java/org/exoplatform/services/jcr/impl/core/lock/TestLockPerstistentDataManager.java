@@ -20,8 +20,8 @@ package org.exoplatform.services.jcr.impl.core.lock;
 
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.impl.core.lock.jbosscache.LockData;
-import org.exoplatform.services.jcr.impl.core.lock.jbosscache.LockJDBCConnection;
-import org.exoplatform.services.jcr.impl.core.lock.jbosscache.LockPersistentDataManager;
+import org.exoplatform.services.jcr.impl.core.lock.jbosscache.jdbc.LockJDBCConnection;
+import org.exoplatform.services.jcr.impl.core.lock.jbosscache.jdbc.LockJDBCContainer;
 
 import java.util.Set;
 
@@ -37,18 +37,18 @@ public class TestLockPerstistentDataManager extends JcrImplBaseTest
 {
    public void testAddLockData() throws RepositoryException
    {
-      LockPersistentDataManager dataManager = new LockPersistentDataManager("jdbcjcrtest", "ws");
+      LockJDBCContainer dataManager = new LockJDBCContainer("jdbcjcrtest", "ws");
       LockJDBCConnection connection = null;
       try
       {
          // get connection to lock storage
-         connection = dataManager.openConnection(false);
+         connection = dataManager.openConnection();
          // put lock data
          connection.addLockData(new LockData("identifier", "hash", false, false, "owner", 100));
          // commit also closes connection
          connection.commit();
          // acquire new connection
-         connection = dataManager.openConnection(false);
+         connection = dataManager.openConnection();
          // get lock data
          LockData lockData = connection.getLockData("identifier");
          // asserts
@@ -67,18 +67,18 @@ public class TestLockPerstistentDataManager extends JcrImplBaseTest
 
    public void testRemoveLockData() throws RepositoryException
    {
-      LockPersistentDataManager dataManager = new LockPersistentDataManager("jdbcjcrtest", "ws");
+      LockJDBCContainer dataManager = new LockJDBCContainer("jdbcjcrtest", "ws");
       LockJDBCConnection connection = null;
       try
       {
          // get connection to lock storage
-         connection = dataManager.openConnection(false);
+         connection = dataManager.openConnection();
          // put lock data
          connection.addLockData(new LockData("identifier2", "hash", false, false, "owner", 100));
          // commit also closes connection
          connection.commit();
          // acquire new connection
-         connection = dataManager.openConnection(false);
+         connection = dataManager.openConnection();
          // get lock data
          LockData lockData = connection.getLockData("identifier2");
          // asserts
@@ -88,7 +88,7 @@ public class TestLockPerstistentDataManager extends JcrImplBaseTest
          // commit also closes connection
          connection.commit();
          // acquire new connection     
-         connection = dataManager.openConnection(false);
+         connection = dataManager.openConnection();
          lockData = connection.getLockData("identifier2");
          // asserts
          assertTrue("Lock data should be null", lockData == null);
@@ -104,12 +104,12 @@ public class TestLockPerstistentDataManager extends JcrImplBaseTest
 
    public void testRefreshLockData() throws RepositoryException
    {
-      LockPersistentDataManager dataManager = new LockPersistentDataManager("jdbcjcrtest", "ws");
+      LockJDBCContainer dataManager = new LockJDBCContainer("jdbcjcrtest", "ws");
       LockJDBCConnection connection = null;
       try
       {
          // get connection to lock storage
-         connection = dataManager.openConnection(false);
+         connection = dataManager.openConnection();
          // put lock data
          connection.addLockData(new LockData("identifier3", "hash", false, false, "owner", 100));
          // commit also closes connection
@@ -123,7 +123,7 @@ public class TestLockPerstistentDataManager extends JcrImplBaseTest
          {
          }
          // acquire new connection
-         connection = dataManager.openConnection(false);
+         connection = dataManager.openConnection();
          // get lock Data
          LockData lockData = connection.getLockData("identifier3");
          Long timeToDeathOriginal = lockData.getTimeToDeath();
@@ -132,7 +132,7 @@ public class TestLockPerstistentDataManager extends JcrImplBaseTest
          // commit also closes connection
          connection.commit();
          // acquire new connection     
-         connection = dataManager.openConnection(false);
+         connection = dataManager.openConnection();
          lockData = connection.getLockData("identifier3");
          Long timeToDeathNew = lockData.getTimeToDeath();
          // asserts
@@ -149,13 +149,13 @@ public class TestLockPerstistentDataManager extends JcrImplBaseTest
 
    public void testgetLockedNodes() throws RepositoryException
    {
-      LockPersistentDataManager dataManager = new LockPersistentDataManager("jdbcjcrtest", "test_workspace");
-      LockPersistentDataManager dataManagerAnotherWS = new LockPersistentDataManager("jdbcjcrtest", "another_workspace");
+      LockJDBCContainer dataManager = new LockJDBCContainer("jdbcjcrtest", "test_workspace");
+      LockJDBCContainer dataManagerAnotherWS = new LockJDBCContainer("jdbcjcrtest", "another_workspace");
       LockJDBCConnection connection = null;
       try
       {
          // get connection to lock storage
-         connection = dataManager.openConnection(false);
+         connection = dataManager.openConnection();
          // put lock data
          connection.addLockData(new LockData("identifier1-listTest", "hash1", false, false, "owner", 100));
          connection.addLockData(new LockData("identifier2-listTest", "hash2", false, false, "owner", 100));
@@ -165,12 +165,12 @@ public class TestLockPerstistentDataManager extends JcrImplBaseTest
          connection.commit();
 
          // Adding lock data to another workspace
-         connection = dataManagerAnotherWS.openConnection(false);
+         connection = dataManagerAnotherWS.openConnection();
          // this lock data is from another workspace and shouldn't be in result set
          connection.addLockData(new LockData("identifier1-listTest", "hash1", false, false, "owner", 100));
          connection.commit();
          // acquire new connection
-         connection = dataManager.openConnection(false);
+         connection = dataManager.openConnection();
          // get set
          Set<String> identifiers = connection.getLockedNodes();
          assertEquals("Wrong size of result.", 4, identifiers.size());
@@ -186,18 +186,18 @@ public class TestLockPerstistentDataManager extends JcrImplBaseTest
 
    public void testAddLockDataTwice() throws RepositoryException
    {
-      LockPersistentDataManager dataManager = new LockPersistentDataManager("jdbcjcrtest", "ws");
+      LockJDBCContainer dataManager = new LockJDBCContainer("jdbcjcrtest", "ws");
       LockJDBCConnection connection = null;
       try
       {
          // get connection to lock storage
-         connection = dataManager.openConnection(false);
+         connection = dataManager.openConnection();
          // put lock data
          connection.addLockData(new LockData("identifier", "hash", false, false, "owner", 100));
          // commit also closes connection
          connection.commit();
          // acquire new connection
-         connection = dataManager.openConnection(false);
+         connection = dataManager.openConnection();
          // put lock data with same identifier
          connection.addLockData(new LockData("identifier", "hash", false, false, "owner", 100));
          fail("exception expected!");

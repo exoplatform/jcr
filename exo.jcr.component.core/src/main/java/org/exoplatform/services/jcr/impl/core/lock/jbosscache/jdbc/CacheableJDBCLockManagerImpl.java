@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see<http://www.gnu.org/licenses/>.
  */
-package org.exoplatform.services.jcr.impl.core.lock.jbosscache;
+package org.exoplatform.services.jcr.impl.core.lock.jbosscache.jdbc;
 
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.management.annotations.Managed;
@@ -41,6 +41,9 @@ import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.lock.LockRemover;
 import org.exoplatform.services.jcr.impl.core.lock.SessionLockManager;
+import org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManager;
+import org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableSessionLockManager;
+import org.exoplatform.services.jcr.impl.core.lock.jbosscache.LockData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientItemData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
@@ -54,10 +57,6 @@ import org.exoplatform.services.transaction.TransactionService;
 import org.jboss.cache.Cache;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.Node;
-import org.jboss.cache.config.CacheLoaderConfig;
-import org.jboss.cache.config.CacheLoaderConfig.IndividualCacheLoaderConfig;
-import org.jboss.cache.loader.CacheLoader;
-import org.jboss.cache.lock.TimeoutException;
 import org.picocontainer.Startable;
 
 import java.io.Serializable;
@@ -74,7 +73,6 @@ import java.util.Set;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.lock.LockException;
-import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
 /**
@@ -87,7 +85,7 @@ import javax.transaction.TransactionManager;
  */
 @Managed
 @NameTemplate(@Property(key = "service", value = "lockmanager"))
-public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPersistenceListener, Startable
+public class CacheableJDBCLockManagerImpl implements CacheableLockManager, ItemsPersistenceListener, Startable
 {
    /**
     *  The name to property time out.  
@@ -98,6 +96,11 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
     *  The name to property cache configuration. 
     */
    public static final String JBOSSCACCHE_CONFIG = "jbosscache-configuration";
+
+   /**
+    * The name of data source's property
+    */
+   public static final String DATA_SOURCE = "data-source";
 
    /**
     * Default lock time out. 30min
@@ -141,6 +144,8 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
 
    private Cache<Serializable, Object> cache;
 
+   private LockJDBCContainer lockJDBCContainer;
+
    private final Fqn<String> lockRoot;
 
    /**
@@ -158,9 +163,9 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
     *          the transaction service
     * @throws RepositoryConfigurationException
     */
-   public CacheableLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
+   public CacheableJDBCLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
       InitialContextInitializer context, TransactionService transactionService, ConfigurationManager cfm)
-      throws RepositoryConfigurationException
+      throws RepositoryConfigurationException, RepositoryException
    {
       this(dataManager, config, context, transactionService.getTransactionManager(), cfm);
    }
@@ -173,8 +178,9 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
     * @param context InitialContextInitializer, needed to reload context after JBoss cache creation
     * @throws RepositoryConfigurationException
     */
-   public CacheableLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
-      InitialContextInitializer context, ConfigurationManager cfm) throws RepositoryConfigurationException
+   public CacheableJDBCLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
+      InitialContextInitializer context, ConfigurationManager cfm) throws RepositoryConfigurationException,
+      RepositoryException
    {
       this(dataManager, config, context, (TransactionManager)null, cfm);
 
@@ -189,10 +195,11 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
     * @param transactionManager 
     *          the transaction manager
     * @throws RepositoryConfigurationException
+    * @throws RepositoryException 
     */
-   public CacheableLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
+   public CacheableJDBCLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
       InitialContextInitializer context, TransactionManager transactionManager, ConfigurationManager cfm)
-      throws RepositoryConfigurationException
+      throws RepositoryConfigurationException, RepositoryException
    {
       lockRoot = Fqn.fromElements(LOCKS);
 
@@ -225,6 +232,8 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
       if (config.getLockManager() != null)
       {
          this.tm = transactionManager;
+         String dataSourceName = config.getLockManager().getParameterValue(DATA_SOURCE);
+         lockJDBCContainer = new LockJDBCContainer(dataSourceName, config.getName());
 
          // create cache using custom factory
          ExoJBossCacheFactory<Serializable, Object> factory =
@@ -233,7 +242,6 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
          cache = factory.createCache(config.getLockManager());
 
          // Add the cache loader needed to prevent TimeoutException
-         addCacheLoaders();
          cache.create();
          cache.start();
 
@@ -245,52 +253,6 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
       else
       {
          throw new RepositoryConfigurationException("Cache configuration not found");
-      }
-   }
-
-   /**
-    * This methods adds programmatically the required {@link CacheLoader} needed to prevent 
-    * any {@link TimeoutException}
-    */
-   private void addCacheLoaders()
-   {
-      CacheLoaderConfig config = cache.getConfiguration().getCacheLoaderConfig();
-      List<IndividualCacheLoaderConfig> oldConfigs;
-      if (config == null || (oldConfigs = config.getIndividualCacheLoaderConfigs()) == null || oldConfigs.isEmpty())
-      {
-         if (log.isInfoEnabled())
-         {
-            log.info("No cache loader has been defined, thus no pre and post cache loader will be added");
-         }
-         return;
-      }
-      PreNPostCacheLoader preCL = new PreNPostCacheLoader(true);
-      // create CacheLoaderConfig
-      IndividualCacheLoaderConfig preCLConfig = new IndividualCacheLoaderConfig();
-      // set CacheLoader
-      preCLConfig.setCacheLoader(preCL);
-      // set parameters
-      preCLConfig.setFetchPersistentState(false);
-      preCLConfig.setAsync(false);
-      preCLConfig.setIgnoreModifications(true);
-      preCLConfig.setPurgeOnStartup(false);
-      PreNPostCacheLoader postCL = new PreNPostCacheLoader(false);
-      // create CacheLoaderConfig
-      IndividualCacheLoaderConfig postCLConfig = new IndividualCacheLoaderConfig();
-      // set CacheLoader
-      postCLConfig.setCacheLoader(postCL);
-      // set parameters
-      postCLConfig.setFetchPersistentState(false);
-      postCLConfig.setAsync(false);
-      postCLConfig.setIgnoreModifications(true);
-      postCLConfig.setPurgeOnStartup(false);
-      List<IndividualCacheLoaderConfig> newConfigs = new ArrayList<IndividualCacheLoaderConfig>(oldConfigs);
-      newConfigs.add(0, preCLConfig);
-      newConfigs.add(postCLConfig);
-      config.setIndividualCacheLoaderConfigs(newConfigs);
-      if (log.isInfoEnabled())
-      {
-         log.info("The pre and post cache loaders have been added");
       }
    }
 
@@ -306,27 +268,21 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
       return lockTimeOut;
    }
 
-   private final LockActionNonTxAware<Integer, Object> getNumLocks = new LockActionNonTxAware<Integer, Object>()
-   {
-      public Integer execute(Object arg)
-      {
-         return cache.getChildrenNames(lockRoot).size();
-      }
-   };
-
    @Managed
    @ManagedDescription("The number of active locks")
    public int getNumLocks()
    {
+      int lockNum = -1;
       try
       {
-         return executeLockActionNonTxAware(getNumLocks, null);
+         LockJDBCConnection connection = this.lockJDBCContainer.openConnection();
+         lockNum = connection.getLockedNodes().size();
       }
       catch (LockException e)
       {
-         // ignore me will never occur
+         // skip
       }
-      return -1;
+      return lockNum;
    }
 
    /**
@@ -339,19 +295,6 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
       return sessionManager;
    }
 
-   private final LockActionNonTxAware<Boolean, String> isLockLive = new LockActionNonTxAware<Boolean, String>()
-   {
-      public Boolean execute(String nodeId)
-      {
-         if (cache.get(makeLockFqn(nodeId), LOCK_DATA) != null) //pendingLocks.containsKey(nodeId) || 
-         {
-            return true;
-         }
-
-         return false;
-      }
-   };
-
    /**
     * Check is LockManager contains lock. No matter it is in pending or persistent state.
     * 
@@ -360,15 +303,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
     */
    public boolean isLockLive(String nodeId) throws LockException
    {
-      try
-      {
-         return executeLockActionNonTxAware(isLockLive, nodeId);
-      }
-      catch (LockException e)
-      {
-         // ignore me will never occur
-      }
-      return false;
+      return this.lockExist(nodeId);
    }
 
    /**
@@ -480,6 +415,10 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
          {
             log.error(e.getLocalizedMessage(), e);
          }
+         catch (LockException e)
+         {
+            log.error(e.getLocalizedMessage(), e);
+         }
       }
 
       // sort locking and unlocking operations to avoid deadlocks in JBossCache
@@ -553,21 +492,6 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
       }
    }
 
-   private final LockActionNonTxAware<Object, LockData> refresh = new LockActionNonTxAware<Object, LockData>()
-   {
-      public Object execute(LockData newLockData) throws LockException
-      {
-         Fqn<String> fqn = makeLockFqn(newLockData.getNodeIdentifier());
-         Object oldValue = cache.put(fqn, LOCK_DATA, newLockData);
-         if (oldValue == null)
-         {
-            throw new LockException("Can't refresh lock for node " + newLockData.getNodeIdentifier()
-               + " since lock is not exist");
-         }
-         return null;
-      }
-   };
-
    /**
     * Refreshed lock data in cache
     * 
@@ -575,7 +499,41 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
     */
    public void refreshLockData(LockData newLockData) throws LockException
    {
-      executeLockActionNonTxAware(refresh, newLockData);
+      // TODO
+      // Write to DB
+      LockJDBCConnection connection = null;
+      try
+      {
+         connection = this.lockJDBCContainer.openConnection();
+         connection.refreshLockData(newLockData);
+         connection.commit();
+         // if database consistency not failed put to cache 
+         Fqn<String> fqn = makeLockFqn(newLockData.getNodeIdentifier());
+         cache.put(fqn, LOCK_DATA, newLockData);
+      }
+      catch (RepositoryException e)
+      {
+         throw new LockException(e);
+      }
+      finally
+      {
+         if (connection != null)
+         {
+            try
+            {
+               connection.close();
+            }
+            catch (IllegalStateException e)
+            {
+               log.error(e.getMessage(), e);
+            }
+            catch (RepositoryException e)
+            {
+               log.error(e.getMessage(), e);
+            }
+         }
+      }
+
    }
 
    /**
@@ -583,21 +541,29 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
     */
    public synchronized void removeExpired()
    {
+      // TODO
       final List<String> removeLockList = new ArrayList<String>();
-
-      for (LockData lock : getLockList())
+      try
       {
-         if (!lock.isSessionScoped() && lock.getTimeToDeath() < 0)
+         // traverse through list
+         List<LockData> lockDatas = getLockList();
+         for (LockData lock : lockDatas)
          {
-            removeLockList.add(lock.getNodeIdentifier());
+            if (!lock.isSessionScoped() && lock.getTimeToDeath() < 0)
+            {
+               removeLockList.add(lock.getNodeIdentifier());
+            }
+         }
+         // apply changes in alphabetical order to prevent deadlocks on cache
+         Collections.sort(removeLockList);
+         for (String rLock : removeLockList)
+         {
+            removeLock(rLock);
          }
       }
-
-      Collections.sort(removeLockList);
-
-      for (String rLock : removeLockList)
+      catch (LockException e)
       {
-         removeLock(rLock);
+         log.error("Exception removing expired locks", e);
       }
    }
 
@@ -652,28 +618,54 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
     */
    private synchronized void internalLock(String sessionId, String nodeIdentifier) throws LockException
    {
-      CacheableSessionLockManager session = sessionLockManagers.get(sessionId);
-      if (session != null && session.cotainsPendingLock(nodeIdentifier))
+      CacheableSessionLockManager sessionLockManager = sessionLockManagers.get(sessionId);
+      if (sessionLockManager != null && sessionLockManager.cotainsPendingLock(nodeIdentifier))
       {
-         LockData lockData = session.getPendingLock(nodeIdentifier);
-         Fqn<String> lockPath = makeLockFqn(lockData.getNodeIdentifier());
+         LockData lockData = sessionLockManager.getPendingLock(nodeIdentifier);
 
-         // addChild will add if absent or return old if present
-         Node<Serializable, Object> node = cache.getRoot().addChild(lockPath);
-
-         // this will return null if success. And old data if something exists...
-         LockData oldLockData = (LockData)node.putIfAbsent(LOCK_DATA, lockData);
-
-         if (oldLockData != null)
+         //TODO
+         // add to DB for first
+         LockJDBCConnection connection = null;
+         try
          {
-            throw new LockException("Unable to write LockData. Node [" + lockData.getNodeIdentifier()
-               + "] already has LockData!");
-         }
+            // write to database
+            connection = this.lockJDBCContainer.openConnection();
+            connection.addLockData(lockData);
+            connection.commit();
 
-         session.notifyLockPersisted(nodeIdentifier);
+            // if any SQL exception, that nothing should be placed to cache
+            Fqn<String> lockPath = makeLockFqn(lockData.getNodeIdentifier());
+            Node<Serializable, Object> node = cache.getRoot().addChild(lockPath);
+            cache.put(lockPath, LOCK_DATA, lockData);
+
+            sessionLockManager.notifyLockPersisted(nodeIdentifier);
+         }
+         catch (RepositoryException e)
+         {
+            throw new LockException(e);
+         }
+         finally
+         {
+            if (connection != null)
+            {
+               try
+               {
+                  connection.close();
+               }
+               catch (IllegalStateException e)
+               {
+                  log.error(e.getMessage(), e);
+               }
+               catch (RepositoryException e)
+               {
+                  log.error(e.getMessage(), e);
+               }
+            }
+         }
       }
       else
       {
+         // no pending lock found
          throw new LockException("No lock in pending locks");
       }
    }
@@ -691,35 +683,84 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
 
       if (lData != null)
       {
-         cache.removeNode(makeLockFqn(nodeIdentifier));
-
-         CacheableSessionLockManager sessMgr = sessionLockManagers.get(sessionId);
-         if (sessMgr != null)
+         //TODO
+         LockJDBCConnection connection = null;
+         try
          {
-            sessMgr.notifyLockRemoved(nodeIdentifier);
+            //first remove from database
+            connection = this.lockJDBCContainer.openConnection();
+            connection.removeLockData(nodeIdentifier);
+            connection.commit();
+
+            //second remove from cache
+            cache.removeNode(makeLockFqn(nodeIdentifier));
+            CacheableSessionLockManager sessMgr = sessionLockManagers.get(sessionId);
+            if (sessMgr != null)
+            {
+               sessMgr.notifyLockRemoved(nodeIdentifier);
+            }
+         }
+         catch (RepositoryException e)
+         {
+            throw new LockException(e);
+         }
+         finally
+         {
+            if (connection != null)
+            {
+               try
+               {
+                  connection.close();
+               }
+               catch (IllegalStateException e)
+               {
+                  log.error(e.getMessage(), e);
+               }
+               catch (RepositoryException e)
+               {
+                  log.error(e.getMessage(), e);
+               }
+            }
          }
       }
    }
 
-   private final LockActionNonTxAware<Boolean, String> lockExist = new LockActionNonTxAware<Boolean, String>()
+   private boolean lockExist(String nodeId) throws LockException
    {
-      public Boolean execute(String nodeId) throws LockException
+      //TODO
+      //if present in cache - then exists
+      if (cache.get(makeLockFqn(nodeId), LOCK_DATA) != null)
       {
-         return cache.get(makeLockFqn(nodeId), LOCK_DATA) != null;
+         return true;
       }
-   };
-
-   private boolean lockExist(String nodeId)
-   {
-      try
+      else
       {
-         return executeLockActionNonTxAware(lockExist, nodeId);
+         // not present in cache, so check in database
+         LockJDBCConnection connection = null;
+         try
+         {
+            connection = this.lockJDBCContainer.openConnection();
+            return connection.getLockData(nodeId) != null;
+         }
+         finally
+         {
+            if (connection != null)
+            {
+               try
+               {
+                  connection.close();
+               }
+               catch (IllegalStateException e)
+               {
+                  log.error(e.getMessage(), e);
+               }
+               catch (RepositoryException e)
+               {
+                  log.error(e.getMessage(), e);
+               }
+            }
+         }
       }
-      catch (LockException e)
-      {
-         // ignore me will never occur
-      }
-      return false;
    }
 
    /**
@@ -804,58 +845,90 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
       return retval;
    }
 
-   private final LockActionNonTxAware<LockData, String> getLockDataById = new LockActionNonTxAware<LockData, String>()
+   protected LockData getLockDataById(String nodeId) throws LockException
    {
-      public LockData execute(String nodeId) throws LockException
-      {
-         return (LockData)cache.get(makeLockFqn(nodeId), LOCK_DATA);
-      }
-   };
+      //TODO
+      LockData lData = (LockData)cache.get(makeLockFqn(nodeId), LOCK_DATA);
 
-   protected LockData getLockDataById(String nodeId)
-   {
-      try
+      if (lData != null)
       {
-         return executeLockActionNonTxAware(getLockDataById, nodeId);
+         return lData;
       }
-      catch (LockException e)
+      else
       {
-         // ignore me will never occur
-      }
-      return null;
-   }
-
-   private final LockActionNonTxAware<List<LockData>, Object> getLockList =
-      new LockActionNonTxAware<List<LockData>, Object>()
-      {
-         public List<LockData> execute(Object arg) throws LockException
+         LockJDBCConnection connection = null;
+         try
          {
-            Set<Object> nodesId = cache.getChildrenNames(lockRoot);
-
-            List<LockData> locksData = new ArrayList<LockData>();
-            for (Object nodeId : nodesId)
+            connection = this.lockJDBCContainer.openConnection();
+            return connection.getLockData(nodeId);
+         }
+         finally
+         {
+            if (connection != null)
             {
-               LockData lockData = (LockData)cache.get(makeLockFqn((String)nodeId), LOCK_DATA);
-               if (lockData != null)
+               try
                {
-                  locksData.add(lockData);
+                  connection.close();
+               }
+               catch (IllegalStateException e)
+               {
+                  log.error(e.getMessage(), e);
+               }
+               catch (RepositoryException e)
+               {
+                  log.error(e.getMessage(), e);
                }
             }
-            return locksData;
          }
-      };
+      }
+   }
 
-   protected synchronized List<LockData> getLockList()
+   protected synchronized List<LockData> getLockList() throws LockException
    {
+
+      //TODO
+
+      LockJDBCConnection connection = null;
       try
       {
-         return executeLockActionNonTxAware(getLockList, null);
+         connection = this.lockJDBCContainer.openConnection();
+         Set<String> nodesId = connection.getLockedNodes();
+         List<LockData> locksData = new ArrayList<LockData>();
+         for (String nodeId : nodesId)
+         {
+            LockData lockData = (LockData)cache.get(makeLockFqn((String)nodeId), LOCK_DATA);
+            if (lockData != null)
+            {
+               locksData.add(lockData);
+            }
+            else
+            {
+               locksData.add(connection.getLockData(nodeId));
+            }
+
+         }
+         return locksData;
       }
-      catch (LockException e)
+      finally
       {
-         // ignore me will never occur
+         if (connection != null)
+         {
+            try
+            {
+               connection.close();
+            }
+            catch (IllegalStateException e)
+            {
+               // TODO Auto-generated catch block
+               e.printStackTrace();
+            }
+            catch (RepositoryException e)
+            {
+               // TODO Auto-generated catch block
+               e.printStackTrace();
+            }
+         }
       }
-      return null;
    }
 
    /**
@@ -959,59 +1032,6 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
          node = cache.getRoot().addChild(fqn);
       }
       node.setResident(true);
-   }
-
-   /**
-    * Execute the given action outside a transaction. This is needed since the {@link Cache} used by {@link CacheableLockManagerImpl}
-    * manages the persistence of its locks thanks to a {@link CacheLoader} and a {@link CacheLoader} lock the JBoss cache {@link Node}
-    * even for read operations which cause deadlock issue when a XA {@link Transaction} is already opened
-    * @throws LockException when a exception occurs
-    */
-   private <R, A> R executeLockActionNonTxAware(LockActionNonTxAware<R, A> action, A arg) throws LockException
-   {
-      Transaction tx = null;
-      try
-      {
-         if (tm != null)
-         {
-            try
-            {
-               tx = tm.suspend();
-            }
-            catch (Exception e)
-            {
-               log.warn("Cannot suspend the current transaction", e);
-            }
-         }
-         return action.execute(arg);
-      }
-      finally
-      {
-         if (tx != null)
-         {
-            try
-            {
-               tm.resume(tx);
-            }
-            catch (Exception e)
-            {
-               log.warn("Cannot resume the current transaction", e);
-            }
-         }
-      }
-   }
-
-   /**
-    * Actions that are not supposed to be called within a transaction
-    * 
-    * Created by The eXo Platform SAS
-    * Author : Nicolas Filotto 
-    *          nicolas.filotto@exoplatform.com
-    * 21 janv. 2010
-    */
-   private static interface LockActionNonTxAware<R, A>
-   {
-      R execute(A arg) throws LockException;
    }
 
 }

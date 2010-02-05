@@ -75,7 +75,7 @@ public class CacheLockImpl extends LockImpl
    /**
     * {@inheritDoc}
     */
-   public boolean isLive()
+   public boolean isLive() throws LockException
    {
       if (!live)
       {

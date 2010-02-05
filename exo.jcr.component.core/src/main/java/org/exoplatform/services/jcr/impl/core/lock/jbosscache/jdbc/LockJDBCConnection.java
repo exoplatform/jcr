@@ -14,8 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see<http://www.gnu.org/licenses/>.
  */
-package org.exoplatform.services.jcr.impl.core.lock.jbosscache;
+package org.exoplatform.services.jcr.impl.core.lock.jbosscache.jdbc;
 
+import org.exoplatform.services.jcr.impl.core.lock.jbosscache.LockData;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -40,7 +41,7 @@ import javax.jcr.lock.LockException;
 public class LockJDBCConnection
 {
 
-   private final Log LOG = ExoLogger.getLogger(LockPersistentDataManager.class);
+   private final Log LOG = ExoLogger.getLogger(LockJDBCContainer.class);
 
    // queries
    protected String ADD_LOCK_DATA;

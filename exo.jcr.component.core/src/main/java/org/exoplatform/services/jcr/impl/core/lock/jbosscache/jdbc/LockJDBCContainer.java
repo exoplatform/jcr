@@ -16,7 +16,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.services.jcr.impl.core.lock.jbosscache;
+package org.exoplatform.services.jcr.impl.core.lock.jbosscache.jdbc;
 
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
@@ -39,9 +39,9 @@ import javax.sql.DataSource;
  * @version $Id: LockPersistentDataManager.java 34360 2009-07-22 23:58:59Z nzamosenchuk $
  *
  */
-public class LockPersistentDataManager
+public class LockJDBCContainer
 {
-   private final Log log = ExoLogger.getLogger(LockPersistentDataManager.class);
+   private final Log log = ExoLogger.getLogger(LockJDBCContainer.class);
 
    private DataSource dataSource;
 
@@ -52,8 +52,9 @@ public class LockPersistentDataManager
     * @param tableName Name of DB table
     * @throws RepositoryException 
     */
-   public LockPersistentDataManager(String dataSourceName, String wsName) throws RepositoryException
+   public LockJDBCContainer(String dataSourceName, String wsName) throws RepositoryException
    {
+      // TODO : rework exception handling
       this.wsName = wsName;
 
       // try to resolve DataSource
@@ -93,7 +94,7 @@ public class LockPersistentDataManager
 
    }
 
-   public LockJDBCConnection openConnection(boolean readOnly) throws LockException
+   public LockJDBCConnection openConnection() throws LockException
    {
       try
       {

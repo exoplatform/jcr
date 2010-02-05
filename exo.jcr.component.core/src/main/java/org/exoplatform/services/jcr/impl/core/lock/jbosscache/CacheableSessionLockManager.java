@@ -186,7 +186,7 @@ public class CacheableSessionLockManager implements SessionLockManager
    /**
     * {@inheritDoc}
     */
-   public boolean isLocked(NodeData node)
+   public boolean isLocked(NodeData node) throws LockException
    {
       LockData lData =
          lockManager
@@ -289,7 +289,7 @@ public class CacheableSessionLockManager implements SessionLockManager
     * @param nodeId - node ID string
     * @return boolean
     */
-   protected boolean cotainsPendingLock(String nodeId)
+   public boolean cotainsPendingLock(String nodeId)
    {
       return pendingLocks.contains(nodeId);
    }
@@ -318,7 +318,7 @@ public class CacheableSessionLockManager implements SessionLockManager
     * @param nodeId - ID of locked node
     * @return pending lock or null
     */
-   protected LockData getPendingLock(String nodeId)
+   public LockData getPendingLock(String nodeId)
    {
       if (pendingLocks.contains(nodeId))
       {
@@ -336,7 +336,7 @@ public class CacheableSessionLockManager implements SessionLockManager
     * @param nodeIdentifier - locked node id
     * @return
     */
-   protected boolean isLockLive(String nodeIdentifier)
+   protected boolean isLockLive(String nodeIdentifier) throws LockException
    {
 
       if (lockManager.isLockLive(nodeIdentifier))
@@ -349,7 +349,7 @@ public class CacheableSessionLockManager implements SessionLockManager
       }
    }
 
-   protected void notifyLockPersisted(String nodeIdentifier)
+   public void notifyLockPersisted(String nodeIdentifier)
    {
       pendingLocks.remove(nodeIdentifier);
    }
@@ -359,7 +359,7 @@ public class CacheableSessionLockManager implements SessionLockManager
     * 
     * @param nodeIdentifier - unlocked node identifier
     */
-   protected void notifyLockRemoved(String nodeIdentifier)
+   public void notifyLockRemoved(String nodeIdentifier)
    {
       lockedNodes.remove(nodeIdentifier);
    }

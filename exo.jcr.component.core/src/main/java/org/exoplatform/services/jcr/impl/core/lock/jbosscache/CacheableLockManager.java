@@ -54,8 +54,9 @@ public interface CacheableLockManager extends WorkspaceLockManager
     * @param nodeIdentifier
     * 
     * @return boolean
+    * @throws LockException TODO
     */
-   boolean isLockLive(String nodeIdentifier);
+   boolean isLockLive(String nodeIdentifier) throws LockException;
 
    /**
     * Search lock in storage. SearchType shows which locks should be returned.
@@ -65,7 +66,7 @@ public interface CacheableLockManager extends WorkspaceLockManager
     * @param searchType - combination of SEARCH_EXECMATCH, SEARCH_CLOSEDPARENT, SEARCH_CLOSEDCHILD search types
     * @return LockData or null
     */
-   public LockData getLockData(NodeData node, int searchType);
+   public LockData getLockData(NodeData node, int searchType) throws LockException;
 
    /**
     * Replace old lockData with new one. Node ID, token can't be replaced.

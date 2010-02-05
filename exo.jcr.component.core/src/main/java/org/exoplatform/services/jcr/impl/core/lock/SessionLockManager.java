@@ -97,9 +97,10 @@ public interface SessionLockManager extends SessionLifecycleListener
     *          node
     * @return <code>true</code> if this node is locked either as a result of a lock held by this node
     *         or by a deep lock on a node above this node; otherwise returns <code>false</code>
+    * @throws LockException 
     * @see javax.jcr.Node#isLocked
     */
-   boolean isLocked(NodeData node);
+   boolean isLocked(NodeData node) throws LockException;
 
    /**
     * Returns <code>true</code> if the specified session holds a lock on the given node; otherwise

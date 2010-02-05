@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see<http://www.gnu.org/licenses/>.
  */
-package org.exoplatform.services.jcr.impl.core.lock.jbosscache;
+package org.exoplatform.services.jcr.impl.core.lock.jbosscache.jdbc;
 
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.DBInitializerException;
 import org.exoplatform.services.log.ExoLogger;

@@ -107,7 +107,7 @@ public class LockData implements Externalizable
     *       is seconds!
     * @param birthday
     */
-   protected LockData(String nodeIdentifier, String lockTokenHash, boolean deep, boolean sessionScoped, String owner,
+   public LockData(String nodeIdentifier, String lockTokenHash, boolean deep, boolean sessionScoped, String owner,
       long timeOut, long birthday)
    {
       this.nodeIdentifier = nodeIdentifier;
@@ -246,12 +246,12 @@ public class LockData implements Externalizable
    /**
     * @return
     */
-   protected long getTimeOut()
+   public long getTimeOut()
    {
       return timeOut;
    }
 
-   protected long getBirthDay()
+   public long getBirthDay()
    {
       return birthday;
    }
