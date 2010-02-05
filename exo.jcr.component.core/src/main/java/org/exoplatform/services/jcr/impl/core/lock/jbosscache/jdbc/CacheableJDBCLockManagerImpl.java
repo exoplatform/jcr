@@ -100,7 +100,7 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
    /**
     * The name of data source's property
     */
-   public static final String DATA_SOURCE = "data-source";
+   public static final String DATA_SOURCE = "datasource";
 
    /**
     * Default lock time out. 30min
