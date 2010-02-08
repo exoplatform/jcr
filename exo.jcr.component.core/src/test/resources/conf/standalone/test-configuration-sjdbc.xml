@@ -52,7 +52,7 @@
         <property name="log4j.appender.file.layout" value="org.apache.log4j.PatternLayout"/>
         <property name="log4j.appender.file.layout.ConversionPattern" value="%d{dd.MM.yyyy HH:mm:ss} *%-5p* [%t] %c{1}: %m (%F, line %L) %n"/>
 
-		<!-- property name="log4j.category.jcr.DBInitializer" value="DEBUG"/ -->
+	<!-- property name="log4j.category.jcr.DBInitializer" value="DEBUG"/ -->
 
         <!-- property name="log4j.category.jcr.SessionDataManager" value="DEBUG"/>
         <property name="log4j.category.jcr.JDBCStorageConnection" value="DEBUG"/>
