@@ -83,6 +83,8 @@ public class JcrQueryAvgResponceTimeTest extends JcrImplBaseTest
 
    public static final String FIELDNAME_STATISTIC = "Statistic";
 
+   private static final String TEST_ROOT = "JcrQueryAvgResponceTimeTest";
+
    public void testname() throws Exception
    {
       QueryAvgResponceTimeTest test =
@@ -172,7 +174,7 @@ public class JcrQueryAvgResponceTimeTest extends JcrImplBaseTest
                sessionLocal = repository.login(credentials, "ws");
                // prepare nodes
                Node wsRoot = sessionLocal.getRootNode();
-               Node threadNode = getOrCreateNode(wsRoot, threadUUID);
+               Node threadNode = getOrCreateNode(getOrCreateNode(TEST_ROOT, wsRoot), threadUUID);
                sessionLocal.save();
                sessionLocal.logout();
                sessionLocal = null;
@@ -223,18 +225,21 @@ public class JcrQueryAvgResponceTimeTest extends JcrImplBaseTest
          {
             // login
             CredentialsImpl credentials = new CredentialsImpl("admin", "admin".toCharArray());
+
             sessionLocal = repository.login(credentials, "ws");
+            Node testRoot = sessionLocal.getRootNode().getNode(TEST_ROOT);
             // prepare nodes
             int i = random.nextInt(words.length);
             String word = words[i];
             Query q =
                sessionLocal.getWorkspace().getQueryManager().createQuery(
-                  "SELECT * FROM nt:base WHERE " + FIELDNAME_CONTENT + "='" + word + "'", Query.SQL);
+                  "SELECT * FROM nt:base WHERE " + FIELDNAME_CONTENT + "='" + word + "' AND jcr:path LIKE '"
+                     + testRoot.getPath() + "/%'", Query.SQL);
             long start = System.currentTimeMillis();
             QueryResult res = q.execute();
             long sqlsize = res.getNodes().getSize();
             result.add(new WorkerResult(true, System.currentTimeMillis() - start));
-            //log.info(word + " found:" + sqlsize + " time=" + (System.currentTimeMillis() - start));
+            log.info(word + " found:" + sqlsize + " time=" + (System.currentTimeMillis() - start));
 
          }
          catch (Exception e)
@@ -269,7 +274,7 @@ public class JcrQueryAvgResponceTimeTest extends JcrImplBaseTest
             CredentialsImpl credentials = new CredentialsImpl("admin", "admin".toCharArray());
             sessionLocal = repository.login(credentials, "ws");
             long start = System.currentTimeMillis();
-            Node threadNode = getOrCreateNode(sessionLocal.getRootNode(), threadUUID);
+            Node threadNode = getOrCreateNode(getOrCreateNode(TEST_ROOT, sessionLocal.getRootNode()), threadUUID);
             addCountent(threadNode, UUID.randomUUID(), word);
             sessionLocal.save();
             result.add(new WorkerResult(false, System.currentTimeMillis() - start));
@@ -311,11 +316,11 @@ public class JcrQueryAvgResponceTimeTest extends JcrImplBaseTest
       private Node getOrCreateNode(Node testRoot, UUID nodePath) throws RepositoryException
       {
          String uuidPath = nodePath.toString();
-         Node l1 = addOrCreate(uuidPath.substring(0, 8), testRoot);
-         Node l2 = addOrCreate(uuidPath.substring(9, 13), l1);
-         Node l3 = addOrCreate(uuidPath.substring(14, 18), l2);
-         Node l4 = addOrCreate(uuidPath.substring(19, 23), l3);
-         return addOrCreate(uuidPath.substring(24), l4);
+         Node l1 = getOrCreateNode(uuidPath.substring(0, 8), testRoot);
+         Node l2 = getOrCreateNode(uuidPath.substring(9, 13), l1);
+         Node l3 = getOrCreateNode(uuidPath.substring(14, 18), l2);
+         Node l4 = getOrCreateNode(uuidPath.substring(19, 23), l3);
+         return getOrCreateNode(uuidPath.substring(24), l4);
 
       }
 
@@ -327,7 +332,7 @@ public class JcrQueryAvgResponceTimeTest extends JcrImplBaseTest
        * @return
        * @throws RepositoryException
        */
-      private Node addOrCreate(String name, Node parent) throws RepositoryException
+      private Node getOrCreateNode(String name, Node parent) throws RepositoryException
       {
          if (parent.hasNode(name))
          {
