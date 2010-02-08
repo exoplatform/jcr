@@ -60,7 +60,7 @@ public class JcrQueryAvgResponceTimeTest extends JcrImplBaseTest
    /**
     * 2min default time of work of one iteration.
     */
-   private static final int ITERATION_TIME = 20 * 60 * 1000;
+   private static final int ITERATION_TIME = 60 * 1000;
 
    /**
     * How much thread will be added on the next iteration.
@@ -88,7 +88,7 @@ public class JcrQueryAvgResponceTimeTest extends JcrImplBaseTest
    public void testname() throws Exception
    {
       QueryAvgResponceTimeTest test =
-         new QueryAvgResponceTimeTest(repository, ITERATION_GROWING_POLL, ITERATION_TIME, 15, READ_VALUE);
+         new QueryAvgResponceTimeTest(repository, ITERATION_GROWING_POLL, ITERATION_TIME, 5, READ_VALUE);
       test.testResponce();
 
    }
@@ -239,7 +239,7 @@ public class JcrQueryAvgResponceTimeTest extends JcrImplBaseTest
             QueryResult res = q.execute();
             long sqlsize = res.getNodes().getSize();
             result.add(new WorkerResult(true, System.currentTimeMillis() - start));
-            log.info(word + " found:" + sqlsize + " time=" + (System.currentTimeMillis() - start));
+            //log.info(word + " found:" + sqlsize + " time=" + (System.currentTimeMillis() - start));
 
          }
          catch (Exception e)
