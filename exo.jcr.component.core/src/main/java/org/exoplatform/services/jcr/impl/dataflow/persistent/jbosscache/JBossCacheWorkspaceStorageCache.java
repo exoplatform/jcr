@@ -265,10 +265,19 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
       {
          throw new RepositoryConfigurationException("Cache configuration not found");
       }
-      
+
       // create cache using custom factory
-      ExoJBossCacheFactory<Serializable, Object> factory =
-         new ExoJBossCacheFactory<Serializable, Object>(cfm, transactionService.getTransactionManager());
+      ExoJBossCacheFactory<Serializable, Object> factory;
+
+      if (transactionService != null)
+      {
+         factory = new ExoJBossCacheFactory<Serializable, Object>(cfm, transactionService.getTransactionManager());
+      }
+      else
+      {
+         factory = new ExoJBossCacheFactory<Serializable, Object>(cfm);
+      }
+      
       this.cache = new BufferedJBossCache(factory.createCache(wsConfig.getCache()));
 
       this.itemsRoot = Fqn.fromElements(ITEMS);
