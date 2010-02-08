@@ -269,7 +269,8 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
    public void configureJDBCCacheLoader(MappedParametrizedObjectEntry parameterEntry) throws RepositoryException
    {
       String dataSourceName = parameterEntry.getParameterValue(JBOSSCACHE_JDBC_CL_DATASOURCE, null);
-      // if data source is not defined, i.e. no cache loader is used (possibly pattern is changed, to used another cache loader)
+      // if data source is defined, then inject correct data-types.
+      // Also it cans be not defined and nothing should be injected (i.e. no cache loader is used (possibly pattern is changed, to used another cache loader))
       if (dataSourceName != null)
       {
          String dialect;
@@ -301,7 +302,6 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
          {
             // Oracle suggests the use VARCHAR2 instead of VARCHAR while declaring data type.
             charType = "VARCHAR2(512)";
-            blobType = "BLOB";
          }
          // POSTGRE SQL
          else if (dialect.equals(DBConstants.DB_DIALECT_PGSQL))
@@ -335,7 +335,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
          {
             parameterEntry.putParameterValue(JBOSSCACHE_JDBC_CL_NODE_COLUMN, blobType);
          }
-         
+
          if (parameterEntry.getParameterValue(JBOSSCACHE_JDBC_CL_FQN_COLUMN, null) == null)
          {
             parameterEntry.putParameterValue(JBOSSCACHE_JDBC_CL_FQN_COLUMN, charType);
