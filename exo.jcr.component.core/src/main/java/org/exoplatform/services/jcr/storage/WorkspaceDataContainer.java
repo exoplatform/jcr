@@ -47,6 +47,8 @@ public interface WorkspaceDataContainer extends DataContainer
 
    public final static String DEF_SWAPDIR = System.getProperty("java.io.tmpdir");
 
+   public final static String CHECK_SNS_NEW_CONNECTION = "check-sns-new-connection";
+
    /**
     * [G.A] do we need it here or in WorkspaceDataManager better??
     * 
@@ -89,4 +91,8 @@ public interface WorkspaceDataContainer extends DataContainer
      */
    WorkspaceStorageConnection reuseConnection(WorkspaceStorageConnection original) throws RepositoryException;
 
+   /**
+    * @return the value of 'check-sns-new-connection' parameter 
+    */
+   boolean isCheckSNSNewConnection();
 }

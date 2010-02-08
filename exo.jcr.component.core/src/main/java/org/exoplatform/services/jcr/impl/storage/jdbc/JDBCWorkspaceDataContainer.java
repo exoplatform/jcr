@@ -45,7 +45,6 @@ import org.picocontainer.Startable;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
@@ -105,6 +104,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    protected final ValueStoragePluginProvider valueStorageProvider;
 
    protected String storageVersion;
+
+   protected boolean checkSNSNewConnection;
 
    protected int maxBufferSize;
 
@@ -331,6 +332,15 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          }
       }
       LOG.info("Using a dialect '" + this.dbDialect + "'");
+
+      try
+      {
+         this.checkSNSNewConnection = wsConfig.getContainer().getParameterBoolean(CHECK_SNS_NEW_CONNECTION);
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         this.checkSNSNewConnection = true;
+      }
 
       // ------------- Values swap config ------------------
       try
@@ -878,4 +888,13 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    {
       return dbUserName;
    }
+
+   /**
+    * {@inheritDoc}
+    */
+   public boolean isCheckSNSNewConnection()
+   {
+      return checkSNSNewConnection;
+   }
+
 }

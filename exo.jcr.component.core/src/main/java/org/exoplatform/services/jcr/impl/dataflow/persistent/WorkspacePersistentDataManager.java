@@ -92,7 +92,6 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
     * Value sorages provider (for dest file suggestion on save).
     */
    // TODO protected final ValueStoragePluginProvider valueStorageProvider;
-
    /**
     * Persistent level listeners. This listeners can be filtered by filters from
     * <code>liestenerFilters</code> list.
@@ -234,7 +233,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
             // if it's different container instances
                ? systemDataContainer.equals(dataContainer) && thisConnection != null
                // but container confugrations are same and non-system connnection open
-               // reuse this connection as system
+                  // reuse this connection as system
                   ? systemDataContainer.reuseConnection(thisConnection)
                   // or open one new system
                   : systemDataContainer.openConnection()
@@ -256,7 +255,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
             // if it's different container instances
                ? dataContainer.equals(systemDataContainer) && systemConnection != null
                // but container confugrations are same and system connnection open
-               // reuse system connection as this
+                  // reuse system connection as this
                   ? dataContainer.reuseConnection(systemConnection)
                   // or open one new
                   : dataContainer.openConnection()
@@ -273,7 +272,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
       protected PlainChangesLogImpl save(PlainChangesLog changesLog) throws InvalidItemStateException,
          RepositoryException, IOException
       { //LOG.info(changesLog.dump())
-        // copy state
+         // copy state
          PlainChangesLogImpl newLog =
             new PlainChangesLogImpl(new ArrayList<ItemState>(), changesLog.getSessionId(), changesLog.getEventType(),
                changesLog.getPairId());
@@ -554,25 +553,39 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
          else
          {
             // check in persistence
-            final WorkspaceStorageConnection acon = con; //dataContainer.openConnection();
-            try
+            if (dataContainer.isCheckSNSNewConnection())
             {
-               NodeData parent = (NodeData)acon.getItemData(node.getParentIdentifier());
-               QPathEntry myName = node.getQPath().getEntries()[node.getQPath().getEntries().length - 1];
-               ItemData sibling =
-                  acon.getItemData(parent, new QPathEntry(myName.getNamespace(), myName.getName(),
-                     myName.getIndex() - 1));
-               if (sibling == null || !sibling.isNode())
+               final WorkspaceStorageConnection acon = dataContainer.openConnection();
+               try
                {
-                  throw new InvalidItemStateException("Node can't be saved " + node.getQPath().getAsString()
-                     + ". No same-name sibling exists with index " + (myName.getIndex() - 1) + ".");
+                  checkPersistedSNS(node, acon);
+               }
+               finally
+               {
+                  acon.close();
                }
             }
-            finally
+            else
             {
-               //acon.close();
+               checkPersistedSNS(node, con);
             }
          }
+      }
+   }
+
+   /**
+    * Check if same-name sibling exists in persistence.
+    */
+   private void checkPersistedSNS(NodeData node, WorkspaceStorageConnection acon) throws RepositoryException
+   {
+      NodeData parent = (NodeData)acon.getItemData(node.getParentIdentifier());
+      QPathEntry myName = node.getQPath().getEntries()[node.getQPath().getEntries().length - 1];
+      ItemData sibling =
+         acon.getItemData(parent, new QPathEntry(myName.getNamespace(), myName.getName(), myName.getIndex() - 1));
+      if (sibling == null || !sibling.isNode())
+      {
+         throw new InvalidItemStateException("Node can't be saved " + node.getQPath().getAsString()
+            + ". No same-name sibling exists with index " + (myName.getIndex() - 1) + ".");
       }
    }
 

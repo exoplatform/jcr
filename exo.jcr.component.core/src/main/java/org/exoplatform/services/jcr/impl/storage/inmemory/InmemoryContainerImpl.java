@@ -99,4 +99,12 @@ public class InmemoryContainerImpl extends WorkspaceDataContainerBase
    {
       return this.equals(another);
    }
+
+   /**
+    * {@inheritDoc}
+    */
+   public boolean isCheckSNSNewConnection()
+   {
+      return true;
+   }
 }

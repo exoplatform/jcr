@@ -37,11 +37,6 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import javax.jcr.RepositoryException;
-import javax.transaction.HeuristicMixedException;
-import javax.transaction.HeuristicRollbackException;
-import javax.transaction.NotSupportedException;
-import javax.transaction.RollbackException;
-import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 
 /**
@@ -379,7 +374,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    public List<PropertyData> getChildPropertiesData(NodeData nodeData) throws RepositoryException
    {
       List<PropertyData> childs = getChildPropertiesData(nodeData, false);
-      for (PropertyData prop: childs)
+      for (PropertyData prop : childs)
       {
          fixPropertyValues(prop);
       }
