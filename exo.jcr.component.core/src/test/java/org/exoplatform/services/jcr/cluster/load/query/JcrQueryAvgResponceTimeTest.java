@@ -60,12 +60,12 @@ public class JcrQueryAvgResponceTimeTest extends JcrImplBaseTest
    /**
     * 2min default time of work of one iteration.
     */
-   private static final int ITERATION_TIME = 60 * 1000;
+   private static final int ITERATION_TIME = 20 * 60 * 1000;
 
    /**
     * How much thread will be added on the next iteration.
     */
-   private static final int ITERATION_GROWING_POLL = 5;
+   private static final int ITERATION_GROWING_POLL = 15;
 
    /**
     * Number between 0 and 100 show % how many read operations. 
@@ -86,7 +86,7 @@ public class JcrQueryAvgResponceTimeTest extends JcrImplBaseTest
    public void testname() throws Exception
    {
       QueryAvgResponceTimeTest test =
-         new QueryAvgResponceTimeTest(repository, ITERATION_GROWING_POLL, ITERATION_TIME, 1, READ_VALUE);
+         new QueryAvgResponceTimeTest(repository, ITERATION_GROWING_POLL, ITERATION_TIME, 15, READ_VALUE);
       test.testResponce();
 
    }
