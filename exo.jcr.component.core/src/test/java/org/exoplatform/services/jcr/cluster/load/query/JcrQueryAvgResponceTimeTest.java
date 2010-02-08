@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.cluster.load.NodeInfo;
 import org.exoplatform.services.jcr.cluster.load.WorkerResult;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
+import org.jboss.cache.CacheException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -171,16 +172,20 @@ public class JcrQueryAvgResponceTimeTest extends JcrImplBaseTest
                sessionLocal = repository.login(credentials, "ws");
                // prepare nodes
                Node wsRoot = sessionLocal.getRootNode();
-               Node threadNode = wsRoot.addNode("Thread" + threadUUID);
+               Node threadNode = getOrCreateNode(wsRoot, threadUUID);
                sessionLocal.save();
                sessionLocal.logout();
                sessionLocal = null;
                isSuccessful = true;
             }
-            catch (Exception e)
+            catch (CacheException e)
             {
                log.error("error on creating root attempt " + i + " from " + maxAttempts);
                //ignore
+            }
+            catch (RepositoryException e)
+            {
+               log.error("error on creating root attempt " + i + " from " + maxAttempts);
             }
             finally
             {
@@ -197,6 +202,10 @@ public class JcrQueryAvgResponceTimeTest extends JcrImplBaseTest
                      e.printStackTrace();
                   }
                }
+            }
+            if (isSuccessful)
+            {
+               break;
             }
          }
 
@@ -295,13 +304,19 @@ public class JcrQueryAvgResponceTimeTest extends JcrImplBaseTest
 
       private void addCountent(Node testRoot, UUID nodePath, String content) throws RepositoryException
       {
+         Node l5 = getOrCreateNode(testRoot, nodePath);
+         l5.setProperty(FIELDNAME_CONTENT, content);
+      }
+
+      private Node getOrCreateNode(Node testRoot, UUID nodePath) throws RepositoryException
+      {
          String uuidPath = nodePath.toString();
          Node l1 = addOrCreate(uuidPath.substring(0, 8), testRoot);
          Node l2 = addOrCreate(uuidPath.substring(9, 13), l1);
          Node l3 = addOrCreate(uuidPath.substring(14, 18), l2);
          Node l4 = addOrCreate(uuidPath.substring(19, 23), l3);
-         Node l5 = addOrCreate(uuidPath.substring(24), l4);
-         l5.setProperty(FIELDNAME_CONTENT, content);
+         return addOrCreate(uuidPath.substring(24), l4);
+
       }
 
       /**
