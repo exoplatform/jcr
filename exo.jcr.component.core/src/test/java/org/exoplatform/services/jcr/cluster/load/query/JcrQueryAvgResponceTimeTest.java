@@ -269,7 +269,7 @@ public class JcrQueryAvgResponceTimeTest extends JcrImplBaseTest
             CredentialsImpl credentials = new CredentialsImpl("admin", "admin".toCharArray());
             sessionLocal = repository.login(credentials, "ws");
             long start = System.currentTimeMillis();
-            Node threadNode = sessionLocal.getRootNode().getNode("Thread" + threadUUID);
+            Node threadNode = getOrCreateNode(sessionLocal.getRootNode(), threadUUID);
             addCountent(threadNode, UUID.randomUUID(), word);
             sessionLocal.save();
             result.add(new WorkerResult(false, System.currentTimeMillis() - start));
