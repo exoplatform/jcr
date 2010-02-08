@@ -18,8 +18,12 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc;
 
+import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+
+import javax.jcr.RepositoryException;
+import javax.sql.DataSource;
 
 /**
  * JDBC dialect detecter based on database metadata and vendor product name.
@@ -30,7 +34,7 @@ import java.sql.SQLException;
  */
 public class DialectDetecter
 {
-   
+
    /**
     * Detect databse dialect using JDBC metadata. Based on code of 
     * http://svn.jboss.org/repos/hibernate/core/trunk/core/src/main/java/org/hibernate/dialect/resolver/StandardDialectResolver.java 
@@ -125,4 +129,34 @@ public class DialectDetecter
       return DBConstants.DB_DIALECT_GENERIC;
    }
 
+   /**
+    * Tries to detect dialect of DataSource
+    * 
+    * @param dataSourceName
+    * @return
+    * @throws RepositoryException
+    */
+   public static String detect(DataSource dataSource) throws SQLException
+   {
+      // if no datasource provided
+      if (dataSource == null)
+      {
+         throw new SQLException("DataSource can't be null");
+      }
+      // try to detect dialect
+      Connection jdbcConn = null;
+      try
+      {
+         jdbcConn = dataSource.getConnection();
+         return detect(jdbcConn.getMetaData());
+      }
+      finally
+      {
+         if (jdbcConn != null && !jdbcConn.isClosed())
+         {
+            jdbcConn.close();
+         }
+      }
+
+   }
 }

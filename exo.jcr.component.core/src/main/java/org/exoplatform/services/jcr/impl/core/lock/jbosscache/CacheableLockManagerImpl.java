@@ -22,6 +22,7 @@ import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
 import org.exoplatform.management.jmx.annotations.Property;
 import org.exoplatform.services.jcr.access.SystemIdentity;
+import org.exoplatform.services.jcr.config.MappedParametrizedObjectEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
@@ -45,6 +46,8 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientItemData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
+import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
+import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory;
 import org.exoplatform.services.jcr.observation.ExtendedEvent;
 import org.exoplatform.services.log.ExoLogger;
@@ -74,6 +77,8 @@ import java.util.Set;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.lock.LockException;
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
@@ -98,6 +103,12 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
     *  The name to property cache configuration. 
     */
    public static final String JBOSSCACCHE_CONFIG = "jbosscache-configuration";
+
+   public static final String JBOSSCACHE_JDBC_CL_DATASOURCE = "jbosscache-cl-cache.jdbc.datasource";
+
+   public static final String JBOSSCACHE_JDBC_CL_NODE_COLUMN = "jbosscache-cl-cache.jdbc.node.type";
+
+   public static final String JBOSSCACHE_JDBC_CL_FQN_COLUMN = "jbosscache-cl-cache.jdbc.fqn.type";
 
    /**
     * Default lock time out. 30min
@@ -160,7 +171,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
     */
    public CacheableLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
       InitialContextInitializer context, TransactionService transactionService, ConfigurationManager cfm)
-      throws RepositoryConfigurationException
+      throws RepositoryConfigurationException, RepositoryException
    {
       this(dataManager, config, context, transactionService.getTransactionManager(), cfm);
    }
@@ -174,7 +185,8 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
     * @throws RepositoryConfigurationException
     */
    public CacheableLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
-      InitialContextInitializer context, ConfigurationManager cfm) throws RepositoryConfigurationException
+      InitialContextInitializer context, ConfigurationManager cfm) throws RepositoryConfigurationException,
+      RepositoryException
    {
       this(dataManager, config, context, (TransactionManager)null, cfm);
 
@@ -192,7 +204,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
     */
    public CacheableLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
       InitialContextInitializer context, TransactionManager transactionManager, ConfigurationManager cfm)
-      throws RepositoryConfigurationException
+      throws RepositoryConfigurationException, RepositoryException
    {
       lockRoot = Fqn.fromElements(LOCKS);
 
@@ -229,6 +241,8 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
          // create cache using custom factory
          ExoJBossCacheFactory<Serializable, Object> factory =
             new ExoJBossCacheFactory<Serializable, Object>(cfm, transactionManager);
+         // configure cache loader parameters with correct DB data-types
+         configureJDBCCacheLoader(config.getLockManager());
 
          cache = factory.createCache(config.getLockManager());
 
@@ -245,6 +259,88 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
       else
       {
          throw new RepositoryConfigurationException("Cache configuration not found");
+      }
+   }
+
+   /**
+    * If JDBC cache loader is used, then fills-in column types. If column type configured from jcr-configuration file,
+    * then nothing is overridden. Parameters are injected into the given parameterEntry.
+    */
+   public void configureJDBCCacheLoader(MappedParametrizedObjectEntry parameterEntry) throws RepositoryException
+   {
+      String dataSourceName = parameterEntry.getParameterValue(JBOSSCACHE_JDBC_CL_DATASOURCE, null);
+      // if data source is not defined, i.e. no cache loader is used (possibly pattern is changed, to used another cache loader)
+      if (dataSourceName != null)
+      {
+         String dialect;
+         // detect dialect of data-source
+         try
+         {
+            DataSource dataSource = (DataSource)new InitialContext().lookup(dataSourceName);
+            dialect = DialectDetecter.detect(dataSource);
+         }
+         catch (Exception e)
+         {
+            throw new RepositoryException("Error configuring JDBC cache loader", e);
+         }
+         // default values, will be overridden with types suitable for concrete data base.
+         String blobType = "BLOB";
+         String charType = "VARCHAR(512)";
+         // HSSQL
+         if (dialect.equals(DBConstants.DB_DIALECT_HSQLDB))
+         {
+            blobType = "OBJECT";
+         }
+         // MYSQL
+         else if (dialect.equals(DBConstants.DB_DIALECT_MYSQL) || dialect.equals(DBConstants.DB_DIALECT_MYSQL_UTF8))
+         {
+            blobType = "LONGBLOB";
+         }
+         // ORACLE
+         else if (dialect.equals(DBConstants.DB_DIALECT_ORACLE) || dialect.equals(DBConstants.DB_DIALECT_ORACLEOCI))
+         {
+            // Oracle suggests the use VARCHAR2 instead of VARCHAR while declaring data type.
+            charType = "VARCHAR2(512)";
+            blobType = "BLOB";
+         }
+         // POSTGRE SQL
+         else if (dialect.equals(DBConstants.DB_DIALECT_PGSQL))
+         {
+            blobType = "bytea";
+         }
+         // Microsoft SQL
+         else if (dialect.equals(DBConstants.DB_DIALECT_MSSQL))
+         {
+            blobType = "VARBINARY(MAX)";
+         }
+         // SYBASE
+         else if (dialect.equals(DBConstants.DB_DIALECT_SYBASE))
+         {
+            blobType = "IMAGE";
+         }
+         // INGRES
+         else if (dialect.equals(DBConstants.DB_DIALECT_INGRES))
+         {
+            blobType = "long byte";
+         }
+         // GENERIC or DB2
+         else
+         {
+            charType = "VARCHAR(512)";
+            blobType = "BLOB";
+         }
+
+         // set parameters if not defined
+         if (parameterEntry.getParameterValue(JBOSSCACHE_JDBC_CL_NODE_COLUMN, null) == null)
+         {
+            parameterEntry.putParameterValue(JBOSSCACHE_JDBC_CL_NODE_COLUMN, blobType);
+         }
+         
+         if (parameterEntry.getParameterValue(JBOSSCACHE_JDBC_CL_FQN_COLUMN, null) == null)
+         {
+            parameterEntry.putParameterValue(JBOSSCACHE_JDBC_CL_FQN_COLUMN, charType);
+         }
+
       }
    }
 
@@ -1009,5 +1105,4 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
    {
       R execute(A arg) throws LockException;
    }
-
 }
