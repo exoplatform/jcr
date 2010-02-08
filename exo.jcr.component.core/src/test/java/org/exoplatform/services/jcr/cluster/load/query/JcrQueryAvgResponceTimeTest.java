@@ -159,21 +159,45 @@ public class JcrQueryAvgResponceTimeTest extends JcrImplBaseTest
        */
       private void initRoot()
       {
-         try
+         int maxAttempts = 10;
+         CredentialsImpl credentials = new CredentialsImpl("admin", "admin".toCharArray());
+         for (int i = 0; i < maxAttempts; i++)
          {
-            CredentialsImpl credentials = new CredentialsImpl("admin", "admin".toCharArray());
-            Session sessionLocal = repository.login(credentials, "ws");
-            // prepare nodes
-            Node wsRoot = sessionLocal.getRootNode();
-            Node threadNode = wsRoot.addNode("Thread" + threadUUID);
-            sessionLocal.save();
-            sessionLocal.logout();
-            sessionLocal = null;
-         }
-         catch (Exception e)
-         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            boolean isSuccessful = false;
+            Session sessionLocal = null;
+            try
+            {
+
+               sessionLocal = repository.login(credentials, "ws");
+               // prepare nodes
+               Node wsRoot = sessionLocal.getRootNode();
+               Node threadNode = wsRoot.addNode("Thread" + threadUUID);
+               sessionLocal.save();
+               sessionLocal.logout();
+               sessionLocal = null;
+               isSuccessful = true;
+            }
+            catch (Exception e)
+            {
+               log.error("error on creating root attempt " + i + " from " + maxAttempts);
+               //ignore
+            }
+            finally
+            {
+               if (sessionLocal != null)
+               {
+                  try
+                  {
+                     sessionLocal.refresh(false);
+                     sessionLocal.logout();
+                  }
+                  catch (RepositoryException e)
+                  {
+                     // TODO Auto-generated catch block
+                     e.printStackTrace();
+                  }
+               }
+            }
          }
 
       }
