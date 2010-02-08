@@ -84,7 +84,7 @@ public class LockJDBCContainer
             }
             finally
             {
-               if (jdbcConn != null)
+               if (jdbcConn != null && !jdbcConn.isClosed())
                {
                   try
                   {
