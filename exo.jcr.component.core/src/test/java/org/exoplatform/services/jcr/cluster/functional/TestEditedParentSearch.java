@@ -157,7 +157,14 @@ public class TestEditedParentSearch extends JcrImplBaseTest
                long start = System.currentTimeMillis();
                QueryResult res = q.execute();
                long sqlsize = res.getNodes().getSize();
-               log.info("size=" + sqlsize + " time=" + (System.currentTimeMillis() - start));
+               if (sqlsize == MAX_NODES_COUNT)
+               {
+                  log.info("size=" + sqlsize + " time=" + (System.currentTimeMillis() - start));
+               }
+               else
+               {
+                  log.warn("!!!!!!!!!!! size=" + sqlsize + " time=" + (System.currentTimeMillis() - start));
+               }
             }
 
          }
