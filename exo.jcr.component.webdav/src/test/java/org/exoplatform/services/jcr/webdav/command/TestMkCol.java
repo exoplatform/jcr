@@ -57,6 +57,17 @@ public class TestMkCol extends BaseStandaloneTest
       Node folderNode = session.getRootNode().getNode(TextUtil.relativizePath(folder));
       assertTrue(folderNode.hasNode(TextUtil.relativizePath(file)));
    }
+   
+   
+   public void testExistentMkCol() throws Exception
+   {
+      String folder = TestUtils.getFolderName();
+      ContainerResponse response = service(WebDAVMethods.MKCOL, getPathWS() + folder, "", null, null);
+      assertEquals(HTTPStatus.CREATED, response.getStatus());
+      
+      response = service(WebDAVMethods.MKCOL, getPathWS() + folder, "", null, null);
+      assertEquals(HTTPStatus.METHOD_NOT_ALLOWED, response.getStatus());
+   }
 
    @Override
    protected String getRepositoryName()

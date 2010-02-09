@@ -393,12 +393,12 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          else
          {
             Session session = session(repoName, workspaceName(repoPath), null);
-            String uri = serverURI + "/" + srcWorkspace;
-            Response prpfind = new PropFindCommand().propfind(session, destNodePath, body, depth.getIntValue(), uri);
-            if (prpfind.getStatus() != HTTPStatus.NOT_FOUND)
+
+            if (session.getRootNode().hasNode(TextUtil.relativizePath(repoPath)))
             {
                return Response.status(HTTPStatus.PRECON_FAILED).entity("Not Found").build();
             }
+
          }
 
          if (depth.getStringValue().equalsIgnoreCase("infinity"))
@@ -524,7 +524,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
                   int dash = token.indexOf("-");
                   if (dash == -1)
                   {
-                     return Response.status(HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE).entity("Requested Range Not Satisfiable").build();
+                     return Response.status(HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE).entity(
+                        "Requested Range Not Satisfiable").build();
                   }
                   else if (dash == 0)
                   {
