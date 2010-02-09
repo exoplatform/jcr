@@ -554,7 +554,7 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery {
             // check if doc is a descendant of one of the context nodes
             pDocs = hResolver.getParents(doc, pDocs);
 
-            if (pDocs.length == 0 ||  pDocs[0] > 0) {
+            if (pDocs.length == 0 ||  pDocs[0] < 0) {
                 return false;
             }
 
