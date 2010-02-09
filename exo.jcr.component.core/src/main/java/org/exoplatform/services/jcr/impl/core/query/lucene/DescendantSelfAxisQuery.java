@@ -567,7 +567,7 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery {
                 boolean valid = false;
                 for (int i = 0; i < pDocs.length; i++) {
                    int pDoci = pDocs[i];
-                    if (pDoci > 0 && pDoci <= contextHits.size() && ancestorCount >= minLevels && contextHits.get(pDoci)) {
+                    if (pDoci >= 0  && pDoci <= contextHits.size() && ancestorCount >= minLevels && contextHits.get(pDoci)) {
                         valid = true;
                         break;
                     }
