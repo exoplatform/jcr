@@ -554,7 +554,7 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery {
             // check if doc is a descendant of one of the context nodes
             pDocs = hResolver.getParents(doc, pDocs);
 
-            if (pDocs.length == 0) {
+            if (pDocs.length == 0 &&  pDocs[0] > 0) {
                 return false;
             }
 
@@ -566,7 +566,8 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery {
             while (pDocs.length != 0) {
                 boolean valid = false;
                 for (int i = 0; i < pDocs.length; i++) {
-                    if (ancestorCount >= minLevels && contextHits.get(pDocs[i])) {
+                   int pDoci = pDocs[i];
+                    if (pDoci > 0 && pDoci <= contextHits.size() && ancestorCount >= minLevels && contextHits.get(pDoci)) {
                         valid = true;
                         break;
                     }
