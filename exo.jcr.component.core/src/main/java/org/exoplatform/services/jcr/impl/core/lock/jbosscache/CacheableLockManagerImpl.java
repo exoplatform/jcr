@@ -366,11 +366,13 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
       if (clm == null)
       {
          log.error("The CacheLoaderManager cannot be found");
+         return;
       }
       CacheLoader currentCL = clm.getCacheLoader();
       if (currentCL == null)
       {
          log.error("The CacheLoader cannot be found");
+         return;
       }
       
       ControllerCacheLoader ccl = new ControllerCacheLoader(currentCL);
