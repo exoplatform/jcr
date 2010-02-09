@@ -1355,23 +1355,23 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    {
 
       checkValid();
-      return isLocked(this);
+      return isLocked((NodeData)this.getData());
    }
 
    /**
     * Checks if a given node is locked only if the node is not new otherwise, we check the first
     * ancestor that is not new
-    * @param node the node to check
+    * @param data the data of the node to check
     * @return <code>true</code> if the node is locked, <code>false</code> otherwise
     * @throws RepositoryException if an error occurs
     */
-   private boolean isLocked(NodeImpl node) throws RepositoryException
+   private boolean isLocked(NodeData data) throws RepositoryException
    {
-      if (dataManager.isNew(node.getInternalIdentifier()))
+      if (dataManager.isNew(data.getIdentifier()))
       {
          // The node is new, so we will check directly its parent instead
-         NodeImpl parent = node.getParent();
-         if (parent == null)
+         NodeData parentData = (NodeData)dataManager.getItemData(data.getParentIdentifier());
+         if (parentData == null)
          {
             // The node is the root node and is new, so we consider it as unlocked
             return false;            
@@ -1379,13 +1379,13 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          else
          {
             // the node has a parent that we need to test
-            return isLocked(parent);
+            return isLocked(parentData);
          }
       }
       else
       {
          // The node already exists so we need to check if it is locked
-         return session.getLockManager().isLocked((NodeData)node.getData());
+         return session.getLockManager().isLocked(data);
       }      
    }
 
