@@ -17,6 +17,7 @@
 package org.exoplatform.services.jcr.impl.core.lock.jbosscache;
 
 import org.jboss.cache.CacheSPI;
+import org.jboss.cache.CacheStatus;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.Modification;
 import org.jboss.cache.NodeSPI;
@@ -27,7 +28,6 @@ import org.jboss.cache.lock.TimeoutException;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,49 +36,49 @@ import java.util.Set;
  * This {@link CacheLoader} is used to encapsulate the {@link CacheLoader} used to persist the data of the Locks.
  * This is used to prevent {@link TimeoutException} that occur when several threads try to access the same data
  * at the same time and the data is missing in the local cache which is the case most of the time, since no data
- * means that the node is not locked. This {@link CacheLoader} will then check if some data exists before calling
- * the main {@link CacheLoader} that is used to persist the data and if no data exist either in the local cache and
- * the main {@link CacheLoader}, this {@link CacheLoader} will load dummy data to indicate that the data has already
- * been loaded. 
+ * means that the node is not locked. Since all the lock data will be loaded at startup, this {@link CacheLoader} 
+ * will only call the nested {@link CacheLoader} for read operations when the cache status is CacheStatus.STARTING,
+ * for all other status, we don't call the nested cache loader since if no data cans be found in the local cache,
+ * it means that there is no data to load because all the lock data has been loaded at startup. 
  * 
  * Created by The eXo Platform SAS
  * Author : Nicolas Filotto 
  *          nicolas.filotto@exoplatform.com
- * 4 févr. 2010  
+ * 9 févr. 2010  
  */
 @SuppressWarnings("unchecked")
-public class PreNPostCacheLoader implements CacheLoader
+public class ControllerCacheLoader implements CacheLoader
 {
    /**
-    * The configuration of the current cache loader
+    * The nested cache loader
     */
-   private IndividualCacheLoaderConfig config;
-
-   /**
-    * Indicates if this cache loader is called before the main cache loader of after the main cache loader
-    */
-   private boolean preCacheLoader;
-
+   private final CacheLoader cl;
+   
    /**
     * The related cache
     */
    private CacheSPI cache;
-
+   
+   /**
+    * The configuration of the current cache loader
+    */
+   private IndividualCacheLoaderConfig config;
+   
    /**
     * The default constructor
-    * @param preCacheLoader indicates if this cache loader must be added before the main cache loader or after it.
-    * <code>true</code> means that it has been added before the main cache loader.
+    * @param cl the cache loader that will be managed by the controller
     */
-   public PreNPostCacheLoader(boolean preCacheLoader)
+   public ControllerCacheLoader(CacheLoader cl)
    {
-      this.preCacheLoader = preCacheLoader;
-   }
-   
+      this.cl = cl;
+   }   
+
    /**
     * @see org.jboss.cache.loader.CacheLoader#commit(java.lang.Object)
     */
    public void commit(Object tx) throws Exception
    {
+      cl.commit(tx);
    }
 
    /**
@@ -86,19 +86,26 @@ public class PreNPostCacheLoader implements CacheLoader
     */
    public boolean exists(Fqn name) throws Exception
    {
-      if (preCacheLoader)
+      if (cache.getCacheStatus() == CacheStatus.STARTING)
       {
-         // Before calling the main cache loader we first check if the data exists in the local cache
-         // in order to prevent multiple call to the cache store
-         return cache.peek(name, false) != null;
+         // Before calling the nested cache loader we first check if the data exists in the local cache
+         // in order to prevent multiple call to the cache store         
+         NodeSPI<?, ?> node = cache.peek(name, false);
+         if (node != null)
+         {
+            // The node already exists in the local cache, so we return true
+            return true;            
+         }
+         else
+         {
+            // The node doesn't exist in the local cache, so we need to check through the nested
+            // cache loader
+            return cl.exists(name);         
+         }
       }
-      else
-      {
-         // The main cache loader has been called but no data could find into the cache store 
-         // so to prevent a multiple useless call, we return an empty map to enforce JBC to create
-         // a node that will indicate that the data has already been loaded but no data was found
-         return true;
-      }      
+      // All the data is loaded at startup, so no need to call the nested cache loader for another
+      // cache status other than CacheStatus.STARTING
+      return false;
    }
 
    /**
@@ -106,30 +113,26 @@ public class PreNPostCacheLoader implements CacheLoader
     */
    public Map<Object, Object> get(Fqn name) throws Exception
    {
-      if (preCacheLoader)
+      if (cache.getCacheStatus() == CacheStatus.STARTING)
       {
-         // Before calling the main cache loader we first check if the data exists in the local cache
-         // in order to prevent multiple call to the cache store
-         NodeSPI<Object, Object> node = cache.peek(name, false);
+         // Before calling the nested cache loader we first check if the data exists in the local cache
+         // in order to prevent multiple call to the cache store                  
+         NodeSPI node = cache.peek(name, false);
          if (node != null)
          {
-            // The node exists which means that the data has already been loaded, so we return the data
-            // already loaded
-            return node.getDataDirect();
+            // The node already exists in the local cache, so we return the corresponding data
+            return node.getDataDirect();            
          }
          else
          {
-            // No data has been loaded, so we can call the main cache loader 
-            return null;
+            // The node doesn't exist in the local cache, so we need to check through the nested
+            // cache loader            
+            return cl.get(name);         
          }
       }
-      else
-      {
-         // The main cache loader has been called but no data could find into the cache store 
-         // so to prevent a multiple useless call, we return an empty map to enforce JBC to create
-         // a node that will indicate that the data has already been loaded but no data was found
-         return Collections.emptyMap();
-      }
+      // All the data is loaded at startup, so no need to call the nested cache loader for another
+      // cache status other than CacheStatus.STARTING
+      return null;
    }
 
    /**
@@ -137,7 +140,14 @@ public class PreNPostCacheLoader implements CacheLoader
     */
    public Set<?> getChildrenNames(Fqn fqn) throws Exception
    {
-      return null;
+      if (cache.getCacheStatus() == CacheStatus.STARTING)
+      {
+         // Try to get the list of children name from the nested cache loader
+         return cl.getChildrenNames(fqn);         
+      }
+      // All the data is loaded at startup, so no need to call the nested cache loader for another
+      // cache status other than CacheStatus.STARTING
+     return null;
    }
 
    /**
@@ -153,6 +163,7 @@ public class PreNPostCacheLoader implements CacheLoader
     */
    public void loadEntireState(ObjectOutputStream os) throws Exception
    {
+      cl.loadEntireState(os);
    }
 
    /**
@@ -160,6 +171,7 @@ public class PreNPostCacheLoader implements CacheLoader
     */
    public void loadState(Fqn subtree, ObjectOutputStream os) throws Exception
    {
+      cl.loadState(subtree, os);
    }
 
    /**
@@ -167,6 +179,7 @@ public class PreNPostCacheLoader implements CacheLoader
     */
    public void prepare(Object tx, List<Modification> modifications, boolean onePhase) throws Exception
    {
+      cl.prepare(tx, modifications, onePhase);
    }
 
    /**
@@ -174,6 +187,7 @@ public class PreNPostCacheLoader implements CacheLoader
     */
    public void put(List<Modification> modifications) throws Exception
    {
+      cl.put(modifications);
    }
 
    /**
@@ -181,6 +195,7 @@ public class PreNPostCacheLoader implements CacheLoader
     */
    public void put(Fqn name, Map<Object, Object> attributes) throws Exception
    {
+      cl.put(name, attributes);
    }
 
    /**
@@ -188,7 +203,7 @@ public class PreNPostCacheLoader implements CacheLoader
     */
    public Object put(Fqn name, Object key, Object value) throws Exception
    {
-      return null;
+      return cl.put(name, key, value);
    }
 
    /**
@@ -196,6 +211,7 @@ public class PreNPostCacheLoader implements CacheLoader
     */
    public void remove(Fqn fqn) throws Exception
    {
+      cl.remove(fqn);
    }
 
    /**
@@ -203,7 +219,7 @@ public class PreNPostCacheLoader implements CacheLoader
     */
    public Object remove(Fqn fqn, Object key) throws Exception
    {
-      return null;
+      return cl.remove(fqn, key);
    }
 
    /**
@@ -211,6 +227,7 @@ public class PreNPostCacheLoader implements CacheLoader
     */
    public void removeData(Fqn fqn) throws Exception
    {
+      cl.removeData(fqn);
    }
 
    /**
@@ -218,14 +235,16 @@ public class PreNPostCacheLoader implements CacheLoader
     */
    public void rollback(Object tx)
    {
+      cl.rollback(tx);
    }
 
    /**
     * @see org.jboss.cache.loader.CacheLoader#setCache(org.jboss.cache.CacheSPI)
     */
-   public void setCache(CacheSPI cache)
+   public void setCache(CacheSPI c)
    {
-      this.cache = cache;
+      cl.setCache(c);
+      this.cache = c;
    }
 
    /**
@@ -241,6 +260,7 @@ public class PreNPostCacheLoader implements CacheLoader
     */
    public void setRegionManager(RegionManager manager)
    {
+      cl.setRegionManager(manager);
    }
 
    /**
@@ -248,6 +268,7 @@ public class PreNPostCacheLoader implements CacheLoader
     */
    public void storeEntireState(ObjectInputStream is) throws Exception
    {
+      cl.storeEntireState(is);
    }
 
    /**
@@ -255,6 +276,7 @@ public class PreNPostCacheLoader implements CacheLoader
     */
    public void storeState(Fqn subtree, ObjectInputStream is) throws Exception
    {
+      cl.storeState(subtree, is);
    }
 
    /**
@@ -262,6 +284,7 @@ public class PreNPostCacheLoader implements CacheLoader
     */
    public void create() throws Exception
    {
+      cl.create();
    }
 
    /**
@@ -269,6 +292,7 @@ public class PreNPostCacheLoader implements CacheLoader
     */
    public void destroy()
    {
+      cl.destroy();
    }
 
    /**
@@ -276,6 +300,7 @@ public class PreNPostCacheLoader implements CacheLoader
     */
    public void start() throws Exception
    {
+      cl.start();
    }
 
    /**
@@ -283,5 +308,7 @@ public class PreNPostCacheLoader implements CacheLoader
     */
    public void stop()
    {
+      cl.stop();
    }
+
 }

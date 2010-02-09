@@ -55,11 +55,13 @@ import org.exoplatform.services.log.Log;
 import org.exoplatform.services.naming.InitialContextInitializer;
 import org.exoplatform.services.transaction.TransactionService;
 import org.jboss.cache.Cache;
+import org.jboss.cache.CacheSPI;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.Node;
 import org.jboss.cache.config.CacheLoaderConfig;
 import org.jboss.cache.config.CacheLoaderConfig.IndividualCacheLoaderConfig;
 import org.jboss.cache.loader.CacheLoader;
+import org.jboss.cache.loader.CacheLoaderManager;
 import org.jboss.cache.lock.TimeoutException;
 import org.picocontainer.Startable;
 
@@ -246,9 +248,9 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
 
          cache = factory.createCache(config.getLockManager());
 
-         // Add the cache loader needed to prevent TimeoutException
-         addCacheLoaders();
          cache.create();
+         // Add the cache loader needed to prevent TimeoutException
+         addCacheLoader();
          cache.start();
 
          createStructuredNode(lockRoot);
@@ -348,7 +350,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
     * This methods adds programmatically the required {@link CacheLoader} needed to prevent 
     * any {@link TimeoutException}
     */
-   private void addCacheLoaders()
+   private void addCacheLoader()
    {
       CacheLoaderConfig config = cache.getConfiguration().getCacheLoaderConfig();
       List<IndividualCacheLoaderConfig> oldConfigs;
@@ -356,37 +358,39 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
       {
          if (log.isInfoEnabled())
          {
-            log.info("No cache loader has been defined, thus no pre and post cache loader will be added");
+            log.info("No cache loader has been defined, thus no need to encapsulate any cache loader.");
          }
          return;
       }
-      PreNPostCacheLoader preCL = new PreNPostCacheLoader(true);
+      CacheLoaderManager clm = ((CacheSPI<Serializable, Object>)cache).getComponentRegistry().getComponent(CacheLoaderManager.class);
+      if (clm == null)
+      {
+         log.error("The CacheLoaderManager cannot be found");
+      }
+      CacheLoader currentCL = clm.getCacheLoader();
+      if (currentCL == null)
+      {
+         log.error("The CacheLoader cannot be found");
+      }
+      
+      ControllerCacheLoader ccl = new ControllerCacheLoader(currentCL);
+      List<IndividualCacheLoaderConfig> newConfig = new ArrayList<IndividualCacheLoaderConfig>(1);
       // create CacheLoaderConfig
-      IndividualCacheLoaderConfig preCLConfig = new IndividualCacheLoaderConfig();
+      IndividualCacheLoaderConfig cclConfig = new IndividualCacheLoaderConfig();
       // set CacheLoader
-      preCLConfig.setCacheLoader(preCL);
+      cclConfig.setCacheLoader(ccl);
       // set parameters
-      preCLConfig.setFetchPersistentState(false);
-      preCLConfig.setAsync(false);
-      preCLConfig.setIgnoreModifications(true);
-      preCLConfig.setPurgeOnStartup(false);
-      PreNPostCacheLoader postCL = new PreNPostCacheLoader(false);
-      // create CacheLoaderConfig
-      IndividualCacheLoaderConfig postCLConfig = new IndividualCacheLoaderConfig();
-      // set CacheLoader
-      postCLConfig.setCacheLoader(postCL);
-      // set parameters
-      postCLConfig.setFetchPersistentState(false);
-      postCLConfig.setAsync(false);
-      postCLConfig.setIgnoreModifications(true);
-      postCLConfig.setPurgeOnStartup(false);
-      List<IndividualCacheLoaderConfig> newConfigs = new ArrayList<IndividualCacheLoaderConfig>(oldConfigs);
-      newConfigs.add(0, preCLConfig);
-      newConfigs.add(postCLConfig);
-      config.setIndividualCacheLoaderConfigs(newConfigs);
+      cclConfig.setFetchPersistentState(clm.isFetchPersistentState());
+      cclConfig.setAsync(false);
+      cclConfig.setIgnoreModifications(false);
+      CacheLoaderConfig.IndividualCacheLoaderConfig first = config.getFirstCacheLoaderConfig();
+      cclConfig.setPurgeOnStartup(first != null && first.isPurgeOnStartup());    
+      newConfig.add(cclConfig);
+      config.setIndividualCacheLoaderConfigs(newConfig);
+
       if (log.isInfoEnabled())
       {
-         log.info("The pre and post cache loaders have been added");
+         log.info("The configured cache loader has been encapsulated successfully");
       }
    }
 

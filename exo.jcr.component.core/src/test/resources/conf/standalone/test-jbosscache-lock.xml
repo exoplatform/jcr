@@ -5,6 +5,10 @@
       lockAcquisitionTimeout="20000" />
 
    <loaders passivation="false" shared="true">
+ 	  <!-- All the data of the JCR locks needs to be loaded at startup -->
+ 	  <preload>
+	     <node fqn="/" />
+	  </preload>   
       <!--
 			For another cache-loader class you should use another template with
 			cache-loader specific parameters
@@ -25,12 +29,4 @@
 			</properties>
       </loader>
    </loaders>
-   <!-- Eviction configuration -->
-   <eviction wakeUpInterval="5000">
-      <default algorithmClass="org.jboss.cache.eviction.LRUAlgorithm"
-         eventQueueSize="1000000">
-         <property name="maxNodes" value="10000" />
-         <property name="timeToLive" value="120000" />
-      </default>
-   </eviction>
 </jbosscache>
