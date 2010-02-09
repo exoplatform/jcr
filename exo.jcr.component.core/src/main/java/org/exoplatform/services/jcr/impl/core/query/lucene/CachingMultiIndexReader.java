@@ -101,8 +101,12 @@ public final class CachingMultiIndexReader
      */
     public DocId getParentDocId(int n) throws IOException {
         int i = readerIndex(n);
-        DocId id = subReaders[i].getParent(n - starts[i]);
-        return id.applyOffset(starts[i]);
+        DocId result = DocId.NULL;
+        if(i > -1 && starts[i] > -1 && (n - starts[i]) > -1) {
+           DocId id = subReaders[i].getParent(n - starts[i]);
+           result  =  id.applyOffset(starts[i]);
+        }
+        return result;
     }
 
     /**
