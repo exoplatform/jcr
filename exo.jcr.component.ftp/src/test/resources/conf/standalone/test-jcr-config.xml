@@ -27,7 +27,7 @@
          <workspaces>
             <workspace name="ws" auto-init-root-nodetype="nt:unstructured">
                <!-- for system storage -->
-               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer">
+               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="sourceName" value="jdbcjcr" />
                      <property name="dialect" value="generic" />
