@@ -27,7 +27,7 @@
          <workspaces>
             <workspace name="ws">
                <!-- for system storage -->
-               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer">
+               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr" />
                      <property name="dialect" value="hsqldb" />
@@ -50,7 +50,7 @@
                </query-handler>
             </workspace>
             <workspace name="ws1">
-               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer">
+               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr1" />
                      <property name="dialect" value="hsqldb" />
@@ -73,7 +73,7 @@
                </query-handler>
             </workspace>
             <workspace name="ws2" auto-init-root-nodetype="nt:unstructured">
-               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer">
+               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr2" />
                      <property name="dialect" value="hsqldb" />
@@ -96,7 +96,7 @@
                </query-handler>
             </workspace>
             <workspace name="ws3" auto-init-root-nodetype="nt:unstructured">
-               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer">
+               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr3" />
                      <property name="dialect" value="hsqldb" />
@@ -119,7 +119,7 @@
                </query-handler>
             </workspace>
             <workspace name="ws4" auto-init-root-nodetype="nt:unstructured">
-               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer">
+               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr4" />
                      <property name="dialect" value="hsqldb" />
@@ -142,7 +142,7 @@
                </query-handler>
             </workspace>
             <workspace name="ws5" auto-init-root-nodetype="nt:unstructured">
-               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer">
+               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr5" />
                      <property name="dialect" value="hsqldb" />
@@ -173,7 +173,7 @@
          <workspaces>
             <workspace name="ws">
                <!-- for system storage -->
-               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer">
+               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr19" />
                      <property name="dialect" value="hsqldb" />
@@ -204,7 +204,7 @@
          <workspaces>
             <workspace name="ws">
                <!-- for system storage -->
-               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer">
+               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr77" />
                      <property name="dialect" value="hsqldb" />
@@ -235,7 +235,7 @@
          <workspaces>
             <workspace name="ws">
                <!-- for system storage -->
-               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer">
+               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr20" />
                      <property name="dialect" value="hsqldb" />
@@ -259,7 +259,7 @@
             </workspace>
             <workspace name="ws1">
                <!-- for system storage -->
-               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer">
+               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr22" />
                      <property name="dialect" value="hsqldb" />
@@ -290,7 +290,7 @@
          <workspaces>
             <workspace name="ws">
                <!-- for system storage -->
-               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer">
+               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr21" />
                      <property name="dialect" value="hsqldb" />
@@ -314,7 +314,7 @@
             </workspace>
             <workspace name="ws1">
                <!-- for system storage -->
-               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer">
+               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr23" />
                      <property name="dialect" value="hsqldb" />
@@ -345,7 +345,7 @@
          <workspaces>
             <workspace name="ws">
                <!-- for system storage -->
-               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer">
+               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr24" />
                      <property name="dialect" value="hsqldb" />
@@ -368,7 +368,7 @@
                </query-handler>
             </workspace>
             <workspace name="ws1">
-               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer">
+               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr24" />
                      <property name="dialect" value="hsqldb" />
@@ -391,7 +391,7 @@
                </query-handler>
             </workspace>
             <workspace name="ws2">
-               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer">
+               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr24" />
                      <property name="dialect" value="hsqldb" />
