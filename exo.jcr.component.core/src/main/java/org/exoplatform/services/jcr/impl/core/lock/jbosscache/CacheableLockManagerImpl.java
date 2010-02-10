@@ -69,6 +69,8 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -280,12 +282,30 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
          try
          {
             DataSource dataSource = (DataSource)new InitialContext().lookup(dataSourceName);
-            dialect = DialectDetecter.detect(dataSource);
+            if (dataSource == null)
+            {
+               throw new RepositoryException("DataSource (" + dataSourceName + ") can't be null");
+            }
+
+            Connection jdbcConn = null;
+            try
+            {
+               jdbcConn = dataSource.getConnection();
+               dialect = DialectDetecter.detect(jdbcConn.getMetaData());
+            }
+            finally
+            {
+               if (jdbcConn != null && !jdbcConn.isClosed())
+               {
+                  jdbcConn.close();
+               }
+            }
          }
          catch (Exception e)
          {
             throw new RepositoryException("Error configuring JDBC cache loader", e);
          }
+
          // default values, will be overridden with types suitable for concrete data base.
          String blobType = "BLOB";
          String charType = "VARCHAR(512)";
@@ -325,12 +345,8 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
          {
             blobType = "long byte";
          }
-         // GENERIC or DB2
-         else
-         {
-            charType = "VARCHAR(512)";
-            blobType = "BLOB";
-         }
+         // else GENERIC, DB2 etc
+         
 
          // set parameters if not defined
          if (parameterEntry.getParameterValue(JBOSSCACHE_JDBC_CL_NODE_COLUMN, null) == null)
@@ -342,7 +358,6 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
          {
             parameterEntry.putParameterValue(JBOSSCACHE_JDBC_CL_FQN_COLUMN, charType);
          }
-
       }
    }
 
@@ -362,7 +377,8 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
          }
          return;
       }
-      CacheLoaderManager clm = ((CacheSPI<Serializable, Object>)cache).getComponentRegistry().getComponent(CacheLoaderManager.class);
+      CacheLoaderManager clm =
+         ((CacheSPI<Serializable, Object>)cache).getComponentRegistry().getComponent(CacheLoaderManager.class);
       if (clm == null)
       {
          log.error("The CacheLoaderManager cannot be found");
@@ -374,7 +390,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
          log.error("The CacheLoader cannot be found");
          return;
       }
-      
+
       ControllerCacheLoader ccl = new ControllerCacheLoader(currentCL);
       List<IndividualCacheLoaderConfig> newConfig = new ArrayList<IndividualCacheLoaderConfig>(1);
       // create CacheLoaderConfig
@@ -386,7 +402,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
       cclConfig.setAsync(false);
       cclConfig.setIgnoreModifications(false);
       CacheLoaderConfig.IndividualCacheLoaderConfig first = config.getFirstCacheLoaderConfig();
-      cclConfig.setPurgeOnStartup(first != null && first.isPurgeOnStartup());    
+      cclConfig.setPurgeOnStartup(first != null && first.isPurgeOnStartup());
       newConfig.add(cclConfig);
       config.setIndividualCacheLoaderConfigs(newConfig);
 

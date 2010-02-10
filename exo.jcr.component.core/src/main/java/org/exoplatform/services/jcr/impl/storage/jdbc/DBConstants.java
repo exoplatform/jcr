@@ -253,6 +253,10 @@ public class DBConstants
 
    // Dialects
    /**
+    * DB_DIALECT_AUTO.
+    */
+   public final static String DB_DIALECT_AUTO = "Auto".intern();
+   /**
     * DB_DIALECT_GENERIC.
     */
    public final static String DB_DIALECT_GENERIC = "Generic".intern();

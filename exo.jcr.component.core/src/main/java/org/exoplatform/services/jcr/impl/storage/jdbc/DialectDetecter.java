@@ -128,35 +128,4 @@ public class DialectDetecter
 
       return DBConstants.DB_DIALECT_GENERIC;
    }
-
-   /**
-    * Tries to detect dialect of DataSource
-    * 
-    * @param dataSourceName
-    * @return
-    * @throws RepositoryException
-    */
-   public static String detect(DataSource dataSource) throws SQLException
-   {
-      // if no datasource provided
-      if (dataSource == null)
-      {
-         throw new SQLException("DataSource can't be null");
-      }
-      // try to detect dialect
-      Connection jdbcConn = null;
-      try
-      {
-         jdbcConn = dataSource.getConnection();
-         return detect(jdbcConn.getMetaData());
-      }
-      finally
-      {
-         if (jdbcConn != null && !jdbcConn.isClosed())
-         {
-            jdbcConn.close();
-         }
-      }
-
-   }
 }
