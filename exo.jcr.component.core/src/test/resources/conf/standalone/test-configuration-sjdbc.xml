@@ -173,15 +173,26 @@
   </component>
 
   <component>
-      <key>org.exoplatform.services.transaction.TransactionService</key>
-      <type>org.exoplatform.services.transaction.impl.jotm.TransactionServiceJotmImpl</type>
-      <init-params>
-        <value-param>
-          <name>timeout</name>
-          <value>5</value>
-        </value-param>
-      </init-params>
+    <key>org.exoplatform.services.transaction.TransactionService</key>
+    <type>org.exoplatform.services.transaction.jbosscache.ArjunaTransactionService</type>
+    <init-params>
+      <value-param>
+        <name>timeout</name>
+        <value>3000</value>
+      </value-param>
+    </init-params>   
   </component>
+  
+  <!-- component>
+   <key>org.exoplatform.services.transaction.TransactionService</key>
+   <type>org.exoplatform.services.transaction.impl.jotm.TransactionServiceJotmImpl</type>
+   <init-params>
+     <value-param>
+       <name>timeout</name>
+       <value>5</value>
+     </value-param>
+   </init-params>
+  </component -->
 
   <external-component-plugins>
     <target-component>org.exoplatform.services.naming.InitialContextInitializer</target-component>
