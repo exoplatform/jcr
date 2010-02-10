@@ -156,8 +156,6 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       this.systemLocationFactory = (LocationFactory)container.getComponentInstanceOfType(LocationFactory.class);
 
       this.accessManager = (AccessManager)container.getComponentInstanceOfType(AccessManager.class);
-      this.lockManager =
-         ((WorkspaceLockManager)container.getComponentInstanceOfType(WorkspaceLockManager.class)).getSessionLockManager(id);
       WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
 
       this.lazyReadThreshold =
@@ -181,6 +179,10 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
          (LocalWorkspaceDataManagerStub)container.getComponentInstanceOfType(LocalWorkspaceDataManagerStub.class);
 
       this.dataManager = new SessionDataManager(this, workspaceDataManager);
+
+      this.lockManager =
+         ((WorkspaceLockManager)container.getComponentInstanceOfType(WorkspaceLockManager.class))
+            .getSessionLockManager(id, dataManager);
 
       this.nodeTypeManager = (NodeTypeDataManager)container.getComponentInstanceOfType(NodeTypeDataManager.class);
 

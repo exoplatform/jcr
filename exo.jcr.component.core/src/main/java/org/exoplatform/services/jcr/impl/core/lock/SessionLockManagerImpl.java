@@ -19,6 +19,7 @@ package org.exoplatform.services.jcr.impl.core.lock;
 import org.exoplatform.services.jcr.core.ExtendedSession;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.lock.Lock;
@@ -30,9 +31,9 @@ import javax.jcr.lock.LockException;
  * <br/>Date: 
  *
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
- * @version $Id: SessionLockManagerImpl.java 111 2008-11-11 11:11:11Z serg $
+ * @version $Id$
  */
-public class SessionLockManagerImpl implements SessionLockManager
+public class SessionLockManagerImpl extends AbstractSessionLockManager
 {
 
    private final String sessionId;
@@ -42,8 +43,9 @@ public class SessionLockManagerImpl implements SessionLockManager
    /**
     * Constructor
     */
-   public SessionLockManagerImpl(String sessionId, LockManagerImpl lockManager)
+   public SessionLockManagerImpl(String sessionId, LockManagerImpl lockManager, SessionDataManager transientManager)
    {
+      super(transientManager);
       this.sessionId = sessionId;
       this.lockManager = lockManager;
    }
@@ -100,7 +102,7 @@ public class SessionLockManagerImpl implements SessionLockManager
    /**
     * {@inheritDoc}
     */
-   public boolean isLocked(NodeData node) throws LockException
+   protected boolean isLockedPersisted(NodeData node) throws LockException
    {
       return lockManager.isLocked(node);
    }

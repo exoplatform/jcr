@@ -64,8 +64,7 @@
                      <property name="restore-path" value="./sv_export_root.xml" />
                      <property name="restore-path" value="./src/test/resources/import-export/restore_db1_ws1.xml" />
                   </properties>
-               </initializer
--->
+               </initializer -->
                <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />

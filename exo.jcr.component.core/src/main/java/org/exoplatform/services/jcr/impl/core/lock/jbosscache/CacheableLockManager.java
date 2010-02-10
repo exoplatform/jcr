@@ -66,15 +66,6 @@ public interface CacheableLockManager extends WorkspaceLockManager
    String getLockTokenHash(String lockToken);
 
    /**
-    * Return lock holding node.
-    * 
-    * @param node NodeData
-    * @return LockData for node or null;
-    * @throws RepositoryException
-    */
-   //LockData getExactNodeLock(NodeData node) throws RepositoryException;
-
-   /**
     * Return Lock holding node or its parent.
     * 
     * @param node - NodeData

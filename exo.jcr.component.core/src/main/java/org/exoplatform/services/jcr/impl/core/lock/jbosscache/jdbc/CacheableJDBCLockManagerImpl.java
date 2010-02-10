@@ -39,6 +39,7 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.lock.LockRemover;
 import org.exoplatform.services.jcr.impl.core.lock.SessionLockManager;
 import org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManager;
@@ -178,7 +179,6 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
       RepositoryException
    {
       this(dataManager, config, context, (TransactionManager)null, cfm);
-
    }
 
    /**
@@ -302,9 +302,9 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
    /**
     * Return new instance of session lock manager.
     */
-   public SessionLockManager getSessionLockManager(String sessionId)
+   public SessionLockManager getSessionLockManager(String sessionId, SessionDataManager transientManager)
    {
-      CacheableSessionLockManager sessionManager = new CacheableSessionLockManager(sessionId, this);
+      CacheableSessionLockManager sessionManager = new CacheableSessionLockManager(sessionId, this, transientManager);
       sessionLockManagers.put(sessionId, sessionManager);
       return sessionManager;
    }
@@ -335,10 +335,8 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
       return true;
    }
 
-   /*
-    * (non-Javadoc)
-    * @seeorg.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener#onSaveItems(org.
-    * exoplatform.services.jcr.dataflow.ItemStateChangesLog)
+   /**
+    * {@inheritDoc}
     */
    public void onSaveItems(ItemStateChangesLog changesLog)
    {
@@ -594,18 +592,16 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
       }
    }
 
-   /*
-    * (non-Javadoc)
-    * @see org.picocontainer.Startable#start()
+   /**
+    * {@inheritDoc}
     */
    public void start()
    {
       lockRemover = new LockRemover(this);
    }
 
-   /*
-    * (non-Javadoc)
-    * @see org.picocontainer.Startable#stop()
+   /**
+    * {@inheritDoc}
     */
    public void stop()
    {
@@ -638,7 +634,7 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
    }
 
    /**
-    * Internal lock
+    * Internal lock.
     * 
     * @param nodeIdentifier
     * @throws LockException
@@ -811,64 +807,6 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
    /**
     * {@inheritDoc}
     */
-   //   public LockData getLockData(NodeData data, int searchType) throws LockException
-   //   {
-   //      if (data == null)
-   //         return null;
-   //      LockData retval = null;
-   //      try
-   //      {
-   //         if ((searchType & SEARCH_EXECMATCH) != 0)
-   //         {
-   //            retval = getLockDataById(data.getIdentifier());
-   //         }
-   //         if (retval == null && (searchType & SEARCH_CLOSEDPARENT) != 0)
-   //         {
-   //
-   //            NodeData parentData = (NodeData)dataManager.getItemData(data.getParentIdentifier());
-   //            if (parentData != null)
-   //            {
-   //               retval = getLockDataById(parentData.getIdentifier());
-   //               // parent not found try to fo upper
-   //               if (retval == null)
-   //               {
-   //                  retval = getLockData(parentData, SEARCH_CLOSEDPARENT);
-   //               }
-   //            }
-   //         }
-   //         if (retval == null && (searchType & SEARCH_CLOSEDCHILD) != 0)
-   //         {
-   //
-   //            List<NodeData> childData = dataManager.getChildNodesData(data);
-   //            for (NodeData nodeData : childData)
-   //            {
-   //               retval = getLockDataById(nodeData.getIdentifier());
-   //               if (retval != null)
-   //                  break;
-   //            }
-   //            if (retval == null)
-   //            {
-   //               // child not found try to find diper
-   //               for (NodeData nodeData : childData)
-   //               {
-   //                  retval = getLockData(nodeData, SEARCH_CLOSEDCHILD);
-   //                  if (retval != null)
-   //                     break;
-   //               }
-   //            }
-   //         }
-   //      }
-   //      catch (RepositoryException e)
-   //      {
-   //         throw new LockException(e.getMessage(), e);
-   //      }
-   //
-   //      return retval;
-   //   }
-
-   /**
-    * {@inheritDoc}
-    */
    public LockData getExactNodeOrCloseParentLock(NodeData node) throws RepositoryException
    {
       if (node == null)
@@ -885,19 +823,6 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
       }
       return retval;
    }
-
-   /**
-    * {@inheritDoc}
-    */
-   //   public LockData getExactNodeLock(NodeData node) throws RepositoryException
-   //   {
-   //      LockData retval = null;
-   //      if (node != null)
-   //      {
-   //         retval = getLockDataById(node.getIdentifier());
-   //      }
-   //      return retval;
-   //   }
 
    /**
     * {@inheritDoc}

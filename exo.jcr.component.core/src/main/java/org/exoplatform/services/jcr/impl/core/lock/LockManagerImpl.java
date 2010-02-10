@@ -41,6 +41,7 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.dataflow.TransientItemData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
@@ -168,12 +169,6 @@ public class LockManagerImpl implements WorkspaceLockManager, ItemsPersistenceLi
       dataManager.addItemPersistenceListener(this);
    }
 
-   /*
-    * (non-Javadoc)
-    * @see
-    * org.exoplatform.services.jcr.impl.core.lock.LockManager#lockTokenAdded(org.exoplatform.services
-    * .jcr.impl.core.SessionImpl, java.lang.String)
-    */
    public synchronized void addLockToken(String sessionId, String lt)
    {
       LockData currLock = tokensMap.get(lt);
@@ -183,12 +178,6 @@ public class LockManagerImpl implements WorkspaceLockManager, ItemsPersistenceLi
       }
    }
 
-   /*
-    * (non-Javadoc)
-    * @see
-    * org.exoplatform.services.jcr.impl.core.lock.LockManager#addPendingLock(org.exoplatform.services
-    * .jcr.impl.core.NodeImpl, boolean, boolean, long)
-    */
    public synchronized Lock addPendingLock(NodeImpl node, boolean isDeep, boolean isSessionScoped, long timeOut)
       throws LockException
    {
@@ -223,12 +212,6 @@ public class LockManagerImpl implements WorkspaceLockManager, ItemsPersistenceLi
       return lock;
    }
 
-   /*
-    * (non-Javadoc)
-    * @see
-    * org.exoplatform.services.jcr.impl.core.lock.LockManager#getLock(org.exoplatform.services.jcr
-    * .impl.core.NodeImpl)
-    */
    public LockImpl getLock(NodeImpl node) throws LockException, RepositoryException
    {
 
@@ -242,10 +225,6 @@ public class LockManagerImpl implements WorkspaceLockManager, ItemsPersistenceLi
       return new LockImpl(node.getSession(), lData);
    }
 
-   /*
-    * (non-Javadoc)
-    * @see org.exoplatform.services.jcr.impl.core.lock.LockManager#getLockTokens(java.lang.String)
-    */
    public synchronized String[] getLockTokens(String sessionID)
    {
       List<String> retval = new ArrayList<String>();
@@ -259,23 +238,11 @@ public class LockManagerImpl implements WorkspaceLockManager, ItemsPersistenceLi
       return retval.toArray(new String[retval.size()]);
    }
 
-   /*
-    * (non-Javadoc)
-    * @see
-    * org.exoplatform.services.jcr.impl.core.lock.LockManager#holdsLock(org.exoplatform.services.
-    * jcr.impl.core.NodeImpl)
-    */
    public boolean holdsLock(NodeData node) throws RepositoryException
    {
       return getLockData(node, SEARCH_EXECMATCH) != null;
    }
 
-   /*
-    * (non-Javadoc)
-    * @see
-    * org.exoplatform.services.jcr.impl.core.lock.LockManager#isLocked(org.exoplatform.services.jcr
-    * .datamodel.NodeData)
-    */
    public boolean isLocked(NodeData node)
    {
       LockData lData = getLockData(node, SEARCH_EXECMATCH | SEARCH_CLOSEDPARENT);
@@ -287,24 +254,12 @@ public class LockManagerImpl implements WorkspaceLockManager, ItemsPersistenceLi
       return true;
    }
 
-   /*
-    * (non-Javadoc)
-    * @see
-    * org.exoplatform.services.jcr.impl.core.lock.LockManager#isLockHolder(org.exoplatform.services
-    * .jcr.impl.core.NodeImpl)
-    */
    public boolean isLockHolder(NodeImpl node) throws RepositoryException
    {
       LockData lData = getLockData((NodeData)node.getData(), SEARCH_EXECMATCH | SEARCH_CLOSEDPARENT);
       return lData != null && lData.isLockHolder(node.getSession().getId());
    }
 
-   /*
-    * (non-Javadoc)
-    * @see
-    * org.exoplatform.services.jcr.core.SessionLifecycleListener#onCloseSession(org.exoplatform.services
-    * .jcr.core.ExtendedSession)
-    */
    public synchronized void onCloseSession(ExtendedSession session)
    {
       // List<String> deadLocksList = new ArrayList<String>();
@@ -367,10 +322,8 @@ public class LockManagerImpl implements WorkspaceLockManager, ItemsPersistenceLi
       }
    }
 
-   /*
-    * (non-Javadoc)
-    * @seeorg.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener#onSaveItems(org.
-    * exoplatform.services.jcr.dataflow.ItemStateChangesLog)
+   /**
+    * {@inheritDoc}
     */
    public void onSaveItems(ItemStateChangesLog changesLog)
    {
@@ -495,11 +448,9 @@ public class LockManagerImpl implements WorkspaceLockManager, ItemsPersistenceLi
       }
    }
 
-   /*
-    * (non-Javadoc)
-    * @see
-    * org.exoplatform.services.jcr.impl.core.lock.LockManager#lockTokenRemoved(org.exoplatform.services
-    * .jcr.impl.core.SessionImpl, java.lang.String)
+   /**
+    * @param sessionId
+    * @param lt
     */
    public synchronized void removeLockToken(String sessionId, String lt)
    {
@@ -510,9 +461,8 @@ public class LockManagerImpl implements WorkspaceLockManager, ItemsPersistenceLi
       }
    }
 
-   /*
-    * (non-Javadoc)
-    * @see org.picocontainer.Startable#start()
+   /**
+    * {@inheritDoc}
     */
    public void start()
    {
@@ -526,7 +476,7 @@ public class LockManagerImpl implements WorkspaceLockManager, ItemsPersistenceLi
    }
 
    /**
-    * Remove expired locks. Used from LockRemover.
+    * {@inheritDoc}
     */
    public synchronized void removeExpired()
    {
@@ -546,9 +496,8 @@ public class LockManagerImpl implements WorkspaceLockManager, ItemsPersistenceLi
       }
    }
 
-   /*
-    * (non-Javadoc)
-    * @see org.picocontainer.Startable#stop()
+   /**
+    * {@inheritDoc}
     */
    public void stop()
    {
@@ -794,11 +743,17 @@ public class LockManagerImpl implements WorkspaceLockManager, ItemsPersistenceLi
       return true;
    }
 
-   public SessionLockManager getSessionLockManager(String sessionId)
+   /**
+    * {@inheritDoc}
+    */
+   public SessionLockManager getSessionLockManager(String sessionId, SessionDataManager transientManager)
    {
-      return new SessionLockManagerImpl(sessionId, this);
+      return new SessionLockManagerImpl(sessionId, this, transientManager);
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void closeSessionLockManager(String sessionId)
    {
       //do nothing

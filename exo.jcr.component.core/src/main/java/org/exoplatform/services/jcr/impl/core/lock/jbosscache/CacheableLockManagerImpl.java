@@ -40,6 +40,7 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.lock.LockRemover;
 import org.exoplatform.services.jcr.impl.core.lock.SessionLockManager;
 import org.exoplatform.services.jcr.impl.dataflow.TransientItemData;
@@ -466,9 +467,9 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
    /**
     * Return new instance of session lock manager.
     */
-   public SessionLockManager getSessionLockManager(String sessionId)
+   public SessionLockManager getSessionLockManager(String sessionId, SessionDataManager transientManager)
    {
-      CacheableSessionLockManager sessionManager = new CacheableSessionLockManager(sessionId, this);
+      CacheableSessionLockManager sessionManager = new CacheableSessionLockManager(sessionId, this, transientManager);
       sessionLockManagers.put(sessionId, sessionManager);
       return sessionManager;
    }

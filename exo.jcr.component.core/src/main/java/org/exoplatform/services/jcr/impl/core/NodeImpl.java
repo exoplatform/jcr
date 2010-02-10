@@ -1355,7 +1355,8 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    {
 
       checkValid();
-      return isLocked((NodeData)this.getData());
+      //TODO return isLocked((NodeData)this.getData());
+      return session.getLockManager().isLocked((NodeData)this.getData());
    }
 
    /**
@@ -1365,6 +1366,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     * @return <code>true</code> if the node is locked, <code>false</code> otherwise
     * @throws RepositoryException if an error occurs
     */
+   // TODO 
    private boolean isLocked(NodeData data) throws RepositoryException
    {
       if (dataManager.isNew(data.getIdentifier()))

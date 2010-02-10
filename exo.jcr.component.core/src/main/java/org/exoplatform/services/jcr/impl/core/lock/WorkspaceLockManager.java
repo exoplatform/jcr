@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock;
 
+import org.exoplatform.services.jcr.impl.core.SessionDataManager;
+
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: LockManager.java 11907 2008-03-13 15:36:21Z ksm $
@@ -32,10 +34,10 @@ public interface WorkspaceLockManager
    /**
     * Returns session lock manager that interact with this LockManager.
     * 
-    * @param sessionId - session ID
-    * @return new SessionLockManager
+    * @param sessionId String, session ID
+    * @return transientManager SessionLockManager
     */
-   SessionLockManager getSessionLockManager(String sessionId);
+   SessionLockManager getSessionLockManager(String sessionId, SessionDataManager transientManager);
 
    /**
     * Release all resources associated with CacheableSessionLockManager.

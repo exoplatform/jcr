@@ -20,9 +20,10 @@ import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.core.ExtendedSession;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.core.lock.AbstractSessionLockManager;
 import org.exoplatform.services.jcr.impl.core.lock.LockImpl;
-import org.exoplatform.services.jcr.impl.core.lock.SessionLockManager;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -44,9 +45,9 @@ import javax.jcr.lock.LockException;
  * <br/>Date: 
  *
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
- * @version $Id: SessionLockManager.java 111 2008-11-11 11:11:11Z serg $
+ * @version $Id$
  */
-public class CacheableSessionLockManager implements SessionLockManager
+public class CacheableSessionLockManager extends AbstractSessionLockManager
 {
    /**
     * Logger
@@ -86,8 +87,9 @@ public class CacheableSessionLockManager implements SessionLockManager
     * @param sessionID - session identifier
     * @param lockManager - workspace lock manager
     */
-   public CacheableSessionLockManager(String sessionID, CacheableLockManager lockManager)
+   public CacheableSessionLockManager(String sessionID, CacheableLockManager lockManager, SessionDataManager transientManager)
    {
+      super(transientManager);
       this.sessionID = sessionID;
       this.tokens = new HashMap<String, String>();
       this.lockedNodes = new HashMap<String, LockData>();
@@ -183,7 +185,7 @@ public class CacheableSessionLockManager implements SessionLockManager
    /**
     * {@inheritDoc}
     */
-   public boolean isLocked(NodeData node) throws LockException
+   protected boolean isLockedPersisted(NodeData node) throws LockException
    {
       LockData lData = null;
       try
