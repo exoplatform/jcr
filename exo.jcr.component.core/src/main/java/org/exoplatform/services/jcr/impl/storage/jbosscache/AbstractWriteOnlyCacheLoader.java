@@ -21,7 +21,6 @@ import org.jboss.cache.Modification;
 import org.jboss.cache.config.CacheLoaderConfig.IndividualCacheLoaderConfig;
 import org.jboss.cache.loader.AbstractCacheLoader;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -53,7 +52,7 @@ public abstract class AbstractWriteOnlyCacheLoader
     */
    public Map<Object, Object> get(Fqn arg0) throws Exception
    {
-      return Collections.emptyMap();
+      return null;
    }
 
    /**
