@@ -113,6 +113,8 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
    public static final String JBOSSCACHE_JDBC_CL_NODE_COLUMN = "jbosscache-cl-cache.jdbc.node.type";
 
    public static final String JBOSSCACHE_JDBC_CL_FQN_COLUMN = "jbosscache-cl-cache.jdbc.fqn.type";
+   
+   public static final String JBOSSCACHE_JDBC_CL_AUTO = "auto";
 
    /**
     * Default lock time out. 30min
@@ -356,12 +358,15 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
          // else GENERIC, DB2 etc
 
          // set parameters if not defined
-         if (parameterEntry.getParameterValue(JBOSSCACHE_JDBC_CL_NODE_COLUMN, null) == null)
+         // if parameter is missing in configuration, then getParameterValue(JBOSSCACHE_JDBC_CL_NODE_COLUMN, JBOSSCACHE_JDBC_CL_AUTO) 
+         // will return JBOSSCACHE_JDBC_CL_AUTO. If parameter is present in configuration and equals to "auto", then it should be replaced 
+         // with correct value for given database
+         if (parameterEntry.getParameterValue(JBOSSCACHE_JDBC_CL_NODE_COLUMN, JBOSSCACHE_JDBC_CL_AUTO).equalsIgnoreCase(JBOSSCACHE_JDBC_CL_AUTO))
          {
             parameterEntry.putParameterValue(JBOSSCACHE_JDBC_CL_NODE_COLUMN, blobType);
          }
 
-         if (parameterEntry.getParameterValue(JBOSSCACHE_JDBC_CL_FQN_COLUMN, null) == null)
+         if (parameterEntry.getParameterValue(JBOSSCACHE_JDBC_CL_FQN_COLUMN, JBOSSCACHE_JDBC_CL_AUTO).equalsIgnoreCase(JBOSSCACHE_JDBC_CL_AUTO))
          {
             parameterEntry.putParameterValue(JBOSSCACHE_JDBC_CL_FQN_COLUMN, charType);
          }
