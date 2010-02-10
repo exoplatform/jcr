@@ -8,7 +8,7 @@
 			<workspaces>
 				<workspace name="system">
 					<container
-						class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer">
+						class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
 						<properties>
 							<property name="source-name" value="jdbcexo" />
 							<property name="dialect" value="MySQL" />
@@ -65,7 +65,7 @@
 				</workspace>
 				<workspace name="collaboration">
 					<container
-						class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer">
+						class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
 						<properties>
 							<property name="source-name" value="jdbcexo" />
 							<property name="dialect" value="MySQL" />
@@ -122,7 +122,7 @@
 				</workspace>
 				<workspace name="backup">
 					<container
-						class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer">
+						class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
 						<properties>
 							<property name="source-name" value="jdbcexo" />
 							<property name="dialect" value="MySQL" />
@@ -180,7 +180,7 @@
 				<workspace name="gadgets">
 					<!-- for system storage -->
 					<container
-						class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer">
+						class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
 						<properties>
 							<property name="source-name" value="jdbcexo" />
 							<property name="dialect" value="MySQL" />
@@ -357,7 +357,7 @@
 				</workspace>
 				<workspace name="backup">
 					<container
-						class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer">
+						class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
 						<properties>
 							<property name="source-name" value="jdbcexo" />
 							<property name="dialect" value="MySQL" />
@@ -415,7 +415,7 @@
 				<workspace name="gadgets">
 					<!-- for system storage -->
 					<container
-						class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer">
+						class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
 						<properties>
 							<property name="source-name" value="jdbcexo" />
 							<property name="dialect" value="MySQL" />

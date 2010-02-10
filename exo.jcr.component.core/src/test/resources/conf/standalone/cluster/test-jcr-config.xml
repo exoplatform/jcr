@@ -20,7 +20,7 @@
          <workspaces>
             <workspace name="ws">
                <!-- for system storage -->
-               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer">
+               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr" />
                      <property name="multi-db" value="true" />
@@ -86,7 +86,7 @@
             </workspace>
 
             <workspace name="ws1">
-               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer">
+               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr1" />
                      <property name="multi-db" value="true" />
@@ -157,7 +157,7 @@
             </workspace>
 
             <workspace name="ws2" lazy-read-threshold="1">
-               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer">
+               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr2" />
                      <property name="multi-db" value="true" />
@@ -229,7 +229,7 @@
 
             <workspace name="ws3">
                <!-- for system storage -->
-               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer">
+               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr3" />
                      <property name="multi-db" value="true" />
@@ -325,7 +325,7 @@
          <workspaces>
             <workspace name="ws">
                <!-- for system storage -->
-               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer">
+               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcrtck" />
                      <property name="multi-db" value="true" />
@@ -403,7 +403,7 @@
             </workspace>
 
             <workspace name="ws1">
-               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer">
+               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr1tck" />
                      <property name="multi-db" value="true" />
@@ -479,7 +479,7 @@
             </workspace>
 
             <workspace name="ws2">
-               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer">
+               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr2tck" />
                      <property name="multi-db" value="true" />
