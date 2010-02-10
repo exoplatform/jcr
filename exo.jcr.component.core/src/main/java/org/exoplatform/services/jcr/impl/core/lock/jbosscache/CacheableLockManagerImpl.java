@@ -132,7 +132,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
    /**
     * Logger
     */
-   private final Log log = ExoLogger.getLogger("jcr.lock.CacheableLockManagerImpl");
+   private final Log LOG = ExoLogger.getLogger("jcr.lock.CacheableLockManagerImpl");
 
    /**
     * Data manager.
@@ -245,6 +245,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
          // create cache using custom factory
          ExoJBossCacheFactory<Serializable, Object> factory =
             new ExoJBossCacheFactory<Serializable, Object>(cfm, transactionManager);
+
          // configure cache loader parameters with correct DB data-types
          configureJDBCCacheLoader(config.getLockManager());
 
@@ -297,7 +298,14 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
             {
                if (jdbcConn != null && !jdbcConn.isClosed())
                {
-                  jdbcConn.close();
+                  try
+                  {
+                     jdbcConn.close();
+                  }
+                  catch (SQLException e)
+                  {
+                     throw new RepositoryException("Error of connection close", e);
+                  }
                }
             }
          }
@@ -346,7 +354,6 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
             blobType = "long byte";
          }
          // else GENERIC, DB2 etc
-         
 
          // set parameters if not defined
          if (parameterEntry.getParameterValue(JBOSSCACHE_JDBC_CL_NODE_COLUMN, null) == null)
@@ -358,6 +365,10 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
          {
             parameterEntry.putParameterValue(JBOSSCACHE_JDBC_CL_FQN_COLUMN, charType);
          }
+      }
+      else
+      {
+         LOG.warn("CacheLoader DataSource " + JBOSSCACHE_JDBC_CL_DATASOURCE + " is not configured.");
       }
    }
 
@@ -371,9 +382,9 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
       List<IndividualCacheLoaderConfig> oldConfigs;
       if (config == null || (oldConfigs = config.getIndividualCacheLoaderConfigs()) == null || oldConfigs.isEmpty())
       {
-         if (log.isInfoEnabled())
+         if (LOG.isInfoEnabled())
          {
-            log.info("No cache loader has been defined, thus no need to encapsulate any cache loader.");
+            LOG.info("No cache loader has been defined, thus no need to encapsulate any cache loader.");
          }
          return;
       }
@@ -381,13 +392,13 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
          ((CacheSPI<Serializable, Object>)cache).getComponentRegistry().getComponent(CacheLoaderManager.class);
       if (clm == null)
       {
-         log.error("The CacheLoaderManager cannot be found");
+         LOG.error("The CacheLoaderManager cannot be found");
          return;
       }
       CacheLoader currentCL = clm.getCacheLoader();
       if (currentCL == null)
       {
-         log.error("The CacheLoader cannot be found");
+         LOG.error("The CacheLoader cannot be found");
          return;
       }
 
@@ -406,9 +417,9 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
       newConfig.add(cclConfig);
       config.setIndividualCacheLoaderConfigs(newConfig);
 
-      if (log.isInfoEnabled())
+      if (LOG.isInfoEnabled())
       {
-         log.info("The configured cache loader has been encapsulated successfully");
+         LOG.info("The configured cache loader has been encapsulated successfully");
       }
    }
 
@@ -540,7 +551,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
                case ExtendedEvent.LOCK :
                   if (currChangesLog.getSize() < 2)
                   {
-                     log.error("Incorrect changes log  of type ExtendedEvent.LOCK size=" + currChangesLog.getSize()
+                     LOG.error("Incorrect changes log  of type ExtendedEvent.LOCK size=" + currChangesLog.getSize()
                         + "<2 \n" + currChangesLog.dump());
                      break;
                   }
@@ -554,13 +565,13 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
                   }
                   else
                   {
-                     log.error("Lock must exist in pending locks.");
+                     LOG.error("Lock must exist in pending locks.");
                   }
                   break;
                case ExtendedEvent.UNLOCK :
                   if (currChangesLog.getSize() < 2)
                   {
-                     log.error("Incorrect changes log  of type ExtendedEvent.UNLOCK size=" + currChangesLog.getSize()
+                     LOG.error("Incorrect changes log  of type ExtendedEvent.UNLOCK size=" + currChangesLog.getSize()
                         + "<2 \n" + currChangesLog.dump());
                      break;
                   }
@@ -596,7 +607,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
          }
          catch (IllegalStateException e)
          {
-            log.error(e.getLocalizedMessage(), e);
+            LOG.error(e.getLocalizedMessage(), e);
          }
       }
 
@@ -610,7 +621,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
          }
          catch (LockException e)
          {
-            log.error(e.getMessage(), e);
+            LOG.error(e.getMessage(), e);
          }
       }
    }
@@ -857,7 +868,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
       }
       catch (NoSuchAlgorithmException e)
       {
-         log.error("Can't get instanse of MD5 MessageDigest!", e);
+         LOG.error("Can't get instanse of MD5 MessageDigest!", e);
       }
       return hash;
    }
@@ -1030,15 +1041,15 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
       {
          //TODO EXOJCR-412, should be refactored in future.
          //Skip property not found in DB, because that lock property was removed in other node of cluster.
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
-            log.debug("The propperty was removed in other node of cluster.", e);
+            LOG.debug("The propperty was removed in other node of cluster.", e);
          }
 
       }
       catch (RepositoryException e)
       {
-         log.error("Error occur during removing lock" + e.getLocalizedMessage(), e);
+         LOG.error("Error occur during removing lock" + e.getLocalizedMessage(), e);
       }
    }
 
@@ -1094,7 +1105,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
             }
             catch (Exception e)
             {
-               log.warn("Cannot suspend the current transaction", e);
+               LOG.warn("Cannot suspend the current transaction", e);
             }
          }
          return action.execute(arg);
@@ -1109,7 +1120,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
             }
             catch (Exception e)
             {
-               log.warn("Cannot resume the current transaction", e);
+               LOG.warn("Cannot resume the current transaction", e);
             }
          }
       }

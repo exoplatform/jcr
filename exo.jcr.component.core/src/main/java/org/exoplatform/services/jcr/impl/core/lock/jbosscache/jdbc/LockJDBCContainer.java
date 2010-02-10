@@ -72,7 +72,7 @@ public class LockJDBCContainer
                jdbcConn = dataSource.getConnection();
                // if table not exists, create it  
                // connection is closed by DB initializer
-               initDatabase(dataSourceName, jdbcConn, DialectDetecter.detect(jdbcConn.getMetaData()));
+               initDatabase(dataSourceName, jdbcConn);
             }
             catch (SQLException e)
             {
@@ -149,11 +149,10 @@ public class LockJDBCContainer
    /**
     * Creates table in DB if not present
     * 
-    * @param dialect
     * @throws IOException 
     * @throws DBInitializerException 
     */
-   protected void initDatabase(String dataSource, Connection jdbcConn, String dialect) throws IOException,
+   protected void initDatabase(String dataSource, Connection jdbcConn) throws IOException,
       DBInitializerException
    {
       DBInitializer dbInitializer = new DBInitializer(dataSource, jdbcConn, "/conf/storage/jcr-lock-jdbc.sql");

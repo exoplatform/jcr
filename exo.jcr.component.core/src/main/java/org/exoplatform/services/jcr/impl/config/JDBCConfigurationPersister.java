@@ -124,7 +124,7 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
       this.sourceName = sourceNameParam;
 
       String dialect = params.getProperty(PARAM_DIALECT);
-      if (dialect == null)
+      if (dialect == null || DBConstants.DB_DIALECT_AUTO.equalsIgnoreCase(dialect))
       {
          Connection conn = null;
          try

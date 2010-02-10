@@ -148,7 +148,7 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
             DatabaseMetaData dbMetaData = conn.getMetaData();
 
             String dialect = props.getProperty(JDBC_DIALECT_PARAM);
-            if (dialect == null)
+            if (dialect == null || DBConstants.DB_DIALECT_AUTO.equalsIgnoreCase(dialect))
             {
                dialect = DialectDetecter.detect(dbMetaData);
             }
