@@ -29,9 +29,11 @@
          <authentication-policy>org.exoplatform.services.jcr.impl.core.access.JAASAuthenticator</authentication-policy>
          <workspaces>
             <workspace name="ws">
+               <!-- for system storage -->
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr" />
+                     <property name="dialect" value="auto" />
                      <property name="multi-db" value="false" />
                      <property name="update-storage" value="false" />
                      <property name="max-buffer-size" value="200k" />
@@ -41,6 +43,10 @@
                      <value-storage id="ws" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
                         <properties>
                            <property name="path" value="target/temp/values/ws" />
+                           <property name="digest-algo" value="MD5" />
+                           <property name="vcas-type" value="org.exoplatform.services.jcr.impl.storage.value.cas.JDBCValueContentAddressStorageImpl" />
+                           <property name="jdbc-source-name" value="jdbcjcr" />
+                           <property name="jdbc-dialect" value="auto" />
                         </properties>
                         <filters>
                            <filter property-type="Binary" />
@@ -53,31 +59,46 @@
                      <property name="root-nodetype" value="nt:unstructured" />
                   </properties>
                </initializer>
-               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl">
+               <!-- initializer class="org.exoplatform.services.jcr.impl.core.RestoreWorkspaceInitializer">
                   <properties>
-                     <property name="max-size" value="2k" />
-                     <property name="live-time" value="20m" />
+                     <property name="restore-path" value="./sv_export_root.xml" />
+                     <property name="restore-path" value="./src/test/resources/import-export/restore_db1_ws1.xml" />
+                  </properties>
+               </initializer -->
+               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
+                  <properties>
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
                   <properties>
                      <property name="index-dir" value="target/temp/index/db1/ws" />
+                     <!-- property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JbossCacheIndexChangesFilter" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" /-->
+                     
                    </properties>
                </query-handler>
-               <lock-manager>
-                  <time-out>15m</time-out>
-                  <persister class="org.exoplatform.services.jcr.impl.core.lock.FileSystemLockPersister">
-                     <properties>
-                        <property name="path" value="target/temp/lock" />
-                     </properties>
-                  </persister>
-               </lock-manager>
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+                  <properties>
+                     <property name="time-out" value="15m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1_ws" />
+                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1_ws_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
+                  </properties>
+               </lock-manager>               
             </workspace>
 
             <workspace name="ws1">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr" />
+                     <property name="dialect" value="auto" />
                      <property name="multi-db" value="false" />
                      <property name="update-storage" value="false" />
                      <property name="max-buffer-size" value="200k" />
@@ -94,15 +115,9 @@
                      </value-storage>
                   </value-storages>
                </container>
-               <initializer class="org.exoplatform.services.jcr.impl.core.ScratchWorkspaceInitializer">
+               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
-                     <property name="root-nodetype" value="nt:unstructured" />
-                  </properties>
-               </initializer>
-               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl">
-                  <properties>
-                     <property name="max-size" value="2k" />
-                     <property name="live-time" value="20m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -116,12 +131,27 @@
                      <property name="spellchecker-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" />
                   </properties>
                </query-handler>
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+                  <properties>
+                     <property name="time-out" value="15m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1_ws1" />
+                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1_ws1_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
+                  </properties>
+               </lock-manager>               
             </workspace>
 
-            <workspace name="ws2">
+            <workspace name="ws2" lazy-read-threshold="1">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr" />
+                     <property name="dialect" value="auto" />
                      <property name="multi-db" value="false" />
                      <property name="update-storage" value="false" />
                      <property name="max-buffer-size" value="200k" />
@@ -138,15 +168,9 @@
                      </value-storage>
                   </value-storages>
                </container>
-               <initializer class="org.exoplatform.services.jcr.impl.core.ScratchWorkspaceInitializer">
+               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
-                     <property name="root-nodetype" value="nt:unstructured" />
-                  </properties>
-               </initializer>
-               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl">
-                  <properties>
-                     <property name="max-size" value="2k" />
-                     <property name="live-time" value="20m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -160,67 +184,106 @@
                      <property name="spellchecker-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" />
                   </properties>
                </query-handler>
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+                  <properties>
+                     <property name="time-out" value="15m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1_ws2" />
+                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1_ws2_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
+                  </properties>
+               </lock-manager>               
             </workspace>
-
+            
             <workspace name="ws3">
-               <!-- for system storage -->
-               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
-                  <properties>
-                     <property name="source-name" value="jdbcjcr" />
-                     <property name="multi-db" value="false" />
-                     <property name="update-storage" value="false" />
-                     <property name="max-buffer-size" value="200k" />
-                     <property name="swap-directory" value="target/temp/swap/ws3" />
-                  </properties>
-                  <value-storages>
-                     <!--
-                        This storage is used to check whether properties are removed correctly from each value-storage in case of complex value storage.
-                        (TestRemoveFromValueStorage.java)
-                     -->
-                     <value-storage id="ws3_big" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
-                        <properties>
-                           <property name="path" value="target/temp/values/ws3_big" />
-                        </properties>
-                        <filters>
-                           <filter property-type="Binary" min-value-size="1024K" />
-                        </filters>
-                     </value-storage>
-                     <value-storage id="ws3" class="org.exoplatform.services.jcr.impl.storage.value.fs.CASableTreeFileValueStorage">
-                        <properties>
-                           <property name="path" value="target/temp/values/ws3" />
-                           <property name="digest-algo" value="MD5" />
-                           <property name="vcas-type" value="org.exoplatform.services.jcr.impl.storage.value.cas.JDBCValueContentAddressStorageImpl" />
-                           <property name="jdbc-source-name" value="jdbcjcr" />
-                        </properties>
-                        <filters>
-                           <filter property-type="Binary" />
-                        </filters>
-                     </value-storage>
-                  </value-storages>
-               </container>
-               <initializer class="org.exoplatform.services.jcr.impl.core.ScratchWorkspaceInitializer">
-                  <properties>
-                     <property name="root-nodetype" value="nt:unstructured" />
-                  </properties>
-               </initializer>
-               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl">
-                  <properties>
-                     <property name="max-size" value="2k" />
-                     <property name="live-time" value="20m" />
-                  </properties>
-               </cache>
-               <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
-                  <properties>
-                     <property name="index-dir" value="target/temp/index/db1/ws3" />
-                     <property name="synonymprovider-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider" />
-                     <property name="synonymprovider-config-path" value="../../synonyms.properties" />
-                     <property name="support-highlighting" value="true" />
-                     <property name="indexing-configuration-path" value="../../indexing-configuration.xml" />
-                     <property name="query-class" value="org.exoplatform.services.jcr.impl.core.query.QueryImpl" />
-                     <property name="spellchecker-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" />
-                  </properties>
-               </query-handler>
-            </workspace>
+					<!-- for system storage -->
+					<container
+						class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
+						<properties>
+							<property name="source-name" value="jdbcjcr" />
+                            <property name="dialect" value="auto" />
+							<property name="multi-db" value="false" />
+							<property name="update-storage" value="false" />
+							<property name="max-buffer-size" value="200k" />
+							<property name="swap-directory" value="target/temp/swap/ws3" />
+						</properties>
+						<value-storages>
+							<!--
+								This storage is used to check whether properties are removed
+								correctly from each value-storage
+								(TestRemoveFromValueStorage.java)
+							-->
+							<value-storage id="ws3_big"
+								class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
+								<properties>
+									<property name="path" value="target/temp/values/ws3_big" />
+								</properties>
+								<filters>
+									<filter property-type="Binary" min-value-size="1024K" />
+								</filters>
+							</value-storage>
+							<value-storage id="ws3"
+								class="org.exoplatform.services.jcr.impl.storage.value.fs.CASableTreeFileValueStorage">
+								<properties>
+									<property name="path" value="target/temp/values/ws3" />
+									<property name="digest-algo" value="MD5" />
+									<property name="vcas-type"
+										value="org.exoplatform.services.jcr.impl.storage.value.cas.JDBCValueContentAddressStorageImpl" />
+									<property name="jdbc-source-name" value="jdbcjcr" />
+								</properties>
+								<filters>
+									<filter property-type="Binary" />
+								</filters>
+							</value-storage>
+						</value-storages>
+					</container>
+					<initializer
+						class="org.exoplatform.services.jcr.impl.core.ScratchWorkspaceInitializer">
+						<properties>
+							<property name="root-nodetype" value="nt:unstructured" />
+						</properties>
+					</initializer>
+					<cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
+                       <properties>
+                          <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
+                       </properties>
+                    </cache>
+					<query-handler
+						class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
+						<properties>
+							<property name="index-dir" value="target/temp/index/db1/ws3" />
+							<property name="synonymprovider-class"
+								value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider" />
+							<property name="synonymprovider-config-path" value="../../synonyms.properties" />
+							<property name="support-highlighting" value="true" />
+							<property name="indexing-configuration-path" value="../../indexing-configuration.xml" />
+							<property name="query-class"
+								value="org.exoplatform.services.jcr.impl.core.query.QueryImpl" />
+							<property name="spellchecker-class"
+								value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" />
+						</properties>
+					</query-handler>
+	               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+	                  <properties>
+	                     <property name="time-out" value="15m" />
+	                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+	                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1_ws3" />
+	                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+	                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+	                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1_ws3_pk" />
+	                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+	                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+	                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+	                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
+	                  </properties>
+	               </lock-manager>               
+
+				</workspace>
          </workspaces>
       </repository>
 
@@ -232,9 +295,11 @@
          <authentication-policy>org.exoplatform.services.jcr.impl.core.access.JAASAuthenticator</authentication-policy>
          <workspaces>
             <workspace name="ws">
+               <!-- for system storage -->
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcrtck" />
+                     <property name="dialect" value="auto" />
                      <property name="multi-db" value="false" />
                      <property name="update-storage" value="false" />
                      <property name="max-buffer-size" value="200k" />
@@ -246,7 +311,7 @@
                            <property name="path" value="target/temp/values/wstck" />
                         </properties>
                         <filters>
-                           <filter property-type="Binary" />
+                           <filter property-type="Binary" min-value-size="100K" />
                         </filters>
                      </value-storage>
                   </value-storages>
@@ -254,14 +319,12 @@
                <initializer class="org.exoplatform.services.jcr.impl.core.ScratchWorkspaceInitializer">
                   <properties>
                      <property name="root-nodetype" value="nt:unstructured" />
-                     <property name="root-permissions"
-                        value="any read;*:/platform/administrators read;*:/platform/administrators add_node;*:/platform/administrators set_property;*:/platform/administrators remove" />
+                     <property name="root-permissions" value="any read;*:/platform/administrators read;*:/platform/administrators add_node;*:/platform/administrators set_property;*:/platform/administrators remove" />
                   </properties>
                </initializer>
-               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl">
+               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
-                     <property name="max-size" value="2k" />
-                     <property name="live-time" value="20m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -276,20 +339,27 @@
                      <property name="spellchecker-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" />
                   </properties>
                </query-handler>
-               <lock-manager>
-                  <time-out>15m</time-out>
-                  <persister class="org.exoplatform.services.jcr.impl.core.lock.FileSystemLockPersister">
-                     <properties>
-                        <property name="path" value="target/temp/lock" />
-                     </properties>
-                  </persister>
-               </lock-manager>
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+                  <properties>
+                     <property name="time-out" value="15m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1tck_ws" />
+                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1tck_ws_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcrtck" />
+                  </properties>
+               </lock-manager>               
             </workspace>
 
             <workspace name="ws1">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcrtck" />
+                     <property name="dialect" value="auto" />
                      <property name="multi-db" value="false" />
                      <property name="update-storage" value="false" />
                      <property name="max-buffer-size" value="200k" />
@@ -301,7 +371,7 @@
                            <property name="path" value="target/temp/values/ws1tck" />
                         </properties>
                         <filters>
-                           <filter property-type="Binary" />
+                           <filter property-type="Binary" min-value-size="100K" />
                         </filters>
                      </value-storage>
                   </value-storages>
@@ -309,14 +379,12 @@
                <initializer class="org.exoplatform.services.jcr.impl.core.ScratchWorkspaceInitializer">
                   <properties>
                      <property name="root-nodetype" value="nt:unstructured" />
-                     <property name="root-permissions"
-                        value="any read;*:/platform/administrators read;*:/platform/administrators add_node;*:/platform/administrators set_property;*:/platform/administrators remove" />
+                     <property name="root-permissions" value="any read;*:/platform/administrators read;*:/platform/administrators add_node;*:/platform/administrators set_property;*:/platform/administrators remove" />
                   </properties>
                </initializer>
-               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl">
+               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
-                     <property name="max-size" value="2k" />
-                     <property name="live-time" value="20m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -330,12 +398,27 @@
                      <property name="spellchecker-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" />
                   </properties>
                </query-handler>
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+                  <properties>
+                     <property name="time-out" value="15m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1tck_ws1" />
+                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1tck_ws1_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcrtck" />
+                  </properties>
+               </lock-manager> 
             </workspace>
 
             <workspace name="ws2">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcrtck" />
+                     <property name="dialect" value="auto" />
                      <property name="multi-db" value="false" />
                      <property name="update-storage" value="false" />
                      <property name="max-buffer-size" value="200k" />
@@ -347,7 +430,7 @@
                            <property name="path" value="target/temp/values/ws2tck" />
                         </properties>
                         <filters>
-                           <filter property-type="Binary" />
+                           <filter property-type="Binary" min-value-size="100K" />
                         </filters>
                      </value-storage>
                   </value-storages>
@@ -355,14 +438,12 @@
                <initializer class="org.exoplatform.services.jcr.impl.core.ScratchWorkspaceInitializer">
                   <properties>
                      <property name="root-nodetype" value="nt:unstructured" />
-                     <property name="root-permissions"
-                        value="any read;*:/platform/administrators read;*:/platform/administrators add_node;*:/platform/administrators set_property;*:/platform/administrators remove" />
+                     <property name="root-permissions" value="any read;*:/platform/administrators read;*:/platform/administrators add_node;*:/platform/administrators set_property;*:/platform/administrators remove" />
                   </properties>
                </initializer>
-               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl">
+               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
-                     <property name="max-size" value="2k" />
-                     <property name="live-time" value="20m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -379,6 +460,20 @@
                      <property name="extractorTimeout" value="10"/>
                   </properties>
                </query-handler>
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+                  <properties>
+                     <property name="time-out" value="15m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1tck_ws2" />
+                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1tck_ws2_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcrtck" />
+                  </properties>
+               </lock-manager> 
             </workspace>
          </workspaces>
       </repository>
