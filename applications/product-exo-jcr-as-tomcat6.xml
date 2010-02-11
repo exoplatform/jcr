@@ -1,4 +1,4 @@
-<!--
+it must de<!--
 
     Copyright (C) 2009 eXo Platform SAS.
 
@@ -39,6 +39,10 @@
          <scope>runtime</scope>
       </dependency>
    </dependencies>
+   
+   <properties>
+     <enforcer.skip>true</enforcer.skip>
+   </properties>
 
    <build>
       <plugins>
