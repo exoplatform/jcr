@@ -34,6 +34,7 @@ import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
 import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
+import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
@@ -381,12 +382,12 @@ public class LockManagerImpl implements WorkspaceLockManager, ItemsPersistenceLi
                      {
 
                         String owner =
-                           new String(((((TransientPropertyData)(ownerState.getData())).getValues()).get(0))
+                           new String(((((PersistedPropertyData)(ownerState.getData())).getValues()).get(0))
                               .getAsByteArray(), Constants.DEFAULT_ENCODING);
 
                         boolean isDeep =
                            Boolean.valueOf(
-                              new String(((((TransientPropertyData)(isDeepState.getData())).getValues()).get(0))
+                              new String(((((PersistedPropertyData)(isDeepState.getData())).getValues()).get(0))
                                  .getAsByteArray(), Constants.DEFAULT_ENCODING)).booleanValue();
 
                         createRemoteLock(currChangesLog.getSessionId(), nodeIdentifier, lockToken, isDeep, false, owner);
