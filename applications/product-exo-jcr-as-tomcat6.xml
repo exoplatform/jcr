@@ -1,4 +1,4 @@
-it must de<!--
+<!--
 
     Copyright (C) 2009 eXo Platform SAS.
 
@@ -23,6 +23,7 @@ it must de<!--
       <groupId>org.exoplatform.jcr</groupId>
       <artifactId>exo.jcr.applications.config</artifactId>
       <version>1.12.0-GA-SNAPSHOT</version>
+      <relativePath>exo.jcr.applications.config</relativePath>
    </parent>
 
    <modelVersion>4.0.0</modelVersion>
