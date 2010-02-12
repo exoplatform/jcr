@@ -18,12 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc;
 
-import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-
-import javax.jcr.RepositoryException;
-import javax.sql.DataSource;
 
 /**
  * JDBC dialect detecter based on database metadata and vendor product name.
