@@ -149,6 +149,37 @@
       <type>org.exoplatform.services.jcr.ext.registry.RESTRegistryService</type>
    </component>
 
+   <component>
+      <type>org.exoplatform.services.jcr.ext.script.groovy.GroovyScript2RestLoader</type>
+      <init-params>
+         <object-param>
+            <name>observation.config</name>
+            <object type="org.exoplatform.services.jcr.ext.script.groovy.ObservationListenerConfiguration">
+               <field name="repository">
+                  <string>repository</string>
+               </field>
+               <field name="workspaces">
+                  <collection type="java.util.ArrayList">
+                     <value>
+                        <string>production</string>
+                     </value>
+                  </collection>
+               </field>
+            </object>
+         </object-param>
+      </init-params>
+   </component>
+
+   <component>
+      <type>org.exoplatform.services.rest.impl.method.MethodInvokerFilterComponentPlugin</type>
+      <init-params>
+         <value-param>
+            <name>method.access.filter</name>
+            <value>org.exoplatform.services.rest.ext.method.filter.MethodAccessFilter</value>
+         </value-param>
+      </init-params> 
+   </component>
+
    <!-- network services -->
    <component>
       <key>org.exoplatform.services.jcr.webdav.lnkproducer.LnkProducer</key>
