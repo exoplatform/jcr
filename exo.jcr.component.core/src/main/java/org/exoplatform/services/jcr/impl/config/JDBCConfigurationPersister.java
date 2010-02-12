@@ -173,7 +173,7 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
       }
       else if (DBConstants.DB_DIALECT_SYBASE.equalsIgnoreCase(dialect))
       {
-         binType = "VARBINARY(255)";
+         binType = "IMAGE";
       }
       else if (DBConstants.DB_DIALECT_INGRES.equalsIgnoreCase(dialect))
       {
@@ -270,7 +270,7 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
             if (isDbInitialized(con))
             {
 
-               PreparedStatement ps = con.prepareStatement("SELECT * FROM " + configTableName + " WHERE name=?");
+               PreparedStatement ps = con.prepareStatement("SELECT * FROM " + configTableName + " WHERE NAME=?");
                ps.setString(1, CONFIGNAME);
                ResultSet res = ps.executeQuery();
 
