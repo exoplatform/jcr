@@ -82,24 +82,15 @@ public class MkColCommand
       {
          nullResourceLocks.checkLock(session, path, tokens);
 
-         try
-         {
-            node = session.getRootNode().getNode(TextUtil.relativizePath(path));
-            return Response.status(HTTPStatus.METHOD_NOT_ALLOWED).entity(
-               "MKCOL can only be executed on a deleted/non-existent resource").build();
-         }
-         catch (PathNotFoundException e)
-         {
-            node = session.getRootNode().addNode(TextUtil.relativizePath(path), nodeType);
+         node = session.getRootNode().addNode(TextUtil.relativizePath(path), nodeType);
 
-            if (mixinTypes != null)
-            {
-               addMixins(node, mixinTypes);
-            }
-            session.save();
+         if (mixinTypes != null)
+         {
+            addMixins(node, mixinTypes);
          }
-
+         session.save();
       }
+
       catch (ItemExistsException exc)
       {
          return Response.status(HTTPStatus.METHOD_NOT_ALLOWED).entity(exc.getMessage()).build();
