@@ -27,7 +27,7 @@
          <workspaces>
             <workspace name="production">
                <!-- for system storage -->
-               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer">
+               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr" />
                      <property name="multi-db" value="false" />
@@ -73,7 +73,7 @@
             </workspace>
 
             <workspace name="backup">
-               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer">
+               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr" />
                      <property name="multi-db" value="false" />
@@ -111,7 +111,7 @@
             </workspace>
 
             <workspace name="digital-assets">
-               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer">
+               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
                      <property name="source-name" value="jdbcjcr" />
                      <property name="multi-db" value="false" />
