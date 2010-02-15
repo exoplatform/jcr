@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter id="architecture" xreflabel="architectural">
+	<?dbhtml filename="architecture.html"?>
+	<chapterinfo>
+		<keywordset>
+			<keyword>JCR</keyword>
+			<keyword>eXoJCR</keyword>
+			<keyword>etc</keyword>
+		</keywordset>
+	</chapterinfo>
+	<title>Basic concepts of eXoJCR</title>
+</chapter>

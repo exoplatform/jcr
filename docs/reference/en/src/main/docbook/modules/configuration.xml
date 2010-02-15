@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter id="configuration" xreflabel="configuration">
+	<?dbhtml filename="configuration.html"?>
+	<chapterinfo>
+		<keywordset>
+			<keyword>JCR</keyword>
+			<keyword>eXoJCR</keyword>
+			<keyword>etc</keyword>
+		</keywordset>
+	</chapterinfo>
+	<title>Configuration of the eXoJCR</title>
+</chapter>

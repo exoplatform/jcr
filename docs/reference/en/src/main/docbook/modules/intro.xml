@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter id="Introduction" xreflabel="Introduction">
+<?dbhtml filename="Introduction.html"?>
+
+  <chapterinfo>
+    <keywordset>
+      <keyword>JCR</keyword>
+      <keyword>eXoJCR</keyword>
+      <keyword>etc</keyword>
+      <keyword>developer guide</keyword>
+    </keywordset>
+  </chapterinfo>
+
+  <title>Introduction</title>
+
+</chapter>
