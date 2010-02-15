@@ -30,6 +30,9 @@
   <packaging>war</packaging>
   <name>eXo JCR :: Application :: FCKeditor Sample</name>
   <description>eXo simple CMS web app</description>
+  <properties>
+    <enforcer.skip>true</enforcer.skip>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>org.exoplatform.jcr</groupId>

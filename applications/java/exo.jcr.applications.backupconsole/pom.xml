@@ -31,6 +31,7 @@
   <properties>
     <exo.test.includes>*</exo.test.includes>
     <childDelegation>true</childDelegation>
+    <enforcer.skip>true</enforcer.skip>
   </properties>
   <dependencies>
     <dependency>

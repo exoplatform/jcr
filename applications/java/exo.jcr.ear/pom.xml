@@ -29,6 +29,9 @@
   <artifactId>exo.jcr.ear</artifactId>
   <packaging>ear</packaging>
   <name>eXo JCR :: EAR</name>
+  <properties>
+    <enforcer.skip>true</enforcer.skip>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>org.exoplatform.jcr</groupId>

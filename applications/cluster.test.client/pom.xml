@@ -43,6 +43,9 @@
       <artifactId>exo.ws.commons</artifactId>
     </dependency>
   </dependencies>
+  <properties>
+    <enforcer.skip>true</enforcer.skip>
+  </properties>
   <build>
     <pluginManagement>
       <plugins>

@@ -30,6 +30,9 @@
   <packaging>war</packaging>
   <name>eXo JCR :: Application :: Rest Web</name>
   <description>eXo JCR Rest web application</description>
+  <properties>
+    <enforcer.skip>true</enforcer.skip>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>org.exoplatform.jcr</groupId>
