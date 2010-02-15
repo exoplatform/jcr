@@ -15,6 +15,7 @@ Features of eXoJCR 1.12.0 comparing to 1.11.2:
 - Lot of WebDAV server bugfixes
 - HTTP (RESTful) Backup agent with concole client
 - HTTP (RESTful) Repository management service
+- Support of Java6 and Java5 runtime and development environment
 
 eXoJCR 1.12.0 tested in on the many databases:
   MySQL 5.1 MYSQL Connector/J 5.1.8
