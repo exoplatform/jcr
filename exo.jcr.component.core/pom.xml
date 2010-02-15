@@ -19,12 +19,12 @@
     02110-1301 USA, or see the FSF site: http://www.fsf.org.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.exoplatform.jcr</groupId>
     <artifactId>jcr-parent</artifactId>
-    <version>1.12.0-GA-SNAPSHOT</version>
+    <version>1.12.0-CR2</version>
   </parent>
   <artifactId>exo.jcr.component.core</artifactId>
   <name>eXo JCR :: Component :: Core Service</name>
@@ -430,11 +430,11 @@
                 <echo>Remove files that have been customized</echo>
                 <delete>
                   <fileset dir="${project.build.directory}/generated-sources/javacc/org/exoplatform/services/jcr/impl/core/query">
-                    <include name="sql/ASTLiteral.java"/>
-                    <include name="sql/ASTContainsExpression.java"/>
-                    <include name="sql/ASTPredicate.java"/>
-                    <include name="sql/ASTIdentifier.java"/>
-                    <include name="xpath/SimpleNode.java"/>
+                    <include name="sql/ASTLiteral.java" />
+                    <include name="sql/ASTContainsExpression.java" />
+                    <include name="sql/ASTPredicate.java" />
+                    <include name="sql/ASTIdentifier.java" />
+                    <include name="xpath/SimpleNode.java" />
                   </fileset>
                 </delete>
               </tasks>
