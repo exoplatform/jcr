@@ -78,7 +78,7 @@ public class ParentNodeEvictionActionPolicy implements EvictionActionPolicy
             
             // We use the method getChildrenNamesDirect to avoid going through 
             // the interceptor chain (EXOJCR-460)
-            Set<Object> names = ((CacheSPI)cache).getNode(parentFqn).getChildrenNamesDirect();
+            Set<Object> names = ((CacheSPI)cache).peek(parentFqn, false).getChildrenNamesDirect();
             if (names.isEmpty() || (names.size() == 1 && names.contains(fqn.get(2))))
             {
                if (log.isTraceEnabled())
