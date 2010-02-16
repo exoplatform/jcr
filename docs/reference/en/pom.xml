@@ -54,6 +54,18 @@
             <groupId>org.jboss.maven.plugins</groupId>
             <artifactId>maven-jdocbook-plugin</artifactId>
             <extensions>true</extensions>
+            <configuration>
+               <formats>
+                  <format>
+                     <formatName>pdf</formatName>
+                  </format>
+                  <format>
+                     <formatName>html_single</formatName>
+                  </format>
+
+               </formats>
+               <sourceDocumentName>modules/lock-manager-config.xml</sourceDocumentName>
+            </configuration>
          </plugin>
       </plugins>
    </build>
