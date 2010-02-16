@@ -7,40 +7,37 @@
   </articleinfo>
 
   <sect1>
-    <title>LockManager configuration</title>
+    <title>Introduction</title>
 
-    <sect2>
-      <title>Introduction</title>
+    <para>What LockManager does?</para>
 
-      <para>What LockManager does?</para>
+    <para>In common words, LockManager stores lock objects, so it can give
+    Lock object or can release it, etc.</para>
 
-      <para>In common words, LockManager stores lock objects, so it can give
-      Lock object or can release it, etc.</para>
+    <para>Also LockManager is responsible for removing Locks that live too
+    long. This parameter may be configured with "time-out" property.</para>
 
-      <para>Also LockManager is responsible for removing Locks that live too
-      long. This parameter may be configured with "time-out" property.</para>
+    <para>JCR provide two base implementation of LockManager:</para>
 
-      <para>JCR provide two base implementation of LockManager:</para>
+    <itemizedlist>
+      <listitem>
+        <para>org.exoplatform.services.jcr.impl.core.lock.LockManagerImpl;</para>
+      </listitem>
 
-      <itemizedlist>
-        <listitem>
-          <para>org.exoplatform.services.jcr.impl.core.lock.LockManagerImpl;</para>
-        </listitem>
+      <listitem>
+        <para>org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl;</para>
+      </listitem>
+    </itemizedlist>
 
-        <listitem>
-          <para>org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl;</para>
-        </listitem>
-      </itemizedlist>
+    <para>In this article we will talk mostly about
+    CacheableLockManagerImpl.</para>
 
-      <para>In this article we will talk mostly about
-      CacheableLockManagerImpl.</para>
+    <para>You can enable LockManager by adding lock-manager-configuration to
+    workspace-configuration.</para>
 
-      <para>You can enable LockManager by adding lock-manager-configuration to
-      workspace-configuration.</para>
+    <para>For example:</para>
 
-      <para>For example:</para>
-
-      <programlisting>&lt;workspace name="ws"&gt;
+    <programlisting>&lt;workspace name="ws"&gt;
    ...
    &lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl"&gt;
       &lt;properties&gt;
@@ -50,100 +47,99 @@
    &lt;/lock-manager&gt;               
    ...
 &lt;/workspace&gt;</programlisting>
-    </sect2>
+  </sect1>
 
-    <sect2>
-      <title>LockManagerImpl</title>
+  <sect1>
+    <title>LockManagerImpl</title>
 
-      <para>LockManagerImpl is simple implementation of LockManager, and also
-      faster than CacheableLockManager. It stores Lock objects in HashMap and
-      may also persist Locks if LockPersister is configured. LockManagerImpl
-      do not support replication in any way.</para>
+    <para>LockManagerImpl is simple implementation of LockManager, and also
+    faster than CacheableLockManager. It stores Lock objects in HashMap and
+    may also persist Locks if LockPersister is configured. LockManagerImpl do
+    not support replication in any way.</para>
 
-      <para>See <ulink
-      url="http://wiki.exoplatform.com/xwiki/bin/view/JCR/Configuration#HLockManagerconfiguration3A">LockManagerImpl
-      configuration</ulink></para>
-    </sect2>
+    <para>See <ulink
+    url="http://wiki.exoplatform.com/xwiki/bin/view/JCR/Configuration#HLockManagerconfiguration3A">LockManagerImpl
+    configuration</ulink></para>
+  </sect1>
 
-    <sect2>
-      <title>CacheableLockManagerImpl</title>
+  <sect1>
+    <title>CacheableLockManagerImpl</title>
 
-      <para>CacheableLockManagerImpl stores Lock object in JBoss-cache, so
-      Locks are replicable and affects on cluster, not only a single node.
-      Also JBoss-cache has JDBCCacheLoader, so locks will be stored to
-      database.</para>
+    <para>CacheableLockManagerImpl stores Lock object in JBoss-cache, so Locks
+    are replicable and affects on cluster, not only a single node. Also
+    JBoss-cache has JDBCCacheLoader, so locks will be stored to
+    database.</para>
 
-      <para>Both implementation supports Expired Locks removing. There is
-      LockRemover - separate thread, that periodically ask LockManager for
-      Locks that lives to much and must be removed. So, timeout for
-      LockRemover may be set as follows, default value is 30m.</para>
+    <para>Both implementation supports Expired Locks removing. There is
+    LockRemover - separate thread, that periodically ask LockManager for Locks
+    that lives to much and must be removed. So, timeout for LockRemover may be
+    set as follows, default value is 30m.</para>
 
-      <programlisting>&lt;properties&gt;
+    <programlisting>&lt;properties&gt;
    &lt;property name="time-out" value="10m" /&gt;
    ...
 &lt;/properties&gt;</programlisting>
 
+    <para>Replication requirements are same as for Cache</para>
+
+    <warning>
+      <para>[TODO add link to replication configuration]</para>
+    </warning>
+
+    <sect2>
+      <title>Configuration</title>
+
       <para>Replication requirements are same as for Cache</para>
 
-      <warning>
-        <para>[TODO add link to replication configuration]</para>
-      </warning>
+      <para>Common tips:</para>
 
-      <sect3>
-        <title>Configuration</title>
+      <itemizedlist>
+        <listitem>
+          <para>clusterName ("jbosscache-cluster-name") must be unique;</para>
+        </listitem>
 
-        <para>Replication requirements are same as for Cache</para>
+        <listitem>
+          <para>cache.jdbc.table.name must be unique per datasource;</para>
+        </listitem>
 
-        <para>Common tips:</para>
+        <listitem>
+          <para>cache.jdbc.fqn.type must and cache.jdbc.node.type must be
+          configured according to used database;</para>
+        </listitem>
+      </itemizedlist>
 
-        <itemizedlist>
-          <listitem>
-            <para>clusterName ("jbosscache-cluster-name") must be
-            unique;</para>
-          </listitem>
+      <para>There is few ways how to configure CacheableLockManagerImpl, and
+      all of them configures JBoss-cache and JDBCCacheLoader.</para>
 
-          <listitem>
-            <para>cache.jdbc.table.name must be unique per datasource;</para>
-          </listitem>
+      <para>See <ulink
+      url="http://community.jboss.org/wiki/JBossCacheJDBCCacheLoader">http://community.jboss.org/wiki/JBossCacheJDBCCacheLoader</ulink></para>
+    </sect2>
 
-          <listitem>
-            <para>cache.jdbc.fqn.type must and cache.jdbc.node.type must be
-            configured according to used database;</para>
-          </listitem>
-        </itemizedlist>
+    <sect2>
+      <title>Simple JbossCache Configuraion</title>
 
-        <para>There is few ways how to configure CacheableLockManagerImpl, and
-        all of them configures JBoss-cache and JDBCCacheLoader.</para>
+      <para>First one is - put JbossCache configuraion file path to
+      CacheableLockManagerImpl</para>
 
-        <para>See <ulink
-        url="http://community.jboss.org/wiki/JBossCacheJDBCCacheLoader">http://community.jboss.org/wiki/JBossCacheJDBCCacheLoader</ulink></para>
-      </sect3>
+      <para><note>
+          <para>This configuration is not so good, as you can think. Because
+          repository may contain many workspaces, and each workspace must
+          contain LockManager configuration, and LockManager config may
+          contain JbossCache config file. So total configuration is growing
+          up. But it is usefull if we want a single LockManager with special
+          configuration.</para>
+        </note></para>
 
-      <sect3>
-        <title>Simple JbossCache Configuraion</title>
+      <para>Config is:</para>
 
-        <para>First one is - put JbossCache configuraion file path to
-        CacheableLockManagerImpl</para>
-
-        <para><note>
-            <para>This configuration is not so good, as you can think. Because
-            repository may contain many workspaces, and each workspace must
-            contain LockManager configuration, and LockManager config may
-            contain JbossCache config file. So total configuration is growing
-            up. But it is usefull if we want a single LockManager with special
-            configuration.</para>
-          </note></para>
-
-        <para>Config is:</para>
-
-        <programlisting>&lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl"&gt;
+      <programlisting>&lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl"&gt;
    &lt;properties&gt;
      &lt;property name="time-out" value="15m" /&gt;
      &lt;property name="jbosscache-configuration" value="conf/standalone/cluster/test-jbosscache-lock-config.xml" /&gt;
    &lt;/properties&gt;
 &lt;/lock-manager&gt;</programlisting>
 
-        <para>test-jbosscache-lock-config.xml<programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+      <para>test-jbosscache-lock-config.xml<programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;jbosscache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:jboss:jbosscache-core:config:3.2"&gt;
 
  &lt;locking useLockStriping="false" concurrencyLevel="50000" lockParentForChildInsertRemove="false" lockAcquisitionTimeout="20000" /&gt;
@@ -201,40 +197,39 @@
 
 &lt;/jbosscache&gt;</programlisting></para>
 
-        <para>Configuration requirements:</para>
+      <para>Configuration requirements:</para>
 
-        <itemizedlist>
-          <listitem>
-            <para>&lt;clustering mode="replication"
-            clusterName="JBoss-Cache-Lock-Cluster_Name"&gt; - cluster name
-            must be unique;</para>
-          </listitem>
+      <itemizedlist>
+        <listitem>
+          <para>&lt;clustering mode="replication"
+          clusterName="JBoss-Cache-Lock-Cluster_Name"&gt; - cluster name must
+          be unique;</para>
+        </listitem>
 
-          <listitem>
-            <para>"cache.jdbc.table.name" must be unique per
-            datasource;</para>
-          </listitem>
+        <listitem>
+          <para><quote>cache.jdbc.table.name</quote> must be unique per
+          datasource;</para>
+        </listitem>
 
-          <listitem>
-            <para>"cache.jdbc.node.type" and "cache.jdbc.fqn.type" must be
-            configured according to using database. <ulink
-            url="#datatypes">DataTypes</ulink> or <link
-            linkend="datatypes">enother link to DataTypes</link>.</para>
-          </listitem>
-        </itemizedlist>
-      </sect3>
+        <listitem>
+          <para><quote>cache.jdbc.node.type</quote> and
+          <quote>cache.jdbc.fqn.type</quote> must be configured according to
+          using database. See <link linkend='datatypes' endterm="datatypes.title"/> .</para>
+        </listitem>
+      </itemizedlist>
+    </sect2>
 
-      <sect3>
-        <title>Template JBossCache Configuration</title>
+    <sect2>
+      <title>Template JBossCache Configuration</title>
 
-        <para>Second one is - use template JBoss-cache configuration for all
-        LockManagers</para>
+      <para>Second one is - use template JBoss-cache configuration for all
+      LockManagers</para>
 
-        <para><citetitle>Lock template configuration</citetitle></para>
+      <para><citetitle>Lock template configuration</citetitle></para>
 
-        <para>test-jbosscache-lock.xml</para>
+      <para>test-jbosscache-lock.xml</para>
 
-        <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+      <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;jbosscache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:jboss:jbosscache-core:config:3.1"&gt;
 
    &lt;locking useLockStriping="false" concurrencyLevel="50000" lockParentForChildInsertRemove="false"
@@ -273,10 +268,10 @@
    &lt;/loaders&gt;
 &lt;/jbosscache&gt;</programlisting>
 
-        <para>As you see, all configurable paramaters filled by templates and
-        will be replaced by LockManagers conf parameters:</para>
+      <para>As you see, all configurable paramaters filled by templates and
+      will be replaced by LockManagers conf parameters:</para>
 
-        <programlisting>&lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl"&gt;
+      <programlisting>&lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl"&gt;
    &lt;properties&gt;
       &lt;property name="time-out" value="15m" /&gt;
       &lt;property name="jbosscache-configuration" value="test-jbosscache-lock.xml" /&gt;
@@ -296,26 +291,26 @@
    &lt;/properties&gt;
 &lt;/lock-manager&gt;</programlisting>
 
-        <para>Configuration requirements:<itemizedlist>
-            <listitem>
-              <para>"jbosscache-cl-cache.jdbc.fqn.column" and
-              "jbosscache-cl-cache.jdbc.node.type" is nothing else as
-              cache.jdbc.fqn.type and cache.jdbc.node.type in JBoss-Cache
-              configuration. You can set those data types according to
-              database type (See [TODO add link to blob types inf diff DB]) or
-              set it as AUTO (or do not set at all) and data type will by
-              detected automaticaly.</para>
-            </listitem>
+      <para>Configuration requirements:<itemizedlist>
+          <listitem>
+            <para><quote>jbosscache-cl-cache.jdbc.fqn.column</quote> and
+            <quote>jbosscache-cl-cache.jdbc.node.type</quote> is nothing else
+            as cache.jdbc.fqn.type and cache.jdbc.node.type in JBoss-Cache
+            configuration. You can set those data types according to database
+            type (See <link linkend='datatypes' endterm="datatypes.title"/>) or set it as
+            AUTO (or do not set at all) and data type will by detected
+            automaticaly.</para>
+          </listitem>
 
-            <listitem>
-              <para>as you see, jgroups-configuration moved to separate config
-              file - udp-mux.xml; In our case udp-mux.xml is common JGroup
-              config for all components (QueryHandler, cache, LockManager).
-              But we, still, can create own config.</para>
-            </listitem>
-          </itemizedlist></para>
+          <listitem>
+            <para>as you see, jgroups-configuration moved to separate config
+            file - udp-mux.xml; In our case udp-mux.xml is common JGroup
+            config for all components (QueryHandler, cache, LockManager). But
+            we, still, can create own config.</para>
+          </listitem>
+        </itemizedlist></para>
 
-        <para>our-udp-mux.xml<programlisting>&lt;protocol_stacks&gt;
+      <para>our-udp-mux.xml<programlisting>&lt;protocol_stacks&gt;
    &lt;stack name="jcr.stack"&gt;
       &lt;config&gt;
          &lt;UDP mcast_addr="228.10.10.10" mcast_port="45588" tos="8" ucast_recv_buf_size="20000000"
@@ -348,101 +343,100 @@
       &lt;/config&gt;
    &lt;/stack&gt;
 &lt;/protocol_stacks&gt; </programlisting></para>
-      </sect3>
+    </sect2>
 
-      <sect3>
-        <title id="datatypes">Data Types in Different Databases</title>
+    <sect2 id="datatypes">
+      <title id="datatypes.title">Data Types in Different Databases</title>
 
-        <table>
-          <title>Fqn type and node type in different databases</title>
+      <table>
+        <title>Fqn type and node type in different databases</title>
 
-          <tgroup cols="3">
-            <thead>
-              <row>
-                <entry>DataBase name</entry>
+        <tgroup cols="3">
+          <thead>
+            <row>
+              <entry>DataBase name</entry>
 
-                <entry>Node data type</entry>
+              <entry>Node data type</entry>
 
-                <entry>FQN data type</entry>
-              </row>
-            </thead>
+              <entry>FQN data type</entry>
+            </row>
+          </thead>
 
-            <tbody>
-              <row>
-                <entry>default</entry>
+          <tbody>
+            <row>
+              <entry>default</entry>
 
-                <entry>BLOB</entry>
+              <entry>BLOB</entry>
 
-                <entry>VARCHAR(512)</entry>
-              </row>
+              <entry>VARCHAR(512)</entry>
+            </row>
 
-              <row>
-                <entry>HSSQL</entry>
+            <row>
+              <entry>HSSQL</entry>
 
-                <entry>OBJECT</entry>
+              <entry>OBJECT</entry>
 
-                <entry>VARCHAR(512)</entry>
-              </row>
+              <entry>VARCHAR(512)</entry>
+            </row>
 
-              <row>
-                <entry>MySQL</entry>
+            <row>
+              <entry>MySQL</entry>
 
-                <entry>LONGBLOB</entry>
+              <entry>LONGBLOB</entry>
 
-                <entry>VARCHAR(512)</entry>
-              </row>
+              <entry>VARCHAR(512)</entry>
+            </row>
 
-              <row>
-                <entry>ORACLE</entry>
+            <row>
+              <entry>ORACLE</entry>
 
-                <entry>BLOB</entry>
+              <entry>BLOB</entry>
 
-                <entry>VARCHAR2(512)</entry>
-              </row>
+              <entry>VARCHAR2(512)</entry>
+            </row>
 
-              <row>
-                <entry>PostgreSQL</entry>
+            <row>
+              <entry>PostgreSQL</entry>
 
-                <entry>bytea</entry>
+              <entry>bytea</entry>
 
-                <entry>VARCHAR(512)</entry>
-              </row>
+              <entry>VARCHAR(512)</entry>
+            </row>
 
-              <row>
-                <entry>MSSQL</entry>
+            <row>
+              <entry>MSSQL</entry>
 
-                <entry>VARBINARY(MAX)</entry>
+              <entry>VARBINARY(MAX)</entry>
 
-                <entry>VARCHAR(512)</entry>
-              </row>
+              <entry>VARCHAR(512)</entry>
+            </row>
 
-              <row>
-                <entry>DB2</entry>
+            <row>
+              <entry>DB2</entry>
 
-                <entry>BLOB</entry>
+              <entry>BLOB</entry>
 
-                <entry>VARCHAR(512)</entry>
-              </row>
+              <entry>VARCHAR(512)</entry>
+            </row>
 
-              <row>
-                <entry>Sybase</entry>
+            <row>
+              <entry>Sybase</entry>
 
-                <entry>IMAGE</entry>
+              <entry>IMAGE</entry>
 
-                <entry>VARCHAR(512)</entry>
-              </row>
+              <entry>VARCHAR(512)</entry>
+            </row>
 
-              <row>
-                <entry>Ingres</entry>
+            <row>
+              <entry>Ingres</entry>
 
-                <entry>long byte</entry>
+              <entry>long byte</entry>
 
-                <entry>VARCHAR(512)</entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </table>
-      </sect3>
+              <entry>VARCHAR(512)</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
     </sect2>
   </sect1>
 </article>
