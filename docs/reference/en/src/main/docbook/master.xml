@@ -19,25 +19,15 @@
     02110-1301 USA, or see the FSF site: http://www.fsf.org.
 
 -->
-
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
-      "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<book lang="en">
-
-<!-- DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN" "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd"
-[  
-   <!ENTITY intro SYSTEM "modules/intro.xml">
-   <!ENTITY architecture SYSTEM "modules/architecture.xml">
-   <!ENTITY configuration SYSTEM "modules/configuration.xml">
-] -->
-
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <!-- adopted from http://anonsvn.jboss.org/repos/gatein/portal/trunk/docs/reference-guide/en/master.xml 
 and https://svn.jboss.org/repos/richfaces/tags/3.3.2.GA/docs/userguide/en/src/main/docbook/master.xml -->
-
 <book lang="en">
-	<bookinfo>
-      <title>eXoJCR Reference Manual</title>
-		<!-- corpauthor>
+  <bookinfo>
+    <title>eXoJCR Reference Manual</title>
+
+    <!-- corpauthor>
 			<inlinemediaobject>
 				<imageobject role="fo">
 					<imagedata format="PNG" fileref="images/richfaces_logo.png" />
@@ -47,40 +37,39 @@ and https://svn.jboss.org/repos/richfaces/tags/3.3.2.GA/docs/userguide/en/src/ma
 				</imageobject>	
 			</inlinemediaobject>           
 		</corpauthor -->
-      <subtitle>Java Content Repository and Extension services</subtitle>
-		<copyright>
-			<year>2009, 20010</year>
-			<holder>eXoPlatform</holder>
-		</copyright>
 
-<!-- PDF version -->
-<abstract>
-   <title/>
-       <para>
-       	<ulink url="../pdf/richfaces_reference.pdf">PDF version</ulink>
-       </para>
-</abstract>
+    <subtitle>Java Content Repository and Extension services</subtitle>
 
-   </bookinfo>
+    <copyright>
+      <year>2009, 2010</year>
 
-   <toc/>
+      <holder>eXoPlatform</holder>
+    </copyright>
 
-	<!--
+    <!-- PDF version -->
+
+    <!-- abstract>
+       <title/>
+         <para>
+       	    <ulink url="../pdf/richfaces_reference.pdf">PDF version</ulink>
+         </para>
+   </abstract -->
+  </bookinfo>
+
+  <toc></toc>
+
+  <!--
 		Table of content in Wiki Format <xi:include
 		xmlns:xi="http://www.w3.org/2001/XInclude"
 		href="modules/Portal_Manual.xml" />
 	-->
-	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/intro.xml" />
 
-	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/architecture.xml" />
+  <xi:include href="modules/intro.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/configuration.xml" />
+  <xi:include href="modules/architecture.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-<!--
-   &intro;
-   &architecture;
-   &configuration;        
--->
-
+  <xi:include href="modules/configuration.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
 </book>
-
