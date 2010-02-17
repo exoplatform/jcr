@@ -85,6 +85,9 @@
 
       <para>Replication requirements are same as for Cache</para>
 
+      <para>Full JCR configuration example you can see there <xref
+      linkend="sect_conf_cluster_jcr"/></para>
+
       <para>Common tips:</para>
 
       <itemizedlist>

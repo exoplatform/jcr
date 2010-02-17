@@ -64,7 +64,7 @@
       </orderedlist>
     </section>
 
-    <section>
+    <section id="sect_conf_cluster_jcr">
       <title>Configuring JCR to use external configuration</title>
 
       <itemizedlist>
@@ -92,7 +92,7 @@
                      &lt;property name="swap-directory" value="../temp/swap/production" /&gt;
                   &lt;/properties&gt;
                   &lt;value-storages&gt;
-                     see "Value storage configuration" part.
+                     see "<link linkend="conf_value_storage">Value storage configuration</link>" part.
                   &lt;/value-storages&gt;
                &lt;/container&gt;
                &lt;initializer class="org.exoplatform.services.jcr.impl.core.ScratchWorkspaceInitializer"&gt;
@@ -101,13 +101,13 @@
                   &lt;/properties&gt;
                &lt;/initializer&gt;
                &lt;cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache"&gt;
-                     see "Cache configuration" part.
+                     see  "<link linkend="conf_cache">Cache configuration</link>" part.
                &lt;/cache&gt;
                &lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
-                  see "Indexer configuration" part.
+                  see  "<link linkend="conf_indexer">Indexer configuration</link>" part.
                &lt;/query-handler&gt;
                &lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl"&gt;
-                  see "Lock Manager configuration" part.
+                  see  "<link linkend="conf_lock_manager">Lock Manager configuration</link>" part.
                &lt;/lock-manager&gt;
             &lt;/workspace&gt;
             &lt;workspace name="ws2"&gt;
@@ -176,7 +176,7 @@
       such parts:</para>
 
       <itemizedlist>
-        <listitem>
+        <listitem id="conf_value_storage">
           <para>Value Storage configuration:</para>
 
           <programlisting>&lt;value-storages&gt;
@@ -190,10 +190,8 @@
    &lt;/value-storage&gt;
 &lt;/value-storages&gt;</programlisting>
         </listitem>
-      </itemizedlist>
 
-      <itemizedlist>
-        <listitem>
+        <listitem id="conf_cache">
           <para>Cache configuration:</para>
 
           <programlisting>&lt;cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache"&gt;
@@ -205,10 +203,8 @@
    &lt;/properties&gt;
 &lt;/cache&gt; </programlisting>
         </listitem>
-      </itemizedlist>
 
-      <itemizedlist>
-        <listitem>
+        <listitem id="conf_indexer">
           <para>Indexer configuration:</para>
 
           <programlisting>&lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
@@ -223,7 +219,7 @@
 &lt;/query-handler&gt; </programlisting>
         </listitem>
 
-        <listitem>
+        <listitem id="conf_lock_manager">
           <para>Lock Manager configuration:</para>
 
           <programlisting>&lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl"&gt;
