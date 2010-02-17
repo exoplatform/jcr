@@ -376,10 +376,7 @@ public class NodeIndexer
                }
                catch (DocumentReadException e)
                {
-                  if (log.isWarnEnabled())
-                  {
-                    log.warn("Can not indexing the document by path " + propData.getQPath().getAsString() + ", propery id '" + propData.getIdentifier() + "' : " + e, e);
-                  }
+                  log.error("Can not indexing the document by path " + propData.getQPath().getAsString() + ", propery id '" + propData.getIdentifier() + "' : " + e, e);
                }
                catch (HandlerNotFoundException e)
                {
