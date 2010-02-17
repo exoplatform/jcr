@@ -20,6 +20,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Fieldable;
 import org.exoplatform.services.document.DocumentReader;
+import org.exoplatform.services.document.PDFDocumentReadException;
 import org.exoplatform.services.document.DocumentReaderService;
 import org.exoplatform.services.document.HandlerNotFoundException;
 import org.exoplatform.services.jcr.core.ExtendedPropertyType;
@@ -303,9 +304,12 @@ public class NodeIndexer
                   // ok, have a reader
                   // if the prop obtainer from cache it will contains a values,
                   // otherwise read prop with values from DM
-                  data =
-                     prop.getValues().size() > 0 ? prop.getValues() : ((PropertyData)stateProvider.getItemData(node,
-                        new QPathEntry(Constants.JCR_DATA, 0))).getValues();
+                  
+                  PropertyData propData = prop.getValues().size() > 0 ? prop : ((PropertyData)stateProvider.getItemData(node,
+                           new QPathEntry(Constants.JCR_DATA, 0)));
+                  
+                  data = propData.getValues();
+                  
                   if (data == null)
                      log.warn("null value found at property " + prop.getQPath().getAsString());
 
@@ -322,10 +326,15 @@ public class NodeIndexer
                         InputStream is = null;
                         try
                         {
-
                            is = pvd.getAsStream();
-                           Reader reader = new StringReader(dreader.getContentAsText(is, encoding));
-                           doc.add(createFulltextField(reader));
+                           try {
+                              Reader reader = new StringReader(dreader.getContentAsText(is, encoding));
+                              doc.add(createFulltextField(reader));
+                           } 
+                           catch (PDFDocumentReadException e)
+                           {
+                              log.error("Can not indexing the PDF document by path " + propData.getQPath().getAsString(), e);
+                           }
 
                         }
                         finally
@@ -349,8 +358,14 @@ public class NodeIndexer
                         try
                         {
                            is = pvd.getAsStream();
-                           Reader reader = new StringReader(dreader.getContentAsText(is));
-                           doc.add(createFulltextField(reader));
+                           try {
+                              Reader reader = new StringReader(dreader.getContentAsText(is));
+                              doc.add(createFulltextField(reader));
+                           } 
+                           catch (PDFDocumentReadException e)
+                           {
+                              log.error("Can not indexing the PDF document by path " + propData.getQPath().getAsString(), e);
+                           }
                         }
                         finally
                         {
