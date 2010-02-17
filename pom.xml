@@ -432,7 +432,6 @@
     </pluginManagement>
   </build>
   <modules>
-    <module>applications/cluster.test.client</module>
     <module>exo.jcr.component.core</module>
     <module>exo.jcr.component.ext</module>
     <module>exo.jcr.component.ftp</module>
@@ -441,12 +440,7 @@
     <module>exo.jcr.framework.command</module>
     <module>exo.jcr.framework.web</module>
     <module>exo.jcr.framework.ftpclient</module>
-    <module>applications/exo.jcr.applications.config</module>
-    <module>applications/java/exo.jcr.applications.browser</module>
-    <module>applications/java/exo.jcr.applications.fckeditor</module>
-    <module>applications/java/exo.jcr.applications.rest</module>
-    <module>applications/java/exo.jcr.ear</module>
-    <module>applications/java/exo.jcr.applications.backupconsole</module>
+    <module>applications</module>
     <module>packaging/module</module>
   </modules>
 </project>
