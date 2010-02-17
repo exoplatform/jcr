@@ -30,7 +30,7 @@
    <artifactId>reference-docs-${translation}</artifactId>
 
    <name>eXoJCR reference documentation (${translation})</name>
-   <packaging>jar</packaging>
+   <packaging>jdocbook</packaging>
 
    <properties>
       <translation>en</translation>
