@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
-"http://www.oasis-open.org/docbook/xml/4.3b2/docbookx.dtd">
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <article>
   <articleinfo>
     <title>LockManager configuration</title>
   </articleinfo>
 
-  <sect1>
+  <section>
     <title>Introduction</title>
 
     <para>What LockManager does?</para>
@@ -47,9 +47,9 @@
    &lt;/lock-manager&gt;               
    ...
 &lt;/workspace&gt;</programlisting>
-  </sect1>
+  </section>
 
-  <sect1>
+  <section>
     <title>LockManagerImpl</title>
 
     <para>LockManagerImpl is simple implementation of LockManager, and also
@@ -60,9 +60,9 @@
     <para>See <ulink
     url="http://wiki.exoplatform.com/xwiki/bin/view/JCR/Configuration#HLockManagerconfiguration3A">LockManagerImpl
     configuration</ulink></para>
-  </sect1>
+  </section>
 
-  <sect1>
+  <section>
     <title>CacheableLockManagerImpl</title>
 
     <para>CacheableLockManagerImpl stores Lock object in JBoss-cache, so Locks
@@ -80,13 +80,7 @@
    ...
 &lt;/properties&gt;</programlisting>
 
-    <para>Replication requirements are same as for Cache</para>
-
-    <warning>
-      <para>[TODO add link to replication configuration]</para>
-    </warning>
-
-    <sect2>
+    <section>
       <title>Configuration</title>
 
       <para>Replication requirements are same as for Cache</para>
@@ -113,9 +107,9 @@
 
       <para>See <ulink
       url="http://community.jboss.org/wiki/JBossCacheJDBCCacheLoader">http://community.jboss.org/wiki/JBossCacheJDBCCacheLoader</ulink></para>
-    </sect2>
+    </section>
 
-    <sect2>
+    <section>
       <title>Simple JbossCache Configuraion</title>
 
       <para>First one is - put JbossCache configuraion file path to
@@ -214,12 +208,13 @@
         <listitem>
           <para><quote>cache.jdbc.node.type</quote> and
           <quote>cache.jdbc.fqn.type</quote> must be configured according to
-          using database. See <link linkend='datatypes' endterm="datatypes.title"/> .</para>
+          using database. See <link endterm="datatypes.title"
+          linkend="datatypes"></link> .</para>
         </listitem>
       </itemizedlist>
-    </sect2>
+    </section>
 
-    <sect2>
+    <section>
       <title>Template JBossCache Configuration</title>
 
       <para>Second one is - use template JBoss-cache configuration for all
@@ -297,9 +292,9 @@
             <quote>jbosscache-cl-cache.jdbc.node.type</quote> is nothing else
             as cache.jdbc.fqn.type and cache.jdbc.node.type in JBoss-Cache
             configuration. You can set those data types according to database
-            type (See <link linkend='datatypes' endterm="datatypes.title"/>) or set it as
-            AUTO (or do not set at all) and data type will by detected
-            automaticaly.</para>
+            type (See <link endterm="datatypes.title"
+            linkend="datatypes"></link>) or set it as AUTO (or do not set at
+            all) and data type will by detected automaticaly.</para>
           </listitem>
 
           <listitem>
@@ -343,9 +338,9 @@
       &lt;/config&gt;
    &lt;/stack&gt;
 &lt;/protocol_stacks&gt; </programlisting></para>
-    </sect2>
+    </section>
 
-    <sect2 id="datatypes">
+    <section id="datatypes">
       <title id="datatypes.title">Data Types in Different Databases</title>
 
       <table>
@@ -437,6 +432,6 @@
           </tbody>
         </tgroup>
       </table>
-    </sect2>
-  </sect1>
+    </section>
+  </section>
 </article>

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
-"http://www.oasis-open.org/docbook/xml/4.3b2/docbookx.dtd">
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <article>
   <articleinfo>
     <title>QueryHandler configuration</title>
   </articleinfo>
 
-  <sect1>
+  <section>
     <title>How does it work?</title>
 
     <para>Lets talk about indexing content in cluster.</para>
@@ -51,12 +51,12 @@
           <imagedata fileref="images/diagram-shared-index.png" />
         </imageobject>
       </mediaobject></para>
-  </sect1>
+  </section>
 
-  <sect1>
+  <section>
     <title>Configuration</title>
 
-    <sect2>
+    <section>
       <title>Common requirements</title>
 
       <para>Now, lets see what we need to run Search engine in cluster
@@ -79,9 +79,9 @@
             <para>configure JBoss-cache, course;</para>
           </listitem>
         </itemizedlist></para>
-    </sect2>
+    </section>
 
-    <sect2>
+    <section>
       <title>Query-handler configuration</title>
 
       <para>Configuration example:<programlisting>&lt;workspace name="ws"&gt;
@@ -152,9 +152,9 @@
             </tbody>
           </tgroup>
         </table></para>
-    </sect2>
+    </section>
 
-    <sect2>
+    <section>
       <title>JBoss-Cache template configuration</title>
 
       <para>JBoss-Cache template configuration for query handler.</para>
@@ -181,6 +181,6 @@
    &lt;/eviction&gt;
 
 &lt;/jbosscache&gt;</programlisting></para>
-    </sect2>
-  </sect1>
+    </section>
+  </section>
 </article>

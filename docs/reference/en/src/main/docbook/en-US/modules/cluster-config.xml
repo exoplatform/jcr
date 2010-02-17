@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
-"http://www.oasis-open.org/docbook/xml/4.3b2/docbookx.dtd">
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <article>
   <articleinfo>
     <title>Configuring JBoss AS with eXo JCR in cluster</title>
   </articleinfo>
 
-  <sect1>
+  <section>
     <title>Launching Cluster</title>
 
-    <sect2>
+    <section>
       <title>Deploying eXo JCR to JBoss As</title>
 
       <para>To deploy eXo JCR to JBoss As follow next steps:</para>
@@ -62,9 +62,9 @@
           you'll get access to repository browser.</para>
         </listitem>
       </orderedlist>
-    </sect2>
+    </section>
 
-    <sect2>
+    <section>
       <title>Configuring JCR to use external configuration</title>
 
       <itemizedlist>
@@ -137,13 +137,13 @@
 &lt;/component&gt;</programlisting></para>
         </listitem>
       </itemizedlist>
-    </sect2>
-  </sect1>
+    </section>
+  </section>
 
-  <sect1>
+  <section>
     <title>Requirements</title>
 
-    <sect2>
+    <section>
       <title>Enviorenment requirements</title>
 
       <itemizedlist>
@@ -167,9 +167,9 @@
           "production_indexer_cluster" )</para>
         </listitem>
       </itemizedlist>
-    </sect2>
+    </section>
 
-    <sect2>
+    <section>
       <title>Enviorenment requirements</title>
 
       <para>Configuration of every workspace in repository must contains of
@@ -246,6 +246,6 @@
 &lt;/lock-manager&gt;</programlisting>
         </listitem>
       </itemizedlist>
-    </sect2>
-  </sect1>
+    </section>
+  </section>
 </article>
