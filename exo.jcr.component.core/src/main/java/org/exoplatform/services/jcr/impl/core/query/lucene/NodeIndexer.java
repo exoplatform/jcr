@@ -383,7 +383,7 @@ public class NodeIndexer
                   // no handler - no index
                   if (log.isWarnEnabled())
                   {
-                     log.warn("This content is not readable, document by path "+ propData.getQPath().getAsString() + ", propery id '" + propData.getIdentifier() + "' : " + e, e);
+                     log.warn("This content is not readable, document by path "+ propData.getQPath().getAsString() + ", propery id '" + propData.getIdentifier() + "' : " + e);
                   }
                }
                catch (IOException e)
