@@ -48,7 +48,7 @@
 
     <para>Common scheme of Shared Index<mediaobject>
         <imageobject>
-          <imagedata fileref="../../../resources/images/diagram-shared-index.png" />
+          <imagedata fileref="images/diagram-shared-index.png" />
         </imageobject>
       </mediaobject></para>
   </sect1>
