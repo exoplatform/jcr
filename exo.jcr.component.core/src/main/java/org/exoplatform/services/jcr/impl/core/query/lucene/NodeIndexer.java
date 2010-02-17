@@ -399,7 +399,7 @@ public class NodeIndexer
                }
                catch (Exception e)
                {
-                  log.error("Binary value indexer error " + e, e);
+                  log.error("Binary value indexer error, document by path " + propData.getQPath().getAsString() + ", propery id '" + propData.getIdentifier() + "' : " + e, e);
                }
             }
          }
