@@ -94,7 +94,7 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
 
       // try to get pushState parameters, since they are set programmatically only
       Boolean pushState = config.getParameterBoolean(QueryHandlerParams.PARAM_JBOSSCACHE_PUSHSTATE, false);
-      Integer pushStateTimeOut = config.getParameterInteger(QueryHandlerParams.PARAM_JBOSSCACHE_PUSHSTATE, 10000);
+      Integer pushStateTimeOut = config.getParameterInteger(QueryHandlerParams.PARAM_JBOSSCACHE_PUSHSTATE_TIMEOUT, 10000);
 
       singletonStoreProperties.setProperty("pushStateWhenCoordinator", pushState.toString());
       singletonStoreProperties.setProperty("pushStateWhenCoordinatorTimeout", pushStateTimeOut.toString());
