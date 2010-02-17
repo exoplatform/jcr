@@ -19,8 +19,8 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Fieldable;
+import org.exoplatform.services.document.DocumentReadException;
 import org.exoplatform.services.document.DocumentReader;
-import org.exoplatform.services.document.PDFDocumentReadException;
 import org.exoplatform.services.document.DocumentReaderService;
 import org.exoplatform.services.document.HandlerNotFoundException;
 import org.exoplatform.services.jcr.core.ExtendedPropertyType;
@@ -295,19 +295,18 @@ public class NodeIndexer
                (PropertyData)stateProvider.getItemData(node, new QPathEntry(Constants.JCR_MIMETYPE, 0));
             if (pmime != null)
             {
+               // ok, have a reader
+               // if the prop obtainer from cache it will contains a values,
+               // otherwise read prop with values from DM
+               PropertyData propData = prop.getValues().size() > 0 ? prop : ((PropertyData)stateProvider.getItemData(node,
+                        new QPathEntry(Constants.JCR_DATA, 0)));
+               
                // index if have jcr:mimeType sibling for this binary property only
                try
                {
                   DocumentReader dreader =
                      extractor.getDocumentReader(new String(pmime.getValues().get(0).getAsByteArray()));
 
-                  // ok, have a reader
-                  // if the prop obtainer from cache it will contains a values,
-                  // otherwise read prop with values from DM
-                  
-                  PropertyData propData = prop.getValues().size() > 0 ? prop : ((PropertyData)stateProvider.getItemData(node,
-                           new QPathEntry(Constants.JCR_DATA, 0)));
-                  
                   data = propData.getValues();
                   
                   if (data == null)
@@ -327,14 +326,8 @@ public class NodeIndexer
                         try
                         {
                            is = pvd.getAsStream();
-                           try {
-                              Reader reader = new StringReader(dreader.getContentAsText(is, encoding));
-                              doc.add(createFulltextField(reader));
-                           } 
-                           catch (PDFDocumentReadException e)
-                           {
-                              log.error("Can not indexing the PDF document by path " + propData.getQPath().getAsString(), e);
-                           }
+                           Reader reader = new StringReader(dreader.getContentAsText(is, encoding));
+                           doc.add(createFulltextField(reader));
 
                         }
                         finally
@@ -358,14 +351,8 @@ public class NodeIndexer
                         try
                         {
                            is = pvd.getAsStream();
-                           try {
-                              Reader reader = new StringReader(dreader.getContentAsText(is));
-                              doc.add(createFulltextField(reader));
-                           } 
-                           catch (PDFDocumentReadException e)
-                           {
-                              log.error("Can not indexing the PDF document by path " + propData.getQPath().getAsString(), e);
-                           }
+                           Reader reader = new StringReader(dreader.getContentAsText(is));
+                           doc.add(createFulltextField(reader));
                         }
                         finally
                         {
@@ -387,17 +374,28 @@ public class NodeIndexer
                   }
 
                }
+               catch (DocumentReadException e)
+               {
+                  if (log.isWarnEnabled())
+                  {
+                    log.warn("Can not indexing the document by path " + propData.getQPath().getAsString() + ", propery id '" + propData.getIdentifier() + "' : " + e, e);
+                  }
+               }
                catch (HandlerNotFoundException e)
                {
                   // no handler - no index
-                  if (log.isDebugEnabled())
-                     log.warn("This content is not readable " + e);
+                  if (log.isWarnEnabled())
+                  {
+                     log.warn("This content is not readable, document by path "+ propData.getQPath().getAsString() + ", propery id '" + propData.getIdentifier() + "' : " + e, e);
+                  }
                }
                catch (IOException e)
                {
                   // no data - no index
-                  if (log.isDebugEnabled())
-                     log.warn("Binary value indexer IO error " + e, e);
+                  if (log.isWarnEnabled())
+                  {
+                     log.warn("Binary value indexer IO error, document by path " + propData.getQPath().getAsString() + ", propery id '" + propData.getIdentifier() + "' : " + e, e);
+                  }
                }
                catch (Exception e)
                {
