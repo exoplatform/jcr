@@ -42,18 +42,8 @@ and https://svn.jboss.org/repos/richfaces/tags/3.3.2.GA/docs/userguide/en/src/ma
 
     <copyright>
       <year>2009, 2010</year>
-
       <holder>eXoPlatform</holder>
     </copyright>
-
-    <!-- PDF version -->
-
-    <!-- abstract>
-       <title/>
-         <para>
-       	    <ulink url="../pdf/richfaces_reference.pdf">PDF version</ulink>
-         </para>
-   </abstract -->
   </bookinfo>
 
   <toc></toc>
