@@ -149,8 +149,7 @@
     </section>
 
     <section>
-      <title>Repository service configuration (JCR repositories
-      configuration)</title>
+      <title>Repository service configuration </title>
 
       <para>Default configuration of the Repository Service located in
       jar:/conf/portal/exo-jcr-config.xml, it will be available for portal and
@@ -338,6 +337,113 @@
       is applicable</para>
 
       <para>Initializer configuration (optional):</para>
+
+      <para>class - initializer implementation class. </para>
+
+      <para>properties - the list of properties (name-value pairs). Properties
+      are supported:</para>
+
+      <para> root-nodetype - The node type for root node initialization
+      </para>
+
+      <para> root-permissions - Default permissions of the root node. It is
+      defined as a set of semicolon-delimited permissions containing a group
+      of space-delimited identities (user, group etc, see Organization service
+      documentation for details) and the type of permission. For example any
+      read;:/admin read;:/admin add_node;:/admin set_property;:/admin remove
+      means that users from group admin have all permissions and other users
+      have only a 'read' permission.</para>
+
+      <para>Configurable initializer adds a capability to override workspace
+      initial startup procedure.</para>
+
+      <para>Cache configuration:</para>
+
+      <para>enabled - if workspace cache is enabled</para>
+
+      <para>class - cache implementation class, optional from 1.9. Default
+      value is
+      org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl.
+      </para>
+
+      <para>Cache can be configured to use concrete implementation of
+      WorkspaceStorageCache interface. JCR core has two implementation to use:
+      * LinkedWorkspaceStorageCacheImpl - default, with configurable read
+      behavior and statistic. * WorkspaceStorageCacheImpl - pre 1.9, still can
+      be used. </para>
+
+      <para>properties - the list of properties (name-value pairs) for
+      Workspace cache: </para>
+
+      <para> max-size - cache maximum size. </para>
+
+      <para> live-time - cached item live time.</para>
+
+      <para>LinkedWorkspaceStorageCacheImpl supports additional optional
+      parameters TODO</para>
+
+      <para>Query Handler configuration:</para>
+
+      <para>class - A Query Handler class name</para>
+
+      <para>properties - the list of properties (name-value pairs) for a Query
+      Handler (indexDir) properties and advanced features described in *Search
+      Configuration*</para>
+
+      <para>Lock Manager configuration:</para>
+
+      <para>time-out - time after which the unused global lock will be
+      removed. </para>
+
+      <para>persister - a class for storing lock information for future use.
+      For example, remove lock after jcr restart. </para>
+
+      <para>path - a lock folder, each workspace has its own.</para>
+
+      <para></para>
+
+      <para>Configuration definition:</para>
+
+      <programlisting>&lt;!ELEMENT repository-service (repositories)&gt;
+  &lt;!ATTLIST repository-service default-repository NMTOKEN #REQUIRED&gt;
+  &lt;!ELEMENT repositories (repository)&gt;
+  &lt;!ELEMENT repository (security-domain,access-control,session-max-age,authentication-policy,workspaces)&gt;
+  &lt;!ATTLIST repository
+	default-workspace NMTOKEN #REQUIRED
+	name NMTOKEN #REQUIRED
+	system-workspace NMTOKEN #REQUIRED
+  &gt;
+  &lt;!ELEMENT security-domain (#PCDATA)&gt;
+  &lt;!ELEMENT access-control (#PCDATA)&gt;
+  &lt;!ELEMENT session-max-age (#PCDATA)&gt;
+  &lt;!ELEMENT authentication-policy (#PCDATA)&gt;
+  &lt;!ELEMENT workspaces (workspace+)&gt;
+  &lt;!ELEMENT workspace (container,initializer,cache,query-handler)&gt;
+  &lt;!ATTLIST workspace name NMTOKEN #REQUIRED&gt;
+  &lt;!ELEMENT container (properties,value-storages)&gt;
+  &lt;!ATTLIST container class NMTOKEN #REQUIRED&gt;
+  &lt;!ELEMENT value-storages (value-storage+)&gt;
+  &lt;!ELEMENT value-storage (properties,filters)&gt;
+  &lt;!ATTLIST value-storage class NMTOKEN #REQUIRED&gt;
+  &lt;!ELEMENT filters (filter+)&gt;
+  &lt;!ELEMENT filter EMPTY&gt;
+  &lt;!ATTLIST filter property-type NMTOKEN #REQUIRED&gt;
+  &lt;!ELEMENT initializer (properties)&gt;
+  &lt;!ATTLIST initializer class NMTOKEN #REQUIRED&gt;
+  &lt;!ELEMENT cache (properties)&gt;
+  &lt;!ATTLIST cache 
+        enabled NMTOKEN #REQUIRED
+        class NMTOKEN #REQUIRED
+  &gt;
+  &lt;!ELEMENT query-handler (properties)&gt;
+  &lt;!ATTLIST query-handler class NMTOKEN #REQUIRED&gt;
+  &lt;!ELEMENT access-manager (properties)&gt;
+  &lt;!ATTLIST access-manager class NMTOKEN #REQUIRED&gt;
+  &lt;!ELEMENT lock-manager (time-out,persister)&gt;
+  &lt;!ELEMENT time-out (#PCDATA)&gt;
+  &lt;!ELEMENT persister (properties)&gt;
+  &lt;!ELEMENT properties (property+)&gt;
+  &lt;!ELEMENT property EMPTY&gt;</programlisting>
     </section>
   </section>
 </article>
