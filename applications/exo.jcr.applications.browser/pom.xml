@@ -28,7 +28,7 @@
   </parent>
   <artifactId>exo.jcr.applications.browser</artifactId>
   <packaging>war</packaging>
-  <name>eXo JCR :: Application :: Browser Demo</name>
+  <name>eXo JCR :: Applications :: Browser Demo</name>
   <properties>
     <enforcer.skip>true</enforcer.skip>
   </properties>

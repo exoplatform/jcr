@@ -29,7 +29,7 @@
   </parent>
   <artifactId>exo.jcr.applications.config</artifactId>
   <packaging>pom</packaging>
-  <name>eXo JCR :: Application</name>
+  <name>eXo JCR :: Applications :: Config</name>
   <dependencies>
     <dependency>
       <groupId>org.exoplatform.jcr</groupId>

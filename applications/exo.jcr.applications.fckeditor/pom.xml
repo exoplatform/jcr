@@ -28,7 +28,7 @@
   </parent>
   <artifactId>exo.jcr.applications.fckeditor</artifactId>
   <packaging>war</packaging>
-  <name>eXo JCR :: Application :: FCKeditor Sample</name>
+  <name>eXo JCR :: Applications :: FCKeditor Sample</name>
   <description>eXo simple CMS web app</description>
   <properties>
     <enforcer.skip>true</enforcer.skip>

@@ -28,7 +28,7 @@
   </parent>
   <artifactId>exo.jcr.applications.rest</artifactId>
   <packaging>war</packaging>
-  <name>eXo JCR :: Application :: Rest Web</name>
+  <name>eXo JCR :: Applications :: Rest Web</name>
   <description>eXo JCR Rest web application</description>
   <properties>
     <enforcer.skip>true</enforcer.skip>

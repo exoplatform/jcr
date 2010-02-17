@@ -27,7 +27,7 @@
     <version>1.12.0-GA-SNAPSHOT</version>
   </parent>
   <artifactId>exo.jcr.applications.backupconsole</artifactId>
-  <name>eXo JCR :: Application :: Backup Console</name>
+  <name>eXo JCR :: Applications :: Backup Console</name>
   <properties>
     <exo.test.includes>*</exo.test.includes>
     <childDelegation>true</childDelegation>
