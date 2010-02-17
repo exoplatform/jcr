@@ -47,13 +47,37 @@
          <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>xml-maven-plugin</artifactId>
-            <version>1.0-beta-2</version>
+            <!-- version>1.0-beta-2</version -->
          </plugin>
 
          <plugin>
             <groupId>org.jboss.maven.plugins</groupId>
             <artifactId>maven-jdocbook-plugin</artifactId>
+            <version>2.1.1</version>
             <extensions>true</extensions>
+            <dependencies>
+               <dependency>
+                  <groupId>org.gatein.doc</groupId>
+                  <artifactId>gatein-docbook-xslt</artifactId>
+                  <version>1.0.0-CR1</version>
+               </dependency>
+               <dependency>
+                  <groupId>org.gatein.doc</groupId>
+                  <artifactId>gatein-jdocbook-style</artifactId>
+                  <version>1.0.0-CR1</version>
+                  <type>jdocbook-style</type>
+               </dependency>
+               <!-- dependency>
+                  <groupId>xalan</groupId>
+                  <artifactId>xalan</artifactId>
+                  <version>2.7.1</version>
+               </dependency --> 
+               <!-- dependency> 
+                  <groupId>net.sf.saxon</groupId>
+                  <artifactId>saxon</artifactId>
+                  <version>9.1.0.8</version>
+               </dependency --> 
+            </dependencies>
             <configuration>
                <sourceDocumentName>master.xml</sourceDocumentName>
 
@@ -63,15 +87,28 @@
                   <includes>
                      <include>images/**/*</include>
                   </includes>
-               </imageResource>
-               
+               </imageResource>              
 
                <formats>
                   <format>
                      <formatName>pdf</formatName>
+                     <stylesheetResource>classpath://xslt/org/gatein/pdf.xsl</stylesheetResource>
+                     <finalName>${pom.name}.pdf</finalName>
+                  </format>
+                  <format>
+                     <formatName>html</formatName>
+                     <stylesheetResource>classpath:/xslt/org/gatein/xhtml.xsl</stylesheetResource>
+                     <finalName>index.html</finalName>
                   </format>
                   <format>
                      <formatName>html_single</formatName>
+                     <stylesheetResource>classpath:/xslt/org/gatein/xhtml-single.xsl</stylesheetResource>
+                     <finalName>index.html</finalName>
+                  </format>
+                  <format>
+                     <formatName>eclipse</formatName>
+                     <stylesheetResource>classpath:/xslt/org/gatein/eclipse.xsl</stylesheetResource>
+                     <finalName>index.html</finalName>
                   </format>
                </formats>
                
