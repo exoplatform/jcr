@@ -22,13 +22,9 @@ import org.exoplatform.services.jcr.impl.core.XASessionImpl;
 import org.exoplatform.services.transaction.TransactionException;
 
 import java.lang.ref.SoftReference;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.transaction.xa.XAException;
 
@@ -54,8 +50,8 @@ public class TransactionableResourceManager
    /**
     * XASessions involved in transaction. Sessions stored by userId.
     */
-   private Map<String, List<SoftReference<XASessionImpl>>> txResources =
-      new HashMap<String, List<SoftReference<XASessionImpl>>>();
+   private ConcurrentHashMap<String, ConcurrentLinkedQueue<SoftReference<XASessionImpl>>> txResources =
+      new ConcurrentHashMap<String, ConcurrentLinkedQueue<SoftReference<XASessionImpl>>>();
 
    /**
     * TransactionableResourceManager constructor.
@@ -70,9 +66,9 @@ public class TransactionableResourceManager
     * @param userSession
     *          XASessionImpl, user XASession
     */
-   synchronized public void add(XASessionImpl userSession)
+   public void add(XASessionImpl userSession)
    {
-      final List<SoftReference<XASessionImpl>> joinedList = txResources.get(userSession.getUserID());
+      final ConcurrentLinkedQueue<SoftReference<XASessionImpl>> joinedList = txResources.get(userSession.getUserID());
       if (joinedList != null)
       {
          // remove unused session from user list and put this list at the end
@@ -95,8 +91,10 @@ public class TransactionableResourceManager
       else
       {
          // sync for same userId operations
-         final List<SoftReference<XASessionImpl>> newJoinedList = new ArrayList<SoftReference<XASessionImpl>>();
-         final List<SoftReference<XASessionImpl>> previous = putIfAbsent(userSession.getUserID(), newJoinedList);
+         final ConcurrentLinkedQueue<SoftReference<XASessionImpl>> newJoinedList =
+            new ConcurrentLinkedQueue<SoftReference<XASessionImpl>>();
+         final ConcurrentLinkedQueue<SoftReference<XASessionImpl>> previous =
+            putIfAbsent(userSession.getUserID(), newJoinedList);
          if (previous != null)
          {
             previous.add(new SoftReference<XASessionImpl>(userSession));
@@ -114,9 +112,9 @@ public class TransactionableResourceManager
     * @param userSession
     *          XASessionImpl, user XASession
     */
-   synchronized public void remove(XASessionImpl userSession)
+   public void remove(XASessionImpl userSession)
    {
-      final List<SoftReference<XASessionImpl>> joinedList = txResources.get(userSession.getUserID());
+      final ConcurrentLinkedQueue<SoftReference<XASessionImpl>> joinedList = txResources.get(userSession.getUserID());
       if (joinedList != null)
       {
          // traverse and remove unused sessions and given one
@@ -146,9 +144,9 @@ public class TransactionableResourceManager
     * @throws TransactionException
     *           Transaction error
     */
-   synchronized public void commit(XASessionImpl userSession, boolean onePhase) throws TransactionException
+   public void commit(XASessionImpl userSession, boolean onePhase) throws TransactionException
    {
-      List<SoftReference<XASessionImpl>> joinedList;
+      ConcurrentLinkedQueue<SoftReference<XASessionImpl>> joinedList;
       if (onePhase)
       {
          joinedList = txResources.remove(userSession.getUserID());
@@ -161,17 +159,19 @@ public class TransactionableResourceManager
 
       if (joinedList != null)
       {
-         int i = 0;
+         Iterator<SoftReference<XASessionImpl>> it = joinedList.iterator();
+         boolean hasCommitedXASession = false;
          try
          {
-            while (i < joinedList.size())
+            while (it.hasNext())
             {
-               SoftReference<XASessionImpl> sr = joinedList.get(i++);
+               SoftReference<XASessionImpl> sr = it.next();
                XASessionImpl xaSession = sr.get();
                if (xaSession != null && xaSession.isLive())
                {
                   xaSession.getTransientNodesManager().getTransactManager().commit();
                }
+               hasCommitedXASession = true;
             }
          }
          catch (TransactionException e)
@@ -179,18 +179,17 @@ public class TransactionableResourceManager
             if (onePhase)
             {
                // rollback now
-               boolean mixedCommit = i > 0;
-               for (; i < joinedList.size(); i++)
+               while (it.hasNext())
                {
-                  SoftReference<XASessionImpl> sr = joinedList.get(i);
+                  SoftReference<XASessionImpl> sr = it.next();
                   XASessionImpl xaSession = sr.get();
                   if (xaSession != null && xaSession.isLive())
                   {
                      xaSession.getTransientNodesManager().getTransactManager().rollback();
                   }
                }
-               
-               if (mixedCommit)
+
+               if (hasCommitedXASession)
                {
                   // somethings were commited already
                   throw new TransactionException(XAException.XA_HEURMIX, e);
@@ -213,9 +212,9 @@ public class TransactionableResourceManager
     * @param userSession
     *          XASessionImpl, start initializing session
     */
-   synchronized public void start(XASessionImpl userSession)
+   public void start(XASessionImpl userSession)
    {
-      List<SoftReference<XASessionImpl>> joinedList = txResources.get(userSession.getUserID());
+      ConcurrentLinkedQueue<SoftReference<XASessionImpl>> joinedList = txResources.get(userSession.getUserID());
       if (joinedList != null)
       {
          for (SoftReference<XASessionImpl> sr : joinedList)
@@ -236,9 +235,9 @@ public class TransactionableResourceManager
     * @param userSession
     *          XASessionImpl, rollback initializing session
     */
-   synchronized public void rollback(XASessionImpl userSession)
+   public void rollback(XASessionImpl userSession)
    {
-      List<SoftReference<XASessionImpl>> joinedList = txResources.remove(userSession.getUserID());
+      ConcurrentLinkedQueue<SoftReference<XASessionImpl>> joinedList = txResources.remove(userSession.getUserID());
       if (joinedList != null)
       {
          for (SoftReference<XASessionImpl> sr : joinedList)
@@ -253,7 +252,8 @@ public class TransactionableResourceManager
       }
    }
 
-   private List<SoftReference<XASessionImpl>> putIfAbsent(String key, List<SoftReference<XASessionImpl>> value)
+   private ConcurrentLinkedQueue<SoftReference<XASessionImpl>> putIfAbsent(String key,
+      ConcurrentLinkedQueue<SoftReference<XASessionImpl>> value)
    {
       if (!txResources.containsKey(key))
       {
