@@ -86,7 +86,7 @@ public class TransactionableResourceManager
 
          // make sure the list is not removed by another Session of same user, see
          // remove()
-         putIfAbsent(userSession.getUserID(), joinedList);
+         txResources.putIfAbsent(userSession.getUserID(), joinedList);
       }
       else
       {
@@ -94,7 +94,7 @@ public class TransactionableResourceManager
          final ConcurrentLinkedQueue<SoftReference<XASessionImpl>> newJoinedList =
             new ConcurrentLinkedQueue<SoftReference<XASessionImpl>>();
          final ConcurrentLinkedQueue<SoftReference<XASessionImpl>> previous =
-            putIfAbsent(userSession.getUserID(), newJoinedList);
+            txResources.putIfAbsent(userSession.getUserID(), newJoinedList);
          if (previous != null)
          {
             previous.add(new SoftReference<XASessionImpl>(userSession));
@@ -251,18 +251,4 @@ public class TransactionableResourceManager
          }
       }
    }
-
-   private ConcurrentLinkedQueue<SoftReference<XASessionImpl>> putIfAbsent(String key,
-      ConcurrentLinkedQueue<SoftReference<XASessionImpl>> value)
-   {
-      if (!txResources.containsKey(key))
-      {
-         return txResources.put(key, value);
-      }
-      else
-      {
-         return txResources.get(key);
-      }
-   }
-
 }
