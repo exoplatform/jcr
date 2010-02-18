@@ -9,6 +9,9 @@
   <section>
     <title>Base information</title>
 
+    <para>TransactionServices provides acces to JTATransactionManager nad
+    UserTransaction.</para>
+
     <table>
       <title>List methods</title>
 
@@ -51,7 +54,7 @@
           </row>
 
           <row>
-            <entry> createXid()</entry>
+            <entry>createXid()</entry>
 
             <entry>Creates unique XA transaction identifier.</entry>
           </row>
