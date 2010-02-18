@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter>
+<chapter id="ch_query_handler_config">
   <?dbhtml filename="query-handler-config.html"?>
+
   <title>QueryHandler configuration</title>
 
   <section>
@@ -46,6 +47,9 @@
     1Mb or more it is flushed to FS. Also there is timer, that flushes
     volatile index by timeout. Volatile index timeout configured by
     "max-volatile-time" paremeter.</para>
+
+    <para>See more about <link linkend="ch_search_configuration">Search
+    Configuration</link>.</para>
 
     <para>Common scheme of Shared Index<mediaobject>
         <imageobject>
@@ -182,6 +186,9 @@
    &lt;/eviction&gt;
 
 &lt;/jbosscache&gt;</programlisting></para>
+
+      <para>See more about template configurations <link
+      linkend="ch_jbosscache_config_templates">here</link>.</para>
     </section>
   </section>
 </chapter>

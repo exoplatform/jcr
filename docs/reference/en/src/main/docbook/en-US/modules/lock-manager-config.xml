@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter>
+<chapter id="ch_lock_manager_config">
   <?dbhtml filename="lock-manager-config.html"?>
 
   <title>LockManager configuration</title>
@@ -21,11 +21,11 @@
 
     <itemizedlist>
       <listitem>
-        <para>org.exoplatform.services.jcr.impl.core.lock.LockManagerImpl;</para>
+        <para><classname>org.exoplatform.services.jcr.impl.core.lock.LockManagerImpl</classname>;</para>
       </listitem>
 
       <listitem>
-        <para>org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl;</para>
+        <para><classname>org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl</classname>;</para>
       </listitem>
     </itemizedlist>
 
@@ -57,9 +57,8 @@
     may also persist Locks if LockPersister is configured. LockManagerImpl do
     not support replication in any way.</para>
 
-    <para>See <ulink
-    url="http://wiki.exoplatform.com/xwiki/bin/view/JCR/Configuration#HLockManagerconfiguration3A">LockManagerImpl
-    configuration</ulink></para>
+    <para>See more about LockManager Configuration <link
+    linkend="ch_configuration">here</link>.</para>
   </section>
 
   <section>
@@ -85,23 +84,26 @@
 
       <para>Replication requirements are same as for Cache</para>
 
-      <para>Full JCR configuration example you can see there <xref
-      linkend="sect_conf_cluster_jcr"/></para>
+      <para>Full JCR configuration example you can see <link
+      linkend="sect_conf_cluster_jcr">here</link>.</para>
 
       <para>Common tips:</para>
 
       <itemizedlist>
         <listitem>
-          <para>clusterName ("jbosscache-cluster-name") must be unique;</para>
+          <para><parameter>clusterName</parameter> ("jbosscache-cluster-name")
+          must be unique;</para>
         </listitem>
 
         <listitem>
-          <para>cache.jdbc.table.name must be unique per datasource;</para>
+          <para><parameter>cache.jdbc.table.name</parameter> must be unique
+          per datasource;</para>
         </listitem>
 
         <listitem>
-          <para>cache.jdbc.fqn.type must and cache.jdbc.node.type must be
-          configured according to used database;</para>
+          <para><parameter>cache.jdbc.fqn.type</parameter> must and
+          cache.jdbc.node.type must be configured according to used
+          database;</para>
         </listitem>
       </itemizedlist>
 
@@ -136,7 +138,7 @@
    &lt;/properties&gt;
 &lt;/lock-manager&gt;</programlisting>
 
-      <para>test-jbosscache-lock-config.xml<programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+      <para><filename>test-jbosscache-lock-config.xml</filename><programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;jbosscache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:jboss:jbosscache-core:config:3.2"&gt;
 
  &lt;locking useLockStriping="false" concurrencyLevel="50000" lockParentForChildInsertRemove="false" lockAcquisitionTimeout="20000" /&gt;
@@ -204,14 +206,14 @@
         </listitem>
 
         <listitem>
-          <para><quote>cache.jdbc.table.name</quote> must be unique per
-          datasource;</para>
+          <para><parameter>cache.jdbc.table.name</parameter> must be unique
+          per datasource;</para>
         </listitem>
 
         <listitem>
-          <para><quote>cache.jdbc.node.type</quote> and
-          <quote>cache.jdbc.fqn.type</quote> must be configured according to
-          using database. See <link endterm="datatypes.title"
+          <para><parameter>cache.jdbc.node.type</parameter> and
+          <parameter>cache.jdbc.fqn.type</parameter> must be configured
+          according to using database. See <link endterm="datatypes.title"
           linkend="datatypes"></link> .</para>
         </listitem>
       </itemizedlist>
@@ -225,7 +227,7 @@
 
       <para><citetitle>Lock template configuration</citetitle></para>
 
-      <para>test-jbosscache-lock.xml</para>
+      <para><filename>test-jbosscache-lock.xml</filename></para>
 
       <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;jbosscache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:jboss:jbosscache-core:config:3.1"&gt;
@@ -291,11 +293,11 @@
 
       <para>Configuration requirements:<itemizedlist>
           <listitem>
-            <para><quote>jbosscache-cl-cache.jdbc.fqn.column</quote> and
-            <quote>jbosscache-cl-cache.jdbc.node.type</quote> is nothing else
-            as cache.jdbc.fqn.type and cache.jdbc.node.type in JBoss-Cache
-            configuration. You can set those data types according to database
-            type (See <link endterm="datatypes.title"
+            <para><parameter>jbosscache-cl-cache.jdbc.fqn.column</parameter>
+            and <parameter>jbosscache-cl-cache.jdbc.node.type</parameter> is
+            nothing else as cache.jdbc.fqn.type and cache.jdbc.node.type in
+            JBoss-Cache configuration. You can set those data types according
+            to database type (See <link endterm="datatypes.title"
             linkend="datatypes"></link>) or set it as AUTO (or do not set at
             all) and data type will by detected automaticaly.</para>
           </listitem>
@@ -308,7 +310,7 @@
           </listitem>
         </itemizedlist></para>
 
-      <para>our-udp-mux.xml<programlisting>&lt;protocol_stacks&gt;
+      <para><filename>our-udp-mux.xml</filename><programlisting>&lt;protocol_stacks&gt;
    &lt;stack name="jcr.stack"&gt;
       &lt;config&gt;
          &lt;UDP mcast_addr="228.10.10.10" mcast_port="45588" tos="8" ucast_recv_buf_size="20000000"

@@ -3,7 +3,9 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter>
   <?dbhtml filename="intro.html"?>
+
   <title>Introduction in eXoJCR</title>
+
   <section>
     <title>JCR (JSR-170) API main concepts</title>
 
@@ -12,8 +14,6 @@
     a result of collaboration of an expert group and the Java community and
     known as JSR-170 (Java Specification Request)
     http://www.jcp.org/en/jsr/detail?id=170.</para>
-
-    <para></para>
 
     <section>
       <title>Data model</title>
