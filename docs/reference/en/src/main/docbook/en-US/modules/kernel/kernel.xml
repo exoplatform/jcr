@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter>
+  <title>eXo Kernel</title>
+
+  <section>
+    <title>eXo Kernel introduction</title>
+
+    <para>eXo Kernel is the basis of all eXo platform products and modules.
+    Any component available in eXo Platform is managed by the Exo Container,
+    our micro container responsible for gluing the services through dependency
+    injection</para>
+
+    <para>Therefore, each product is composed of a set of services and plugins
+    registered to the container and configured by XML configuration
+    files.</para>
+
+    <para>The Kernel module also contains a set of very low level
+    services.</para>
+
+    <para><ulink url="http://wiki.exoplatform.org/xwiki/bin/view/Kernel/">Find
+    more on eXo site</ulink></para>
+  </section>
+</chapter>

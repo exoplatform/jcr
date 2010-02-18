@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter>
+  <title>eXo Core</title>
+
+  <section>
+    <title>eXo Core introduction</title>
+
+    <para>The eXo Core is a set of common services that are used by eXo
+    products and modules, it also can be used in the business logic.</para>
+
+    <para>It's Authentication and Security, Organization, Database, Logging,
+    JNDI, LDAP, Document reader and other services. Find more on <ulink
+    url="http://wiki.exoplatform.org/xwiki/bin/view/Core/">eXo
+    site</ulink></para>
+  </section>
+</chapter>

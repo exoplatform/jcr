@@ -58,9 +58,8 @@ NLS_NCHAR_CONV_EXCP      FALSE
 NLS_NCHAR_CHARACTERSET   AL16UTF16</programlisting></para>
 
     <warning>
-      <para>JCR of versions 1.10.x, 1.11.x and 1.12.x doesn't use NVARCHAR
-      columns, so that the value of the parameter NLS_NCHAR_CHARACTERSET does
-      not matter for JCR.</para>
+      <para>JCR 1.12.x doesn't use NVARCHAR columns, so that the value of the
+      parameter NLS_NCHAR_CHARACTERSET does not matter for JCR.</para>
     </warning>
 
     <para>Create database with Unicode encoding and use Oracle dialect for the
