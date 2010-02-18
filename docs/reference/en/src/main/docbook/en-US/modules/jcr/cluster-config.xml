@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="ch_cluster_configuration">
-  <?dbhtml filename="ch-cluster-config.html"?>
+<chapter>
+  <?dbhtml filename="cluster-config.html"?>
 
   <title>Configuring JBoss AS with eXo JCR in cluster</title>
 
@@ -16,8 +16,7 @@
 
       <orderedlist>
         <listitem>
-          <para>Dowload the latest version of eXo JCR ear distribution from
-          [LINK THERE]</para>
+          <para>Dowload the latest version of eXo JCR ear distribution.</para>
         </listitem>
 
         <listitem>
@@ -42,6 +41,30 @@
         </listitem>
 
         <listitem>
+          <para>Ensure that you use JBoss <link
+          linkend="ch_transaction_service">Transaction Service</link> (Arjuna)
+          and JBoss <link linkend="ch-arjuna-tranasction-service">Transaction
+          Manager</link>. Your exo-configuration.xml must contain such
+          parts:</para>
+
+          <programlisting>&lt;component&gt;
+   &lt;key&gt;org.jboss.cache.transaction.TransactionManagerLookup&lt;/key&gt;
+   &lt;type&gt;org.jboss.cache.GenericTransactionManagerLookup&lt;/type&gt;^
+&lt;/component&gt;
+
+&lt;component&gt;
+   &lt;key&gt;org.exoplatform.services.transaction.TransactionService&lt;/key&gt;
+   &lt;type&gt;org.exoplatform.services.transaction.jbosscache.ArjunaTransactionService&lt;/type&gt;
+   &lt;init-params&gt;
+      &lt;value-param&gt;
+         &lt;name&gt;timeout&lt;/name&gt;
+         &lt;value&gt;300&lt;/value&gt;
+      &lt;/value-param&gt;
+   &lt;/init-params&gt;
+&lt;/component&gt;</programlisting>
+        </listitem>
+
+        <listitem>
           <para>Start server:</para>
 
           <itemizedlist>
@@ -56,9 +79,10 @@
         </listitem>
 
         <listitem>
-          <para>Try accessing <uri>http://localhost:8080/browser</uri> with
-          root/exo as login/password if you have done everything right, you'll
-          get access to repository browser.</para>
+          <para>Try accessing <ulink
+          url="http://localhost:8080/browser">http://localhost:8080/browser</ulink>
+          with root/exo as login/password if you have done everything right,
+          you'll get access to repository browser.</para>
         </listitem>
       </orderedlist>
     </section>
@@ -69,9 +93,9 @@
       <itemizedlist>
         <listitem>
           <para>To manually configure repository create a new configuration
-          file (f.e. exo-jcr-configuration.xml). For details see <link
-          linkend="ch_configuration">JCR Configuration</link>. Your
-          configuration must look like:</para>
+          file (f.e. exo-jcr-configuration.xml). For details see <ulink
+          url="http://wiki.exoplatform.org/xwiki/bin/view/JCR/#HConfiguration">JCR
+          Configuration</ulink>. Your configuration must look like:</para>
 
           <programlisting>&lt;repository-service default-repository="repository1"&gt;
    &lt;repositories&gt;
@@ -188,10 +212,6 @@
       &lt;/filters&gt;
    &lt;/value-storage&gt;
 &lt;/value-storages&gt;</programlisting>
-
-          <para>See more about <link
-          linkend="ch_external_value_storages">ValueStorage
-          configuration</link>.</para>
         </listitem>
 
         <listitem id="conf_cache">
@@ -205,10 +225,6 @@
       &lt;property name="jgroups-multiplexer-stack" value="true" /&gt;
    &lt;/properties&gt;
 &lt;/cache&gt; </programlisting>
-
-          <para>See more about <link
-          linkend="ch_jbosscache_config_templates">Cache
-          configuration</link>.</para>
         </listitem>
 
         <listitem id="conf_indexer">
@@ -224,10 +240,6 @@
       &lt;property name="jgroups-multiplexer-stack" value="true" /&gt;
    &lt;/properties&gt;
 &lt;/query-handler&gt; </programlisting>
-
-          <para>See more about <link
-          linkend="ch_query_handler_config">QueryHandler
-          configuration</link>.</para>
         </listitem>
 
         <listitem id="conf_lock_manager">
@@ -251,10 +263,6 @@
       &lt;property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr"/&gt;
    &lt;/properties&gt;
 &lt;/lock-manager&gt;</programlisting>
-
-          <para>See more about <link
-          linkend="ch_lock_manager_config">LockManager
-          configuration</link>.</para>
         </listitem>
       </itemizedlist>
     </section>
