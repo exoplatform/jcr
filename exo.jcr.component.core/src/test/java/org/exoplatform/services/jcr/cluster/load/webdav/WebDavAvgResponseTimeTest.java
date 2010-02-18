@@ -20,13 +20,15 @@ package org.exoplatform.services.jcr.cluster.load.webdav;
 
 import junit.framework.TestCase;
 
-import org.exoplatform.services.jcr.cluster.load.AbstractAvgResponceTimeTest;
+import org.exoplatform.services.jcr.cluster.load.AbstractAvgResponseTimeTest;
 import org.exoplatform.services.jcr.cluster.load.AbstractTestAgent;
 import org.exoplatform.services.jcr.cluster.load.NodeInfo;
 import org.exoplatform.services.jcr.cluster.load.WorkerResult;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -34,7 +36,7 @@ import java.util.concurrent.CountDownLatch;
  * @version $Id: exo-jboss-codetemplates.xml 34360 2009-07-22 23:58:59Z ksm $
  *
  */
-public class WebDavAvgResponceTimeTest extends TestCase
+public class WebDavAvgResponseTimeTest extends TestCase
 {
 
    /**
@@ -45,21 +47,27 @@ public class WebDavAvgResponceTimeTest extends TestCase
    /**
     * How much thread will be added on the next iteration.
     */
-   private static final int ITERATION_GROWING_POLL = 5;
+   private static final int ITERATION_GROWING_POLL = 10;
 
    /**
     * Number between 0 and 100 show % how many read operations. 
     */
    private static final int READ_VALUE = 90;
 
+   private static final String TEST_ROOT = "WebDavAvgResponseTimeTestRoot";
+
    public void testWebDav() throws Exception
    {
-      WebDavTest test = new WebDavTest(ITERATION_GROWING_POLL, ITERATION_TIME, 1, READ_VALUE);
+      WebDavTest test = new WebDavTest(ITERATION_GROWING_POLL, ITERATION_TIME, 10, READ_VALUE);
       test.testResponce();
    }
 
-   private class WebDavTest extends AbstractAvgResponceTimeTest
+   private class WebDavTest extends AbstractAvgResponseTimeTest
    {
+      private String iterationRoot;
+
+      private int counter;
+
       /**
        * @param iterationGrowingPoll
        * @param iterationTime
@@ -69,17 +77,41 @@ public class WebDavAvgResponceTimeTest extends TestCase
       public WebDavTest(int iterationGrowingPoll, int iterationTime, int initialSize, int readValue)
       {
          super(iterationGrowingPoll, iterationTime, initialSize, readValue);
-         // TODO Auto-generated constructor stub
       }
 
       /**
-       * @see org.exoplatform.services.jcr.cluster.load.AbstractAvgResponceTimeTest#getAgent(java.util.List, java.util.List, java.util.concurrent.CountDownLatch, int, java.util.Random)
+       * @see org.exoplatform.services.jcr.cluster.load.AbstractAvgResponseTimeTest#setUp()
+       */
+      @Override
+      protected void setUp() throws Exception
+      {
+         // TODO Auto-generated method stub
+         super.setUp();
+         WebDavTestAgent setUpAgent = new WebDavTestAgent(null, null, null, null, 0, null);
+
+         String testRoot = setUpAgent.createDirIfAbsent("", TEST_ROOT, new ArrayList<WorkerResult>());
+         iterationRoot =
+            setUpAgent.createDirIfAbsent(testRoot, UUID.randomUUID().toString(), new ArrayList<WorkerResult>());
+      }
+
+      /**
+       * @see org.exoplatform.services.jcr.cluster.load.AbstractAvgResponseTimeTest#tearDown()
+       */
+      @Override
+      protected void tearDown() throws Exception
+      {
+         super.tearDown();
+
+      }
+
+      /**
+       * @see org.exoplatform.services.jcr.cluster.load.AbstractAvgResponseTimeTest#getAgent(java.util.List, java.util.List, java.util.concurrent.CountDownLatch, int, java.util.Random)
        */
       @Override
       protected AbstractTestAgent getAgent(List<NodeInfo> nodesPath, List<WorkerResult> responceResults,
          CountDownLatch startSignal, int readValue, Random random)
       {
-         return new WebDavTestAgent(nodesPath, responceResults, startSignal, readValue, random);
+         return new WebDavTestAgent(iterationRoot, nodesPath, responceResults, startSignal, readValue, random);
       }
 
    }

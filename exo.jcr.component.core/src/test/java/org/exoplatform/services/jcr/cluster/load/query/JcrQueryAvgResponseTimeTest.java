@@ -19,7 +19,7 @@
 package org.exoplatform.services.jcr.cluster.load.query;
 
 import org.exoplatform.services.jcr.JcrImplBaseTest;
-import org.exoplatform.services.jcr.cluster.load.AbstractAvgResponceTimeTest;
+import org.exoplatform.services.jcr.cluster.load.AbstractAvgResponseTimeTest;
 import org.exoplatform.services.jcr.cluster.load.AbstractTestAgent;
 import org.exoplatform.services.jcr.cluster.load.NodeInfo;
 import org.exoplatform.services.jcr.cluster.load.WorkerResult;
@@ -27,7 +27,6 @@ import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.jboss.cache.CacheException;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
@@ -54,7 +53,7 @@ import javax.jcr.version.VersionException;
  * @version $Id: exo-jboss-codetemplates.xml 34360 2009-07-22 23:58:59Z ksm $
  *
  */
-public class JcrQueryAvgResponceTimeTest extends JcrImplBaseTest
+public class JcrQueryAvgResponseTimeTest extends JcrImplBaseTest
 {
 
    /**
@@ -93,7 +92,7 @@ public class JcrQueryAvgResponceTimeTest extends JcrImplBaseTest
 
    }
 
-   private class QueryAvgResponceTimeTest extends AbstractAvgResponceTimeTest
+   private class QueryAvgResponceTimeTest extends AbstractAvgResponseTimeTest
    {
 
       private final RepositoryImpl repository;
@@ -112,7 +111,7 @@ public class JcrQueryAvgResponceTimeTest extends JcrImplBaseTest
       }
 
       /**
-       * @see org.exoplatform.services.jcr.cluster.load.AbstractAvgResponceTimeTest#getAgent(java.util.List, java.util.List, java.util.concurrent.CountDownLatch, int, java.util.Random)
+       * @see org.exoplatform.services.jcr.cluster.load.AbstractAvgResponseTimeTest#getAgent(java.util.List, java.util.List, java.util.concurrent.CountDownLatch, int, java.util.Random)
        */
       @Override
       protected AbstractTestAgent getAgent(List<NodeInfo> nodesPath, List<WorkerResult> responceResults,
@@ -217,9 +216,8 @@ public class JcrQueryAvgResponceTimeTest extends JcrImplBaseTest
        * @see org.exoplatform.services.jcr.cluster.load.AbstractTestAgent#doRead(java.util.List)
        */
       @Override
-      public List<WorkerResult> doRead(List<NodeInfo> nodesPath)
+      public void doRead(List<NodeInfo> nodesPath, List<WorkerResult> responseResults)
       {
-         List<WorkerResult> result = new ArrayList<WorkerResult>();
          Session sessionLocal = null;
          try
          {
@@ -238,7 +236,7 @@ public class JcrQueryAvgResponceTimeTest extends JcrImplBaseTest
             long start = System.currentTimeMillis();
             QueryResult res = q.execute();
             long sqlsize = res.getNodes().getSize();
-            result.add(new WorkerResult(true, System.currentTimeMillis() - start));
+            responseResults.add(new WorkerResult(true, System.currentTimeMillis() - start));
             //log.info(word + " found:" + sqlsize + " time=" + (System.currentTimeMillis() - start));
 
          }
@@ -254,16 +252,14 @@ public class JcrQueryAvgResponceTimeTest extends JcrImplBaseTest
                sessionLocal = null;
             }
          }
-         return result;
       }
 
       /**
        * @see org.exoplatform.services.jcr.cluster.load.AbstractTestAgent#doWrite(java.util.List)
        */
       @Override
-      public List<WorkerResult> doWrite(List<NodeInfo> nodesPath)
+      public void doWrite(List<NodeInfo> nodesPath, List<WorkerResult> responseResults)
       {
-         List<WorkerResult> result = new ArrayList<WorkerResult>();
          // get any word
          int i = random.nextInt(words.length);
          String word = words[i];
@@ -277,7 +273,7 @@ public class JcrQueryAvgResponceTimeTest extends JcrImplBaseTest
             Node threadNode = getOrCreateNode(getOrCreateNode(TEST_ROOT, sessionLocal.getRootNode()), threadUUID);
             addCountent(threadNode, UUID.randomUUID(), word);
             sessionLocal.save();
-            result.add(new WorkerResult(false, System.currentTimeMillis() - start));
+            responseResults.add(new WorkerResult(false, System.currentTimeMillis() - start));
             //log.info(word + " time : " + (System.currentTimeMillis() - start));
          }
          catch (Exception e1)
@@ -304,7 +300,6 @@ public class JcrQueryAvgResponceTimeTest extends JcrImplBaseTest
                sessionLocal = null;
             }
          }
-         return result;
       }
 
       private void addCountent(Node testRoot, UUID nodePath, String content) throws RepositoryException

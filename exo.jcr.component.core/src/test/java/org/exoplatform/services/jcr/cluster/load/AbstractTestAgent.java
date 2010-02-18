@@ -59,13 +59,21 @@ public abstract class AbstractTestAgent implements Runnable
     * Do read
     * @return
     */
-   public abstract List<WorkerResult> doRead(List<NodeInfo> nodesPath);
+   public abstract void doRead(List<NodeInfo> nodesPath, List<WorkerResult> responseResults);
 
    /**
     * Do write
     * @return
     */
-   public abstract List<WorkerResult> doWrite(List<NodeInfo> nodesPath);
+   public abstract void doWrite(List<NodeInfo> nodesPath, List<WorkerResult> responseResults);
+
+   /**
+    * Prepare agent
+    */
+   protected void prepare()
+   {
+
+   }
 
    /**
     * @see java.lang.Runnable#run()
@@ -75,16 +83,17 @@ public abstract class AbstractTestAgent implements Runnable
       try
       {
          startSignal.await();
+
          while (!shouldStop)
          {
-            if (random.nextInt(100) > readValue)
+            if (nodesPath.size() < 10 || random.nextInt(100) > readValue)
             {
 
-               responceResults.addAll(doWrite(nodesPath));
+               doWrite(nodesPath, responceResults);
             }
             else
             {
-               responceResults.addAll(doRead(nodesPath));
+               doRead(nodesPath, responceResults);
             }
          }
       }

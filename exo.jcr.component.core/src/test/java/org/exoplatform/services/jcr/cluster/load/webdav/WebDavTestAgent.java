@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.cluster.load.webdav;
 
+import org.exoplatform.common.http.HTTPStatus;
 import org.exoplatform.common.http.client.HTTPResponse;
 import org.exoplatform.services.jcr.cluster.JCRWebdavConnection;
 import org.exoplatform.services.jcr.cluster.load.NodeInfo;
@@ -26,6 +27,7 @@ import org.exoplatform.services.jcr.cluster.load.WorkerResult;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -36,11 +38,7 @@ import java.util.concurrent.CountDownLatch;
 public class WebDavTestAgent extends AbstractWebDavTestAgent
 {
 
-   private volatile static long l1FolderCount = 0;
-
-   private String l1FolderName;
-
-   private long l2FolderCount;
+   private String testRoot;
 
    /**
     * @param nodesPath
@@ -49,19 +47,20 @@ public class WebDavTestAgent extends AbstractWebDavTestAgent
     * @param READ_VALUE
     * @param random
     */
-   public WebDavTestAgent(List<NodeInfo> nodesPath, List<WorkerResult> responceResults, CountDownLatch startSignal,
-      int READ_VALUE, Random random)
+   public WebDavTestAgent(String testRoot, List<NodeInfo> nodesPath, List<WorkerResult> responceResults,
+      CountDownLatch startSignal, int READ_VALUE, Random random)
    {
       super(nodesPath, responceResults, startSignal, READ_VALUE, random);
+      this.testRoot = testRoot;
    }
 
    /**
     * @see org.exoplatform.services.jcr.cluster.load.AbstractTestAgent#doRead(java.util.List)
     */
    @Override
-   public List<WorkerResult> doRead(List<NodeInfo> nodesPath)
+   public void doRead(List<NodeInfo> nodesPath, List<WorkerResult> responseResults)
    {
-      List<WorkerResult> result = new ArrayList<WorkerResult>();
+      //List<WorkerResult> result = new ArrayList<WorkerResult>();
       if (nodesPath.size() > 0)
       {
 
@@ -76,14 +75,20 @@ public class WebDavTestAgent extends AbstractWebDavTestAgent
 
          }
          long start = System.currentTimeMillis();
-         JCRWebdavConnection conn = getNewConnection();
+         JCRWebdavConnection conn = null;
          try
          {
+            conn = getNewConnection();
             HTTPResponse response = conn.getNode(readNodePath);
-            if (response.getStatusCode() != 200)
+            if (response.getStatusCode() == HTTPStatus.OK)
+            {
+               responseResults.add(new WorkerResult(true, System.currentTimeMillis() - start));
+            }
+            else
             {
                System.out.println("Can not get (response code " + response.getStatusCode()
                   + new String(response.getData()) + " ) node with path : " + readNodePath);
+
             }
 
          }
@@ -93,47 +98,52 @@ public class WebDavTestAgent extends AbstractWebDavTestAgent
          }
          finally
          {
-            conn.stop();
+            if (conn != null)
+            {
+               conn.stop();
+            }
          }
 
-         result.add(new WorkerResult(true, System.currentTimeMillis() - start));
-
       }
-      return result;
+   }
+
+   /**
+    * @see org.exoplatform.services.jcr.cluster.load.AbstractTestAgent#prepare()
+    */
+   @Override
+   protected void prepare()
+   {
+      testRoot = createDirIfAbsent(testRoot, UUID.randomUUID().toString(), new ArrayList<WorkerResult>());
    }
 
    /**
     * @see org.exoplatform.services.jcr.cluster.load.AbstractTestAgent#doWrite(java.util.List)
     */
    @Override
-   public List<WorkerResult> doWrite(List<NodeInfo> nodesPath)
+   public void doWrite(List<NodeInfo> nodesPath, List<WorkerResult> responseResults)
    {
-      List<WorkerResult> result = new ArrayList<WorkerResult>();
-      long start = 0;
+
       JCRWebdavConnection connection = null;
       try
       {
          connection = getNewConnection();
+         String putFile =
+            createDirIfAbsent(testRoot, UUID.randomUUID().toString(), new ArrayList<WorkerResult>()) + "/file";
+         long start = System.currentTimeMillis();
+         HTTPResponse response = connection.addNode(putFile, ("__the_data_in_nt+file__").getBytes());
 
-         if (l1FolderName == null || l2FolderCount == 100)
+         if (response.getStatusCode() == HTTPStatus.CREATED)
          {
-            l1FolderName = "folder" + (l1FolderCount++);
-            start = System.currentTimeMillis();
-            connection.addDir(l1FolderName);
-            l2FolderCount = 0;
-            result.add(new WorkerResult(false, System.currentTimeMillis() - start));
+            responseResults.add(new WorkerResult(false, System.currentTimeMillis() - start));
+            nodesPath.add(new NodeInfo(putFile, System.currentTimeMillis()));
          }
-         String path = l1FolderName + "/" + "node" + l2FolderCount++;
-         start = System.currentTimeMillis();
-         HTTPResponse response = connection.addNode(path, ("__the_data_in_nt+file__" + l2FolderCount).getBytes());
-
-         if (response.getStatusCode() != 201)
+         else
          {
             System.out.println(Thread.currentThread().getName() + " : Can not add (response code "
-               + response.getStatusCode() + new String(response.getData()) + " ) node with path : " + path);
+               + response.getStatusCode() + new String(response.getData()) + " ) file with path : " + putFile);
+
          }
-         result.add(new WorkerResult(false, System.currentTimeMillis() - start));
-         nodesPath.add(new NodeInfo(path, System.currentTimeMillis()));
+
       }
       catch (Exception e)
       {
@@ -146,6 +156,74 @@ public class WebDavTestAgent extends AbstractWebDavTestAgent
             connection.stop();
          }
       }
-      return result;
+   }
+
+   /**
+    * Create WebDav node if not exist
+    * @param root
+    * @param name
+    * @param data
+    * @return
+    */
+   public String createDirIfAbsent(String root, String name, List<WorkerResult> result)
+   {
+      String path = root.length() == 0 ? name : root + "/" + name;
+      JCRWebdavConnection connection = null;
+      try
+      {
+         connection = getNewConnection();
+
+         long start = System.currentTimeMillis();
+         HTTPResponse nodeResponce = connection.getNode(path);
+         //add information about read
+         result.add(new WorkerResult(true, System.currentTimeMillis() - start));
+         if (nodeResponce.getStatusCode() != HTTPStatus.OK)
+         {
+            start = System.currentTimeMillis();
+            HTTPResponse addResponce = connection.addDir(path);
+            //add information about write
+
+            if (addResponce.getStatusCode() == HTTPStatus.CREATED)
+            {
+               result.add(new WorkerResult(false, System.currentTimeMillis() - start));
+            }
+            else
+            {
+               System.out.println(Thread.currentThread().getName() + " : Can not add (response code "
+                  + addResponce.getStatusCode() + new String(addResponce.getData()) + " ) node with path : " + path);
+
+            }
+         }
+      }
+      catch (Exception e)
+      {
+         System.out.println(e.getLocalizedMessage());
+      }
+      finally
+      {
+         if (connection != null)
+         {
+            connection.stop();
+         }
+      }
+      return path;
+   }
+
+   /**
+    * Create WebDav node if not exist
+    * @param root
+    * @param uuid
+    * @param data
+    * @return
+    */
+   public String createDirIfAbsent(String root, UUID uuid, List<WorkerResult> result)
+   {
+      String uuidPath = uuid.toString();
+      String l1 = createDirIfAbsent(root, uuidPath.substring(0, 8), result);
+      //      String l2 = createDirIfAbsent(l1, uuidPath.substring(9, 13), result);
+      //      String l3 = createDirIfAbsent(l2, uuidPath.substring(14, 18), result);
+      //      String l4 = createDirIfAbsent(l3, uuidPath.substring(19, 23), result);
+      return createDirIfAbsent(l1, uuidPath.substring(9), result);
+
    }
 }
