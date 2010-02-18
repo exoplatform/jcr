@@ -2,7 +2,7 @@
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="ch_configuration">
-  <?dbhtml filename="configuration.html"?>
+  <?dbhtml filename="ch-configuration.html"?>
 
   <title>eXo JCR configuration</title>
 

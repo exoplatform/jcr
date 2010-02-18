@@ -3,7 +3,7 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="ch_jbosscache_config_templates">
 
-  <?dbhtml filename="jbosscache-configuration-templates.html"?>
+  <?dbhtml filename="ch-jbosscache-configuration-templates.html"?>
 
   <title>JBoss Cache configuration</title>
 

@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="ch_query_handler_config">
+  <?dbhtml filename="ch-query-handler-config.html"?>
+
+  <title>QueryHandler configuration</title>
+
+  <section>
+    <title>How does it work?</title>
+
+    <para>Lets talk about indexing content in cluster.</para>
+
+    <para>For couple of reasons, we can't replicate index. That's means, some
+    data added and indexed on one cluster node, will be replicated to another
+    cluster node, but will not be indexed on that node.</para>
+
+    <para><citetitle>So, how do the indexing works in cluster
+    environment?</citetitle></para>
+
+    <para>As, we can not index same data on all nodes of cluster, we must
+    index it on one node. Node, that can index data and do changes on lucene
+    index, is called "coordinator". Coordinator-node is choosen automaticaly,
+    so we do not need special configuration for coordinator.</para>
+
+    <para>But, how can another nodes save their changes to lucene
+    index?</para>
+
+    <para>First of all, data is already saved and replicated to another
+    cluster-nodes, so we need only deliver message like "we need to index this
+    data" to coordinator. Thats why Jboss-cache is used.</para>
+
+    <para>All nodes of cluster writes messages into JBoss-cache but only
+    coordinator takes those messages and makes changes Lucene index.</para>
+
+    <para><citetitle>How do the search works in cluster
+    environment?</citetitle></para>
+
+    <para>Search engine do not works with indexer, coordinator, etc. Search
+    needs only lucene index. But only one cluster node can change lucene index
+    - asking you. Yes - lucene index is shared. So, all cluster nodes must be
+    configured to use lucene index from shared directory.</para>
+
+    <para>A little bit about indexing process (no matter, cluster or not)
+    Indexer do not writes changes to FS lucene index immediately. At first,
+    Indexer writes changes to Volatile index. If Volatile index size become
+    1Mb or more it is flushed to FS. Also there is timer, that flushes
+    volatile index by timeout. Volatile index timeout configured by
+    "max-volatile-time" paremeter.</para>
+
+    <para>See more about <link linkend="ch_search_configuration">Search
+    Configuration</link>.</para>
+
+    <para>Common scheme of Shared Index<mediaobject>
+        <imageobject>
+          <imagedata fileref="images/diagram-shared-index.png" />
+        </imageobject>
+      </mediaobject></para>
+  </section>
+
+  <section>
+    <title>Configuration</title>
+
+    <section>
+      <title>Common requirements</title>
+
+      <para>Now, lets see what we need to run Search engine in cluster
+      environment.<itemizedlist>
+          <listitem>
+            <para>shared directory for storing Lucene index (i.e. NFS);</para>
+          </listitem>
+
+          <listitem>
+            <para>changes filter configured as
+            org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter;</para>
+
+            <note>
+              <para>This filter ignore changes on non-coordinator nodes, and
+              index changes on coordinator node.</para>
+            </note>
+          </listitem>
+
+          <listitem>
+            <para>configure JBoss-cache, course;</para>
+          </listitem>
+        </itemizedlist></para>
+    </section>
+
+    <section>
+      <title>Query-handler configuration</title>
+
+      <para>Configuration example:<programlisting>&lt;workspace name="ws"&gt;
+   &lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
+      &lt;properties&gt;
+         &lt;property name="index-dir" value="shareddir/index/db1/ws" /&gt;
+         &lt;property name="changesfilter-class"
+            value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter" /&gt;
+         &lt;property name="jbosscache-configuration" value="jbosscache-indexer.xml" /&gt;
+         &lt;property name="jgroups-configuration" value="udp-mux.xml" /&gt;
+         &lt;property name="jgroups-multiplexer-stack" value="true" /&gt;
+         &lt;property name="jbosscache-cluster-name" value="JCR-cluster-indexer-ws" /&gt;
+         &lt;property name="max-volatile-time" value="60" /&gt;
+      &lt;/properties&gt;
+   &lt;/query-handler&gt;
+&lt;/workspace&gt;</programlisting> <table>
+          <title>Config properties description</title>
+
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Property name</entry>
+
+                <entry>Description</entry>
+              </row>
+            </thead>
+
+            <tbody>
+              <row>
+                <entry>index-dir</entry>
+
+                <entry>path to index</entry>
+              </row>
+
+              <row>
+                <entry>jbosscache-configuration</entry>
+
+                <entry>template of JBoss-cache configuration for all
+                query-handlers in repository</entry>
+              </row>
+
+              <row>
+                <entry>jgroups-configuration</entry>
+
+                <entry>jgroups-configuration is template configuration for all
+                components (search, cache, locks) [Add link to document
+                describing template configurations]</entry>
+              </row>
+
+              <row>
+                <entry>jgroups-multiplexer-stack</entry>
+
+                <entry>[TODO about jgroups-multiplexer-stack - add link to
+                JBoss doc]</entry>
+              </row>
+
+              <row>
+                <entry>jbosscache-cluster-name</entry>
+
+                <entry>cluster name (must be unique)</entry>
+              </row>
+
+              <row>
+                <entry>max-volatile-time</entry>
+
+                <entry>max time to live for Volatile Index</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table></para>
+    </section>
+
+    <section>
+      <title>JBoss-Cache template configuration</title>
+
+      <para>JBoss-Cache template configuration for query handler.</para>
+
+      <para>jbosscache-indexer.xml<programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;jbosscache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:jboss:jbosscache-core:config:3.1"&gt;
+
+   &lt;locking useLockStriping="false" concurrencyLevel="50000" lockParentForChildInsertRemove="false"
+      lockAcquisitionTimeout="20000" /&gt;
+   &lt;!-- Configure the TransactionManager --&gt;
+   &lt;transaction transactionManagerLookupClass="org.jboss.cache.transaction.JBossStandaloneJTAManagerLookup" /&gt;
+
+   &lt;clustering mode="replication" clusterName="${jbosscache-cluster-name}"&gt;
+      &lt;stateRetrieval timeout="20000" fetchInMemoryState="false" /&gt;
+      &lt;jgroupsConfig multiplexerStack="jcr.stack" /&gt;
+      &lt;sync /&gt;
+   &lt;/clustering&gt;
+   &lt;!-- Eviction configuration --&gt;
+   &lt;eviction wakeUpInterval="5000"&gt;
+      &lt;default algorithmClass="org.jboss.cache.eviction.FIFOAlgorithm" eventQueueSize="1000000"&gt;
+         &lt;property name="maxNodes" value="10000" /&gt;
+         &lt;property name="minTimeToLive" value="60000" /&gt;
+      &lt;/default&gt;
+   &lt;/eviction&gt;
+
+&lt;/jbosscache&gt;</programlisting></para>
+
+      <para>See more about template configurations <link
+      linkend="ch_jbosscache_config_templates">here</link>.</para>
+    </section>
+  </section>
+</chapter>

@@ -54,46 +54,19 @@ and https://svn.jboss.org/repos/richfaces/tags/3.3.2.GA/docs/userguide/en/src/ma
 		href="modules/Portal_Manual.xml" />
 	-->
 
-  <xi:include href="modules/intro.xml"
+  
+
+  <xi:include href="modules/jcr.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-  <xi:include href="modules/architecture.xml"
+  <xi:include href="modules/kernel.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+ 
+  <xi:include href="modules/core.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-  <!-- common configs -->  
-
-  <xi:include href="modules/configuration.xml"
+  <xi:include href="modules/ws.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
-
-  <xi:include href="modules/jdbc-data-container-config.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
-
-  <xi:include href="modules/external-value-storages.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
-
-  <xi:include href="modules/search-configuration.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
-
-  <xi:include href="modules/multilanguage-support.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
-
-  <xi:include href="modules/configuration-persister.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
-
-  <!-- cluster configs -->
-
-  <xi:include href="modules/cluster-config.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
-
-  <xi:include href="modules/jbosscache-configuration-templates.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
-
-  <xi:include href="modules/lock-manager-config.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
-
-  <xi:include href="modules/query-handler-config.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
-
 
 
 

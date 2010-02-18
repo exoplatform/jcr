@@ -2,7 +2,7 @@
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="ch_configuration_persister">
-  <?dbhtml filename="configuration-persister.html"?>
+  <?dbhtml filename="ch-configuration-persister.html"?>
   <title>JCR Configuration persister</title>
 
   <section>
