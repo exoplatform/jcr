@@ -19,8 +19,12 @@
 package org.exoplatform.services.jcr.ext.resource;
 
 import org.exoplatform.services.jcr.ext.BaseStandaloneTest;
+import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
+import org.exoplatform.services.jcr.ext.common.SessionProvider;
 import org.exoplatform.services.jcr.ext.resource.representation.NtFileNodeRepresentation;
 import org.exoplatform.services.jcr.ext.resource.representation.NtFileNodeRepresentationFactory;
+import org.exoplatform.services.security.ConversationState;
+import org.exoplatform.services.security.Identity;
 
 import java.io.ByteArrayInputStream;
 import java.util.Calendar;
@@ -45,18 +49,24 @@ public class NodeRepresentationTest extends BaseStandaloneTest
    public void setUp() throws Exception
    {
       super.setUp();
-      if (nodeRepresentationService == null)
+
+      // prepare SessionProviderService
+      ThreadLocalSessionProviderService sesProv =  
+         (ThreadLocalSessionProviderService)container
+            .getComponentInstanceOfType(ThreadLocalSessionProviderService.class);
+      sesProv.setSessionProvider(null, new SessionProvider(new ConversationState(new Identity(session.getUserID()))));
+
+      nodeRepresentationService =
+         (NodeRepresentationService)container.getComponentInstanceOfType(NodeRepresentationService.class);
+      assertNotNull(nodeRepresentationService);
+      ntFileNodeRepresentationFactory =
+         (NtFileNodeRepresentationFactory)container.getComponentInstanceOfType(NtFileNodeRepresentationFactory.class);
+      assertNotNull(ntFileNodeRepresentationFactory);
+
+      if (!root.hasNode("NodeRepresentationTest"))
       {
-         nodeRepresentationService =
-            (NodeRepresentationService)container.getComponentInstanceOfType(NodeRepresentationService.class);
-         assertNotNull(nodeRepresentationService);
-         ntFileNodeRepresentationFactory =
-            (NtFileNodeRepresentationFactory)container
-               .getComponentInstanceOfType(NtFileNodeRepresentationFactory.class);
-         assertNotNull(ntFileNodeRepresentationFactory);
-
          testRoot = root.addNode("NodeRepresentationTest", "nt:unstructured");
-
+         root.save();
       }
    }
 
