@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<article>
-  <articleinfo>
-    <title>Configuring JBoss AS with eXo JCR in cluster</title>
-  </articleinfo>
+<chapter>
+  <?dbhtml filename="cluster-config.html"?>
+
+  <title>Configuring JBoss AS with eXo JCR in cluster</title>
 
   <section>
     <title>Launching Cluster</title>
@@ -182,7 +182,7 @@
           <programlisting>&lt;value-storages&gt;
    &lt;value-storage id="system" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage"&gt;
       &lt;properties&gt;
-         &lt;property name="path" value="/mnt/tornado/temp/values/production" /&gt;    -    path within NFS where ValueStorage will hold it's data
+         &lt;property name="path" value="/mnt/tornado/temp/values/production" /&gt;    &lt;!--path within NFS where ValueStorage will hold it's data--&gt;
       &lt;/properties&gt;
       &lt;filters&gt;
          &lt;filter property-type="Binary" /&gt;
@@ -196,9 +196,9 @@
 
           <programlisting>&lt;cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache"&gt;
    &lt;properties&gt;
-      &lt;property name="jbosscache-configuration" value="jar:/conf/portal/test-jbosscache-data.xml" /&gt;     -    path to JBoss Cache configuration for data storage
-      &lt;property name="jgroups-configuration" value="jar:/conf/portal/udp-mux.xml" /&gt;                     -    path to JGroups configuration
-      &lt;property name="jbosscache-cluster-name" value="JCR_Cluster_cache_production" /&gt;                   -    JBoss Cache data storage cluster name
+      &lt;property name="jbosscache-configuration" value="jar:/conf/portal/test-jbosscache-data.xml" /&gt;     &lt;!--    path to JBoss Cache configuration for data storage --&gt;
+      &lt;property name="jgroups-configuration" value="jar:/conf/portal/udp-mux.xml" /&gt;                     &lt;!--    path to JGroups configuration --&gt;
+      &lt;property name="jbosscache-cluster-name" value="JCR_Cluster_cache_production" /&gt;                   &lt;!--    JBoss Cache data storage cluster name --&gt;
       &lt;property name="jgroups-multiplexer-stack" value="true" /&gt;
    &lt;/properties&gt;
 &lt;/cache&gt; </programlisting>
@@ -210,10 +210,10 @@
           <programlisting>&lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
    &lt;properties&gt;
       &lt;property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter" /&gt;
-      &lt;property name="index-dir" value="/mnt/tornado/temp/jcrlucenedb/production" /&gt;                       -    path within NFS where ValueStorage will hold it's data
-      &lt;property name="jbosscache-configuration" value="jar:/conf/portal/test-jbosscache-indexer.xml" /&gt;    -    path to JBoss Cache configuration for indexer
-      &lt;property name="jgroups-configuration" value="jar:/conf/portal/udp-mux.xml" /&gt;                       -    path to JGroups configuration
-      &lt;property name="jbosscache-cluster-name" value="JCR_Cluster_indexer_production" /&gt;                   -    JBoss Cache indexer cluster name
+      &lt;property name="index-dir" value="/mnt/tornado/temp/jcrlucenedb/production" /&gt;                       &lt;!--    path within NFS where ValueStorage will hold it's data --&gt;
+      &lt;property name="jbosscache-configuration" value="jar:/conf/portal/test-jbosscache-indexer.xml" /&gt;    &lt;!--    path to JBoss Cache configuration for indexer --&gt;
+      &lt;property name="jgroups-configuration" value="jar:/conf/portal/udp-mux.xml" /&gt;                       &lt;!--    path to JGroups configuration --&gt;
+      &lt;property name="jbosscache-cluster-name" value="JCR_Cluster_indexer_production" /&gt;                   &lt;!--    JBoss Cache indexer cluster name --&gt;
       &lt;property name="jgroups-multiplexer-stack" value="true" /&gt;
    &lt;/properties&gt;
 &lt;/query-handler&gt; </programlisting>
@@ -225,12 +225,12 @@
           <programlisting>&lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl"&gt;
    &lt;properties&gt;
       &lt;property name="time-out" value="15m" /&gt;
-      &lt;property name="jbosscache-configuration" value="jar:/conf/portal/test-jbosscache-lock.xml" /&gt;       -    path to JBoss Cache configuration for lock manager
-      &lt;property name="jgroups-configuration" value="jar:/conf/portal/udp-mux.xml" /&gt;                       -    path to JGroups configuration
+      &lt;property name="jbosscache-configuration" value="jar:/conf/portal/test-jbosscache-lock.xml" /&gt;       &lt;!--    path to JBoss Cache configuration for lock manager --&gt;
+      &lt;property name="jgroups-configuration" value="jar:/conf/portal/udp-mux.xml" /&gt;                       &lt;!--    path to JGroups configuration --&gt;
       &lt;property name="jgroups-multiplexer-stack" value="true" /&gt;
-      &lt;property name="jbosscache-cluster-name" value="JCR_Cluster_lock_production" /&gt;                      -    JBoss Cache locks cluster name
+      &lt;property name="jbosscache-cluster-name" value="JCR_Cluster_lock_production" /&gt;                      &lt;!--    JBoss Cache locks cluster name --&gt;
                      
-      &lt;property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_production"/&gt;                   -    the name of the DB table where lock's data will be stored
+      &lt;property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_production"/&gt;                   &lt;!--    the name of the DB table where lock's data will be stored --&gt;
       &lt;property name="jbosscache-cl-cache.jdbc.table.create" value="true"/&gt;
       &lt;property name="jbosscache-cl-cache.jdbc.table.drop" value="false"/&gt;
       &lt;property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_production_pk"/&gt;
@@ -244,4 +244,4 @@
       </itemizedlist>
     </section>
   </section>
-</article>
+</chapter>

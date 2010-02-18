@@ -1,22 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<article>
-  <articleinfo>
-    <title>eXo JCR configuration</title>
+<chapter>
+  <?dbhtml filename="configuration.html"?>
 
-    <author>
-      <firstname></firstname>
-
-      <surname></surname>
-
-      <affiliation>
-        <orgname></orgname>
-      </affiliation>
-    </author>
-
-    <pubdate></pubdate>
-  </articleinfo>
+  <title>eXo JCR configuration</title>
 
   <section>
     <title>Related documents</title>
@@ -444,4 +432,4 @@
   &lt;!ELEMENT property EMPTY&gt;</programlisting>
     </section>
   </section>
-</article>
+</chapter>
