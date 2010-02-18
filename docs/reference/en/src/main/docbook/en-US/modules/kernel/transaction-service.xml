@@ -9,8 +9,8 @@
   <section>
     <title>Base information</title>
 
-    <para>TransactionServices provides acces to JTATransactionManager nad
-    UserTransaction.</para>
+    <para>TransactionServices provides acces to XA TransactionManager and
+    UserTransaction (See JTA specification for details).</para>
 
     <table>
       <title>List methods</title>
