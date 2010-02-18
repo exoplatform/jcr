@@ -7,8 +7,56 @@
   <title>TransactionService</title>
 
   <section>
-    <title>Intro</title>
+    <title>Base information</title>
 
-    <para></para>
+    <table>
+      <title>List methods</title>
+
+      <tgroup cols="2">
+        <tbody>
+          <row>
+            <entry>getTransactionManager()</entry>
+
+            <entry>Get used TransactionManager</entry>
+          </row>
+
+          <row>
+            <entry>getUserTransaction()</entry>
+
+            <entry>Get UserTransaction on TransactionManager</entry>
+          </row>
+
+          <row>
+            <entry>getDefaultTimeout()</entry>
+
+            <entry>Return default TimeOut</entry>
+          </row>
+
+          <row>
+            <entry>setTransactionTimeout(int seconds)</entry>
+
+            <entry>Set TimeOut in second</entry>
+          </row>
+
+          <row>
+            <entry>enlistResource(ExoResource xares)</entry>
+
+            <entry>Enlist XA resource in TransactionManager</entry>
+          </row>
+
+          <row>
+            <entry>delistResource(ExoResource xares)</entry>
+
+            <entry>Delist XA resource from TransactionManager</entry>
+          </row>
+
+          <row>
+            <entry> createXid()</entry>
+
+            <entry>Creates unique XA transaction identifier.</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
   </section>
 </chapter>
