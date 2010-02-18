@@ -60,8 +60,21 @@ and https://svn.jboss.org/repos/richfaces/tags/3.3.2.GA/docs/userguide/en/src/ma
   <xi:include href="modules/architecture.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
+  <!-- common configs -->  
+
   <xi:include href="modules/configuration.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
+
+  <xi:include href="modules/jdbc-data-container-config.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
+  <xi:include href="modules/external-value-storages.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
+  <xi:include href="modules/search-configuration.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
+  <!-- cluster configs -->
 
   <xi:include href="modules/cluster-config.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
@@ -75,14 +88,8 @@ and https://svn.jboss.org/repos/richfaces/tags/3.3.2.GA/docs/userguide/en/src/ma
   <xi:include href="modules/query-handler-config.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-  <xi:include href="modules/jdbc-data-container-config.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-  <xi:include href="modules/external-value-storages.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-  <xi:include href="modules/search-configuration.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
 
 
 </book>
