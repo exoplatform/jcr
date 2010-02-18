@@ -381,9 +381,9 @@ public class NodeIndexer
                catch (HandlerNotFoundException e)
                {
                   // no handler - no index
-                  if (log.isWarnEnabled())
+                  if (log.isDebugEnabled())
                   {
-                     log.warn("This content is not readable, document by path "+ propData.getQPath().getAsString() + ", propery id '" + propData.getIdentifier() + "' : " + e);
+                     log.debug("Can not indexing the document by path " + propData.getQPath().getAsString() + ", propery id '" + propData.getIdentifier() + "' : " + e, e);
                   }
                }
                catch (IOException e)
