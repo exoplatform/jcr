@@ -9,19 +9,20 @@
   <section>
     <title>Related documents</title>
 
-    <para></para>
-
     <itemizedlist>
       <listitem>
-        <para>Search Configuration</para>
+        <para><link linkend="ch_search_configuration">Search
+        Configuration</link></para>
       </listitem>
 
       <listitem>
-        <para>JDBC Data Container config</para>
+        <para><link linkend="ch_jdbc_data_container">JDBC Data Container
+        config</link></para>
       </listitem>
 
       <listitem>
-        <para>External Value Storages</para>
+        <para><link linkend="ch_external_value_storages">External Value
+        Storages</link></para>
       </listitem>
     </itemizedlist>
   </section>
