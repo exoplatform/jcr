@@ -22,7 +22,6 @@ import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.config.QueryHandlerParams;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
-import org.exoplatform.services.jcr.config.TemplateConfigurationHelper;
 import org.exoplatform.services.jcr.impl.core.query.IndexerChangesFilter;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoMode;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
@@ -35,15 +34,12 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.jboss.cache.Cache;
 import org.jboss.cache.CacheException;
-import org.jboss.cache.CacheFactory;
 import org.jboss.cache.CacheSPI;
-import org.jboss.cache.DefaultCacheFactory;
 import org.jboss.cache.config.CacheLoaderConfig;
 import org.jboss.cache.config.CacheLoaderConfig.IndividualCacheLoaderConfig;
 import org.jboss.cache.config.CacheLoaderConfig.IndividualCacheLoaderConfig.SingletonStoreConfig;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Properties;
 import java.util.Set;
@@ -157,6 +153,7 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
       }
       catch (CacheException e)
       {
+         log.error(e.getLocalizedMessage(), e);
          logErrorChanges(handler, removedNodes, addedNodes);
          logErrorChanges(parentHandler, parentRemovedNodes, parentAddedNodes);
       }
