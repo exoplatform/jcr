@@ -274,9 +274,17 @@ public class JCRWebdavConnection extends HTTPConnection
       response.getStatusCode();
    }
 
-   public void addDir(String path) throws IOException, ModuleException
+   /**
+    * Return true if create successfully
+    * @param path
+    * @throws IOException
+    * @throws ModuleException
+    */
+   public HTTPResponse addDir(String path) throws IOException, ModuleException
    {
-      MkCol(workspacePath + path).getStatusCode();
+      HTTPResponse mkCol = MkCol(workspacePath + path);
+      mkCol.getStatusCode();
+      return mkCol;
    }
 
    public HTTPResponse restore(String node, String version) throws IOException, ModuleException
