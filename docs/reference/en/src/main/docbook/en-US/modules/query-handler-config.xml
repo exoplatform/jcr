@@ -15,7 +15,8 @@
     data added and indexed on one cluster node, will be replicated to another
     cluster node, but will not be indexed on that node.</para>
 
-    <para>So, how do the indexing works in cluster environment?</para>
+    <para><citetitle>So, how do the indexing works in cluster
+    environment?</citetitle></para>
 
     <para>As, we can not index same data on all nodes of cluster, we must
     index it on one node. Node, that can index data and do changes on lucene
@@ -32,7 +33,8 @@
     <para>All nodes of cluster writes messages into JBoss-cache but only
     coordinator takes those messages and makes changes Lucene index.</para>
 
-    <para>How do the search works in cluster environment?</para>
+    <para><citetitle>How do the search works in cluster
+    environment?</citetitle></para>
 
     <para>Search engine do not works with indexer, coordinator, etc. Search
     needs only lucene index. But only one cluster node can change lucene index

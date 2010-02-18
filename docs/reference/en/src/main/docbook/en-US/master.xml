@@ -66,6 +66,9 @@ and https://svn.jboss.org/repos/richfaces/tags/3.3.2.GA/docs/userguide/en/src/ma
   <xi:include href="modules/cluster-config.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
+  <xi:include href="modules/jbosscache-configuration-templates.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
   <xi:include href="modules/lock-manager-config.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
