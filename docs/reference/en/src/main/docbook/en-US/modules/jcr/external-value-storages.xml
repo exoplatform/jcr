@@ -3,6 +3,7 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="ch_external_value_storages">
   <?dbhtml filename="ch-external-value-storages.html"?>
+
   <title>External Value Storages</title>
 
   <section>
@@ -93,34 +94,6 @@
   </section>
 
   <section>
-    <title>S3 File Value Storage</title>
-
-    <para>Holds Values at Amazon S3 storage. For more about S3 see <ulink
-    url="http://www.amazon.com/S3-AWS-home-page-Money/b/ref=sc_fe_l_2/103-7720231-3235021?ie=UTF8&amp;node=16427261&amp;no=3435361&amp;me=A36L942TSJ2AJA">http://www.amazon.com/S3-AWS-home-page-Money/b/ref=sc_fe_l_2/103-7720231-3235021?ie=UTF8&amp;node=16427261&amp;no=3435361&amp;me=A36L942TSJ2AJA</ulink>.</para>
-
-    <para>This type of storage saves all matching Values on Amazon S3 service.
-    That is very useful for <phrase>cloud computing</phrase> (like Amazon EC2
-    hosted repositories). But can be used in any environment and storages
-    combinations. It's often used in combined with Workspace Simple DB storage
-    [TODO Workspace Simple DB storage].</para>
-
-    <para>It's networked storage with RESTbased access (via HTTP) that makes a
-    footprint on performance of the Repository.</para>
-
-    <programlisting>&lt;value-storage id="Storage #1" class="org.exoplatform.services.jcr.impl.storage.value.s3.SimpleS3ValueStorage"&gt;
-    &lt;properties&gt;
-      &lt;property name="bucket" value="BUCKET NAME HERE"/&gt;
-      &lt;property name="aws-access-key" value="INSERT YOUR AWS ACCESS KEY ID HERE"/&gt;
-      &lt;property name="aws-secret-access-key" value="INSERT YOUR AWS SECRET ACCESS KEY HERE"/&gt;
-      &lt;property name="s3-swap-directory" value="s3swap_directory_name"/&gt;
-    &lt;/properties&gt;
-    &lt;filters&gt;
-      &lt;filter property-type="Binary"/&gt;
-    &lt;/filters&gt;
-&lt;/value-storage&gt;</programlisting>
-  </section>
-
-  <section>
     <title>Simple File Value Storage</title>
 
     <note>
@@ -145,8 +118,6 @@
 
   <section>
     <title>Content Addressable Value storage (CAS) support</title>
-
-    <remark>Available from version 1.9.3</remark>
 
     <para>eXo JCR supports <phrase>Content-addressable storage</phrase>
     feature for <phrase>Values</phrase> storing.</para>
