@@ -16,7 +16,8 @@
     (BLOBs) for example (see [TODOBinary values processing link]).</para>
 
     <para>Value storage configuration is a part of Repository configuration,
-    find more details there [TODO link to repository configuration].</para>
+    find more details <link
+    linkend="sect_repository_service_configuration">there</link>.</para>
 
     <para>Tree-based storage is recommended for most of cases. If you run an
     application on Amazon EC2 - the S3 option may be interesting for

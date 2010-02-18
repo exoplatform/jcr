@@ -117,14 +117,14 @@
     <section>
       <title>JCR Configuration</title>
 
-      <para> The Configuration is defined in an XML file (see DTD below).
-      </para>
+      <para>The Configuration is defined in an XML file (see DTD
+      below).</para>
 
       <para>JCR Service can use multiple Repositories and each repository can
-      have multiple Workspaces. </para>
+      have multiple Workspaces.</para>
 
       <para>Repositories configuration parameters support human-readable
-      formats of values. They are all case-insensitive: </para>
+      formats of values. They are all case-insensitive:</para>
 
       <itemizedlist>
         <listitem>
@@ -137,8 +137,8 @@
 
         <listitem>
           <para>Time format endings: ms - milliseconds, s - seconds, m -
-          minutes, h - hours, d - days, w - weeks, if no ending - seconds.
-          </para>
+          minutes, h - hours, d - days, w - weeks, if no ending -
+          seconds.</para>
 
           <para>Examples: 500ms - 500 milliseconds, 20 or 20s - 20 seconds,
           30m - 30 minutes, 12h - 12 hours, 5d - 5 days, 4w - 4 weeks.</para>
@@ -148,12 +148,12 @@
       <para></para>
     </section>
 
-    <section>
-      <title>Repository service configuration </title>
+    <section id="sect_repository_service_configuration">
+      <title>Repository service configuration</title>
 
       <para>Default configuration of the Repository Service located in
       jar:/conf/portal/exo-jcr-config.xml, it will be available for portal and
-      standalone modes. </para>
+      standalone modes.</para>
 
       <para>In portal mode it is overriden and located in the portal web
       application portal/WEB-INF/conf/jcr/repository-configuration.xml.</para>
@@ -272,7 +272,7 @@
 
       <para>default-workspace - the name of a workspace obtained using
       Session's login() or login(Credentials) methods (ones without an
-      explicit workspace name) </para>
+      explicit workspace name)</para>
 
       <para>system-workspace - name of workspace where /jcr:system node is
       placed</para>
@@ -308,7 +308,7 @@
 
       <para>cache - workspace storage cache configuration</para>
 
-      <para>query-handler - query handler configuration </para>
+      <para>query-handler - query handler configuration</para>
 
       <para>Workspace data container configuration:</para>
 
@@ -338,15 +338,14 @@
 
       <para>Initializer configuration (optional):</para>
 
-      <para>class - initializer implementation class. </para>
+      <para>class - initializer implementation class.</para>
 
       <para>properties - the list of properties (name-value pairs). Properties
       are supported:</para>
 
-      <para> root-nodetype - The node type for root node initialization
-      </para>
+      <para>root-nodetype - The node type for root node initialization</para>
 
-      <para> root-permissions - Default permissions of the root node. It is
+      <para>root-permissions - Default permissions of the root node. It is
       defined as a set of semicolon-delimited permissions containing a group
       of space-delimited identities (user, group etc, see Organization service
       documentation for details) and the type of permission. For example any
@@ -363,21 +362,20 @@
 
       <para>class - cache implementation class, optional from 1.9. Default
       value is
-      org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl.
-      </para>
+      org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl.</para>
 
       <para>Cache can be configured to use concrete implementation of
       WorkspaceStorageCache interface. JCR core has two implementation to use:
       * LinkedWorkspaceStorageCacheImpl - default, with configurable read
       behavior and statistic. * WorkspaceStorageCacheImpl - pre 1.9, still can
-      be used. </para>
+      be used.</para>
 
       <para>properties - the list of properties (name-value pairs) for
-      Workspace cache: </para>
+      Workspace cache:</para>
 
-      <para> max-size - cache maximum size. </para>
+      <para>max-size - cache maximum size.</para>
 
-      <para> live-time - cached item live time.</para>
+      <para>live-time - cached item live time.</para>
 
       <para>LinkedWorkspaceStorageCacheImpl supports additional optional
       parameters TODO</para>
@@ -393,10 +391,10 @@
       <para>Lock Manager configuration:</para>
 
       <para>time-out - time after which the unused global lock will be
-      removed. </para>
+      removed.</para>
 
       <para>persister - a class for storing lock information for future use.
-      For example, remove lock after jcr restart. </para>
+      For example, remove lock after jcr restart.</para>
 
       <para>path - a lock folder, each workspace has its own.</para>
 
