@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="ch_multilanguage_support">
+  <?dbhtml filename="multilanguage-support.html"?>
+
+  <title>Multilanguage support in eXo JCR RDB backend</title>
+
+  <section>
+    <title>Intro</title>
+
+    <para>Whenever relational database is used to store multilingual text data
+    of eXo Java Content Repository we need to adapt configuration in order to
+    support UTF-8 encoding. Here is a short HOWTO instruction for several
+    supported RDBMS with examples.</para>
+
+    <para>The configuration file you have to modify:
+    .../webapps/portal/WEB-INF/conf/jcr/repository-configuration.xml</para>
+
+    <note>
+      <para>Datasource <parameter>jdbcjcr</parameter> used in examples can be
+      configured via <classname>InitialContextInitializer</classname>
+      component.</para>
+    </note>
+  </section>
+
+  <section>
+    <title>Oracle</title>
+
+    <para>In order to run multilanguage JCR on an Oracle backend Unicode
+    encoding for characters set should be applied to the database. Other
+    Oracle globalization parameters don't make any impact. The only property
+    to modify is <constant>NLS_CHARACTERSET</constant>.</para>
+
+    <para>We have tested <constant>NLS_CHARACTERSET</constant> =
+    <constant>AL32UTF8</constant> and it's works well for many European and
+    Asian languages.</para>
+
+    <para>Example of database configuration (used for JCR
+    testing):<programlisting>NLS_LANGUAGE             AMERICAN
+NLS_TERRITORY            AMERICA
+NLS_CURRENCY             $
+NLS_ISO_CURRENCY         AMERICA
+NLS_NUMERIC_CHARACTERS   .,
+NLS_CHARACTERSET         AL32UTF8
+NLS_CALENDAR             GREGORIAN
+NLS_DATE_FORMAT          DD-MON-RR
+NLS_DATE_LANGUAGE        AMERICAN
+NLS_SORT                 BINARY
+NLS_TIME_FORMAT          HH.MI.SSXFF AM
+NLS_TIMESTAMP_FORMAT     DD-MON-RR HH.MI.SSXFF AM
+NLS_TIME_TZ_FORMAT       HH.MI.SSXFF AM TZR
+NLS_TIMESTAMP_TZ_FORMAT  DD-MON-RR HH.MI.SSXFF AM TZR
+NLS_DUAL_CURRENCY        $
+NLS_COMP                 BINARY
+NLS_LENGTH_SEMANTICS     BYTE
+NLS_NCHAR_CONV_EXCP      FALSE
+NLS_NCHAR_CHARACTERSET   AL16UTF16</programlisting></para>
+
+    <warning>
+      <para>JCR of versions 1.10.x, 1.11.x and 1.12.x doesn't use NVARCHAR
+      columns, so that the value of the parameter NLS_NCHAR_CHARACTERSET does
+      not matter for JCR.</para>
+    </warning>
+
+    <para>Create database with Unicode encoding and use Oracle dialect for the
+    Workspace Container:</para>
+
+    <programlisting>&lt;workspace name="collaboration"&gt;
+          &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
+            &lt;properties&gt;
+              &lt;property name="source-name" value="jdbcjcr" /&gt;
+              &lt;property name="dialect" value="oracle" /&gt;
+              &lt;property name="multi-db" value="false" /&gt;
+              &lt;property name="max-buffer-size" value="200k" /&gt;
+              &lt;property name="swap-directory" value="target/temp/swap/ws" /&gt;
+            &lt;/properties&gt;
+          .....</programlisting>
+  </section>
+
+  <section>
+    <title>DB2</title>
+
+    <para>DB2 Universal Database (DB2 UDB) supports <ulink
+    url="http://publib.boulder.ibm.com/infocenter/db2luw/v9/index.jsp?topic=/com.ibm.db2.udb.admin.doc/doc/c0004821.htm">UTF-8
+    and UTF-16/UCS-2</ulink>. When a Unicode database is created, CHAR,
+    VARCHAR, LONG VARCHAR data are stored in UTF-8 form. It's enough for JCR
+    multi-lingual support.</para>
+
+    <para>Example of UTF-8 database creation:<programlisting>DB2 CREATE DATABASE dbname USING CODESET UTF-8 TERRITORY US</programlisting></para>
+
+    <para>Create database with UTF-8 encoding and use db2 dialect for
+    Workspace Container on DB2 v.9 and higher:<programlisting>&lt;workspace name="collaboration"&gt;
+          &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
+            &lt;properties&gt;
+              &lt;property name="source-name" value="jdbcjcr" /&gt;
+              &lt;property name="dialect" value="db2" /&gt;
+              &lt;property name="multi-db" value="false" /&gt;
+              &lt;property name="max-buffer-size" value="200k" /&gt;
+              &lt;property name="swap-directory" value="target/temp/swap/ws" /&gt;
+            &lt;/properties&gt;
+          .....</programlisting></para>
+
+    <note>
+      <para>For DB2 v.8.x support change the property "dialect" to
+      db2v8.</para>
+    </note>
+  </section>
+
+  <section>
+    <title>MySQL</title>
+
+    <para>JCR MySQL-backend requires special dialect <ulink
+    url="http://jira.exoplatform.org/browse/JCR-375">MySQL-UTF8</ulink> to be
+    used for internationalization support. But the database default charset
+    should be latin1 to use limited index space effectively (1000 bytes for
+    MyISAM engine, 767 for InnoDB). If database default charset is multibyte,
+    a JCR database initialization error is thrown concerning index creation
+    failure. In other words JCR can work on any singlebyte default charset of
+    database, with UTF8 supported by MySQL server. But we have tested it only
+    on latin1 database default charset.</para>
+
+    <para>Repository configuration, workspace container entry
+    example:<programlisting>&lt;workspace name="collaboration"&gt;
+          &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
+            &lt;properties&gt;
+              &lt;property name="source-name" value="jdbcjcr" /&gt;
+              &lt;property name="dialect" value="mysql-utf8" /&gt;
+              &lt;property name="multi-db" value="false" /&gt;
+              &lt;property name="max-buffer-size" value="200k" /&gt;
+              &lt;property name="swap-directory" value="target/temp/swap/ws" /&gt;
+            &lt;/properties&gt;
+          .....</programlisting></para>
+  </section>
+
+  <section>
+    <title>PostgreSQL</title>
+
+    <para>On PostgreSQL-backend multilingual support can be enabled in <ulink
+    url="http://www.postgresql.org/docs/8.3/interactive/charset.html">different
+    ways</ulink>:<itemizedlist>
+        <listitem>
+          <para>Using the locale features of the operating system to provide
+          locale-specific collation order, number formatting, translated
+          messages, and other aspects. UTF-8 is widely used on Linux
+          distributions by default, so it can be useful in such case.</para>
+        </listitem>
+
+        <listitem>
+          <para>Providing a number of different character sets defined in the
+          PostgreSQL server, including multiple-byte character sets, to
+          support storing text any language, and providing character set
+          translation between client and server. We recommend to use UTF-8
+          database charset, it will allow any-to-any conversations and make
+          this issue transparent for the JCR.</para>
+        </listitem>
+      </itemizedlist></para>
+
+    <para>Create database with UTF-8 encoding and use PgSQL dialect for
+    Workspace Container:<programlisting>&lt;workspace name="collaboration"&gt;
+          &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
+            &lt;properties&gt;
+              &lt;property name="source-name" value="jdbcjcr" /&gt;
+              &lt;property name="dialect" value="pgsql" /&gt;
+              &lt;property name="multi-db" value="false" /&gt;
+              &lt;property name="max-buffer-size" value="200k" /&gt;
+              &lt;property name="swap-directory" value="target/temp/swap/ws" /&gt;
+            &lt;/properties&gt;
+          .....</programlisting></para>
+  </section>
+</chapter>
