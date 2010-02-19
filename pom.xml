@@ -152,7 +152,7 @@
       </dependency>
       <dependency>
         <groupId>org.exoplatform.jcr</groupId>
-        <artifactId>exo.jcr.component.cluster.test.client</artifactId>
+        <artifactId>exo.jcr.cluster.testclient</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
