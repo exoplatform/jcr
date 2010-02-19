@@ -94,7 +94,7 @@ public class SessionLockManagerImpl extends AbstractSessionLockManager
    /**
     * {@inheritDoc}
     */
-   public boolean isLockHolder(NodeImpl node) throws RepositoryException
+   protected boolean isPersitedLockHolder(NodeImpl node) throws RepositoryException
    {
       return lockManager.isLockHolder(node);
    }

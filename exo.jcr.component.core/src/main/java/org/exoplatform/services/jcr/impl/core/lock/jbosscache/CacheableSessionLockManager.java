@@ -87,7 +87,8 @@ public class CacheableSessionLockManager extends AbstractSessionLockManager
     * @param sessionID - session identifier
     * @param lockManager - workspace lock manager
     */
-   public CacheableSessionLockManager(String sessionID, CacheableLockManager lockManager, SessionDataManager transientManager)
+   public CacheableSessionLockManager(String sessionID, CacheableLockManager lockManager,
+      SessionDataManager transientManager)
    {
       super(transientManager);
       this.sessionID = sessionID;
@@ -207,7 +208,7 @@ public class CacheableSessionLockManager extends AbstractSessionLockManager
    /**
     * {@inheritDoc}
     */
-   public boolean isLockHolder(NodeImpl node) throws RepositoryException
+   protected boolean isPersitedLockHolder(NodeImpl node) throws RepositoryException
    {
       //TODO optimise it
       LockData lData = lockManager.getExactNodeOrCloseParentLock((NodeData)node.getData());
