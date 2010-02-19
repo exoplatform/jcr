@@ -1,0 +1,750 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter>
+  <title>Configuration</title>
+
+  <section>
+    <title>Kernel configuration namespace</title>
+
+    <para>To be effective the namespace URI <link
+    linkend="???">http://www.exoplaform.org/xml/ns/kernel_1_1.xsd</link> must
+    be target namespace of the XML configuration file.</para>
+
+    <programlisting>&lt;xsd:schema
+     targetNamespace="http://www.exoplaform.org/xml/ns/kernel_1_1.xsd"
+     xmlns="http://www.exoplaform.org/xml/ns/kernel_1_1.xsd"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+     elementFormDefault="qualified"
+     attributeFormDefault="unqualified"
+     version="1.0"&gt;
+
+   ...
+&lt;/xsd:schema&gt;</programlisting>
+  </section>
+
+  <section>
+    <title>Understanding How configuration files are loaded</title>
+
+    <section>
+      <title>First concepts</title>
+
+      <para>You can find the first concepts of <emphasis>How are the
+      configuration files loaded</emphasis> <ulink
+      url="http://wiki.exoplatform.org/xwiki/bin/view/Kernel/Container+Configuration">here</ulink>.</para>
+    </section>
+
+    <section>
+      <title>Advanced concepts for the <emphasis>PortalContainers</emphasis>
+      </title>
+
+      <para>Since eXo JCR 1.12, we added a set of new features that have been
+      designed to extend portal applications such as GateIn.</para>
+
+      <section>
+        <title>Add new configuration files from a WAR file</title>
+
+        <para>A <envar>ServletContextListener</envar> called
+        <envar>org.exoplatform.container.web.PortalContainerConfigOwner</envar>
+        has been added in order to notify the application that a given web
+        application provides some configuration to the portal container, and
+        this configuration file is the file
+        <emphasis>WEB-INF/conf/configuration.xml</emphasis> available in the
+        web application itself.</para>
+
+        <para>If your war file contains some configuration to add to the
+        <envar>PortalContainer</envar> simply add the following lines in your
+        <emphasis>web.xml</emphasis> file.</para>
+
+        <programlisting>&lt;?xml version="1.0" encoding="ISO-8859-1" ?&gt;
+&lt;!DOCTYPE web-app PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+                 "http://java.sun.com/dtd/web-app_2_3.dtd"&gt;
+&lt;web-app&gt;
+...
+  &lt;!-- ================================================================== --&gt;
+  &lt;!--           LISTENER                                                 --&gt;
+  &lt;!-- ================================================================== --&gt;
+  &lt;listener&gt;
+    &lt;listener-class&gt;org.exoplatform.container.web.PortalContainerConfigOwner&lt;/listener-class&gt;
+  &lt;/listener&gt;
+...
+&lt;/web-app&gt;</programlisting>
+      </section>
+
+      <section>
+        <title>Create your <emphasis>PortalContainers</emphasis> from a WAR
+        file</title>
+
+        <para>A <envar>ServletContextListener</envar> called
+        <envar>org.exoplatform.container.web.PortalContainerCreator</envar>
+        has been added in order to create the current portal containers that
+        have been registered. We assume that all the web applications have
+        already been loaded before calling
+        <envar>PortalContainerCreator.contextInitialized<replaceable><optional>.</optional></replaceable></envar></para>
+
+        <para><note>
+            <para>In GateIn, the <envar>PortalContainerCreator</envar> is
+            already managed by the file
+            <emphasis>starter.war/ear.</emphasis></para>
+          </note></para>
+      </section>
+
+      <section>
+        <title>Define a <emphasis>PortalContainer</emphasis> with its
+        dependencies and its settings</title>
+
+        <para>Now we can define precisely a portal container and its
+        dependencies and settings thanks to the
+        <envar>PortalContainerDefinition</envar> that currently contains the
+        name of the portal container, the name of the rest context, the name
+        of the realm he web application dependencies ordered by loading
+        priority (i.e. the first dependency must be loaded at first and so
+        on..) and the settings.</para>
+
+        <para>To be able to define a <envar>PortalContainerDefinition</envar>,
+        we need to ensure first of all that a
+        <envar>PortalContainerConfig</envar> has been defined at the
+        <envar>RootContainer</envar> level, see below an example:</para>
+
+        <programlisting>  &lt;component&gt;
+    &lt;!-- The full qualified name of the PortalContainerConfig --&gt;
+    &lt;type&gt;org.exoplatform.container.definition.PortalContainerConfig&lt;/type&gt;
+    &lt;init-params&gt;
+      &lt;!-- The name of the default portal container --&gt;
+      &lt;value-param&gt;
+        &lt;name&gt;default.portal.container&lt;/name&gt;
+        &lt;value&gt;myPortal&lt;/value&gt;
+      &lt;/value-param&gt;
+      &lt;!-- The name of the default rest ServletContext --&gt;
+      &lt;value-param&gt;
+        &lt;name&gt;default.rest.context&lt;/name&gt;
+        &lt;value&gt;myRest&lt;/value&gt;
+      &lt;/value-param&gt;
+      &lt;!-- The name of the default realm --&gt;
+      &lt;value-param&gt;
+        &lt;name&gt;default.realm.name&lt;/name&gt;
+        &lt;value&gt;my-exo-domain&lt;/value&gt;
+      &lt;/value-param&gt;
+    &lt;/init-params&gt;
+  &lt;/component&gt;</programlisting>
+
+        <table>
+          <title>Descriptions of the fields of
+          <envar>PortalContainerConfig</envar></title>
+
+          <tgroup cols="2">
+            <tbody>
+              <row>
+                <entry>default.portal.container</entry>
+
+                <entry>The name of the default portal container. This field is
+                optional.</entry>
+              </row>
+
+              <row>
+                <entry>default.rest.context</entry>
+
+                <entry>The name of the default rest
+                <envar>ServletContext</envar>. This field is optional.</entry>
+              </row>
+
+              <row>
+                <entry>default.realm.name</entry>
+
+                <entry>The name of the default realm. This field is
+                optional.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+
+        <para> A new <envar>PortalContainerDefinition</envar> can be defined
+        at the <envar>RootContainer</envar> level thanks to an external
+        plugin, see below an example:<programlisting>  &lt;external-component-plugins&gt;
+    &lt;!-- The full qualified name of the PortalContainerConfig --&gt;
+    &lt;target-component&gt;org.exoplatform.container.definition.PortalContainerConfig&lt;/target-component&gt;
+    &lt;component-plugin&gt;
+      &lt;!-- The name of the plugin --&gt;
+      &lt;name&gt;Add PortalContainer Definitions&lt;/name&gt;
+      &lt;!-- The name of the method to call on the PortalContainerConfig in order to register the PortalContainerDefinitions --&gt;
+      &lt;set-method&gt;registerPlugin&lt;/set-method&gt;
+      &lt;!-- The full qualified name of the PortalContainerDefinitionPlugin --&gt;
+      &lt;type&gt;org.exoplatform.container.definition.PortalContainerDefinitionPlugin&lt;/type&gt;
+      &lt;init-params&gt;
+        &lt;object-param&gt;
+          &lt;name&gt;portal&lt;/name&gt;
+          &lt;object type="org.exoplatform.container.definition.PortalContainerDefinition"&gt;
+            &lt;!-- The name of the portal container --&gt;
+            &lt;field name="name"&gt;
+              &lt;string&gt;myPortal&lt;/string&gt;
+            &lt;/field&gt;
+            &lt;!-- The name of the context name of the rest web application --&gt;
+            &lt;field name="restContextName"&gt;
+              &lt;string&gt;myRest&lt;/string&gt;
+            &lt;/field&gt;
+            &lt;!-- The name of the realm --&gt;
+            &lt;field name="realmName"&gt;
+              &lt;string&gt;my-domain&lt;/string&gt;
+            &lt;/field&gt;
+            &lt;!-- All the dependencies of the portal container ordered by loading priority --&gt;
+            &lt;field name="dependencies"&gt;
+              &lt;collection type="java.util.ArrayList"&gt;
+                &lt;value&gt;
+                  &lt;string&gt;foo&lt;/string&gt;
+                &lt;/value&gt;
+                &lt;value&gt;
+                  &lt;string&gt;foo2&lt;/string&gt;
+                &lt;/value&gt;
+                &lt;value&gt;
+                  &lt;string&gt;foo3&lt;/string&gt;
+                &lt;/value&gt;
+              &lt;/collection&gt;
+            &lt;/field&gt;
+            &lt;!-- A map of settings tied to the portal container --&gt;
+            &lt;field name="settings"&gt;
+              &lt;map type="java.util.HashMap"&gt;
+                &lt;entry&gt;
+                  &lt;key&gt;
+                    &lt;string&gt;foo&lt;/string&gt;
+                  &lt;/key&gt;
+                  &lt;value&gt;
+                    &lt;string&gt;value&lt;/string&gt;
+                  &lt;/value&gt;
+                &lt;/entry&gt;
+                &lt;entry&gt;
+                  &lt;key&gt;
+                    &lt;string&gt;int&lt;/string&gt;
+                  &lt;/key&gt;
+                  &lt;value&gt;
+                    &lt;int&gt;10&lt;/int&gt;
+                  &lt;/value&gt;
+                &lt;/entry&gt;
+                &lt;entry&gt;
+                  &lt;key&gt;
+                    &lt;string&gt;long&lt;/string&gt;
+                  &lt;/key&gt;
+                  &lt;value&gt;
+                    &lt;long&gt;10&lt;/long&gt;
+                  &lt;/value&gt;
+                &lt;/entry&gt;
+                &lt;entry&gt;
+                  &lt;key&gt;
+                    &lt;string&gt;double&lt;/string&gt;
+                  &lt;/key&gt;
+                  &lt;value&gt;
+                    &lt;double&gt;10&lt;/double&gt;
+                  &lt;/value&gt;
+                &lt;/entry&gt;
+                &lt;entry&gt;
+                  &lt;key&gt;
+                    &lt;string&gt;boolean&lt;/string&gt;
+                  &lt;/key&gt;
+                  &lt;value&gt;
+                    &lt;boolean&gt;true&lt;/boolean&gt;
+                  &lt;/value&gt;
+                &lt;/entry&gt;                                
+              &lt;/map&gt;
+            &lt;/field&gt;            
+            &lt;!-- The path to the external properties file --&gt;
+            &lt;field name="externalSettingsPath"&gt;
+              &lt;string&gt;classpath:/org/exoplatform/container/definition/settings.properties&lt;/string&gt;
+            &lt;/field&gt;
+          &lt;/object&gt;
+        &lt;/object-param&gt;
+      &lt;/init-params&gt;
+    &lt;/component-plugin&gt;
+  &lt;/external-component-plugins&gt;</programlisting></para>
+
+        <table>
+          <title>Descriptions of the fields of
+          <envar>PortalContainerDefinition</envar></title>
+
+          <tgroup cols="2">
+            <tbody>
+              <row>
+                <entry>name</entry>
+
+                <entry>The name of the portal container. This field is
+                mandatory.</entry>
+              </row>
+
+              <row>
+                <entry>restContextName</entry>
+
+                <entry>The name of the context name of the rest web
+                application. This field is optional. The default value will
+                the value define at the <envar>PortalContainerConfig</envar>
+                level if it is not null, "rest" otherwise.</entry>
+              </row>
+
+              <row>
+                <entry>realmName</entry>
+
+                <entry>The name of the realm. This field is optional. The
+                default value will the value define at the
+                <envar>PortalContainerConfig</envar> level if it is not null,
+                "exo-domain" otherwise.</entry>
+              </row>
+
+              <row>
+                <entry>dependencies</entry>
+
+                <entry>All the dependencies of the portal container ordered by
+                loading priority. The dependencies are in fact the list of the
+                context names of the web applications from which the portal
+                container depends. This field is optional. The dependency
+                order is really crucial since it will be interpreted the same
+                way by several components of the platform. All those
+                components, will consider the 1st element in the list less
+                important than the second element and so on. It is currently
+                used to:<itemizedlist>
+                    <listitem>
+                      <para>Know the loading order of all the
+                      dependencies.</para>
+                    </listitem>
+
+                    <listitem>
+                      <para>If we have several
+                      <envar>PortalContainerConfigOwner</envar><itemizedlist>
+                          <listitem>
+                            <para>The <envar>ServletContext</envar> of all the
+                            <envar>PortalContainerConfigOwner</envar> will be
+                            unified, if we use the unified
+                            <envar>ServletContext</envar>
+                            (<emphasis>PortalContainer.getPortalContext()</emphasis>)
+                            to get a resource, it will try to get the resource
+                            in the <envar>ServletContext</envar> of the most
+                            important <envar>PortalContainerConfigOwner</envar>
+                            (i.e. last in the dependency list) and if it cans
+                            find it, it will try with the second most important
+                            <envar>PortalContainerConfigOwner</envar> and so
+                            on.</para>
+                          </listitem>
+
+                          <listitem>
+                            <para>The <envar>ClassLoader</envar> of all the
+                            <envar>PortalContainerConfigOwner</envar> will be
+                            unified, if we use the unified
+                            <envar>ClassLoader</envar>
+                            (<emphasis>PortalContainer.getPortalClassLoader()</emphasis>)
+                            to get a resource, it will try to get the resource
+                            in the <envar>ClassLoader</envar> of the most
+                            important <envar>PortalContainerConfigOwner</envar>
+                            (i.e. last in the dependency list) and if it cans
+                            find it, it will try with the second most important
+                            <envar>PortalContainerConfigOwner</envar> and so
+                            on.</para>
+                          </listitem>
+                        </itemizedlist></para>
+                    </listitem>
+                  </itemizedlist></entry>
+              </row>
+
+              <row>
+                <entry>settings</entry>
+
+                <entry>A <envar>java.util.Map</envar> of internal parameters
+                that we would like to tie the portal container. Those
+                parameters could have any type of value. This field is
+                optional.</entry>
+              </row>
+
+              <row>
+                <entry>externalSettingsPath</entry>
+
+                <entry>The path of the external properties file to load as
+                default settings to the portal container. This field is
+                optional. The external properties files can be either of type
+                "properties" or of type "xml". The path will be interpreted as
+                follows:<orderedlist>
+                    <listitem>
+                      <para>The path doesn't contain any prefix of type
+                      "classpath:", "jar:" or "file:", we assume that the file
+                      could be externalized so we apply the following
+                      rules:<orderedlist>
+                          <listitem>
+                            <para>A file exists at
+                            <emphasis>${exo-conf-dir}/portal/${portalContainerName}/${externalSettingsPath}</emphasis>,
+                            we will load this file.</para>
+                          </listitem>
+
+                          <listitem>
+                            <para>No file exists at the previous path, we then
+                            assume that the path cans be interpreted by the
+                            <envar>ConfigurationManager</envar>.</para>
+                          </listitem>
+                        </orderedlist></para>
+                    </listitem>
+
+                    <listitem>
+                      <para>The path contains a prefix, we then assume that
+                      the path cans be interpreted by the
+                      <envar>ConfigurationManager</envar>.</para>
+                    </listitem>
+                  </orderedlist></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+
+        <para>Internal and external settings are both optional, but if we give
+        a non empty value for both the application will merge the settings. If
+        the same setting name exists in both settings, we apply the following
+        rules:</para>
+
+        <orderedlist>
+          <listitem>
+            <para>The value of the external setting is
+            <emphasis>null</emphasis>, we ignore the value.</para>
+          </listitem>
+
+          <listitem>
+            <para>The value of the external setting is not
+            <emphasis>null</emphasis> and the value of the internal setting is
+            <emphasis>null</emphasis>, the final value will be the external
+            setting value that is of type <envar>String</envar>.</para>
+          </listitem>
+
+          <listitem>
+            <para>Both values are not <envar>null</envar>, we will have to
+            convert the external setting value into the target type which is
+            the type of the internal setting value, thanks to the static
+            method <emphasis>valueOf(String)</emphasis>, the following
+            sub-rules are then applied:</para>
+
+            <orderedlist>
+              <listitem>
+                <para>The method cannot be found, the final value will be the
+                external setting value that is of type
+                <envar>String</envar>.</para>
+              </listitem>
+
+              <listitem>
+                <para>The method can be found and the external setting value
+                is an empty <envar>String</envar>, we ignore the external
+                setting value.</para>
+              </listitem>
+
+              <listitem>
+                <para>The method can be found and the external setting value
+                is not an empty <envar>String</envar> but the method call
+                fails, we ignore the external setting value.</para>
+              </listitem>
+
+              <listitem>
+                <para>The method can be found and the external setting value
+                is not an empty <envar>String</envar> and the method call
+                succeeds, the final value will be the external setting value
+                that is of type of the internal setting value.</para>
+              </listitem>
+            </orderedlist>
+          </listitem>
+        </orderedlist>
+      </section>
+
+      <section>
+        <title><envar>PortalContainer</envar> settings</title>
+
+        <para>We can inject the value of the portal container settings into
+        the portal container configuration files thanks to the variables which
+        name start with "<emphasis>portal.container.</emphasis>", so to get
+        the value of a setting called "<emphasis>foo</emphasis>" just use the
+        following syntax <emphasis>${portal.container.foo}</emphasis>. You can
+        also use internal variables, such as: </para>
+
+        <table>
+          <title>Definition of the internal variables</title>
+
+          <tgroup cols="2">
+            <tbody>
+              <row>
+                <entry>portal.container.name</entry>
+
+                <entry>Gives the name of the current portal container.</entry>
+              </row>
+
+              <row>
+                <entry>portal.container.rest</entry>
+
+                <entry>Gives the context name of the rest web application of
+                the current portal container.</entry>
+              </row>
+
+              <row>
+                <entry>portal.container.realm</entry>
+
+                <entry>Gives the realm name of the current portal
+                container.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+
+        <para>You can find below an example of how to use the
+        variables:<programlisting>&lt;configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_1.xsd http://www.exoplaform.org/xml/ns/kernel_1_1.xsd"
+  xmlns="http://www.exoplaform.org/xml/ns/kernel_1_1.xsd"&gt;
+  &lt;component&gt;
+    &lt;type&gt;org.exoplatform.container.TestPortalContainer$MyComponent&lt;/type&gt;
+    &lt;init-params&gt;
+      &lt;!-- The name of the portal container --&gt;
+      &lt;value-param&gt;
+        &lt;name&gt;portal&lt;/name&gt;
+        &lt;value&gt;${portal.container.name}&lt;/value&gt;
+      &lt;/value-param&gt;
+      &lt;!-- The name of the rest ServletContext --&gt;
+      &lt;value-param&gt;
+        &lt;name&gt;rest&lt;/name&gt;
+        &lt;value&gt;${portal.container.rest}&lt;/value&gt;
+      &lt;/value-param&gt;
+      &lt;!-- The name of the realm --&gt;
+      &lt;value-param&gt;
+        &lt;name&gt;realm&lt;/name&gt;
+        &lt;value&gt;${portal.container.realm}&lt;/value&gt;
+      &lt;/value-param&gt;
+      &lt;value-param&gt;
+        &lt;name&gt;foo&lt;/name&gt;
+        &lt;value&gt;${portal.container.foo}&lt;/value&gt;
+      &lt;/value-param&gt;
+      &lt;value-param&gt;
+        &lt;name&gt;before foo after&lt;/name&gt;
+        &lt;value&gt;before ${portal.container.foo} after&lt;/value&gt;
+      &lt;/value-param&gt;
+    &lt;/init-params&gt;
+  &lt;/component&gt;
+&lt;/configuration&gt;</programlisting></para>
+      </section>
+    </section>
+  </section>
+
+  <section>
+    <title>System property configuration</title>
+
+    <para>A new property configurator service has been developed for taking
+    care of configuring system properties from the inline kernel configuration
+    or from specified property files.</para>
+
+    <para>The services is scoped at the root container level because it is
+    used by all the services in the different portal containers in the
+    application runtime.</para>
+
+    <section>
+      <title>Properties init param</title>
+
+      <para>The properties init param takes a property declared to configure
+      various properties.</para>
+
+      <programlisting>&lt;component&gt;
+  &lt;key&gt;PropertyManagerConfigurator&lt;/key&gt;
+  &lt;type&gt;org.exoplatform.container.PropertyConfigurator&lt;/type&gt;
+  &lt;init-params&gt;
+    &lt;properties-param&gt;
+      &lt;name&gt;properties&lt;/name&gt;
+      &lt;property name="foo" value="bar"/&gt;
+    &lt;/properties-param&gt;
+  &lt;/init-params&gt;
+&lt;/component&gt;</programlisting>
+    </section>
+
+    <section>
+      <title>Properties URL init param</title>
+
+      <para>The properties URL init param allow to load an external file by
+      specifying its URL. Both property and XML format are supported, see the
+      javadoc of the <emphasis><envar>java.util.Properties</envar></emphasis>
+      class for more information. When a property file is loaded the various
+      property declarations are loaded in the order in which the properties
+      are declared sequentially in the file.</para>
+
+      <programlisting>&lt;component&gt;
+  &lt;key&gt;PropertyManagerConfigurator&lt;/key&gt;
+  &lt;type&gt;org.exoplatform.container.PropertyConfigurator&lt;/type&gt;
+  &lt;init-params&gt;
+    &lt;value-param&gt;
+      &lt;name&gt;properties.url&lt;/name&gt;
+      &lt;value&gt;classpath:configuration.properties&lt;/value&gt;
+    &lt;/value-param&gt;
+  &lt;/init-params&gt;
+&lt;/component&gt;</programlisting>
+    </section>
+
+    <section>
+      <title>System Property configuration of the properties URL</title>
+
+      <para>It is possible to replace the properties URL init param by a
+      system property that overwrites it. The name of that property is
+      <emphasis>exo.properties.url</emphasis>.</para>
+    </section>
+  </section>
+
+  <section>
+    <title>Runtime configuration profiles</title>
+
+    <para>The kernel configuration is able to handle configuration profiles at
+    runtime (as opposed to packaging time).</para>
+
+    <section>
+      <title>Profiles activation</title>
+
+      <para>An active profile list is obtained during the boot of the root
+      container and is composed of the system property
+      <emphasis>exo.profiles</emphasis> sliced according the "," delimiter and
+      also a server specific profile value (tomcat for tomcat, jboss for
+      jboss, etc...).</para>
+
+      <programlisting># runs GateIn on Tomcat with the profiles tomcat and foo
+sh gatein.sh -Dexo.profiles=foo
+
+# runs GateIn on JBoss with the profiles jboss, foo and bar
+sh run.sh -Dexo.profiles=foo,bar</programlisting>
+    </section>
+
+    <section>
+      <title>Profiles configuration</title>
+
+      <para>Profiles are configured in the configuration files of the eXo
+      kernel.</para>
+
+      <section>
+        <title>Profiles definition</title>
+
+        <para>Profile activation occurs at XML to configuration object
+        unmarshalling time. It is based on an "profile" attribute that is
+        present on some of the XML element of the configuration files. To
+        enable this the kernel configuration schema has been upgraded to
+        kernel_1_1.xsd. The configuration is based on the following
+        rules:</para>
+
+        <orderedlist>
+          <listitem>
+            <para>Any kernel element with the no <emphasis>profiles</emphasis>
+            attribute will create a configuration object</para>
+          </listitem>
+
+          <listitem>
+            <para>Any kernel element having a <emphasis>profiles</emphasis>
+            attribute containing at least one of the active profiles will
+            create a configuration object</para>
+          </listitem>
+
+          <listitem>
+            <para>Any kernel element having a <emphasis>profiles</emphasis>
+            attribute matching none of the active profile will not create a
+            configuration object</para>
+          </listitem>
+
+          <listitem>
+            <para>Resolution of duplicates (such as two components with same
+            type) is left up to the kernel</para>
+          </listitem>
+        </orderedlist>
+      </section>
+
+      <section>
+        <title>Profiles capable configuration elements</title>
+
+        <para>A configuration element is <emphasis>profiles</emphasis> capable
+        when it carries a profiles element.</para>
+
+        <section>
+          <title>Component element</title>
+
+          <para>The component element declares a component when activated. It
+          will shadow any element with the same key declared before in the
+          same configuration file:</para>
+
+          <programlisting>&lt;component&gt;
+  &lt;key&gt;Component&lt;/key&gt;
+  &lt;type&gt;Component&lt;/type&gt;
+&lt;/component&gt;
+
+&lt;component profile="foo"&gt;
+  &lt;key&gt;Component&lt;/key&gt;
+  &lt;type&gt;FooComponent&lt;/type&gt;
+&lt;/component&gt;</programlisting>
+        </section>
+
+        <section>
+          <title>Import element</title>
+
+          <para>The import element imports a referenced configuration file
+          when activated:</para>
+
+          <programlisting>&lt;import&gt;empty&lt;/import&gt;
+&lt;import profile="foo"&gt;foo&lt;/import&gt;
+&lt;import profile="bar"&gt;bar&lt;/import&gt;</programlisting>
+        </section>
+
+        <section>
+          <title>Init param element</title>
+
+          <para>The init param element configures the parameter argument of
+          the construction of a component service:</para>
+
+          <programlisting>&lt;component&gt;
+  &lt;key&gt;Component&lt;/key&gt;
+  &lt;type&gt;ComponentImpl&lt;/type&gt;
+  &lt;init-params&gt;
+    &lt;value-param&gt;
+      &lt;name&gt;param&lt;/name&gt;
+      &lt;value&gt;empty&lt;/value&gt;
+    &lt;/value-param&gt;
+    &lt;value-param profile="foo"&gt;
+      &lt;name&gt;param&lt;/name&gt;
+      &lt;value&gt;foo&lt;/value&gt;
+    &lt;/value-param&gt;
+    &lt;value-param profile="bar"&gt;
+      &lt;name&gt;param&lt;/name&gt;
+      &lt;value&gt;bar&lt;/value&gt;
+    &lt;/value-param&gt;
+  &lt;/init-params&gt;
+&lt;/component&gt;</programlisting>
+        </section>
+
+        <section>
+          <title>Value collection element</title>
+
+          <para>The value collection element configures one of the value of
+          collection data:</para>
+
+          <programlisting>&lt;object type="org.exoplatform.container.configuration.ConfigParam"&gt;
+  &lt;field name="role"&gt;
+    &lt;collection type="java.util.ArrayList"&gt;
+      &lt;value&gt;&lt;string&gt;manager&lt;/string&gt;&lt;/value&gt;
+      &lt;value profile="foo"&gt;&lt;string&gt;foo_manager&lt;/string&gt;&lt;/value&gt;
+      &lt;value profile="foo,bar"&gt;&lt;string&gt;foo_bar_manager&lt;/string&gt;&lt;/value&gt;
+    &lt;/collection&gt;
+  &lt;/field&gt;
+&lt;/object&gt;</programlisting>
+        </section>
+
+        <section>
+          <title>Field configuration element</title>
+
+          <para>The field configuration element configures the field of an
+          object:</para>
+
+          <programlisting>&lt;object-param&gt;
+  &lt;name&gt;test.configuration&lt;/name&gt;
+  &lt;object type="org.exoplatform.container.configuration.ConfigParam"&gt;
+    &lt;field name="role"&gt;
+      &lt;collection type="java.util.ArrayList"&gt;
+        &lt;value&gt;&lt;string&gt;manager&lt;/string&gt;&lt;/value&gt;
+      &lt;/collection&gt;
+    &lt;/field&gt;
+    &lt;field name="role" profile="foo,bar"&gt;
+      &lt;collection type="java.util.ArrayList"&gt;
+        &lt;value&gt;&lt;string&gt;foo_bar_manager&lt;/string&gt;&lt;/value&gt;
+      &lt;/collection&gt;
+    &lt;/field&gt;
+    &lt;field name="role" profile="foo"&gt;
+      &lt;collection type="java.util.ArrayList"&gt;
+        &lt;value&gt;&lt;string&gt;foo_manager&lt;/string&gt;&lt;/value&gt;
+      &lt;/collection&gt;
+    &lt;/field&gt;
+  &lt;/object&gt;
+&lt;/object-param&gt;</programlisting>
+        </section>
+      </section>
+    </section>
+  </section>
+</chapter>
