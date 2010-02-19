@@ -124,6 +124,13 @@ public class JCRWebdavConnection extends HTTPConnection
    {
       return Put(workspacePath + name, stream);
    }
+   
+   public HTTPResponse addNode(String name, HttpOutputStream stream, String mimeType) throws IOException, ModuleException
+   {
+      NVPair[] headers = new NVPair[1];
+      headers[0] = new NVPair(HttpHeaders.CONTENT_TYPE, mimeType);
+      return Put(workspacePath + name, stream, headers);
+   }
 
    public HTTPResponse removeNode(String name) throws IOException, ModuleException
    {
