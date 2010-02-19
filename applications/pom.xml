@@ -35,7 +35,7 @@
    <description>eXo JCR Applications Reactor</description>
 
    <modules>
-      <module>cluster.test.client</module>
+      <module>exo.jcr.component.cluster.test.client</module>
       <module>exo.jcr.applications.backupconsole</module>
       <module>exo.jcr.applications.browser</module>
       <module>exo.jcr.applications.config</module>                  
