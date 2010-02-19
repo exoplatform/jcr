@@ -26,7 +26,7 @@
     <artifactId>jcr-applications-parent</artifactId>
     <version>1.12.0-GA-SNAPSHOT</version>
   </parent>
-  <artifactId>exo.jcr.component.cluster.test.client</artifactId>
+  <artifactId>exo.jcr.cluster.testclient</artifactId>
   <name>eXo JCR :: Cluster :: Test Client</name>
   <description>Cluster test client</description>
   <dependencies>
