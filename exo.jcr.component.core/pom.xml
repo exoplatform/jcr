@@ -71,6 +71,11 @@
       <artifactId>exo.core.component.security.core</artifactId>
     </dependency>
     <dependency>
+       <groupId>org.exoplatform.jcr</groupId>
+       <artifactId>exo.jcr.cluster.testclient</artifactId>
+       <scope>test</scope>
+    </dependency>    
+    <dependency>
       <groupId>org.apache.lucene</groupId>
       <artifactId>lucene-core</artifactId>
     </dependency>
@@ -165,12 +170,7 @@
           <artifactId>junit</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.exoplatform.jcr</groupId>
-      <artifactId>exo.jcr.component.cluster.test.client</artifactId>
-      <scope>test</scope>
-    </dependency>
+    </dependency>    
     <!-- TCK binaries and deps for repo stub, some eXo API test -->
     <dependency>
       <groupId>org.jboss.cache</groupId>
