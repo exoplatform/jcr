@@ -25,6 +25,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 
 import javax.jcr.Node;
 import javax.jcr.Property;
@@ -123,6 +124,36 @@ public class TestI18nValues extends JcrAPIBaseTest
       catch (RepositoryException e)
       {
          fail("Error read property '" + TEST_I18N_PROP + "': " + e);
+      }
+   }
+
+   public void setLongItem(String item, String source) throws RepositoryException
+   {
+
+      if (log.isDebugEnabled())
+         log.debug("String as string value: '" + source + "'");
+
+      try
+      {
+         testNode.setProperty(item, source);
+         testNode.save();
+      }
+      catch (RepositoryException e)
+      {
+         fail("Error create proeprty '" + item + "': " + e);
+      }
+
+      Session session1 = repository.login(credentials, WORKSPACE);
+      Node test = session1.getRootNode().getNode(TEST_I18N);
+
+      try
+      {
+         Property prop = test.getProperty(item);
+         assertEquals("Content must be identical", prop.getString(), source);
+      }
+      catch (RepositoryException e)
+      {
+         fail("Error read property '" + item + "': " + e);
       }
    }
 
@@ -451,4 +482,11 @@ public class TestI18nValues extends JcrAPIBaseTest
       s1.logout();
    }
 
+   public void testLongItem() throws RepositoryException
+   {
+      char item[] = new char[500];
+      Arrays.fill(item, '0');
+
+      setLongItem(new String(item), TEST_I18N_CONTENT_CYR);
+   }
 }
