@@ -153,8 +153,9 @@ public class CollectionResource extends GenericResource
       final WebDavNamespaceContext namespaceContext) throws IllegalResourceTypeException, RepositoryException
    {
       super(type, identifier, new WebDavNamespaceContext(node.getSession()));
-      if (ResourceUtil.isFile(node))
-         throw new IllegalResourceTypeException("Node type is not applicable for COLLECTION resource " + node.getPath());
+      // TODO EXOJCR-533
+      //if (ResourceUtil.isFile(node))
+      //   throw new IllegalResourceTypeException("Node type is not applicable for COLLECTION resource " + node.getPath());
       this.node = node;
    }
 

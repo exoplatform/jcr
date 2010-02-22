@@ -58,7 +58,7 @@ import org.exoplatform.services.rest.impl.header.MediaTypeHelper;
  * Created by The eXo Platform SAS Author : <a
  * href="gavrikvetal@gmail.com">Vitaly Guly</a>.
  * 
- * @version $Id: $
+ * @version $Id$
  */
 
 public class GetCommand
@@ -81,8 +81,12 @@ public class GetCommand
     * @param ranges ranges
     * @return the instance of javax.ws.rs.core.Response
     */
-   public Response get(Session session, String path, String version, String baseURI, List<Range> ranges, String ifModifiedSince, HashMap<MediaType, String> cahceControls)
+   public Response get(Session session, String path, String version, String baseURI, List<Range> ranges,
+      String ifModifiedSince, HashMap<MediaType, String> cahceControls)
    {
+      // TODO EXOJCR-533
+      //      long startGet = System.currentTimeMillis();
+      //      try {
 
       if (version == null)
       {
@@ -95,7 +99,6 @@ public class GetCommand
 
       try
       {
-
          Node node = (Node)session.getItem(path);
 
          WebDavNamespaceContext nsContext = new WebDavNamespaceContext(session);
@@ -119,18 +122,19 @@ public class GetCommand
                istream = ((FileResource)resource).getContentAsStream();
             }
 
-            HierarchicalProperty contentLengthProperty = resource.getProperty(FileResource.GETCONTENTLENGTH);
-            long contentLength = new Long(contentLengthProperty.getValue());
+            // TODO EXOJCR-533 why we need fileResource if we have resource?
+            // FileResource fileResource = new FileResource(uri, node, nsContext);
+            // HierarchicalProperty lastModifiedProperty = fileResource.getProperty(FileResource.GETLASTMODIFIED);
+            HierarchicalProperty lastModifiedProperty = resource.getProperty(FileResource.GETLASTMODIFIED);
 
-            HierarchicalProperty mimeTypeProperty = resource.getProperty(FileResource.GETCONTENTTYPE);
-            String contentType = mimeTypeProperty.getValue();
-
-            FileResource fileResource = new FileResource(uri, node, nsContext);
-            HierarchicalProperty lastModifiedProperty = fileResource.getProperty(FileResource.GETLASTMODIFIED);
-            
-            if((ifModifiedSince != null) && (ifModifiedSince.equals(lastModifiedProperty.getValue()))){
+            // check before any other reads
+            if ((ifModifiedSince != null) && (ifModifiedSince.equals(lastModifiedProperty.getValue())))
+            {
                return Response.notModified().entity("Not Modified").build();
             }
+
+            HierarchicalProperty contentLengthProperty = resource.getProperty(FileResource.GETCONTENTLENGTH);
+            long contentLength = new Long(contentLengthProperty.getValue());
 
             // content length is not present
             if (contentLength == 0)
@@ -138,17 +142,16 @@ public class GetCommand
                return Response.ok().header(ExtHttpHeaders.ACCEPT_RANGES, "bytes").entity(istream).build();
             }
 
-            // no ranges request
+            HierarchicalProperty mimeTypeProperty = resource.getProperty(FileResource.GETCONTENTTYPE);
+            String contentType = mimeTypeProperty.getValue();
 
+            // no ranges request
             if (ranges.size() == 0)
             {
-
-
                return Response.ok().header(HttpHeaders.CONTENT_LENGTH, Long.toString(contentLength)).header(
                   ExtHttpHeaders.ACCEPT_RANGES, "bytes").header(ExtHttpHeaders.LAST_MODIFIED,
                   lastModifiedProperty.getValue()).header(ExtHttpHeaders.CACHE_CONTROL,
                   generateCacheControl(cahceControls, contentType)).entity(istream).type(contentType).build();
-
             }
 
             // one range
@@ -213,6 +216,11 @@ public class GetCommand
          log.error(exc.getMessage(), exc);
          return Response.serverError().entity(exc.getMessage()).build();
       }
+
+      // TODO EXOJCR-533
+      //      } finally {
+      //         System.out.println(System.currentTimeMillis() + ":GetCommand:" + path + ":" + (System.currentTimeMillis() - startGet));
+      //      }
    }
 
    /**
@@ -270,26 +278,30 @@ public class GetCommand
     */
    private String generateCacheControl(HashMap<MediaType, String> cacheControlMap, String contentType)
    {
-      
+
       ArrayList<MediaType> mediaTypesList = new ArrayList<MediaType>(cacheControlMap.keySet());
       Collections.sort(mediaTypesList, MediaTypeHelper.MEDIA_TYPE_COMPARATOR);
       String cacheControlValue = "no-cache";
-      
-      if(contentType == null || contentType.equals("")){
+
+      if (contentType == null || contentType.equals(""))
+      {
          return cacheControlValue;
       }
-      
+
       for (MediaType mediaType : mediaTypesList)
       {
-         if(contentType.equals(MediaType.WILDCARD)){
+         if (contentType.equals(MediaType.WILDCARD))
+         {
             cacheControlValue = cacheControlMap.get(MediaType.WILDCARD_TYPE);
             break;
-         } else if (mediaType.isCompatible(new MediaType(contentType.split("/")[0], contentType.split("/")[1]) )) {
+         }
+         else if (mediaType.isCompatible(new MediaType(contentType.split("/")[0], contentType.split("/")[1])))
+         {
             cacheControlValue = cacheControlMap.get(mediaType);
             break;
          }
       }
-      return cacheControlValue;    
+      return cacheControlValue;
    }
 
 }

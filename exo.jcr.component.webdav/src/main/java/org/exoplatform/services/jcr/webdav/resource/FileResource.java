@@ -45,9 +45,8 @@ import javax.xml.namespace.QName;
  * nt:file's URI jcr:content's jcr:data property contains file's payload
  * 
  * @author Gennady Azarenkov
- * @version $Id: $
+ * @version $Id$
  */
-
 public class FileResource extends GenericResource
 {
 
@@ -88,6 +87,16 @@ public class FileResource extends GenericResource
    protected final Node node;
 
    /**
+    * Content Node (jcr:content).
+    */
+   private Node contentNode;
+
+   /**
+    * Data Property (jcr:data).
+    */
+   private Property contentData;
+
+   /**
     * @param identifier resource identifier
     * @param node node
     * @param namespaceContext namespace context
@@ -113,8 +122,9 @@ public class FileResource extends GenericResource
       throws IllegalResourceTypeException, RepositoryException
    {
       super(type, identifier, namespaceContext);
-      if (!ResourceUtil.isFile(node))
-         throw new IllegalResourceTypeException("Node type is not applicable for FILE resource " + node.getPath());
+      // TODO EXOJCR-533
+      //if (!ResourceUtil.isFile(node))
+      //   throw new IllegalResourceTypeException("Node type is not applicable for FILE resource " + node.getPath());
       this.node = node;
    }
 
@@ -125,7 +135,6 @@ public class FileResource extends GenericResource
    public Set<HierarchicalProperty> getProperties(boolean namesOnly) throws PathNotFoundException,
       AccessDeniedException, RepositoryException
    {
-
       Set<HierarchicalProperty> props = super.getProperties(namesOnly);
 
       props.add(namesOnly ? new HierarchicalProperty(GETLASTMODIFIED) : getProperty(GETLASTMODIFIED));
@@ -193,7 +202,6 @@ public class FileResource extends GenericResource
       if (name.equals(DISPLAYNAME))
       {
          return new HierarchicalProperty(name, node.getName());
-
       }
       else if (name.equals(CREATIONDATE))
       {
@@ -202,22 +210,18 @@ public class FileResource extends GenericResource
          HierarchicalProperty creationDate = new HierarchicalProperty(name, created, CREATION_PATTERN);
          creationDate.setAttribute("b:dt", "dateTime.tz");
          return creationDate;
-
       }
       else if (name.equals(CHILDCOUNT))
       {
          return new HierarchicalProperty(name, "0");
-
       }
       else if (name.equals(GETCONTENTLENGTH))
       {
-         return new HierarchicalProperty(name, "" + node.getNode("jcr:content").getProperty("jcr:data").getLength());
-
+         return new HierarchicalProperty(name, String.valueOf(dataProperty().getLength()));
       }
       else if (name.equals(GETCONTENTTYPE))
       {
-         return new HierarchicalProperty(name, node.getNode("jcr:content").getProperty("jcr:mimeType").getString());
-
+         return new HierarchicalProperty(name, contentNode().getProperty("jcr:mimeType").getString());
       }
       else if (name.equals(GETLASTMODIFIED))
       {
@@ -225,37 +229,30 @@ public class FileResource extends GenericResource
          HierarchicalProperty lastModified = new HierarchicalProperty(name, modified, MODIFICATION_PATTERN);
          lastModified.setAttribute("b:dt", "dateTime.rfc1123");
          return lastModified;
-
       }
       else if (name.equals(HASCHILDREN))
       {
          return new HierarchicalProperty(name, "0");
-
       }
       else if (name.equals(ISCOLLECTION))
       {
          return new HierarchicalProperty(name, "0");
-
       }
       else if (name.equals(ISFOLDER))
       {
          return new HierarchicalProperty(name, "0");
-
       }
       else if (name.equals(ISROOT))
       {
          return new HierarchicalProperty(name, "0");
-
       }
       else if (name.equals(PARENTNAME))
       {
          return new HierarchicalProperty(name, node.getParent().getName());
-
       }
       else if (name.equals(RESOURCETYPE))
       {
          return new HierarchicalProperty(name);
-
       }
       else if (name.equals(SUPPORTEDLOCK))
       {
@@ -279,12 +276,10 @@ public class FileResource extends GenericResource
       else if (name.equals(ISVERSIONED))
       {
          return new HierarchicalProperty(name, "0");
-
       }
       else if (name.equals(SUPPORTEDMETHODSET))
       {
          return supportedMethodSet();
-
       }
       else
       {
@@ -294,7 +289,6 @@ public class FileResource extends GenericResource
             String propertyValue;
             if (property.getDefinition().isMultiple())
             {
-
                if (property.getValues().length == 0)
                {
                   throw new PathNotFoundException();
@@ -342,7 +336,7 @@ public class FileResource extends GenericResource
     */
    public String getContentAsText() throws RepositoryException
    {
-      return contentNode().getProperty("jcr:data").getString();
+      return dataProperty().getString();
    }
 
    /**
@@ -353,7 +347,7 @@ public class FileResource extends GenericResource
     */
    public InputStream getContentAsStream() throws RepositoryException
    {
-      return contentNode().getProperty("jcr:data").getStream();
+      return dataProperty().getStream();
    }
 
    /**
@@ -365,7 +359,7 @@ public class FileResource extends GenericResource
    {
       try
       {
-         return contentNode().getProperty("jcr:data").getType() != PropertyType.BINARY;
+         return dataProperty().getType() != PropertyType.BINARY;
       }
       catch (RepositoryException exc)
       {
@@ -377,12 +371,37 @@ public class FileResource extends GenericResource
    /**
     * Returns the content node.
     * 
-    * @return the content node
+    * @return Node, the content node
     * @throws RepositoryException {@link RepositoryException}
     */
-   public Node contentNode() throws RepositoryException
+   protected Node contentNode() throws RepositoryException
    {
-      return node.getNode("jcr:content");
+      if (contentNode == null)
+      {
+         return contentNode = node.getNode("jcr:content");
+      }
+      else
+      {
+         return contentNode;
+      }
+   }
+
+   /**
+    * Returns the data property.
+    * 
+    * @return Property, the content data property
+    * @throws RepositoryException {@link RepositoryException}
+    */
+   protected Property dataProperty() throws RepositoryException
+   {
+      if (contentData == null)
+      {
+         return contentData = contentNode().getProperty("jcr:data");  
+      }
+      else
+      {
+         return contentData;  
+      }
    }
 
 }
