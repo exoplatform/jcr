@@ -26,17 +26,239 @@
   <section>
     <title>Understanding How configuration files are loaded</title>
 
-    <section>
-      <title>First concepts</title>
+    <para>eXo Portal uses PicoContainer, which implements the Inversion of
+    Control (IoC) design pattern. All eXo containers inherit from a
+    PicoContainer. There are mainly two eXo containers used, each of them can
+    provide one or several services. Each container service is delivered in a
+    JAR file. This JAR file may contain a default configuration. The use of
+    default configurations is recommended and most services provide it.</para>
 
-      <para>You can find the first concepts of <emphasis>How are the
-      configuration files loaded</emphasis> <ulink
-      url="http://wiki.exoplatform.org/xwiki/bin/view/Kernel/Container+Configuration">here</ulink>.</para>
+    <para>When a Pico Container searches for services and its configurations,
+    each configurable service may be reconfigured to override default values
+    or set additional parameters. If the service is configured in two or more
+    places the configuration override mechanism will be used.</para>
+
+    <section>
+      <title>Configuration Retrieval</title>
+
+      <para>The container performs the following steps making eXo Container
+      configuration retrieval depending on the container type.</para>
+
+      <section>
+        <title>Configuration retrieval order for the
+        <envar>PortalContainer</envar></title>
+
+        <para>The container is initialized by looking into different
+        locations. This container is used by portal applications.
+        Configurations are overloaded in the following lookup sequence:</para>
+
+        <orderedlist>
+          <listitem>
+            <para>Services default <envar>RootContainer</envar> configurations
+            from JAR files <emphasis>/conf/configuration.xml</emphasis></para>
+          </listitem>
+
+          <listitem>
+            <para>External <envar>RootContainer</envar> configuration, if will
+            be found at
+            <emphasis>$AS_HOME/exo-conf/configuration.xml</emphasis></para>
+          </listitem>
+
+          <listitem>
+            <para>Services default <envar>PortalContainer</envar>
+            configurations from JAR files
+            <emphasis>/conf/portal/configuration.xml</emphasis></para>
+          </listitem>
+
+          <listitem>
+            <para>Web applications configurations from WAR files
+            <emphasis>/WEB-INF/conf/configuration.xml</emphasis></para>
+          </listitem>
+
+          <listitem>
+            <para>External configuration for services of named portal, if will
+            be found at
+            <emphasis>$AS_HOME/exo-conf/portal/$PORTAL_NAME/configuration.xml</emphasis></para>
+          </listitem>
+        </orderedlist>
+      </section>
+
+      <section>
+        <title>Configuration retrieval for a
+        <envar>StandaloneContainer</envar></title>
+
+        <para>The container is initialized by looking into different
+        locations. This container is used by non portal applications.
+        Configurations are overloaded in the following lookup sequence:</para>
+
+        <orderedlist>
+          <listitem>
+            <para>Services default <envar>RootContainer</envar> configurations
+            from JAR files <emphasis>/conf/configuration.xml</emphasis></para>
+          </listitem>
+
+          <listitem>
+            <para>External <envar>RootContainer</envar> configuration, if will
+            be found at
+            <emphasis>$AS_HOME/exo-conf/configuration.xml</emphasis></para>
+          </listitem>
+
+          <listitem>
+            <para>Services default <envar>StandaloneContainer</envar>
+            configurations from JAR files
+            <emphasis>/conf/portal/configuration.xml</emphasis></para>
+          </listitem>
+
+          <listitem>
+            <para>Web applications configurations from WAR files
+            <emphasis>/WEB-INF/conf/configuration.xml</emphasis></para>
+          </listitem>
+
+          <listitem>
+            <para>Then depending on the <envar>StandaloneContainer</envar>
+            configuration URL initialization:</para>
+
+            <itemizedlist>
+              <listitem>
+                <para>if configuration URL was initialized to be added to
+                services defaults, as below:<programlisting>// add configuration to the default services configurations from JARs/WARs
+StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
+
+                <para>Configuration from added URL
+                <emphasis>containerConf</emphasis> will override only services
+                configured in the file</para>
+              </listitem>
+
+              <listitem>
+                <para>if configuration URL not initialized at all, it will be
+                found at <emphasis>$AS_HOME/exo-configuration.xml</emphasis>.
+                If <emphasis>$AS_HOME/exo-configuration.xml</emphasis> doesn't
+                exist and the <envar>StandaloneContainer</envar> instance
+                obtained with the dedicated configuration
+                <envar>ClassLoader</envar> the container will try to retrieve
+                the resource <emphasis>conf/exo-configuration.xml</emphasis>
+                within the given <envar>ClassLoader</envar>.</para>
+              </listitem>
+            </itemizedlist>
+          </listitem>
+        </orderedlist>
+      </section>
+
+      <section>
+        <title>General notes about the configuration retrieval</title>
+
+        <note>
+          <para><emphasis>$AS_HOME</emphasis> - application server home
+          directory, or <emphasis>user.dir</emphasis> JVM system property
+          value in case of Java Standalone application.</para>
+        </note>
+
+        <note>
+          <para><emphasis>$PORTAL_NAME</emphasis> - portal web application
+          name.</para>
+        </note>
+
+        <note>
+          <para>External configuration location can be overridden with System
+          property <emphasis>exo.conf.dir</emphasis>. If the property exists
+          its value will be used as path to eXo configuration directory, i.e.
+          to <emphasis>$AS_HOME/exo-conf</emphasis> alternative. E.g. put
+          property in command line java
+          <emphasis>-Dexo.conf.dir=/path/to/exo/conf</emphasis>. In this
+          particular use case, you have no need to use any prefix to import
+          other files. For instance, if your configuration file is
+          <emphasis>$AS_HOME/exo-conf/portal/PORTAL_NAME/configuration.xml</emphasis>
+          and you want to import the configuration file
+          <emphasis>$AS_HOME/exo-conf/portal/PORTAL_NAME/mySubConfDir/myConfig.xml</emphasis>,
+          you can do it by adding
+          <emphasis>&lt;import&gt;mySubConfDir/myConfig.xml&lt;/import&gt;</emphasis>
+          to your configuration file.</para>
+        </note>
+
+        <note>
+          <para>The name of the configuration folder that is by default
+          <emphasis>"exo-conf"</emphasis>, can be changed thanks to the System
+          property <emphasis>exo.conf.dir.name</emphasis>.</para>
+        </note>
+
+        <note>
+          <para>Under JBoss application server <emphasis>exo-conf</emphasis>
+          will be looked up in directory described by JBoss System property
+          <emphasis>jboss.server.config.url</emphasis>. If the property is not
+          found or empty <emphasis>$AS_HOME/exo-conf</emphasis> will be
+          asked.</para>
+        </note>
+
+        <note>
+          <para>The search looks for a configuration file in each JAR/WAR
+          available from the classpath using the current thread context
+          classloader. During the search these configurations are added to a
+          set. If the service was configured previously and the current JAR
+          contains a new configuration of that service the latest (from the
+          current JAR/WAR) will replace the previous one. The last one will be
+          applied to the service during the services start phase.</para>
+        </note>
+
+        <warning>
+          <para>Take care to have no dependencies between configurations from
+          JAR files (<emphasis>/conf/portal/configuration.xml</emphasis> and
+          <emphasis>/conf/configuration.xml</emphasis>) since we have no way
+          to know in advance the loading order of those configurations. In
+          other words, if you want to overload some configuration located in
+          the file <emphasis>/conf/portal/configuration.xml</emphasis> of a
+          given JAR file, you must not do it from the file
+          <emphasis>/conf/portal/configuration.xml</emphasis> of another JAR
+          file but from another configuration file loaded after configurations
+          from JAR files
+          <emphasis>/conf/portal/configuration.xml.</emphasis></para>
+        </warning>
+
+        <para>After the processing of all configurations available in system
+        the container will initialize it and start each service in order of
+        the dependency injection (DI).</para>
+
+        <para>The user/developer should be careful when configuring the same
+        service in different configuration files. It's recommended to
+        configure a service in its own JAR only. Or, in case of a portal
+        configuration, strictly reconfigure the services in portal WAR files
+        or in an external configuration.</para>
+
+        <para>There are services that can be (or should be) configured more
+        than one time. This depends on business logic of the service. A
+        service may initialize the same resource (shared with other services)
+        or may add a particular object to a set of objects (shared with other
+        services too). In the first case it's critical who will be the last,
+        i.e. whose configuration will be used. In the second case it's no
+        matter who is the first and who is the last (if the parameter objects
+        are independent).</para>
+      </section>
+
+      <section>
+        <title>Configuration retrieval log</title>
+
+        <para>In case of problems with service configuration it's important to
+        know from which JAR/WAR it comes. For that purpose the JVM system
+        property
+        <emphasis>org.exoplatform.container.configuration.debug</emphasis> can
+        be used.<programlisting>java -Dorg.exoplatform.container.configuration.debug ...</programlisting></para>
+
+        <para>If the property is enabled the container configuration manager
+        will report the configuration adding process to the standard output
+        (System.out).<programlisting>......
+   Add configuration jar:file:/D:/Projects/eXo/dev/exo-working/exo-tomcat/lib/exo.kernel.container-trunk.jar!/conf/portal/configuration.xml
+   Add configuration jar:file:/D:/Projects/eXo/dev/exo-working/exo-tomcat/lib/exo.kernel.component.cache-trunk.jar!/conf/portal/configuration.xml
+   Add configuration jndi:/localhost/portal/WEB-INF/conf/configuration.xml
+        import jndi:/localhost/portal/WEB-INF/conf/common/common-configuration.xml
+        import jndi:/localhost/portal/WEB-INF/conf/database/database-configuration.xml
+        import jndi:/localhost/portal/WEB-INF/conf/ecm/jcr-component-plugins-configuration.xml
+        import jndi:/localhost/portal/WEB-INF/conf/jcr/jcr-configuration.xml 
+   ......</programlisting></para>
+      </section>
     </section>
 
     <section>
-      <title>Advanced concepts for the <emphasis>PortalContainers</emphasis>
-      </title>
+      <title>Advanced concepts for the
+      <emphasis>PortalContainers</emphasis></title>
 
       <para>Since eXo JCR 1.12, we added a set of new features that have been
       designed to extend portal applications such as GateIn.</para>
@@ -158,9 +380,9 @@
           </tgroup>
         </table>
 
-        <para> A new <envar>PortalContainerDefinition</envar> can be defined
-        at the <envar>RootContainer</envar> level thanks to an external
-        plugin, see below an example:<programlisting>  &lt;external-component-plugins&gt;
+        <para>A new <envar>PortalContainerDefinition</envar> can be defined at
+        the <envar>RootContainer</envar> level thanks to an external plugin,
+        see below an example:<programlisting>  &lt;external-component-plugins&gt;
     &lt;!-- The full qualified name of the PortalContainerConfig --&gt;
     &lt;target-component&gt;org.exoplatform.container.definition.PortalContainerConfig&lt;/target-component&gt;
     &lt;component-plugin&gt;
@@ -450,7 +672,7 @@
         name start with "<emphasis>portal.container.</emphasis>", so to get
         the value of a setting called "<emphasis>foo</emphasis>" just use the
         following syntax <emphasis>${portal.container.foo}</emphasis>. You can
-        also use internal variables, such as: </para>
+        also use internal variables, such as:</para>
 
         <table>
           <title>Definition of the internal variables</title>
