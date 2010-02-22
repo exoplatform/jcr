@@ -33,15 +33,15 @@ import javax.transaction.xa.Xid;
  * @version $Id$
  *
  */
-public class ArjunaTransactionService extends GenericTransactionService
+public class JBossTransactionsService extends GenericTransactionService
 {
    
-   public ArjunaTransactionService(TransactionManagerLookup tmLookup)
+   public JBossTransactionsService(TransactionManagerLookup tmLookup)
    {
       super(tmLookup);
    }
       
-   public ArjunaTransactionService(TransactionManagerLookup tmLookup, InitParams params)
+   public JBossTransactionsService(TransactionManagerLookup tmLookup, InitParams params)
    {
       super(tmLookup, params);      
    }
