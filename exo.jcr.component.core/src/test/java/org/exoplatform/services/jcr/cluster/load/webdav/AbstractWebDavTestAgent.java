@@ -52,9 +52,9 @@ public abstract class AbstractWebDavTestAgent extends AbstractTestAgent
     * @param random
     */
    public AbstractWebDavTestAgent(List<NodeInfo> nodesPath, ResultCollector resultCollector,
-      CountDownLatch startSignal, int READ_VALUE, Random random)
+      CountDownLatch startSignal, int READ_VALUE, Random random, boolean isReadThread)
    {
-      super(nodesPath, resultCollector, startSignal, READ_VALUE, random);
+      super(nodesPath, resultCollector, startSignal, READ_VALUE, random, isReadThread);
    }
 
    protected JCRWebdavConnection getNewConnection()

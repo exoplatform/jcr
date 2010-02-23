@@ -115,9 +115,9 @@ public class JcrQueryAvgResponseTimeTest extends JcrImplBaseTest
        */
       @Override
       protected AbstractTestAgent getAgent(List<NodeInfo> nodesPath, ResultCollector resultCollector,
-         CountDownLatch startSignal, int readValue, Random random)
+         CountDownLatch startSignal, int readValue, Random random, boolean isReadThread)
       {
-         return new QueryTestAgent(repository, nodesPath, resultCollector, startSignal, readValue, random);
+         return new QueryTestAgent(repository, nodesPath, resultCollector, startSignal, readValue, random, isReadThread);
       }
 
    }
@@ -137,9 +137,9 @@ public class JcrQueryAvgResponseTimeTest extends JcrImplBaseTest
        * @param random
        */
       public QueryTestAgent(RepositoryImpl repository, List<NodeInfo> nodesPath, ResultCollector resultCollector,
-         CountDownLatch startSignal, int readValue, Random random)
+         CountDownLatch startSignal, int readValue, Random random, boolean isReadThread)
       {
-         super(nodesPath, resultCollector, startSignal, readValue, random);
+         super(nodesPath, resultCollector, startSignal, readValue, random, true);
          this.threadUUID = UUID.randomUUID();
          this.repository = repository;
          initRoot();

@@ -46,17 +46,20 @@ public abstract class AbstractTestAgent implements Runnable
 
    private boolean blockWrite;
 
+   private final boolean isReadThread;
+
    /**
     * 
     */
    public AbstractTestAgent(List<NodeInfo> nodesPath, ResultCollector resultCollector, CountDownLatch startSignal,
-      int readValue, Random random)
+      int readValue, Random random, boolean isReadThread)
    {
       this.nodesPath = nodesPath;
       this.resultCollector = resultCollector;
       this.random = random;
       this.startSignal = startSignal;
       this.readValue = readValue;
+      this.isReadThread = isReadThread;
    }
 
    /**
@@ -82,31 +85,47 @@ public abstract class AbstractTestAgent implements Runnable
 
          while (!shouldStop)
          {
-            long totalRead = resultCollector.getTotalReadTime();
-            long totalWrite = resultCollector.getTotalWriteTime();
-            long readAndWrite = totalRead + totalWrite;
-            if (blockWrite)
+            if (isReadThread)
             {
-               doRead(nodesPath, resultCollector);
-            }
-            else
-            {
-               long ratio = 0;
-               if (readAndWrite > 0)
-               {
-                  ratio = (totalRead * 100) / readAndWrite;
-               }
-               //prevent to match write
-               if (nodesPath.size() < 2 || (System.currentTimeMillis() - LAST_WRITE_START > 500 && (ratio > readValue)))
-               {
-                  LAST_WRITE_START = System.currentTimeMillis();
-                  doWrite(nodesPath, resultCollector);
-               }
-               else
+               if (nodesPath.size() > 1)
                {
                   doRead(nodesPath, resultCollector);
                }
+               else
+               {
+                  Thread.sleep(100);
+               }
             }
+            else if (!blockWrite)
+            {
+               doWrite(nodesPath, resultCollector);
+            }
+            //
+            //            long totalRead = resultCollector.getTotalReadTime();
+            //            long totalWrite = resultCollector.getTotalWriteTime();
+            //            long readAndWrite = totalRead + totalWrite;
+            //            if (blockWrite)
+            //            {
+            //               doRead(nodesPath, resultCollector);
+            //            }
+            //            else
+            //            {
+            //               long ratio = 0;
+            //               if (readAndWrite > 0)
+            //               {
+            //                  ratio = (totalRead * 100) / readAndWrite;
+            //               }
+            //               //prevent to match write
+            //               if (System.currentTimeMillis() - LAST_WRITE_START > 500 && (nodesPath.size() < 1 || ratio > readValue))
+            //               {
+            //                  LAST_WRITE_START = System.currentTimeMillis();
+            //                  doWrite(nodesPath, resultCollector);
+            //               }
+            //               else
+            //               {
+            //                  doRead(nodesPath, resultCollector);
+            //               }
+            //            }
 
          }
       }

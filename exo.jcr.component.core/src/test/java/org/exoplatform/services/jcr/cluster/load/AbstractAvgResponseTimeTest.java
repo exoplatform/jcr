@@ -43,6 +43,11 @@ public abstract class AbstractAvgResponseTimeTest
    private final int readValue;
 
    /**
+    * Fixed number of write agent
+    */
+   private final int WRITE_AGENT_COUNT = 10;
+
+   /**
     * 10%
     */
    private final int WARM_UP_RATIO = 10;
@@ -76,14 +81,23 @@ public abstract class AbstractAvgResponseTimeTest
 
          final List<NodeInfo> nodesPath = new LinkedList<NodeInfo>();
 
-         ExecutorService threadPool = Executors.newFixedThreadPool(threadCount);
+         ExecutorService threadPool = Executors.newFixedThreadPool(threadCount + WRITE_AGENT_COUNT);
          CountDownLatch startSignal = new CountDownLatch(1);
-         AbstractTestAgent[] testAgents = new AbstractTestAgent[threadCount];
+         AbstractTestAgent[] testAgents = new AbstractTestAgent[threadCount + WRITE_AGENT_COUNT];
          ResultCollector resultCollector = new ResultCollector();
          //pool initialization
-         for (int i = 0; i < threadCount; i++)
+         //init write
+         for (int i = 0; i < WRITE_AGENT_COUNT; i++)
          {
-            testAgents[i] = getAgent(nodesPath, resultCollector, startSignal, readValue, random);
+            testAgents[i] = getAgent(nodesPath, resultCollector, startSignal, readValue, random, false);
+            //init agent
+            testAgents[i].prepare();
+            threadPool.execute(testAgents[i]);
+         }
+         //init read
+         for (int i = WRITE_AGENT_COUNT; i < threadCount + WRITE_AGENT_COUNT; i++)
+         {
+            testAgents[i] = getAgent(nodesPath, resultCollector, startSignal, readValue, random, true);
             //init agent
             testAgents[i].prepare();
             threadPool.execute(testAgents[i]);
@@ -97,25 +111,29 @@ public abstract class AbstractAvgResponseTimeTest
          //reset result after warm up
          resultCollector.reset();
          Thread.sleep(iterationTime - warmUpTime);
-
-         while (true)
-         {
-            long totalRead = resultCollector.getTotalReadTime();
-            long totalWrite = resultCollector.getTotalWriteTime();
-            long readAndWrite = totalRead + totalWrite;
-            long ratio = (totalRead * 100) / readAndWrite;
-            System.out.println("Ratio =" + ratio);
-            if (ratio >= readValue)
-            {
-               break;
-            }
-            //only read allowed
-            for (int i = 0; i < testAgents.length; i++)
-            {
-               testAgents[i].setBlockWrite(true);
-            }
-            Thread.sleep(1000);
-         }
+         long totalRead = resultCollector.getTotalReadTime();
+         long totalWrite = resultCollector.getTotalWriteTime();
+         long readAndWrite = totalRead + totalWrite;
+         long ratio = (totalRead * 100) / readAndWrite;
+         System.out.println("Ratio =" + ratio);
+         //         while (true)
+         //         {
+         //            long totalRead = resultCollector.getTotalReadTime();
+         //            long totalWrite = resultCollector.getTotalWriteTime();
+         //            long readAndWrite = totalRead + totalWrite;
+         //            long ratio = (totalRead * 100) / readAndWrite;
+         //            System.out.println("Ratio =" + ratio);
+         //            if (ratio >= readValue)
+         //            {
+         //               break;
+         //            }
+         //            //only read allowed
+         //            for (int i = 0; i < testAgents.length; i++)
+         //            {
+         //               testAgents[i].setBlockWrite(true);
+         //            }
+         //            Thread.sleep(1000);
+         //         }
 
          threadPool.shutdown();
          for (int i = 0; i < testAgents.length; i++)
@@ -166,6 +184,6 @@ public abstract class AbstractAvgResponseTimeTest
     * @return
     */
    protected abstract AbstractTestAgent getAgent(List<NodeInfo> nodesPath, ResultCollector resultCollector,
-      CountDownLatch startSignal, int readValue, Random random);
+      CountDownLatch startSignal, int readValue, Random random, boolean isReadThread);
 
 }

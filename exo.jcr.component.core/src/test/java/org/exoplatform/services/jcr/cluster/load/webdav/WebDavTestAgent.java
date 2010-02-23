@@ -49,9 +49,9 @@ public class WebDavTestAgent extends AbstractWebDavTestAgent
     * @param random
     */
    public WebDavTestAgent(String testRoot, List<NodeInfo> nodesPath, ResultCollector resultCollector,
-      CountDownLatch startSignal, int READ_VALUE, Random random)
+      CountDownLatch startSignal, int READ_VALUE, Random random, boolean isReadThread)
    {
-      super(nodesPath, resultCollector, startSignal, READ_VALUE, random);
+      super(nodesPath, resultCollector, startSignal, READ_VALUE, random, isReadThread);
       this.testRoot = testRoot;
    }
 

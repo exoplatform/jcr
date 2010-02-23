@@ -46,7 +46,7 @@ public class WebDavAvgResponseTimeTest extends TestCase
    /**
     * How much thread will be added on the next iteration.
     */
-   private static final int ITERATION_GROWING_POLL = 25;
+   private static final int ITERATION_GROWING_POLL = 50;
 
    /**
     * Number between 0 and 100 show % how many read operations. 
@@ -64,8 +64,6 @@ public class WebDavAvgResponseTimeTest extends TestCase
    private class WebDavTest extends AbstractAvgResponseTimeTest
    {
       private String iterationRoot;
-
-      private int counter;
 
       /**
        * @param iterationGrowingPoll
@@ -86,7 +84,7 @@ public class WebDavAvgResponseTimeTest extends TestCase
       {
          // TODO Auto-generated method stub
          super.setUp();
-         WebDavTestAgent setUpAgent = new WebDavTestAgent(null, null, null, null, 0, null);
+         WebDavTestAgent setUpAgent = new WebDavTestAgent(null, null, null, null, 0, null, false);
 
          String testRoot = setUpAgent.createDirIfAbsent("", TEST_ROOT, new ResultCollector());
          iterationRoot = setUpAgent.createDirIfAbsent(testRoot, UUID.randomUUID().toString(), new ResultCollector());
@@ -107,9 +105,10 @@ public class WebDavAvgResponseTimeTest extends TestCase
        */
       @Override
       protected AbstractTestAgent getAgent(List<NodeInfo> nodesPath, ResultCollector resultCollector,
-         CountDownLatch startSignal, int readValue, Random random)
+         CountDownLatch startSignal, int readValue, Random random, boolean isReadThread)
       {
-         return new WebDavTestAgent(iterationRoot, nodesPath, resultCollector, startSignal, readValue, random);
+         return new WebDavTestAgent(iterationRoot, nodesPath, resultCollector, startSignal, readValue, random,
+            isReadThread);
       }
 
    }
