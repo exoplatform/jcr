@@ -51,10 +51,6 @@ public class VersionedCollectionResource extends CollectionResource implements V
       throws IllegalResourceTypeException, RepositoryException
    {
       super(VERSIONED_COLLECTION, identifier, node, namespaceContext);
-      // TODO EXOJCR-533
-      // if (!node.isNodeType("mix:versionable"))
-      //   throw new IllegalResourceTypeException("Node type is not applicable for Versioned FILE resource "
-      //      + node.getPath());
    }
 
    /**

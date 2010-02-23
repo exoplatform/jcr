@@ -60,10 +60,6 @@ public class VersionedFileResource extends FileResource implements VersionedReso
       throws IllegalResourceTypeException, RepositoryException
    {
       super(VERSIONED_FILE, identifier, node, namespaceContext);
-      // TODO EXOJCR-533
-      // if (!node.isNodeType("mix:versionable"))
-      //   throw new IllegalResourceTypeException("Node type is not applicable for Versioned FILE resource "
-      //      + node.getPath());
    }
 
    /**

@@ -84,10 +84,6 @@ public class GetCommand
    public Response get(Session session, String path, String version, String baseURI, List<Range> ranges,
       String ifModifiedSince, HashMap<MediaType, String> cahceControls)
    {
-      // TODO EXOJCR-533
-      //      long startGet = System.currentTimeMillis();
-      //      try {
-
       if (version == null)
       {
          if (path.indexOf("?version=") > 0)
@@ -122,11 +118,7 @@ public class GetCommand
                istream = ((FileResource)resource).getContentAsStream();
             }
 
-            // TODO EXOJCR-533 why we need fileResource if we have resource?
-            // FileResource fileResource = new FileResource(uri, node, nsContext);
-            // HierarchicalProperty lastModifiedProperty = fileResource.getProperty(FileResource.GETLASTMODIFIED);
             HierarchicalProperty lastModifiedProperty = resource.getProperty(FileResource.GETLASTMODIFIED);
-
             // check before any other reads
             if ((ifModifiedSince != null) && (ifModifiedSince.equals(lastModifiedProperty.getValue())))
             {
@@ -216,11 +208,6 @@ public class GetCommand
          log.error(exc.getMessage(), exc);
          return Response.serverError().entity(exc.getMessage()).build();
       }
-
-      // TODO EXOJCR-533
-      //      } finally {
-      //         System.out.println(System.currentTimeMillis() + ":GetCommand:" + path + ":" + (System.currentTimeMillis() - startGet));
-      //      }
    }
 
    /**

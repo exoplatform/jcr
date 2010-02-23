@@ -490,10 +490,6 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       @HeaderParam(ExtHttpHeaders.IF_MODIFIED_SINCE) String ifModifiedSince, @QueryParam("version") String version,
       @Context UriInfo uriInfo)
    {
-      // TODO EXOJCR-533 
-      //      long startGet = System.currentTimeMillis();
-      //      try {
-
       if (log.isDebugEnabled())
       {
          log.debug("GET " + repoName + "/" + repoPath);
@@ -562,11 +558,6 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          log.error(exc.getMessage(), exc);
          return Response.serverError().entity(exc.getMessage()).build();
       }
-
-      // TODO EXOJCR-533
-      //      } finally {
-      //         System.out.println(System.currentTimeMillis() + ":Get:" + repoPath + ":" + (System.currentTimeMillis() - startGet));
-      //      }
    }
 
    /**

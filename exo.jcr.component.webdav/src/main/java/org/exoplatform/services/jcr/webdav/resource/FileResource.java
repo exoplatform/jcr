@@ -122,9 +122,6 @@ public class FileResource extends GenericResource
       throws IllegalResourceTypeException, RepositoryException
    {
       super(type, identifier, namespaceContext);
-      // TODO EXOJCR-533
-      //if (!ResourceUtil.isFile(node))
-      //   throw new IllegalResourceTypeException("Node type is not applicable for FILE resource " + node.getPath());
       this.node = node;
    }
 
