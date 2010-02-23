@@ -133,11 +133,14 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
                 <para>if configuration URL not initialized at all, it will be
                 found at <emphasis>$AS_HOME/exo-configuration.xml</emphasis>.
                 If <emphasis>$AS_HOME/exo-configuration.xml</emphasis> doesn't
-                exist and the <envar>StandaloneContainer</envar> instance
-                obtained with the dedicated configuration
-                <envar>ClassLoader</envar> the container will try to retrieve
-                the resource <emphasis>conf/exo-configuration.xml</emphasis>
-                within the given <envar>ClassLoader</envar>.</para>
+                exist the container will try find it at
+                <emphasis>$AS_HOME/exo-conf/exo-configuration.xml</emphasis>
+                location and if it's still not found and the
+                <envar>StandaloneContainer</envar> instance obtained with the
+                dedicated configuration <envar>ClassLoader</envar> the
+                container will try to retrieve the resource
+                <emphasis>conf/exo-configuration.xml</emphasis> within the
+                given <envar>ClassLoader</envar>.</para>
               </listitem>
             </itemizedlist>
           </listitem>
