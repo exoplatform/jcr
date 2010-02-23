@@ -21,7 +21,7 @@ package org.exoplatform.services.jcr.cluster.load.webdav;
 import org.exoplatform.services.jcr.cluster.JCRWebdavConnection;
 import org.exoplatform.services.jcr.cluster.load.AbstractTestAgent;
 import org.exoplatform.services.jcr.cluster.load.NodeInfo;
-import org.exoplatform.services.jcr.cluster.load.WorkerResult;
+import org.exoplatform.services.jcr.cluster.load.ResultCollector;
 
 import java.util.List;
 import java.util.Random;
@@ -51,10 +51,10 @@ public abstract class AbstractWebDavTestAgent extends AbstractTestAgent
     * @param READ_VALUE
     * @param random
     */
-   public AbstractWebDavTestAgent(List<NodeInfo> nodesPath, List<WorkerResult> responceResults,
+   public AbstractWebDavTestAgent(List<NodeInfo> nodesPath, ResultCollector resultCollector,
       CountDownLatch startSignal, int READ_VALUE, Random random)
    {
-      super(nodesPath, responceResults, startSignal, READ_VALUE, random);
+      super(nodesPath, resultCollector, startSignal, READ_VALUE, random);
    }
 
    protected JCRWebdavConnection getNewConnection()

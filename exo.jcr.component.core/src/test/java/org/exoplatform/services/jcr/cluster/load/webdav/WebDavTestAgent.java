@@ -22,9 +22,8 @@ import org.exoplatform.common.http.HTTPStatus;
 import org.exoplatform.common.http.client.HTTPResponse;
 import org.exoplatform.services.jcr.cluster.JCRWebdavConnection;
 import org.exoplatform.services.jcr.cluster.load.NodeInfo;
-import org.exoplatform.services.jcr.cluster.load.WorkerResult;
+import org.exoplatform.services.jcr.cluster.load.ResultCollector;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
@@ -40,6 +39,8 @@ public class WebDavTestAgent extends AbstractWebDavTestAgent
 
    private String testRoot;
 
+   private boolean readFresh = true;
+
    /**
     * @param nodesPath
     * @param responceResults
@@ -47,10 +48,10 @@ public class WebDavTestAgent extends AbstractWebDavTestAgent
     * @param READ_VALUE
     * @param random
     */
-   public WebDavTestAgent(String testRoot, List<NodeInfo> nodesPath, List<WorkerResult> responceResults,
+   public WebDavTestAgent(String testRoot, List<NodeInfo> nodesPath, ResultCollector resultCollector,
       CountDownLatch startSignal, int READ_VALUE, Random random)
    {
-      super(nodesPath, responceResults, startSignal, READ_VALUE, random);
+      super(nodesPath, resultCollector, startSignal, READ_VALUE, random);
       this.testRoot = testRoot;
    }
 
@@ -58,9 +59,8 @@ public class WebDavTestAgent extends AbstractWebDavTestAgent
     * @see org.exoplatform.services.jcr.cluster.load.AbstractTestAgent#doRead(java.util.List)
     */
    @Override
-   public void doRead(List<NodeInfo> nodesPath, List<WorkerResult> responseResults)
+   public void doRead(List<NodeInfo> nodesPath, ResultCollector resultCollector)
    {
-      //List<WorkerResult> result = new ArrayList<WorkerResult>();
       if (nodesPath.size() > 0)
       {
 
@@ -68,10 +68,12 @@ public class WebDavTestAgent extends AbstractWebDavTestAgent
          while (readNodePath == null)
          {
             NodeInfo nodeInfo = nodesPath.get(random.nextInt(nodesPath.size()));
-            //               if ((System.currentTimeMillis() - nodeInfo.created) > 30000)
-            //               {
+            if (!readFresh && (System.currentTimeMillis() - nodeInfo.getCreated()) < 30000)
+            {
+               return;
+            }
+
             readNodePath = nodeInfo.getPath();
-            //               }
 
          }
          long start = System.currentTimeMillis();
@@ -82,7 +84,7 @@ public class WebDavTestAgent extends AbstractWebDavTestAgent
             HTTPResponse response = conn.getNode(readNodePath);
             if (response.getStatusCode() == HTTPStatus.OK)
             {
-               responseResults.add(new WorkerResult(true, System.currentTimeMillis() - start));
+               resultCollector.addResult(true, System.currentTimeMillis() - start);
             }
             else
             {
@@ -113,28 +115,28 @@ public class WebDavTestAgent extends AbstractWebDavTestAgent
    @Override
    protected void prepare()
    {
-      testRoot = createDirIfAbsent(testRoot, UUID.randomUUID().toString(), new ArrayList<WorkerResult>());
+      testRoot = createDirIfAbsent(testRoot, UUID.randomUUID().toString(), new ResultCollector());
    }
 
    /**
     * @see org.exoplatform.services.jcr.cluster.load.AbstractTestAgent#doWrite(java.util.List)
     */
    @Override
-   public void doWrite(List<NodeInfo> nodesPath, List<WorkerResult> responseResults)
+   public void doWrite(List<NodeInfo> nodesPath, ResultCollector resultCollector)
    {
 
       JCRWebdavConnection connection = null;
       try
       {
          connection = getNewConnection();
-         String putFile =
-            createDirIfAbsent(testRoot, UUID.randomUUID().toString(), new ArrayList<WorkerResult>()) + "/file";
+         String putFile = testRoot + "/" + UUID.randomUUID().toString();
+
          long start = System.currentTimeMillis();
-         HTTPResponse response = connection.addNode(putFile, ("__the_data_in_nt+file__").getBytes());
+         HTTPResponse response = connection.addNode(putFile, ("__the_data_in_nt+file__").getBytes(), "text/plain");
 
          if (response.getStatusCode() == HTTPStatus.CREATED)
          {
-            responseResults.add(new WorkerResult(false, System.currentTimeMillis() - start));
+            resultCollector.addResult(false, System.currentTimeMillis() - start);
             nodesPath.add(new NodeInfo(putFile, System.currentTimeMillis()));
          }
          else
@@ -165,7 +167,7 @@ public class WebDavTestAgent extends AbstractWebDavTestAgent
     * @param data
     * @return
     */
-   public String createDirIfAbsent(String root, String name, List<WorkerResult> result)
+   public String createDirIfAbsent(String root, String name, ResultCollector resultCollector)
    {
       String path = root.length() == 0 ? name : root + "/" + name;
       JCRWebdavConnection connection = null;
@@ -176,7 +178,8 @@ public class WebDavTestAgent extends AbstractWebDavTestAgent
          long start = System.currentTimeMillis();
          HTTPResponse nodeResponce = connection.getNode(path);
          //add information about read
-         result.add(new WorkerResult(true, System.currentTimeMillis() - start));
+
+         resultCollector.addResult(true, System.currentTimeMillis() - start);
          if (nodeResponce.getStatusCode() != HTTPStatus.OK)
          {
             start = System.currentTimeMillis();
@@ -185,7 +188,7 @@ public class WebDavTestAgent extends AbstractWebDavTestAgent
 
             if (addResponce.getStatusCode() == HTTPStatus.CREATED)
             {
-               result.add(new WorkerResult(false, System.currentTimeMillis() - start));
+               resultCollector.addResult(false, System.currentTimeMillis() - start);
             }
             else
             {
@@ -216,14 +219,14 @@ public class WebDavTestAgent extends AbstractWebDavTestAgent
     * @param data
     * @return
     */
-   public String createDirIfAbsent(String root, UUID uuid, List<WorkerResult> result)
+   public String createDirIfAbsent(String root, UUID uuid, ResultCollector resultCollector)
    {
       String uuidPath = uuid.toString();
-      String l1 = createDirIfAbsent(root, uuidPath.substring(0, 8), result);
+      String l1 = createDirIfAbsent(root, uuidPath.substring(0, 8), resultCollector);
       //      String l2 = createDirIfAbsent(l1, uuidPath.substring(9, 13), result);
       //      String l3 = createDirIfAbsent(l2, uuidPath.substring(14, 18), result);
       //      String l4 = createDirIfAbsent(l3, uuidPath.substring(19, 23), result);
-      return createDirIfAbsent(l1, uuidPath.substring(9), result);
+      return createDirIfAbsent(l1, uuidPath.substring(9), resultCollector);
 
    }
 }

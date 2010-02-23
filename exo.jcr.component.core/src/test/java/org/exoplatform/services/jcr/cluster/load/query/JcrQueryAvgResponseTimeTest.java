@@ -22,7 +22,7 @@ import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.cluster.load.AbstractAvgResponseTimeTest;
 import org.exoplatform.services.jcr.cluster.load.AbstractTestAgent;
 import org.exoplatform.services.jcr.cluster.load.NodeInfo;
-import org.exoplatform.services.jcr.cluster.load.WorkerResult;
+import org.exoplatform.services.jcr.cluster.load.ResultCollector;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.jboss.cache.CacheException;
@@ -114,10 +114,10 @@ public class JcrQueryAvgResponseTimeTest extends JcrImplBaseTest
        * @see org.exoplatform.services.jcr.cluster.load.AbstractAvgResponseTimeTest#getAgent(java.util.List, java.util.List, java.util.concurrent.CountDownLatch, int, java.util.Random)
        */
       @Override
-      protected AbstractTestAgent getAgent(List<NodeInfo> nodesPath, List<WorkerResult> responceResults,
+      protected AbstractTestAgent getAgent(List<NodeInfo> nodesPath, ResultCollector resultCollector,
          CountDownLatch startSignal, int readValue, Random random)
       {
-         return new QueryTestAgent(repository, nodesPath, responceResults, startSignal, readValue, random);
+         return new QueryTestAgent(repository, nodesPath, resultCollector, startSignal, readValue, random);
       }
 
    }
@@ -136,10 +136,10 @@ public class JcrQueryAvgResponseTimeTest extends JcrImplBaseTest
        * @param READ_VALUE
        * @param random
        */
-      public QueryTestAgent(RepositoryImpl repository, List<NodeInfo> nodesPath, List<WorkerResult> responceResults,
+      public QueryTestAgent(RepositoryImpl repository, List<NodeInfo> nodesPath, ResultCollector resultCollector,
          CountDownLatch startSignal, int readValue, Random random)
       {
-         super(nodesPath, responceResults, startSignal, readValue, random);
+         super(nodesPath, resultCollector, startSignal, readValue, random);
          this.threadUUID = UUID.randomUUID();
          this.repository = repository;
          initRoot();
@@ -216,7 +216,7 @@ public class JcrQueryAvgResponseTimeTest extends JcrImplBaseTest
        * @see org.exoplatform.services.jcr.cluster.load.AbstractTestAgent#doRead(java.util.List)
        */
       @Override
-      public void doRead(List<NodeInfo> nodesPath, List<WorkerResult> responseResults)
+      public void doRead(List<NodeInfo> nodesPath, ResultCollector resultCollector)
       {
          Session sessionLocal = null;
          try
@@ -236,7 +236,7 @@ public class JcrQueryAvgResponseTimeTest extends JcrImplBaseTest
             long start = System.currentTimeMillis();
             QueryResult res = q.execute();
             long sqlsize = res.getNodes().getSize();
-            responseResults.add(new WorkerResult(true, System.currentTimeMillis() - start));
+            resultCollector.addResult(true, System.currentTimeMillis() - start);
             //log.info(word + " found:" + sqlsize + " time=" + (System.currentTimeMillis() - start));
 
          }
@@ -258,7 +258,7 @@ public class JcrQueryAvgResponseTimeTest extends JcrImplBaseTest
        * @see org.exoplatform.services.jcr.cluster.load.AbstractTestAgent#doWrite(java.util.List)
        */
       @Override
-      public void doWrite(List<NodeInfo> nodesPath, List<WorkerResult> responseResults)
+      public void doWrite(List<NodeInfo> nodesPath, ResultCollector resultCollector)
       {
          // get any word
          int i = random.nextInt(words.length);
@@ -273,7 +273,7 @@ public class JcrQueryAvgResponseTimeTest extends JcrImplBaseTest
             Node threadNode = getOrCreateNode(getOrCreateNode(TEST_ROOT, sessionLocal.getRootNode()), threadUUID);
             addCountent(threadNode, UUID.randomUUID(), word);
             sessionLocal.save();
-            responseResults.add(new WorkerResult(false, System.currentTimeMillis() - start));
+            resultCollector.addResult(false, System.currentTimeMillis() - start);
             //log.info(word + " time : " + (System.currentTimeMillis() - start));
          }
          catch (Exception e1)

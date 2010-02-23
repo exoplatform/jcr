@@ -23,9 +23,8 @@ import junit.framework.TestCase;
 import org.exoplatform.services.jcr.cluster.load.AbstractAvgResponseTimeTest;
 import org.exoplatform.services.jcr.cluster.load.AbstractTestAgent;
 import org.exoplatform.services.jcr.cluster.load.NodeInfo;
-import org.exoplatform.services.jcr.cluster.load.WorkerResult;
+import org.exoplatform.services.jcr.cluster.load.ResultCollector;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
@@ -47,7 +46,7 @@ public class WebDavAvgResponseTimeTest extends TestCase
    /**
     * How much thread will be added on the next iteration.
     */
-   private static final int ITERATION_GROWING_POLL = 10;
+   private static final int ITERATION_GROWING_POLL = 25;
 
    /**
     * Number between 0 and 100 show % how many read operations. 
@@ -58,7 +57,7 @@ public class WebDavAvgResponseTimeTest extends TestCase
 
    public void testWebDav() throws Exception
    {
-      WebDavTest test = new WebDavTest(ITERATION_GROWING_POLL, ITERATION_TIME, 10, READ_VALUE);
+      WebDavTest test = new WebDavTest(ITERATION_GROWING_POLL, ITERATION_TIME, 50, READ_VALUE);
       test.testResponce();
    }
 
@@ -89,9 +88,8 @@ public class WebDavAvgResponseTimeTest extends TestCase
          super.setUp();
          WebDavTestAgent setUpAgent = new WebDavTestAgent(null, null, null, null, 0, null);
 
-         String testRoot = setUpAgent.createDirIfAbsent("", TEST_ROOT, new ArrayList<WorkerResult>());
-         iterationRoot =
-            setUpAgent.createDirIfAbsent(testRoot, UUID.randomUUID().toString(), new ArrayList<WorkerResult>());
+         String testRoot = setUpAgent.createDirIfAbsent("", TEST_ROOT, new ResultCollector());
+         iterationRoot = setUpAgent.createDirIfAbsent(testRoot, UUID.randomUUID().toString(), new ResultCollector());
       }
 
       /**
@@ -108,10 +106,10 @@ public class WebDavAvgResponseTimeTest extends TestCase
        * @see org.exoplatform.services.jcr.cluster.load.AbstractAvgResponseTimeTest#getAgent(java.util.List, java.util.List, java.util.concurrent.CountDownLatch, int, java.util.Random)
        */
       @Override
-      protected AbstractTestAgent getAgent(List<NodeInfo> nodesPath, List<WorkerResult> responceResults,
+      protected AbstractTestAgent getAgent(List<NodeInfo> nodesPath, ResultCollector resultCollector,
          CountDownLatch startSignal, int readValue, Random random)
       {
-         return new WebDavTestAgent(iterationRoot, nodesPath, responceResults, startSignal, readValue, random);
+         return new WebDavTestAgent(iterationRoot, nodesPath, resultCollector, startSignal, readValue, random);
       }
 
    }

@@ -18,8 +18,6 @@
  */
 package org.exoplatform.services.jcr.cluster.load;
 
-import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
@@ -44,7 +42,10 @@ public abstract class AbstractAvgResponseTimeTest
 
    private final int readValue;
 
-   private final DecimalFormat df = new DecimalFormat("#####.##");
+   /**
+    * 10%
+    */
+   private final int WARM_UP_RATIO = 10;
 
    /**
     * @param iterationGrowingPoll
@@ -62,7 +63,7 @@ public abstract class AbstractAvgResponseTimeTest
 
    public void testResponce() throws Exception
    {
-      final List<NodeInfo> nodesPath = new LinkedList<NodeInfo>();
+
       //start from 1 thread
       int threadCount = initialSize;
 
@@ -73,37 +74,68 @@ public abstract class AbstractAvgResponseTimeTest
          //test init
          setUp();
 
-         final List<WorkerResult> responceResults = new LinkedList<WorkerResult>();
+         final List<NodeInfo> nodesPath = new LinkedList<NodeInfo>();
 
          ExecutorService threadPool = Executors.newFixedThreadPool(threadCount);
          CountDownLatch startSignal = new CountDownLatch(1);
          AbstractTestAgent[] testAgents = new AbstractTestAgent[threadCount];
-
+         ResultCollector resultCollector = new ResultCollector();
          //pool initialization
          for (int i = 0; i < threadCount; i++)
          {
-            testAgents[i] = getAgent(nodesPath, responceResults, startSignal, readValue, random);
+            testAgents[i] = getAgent(nodesPath, resultCollector, startSignal, readValue, random);
             //init agent
             testAgents[i].prepare();
             threadPool.execute(testAgents[i]);
 
          }
-         responceResults.clear();
+         resultCollector.startIteration();
          startSignal.countDown();//let all threads proceed
 
-         Thread.sleep(iterationTime);
+         long warmUpTime = (iterationTime * WARM_UP_RATIO) / 100;
+         Thread.sleep(warmUpTime);
+         //reset result after warm up
+         resultCollector.reset();
+         Thread.sleep(iterationTime - warmUpTime);
+
+         while (true)
+         {
+            long totalRead = resultCollector.getTotalReadTime();
+            long totalWrite = resultCollector.getTotalWriteTime();
+            long readAndWrite = totalRead + totalWrite;
+            long ratio = (totalRead * 100) / readAndWrite;
+            System.out.println("Ratio =" + ratio);
+            if (ratio >= readValue)
+            {
+               break;
+            }
+            //only read allowed
+            for (int i = 0; i < testAgents.length; i++)
+            {
+               testAgents[i].setBlockWrite(true);
+            }
+            Thread.sleep(1000);
+         }
 
          threadPool.shutdown();
          for (int i = 0; i < testAgents.length; i++)
          {
             testAgents[i].setShouldStop(true);
          }
+
          //wait 10 minutes
          threadPool.awaitTermination(60 * 10, TimeUnit.SECONDS);
-         dumpResults(responceResults, threadCount, iterationTime);
+         resultCollector.finishIteration();
+         pritResult(threadCount, resultCollector);
          threadCount += iterationGrowingPoll;
          tearDown();
       }
+   }
+
+   private void pritResult(int threadCount, ResultCollector resultCollector)
+   {
+      System.out.println("Threads " + threadCount + " Time read " + resultCollector.getTotalReadTime() + " Time write "
+         + resultCollector.getTotalWriteTime() + "  " + resultCollector.getStatistic());
    }
 
    /**
@@ -133,199 +165,7 @@ public abstract class AbstractAvgResponseTimeTest
     * @param random
     * @return
     */
-   protected abstract AbstractTestAgent getAgent(List<NodeInfo> nodesPath, List<WorkerResult> responceResults,
+   protected abstract AbstractTestAgent getAgent(List<NodeInfo> nodesPath, ResultCollector resultCollector,
       CountDownLatch startSignal, int readValue, Random random);
 
-   private void dumpResults(List<WorkerResult> responceResults, int threadCount, int iterationTime)
-   {
-
-      List<Double> readResult = new ArrayList<Double>();
-      List<Double> writeResult = new ArrayList<Double>();
-
-      for (WorkerResult workerResult : responceResults)
-      {
-         if (workerResult == null)
-         {
-            continue;
-         }
-         if (workerResult.isRead())
-         {
-            //            read++;
-            //            sum_read += workerResult.getResponceTime();
-            readResult.add(new Double(workerResult.getResponceTime()));
-         }
-         else
-         {
-            writeResult.add(new Double(workerResult.getResponceTime()));
-         }
-      }
-      ResultInfo readResultInfo = new ResultInfo(readResult);
-      readResultInfo.calculate();
-
-      ResultInfo writeResultInfo = new ResultInfo(writeResult);
-      writeResultInfo.calculate();
-
-      StringBuffer result = new StringBuffer();
-      result.append("ThreadCount= ").append(threadCount);
-      result.append(" TPS = ").append(
-         Math.round(((readResultInfo.getResultCount() + writeResultInfo.getResultCount()) * 1000) / iterationTime));
-      result.append(" Total read= ").append(df.format(readResultInfo.getResultCount()));
-      result.append(" Max= ").append(df.format(readResultInfo.getMaxValue()));
-      result.append(" Min= ").append(df.format(readResultInfo.getMinValue()));
-      result.append(" Avg= ").append(df.format(readResultInfo.getAvgValue()));
-      result.append(" StdDev= ").append(df.format(readResultInfo.getStdDevValue()));
-      result.append(" Total write= ").append(writeResultInfo.getResultCount());
-      result.append(" Max= ").append(df.format(writeResultInfo.getMaxValue()));
-      result.append(" Min= ").append(df.format(writeResultInfo.getMinValue()));
-      result.append(" Avg= ").append(df.format(writeResultInfo.getAvgValue()));
-      result.append(" StdDev= ").append(df.format(writeResultInfo.getStdDevValue()));
-
-      System.out.println(result.toString());
-      //      long sum_read = 0;
-      //      long sum_write = 0;
-      //      long read = 0;
-      //      long write = 0;
-      //      for (WorkerResult workerResult : responceResults)
-      //      {
-      //         if (workerResult == null)
-      //         {
-      //            continue;
-      //         }
-      //         if (workerResult.isRead())
-      //         {
-      //            read++;
-      //            sum_read += workerResult.getResponceTime();
-      //         }
-      //         else
-      //         {
-      //            write++;
-      //            sum_write += workerResult.getResponceTime();
-      //         }
-      //      }
-      //      if ((read + write) > 0)
-      //      {
-      //         StringBuffer result = new StringBuffer();
-      //         result.append("ThreadCount= ").append(threadCount);
-      //         result.append(" TPS = ").append(Math.round(((read + write) * 1000) / iterationTime));
-      //         if (read > 0)
-      //         {
-      //            result.append(" Total read = ").append(read);
-      //
-      //            result.append(" Avg read response = ").append((sum_read / read));
-      //         }
-      //         if (write > 0)
-      //         {
-      //            result.append(" Total write = ").append(write);
-      //
-      //            result.append(" Avg write response = ").append((sum_write / write));
-      //         }
-      //
-      //         System.out.println(result.toString());
-      //      }
-      responceResults.clear();
-   }
-
-   public class ResultInfo
-   {
-      private double maxValue;
-
-      private double minValue;
-
-      private double avgValue;
-
-      private double stdDevValue;
-
-      private List<Double> data;
-
-      /**
-       * @param data
-       */
-      public ResultInfo(List<Double> data)
-      {
-         super();
-         this.data = data;
-      }
-
-      private void calculate()
-      {
-         final int n = data.size();
-         if (n < 2)
-         {
-            this.stdDevValue = Double.NaN;
-            this.avgValue = data.get(0);
-            this.maxValue = data.get(0);
-            this.minValue = data.get(0);
-         }
-         else
-         {
-            this.avgValue = data.get(0);
-            this.maxValue = data.get(0);
-            this.minValue = data.get(0);
-            double sum = 0;
-            for (int i = 1; i < data.size(); i++)
-            {
-               Double currValue = data.get(i);
-               if (currValue > maxValue)
-               {
-                  maxValue = currValue;
-               }
-               if (currValue < minValue)
-               {
-                  minValue = currValue;
-               }
-               double newavg = avgValue + (currValue - avgValue) / (i + 1);
-               sum += (currValue - avgValue) * (currValue - newavg);
-               this.avgValue = newavg;
-            }
-            // Change to ( n - 1 ) to n if you have complete data instead of a sample.
-            this.stdDevValue = Math.sqrt(sum / (n - 1));
-         }
-      }
-
-      /**
-       * @return the stdDevValue
-       */
-      public double getStdDevValue()
-      {
-         return stdDevValue;
-      }
-
-      /**
-       * @return the maxValue
-       */
-      public double getMaxValue()
-      {
-         return maxValue;
-      }
-
-      /**
-       * @return the minValue
-       */
-      public double getMinValue()
-      {
-         return minValue;
-      }
-
-      /**
-       * @return the avgValue
-       */
-      public double getAvgValue()
-      {
-         return avgValue;
-      }
-
-      /**
-       * @return the data
-       */
-      public List<Double> getData()
-      {
-         return data;
-      }
-
-      public long getResultCount()
-      {
-         return data.size();
-      }
-
-   }
 }

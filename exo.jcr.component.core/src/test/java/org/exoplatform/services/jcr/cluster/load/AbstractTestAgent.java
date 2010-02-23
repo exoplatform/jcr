@@ -38,18 +38,22 @@ public abstract class AbstractTestAgent implements Runnable
 
    private final List<NodeInfo> nodesPath;
 
-   private final List<WorkerResult> responceResults;
+   private final ResultCollector resultCollector;
 
    private boolean shouldStop = false;
+
+   private static volatile long LAST_WRITE_START;
+
+   private boolean blockWrite;
 
    /**
     * 
     */
-   public AbstractTestAgent(List<NodeInfo> nodesPath, List<WorkerResult> responceResults, CountDownLatch startSignal,
+   public AbstractTestAgent(List<NodeInfo> nodesPath, ResultCollector resultCollector, CountDownLatch startSignal,
       int readValue, Random random)
    {
       this.nodesPath = nodesPath;
-      this.responceResults = responceResults;
+      this.resultCollector = resultCollector;
       this.random = random;
       this.startSignal = startSignal;
       this.readValue = readValue;
@@ -59,21 +63,13 @@ public abstract class AbstractTestAgent implements Runnable
     * Do read
     * @return
     */
-   public abstract void doRead(List<NodeInfo> nodesPath, List<WorkerResult> responseResults);
+   public abstract void doRead(List<NodeInfo> nodesPath, ResultCollector resultCollector);
 
    /**
     * Do write
     * @return
     */
-   public abstract void doWrite(List<NodeInfo> nodesPath, List<WorkerResult> responseResults);
-
-   /**
-    * Prepare agent
-    */
-   protected void prepare()
-   {
-
-   }
+   public abstract void doWrite(List<NodeInfo> nodesPath, ResultCollector resultCollector);
 
    /**
     * @see java.lang.Runnable#run()
@@ -86,15 +82,32 @@ public abstract class AbstractTestAgent implements Runnable
 
          while (!shouldStop)
          {
-            if (nodesPath.size() < 10 || random.nextInt(100) > readValue)
+            long totalRead = resultCollector.getTotalReadTime();
+            long totalWrite = resultCollector.getTotalWriteTime();
+            long readAndWrite = totalRead + totalWrite;
+            if (blockWrite)
             {
-
-               doWrite(nodesPath, responceResults);
+               doRead(nodesPath, resultCollector);
             }
             else
             {
-               doRead(nodesPath, responceResults);
+               long ratio = 0;
+               if (readAndWrite > 0)
+               {
+                  ratio = (totalRead * 100) / readAndWrite;
+               }
+               //prevent to match write
+               if (nodesPath.size() < 2 || (System.currentTimeMillis() - LAST_WRITE_START > 500 && (ratio > readValue)))
+               {
+                  LAST_WRITE_START = System.currentTimeMillis();
+                  doWrite(nodesPath, resultCollector);
+               }
+               else
+               {
+                  doRead(nodesPath, resultCollector);
+               }
             }
+
          }
       }
       catch (InterruptedException e)
@@ -104,11 +117,35 @@ public abstract class AbstractTestAgent implements Runnable
    }
 
    /**
+    * @return the blockWrite
+    */
+   protected boolean isBlockWrite()
+   {
+      return blockWrite;
+   }
+
+   /**
     * @return the shouldStop
     */
    protected boolean isShouldStop()
    {
       return shouldStop;
+   }
+
+   /**
+    * Prepare agent
+    */
+   protected void prepare()
+   {
+
+   }
+
+   /**
+    * @param blockWrite the blockWrite to set
+    */
+   protected void setBlockWrite(boolean blockWrite)
+   {
+      this.blockWrite = blockWrite;
    }
 
    /**
