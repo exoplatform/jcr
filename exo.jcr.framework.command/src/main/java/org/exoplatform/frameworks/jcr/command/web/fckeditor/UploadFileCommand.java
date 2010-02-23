@@ -30,6 +30,7 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.jcr.Node;
@@ -110,10 +111,9 @@ public class UploadFileCommand extends AbstractFCKConnector implements Command
             fields.put(item.getFieldName(), item);
       }
       FileItem uplFile = (FileItem)fields.get("NewFile");
-      
 
       // On IE, the file name is specified as an absolute path.
-      String fileName = org.apache.commons.io.FilenameUtils.getName(uplFile.getName()); 
+      String fileName = org.apache.commons.io.FilenameUtils.getName(uplFile.getName());
 
       Node file =
          JCRCommandHelper
@@ -125,7 +125,7 @@ public class UploadFileCommand extends AbstractFCKConnector implements Command
       int retVal = 0;
 
       out.println("<script type=\"text/javascript\">");
-      out.println("window.parent.frames['frmUpload'].OnUploadCompleted(" + retVal + ",'" + file.getName() + "');");
+      out.println("window.parent.frames['frmUpload'].OnUploadCompleted(" + retVal + ",'" + "');");
       out.println("</script>");
       out.flush();
       out.close();
