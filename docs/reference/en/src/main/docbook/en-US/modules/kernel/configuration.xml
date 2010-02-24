@@ -737,6 +737,13 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
     &lt;/init-params&gt;
   &lt;/component&gt;
 &lt;/configuration&gt;</programlisting></para>
+
+        <para>In the properties file corresponding to the external settings,
+        you can reuse variables previously defined to create a new variable.
+        In this case the prefix "<emphasis>portal.container.</emphasis>" is
+        not needed, see an example below:<programlisting>my-var1=value 1
+my-var2=value 2
+complex-value=${my-var1}-${my-var2}</programlisting> </para>
       </section>
     </section>
   </section>
@@ -790,6 +797,13 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
     &lt;/value-param&gt;
   &lt;/init-params&gt;
 &lt;/component&gt;</programlisting>
+
+      <para>In the properties file corresponding to the external properties,
+      you can reuse variables previously defined to create a new variable. In
+      this case the prefix "<emphasis>portal.container.</emphasis>" is not
+      needed, see an example below:<programlisting>my-var1=value 1
+my-var2=value 2
+complex-value=${my-var1}-${my-var2}</programlisting></para>
     </section>
 
     <section>
@@ -969,6 +983,105 @@ sh run.sh -Dexo.profiles=foo,bar</programlisting>
   &lt;/object&gt;
 &lt;/object-param&gt;</programlisting>
         </section>
+      </section>
+    </section>
+  </section>
+
+  <section>
+    <title>Component request life cycle</title>
+
+    <section>
+      <title>Component request life cycle contract</title>
+
+      <para>The component request life cycle is an interface that defines a
+      contract for a component for being involved into a
+      request:<programlisting>public interface ComponentRequestLifecycle
+{
+   /**
+    * Start a request.
+    * @param container the related container
+    */
+   void startRequest(ExoContainer container);
+ 
+   /**
+    * Ends a request.
+    * @param container the related container
+    */
+   void endRequest(ExoContainer container);
+}</programlisting></para>
+
+      <para>The container passed is the container to which the component is
+      related. This contract is often used to setup a thread local based
+      context that will be demarcated by a request.</para>
+
+      <para>For instance in the GateIn portal context, a component request
+      life cycle is triggered for user requests. Another example is the
+      initial data import in GateIn that demarcates using callbacks made to
+      that interface.</para>
+    </section>
+
+    <section>
+      <title>Request life cycle</title>
+
+      <para>The <envar>RequestLifeCycle</envar> class has several statics
+      methods that are used to schedule the component request life cycle of
+      components. Its main responsability is to perform scheduling while
+      respecting the constraint to execute the request life cycle of a
+      component only once even if it can be scheduled several times.</para>
+
+      <section>
+        <title>Scheduling a component request life cycle</title>
+
+        <programlisting>RequestLifeCycle.begin(component);
+try
+{
+   // Do something
+}
+finally
+{
+   RequestLifeCycle.end();
+}</programlisting>
+      </section>
+
+      <section>
+        <title>Scheduling a container request life cycle</title>
+
+        <para>Scheduling a container triggers the component request life cyle
+        of all the components that implement the interface
+        <envar>ComponentRequestLifeCycle</envar>. If one of the component has
+        already been scheduled before then that component will not be
+        scheduled again. When the local value is true then the looked
+        components will be those of the container, when it is false then the
+        scheduler will also look at the components in the ancestor
+        containers.<programlisting>RequestLifeCycle.begin(container, local);
+try
+{
+   // Do something
+}
+finally
+{
+   RequestLifeCycle.end();
+}</programlisting></para>
+      </section>
+    </section>
+
+    <section>
+      <title>When request life cycle is triggered</title>
+
+      <section>
+        <title>Portal request life cycle</title>
+
+        <para>Each portal request triggers the life cycle of the associated
+        portal container.</para>
+      </section>
+
+      <section>
+        <title>JMX request Life Cycle</title>
+
+        <para>When a JMX bean is invoked, the request life cycle of the
+        container to which it belongs it scheduled. Indeed JMX is an entry
+        point of the system that may need component to have a request life
+        cycle triggered.</para>
       </section>
     </section>
   </section>
