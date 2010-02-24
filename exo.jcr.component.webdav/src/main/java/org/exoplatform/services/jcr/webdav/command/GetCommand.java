@@ -201,6 +201,7 @@ public class GetCommand
       }
       catch (RepositoryException exc)
       {
+         log.error(exc.getMessage(), exc);
          return Response.serverError().entity(exc.getMessage()).build();
       }
       catch (Exception exc)

@@ -113,6 +113,7 @@ public class MkColCommand
       }
       catch (RepositoryException exc)
       {
+         log.error(exc.getMessage(), exc);
          return Response.serverError().entity(exc.getMessage()).build();
       }
 
