@@ -204,10 +204,10 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
 
       FIND_NODES_BY_PARENTID_CQ =
          "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA"
-            + " from (select * from JCR_MITEM where PARENT_ID=? and I_CLASS=1) I, JCR_MITEM P, JCR_MVALUE V"
-            + " where (P.PARENT_ID=I.ID and P.I_CLASS=2 and (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions') and V.PROPERTY_ID=P.ID)"
-            + " order by I.N_ORDER_NUM, I.ID, PROP_NAME DESC, V.ORDER_NUM";
-
+            + " from JCR_MITEM I, JCR_MITEM P, JCR_MVALUE V"
+            + " where I.PARENT_ID=? and I.I_CLASS=1 and (P.PARENT_ID=I.ID and P.I_CLASS=2 and (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions') and V.PROPERTY_ID=P.ID)"
+            + " order by I.N_ORDER_NUM, I.ID, P.ID";
+      
       FIND_NODE_MAIN_PROPERTIES_BY_PARENTID_CQ =
          "select I.NAME, V.DATA"
             + " from JCR_MITEM I, JCR_MVALUE V"
