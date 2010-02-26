@@ -104,12 +104,13 @@
                   <copy todir="${exo.projects.directory.working}/exo-jboss/server/default/conf/" verbose="true" overwrite="true">
                      <fileset dir="${basedir}/product-patches/as/jboss/exoplatform.sar/META-INF/" includes="login*.xml" />
                   </copy>
-                  <delete file="${exo.projects.directory.working}/exo-jboss/server/default/lib/hsqldb.jar" />
+                  <!-- we don't need it for JBossAS 5.1 -->  
+                  <!-- delete file="${exo.projects.directory.working}/exo-jboss/server/default/lib/hsqldb.jar" />
                   <copy todir="${exo.projects.directory.working}/exo-jboss/server/default/lib/">
                      <fileset dir="${basedir}/target/lib-binary.dir/">
                         <include name="**/hsqldb*.jar" />
                      </fileset>
-                  </copy>
+                  </copy -->
                </tasks>
             </configuration>
          </plugin>
