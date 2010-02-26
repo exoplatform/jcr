@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import org.jboss.cache.lock.LockType;
 
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@exoplatform.org">Sergey Kabashnyuk</a>
@@ -42,27 +41,5 @@ public interface IndexUpdateMonitor
     * @param listener the listener to add
     */
    void addIndexUpdateMonitorListener(IndexUpdateMonitorListener listener);
-   
-   /**
-    *  Returns true if the node is locked (either for reading or writing) by anyone, and false otherwise.
-    * @param name
-    * @return
-    */
-   public boolean isLocked(String name);
-
-   /**
-    *  Acquires a lock of type lockType, for a given owner
-    * @param name
-    * @param lockType
-    * @return
-    * @throws InterruptedException
-    */
-   public boolean lock(String name, LockType lockType);
-
-   /**
-    * Releases the lock passed in
-    * @param name
-    */
-   public void unlock(String name);
 
 }

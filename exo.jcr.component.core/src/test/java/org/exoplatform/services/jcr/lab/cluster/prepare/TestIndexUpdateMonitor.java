@@ -29,10 +29,8 @@ import org.exoplatform.services.log.Log;
 import org.jboss.cache.Cache;
 import org.jboss.cache.CacheFactory;
 import org.jboss.cache.DefaultCacheFactory;
-import org.jboss.cache.lock.LockType;
 
 import java.io.Serializable;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@exoplatform.org">Sergey Kabashnyuk</a>
@@ -59,7 +57,8 @@ public class TestIndexUpdateMonitor extends TestCase
       // TODO Auto-generated method stub
       super.setUp();
       cache = createCache();
-      indexUpdateMonitor = new JBossCacheIndexUpdateMonitor(cache, new IndexerIoModeHandler(IndexerIoMode.READ_WRITE));
+      indexUpdateMonitor =
+         new JBossCacheIndexUpdateMonitor(cache, false, new IndexerIoModeHandler(IndexerIoMode.READ_WRITE));
    }
 
    /**
@@ -90,177 +89,6 @@ public class TestIndexUpdateMonitor extends TestCase
       indexUpdateMonitor.setUpdateInProgress(false);
       assertFalse(indexUpdateMonitor.getUpdateInProgress());
 
-   }
-
-   public void testLock() throws Exception
-   {
-      String lockName = "testLock";
-      assertFalse(indexUpdateMonitor.isLocked(lockName));
-      assertTrue(indexUpdateMonitor.lock(lockName, LockType.WRITE));
-      assertTrue(indexUpdateMonitor.isLocked(lockName));
-      LockChecker checker = new LockChecker(indexUpdateMonitor, lockName);
-      Thread lockThread = new Thread(checker);
-      assertFalse(checker.isWaiting());
-      lockThread.start();
-      assertTrue(checker.isWaiting());
-      indexUpdateMonitor.unlock(lockName);
-      assertFalse(checker.isWaiting());
-
-   }
-
-   public void _testMultiThread() throws Exception
-   {
-      AtomicBoolean atomicBoolean = new AtomicBoolean();
-      ThreadGroup chengers = new ThreadGroup("Changers");
-      ThreadGroup checkers = new ThreadGroup("Checkers");
-      Thread[] changersArray = new Thread[10];
-      Thread[] checkerArray = new Thread[10];
-
-      for (int i = 0; i < changersArray.length; i++)
-      {
-         changersArray[i] = new Thread(chengers, new UpdateMonitorChanger(atomicBoolean));
-         changersArray[i].start();
-      }
-
-      for (int i = 0; i < checkerArray.length; i++)
-      {
-         checkerArray[i] = new Thread(checkers, new UpdateMonitorChecker(atomicBoolean));
-         checkerArray[i].start();
-      }
-
-      //      Thread changer = new Thread(new UpdateMonitorChanger(atomicBoolean));
-      //      changer.start();
-      //      Thread checker = new Thread(new UpdateMonitorChecker(atomicBoolean));
-      //      checker.start();
-
-      Thread.sleep(4 * 60 * 1000);
-      chengers.destroy();
-      checkers.destroy();
-   }
-
-   private class LockChecker implements Runnable
-   {
-      private final String lockName;
-
-      private boolean waiting = false;
-
-      /**
-       * @return the waiting
-       */
-      protected boolean isWaiting()
-      {
-         return waiting;
-      }
-
-      /**
-       * @param indexUpdateMonitor
-       */
-      public LockChecker(IndexUpdateMonitor indexUpdateMonitor, String lockName)
-      {
-         super();
-         this.indexUpdateMonitor = indexUpdateMonitor;
-         this.lockName = lockName;
-      }
-
-      private final IndexUpdateMonitor indexUpdateMonitor;
-
-      /**
-       * @see java.lang.Runnable#run()
-       */
-      public void run()
-      {
-         waiting = true;
-         assertTrue(indexUpdateMonitor.lock(lockName, LockType.WRITE));
-         waiting = false;
-      }
-   }
-
-   private class UpdateMonitorChanger implements Runnable
-   {
-      private AtomicBoolean atomicBoolean;
-
-      /**
-       * @param atomicBoolean
-       */
-      public UpdateMonitorChanger(AtomicBoolean atomicBoolean)
-      {
-         super();
-         this.atomicBoolean = atomicBoolean;
-      }
-
-      /**
-       * @see java.lang.Runnable#run()
-       */
-      public void run()
-      {
-         while (!Thread.currentThread().isInterrupted())
-         {
-
-            synchronized (atomicBoolean)
-            {
-               assertEquals(atomicBoolean.get(), indexUpdateMonitor.getUpdateInProgress());
-               boolean oldValue = atomicBoolean.get();
-
-               indexUpdateMonitor.setUpdateInProgress(!oldValue);
-
-               if (!atomicBoolean.compareAndSet(oldValue, !oldValue))
-               {
-                  log.warn("Fail to change monitor");
-               }
-            }
-         }
-
-      }
-   }
-
-   private class UpdateMonitorChecker implements Runnable
-   {
-
-      /**
-       * @param atomicBoolean
-       */
-      public UpdateMonitorChecker(AtomicBoolean atomicBoolean)
-      {
-         super();
-         this.atomicBoolean = atomicBoolean;
-      }
-
-      private final AtomicBoolean atomicBoolean;
-
-      /**
-       * @see java.lang.Runnable#run()
-       */
-      public void run()
-      {
-
-         while (!Thread.currentThread().isInterrupted())
-         {
-
-            synchronized (atomicBoolean)
-            {
-               //assertEquals(atomicBoolean.get(), indexUpdateMonitor.getUpdateInProgress());
-               if (atomicBoolean.get() == indexUpdateMonitor.getUpdateInProgress())
-               {
-                  System.out.println("check ok");
-               }
-               else
-               {
-                  System.out.println("check fail");
-               }
-
-            }
-
-            try
-            {
-               Thread.sleep(100);
-            }
-            catch (InterruptedException e)
-            {
-               return;
-            }
-         }
-
-      }
    }
 
    private Cache<Serializable, Object> createCache()

@@ -21,17 +21,15 @@ package org.exoplatform.services.jcr.impl.core.query.jbosscache;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoMode;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeListener;
+import org.exoplatform.services.jcr.impl.core.query.lucene.IndexInfos;
 import org.exoplatform.services.jcr.impl.core.query.lucene.IndexUpdateMonitor;
 import org.exoplatform.services.jcr.impl.core.query.lucene.IndexUpdateMonitorListener;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.jboss.cache.Cache;
 import org.jboss.cache.CacheException;
-import org.jboss.cache.CacheSPI;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.Node;
-import org.jboss.cache.lock.LockManager;
-import org.jboss.cache.lock.LockType;
 import org.jboss.cache.notifications.annotation.CacheListener;
 import org.jboss.cache.notifications.annotation.NodeModified;
 import org.jboss.cache.notifications.event.NodeModifiedEvent;
@@ -56,7 +54,9 @@ public class JBossCacheIndexUpdateMonitor implements IndexUpdateMonitor, Indexer
 
    private final Cache<Serializable, Object> cache;
 
-   private final static Fqn PARAMETER_ROOT = Fqn.fromString("INDEX_UPDATE_MONITOR");
+   private static final String INDEX_PARAMETERS = "$index_parameters".intern();
+
+   private static final String SYSINDEX_PARAMETERS = "$sysindex_parameters".intern();
 
    private final static String PARAMETER_NAME = "index-update-in-progress";
 
@@ -68,25 +68,34 @@ public class JBossCacheIndexUpdateMonitor implements IndexUpdateMonitor, Indexer
    private final List<IndexUpdateMonitorListener> listeners;
 
    /**
+    * This FQN points to cache node, where list of indexes for this {@link IndexInfos} instance is stored.
+    */
+   private final Fqn parametersFqn;
+
+   /**
     * @param cache instance of JbossCache that is used to deliver index names
     */
-   public JBossCacheIndexUpdateMonitor(Cache<Serializable, Object> cache, IndexerIoModeHandler modeHandler)
+   public JBossCacheIndexUpdateMonitor(Cache<Serializable, Object> cache, boolean system,
+      IndexerIoModeHandler modeHandler)
    {
       this.cache = cache;
       this.modeHandler = modeHandler;
       this.listeners = new CopyOnWriteArrayList<IndexUpdateMonitorListener>();
+      // store parsed FQN to avoid it's parsing each time cache event is generated
+      this.parametersFqn = Fqn.fromString(system ? INDEX_PARAMETERS : SYSINDEX_PARAMETERS);
+
       modeHandler.addIndexerIoModeListener(this);
       Node<Serializable, Object> cacheRoot = cache.getRoot();
 
       // prepare cache structures
-      if (!cacheRoot.hasChild(PARAMETER_ROOT))
+      if (!cacheRoot.hasChild(parametersFqn))
       {
          cache.getInvocationContext().getOptionOverrides().setCacheModeLocal(true);
-         cacheRoot.addChild(PARAMETER_ROOT).setResident(true);
+         cacheRoot.addChild(parametersFqn).setResident(true);
       }
       else
       {
-         cache.getNode(PARAMETER_ROOT).setResident(true);
+         cache.getNode(parametersFqn).setResident(true);
       }
 
       if (IndexerIoMode.READ_WRITE == modeHandler.getMode())
@@ -98,6 +107,7 @@ public class JBossCacheIndexUpdateMonitor implements IndexUpdateMonitor, Indexer
          // Currently READ_ONLY is set, so new lists should be fired to multiIndex.
          cache.addCacheListener(this);
       }
+
    }
 
    /**
@@ -124,41 +134,9 @@ public class JBossCacheIndexUpdateMonitor implements IndexUpdateMonitor, Indexer
     */
    public boolean getUpdateInProgress()
    {
-      Object value = cache.get(PARAMETER_ROOT, PARAMETER_NAME);
+
+      Object value = cache.get(parametersFqn, PARAMETER_NAME);
       return value != null ? (Boolean)value : false;
-   }
-
-   /**
-    *  Returns true if the node is locked (either for reading or writing) by anyone, and false otherwise.
-    * @param name
-    * @return
-    */
-   public boolean isLocked(String name)
-   {
-      LockManager lm = ((CacheSPI<Serializable, Object>)cache).getComponentRegistry().getComponent(LockManager.class);
-      return lm.isLocked(Fqn.fromRelativeFqn(PARAMETER_ROOT, Fqn.fromString(name)));
-   }
-
-   /**
-    *  Acquires a lock of type lockType, for a given owner
-    * @param name
-    * @param lockType
-    * @return
-    * @throws InterruptedException
-    */
-   public boolean lock(String name, LockType lockType)
-   {
-
-      LockManager lm = ((CacheSPI<Serializable, Object>)cache).getComponentRegistry().getComponent(LockManager.class);
-      try
-      {
-         return lm.lock(Fqn.fromRelativeFqn(PARAMETER_ROOT, Fqn.fromString(name)), lockType, Integer.MAX_VALUE);
-      }
-      catch (InterruptedException e)
-      {
-         log.warn("An error occurs while tryning to lock the node " + name, e);
-      }
-      return false;
    }
 
    /**
@@ -172,7 +150,7 @@ public class JBossCacheIndexUpdateMonitor implements IndexUpdateMonitor, Indexer
       }
       try
       {
-         cache.put(PARAMETER_ROOT, PARAMETER_NAME, new Boolean(updateInProgress));
+         cache.put(parametersFqn, PARAMETER_NAME, new Boolean(updateInProgress));
          for (IndexUpdateMonitorListener listener : listeners)
          {
             listener.onUpdateInProgressChange(updateInProgress);
@@ -183,17 +161,6 @@ public class JBossCacheIndexUpdateMonitor implements IndexUpdateMonitor, Indexer
       {
          log.error("Fail to change updateInProgress mode to " + updateInProgress, e);
       }
-   }
-
-   /**
-    * Releases the lock passed in
-    * @param name
-    */
-   public void unlock(String name)
-   {
-      LockManager lm = ((CacheSPI<Serializable, Object>)cache).getComponentRegistry().getComponent(LockManager.class);
-      lm.unlock(Fqn.fromRelativeFqn(PARAMETER_ROOT, Fqn.fromString(name)), cache.getInvocationContext()
-         .getGlobalTransaction());
    }
 
    /**
@@ -212,7 +179,7 @@ public class JBossCacheIndexUpdateMonitor implements IndexUpdateMonitor, Indexer
    @NodeModified
    public void cacheNodeModified(NodeModifiedEvent event)
    {
-      if (!event.isPre() && event.getFqn().equals(PARAMETER_ROOT))
+      if (!event.isPre() && event.getFqn().equals(parametersFqn))
       {
          Object value = null;
          Map<?, ?> data = event.getData();
@@ -227,7 +194,7 @@ public class JBossCacheIndexUpdateMonitor implements IndexUpdateMonitor, Indexer
          if (value == null)
          {
             log.warn("The data cannot be found, we will try to get it from the cache");
-            value = cache.get(PARAMETER_ROOT, PARAMETER_NAME);
+            value = cache.get(parametersFqn, PARAMETER_NAME);
          }
          boolean updateInProgress = value != null ? (Boolean)value : false;
          for (IndexUpdateMonitorListener listener : listeners)

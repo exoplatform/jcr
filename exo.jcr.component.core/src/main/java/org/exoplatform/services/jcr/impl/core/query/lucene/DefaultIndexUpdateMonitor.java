@@ -18,8 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import org.jboss.cache.lock.LockType;
-
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -32,12 +30,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class DefaultIndexUpdateMonitor implements IndexUpdateMonitor
 {
    private final AtomicBoolean updateInProgress;
-   
+
    /**
     * The list of all the listeners
     */
    private final List<IndexUpdateMonitorListener> listeners;
-   
+
    /**
     * @param semaphore
     */
@@ -67,30 +65,7 @@ public class DefaultIndexUpdateMonitor implements IndexUpdateMonitor
       for (IndexUpdateMonitorListener listener : listeners)
       {
          listener.onUpdateInProgressChange(updateInProgress);
-      }      
-   }
-
-   /**
-    * @see org.exoplatform.services.jcr.impl.core.query.lucene.IndexUpdateMonitor#unlock(java.lang.String)
-    */
-   public void unlock(String name)
-   {
-   }
-
-   /**
-    * @see org.exoplatform.services.jcr.impl.core.query.lucene.IndexUpdateMonitor#lock(java.lang.String, org.jboss.cache.lock.LockType)
-    */
-   public boolean lock(String name, LockType lockType)
-   {
-      return false;
-   }
-
-   /**
-    * @see org.exoplatform.services.jcr.impl.core.query.lucene.IndexUpdateMonitor#isLocked(java.lang.String)
-    */
-   public boolean isLocked(String name)
-   {
-      return false;
+      }
    }
 
    /**

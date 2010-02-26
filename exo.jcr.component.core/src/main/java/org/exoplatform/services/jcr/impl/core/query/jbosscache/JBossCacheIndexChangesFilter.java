@@ -90,7 +90,8 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
 
       // try to get pushState parameters, since they are set programmatically only
       Boolean pushState = config.getParameterBoolean(QueryHandlerParams.PARAM_JBOSSCACHE_PUSHSTATE, false);
-      Integer pushStateTimeOut = config.getParameterInteger(QueryHandlerParams.PARAM_JBOSSCACHE_PUSHSTATE_TIMEOUT, 10000);
+      Integer pushStateTimeOut =
+         config.getParameterInteger(QueryHandlerParams.PARAM_JBOSSCACHE_PUSHSTATE_TIMEOUT, 10000);
 
       singletonStoreProperties.setProperty("pushStateWhenCoordinator", pushState.toString());
       singletonStoreProperties.setProperty("pushStateWhenCoordinatorTimeout", pushStateTimeOut.toString());
@@ -126,13 +127,13 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
       if (!parentHandler.isInitialized())
       {
          parentHandler.setIndexInfos(new JBossCacheIndexInfos(cache, true, modeHandler));
-         parentHandler.setIndexUpdateMonitor(new JBossCacheIndexUpdateMonitor(cache, modeHandler));
+         parentHandler.setIndexUpdateMonitor(new JBossCacheIndexUpdateMonitor(cache, true, modeHandler));
          parentHandler.init();
       }
       if (!handler.isInitialized())
       {
          handler.setIndexInfos(new JBossCacheIndexInfos(cache, false, modeHandler));
-         handler.setIndexUpdateMonitor(new JBossCacheIndexUpdateMonitor(cache, modeHandler));
+         handler.setIndexUpdateMonitor(new JBossCacheIndexUpdateMonitor(cache, false, modeHandler));
          handler.init();
       }
 
