@@ -42,7 +42,7 @@ public class CleanableFilePersistedValueData extends FilePersistedValueData
    protected final static Log LOG = ExoLogger.getLogger("jcr.CleanableFileStreamValueData");
 
    protected FileCleaner cleaner;
-   
+
    /**
     *   Empty constructor to serialization.
     */
@@ -84,13 +84,13 @@ public class CleanableFilePersistedValueData extends FilePersistedValueData
             //TODO FileCleaner maybe null. 
             if (cleaner != null)
             {
-            cleaner.addFile(file);
+               cleaner.addFile(file);
 
-            if (LOG.isDebugEnabled())
-            {
-               LOG.debug("Could not remove temporary file on finalize: inUse=" + (((SwapFile)file).inUse()) + ", "
-                  + file.getAbsolutePath());
-            }
+               if (LOG.isDebugEnabled())
+               {
+                  LOG.debug("Could not remove temporary file on finalize: inUse=" + (((SwapFile)file).inUse()) + ", "
+                     + file.getAbsolutePath());
+               }
             }
          }
       }

@@ -103,11 +103,14 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
       testCleaner = null;
 
       if (testFile.exists())
+      {
          testFile.delete();
+      }
 
       TestSwapFile.cleanShare();
 
       System.gc();
+      Thread.sleep(CLEANER_TIMEOUT + 500);
       Thread.yield();
       System.gc();
 
@@ -151,6 +154,17 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
       System.gc();
 
       assertTrue(testFile.exists());
+
+      // clean ValueData
+      cfvd2 = null;
+
+      // allows GC to call finalize on vd
+      System.gc();
+      Thread.sleep(CLEANER_TIMEOUT + 500);
+      Thread.yield();
+      System.gc();
+
+      assertFalse(testFile.exists());
    }
 
    public void testTransientFileNotCleaned() throws InterruptedException, IOException, RepositoryException
