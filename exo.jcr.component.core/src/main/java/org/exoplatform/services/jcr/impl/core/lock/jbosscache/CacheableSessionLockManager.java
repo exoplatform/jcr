@@ -362,11 +362,7 @@ public class CacheableSessionLockManager extends AbstractSessionLockManager
     */
    public void notifyLockRemoved(String nodeIdentifier)
    {
-      LockData removedLockData = lockedNodes.remove(nodeIdentifier);
-      //TODO do we really need remove lock token for removed lockData 
-      // also remember, tokens that added on another sessions will not be removed
-      String token = getLockToken(removedLockData.getTokenHash());
-      tokens.remove(token);
+      lockedNodes.remove(nodeIdentifier);
    }
 
    /**
