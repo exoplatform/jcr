@@ -255,10 +255,10 @@ public class LockManagerImpl implements WorkspaceLockManager, ItemsPersistenceLi
       return true;
    }
 
-   public boolean isLockHolder(NodeImpl node) throws RepositoryException
+   public boolean isLockHolder(NodeData node, String sessionId)// throws RepositoryException
    {
-      LockData lData = getLockData((NodeData)node.getData(), SEARCH_EXECMATCH | SEARCH_CLOSEDPARENT);
-      return lData != null && lData.isLockHolder(node.getSession().getId());
+      LockData lData = getLockData(node, SEARCH_EXECMATCH | SEARCH_CLOSEDPARENT);
+      return lData != null && lData.isLockHolder(sessionId);
    }
 
    public synchronized void onCloseSession(ExtendedSession session)

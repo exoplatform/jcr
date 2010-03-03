@@ -2165,7 +2165,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       if (!session.getLockManager().holdsLock((NodeData)this.getData()))
          throw new LockException("The node not locked " + getPath());
 
-      if (!session.getLockManager().isLockHolder(this))
+      if (!session.getLockManager().isLockHolder(this.nodeData()))
          throw new LockException("There are no permission to unlock the node " + getPath());
 
       if (dataManager.hasPendingChanges(getInternalPath()))
@@ -2309,8 +2309,12 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
    boolean checkLocking() throws RepositoryException
    {
-      return (!isLocked() || session.getLockManager().isLockHolder(this) || session.getUserID().equals(
+      //      return (!isLocked() || session.getLockManager().isLockHolder(this) || session.getUserID().equals(
+      //         SystemIdentity.SYSTEM));
+
+      return (session.getLockManager().checkLocking(this.nodeData()) || session.getUserID().equals(
          SystemIdentity.SYSTEM));
+
    }
 
    protected void doOrderBefore(QPath srcPath, QPath destPath) throws RepositoryException
@@ -2537,7 +2541,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       {
          // locked, should be unlocked
 
-         if (!session.getLockManager().isLockHolder(this))
+         if (!session.getLockManager().isLockHolder(this.nodeData()))
             throw new LockException("There are no permission to unlock the node " + getPath());
 
          // remove mix:lockable properties (as the node is locked)

@@ -16,7 +16,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock.jbosscache;
 
-import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.core.ExtendedSession;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
@@ -110,7 +109,6 @@ public class CacheableSessionLockManager extends AbstractSessionLockManager
       NodeData data = (NodeData)node.getData();
 
       LockData lData = lockManager.getExactNodeOrCloseParentLock(data);
-      //.getLockData(data, CacheableLockManager.SEARCH_EXECMATCH | CacheableLockManager.SEARCH_CLOSEDPARENT);
       if (lData != null)
       {
          if (lData.getNodeIdentifier().equals(node.getIdentifier()))
@@ -208,11 +206,9 @@ public class CacheableSessionLockManager extends AbstractSessionLockManager
    /**
     * {@inheritDoc}
     */
-   protected boolean isPersitedLockHolder(NodeImpl node) throws RepositoryException
+   protected boolean isPersistedLockHolder(NodeData node) throws RepositoryException
    {
-      //TODO optimise it
-      LockData lData = lockManager.getExactNodeOrCloseParentLock((NodeData)node.getData());
-
+      LockData lData = lockManager.getExactNodeOrCloseParentLock(node);
       return lData != null && isLockHolder(lData);
    }
 
@@ -286,7 +282,7 @@ public class CacheableSessionLockManager extends AbstractSessionLockManager
     */
    private boolean isLockHolder(LockData lockData)
    {
-      return (SystemIdentity.SYSTEM.equals(sessionID) || tokens.containsValue(lockData.getTokenHash()));
+      return tokens.containsValue(lockData.getTokenHash());
    }
 
    /**
@@ -366,7 +362,11 @@ public class CacheableSessionLockManager extends AbstractSessionLockManager
     */
    public void notifyLockRemoved(String nodeIdentifier)
    {
-      lockedNodes.remove(nodeIdentifier);
+      LockData removedLockData = lockedNodes.remove(nodeIdentifier);
+      //TODO do we really need remove lock token for removed lockData 
+      // also remember, tokens that added on another sessions will not be removed
+      String token = getLockToken(removedLockData.getTokenHash());
+      tokens.remove(token);
    }
 
    /**
@@ -378,6 +378,30 @@ public class CacheableSessionLockManager extends AbstractSessionLockManager
    protected void refresh(LockData newLockData) throws LockException
    {
       lockManager.refreshLockData(newLockData);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected boolean checkPersistedLocks(NodeData node) throws LockException
+   {
+      LockData lData = null;
+      try
+      {
+         lData = lockManager.getExactNodeOrCloseParentLock(node);
+      }
+      catch (RepositoryException e)
+      {
+         throw new LockException(e.getMessage(), e);
+      }
+
+      if (lData == null || (!node.getIdentifier().equals(lData.getNodeIdentifier()) && !lData.isDeep()))
+      {
+         return true;
+      }
+
+      // lock exist, so lets check is current session is LockHolder
+      return isLockHolder(lData);
    }
 
 }

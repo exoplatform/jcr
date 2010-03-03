@@ -19,7 +19,6 @@
 package org.exoplatform.services.jcr.impl.core.lock;
 
 import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 
 import javax.jcr.RepositoryException;
@@ -41,19 +40,57 @@ public abstract class AbstractSessionLockManager implements SessionLockManager
    }
 
    /**
-    * Check if the node locked (and lock peristed in internal storage).
+    * Check if the node locked (locks persisted in internal storage).
     * @param node NodeData to check
     * @return boolean, <code>true</code> if the node is locked, <code>false</code> otherwise
     * @throws LockException
     */
    protected abstract boolean isLockedPersisted(NodeData node) throws LockException;
 
-   protected abstract boolean isPersitedLockHolder(NodeImpl node) throws RepositoryException;
+   protected abstract boolean isPersistedLockHolder(NodeData node) throws RepositoryException;
+
+   /**
+    * Checks the node, is it accessible according to possible locks. If node is locked and current 
+    * session is not lockHolder <code> false</code> will be returned.
+    *  
+    * @param data - node that must be checked
+    * @return true - if lock not exist or current session is LockOwner; false - in other case;
+    * @throws LockException - if lock engine exception happens
+    */
+   protected abstract boolean checkPersistedLocks(NodeData node) throws LockException;
 
    /**
     * {@inheritDoc}
     */
-   public boolean isLockHolder(NodeImpl node) throws RepositoryException
+   public boolean checkLocking(NodeData data) throws LockException
+   {
+      //check is new and find close persisted parent
+
+      while (transientManager.isNew(data.getIdentifier()))
+      {
+         // The node is new, so we will check directly its parent instead
+         try
+         {
+            data = (NodeData)transientManager.getItemData(data.getParentIdentifier());
+            if (data == null)
+            {
+               // The node is the root node and is new, so we consider it as unlocked
+               return true;
+            }
+         }
+         catch (RepositoryException e)
+         {
+            throw new LockException(e);
+         }
+      }
+
+      return checkPersistedLocks(data);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public boolean isLockHolder(NodeData node) throws RepositoryException
    {
       //check is parent node also new
       if (transientManager.isNew(node.getIdentifier()) && transientManager.isNew(node.getParentIdentifier()))
@@ -62,7 +99,7 @@ public abstract class AbstractSessionLockManager implements SessionLockManager
       }
       else
       {
-         return isPersitedLockHolder(node);
+         return isPersistedLockHolder(node);
       }
    }
 

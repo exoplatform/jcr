@@ -114,7 +114,7 @@ public interface SessionLockManager extends SessionLifecycleListener
     * @return if the specified session holds a lock on the given node; otherwise returns
     *         <code>false</code>
     */
-   boolean isLockHolder(NodeImpl node) throws RepositoryException;
+   boolean isLockHolder(NodeData node) throws RepositoryException;
 
    /**
     * Invoked by a session to inform that a lock token has been removed.
@@ -126,4 +126,13 @@ public interface SessionLockManager extends SessionLifecycleListener
     */
    void removeLockToken(String lt);
 
+   /**
+    * Checks this node, is it accessible according to possible locks. If node is locked and current 
+    * session is not lockHolder <code> false</code> will be returned. 
+    *  
+    * @param data - node that must be checked
+    * @return true - if lock not exist or current session is LockOwner; false - in other case;
+    * @throws LockException - if lock engine exception happens
+    */
+   boolean checkLocking(NodeData data) throws LockException;
 }

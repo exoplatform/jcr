@@ -94,9 +94,9 @@ public class SessionLockManagerImpl extends AbstractSessionLockManager
    /**
     * {@inheritDoc}
     */
-   protected boolean isPersitedLockHolder(NodeImpl node) throws RepositoryException
+   protected boolean isPersistedLockHolder(NodeData node)// throws RepositoryException
    {
-      return lockManager.isLockHolder(node);
+      return lockManager.isLockHolder(node, sessionId);
    }
 
    /**
@@ -123,4 +123,11 @@ public class SessionLockManagerImpl extends AbstractSessionLockManager
       lockManager.onCloseSession(session);
    }
 
+   /**
+    * {@inheritDoc}
+    */
+   protected boolean checkPersistedLocks(NodeData node) throws LockException
+   {
+      return (!isLockedPersisted(node) || isPersistedLockHolder(node));
+   }
 }
