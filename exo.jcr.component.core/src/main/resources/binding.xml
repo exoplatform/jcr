@@ -1,4 +1,6 @@
 <binding>
+  <!-- the default deserializer to use for String -->
+  <format type="java.lang.String" deserializer="org.exoplatform.container.xml.Deserializer.cleanString"/>
 
   <mapping name="repository-service" class="org.exoplatform.services.jcr.config.RepositoryServiceConfiguration">
     <value name="default-repository" field="defaultRepositoryName" style="attribute" />
