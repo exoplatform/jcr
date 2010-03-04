@@ -350,6 +350,60 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
         &lt;name&gt;default.realm.name&lt;/name&gt;
         &lt;value&gt;my-exo-domain&lt;/value&gt;
       &lt;/value-param&gt;
+      &lt;!-- The default portal container definition --&gt;
+      &lt;!-- It cans be used to avoid duplicating configuration --&gt;
+      &lt;object-param&gt;
+        &lt;name&gt;default.portal.definition&lt;/name&gt;
+        &lt;object type="org.exoplatform.container.definition.PortalContainerDefinition"&gt;
+          &lt;!-- All the dependencies of the portal container ordered by loading priority --&gt;
+          &lt;field name="dependencies"&gt;
+            &lt;collection type="java.util.ArrayList"&gt;
+              &lt;value&gt;
+                &lt;string&gt;foo&lt;/string&gt;
+              &lt;/value&gt;
+              &lt;value&gt;
+                &lt;string&gt;foo2&lt;/string&gt;
+              &lt;/value&gt;
+              &lt;value&gt;
+                &lt;string&gt;foo3&lt;/string&gt;
+              &lt;/value&gt;
+            &lt;/collection&gt;
+          &lt;/field&gt;        
+          &lt;!-- A map of settings tied to the default portal container --&gt;
+          &lt;field name="settings"&gt;
+            &lt;map type="java.util.HashMap"&gt;
+              &lt;entry&gt;
+                &lt;key&gt;
+                  &lt;string&gt;foo5&lt;/string&gt;
+                &lt;/key&gt;
+                &lt;value&gt;
+                  &lt;string&gt;value&lt;/string&gt;
+                &lt;/value&gt;
+              &lt;/entry&gt;
+              &lt;entry&gt;
+                &lt;key&gt;
+                  &lt;string&gt;string&lt;/string&gt;
+                &lt;/key&gt;
+                &lt;value&gt;
+                  &lt;string&gt;value0&lt;/string&gt;
+                &lt;/value&gt;
+              &lt;/entry&gt;
+              &lt;entry&gt;
+                &lt;key&gt;
+                  &lt;string&gt;int&lt;/string&gt;
+                &lt;/key&gt;
+                &lt;value&gt;
+                  &lt;int&gt;100&lt;/int&gt;
+                &lt;/value&gt;
+              &lt;/entry&gt;
+            &lt;/map&gt;
+          &lt;/field&gt;
+          &lt;!-- The path to the external properties file --&gt;
+          &lt;field name="externalSettingsPath"&gt;
+            &lt;string&gt;classpath:/org/exoplatform/container/definition/default-settings.properties&lt;/string&gt;
+          &lt;/field&gt;
+        &lt;/object&gt;
+      &lt;/object-param&gt;
     &lt;/init-params&gt;
   &lt;/component&gt;</programlisting>
 
@@ -378,6 +432,17 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
 
                 <entry>The name of the default realm. This field is
                 optional.</entry>
+              </row>
+
+              <row>
+                <entry>default.portal.definition</entry>
+
+                <entry>The definition of the default portal container. This
+                field is optional. The expected type is
+                <envar>org.exoplatform.container.definition.PortalContainerDefinition</envar>
+                that is described below. Allow the parameters defined in this
+                default <envar>PortalContainerDefinition</envar> will be the
+                default values.</entry>
               </row>
             </tbody>
           </tgroup>
@@ -482,7 +547,8 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
 
         <table>
           <title>Descriptions of the fields of
-          <envar>PortalContainerDefinition</envar></title>
+          <envar>PortalContainerDefinition</envar> when it is used to define a
+          new portal container</title>
 
           <tgroup cols="2">
             <tbody>
@@ -490,7 +556,7 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
                 <entry>name</entry>
 
                 <entry>The name of the portal container. This field is
-                mandatory.</entry>
+                mandatory .</entry>
               </row>
 
               <row>
@@ -499,7 +565,7 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
                 <entry>The name of the context name of the rest web
                 application. This field is optional. The default value will
                 the value define at the <envar>PortalContainerConfig</envar>
-                level if it is not null, "rest" otherwise.</entry>
+                level.</entry>
               </row>
 
               <row>
@@ -507,22 +573,24 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
 
                 <entry>The name of the realm. This field is optional. The
                 default value will the value define at the
-                <envar>PortalContainerConfig</envar> level if it is not null,
-                "exo-domain" otherwise.</entry>
+                <envar>PortalContainerConfig</envar> level.</entry>
               </row>
 
               <row>
                 <entry>dependencies</entry>
 
                 <entry>All the dependencies of the portal container ordered by
-                loading priority. The dependencies are in fact the list of the
-                context names of the web applications from which the portal
-                container depends. This field is optional. The dependency
-                order is really crucial since it will be interpreted the same
-                way by several components of the platform. All those
-                components, will consider the 1st element in the list less
-                important than the second element and so on. It is currently
-                used to:<itemizedlist>
+                loading priority. This field is optional. The default value
+                will the value define at the
+                <envar>PortalContainerConfig</envar> level. The dependencies
+                are in fact the list of the context names of the web
+                applications from which the portal container depends. This
+                field is optional. The dependency order is really crucial
+                since it will be interpreted the same way by several
+                components of the platform. All those components, will
+                consider the 1st element in the list less important than the
+                second element and so on. It is currently used
+                to:<itemizedlist>
                     <listitem>
                       <para>Know the loading order of all the
                       dependencies.</para>
@@ -571,7 +639,11 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
                 <entry>A <envar>java.util.Map</envar> of internal parameters
                 that we would like to tie the portal container. Those
                 parameters could have any type of value. This field is
-                optional.</entry>
+                optional. If some internal settings are defined at the
+                <envar>PortalContainerConfig</envar> level, the two maps of
+                settings will be merged. If a setting with the same name is
+                defined in both maps, it will keep the value defined at the
+                <envar>PortalContainerDefinition</envar> level.</entry>
               </row>
 
               <row>
@@ -579,9 +651,13 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
 
                 <entry>The path of the external properties file to load as
                 default settings to the portal container. This field is
-                optional. The external properties files can be either of type
-                "properties" or of type "xml". The path will be interpreted as
-                follows:<orderedlist>
+                optional. If some external settings are defined at the
+                <envar>PortalContainerConfig</envar> level, the two maps of
+                settings will be merged. If a setting with the same name is
+                defined in both maps, it will keep the value defined at the
+                <envar>PortalContainerDefinition</envar> level. The external
+                properties files can be either of type "properties" or of type
+                "xml". The path will be interpreted as follows:<orderedlist>
                     <listitem>
                       <para>The path doesn't contain any prefix of type
                       "classpath:", "jar:" or "file:", we assume that the file
@@ -590,6 +666,148 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
                           <listitem>
                             <para>A file exists at
                             <emphasis>${exo-conf-dir}/portal/${portalContainerName}/${externalSettingsPath}</emphasis>,
+                            we will load this file.</para>
+                          </listitem>
+
+                          <listitem>
+                            <para>No file exists at the previous path, we then
+                            assume that the path cans be interpreted by the
+                            <envar>ConfigurationManager</envar>.</para>
+                          </listitem>
+                        </orderedlist></para>
+                    </listitem>
+
+                    <listitem>
+                      <para>The path contains a prefix, we then assume that
+                      the path cans be interpreted by the
+                      <envar>ConfigurationManager</envar>.</para>
+                    </listitem>
+                  </orderedlist></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+
+        <table>
+          <title>Descriptions of the fields of
+          <envar>PortalContainerDefinition</envar> when it is used to define
+          the default portal container</title>
+
+          <tgroup cols="2">
+            <tbody>
+              <row>
+                <entry>name</entry>
+
+                <entry>The name of the portal container. This field is
+                optional. The default portal name will be:<orderedlist>
+                    <listitem>
+                      <para>If this field is not empty, then the default value
+                      will be the value of this field.</para>
+                    </listitem>
+
+                    <listitem>
+                      <para>If this field is empty and the value of the
+                      parameter <emphasis>default.portal.container</emphasis>
+                      is not empty, then the default value will be the value
+                      of the parameter.</para>
+                    </listitem>
+
+                    <listitem>
+                      <para>If this field and the parameter
+                      <emphasis>default.portal.container</emphasis> are both
+                      empty, the default value will be
+                      <emphasis>"portal".</emphasis></para>
+                    </listitem>
+                  </orderedlist></entry>
+              </row>
+
+              <row>
+                <entry>restContextName</entry>
+
+                <entry>The name of the context name of the rest web
+                application. This field is optional. The default value wil
+                be:<orderedlist>
+                    <listitem>
+                      <para>If this field is not empty, then the default value
+                      will be the value of this field.</para>
+                    </listitem>
+
+                    <listitem>
+                      <para>f this field is empty and the value of the
+                      parameter <emphasis>default.rest.context</emphasis> is
+                      not empty, then the default value will be the value of
+                      the parameter.</para>
+                    </listitem>
+
+                    <listitem>
+                      <para>f this field and the parameter
+                      <emphasis>default.rest.context</emphasis> are both
+                      empty, the default value will be
+                      <emphasis>"rest".</emphasis></para>
+                    </listitem>
+                  </orderedlist></entry>
+              </row>
+
+              <row>
+                <entry>realmName</entry>
+
+                <entry>The name of the realm. This field is optional. The
+                default value wil be:<orderedlist>
+                    <listitem>
+                      <para>If this field is not empty, then the default value
+                      will be the value of this field.</para>
+                    </listitem>
+
+                    <listitem>
+                      <para>f this field is empty and the value of the
+                      parameter <emphasis>default.realm.name</emphasis> is not
+                      empty, then the default value will be the value of the
+                      parameter.</para>
+                    </listitem>
+
+                    <listitem>
+                      <para>f this field and the parameter
+                      <emphasis>default.realm.name</emphasis> are both empty,
+                      the default value will be
+                      <emphasis>"exo-domain".</emphasis></para>
+                    </listitem>
+                  </orderedlist></entry>
+              </row>
+
+              <row>
+                <entry>dependencies</entry>
+
+                <entry>All the dependencies of the portal container ordered by
+                loading priority. This field is optional. If this field has a
+                non empty value, it will be the default list of
+                dependencies.</entry>
+              </row>
+
+              <row>
+                <entry>settings</entry>
+
+                <entry>A <envar>java.util.Map</envar> of internal parameters
+                that we would like to tie the default portal container. Those
+                parameters could have any type of value. This field is
+                optional.</entry>
+              </row>
+
+              <row>
+                <entry>externalSettingsPath</entry>
+
+                <entry>The path of the external properties file to load as
+                default settings to the default portal container. This field
+                is optional. The external properties files can be either of
+                type "properties" or of type "xml". The path will be
+                interpreted as follows:<orderedlist>
+                    <listitem>
+                      <para>The path doesn't contain any prefix of type
+                      "classpath:", "jar:" or "file:", we assume that the file
+                      could be externalized so we apply the following
+                      rules:<orderedlist>
+                          <listitem>
+                            <para>A file exists at
+                            <emphasis>${exo-conf-dir}/portal/${externalSettingsPath}</emphasis>,
                             we will load this file.</para>
                           </listitem>
 
@@ -739,11 +957,34 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
 &lt;/configuration&gt;</programlisting></para>
 
         <para>In the properties file corresponding to the external settings,
-        you can reuse variables previously defined to create a new variable.
-        In this case the prefix "<emphasis>portal.container.</emphasis>" is
-        not needed, see an example below:<programlisting>my-var1=value 1
+        you can reuse variables previously defined (in the external settings
+        or in the internal settings) to create a new variable. In this case
+        the prefix "<emphasis>portal.container.</emphasis>" is not needed, see
+        an example below:<programlisting>my-var1=value 1
 my-var2=value 2
-complex-value=${my-var1}-${my-var2}</programlisting> </para>
+complex-value=${my-var1}-${my-var2}</programlisting></para>
+
+        <para>In the external and internal settings, you can also use create
+        variables based on value of System paramaters. The System parameters
+        can either be defined at launch time or thanks to the
+        <envar>PropertyConfigurator</envar> (see next section for more
+        details). See an example below:</para>
+
+        <programlisting>temp-dir=${java.io.tmpdir}${file.separator}my-temp</programlisting>
+
+        <para>However, for the internal settings you can use System parameters
+        only to define settings of type
+        <envar>java.lang.String</envar>.</para>
+
+        <para>It cans be also very usefull to define a generic variable in the
+        settings of the default portal container, the value of this variable
+        will change according to the current portal container. See below an
+        example:<programlisting>my-generic-var=value of the portal container "${name}"</programlisting></para>
+
+        <para>If this variable is defined at the default portal container
+        level, the value of this variable for a portal container called
+        <emphasis>"foo"</emphasis> will be <emphasis>value of the portal
+        container "foo"</emphasis>.</para>
       </section>
     </section>
   </section>
