@@ -448,6 +448,7 @@
     <module>exo.jcr.framework.web</module>
     <module>exo.jcr.framework.ftpclient</module>
     <module>applications</module>
+    <module>docs</module>
     <module>packaging/module</module>
   </modules>
 </project>
