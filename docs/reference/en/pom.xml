@@ -59,12 +59,12 @@
                <dependency>
                   <groupId>org.exoplatform.doc</groupId>
                   <artifactId>exo-docbook-xslt</artifactId>
-                  <version>1.0.0-SNAPSHOT</version>
+                  <version>1</version>
                </dependency>
                <dependency>
                   <groupId>org.exoplatform.doc</groupId>
                   <artifactId>exo-jdocbook-style</artifactId>
-                  <version>1.0.0-SNAPSHOT</version>
+                  <version>1</version>
                   <type>jdocbook-style</type>
                </dependency>
                <!-- dependency>
