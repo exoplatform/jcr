@@ -24,6 +24,7 @@ import org.exoplatform.services.jcr.dataflow.serialization.UnknownClassIdExcepti
 import org.exoplatform.services.jcr.impl.dataflow.AbstractPersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.ByteArrayPersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.FilePersistedValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 
@@ -118,14 +119,14 @@ public class PersistedValueDataReader
             // TODO optimize writeToFile - use channels or streams
             writeToFile(in, sf, length);
             holder.put(id, sf);
-            return new FilePersistedValueData(orderNumber, sf);
+            return new StreamPersistedValueData(orderNumber, sf);
          }
          else
          {
             sf.acquire(this); // TODO workaround for AsyncReplication test
             try
             {
-               AbstractPersistedValueData vd = new FilePersistedValueData(orderNumber, sf);
+               AbstractPersistedValueData vd = new StreamPersistedValueData(orderNumber, sf);
 
                // skip data in input stream
                if (in.skip(length) != length)

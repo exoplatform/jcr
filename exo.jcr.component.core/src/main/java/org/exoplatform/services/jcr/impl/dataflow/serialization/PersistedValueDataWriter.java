@@ -22,8 +22,10 @@ import org.exoplatform.services.jcr.dataflow.serialization.ObjectWriter;
 import org.exoplatform.services.jcr.dataflow.serialization.SerializationConstants;
 import org.exoplatform.services.jcr.impl.dataflow.AbstractPersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.FilePersistedValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -67,7 +69,16 @@ public class PersistedValueDataWriter
          // write file content
          FilePersistedValueData streamed = (FilePersistedValueData)vd;
 
-         InputStream in = streamed.getAsStream();
+         InputStream in = null;
+         
+         if (streamed.getFile() == null && vd instanceof StreamPersistedValueData)
+         {
+            in = new FileInputStream(((StreamPersistedValueData)vd).getTempFile());
+         }
+         else
+         {
+           in = streamed.getAsStream();
+         }
 
          // TODO optimize it, use channels
          if (streamed.getFile() instanceof SerializationSpoolFile)
