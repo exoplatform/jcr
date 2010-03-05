@@ -22,7 +22,6 @@ import org.exoplatform.services.jcr.dataflow.ChangesLogIterator;
 import org.exoplatform.services.jcr.dataflow.CompositeChangesLog;
 import org.exoplatform.services.jcr.dataflow.DataManager;
 import org.exoplatform.services.jcr.dataflow.ItemState;
-import org.exoplatform.services.jcr.dataflow.PairChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
 import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
@@ -48,7 +47,7 @@ import javax.jcr.RepositoryException;
  * mix:versionable
  * 
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov</a>
- * @version $Id$
+ * @version $Id$ * @version $Id: VersionableWorkspaceDataManager.java 1518 2010-01-20 23:33:30Z
  */
 
 public class VersionableWorkspaceDataManager extends ACLInheritanceSupportedWorkspaceDataManager
@@ -83,7 +82,7 @@ public class VersionableWorkspaceDataManager extends ACLInheritanceSupportedWork
          return versionDataManager.getChildNodesData(nodeData);
       }
       return super.getChildNodesData(nodeData);
-   } 
+   }
 
    /**
     * {@inheritDoc}
@@ -210,8 +209,9 @@ public class VersionableWorkspaceDataManager extends ACLInheritanceSupportedWork
                // we have pair of logs for system and non-system (this) workspaces
                final String pairId = IdGenerator.generate();
 
-               versionLogs.addLog(new PairChangesLog(vstates, changes.getSessionId(), changes.getEventType(), pairId));
-               nonVersionLogs.addLog(new PairChangesLog(nvstates, changes.getSessionId(), changes.getEventType(),
+               versionLogs.addLog(new PlainChangesLogImpl(vstates, changes.getSessionId(), changes.getEventType(),
+                  pairId));
+               nonVersionLogs.addLog(new PlainChangesLogImpl(nvstates, changes.getSessionId(), changes.getEventType(),
                   pairId));
             }
             else
