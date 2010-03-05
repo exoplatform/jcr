@@ -103,11 +103,9 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
           <configuration>
-            <includes>
-              <include>**/Test*</include>
-            </includes>
             <excludes>
               <exclude>**/TestUtils.java</exclude>
+              <exclude>**/OrderPatchTest.java</exclude>
               <!-- Related issue: http://jira.exoplatform.org/browse/JCR-1149 -->
               <exclude>**/TestEncoding.java</exclude>
               <exclude>**/TestPropFindContent.java</exclude>

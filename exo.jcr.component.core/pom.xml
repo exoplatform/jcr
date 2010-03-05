@@ -676,7 +676,6 @@
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
               <phase>test</phase>
-              <forkMode>${exo.test.forkMode}</forkMode>
               <!-- argLine>${env.MAVEN_OPTS}</argLine -->
               <goals>
                 <goal>test</goal>

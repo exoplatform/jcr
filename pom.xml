@@ -426,9 +426,6 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
           <configuration>
-            <includes>
-              <include>**/${exo.test.includes}.java</include>
-            </includes>
             <excludes>
               <exclude>**/ftpclient/**/*.java</exclude>
               <exclude>**/TestCleanableFileStreamValueData.java</exclude>
