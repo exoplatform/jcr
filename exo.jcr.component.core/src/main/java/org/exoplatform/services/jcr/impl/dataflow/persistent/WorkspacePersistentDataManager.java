@@ -271,7 +271,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
 
       protected PlainChangesLogImpl save(PlainChangesLog changesLog) throws InvalidItemStateException,
          RepositoryException, IOException
-      { //LOG.info(changesLog.dump())
+      { 
          // copy state
          PlainChangesLogImpl newLog =
             new PlainChangesLogImpl(new ArrayList<ItemState>(), changesLog.getSessionId(), changesLog.getEventType(),
@@ -367,7 +367,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
                   prevState.isInternallyCreated(), prevState.isPersisted());
 
             newLog.add(itemState);
-
+            
             // save state
             if (itemState.isPersisted())
             {
