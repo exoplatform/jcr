@@ -198,7 +198,7 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
       FIND_REFERENCE_PROPERTIES_CQ =
          "select P.ID, P.PARENT_ID, P.VERSION, P.P_TYPE, P.P_MULTIVALUED, P.NAME, V.ORDER_NUM, V.DATA, V.STORAGE_DESC"
             + " from JCR_SREF R, JCR_SITEM P, JCR_SVALUE V"
-            + " where R.NODE_ID=? and P.CONTAINER_NAME=? and P.ID=R.PROPERTY_ID and P.I_CLASS=2 and V.PROPERTY_ID=P.ID order by P.ID, V.ORDER_NUM";
+            + " where R.NODE_ID=? and P.CONTAINER_NAME=? and P.ID=R.PROPERTY_ID and P.I_CLASS=2 and V.PROPERTY_ID=P.ID order by R.PROPERTY_ID";
 
       FIND_VALUES_BY_PROPERTYID =
          "select PROPERTY_ID, ORDER_NUM, DATA, STORAGE_DESC from JCR_SVALUE where PROPERTY_ID=? order by ORDER_NUM";
@@ -214,12 +214,12 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
          "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA"
             + " from JCR_SITEM I, JCR_SITEM P, JCR_SVALUE V"
             + " where I.CONTAINER_NAME=? and I.PARENT_ID=? and I.I_CLASS=1 and (P.CONTAINER_NAME=? and P.PARENT_ID=I.ID and P.I_CLASS=2 and (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions') and V.PROPERTY_ID=P.ID)"
-            + " order by I.N_ORDER_NUM, I.ID, PROP_NAME DESC, V.ORDER_NUM";
+            + " order by I.N_ORDER_NUM, I.ID";
 
       FIND_NODE_MAIN_PROPERTIES_BY_PARENTID_CQ =
-         "select I.NAME, V.DATA"
+         "select I.NAME, V.DATA, V.ORDER_NUM"
             + " from JCR_SITEM I, JCR_SVALUE V"
-            + " where I.I_CLASS=2 and I.CONTAINER_NAME=? and I.PARENT_ID=? and (I.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or I.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions') and I.ID=V.PROPERTY_ID order by V.ORDER_NUM";
+            + " where I.I_CLASS=2 and I.CONTAINER_NAME=? and I.PARENT_ID=? and (I.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or I.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions') and I.ID=V.PROPERTY_ID";
 
       FIND_ITEM_QPATH_BY_ID_CQ =
          "select I.ID, I.PARENT_ID, I.NAME, I.I_INDEX"
@@ -235,7 +235,7 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
       FIND_PROPERTIES_BY_PARENTID_CQ =
          "select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_CLASS, I.I_INDEX, I.N_ORDER_NUM, I.P_TYPE, I.P_MULTIVALUED, V.ORDER_NUM,"
             + " V.DATA, V.STORAGE_DESC from JCR_SITEM I LEFT OUTER JOIN JCR_SVALUE V ON (V.PROPERTY_ID=I.ID)"
-            + " where I.I_CLASS=2 and CONTAINER_NAME=? and I.PARENT_ID=? order by I.ID, V.ORDER_NUM";
+            + " where I.I_CLASS=2 and CONTAINER_NAME=? and I.PARENT_ID=? order by I.ID";
 
       INSERT_NODE =
          "insert into JCR_SITEM(ID, PARENT_ID, NAME, CONTAINER_NAME, VERSION, I_CLASS, I_INDEX, N_ORDER_NUM) VALUES(?,?,?,?,?,"
