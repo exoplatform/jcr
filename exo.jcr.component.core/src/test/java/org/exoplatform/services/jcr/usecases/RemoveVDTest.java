@@ -82,6 +82,8 @@ public class RemoveVDTest extends BaseUsecasesTest
       }
 
       or.close();
+      // Imitation save
+      ((StreamPersistedValueData) vd1).setPersistedFile(((StreamPersistedValueData) vd1).getTempFile());
 
       // read second time
       or = new ObjectReaderImpl(new FileInputStream(serf));
@@ -96,6 +98,8 @@ public class RemoveVDTest extends BaseUsecasesTest
          fail(e.getMessage());
       }
       or.close();
+      // Imitation save
+      ((StreamPersistedValueData) vd2).setPersistedFile(((StreamPersistedValueData) vd2).getTempFile());
 
       assertTrue(vd1.getFile().exists());
       assertTrue(vd2.getFile().exists());
