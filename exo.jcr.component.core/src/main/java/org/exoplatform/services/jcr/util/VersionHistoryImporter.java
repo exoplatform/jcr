@@ -132,12 +132,6 @@ public class VersionHistoryImporter
    {
       String path = versionableNode.getVersionHistory().getParent().getPath();
 
-      if (versionableNode.getVersionHistory().getParent().hasNode(versionHistory))
-      {
-         throw new RepositoryException("Can't import version history for node with identifier '" + versionHistory
-            + "', because it already exists in version storage.");
-      }
-
       NodeData versionable = (NodeData)versionableNode.getData();
       // ----- VERSIONABLE properties -----
       // jcr:versionHistory
@@ -177,9 +171,9 @@ public class VersionHistoryImporter
       changesLogDeltete.add(ItemState
          .createDeletedState(((PropertyImpl)versionableNode.getProperty("jcr:predecessors")).getData()));
       dataKeeper.save(changesLogDeltete);
-      userSession.save();
       // remove version history
       dataKeeper.save(changesLog);
+      userSession.save();
       // import new version history
       userSession.getWorkspace().importXML(path, versionHistoryStream, 0);
       userSession.save();

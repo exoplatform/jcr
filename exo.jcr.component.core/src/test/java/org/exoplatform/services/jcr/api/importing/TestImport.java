@@ -34,21 +34,29 @@ import org.exoplatform.services.security.Identity;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
 
 import javax.jcr.ImportUUIDBehavior;
 import javax.jcr.Node;
+import javax.jcr.NodeIterator;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Value;
 import javax.jcr.ValueFormatException;
+import javax.jcr.query.Query;
+import javax.jcr.query.QueryManager;
+import javax.jcr.query.QueryResult;
 import javax.jcr.util.TraversingItemVisitor;
+import javax.jcr.version.Version;
 
 /**
  * Created by The eXo Platform SAS.
@@ -64,6 +72,8 @@ public class TestImport extends AbstractImportTest
    private final Log log = ExoLogger.getLogger("jcr.TestImport");
 
    private final Random random;
+
+   private List<String> versionList = new ArrayList<String>();
 
    // private List<String> versionList = new ArrayList<String>();
 
@@ -738,6 +748,106 @@ public class TestImport extends AbstractImportTest
       session1.save();
    }
 
+   public void testImportAndExport() throws Exception
+   {
+      Node aaa = root.addNode("AAA");
+      Node bbb = root.addNode("BBB");
+      Node ccc = root.addNode("CCC");
+      session.save();
+
+      // Export Action
+      ByteArrayOutputStream bos = new ByteArrayOutputStream();
+      aaa.getSession().exportDocumentView(aaa.getPath(), bos, false, false);
+      ByteArrayInputStream is = new ByteArrayInputStream(bos.toByteArray());
+      bbb.getSession().importXML(bbb.getPath(), is, 1);
+      session.save();
+
+      String[] paths = new String[]{"AAA", "BBB", "BBB/AAA"};
+      for (String path : paths)
+      {
+         if (bbb.hasNode(path))
+         {
+         }
+      }
+
+      Node hello = aaa.addNode("hello", "exo:article");
+      hello.setProperty("exo:title", "hello");
+      hello.addMixin("mix:versionable");
+      session.save();
+
+      Version version = hello.checkin();
+      hello.checkout();
+
+      session.save();
+
+      /**
+       * Before import this node has one version
+       */
+      Version rootVersion = hello.getVersionHistory().getRootVersion();
+      getListVersion(rootVersion);
+      assertEquals(1, versionList.size());
+
+      // Export VersionHistory
+      InputStream inputVersion = null;
+      if (hello.isNodeType("mix:versionable"))
+      {
+         ByteArrayOutputStream bosVersion = new ByteArrayOutputStream();
+         hello.getSession().exportDocumentView(hello.getVersionHistory().getPath(), bosVersion, false, false);
+         inputVersion = new ByteArrayInputStream(bosVersion.toByteArray());
+      }
+      String versionHistory = hello.getProperty("jcr:versionHistory").getValue().getString();
+      String baseVersion = hello.getProperty("jcr:baseVersion").getValue().getString();
+      Value[] jcrPredecessors = hello.getProperty("jcr:predecessors").getValues();
+      String[] predecessorsHistory;
+      StringBuilder jcrPredecessorsBuilder = new StringBuilder();
+      for (Value value : jcrPredecessors)
+      {
+         if (jcrPredecessorsBuilder.length() > 0)
+            jcrPredecessorsBuilder.append(",");
+         jcrPredecessorsBuilder.append(value.getString());
+      }
+      if (jcrPredecessorsBuilder.toString().indexOf(",") > -1)
+      {
+         predecessorsHistory = jcrPredecessorsBuilder.toString().split(",");
+      }
+      else
+      {
+         predecessorsHistory = new String[]{jcrPredecessorsBuilder.toString()};
+      }
+
+      // Export Action
+      ByteArrayOutputStream bosHello = new ByteArrayOutputStream();
+      hello.getSession().exportDocumentView(hello.getPath(), bosHello, false, false);
+      ByteArrayInputStream isHello = new ByteArrayInputStream(bosHello.toByteArray());
+      // Remove node "/aaa/hello" and it's version history, before importing it
+      // again!
+      // hello.remove();
+      session.save();
+      ccc.getSession().importXML(ccc.getPath(), isHello, 1);
+      session.save();
+
+      /**
+       * Import VersionHistory After import version history, the node has no
+       * version Errors: Lose version when import version history
+       */
+      Node helloImport = (Node)session.getItem("/CCC/hello");
+      importHistory((NodeImpl)helloImport, inputVersion, baseVersion, predecessorsHistory, versionHistory);
+      // versionList.clear();
+      // Version rootVersionImport =
+      // helloImport.getVersionHistory().getRootVersion();
+      // getListVersion(rootVersionImport);
+      // assertEquals(1, versionList.size());
+
+      aaa = root.getNode("AAA");
+      bbb = root.getNode("BBB");
+      ccc = root.getNode("CCC");
+
+      aaa.remove();
+      bbb.remove();
+      ccc.remove();
+      session.save();
+   }
+
    private String dumpVersionable(Node versionableNode) throws RepositoryException
    {
       String result;
@@ -857,6 +967,37 @@ public class TestImport extends AbstractImportTest
             this.predecessorsHistory[i] = jcrPredecessors[i].getString();
          }
 
+      }
+   }
+
+   private void importHistory(NodeImpl versionableNode, InputStream versionHistoryStream, String baseVersionUuid,
+      String[] predecessors, String versionHistory) throws RepositoryException, IOException
+   {
+      VersionHistoryImporter versionHistoryImporter =
+         new VersionHistoryImporter(versionableNode, versionHistoryStream, baseVersionUuid, predecessors,
+            versionHistory);
+      versionHistoryImporter.doImport();
+   }
+
+   public void getListVersion(Version version)
+   {
+      try
+      {
+         String uuid = version.getUUID();
+         QueryManager queryManager = session.getWorkspace().getQueryManager();
+         Query query =
+            queryManager.createQuery("//element(*, nt:version)[@jcr:predecessors='" + uuid + "']", Query.XPATH);
+         QueryResult queryResult = query.execute();
+         NodeIterator iterate = queryResult.getNodes();
+         while (iterate.hasNext())
+         {
+            Version version1 = (Version)iterate.nextNode();
+            versionList.add(version1.getUUID());
+            getListVersion(version1);
+         }
+      }
+      catch (Exception e)
+      {
       }
    }
 }
