@@ -70,7 +70,7 @@ public class TreeFile extends File
          if (fp.isDirectory())
          {
             String[] ls = fp.list();
-            if (ls.length <= 0)
+            if (ls != null && ls.length <= 0)
             {
                if (res = fp.delete())
                {
