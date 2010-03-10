@@ -28,7 +28,6 @@ import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
-import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.ByteArrayPersistedValueData;
@@ -55,7 +54,6 @@ import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
-import javax.jcr.InvalidItemStateException;
 import javax.jcr.RepositoryException;
 
 /**
@@ -91,11 +89,6 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
     * FIND_REFERENCE_PROPERTIES_CQ.
     */
    protected String FIND_REFERENCE_PROPERTIES_CQ;
-
-   /**
-    * FIND_ITEM_QPATH_BY_ID_CQ.
-    */
-   protected String FIND_ITEM_QPATH_BY_ID_CQ;
 
    /**
     * The comparator used to sort the value data
@@ -730,84 +723,6 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
          throw new RepositoryException(e);
       }
    }
-
-   /**
-    * {@inheritDoc} 
-    */
-   @Override
-   protected QPath traverseQPath(String cpid) throws SQLException, InvalidItemStateException, IllegalNameException
-   {
-      String id = getIdentifier(cpid);
-      if (id.equals(Constants.ROOT_UUID))
-      {
-         return Constants.ROOT_PATH;
-      }
-      // get item by Identifier usecase
-      List<QPathEntry> qrpath = new ArrayList<QPathEntry>(); // reverted path
-      String caid = cpid; // container ancestor id
-      boolean isRoot = false;
-      do
-      {
-         ResultSet result = null;
-         try
-         {
-            result = findItemQPathByIdentifierCQ(caid);
-            if (!result.next())
-               throw new InvalidItemStateException("Parent not found, uuid: " + getIdentifier(caid));
-
-            QPathEntry qpe1 =
-               new QPathEntry(InternalQName.parse(result.getString(COLUMN_NAME)), result.getInt(COLUMN_INDEX));
-            boolean isChild = caid.equals(result.getString(COLUMN_ID));
-            caid = result.getString(COLUMN_PARENTID);
-            if (result.next())
-            {
-               QPathEntry qpe2 =
-                  new QPathEntry(InternalQName.parse(result.getString(COLUMN_NAME)), result.getInt(COLUMN_INDEX));
-               if (isChild)
-               {
-                  // The child is the first result then we have the parent
-                  qrpath.add(qpe1);
-                  qrpath.add(qpe2);
-                  // We need to take the value of the parent node
-                  caid = result.getString(COLUMN_PARENTID);
-               }
-               else
-               {
-                  // The parent is the first result then we have the child
-                  qrpath.add(qpe2);
-                  qrpath.add(qpe1);
-               }
-            }
-            else
-            {
-               qrpath.add(qpe1);
-            }
-         }
-         finally
-         {
-            result.close();
-         }
-         if (caid.equals(Constants.ROOT_PARENT_UUID) || (id = getIdentifier(caid)).equals(Constants.ROOT_UUID))
-         {
-            if (id.equals(Constants.ROOT_UUID))
-            {
-               qrpath.add(Constants.ROOT_PATH.getEntries()[0]);
-            }
-            isRoot = true;
-         }
-      }
-      while (!isRoot);
-
-      QPathEntry[] qentries = new QPathEntry[qrpath.size()];
-      int qi = 0;
-      for (int i = qrpath.size() - 1; i >= 0; i--)
-      {
-         qentries[qi++] = qrpath.get(i);
-      }
-      return new QPath(qentries);
-   }
-
-   protected abstract ResultSet findItemQPathByIdentifierCQ(String identifier) throws SQLException;
 
    protected abstract ResultSet findChildNodesByParentIdentifierCQ(String parentIdentifier) throws SQLException;
 
