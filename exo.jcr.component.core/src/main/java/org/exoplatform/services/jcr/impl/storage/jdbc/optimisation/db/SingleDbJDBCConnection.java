@@ -225,12 +225,12 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
          "select count(ID) from JCR_SITEM" + " where I_CLASS=1 and CONTAINER_NAME=? and PARENT_ID=?";
 
       FIND_PROPERTIES_BY_PARENTID =
-         "select * from JCR_SITEM" + " where I_CLASS=2 and CONTAINER_NAME=? and PARENT_ID=?" + " order by ID";
+         "select * from JCR_SITEM" + " where I_CLASS=2 and CONTAINER_NAME=? and PARENT_ID=?" + " order by NAME";
 
       FIND_PROPERTIES_BY_PARENTID_CQ =
          "select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_CLASS, I.I_INDEX, I.N_ORDER_NUM, I.P_TYPE, I.P_MULTIVALUED, V.ORDER_NUM,"
             + " V.DATA, V.STORAGE_DESC from JCR_SITEM I LEFT OUTER JOIN JCR_SVALUE V ON (V.PROPERTY_ID=I.ID)"
-            + " where I.I_CLASS=2 and CONTAINER_NAME=? and I.PARENT_ID=? order by I.ID";
+            + " where I.I_CLASS=2 and CONTAINER_NAME=? and I.PARENT_ID=? order by I.NAME";
 
       INSERT_NODE =
          "insert into JCR_SITEM(ID, PARENT_ID, NAME, CONTAINER_NAME, VERSION, I_CLASS, I_INDEX, N_ORDER_NUM) VALUES(?,?,?,?,?,"
