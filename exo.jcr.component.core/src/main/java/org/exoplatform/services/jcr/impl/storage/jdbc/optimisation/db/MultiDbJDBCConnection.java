@@ -213,11 +213,6 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
             + " from JCR_MITEM I, JCR_MVALUE V"
             + " where I.I_CLASS=2 and I.PARENT_ID=? and (I.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or I.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions') and I.ID=V.PROPERTY_ID order by V.ORDER_NUM";
 
-      FIND_ITEM_QPATH_BY_ID_CQ =
-         "select I.ID, I.PARENT_ID, I.NAME, I.I_INDEX"
-            + " from JCR_MITEM I, (SELECT ID, PARENT_ID from JCR_MITEM where ID=?) J"
-            + " where I.ID = J.ID or I.ID = J.PARENT_ID";
-
       FIND_NODES_COUNT_BY_PARENTID = "select count(ID) from JCR_MITEM" + " where I_CLASS=1 and PARENT_ID=?";
 
       FIND_PROPERTIES_BY_PARENTID = "select * from JCR_MITEM" + " where I_CLASS=2 and PARENT_ID=?" + " order by ID";
@@ -649,21 +644,6 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
 
       findNodeMainPropertiesByParentIdentifierCQ.setString(1, parentIdentifier);
       return findNodeMainPropertiesByParentIdentifierCQ.executeQuery();
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected ResultSet findItemQPathByIdentifierCQ(String identifier) throws SQLException
-   {
-      if (findItemQPathByIdentifierCQ == null)
-         findItemQPathByIdentifierCQ = dbConnection.prepareStatement(FIND_ITEM_QPATH_BY_ID_CQ);
-      else
-         findItemQPathByIdentifierCQ.clearParameters();
-
-      findItemQPathByIdentifierCQ.setString(1, identifier);
-      return findItemQPathByIdentifierCQ.executeQuery();
    }
 
    /**
