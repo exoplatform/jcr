@@ -365,6 +365,11 @@
               <name>emma.coverage.out.file</name>
               <value>target/emma/coverage.ec</value>
             </property>
+            <!-- Uncomment the line below if you want to enable the statistics -->
+            <!--property>
+                <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
+                <value>true</value>
+            </property-->            
           </systemProperties>
           <includes>
             <include>org/exoplatform/services/jcr/api/**/Test*.java</include>
@@ -547,6 +552,11 @@
                               org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testVersion
                               org.apache.jackrabbit.test.api.NamespaceRegistryTest#testRegisterNamespace</value>
                 </property>
+                <!-- Uncomment the line below if you want to enable the statistics -->
+                <!--property>
+                  <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
+                  <value>true</value>
+                </property-->                
               </systemProperties>
               <includes>
                 <include>org/apache/jackrabbit/test/api/*Test.java</include>
@@ -614,6 +624,11 @@
                               org.apache.jackrabbit.test.api.nodetype.PredefinedNodeTypeTest#testVersion
                               org.apache.jackrabbit.test.api.NamespaceRegistryTest#testRegisterNamespace</value>
                 </property>
+                <!-- Uncomment the line below if you want to enable the statistics -->
+                <!--property>
+                  <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
+                  <value>true</value>
+                </property-->                  
               </systemProperties>
               <includes>
                 <!-- From default tests -->
@@ -685,6 +700,11 @@
                   <name>jcr.test.configuration.file</name>
                   <value>${jcr.test.configuration.file}</value>
                 </property>
+                <!-- Uncomment the line below if you want to enable the statistics -->
+                <!--property>
+                  <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
+                  <value>true</value>
+                </property-->                  
               </systemProperties>
               <includes>
                 <include>**/**/reading_/Test*.java</include>

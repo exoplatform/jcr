@@ -27,10 +27,11 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.db.HSQLDBConnectionFactory
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.MySQLConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.OracleConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.WorkspaceStorageConnectionFactory;
-import org.exoplatform.services.jcr.impl.storage.jdbc.init.StorageDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.IngresSQLDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.OracleDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.PgSQLDBInitializer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.init.StorageDBInitializer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.statistics.StatisticsJDBCStorageConnection;
 import org.exoplatform.services.jcr.impl.storage.jdbc.update.StorageUpdateManager;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerException;
@@ -64,6 +65,18 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
 
    protected static final Log LOG = ExoLogger.getLogger("jcr.JDBCWorkspaceDataContainer");
 
+   /**
+    * Indicates if the statistics has to be enabled.
+    */
+   public static final boolean STATISTICS_ENABLED = Boolean.valueOf(System.getProperty("JDBCWorkspaceDataContainer.statistics.enabled"));
+   static
+   {
+      if (STATISTICS_ENABLED)
+      {
+         LOG.info("The statistics of the component JDBCWorkspaceDataContainer has been enabled");
+      }
+   }
+   
    //configuration params
 
    public final static String SOURCE_NAME = "source-name";
@@ -724,8 +737,12 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     */
    public WorkspaceStorageConnection openConnection() throws RepositoryException
    {
-
-      return connFactory.openConnection();
+      WorkspaceStorageConnection con = connFactory.openConnection();
+      if (STATISTICS_ENABLED)
+      {
+         con = new StatisticsJDBCStorageConnection(con);
+      }
+      return con;
    }
 
    /**
@@ -733,8 +750,12 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     */
    public WorkspaceStorageConnection openConnection(boolean readOnly) throws RepositoryException
    {
-
-      return connFactory.openConnection(readOnly);
+      WorkspaceStorageConnection con = connFactory.openConnection(readOnly);
+      if (STATISTICS_ENABLED)
+      {
+         con = new StatisticsJDBCStorageConnection(con);
+      }
+      return con;
    }
 
    /**
@@ -742,14 +763,18 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     */
    public WorkspaceStorageConnection reuseConnection(WorkspaceStorageConnection original) throws RepositoryException
    {
-
+      if (original instanceof StatisticsJDBCStorageConnection)
+      {
+         original = ((StatisticsJDBCStorageConnection)original).getNestedWorkspaceStorageConnection();
+      }
+      
       if (original instanceof JDBCStorageConnection)
       {
          WorkspaceStorageConnectionFactory cFactory =
             new SharedConnectionFactory(((JDBCStorageConnection)original).getJdbcConnection(), containerName, multiDb,
                valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
 
-         return cFactory.openConnection();
+         return STATISTICS_ENABLED ? new StatisticsJDBCStorageConnection(cFactory.openConnection()) : cFactory.openConnection();
       }
       else
       {
