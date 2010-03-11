@@ -52,4 +52,8 @@
   <xi:include href="jcr/transaction-manager-lookup.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
+  <!-- statistics configs -->
+
+  <xi:include href="jcr/statistics.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
 </part>

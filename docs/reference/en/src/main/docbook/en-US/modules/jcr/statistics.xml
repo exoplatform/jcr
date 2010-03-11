@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter>
+  <title>eXo JCR statistics</title>
+
+  <section>
+    <title>Statistics on the Database Access Layer</title>
+
+    <para>In order to have a better idea of the time spent into the database
+    access layer, it cans be interesting to get some statistics on that part
+    of the code, knowing that most of the time spent into eXo JCR is mainly
+    the database access. This statistics will then allow you to identify
+    without using any profiler what is anormally slow in this layer, which
+    could help to fix the problem quickly.</para>
+
+    <para>In case you use
+    <envar>org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer</envar>
+    or
+    <envar>org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer</envar>
+    as <envar>WorkspaceDataContainer</envar>, you can get statistics on the
+    time spent into the database access layer. The database access layer (in
+    eXo JCR) is represented by the methods of the interface
+    <envar>org.exoplatform.services.jcr.storage.WorkspaceStorageConnection</envar>,
+    so for all the methods defined in this interface, we can have the
+    following figures: </para>
+
+    <itemizedlist>
+      <listitem>
+        <para>The minimum time spent into the method.</para>
+      </listitem>
+
+      <listitem>
+        <para>The maximum time spent into the method.</para>
+      </listitem>
+
+      <listitem>
+        <para>The average time spent into the method.</para>
+      </listitem>
+
+      <listitem>
+        <para>The total amount of time spent into the method.</para>
+      </listitem>
+
+      <listitem>
+        <para>The total amount of times the method has been called.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Those figures are also available globaly for all the methods which
+    gives us the global behavior of this layer.</para>
+
+    <para>If you want to enable the statistics, you just need to set the JVM
+    parameter called
+    <emphasis>JDBCWorkspaceDataContainer.statistics.enabled</emphasis> to
+    <emphasis>true</emphasis>. This will then create at startup a file called
+    <emphasis>StatisticsJDBCStorageConnection-${creation-timestamp}.csv</emphasis>
+    into the user directory if it is possible otherwise it will create it into
+    the temporary directory. The format of this file is <envar>CSV</envar>
+    (i.e. Comma-Seperated Values), one new line will be added every 5 seconds
+    and one last line will be added at JVM exit. Each line, will be composed
+    of the 5 figures described above for each method and globaly for all the
+    methods.</para>
+
+    <para>The format of each column header is
+    ${method-alias}-${metric-alias}.</para>
+
+    <table>
+      <title>Method Alias</title>
+
+      <tgroup cols="2">
+        <tbody>
+          <row>
+            <entry>global</entry>
+
+            <entry>This is the alias for all the methods.</entry>
+          </row>
+
+          <row>
+            <entry>getItemDataById</entry>
+
+            <entry>This is the alias for the method
+            <emphasis>getItemData(String identifier).</emphasis></entry>
+          </row>
+
+          <row>
+            <entry>getItemDataByNodeDataNQPathEntry</entry>
+
+            <entry>This is the alias for the method
+            <emphasis>getItemData(NodeData parentData, QPathEntry
+            name).</emphasis></entry>
+          </row>
+
+          <row>
+            <entry>getChildNodesData</entry>
+
+            <entry>This is the alias for the method
+            <emphasis>getChildNodesData(NodeData parent).</emphasis></entry>
+          </row>
+
+          <row>
+            <entry>getChildNodesCount</entry>
+
+            <entry>This is the alias for the method
+            <emphasis>getChildNodesCount(NodeData parent).</emphasis></entry>
+          </row>
+
+          <row>
+            <entry>getChildPropertiesData</entry>
+
+            <entry>This is the alias for the method
+            <emphasis>getChildPropertiesData(NodeData
+            parent).</emphasis></entry>
+          </row>
+
+          <row>
+            <entry>listChildPropertiesData</entry>
+
+            <entry>This is the alias for the method
+            <emphasis>listChildPropertiesData(NodeData
+            parent).</emphasis></entry>
+          </row>
+
+          <row>
+            <entry>getReferencesData</entry>
+
+            <entry>This is the alias for the method
+            <emphasis>getReferencesData(String
+            nodeIdentifier).</emphasis></entry>
+          </row>
+
+          <row>
+            <entry>commit</entry>
+
+            <entry>This is the alias for the method
+            <emphasis>commit().</emphasis></entry>
+          </row>
+
+          <row>
+            <entry>addNodeData</entry>
+
+            <entry>This is the alias for the method <emphasis>add(NodeData
+            data).</emphasis></entry>
+          </row>
+
+          <row>
+            <entry>addPropertyData</entry>
+
+            <entry>This is the alias for the method <emphasis>add(PropertyData
+            data).</emphasis></entry>
+          </row>
+
+          <row>
+            <entry>updateNodeData</entry>
+
+            <entry>This is the alias for the method <emphasis>update(NodeData
+            data).</emphasis></entry>
+          </row>
+
+          <row>
+            <entry>updatePropertyData</entry>
+
+            <entry>This is the alias for the method
+            <emphasis>update(PropertyData data).</emphasis></entry>
+          </row>
+
+          <row>
+            <entry>deleteNodeData</entry>
+
+            <entry>This is the alias for the method <emphasis>delete(NodeData
+            data).</emphasis></entry>
+          </row>
+
+          <row>
+            <entry>deletePropertyData</entry>
+
+            <entry>This is the alias for the method
+            <emphasis>delete(PropertyData data).</emphasis></entry>
+          </row>
+
+          <row>
+            <entry>renameNodeData</entry>
+
+            <entry>This is the alias for the method <emphasis>rename(NodeData
+            data).</emphasis></entry>
+          </row>
+
+          <row>
+            <entry>rollback</entry>
+
+            <entry>This is the alias for the method
+            <emphasis>rollback().</emphasis></entry>
+          </row>
+
+          <row>
+            <entry>isOpened</entry>
+
+            <entry>This is the alias for the method
+            <emphasis>isOpened().</emphasis></entry>
+          </row>
+
+          <row>
+            <entry>close</entry>
+
+            <entry>This is the alias for the method
+            <emphasis>close().</emphasis></entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+
+    <table>
+      <title>Metric Alias</title>
+
+      <tgroup cols="2">
+        <tbody>
+          <row>
+            <entry>Min</entry>
+
+            <entry>The minimum time spent into the method.</entry>
+          </row>
+
+          <row>
+            <entry>Max</entry>
+
+            <entry>The maximum time spent into the method.</entry>
+          </row>
+
+          <row>
+            <entry>Total</entry>
+
+            <entry>The total amount of time spent into the method.</entry>
+          </row>
+
+          <row>
+            <entry>Avg</entry>
+
+            <entry>The average time spent into the method.</entry>
+          </row>
+
+          <row>
+            <entry>Times</entry>
+
+            <entry>The total amount of times the method has been
+            called.</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </section>
+</chapter>
