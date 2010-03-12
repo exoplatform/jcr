@@ -41,11 +41,11 @@
         </listitem>
 
         <listitem>
-          <para>Ensure that you use JBoss <link
-          linkend="ch_transaction_service">Transaction Service</link> (Arjuna)
-          and JBoss <link linkend="ch-arjuna-tranasction-service">Transaction
-          Manager</link>. Your exo-configuration.xml must contain such
-          parts:</para>
+          <para>Ensure that you use JBossTS <link
+          linkend="ch_transaction_service">Transaction Service</link> and
+          JBossCache <link
+          linkend="ch-jbossts-tranasction-service">Transaction Manager</link>.
+          Your exo-configuration.xml must contain such parts:</para>
 
           <programlisting>&lt;component&gt;
    &lt;key&gt;org.jboss.cache.transaction.TransactionManagerLookup&lt;/key&gt;
@@ -54,7 +54,7 @@
 
 &lt;component&gt;
    &lt;key&gt;org.exoplatform.services.transaction.TransactionService&lt;/key&gt;
-   &lt;type&gt;org.exoplatform.services.transaction.jbosscache.ArjunaTransactionService&lt;/type&gt;
+   &lt;type&gt;org.exoplatform.services.transaction.jbosscache.JBossTransactionsService&lt;/type&gt;
    &lt;init-params&gt;
       &lt;value-param&gt;
          &lt;name&gt;timeout&lt;/name&gt;
