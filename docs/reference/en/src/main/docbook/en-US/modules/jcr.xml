@@ -46,7 +46,7 @@
   <xi:include href="jcr/query-handler-config.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-  <xi:include href="jcr/arjuna-transaction-service.xml"
+  <xi:include href="jcr/jbossts-transaction-service.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
   <xi:include href="jcr/transaction-manager-lookup.xml"

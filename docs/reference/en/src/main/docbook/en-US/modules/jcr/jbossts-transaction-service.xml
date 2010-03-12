@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter if="ch_arjuna_transaction_service">
-  <?dbhtml filename="ch-arjuna-tranasction-service.html"?>
+<chapter if="ch_jbossts_transaction_service">
+  <?dbhtml filename="ch-jbossts-tranasction-service.html"?>
 
-  <title>ArjunaTransactionService</title>
+  <title>JBossTransactionsService</title>
 
   <section>
     <title>Introduction</title>
 
-    <para>ArjunaTransactionService implements eXo <link
+    <para>JBossTransactionsService implements eXo <link
     linkend="ch_transaction_service">TransactionService</link> and provides
     access to <ulink url="http://www.jboss.org/jbosstm/">JBoss Transaction
     Service (JBossTS)</ulink> JTA implementation via eXo container
@@ -28,7 +28,7 @@
 
     <programlisting>  &lt;component&gt;
     &lt;key&gt;org.exoplatform.services.transaction.TransactionService&lt;/key&gt;
-    &lt;type&gt;org.exoplatform.services.transaction.jbosscache.ArjunaTransactionService&lt;/type&gt;
+    &lt;type&gt;org.exoplatform.services.transaction.jbosscache.JBossTransactionsService&lt;/type&gt;
     &lt;init-params&gt;
       &lt;value-param&gt;
         &lt;name&gt;timeout&lt;/name&gt;
