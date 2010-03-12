@@ -21,6 +21,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jboss.cache.Cache;
 import org.jboss.cache.CacheSPI;
 import org.jboss.cache.Fqn;
+import org.jboss.cache.NodeSPI;
 import org.jboss.cache.eviction.DefaultEvictionActionPolicy;
 import org.jboss.cache.eviction.EvictionActionPolicy;
 
@@ -75,15 +76,20 @@ public class ParentNodeEvictionActionPolicy implements EvictionActionPolicy
          {
             // The expected data structure is of type $CHILD_NODES/${node-id}/${sub-node-name} or
             // $CHILD_PROPS/${node-id}/${sub-property-name}
-            
+
             // We use the method getChildrenNamesDirect to avoid going through 
-            // the interceptor chain (EXOJCR-460)
-            Set<Object> names = ((CacheSPI)cache).peek(parentFqn, false).getChildrenNamesDirect();
-            if (names.isEmpty() || (names.size() == 1 && names.contains(fqn.get(2))))
+            // the intercepter chain (EXOJCR-460)
+            NodeSPI node = ((CacheSPI)cache).peek(parentFqn, false);
+            // Check if not null, possibly this node was concurrently removed 
+            if (node != null)
             {
-               if (log.isTraceEnabled())
-                  log.trace("Evicting Fqn " + fqn);
-               cache.evict(parentFqn);
+               Set<Object> names = node.getChildrenNamesDirect();
+               if (names.isEmpty() || (names.size() == 1 && names.contains(fqn.get(2))))
+               {
+                  if (log.isTraceEnabled())
+                     log.trace("Evicting Fqn " + fqn);
+                  cache.evict(parentFqn);
+               }
             }
          }
       }
