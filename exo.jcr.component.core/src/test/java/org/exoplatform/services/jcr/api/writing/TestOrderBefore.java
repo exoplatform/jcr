@@ -965,6 +965,38 @@ public class TestOrderBefore extends JcrAPIBaseTest
 
    }
 
+   public void testDeleteOrderBefore() throws Exception
+   {
+      Session session = repository.login(credentials, "ws");
+      session.getRootNode().addNode("a");
+      session.save();
+      session.logout();
+      
+      session = repository.login(credentials, "ws");
+      Node a = session.getRootNode().getNode("a"); // We suppose it already exist
+      a.addNode("n1");
+      a.addNode("n2");
+      a.addNode("n3");
+      a.addNode("n4");
+      session.save();
+      session.logout();
+
+      session = repository.login(credentials, "ws");
+      a = session.getRootNode().getNode("a");
+      NodeIterator i = a.getNodes();
+      i.nextNode().remove();
+      i.nextNode().remove();
+      i.nextNode().remove();
+      session.save();
+      session.logout();
+
+      session = repository.login(credentials, "ws");
+      a = session.getRootNode().getNode("a");
+      a.addNode("n5");
+      a.orderBefore("n5", null); // NPE happens here
+      session.save(); 
+   }
+
    private EntityCollection getEntityCollection(NodeIterator nodes)
    {
       List result = new ArrayList();
