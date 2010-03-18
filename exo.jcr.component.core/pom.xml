@@ -668,6 +668,7 @@
                         <exclude>org/exoplatform/services/jcr/**/impl/**/TestSessionDataManager.java</exclude>
                         <exclude>org/exoplatform/services/jcr/**/impl/**/TestLinkedWorkspaceStorageCacheMetrics.java</exclude>
                         <exclude>org/exoplatform/services/jcr/**/impl/**/SQLBenchmarkTest.java</exclude>
+                        <exclude>org/exoplatform/services/jcr/**/impl/**/TestCleanableFileStreamValueData.java</exclude>
                         <exclude>org/exoplatform/services/jcr/**/impl/**/TestLockPerstistentDataManager.java</exclude>
                         <exclude>org/exoplatform/services/jcr/**/api/**/TestOrderBefore.java</exclude>
                         <!-- From TCK -->
@@ -708,6 +709,7 @@
                         <include>**/**/reading_/Test*.java</include>
                         <include>**/**/writing_/Test*.java</include>
                         <include>**/**/TestJBossCacheWorkspaceStorageCache_.java</include>
+                        <exclude>**/**/TestCleanableFileStreamValueData.java</exclude>
                         <include>**/**/TestSVNodeDataOptimization_.java</include>
                         <include>**/**/TestValueConstraints.java</include>
                      </includes>
