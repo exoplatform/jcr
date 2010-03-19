@@ -31,7 +31,6 @@ import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.ByteArrayPersistedValueData;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection;
 import org.exoplatform.services.jcr.impl.storage.jdbc.PrimaryTypeNotFoundException;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
@@ -86,11 +85,6 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
     * FIND_NODE_MAIN_PROPERTIES_BY_PARENTID_CQ.
     */
    protected String FIND_NODE_MAIN_PROPERTIES_BY_PARENTID_CQ;
-
-   /**
-    * FIND_REFERENCE_PROPERTIES_CQ.
-    */
-   protected String FIND_REFERENCE_PROPERTIES_CQ;
 
    /**
     * FIND_ITEM_QPATH_BY_ID_CQ.
@@ -349,152 +343,6 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
          }
       }
 
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public List<PropertyData> getReferencesData(String nodeIdentifier) throws RepositoryException, IllegalStateException
-   {
-      checkIfOpened();
-      ResultSet refProps = null;
-      try
-      {
-         refProps = findReferencePropertiesCQ(getInternalId(nodeIdentifier));
-         return loadReferences(refProps);
-      }
-      catch (SQLException e)
-      {
-         throw new RepositoryException(e);
-      }
-      catch (IOException e)
-      {
-         throw new RepositoryException(e);
-      }
-      finally
-      {
-         if (refProps != null)
-         {
-            try
-            {
-               refProps.close();
-            }
-            catch (SQLException e)
-            {
-               LOG.error(e.getMessage(), e);
-            }
-         }
-      }
-
-   }
-
-   /**
-    * Load Property references
-    * 
-    * @param resultSet
-    * @return
-    * @throws RepositoryException
-    * @throws SQLException
-    * @throws IOException
-    */
-   private List<PropertyData> loadReferences(ResultSet resultSet) throws RepositoryException, SQLException, IOException
-   {
-      List<PropertyData> resultProps = new ArrayList<PropertyData>();
-
-      // Property Id and amount of copies in result
-      Map<String, Integer> dublicatedProps = new HashMap<String, Integer>();
-      Map<String, PersistedPropertyData> propertyBuffer = new HashMap<String, PersistedPropertyData>();
-      Map<String, List<ValueData>> valuesBuffer = new HashMap<String, List<ValueData>>();
-
-      try
-      {
-         while (resultSet.next())
-         {
-            String cid = resultSet.getString(COLUMN_ID);
-            String identifier = getIdentifier(cid);
-
-            int cversion = resultSet.getInt(COLUMN_VERSION);
-
-            int valueOrderNum = resultSet.getInt(COLUMN_VORDERNUM);
-            PersistedPropertyData prop = propertyBuffer.get(identifier);
-
-            if (prop == null)
-            {
-               // make temporary PropertyData without values
-               String cname = resultSet.getString(COLUMN_NAME);
-
-               String cpid = resultSet.getString(COLUMN_PARENTID);
-               int cptype = resultSet.getInt(COLUMN_PTYPE);
-               boolean cpmultivalued = resultSet.getBoolean(COLUMN_PMULTIVALUED);
-               QPath qpath = QPath.makeChildPath(traverseQPath(cpid), InternalQName.parse(cname));
-
-               prop =
-                  new PersistedPropertyData(identifier, qpath, getIdentifier(cpid), cversion, cptype, cpmultivalued,
-                     null); // null values!
-               propertyBuffer.put(identifier, prop);
-               valuesBuffer.put(identifier, new ArrayList<ValueData>());
-               dublicatedProps.put(identifier, new Integer(1));
-            }
-
-            List<ValueData> values = valuesBuffer.get(identifier);
-            if (valueOrderNum == 0 && values.size() > 0)
-            {
-               // ignore it, this is a new copy
-               Integer copies = dublicatedProps.get(identifier);
-               copies++;
-               dublicatedProps.put(identifier, copies);
-            }
-            else if (values.size() == valueOrderNum)
-            {
-               // read value and put into values buffer
-               final String storageId = resultSet.getString(COLUMN_VSTORAGE_DESC);
-               ValueData vdata =
-                  resultSet.wasNull() ? readValueData(cid, valueOrderNum, cversion, resultSet
-                     .getBinaryStream(COLUMN_VDATA)) : readValueData(identifier, valueOrderNum, storageId);
-
-               values.add(vdata);
-               valuesBuffer.put(identifier, values);
-            }
-         }
-
-         for (String id : propertyBuffer.keySet())
-         {
-
-            PersistedPropertyData prop = propertyBuffer.get(id);
-            List<ValueData> values = valuesBuffer.get(id);
-            Collections.sort(values, COMPARATOR_VALUE_DATA);
-            int count = dublicatedProps.get(id).intValue();
-
-            for (int i = 0; i < count; i++)
-            {
-               //make a copy
-               List<ValueData> newValues = new ArrayList<ValueData>();
-               for (ValueData vd : values)
-               {
-                  newValues.add(new ByteArrayPersistedValueData(vd.getOrderNumber(), vd.getAsByteArray()));
-               }
-
-               PersistedPropertyData pdata =
-                  new PersistedPropertyData(prop.getIdentifier(), prop.getQPath(), prop.getParentIdentifier(), prop
-                     .getPersistedVersion(), prop.getType(), prop.isMultiValued(), newValues);
-               resultProps.add(pdata);
-            }
-            values.clear();
-         }
-      }
-      catch (IllegalNameException e)
-      {
-         throw new RepositoryException(e);
-      }
-      finally
-      {
-         // clean buffers
-         propertyBuffer.clear();
-         valuesBuffer.clear();
-         dublicatedProps.clear();
-      }
-
-      return resultProps;
    }
 
    /**
@@ -814,6 +662,4 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
    protected abstract ResultSet findChildPropertiesByParentIdentifierCQ(String parentIdentifier) throws SQLException;
 
    protected abstract ResultSet findNodeMainPropertiesByParentIdentifierCQ(String parentIdentifier) throws SQLException;
-
-   protected abstract ResultSet findReferencePropertiesCQ(String nodeIdentifier) throws SQLException;
 }

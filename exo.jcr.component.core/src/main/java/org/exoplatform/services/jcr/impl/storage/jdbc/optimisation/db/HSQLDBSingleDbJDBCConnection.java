@@ -99,10 +99,6 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
          "select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_CLASS, I.I_INDEX, I.N_ORDER_NUM, I.P_TYPE, I.P_MULTIVALUED, V.ORDER_NUM,"
             + " V.DATA, V.STORAGE_DESC from JCR_SITEM I LEFT OUTER JOIN JCR_SVALUE V ON (V.PROPERTY_ID=I.ID)"
             + " where I.PARENT_ID=? and I.I_CLASS=2 and I.CONTAINER_NAME=? order by I.NAME"; 
-      FIND_REFERENCE_PROPERTIES_CQ =
-         "select P.ID, P.PARENT_ID, P.VERSION, P.P_TYPE, P.P_MULTIVALUED, P.NAME, V.ORDER_NUM, V.DATA, V.STORAGE_DESC"
-            + " from JCR_SREF R, JCR_SITEM P, JCR_SVALUE V"
-            + " where R.NODE_ID=? and P.ID=R.PROPERTY_ID and P.I_CLASS=2 and P.CONTAINER_NAME=? and V.PROPERTY_ID=P.ID order by R.PROPERTY_ID";      
    }
 
    /**

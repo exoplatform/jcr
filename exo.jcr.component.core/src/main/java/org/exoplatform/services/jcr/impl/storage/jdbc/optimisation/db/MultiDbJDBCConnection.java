@@ -67,8 +67,6 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
 
    protected PreparedStatement findReferences;
 
-   protected PreparedStatement findReferencePropertiesCQ;
-
    protected PreparedStatement findValuesByPropertyId;
 
    protected PreparedStatement findValuesDataByPropertyId;
@@ -187,11 +185,6 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
       FIND_REFERENCES =
          "select P.ID, P.PARENT_ID, P.VERSION, P.P_TYPE, P.P_MULTIVALUED, P.NAME" + " from JCR_MREF R, JCR_MITEM P"
             + " where R.NODE_ID=? and P.ID=R.PROPERTY_ID and P.I_CLASS=2";
-
-      FIND_REFERENCE_PROPERTIES_CQ =
-         "select P.ID, P.PARENT_ID, P.VERSION, P.P_TYPE, P.P_MULTIVALUED, P.NAME, V.ORDER_NUM, V.DATA, V.STORAGE_DESC"
-            + " from JCR_MREF R, JCR_MITEM P, JCR_MVALUE V"
-            + " where R.NODE_ID=? and P.ID=R.PROPERTY_ID and P.I_CLASS=2 and V.PROPERTY_ID=P.ID order by R.PROPERTY_ID";
 
       FIND_VALUES_BY_PROPERTYID =
          "select PROPERTY_ID, ORDER_NUM, DATA, STORAGE_DESC from JCR_MVALUE where PROPERTY_ID=? order by ORDER_NUM";
@@ -666,21 +659,6 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
 
       findItemQPathByIdentifierCQ.setString(1, identifier);
       return findItemQPathByIdentifierCQ.executeQuery();
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected ResultSet findReferencePropertiesCQ(String nodeIdentifier) throws SQLException
-   {
-      if (findReferencePropertiesCQ == null)
-         findReferencePropertiesCQ = dbConnection.prepareStatement(FIND_REFERENCE_PROPERTIES_CQ);
-      else
-         findReferencePropertiesCQ.clearParameters();
-
-      findReferencePropertiesCQ.setString(1, nodeIdentifier);
-      return findReferencePropertiesCQ.executeQuery();
    }
 
 }
