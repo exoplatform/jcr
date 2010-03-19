@@ -41,7 +41,7 @@ import javax.jcr.RepositoryException;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id$
  */
-public class OracleConnectionFactory extends GenericCQConnectionFactory
+public class OracleConnectionFactory extends DefaultOracleConnectionFactory
 {
 
    public static int CONNCACHE_MAX_LIMIT = 25;

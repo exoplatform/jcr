@@ -16,6 +16,8 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 
+import org.exoplatform.services.jcr.datamodel.IllegalNameException;
+import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 
@@ -23,6 +25,8 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import javax.jcr.InvalidItemStateException;
 
 /**
  * Created by The eXo Platform SAS
@@ -85,8 +89,31 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
          "select count(ID) from JCR_SITEM" + " where PARENT_ID=? and I_CLASS=1 and CONTAINER_NAME=?";
       FIND_PROPERTIES_BY_PARENTID =
          "select * from JCR_SITEM" + " where PARENT_ID=? and I_CLASS=2 and CONTAINER_NAME=?" + " order by ID";
+      FIND_NODES_BY_PARENTID_CQ =
+         "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA"
+            + " from JCR_SITEM I, JCR_SITEM P, JCR_SVALUE V"
+            + " where I.PARENT_ID=? and I.I_CLASS=1 and I.CONTAINER_NAME=? and"
+            + " P.PARENT_ID=I.ID and P.I_CLASS=2 and P.CONTAINER_NAME=? and (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
+            + " and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID";
+      FIND_PROPERTIES_BY_PARENTID_CQ =
+         "select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_CLASS, I.I_INDEX, I.N_ORDER_NUM, I.P_TYPE, I.P_MULTIVALUED, V.ORDER_NUM,"
+            + " V.DATA, V.STORAGE_DESC from JCR_SITEM I LEFT OUTER JOIN JCR_SVALUE V ON (V.PROPERTY_ID=I.ID)"
+            + " where I.PARENT_ID=? and I.I_CLASS=2 and I.CONTAINER_NAME=? order by I.NAME"; 
+      FIND_REFERENCE_PROPERTIES_CQ =
+         "select P.ID, P.PARENT_ID, P.VERSION, P.P_TYPE, P.P_MULTIVALUED, P.NAME, V.ORDER_NUM, V.DATA, V.STORAGE_DESC"
+            + " from JCR_SREF R, JCR_SITEM P, JCR_SVALUE V"
+            + " where R.NODE_ID=? and P.ID=R.PROPERTY_ID and P.I_CLASS=2 and P.CONTAINER_NAME=? and V.PROPERTY_ID=P.ID order by R.PROPERTY_ID";      
    }
 
+   /**
+    * Use simple queries since it is much faster
+    */
+   @Override
+   protected QPath traverseQPath(String cpid) throws SQLException, InvalidItemStateException, IllegalNameException
+   {
+      return traverseQPathSQ(cpid);
+   }  
+   
    /**
     * {@inheritDoc}
     */
@@ -169,4 +196,39 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
       findPropertiesByParentId.setString(2, containerName);
       return findPropertiesByParentId.executeQuery();
    }
+   
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findChildNodesByParentIdentifierCQ(String parentIdentifier) throws SQLException
+   {
+      if (findNodesByParentIdCQ == null)
+         findNodesByParentIdCQ = dbConnection.prepareStatement(FIND_NODES_BY_PARENTID_CQ);
+      else
+         findNodesByParentIdCQ.clearParameters();
+
+      findNodesByParentIdCQ.setString(1, parentIdentifier);
+      findNodesByParentIdCQ.setString(2, containerName);
+      findNodesByParentIdCQ.setString(3, containerName);
+      return findNodesByParentIdCQ.executeQuery();
+   }   
+   
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findChildPropertiesByParentIdentifierCQ(String parentIdentifier) throws SQLException
+   {
+      if (findPropertiesByParentIdCQ == null)
+         findPropertiesByParentIdCQ = dbConnection.prepareStatement(FIND_PROPERTIES_BY_PARENTID_CQ);
+      else
+         findPropertiesByParentIdCQ.clearParameters();
+
+      findPropertiesByParentIdCQ.setString(1, parentIdentifier);
+      findPropertiesByParentIdCQ.setString(2, containerName);
+      return findPropertiesByParentIdCQ.executeQuery();
+
+   }   
 }

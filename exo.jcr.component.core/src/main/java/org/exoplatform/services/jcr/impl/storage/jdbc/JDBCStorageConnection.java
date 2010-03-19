@@ -946,6 +946,16 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
     */
    protected QPath traverseQPath(String cpid) throws SQLException, InvalidItemStateException, IllegalNameException
    {
+      return traverseQPathSQ(cpid);
+   }
+   
+   /**
+    * The method <code>traverseQPath</code> implemented thanks to simple queries. It allows
+    * to use Simple Queries instead of Complex Queries when complex queries are much slower such
+    * as with HSQLDB for example.
+    */
+   protected QPath traverseQPathSQ(String cpid) throws SQLException, InvalidItemStateException, IllegalNameException
+   {
       // get item by Identifier usecase 
       List<QPathEntry> qrpath = new ArrayList<QPathEntry>(); // reverted path
       String caid = cpid; // container ancestor id
