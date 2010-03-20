@@ -32,6 +32,15 @@ import java.sql.SQLException;
 public class OracleSingleDbJDBCConnection extends SingleDbJDBCConnection
 {
 
+   protected static final String FIND_NODES_BY_PARENTID_CQ_QUERY =
+      SingleDbJDBCConnection.FIND_NODES_BY_PARENTID_CQ_QUERY
+         .replaceFirst("select",
+            "select /*+ INDEX(I JCR_IDX_SITEM_PARENT_ID) INDEX(P JCR_IDX_SITEM_PARENT_ID) INDEX(V JCR_IDX_SVALUE_PROPERTY)*/");
+
+   protected static final String FIND_PROPERTIES_BY_PARENTID_CQ_QUERY =
+      SingleDbJDBCConnection.FIND_PROPERTIES_BY_PARENTID_CQ_QUERY.replaceFirst("select",
+         "select /*+ INDEX(I JCR_IDX_SITEM_PARENT_ID) INDEX(V JCR_IDX_SVALUE_PROPERTY)*/");
+
    /**
     * Oracle Singledatabase JDBC Connection constructor.
     * 
@@ -52,7 +61,7 @@ public class OracleSingleDbJDBCConnection extends SingleDbJDBCConnection
     * @throws SQLException
     * 
     * @see org.exoplatform.services.jcr.impl.util.io.FileCleaner
-    */   
+    */
    public OracleSingleDbJDBCConnection(Connection dbConnection, boolean readOnly, String containerName,
       ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory, FileCleaner swapCleaner)
       throws SQLException
@@ -69,15 +78,7 @@ public class OracleSingleDbJDBCConnection extends SingleDbJDBCConnection
    {
 
       super.prepareQueries();
-      FIND_NODES_BY_PARENTID_CQ =
-         "select /*+ INDEX(I JCR_IDX_SITEM_PARENT_ID) INDEX(P JCR_IDX_SITEM_PARENT_ID) INDEX(V JCR_IDX_SVALUE_PROPERTY)*/ I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA"
-            + " from JCR_SITEM I, JCR_SITEM P, JCR_SVALUE V"
-            + " where I.I_CLASS=1 and I.CONTAINER_NAME=? and I.PARENT_ID=? and"
-            + " P.I_CLASS=2 and P.CONTAINER_NAME=? and P.PARENT_ID=I.ID and (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
-            + " and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID";
-      FIND_PROPERTIES_BY_PARENTID_CQ =
-         "select /*+ INDEX(I JCR_IDX_SITEM_PARENT_ID) INDEX(V JCR_IDX_SVALUE_PROPERTY)*/ I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_CLASS, I.I_INDEX, I.N_ORDER_NUM, I.P_TYPE, I.P_MULTIVALUED, V.ORDER_NUM,"
-            + " V.DATA, V.STORAGE_DESC from JCR_SITEM I LEFT OUTER JOIN JCR_SVALUE V ON (V.PROPERTY_ID=I.ID)"
-            + " where I.I_CLASS=2 and I.CONTAINER_NAME=? and I.PARENT_ID=? order by I.NAME";
+      FIND_NODES_BY_PARENTID_CQ = FIND_NODES_BY_PARENTID_CQ_QUERY;
+      FIND_PROPERTIES_BY_PARENTID_CQ = FIND_PROPERTIES_BY_PARENTID_CQ_QUERY;
    }
 }

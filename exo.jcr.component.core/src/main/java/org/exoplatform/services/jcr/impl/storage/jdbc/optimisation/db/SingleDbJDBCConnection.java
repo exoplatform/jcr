@@ -49,6 +49,18 @@ import java.util.List;
 public class SingleDbJDBCConnection extends CQJDBCStorageConnection
 {
 
+   protected static final String FIND_NODES_BY_PARENTID_CQ_QUERY =
+      "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA"
+         + " from JCR_SITEM I, JCR_SITEM P, JCR_SVALUE V"
+         + " where I.I_CLASS=1 and I.CONTAINER_NAME=? and I.PARENT_ID=? and"
+         + " P.I_CLASS=2 and P.CONTAINER_NAME=? and P.PARENT_ID=I.ID and (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
+         + " and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID";
+
+   protected static final String FIND_PROPERTIES_BY_PARENTID_CQ_QUERY =
+      "select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_CLASS, I.I_INDEX, I.N_ORDER_NUM, I.P_TYPE, I.P_MULTIVALUED, V.ORDER_NUM,"
+         + " V.DATA, V.STORAGE_DESC from JCR_SITEM I LEFT OUTER JOIN JCR_SVALUE V ON (V.PROPERTY_ID=I.ID)"
+         + " where I.I_CLASS=2 and I.CONTAINER_NAME=? and I.PARENT_ID=? order by I.NAME";
+
    protected PreparedStatement findItemById;
 
    protected PreparedStatement findItemByPath;
@@ -204,12 +216,7 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
       FIND_NODES_BY_PARENTID =
          "select * from JCR_SITEM" + " where I_CLASS=1 and CONTAINER_NAME=? and PARENT_ID=?" + " order by N_ORDER_NUM";
 
-      FIND_NODES_BY_PARENTID_CQ =
-         "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA"
-            + " from JCR_SITEM I, JCR_SITEM P, JCR_SVALUE V"
-            + " where I.I_CLASS=1 and I.CONTAINER_NAME=? and I.PARENT_ID=? and"
-            + " P.I_CLASS=2 and P.CONTAINER_NAME=? and P.PARENT_ID=I.ID and (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
-            + " and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID";
+      FIND_NODES_BY_PARENTID_CQ = FIND_NODES_BY_PARENTID_CQ_QUERY;
 
       FIND_NODE_MAIN_PROPERTIES_BY_PARENTID_CQ =
          "select I.NAME, V.DATA, V.ORDER_NUM"
@@ -227,10 +234,7 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
       FIND_PROPERTIES_BY_PARENTID =
          "select * from JCR_SITEM" + " where I_CLASS=2 and CONTAINER_NAME=? and PARENT_ID=?" + " order by NAME";
 
-      FIND_PROPERTIES_BY_PARENTID_CQ =
-         "select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_CLASS, I.I_INDEX, I.N_ORDER_NUM, I.P_TYPE, I.P_MULTIVALUED, V.ORDER_NUM,"
-            + " V.DATA, V.STORAGE_DESC from JCR_SITEM I LEFT OUTER JOIN JCR_SVALUE V ON (V.PROPERTY_ID=I.ID)"
-            + " where I.I_CLASS=2 and I.CONTAINER_NAME=? and I.PARENT_ID=? order by I.NAME";
+      FIND_PROPERTIES_BY_PARENTID_CQ = FIND_PROPERTIES_BY_PARENTID_CQ_QUERY;
 
       INSERT_NODE =
          "insert into JCR_SITEM(ID, PARENT_ID, NAME, CONTAINER_NAME, VERSION, I_CLASS, I_INDEX, N_ORDER_NUM) VALUES(?,?,?,?,?,"
