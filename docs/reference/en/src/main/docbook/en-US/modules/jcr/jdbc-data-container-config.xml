@@ -295,7 +295,8 @@
         <listitem>
           <para><parameter>dialect</parameter> - a database dialect, one of
           "hsqldb", "mysql", "mysql-utf8", "pgsql", "oracle", "oracle-oci",
-          "mssql", "sybase", "derby", "db2", "db2v8".</para>
+          "mssql", "sybase", "derby", "db2", "db2v8" or "auto" for dialect
+          autodetection;</para>
         </listitem>
 
         <listitem>
@@ -319,7 +320,7 @@
     in two different databases (ws in HSQLDB, ws1 in MySQL).</para>
 
     <note>
-      <para> Starting from v.1.9 <link linkend="ch_configuration">repository
+      <para>Starting from v.1.9 <link linkend="ch_configuration">repository
       configuration</link> parameters supports human-readable formats of
       values (e.g. 200K - 200 Kbytes, 30m - 30 minutes etc)</para>
     </note>
@@ -492,6 +493,64 @@
           </listitem>
         </itemizedlist></para>
     </section>
+  </section>
+
+  <section>
+    <title>Simple and Complex queries</title>
+
+    <para>eXo JCR provides two ways for interact with Database -
+    <classname>JDBCStorageConnection</classname> that uses simple queries and
+    <classname>CQJDBCStorageConection</classname> that uses complex queries
+    for reducing amount of database callings.</para>
+
+    <para>Simple queries will be used if you chose
+    <classname>org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer</classname>:<programlisting>&lt;workspaces&gt;
+  &lt;workspace name="ws" auto-init-root-nodetype="nt:unstructured"&gt;
+    &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
+    ...
+  &lt;/workspace&gt;
+&lt;/worksapces&gt;</programlisting></para>
+
+    <para>Complex queries will be used if you chose
+    <classname>org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer</classname>:<programlisting>&lt;workspaces&gt;
+  &lt;workspace name="ws" auto-init-root-nodetype="nt:unstructured"&gt;
+    &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer"&gt;
+    ...
+  &lt;/workspace&gt;
+&lt;/worksapces&gt;</programlisting></para>
+
+    <para>Why we should use a Complex Queries?<simplelist>
+        <member>They are optimised to reduce amount of requests to
+        database.</member>
+      </simplelist>Why we should use a Simple Queries?<simplelist>
+        <member>Simple queries implemented in way to support as many database
+        dialects as possible.</member>
+
+        <member>Simple queries do not use sub queries, left or right
+        joins.</member>
+      </simplelist></para>
+  </section>
+
+  <section>
+    <title>Forse Query Hints</title>
+
+    <para>Some databases supports hints to increase query performance (like
+    Oracle, MySQL, etc). eXo JCR have separate Complex Query implementation
+    for Orcale dialect, that uses query hints to increase performance for few
+    important queries. </para>
+
+    <para>To enable this option put next configuration
+    property:<programlisting>&lt;workspace name="ws" auto-init-root-nodetype="nt:unstructured"&gt;
+  &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
+    &lt;properties&gt;
+      &lt;property name="dialect" value="oracle"/&gt;
+      &lt;property name="force.query.hints" value="true" /&gt;
+      ......</programlisting></para>
+
+    <para>Query hints enabled by default. </para>
+
+    <para>eXo JCR uses query hints only for Complex Query Oracle dialect. For
+    all other dialects this parameter is ignored.</para>
   </section>
 
   <section>
