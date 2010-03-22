@@ -36,7 +36,6 @@
                      <property name="dialect" value="auto" />
                      <property name="multi-db" value="true" />
                      <property name="update-storage" value="false" />
-
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/ws" />
                   </properties>

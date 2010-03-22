@@ -38,7 +38,6 @@
                      <property name="update-storage" value="false" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/ws" />
-                     <property name="force.query.hints" value="true" />
                   </properties>
                   <value-storages>
                      <value-storage id="ws" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">

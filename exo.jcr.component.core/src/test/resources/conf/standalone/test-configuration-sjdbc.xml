@@ -244,13 +244,10 @@
         <properties-param>
           <name>ref-addresses</name>
           <description>ref-addresses</description>
-          <property name="driverClassName" value="oracle.jdbc.OracleDriver" />
-          <property name="url" value="jdbc:oracle:thin:@db2.exoua-int:1521:orclvm" />
-          <property name="username" value="exoperf" />
-          <property name="password" value="exo12321" />
-          <property name="maxActive" value="600" />
-          <property name="maxIdle" value="50" />
-          <property name="initialSize" value="5" />
+          <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+          <property name="url" value="jdbc:hsqldb:file:target/temp/data/portal"/>
+          <property name="username" value="sa"/>
+          <property name="password" value=""/>
         </properties-param>
       </init-params>
     </component-plugin>
