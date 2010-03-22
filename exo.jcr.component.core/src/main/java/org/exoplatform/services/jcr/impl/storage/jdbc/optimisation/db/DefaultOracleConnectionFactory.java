@@ -34,6 +34,9 @@ import javax.sql.DataSource;
  */
 public class DefaultOracleConnectionFactory extends GenericCQConnectionFactory
 {
+
+   protected boolean forceQueryHints;
+
    /**
     * DefaultOracleConnectionFactory constructor.
     * 
@@ -51,12 +54,15 @@ public class DefaultOracleConnectionFactory extends GenericCQConnectionFactory
     *          - Swap directory (see configuration)
     * @param swapCleaner
     *          - Swap cleaner (internal FileCleaner).
+    * @param forceQueryHints
+    *          - use Oracle queries with query hints
     */
    public DefaultOracleConnectionFactory(DataSource dataSource, String containerName, boolean multiDb,
-      ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory, FileCleaner swapCleaner)
+      ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory, FileCleaner swapCleaner,
+      boolean forceQueryHints)
    {
-
       super(dataSource, containerName, multiDb, valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+      this.forceQueryHints = forceQueryHints;
    }
 
    /**
@@ -84,18 +90,21 @@ public class DefaultOracleConnectionFactory extends GenericCQConnectionFactory
     *          - Swap directory (see configuration)
     * @param swapCleaner
     *          - Swap cleaner (internal FileCleaner).
+    * @param forceQueryHints
+    *          - use Oracle queries with query hints
     * @throws RepositoryException
     *           if error eccurs
     */
    public DefaultOracleConnectionFactory(String dbDriver, String dbUrl, String dbUserName, String dbPassword,
       String containerName, boolean multiDb, ValueStoragePluginProvider valueStorageProvider, int maxBufferSize,
-      File swapDirectory, FileCleaner swapCleaner) throws RepositoryException
+      File swapDirectory, FileCleaner swapCleaner, boolean forceQueryHints) throws RepositoryException
    {
 
       super(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb, valueStorageProvider, maxBufferSize,
          swapDirectory, swapCleaner);
+      this.forceQueryHints = forceQueryHints;
    }
-   
+
    /**
     * {@inheritDoc}
     */
@@ -104,20 +113,27 @@ public class DefaultOracleConnectionFactory extends GenericCQConnectionFactory
    {
       try
       {
-
-         if (multiDb)
+         if (forceQueryHints)
          {
-            return new OracleMultiDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerName,
+            if (multiDb)
+            {
+               return new OracleMultiDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerName,
+                  valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+            }
+
+            return new OracleSingleDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerName,
                valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
          }
-
-         return new OracleSingleDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerName,
-            valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+         else
+         {
+            // use common CQ queries, since Oracle[Multi/Single]DbJDBCConnection contains only queries with hints
+            return super.openConnection(readOnly);
+         }
 
       }
       catch (SQLException e)
       {
          throw new RepositoryException(e);
       }
-   }    
+   }
 }

@@ -28,10 +28,10 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.init.IngresSQLDBInitialize
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.OracleDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.PgSQLDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.StorageDBInitializer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.DefaultOracleConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.GenericCQConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.HSQLDBConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.MySQLConnectionFactory;
-import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.DefaultOracleConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.OracleConnectionFactory;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerException;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
@@ -93,19 +93,19 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
          LOG.warn(DBConstants.DB_DIALECT_ORACLEOCI + " dialect is experimental!");
          // sample of connection factory customization
          if (dbSourceName != null)
-         {   
+         {
             DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
             if (ds != null)
                this.connFactory =
                   new DefaultOracleConnectionFactory(ds, containerName, multiDb, valueStorageProvider, maxBufferSize,
-                     swapDirectory, swapCleaner);
+                     swapDirectory, swapCleaner, useQueryHints);
             else
                throw new RepositoryException("Datasource '" + dbSourceName + "' is not bound in this context.");
-         }   
+         }
          else
             this.connFactory =
                new OracleConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
-                  valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+                  valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner, useQueryHints);
 
          sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.ora.sql";
 
@@ -121,14 +121,14 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
             if (ds != null)
                this.connFactory =
                   new DefaultOracleConnectionFactory(ds, containerName, multiDb, valueStorageProvider, maxBufferSize,
-                     swapDirectory, swapCleaner);
+                     swapDirectory, swapCleaner, useQueryHints);
             else
                throw new RepositoryException("Datasource '" + dbSourceName + "' is not bound in this context.");
          }
          else
             this.connFactory =
                new DefaultOracleConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
-                  valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+                  valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner, useQueryHints);
          sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.ora.sql";
          dbInitilizer = new OracleDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
 

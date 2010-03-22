@@ -68,7 +68,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    /**
     * Indicates if the statistics has to be enabled.
     */
-   public static final boolean STATISTICS_ENABLED = Boolean.valueOf(System.getProperty("JDBCWorkspaceDataContainer.statistics.enabled"));
+   public static final boolean STATISTICS_ENABLED =
+      Boolean.valueOf(System.getProperty("JDBCWorkspaceDataContainer.statistics.enabled"));
    static
    {
       if (STATISTICS_ENABLED)
@@ -76,7 +77,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          LOG.info("The statistics of the component JDBCWorkspaceDataContainer has been enabled");
       }
    }
-   
+
    //configuration params
 
    public final static String SOURCE_NAME = "source-name";
@@ -97,6 +98,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    public final static String DB_USERNAME = "username";
 
    public final static String DB_PASSWORD = "password";
+
+   public final static String DB_FORCE_QUERY_HINTS = "force.query.hints";
 
    protected final String containerName;
 
@@ -127,6 +130,12 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    protected FileCleaner swapCleaner;
 
    protected GenericConnectionFactory connFactory;
+
+   /**
+    * Some DataBases supports query hints, that may improve query performance.
+    * For default hints are enabled.
+    */
+   protected boolean useQueryHints;
 
    /**
     * Shared connection factory.
@@ -345,6 +354,9 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          }
       }
       LOG.info("Using a dialect '" + this.dbDialect + "'");
+
+      // check is there DB_FORCE_QUERY_HINTS parameter - by default its enabled
+      useQueryHints = wsConfig.getContainer().getParameterBoolean(DB_FORCE_QUERY_HINTS, true);
 
       try
       {
@@ -767,14 +779,15 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       {
          original = ((StatisticsJDBCStorageConnection)original).getNestedWorkspaceStorageConnection();
       }
-      
+
       if (original instanceof JDBCStorageConnection)
       {
          WorkspaceStorageConnectionFactory cFactory =
             new SharedConnectionFactory(((JDBCStorageConnection)original).getJdbcConnection(), containerName, multiDb,
                valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
 
-         return STATISTICS_ENABLED ? new StatisticsJDBCStorageConnection(cFactory.openConnection()) : cFactory.openConnection();
+         return STATISTICS_ENABLED ? new StatisticsJDBCStorageConnection(cFactory.openConnection()) : cFactory
+            .openConnection();
       }
       else
       {

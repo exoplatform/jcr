@@ -77,12 +77,14 @@ public class OracleConnectionFactory extends DefaultOracleConnectionFactory
     *          - Swap directory (see configuration)
     * @param swapCleaner
     *          - Swap cleaner (internal FileCleaner).
+    * @param forceQueryHints
+    *          - use Oracle queries with query hints
     * @throws RepositoryException
     *           if error occurs
     */
    public OracleConnectionFactory(String dbDriver, String dbUrl, String dbUserName, String dbPassword,
       String containerName, boolean multiDb, ValueStoragePluginProvider valueStorageProvider, int maxBufferSize,
-      File swapDirectory, FileCleaner swapCleaner) throws RepositoryException
+      File swapDirectory, FileCleaner swapCleaner, boolean forceQueryHints) throws RepositoryException
    {
 
       // ;D:\Devel\oracle_instantclient_10_2\;C:\oracle\ora92\bin;
@@ -111,7 +113,7 @@ public class OracleConnectionFactory extends DefaultOracleConnectionFactory
        */
 
       super(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb, valueStorageProvider, maxBufferSize,
-         swapDirectory, swapCleaner);
+         swapDirectory, swapCleaner, forceQueryHints);
 
       Object cds = null;
       try
