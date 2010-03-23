@@ -383,7 +383,7 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
                   nodeIdentifier = currChangesLog.getAllStates().get(0).getData().getParentIdentifier();
 
                   CacheableSessionLockManager session = sessionLockManagers.get(sessionId);
-                  if (session != null && session.cotainsPendingLock(nodeIdentifier))
+                  if (session != null && session.containsPendingLock(nodeIdentifier))
                   {
                      containers.add(new LockOperationContainer(nodeIdentifier, currChangesLog.getSessionId(),
                         ExtendedEvent.LOCK));
@@ -642,7 +642,7 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
    private synchronized void internalLock(String sessionId, String nodeIdentifier) throws RepositoryException
    {
       CacheableSessionLockManager sessionLockManager = sessionLockManagers.get(sessionId);
-      if (sessionLockManager != null && sessionLockManager.cotainsPendingLock(nodeIdentifier))
+      if (sessionLockManager != null && sessionLockManager.containsPendingLock(nodeIdentifier))
       {
          LockData lockData = sessionLockManager.getPendingLock(nodeIdentifier);
 

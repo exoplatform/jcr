@@ -290,7 +290,7 @@ public class CacheableSessionLockManager extends AbstractSessionLockManager
     * @param nodeId - node ID string
     * @return boolean
     */
-   public boolean cotainsPendingLock(String nodeId)
+   public boolean containsPendingLock(String nodeId)
    {
       return pendingLocks.contains(nodeId);
    }

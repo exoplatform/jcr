@@ -74,11 +74,11 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.lock.LockException;
@@ -236,7 +236,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
          lockTimeOut = DEFAULT_LOCK_TIMEOUT;
       }
 
-      sessionLockManagers = new HashMap<String, CacheableSessionLockManager>();
+      sessionLockManagers = new ConcurrentHashMap<String, CacheableSessionLockManager>();
 
       dataManager.addItemPersistenceListener(this);
 
@@ -566,7 +566,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
                   nodeIdentifier = currChangesLog.getAllStates().get(0).getData().getParentIdentifier();
 
                   CacheableSessionLockManager session = sessionLockManagers.get(sessionId);
-                  if (session != null && session.cotainsPendingLock(nodeIdentifier))
+                  if (session != null && session.containsPendingLock(nodeIdentifier))
                   {
                      containers.add(new LockOperationContainer(nodeIdentifier, currChangesLog.getSessionId(),
                         ExtendedEvent.LOCK));
@@ -790,7 +790,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
    private synchronized void internalLock(String sessionId, String nodeIdentifier) throws LockException
    {
       CacheableSessionLockManager session = sessionLockManagers.get(sessionId);
-      if (session != null && session.cotainsPendingLock(nodeIdentifier))
+      if (session != null && session.containsPendingLock(nodeIdentifier))
       {
          LockData lockData = session.getPendingLock(nodeIdentifier);
          Fqn<String> lockPath = makeLockFqn(lockData.getNodeIdentifier());
