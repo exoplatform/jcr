@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter>
+  <?dbhtml filename="ch-db-creator-service.html"?>
+
+  <title>Database Creator</title>
+
+  <section>
+    <title>About</title>
+
+    <para>Database Creator is responsible for execution DDL script at runtime.
+    A DDL script may contain templates for database name, user name and
+    password which will be replaced by real values at execution time.</para>
+
+    <para>Supports 3 templates:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>${database} for database name;</para>
+      </listitem>
+
+      <listitem>
+        <para>${username} for user name;</para>
+      </listitem>
+
+      <listitem>
+        <para>${password} for user's password;</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>API</title>
+
+    <para>Service provide method for execute script for new database creation.
+    Database name which are passed as parameter will be substituted in DDL
+    script instead of ${database} template. Returns DBConnectionInfo object
+    (with all neccesary information of new database's connection) or throws
+    DBScriptExecutorException exception if any errors occurs in other
+    case.</para>
+
+    <programlisting>public DBConnectionInfo createDatabase(String dbName) throws DBCreatorException;</programlisting>
+
+    <para>For MSSQL and Sybase servers uses autocommit mode set true for
+    connection. It's due to after execution "create database" command newly
+    created database not available for "use" command and therefore you can't
+    create new user inside database per one script.</para>
+  </section>
+
+  <section>
+    <title>A configuration examples</title>
+
+    <para>Service's configuration.</para>
+
+    <programlisting>&lt;component&gt;
+      &lt;key&gt;org.exoplatform.services.database.creator.DBCreator&lt;/key&gt;
+      &lt;type&gt;org.exoplatform.services.database.creator.DBCreator&lt;/type&gt;
+      &lt;init-params&gt;
+      &lt;properties-param&gt;
+            &lt;name&gt;db-connection&lt;/name&gt;
+            &lt;description&gt;database connection properties&lt;/description&gt;
+            &lt;property name="driverClassName" value="com.mysql.jdbc.Driver" /&gt;
+            &lt;property name="url" value="jdbc:mysql://localhost/" /&gt;
+            &lt;property name="username" value="root" /&gt;
+            &lt;property name="password" value="admin" /&gt;
+         &lt;/properties-param&gt;
+         &lt;properties-param&gt;
+            &lt;name&gt;db-creation&lt;/name&gt;.
+            &lt;description&gt;database creation properties&lt;/description&gt;.
+            &lt;property name="scriptPath" value="script.sql" /&gt;
+            &lt;property name="username" value="testuser" /&gt;
+            &lt;property name="password" value="testpwd" /&gt;
+         &lt;/properties-param&gt;
+      &lt;/init-params&gt;
+   &lt;/component&gt;</programlisting>
+
+    <para>db-connection properties section contains parameters needed for
+    connection to database server</para>
+
+    <para>db-creation properties section contains paramaters for database
+    creation using DDL script:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>scriptPath: absolute path to DDL script file;</para>
+      </listitem>
+
+      <listitem>
+        <para>username: user name for substitution ${username} template in DDL
+        script;</para>
+      </listitem>
+
+      <listitem>
+        <para>password: user's password for substitution ${password} template
+        in DDL script;</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Specific db-connection properties section for different
+    databases.</para>
+
+    <para>MySQL:</para>
+
+    <programlisting>&lt;property name="driverClassName" value="com.mysql.jdbc.Driver" /&gt;
+&lt;property name="url" value="jdbc:mysql://localhost/" /&gt;
+&lt;property name="username" value="root" /&gt;
+&lt;property name="password" value="admin" /&gt;</programlisting>
+
+    <para>PostgreSQL:</para>
+
+    <programlisting>&lt;property name="driverClassName" value="org.postgresql.Driver" /&gt;
+&lt;property name="url" value="jdbc:postgresql://localhost/" /&gt;
+&lt;property name="username" value="root" /&gt;
+&lt;property name="password" value="admin" /&gt;</programlisting>
+
+    <para>MSSQL:</para>
+
+    <programlisting>&lt;property name="driverClassName" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/&gt;
+&lt;property name="url" value="jdbc:sqlserver://localhost:1433;"/&gt;
+&lt;property name="username" value="root"/&gt;
+&lt;property name="password" value="admin"/&gt;</programlisting>
+
+    <para>Sybase:</para>
+
+    <programlisting>&lt;property name="driverClassName" value="com.sybase.jdbc3.jdbc.SybDriver" /&gt;
+&lt;property name="url" value="jdbc:sybase:Tds:localhost:5000/"/&gt;
+&lt;property name="username" value="root"/&gt;
+&lt;property name="password" value="admin"/&gt;</programlisting>
+
+    <para>Oracle:</para>
+
+    <programlisting>&lt;property name="driverClassName" value="oracle.jdbc.OracleDriver" /&gt;
+&lt;property name="url" value="jdbc:oracle:thin:@db2.exoua-int:1521:orclvm" /&gt;
+&lt;property name="username" value="root" /&gt;
+&lt;property name="password" value="admin" /&gt;</programlisting>
+  </section>
+
+  <section>
+    <title>An examples of a DDL script</title>
+
+    <para>MySQL:</para>
+
+    <programlisting>CREATE DATABASE ${database};
+USE ${database};
+CREATE USER '${username}' IDENTIFIED BY '${password}';
+GRANT SELECT,INSERT,UPDATE,DELETE ON ${database}.* TO '${username}';</programlisting>
+
+    <para>PostgreSQL:</para>
+
+    <programlisting>CREATE USER ${username} WITH PASSWORD '${password}';
+CREATE DATABASE ${database} WITH OWNER ${username};</programlisting>
+
+    <para>MSSQL:</para>
+
+    <programlisting>USE MASTER;
+CREATE DATABASE ${database};
+USE ${database};
+CREATE LOGIN ${username} WITH PASSWORD = '${password}';
+CREATE USER ${username} FOR LOGIN ${username};</programlisting>
+
+    <para>Sybase:</para>
+
+    <programlisting>sp_addlogin ${username}, ${password};
+CREATE DATABASE ${database};
+USE ${database};
+sp_adduser ${username};</programlisting>
+
+    <para>Oracle:</para>
+
+    <programlisting>CREATE TABLESPACE "${database}" DATAFILE '/var/oracle_db/orclvm/${database}' SIZE 10M AUTOEXTEND ON NEXT 6M MAXSIZE UNLIMITED LOGGING EXTENT MANAGEMENT LOCAL SEGMENT SPACE MANAGEMENT AUTO;
+CREATE TEMPORARY TABLESPACE "${database}.TEMP" TEMPFILE '/var/oracle_db/orclvm/${database}.temp' SIZE 5M AUTOEXTEND ON NEXT 5M MAXSIZE UNLIMITED EXTENT MANAGEMENT LOCAL UNIFORM SIZE 1M;
+CREATE USER "${username}" PROFILE "DEFAULT" IDENTIFIED BY "${password}" DEFAULT TABLESPACE "${database}" TEMPORARY TABLESPACE "${database}.TEMP" ACCOUNT UNLOCK;
+GRANT CREATE SEQUENCE TO "${username}";
+GRANT CREATE TABLE TO "${username}";
+GRANT CREATE TRIGGER TO "${username}";
+GRANT UNLIMITED TABLESPACE TO "${username}";
+GRANT "CONNECT" TO "${username}";
+GRANT "RESOURCE" TO "${username}";</programlisting>
+  </section>
+</chapter>
