@@ -2374,7 +2374,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
                srcInd = i;
             }
          }
-         if (destInd == -1 && destPath != null)
+         if (destPath != null && destInd == -1)
          {
             if (nodeData.getQPath().getName().equals(destPath.getName())
                && (nodeData.getQPath().getIndex() == destPath.getIndex() || destPath.getIndex() == 0
@@ -2495,7 +2495,10 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          }
       }
       // delete state first
-      dataManager.getChangesLog().add(deleteState);
+      if (deleteState != null)
+      {
+         dataManager.getChangesLog().add(deleteState);
+      }
       dataManager.getChangesLog().addAll(changes);
    }
 
