@@ -434,12 +434,12 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          //updateInProgress = true;
          indexUpdateMonitor.setUpdateInProgress(true, false);
       }
+      boolean flush = false;
       try
       {
          long transactionId = nextTransactionId++;
          executeAndLog(new Start(transactionId));
 
-         boolean flush = false;
          for (Iterator it = remove.iterator(); it.hasNext();)
          {
             executeAndLog(new DeleteNode(transactionId, (String)it.next()));
@@ -459,6 +459,11 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          // flush whole index when volatile index has been commited.
          if (flush)
          {
+            // if we are going to flush, need to set persistent update
+            synchronized (updateMonitor)
+            {
+               indexUpdateMonitor.setUpdateInProgress(true, true);
+            }  
             flush();
          }
       }
@@ -467,7 +472,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          synchronized (updateMonitor)
          {
             //updateInProgress = false;
-            indexUpdateMonitor.setUpdateInProgress(false, false);
+            
+            indexUpdateMonitor.setUpdateInProgress(false, flush);
             updateMonitor.notifyAll();
             releaseMultiReader();
          }
