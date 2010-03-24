@@ -279,7 +279,12 @@ public class XASessionImpl extends SessionImpl implements XASession, XAResource,
       if (resource instanceof XASessionImpl)
       {
          XASessionImpl session = (XASessionImpl)resource;
-         boolean isSame = getUserID().equals(session.getUserID());
+         boolean isSame =
+            getUserID().equals(session.getUserID())
+               && getWorkspace().getName().equals(session.getWorkspace().getName())
+               && ((RepositoryImpl)getRepository()).getName().equals(
+                  ((RepositoryImpl)session.getRepository()).getName());
+
          if (LOG.isDebugEnabled())
          {
             LOG.debug("isSameRM: " + getSessionInfo() + " -- " + session.getSessionInfo() + " : " + isSame + ", "
