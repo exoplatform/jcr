@@ -122,8 +122,6 @@ public class JBossCacheIndexUpdateMonitor implements IndexUpdateMonitor, Indexer
          // In READ_WRITE, the value of UpdateInProgress is changed locally so no need to listen
          // to the cache
          cache.removeCacheListener(this);
-         // possibly indexer was terminated, so status should be reseted
-         setUpdateInProgress(false, true);
       }
       else
       {
