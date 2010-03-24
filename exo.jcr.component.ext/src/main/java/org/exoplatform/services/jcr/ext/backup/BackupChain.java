@@ -26,7 +26,7 @@ import java.util.List;
  *  Author : Alex Reshetnyak alex.reshetnyak@exoplatform.com.ua
  * 09.01.2008
  */
-public interface BackupChain
+public interface BackupChain extends RepositoryBackupChain 
 {
    /**
     * The full backup state.
@@ -37,16 +37,6 @@ public interface BackupChain
     * The full + incremental backup state.
     */
    public static final int INCREMENTAL_WORKING = 2;
-
-   /**
-    * State of backup FINISHED.
-    */
-   public static final int FINISHED = 4;
-
-   /**
-    * Sate of backup INITIALIZED.
-    */
-   public static final int INITIALIZED = 0;
 
    /**
     *  The timeout.
@@ -60,18 +50,6 @@ public interface BackupChain
     *           return list of current backup jobs.
     */
    List<BackupJob> getBackupJobs();
-
-   /**
-    * Call start backup.
-    *
-    */
-   void startBackup();
-
-   /**
-    * Call stop backup.
-    *
-    */
-   void stopBackup();
 
    /**
     * Getting backup config.
@@ -88,30 +66,14 @@ public interface BackupChain
     *           return state of full backup
     */
    int getFullBackupState();
-
+   
    /**
-    * Getting state of backup.
+    * Getting the state of incremental backup.
     *
     * @return int
-    *           return  state of backup
+    *           return state of full backup
     */
-   int getState();
-
-   /**
-    * isFinished.
-    *
-    * @return boolean
-    *           return 'true' if backup was finished.
-    */
-   boolean isFinished();
-
-   /**
-    * Getting path to backup log.
-    *
-    * @return String
-    *           return path to backup log
-    */
-   String getLogFilePath();
+   int getIncrementalBackupState();
 
    /**
     * Add listener to all existing and will be created in future jobs.
@@ -128,21 +90,4 @@ public interface BackupChain
     *          BackupJobListener, the backup job listener
     */
    void removeListener(BackupJobListener listener);
-
-   /**
-    * Getting identifier of backup.
-    *
-    * @return String 
-    *           return identifier of backup
-    */
-   String getBackupId();
-
-   /**
-    * Getting started time of backup.
-    *
-    * @return Calendar
-    *           return started time of backup
-    */
-   Calendar getStartedTime();
-
 }

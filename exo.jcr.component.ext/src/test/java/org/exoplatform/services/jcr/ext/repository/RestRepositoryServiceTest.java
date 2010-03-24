@@ -205,6 +205,8 @@ public class RestRepositoryServiceTest
                new ContainerRequestUserRole("POST", new URI(REST_REPOSITORY_SERVICE_PATH
                         + RestRepositoryService.Constants.OperationType.CREATE_REPOSITORY), new URI(""),
                         new ByteArrayInputStream(json.toString().getBytes("UTF-8")), new InputHeadersMap(headers));
+      
+      System.out.print("testCreateRepository  : " +json.toString());
 
       ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
       ContainerResponse cres = new ContainerResponse(responseWriter);
@@ -239,6 +241,8 @@ public class RestRepositoryServiceTest
                         + RestRepositoryService.Constants.OperationType.CREATE_WORKSPACE + "/"
                         + rName), new URI(""),
                         new ByteArrayInputStream(json.toString().getBytes("UTF-8")), new InputHeadersMap(headers));
+      
+      System.out.print("testCreateWorkspace  : " +json.toString());
 
       ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
       ContainerResponse cres = new ContainerResponse(responseWriter);

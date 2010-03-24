@@ -18,15 +18,20 @@
  */
 package org.exoplatform.services.jcr.ext.backup;
 
+import org.apache.commons.collections.map.HashedMap;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.ext.backup.impl.JobRepositoryRestore;
 import org.exoplatform.services.jcr.ext.backup.impl.JobWorkspaceRestore;
+import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.Map;
 
 import javax.jcr.Node;
 import javax.jcr.lock.Lock;
@@ -498,7 +503,7 @@ public class TestBackupManager extends AbstractBackupTestCase
          SessionImpl sessionWS1 = (SessionImpl)repository.login(credentials, "ws3");
 
          sessionWS1.getRootNode().addNode("asdasdasda", "nt:unstructured")
-            .setProperty("data", "data_1"/*new FileInputStream(createBLOBTempFile(1024))*/);
+            .setProperty("data", /*"data_1"*/new FileInputStream(createBLOBTempFile(1024)));
          sessionWS1.save();
 
          // 1-st backup
@@ -536,7 +541,7 @@ public class TestBackupManager extends AbstractBackupTestCase
 
             // add date to restored workspace
             back1.getRootNode().addNode("gdfgrghfhf", "nt:unstructured")
-               .setProperty("data", "data_2"/*new FileInputStream(createBLOBTempFile(1024))*/);
+               .setProperty("data", /*"data_2"*/new FileInputStream(createBLOBTempFile(1024)));
             back1.save();
          }
          else
@@ -734,5 +739,285 @@ public class TestBackupManager extends AbstractBackupTestCase
       else
          fail("There are no backup files in " + backDir.getAbsolutePath());
    }
+   
+   
+   public void testRepositoryFullBackupRestore() throws Exception
+   {
+      // backup
+      File backDir = new File("target/backup");
+      backDir.mkdirs();
 
+      RepositoryBackupConfig config = new RepositoryBackupConfig();
+      config.setRepository(repository.getName());
+      config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
+
+      config.setBackupDir(backDir);
+
+      backup.startBackup(config);
+
+      RepositoryBackupChain bch = backup.findRepositoryBackup(repository.getName());
+
+      // wait till full backup will be stopped
+      while (bch.getState() != RepositoryBackupChain.FINISHED)
+      {
+         Thread.yield();
+         Thread.sleep(50);
+      }
+
+      // stop fullBackup
+
+      backup.stopBackup(bch);
+      
+
+      // restore
+      RepositoryEntry re = (RepositoryEntry)ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
+      
+      String newRepositoryName = "repo_restored_1";
+      RepositoryEntry newRepositoryEntry = makeRepositoryEntry(newRepositoryName, re, "jdbcjcr_to_repository_restore_1", null);
+
+      File backLog = new File(bch.getLogFilePath());
+      if (backLog.exists())
+      {
+         RepositoryBackupChainLog bchLog = new RepositoryBackupChainLog(backLog);
+
+         assertNotNull(bchLog.getStartedTime());
+         assertNotNull(bchLog.getFinishedTime());
+
+         backup.restore(bchLog, newRepositoryEntry, false);
+
+         // check
+         ManageableRepository restoredRepository = repositoryService.getRepository(newRepositoryName);
+
+         for (String wsName : restoredRepository.getWorkspaceNames())
+         {
+            SessionImpl back1 = null;
+            try
+            {
+               back1 = (SessionImpl)repository.login(credentials, wsName);
+               Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
+               assertEquals("Restored content should be same", "property-5", ws1backTestRoot.getNode("node_5")
+                  .getProperty("exo:data").getString());
+            }
+            catch (Exception e)
+            {
+               e.printStackTrace();
+               fail(e.getMessage());
+            }
+            finally
+            {
+               if (back1 != null)
+                  back1.logout();
+            }
+         }
+      }
+      else
+         fail("There are no backup files in " + backDir.getAbsolutePath());
+   }
+   
+   public void testRepositoryFullBackupAsynchronusRestore() throws Exception
+   {
+      // backup
+      File backDir = new File("target/backup");
+      backDir.mkdirs();
+
+      RepositoryBackupConfig config = new RepositoryBackupConfig();
+      config.setRepository(repository.getName());
+      config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
+
+      config.setBackupDir(backDir);
+
+      backup.startBackup(config);
+
+      RepositoryBackupChain bch = backup.findRepositoryBackup(repository.getName());
+
+      // wait till full backup will be stopped
+      while (bch.getState() != RepositoryBackupChain.FINISHED)
+      {
+         Thread.yield();
+         Thread.sleep(50);
+      }
+
+      // stop fullBackup
+
+      backup.stopBackup(bch);
+
+      // restore
+      RepositoryEntry re = (RepositoryEntry)ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
+      
+      String newRepositoryName = "repo_restored_2";
+      RepositoryEntry newRepositoryEntry = makeRepositoryEntry(newRepositoryName, re, "jdbcjcr_to_repository_restore_1", null);
+
+      File backLog = new File(bch.getLogFilePath());
+      if (backLog.exists())
+      {
+         RepositoryBackupChainLog bchLog = new RepositoryBackupChainLog(backLog);
+
+         assertNotNull(bchLog.getStartedTime());
+         assertNotNull(bchLog.getFinishedTime());
+
+         backup.restore(bchLog, newRepositoryEntry, true);
+         
+         JobRepositoryRestore job = backup.getLastRepositoryRestore(newRepositoryName);
+         
+         while (job.getStateRestore() != JobRepositoryRestore.REPOSITORY_RESTORE_SUCCESSFUL
+                  || job.getStateRestore() == JobRepositoryRestore.REPOSITORY_RESTORE_FAIL)
+         {
+            Thread.yield();
+            Thread.sleep(50);
+         }
+
+         // check
+         ManageableRepository restoredRepository = repositoryService.getRepository(newRepositoryName);
+
+         for (String wsName : restoredRepository.getWorkspaceNames())
+         {
+            SessionImpl back1 = null;
+            try
+            {
+               back1 = (SessionImpl)repository.login(credentials, wsName);
+               Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
+               assertEquals("Restored content should be same", "property-5", ws1backTestRoot.getNode("node_5")
+                  .getProperty("exo:data").getString());
+            }
+            catch (Exception e)
+            {
+               e.printStackTrace();
+               fail(e.getMessage());
+            }
+            finally
+            {
+               if (back1 != null)
+                  back1.logout();
+            }
+         }
+      }
+      else
+         fail("There are no backup files in " + backDir.getAbsolutePath());
+   }
+   
+   public void testRepositoryFullBackupAsynchronusRestoreWorkspaceMapping() throws Exception
+   {
+      // backup
+      File backDir = new File("target/backup");
+      backDir.mkdirs();
+
+      RepositoryBackupConfig config = new RepositoryBackupConfig();
+      config.setRepository(repository.getName());
+      config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
+
+      config.setBackupDir(backDir);
+
+      backup.startBackup(config);
+
+      RepositoryBackupChain bch = backup.findRepositoryBackup(repository.getName());
+
+      // wait till full backup will be stopped
+      while (bch.getState() != RepositoryBackupChain.FINISHED)
+      {
+         Thread.yield();
+         Thread.sleep(50);
+      }
+
+      // stop fullBackup
+
+      backup.stopBackup(bch);
+      
+
+      // restore
+      RepositoryEntry re = (RepositoryEntry)ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
+      
+      String newRepositoryName = "repo_restored_3";
+      RepositoryEntry newRepositoryEntry = makeRepositoryEntry(newRepositoryName, re, "jdbcjcr_to_repository_restore_1", null);
+      
+      // create workspace mappingS
+      Map<String, String> workspaceMapping  = new HashedMap();
+      for (WorkspaceEntry we : newRepositoryEntry.getWorkspaceEntries())
+      {
+         workspaceMapping.put(we.getName(), we.getName() + "_mapped");
+      }
+      
+      // Change workspaeNames
+      for (WorkspaceEntry we : newRepositoryEntry.getWorkspaceEntries())
+      {
+         if (newRepositoryEntry.getSystemWorkspaceName().equals(we.getName()))
+         {
+            newRepositoryEntry.setSystemWorkspaceName(workspaceMapping.get(we.getName()));
+            newRepositoryEntry.setDefaultWorkspaceName(workspaceMapping.get(we.getName()));
+         }
+         
+         we.setName(workspaceMapping.get(we.getName()));
+         we.setUniqueName(we.getUniqueName() + workspaceMapping.get(we.getName()));
+      }
+
+      File backLog = new File(bch.getLogFilePath());
+      if (backLog.exists())
+      {
+         RepositoryBackupChainLog bchLog = new RepositoryBackupChainLog(backLog);
+
+         assertNotNull(bchLog.getStartedTime());
+         assertNotNull(bchLog.getFinishedTime());
+
+         backup.restore(bchLog, newRepositoryEntry, workspaceMapping,true);
+         
+         JobRepositoryRestore job = backup.getLastRepositoryRestore(newRepositoryName);
+         
+         while (job.getStateRestore() != JobRepositoryRestore.REPOSITORY_RESTORE_SUCCESSFUL
+                  || job.getStateRestore() == JobRepositoryRestore.REPOSITORY_RESTORE_FAIL)
+         {
+            Thread.yield();
+            Thread.sleep(50);
+         }
+
+         // check
+         ManageableRepository restoredRepository = repositoryService.getRepository(newRepositoryName);
+
+         for (String wsName : restoredRepository.getWorkspaceNames())
+         {
+            SessionImpl back1 = null;
+            try
+            {
+               back1 = (SessionImpl)repository.login(credentials, workspaceMapping.get(wsName));
+               Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
+               assertEquals("Restored content should be same", "property-5", ws1backTestRoot.getNode("node_5")
+                  .getProperty("exo:data").getString());
+            }
+            catch (Exception e)
+            {
+               e.printStackTrace();
+               fail(e.getMessage());
+            }
+            finally
+            {
+               if (back1 != null)
+                  back1.logout();
+            }
+         }
+      }
+      else
+         fail("There are no backup files in " + backDir.getAbsolutePath());
+   }
+
+   /*public void testAutoStopRepositoryBackupIncrRepetion() throws Exception
+   {
+      // backup
+      File backDir = new File("target/backup/" + repository.getName() + "123");
+      backDir.mkdirs();
+
+      RepositoryBackupConfig config = new RepositoryBackupConfig();
+      config.setRepository(repository.getName());
+      config.setBackupType(BackupManager.FULL_AND_INCREMENTAL);
+      config.setBackupDir(backDir);
+      config.setIncrementalJobPeriod(4);
+      config.setIncrementalJobNumber(2);
+
+      final RepositoryBackupChain bch = backup.startBackup(config);
+
+      Thread.sleep(20000);
+
+      assertTrue(bch.isFinished());
+
+      for (RepositoryBackupChain chain : backup.getCurrentRepositoryBackups())
+         if (bch.getBackupId().equals(chain.getBackupId()))
+            fail("The backup with id '" + chain.getBackupId() + "' should not be active");
+   }*/
 }

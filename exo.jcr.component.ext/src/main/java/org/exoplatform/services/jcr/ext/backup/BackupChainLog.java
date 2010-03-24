@@ -309,7 +309,7 @@ public class BackupChainLog
       return finishedTime;
    }
 
-   class LogReader
+   private class LogReader
    {
       protected Log logger = ExoLogger.getLogger("ext.LogWriter");
 
@@ -533,7 +533,7 @@ public class BackupChainLog
       }
    }
 
-   class LogWriter
+   private class LogWriter
    {
 
       protected Log logger = ExoLogger.getLogger("ext.LogWriter");

@@ -19,13 +19,16 @@
 package org.exoplatform.services.jcr.ext.backup;
 
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.ext.backup.impl.BackupMessage;
 import org.exoplatform.services.jcr.ext.backup.impl.BackupScheduler;
+import org.exoplatform.services.jcr.ext.backup.impl.JobRepositoryRestore;
 import org.exoplatform.services.jcr.ext.backup.impl.JobWorkspaceRestore;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.jcr.RepositoryException;
@@ -57,6 +60,14 @@ public interface BackupManager
     *           return the set of current backups 
     */
    Set<BackupChain> getCurrentBackups();
+   
+   /**
+    * Getting current repository backups.
+    *
+    * @return Set
+    *           return the set of current backups 
+    */
+   Set<RepositoryBackupChain> getCurrentRepositoryBackups();
 
    /**
     * Getting list of restores.
@@ -67,7 +78,7 @@ public interface BackupManager
    List<JobWorkspaceRestore> getRestores();
 
    /**
-    * Getting last restore by repository nam workspace.
+    * Getting last restore by repository and workspace name.
     *
     * @param repositoryName
     *          String,  the repository name
@@ -77,6 +88,24 @@ public interface BackupManager
     *           return the job to restore
     */
    JobWorkspaceRestore getLastRestore(String repositoryName, String workspaceName);
+   
+   /**
+    * Getting list of repository restores.
+    *
+    * @return List
+    *           return the list of backups
+    */
+   List<JobRepositoryRestore> getRepositoryRestores();
+
+   /**
+    * Getting last repository restore by repository name.
+    *
+    * @param repositoryName
+    *          String,  the repository name
+    * @return JobWorkspaceRestore
+    *           return the job to restore
+    */
+   JobRepositoryRestore getLastRepositoryRestore(String repositoryName);
 
    /**
     * Getting all backup logs .
@@ -229,4 +258,88 @@ public interface BackupManager
     *           return the default incremental job period 
     */
    long getDefaultIncrementalJobPeriod();
+   
+   /**
+    * Starting repository backup.
+    *
+    * @param config
+    *          RepositoryBackupConfig, the backup configuration to repository
+    * @return RepositoryBackupChain
+    *           return the repository backup chain
+    * @throws BackupOperationException BackupOperationException
+    *           will be generate the exception BackupOperationException
+    * @throws BackupConfigurationException
+    *           will be generate the exception BackupConfigurationException
+    * @throws RepositoryException
+    *           will be generate the exception RepositoryException
+    * @throws RepositoryConfigurationException
+    *           will be generate the exception RepositoryConfigurationException
+    */
+   RepositoryBackupChain startBackup(RepositoryBackupConfig config) throws BackupOperationException, BackupConfigurationException,
+      RepositoryException, RepositoryConfigurationException;
+   
+   /**
+    * Stop backup.
+    *
+    * @param backup
+    *          RepositoryBackupChain, the repositroy backup chain 
+    */
+   void stopBackup(RepositoryBackupChain backup);
+   
+   /**
+    * Repository restore from backup.
+    *
+    * @param log
+    *          RepositoryBackupChainLog, the repository backup log
+    * @param repositoryEntry
+    *          RepositoryEntry, the repository entry
+    * @param workspaceNamesCorrespondMap
+    *          Map<String, String>, the map with correspondence workspace name in RepositoryEntry and RepositoryBackupChainLog.
+    * @param asynchronous
+    *          boolean, in 'true' then asynchronous restore.   
+    * @throws BackupOperationException
+    *           will be generate the exception BackupOperationException 
+    * @throws BackupConfigurationException
+    *           will be generate the exception BackupConfigurationException 
+    * @throws RepositoryException
+    *           will be generate the exception RepositoryException 
+    * @throws RepositoryConfigurationException
+    *           will be generate the exception RepositoryConfigurationException 
+    */
+   void restore(RepositoryBackupChainLog log, RepositoryEntry repositoryEntry, Map<String, String> workspaceNamesCorrespondMap, boolean asynchronous)
+      throws BackupOperationException, BackupConfigurationException, RepositoryException,
+      RepositoryConfigurationException;
+   
+   /**
+    * Repository restore from backup.
+    *
+    * @param log
+    *          RepositoryBackupChainLog, the repository backup log
+    * @param repositoryEntry
+    *          RepositoryEntry, the repository entry
+    * @param asynchronous
+    *          boolean, in 'true' then asynchronous restore.   
+    * @throws BackupOperationException
+    *           will be generate the exception BackupOperationException 
+    * @throws BackupConfigurationException
+    *           will be generate the exception BackupConfigurationException 
+    * @throws RepositoryException
+    *           will be generate the exception RepositoryException 
+    * @throws RepositoryConfigurationException
+    *           will be generate the exception RepositoryConfigurationException 
+    */
+   void restore(RepositoryBackupChainLog log, RepositoryEntry repositoryEntry, boolean asynchronous)
+      throws BackupOperationException, BackupConfigurationException, RepositoryException,
+      RepositoryConfigurationException;
+
+   /**
+    * Finding current backup by repository.
+    *
+    * @param reposytore
+    *          String, the repository name
+    * @return RepositoryBackupChain
+    *           return the current backup to repository 
+    */
+   RepositoryBackupChain findRepositoryBackup(String repository);
+   
 }

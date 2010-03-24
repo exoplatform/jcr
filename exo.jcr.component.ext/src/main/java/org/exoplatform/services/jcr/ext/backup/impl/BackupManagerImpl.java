@@ -18,13 +18,17 @@
  */
 package org.exoplatform.services.jcr.ext.backup.impl;
 
+import org.apache.commons.collections.map.HashedMap;
+import org.bouncycastle.jce.interfaces.BCKeyStore;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.config.WorkspaceInitializerEntry;
+import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.dataflow.ChangesLogIterator;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
@@ -40,6 +44,9 @@ import org.exoplatform.services.jcr.ext.backup.BackupJobListener;
 import org.exoplatform.services.jcr.ext.backup.BackupManager;
 import org.exoplatform.services.jcr.ext.backup.BackupOperationException;
 import org.exoplatform.services.jcr.ext.backup.JobEntryInfo;
+import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChain;
+import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChainLog;
+import org.exoplatform.services.jcr.ext.backup.RepositoryBackupConfig;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
 import org.exoplatform.services.jcr.ext.registry.RegistryEntry;
 import org.exoplatform.services.jcr.ext.registry.RegistryService;
@@ -75,6 +82,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.jcr.PathNotFoundException;
@@ -122,11 +130,18 @@ public class BackupManagerImpl
    private String incrementalBackupType;
 
    private final Set<BackupChain> currentBackups;
+   
+   private final Set<RepositoryBackupChain> currentRepositoryBackups;
 
    /**
-    * The list of restore job.
+    * The list of workspace restore job.
     */
    private List<JobWorkspaceRestore> restoreJobs;
+   
+   /**
+    * The list of repository restore job.
+    */
+   private List<JobRepositoryRestore> restoreRepositoryJobs;
 
    private InitParams initParams;
 
@@ -329,6 +344,8 @@ public class BackupManagerImpl
       this.initParams = initParams;
 
       currentBackups = Collections.synchronizedSet(new HashSet<BackupChain>());
+      
+      currentRepositoryBackups = Collections.synchronizedSet(new HashSet<RepositoryBackupChain>());
 
       fileCleaner = new FileCleaner(10000);
 
@@ -337,6 +354,7 @@ public class BackupManagerImpl
       scheduler = new BackupScheduler(this, messages);
 
       this.restoreJobs = new ArrayList<JobWorkspaceRestore>();
+      this.restoreRepositoryJobs = new ArrayList<JobRepositoryRestore>();
       this.stopper = new AutoStopper();
       this.stopper.start();
    }
@@ -411,10 +429,10 @@ public class BackupManagerImpl
       BackupConfig config = log.getBackupConfig();
 
       String reposytoryName = (repositoryName == null ? config.getRepository() : repositoryName);
-      String workspaseName = workspaceEntry.getName();
+      String workspaceName = workspaceEntry.getName();
 
       // ws should be registered not created
-      if (!workspaceAlreadyExist(reposytoryName, workspaseName))
+      if (!workspaceAlreadyExist(reposytoryName, workspaceName))
       {
 
          for (int i = 0; i < list.size(); i++)
@@ -423,7 +441,7 @@ public class BackupManagerImpl
             {
                try
                {
-                  fullRestore(list.get(i).getURL().getPath(), reposytoryName, workspaseName, workspaceEntry);
+                  fullRestore(list.get(i).getURL().getPath(), reposytoryName, workspaceName, workspaceEntry);
                }
                catch (FileNotFoundException e)
                {
@@ -440,7 +458,7 @@ public class BackupManagerImpl
                // events which are logged in chan log one after another
                try
                {
-                  incrementalRestore(list.get(i).getURL().getPath(), reposytoryName, workspaseName);
+                  incrementalRestore(list.get(i).getURL().getPath(), reposytoryName, workspaceName);
                }
                catch (FileNotFoundException e)
                {
@@ -458,7 +476,7 @@ public class BackupManagerImpl
          }
       }
       else
-         throw new BackupConfigurationException("Workspace should exists " + workspaseName);
+         throw new BackupConfigurationException("Workspace should exists " + workspaceName);
    }
 
    protected void restoreOverInitializer(BackupChainLog log, String repositoryName, WorkspaceEntry workspaceEntry)
@@ -470,10 +488,10 @@ public class BackupManagerImpl
       BackupConfig config = log.getBackupConfig();
 
       String reposytoryName = (repositoryName == null ? config.getRepository() : repositoryName);
-      String workspaseName = workspaceEntry.getName();
+      String workspaceName = workspaceEntry.getName();
 
       // ws should be registered not created
-      if (!workspaceAlreadyExist(reposytoryName, workspaseName))
+      if (!workspaceAlreadyExist(reposytoryName, workspaceName))
       {
 
          for (int i = 0; i < list.size(); i++)
@@ -501,7 +519,7 @@ public class BackupManagerImpl
                // events which are logged in chan log one after another
                try
                {
-                  incrementalRestore(list.get(i).getURL().getPath(), reposytoryName, workspaseName);
+                  incrementalRestore(list.get(i).getURL().getPath(), reposytoryName, workspaceName);
                }
                catch (FileNotFoundException e)
                {
@@ -519,7 +537,7 @@ public class BackupManagerImpl
          }
       }
       else
-         throw new BackupConfigurationException("Workspace should exists " + workspaseName);
+         throw new BackupConfigurationException("Workspace should exists " + workspaceName);
    }
 
    private boolean workspaceAlreadyExist(String repository, String workspace) throws RepositoryException,
@@ -557,7 +575,33 @@ public class BackupManagerImpl
    BackupChain startBackup(BackupConfig config, BackupJobListener jobListener) throws BackupOperationException,
             BackupConfigurationException, RepositoryException, RepositoryConfigurationException
    {
+      validateBackupConfig(config);
 
+      BackupChain bchain =
+         new BackupChainImpl(config, logsDirectory, repoService.getRepository(config.getRepository()),
+                  fullBackupType, incrementalBackupType, IdGenerator.generate());
+      
+      bchain.addListener(messagesListener);
+      bchain.addListener(jobListener);
+
+      currentBackups.add(bchain);
+      bchain.startBackup();
+
+      return bchain;
+   }
+   
+   /**
+    * Initialize backup chain to workspace backup. 
+    * 
+    * @param config
+    * @return
+    * @throws BackupOperationException
+    * @throws BackupConfigurationException
+    * @throws RepositoryException
+    * @throws RepositoryConfigurationException
+    */
+   private void validateBackupConfig(RepositoryBackupConfig config) throws BackupConfigurationException
+   {
       if (config.getIncrementalJobPeriod() < 0)
          throw new BackupConfigurationException("The parameter 'incremental job period' can not be negative.");
 
@@ -566,18 +610,6 @@ public class BackupManagerImpl
 
       if (config.getIncrementalJobPeriod() == 0 && config.getBackupType() == BackupManager.FULL_AND_INCREMENTAL)
          config.setIncrementalJobPeriod(defaultIncrementalJobPeriod);
-
-      BackupChain bchain =
-               new BackupChainImpl(config, logsDirectory, repoService.getRepository(config.getRepository()),
-                        fullBackupType, incrementalBackupType, IdGenerator.generate());
-
-      bchain.addListener(messagesListener);
-      bchain.addListener(jobListener);
-
-      currentBackups.add(bchain);
-      bchain.startBackup();
-
-      return bchain;
    }
 
    /**
@@ -1160,6 +1192,31 @@ public class BackupManagerImpl
 
       return null;
    }
+   
+   /**
+    * {@inheritDoc}
+    */
+   public JobRepositoryRestore getLastRepositoryRestore(String repositoryName)
+   {
+      
+      for (int i = restoreRepositoryJobs.size() - 1; i >= 0; i--)
+      {
+         JobRepositoryRestore job = restoreRepositoryJobs.get(i);
+
+         if (repositoryName.equals(job.getRepositoryName()))
+         {
+            return job;
+
+         }
+      }
+
+      return null;
+   }
+
+   public List<JobRepositoryRestore> getRepositoryRestores()
+   {
+      return restoreRepositoryJobs;
+   }
 
    /**
     * {@inheritDoc}
@@ -1179,5 +1236,155 @@ public class BackupManagerImpl
       {
          this.restoreOverInitializer(log, repositoryName, workspaceEntry);
       }
+   }
+   
+   /**
+    * {@inheritDoc}
+    */
+   public void restore(RepositoryBackupChainLog log, RepositoryEntry repositoryEntry, boolean asynchronous)
+            throws BackupOperationException, BackupConfigurationException, RepositoryException,
+            RepositoryConfigurationException
+   {
+      this.restore(log, repositoryEntry, null, asynchronous);
+   }
+   
+   /**
+    * {@inheritDoc}
+    */
+   public void restore(RepositoryBackupChainLog rblog, RepositoryEntry repositoryEntry,
+            Map<String, String> workspaceNamesCorrespondMap, boolean asynchronous) throws BackupOperationException,
+            BackupConfigurationException, RepositoryException, RepositoryConfigurationException
+   {
+      Map<String, BackupChainLog> workspacesMapping = new HashedMap();
+
+      Map<String, BackupChainLog> backups = new HashedMap();
+      
+      for (String path : rblog.getWorkspaceBackupsInfo())
+      {
+         BackupChainLog bLog = new BackupChainLog(new File(path));
+         backups.put(bLog.getBackupConfig().getWorkspace(), bLog);
+      }
+      
+      if (workspaceNamesCorrespondMap == null) 
+      {
+         if (!rblog.getSystemWorkspace().equals(repositoryEntry.getSystemWorkspaceName())) 
+         {
+            throw new BackupConfigurationException("The backup to system workspace is not system workspace in repository entry: " + rblog.getSystemWorkspace() + " is not equal " + repositoryEntry.getSystemWorkspaceName());  
+         }
+         
+         if (backups.size() != repositoryEntry.getWorkspaceEntries().size()) 
+         {
+            throw new BackupConfigurationException("The repository entry is contains more or less workspace entry than backups of workspace in " + rblog.getLogFilePath());  
+         }
+         
+         for (WorkspaceEntry wsEntry : repositoryEntry.getWorkspaceEntries())
+         {
+            if (!backups.containsKey(wsEntry.getName()))
+            {
+               throw new BackupConfigurationException("The workspace '" + wsEntry.getName() + "' is not found in backup " + rblog.getLogFilePath());
+            }
+            else
+            {
+               workspacesMapping.put(wsEntry.getName(), backups.get(wsEntry.getName()));
+            }
+         }
+      }
+      else
+      {
+         if (!repositoryEntry.getSystemWorkspaceName().equals(workspaceNamesCorrespondMap.get(rblog.getSystemWorkspace()))) 
+         {
+            throw new BackupConfigurationException("The backup to system workspace is not system workspace in repository entry: " + repositoryEntry.getSystemWorkspaceName() + " is not equal " + workspaceNamesCorrespondMap.get(rblog.getSystemWorkspace()));  
+         }
+         
+         if (workspaceNamesCorrespondMap.size() != repositoryEntry.getWorkspaceEntries().size()) 
+         {
+            throw new BackupConfigurationException("The repository entry is contains more or less workspace entry than backups of workspace in " + rblog.getLogFilePath());
+         }
+         
+         for (WorkspaceEntry wsEntry : repositoryEntry.getWorkspaceEntries())
+         {
+            if (!workspaceNamesCorrespondMap.containsKey(wsEntry.getName()))
+            {
+               throw new BackupConfigurationException("The workspace '" + wsEntry.getName() + "' is not found workspaceNamesCorrespondMap  : " + workspaceNamesCorrespondMap.keySet());
+            }
+            else if (!backups.containsKey(wsEntry.getName()))
+            {
+               throw new BackupConfigurationException("The workspace '" + wsEntry.getName() + "' is not found in backup " + rblog.getLogFilePath());
+            }
+            else
+            {
+               workspacesMapping.put(wsEntry.getName(), backups.get(wsEntry.getName()));
+            }
+         }
+      }
+      
+      JobRepositoryRestore jobRepositoryRestore =
+               new JobRepositoryRestore(repoService, this, repositoryEntry, workspacesMapping);
+      
+      if (asynchronous)
+      {
+         restoreRepositoryJobs.add(jobRepositoryRestore);
+         jobRepositoryRestore.start();
+      }
+      else
+      {
+         jobRepositoryRestore.restore();
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public RepositoryBackupChain startBackup(RepositoryBackupConfig config) throws BackupOperationException,
+            BackupConfigurationException, RepositoryException, RepositoryConfigurationException
+   {
+      validateBackupConfig(config);
+
+      ManageableRepository repository = repoService.getRepository(config.getRepository());
+
+      File dir =
+               new File(config.getBackupDir() + File.separator + "repository_" + config.getRepository() + "_backup_"
+                        + System.currentTimeMillis());
+      dir.mkdir();
+      config.setBackupDir(dir);
+
+      RepositoryBackupChain repositoryBackupChain =
+               new RepositoryBackupChainImpl(config, logsDirectory, repository, fullBackupType, incrementalBackupType,
+                        IdGenerator.generate());
+      
+      repositoryBackupChain.startBackup();
+      
+      currentRepositoryBackups.add(repositoryBackupChain);
+
+      return repositoryBackupChain;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void stopBackup(RepositoryBackupChain backup)
+   {
+      backup.stopBackup();
+      currentRepositoryBackups.remove(backup);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public RepositoryBackupChain findRepositoryBackup(String repository)
+   {
+      Iterator<RepositoryBackupChain> it = currentRepositoryBackups.iterator();
+      while (it.hasNext())
+      {
+         RepositoryBackupChain chain = it.next();
+         if (repository.equals(chain.getBackupConfig().getRepository()))
+            return chain;
+      }
+      return null;
+   }
+
+   public Set<RepositoryBackupChain> getCurrentRepositoryBackups()
+   {
+      return currentRepositoryBackups;
    }
 }

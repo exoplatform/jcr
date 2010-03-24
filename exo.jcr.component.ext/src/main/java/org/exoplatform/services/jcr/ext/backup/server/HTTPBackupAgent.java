@@ -762,7 +762,7 @@ public class HTTPBackupAgent
    @Produces(MediaType.APPLICATION_JSON)
    @RolesAllowed("administrators")
    @Path("/info/backup/{repo}/{ws}")
-   public Response infoBackupByWorkspase(@PathParam("repo") String repository, @PathParam("ws") String workspace)
+   public Response infoBackupByWorkspace(@PathParam("repo") String repository, @PathParam("ws") String workspace)
    {
       try
       {

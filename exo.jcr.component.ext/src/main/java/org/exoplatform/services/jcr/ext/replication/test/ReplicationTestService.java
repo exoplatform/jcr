@@ -131,7 +131,7 @@ public class ReplicationTestService implements ResourceContainer
          /**
           * The move node by workspace.
           */
-         public static final String WORKSPASE_MOVE = "workspaceMove";
+         public static final String WORKSPACE_MOVE = "workspaceMove";
 
          /**
           * The move node by session.

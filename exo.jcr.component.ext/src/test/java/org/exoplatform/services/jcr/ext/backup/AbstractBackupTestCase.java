@@ -18,6 +18,23 @@
  */
 package org.exoplatform.services.jcr.ext.backup;
 
+import java.io.File;
+import java.io.FileFilter;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.Map;
+
+import javax.jcr.ItemExistsException;
+import javax.jcr.Node;
+import javax.jcr.PathNotFoundException;
+import javax.jcr.RepositoryException;
+import javax.jcr.ValueFormatException;
+import javax.jcr.lock.LockException;
+import javax.jcr.nodetype.ConstraintViolationException;
+import javax.jcr.version.VersionException;
+
 import org.exoplatform.services.jcr.config.ContainerEntry;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
@@ -27,23 +44,6 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.ext.BaseStandaloneTest;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
-
-import java.io.File;
-import java.io.FileFilter;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Iterator;
-
-import javax.jcr.ItemExistsException;
-import javax.jcr.Node;
-import javax.jcr.PathNotFoundException;
-import javax.jcr.Repository;
-import javax.jcr.RepositoryException;
-import javax.jcr.ValueFormatException;
-import javax.jcr.lock.LockException;
-import javax.jcr.nodetype.ConstraintViolationException;
-import javax.jcr.version.VersionException;
 
 /**
  * Created by The eXo Platform SAS Author : Peter Nedonosko peter.nedonosko@exoplatform.com.ua
@@ -85,12 +85,25 @@ public class AbstractBackupTestCase extends BaseStandaloneTest
          throw new Exception("There are no BackupManagerImpl in configuration");
 
       // ws1
-      SessionImpl ws1 = (SessionImpl)repository.login(credentials, "ws1");
-      ws1TestRoot = ws1.getRootNode().addNode("backupTest");
-      ws1.save();
-      ws1Session = ws1;
-
-      addContent(ws1TestRoot, 1, 10, 1);
+      
+      for (String wsName : repository.getWorkspaceNames())
+      {
+         if ("ws1".equals(wsName))
+         {
+            ws1Session = (SessionImpl) repository.login(credentials, "ws1");
+            ws1TestRoot = ws1Session.getRootNode().addNode("backupTest");
+            ws1Session.save();
+            addContent(ws1TestRoot, 1, 10, 1);
+            
+         }
+         else
+         {
+            SessionImpl ws = (SessionImpl) repository.login(credentials, wsName);
+            Node wsTestRoot = ws.getRootNode().addNode("backupTest");
+            ws.save();
+            addContent(wsTestRoot, 1, 10, 1);
+         }
+      }
 
       // ws2
       ws2Session = (SessionImpl)repository.login(credentials, "ws2");
@@ -100,8 +113,21 @@ public class AbstractBackupTestCase extends BaseStandaloneTest
    protected void tearDown() throws Exception
    {
 
-      ws1Session.getRootNode().getNode("backupTest").remove();
-      ws1Session.save();
+      for (String wsName : repository.getWorkspaceNames())
+      {
+         if ("ws1".equals(wsName))
+         {
+            ws1Session = (SessionImpl) repository.login(credentials, "ws1");
+            ws1Session.getRootNode().getNode("backupTest").remove();
+            ws1Session.save();
+         }
+         else
+         {
+            SessionImpl ws = (SessionImpl)repository.login(credentials, wsName);
+            ws.getRootNode().getNode("backupTest").remove();
+            ws.save();
+         }
+      }
 
       super.tearDown();
    }
@@ -116,11 +142,7 @@ public class AbstractBackupTestCase extends BaseStandaloneTest
       // container.getComponentInstanceOfType(RepositoryContainer.class);
       ws1back.setUniqueName(((RepositoryImpl)ws1Session.getRepository()).getName() + "_" + ws1back.getName()); // EXOMAN
 
-      Repository repository1;
-
       ws1back.setAccessManager(ws1e.getAccessManager());
-      ws1back.setAutoInitializedRootNt(ws1e.getAutoInitializedRootNt());
-      ws1back.setAutoInitPermissions(ws1e.getAutoInitPermissions());
       ws1back.setCache(ws1e.getCache());
       ws1back.setContainer(ws1e.getContainer());
       ws1back.setLockManager(ws1e.getLockManager());
@@ -129,7 +151,7 @@ public class AbstractBackupTestCase extends BaseStandaloneTest
       ArrayList qParams = new ArrayList();
       // qParams.add(new SimpleParameterEntry("indexDir", "target" + File.separator+ "temp" +
       // File.separator +"index" + name));
-      qParams.add(new SimpleParameterEntry("indexDir", "target" + File.separator + name));
+      qParams.add(new SimpleParameterEntry("indexDir", "target" + File.separator + name + System.currentTimeMillis()));
       QueryHandlerEntry qEntry =
          new QueryHandlerEntry("org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex", qParams);
 
@@ -144,7 +166,81 @@ public class AbstractBackupTestCase extends BaseStandaloneTest
          if (newp.getName().equals("source-name"))
             newp.setValue(sourceName);
          else if (newp.getName().equals("swap-directory"))
-            newp.setValue("target/temp/swap/" + name);
+            newp.setValue("target/temp/swap/" + name + System.currentTimeMillis());
+
+         params.add(newp);
+      }
+
+      ContainerEntry ce =
+         new ContainerEntry("org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer", params);
+      ws1back.setContainer(ce);
+
+      return ws1back;
+   }
+   
+   protected RepositoryEntry makeRepositoryEntry(String repoName, RepositoryEntry baseRepoEntry, String sourceName, Map<String, String> workspaceMapping)
+   {
+      ArrayList<WorkspaceEntry> wsEntries = new ArrayList<WorkspaceEntry>();
+      
+      for (WorkspaceEntry wsEntry : baseRepoEntry.getWorkspaceEntries())
+      {
+         String newWorkspaceName = wsEntry.getName(); 
+         if (workspaceMapping != null)
+         {
+            newWorkspaceName = workspaceMapping.get(wsEntry.getName());
+         }
+         
+         WorkspaceEntry newWSEntry = makeWorkspaceEntry(wsEntry, newWorkspaceName, repoName, sourceName);
+         
+         wsEntries.add(newWSEntry);
+      }
+      
+      RepositoryEntry newRepositoryEntry = new RepositoryEntry();
+      
+      newRepositoryEntry.setSystemWorkspaceName(workspaceMapping == null ? baseRepoEntry.getSystemWorkspaceName() : workspaceMapping.get(baseRepoEntry.getSystemWorkspaceName()));
+      newRepositoryEntry.setAccessControl(baseRepoEntry.getAccessControl());
+      newRepositoryEntry.setAuthenticationPolicy(baseRepoEntry.getAuthenticationPolicy());
+      newRepositoryEntry.setDefaultWorkspaceName(workspaceMapping == null ? baseRepoEntry.getDefaultWorkspaceName() : workspaceMapping.get(baseRepoEntry.getDefaultWorkspaceName()));
+      newRepositoryEntry.setName(repoName);
+      newRepositoryEntry.setSecurityDomain(baseRepoEntry.getSecurityDomain());
+      newRepositoryEntry.setSessionTimeOut(baseRepoEntry.getSessionTimeOut());
+      
+      newRepositoryEntry.setWorkspaceEntries(wsEntries);
+      
+      return newRepositoryEntry;
+   }
+   
+   protected WorkspaceEntry makeWorkspaceEntry(WorkspaceEntry baseWorkspaceEntry, String wsName, String repoName, String sourceName)
+   {
+      WorkspaceEntry ws1back = new WorkspaceEntry();
+      ws1back.setName(wsName);
+      ws1back.setUniqueName(repoName + "_" + ws1back.getName());
+
+      ws1back.setAccessManager(baseWorkspaceEntry.getAccessManager());
+      ws1back.setCache(baseWorkspaceEntry.getCache());
+      ws1back.setContainer(baseWorkspaceEntry.getContainer());
+      ws1back.setLockManager(baseWorkspaceEntry.getLockManager());
+
+      // Indexer
+      ArrayList qParams = new ArrayList();
+      qParams.add(new SimpleParameterEntry("indexDir", "target" + File.separator + repoName + "_" + wsName));
+      QueryHandlerEntry qEntry =
+         new QueryHandlerEntry("org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex", qParams);
+
+      ws1back.setQueryHandler(qEntry); 
+      
+      ArrayList params = new ArrayList();
+      for (Iterator i = ws1back.getContainer().getParameters().iterator(); i.hasNext();)
+      {
+         SimpleParameterEntry p = (SimpleParameterEntry)i.next();
+         SimpleParameterEntry newp = new SimpleParameterEntry(p.getName(), p.getValue());
+
+         if (newp.getName().equals("source-name"))
+            newp.setValue(sourceName);
+         else if (newp.getName().equals("swap-directory"))
+            newp.setValue("target/temp/swap/"  + repoName + "_" + wsName);
+         else if (newp.getName().equals("multi-db"))
+            newp.setValue("false");
 
          params.add(newp);
       }

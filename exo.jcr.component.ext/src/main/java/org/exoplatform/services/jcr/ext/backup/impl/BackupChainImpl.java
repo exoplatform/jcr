@@ -247,6 +247,14 @@ public class BackupChainImpl implements BackupChain
    {
       return fullBackup.getState();
    }
+   
+   public int getIncrementalBackupState()
+   {
+      if (incrementalBackup == null)
+         throw new RuntimeException("The incremental bacup was not configured. Only full backup.");
+         
+      return incrementalBackup.getState();
+   }
 
    public String getLogFilePath()
    {

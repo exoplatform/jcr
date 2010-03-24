@@ -27,105 +27,12 @@ import java.io.File;
  * @version $Id: $
  */
 
-public class BackupConfig
+public class BackupConfig extends RepositoryBackupConfig
 {
-
-   /**
-    * The backup type.
-    */
-   private int backupType;
-
-   /**
-    * The repository name.
-    */
-   private String repository;
-
    /**
     * The workspace name. 
     */
    private String workspace;
-
-   /**
-    * The incremental job period.
-    */
-   private long incrementalJobPeriod;
-
-   /**
-    * The incremental job number (the repetition numper).
-    */
-   private int incrementalJobNumber;
-
-   /**
-    * The backup directory.
-    */
-   private File backupDir;
-
-   /**
-    * Getting incremental job period.
-    *
-    * @return long
-    *           return incremental job period.
-    */
-   public long getIncrementalJobPeriod()
-   {
-      return incrementalJobPeriod;
-   }
-
-   /**
-    * Setting incremental job period.
-    *
-    * @param incrementalJobPeriod
-    *          long, the incremental job period
-    */
-   public void setIncrementalJobPeriod(long incrementalJobPeriod)
-   {
-      this.incrementalJobPeriod = incrementalJobPeriod;
-   }
-
-   /**
-    * Getting incremental job period (the repetition period).
-    *
-    * @return int
-    *          return incremental job period 
-    */
-   public int getIncrementalJobNumber()
-   {
-      return incrementalJobNumber;
-   }
-
-   /**
-    * Setting incremental job number (the repetition period).
-    *
-    * @param incrementalJobNumber
-    *          int, the incremental job number
-    *          
-    */
-   public void setIncrementalJobNumber(int incrementalJobNumber)
-   {
-      this.incrementalJobNumber = incrementalJobNumber;
-   }
-
-   /**
-    * Getting the repository name.
-    *
-    * @return String
-    *           return the repository name
-    */
-   public String getRepository()
-   {
-      return repository;
-   }
-
-   /**
-    * Setting the repository name.
-    *
-    * @param repository
-    *          String, the repository name
-    */
-   public void setRepository(String repository)
-   {
-      this.repository = repository;
-   }
 
    /**
     * Getting the workspace name.
@@ -147,49 +54,5 @@ public class BackupConfig
    public void setWorkspace(String workspace)
    {
       this.workspace = workspace;
-   }
-
-   /**
-    * Getting backup directory.
-    *
-    * @return File
-    *           return c 
-    */
-   public File getBackupDir()
-   {
-      return backupDir;
-   }
-
-   /**
-    * Setting the backup directory.
-    *
-    * @param backupDir
-    *          File, the backup directory
-    */
-   public void setBackupDir(File backupDir)
-   {
-      this.backupDir = backupDir;
-   }
-
-   /**
-    * Getting the backup type.
-    *
-    * @return int
-    *           return the backup type
-    */
-   public int getBackupType()
-   {
-      return backupType;
-   }
-
-   /**
-    * Setting the backup type.
-    *
-    * @param backupType
-    *          int, the backup type
-    */
-   public void setBackupType(int backupType)
-   {
-      this.backupType = backupType;
    }
 }
