@@ -33,8 +33,9 @@ public interface IndexUpdateMonitor
 
    /**
     * @param updateInProgress the updateInProgress to set
+    * @param persitentUpdate Additional information, identifying persistent index update
     */
-   void setUpdateInProgress(boolean updateInProgress);
+   void setUpdateInProgress(boolean updateInProgress, boolean persitentUpdate);
 
    /**
     * Adds a new listener of type {@link IndexUpdateMonitorListener}

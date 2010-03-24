@@ -78,15 +78,15 @@ public class TestIndexUpdateMonitor extends TestCase
       assertFalse(indexUpdateMonitor.getUpdateInProgress());
 
       //test set false
-      indexUpdateMonitor.setUpdateInProgress(false);
+      indexUpdateMonitor.setUpdateInProgress(false, true);
       assertFalse(indexUpdateMonitor.getUpdateInProgress());
 
       //test set true
-      indexUpdateMonitor.setUpdateInProgress(true);
+      indexUpdateMonitor.setUpdateInProgress(true, true);
       assertTrue(indexUpdateMonitor.getUpdateInProgress());
 
       //test set false
-      indexUpdateMonitor.setUpdateInProgress(false);
+      indexUpdateMonitor.setUpdateInProgress(false, true);
       assertFalse(indexUpdateMonitor.getUpdateInProgress());
 
    }

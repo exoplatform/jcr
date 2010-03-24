@@ -54,6 +54,8 @@ public class JBossCacheIndexUpdateMonitor implements IndexUpdateMonitor, Indexer
 
    private final Cache<Serializable, Object> cache;
 
+   private boolean localUpdateInProgress = false;
+
    private static final String INDEX_PARAMETERS = "$index_parameters".intern();
 
    private static final String SYSINDEX_PARAMETERS = "$sysindex_parameters".intern();
@@ -83,7 +85,6 @@ public class JBossCacheIndexUpdateMonitor implements IndexUpdateMonitor, Indexer
       this.listeners = new CopyOnWriteArrayList<IndexUpdateMonitorListener>();
       // store parsed FQN to avoid it's parsing each time cache event is generated
       this.parametersFqn = Fqn.fromString(system ? INDEX_PARAMETERS : SYSINDEX_PARAMETERS);
-
       modeHandler.addIndexerIoModeListener(this);
       Node<Serializable, Object> cacheRoot = cache.getRoot();
 
@@ -100,7 +101,8 @@ public class JBossCacheIndexUpdateMonitor implements IndexUpdateMonitor, Indexer
 
       if (IndexerIoMode.READ_WRITE == modeHandler.getMode())
       {
-         setUpdateInProgress(false);
+         // global, replicated set
+         setUpdateInProgress(false, true);
       }
       else
       {
@@ -120,6 +122,8 @@ public class JBossCacheIndexUpdateMonitor implements IndexUpdateMonitor, Indexer
          // In READ_WRITE, the value of UpdateInProgress is changed locally so no need to listen
          // to the cache
          cache.removeCacheListener(this);
+         // possibly indexer was terminated, so status should be reseted
+         setUpdateInProgress(false, true);
       }
       else
       {
@@ -134,15 +138,23 @@ public class JBossCacheIndexUpdateMonitor implements IndexUpdateMonitor, Indexer
     */
    public boolean getUpdateInProgress()
    {
-
-      Object value = cache.get(parametersFqn, PARAMETER_NAME);
-      return value != null ? (Boolean)value : false;
+      if (IndexerIoMode.READ_ONLY == modeHandler.getMode())
+      {
+         Object value = cache.get(parametersFqn, PARAMETER_NAME);
+         return value != null ? (Boolean)value : false;
+      }
+      else
+      {
+         // this node is read-write, so must read local value.
+         // Local value is updated every time, but remote cache value is skipped is volatile changes are performed 
+         return localUpdateInProgress;
+      }
    }
 
    /**
-    * @see org.exoplatform.services.jcr.impl.core.query.lucene.IndexUpdateMonitor#setUpdateInProgress(boolean)
+    * @see org.exoplatform.services.jcr.impl.core.query.lucene.IndexUpdateMonitor#setUpdateInProgress(boolean, boolean)
     */
-   public void setUpdateInProgress(boolean updateInProgress)
+   public void setUpdateInProgress(boolean updateInProgress, boolean persitentUpdate)
    {
       if (IndexerIoMode.READ_ONLY == modeHandler.getMode())
       {
@@ -150,7 +162,13 @@ public class JBossCacheIndexUpdateMonitor implements IndexUpdateMonitor, Indexer
       }
       try
       {
-         cache.put(parametersFqn, PARAMETER_NAME, new Boolean(updateInProgress));
+         // anyway set local update in progress
+         localUpdateInProgress = updateInProgress;
+         if (persitentUpdate)
+         {
+            cache.put(parametersFqn, PARAMETER_NAME, new Boolean(updateInProgress));
+
+         }
          for (IndexUpdateMonitorListener listener : listeners)
          {
             listener.onUpdateInProgressChange(updateInProgress);

@@ -57,9 +57,9 @@ public class DefaultIndexUpdateMonitor implements IndexUpdateMonitor
 
    /**
     * 
-    * @see org.exoplatform.services.jcr.impl.core.query.lucene.IndexUpdateMonitor#setUpdateInProgress(boolean)
+    * @see org.exoplatform.services.jcr.impl.core.query.lucene.IndexUpdateMonitor#setUpdateInProgress(boolean, boolean)
     */
-   public void setUpdateInProgress(boolean updateInProgress)
+   public void setUpdateInProgress(boolean updateInProgress, boolean persitentUpdate)
    {
       this.updateInProgress.set(updateInProgress);
       for (IndexUpdateMonitorListener listener : listeners)

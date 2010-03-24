@@ -432,7 +432,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       synchronized (updateMonitor)
       {
          //updateInProgress = true;
-         indexUpdateMonitor.setUpdateInProgress(true);
+         indexUpdateMonitor.setUpdateInProgress(true, false);
       }
       try
       {
@@ -467,7 +467,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          synchronized (updateMonitor)
          {
             //updateInProgress = false;
-            indexUpdateMonitor.setUpdateInProgress(false);
+            indexUpdateMonitor.setUpdateInProgress(false, false);
             updateMonitor.notifyAll();
             releaseMultiReader();
          }
@@ -514,7 +514,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       synchronized (updateMonitor)
       {
          //updateInProgress = true;
-         indexUpdateMonitor.setUpdateInProgress(true);
+         indexUpdateMonitor.setUpdateInProgress(true, false);
       }
       int num;
       try
@@ -547,7 +547,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          synchronized (updateMonitor)
          {
             //updateInProgress = false;
-            indexUpdateMonitor.setUpdateInProgress(false);
+            indexUpdateMonitor.setUpdateInProgress(false, false);
             updateMonitor.notifyAll();
             releaseMultiReader();
          }
@@ -733,7 +733,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          synchronized (updateMonitor)
          {
             //updateInProgress = true;
-            indexUpdateMonitor.setUpdateInProgress(true);
+            indexUpdateMonitor.setUpdateInProgress(true, true);
          }
          try
          {
@@ -781,7 +781,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             synchronized (updateMonitor)
             {
                //updateInProgress = false;
-               indexUpdateMonitor.setUpdateInProgress(false);
+               indexUpdateMonitor.setUpdateInProgress(false, true);
                updateMonitor.notifyAll();
                releaseMultiReader();
             }
@@ -1395,7 +1395,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                synchronized (updateMonitor)
                {
                   //updateInProgress = true;
-                  indexUpdateMonitor.setUpdateInProgress(true);
+                  indexUpdateMonitor.setUpdateInProgress(true, true);
                }
                try
                {
@@ -1406,7 +1406,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                   synchronized (updateMonitor)
                   {
                      //updateInProgress = false;
-                     indexUpdateMonitor.setUpdateInProgress(false);
+                     indexUpdateMonitor.setUpdateInProgress(false, true);
                      updateMonitor.notifyAll();
                      releaseMultiReader();
                   }
@@ -2415,7 +2415,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       // Release all the current threads
       synchronized (updateMonitor)
       {
-         indexUpdateMonitor.setUpdateInProgress(false);
+         indexUpdateMonitor.setUpdateInProgress(false, true);
          updateMonitor.notifyAll();
          releaseMultiReader();
       }
