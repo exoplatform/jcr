@@ -63,7 +63,7 @@ import javax.sql.DataSource;
 public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase implements Startable
 {
 
-   protected static final Log LOG = ExoLogger.getLogger("jcr.JDBCWorkspaceDataContainer");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.JDBCWorkspaceDataContainer");
 
    /**
     * Indicates if the statistics has to be enabled.

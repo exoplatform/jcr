@@ -49,7 +49,7 @@ public class BinaryValue extends BaseValue implements EditableBinaryValue
 
    protected boolean changed = false;
 
-   protected static Log log = ExoLogger.getLogger("jcr.BinaryValue");
+   protected static Log log = ExoLogger.getLogger("exo.jcr.component.core.BinaryValue");
 
    /**
     * @param text

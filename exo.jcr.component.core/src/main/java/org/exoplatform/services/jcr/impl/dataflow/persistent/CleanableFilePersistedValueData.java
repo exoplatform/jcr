@@ -39,7 +39,7 @@ import javax.jcr.RepositoryException;
 public class CleanableFilePersistedValueData extends FilePersistedValueData
 {
 
-   protected final static Log LOG = ExoLogger.getLogger("jcr.CleanableFileStreamValueData");
+   protected final static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.CleanableFileStreamValueData");
 
    protected FileCleaner cleaner;
 

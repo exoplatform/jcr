@@ -46,7 +46,7 @@ public abstract class FileIOChannel extends ValueFileIOHelper implements ValueIO
    /**
     * Logger.
     */
-   private static Log LOG = ExoLogger.getLogger("jcr.FileIOChannel");
+   private static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.FileIOChannel");
 
    /**
     * Temporary directory. Used for I/O transaction operations and locks.

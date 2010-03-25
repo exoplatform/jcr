@@ -44,7 +44,7 @@ import javax.jcr.RepositoryException;
 public class StorageUpdateManager
 {
 
-   protected static Log log = ExoLogger.getLogger("jcr.StorageUpdateManager");
+   protected static Log log = ExoLogger.getLogger("exo.jcr.component.core.StorageUpdateManager");
 
    public static final String STORAGE_VERSION_1_0_0 = "1.0";
 

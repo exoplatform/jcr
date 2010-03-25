@@ -23,7 +23,7 @@ import javax.transaction.TransactionManager;
  */
 public abstract class TxIsolatedOperation
 {
-   protected static final Log LOG = ExoLogger.getLogger("jcr.TxIsolatedOperation");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.TxIsolatedOperation");
 
    protected final TransactionManager txManager;
 

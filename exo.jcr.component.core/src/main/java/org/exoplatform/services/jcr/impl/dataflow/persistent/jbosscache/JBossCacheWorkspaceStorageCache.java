@@ -21,8 +21,6 @@ package org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
-import org.exoplatform.services.jcr.config.SimpleParameterEntry;
-import org.exoplatform.services.jcr.config.TemplateConfigurationHelper;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
@@ -40,14 +38,9 @@ import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.transaction.TransactionService;
-import org.jboss.cache.CacheFactory;
-import org.jboss.cache.DefaultCacheFactory;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.Node;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -96,7 +89,7 @@ import javax.transaction.TransactionManager;
 public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
 {
 
-   private static final Log LOG = ExoLogger.getLogger("jcr.JBossCacheWorkspaceStorageCache");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.JBossCacheWorkspaceStorageCache");
 
    public static final String JBOSSCACHE_CONFIG = "jbosscache-configuration";
 
@@ -277,7 +270,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
       {
          factory = new ExoJBossCacheFactory<Serializable, Object>(cfm);
       }
-      
+
       this.cache = new BufferedJBossCache(factory.createCache(wsConfig.getCache()));
 
       this.itemsRoot = Fqn.fromElements(ITEMS);

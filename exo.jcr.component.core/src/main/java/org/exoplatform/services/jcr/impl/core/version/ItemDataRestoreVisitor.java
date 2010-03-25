@@ -63,7 +63,7 @@ import javax.jcr.version.OnParentVersionAction;
 public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
 {
 
-   private final Log log = ExoLogger.getLogger("jcr.ItemDataRestoreVisitor");
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.ItemDataRestoreVisitor");
 
    protected final boolean removeExisting;
 

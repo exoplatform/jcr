@@ -22,7 +22,6 @@ import org.jboss.cache.Cache;
 import org.jboss.cache.CacheSPI;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.NodeSPI;
-import org.jboss.cache.eviction.DefaultEvictionActionPolicy;
 import org.jboss.cache.eviction.EvictionActionPolicy;
 
 import java.util.Set;
@@ -40,7 +39,7 @@ public class ParentNodeEvictionActionPolicy implements EvictionActionPolicy
 {
    Cache<?, ?> cache;
 
-   private static final Log log = LogFactory.getLog(DefaultEvictionActionPolicy.class);
+   private static final Log log = LogFactory.getLog("exo.jcr.component.core.DefaultEvictionActionPolicy");
 
    public void setCache(Cache<?, ?> cache)
    {

@@ -41,7 +41,7 @@ public class StringConverter
 
    private static final int ENCODE_CHARS = 7;
 
-   private static Log log = ExoLogger.getLogger("jcr.StringConverter");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.StringConverter");
 
    private static class DNChar
    {

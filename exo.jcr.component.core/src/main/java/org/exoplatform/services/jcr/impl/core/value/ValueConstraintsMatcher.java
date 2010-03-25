@@ -52,7 +52,7 @@ import javax.jcr.nodetype.ConstraintViolationException;
 public class ValueConstraintsMatcher
 {
 
-   protected static Log log = ExoLogger.getLogger("jcr.ValueConstraintsMatcher");
+   protected static Log log = ExoLogger.getLogger("exo.jcr.component.core.ValueConstraintsMatcher");
 
    protected final static String DEFAULT_THRESHOLD = "";
 

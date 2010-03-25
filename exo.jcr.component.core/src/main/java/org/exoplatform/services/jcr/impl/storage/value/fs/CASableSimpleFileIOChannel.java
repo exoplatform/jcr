@@ -42,7 +42,7 @@ import java.util.List;
 public class CASableSimpleFileIOChannel extends SimpleFileIOChannel
 {
 
-   static private final Log LOG = ExoLogger.getLogger("jcr.CASableSimpleFileIOChannel");
+   static private final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.CASableSimpleFileIOChannel");
 
    private final CASableIOSupport cas;
 

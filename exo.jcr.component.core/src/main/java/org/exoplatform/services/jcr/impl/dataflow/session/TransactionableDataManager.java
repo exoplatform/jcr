@@ -55,7 +55,7 @@ public class TransactionableDataManager implements TransactionResource, DataMana
    // VersionableWorkspaceDataManager.save(CompositeChangesLog changesLog) 
    private LocalWorkspaceDataManagerStub storageDataManager;
 
-   protected static Log LOG = ExoLogger.getLogger("jcr.TransactionableDataManager");
+   protected static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.TransactionableDataManager");
 
    private TransactionChangesLog transactionLog;
 

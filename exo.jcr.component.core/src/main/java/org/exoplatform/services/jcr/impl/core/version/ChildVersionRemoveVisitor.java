@@ -46,7 +46,7 @@ import javax.jcr.RepositoryException;
 public class ChildVersionRemoveVisitor extends ItemDataTraversingVisitor
 {
 
-   private final Log log = ExoLogger.getLogger("jcr.ChildVersionRemoveVisitor");
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.ChildVersionRemoveVisitor");
 
    protected final Stack<NodeData> parents = new Stack<NodeData>();
 

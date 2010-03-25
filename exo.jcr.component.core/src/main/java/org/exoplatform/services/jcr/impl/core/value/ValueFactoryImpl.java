@@ -60,7 +60,7 @@ import javax.jcr.ValueFormatException;
 public class ValueFactoryImpl implements ValueFactory
 {
 
-   protected static final Log LOG = ExoLogger.getLogger("jcr.ValueFactoryImpl");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.ValueFactoryImpl");
 
    private LocationFactory locationFactory;
 

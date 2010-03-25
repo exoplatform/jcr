@@ -41,11 +41,8 @@ import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
-import org.exoplatform.services.jcr.impl.storage.value.fs.FileIOChannel;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
-import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
-import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -59,7 +56,6 @@ import java.util.List;
 import java.util.Set;
 
 import javax.jcr.InvalidItemStateException;
-import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 
 /**
@@ -76,7 +72,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
    /**
     * Logger.
     */
-   protected static final Log LOG = ExoLogger.getLogger("jcr.WorkspacePersistentDataManager");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.WorkspacePersistentDataManager");
 
    /**
     * Workspace data container (persistent storage).
@@ -271,7 +267,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
 
       protected PlainChangesLogImpl save(PlainChangesLog changesLog) throws InvalidItemStateException,
          RepositoryException, IOException
-      { 
+      {
          // copy state
          PlainChangesLogImpl newLog =
             new PlainChangesLogImpl(new ArrayList<ItemState>(), changesLog.getSessionId(), changesLog.getEventType(),
@@ -367,7 +363,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
                   prevState.isInternallyCreated(), prevState.isPersisted());
 
             newLog.add(itemState);
-            
+
             // save state
             if (itemState.isPersisted())
             {

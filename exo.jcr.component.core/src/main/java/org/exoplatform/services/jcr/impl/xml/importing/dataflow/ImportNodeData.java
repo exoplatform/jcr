@@ -42,7 +42,7 @@ public class ImportNodeData extends TransientNodeData implements ImportItemData
    /**
     * 
     */
-   private static Log log = ExoLogger.getLogger("jcr.ImportedNodeData");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.ImportNodeData");
 
    /**
     * 

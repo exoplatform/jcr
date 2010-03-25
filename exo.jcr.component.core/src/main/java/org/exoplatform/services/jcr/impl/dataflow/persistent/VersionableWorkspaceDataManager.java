@@ -53,7 +53,7 @@ import javax.jcr.RepositoryException;
 public class VersionableWorkspaceDataManager extends ACLInheritanceSupportedWorkspaceDataManager
 {
 
-   private static Log log = ExoLogger.getLogger("jcr.VersionableWorkspaceDataManager");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.VersionableWorkspaceDataManager");
 
    private ACLInheritanceSupportedWorkspaceDataManager versionDataManager;
 

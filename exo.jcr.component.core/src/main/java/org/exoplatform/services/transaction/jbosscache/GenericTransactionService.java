@@ -46,8 +46,8 @@ public class GenericTransactionService implements TransactionService
    /**
     * The logger 
     */
-   private static final Log LOG = ExoLogger.getLogger(GenericTransactionService.class);
-   
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.GenericTransactionService");
+
    /**
     * The default value of a transaction timeout in seconds
     */
@@ -236,7 +236,7 @@ public class GenericTransactionService implements TransactionService
        * The default timeout of the {@link Transaction}
        */
       private final int defaultTimeout;
-      
+
       /**
        * This is used to know if a timeout has already been set for the next transaction
        */
@@ -268,7 +268,7 @@ public class GenericTransactionService implements TransactionService
             catch (Exception e)
             {
                LOG.warn("Cannot set the transaction timeout", e);
-            }            
+            }
          }
          // Start the transaction
          tm.begin();

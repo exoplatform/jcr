@@ -46,7 +46,7 @@ import javax.jcr.version.OnParentVersionAction;
 public class ItemDataCopyIgnoredVisitor extends DefaultItemDataCopyVisitor
 {
 
-   private static Log log = ExoLogger.getLogger("jcr.ItemDataCopyIgnoredVisitor");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.ItemDataCopyIgnoredVisitor");
 
    protected final SessionChangesLog restoredChanges;
 

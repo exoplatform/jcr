@@ -67,7 +67,7 @@ public class ItemDataMergeVisitor extends AbstractItemDataCopyVisitor
 
    protected static int UPDATE = 2;
 
-   protected static Log log = ExoLogger.getLogger("jcr.ItemDataMergeVisitor");
+   protected static Log log = ExoLogger.getLogger("exo.jcr.component.core.ItemDataMergeVisitor");
 
    protected final SessionImpl mergeSession;
 

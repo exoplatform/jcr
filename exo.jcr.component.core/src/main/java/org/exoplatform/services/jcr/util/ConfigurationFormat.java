@@ -34,7 +34,7 @@ import org.exoplatform.services.log.Log;
 public class ConfigurationFormat
 {
 
-   private static final Log LOG = ExoLogger.getLogger("jcr.ConfigurationFormat");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.ConfigurationFormat");
 
    public static int parseInt(String text)
    {

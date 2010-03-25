@@ -36,7 +36,7 @@ public class TreeFile extends File
 {
 
    /** Files log */
-   private static Log fLog = ExoLogger.getLogger("jcr.TreeFile");
+   private static Log fLog = ExoLogger.getLogger("exo.jcr.component.core.TreeFile");
 
    private static final long serialVersionUID = 5125295927077006487L;
 

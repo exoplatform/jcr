@@ -56,7 +56,7 @@ import javax.xml.stream.events.XMLEvent;
 public class StreamImporter implements RawDataImporter
 {
 
-   private final Log log = ExoLogger.getLogger("jcr.StreamImporter");
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.StreamImporter");
 
    private final ContentImporter importer;
 

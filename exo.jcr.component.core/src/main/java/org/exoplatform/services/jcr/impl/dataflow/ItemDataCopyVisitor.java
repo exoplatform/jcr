@@ -41,7 +41,7 @@ import javax.jcr.RepositoryException;
 public class ItemDataCopyVisitor extends DefaultItemDataCopyVisitor
 {
 
-   private Log log = ExoLogger.getLogger("jcr.ItemDataCopyVisitor");
+   private Log log = ExoLogger.getLogger("exo.jcr.component.core.ItemDataCopyVisitor");
 
    public ItemDataCopyVisitor(NodeData parent, InternalQName destNodeName, NodeTypeDataManager nodeTypeManager,
       SessionDataManager dataManager, boolean keepIdentifiers)
@@ -143,7 +143,7 @@ public class ItemDataCopyVisitor extends DefaultItemDataCopyVisitor
          {
             return;
          }
-         values = copyValues(property); 
+         values = copyValues(property);
       }
 
       TransientPropertyData newProperty =
@@ -151,7 +151,8 @@ public class ItemDataCopyVisitor extends DefaultItemDataCopyVisitor
             .getIdentifier() : IdGenerator.generate(), -1, property.getType(), curParent().getIdentifier(), property
             .isMultiValued(), values);
 
-      if (log.isDebugEnabled()) {
+      if (log.isDebugEnabled())
+      {
          log.debug("entering COPY " + newProperty.getQPath().getAsString() + "; pidentifier: "
             + newProperty.getParentIdentifier() + "; identifier: " + newProperty.getIdentifier());
       }

@@ -60,7 +60,7 @@ import javax.jcr.version.VersionException;
 public class FrozenNodeInitializer extends AbstractItemDataCopyVisitor
 {
 
-   private static Log log = ExoLogger.getLogger("jcr.FrozenNodeInitializer");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.FrozenNodeInitializer");
 
    private final Stack<NodeData> contextNodes;
 
@@ -90,11 +90,13 @@ public class FrozenNodeInitializer extends AbstractItemDataCopyVisitor
    protected void entering(PropertyData property, int level) throws RepositoryException
    {
 
-      if (log.isDebugEnabled()) {
+      if (log.isDebugEnabled())
+      {
          log.debug("Entering property " + property.getQPath().getAsString());
       }
-      
-      if (currentNode() == null) {
+
+      if (currentNode() == null)
+      {
          // skip if no parent - parent is COMPUTE, INITIALIZE
          return;
       }
@@ -196,7 +198,7 @@ public class FrozenNodeInitializer extends AbstractItemDataCopyVisitor
          else
             throw new RepositoryException("Unknown OnParentVersion value " + action);
       }
-      
+
       changesLog.add(ItemState.createAddedState(frozenProperty));
    }
 

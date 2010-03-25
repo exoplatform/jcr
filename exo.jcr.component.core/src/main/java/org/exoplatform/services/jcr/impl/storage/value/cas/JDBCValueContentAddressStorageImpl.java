@@ -77,7 +77,7 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
    /**
     * LOG.
     */
-   private static final Log LOG = ExoLogger.getLogger("jcr.JDBCValueContentAddressStorageImpl");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.JDBCValueContentAddressStorageImpl");
 
    /**
     * MYSQL_PK_CONSTRAINT_DETECT_PATTERN.
@@ -88,8 +88,8 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
    /**
     * MYSQL_PK_CONSTRAINT_DETECT.
     */
-   private static final Pattern MYSQL_PK_CONSTRAINT_DETECT = Pattern.compile(MYSQL_PK_CONSTRAINT_DETECT_PATTERN,
-      Pattern.CASE_INSENSITIVE);
+   private static final Pattern MYSQL_PK_CONSTRAINT_DETECT =
+      Pattern.compile(MYSQL_PK_CONSTRAINT_DETECT_PATTERN, Pattern.CASE_INSENSITIVE);
 
    /**
     * DB2_PK_CONSTRAINT_DETECT_PATTERN.

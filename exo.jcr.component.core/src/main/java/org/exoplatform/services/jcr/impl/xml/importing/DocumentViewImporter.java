@@ -81,7 +81,7 @@ public class DocumentViewImporter extends BaseXmlImporter
    /**
     * 
     */
-   private static Log log = ExoLogger.getLogger("jcr.DocNodeImporter");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.DocumentViewImporter");
 
    /**
     * 

@@ -40,7 +40,7 @@ import java.io.ObjectOutput;
 public abstract class TransientItemData implements ItemData, Externalizable
 {
 
-   protected static final Log LOG = ExoLogger.getLogger("jcr.TransientItemData");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.TransientItemData");
 
    protected String identifier;
 

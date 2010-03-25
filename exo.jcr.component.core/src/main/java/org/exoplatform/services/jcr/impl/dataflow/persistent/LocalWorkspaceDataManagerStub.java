@@ -38,7 +38,7 @@ import javax.jcr.RepositoryException;
 public class LocalWorkspaceDataManagerStub extends VersionableWorkspaceDataManager
 {
 
-   private static Log log = ExoLogger.getLogger("jcr.LocalWorkspaceDataManagerStub");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.LocalWorkspaceDataManagerStub");
 
    public LocalWorkspaceDataManagerStub(CacheableWorkspaceDataManager persistentManager)
    {

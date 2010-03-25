@@ -40,7 +40,7 @@ import java.security.NoSuchAlgorithmException;
 public class CASableIOSupport
 {
 
-   private static Log LOG = ExoLogger.getLogger("jcr.CASeableIOSupport");
+   private static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.CASeableIOSupport");
 
    public static final int HASHFILE_ORDERNUMBER = 0;
 

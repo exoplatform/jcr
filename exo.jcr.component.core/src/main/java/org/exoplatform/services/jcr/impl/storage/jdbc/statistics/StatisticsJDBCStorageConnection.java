@@ -58,7 +58,7 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
    /**
     * The logger
     */
-   private static final Log LOG = ExoLogger.getLogger(StatisticsJDBCStorageConnection.class);
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.StatisticsJDBCStorageConnection");
 
    /**
     * The description of the statistics corresponding to the method 

@@ -36,10 +36,10 @@ import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 
-public class EditableValueData extends TransientValueData 
+public class EditableValueData extends TransientValueData
 {
 
-   protected final static Log LOG = ExoLogger.getLogger("jcr.EditableValueData");
+   protected final static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.EditableValueData");
 
    protected class NewEditableValueData extends NewValueData
    {

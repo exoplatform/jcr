@@ -59,7 +59,7 @@ import javax.jcr.RepositoryException;
 public class TransientValueData implements ValueData
 {
 
-   protected final static Log LOG = ExoLogger.getLogger("jcr.TransientValueData");
+   protected final static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.TransientValueData");
 
    protected ValueData delegate;
 
@@ -839,7 +839,7 @@ public class TransientValueData implements ValueData
    {
       this(0, value);
    }
-   
+
    /**
     * Creates TransientValueData with incoming byte array.
     * @param orderNumber
@@ -1055,7 +1055,7 @@ public class TransientValueData implements ValueData
    {
       this(0, value);
    }
-   
+
    /**
     * Constructor for Reference value data.
     * 

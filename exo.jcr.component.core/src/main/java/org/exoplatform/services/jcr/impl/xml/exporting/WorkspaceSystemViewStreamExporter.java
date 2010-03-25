@@ -48,7 +48,7 @@ public class WorkspaceSystemViewStreamExporter extends SystemViewStreamExporter
    /**
     * Class logger.
     */
-   private final Log log = ExoLogger.getLogger("jcr.WorkspaceSystemViewStreamExporter");
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.WorkspaceSystemViewStreamExporter");
 
    public WorkspaceSystemViewStreamExporter(XMLStreamWriter writer, ItemDataConsumer dataManager,
       NamespaceRegistry namespaceRegistry, ValueFactoryImpl systemValueFactory, boolean skipBinary, boolean noRecurse)

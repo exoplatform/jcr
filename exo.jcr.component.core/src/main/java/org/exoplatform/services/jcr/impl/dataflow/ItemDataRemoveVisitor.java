@@ -51,7 +51,7 @@ import javax.jcr.RepositoryException;
 public class ItemDataRemoveVisitor extends ItemDataTraversingVisitor
 {
 
-   private static Log log = ExoLogger.getLogger("jcr.ItemDataRemoveVisitor");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.ItemDataRemoveVisitor");
 
    protected List<ItemState> itemRemovedStates = new ArrayList<ItemState>();
 
@@ -326,7 +326,7 @@ public class ItemDataRemoveVisitor extends ItemDataTraversingVisitor
             throw new RepositoryException("Node ACL is null. " + node.getQPath().getAsString() + " "
                + node.getIdentifier());
          }
-         
+
          return new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(), node
             .getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(), node.getParentIdentifier(), acl);
       }

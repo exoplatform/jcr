@@ -44,7 +44,7 @@ import javax.jcr.RepositoryException;
 public class ACLInheritanceSupportedWorkspaceDataManager implements SharedDataManager
 {
 
-   private static Log LOG = ExoLogger.getLogger("jcr.ACLInheritanceSupportedWorkspaceDataManager");
+   private static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.ACLInheritanceSupportedWorkspaceDataManager");
 
    protected final CacheableWorkspaceDataManager persistentManager;
 

@@ -40,7 +40,7 @@ import java.util.Properties;
 public abstract class FileValueStorage extends ValueStoragePlugin
 {
 
-   private Log log = ExoLogger.getLogger("jcr.FileValueStorage");
+   private Log log = ExoLogger.getLogger("exo.jcr.component.core.FileValueStorage");
 
    public final static String PATH = "path";
 

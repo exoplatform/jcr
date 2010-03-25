@@ -18,11 +18,11 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
-import javax.jcr.RepositoryException;
-
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+
+import javax.jcr.RepositoryException;
 
 /**
  * @author <a href="mailto:peter.nedonosko@exoplatform.com">Peter Nedonosko</a>
@@ -31,7 +31,7 @@ import org.exoplatform.services.log.Log;
 public abstract class AbstractPersistedValueData implements ValueData
 {
 
-   protected final static Log LOG = ExoLogger.getLogger("jcr.PersistedValueData");
+   protected final static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.PersistedValueData");
 
    protected int orderNumber;
 
@@ -41,12 +41,12 @@ public abstract class AbstractPersistedValueData implements ValueData
    protected AbstractPersistedValueData()
    {
    }
-   
+
    protected AbstractPersistedValueData(int orderNumber)
    {
       this.orderNumber = orderNumber;
    }
-   
+
    /**
     * {@inheritDoc}
     */
@@ -76,5 +76,5 @@ public abstract class AbstractPersistedValueData implements ValueData
     * @throws RepositoryException if error ocurs
     */
    public abstract TransientValueData createTransientCopy() throws RepositoryException;
-   
+
 }

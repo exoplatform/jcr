@@ -50,7 +50,7 @@ import javax.jcr.RepositoryException;
 public class InmemoryStorageConnection implements WorkspaceStorageConnection
 {
 
-   private static Log log = ExoLogger.getLogger("jcr.InmemoryStorageConnection");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.InmemoryStorageConnection");
 
    private TreeMap items;
 

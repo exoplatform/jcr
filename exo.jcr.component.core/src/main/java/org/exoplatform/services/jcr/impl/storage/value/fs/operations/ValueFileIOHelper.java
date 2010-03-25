@@ -57,7 +57,7 @@ public class ValueFileIOHelper
    /**
     * Helper logger.
     */
-   protected static final Log LOG = ExoLogger.getLogger("jcr.ValueFileIOHelper");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.ValueFileIOHelper");
 
    /**
     * Read value from file.

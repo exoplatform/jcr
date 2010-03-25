@@ -38,7 +38,7 @@ public class FileCleaner extends WorkerThread
 
    protected static final long DEFAULT_TIMEOUT = 30000;
 
-   protected static Log log = ExoLogger.getLogger("jcr.FileCleaner");
+   protected static Log log = ExoLogger.getLogger("exo.jcr.component.core.FileCleaner");
 
    protected Set<File> files = new LinkedHashSet<File>();
 

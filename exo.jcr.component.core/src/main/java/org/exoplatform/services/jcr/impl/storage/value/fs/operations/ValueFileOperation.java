@@ -56,7 +56,7 @@ public abstract class ValueFileOperation extends ValueFileIOHelper implements Va
    /**
     * Logger.
     */
-   protected static final Log LOG = ExoLogger.getLogger("jcr.ValueFileOperation");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.ValueFileOperation");
 
    /**
     * File cleaner.

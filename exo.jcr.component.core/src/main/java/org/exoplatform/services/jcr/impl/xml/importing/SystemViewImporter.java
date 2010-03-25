@@ -71,7 +71,7 @@ public class SystemViewImporter extends BaseXmlImporter
    /**
     * 
     */
-   private static Log log = ExoLogger.getLogger(SystemViewImporter.class);
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.SystemViewImporter");
 
    protected PropertyInfo propertyInfo = new PropertyInfo();
 

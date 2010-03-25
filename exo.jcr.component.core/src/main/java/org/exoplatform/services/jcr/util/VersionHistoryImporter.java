@@ -55,7 +55,7 @@ public class VersionHistoryImporter
    /**
     * Class logger.
     */
-   private static final Log LOG = ExoLogger.getLogger(VersionHistoryImporter.class);
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.VersionHistoryImporter");
 
    /**
     * Versioned node.

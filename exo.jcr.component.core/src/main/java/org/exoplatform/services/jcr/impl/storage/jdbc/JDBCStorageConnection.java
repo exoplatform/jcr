@@ -91,7 +91,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    /**
     * Connection logger.
     */
-   protected static final Log LOG = ExoLogger.getLogger("jcr.JDBCStorageConnection");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.JDBCStorageConnection");
 
    /**
     * NODE type.

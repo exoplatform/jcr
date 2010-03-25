@@ -50,7 +50,7 @@ import javax.jcr.NamespaceRegistry;
 public class WorkspaceRestoreContentImporter extends WorkspaceContentImporter
 {
 
-   protected final Log log = ExoLogger.getLogger("jcr.WorkspaceRestoreContentImporter");
+   protected final Log log = ExoLogger.getLogger("exo.jcr.component.core.WorkspaceRestoreContentImporter");
 
    /**
     * Class used to import content of workspace, using "System View XML Mapping",

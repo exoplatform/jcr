@@ -69,7 +69,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
    /**
     * Connection logger.
     */
-   protected static final Log LOG = ExoLogger.getLogger("jcr.optimisation.CQJDBCStorageConnection");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.CQJDBCStorageConnection");
 
    /**
     * FIND_NODES_BY_PARENTID NEW.
@@ -100,9 +100,9 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
       public int compare(ValueData vd1, ValueData vd2)
       {
          return vd1.getOrderNumber() - vd2.getOrderNumber();
-      }      
+      }
    };
-   
+
    /**
     * Class needed to store node details (property also) since result set is not sorted in valid way. 
     */
@@ -132,15 +132,16 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
          cnordernumb = item.getInt(COLUMN_NORDERNUM);
       }
    }
-   
+
    /**
     * store temporary property data to allow to sort it manually
     */
    private static class TempPropertyData implements Comparable<TempPropertyData>
    {
       int orderNum;
+
       byte[] data;
-      
+
       public TempPropertyData(ResultSet item) throws SQLException
       {
          orderNum = item.getInt(COLUMN_VORDERNUM);
@@ -306,7 +307,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
                   isNotLast = resultSet.next();
                }
                while (isNotLast && resultSet.getString(COLUMN_ID).equals(cid));
-               
+
                // To avoid using a temporary table, we sort the values manually
                Collections.sort(data, COMPARATOR_VALUE_DATA);
                //create property
@@ -382,7 +383,8 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
     * @return ACL owner
     * @throws IllegalACLException
     */
-   protected String readACLOwner(String cid, Map<String, SortedSet<TempPropertyData>> properties) throws IllegalACLException
+   protected String readACLOwner(String cid, Map<String, SortedSet<TempPropertyData>> properties)
+      throws IllegalACLException
    {
       SortedSet<TempPropertyData> ownerValues = properties.get(Constants.EXO_OWNER.getAsString());
       if (ownerValues != null)
@@ -431,7 +433,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
       return loadNodeRecord(parentPath, tempData.cname, tempData.cid, tempData.cpid, tempData.cindex,
          tempData.cversion, tempData.cnordernumb, tempData.properties, parentACL);
    }
-   
+
    /**
     * Create a new node from the given parameter.
     */

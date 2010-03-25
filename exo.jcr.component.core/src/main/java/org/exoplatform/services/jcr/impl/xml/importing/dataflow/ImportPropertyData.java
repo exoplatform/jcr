@@ -38,7 +38,7 @@ public class ImportPropertyData extends TransientPropertyData implements ImportI
    /**
     * Logger.
     */
-   private static Log log = ExoLogger.getLogger("jcr.ImportedPropertyData");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.ImportPropertyData");
 
    /**
     * Default constructor.

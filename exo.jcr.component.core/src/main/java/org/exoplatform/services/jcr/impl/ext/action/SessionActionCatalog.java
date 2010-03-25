@@ -44,7 +44,7 @@ import javax.jcr.observation.Event;
 public class SessionActionCatalog extends ActionCatalog
 {
 
-   private static Log log = ExoLogger.getLogger("jcr.SessionActionCatalog");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.SessionActionCatalog");
 
    private final LocationFactory locFactory;
 

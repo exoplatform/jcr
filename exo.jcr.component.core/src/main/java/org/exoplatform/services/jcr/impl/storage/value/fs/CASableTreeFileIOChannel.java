@@ -41,7 +41,7 @@ import java.util.List;
 public class CASableTreeFileIOChannel extends TreeFileIOChannel
 {
 
-   static private final Log LOG = ExoLogger.getLogger("jcr.CASableTreeFileIOChannel");
+   static private final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.CASableTreeFileIOChannel");
 
    private final ValueContentAddressStorage vcas;
 

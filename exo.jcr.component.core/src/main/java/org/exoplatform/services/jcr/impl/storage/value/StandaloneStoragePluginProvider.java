@@ -53,7 +53,7 @@ public class StandaloneStoragePluginProvider extends ArrayList<ValueStoragePlugi
 
    private static final long serialVersionUID = 4537116106932443262L;
 
-   private static Log log = ExoLogger.getLogger("jcr.ValueStoragePluginFactory");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.StandaloneStoragePluginProvider");
 
    /**
     * ValueData resorces holder (Files etc). It's singleton feature.

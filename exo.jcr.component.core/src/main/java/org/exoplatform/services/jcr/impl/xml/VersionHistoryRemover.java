@@ -51,7 +51,7 @@ public class VersionHistoryRemover
    /**
     * Class logger.
     */
-   private final Log log = ExoLogger.getLogger("jcr.VersionHistoryRemover");
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.VersionHistoryRemover");
 
    /**
     * Version history identifier.

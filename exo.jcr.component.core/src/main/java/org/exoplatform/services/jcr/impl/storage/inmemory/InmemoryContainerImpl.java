@@ -37,7 +37,7 @@ import javax.jcr.RepositoryException;
 public class InmemoryContainerImpl extends WorkspaceDataContainerBase
 {
 
-   private static Log log = ExoLogger.getLogger("jcr.InmemoryContainerImpl");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.InmemoryContainerImpl");
 
    private String name;
 

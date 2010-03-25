@@ -64,7 +64,7 @@ public class ExoJBossCacheFactory<K, V>
 
    private ConfigurationManager configurationManager;
 
-   private final Log log = ExoLogger.getLogger(ExoJBossCacheFactory.class);
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.ExoJBossCacheFactory");
 
    /**
     * Creates ExoJbossCacheFactory with provided configuration transaction managers.
