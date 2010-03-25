@@ -42,7 +42,7 @@ import javax.jcr.RepositoryException;
  */
 public class IndexerCacheLoader extends AbstractWriteOnlyCacheLoader
 {
-   private final Log log = ExoLogger.getLogger(this.getClass().getName());
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.IndexerCacheLoader");
 
    private SearchManager searchManager;
 
@@ -51,7 +51,7 @@ public class IndexerCacheLoader extends AbstractWriteOnlyCacheLoader
    private QueryHandler handler;
 
    private QueryHandler parentHandler;
-   
+
    private volatile IndexerIoModeHandler modeHandler;
 
    /**
@@ -132,7 +132,7 @@ public class IndexerCacheLoader extends AbstractWriteOnlyCacheLoader
    {
       // do nothing
    }
-   
+
    /**
     * Switches Indexer mode from RO to RW, or from RW to RO
     * 
@@ -142,7 +142,7 @@ public class IndexerCacheLoader extends AbstractWriteOnlyCacheLoader
    {
       if (modeHandler != null)
       {
-         modeHandler.setMode(ioMode);         
+         modeHandler.setMode(ioMode);
       }
    }
 
@@ -162,13 +162,15 @@ public class IndexerCacheLoader extends AbstractWriteOnlyCacheLoader
          {
             if (modeHandler == null)
             {
-               this.modeHandler = new IndexerIoModeHandler(cache.getRPCManager().isCoordinator() ? IndexerIoMode.READ_WRITE : IndexerIoMode.READ_ONLY);               
+               this.modeHandler =
+                  new IndexerIoModeHandler(cache.getRPCManager().isCoordinator() ? IndexerIoMode.READ_WRITE
+                     : IndexerIoMode.READ_ONLY);
             }
          }
       }
       return modeHandler;
    }
-   
+
    /**
     * Flushes lists of added/removed nodes to SearchManagers, starting indexing.
     * 

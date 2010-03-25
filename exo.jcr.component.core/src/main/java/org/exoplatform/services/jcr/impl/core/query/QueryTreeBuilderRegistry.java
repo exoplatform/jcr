@@ -19,79 +19,87 @@ package org.exoplatform.services.jcr.impl.core.query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.imageio.spi.ServiceRegistry;
-import javax.jcr.query.InvalidQueryException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Iterator;
 import java.util.Set;
+
+import javax.jcr.query.InvalidQueryException;
 
 /**
  * Implements a central access to QueryTreeBuilder instances.
  */
-public class QueryTreeBuilderRegistry {
+public class QueryTreeBuilderRegistry
+{
 
-    /**
-     * Logger instance for this class.
-     */
-    private static final Logger log = LoggerFactory.getLogger(QueryTreeBuilderRegistry.class);
+   /**
+    * Logger instance for this class.
+    */
+   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.QueryTreeBuilderRegistry");
 
-    /**
-     * List of <code>QueryTreeBuilder</code> instances known to the classloader.
-     */
-    private static final List<QueryTreeBuilder> BUILDERS = new ArrayList<QueryTreeBuilder>();
-    /**
-     * Set of languages known to the registered builders.
-     */
-    private static final Set<String> LANGUAGES;
+   /**
+    * List of <code>QueryTreeBuilder</code> instances known to the classloader.
+    */
+   private static final List<QueryTreeBuilder> BUILDERS = new ArrayList<QueryTreeBuilder>();
 
-    static {
-       Set<String> languages = new HashSet<String>();
-        try {
-           BUILDERS.add(new org.exoplatform.services.jcr.impl.core.query.sql.QueryBuilder());
-           BUILDERS.add(new org.exoplatform.services.jcr.impl.core.query.xpath.QueryBuilder());
+   /**
+    * Set of languages known to the registered builders.
+    */
+   private static final Set<String> LANGUAGES;
 
-           for (QueryTreeBuilder builder : BUILDERS)
-           {
-              languages.addAll(Arrays.asList(builder.getSupportedLanguages()));
-           }
-           if (BUILDERS.size() < 1)
-              log.warn("No builders found");
-        } catch (Error e) {
-            log.warn("Unable to load providers for QueryTreeBuilder: " + e);
-        }
-        LANGUAGES = Collections.unmodifiableSet(languages);
-    }
+   static
+   {
+      Set<String> languages = new HashSet<String>();
+      try
+      {
+         BUILDERS.add(new org.exoplatform.services.jcr.impl.core.query.sql.QueryBuilder());
+         BUILDERS.add(new org.exoplatform.services.jcr.impl.core.query.xpath.QueryBuilder());
 
-    /**
-     * Returns the <code>QueryTreeBuilder</code> for <code>language</code>.
-     *
-     * @param language the language of the query statement.
-     * @return the <code>QueryTreeBuilder</code> for <code>language</code>.
-     * @throws InvalidQueryException if there is no query tree builder for
-     *                               <code>language</code>.
-     */
-    public static QueryTreeBuilder getQueryTreeBuilder(String language)
-            throws InvalidQueryException {
-        for (int i = 0; i < BUILDERS.size(); i++) {
-            QueryTreeBuilder builder = (QueryTreeBuilder) BUILDERS.get(i);
-            if (builder.canHandle(language)) {
-                return builder;
-            }
-        }
-        throw new InvalidQueryException("Unsupported language: " + language);
-    }
+         for (QueryTreeBuilder builder : BUILDERS)
+         {
+            languages.addAll(Arrays.asList(builder.getSupportedLanguages()));
+         }
+         if (BUILDERS.size() < 1)
+            log.warn("No builders found");
+      }
+      catch (Error e)
+      {
+         log.warn("Unable to load providers for QueryTreeBuilder: " + e);
+      }
+      LANGUAGES = Collections.unmodifiableSet(languages);
+   }
 
-    /**
-     * Returns the set of query languages supported by all registered
-     * {@link QueryTreeBuilder} implementations.
-     *
-     * @return String array containing the names of the supported languages.
-     */
-    public static String[] getSupportedLanguages() {
-        return (String[]) LANGUAGES.toArray(new String[LANGUAGES.size()]);
-    }
+   /**
+    * Returns the <code>QueryTreeBuilder</code> for <code>language</code>.
+    *
+    * @param language the language of the query statement.
+    * @return the <code>QueryTreeBuilder</code> for <code>language</code>.
+    * @throws InvalidQueryException if there is no query tree builder for
+    *                               <code>language</code>.
+    */
+   public static QueryTreeBuilder getQueryTreeBuilder(String language) throws InvalidQueryException
+   {
+      for (int i = 0; i < BUILDERS.size(); i++)
+      {
+         QueryTreeBuilder builder = (QueryTreeBuilder)BUILDERS.get(i);
+         if (builder.canHandle(language))
+         {
+            return builder;
+         }
+      }
+      throw new InvalidQueryException("Unsupported language: " + language);
+   }
+
+   /**
+    * Returns the set of query languages supported by all registered
+    * {@link QueryTreeBuilder} implementations.
+    *
+    * @return String array containing the names of the supported languages.
+    */
+   public static String[] getSupportedLanguages()
+   {
+      return (String[])LANGUAGES.toArray(new String[LANGUAGES.size()]);
+   }
 }

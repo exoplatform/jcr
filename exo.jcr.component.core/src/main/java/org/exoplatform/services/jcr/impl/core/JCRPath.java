@@ -46,7 +46,7 @@ public class JCRPath
 
    public final static String PARENT_RELPATH = "..";
 
-   protected static Log log = ExoLogger.getLogger("jcr.JCRPath");
+   protected static Log log = ExoLogger.getLogger("exo.jcr.component.core.JCRPath");
 
    protected PathElement[] names;
 

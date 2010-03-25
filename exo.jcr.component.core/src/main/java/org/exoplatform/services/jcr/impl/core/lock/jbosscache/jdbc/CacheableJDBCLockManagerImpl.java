@@ -121,7 +121,7 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
    /**
     * Logger
     */
-   private final Log log = ExoLogger.getLogger("jcr.lock.CacheableLockManagerImpl");
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.CacheableJDBCLockManagerImpl");
 
    /**
     * Data manager.

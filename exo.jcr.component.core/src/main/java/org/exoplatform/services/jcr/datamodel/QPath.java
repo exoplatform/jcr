@@ -41,7 +41,7 @@ public class QPath implements Comparable<QPath>
    /**
     * Logger.
     */
-   protected static final Log LOG = ExoLogger.getLogger("jcr.QPath");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.QPath");
 
    /**
     * QPath prefix delimiter.

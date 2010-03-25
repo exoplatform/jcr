@@ -36,80 +36,89 @@ import javax.jcr.RepositoryException;
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: $
  */
-public class RepositoryIndexSearcherHolder implements Startable {
-    private final List<SearchManager> indexSearchers;
+public class RepositoryIndexSearcherHolder implements Startable
+{
+   private final List<SearchManager> indexSearchers;
 
-    /**
-     * Class logger.
-     */
-    private final Log log = ExoLogger
-	    .getLogger(RepositoryIndexSearcherHolder.class);
+   /**
+    * Class logger.
+    */
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.RepositoryIndexSearcherHolder");
 
-    /**
-     * @param indexSearchers
-     */
-    public RepositoryIndexSearcherHolder() {
-	super();
-	this.indexSearchers = new ArrayList<SearchManager>();
-    }
+   /**
+    * @param indexSearchers
+    */
+   public RepositoryIndexSearcherHolder()
+   {
+      super();
+      this.indexSearchers = new ArrayList<SearchManager>();
+   }
 
-    /**
-     * @return the indexSearchers
-     */
-    public void addIndexSearcher(final SearchManager indexSearcher) {
-	this.indexSearchers.add(indexSearcher);
-    }
+   /**
+    * @return the indexSearchers
+    */
+   public void addIndexSearcher(final SearchManager indexSearcher)
+   {
+      this.indexSearchers.add(indexSearcher);
+   }
 
-    /**
-     * @return
-     * @throws IndexException
-     */
-    public Set<String> getFieldNames() throws IndexException {
-	final Set<String> fildsSet = new HashSet<String>();
+   /**
+    * @return
+    * @throws IndexException
+    */
+   public Set<String> getFieldNames() throws IndexException
+   {
+      final Set<String> fildsSet = new HashSet<String>();
 
-	for (final SearchManager queryHandler : this.indexSearchers) {
+      for (final SearchManager queryHandler : this.indexSearchers)
+      {
 
-	    fildsSet.addAll(queryHandler.getFieldNames());
-	}
-	return fildsSet;
-    }
+         fildsSet.addAll(queryHandler.getFieldNames());
+      }
+      return fildsSet;
+   }
 
-    public Set<String> getNodesByNodeType(final InternalQName nodeType)
-	    throws RepositoryException {
-	final Set<String> result = new HashSet<String>();
-	for (final SearchManager indexingService : this.indexSearchers) {
-	    result.addAll(indexingService.getNodesByNodeType(nodeType));
-	}
+   public Set<String> getNodesByNodeType(final InternalQName nodeType) throws RepositoryException
+   {
+      final Set<String> result = new HashSet<String>();
+      for (final SearchManager indexingService : this.indexSearchers)
+      {
+         result.addAll(indexingService.getNodesByNodeType(nodeType));
+      }
 
-	return result;
-    }
+      return result;
+   }
 
-    /**
-     * @param uri
-     * @return
-     * @throws RepositoryException
-     */
-    public Set<String> getNodesByUri(final String uri)
-	    throws RepositoryException {
-	final Set<String> result = new HashSet<String>();
-	for (final SearchManager indexingService : this.indexSearchers) {
-	    result.addAll(indexingService.getNodesByUri(uri));
-	}
+   /**
+    * @param uri
+    * @return
+    * @throws RepositoryException
+    */
+   public Set<String> getNodesByUri(final String uri) throws RepositoryException
+   {
+      final Set<String> result = new HashSet<String>();
+      for (final SearchManager indexingService : this.indexSearchers)
+      {
+         result.addAll(indexingService.getNodesByUri(uri));
+      }
 
-	return result;
-    }
+      return result;
+   }
 
-    /**
-     * @return the indexSearchers
-     */
-    public void removeIndexSearcher(final SearchManager indexSearcher) {
-	this.indexSearchers.remove(indexSearcher);
-    }
+   /**
+    * @return the indexSearchers
+    */
+   public void removeIndexSearcher(final SearchManager indexSearcher)
+   {
+      this.indexSearchers.remove(indexSearcher);
+   }
 
-    public void start() {
-    }
+   public void start()
+   {
+   }
 
-    public void stop() {
-	this.indexSearchers.clear();
-    }
+   public void stop()
+   {
+      this.indexSearchers.clear();
+   }
 }

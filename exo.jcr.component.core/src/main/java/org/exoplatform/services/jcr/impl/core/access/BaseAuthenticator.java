@@ -41,7 +41,7 @@ import javax.jcr.LoginException;
 abstract public class BaseAuthenticator implements AuthenticationPolicy
 {
 
-   protected static Log log = ExoLogger.getLogger("jcr.BaseAuthenticator");
+   protected static Log log = ExoLogger.getLogger("exo.jcr.component.core.BaseAuthenticator");
 
    protected RepositoryEntry config;
 

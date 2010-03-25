@@ -56,7 +56,7 @@ public class ActionLauncher implements ItemsPersistenceListener
 
    public final int SKIP_EVENT = Integer.MIN_VALUE;
 
-   private final Log log = ExoLogger.getLogger("jcr.ActionLauncher");
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.ActionLauncher");
 
    private final ObservationManagerRegistry observationRegistry;
 

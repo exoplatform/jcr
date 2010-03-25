@@ -46,7 +46,7 @@ public class XmlNodeTypeDataPersister implements NodeTypeDataPersister
    /**
     * Class logger.
     */
-   private final Log log = ExoLogger.getLogger(XmlNodeTypeDataPersister.class);
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.XmlNodeTypeDataPersister");
 
    private final NodeTypeConverter converter;
 

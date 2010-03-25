@@ -52,7 +52,7 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
    /**
     * Class logger.
     */
-   private static final Log LOG = ExoLogger.getLogger(NodeDefinitionComparator.class);
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.NodeDefinitionComparator");
 
    private final List<NodeData> affectedNodes;
 

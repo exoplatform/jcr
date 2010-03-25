@@ -66,7 +66,7 @@ import javax.jcr.RepositoryException;
 public class ScratchWorkspaceInitializer implements WorkspaceInitializer
 {
 
-   protected static final Log log = ExoLogger.getLogger("jcr.WorkspaceInitializer");
+   protected static final Log log = ExoLogger.getLogger("exo.jcr.component.core.WorkspaceInitializer");
 
    private final String systemWorkspaceName;
 

@@ -49,7 +49,7 @@ public class NodeTypeConverter
    /**
     * Class logger.
     */
-   private final Log log = ExoLogger.getLogger(NodeTypeConverter.class);
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.NodeTypeConverter");
 
    private final LocationFactory locationFactory;
 
@@ -105,8 +105,7 @@ public class NodeTypeConverter
             pd =
                new PropertyDefinitionData(locationFactory.parseJCRName(v.getName()).getInternalName(), ntName, v
                   .isAutoCreate(), v.isMandatory(), v.getOnVersion(), v.isReadOnly(), v.getRequiredType(),
-                  safeListToArray(v.getValueConstraints()), safeListToArray(v.getDefaultValueStrings()),
-                  v.isMultiple());
+                  safeListToArray(v.getValueConstraints()), safeListToArray(v.getDefaultValueStrings()), v.isMultiple());
 
             props[i] = pd;
          }
@@ -140,7 +139,8 @@ public class NodeTypeConverter
             primaryItemName = locationFactory.parseJCRName(ntvalue.getPrimaryItemName()).getInternalName();
 
          NodeTypeData nodeTypeData =
-            new NodeTypeDataImpl(ntName, primaryItemName, ntvalue.isMixin(), ntvalue.isOrderableChild(),  supertypes, props, nodes);
+            new NodeTypeDataImpl(ntName, primaryItemName, ntvalue.isMixin(), ntvalue.isOrderableChild(), supertypes,
+               props, nodes);
 
          nodeTypeDataList.add(nodeTypeData);
       }

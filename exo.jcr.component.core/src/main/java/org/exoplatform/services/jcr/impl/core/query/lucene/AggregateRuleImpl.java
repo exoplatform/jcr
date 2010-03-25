@@ -16,15 +16,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-
-import javax.jcr.NamespaceException;
-import javax.jcr.PathNotFoundException;
-import javax.jcr.RepositoryException;
-
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.IllegalPathException;
@@ -36,11 +27,18 @@ import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
-
 import org.exoplatform.services.jcr.util.Text;
 import org.w3c.dom.CharacterData;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+
+import javax.jcr.PathNotFoundException;
+import javax.jcr.RepositoryException;
 
 /**
  * <code>AggregateRule</code> defines a configuration for a node index
@@ -75,11 +73,6 @@ class AggregateRuleImpl implements AggregateRule
     * The item state manager to retrieve additional item states.
     */
    private final ItemDataConsumer ism;
-
-   //    /**
-   //     * A hierarchy resolver for the item state manager.
-   //     */
-   //    private final HierarchyManager hmgr;
 
    /**
     * Creates a new indexing aggregate using the given <code>config</code>.
@@ -148,7 +141,7 @@ class AggregateRuleImpl implements AggregateRule
     * @throws RepositoryException 
     * @throws ItemStateException  if an error occurs.
     */
-   public NodeData[] getAggregatedNodeStates(NodeData nodeState) throws RepositoryException 
+   public NodeData[] getAggregatedNodeStates(NodeData nodeState) throws RepositoryException
    {
       if (nodeState.getPrimaryTypeName().equals(nodeTypeName))
       {
@@ -169,7 +162,7 @@ class AggregateRuleImpl implements AggregateRule
     * {@inheritDoc}
     * @throws RepositoryException 
     */
-   public PropertyData[] getAggregatedPropertyStates(NodeData nodeState) throws RepositoryException 
+   public PropertyData[] getAggregatedPropertyStates(NodeData nodeState) throws RepositoryException
    {
       if (nodeState.getPrimaryTypeName().equals(nodeTypeName))
       {
@@ -214,8 +207,7 @@ class AggregateRuleImpl implements AggregateRule
     *                                characters.
     * @throws RepositoryException 
     */
-   private NodeInclude[] getNodeIncludes(Node config) throws IllegalNameException,
-      RepositoryException
+   private NodeInclude[] getNodeIncludes(Node config) throws IllegalNameException, RepositoryException
    {
       List includes = new ArrayList();
       NodeList childNodes = config.getChildNodes();
@@ -231,7 +223,7 @@ class AggregateRuleImpl implements AggregateRule
                ntName = resolver.parseJCRName(ntAttr.getNodeValue()).getInternalName();
             }
             String[] elements = Text.explode(getTextContent(n), '/');
-  
+
             QPathEntry[] path = new QPathEntry[elements.length];
             for (int j = 0; j < elements.length; j++)
             {
@@ -244,7 +236,7 @@ class AggregateRuleImpl implements AggregateRule
                   path[j] = new QPathEntry(resolver.parseJCRName(elements[j]).getInternalName(), 0);
                }
             }
-            
+
             includes.add(new NodeInclude(new QPath(path), ntName));
          }
       }
@@ -272,16 +264,16 @@ class AggregateRuleImpl implements AggregateRule
          if (n.getNodeName().equals("include-property"))
          {
             String[] elements = Text.explode(getTextContent(n), '/');
-            
-            QPathEntry[] path  = new QPathEntry[elements.length];
+
+            QPathEntry[] path = new QPathEntry[elements.length];
             for (int j = 0; j < elements.length; j++)
             {
                if (elements[j].equals("*"))
                {
                   throw new IllegalNameException("* not supported in include-property");
                }
-               
-               path[j] = new QPathEntry(resolver.parseJCRName(elements[j]).getInternalName(),1);
+
+               path[j] = new QPathEntry(resolver.parseJCRName(elements[j]).getInternalName(), 1);
             }
             includes.add(new PropertyInclude(new QPath(path)));
          }

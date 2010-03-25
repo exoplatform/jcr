@@ -50,7 +50,7 @@ public abstract class AbstractExcerpt implements HighlightingExcerptProvider
    /**
     * Logger instance for this class.
     */
-   private static final Logger log = LoggerFactory.getLogger(AbstractExcerpt.class);
+   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.AbstractExcerpt");
 
    /**
     * The search index.

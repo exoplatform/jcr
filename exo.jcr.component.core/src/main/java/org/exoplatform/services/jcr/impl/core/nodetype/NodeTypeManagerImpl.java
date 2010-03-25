@@ -59,7 +59,7 @@ import javax.jcr.nodetype.NodeTypeIterator;
 public class NodeTypeManagerImpl implements ExtendedNodeTypeManager
 {
 
-   protected static final Log LOG = ExoLogger.getLogger("jcr.NodeTypeManagerImpl");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.NodeTypeManagerImpl");
 
    public static final String NODETYPES_ROOT = "/jcr:system/jcr:nodetypes";
 
@@ -220,6 +220,7 @@ public class NodeTypeManagerImpl implements ExtendedNodeTypeManager
 
       return typesManager.getNodeType(locationFactory.parseJCRName(name).getInternalName()) != null;
    }
+
    /**
     * {@inheritDoc}
     */
@@ -269,7 +270,7 @@ public class NodeTypeManagerImpl implements ExtendedNodeTypeManager
 
       return types;
    }
-   
+
    /**
     * {@inheritDoc}
     * 
@@ -280,7 +281,8 @@ public class NodeTypeManagerImpl implements ExtendedNodeTypeManager
    public NodeTypeIterator registerNodeTypes(InputStream xml, int alreadyExistsBehaviour) throws RepositoryException
    {
 
-      Collection<NodeTypeData> nts = typesManager.registerNodeTypes(xml, alreadyExistsBehaviour, NodeTypeDataManager.TEXT_XML);
+      Collection<NodeTypeData> nts =
+         typesManager.registerNodeTypes(xml, alreadyExistsBehaviour, NodeTypeDataManager.TEXT_XML);
       EntityCollection types = new EntityCollection();
       for (NodeTypeData ntdata : nts)
          types.add(new NodeTypeImpl(ntdata, typesManager, this, locationFactory, valueFactory));

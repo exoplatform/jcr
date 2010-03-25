@@ -18,11 +18,6 @@
  */
 package org.exoplatform.services.jcr.dataflow.persistent;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-
 import org.exoplatform.services.jcr.datamodel.IllegalPathException;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.QPath;
@@ -32,8 +27,6 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-
-import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS. </br>

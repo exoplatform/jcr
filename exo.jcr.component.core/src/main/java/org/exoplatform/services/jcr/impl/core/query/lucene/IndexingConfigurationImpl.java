@@ -65,13 +65,8 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
    /**
     * The logger instance for this class
     */
-   private static final Logger log = LoggerFactory.getLogger(IndexingConfigurationImpl.class);
+   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.IndexingConfigurationImpl");
 
-   /**
-    * The path factory instance.
-    */
-   // private static final PathFactory PATH_FACTORY =
-   // PathFactoryImpl.getInstance();
    /**
     * A namespace resolver for parsing QNames in the configuration.
     */

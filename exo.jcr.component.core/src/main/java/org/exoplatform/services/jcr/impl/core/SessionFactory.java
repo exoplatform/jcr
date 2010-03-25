@@ -29,7 +29,6 @@ import org.exoplatform.services.transaction.TransactionService;
 
 import javax.jcr.LoginException;
 import javax.jcr.RepositoryException;
-import javax.transaction.xa.XAException;
 
 /**
  * Created by The eXo Platform SAS.<br/> the factory for jcr Session
@@ -41,7 +40,7 @@ import javax.transaction.xa.XAException;
 public class SessionFactory
 {
 
-   protected static Log LOG = ExoLogger.getLogger("jcr.SessionFactory");
+   protected static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.SessionFactory");
 
    private final ExoContainer container;
 

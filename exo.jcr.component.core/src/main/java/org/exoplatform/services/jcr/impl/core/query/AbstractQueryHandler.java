@@ -39,7 +39,7 @@ public abstract class AbstractQueryHandler implements QueryHandler
    /**
     * Logger instance for this class
     */
-   private static final Logger log = LoggerFactory.getLogger(AbstractQueryHandler.class);
+   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.AbstractQueryHandler");
 
    /**
     * The context for this query handler.
@@ -87,7 +87,8 @@ public abstract class AbstractQueryHandler implements QueryHandler
    public void setIndexerIoModeHandler(IndexerIoModeHandler modeHandler) throws IOException
    {
       this.modeHandler = modeHandler;
-   }   
+   }
+
    /**
     * @see org.exoplatform.services.jcr.impl.core.query.QueryHandler#setContext(org.exoplatform.services.jcr.impl.core.query.QueryHandlerContext)
     */

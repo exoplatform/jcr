@@ -35,7 +35,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import javax.jcr.RepositoryException;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
@@ -49,7 +48,7 @@ import javax.sql.DataSource;
 public class JDBCConfigurationPersister implements ConfigurationPersister
 {
 
-   protected static Log LOG = ExoLogger.getLogger("jcr.JDBCConfigurationPersister");
+   protected static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.JDBCConfigurationPersister");
 
    public final static String PARAM_SOURCE_NAME = "source-name";
 

@@ -53,7 +53,7 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
    /**
     * Logger instance for this class.
     */
-   private static final Log log = ExoLogger.getLogger(LuceneSpellChecker.class);
+   private static final Log log = ExoLogger.getLogger("exo.jcr.component.core.LuceneSpellChecker");
 
    public static final class FiveSecondsRefreshInterval extends LuceneSpellChecker
    {

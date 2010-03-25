@@ -41,7 +41,7 @@ public class VolatileNodeTypeDataManager extends NodeTypeDataManagerImpl
    /**
     * Class logger.
     */
-   private final Log log = ExoLogger.getLogger(VolatileNodeTypeDataManager.class);
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.VolatileNodeTypeDataManager");
 
    public VolatileNodeTypeDataManager(final NodeTypeDataManagerImpl nodeTypeDataManagerImpl) throws RepositoryException
    {

@@ -57,7 +57,7 @@ public class PropertyDefinitionComparator extends AbstractDefinitionComparator<P
    /**
     * Class logger.
     */
-   private static final Log LOG = ExoLogger.getLogger(PropertyDefinitionComparator.class);
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.PropertyDefinitionComparator");
 
    private final List<NodeData> affectedNodes;
 

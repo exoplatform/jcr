@@ -16,16 +16,16 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
+import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.QPath;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.jcr.ItemNotFoundException;
 import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.datamodel.QPath;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * <code>OnWorkspaceInconsistency</code> defines an interface to handle
@@ -37,7 +37,7 @@ public abstract class OnWorkspaceInconsistency
    /**
     * Logger instance for this class.
     */
-   private static final Logger log = LoggerFactory.getLogger(OnWorkspaceInconsistency.class);
+   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.OnWorkspaceInconsistency");
 
    /**
     * An handler that simply logs the path of the parent node and the name
@@ -51,11 +51,10 @@ public abstract class OnWorkspaceInconsistency
       {
          //NamePathResolver resolver = new DefaultNamePathResolver(handler.getContext().getNamespaceRegistry());
          log.error("TO DO ");
-//         log.error("Node {} ({}) has missing child '{}' ({})", new Object[]{resolver.getJCRPath(path),
-//            node.getNodeId().getUUID().toString(), resolver.getJCRName(child.getName()),
-//            child.getId().getUUID().toString()});
-         
-         
+         //         log.error("Node {} ({}) has missing child '{}' ({})", new Object[]{resolver.getJCRPath(path),
+         //            node.getNodeId().getUUID().toString(), resolver.getJCRName(child.getName()),
+         //            child.getId().getUUID().toString()});
+
          throw exception;
       }
    };

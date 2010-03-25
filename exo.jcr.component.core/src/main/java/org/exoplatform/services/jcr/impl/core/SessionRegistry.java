@@ -44,7 +44,7 @@ public final class SessionRegistry implements Startable
    // 1 min
    public final static int DEFAULT_CLEANER_TIMEOUT = 60 * 1000;
 
-   protected static Log log = ExoLogger.getLogger("jcr.SessionRegistry");
+   protected static Log log = ExoLogger.getLogger("exo.jcr.component.core.SessionRegistry");
 
    private SessionCleaner sessionCleaner;
 

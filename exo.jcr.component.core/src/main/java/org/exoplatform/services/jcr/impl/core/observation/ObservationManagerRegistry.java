@@ -43,7 +43,7 @@ import javax.jcr.observation.EventListenerIterator;
 public class ObservationManagerRegistry
 {
 
-   protected static Log log = ExoLogger.getLogger("jcr.RepositoryService");
+   protected static Log log = ExoLogger.getLogger("exo.jcr.component.core.ObservationManagerRegistry");
 
    protected Map<EventListener, ListenerCriteria> listenersMap;
 

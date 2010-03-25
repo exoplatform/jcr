@@ -58,7 +58,7 @@ class RowIteratorImpl implements RowIterator
    /**
     * The logger instance for this class.
     */
-   private static final Logger log = LoggerFactory.getLogger(RowIteratorImpl.class);
+   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.RowIteratorImpl");
 
    /**
     * The QValue factory.

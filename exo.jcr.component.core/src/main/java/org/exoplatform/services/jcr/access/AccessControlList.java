@@ -44,7 +44,7 @@ public class AccessControlList implements Externalizable
 
    private static final long serialVersionUID = 5848327750178729120L;
 
-   private Log log = ExoLogger.getLogger("jcr.AccessControlList");
+   private Log log = ExoLogger.getLogger("exo.jcr.component.core.AccessControlList");
 
    public static final String DELIMITER = ";";
 

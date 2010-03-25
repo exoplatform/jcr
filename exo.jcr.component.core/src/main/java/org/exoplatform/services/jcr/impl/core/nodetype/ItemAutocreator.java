@@ -60,7 +60,7 @@ import javax.jcr.ValueFactory;
 public class ItemAutocreator
 {
 
-   private final Log log = ExoLogger.getLogger(getClass().getName());
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.ItemAutocreator");
 
    private final NodeTypeDataManager nodeTypeDataManager;
 

@@ -16,67 +16,56 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import java.io.IOException;
-
-import javax.jcr.RepositoryException;
-
 import org.exoplatform.services.jcr.access.AccessManager;
-import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 
+import java.io.IOException;
 
-
+import javax.jcr.RepositoryException;
 
 /**
  * <code>MultiColumnQueryResult</code> implements a query result that executes
  * a {@link MultiColumnQuery}.
  */
-public class MultiColumnQueryResult extends QueryResultImpl {
+public class MultiColumnQueryResult extends QueryResultImpl
+{
 
-    /**
-     * The query to execute.
-     */
-    private final MultiColumnQuery query;
+   /**
+    * The query to execute.
+    */
+   private final MultiColumnQuery query;
 
-    public MultiColumnQueryResult(SearchIndex index,
-             SessionDataManager itemMgr,
-                                  SessionImpl session,
-                                  AccessManager accessMgr,
-                                  AbstractQueryImpl queryImpl,
-                                  MultiColumnQuery query,
-                                  SpellSuggestion spellSuggestion,
-                                  InternalQName[] selectProps,
-                                  QPath[] orderProps,
-                                  boolean[] orderSpecs,
-                                  boolean documentOrder,
-                                  long offset,
-                                  long limit) throws RepositoryException {
-        super(index, itemMgr, session, accessMgr, queryImpl, spellSuggestion,
-                selectProps, orderProps, orderSpecs, documentOrder, offset, limit);
-        
-        this.query = query;
-        // if document order is requested get all results right away
-        getResults(docOrder ? Integer.MAX_VALUE : index.getResultFetchSize());
-    }
+   public MultiColumnQueryResult(SearchIndex index, SessionDataManager itemMgr, SessionImpl session,
+      AccessManager accessMgr, AbstractQueryImpl queryImpl, MultiColumnQuery query, SpellSuggestion spellSuggestion,
+      InternalQName[] selectProps, QPath[] orderProps, boolean[] orderSpecs, boolean documentOrder, long offset,
+      long limit) throws RepositoryException
+   {
+      super(index, itemMgr, session, accessMgr, queryImpl, spellSuggestion, selectProps, orderProps, orderSpecs,
+         documentOrder, offset, limit);
 
-    /**
-     * {@inheritDoc}
-    * @throws RepositoryException 
-     */
-    protected MultiColumnQueryHits executeQuery(long resultFetchHint)
-            throws IOException, RepositoryException {
-        return index.executeQuery(session, query, orderProps,
-                orderSpecs, resultFetchHint);
-    }
+      this.query = query;
+      // if document order is requested get all results right away
+      getResults(docOrder ? Integer.MAX_VALUE : index.getResultFetchSize());
+   }
 
-    /**
-     * {@inheritDoc}
-     */
-    protected ExcerptProvider createExcerptProvider() throws IOException {
-        // TODO
-        return null;
-    }
+   /**
+    * {@inheritDoc}
+   * @throws RepositoryException 
+    */
+   protected MultiColumnQueryHits executeQuery(long resultFetchHint) throws IOException, RepositoryException
+   {
+      return index.executeQuery(session, query, orderProps, orderSpecs, resultFetchHint);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected ExcerptProvider createExcerptProvider() throws IOException
+   {
+      // TODO
+      return null;
+   }
 }

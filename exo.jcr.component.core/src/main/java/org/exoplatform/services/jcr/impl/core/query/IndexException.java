@@ -39,7 +39,7 @@ public class IndexException extends RepositoryException
    /**
     * Class logger.
     */
-   private static final Log LOG = ExoLogger.getLogger(IndexException.class);
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.IndexException");
 
    /**
     * 

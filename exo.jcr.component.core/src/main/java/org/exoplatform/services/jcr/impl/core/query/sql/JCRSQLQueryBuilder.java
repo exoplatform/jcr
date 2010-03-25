@@ -16,21 +16,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.sql;
 
-import java.io.StringReader;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-
-import javax.jcr.NamespaceException;
-import javax.jcr.RepositoryException;
-import javax.jcr.query.InvalidQueryException;
-
 import org.apache.commons.collections.map.ReferenceMap;
 import org.exoplatform.commons.utils.ISO8601;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
@@ -53,9 +38,23 @@ import org.exoplatform.services.jcr.impl.core.query.QueryNodeFactory;
 import org.exoplatform.services.jcr.impl.core.query.QueryRootNode;
 import org.exoplatform.services.jcr.impl.core.query.RelationQueryNode;
 import org.exoplatform.services.jcr.impl.core.query.TextsearchQueryNode;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.StringReader;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+
+import javax.jcr.NamespaceException;
+import javax.jcr.RepositoryException;
+import javax.jcr.query.InvalidQueryException;
 
 /**
  * Implements the query builder for the JCR SQL syntax.
@@ -66,7 +65,7 @@ public class JCRSQLQueryBuilder implements JCRSQLParserVisitor
    /**
     * logger instance for this class
     */
-   private static final Logger log = LoggerFactory.getLogger(JCRSQLQueryBuilder.class);
+   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.JCRSQLQueryBuilder");
 
    /**
     * DateFormat pattern for type
@@ -180,7 +179,7 @@ public class JCRSQLQueryBuilder implements JCRSQLParserVisitor
       {
          t.printStackTrace();
          // javacc parser may also throw an error in some cases
-         throw new InvalidQueryException(t.getMessage(),t);
+         throw new InvalidQueryException(t.getMessage(), t);
       }
    }
 
@@ -772,7 +771,6 @@ public class JCRSQLQueryBuilder implements JCRSQLParserVisitor
       {
          throw new IllegalArgumentException(e.toString());
       }
-
 
       if (node == null)
       {

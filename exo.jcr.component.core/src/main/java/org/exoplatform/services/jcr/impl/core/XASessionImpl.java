@@ -47,7 +47,7 @@ public class XASessionImpl extends SessionImpl implements XASession, XAResource,
    /**
     * Session logger.
     */
-   private static final Log LOG = ExoLogger.getLogger("jcr.XASessionImpl");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.XASessionImpl");
 
    /**
     * Transaction service.

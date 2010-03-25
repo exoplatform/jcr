@@ -16,68 +16,46 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
+import org.exoplatform.services.jcr.impl.core.SessionDataManager;
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
+
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.query.InvalidQueryException;
 import javax.jcr.query.Query;
 
-import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
-import org.exoplatform.services.jcr.impl.core.SessionDataManager;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
-
 /**
  * Defines common initialization methods for all query implementations.
  */
-public abstract class AbstractQueryImpl implements Query {
+public abstract class AbstractQueryImpl implements Query
+{
 
-    /**
-     * Initializes a query instance from a query string.
-     *
-     * @param session   the session of the user executing this query.
-     * @param itemMgr   the item manager of the session executing this query.
-     * @param handler   the query handler of the search index.
-     * @param statement the query statement.
-     * @param language  the syntax of the query statement.
-     * @throws InvalidQueryException if the query statement is invalid according
-     *                               to the specified <code>language</code>.
-     */
-    public abstract void init(SessionImpl session,
-       SessionDataManager itemMgr,
-                              QueryHandler handler,
-                              String statement,
-                              String language) throws InvalidQueryException;
+   /**
+    * Initializes a query instance from a query string.
+    *
+    * @param session   the session of the user executing this query.
+    * @param itemMgr   the item manager of the session executing this query.
+    * @param handler   the query handler of the search index.
+    * @param statement the query statement.
+    * @param language  the syntax of the query statement.
+    * @throws InvalidQueryException if the query statement is invalid according
+    *                               to the specified <code>language</code>.
+    */
+   public abstract void init(SessionImpl session, SessionDataManager itemMgr, QueryHandler handler, String statement,
+      String language) throws InvalidQueryException;
 
-    /**
-     * Initializes a query instance from a nt:query node.
-     *
-     * @param session the session of the user executing this query.
-     * @param itemMgr the item manager of the session executing this query.
-     * @param handler the query handler of the search index.
-     * @param node    a node of type <code>nt:query</code>.
-     * @throws InvalidQueryException If <code>node</code> is not a valid persisted query
-     *                               (that is, a node of type <code>nt:query</code>).
-     * @throws RepositoryException   if another error occurs
-     */
-    public abstract void init(SessionImpl session,
-       SessionDataManager itemMgr,
-                              QueryHandler handler,
-                              Node node)
-            throws InvalidQueryException, RepositoryException;
+   /**
+    * Initializes a query instance from a nt:query node.
+    *
+    * @param session the session of the user executing this query.
+    * @param itemMgr the item manager of the session executing this query.
+    * @param handler the query handler of the search index.
+    * @param node    a node of type <code>nt:query</code>.
+    * @throws InvalidQueryException If <code>node</code> is not a valid persisted query
+    *                               (that is, a node of type <code>nt:query</code>).
+    * @throws RepositoryException   if another error occurs
+    */
+   public abstract void init(SessionImpl session, SessionDataManager itemMgr, QueryHandler handler, Node node)
+      throws InvalidQueryException, RepositoryException;
 
-//    /**
-//     * Initializes a query instance from a query object model.
-//     *
-//     * @param session  the session of the user executing this query.
-//     * @param itemMgr  the item manager of the session executing this query.
-//     * @param handler  the query handler of the search index.
-//     * @param qomTree  the query object model tree.
-//     * @param language the original query syntax from where the JQOM was
-//     *                 created.
-//     * @throws RepositoryException if another error occurs
-//     */
-//    public abstract void init(SessionImpl session,
-//                              ItemManager itemMgr,
-//                              QueryHandler handler,
-//                              QueryObjectModelTree qomTree,
-//                              String language) throws RepositoryException;
 }

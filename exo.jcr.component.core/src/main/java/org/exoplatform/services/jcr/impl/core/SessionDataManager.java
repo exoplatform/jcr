@@ -80,7 +80,7 @@ public class SessionDataManager implements ItemDataConsumer
 
    public static final int MERGE_ITEMS = 3;
 
-   protected static Log log = ExoLogger.getLogger("jcr.SessionDataManager");
+   protected static Log log = ExoLogger.getLogger("exo.jcr.component.core.SessionDataManager");
 
    protected final SessionImpl session;
 

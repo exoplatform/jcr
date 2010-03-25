@@ -48,15 +48,15 @@ public class NodeTypeDataImpl implements NodeTypeData
 
    protected Boolean mixin;
 
- //  protected Boolean isAbstract;
+   //  protected Boolean isAbstract;
 
-//   /**
-//    * Default true.
-//    */
-//   protected boolean isQueryable;
+   //   /**
+   //    * Default true.
+   //    */
+   //   protected boolean isQueryable;
 
    public NodeTypeDataImpl(InternalQName name, InternalQName primaryItemName, boolean mixin,
-      boolean hasOrderableChildNodes,  InternalQName[] declaredSupertypeNames,
+      boolean hasOrderableChildNodes, InternalQName[] declaredSupertypeNames,
       PropertyDefinitionData[] declaredPropertyDefinitions, NodeDefinitionData[] declaredChildNodeDefinitions)
    {
 
@@ -70,14 +70,6 @@ public class NodeTypeDataImpl implements NodeTypeData
       this.declaredPropertyDefinitions = declaredPropertyDefinitions;
       this.declaredChildNodeDefinitions = declaredChildNodeDefinitions;
    }
-//
-//   /**
-//    * @see org.exoplatform.services.jcr.core.nodetype.NodeTypeData#isAbstract()
-//    */
-//   public boolean isAbstract()
-//   {
-//      return isAbstract;
-//   }
 
    /**
     * @see org.exoplatform.services.jcr.core.nodetype.NodeTypeData#getDeclaredChildNodeDefinitions()
@@ -211,12 +203,12 @@ public class NodeTypeDataImpl implements NodeTypeData
       return mixin;
    }
 
-//   /**
-//    * @see org.exoplatform.services.jcr.core.nodetype.NodeTypeData#isQueryable()
-//    */
-//   public boolean isQueryable()
-//   {
-//      return isQueryable;
-//   }
+   //   /**
+   //    * @see org.exoplatform.services.jcr.core.nodetype.NodeTypeData#isQueryable()
+   //    */
+   //   public boolean isQueryable()
+   //   {
+   //      return isQueryable;
+   //   }
 
 }

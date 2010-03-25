@@ -49,7 +49,7 @@ class ConsistencyCheck
    /**
     * Logger instance for this class
     */
-   private static final Logger log = LoggerFactory.getLogger(ConsistencyCheck.class);
+   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.ConsistencyCheck");
 
    /**
     * The ItemStateManager of the workspace.

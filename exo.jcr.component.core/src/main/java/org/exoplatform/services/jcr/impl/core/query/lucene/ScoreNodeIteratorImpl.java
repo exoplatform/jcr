@@ -16,14 +16,9 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
-
-import javax.jcr.RangeIterator;
 
 /**
  * <code>ScoreNodeIteratorImpl</code> implements a {@link ScoreNodeIterator}
@@ -35,11 +30,10 @@ public class ScoreNodeIteratorImpl implements ScoreNodeIterator
    //private final ScoreNode[][] scoreNodes;
 
    private ListIterator<ScoreNode[]> iterator;
-   
-    
+
    public ScoreNodeIteratorImpl(ScoreNode[][] scoreNodes)
    {
-     
+
       iterator = Arrays.asList(scoreNodes).listIterator();
       //this.scoreNodes = scoreNodes;
       ///this(Arrays.asList(scoreNodes));
@@ -56,57 +50,9 @@ public class ScoreNodeIteratorImpl implements ScoreNodeIterator
    }
 
    /**
-    * Static instance of an empty {@link RangeIterator}.
-    */
-   //public static final RangeIterator EMPTY = new RangeIteratorAdapter(Collections.EMPTY_LIST);
-
-   //   /**
-   //    * The adapted iterator instance.
-   //    */
-   //   private final Iterator iterator;
-
-   /**
     * Number of elements in the adapted iterator, or -1 if unknown.
     */
    private int size;
-
-   /**
-    * Current position of the iterator.
-    */
-  // private int position;
-
-   //   /**
-   //    * Creates an adapter for the given iterator of the given size.
-   //    *
-   //    * @param iterator adapted iterator
-   //    * @param size size of the iterator, or -1 if unknown
-   //    */
-   //   public ScoreNodeIteratorImpl(Iterator iterator, long size)
-   //   {
-   //      this.iterator = iterator;
-   //      this.size = size;
-   //      this.position = 0;
-   //   }
-
-   //   /**
-   //    * Creates an adapter for the given iterator of unknown size.
-   //    *
-   //    * @param iterator adapted iterator
-   //    */
-   //   public ScoreNodeIteratorImpl(Iterator iterator)
-   //   {
-   //      this(iterator, -1);
-   //   }
-   //
-   //   /**
-   //    * Creates a {@link RangeIterator} for the given collection.
-   //    *
-   //    * @param collection the collection to iterate
-   //    */
-   //   public ScoreNodeIteratorImpl(Collection collection)
-   //   {
-   //      this(collection.iterator(), collection.size());
-   //   }
 
    //-------------------------------------------------------< RangeIterator >
 
@@ -143,7 +89,7 @@ public class ScoreNodeIteratorImpl implements ScoreNodeIterator
       {
          throw new IllegalArgumentException("skip(" + n + ")");
       }
-      
+
       for (long i = 0; i < n; i++)
       {
          next();
@@ -162,18 +108,6 @@ public class ScoreNodeIteratorImpl implements ScoreNodeIterator
     */
    public boolean hasNext()
    {
-      //      if (iterator.hasNext())
-      //      {
-      //         return true;
-      //      }
-      //      else
-      //      {
-      //         if (size == -1)
-      //         {
-      //            size = position;
-      //         }
-      //         return false;
-      //      }
       return iterator.hasNext();
    }
 
@@ -199,8 +133,8 @@ public class ScoreNodeIteratorImpl implements ScoreNodeIterator
     */
    public void remove() throws UnsupportedOperationException, IllegalStateException
    {
-     iterator.remove();
-     size--;
+      iterator.remove();
+      size--;
    }
 
    public void skipBack(long skipNum)

@@ -82,7 +82,7 @@ public abstract class ItemImpl implements Item
    /**
     * Logger.
     */
-   private static Log log = ExoLogger.getLogger("jcr.ItemImpl");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.ItemImpl");
 
    /**
     * Session object.

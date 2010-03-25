@@ -43,7 +43,7 @@ public class NodeDefinitionImpl extends ItemDefinitionImpl implements ExtendedNo
    /**
     * Class logger.
     */
-   private static final Log LOG = ExoLogger.getLogger(NodeDefinitionImpl.class);
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.NodeDefinitionImpl");
 
    private final NodeDefinitionData nodeDefinitionData;
 

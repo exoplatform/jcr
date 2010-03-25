@@ -16,17 +16,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.jcr.RepositoryException;
-
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
@@ -42,7 +31,6 @@ import org.apache.lucene.search.Weight;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.core.query.LocationStepQueryNode;
 import org.exoplatform.services.jcr.impl.core.query.lucene.hits.AdaptingHits;
@@ -50,6 +38,17 @@ import org.exoplatform.services.jcr.impl.core.query.lucene.hits.Hits;
 import org.exoplatform.services.jcr.impl.core.query.lucene.hits.ScorerHits;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.jcr.RepositoryException;
 
 /**
  * Implements a lucene <code>Query</code> which returns the child nodes of the
@@ -61,7 +60,7 @@ class ChildAxisQuery extends Query implements JcrQuery
    /**
     * The logger instance for this class.
     */
-   private static final Logger log = LoggerFactory.getLogger(ChildAxisQuery.class);
+   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.ChildAxisQuery");
 
    /**
     * Threshold when children calculation is switched to
@@ -705,13 +704,14 @@ class ChildAxisQuery extends Query implements JcrQuery
                   List<NodeData> childs = itemMgr.getChildNodesData(state);
 
                   List<NodeData> datas = new ArrayList<NodeData>();
-                  if (childs != null){
+                  if (childs != null)
+                  {
                      for (NodeData nodeData : childs)
                      {
-                        if(nameTest.equals(nodeData.getQPath().getName()))
+                        if (nameTest.equals(nodeData.getQPath().getName()))
                            datas.add(nodeData);
                      }
-                     
+
                   }
                   entries = datas.iterator();//itemMgr.getChildNodesData(childNodeData).iterator();
                }

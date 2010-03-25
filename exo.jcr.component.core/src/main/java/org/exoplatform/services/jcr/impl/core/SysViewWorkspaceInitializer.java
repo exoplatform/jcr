@@ -83,7 +83,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
 
    public static final String RESTORE_PATH_PARAMETER = "restore-path";
 
-   protected static final Log log = ExoLogger.getLogger("jcr.WorkspaceInitializer");
+   protected static final Log log = ExoLogger.getLogger("exo.jcr.component.core.WorkspaceInitializer");
 
    protected final String workspaceName;
 

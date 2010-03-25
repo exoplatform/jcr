@@ -91,7 +91,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    /**
     * Logger instance for this class
     */
-   private static final Log log = ExoLogger.getLogger(SearchManager.class);
+   private static final Log log = ExoLogger.getLogger("exo.jcr.component.core.SearchManager");
 
    protected final QueryHandlerEntry config;
 
@@ -649,7 +649,8 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          }
          Constructor<? extends IndexerChangesFilter> constuctor =
             changesFilterClass.getConstructor(SearchManager.class, SearchManager.class, QueryHandlerEntry.class,
-               IndexingTree.class, IndexingTree.class, QueryHandler.class, QueryHandler.class, ConfigurationManager.class);
+               IndexingTree.class, IndexingTree.class, QueryHandler.class, QueryHandler.class,
+               ConfigurationManager.class);
          if (parentSearchManager != null)
          {
             newChangesFilter =

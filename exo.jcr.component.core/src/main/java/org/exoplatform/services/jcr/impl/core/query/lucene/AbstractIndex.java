@@ -16,13 +16,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.StringReader;
-import java.util.BitSet;
-import java.util.Iterator;
-
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -34,6 +27,13 @@ import org.apache.lucene.search.Similarity;
 import org.apache.lucene.store.Directory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.StringReader;
+import java.util.BitSet;
+import java.util.Iterator;
 
 /**
  * Implements common functionality for a lucene index.
@@ -53,7 +53,7 @@ abstract class AbstractIndex
 {
 
    /** The logger instance for this class */
-   private static final Logger log = LoggerFactory.getLogger(AbstractIndex.class);
+   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.AbstractIndex");
 
    /** PrintStream that pipes all calls to println(String) into log.info() */
    private static final LoggingPrintStream STREAM_LOGGER = new LoggingPrintStream();
@@ -255,7 +255,7 @@ abstract class AbstractIndex
          log.debug("closing IndexWriter.");
          indexWriter = null;
       }
-      
+
       if (indexReader == null || !indexReader.isCurrent())
       {
          IndexReader reader = IndexReader.open(getDirectory());

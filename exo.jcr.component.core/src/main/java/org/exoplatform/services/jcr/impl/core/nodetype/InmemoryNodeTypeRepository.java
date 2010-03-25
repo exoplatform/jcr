@@ -39,15 +39,13 @@ import javax.jcr.RepositoryException;
  */
 public class InmemoryNodeTypeRepository extends AbstractNodeTypeRepository
 {
-   private final Log log = ExoLogger.getLogger(InmemoryNodeTypeRepository.class.getName());
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.InmemoryNodeTypeRepository");
 
    private final ItemDefinitionDataHolder defsHolder;
 
    private final NodeTypeDataHierarchyHolder hierarchy;
-   
-   private boolean haveTypes = false; 
 
-   
+   private boolean haveTypes = false;
 
    /**
     * @param defsHolder
@@ -80,7 +78,7 @@ public class InmemoryNodeTypeRepository extends AbstractNodeTypeRepository
    {
 
       hierarchy.addNodeType(nodeType, volatileNodeTypes);
-      
+
       // put supers
       final Set<InternalQName> supers = hierarchy.getSupertypes(nodeType.getName(), volatileNodeTypes);
 
@@ -89,7 +87,7 @@ public class InmemoryNodeTypeRepository extends AbstractNodeTypeRepository
          defsHolder.putDefinitions(nodeType.getName(), hierarchy.getNodeType(superName, volatileNodeTypes));
       }
       haveTypes = true;
-      
+
       // put prop def
       defsHolder.putDefinitions(nodeType.getName(), nodeType);
    }
@@ -243,6 +241,6 @@ public class InmemoryNodeTypeRepository extends AbstractNodeTypeRepository
       }
       // remove it self
       defsHolder.removeDefinitions(nodeTypeName, nodeType);
-      haveTypes  = hierarchy.getAllNodeTypes().size()>0;
+      haveTypes = hierarchy.getAllNodeTypes().size() > 0;
    }
 }

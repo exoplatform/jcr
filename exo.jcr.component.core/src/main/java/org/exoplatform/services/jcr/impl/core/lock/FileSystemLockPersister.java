@@ -62,7 +62,7 @@ public class FileSystemLockPersister implements LockPersister
    /**
     * logger.
     */
-   private final Log log = ExoLogger.getLogger("jcr.lock.LockPersister");
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.FileSystemLockPersister");
 
    /**
     * The directory which stores information of the locks.

@@ -56,7 +56,7 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
    /**
     * Logger instance for this class
     */
-   private final Log log = ExoLogger.getLogger(JBossCacheIndexChangesFilter.class);
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.JBossCacheIndexChangesFilter");
 
    private final Cache<Serializable, Object> cache;
 

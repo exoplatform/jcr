@@ -44,7 +44,7 @@ public class NodeTypeDataHierarchyHolder
    /**
     * Class logger.
     */
-   private static final Log LOG = ExoLogger.getLogger(NodeTypeDataHierarchyHolder.class);
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.NodeTypeDataHierarchyHolder");
 
    private final Map<InternalQName, NodeTypeHolder> nodeTypes;
 

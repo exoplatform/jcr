@@ -51,7 +51,7 @@ public class CacheableSessionLockManager extends AbstractSessionLockManager
    /**
     * Logger
     */
-   private final Log log = ExoLogger.getLogger("jcr.lock.SessionLockManager");
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.CacheableSessionLockManager");
 
    /**
     * Session identifier.

@@ -63,7 +63,7 @@ public class NodeTypeImpl extends NodeTypeDefinitionImpl implements NodeType
    /**
     * Logger.
     */
-   protected static final Log LOG = ExoLogger.getLogger("jcr.NodeTypeImpl");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.NodeTypeImpl");
 
    /**
     * @param nodeTypeData
@@ -693,13 +693,13 @@ public class NodeTypeImpl extends NodeTypeDefinitionImpl implements NodeType
       }
    }
 
-    /**
-    * Check value constrains.
-    * 
-    * @param constraints - string constrains.
-    * @param value - value to check.
-    * @return result of check.
-    */
+   /**
+   * Check value constrains.
+   * 
+   * @param constraints - string constrains.
+   * @param value - value to check.
+   * @return result of check.
+   */
    private boolean checkValueConstraints(String[] constraints, Value value)
    {
 

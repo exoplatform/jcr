@@ -44,7 +44,7 @@ public class WeightedHighlighter extends DefaultHighlighter
    /**
     * The logger instance for this class.
     */
-   private static final Logger log = LoggerFactory.getLogger(WeightedHighlighter.class);
+   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.WeightedHighlighter");
 
    /**
     * Punctuation characters that mark the end of a sentence.

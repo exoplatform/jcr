@@ -102,7 +102,7 @@ public class LockManagerImpl implements WorkspaceLockManager, ItemsPersistenceLi
    /**
     * Logger
     */
-   private final Log log = ExoLogger.getLogger("jcr.lock.LockManagerImpl");
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.LockManagerImpl");
 
    /**
     * Map NodeIdentifier -- lockData

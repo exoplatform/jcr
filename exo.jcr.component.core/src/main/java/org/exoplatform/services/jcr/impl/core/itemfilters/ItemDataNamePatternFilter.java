@@ -45,7 +45,7 @@ public class ItemDataNamePatternFilter implements ItemDataFilter
    /**
     * Logger.
     */
-   protected static final Log LOG = ExoLogger.getLogger("jcr.ItemDataNamePatternFilter");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.ItemDataNamePatternFilter");
 
    private final SessionImpl session;
 
@@ -60,19 +60,6 @@ public class ItemDataNamePatternFilter implements ItemDataFilter
       while (parser.hasMoreTokens())
       {
          String token = parser.nextToken();
-
-         //         String expr;
-         //         int prefixIndex = token.indexOf(":");
-         //         if (prefixIndex > 0)
-         //         {
-         //            expr =
-         //               "[" + session.getNamespaceURI(token.substring(0, prefixIndex)) + "]"
-         //                  + (prefixIndex < token.length() - 1 ? token.substring(prefixIndex + 1) : "");
-         //         }
-         //         else
-         //         {
-         //            expr = token;
-         //         }
 
          expressions.add(token.trim());
       }

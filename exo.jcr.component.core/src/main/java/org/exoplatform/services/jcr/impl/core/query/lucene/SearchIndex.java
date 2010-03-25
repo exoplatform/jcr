@@ -95,7 +95,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    private static final DefaultQueryNodeFactory DEFAULT_QUERY_NODE_FACTORY = new DefaultQueryNodeFactory();
 
    /** The logger instance for this class */
-   private static final Logger log = LoggerFactory.getLogger(SearchIndex.class);
+   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.SearchIndex");
 
    /**
     * Name of the file to persist search internal namespace mappings.
@@ -596,7 +596,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       {
          recoverErrorLog(errorLog);
       }
-      
+
       modeHandler.addIndexerIoModeListener(this);
    }
 
@@ -819,11 +819,6 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          {
             log.warn("Exception while closing FileSystem", e);
          }
-      }
-      // shutdown extractor
-      if (extractor instanceof PooledTextExtractor)
-      {
-         // ((PooledTextExtractor)extractor).shutdown();
       }
       if (spellChecker != null)
       {
@@ -2710,11 +2705,11 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       }
       catch (IOException e)
       {
-         log.error("Can not recover error log. On changed mode " +  mode , e);
+         log.error("Can not recover error log. On changed mode " + mode, e);
       }
       catch (RepositoryException e)
       {
          log.error("Can not recover error log.", e);
-      }      
+      }
    }
 }

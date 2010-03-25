@@ -82,7 +82,7 @@ import javax.jcr.version.VersionException;
 public class WorkspaceImpl implements ExtendedWorkspace
 {
 
-   protected static Log log = ExoLogger.getLogger("jcr.WorkspaceImpl");
+   protected static Log log = ExoLogger.getLogger("exo.jcr.component.core.WorkspaceImpl");
 
    private final SessionImpl session;
 

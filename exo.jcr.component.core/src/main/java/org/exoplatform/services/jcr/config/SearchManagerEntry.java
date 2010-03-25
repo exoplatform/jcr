@@ -34,7 +34,7 @@ public class SearchManagerEntry
    /**
     * Class logger.
     */
-   private final Log log = ExoLogger.getLogger("jcr.SearchManagerEntry");
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.SearchManagerEntry");
 
    /**
     * Name of the default query implementation class.

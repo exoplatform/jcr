@@ -31,7 +31,7 @@ import org.exoplatform.services.log.Log;
 public class LockRemover extends WorkerThread
 {
 
-   private final Log log = ExoLogger.getLogger("jcr.lock.LockRemover");
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.LockRemover");
 
    public static final long DEFAULT_THREAD_TIMEOUT = 30000; // 30
 

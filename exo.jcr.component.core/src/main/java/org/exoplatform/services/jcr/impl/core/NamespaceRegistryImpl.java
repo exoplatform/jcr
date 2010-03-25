@@ -50,7 +50,7 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry, Startab
 
    private final static Set<String> PROTECTED_NAMESPACES = new HashSet<String>();
 
-   protected final static Log log = ExoLogger.getLogger("jcr.NamespaceRegistryImpl");
+   protected final static Log log = ExoLogger.getLogger("exo.jcr.component.core.NamespaceRegistryImpl");
 
    private boolean started = false;
    static

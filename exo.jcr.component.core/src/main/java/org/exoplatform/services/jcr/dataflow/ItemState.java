@@ -39,7 +39,7 @@ public class ItemState implements Externalizable
 
    private static final long serialVersionUID = 7967457831325761318L;
 
-   private static Log log = ExoLogger.getLogger("jcr.ItemState");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.ItemState");
 
    public static final int ADDED = 1;
 

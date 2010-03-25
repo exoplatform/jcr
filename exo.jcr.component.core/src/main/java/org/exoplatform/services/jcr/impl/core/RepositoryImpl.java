@@ -81,7 +81,7 @@ public class RepositoryImpl implements ManageableRepository
    /**
     * Logger.
     */
-   protected static final Log LOG = ExoLogger.getLogger("jcr:RepositoryImpl");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.RepositoryImpl");
 
    static
    {

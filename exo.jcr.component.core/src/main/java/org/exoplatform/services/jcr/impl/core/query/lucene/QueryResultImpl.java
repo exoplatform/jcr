@@ -16,6 +16,16 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
+import org.exoplatform.services.jcr.access.AccessManager;
+import org.exoplatform.services.jcr.access.PermissionType;
+import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.QPath;
+import org.exoplatform.services.jcr.impl.core.SessionDataManager;
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,17 +38,6 @@ import javax.jcr.RepositoryException;
 import javax.jcr.query.QueryResult;
 import javax.jcr.query.RowIterator;
 
-import org.exoplatform.services.jcr.access.AccessManager;
-import org.exoplatform.services.jcr.access.PermissionType;
-import org.exoplatform.services.jcr.datamodel.InternalQName;
-import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.datamodel.QPath;
-import org.exoplatform.services.jcr.impl.core.SessionDataManager;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Implements the <code>QueryResult</code> interface.
  */
@@ -48,7 +47,7 @@ public abstract class QueryResultImpl implements QueryResult
    /**
     * The logger instance for this class
     */
-   private static final Logger log = LoggerFactory.getLogger(QueryResultImpl.class);
+   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.QueryResultImpl");
 
    /**
     * The search index to execute the query.
@@ -232,8 +231,8 @@ public abstract class QueryResultImpl implements QueryResult
             throw new RepositoryException(e);
          }
       }
-      return new RowIteratorImpl(getScoreNodes(), selectProps, selectorNames, itemMgr, session.getLocationFactory(), excerptProvider,
-         spellSuggestion);
+      return new RowIteratorImpl(getScoreNodes(), selectProps, selectorNames, itemMgr, session.getLocationFactory(),
+         excerptProvider, spellSuggestion);
    }
 
    /**
@@ -505,6 +504,7 @@ public abstract class QueryResultImpl implements QueryResult
             }
          }
       }
+
       /**
        * 
        * @see org.exoplatform.services.jcr.impl.core.query.lucene.TwoWayRangeIterator#skipBack(long)
@@ -529,7 +529,7 @@ public abstract class QueryResultImpl implements QueryResult
             position -= skipNum + 1;
             fetchNext();
          }
-         
+
       }
 
       /**

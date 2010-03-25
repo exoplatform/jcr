@@ -43,7 +43,7 @@ public class NodeTypeDataValidator
    /**
     * Class logger.
     */
-   private final Log log = ExoLogger.getLogger(NodeTypeDataValidator.class);
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.NodeTypeDataValidator");
 
    protected final NodeTypeRepository hierarchy;
 
@@ -112,13 +112,13 @@ public class NodeTypeDataValidator
          {
             msg += " " + internalQName.getAsString();
          }
-         
-         msg +=" Unresolved ";
+
+         msg += " Unresolved ";
          for (InternalQName internalQName : unresolvedDependecies)
          {
             msg += " " + internalQName.getAsString();
          }
-         
+
          throw new RepositoryException(msg);
       }
    }

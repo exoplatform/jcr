@@ -84,7 +84,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
 
    private static final String NODETYPES_FILE = "nodetypes.xml";
 
-   private final Log log = ExoLogger.getLogger(NodeTypeDataManagerImpl.class.getName());
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.NodeTypeDataManagerImpl");
 
    protected final String accessControlPolicy;
 
@@ -196,7 +196,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
                }
             }
          }
-         
+
          for (final NodeDefinitionData cnd : this.nodeTypeRepository.getNodeType(ntname)
             .getDeclaredChildNodeDefinitions())
          {
@@ -210,7 +210,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
             }
          }
       }
-      
+
       defsAny.addAll(defs.values());
 
       return defsAny.toArray(new NodeDefinitionData[defsAny.size()]);
@@ -243,14 +243,14 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
    {
       final Collection<PropertyDefinitionData> defsAny = new ArrayList<PropertyDefinitionData>();
       final HashMap<InternalQName, PropertyDefinitionData> defs = new HashMap<InternalQName, PropertyDefinitionData>();
-      
+
       for (final InternalQName ntname : nodeTypeNames)
       {
 
          for (final InternalQName suname : this.nodeTypeRepository.getSupertypes(ntname))
          {
             for (final PropertyDefinitionData pd : this.nodeTypeRepository.getNodeType(suname)
-                     .getDeclaredPropertyDefinitions())
+               .getDeclaredPropertyDefinitions())
             {
                if (pd.getName().equals(Constants.JCR_ANY_NAME))
                {
@@ -264,7 +264,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
          }
 
          for (final PropertyDefinitionData pd : this.nodeTypeRepository.getNodeType(ntname)
-                  .getDeclaredPropertyDefinitions())
+            .getDeclaredPropertyDefinitions())
          {
             if (pd.getName().equals(Constants.JCR_ANY_NAME))
             {
@@ -276,7 +276,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
             }
          }
       }
-      
+
       defsAny.addAll(defs.values());
 
       return defsAny.toArray(new PropertyDefinitionData[defsAny.size()]);
@@ -395,7 +395,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
 
       PropertyDefinitionDatas propertyDefinitions =
          this.nodeTypeRepository.getPropertyDefinitions(propertyName, nodeTypeNames);
-      
+
       // Try super
       if (propertyDefinitions == null)
       {

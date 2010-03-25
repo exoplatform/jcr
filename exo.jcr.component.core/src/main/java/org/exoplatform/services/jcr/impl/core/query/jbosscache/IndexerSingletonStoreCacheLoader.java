@@ -25,9 +25,6 @@ import org.exoplatform.services.log.Log;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.NodeSPI;
 import org.jboss.cache.loader.SingletonStoreCacheLoader;
-import org.jboss.cache.notifications.annotation.CacheListener;
-import org.jboss.cache.notifications.annotation.CacheStarted;
-import org.jboss.cache.notifications.event.Event;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -41,7 +38,7 @@ import java.util.concurrent.Callable;
  */
 public class IndexerSingletonStoreCacheLoader extends SingletonStoreCacheLoader
 {
-   private final Log log = ExoLogger.getLogger(this.getClass().getName());
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.IndexerSingletonStoreCacheLoader");
 
    /**
     * @see org.jboss.cache.loader.SingletonStoreCacheLoader#activeStatusChanged(boolean)

@@ -31,7 +31,7 @@ public interface ExtendedItemDefinition extends ItemDefinition
 {
 
    /**
-    * Remove it from NodeImpl.findNodeType, BaseXmlExporter.findNodeType, tests
+    * TODO Remove it from NodeImpl.findNodeType, BaseXmlExporter.findNodeType, tests
     */
    // @Deprecated
    // public static String RESIDUAL_SET = "*";

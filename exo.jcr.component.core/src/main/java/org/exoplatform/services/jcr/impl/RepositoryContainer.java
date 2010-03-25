@@ -41,7 +41,6 @@ import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.jcr.impl.core.WorkspaceInitializer;
 import org.exoplatform.services.jcr.impl.core.access.DefaultAccessManagerImpl;
 import org.exoplatform.services.jcr.impl.core.lock.LockManagerImpl;
-import org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeDataManagerImpl;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
 import org.exoplatform.services.jcr.impl.core.nodetype.registration.JCRNodeTypeDataPersister;
@@ -98,7 +97,7 @@ public class RepositoryContainer extends ExoContainer
    /**
     * Logger.
     */
-   private final Log log = ExoLogger.getLogger("jcr.RepositoryContainer");
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.RepositoryContainer");
 
    /**
     * RepositoryContainer constructor.
@@ -267,24 +266,24 @@ public class RepositoryContainer extends ExoContainer
             }
          }
 
-         
-         if (wsConfig.getLockManager() != null && wsConfig.getLockManager().getType() != null) 
+         if (wsConfig.getLockManager() != null && wsConfig.getLockManager().getType() != null)
          {
             try
             {
                Class<?> lockManagerType = Class.forName(wsConfig.getLockManager().getType());
                workspaceContainer.registerComponentImplementation(lockManagerType);
-            } catch (ClassNotFoundException e) {
+            }
+            catch (ClassNotFoundException e)
+            {
                throw new RepositoryConfigurationException("Class not found for workspace lock manager "
-                        + wsConfig.getLockManager().getType() + ", container " + wsConfig.getUniqueName()
-                        + " : " + e);
+                  + wsConfig.getLockManager().getType() + ", container " + wsConfig.getUniqueName() + " : " + e);
             }
          }
          else
          {
             workspaceContainer.registerComponentImplementation(LockManagerImpl.class);
          }
-         
+
          // Query handler
          if (wsConfig.getQueryHandler() != null)
          {

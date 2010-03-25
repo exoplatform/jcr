@@ -32,7 +32,7 @@ public class RelatedDefinition<T>
    /**
     * Class logger.
     */
-   private static final Log LOG = ExoLogger.getLogger(RelatedDefinition.class);
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.RelatedDefinition");
 
    private final T ancestorDefinition;
 

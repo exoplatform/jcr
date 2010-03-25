@@ -60,7 +60,7 @@ public class NodeIndexer
    /**
     * The logger instance for this class.
     */
-   private static final Logger log = LoggerFactory.getLogger(NodeIndexer.class);
+   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.NodeIndexer");
 
    /**
     * The default boost for a lucene field: 1.0f.
@@ -298,9 +298,10 @@ public class NodeIndexer
                // ok, have a reader
                // if the prop obtainer from cache it will contains a values,
                // otherwise read prop with values from DM
-               PropertyData propData = prop.getValues().size() > 0 ? prop : ((PropertyData)stateProvider.getItemData(node,
-                        new QPathEntry(Constants.JCR_DATA, 0)));
-               
+               PropertyData propData =
+                  prop.getValues().size() > 0 ? prop : ((PropertyData)stateProvider.getItemData(node, new QPathEntry(
+                     Constants.JCR_DATA, 0)));
+
                // index if have jcr:mimeType sibling for this binary property only
                try
                {
@@ -308,7 +309,7 @@ public class NodeIndexer
                      extractor.getDocumentReader(new String(pmime.getValues().get(0).getAsByteArray()));
 
                   data = propData.getValues();
-                  
+
                   if (data == null)
                      log.warn("null value found at property " + prop.getQPath().getAsString());
 
@@ -376,14 +377,16 @@ public class NodeIndexer
                }
                catch (DocumentReadException e)
                {
-                  log.error("Can not indexing the document by path " + propData.getQPath().getAsString() + ", propery id '" + propData.getIdentifier() + "' : " + e, e);
+                  log.error("Can not indexing the document by path " + propData.getQPath().getAsString()
+                     + ", propery id '" + propData.getIdentifier() + "' : " + e, e);
                }
                catch (HandlerNotFoundException e)
                {
                   // no handler - no index
                   if (log.isDebugEnabled())
                   {
-                     log.debug("Can not indexing the document by path " + propData.getQPath().getAsString() + ", propery id '" + propData.getIdentifier() + "' : " + e, e);
+                     log.debug("Can not indexing the document by path " + propData.getQPath().getAsString()
+                        + ", propery id '" + propData.getIdentifier() + "' : " + e, e);
                   }
                }
                catch (IOException e)
@@ -391,12 +394,14 @@ public class NodeIndexer
                   // no data - no index
                   if (log.isWarnEnabled())
                   {
-                     log.warn("Binary value indexer IO error, document by path " + propData.getQPath().getAsString() + ", propery id '" + propData.getIdentifier() + "' : " + e, e);
+                     log.warn("Binary value indexer IO error, document by path " + propData.getQPath().getAsString()
+                        + ", propery id '" + propData.getIdentifier() + "' : " + e, e);
                   }
                }
                catch (Exception e)
                {
-                  log.error("Binary value indexer error, document by path " + propData.getQPath().getAsString() + ", propery id '" + propData.getIdentifier() + "' : " + e, e);
+                  log.error("Binary value indexer error, document by path " + propData.getQPath().getAsString()
+                     + ", propery id '" + propData.getIdentifier() + "' : " + e, e);
                }
             }
          }
@@ -411,7 +416,8 @@ public class NodeIndexer
             // WARN. DON'T USE access item BY PATH - it's may be a node in case of
             // residual definitions in NT
             List<ValueData> data =
-               prop.getValues().size() > 0 ? prop.getValues() : ((PropertyData)stateProvider.getItemData(prop.getIdentifier())).getValues();
+               prop.getValues().size() > 0 ? prop.getValues() : ((PropertyData)stateProvider.getItemData(prop
+                  .getIdentifier())).getValues();
 
             if (data == null)
                log.warn("null value found at property " + prop.getQPath().getAsString());

@@ -18,8 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock.jbosscache.jdbc;
 
-import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
-import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializer;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerException;
 import org.exoplatform.services.log.ExoLogger;
@@ -152,8 +150,7 @@ public class LockJDBCContainer
     * @throws IOException 
     * @throws DBInitializerException 
     */
-   protected void initDatabase(String dataSource, Connection jdbcConn) throws IOException,
-      DBInitializerException
+   protected void initDatabase(String dataSource, Connection jdbcConn) throws IOException, DBInitializerException
    {
       DBInitializer dbInitializer = new DBInitializer(dataSource, jdbcConn, "/conf/storage/jcr-lock-jdbc.sql");
 

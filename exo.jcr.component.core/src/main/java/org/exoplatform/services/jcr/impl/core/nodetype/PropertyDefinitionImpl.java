@@ -40,6 +40,11 @@ import javax.jcr.nodetype.PropertyDefinition;
 public class PropertyDefinitionImpl extends ItemDefinitionImpl implements PropertyDefinition
 {
 
+   /**
+    * Class logger.
+    */
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.PropertyDefinitionImpl");
+
    private final PropertyDefinitionData propertyDefinitionData;
 
    /**
@@ -56,11 +61,6 @@ public class PropertyDefinitionImpl extends ItemDefinitionImpl implements Proper
       super(propertyDefinitionData, nodeTypeDataManager, nodeTypeManager, locationFactory, valueFactory);
       this.propertyDefinitionData = propertyDefinitionData;
    }
-
-   /**
-    * Class logger.
-    */
-   private static final Log LOG = ExoLogger.getLogger(PropertyDefinitionImpl.class);
 
    /**
     * {@inheritDoc}
@@ -104,29 +104,29 @@ public class PropertyDefinitionImpl extends ItemDefinitionImpl implements Proper
    {
       return propertyDefinitionData.isMultiple();
    }
-//
-//   /**
-//    * {@inheritDoc}
-//    */
-//   public String[] getAvailableQueryOperators()
-//   {
-//      return propertyDefinitionData.getAvailableQueryOperators();
-//   }
-//
-//   /**
-//    * {@inheritDoc}
-//    */
-//   public boolean isFullTextSearchable()
-//   {
-//      return propertyDefinitionData.isFullTextSearchable();
-//   }
-//
-//   /**
-//    * {@inheritDoc}
-//    */
-//   public boolean isQueryOrderable()
-//   {
-//      return propertyDefinitionData.isQueryOrderable();
-//   }
+   //
+   //   /**
+   //    * {@inheritDoc}
+   //    */
+   //   public String[] getAvailableQueryOperators()
+   //   {
+   //      return propertyDefinitionData.getAvailableQueryOperators();
+   //   }
+   //
+   //   /**
+   //    * {@inheritDoc}
+   //    */
+   //   public boolean isFullTextSearchable()
+   //   {
+   //      return propertyDefinitionData.isFullTextSearchable();
+   //   }
+   //
+   //   /**
+   //    * {@inheritDoc}
+   //    */
+   //   public boolean isQueryOrderable()
+   //   {
+   //      return propertyDefinitionData.isQueryOrderable();
+   //   }
 
 }

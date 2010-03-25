@@ -16,13 +16,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
-
-import javax.jcr.PropertyType;
-import javax.jcr.RepositoryException;
-
 import org.apache.lucene.search.Query;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.ItemData;
@@ -32,6 +25,12 @@ import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+
+import java.io.IOException;
+import java.util.List;
+
+import javax.jcr.PropertyType;
+import javax.jcr.RepositoryException;
 
 /**
  * <code>SimpleExcerptProvider</code> is a <b>very</b> simple excerpt provider.
@@ -45,7 +44,8 @@ public class SimpleExcerptProvider implements ExcerptProvider
    /**
     * Logger instance for this class
     */
-   private static final Log log = ExoLogger.getLogger(SimpleExcerptProvider.class);
+   private static final Log log = ExoLogger.getLogger("exo.jcr.component.core.SimpleExcerptProvider");
+
    /**
     * The item state manager.
     */

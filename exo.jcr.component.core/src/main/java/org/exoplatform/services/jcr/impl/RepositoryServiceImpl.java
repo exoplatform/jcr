@@ -60,7 +60,7 @@ import javax.jcr.RepositoryException;
 public class RepositoryServiceImpl implements RepositoryService, Startable
 {
 
-   protected static Log log = ExoLogger.getLogger("jcr.RepositoryService");
+   protected static Log log = ExoLogger.getLogger("exo.jcr.component.core.RepositoryServiceImpl");
 
    private final RepositoryServiceConfiguration config;
 

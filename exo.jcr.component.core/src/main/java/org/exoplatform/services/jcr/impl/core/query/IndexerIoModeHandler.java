@@ -34,13 +34,13 @@ public class IndexerIoModeHandler
    /**
     * The logger instance for this class
     */
-   private static final Logger log = LoggerFactory.getLogger(IndexerIoModeHandler.class);
-   
+   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.IndexerIoModeHandler");
+
    /**
     * The current mode
     */
    private volatile IndexerIoMode mode;
-   
+
    /**
     * The list of all the listeners
     */
@@ -73,7 +73,7 @@ public class IndexerIoModeHandler
    {
       if (this.mode != mode)
       {
-         log.info("Indexer io mode=" + mode);         
+         log.info("Indexer io mode=" + mode);
          this.mode = mode;
          for (IndexerIoModeListener listener : listeners)
          {
@@ -81,7 +81,7 @@ public class IndexerIoModeHandler
          }
       }
    }
-   
+
    /**
     * Add a new IndexerIoModeListener to the list of listeners
     * @param listener the listener to add

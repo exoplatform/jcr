@@ -83,7 +83,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    /**
     * The logger instance for this class
     */
-   private static final Logger log = LoggerFactory.getLogger(MultiIndex.class);
+   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.MultiIndex");
 
    /**
     * Names of active persistent index directories.
@@ -463,7 +463,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             synchronized (updateMonitor)
             {
                indexUpdateMonitor.setUpdateInProgress(true, true);
-            }  
+            }
             flush();
          }
       }
@@ -472,7 +472,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          synchronized (updateMonitor)
          {
             //updateInProgress = false;
-            
+
             indexUpdateMonitor.setUpdateInProgress(false, flush);
             updateMonitor.notifyAll();
             releaseMultiReader();

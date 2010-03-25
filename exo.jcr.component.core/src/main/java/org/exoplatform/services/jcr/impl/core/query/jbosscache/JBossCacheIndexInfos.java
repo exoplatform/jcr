@@ -55,7 +55,7 @@ import java.util.Set;
 public class JBossCacheIndexInfos extends IndexInfos implements IndexerIoModeListener
 {
 
-   private final Log log = ExoLogger.getLogger(this.getClass().getName());
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.JBossCacheIndexInfos");
 
    private static final String INDEX_NAMES = "$names".intern();
 

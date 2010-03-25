@@ -118,7 +118,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    /**
     * Logger.
     */
-   protected static final Log LOG = ExoLogger.getLogger("jcr.NodeImpl");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.NodeImpl");
 
    /**
     * System LocationFactory.

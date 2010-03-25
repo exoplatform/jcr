@@ -42,7 +42,7 @@ public class ItemDefinitionImpl implements ExtendedItemDefinition
    /**
     * Class logger.
     */
-   private static final Log LOG = ExoLogger.getLogger(ItemDefinitionImpl.class);
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.ItemDefinitionImpl");
 
    protected final NodeTypeDataManager nodeTypeDataManager;
 

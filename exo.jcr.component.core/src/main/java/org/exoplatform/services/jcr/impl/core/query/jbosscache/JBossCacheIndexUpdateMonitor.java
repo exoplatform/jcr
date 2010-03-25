@@ -50,7 +50,7 @@ public class JBossCacheIndexUpdateMonitor implements IndexUpdateMonitor, Indexer
    /**
     * Logger instance for this class
     */
-   private final Log log = ExoLogger.getLogger(JBossCacheIndexUpdateMonitor.class);
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.JBossCacheIndexUpdateMonitor");
 
    private final Cache<Serializable, Object> cache;
 

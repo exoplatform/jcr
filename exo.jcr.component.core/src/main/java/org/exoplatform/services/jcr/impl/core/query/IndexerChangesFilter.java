@@ -44,7 +44,7 @@ public abstract class IndexerChangesFilter implements ItemsPersistenceListener
    /**
     * Logger instance for this class
     */
-   private static final Log log = ExoLogger.getLogger(DefaultChangesFilter.class);
+   private static final Log log = ExoLogger.getLogger("exo.jcr.component.core.DefaultChangesFilter");
 
    protected final SearchManager searchManager;
 

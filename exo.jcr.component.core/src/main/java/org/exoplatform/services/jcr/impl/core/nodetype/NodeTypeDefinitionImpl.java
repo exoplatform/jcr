@@ -36,12 +36,12 @@ import javax.jcr.nodetype.PropertyDefinition;
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: $
  */
-public class NodeTypeDefinitionImpl 
+public class NodeTypeDefinitionImpl
 {
    /**
     * Class logger.
     */
-   private static final Log LOG = ExoLogger.getLogger(NodeTypeDefinitionImpl.class);
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.NodeTypeDefinitionImpl");
 
    protected NodeTypeData nodeTypeData;
 
@@ -213,13 +213,13 @@ public class NodeTypeDefinitionImpl
       return nodeTypeData.hasOrderableChildNodes();
    }
 
-//   /**
-//    * {@inheritDoc}
-//    */
-//   public boolean isAbstract()
-//   {
-//      return nodeTypeData.isAbstract();
-//   }
+   //   /**
+   //    * {@inheritDoc}
+   //    */
+   //   public boolean isAbstract()
+   //   {
+   //      return nodeTypeData.isAbstract();
+   //   }
 
    /**
     * {@inheritDoc}
@@ -229,12 +229,12 @@ public class NodeTypeDefinitionImpl
       return nodeTypeData.isMixin();
    }
 
-//   /**
-//    * {@inheritDoc}
-//    */
-//   public boolean isQueryable()
-//   {
-//      return nodeTypeData.isQueryable();
-//   }
+   //   /**
+   //    * {@inheritDoc}
+   //    */
+   //   public boolean isQueryable()
+   //   {
+   //      return nodeTypeData.isQueryable();
+   //   }
 
 }

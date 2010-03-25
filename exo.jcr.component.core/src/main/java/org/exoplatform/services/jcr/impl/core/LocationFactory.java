@@ -39,7 +39,7 @@ import javax.jcr.RepositoryException;
 public class LocationFactory
 {
 
-   protected static Log log = ExoLogger.getLogger("jcr.LocationFactory");
+   protected static Log log = ExoLogger.getLogger("exo.jcr.component.core.LocationFactory");
 
    private NamespaceAccessor namespaces;
 

@@ -45,7 +45,7 @@ import java.util.Map.Entry;
 public class ItemDefinitionDataHolder
 {
 
-   private static Log LOG = ExoLogger.getLogger("jcr.ItemDefinitionDataHolder");
+   private static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.ItemDefinitionDataHolder");
 
    private final Map<InternalQName, Map<InternalQName, Map<InternalQName, NodeDefinitionData>>> nodeDefinitions;
 
@@ -202,7 +202,7 @@ public class ItemDefinitionDataHolder
       for (PropertyDefinitionData propDef : propDefs)
       {
          addPropertyDefinitionInternal(name, propDef.getName(), propDef.isMultiple(), propDef);
-         
+
          if (LOG.isDebugEnabled())
          {
             LOG.debug("PropDef added: parent NT: " + name.getAsString() + " child propName: "
@@ -235,7 +235,7 @@ public class ItemDefinitionDataHolder
          {
             LOG.debug("Default NodeDef removed: parent NT: " + name.getAsString() + " child nodeName: "
                + nodeDef.getName());
-         }         
+         }
       }
 
       // remove defs
@@ -324,12 +324,12 @@ public class ItemDefinitionDataHolder
       if (def == null)
       {
          def = new HashMap<Boolean, PropertyDefinitionData>();
-         defs.put(childName, def);         
+         defs.put(childName, def);
       }
 
-      def.put(multiValued, propDef);      
+      def.put(multiValued, propDef);
    }
-   
+
    private void removePropertyDefinitionInternal(InternalQName parentNodeType, InternalQName childName,
       boolean multiValued)
    {
@@ -343,9 +343,9 @@ public class ItemDefinitionDataHolder
       {
          return;
       }
-      def.remove(multiValued);      
+      def.remove(multiValued);
    }
-   
+
    private NodeDefinitionData getNodeDefinitionDataInternal(InternalQName parentNodeType, InternalQName childName,
       InternalQName childNodeType)
    {
@@ -361,7 +361,7 @@ public class ItemDefinitionDataHolder
       }
       return def.get(childNodeType);
    }
-   
+
    private void addNodeDefinitionDataInternal(InternalQName parentNodeType, InternalQName childName,
       InternalQName childNodeType, NodeDefinitionData nodeDef)
    {
@@ -375,12 +375,12 @@ public class ItemDefinitionDataHolder
       if (def == null)
       {
          def = new HashMap<InternalQName, NodeDefinitionData>();
-         defs.put(childName, def);         
+         defs.put(childName, def);
       }
 
-      def.put(childNodeType, nodeDef);           
+      def.put(childNodeType, nodeDef);
    }
-   
+
    private void removeNodeDefinitionDataInternal(InternalQName parentNodeType, InternalQName childName,
       InternalQName childNodeType)
    {
@@ -394,9 +394,9 @@ public class ItemDefinitionDataHolder
       {
          return;
       }
-      def.remove(childNodeType);      
+      def.remove(childNodeType);
    }
-   
+
    /**
     * Create copy of holder.
     * 
@@ -407,12 +407,12 @@ public class ItemDefinitionDataHolder
       return new ItemDefinitionDataHolder(cloneMap(nodeDefinitions), cloneMap(propertyDefinitions),
          cloneMap(defNodeDefinitions));
    }
-   
+
    @SuppressWarnings("unchecked")
-   private static <K,V> Map<K,V> cloneMap(Map<? extends K, ? extends V> map) 
+   private static <K, V> Map<K, V> cloneMap(Map<? extends K, ? extends V> map)
    {
-      Map<K,V> copyMap = (Map<K,V>)((HashMap<K, V>)map).clone();
-      
+      Map<K, V> copyMap = (Map<K, V>)((HashMap<K, V>)map).clone();
+
       for (Entry<K, V> entry : copyMap.entrySet())
       {
          if (entry.getValue() instanceof Map<?, ?>)

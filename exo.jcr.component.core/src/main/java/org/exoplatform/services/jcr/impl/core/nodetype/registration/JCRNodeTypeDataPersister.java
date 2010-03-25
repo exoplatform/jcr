@@ -64,7 +64,7 @@ import javax.jcr.nodetype.NoSuchNodeTypeException;
 public class JCRNodeTypeDataPersister implements NodeTypeDataPersister
 {
 
-   protected final Log log = ExoLogger.getLogger(getClass().getName());
+   protected final Log log = ExoLogger.getLogger("exo.jcr.component.core.JCRNodeTypeDataPersister");
 
    private final DataManager dataManager;
 

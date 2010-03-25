@@ -16,6 +16,14 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
+import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionData;
+import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,15 +33,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.jcr.PropertyType;
-import javax.jcr.nodetype.NoSuchNodeTypeException;
-
-import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
-import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
-import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionData;
-import org.exoplatform.services.jcr.datamodel.InternalQName;
-import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * The <code>PropertyTypeRegistry</code> keeps track of registered node type
@@ -44,7 +43,7 @@ public class PropertyTypeRegistry implements NodeTypeManagerListener
 {
 
    /** The logger instance for this class */
-   private static final Logger log = LoggerFactory.getLogger(PropertyTypeRegistry.class);
+   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.PropertyTypeRegistry");
 
    /**
     * Empty <code>TypeMapping</code> array as return value if no type is

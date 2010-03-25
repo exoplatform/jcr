@@ -42,196 +42,229 @@ import java.util.Set;
  * @version $Id: $
  */
 
-public class ErrorLog {
+public class ErrorLog
+{
 
-    /**
-     * Logger instance for this class
-     */
-    private static final Log LOG = ExoLogger.getLogger(ErrorLog.class);
+   /**
+    * Logger instance for this class
+    */
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.ErrorLog");
 
-    /**
-     * REMOVE term.
-     */
-    public static final String REMOVE = "rem";
+   /**
+    * REMOVE term.
+    */
+   public static final String REMOVE = "rem";
 
-    /**
-     * ADD term.
-     */
-    public static final String ADD = "add";
+   /**
+    * ADD term.
+    */
+   public static final String ADD = "add";
 
-    /**
-     * The log file
-     */
-    private final File logFile;
+   /**
+    * The log file
+    */
+   private final File logFile;
 
-    /**
-     * Writer to the log file
-     */
-    private FileChannel out;
+   /**
+    * Writer to the log file
+    */
+   private FileChannel out;
 
-    /**
-     * File size in Kb. Used on create and clear(truncate) methods.
-     */
-    private int fileSize = 0; // Kb
+   /**
+    * File size in Kb. Used on create and clear(truncate) methods.
+    */
+   private int fileSize = 0; // Kb
 
-    /**
-     * ErrorLog constructor.
-     * 
-     * @param file
-     * @param errorLogSize
-     * @throws IOException
-     */
-    public ErrorLog(File file, int errorLogSize) throws IOException {
-	fileSize = errorLogSize;
-	logFile = file;
-	openFile(file);
-    }
+   /**
+    * ErrorLog constructor.
+    * 
+    * @param file
+    * @param errorLogSize
+    * @throws IOException
+    */
+   public ErrorLog(File file, int errorLogSize) throws IOException
+   {
+      fileSize = errorLogSize;
+      logFile = file;
+      openFile(file);
+   }
 
-    /**
-     * openFile.
-     * 
-     * @param log
-     * @throws IOException
-     */
-    private void openFile(File log) throws IOException {
-	// set file size;
-	if (!log.exists()) {
-	    log.getParentFile().mkdirs();
-	    log.createNewFile();
+   /**
+    * openFile.
+    * 
+    * @param log
+    * @throws IOException
+    */
+   private void openFile(File log) throws IOException
+   {
+      // set file size;
+      if (!log.exists())
+      {
+         log.getParentFile().mkdirs();
+         log.createNewFile();
 
-	    out = new FileOutputStream(log).getChannel();
-	    out.position(1024 * fileSize - 1);
-	    out.write(ByteBuffer.wrap(new byte[] { 0 }));
-	    out.position(0);
-	    out.force(false);
-	} else {
-	    out = new FileOutputStream(log, true).getChannel();
-	}
-    }
+         out = new FileOutputStream(log).getChannel();
+         out.position(1024 * fileSize - 1);
+         out.write(ByteBuffer.wrap(new byte[]{0}));
+         out.position(0);
+         out.force(false);
+      }
+      else
+      {
+         out = new FileOutputStream(log, true).getChannel();
+      }
+   }
 
-    /**
-     * Appends an action to the log.
-     * 
-     * @param action
-     *            the action to append.
-     * @throws IOException
-     *             if the node cannot be written to the redo log.
-     */
-    public void append(String action, String uuid) throws IOException {
-	initOut();
-	out.write(ByteBuffer.wrap((action + " " + uuid + "\n").getBytes()));
-    }
+   /**
+    * Appends an action to the log.
+    * 
+    * @param action
+    *            the action to append.
+    * @throws IOException
+    *             if the node cannot be written to the redo log.
+    */
+   public void append(String action, String uuid) throws IOException
+   {
+      initOut();
+      out.write(ByteBuffer.wrap((action + " " + uuid + "\n").getBytes()));
+   }
 
-    /**
-     * Flushes all pending writes to the underlying file.
-     * 
-     * @throws IOException
-     *             if an error occurs while writing.
-     */
-    public void flush() throws IOException {
-	if (out != null) {
-	    out.force(false);
-	}
-    }
+   /**
+    * Flushes all pending writes to the underlying file.
+    * 
+    * @throws IOException
+    *             if an error occurs while writing.
+    */
+   public void flush() throws IOException
+   {
+      if (out != null)
+      {
+         out.force(false);
+      }
+   }
 
-    /**
-     * Clears the redo log.
-     * 
-     * @throws IOException
-     *             if the redo log cannot be cleared.
-     */
-    public void clear() throws IOException {
-	if (out != null) {
-	    out.truncate(0);
-	    out.close();
-	    out = new FileOutputStream(logFile).getChannel();
-	    out.position(1024 * fileSize - 1);
-	    out.write(ByteBuffer.wrap(new byte[] { 0 }));
-	    out.position(0);
-	    out.force(false);
-	}
-    }
+   /**
+    * Clears the redo log.
+    * 
+    * @throws IOException
+    *             if the redo log cannot be cleared.
+    */
+   public void clear() throws IOException
+   {
+      if (out != null)
+      {
+         out.truncate(0);
+         out.close();
+         out = new FileOutputStream(logFile).getChannel();
+         out.position(1024 * fileSize - 1);
+         out.write(ByteBuffer.wrap(new byte[]{0}));
+         out.position(0);
+         out.force(false);
+      }
+   }
 
-    /**
-     * Initializes the {@link #out} stream if it is not yet set.
-     * 
-     * @throws IOException
-     *             if an error occurs while creating the output stream.
-     */
-    private void initOut() throws IOException {
-	if (out == null) {
-	    FileOutputStream os = new FileOutputStream(logFile, false);
-	    out = os.getChannel();
-	}
-    }
+   /**
+    * Initializes the {@link #out} stream if it is not yet set.
+    * 
+    * @throws IOException
+    *             if an error occurs while creating the output stream.
+    */
+   private void initOut() throws IOException
+   {
+      if (out == null)
+      {
+         FileOutputStream os = new FileOutputStream(logFile, false);
+         out = os.getChannel();
+      }
+   }
 
-    /**
-     * Reads the log file .
-     * 
-     * @throws IOException
-     *             if an error occurs while reading from the log file.
-     */
-    public List<String> readList() throws IOException {
-	InputStream in = new FileInputStream(logFile);
-	try {
-	    List<String> list = new ArrayList<String>();
-	    BufferedReader reader = new BufferedReader(
-		    new InputStreamReader(in));
-	    String line;
-	    while ((line = reader.readLine()) != null) {
-		if (!line.matches("\\x00++")) {
-		    list.add(line);
-		}
-	    }
-	    return list;
+   /**
+    * Reads the log file .
+    * 
+    * @throws IOException
+    *             if an error occurs while reading from the log file.
+    */
+   public List<String> readList() throws IOException
+   {
+      InputStream in = new FileInputStream(logFile);
+      try
+      {
+         List<String> list = new ArrayList<String>();
+         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+         String line;
+         while ((line = reader.readLine()) != null)
+         {
+            if (!line.matches("\\x00++"))
+            {
+               list.add(line);
+            }
+         }
+         return list;
 
-	} finally {
-	    if (in != null) {
-		try {
-		    in.close();
-		} catch (IOException e) {
-		    LOG.warn("Exception while closing error log: "
-			    + e.toString());
-		}
-	    }
-	}
-    }
+      }
+      finally
+      {
+         if (in != null)
+         {
+            try
+            {
+               in.close();
+            }
+            catch (IOException e)
+            {
+               LOG.warn("Exception while closing error log: " + e.toString());
+            }
+         }
+      }
+   }
 
-    public void readChanges(Set<String> rem, Set<String> add)
-	    throws IOException {
-	List<String> list = readList();
+   public void readChanges(Set<String> rem, Set<String> add) throws IOException
+   {
+      List<String> list = readList();
 
-	Iterator<String> it = list.iterator();
-	while (it.hasNext()) {
-	    String[] str = it.next().split(" ");
-	    if (str.length == 2) {
-		if (str[0].equals(ADD)) {
-		    add.add(str[1]);
-		} else if (str[0].equals(REMOVE)) {
-		    rem.add(str[1]);
-		}
-	    }
-	}
-    }
+      Iterator<String> it = list.iterator();
+      while (it.hasNext())
+      {
+         String[] str = it.next().split(" ");
+         if (str.length == 2)
+         {
+            if (str[0].equals(ADD))
+            {
+               add.add(str[1]);
+            }
+            else if (str[0].equals(REMOVE))
+            {
+               rem.add(str[1]);
+            }
+         }
+      }
+   }
 
-    public void writeChanges(Set<String> removed, Set<String> added)
-	    throws IOException {
-	try {
-	    if (!removed.isEmpty()) {
-		Iterator<String> rem = removed.iterator();
-		while (rem.hasNext()) {
-		    append(ErrorLog.REMOVE, rem.next());
-		}
-	    }
-	    if (!added.isEmpty()) {
-		Iterator<String> add = added.iterator();
-		while (add.hasNext()) {
-		    append(ErrorLog.ADD, add.next());
-		}
-	    }
-	} finally {
-	    flush();
-	}
-    }
+   public void writeChanges(Set<String> removed, Set<String> added) throws IOException
+   {
+      try
+      {
+         if (!removed.isEmpty())
+         {
+            Iterator<String> rem = removed.iterator();
+            while (rem.hasNext())
+            {
+               append(ErrorLog.REMOVE, rem.next());
+            }
+         }
+         if (!added.isEmpty())
+         {
+            Iterator<String> add = added.iterator();
+            while (add.hasNext())
+            {
+               append(ErrorLog.ADD, add.next());
+            }
+         }
+      }
+      finally
+      {
+         flush();
+      }
+   }
 
 }
