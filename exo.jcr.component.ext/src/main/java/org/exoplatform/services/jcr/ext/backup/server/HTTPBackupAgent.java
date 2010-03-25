@@ -119,6 +119,11 @@ public class HTTPBackupAgent implements ResourceContainer
          public static final String STOP_BACKUP = "/stop";
 
          /**
+          * Stop repository backup operations.
+          */
+         public static final String STOP_BACKUP_REPOSITORY = "stop-repository";
+
+         /**
           * The current and completed backups info operation.
           */
          public static final String CURRENT_AND_COMPLETED_BACKUPS_INFO = "/info/backup";
@@ -132,6 +137,11 @@ public class HTTPBackupAgent implements ResourceContainer
           * The current backups info operations.
           */
          public static final String CURRENT_BACKUPS_INFO = "/info/backup/current";
+
+         /**
+          * The current repository backups info operations.
+          */
+         public static final String CURRENT_BACKUPS_REPOSITORY_INFO = "/info/backup-repository/current";
 
          /**
           * The current or completed backup info operations.
@@ -156,7 +166,7 @@ public class HTTPBackupAgent implements ResourceContainer
          /**
           * The completed repository backups info operations.
           */
-         public static final String COMPLETED_BACKUPS_REPOSITORY_INFO = "/info/backup/repository/completed";
+         public static final String COMPLETED_BACKUPS_REPOSITORY_INFO = "/info/backup-repository/completed";
 
          /**
           * The backup service info operations.
@@ -731,7 +741,6 @@ public class HTTPBackupAgent implements ResourceContainer
             if (backupId.equals(chainLog.getBackupId()))
             {
                shortInfo = new ShortInfo(ShortInfo.COMPLETED, chainLog);
-               System.out.println();
                break;
             }
 
@@ -757,6 +766,64 @@ public class HTTPBackupAgent implements ResourceContainer
 
       return Response.status(status).entity("Can not stop backup : " + failMessage).type(MediaType.TEXT_PLAIN)
          .cacheControl(noCache).build();
+   }
+
+   /**
+    * The repository backup stop by 'id'.
+    * 
+    * @param backupId
+    *          String, the identifier to backup
+    * @return Response return the response
+    */
+   @GET
+   @Produces(MediaType.APPLICATION_JSON)
+   @RolesAllowed("administrators")
+   @Path("/stop-repository/{id}")
+   public Response stopRepository(@PathParam("id") String backupId)
+   {
+      String failMessage;
+      Response.Status status;
+      Throwable exception;
+
+      try
+      {
+         RepositoryBackupChain bch = backupManager.findRepositoryBackupId(backupId);
+
+         if (bch != null)
+            backupManager.stopBackup(bch);
+         else
+            throw new BackupNotFoundException("No active repository backup with id '" + backupId + "'");
+
+         ShortInfo shortInfo = null;
+         for (RepositoryBackupChainLog chainLog : backupManager.getRepositoryBackupsLogs())
+            if (backupId.equals(chainLog.getBackupId()))
+            {
+               shortInfo = new ShortInfo(ShortInfo.COMPLETED, chainLog);
+               break;
+            }
+
+         if (shortInfo == null)
+            throw new BackupNotFoundException("No completed backup with id '" + backupId + "'");
+
+         return Response.ok(shortInfo).cacheControl(noCache).build();
+      }
+      catch (BackupNotFoundException e)
+      {
+         exception = e;
+         status = Response.Status.NOT_FOUND;
+         failMessage = e.getMessage();
+      }
+      catch (Throwable e)
+      {
+         exception = e;
+         status = Response.Status.INTERNAL_SERVER_ERROR;
+         failMessage = e.getMessage();
+      }
+
+      log.error("Can not stop repository backup ", exception);
+
+      return Response.status(status).entity("Can not stop repository backup : " + failMessage).type(
+         MediaType.TEXT_PLAIN).cacheControl(noCache).build();
    }
 
    /**
@@ -943,16 +1010,17 @@ public class HTTPBackupAgent implements ResourceContainer
             return Response.ok(info).cacheControl(noCache).build();
          }
 
-         return Response.status(Response.Status.NOT_FOUND).entity("No current or completed repository backup with 'id' " + id)
-            .type(MediaType.TEXT_PLAIN).cacheControl(noCache).build();
+         return Response.status(Response.Status.NOT_FOUND).entity(
+            "No current or completed repository backup with 'id' " + id).type(MediaType.TEXT_PLAIN).cacheControl(
+            noCache).build();
       }
       catch (Throwable e)
       {
          log.error("Can not get information about current or completed repository backup with 'id' " + id, e);
 
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
-            "Can not get information about current or completed repository backup with 'id' " + id + " : " + e.getMessage()).type(
-            MediaType.TEXT_PLAIN).cacheControl(noCache).build();
+            "Can not get information about current or completed repository backup with 'id' " + id + " : "
+               + e.getMessage()).type(MediaType.TEXT_PLAIN).cacheControl(noCache).build();
       }
    }
 
@@ -1061,8 +1129,8 @@ public class HTTPBackupAgent implements ResourceContainer
    @GET
    @Produces(MediaType.APPLICATION_JSON)
    @RolesAllowed("administrators")
-   @Path("/info/backup/repository/completed")
-   public Response infoBackupRepositoryCompleted()
+   @Path("/info/backup-repository/completed")
+   public Response infoRepositoryBackupCompleted()
    {
       try
       {

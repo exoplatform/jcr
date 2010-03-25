@@ -188,37 +188,80 @@ public class HTTPBackupAgentTest extends BaseStandaloneTest
       Thread.sleep(5000);
    }
 
-   public void testRepositoryStart() throws Exception
+   public void testRepositoryStartBackup() throws Exception
    {
       // login to workspace '/db6/ws2'
-      Session session_db6_ws2 = repositoryService.getRepository("db6").login(credentials, "ws2");
-      assertNotNull(session_db6_ws2);
+      // Start repository backup
+      {
+         Session session_db6_ws2 = repositoryService.getRepository("db6").login(credentials, "ws2");
+         assertNotNull(session_db6_ws2);
 
-      session_db6_ws2.getRootNode().addNode("NODE_NAME_TO_TEST");
-      session_db6_ws2.save();
+         session_db6_ws2.getRootNode().addNode("NODE_NAME_TO_TEST");
+         session_db6_ws2.save();
 
-      File f = new File("target/temp/backup/" + System.currentTimeMillis());
-      f.mkdirs();
+         File f = new File("target/temp/backup/" + System.currentTimeMillis());
+         f.mkdirs();
 
-      BackupConfigBean configBean = new BackupConfigBean(BackupManager.FULL_AND_INCREMENTAL, f.getPath(), 10000l);
+         BackupConfigBean configBean = new BackupConfigBean(BackupManager.FULL_AND_INCREMENTAL, f.getPath(), 10000l);
 
-      JsonGeneratorImpl generatorImpl = new JsonGeneratorImpl();
-      JsonValue json = generatorImpl.createJsonObject(configBean);
+         JsonGeneratorImpl generatorImpl = new JsonGeneratorImpl();
+         JsonValue json = generatorImpl.createJsonObject(configBean);
+
+         MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+         headers.putSingle("Content-Type", "application/json; charset=UTF-8");
+         ContainerRequestUserRole creq =
+            new ContainerRequestUserRole("POST", new URI(HTTP_BACKUP_AGENT_PATH
+               + HTTPBackupAgent.Constants.OperationType.START_BACKUP + "/db6"), new URI(""), new ByteArrayInputStream(
+               json.toString().getBytes("UTF-8")), new InputHeadersMap(headers));
+
+         ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
+         ContainerResponse cres = new ContainerResponse(responseWriter);
+         handler.handleRequest(creq, cres);
+
+         assertEquals(200, cres.getStatus());
+
+         Thread.sleep(10000);
+      }
+
+      // Get repository backup id for backup on workspace /db6/ws2
+      String id = null;
+
+      {
+         MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+         ContainerRequestUserRole creq =
+            new ContainerRequestUserRole("GET", new URI(HTTP_BACKUP_AGENT_PATH
+               + HTTPBackupAgent.Constants.OperationType.CURRENT_BACKUPS_REPOSITORY_INFO), new URI(""), null,
+               new InputHeadersMap(headers));
+
+         ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
+         ContainerResponse cres = new ContainerResponse(responseWriter);
+         handler.handleRequest(creq, cres);
+
+         assertEquals(200, cres.getStatus());
+
+         ShortInfoList infoList = (ShortInfoList)getObject(ShortInfoList.class, responseWriter.getBody());
+         List<ShortInfo> list = new ArrayList<ShortInfo>(infoList.getBackups());
+
+         assertEquals(1, list.size());
+
+         ShortInfo info = list.get(0);
+
+         assertEquals(info.getRepositoryName(), "db6");
+
+         id = info.getBackupId();
+      }
 
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
-      headers.putSingle("Content-Type", "application/json; charset=UTF-8");
       ContainerRequestUserRole creq =
-         new ContainerRequestUserRole("POST", new URI(HTTP_BACKUP_AGENT_PATH
-            + HTTPBackupAgent.Constants.OperationType.START_BACKUP + "/db6"), new URI(""), new ByteArrayInputStream(
-            json.toString().getBytes("UTF-8")), new InputHeadersMap(headers));
+         new ContainerRequestUserRole("GET", new URI(HTTP_BACKUP_AGENT_PATH
+            + HTTPBackupAgent.Constants.OperationType.STOP_BACKUP_REPOSITORY + "/" + id), new URI(""), null,
+            new InputHeadersMap(headers));
 
       ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
       ContainerResponse cres = new ContainerResponse(responseWriter);
       handler.handleRequest(creq, cres);
 
       assertEquals(200, cres.getStatus());
-
-      Thread.sleep(5000);
    }
 
    public void testInfoBackup() throws Exception
