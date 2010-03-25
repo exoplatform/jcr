@@ -36,6 +36,8 @@ import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChain;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChainLog;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupConfig;
 import org.exoplatform.services.jcr.util.IdGenerator;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 /**
  * Created by The eXo Platform SAS.
@@ -48,6 +50,10 @@ import org.exoplatform.services.jcr.util.IdGenerator;
 public class RepositoryBackupChainImpl
    implements RepositoryBackupChain
 {
+   /**
+    * The apache logger.
+    */
+   private static Log log = ExoLogger.getLogger("ext.RepositoryBackupChainImpl");
    
    private final RepositoryBackupConfig config;
 
@@ -110,9 +116,11 @@ public class RepositoryBackupChainImpl
    {
       if (state != FINISHED)
       {
-         for (BackupChain bc : workspaceBackups)
-         {
-            System.out.println( repositoryBackupId + " : " + getState(bc.getFullBackupState()));
+         if (log.isDebugEnabled()) {
+            for (BackupChain bc : workspaceBackups)
+            {
+               log.debug( repositoryBackupId + " : " + getState(bc.getFullBackupState()));
+            }
          }
          
          int fullBackupsState =-1;
