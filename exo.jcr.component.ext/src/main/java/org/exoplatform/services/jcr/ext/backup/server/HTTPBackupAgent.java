@@ -855,8 +855,8 @@ public class HTTPBackupAgent implements ResourceContainer
          log.error("Can not get information about current or completed reposioty backups", e);
 
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
-            "Can not get information about current or completed repository backups" + e.getMessage()).type(MediaType.TEXT_PLAIN)
-            .cacheControl(noCache).build();
+            "Can not get information about current or completed repository backups" + e.getMessage()).type(
+            MediaType.TEXT_PLAIN).cacheControl(noCache).build();
       }
    }
 
@@ -907,7 +907,7 @@ public class HTTPBackupAgent implements ResourceContainer
             MediaType.TEXT_PLAIN).cacheControl(noCache).build();
       }
    }
-   
+
    /**
     * Will be returned the detailed info of current or completed repository backup by 'id'.
     * 
@@ -987,7 +987,7 @@ public class HTTPBackupAgent implements ResourceContainer
             noCache).build();
       }
    }
-   
+
    /**
     * Will be returned the list short info of current backups .
     * 
@@ -1069,7 +1069,7 @@ public class HTTPBackupAgent implements ResourceContainer
          List<ShortInfo> completedList = new ArrayList<ShortInfo>();
 
          for (RepositoryBackupChainLog chainLog : backupManager.getRepositoryBackupsLogs())
-            if (backupManager.findBackup(chainLog.getBackupId()) == null)
+            if (backupManager.findRepositoryBackupId(chainLog.getBackupId()) == null)
                completedList.add(new ShortInfo(ShortInfo.COMPLETED, chainLog));
 
          ShortInfoList list = new ShortInfoList(completedList);
