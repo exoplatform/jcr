@@ -110,10 +110,9 @@ public class FileNameProducer
 
       for (int i = 0; i < fileList.length; i++)
       {
-
          String[] stringArray = fileList[i].split("[.]");
-
-         int currentSufix = Integer.valueOf(stringArray[1]).intValue();
+         
+         int currentSufix = Integer.valueOf(stringArray[stringArray.length - 1]).intValue();
 
          if (currentSufix > sufix)
             sufix = currentSufix;
