@@ -617,9 +617,8 @@ public class HTTPBackupAgent implements ResourceContainer
    @Consumes(MediaType.APPLICATION_JSON)
    @Produces(MediaType.APPLICATION_JSON)
    @RolesAllowed("administrators")
-   @Path("/restore/{repo}/{id}")
-   public Response restore(RepositoryEntry rEntry, @PathParam("repo") String repository,
-      @PathParam("id") String backupId)
+   @Path("/restore-repository/{id}")
+   public Response restore(RepositoryEntry rEntry, @PathParam("id") String backupId)
    {
       String failMessage;
       Response.Status status;
@@ -627,7 +626,7 @@ public class HTTPBackupAgent implements ResourceContainer
 
       try
       {
-         validateOneRestoreInstants(repository);
+         validateOneRestoreInstants(rEntry.getName());
 
          File backupLog = getBackupLogbyId(backupId);
 
@@ -637,9 +636,9 @@ public class HTTPBackupAgent implements ResourceContainer
             throw new BackupLogNotFoundException("The backup log file with id " + backupId + " not exists.");
          }
 
-         validateRepositoryName(repository);
+         validateRepositoryName(rEntry.getName());
 
-         if (isRepositoryExist(repository))
+         if (isRepositoryExist(rEntry.getName()))
          {
             throw new Exception("Repository " + rEntry.getName() + " already exist!");
          }
@@ -656,7 +655,7 @@ public class HTTPBackupAgent implements ResourceContainer
          JobRepositoryRestore restore = null;
          for (JobRepositoryRestore curRestore : restoreJobs)
          {
-            if (curRestore.getRepositoryName().equals(repository))
+            if (curRestore.getRepositoryName().equals(rEntry.getName()))
             {
                restore = curRestore;
                break;
@@ -704,11 +703,11 @@ public class HTTPBackupAgent implements ResourceContainer
          failMessage = e.getMessage();
       }
 
-      log.error("Can not start restore the repository '" + "/" + repository + "' from backup log with id '" + backupId
+      log.error("Can not start restore the repository '" + "/" + rEntry.getName() + "' from backup log with id '" + backupId
          + "'", exception);
 
       return Response.status(status).entity(
-         "Can not start restore the repository '" + "/" + repository + "' from backup log with id '" + backupId
+         "Can not start restore the repository '" + "/" + rEntry.getName() + "' from backup log with id '" + backupId
             + "' : " + failMessage).type(MediaType.TEXT_PLAIN).cacheControl(noCache).build();
    }
 
