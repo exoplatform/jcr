@@ -726,7 +726,7 @@ public class HTTPBackupAgentTest extends BaseStandaloneTest
          MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
          ContainerRequestUserRole creq =
             new ContainerRequestUserRole("GET", new URI(HTTP_BACKUP_AGENT_PATH
-               + HTTPBackupAgent.Constants.OperationType.COMPLETED_BACKUPS_INFO), new URI(""), null,
+               + HTTPBackupAgent.Constants.OperationType.COMPLETED_BACKUPS_REPOSITORY_INFO), new URI(""), null,
                new InputHeadersMap(headers));
 
          ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();

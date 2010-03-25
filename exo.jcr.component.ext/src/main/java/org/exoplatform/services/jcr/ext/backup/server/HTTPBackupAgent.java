@@ -154,6 +154,11 @@ public class HTTPBackupAgent implements ResourceContainer
          public static final String COMPLETED_BACKUPS_INFO = "/info/backup/completed";
 
          /**
+          * The completed repository backups info operations.
+          */
+         public static final String COMPLETED_BACKUPS_REPOSITORY_INFO = "/info/backup/repository/completed";
+
+         /**
           * The backup service info operations.
           */
          public static final String BACKUP_SERVICE_INFO = "/info";
@@ -951,6 +956,39 @@ public class HTTPBackupAgent implements ResourceContainer
          List<ShortInfo> completedList = new ArrayList<ShortInfo>();
 
          for (BackupChainLog chainLog : backupManager.getBackupsLogs())
+            if (backupManager.findBackup(chainLog.getBackupId()) == null)
+               completedList.add(new ShortInfo(ShortInfo.COMPLETED, chainLog));
+
+         ShortInfoList list = new ShortInfoList(completedList);
+
+         return Response.ok(list).cacheControl(noCache).build();
+      }
+      catch (Throwable e)
+      {
+         log.error("Can not get information about completed backups", e);
+
+         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
+            "Can not get information about completed backups" + e.getMessage()).type(MediaType.TEXT_PLAIN)
+            .cacheControl(noCache).build();
+      }
+   }
+
+   /**
+    * Will be returned the list short info of completed backups .
+    * 
+    * @return Response return the response
+    */
+   @GET
+   @Produces(MediaType.APPLICATION_JSON)
+   @RolesAllowed("administrators")
+   @Path("/info/backup/repository/completed")
+   public Response infoBackupRepositoryCompleted()
+   {
+      try
+      {
+         List<ShortInfo> completedList = new ArrayList<ShortInfo>();
+
+         for (RepositoryBackupChainLog chainLog : backupManager.getRepositoryBackupsLogs())
             if (backupManager.findBackup(chainLog.getBackupId()) == null)
                completedList.add(new ShortInfo(ShortInfo.COMPLETED, chainLog));
 
