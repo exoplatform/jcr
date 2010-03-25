@@ -36,11 +36,9 @@ import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.ext.backup.BackupChainLog;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChainLog;
 import org.exoplatform.services.jcr.ext.backup.RepositoryRestoreExeption;
-import org.exoplatform.services.jcr.ext.backup.server.WorkspaceRestoreExeption;
 import org.exoplatform.services.jcr.impl.core.BackupWorkspaceInitializer;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
-import org.exoplatform.services.jcr.impl.core.SysViewWorkspaceInitializer;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -182,18 +180,16 @@ public class JobRepositoryRestore extends Thread
 
          // save configuration to persistence (file or persister)
          repositoryService.getConfig().retain();
-         backupManager.restore(repositoryBackupChainLog, repositoryEntry, false);
 
-         // TODO
-         //         for (WorkspaceEntry wsEntry : originalWorkspaceEntrys)
-         //         {
-         //            if (!(wsEntry.getName().equals(repositoryEntry.getSystemWorkspaceName())))
-         //            {
-         //               currennWorkspaceName = wsEntry.getName();
-         //               backupManager.restore(workspacesMapping.get(wsEntry.getName()), repositoryEntry.getName(), wsEntry,
-         //                  false);
-         //            }
-         //         }
+         for (WorkspaceEntry wsEntry : originalWorkspaceEntrys)
+         {
+            if (!(wsEntry.getName().equals(repositoryEntry.getSystemWorkspaceName())))
+            {
+               currennWorkspaceName = wsEntry.getName();
+               backupManager.restore(workspacesMapping.get(wsEntry.getName()), repositoryEntry.getName(), wsEntry,
+                        false);
+            }
+         }
       }
       catch (InvalidItemStateException e)
       {

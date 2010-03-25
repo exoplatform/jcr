@@ -1399,8 +1399,7 @@ public class BackupManagerImpl implements BackupManager, Startable
       }
 
       JobRepositoryRestore jobRepositoryRestore =
-         new JobRepositoryRestore(repoService, this, repositoryEntry, workspacesMapping, new RepositoryBackupChainLog(
-            new File(rblog.getLogFilePath()))); // TODO
+         new JobRepositoryRestore(repoService, this, repositoryEntry, workspacesMapping, rblog);
 
       if (asynchronous)
       {

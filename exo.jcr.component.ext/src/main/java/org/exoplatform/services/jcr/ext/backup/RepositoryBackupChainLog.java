@@ -366,11 +366,14 @@ public class RepositoryBackupChainLog
     * Finalize log.
     *
     */
-   public void endLog()
+   public synchronized void endLog()
    {
-      finishedTime = Calendar.getInstance();
-      finalized = true;
-      logWriter.writeEndLog();
+      if (!finalized) 
+      {
+         finishedTime = Calendar.getInstance();
+         finalized = true;
+         logWriter.writeEndLog();
+      }
    }
    
    /**
