@@ -931,9 +931,9 @@ public class HTTPBackupAgent implements ResourceContainer
             return Response.ok(info).cacheControl(noCache).build();
          }
 
-         BackupChainLog completed = null;
+         RepositoryBackupChainLog completed = null;
 
-         for (BackupChainLog chainLog : backupManager.getBackupsLogs())
+         for (RepositoryBackupChainLog chainLog : backupManager.getRepositoryBackupsLogs())
             if (id.equals(chainLog.getBackupId()))
                completed = chainLog;
 
@@ -943,15 +943,15 @@ public class HTTPBackupAgent implements ResourceContainer
             return Response.ok(info).cacheControl(noCache).build();
          }
 
-         return Response.status(Response.Status.NOT_FOUND).entity("No current or completed backup with 'id' " + id)
+         return Response.status(Response.Status.NOT_FOUND).entity("No current or completed repository backup with 'id' " + id)
             .type(MediaType.TEXT_PLAIN).cacheControl(noCache).build();
       }
       catch (Throwable e)
       {
-         log.error("Can not get information about current or completed backup with 'id' " + id, e);
+         log.error("Can not get information about current or completed repository backup with 'id' " + id, e);
 
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
-            "Can not get information about current or completed backup with 'id' " + id + " : " + e.getMessage()).type(
+            "Can not get information about current or completed repository backup with 'id' " + id + " : " + e.getMessage()).type(
             MediaType.TEXT_PLAIN).cacheControl(noCache).build();
       }
    }

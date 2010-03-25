@@ -92,6 +92,20 @@ public class DetailedInfo extends ShortInfo
       super(type, chainLog);
       this.backupConfig = new BackupConfigBean(chainLog.getBackupConfig());
    }
+   
+   /**
+    * DetailedInfo constructor.
+    * 
+    * @param type
+    *          int, the type of detailed info (current or completed)
+    * @param chainLog
+    *          RepositoryBackupChainLog
+    */
+   public DetailedInfo(int type, RepositoryBackupChainLog chainLog)
+   {
+      super(type, chainLog);
+      this.backupConfig = new BackupConfigBean(chainLog.getBackupConfig());
+   }
 
    /**
     * DetailedInfo constructor.
