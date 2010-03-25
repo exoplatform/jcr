@@ -146,6 +146,7 @@ public class AbstractBackupTestCase extends BaseStandaloneTest
       ws1back.setCache(ws1e.getCache());
       ws1back.setContainer(ws1e.getContainer());
       ws1back.setLockManager(ws1e.getLockManager());
+      ws1back.setInitializer(ws1e.getInitializer());
 
       // Indexer
       ArrayList qParams = new ArrayList();
@@ -220,6 +221,7 @@ public class AbstractBackupTestCase extends BaseStandaloneTest
       ws1back.setCache(baseWorkspaceEntry.getCache());
       ws1back.setContainer(baseWorkspaceEntry.getContainer());
       ws1back.setLockManager(baseWorkspaceEntry.getLockManager());
+      ws1back.setInitializer(baseWorkspaceEntry.getInitializer());
 
       // Indexer
       ArrayList qParams = new ArrayList();

@@ -24,7 +24,6 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.ext.backup.impl.JobRepositoryRestore;
 import org.exoplatform.services.jcr.ext.backup.impl.JobWorkspaceRestore;
-import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 
 import java.io.ByteArrayInputStream;
@@ -47,7 +46,7 @@ import javax.jcr.lock.Lock;
 public class TestBackupManager extends AbstractBackupTestCase
 {
 
-   public void testFullBackupRestore() throws Exception
+   /*public void testFullBackupRestore() throws Exception
    {
       // backup
       File backDir = new File("target/backup/ws1");
@@ -202,11 +201,11 @@ public class TestBackupManager extends AbstractBackupTestCase
          fail("There are no backup files in " + backDir.getAbsolutePath());
    }
 
-   /**
+   *//**
     * With BLOBs, locks, copy and move
     * 
     * @throws Exception
-    */
+    *//*
    public void testIncrementalBackupRestore2() throws Exception
    {
       // full backup with BLOBs & incremental with BLOBs
@@ -503,7 +502,7 @@ public class TestBackupManager extends AbstractBackupTestCase
          SessionImpl sessionWS1 = (SessionImpl)repository.login(credentials, "ws3");
 
          sessionWS1.getRootNode().addNode("asdasdasda", "nt:unstructured")
-            .setProperty("data", /*"data_1"*/new FileInputStream(createBLOBTempFile(1024)));
+            .setProperty("data", new FileInputStream(createBLOBTempFile(1024)));
          sessionWS1.save();
 
          // 1-st backup
@@ -541,7 +540,7 @@ public class TestBackupManager extends AbstractBackupTestCase
 
             // add date to restored workspace
             back1.getRootNode().addNode("gdfgrghfhf", "nt:unstructured")
-               .setProperty("data", /*"data_2"*/new FileInputStream(createBLOBTempFile(1024)));
+               .setProperty("data", new FileInputStream(createBLOBTempFile(1024)));
             back1.save();
          }
          else
@@ -738,7 +737,7 @@ public class TestBackupManager extends AbstractBackupTestCase
       }
       else
          fail("There are no backup files in " + backDir.getAbsolutePath());
-   }
+   }*/
    
    
    public void testRepositoryFullBackupRestore() throws Exception
@@ -997,10 +996,10 @@ public class TestBackupManager extends AbstractBackupTestCase
          fail("There are no backup files in " + backDir.getAbsolutePath());
    }
 
-   /*public void testAutoStopRepositoryBackupIncrRepetion() throws Exception
+   public void testAutoStopRepositoryBackupIncrRepetion() throws Exception
    {
       // backup
-      File backDir = new File("target/backup/" + repository.getName() + "123");
+      File backDir = new File("target/backup/" + repository.getName() + "_" + System.currentTimeMillis());
       backDir.mkdirs();
 
       RepositoryBackupConfig config = new RepositoryBackupConfig();
@@ -1019,5 +1018,5 @@ public class TestBackupManager extends AbstractBackupTestCase
       for (RepositoryBackupChain chain : backup.getCurrentRepositoryBackups())
          if (bch.getBackupId().equals(chain.getBackupId()))
             fail("The backup with id '" + chain.getBackupId() + "' should not be active");
-   }*/
+   }
 }

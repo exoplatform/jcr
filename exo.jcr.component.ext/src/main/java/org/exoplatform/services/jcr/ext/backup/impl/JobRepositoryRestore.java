@@ -37,6 +37,7 @@ import org.exoplatform.services.jcr.ext.backup.BackupChainLog;
 import org.exoplatform.services.jcr.ext.backup.RepositoryRestoreExeption;
 import org.exoplatform.services.jcr.ext.backup.server.WorkspaceRestoreExeption;
 import org.exoplatform.services.jcr.impl.core.BackupWorkspaceInitializer;
+import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.jcr.impl.core.SysViewWorkspaceInitializer;
 import org.exoplatform.services.log.ExoLogger;
@@ -137,6 +138,8 @@ public class JobRepositoryRestore extends Thread
          }
       }
       
+      WorkspaceInitializerEntry wieOriginal = systemWorkspaceEntry.getInitializer();
+      
       //getting backup cahil log to system workspace.
       BackupChainLog systemBackupChainLog = workspacesMapping.get(systemWorkspaceEntry.getName());
       File fullBackupFile = new File(systemBackupChainLog.getJobEntryInfos().get(0).getURL().getPath());
@@ -164,7 +167,15 @@ public class JobRepositoryRestore extends Thread
       try
       {
          repositoryService.createRepository(repositoryEntry);
-         repositoryService.getConfig().retain(); // save configuration to persistence (file or persister)
+         
+         //set original initializer to created workspace.
+         RepositoryImpl defRep = (RepositoryImpl) repositoryService.getRepository(repositoryEntry.getName());
+         WorkspaceContainerFacade wcf = defRep.getWorkspaceContainer(systemWorkspaceEntry.getName());
+         WorkspaceEntry createdWorkspaceEntry = (WorkspaceEntry) wcf.getComponent(WorkspaceEntry.class);
+         createdWorkspaceEntry.setInitializer(wieOriginal);
+         
+         // save configuration to persistence (file or persister)
+         repositoryService.getConfig().retain(); 
          
          for (WorkspaceEntry wsEntry : originalWorkspaceEntrys)
          {

@@ -293,23 +293,23 @@ public class RepositoryBackupChainLog
       }
       catch (FileNotFoundException e)
       {
-         throw new BackupOperationException("Can not read RepositoryBackupChainLog from file ...", e);
+         throw new BackupOperationException("Can not read RepositoryBackupChainLog from file :" + log.getAbsolutePath(), e);
       }
       catch (XMLStreamException e)
       {
-         throw new BackupOperationException("Can not read RepositoryBackupChainLog from file ...", e);
+         throw new BackupOperationException("Can not read RepositoryBackupChainLog from file :" + log.getAbsolutePath(), e);
       }
       catch (FactoryConfigurationError e)
       {
-         throw new BackupOperationException("Can not read RepositoryBackupChainLog from file ...", e);
+         throw new BackupOperationException("Can not read RepositoryBackupChainLog from file :" + log.getAbsolutePath(), e);
       }
       catch (MalformedURLException e)
       {
-         throw new BackupOperationException("Can not read RepositoryBackupChainLog from file ...", e);
+         throw new BackupOperationException("Can not read RepositoryBackupChainLog from file :" + log.getAbsolutePath(), e);
       }
       catch (ValueFormatException e)
       {
-         throw new BackupOperationException("Can not read RepositoryBackupChainLog from file ...", e);
+         throw new BackupOperationException("Can not read RepositoryBackupChainLog from file :" + log.getAbsolutePath(), e);
       }
    }
 
