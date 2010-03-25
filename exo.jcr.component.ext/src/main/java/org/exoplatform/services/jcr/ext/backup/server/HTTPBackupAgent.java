@@ -351,7 +351,7 @@ public class HTTPBackupAgent implements ResourceContainer
    @Consumes(MediaType.APPLICATION_JSON)
    @Produces(MediaType.APPLICATION_JSON)
    @RolesAllowed("administrators")
-   @Path("/start/{repo}}")
+   @Path("/start/{repo}")
    public Response start(BackupConfigBean bConfigBeen, @PathParam("repo") String repository)
    {
       String failMessage;
