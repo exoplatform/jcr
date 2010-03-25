@@ -211,7 +211,7 @@ public class RepositoryBackupChainLog
 
    protected static Log logger = ExoLogger.getLogger("ext.BackupChainLog");
 
-   private static final String PREFIX = "repository-backup-";
+   public static final String PREFIX = "repository-backup-";
 
    private static final String SUFFIX = ".xml";
 

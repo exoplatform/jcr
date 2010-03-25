@@ -626,21 +626,19 @@ public class HTTPBackupAgent implements ResourceContainer
 
       try
       {
-         validateOneRestoreInstants(rEntry.getName());
+         validateOneRepositoryRestoreInstants(rEntry.getName());
 
-         File backupLog = getBackupLogbyId(backupId);
+         File backupLog = getRepositoryBackupLogbyId(backupId);
 
          // validate backup log file
          if (backupLog == null)
          {
-            throw new BackupLogNotFoundException("The backup log file with id " + backupId + " not exists.");
+            throw new BackupLogNotFoundException("The repository backup log file with id " + backupId + " not exists.");
          }
-
-         validateRepositoryName(rEntry.getName());
 
          if (isRepositoryExist(rEntry.getName()))
          {
-            throw new Exception("Repository " + rEntry.getName() + " already exist!");
+            throw new RepositoryRestoreExeption("Repository " + rEntry.getName() + " already exist!");
          }
 
          RepositoryBackupChainLog backupChainLog = new RepositoryBackupChainLog(backupLog);
@@ -651,28 +649,14 @@ public class HTTPBackupAgent implements ResourceContainer
          Thread.sleep(100);
 
          // search necessary restore
-         List<JobRepositoryRestore> restoreJobs = backupManager.getRepositoryRestores();
-         JobRepositoryRestore restore = null;
-         for (JobRepositoryRestore curRestore : restoreJobs)
-         {
-            if (curRestore.getRepositoryName().equals(rEntry.getName()))
-            {
-               restore = curRestore;
-               break;
-            }
-         }
+         JobRepositoryRestore restore = backupManager.getLastRepositoryRestore(rEntry.getName());
+         ShortInfo info =
+                  new ShortInfo(ShortInfo.RESTORE, restore.getRepositoryBackupChainLog(), restore.getStartTime(),
+                           restore.getEndTime(), restore.getStateRestore(), restore.getRepositoryName());
 
-         if (restore != null)
-         {
-            ShortInfo info =
-               new ShortInfo(ShortInfo.RESTORE, restore.getRepositoryBackupChainLog(), restore.getStartTime(), restore
-                  .getEndTime(), restore.getStateRestore(), restore.getRepositoryName());
-            return Response.ok(info).cacheControl(noCache).build();
-         }
-
-         return Response.ok().cacheControl(noCache).build();
+         return Response.ok(info).cacheControl(noCache).build();
       }
-      catch (WorkspaceRestoreExeption e)
+      catch (RepositoryRestoreExeption e)
       {
          exception = e;
          status = Response.Status.FORBIDDEN;
@@ -1294,7 +1278,15 @@ public class HTTPBackupAgent implements ResourceContainer
    private boolean isRepositoryExist(String repositoryName) throws RepositoryException,
       RepositoryConfigurationException
    {
-      return repositoryService.getRepository(repositoryName) != null;
+      try 
+      {
+         return repositoryService.getRepository(repositoryName) != null;
+      }
+      catch (RepositoryException e)
+      {
+         return false;
+      }
+      
    }
 
    /**
@@ -1338,6 +1330,26 @@ public class HTTPBackupAgent implements ResourceContainer
             throw new WorkspaceRestoreExeption("The workspace '" + "/" + repositoryName + "/" + workspaceName
                + "' is already restoring.");
          }
+   }
+   
+   /**
+    * validateOneRepositoryRestoreInstants.
+    * 
+    * @param repositoryName
+    *          the repository name
+    * @throws WorkspaceRestoreExeption
+    *           will be generated WorkspaceRestoreExeption
+    */
+   private void validateOneRepositoryRestoreInstants(String repositoryName) throws RepositoryRestoreExeption
+   {
+      for (JobRepositoryRestore job : backupManager.getRepositoryRestores())
+      {
+         if (repositoryName.equals(job.getRepositoryName())
+            && (job.getStateRestore() == JobWorkspaceRestore.RESTORE_INITIALIZED || job.getStateRestore() == JobWorkspaceRestore.RESTORE_STARTED))
+         {
+            throw new RepositoryRestoreExeption("The repository '" + "/" + repositoryName + "' is already restoring.");
+         }
+      }
    }
 
    /**
@@ -1406,6 +1418,34 @@ public class HTTPBackupAgent implements ResourceContainer
       if (files.length != 0)
          for (File f : files)
             if (f.getName().replaceAll(".xml", "").replaceAll("backup-", "").equals(backupId))
+               return f;
+
+      return null;
+   }
+   
+   /**
+    * getRepositoryBackupLogbyId.
+    * 
+    * @param backupId
+    *          String, the backup identifier
+    * @return File return backup log file
+    */
+   private File getRepositoryBackupLogbyId(String backupId)
+   {
+      FilenameFilter backupLogsFilter = new FilenameFilter()
+      {
+
+         public boolean accept(File dir, String name)
+         {
+            return (name.endsWith(".xml") && name.startsWith(RepositoryBackupChainLog.PREFIX));
+         }
+      };
+
+      File[] files = backupManager.getBackupDirectory().listFiles(backupLogsFilter);
+
+      if (files.length != 0)
+         for (File f : files)
+            if (f.getName().replaceAll(".xml", "").replaceAll(RepositoryBackupChainLog.PREFIX, "").equals(backupId))
                return f;
 
       return null;
