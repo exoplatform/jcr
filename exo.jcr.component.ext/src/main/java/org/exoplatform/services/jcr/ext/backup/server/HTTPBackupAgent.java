@@ -825,14 +825,14 @@ public class HTTPBackupAgent implements ResourceContainer
    }
 
    /**
-    * Will be returned the list short info of current and completed backups .
+    * Will be returned the list short info of current and completed repository backups .
     * 
     * @return Response return the response
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
    @RolesAllowed("administrators")
-   @Path("/info/backup/repository")
+   @Path("/info/backup-repository")
    public Response infoBackupRepository()
    {
       try
@@ -843,7 +843,7 @@ public class HTTPBackupAgent implements ResourceContainer
             list.add(new ShortInfo(ShortInfo.CURRENT, chain));
 
          for (RepositoryBackupChainLog chainLog : backupManager.getRepositoryBackupsLogs())
-            if (backupManager.findBackup(chainLog.getBackupId()) == null)
+            if (backupManager.findRepositoryBackupId(chainLog.getBackupId()) == null)
                list.add(new ShortInfo(ShortInfo.COMPLETED, chainLog));
 
          ShortInfoList shortInfoList = new ShortInfoList(list);
@@ -852,10 +852,10 @@ public class HTTPBackupAgent implements ResourceContainer
       }
       catch (Throwable e)
       {
-         log.error("Can not get information about current or completed backups", e);
+         log.error("Can not get information about current or completed reposioty backups", e);
 
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
-            "Can not get information about current or completed backups" + e.getMessage()).type(MediaType.TEXT_PLAIN)
+            "Can not get information about current or completed repository backups" + e.getMessage()).type(MediaType.TEXT_PLAIN)
             .cacheControl(noCache).build();
       }
    }
@@ -876,6 +876,54 @@ public class HTTPBackupAgent implements ResourceContainer
       try
       {
          BackupChain current = backupManager.findBackup(id);
+
+         if (current != null)
+         {
+            DetailedInfo info = new DetailedInfo(DetailedInfo.CURRENT, current);
+            return Response.ok(info).cacheControl(noCache).build();
+         }
+
+         BackupChainLog completed = null;
+
+         for (BackupChainLog chainLog : backupManager.getBackupsLogs())
+            if (id.equals(chainLog.getBackupId()))
+               completed = chainLog;
+
+         if (completed != null)
+         {
+            DetailedInfo info = new DetailedInfo(DetailedInfo.COMPLETED, completed);
+            return Response.ok(info).cacheControl(noCache).build();
+         }
+
+         return Response.status(Response.Status.NOT_FOUND).entity("No current or completed backup with 'id' " + id)
+            .type(MediaType.TEXT_PLAIN).cacheControl(noCache).build();
+      }
+      catch (Throwable e)
+      {
+         log.error("Can not get information about current or completed backup with 'id' " + id, e);
+
+         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
+            "Can not get information about current or completed backup with 'id' " + id + " : " + e.getMessage()).type(
+            MediaType.TEXT_PLAIN).cacheControl(noCache).build();
+      }
+   }
+   
+   /**
+    * Will be returned the detailed info of current or completed repository backup by 'id'.
+    * 
+    * @param id
+    *          String, the identifier to repository backup
+    * @return Response return the response
+    */
+   @GET
+   @Produces(MediaType.APPLICATION_JSON)
+   @RolesAllowed("administrators")
+   @Path("/info/backup-repository/{id}")
+   public Response infoBackupRepositoryId(@PathParam("id") String id)
+   {
+      try
+      {
+         RepositoryBackupChain current = backupManager.findRepositoryBackupId(id);
 
          if (current != null)
          {
@@ -933,6 +981,38 @@ public class HTTPBackupAgent implements ResourceContainer
       catch (Throwable e)
       {
          log.error("Can not get information about current backups", e);
+
+         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
+            "Can not get information about current backups" + e.getMessage()).type(MediaType.TEXT_PLAIN).cacheControl(
+            noCache).build();
+      }
+   }
+   
+   /**
+    * Will be returned the list short info of current backups .
+    * 
+    * @return Response return the response
+    */
+   @GET
+   @Produces(MediaType.APPLICATION_JSON)
+   @RolesAllowed("administrators")
+   @Path("/info/backup-repository/current")
+   public Response infoRepositoryBackupCurrent()
+   {
+      try
+      {
+         List<ShortInfo> list = new ArrayList<ShortInfo>();
+
+         for (RepositoryBackupChain chain : backupManager.getCurrentRepositoryBackups())
+            list.add(new ShortInfo(ShortInfo.CURRENT, chain));
+
+         ShortInfoList shortInfoList = new ShortInfoList(list);
+
+         return Response.ok(shortInfoList).cacheControl(noCache).build();
+      }
+      catch (Throwable e)
+      {
+         log.error("Can not get information about current repositorty backups", e);
 
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
             "Can not get information about current backups" + e.getMessage()).type(MediaType.TEXT_PLAIN).cacheControl(

@@ -1498,8 +1498,26 @@ public class BackupManagerImpl implements BackupManager, Startable
       return null;
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public Set<RepositoryBackupChain> getCurrentRepositoryBackups()
    {
       return currentRepositoryBackups;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public RepositoryBackupChain findRepositoryBackupId(String backupId)
+   {
+      Iterator<RepositoryBackupChain> it = currentRepositoryBackups.iterator();
+      while (it.hasNext())
+      {
+         RepositoryBackupChain chain = it.next();
+         if (backupId.equals(chain.getBackupId()))
+            return chain;
+      }
+      return null;
    }
 }

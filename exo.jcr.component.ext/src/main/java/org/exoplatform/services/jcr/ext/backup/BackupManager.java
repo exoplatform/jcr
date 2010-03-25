@@ -349,5 +349,15 @@ public interface BackupManager
     *           return the current backup to repository 
     */
    RepositoryBackupChain findRepositoryBackup(String repository);
+   
+   /**
+    * Finding current backup by id.
+    *
+    * @param reposytore
+    *          String, the repository name
+    * @return RepositoryBackupChain
+    *           return the current backup to repository 
+    */
+   RepositoryBackupChain findRepositoryBackupId(String id);
 
 }

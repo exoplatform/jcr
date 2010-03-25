@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.ext.backup.server.bean.response;
 
 import org.exoplatform.services.jcr.ext.backup.BackupChain;
 import org.exoplatform.services.jcr.ext.backup.BackupChainLog;
+import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChain;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChainLog;
 import org.exoplatform.services.jcr.ext.backup.server.bean.BackupConfigBean;
 
@@ -59,6 +60,20 @@ public class DetailedInfo extends ShortInfo
     *          backupChain
     */
    public DetailedInfo(int type, BackupChain chain)
+   {
+      super(type, chain);
+      this.backupConfig = new BackupConfigBean(chain.getBackupConfig());
+   }
+   
+   /**
+    * DetailedInfo constructor.
+    * 
+    * @param type
+    *          int, the type of detailed info (current or completed)
+    * @param chain
+    *          backupChain
+    */
+   public DetailedInfo(int type, RepositoryBackupChain chain)
    {
       super(type, chain);
       this.backupConfig = new BackupConfigBean(chain.getBackupConfig());
