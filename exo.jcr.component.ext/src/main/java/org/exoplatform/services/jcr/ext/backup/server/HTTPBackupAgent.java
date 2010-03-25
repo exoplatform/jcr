@@ -1209,7 +1209,7 @@ public class HTTPBackupAgent implements ResourceContainer
    }
 
    /**
-    * Will be returned the list short info of current and completed backups.
+    * Will be returned the list short info of current and completed repository backups.
     * 
     * @param repository
     *          String, the repository name
