@@ -114,6 +114,11 @@ public class HTTPBackupAgent implements ResourceContainer
          public static final String RESTORE = "/restore";
 
          /**
+          * Restore repository operations.
+          */
+         public static final String RESTORE_REPOSITORY = "/restore-repository";
+
+         /**
           * Stop backup operations.
           */
          public static final String STOP_BACKUP = "/stop";
@@ -188,6 +193,11 @@ public class HTTPBackupAgent implements ResourceContainer
           * The get default workspace configuration.
           */
          public static final String GET_DEFAULT_WORKSPACE_CONFIG = "/info/default-ws-config";
+
+         /**
+          * The get default repository configuration.
+          */
+         public static final String GET_DEFAULT_REPOSITORY_CONFIG = "/info/default-repository-config";
 
          /**
           * OperationType constructor.
@@ -1441,6 +1451,28 @@ public class HTTPBackupAgent implements ResourceContainer
 
          return Response.status(Response.Status.NOT_FOUND).entity("Can not get default workspace configuration.").type(
             MediaType.TEXT_PLAIN).cacheControl(noCache).build();
+      }
+      catch (Throwable e)
+      {
+         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
+            "Can not get default workspace configuration.").type(MediaType.TEXT_PLAIN).cacheControl(noCache).build();
+      }
+   }
+
+   /**
+    * Will be returned the default repository configuration.
+    * 
+    * @return Response return the JSON to WorkspaceEntry
+    */
+   @GET
+   @Produces(MediaType.APPLICATION_JSON)
+   @RolesAllowed("administrators")
+   @Path("/info/default-repository-config")
+   public Response getDefaultRepositoryConfig()
+   {
+      try
+      {
+         return Response.ok(repositoryService.getDefaultRepository().getConfiguration()).cacheControl(noCache).build();
       }
       catch (Throwable e)
       {
