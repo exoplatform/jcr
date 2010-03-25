@@ -147,6 +147,12 @@ public class HTTPBackupAgent implements ResourceContainer
           * The current or completed backup info operations.
           */
          public static final String CURRENT_OR_COMPLETED_BACKUP_INFO = "/info/backup";
+         
+         /**
+          * The current or completed repository backup info operations.
+          */
+         public static final String CURRENT_OR_COMPLETED_BACKUP_REPOSITORY_INFO = "/info/backup-repository-id";
+         
 
          /**
           * The current restore info operations for specific workspace.
@@ -985,8 +991,8 @@ public class HTTPBackupAgent implements ResourceContainer
    @GET
    @Produces(MediaType.APPLICATION_JSON)
    @RolesAllowed("administrators")
-   @Path("/info/backup-repository/{id}")
-   public Response infoBackupRepositoryId(@PathParam("id") String id)
+   @Path("/info/backup-repository-id/{id}")
+   public Response infoRepositoryBackupId(@PathParam("id") String id)
    {
       try
       {
@@ -1209,7 +1215,8 @@ public class HTTPBackupAgent implements ResourceContainer
    }
 
    /**
-    * Will be returned the list short info of current and completed repository backups.
+    * Will be returned the list short info of current and completed backups. Filtered by specific
+    * repository.
     * 
     * @param repository
     *          String, the repository name
@@ -1219,14 +1226,14 @@ public class HTTPBackupAgent implements ResourceContainer
    @GET
    @Produces(MediaType.APPLICATION_JSON)
    @RolesAllowed("administrators")
-   @Path("/info/backup/repository/{repo}")
+   @Path("/info/backup-repository/{repo}")
    public Response infoBackupByRepository(@PathParam("repo") String repository)
    {
       try
       {
          List<ShortInfo> list = new ArrayList<ShortInfo>();
 
-         for (BackupChain chain : backupManager.getCurrentBackups())
+         for (RepositoryBackupChain chain : backupManager.getCurrentRepositoryBackups())
          {
             if (repository.equals(chain.getBackupConfig().getRepository()))
             {
@@ -1234,9 +1241,9 @@ public class HTTPBackupAgent implements ResourceContainer
             }
          }
 
-         for (BackupChainLog chainLog : backupManager.getBackupsLogs())
+         for (RepositoryBackupChainLog chainLog : backupManager.getRepositoryBackupsLogs())
          {
-            if (backupManager.findBackup(chainLog.getBackupId()) == null
+            if (backupManager.findRepositoryBackupId(chainLog.getBackupId()) == null
                && repository.equals(chainLog.getBackupConfig().getRepository()))
             {
                list.add(new ShortInfo(ShortInfo.COMPLETED, chainLog));
@@ -1249,10 +1256,10 @@ public class HTTPBackupAgent implements ResourceContainer
       }
       catch (Throwable e)
       {
-         log.error("Can not get information about current or completed backups", e);
+         log.error("Can not get information about current or completed repository backups", e);
 
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
-            "Can not get information about current or completed backups" + e.getMessage()).type(MediaType.TEXT_PLAIN)
+            "Can not get information about current or completed repository backups" + e.getMessage()).type(MediaType.TEXT_PLAIN)
             .cacheControl(noCache).build();
       }
    }
@@ -1320,8 +1327,8 @@ public class HTTPBackupAgent implements ResourceContainer
    @GET
    @Produces(MediaType.APPLICATION_JSON)
    @RolesAllowed("administrators")
-   @Path("/info/restore/{repo}")
-   public Response infoRestore(@PathParam("repo") String repository)
+   @Path("/info/restore-repository/{repo}")
+   public Response infoRestoreRepository(@PathParam("repo") String repository)
    {
       try
       {
