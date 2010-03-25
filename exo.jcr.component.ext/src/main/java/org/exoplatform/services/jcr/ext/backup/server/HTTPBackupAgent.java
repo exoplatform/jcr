@@ -489,6 +489,75 @@ public class HTTPBackupAgent implements ResourceContainer
    }
 
    /**
+    * Drops repository.
+    * 
+    * @param repository
+    *          String, the repository name
+    * @param forceSessionClose
+    *          Boolean, flag to force session close
+    * @return Response return the response
+    */
+   @GET
+   @RolesAllowed("administrators")
+   @Path("/drop-repository/{repo}/{force-session-close}")
+   public Response dropRepository(@PathParam("repo") String repository,
+      @PathParam("force-session-close") Boolean forceSessionClose)
+   {
+
+      String failMessage;
+      Response.Status status;
+      Throwable exception;
+
+      try
+      {
+         validateRepositoryName(repository);
+
+         RepositoryImpl repositoryImpl = (RepositoryImpl)repositoryService.getRepository(repository);
+
+         if (forceSessionClose)
+         {
+            for (String workspace : repositoryImpl.getWorkspaceNames())
+            {
+               forceCloseSession(repository, workspace);
+            }
+         }
+
+         for (String workspace : repositoryImpl.getWorkspaceNames())
+         {
+            repositoryImpl.removeWorkspace(workspace);
+         }
+         repositoryService.getConfig().retain(); // save configuration to persistence (file or persister)
+
+         return Response.ok().cacheControl(noCache).build();
+
+      }
+      catch (RepositoryException e)
+      {
+         exception = e;
+         status = Response.Status.INTERNAL_SERVER_ERROR;
+         failMessage = e.getMessage();
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         exception = e;
+         status = Response.Status.INTERNAL_SERVER_ERROR;
+         failMessage = e.getMessage();
+      }
+      catch (Throwable e)
+      {
+         exception = e;
+         status = Response.Status.INTERNAL_SERVER_ERROR;
+         failMessage = e.getMessage();
+      }
+
+      log.error("Can not drop the repository '" + "/" + repository, exception);
+
+      return Response.status(status).entity("Can not drop the repository '" + "/" + repository + "' : " + failMessage)
+         .type(MediaType.TEXT_PLAIN).cacheControl(noCache).build();
+
+   }
+
+   /**
     * Restore the workspace.
     * 
     * @param wEntry
@@ -1004,6 +1073,55 @@ public class HTTPBackupAgent implements ResourceContainer
    }
 
    /**
+    * Will be returned the list short info of current and completed backups.
+    * 
+    * @param repository
+    *          String, the repository name
+    * 
+    * @return Response return the response
+    */
+   @GET
+   @Produces(MediaType.APPLICATION_JSON)
+   @RolesAllowed("administrators")
+   @Path("/info/backup/{repo}")
+   public Response infoBackupByRepository(@PathParam("repo") String repository)
+   {
+      try
+      {
+         List<ShortInfo> list = new ArrayList<ShortInfo>();
+
+         for (BackupChain chain : backupManager.getCurrentBackups())
+         {
+            if (repository.equals(chain.getBackupConfig().getRepository()))
+            {
+               list.add(new ShortInfo(ShortInfo.CURRENT, chain));
+            }
+         }
+
+         for (BackupChainLog chainLog : backupManager.getBackupsLogs())
+         {
+            if (backupManager.findBackup(chainLog.getBackupId()) == null
+               && repository.equals(chainLog.getBackupConfig().getRepository()))
+            {
+               list.add(new ShortInfo(ShortInfo.COMPLETED, chainLog));
+            }
+         }
+
+         ShortInfoList shortInfoList = new ShortInfoList(list);
+
+         return Response.ok(shortInfoList).cacheControl(noCache).build();
+      }
+      catch (Throwable e)
+      {
+         log.error("Can not get information about current or completed backups", e);
+
+         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
+            "Can not get information about current or completed backups" + e.getMessage()).type(MediaType.TEXT_PLAIN)
+            .cacheControl(noCache).build();
+      }
+   }
+
+   /**
     * Will be returned the detailed information about last restore for specific workspace.
     * 
     * @param repository
@@ -1066,7 +1184,7 @@ public class HTTPBackupAgent implements ResourceContainer
    @GET
    @Produces(MediaType.APPLICATION_JSON)
    @RolesAllowed("administrators")
-   @Path("/info/restore/{repo}/{ws}")
+   @Path("/info/restore/{repo}")
    public Response infoRestore(@PathParam("repo") String repository)
    {
       try
