@@ -9,23 +9,24 @@
   <section>
     <title>About</title>
 
-    <para>Database Creator is responsible for execution DDL script at runtime.
-    A DDL script may contain templates for database name, user name and
-    password which will be replaced by real values at execution time.</para>
+    <para>Database creator<envar> DBCreator</envar> is responsible for
+    execution DDL script in runtime. A DDL script may contain templates for
+    database name, user name and password which will be replaced by real
+    values at execution time.</para>
 
-    <para>Supports 3 templates:</para>
+    <para>Three templates supported:</para>
 
     <itemizedlist>
       <listitem>
-        <para>${database} for database name;</para>
+        <para><envar>${database}</envar> for database name;</para>
       </listitem>
 
       <listitem>
-        <para>${username} for user name;</para>
+        <para><envar>${username}</envar> for user name;</para>
       </listitem>
 
       <listitem>
-        <para>${password} for user's password;</para>
+        <para><envar>${password}</envar> for user's password;</para>
       </listitem>
     </itemizedlist>
   </section>
@@ -35,12 +36,13 @@
 
     <para>Service provide method for execute script for new database creation.
     Database name which are passed as parameter will be substituted in DDL
-    script instead of ${database} template. Returns DBConnectionInfo object
-    (with all neccesary information of new database's connection) or throws
-    DBScriptExecutorException exception if any errors occurs in other
-    case.</para>
+    script instead of <envar>${database}</envar> template. Returns
+    <envar>DBConnectionInfo</envar> object (with all neccesary information of
+    new database's connection) or throws <envar>DBCreatorException</envar>
+    exception if any errors occurs in other case.</para>
 
-    <programlisting>public DBConnectionInfo createDatabase(String dbName) throws DBCreatorException;</programlisting>
+    <programlisting>
+public DBConnectionInfo createDatabase(String dbName) throws DBCreatorException;</programlisting>
 
     <para>For MSSQL and Sybase servers uses autocommit mode set true for
     connection. It's due to after execution "create database" command newly
@@ -53,7 +55,7 @@
 
     <para>Service's configuration.</para>
 
-    <programlisting>&lt;component&gt;
+    <programlisting>   &lt;component&gt;
       &lt;key&gt;org.exoplatform.services.database.creator.DBCreator&lt;/key&gt;
       &lt;type&gt;org.exoplatform.services.database.creator.DBCreator&lt;/type&gt;
       &lt;init-params&gt;
@@ -75,30 +77,31 @@
       &lt;/init-params&gt;
    &lt;/component&gt;</programlisting>
 
-    <para>db-connection properties section contains parameters needed for
-    connection to database server</para>
+    <para><envar>db-connection</envar> properties section contains parameters
+    needed for connection to database server</para>
 
-    <para>db-creation properties section contains paramaters for database
-    creation using DDL script:</para>
+    <para><envar>db-creation</envar> properties section contains paramaters
+    for database creation using DDL script:</para>
 
     <itemizedlist>
       <listitem>
-        <para>scriptPath: absolute path to DDL script file;</para>
+        <para><envar>scriptPath</envar> absolute path to DDL script
+        file;</para>
       </listitem>
 
       <listitem>
-        <para>username: user name for substitution ${username} template in DDL
-        script;</para>
+        <para><envar>username</envar> user name for substitution
+        <envar>${username}</envar> template in DDL script;</para>
       </listitem>
 
       <listitem>
-        <para>password: user's password for substitution ${password} template
-        in DDL script;</para>
+        <para><envar>password</envar> user's password for substitution
+        <envar>${password}</envar> template in DDL script;</para>
       </listitem>
     </itemizedlist>
 
-    <para>Specific db-connection properties section for different
-    databases.</para>
+    <para>Specific <envar>db-connection</envar> properties section for
+    different databases.</para>
 
     <para>MySQL:</para>
 

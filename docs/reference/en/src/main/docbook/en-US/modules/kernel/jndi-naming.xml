@@ -134,8 +134,8 @@
     &lt;/init-params&gt;
   &lt;/component&gt;</programlisting></para>
 
-    <para>The BindReferencePlugin component plugin configuration example (for
-    JDBC datasource):</para>
+    <para>The <envar>BindReferencePlugin</envar> component plugin
+    configuration example (for JDBC datasource):</para>
 
     <para><programlisting>  &lt;component-plugins&gt; 
     &lt;component-plugin&gt; 
