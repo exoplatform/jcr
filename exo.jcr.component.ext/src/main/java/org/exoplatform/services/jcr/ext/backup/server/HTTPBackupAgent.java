@@ -703,8 +703,8 @@ public class HTTPBackupAgent implements ResourceContainer
          failMessage = e.getMessage();
       }
 
-      log.error("Can not start restore the repository '" + "/" + rEntry.getName() + "' from backup log with id '" + backupId
-         + "'", exception);
+      log.error("Can not start restore the repository '" + "/" + rEntry.getName() + "' from backup log with id '"
+         + backupId + "'", exception);
 
       return Response.status(status).entity(
          "Can not start restore the repository '" + "/" + rEntry.getName() + "' from backup log with id '" + backupId
@@ -1013,7 +1013,7 @@ public class HTTPBackupAgent implements ResourceContainer
    @GET
    @Produces(MediaType.APPLICATION_JSON)
    @RolesAllowed("administrators")
-   @Path("/info/backup/{repo}")
+   @Path("/info/backup/repository/{repo}")
    public Response infoBackupByRepository(@PathParam("repo") String repository)
    {
       try
