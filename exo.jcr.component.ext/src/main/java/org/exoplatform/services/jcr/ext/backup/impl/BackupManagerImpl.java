@@ -246,12 +246,21 @@ public class BackupManagerImpl implements BackupManager, Startable
       }
    }
 
-   class LogsFilter implements FileFilter
+   class BackupLogsFilter implements FileFilter
    {
 
       public boolean accept(File pathname)
       {
-         return pathname.getName().endsWith(".xml");
+         return pathname.getName().endsWith(".xml") && pathname.getName().startsWith(BackupChainLog.PREFIX);
+      }
+   }
+
+   class RepositoryBackupLogsFilter implements FileFilter
+   {
+
+      public boolean accept(File pathname)
+      {
+         return pathname.getName().endsWith(".xml") && pathname.getName().startsWith(RepositoryBackupChainLog.PREFIX);
       }
    }
 
@@ -425,7 +434,7 @@ public class BackupManagerImpl implements BackupManager, Startable
     */
    public BackupChainLog[] getBackupsLogs()
    {
-      File[] cfs = logsDirectory.listFiles(new LogsFilter());
+      File[] cfs = logsDirectory.listFiles(new BackupLogsFilter());
       List<BackupChainLog> logs = new ArrayList<BackupChainLog>();
       for (int i = 0; i < cfs.length; i++)
       {
@@ -442,6 +451,32 @@ public class BackupManagerImpl implements BackupManager, Startable
          }
       }
       BackupChainLog[] ls = new BackupChainLog[logs.size()];
+      logs.toArray(ls);
+      return ls;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public RepositoryBackupChainLog[] getRepositoryBackupsLogs()
+   {
+      File[] cfs = logsDirectory.listFiles(new RepositoryBackupLogsFilter());
+      List<RepositoryBackupChainLog> logs = new ArrayList<RepositoryBackupChainLog>();
+      for (int i = 0; i < cfs.length; i++)
+      {
+         File cf = cfs[i];
+
+         try
+         {
+            if (!isCurrentBackup(cf))
+               logs.add(new RepositoryBackupChainLog(cf));
+         }
+         catch (BackupOperationException e)
+         {
+            log.warn("Log file " + cf.getAbsolutePath() + " is bussy or corrupted. Skipped. " + e, e);
+         }
+      }
+      RepositoryBackupChainLog[] ls = new RepositoryBackupChainLog[logs.size()];
       logs.toArray(ls);
       return ls;
    }

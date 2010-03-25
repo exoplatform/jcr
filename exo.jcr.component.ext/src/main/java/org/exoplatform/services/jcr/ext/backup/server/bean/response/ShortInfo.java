@@ -180,6 +180,30 @@ public class ShortInfo
    /**
     * ShortInfo constructor.
     * 
+    * @param type
+    *          int, the tupe of short info
+    * @param chainLog
+    *          BackupChainLog, the backup chain log for completed backup.
+    */
+   public ShortInfo(int type, RepositoryBackupChainLog chainLog)
+   {
+      this.type = type;
+      this.backupType = chainLog.getBackupConfig().getBackupType();
+      this.backupId = chainLog.getBackupId();
+      this.repositoryName = chainLog.getBackupConfig().getRepository();
+      this.workspaceName = "";
+
+      // do not use
+      this.state = 0;
+
+      DateFormat df = new SimpleDateFormat(HTTPBackupAgent.Constants.DATE_FORMAT_RFC_1123);
+      this.startedTime = df.format(chainLog.getStartedTime().getTime());
+      this.finishedTime = df.format(chainLog.getFinishedTime().getTime());;
+   }
+
+   /**
+    * ShortInfo constructor.
+    * 
     * For restore.
     * 
     * @param type

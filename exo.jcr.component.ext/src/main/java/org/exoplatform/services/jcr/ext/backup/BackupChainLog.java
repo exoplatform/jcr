@@ -55,7 +55,7 @@ public class BackupChainLog
 
    protected static Log logger = ExoLogger.getLogger("ext.BackupChainLog");
 
-   private static final String PREFIX = "backup-";
+   public static final String PREFIX = "backup-";
 
    private static final String SUFFIX = ".xml";
 

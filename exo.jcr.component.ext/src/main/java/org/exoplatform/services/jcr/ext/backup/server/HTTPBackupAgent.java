@@ -651,8 +651,8 @@ public class HTTPBackupAgent implements ResourceContainer
          // search necessary restore
          JobRepositoryRestore restore = backupManager.getLastRepositoryRestore(rEntry.getName());
          ShortInfo info =
-                  new ShortInfo(ShortInfo.RESTORE, restore.getRepositoryBackupChainLog(), restore.getStartTime(),
-                           restore.getEndTime(), restore.getStateRestore(), restore.getRepositoryName());
+            new ShortInfo(ShortInfo.RESTORE, restore.getRepositoryBackupChainLog(), restore.getStartTime(), restore
+               .getEndTime(), restore.getStateRestore(), restore.getRepositoryName());
 
          return Response.ok(info).cacheControl(noCache).build();
       }
@@ -802,6 +802,42 @@ public class HTTPBackupAgent implements ResourceContainer
             list.add(new ShortInfo(ShortInfo.CURRENT, chain));
 
          for (BackupChainLog chainLog : backupManager.getBackupsLogs())
+            if (backupManager.findBackup(chainLog.getBackupId()) == null)
+               list.add(new ShortInfo(ShortInfo.COMPLETED, chainLog));
+
+         ShortInfoList shortInfoList = new ShortInfoList(list);
+
+         return Response.ok(shortInfoList).cacheControl(noCache).build();
+      }
+      catch (Throwable e)
+      {
+         log.error("Can not get information about current or completed backups", e);
+
+         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
+            "Can not get information about current or completed backups" + e.getMessage()).type(MediaType.TEXT_PLAIN)
+            .cacheControl(noCache).build();
+      }
+   }
+
+   /**
+    * Will be returned the list short info of current and completed backups .
+    * 
+    * @return Response return the response
+    */
+   @GET
+   @Produces(MediaType.APPLICATION_JSON)
+   @RolesAllowed("administrators")
+   @Path("/info/backup/repository")
+   public Response infoBackupRepository()
+   {
+      try
+      {
+         List<ShortInfo> list = new ArrayList<ShortInfo>();
+
+         for (RepositoryBackupChain chain : backupManager.getCurrentRepositoryBackups())
+            list.add(new ShortInfo(ShortInfo.CURRENT, chain));
+
+         for (RepositoryBackupChainLog chainLog : backupManager.getRepositoryBackupsLogs())
             if (backupManager.findBackup(chainLog.getBackupId()) == null)
                list.add(new ShortInfo(ShortInfo.COMPLETED, chainLog));
 
@@ -1278,7 +1314,7 @@ public class HTTPBackupAgent implements ResourceContainer
    private boolean isRepositoryExist(String repositoryName) throws RepositoryException,
       RepositoryConfigurationException
    {
-      try 
+      try
       {
          return repositoryService.getRepository(repositoryName) != null;
       }
@@ -1286,7 +1322,7 @@ public class HTTPBackupAgent implements ResourceContainer
       {
          return false;
       }
-      
+
    }
 
    /**
@@ -1331,7 +1367,7 @@ public class HTTPBackupAgent implements ResourceContainer
                + "' is already restoring.");
          }
    }
-   
+
    /**
     * validateOneRepositoryRestoreInstants.
     * 
@@ -1422,7 +1458,7 @@ public class HTTPBackupAgent implements ResourceContainer
 
       return null;
    }
-   
+
    /**
     * getRepositoryBackupLogbyId.
     * 

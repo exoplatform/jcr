@@ -60,7 +60,7 @@ public interface BackupManager
     *           return the set of current backups 
     */
    Set<BackupChain> getCurrentBackups();
-   
+
    /**
     * Getting current repository backups.
     *
@@ -88,7 +88,7 @@ public interface BackupManager
     *           return the job to restore
     */
    JobWorkspaceRestore getLastRestore(String repositoryName, String workspaceName);
-   
+
    /**
     * Getting list of repository restores.
     *
@@ -114,6 +114,14 @@ public interface BackupManager
     *           return the all backup logs
     */
    BackupChainLog[] getBackupsLogs();
+
+   /**
+    * Getting all repository backup logs.
+    *
+    * @return RepositoryBackupChainLog[]
+    *           return the all repository backup logs
+    */
+   RepositoryBackupChainLog[] getRepositoryBackupsLogs();
 
    /**
     * Starting backup.
@@ -258,7 +266,7 @@ public interface BackupManager
     *           return the default incremental job period 
     */
    long getDefaultIncrementalJobPeriod();
-   
+
    /**
     * Starting repository backup.
     *
@@ -275,9 +283,9 @@ public interface BackupManager
     * @throws RepositoryConfigurationException
     *           will be generate the exception RepositoryConfigurationException
     */
-   RepositoryBackupChain startBackup(RepositoryBackupConfig config) throws BackupOperationException, BackupConfigurationException,
-      RepositoryException, RepositoryConfigurationException;
-   
+   RepositoryBackupChain startBackup(RepositoryBackupConfig config) throws BackupOperationException,
+      BackupConfigurationException, RepositoryException, RepositoryConfigurationException;
+
    /**
     * Stop backup.
     *
@@ -285,7 +293,7 @@ public interface BackupManager
     *          RepositoryBackupChain, the repositroy backup chain 
     */
    void stopBackup(RepositoryBackupChain backup);
-   
+
    /**
     * Repository restore from backup.
     *
@@ -306,10 +314,10 @@ public interface BackupManager
     * @throws RepositoryConfigurationException
     *           will be generate the exception RepositoryConfigurationException 
     */
-   void restore(RepositoryBackupChainLog log, RepositoryEntry repositoryEntry, Map<String, String> workspaceNamesCorrespondMap, boolean asynchronous)
-      throws BackupOperationException, BackupConfigurationException, RepositoryException,
-      RepositoryConfigurationException;
-   
+   void restore(RepositoryBackupChainLog log, RepositoryEntry repositoryEntry,
+      Map<String, String> workspaceNamesCorrespondMap, boolean asynchronous) throws BackupOperationException,
+      BackupConfigurationException, RepositoryException, RepositoryConfigurationException;
+
    /**
     * Repository restore from backup.
     *
@@ -341,5 +349,5 @@ public interface BackupManager
     *           return the current backup to repository 
     */
    RepositoryBackupChain findRepositoryBackup(String repository);
-   
+
 }
