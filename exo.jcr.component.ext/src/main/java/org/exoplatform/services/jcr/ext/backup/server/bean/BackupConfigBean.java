@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.ext.backup.server.bean;
 
 import org.exoplatform.services.jcr.ext.backup.BackupConfig;
+import org.exoplatform.services.jcr.ext.backup.RepositoryBackupConfig;
 import org.exoplatform.services.jcr.ext.backup.server.bean.response.BackupJobConfig;
 
 /**
@@ -129,6 +130,18 @@ public class BackupConfigBean
     *          the backup config
     */
    public BackupConfigBean(BackupConfig config)
+   {
+      this(config.getBackupType(), config.getBackupDir().getAbsolutePath(), config.getIncrementalJobPeriod());
+      this.incrementalRepetitionNumber = config.getIncrementalJobNumber();
+   }
+
+   /**
+    * BackupConfigBeen constructor.
+    * 
+    * @param config
+    *          the backup config
+    */
+   public BackupConfigBean(RepositoryBackupConfig config)
    {
       this(config.getBackupType(), config.getBackupDir().getAbsolutePath(), config.getIncrementalJobPeriod());
       this.incrementalRepetitionNumber = config.getIncrementalJobNumber();

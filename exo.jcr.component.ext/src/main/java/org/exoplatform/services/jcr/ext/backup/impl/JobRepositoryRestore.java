@@ -34,6 +34,7 @@ import org.exoplatform.services.jcr.config.WorkspaceInitializerEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.ext.backup.BackupChainLog;
+import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChainLog;
 import org.exoplatform.services.jcr.ext.backup.RepositoryRestoreExeption;
 import org.exoplatform.services.jcr.ext.backup.server.WorkspaceRestoreExeption;
 import org.exoplatform.services.jcr.impl.core.BackupWorkspaceInitializer;
@@ -57,7 +58,7 @@ public class JobRepositoryRestore extends Thread
     * The apache logger.
     */
    private static Log log = ExoLogger.getLogger("ext.JobRepositoryRestore");
-   
+
    /**
     * REPOSITORY_RESTORE_STARTED. The state of start restore.
     */
@@ -82,7 +83,7 @@ public class JobRepositoryRestore extends Thread
     * The state of restore.
     */
    private int stateRestore;
-   
+
    /**
     * The start time of restore.
     */
@@ -92,27 +93,31 @@ public class JobRepositoryRestore extends Thread
     * The end time of restore.
     */
    private Calendar endTime;
-   
+
    /**
     * The exception on restore.
     */
    private Throwable restoreException = null;
-   
+
    private RepositoryService repositoryService;
-   
+
    private BackupManagerImpl backupManager;
-   
+
    private RepositoryEntry repositoryEntry;
-   
+
    private Map<String, BackupChainLog> workspacesMapping;
 
+   private RepositoryBackupChainLog repositoryBackupChainLog;
+
    public JobRepositoryRestore(RepositoryService repoService, BackupManagerImpl backupManagerImpl,
-            RepositoryEntry repositoryEntry, Map<String, BackupChainLog> workspacesMapping)
+      RepositoryEntry repositoryEntry, Map<String, BackupChainLog> workspacesMapping,
+      RepositoryBackupChainLog backupChainLog)
    {
       this.repositoryService = repoService;
       this.backupManager = backupManagerImpl;
       this.repositoryEntry = repositoryEntry;
       this.workspacesMapping = workspacesMapping;
+      this.repositoryBackupChainLog = backupChainLog;
    }
 
    /**
@@ -122,82 +127,86 @@ public class JobRepositoryRestore extends Thread
     * @throws Throwable
     *           will be generated the Throwable
     */
-   protected void restore() throws RepositoryRestoreExeption 
+   protected void restore() throws RepositoryRestoreExeption
    {
       List<WorkspaceEntry> originalWorkspaceEntrys = repositoryEntry.getWorkspaceEntries();
-      
+
       //Getting system workspace entry
       WorkspaceEntry systemWorkspaceEntry = null;
-      
+
       for (WorkspaceEntry wsEntry : originalWorkspaceEntrys)
       {
-         if (wsEntry.getName().equals(repositoryEntry.getSystemWorkspaceName())) 
+         if (wsEntry.getName().equals(repositoryEntry.getSystemWorkspaceName()))
          {
             systemWorkspaceEntry = wsEntry;
             break;
          }
       }
-      
+
       WorkspaceInitializerEntry wieOriginal = systemWorkspaceEntry.getInitializer();
-      
-      //getting backup cahil log to system workspace.
+
+      //getting backup chail log to system workspace.
       BackupChainLog systemBackupChainLog = workspacesMapping.get(systemWorkspaceEntry.getName());
       File fullBackupFile = new File(systemBackupChainLog.getJobEntryInfos().get(0).getURL().getPath());
-      
+
       // set the initializer SysViewWorkspaceInitializer
       WorkspaceInitializerEntry wiEntry = new WorkspaceInitializerEntry();
       wiEntry.setType(BackupWorkspaceInitializer.class.getCanonicalName());
 
       List<SimpleParameterEntry> wieParams = new ArrayList<SimpleParameterEntry>();
-      wieParams.add(new SimpleParameterEntry(BackupWorkspaceInitializer.RESTORE_PATH_PARAMETER, fullBackupFile.getParent()));
+      wieParams.add(new SimpleParameterEntry(BackupWorkspaceInitializer.RESTORE_PATH_PARAMETER, fullBackupFile
+         .getParent()));
 
       wiEntry.setParameters(wieParams);
 
       // set initializer
       systemWorkspaceEntry.setInitializer(wiEntry);
-      
+
       ArrayList<WorkspaceEntry> newEntries = new ArrayList<WorkspaceEntry>();
       newEntries.add(systemWorkspaceEntry);
-      
+
       repositoryEntry.setWorkspaceEntries(newEntries);
-      
+
       String currennWorkspaceName = repositoryEntry.getSystemWorkspaceName();
-      
+
       boolean restored = true;
       try
       {
          repositoryService.createRepository(repositoryEntry);
-         
+
          //set original initializer to created workspace.
-         RepositoryImpl defRep = (RepositoryImpl) repositoryService.getRepository(repositoryEntry.getName());
+         RepositoryImpl defRep = (RepositoryImpl)repositoryService.getRepository(repositoryEntry.getName());
          WorkspaceContainerFacade wcf = defRep.getWorkspaceContainer(systemWorkspaceEntry.getName());
-         WorkspaceEntry createdWorkspaceEntry = (WorkspaceEntry) wcf.getComponent(WorkspaceEntry.class);
+         WorkspaceEntry createdWorkspaceEntry = (WorkspaceEntry)wcf.getComponent(WorkspaceEntry.class);
          createdWorkspaceEntry.setInitializer(wieOriginal);
-         
+
          // save configuration to persistence (file or persister)
-         repositoryService.getConfig().retain(); 
-         
-         for (WorkspaceEntry wsEntry : originalWorkspaceEntrys)
-         {
-            if (!(wsEntry.getName().equals(repositoryEntry.getSystemWorkspaceName())))
-            {
-               currennWorkspaceName = wsEntry.getName();
-               backupManager.restore(workspacesMapping.get(wsEntry.getName()), repositoryEntry.getName(), wsEntry, false);
-            }
-         }
+         repositoryService.getConfig().retain();
+         backupManager.restore(repositoryBackupChainLog, repositoryEntry, false);
+
+         // TODO
+         //         for (WorkspaceEntry wsEntry : originalWorkspaceEntrys)
+         //         {
+         //            if (!(wsEntry.getName().equals(repositoryEntry.getSystemWorkspaceName())))
+         //            {
+         //               currennWorkspaceName = wsEntry.getName();
+         //               backupManager.restore(workspacesMapping.get(wsEntry.getName()), repositoryEntry.getName(), wsEntry,
+         //                  false);
+         //            }
+         //         }
       }
       catch (InvalidItemStateException e)
       {
          restored = false;
-         throw new RepositoryRestoreExeption("Workspace '" + "/" + repositoryEntry.getName() + "/" + currennWorkspaceName
-            + "' can not be restored! There was database error!", e);
+         throw new RepositoryRestoreExeption("Workspace '" + "/" + repositoryEntry.getName() + "/"
+            + currennWorkspaceName + "' can not be restored! There was database error!", e);
 
       }
       catch (Throwable t)
       {
          restored = false;
-         throw new RepositoryRestoreExeption("Workspace '" + "/" + repositoryEntry.getName() + "/" + currennWorkspaceName
-            + "' can not be restored!", t);
+         throw new RepositoryRestoreExeption("Workspace '" + "/" + repositoryEntry.getName() + "/"
+            + currennWorkspaceName + "' can not be restored!", t);
 
       }
       finally
@@ -207,16 +216,16 @@ public class JobRepositoryRestore extends Thread
             try
             {
                ManageableRepository mr = null;
-               
-               try 
+
+               try
                {
                   mr = repositoryService.getRepository(repositoryEntry.getName());
-               } 
+               }
                catch (RepositoryException e)
                {
                   // The repository not exist.
                }
-               
+
                if (mr != null)
                {
                   closeAllSession(mr);
@@ -226,13 +235,13 @@ public class JobRepositoryRestore extends Thread
             }
             catch (Throwable thr)
             {
-               throw new RepositoryRestoreExeption("Reprository '" + "/" + repositoryEntry.getName() + 
-                  "' can not be restored!", thr);
+               throw new RepositoryRestoreExeption("Reprository '" + "/" + repositoryEntry.getName()
+                  + "' can not be restored!", thr);
             }
          }
       }
    }
-   
+
    /**
     * Close all open session in repository
     * 
@@ -247,7 +256,7 @@ public class JobRepositoryRestore extends Thread
          if (!mr.canRemoveWorkspace(wsName))
          {
             WorkspaceContainerFacade wc = mr.getWorkspaceContainer(wsName);
-            SessionRegistry sessionRegistry = (SessionRegistry) wc.getComponent(SessionRegistry.class);
+            SessionRegistry sessionRegistry = (SessionRegistry)wc.getComponent(SessionRegistry.class);
             sessionRegistry.closeSessions(wsName);
          }
       }
@@ -258,7 +267,7 @@ public class JobRepositoryRestore extends Thread
     */
    public void run()
    {
-      
+
       try
       {
          stateRestore = REPOSITORY_RESTORE_STARTED;
@@ -287,7 +296,7 @@ public class JobRepositoryRestore extends Thread
    {
       return restoreException;
    }
-   
+
    /**
     * getStateRestore.
     * 
@@ -317,7 +326,7 @@ public class JobRepositoryRestore extends Thread
    {
       return endTime;
    }
-   
+
    /**
     * getRepositoryName.
     *
@@ -328,4 +337,25 @@ public class JobRepositoryRestore extends Thread
    {
       return repositoryEntry.getName();
    }
+
+   /**
+    * GetRepositoryBackupChainLog.
+    * 
+    * @return repositoryBackupChainLog
+    */
+   public RepositoryBackupChainLog getRepositoryBackupChainLog()
+   {
+      return repositoryBackupChainLog;
+   }
+
+   /**
+    * getRepositoryEntry.
+    * 
+    * @return repositoryBackupChainLog
+    */
+   public RepositoryEntry getRepositoryEntry()
+   {
+      return repositoryEntry;
+   }
+
 }

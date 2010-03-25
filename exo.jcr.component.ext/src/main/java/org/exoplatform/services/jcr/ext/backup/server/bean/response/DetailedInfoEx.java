@@ -18,8 +18,10 @@
  */
 package org.exoplatform.services.jcr.ext.backup.server.bean.response;
 
+import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.ext.backup.BackupChainLog;
+import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChainLog;
 
 import java.util.Calendar;
 
@@ -35,6 +37,8 @@ public class DetailedInfoEx extends DetailedInfo
 
    protected WorkspaceEntry workspaceEntry;
 
+   protected RepositoryEntry repositoryEntry;
+
    protected String failMessage;
 
    public DetailedInfoEx(int type, BackupChainLog chainLog, Calendar startedTime, Calendar finishedTime, int state,
@@ -43,6 +47,15 @@ public class DetailedInfoEx extends DetailedInfo
       super(type, chainLog, startedTime, finishedTime, state, repositroryName, workspaceName);
 
       this.workspaceEntry = workspaceEntry;
+      this.failMessage = failMessage;
+   }
+
+   public DetailedInfoEx(int type, RepositoryBackupChainLog chainLog, Calendar startedTime, Calendar finishedTime,
+      int state, String repositroryName, RepositoryEntry repositoryEntry, String failMessage)
+   {
+      super(type, chainLog, startedTime, finishedTime, state, repositroryName);
+
+      this.repositoryEntry = repositoryEntry;
       this.failMessage = failMessage;
    }
 

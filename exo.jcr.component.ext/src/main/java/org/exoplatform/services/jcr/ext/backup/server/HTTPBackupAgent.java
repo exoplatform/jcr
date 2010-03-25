@@ -40,6 +40,7 @@ import javax.ws.rs.core.Response;
 
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
@@ -50,6 +51,10 @@ import org.exoplatform.services.jcr.ext.backup.BackupConfig;
 import org.exoplatform.services.jcr.ext.backup.BackupConfigurationException;
 import org.exoplatform.services.jcr.ext.backup.BackupManager;
 import org.exoplatform.services.jcr.ext.backup.BackupOperationException;
+import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChain;
+import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChainLog;
+import org.exoplatform.services.jcr.ext.backup.RepositoryBackupConfig;
+import org.exoplatform.services.jcr.ext.backup.impl.JobRepositoryRestore;
 import org.exoplatform.services.jcr.ext.backup.impl.JobWorkspaceRestore;
 import org.exoplatform.services.jcr.ext.backup.server.bean.BackupConfigBean;
 import org.exoplatform.services.jcr.ext.backup.server.bean.response.BackupServiceInfoBean;
@@ -74,8 +79,7 @@ import org.exoplatform.services.rest.resource.ResourceContainer;
  */
 
 @Path("/jcr-backup/")
-public class HTTPBackupAgent
-   implements ResourceContainer
+public class HTTPBackupAgent implements ResourceContainer
 {
 
    /**
@@ -223,7 +227,7 @@ public class HTTPBackupAgent
     *          the ThreadLocalSessionProviderService
     */
    public HTTPBackupAgent(RepositoryService repoService, BackupManager backupManager,
-            ThreadLocalSessionProviderService sessionProviderService)
+      ThreadLocalSessionProviderService sessionProviderService)
    {
       this.repositoryService = repoService;
       this.backupManager = backupManager;
@@ -249,7 +253,7 @@ public class HTTPBackupAgent
    @RolesAllowed("administrators")
    @Path("/start/{repo}/{ws}")
    public Response start(BackupConfigBean bConfigBeen, @PathParam("repo") String repository,
-            @PathParam("ws") String workspace)
+      @PathParam("ws") String workspace)
    {
       String failMessage;
       Response.Status status;
@@ -331,7 +335,93 @@ public class HTTPBackupAgent
       log.error("Can not start backup", exception);
 
       return Response.status(status).entity("Can not start backup : " + failMessage).type(MediaType.TEXT_PLAIN)
-               .cacheControl(noCache).build();
+         .cacheControl(noCache).build();
+   }
+
+   /**
+    * The start repository backup.
+    * 
+    * @param bConfigBeen
+    *          BackupConfigBeen, the been with backup configuration.
+    * @param repository
+    *          String, the repository name
+    * @return Response return the response
+    */
+   @POST
+   @Consumes(MediaType.APPLICATION_JSON)
+   @Produces(MediaType.APPLICATION_JSON)
+   @RolesAllowed("administrators")
+   @Path("/start/{repo}}")
+   public Response start(BackupConfigBean bConfigBeen, @PathParam("repo") String repository)
+   {
+      String failMessage;
+      Response.Status status;
+      Throwable exception;
+
+      try
+      {
+         File backupDir = new File(bConfigBeen.getBackupDir());
+         if (!backupDir.exists())
+         {
+            throw new BackupDirNotFoundException("The backup folder not exists :  " + backupDir.getAbsolutePath());
+         }
+
+         RepositoryBackupConfig config = new RepositoryBackupConfig();
+         config.setBackupType(bConfigBeen.getBackupType());
+         config.setRepository(repository);
+         config.setBackupDir(backupDir);
+         config.setIncrementalJobPeriod(bConfigBeen.getIncrementalJobPeriod());
+         config.setIncrementalJobNumber(bConfigBeen.getIncrementalRepetitionNumber());
+
+         validateRepositoryName(repository);
+
+         RepositoryBackupChain chain = backupManager.startBackup(config);
+
+         ShortInfo shortInfo = new ShortInfo(ShortInfo.CURRENT, chain);
+
+         return Response.ok(shortInfo).cacheControl(noCache).build();
+      }
+      catch (LoginException e)
+      {
+         exception = e;
+         status = Response.Status.UNAUTHORIZED;
+         failMessage = e.getMessage();
+      }
+      catch (RepositoryException e)
+      {
+         exception = e;
+         status = Response.Status.INTERNAL_SERVER_ERROR;
+         failMessage = e.getMessage();
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         exception = e;
+         status = Response.Status.NOT_FOUND;
+         failMessage = e.getMessage();
+      }
+      catch (BackupOperationException e)
+      {
+         exception = e;
+         status = Response.Status.INTERNAL_SERVER_ERROR;
+         failMessage = e.getMessage();
+      }
+      catch (BackupConfigurationException e)
+      {
+         exception = e;
+         status = Response.Status.NOT_FOUND;
+         failMessage = e.getMessage();
+      }
+      catch (Throwable e)
+      {
+         exception = e;
+         status = Response.Status.INTERNAL_SERVER_ERROR;
+         failMessage = e.getMessage();
+      }
+
+      log.error("Can not start backup", exception);
+
+      return Response.status(status).entity("Can not start backup : " + failMessage).type(MediaType.TEXT_PLAIN)
+         .cacheControl(noCache).build();
    }
 
    /**
@@ -349,7 +439,7 @@ public class HTTPBackupAgent
    @RolesAllowed("administrators")
    @Path("/drop-workspace/{repo}/{ws}/{force-session-close}")
    public Response dropWorkspace(@PathParam("repo") String repository, @PathParam("ws") String workspace,
-            @PathParam("force-session-close") Boolean forceSessionClose)
+      @PathParam("force-session-close") Boolean forceSessionClose)
    {
 
       String failMessage;
@@ -364,7 +454,7 @@ public class HTTPBackupAgent
          if (forceSessionClose)
             forceCloseSession(repository, workspace);
 
-         RepositoryImpl repositoryImpl = (RepositoryImpl) repositoryService.getRepository(repository);
+         RepositoryImpl repositoryImpl = (RepositoryImpl)repositoryService.getRepository(repository);
          repositoryImpl.removeWorkspace(workspace);
          repositoryService.getConfig().retain(); // save configuration to persistence (file or persister)
 
@@ -393,8 +483,8 @@ public class HTTPBackupAgent
       log.error("Can not drop the workspace '" + "/" + repository + "/" + workspace + "'", exception);
 
       return Response.status(status).entity(
-               "Can not drop the workspace '" + "/" + repository + "/" + workspace + "' : " + failMessage).type(
-               MediaType.TEXT_PLAIN).cacheControl(noCache).build();
+         "Can not drop the workspace '" + "/" + repository + "/" + workspace + "' : " + failMessage).type(
+         MediaType.TEXT_PLAIN).cacheControl(noCache).build();
 
    }
 
@@ -443,31 +533,34 @@ public class HTTPBackupAgent
           * Sleeping
           * Restore must be initialized by job thread
           */
-         
+
          Thread.sleep(100);
-         
+
          /*
           * search necessary restore
           */
 
          List<JobWorkspaceRestore> restoreJobs = backupManager.getRestores();
          JobWorkspaceRestore restore = null;
-         for (JobWorkspaceRestore curRestore : restoreJobs) {
-            if (curRestore.getRepositoryName().equals(repository) &&
-                     curRestore.getWorkspaceName().equals(wEntry.getName())) {
+         for (JobWorkspaceRestore curRestore : restoreJobs)
+         {
+            if (curRestore.getRepositoryName().equals(repository)
+               && curRestore.getWorkspaceName().equals(wEntry.getName()))
+            {
                restore = curRestore;
                break;
             }
          }
-         
-         if (restore != null) {
+
+         if (restore != null)
+         {
             ShortInfo info =
-               new ShortInfo(ShortInfo.RESTORE, restore.getBackupChainLog(), restore.getStartTime(), restore.getEndTime(),
-                  restore.getStateRestore(), restore.getRepositoryName(), restore.getWorkspaceName());         
+               new ShortInfo(ShortInfo.RESTORE, restore.getBackupChainLog(), restore.getStartTime(), restore
+                  .getEndTime(), restore.getStateRestore(), restore.getRepositoryName(), restore.getWorkspaceName());
             return Response.ok(info).cacheControl(noCache).build();
          }
-         
-         return Response.ok().cacheControl(noCache).build();         
+
+         return Response.ok().cacheControl(noCache).build();
       }
       catch (WorkspaceRestoreExeption e)
       {
@@ -501,12 +594,122 @@ public class HTTPBackupAgent
       }
 
       log.error("Can not start restore the workspace '" + "/" + repository + "/" + wEntry.getName()
-               + "' from backup log with id '" + backupId + "'", exception);
+         + "' from backup log with id '" + backupId + "'", exception);
 
       return Response.status(status).entity(
-               "Can not start restore the workspace '" + "/" + repository + "/" + wEntry.getName()
-                        + "' from backup log with id '" + backupId + "' : " + failMessage).type(MediaType.TEXT_PLAIN)
-               .cacheControl(noCache).build();
+         "Can not start restore the workspace '" + "/" + repository + "/" + wEntry.getName()
+            + "' from backup log with id '" + backupId + "' : " + failMessage).type(MediaType.TEXT_PLAIN).cacheControl(
+         noCache).build();
+   }
+
+   /**
+    * Restore the repository.
+    * 
+    * @param rEntry
+    *          RepositoryEntry, the configuration to restored repository
+    * @param repository
+    *          String, the repository name
+    * @param backupId
+    *          String, the identifier of backup
+    * @return Response return the response
+    */
+   @POST
+   @Consumes(MediaType.APPLICATION_JSON)
+   @Produces(MediaType.APPLICATION_JSON)
+   @RolesAllowed("administrators")
+   @Path("/restore/{repo}/{id}")
+   public Response restore(RepositoryEntry rEntry, @PathParam("repo") String repository,
+      @PathParam("id") String backupId)
+   {
+      String failMessage;
+      Response.Status status;
+      Throwable exception;
+
+      try
+      {
+         validateOneRestoreInstants(repository);
+
+         File backupLog = getBackupLogbyId(backupId);
+
+         // validate backup log file
+         if (backupLog == null)
+         {
+            throw new BackupLogNotFoundException("The backup log file with id " + backupId + " not exists.");
+         }
+
+         validateRepositoryName(repository);
+
+         if (isRepositoryExist(repository))
+         {
+            throw new Exception("Repository " + rEntry.getName() + " already exist!");
+         }
+
+         RepositoryBackupChainLog backupChainLog = new RepositoryBackupChainLog(backupLog);
+
+         backupManager.restore(backupChainLog, rEntry, true);
+
+         // Sleeping. Restore should be initialized by job thread
+         Thread.sleep(100);
+
+         // search necessary restore
+         List<JobRepositoryRestore> restoreJobs = backupManager.getRepositoryRestores();
+         JobRepositoryRestore restore = null;
+         for (JobRepositoryRestore curRestore : restoreJobs)
+         {
+            if (curRestore.getRepositoryName().equals(repository))
+            {
+               restore = curRestore;
+               break;
+            }
+         }
+
+         if (restore != null)
+         {
+            ShortInfo info =
+               new ShortInfo(ShortInfo.RESTORE, restore.getRepositoryBackupChainLog(), restore.getStartTime(), restore
+                  .getEndTime(), restore.getStateRestore(), restore.getRepositoryName());
+            return Response.ok(info).cacheControl(noCache).build();
+         }
+
+         return Response.ok().cacheControl(noCache).build();
+      }
+      catch (WorkspaceRestoreExeption e)
+      {
+         exception = e;
+         status = Response.Status.FORBIDDEN;
+         failMessage = e.getMessage();
+      }
+      catch (RepositoryException e)
+      {
+         exception = e;
+         status = Response.Status.NOT_FOUND;
+         failMessage = e.getMessage();
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         exception = e;
+         status = Response.Status.NOT_FOUND;
+         failMessage = e.getMessage();
+      }
+      catch (BackupLogNotFoundException e)
+      {
+         exception = e;
+         status = Response.Status.NOT_FOUND;
+         failMessage = e.getMessage();
+      }
+      catch (Throwable e)
+      {
+         exception = e;
+         status = Response.Status.INTERNAL_SERVER_ERROR;
+         failMessage = e.getMessage();
+      }
+
+      log.error("Can not start restore the repository '" + "/" + repository + "' from backup log with id '" + backupId
+         + "'", exception);
+
+      return Response.status(status).entity(
+         "Can not start restore the repository '" + "/" + repository + "' from backup log with id '" + backupId
+            + "' : " + failMessage).type(MediaType.TEXT_PLAIN).cacheControl(noCache).build();
    }
 
    /**
@@ -565,7 +768,7 @@ public class HTTPBackupAgent
       log.error("Can not stop backup", exception);
 
       return Response.status(status).entity("Can not stop backup : " + failMessage).type(MediaType.TEXT_PLAIN)
-               .cacheControl(noCache).build();
+         .cacheControl(noCache).build();
    }
 
    /**
@@ -582,9 +785,8 @@ public class HTTPBackupAgent
       try
       {
          BackupServiceInfoBean infoBeen =
-                  new BackupServiceInfoBean(backupManager.getFullBackupType(),
-                           backupManager.getIncrementalBackupType(), backupManager.getBackupDirectory()
-                                    .getAbsolutePath(), backupManager.getDefaultIncrementalJobPeriod());
+            new BackupServiceInfoBean(backupManager.getFullBackupType(), backupManager.getIncrementalBackupType(),
+               backupManager.getBackupDirectory().getAbsolutePath(), backupManager.getDefaultIncrementalJobPeriod());
 
          return Response.ok(infoBeen).cacheControl(noCache).build();
       }
@@ -593,8 +795,8 @@ public class HTTPBackupAgent
          log.error("Can not get information about backup service", e);
 
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
-                  "Can not get information about backup service : " + e.getMessage()).type(MediaType.TEXT_PLAIN)
-                  .cacheControl(noCache).build();
+            "Can not get information about backup service : " + e.getMessage()).type(MediaType.TEXT_PLAIN)
+            .cacheControl(noCache).build();
       }
    }
 
@@ -629,8 +831,8 @@ public class HTTPBackupAgent
          log.error("Can not get information about current or completed backups", e);
 
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
-                  "Can not get information about current or completed backups" + e.getMessage()).type(
-                  MediaType.TEXT_PLAIN).cacheControl(noCache).build();
+            "Can not get information about current or completed backups" + e.getMessage()).type(MediaType.TEXT_PLAIN)
+            .cacheControl(noCache).build();
       }
    }
 
@@ -670,15 +872,15 @@ public class HTTPBackupAgent
          }
 
          return Response.status(Response.Status.NOT_FOUND).entity("No current or completed backup with 'id' " + id)
-                  .type(MediaType.TEXT_PLAIN).cacheControl(noCache).build();
+            .type(MediaType.TEXT_PLAIN).cacheControl(noCache).build();
       }
       catch (Throwable e)
       {
          log.error("Can not get information about current or completed backup with 'id' " + id, e);
 
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
-                  "Can not get information about current or completed backup with 'id' " + id + " : " + e.getMessage())
-                  .type(MediaType.TEXT_PLAIN).cacheControl(noCache).build();
+            "Can not get information about current or completed backup with 'id' " + id + " : " + e.getMessage()).type(
+            MediaType.TEXT_PLAIN).cacheControl(noCache).build();
       }
    }
 
@@ -709,8 +911,8 @@ public class HTTPBackupAgent
          log.error("Can not get information about current backups", e);
 
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
-                  "Can not get information about current backups" + e.getMessage()).type(MediaType.TEXT_PLAIN)
-                  .cacheControl(noCache).build();
+            "Can not get information about current backups" + e.getMessage()).type(MediaType.TEXT_PLAIN).cacheControl(
+            noCache).build();
       }
    }
 
@@ -742,8 +944,8 @@ public class HTTPBackupAgent
          log.error("Can not get information about completed backups", e);
 
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
-                  "Can not get information about completed backups" + e.getMessage()).type(MediaType.TEXT_PLAIN)
-                  .cacheControl(noCache).build();
+            "Can not get information about completed backups" + e.getMessage()).type(MediaType.TEXT_PLAIN)
+            .cacheControl(noCache).build();
       }
    }
 
@@ -771,7 +973,7 @@ public class HTTPBackupAgent
          for (BackupChain chain : backupManager.getCurrentBackups())
          {
             if (repository.equals(chain.getBackupConfig().getRepository())
-                     && workspace.equals(chain.getBackupConfig().getWorkspace()))
+               && workspace.equals(chain.getBackupConfig().getWorkspace()))
             {
                list.add(new ShortInfo(ShortInfo.CURRENT, chain));
             }
@@ -780,8 +982,8 @@ public class HTTPBackupAgent
          for (BackupChainLog chainLog : backupManager.getBackupsLogs())
          {
             if (backupManager.findBackup(chainLog.getBackupId()) == null
-                     && repository.equals(chainLog.getBackupConfig().getRepository())
-                     && workspace.equals(chainLog.getBackupConfig().getWorkspace()))
+               && repository.equals(chainLog.getBackupConfig().getRepository())
+               && workspace.equals(chainLog.getBackupConfig().getWorkspace()))
             {
                list.add(new ShortInfo(ShortInfo.COMPLETED, chainLog));
             }
@@ -796,8 +998,8 @@ public class HTTPBackupAgent
          log.error("Can not get information about current or completed backups", e);
 
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
-                  "Can not get information about current or completed backups" + e.getMessage()).type(
-                  MediaType.TEXT_PLAIN).cacheControl(noCache).build();
+            "Can not get information about current or completed backups" + e.getMessage()).type(MediaType.TEXT_PLAIN)
+            .cacheControl(noCache).build();
       }
    }
 
@@ -824,32 +1026,79 @@ public class HTTPBackupAgent
          if (restoreJob != null)
          {
             DetailedInfoEx info =
-                     new DetailedInfoEx(DetailedInfo.RESTORE, restoreJob.getBackupChainLog(),
-                              restoreJob.getStartTime(), restoreJob.getEndTime(), restoreJob.getStateRestore(),
-                              restoreJob.getRepositoryName(), restoreJob.getWorkspaceName(),
+               new DetailedInfoEx(DetailedInfo.RESTORE, restoreJob.getBackupChainLog(), restoreJob.getStartTime(),
+                  restoreJob.getEndTime(), restoreJob.getStateRestore(), restoreJob.getRepositoryName(), restoreJob
+                     .getWorkspaceName(),
 
-                              restoreJob.getWorkspaceEntry(), restoreJob.getRestoreException() == null ? ""
-                                       : restoreJob.getRestoreException().getMessage());
+                  restoreJob.getWorkspaceEntry(), restoreJob.getRestoreException() == null ? "" : restoreJob
+                     .getRestoreException().getMessage());
 
             return Response.ok(info).cacheControl(noCache).build();
          }
          else
          {
             return Response.status(Response.Status.NOT_FOUND).entity(
-                     "No resrore for workspace /" + repository + "/" + workspace + "'").type(MediaType.TEXT_PLAIN)
-                     .cacheControl(noCache).build();
+               "No resrore for workspace /" + repository + "/" + workspace + "'").type(MediaType.TEXT_PLAIN)
+               .cacheControl(noCache).build();
          }
 
       }
       catch (Throwable e)
       {
          log.error(
-                  "Can not get information about current restore for workspace /" + repository + "/" + workspace + "'",
-                  e);
+            "Can not get information about current restore for workspace /" + repository + "/" + workspace + "'", e);
 
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
-                  "Can not get information about current restore for workspace /" + repository + "/" + workspace
-                           + "' : " + e.getMessage()).type(MediaType.TEXT_PLAIN).cacheControl(noCache).build();
+            "Can not get information about current restore for workspace /" + repository + "/" + workspace + "' : "
+               + e.getMessage()).type(MediaType.TEXT_PLAIN).cacheControl(noCache).build();
+      }
+
+   }
+
+   /**
+    * Will be returned the detailed information about last restore for specific repository.
+    * 
+    * @param repository
+    *          String, the repository name
+    * 
+    * @return Response return the response
+    */
+   @GET
+   @Produces(MediaType.APPLICATION_JSON)
+   @RolesAllowed("administrators")
+   @Path("/info/restore/{repo}/{ws}")
+   public Response infoRestore(@PathParam("repo") String repository)
+   {
+      try
+      {
+         JobRepositoryRestore restoreJob = backupManager.getLastRepositoryRestore(repository);
+
+         if (restoreJob != null)
+         {
+            DetailedInfoEx info =
+               new DetailedInfoEx(DetailedInfo.RESTORE, restoreJob.getRepositoryBackupChainLog(), restoreJob
+                  .getStartTime(), restoreJob.getEndTime(), restoreJob.getStateRestore(), restoreJob
+                  .getRepositoryName(),
+
+               restoreJob.getRepositoryEntry(), restoreJob.getRestoreException() == null ? "" : restoreJob
+                  .getRestoreException().getMessage());
+
+            return Response.ok(info).cacheControl(noCache).build();
+         }
+         else
+         {
+            return Response.status(Response.Status.NOT_FOUND).entity("No restore for repository /" + repository + "'")
+               .type(MediaType.TEXT_PLAIN).cacheControl(noCache).build();
+         }
+
+      }
+      catch (Throwable e)
+      {
+         log.error("Can not get information about current restore for repository /" + repository + "'", e);
+
+         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
+            "Can not get information about current restore for repository /" + repository + "' : " + e.getMessage())
+            .type(MediaType.TEXT_PLAIN).cacheControl(noCache).build();
       }
 
    }
@@ -878,7 +1127,7 @@ public class HTTPBackupAgent
             for (JobWorkspaceRestore unJob : jobs)
             {
                if (unJob.getRepositoryName().equals(job.getRepositoryName())
-                        && unJob.getWorkspaceName().equals(job.getWorkspaceName()))
+                  && unJob.getWorkspaceName().equals(job.getWorkspaceName()))
                   isUnique = false;
             }
 
@@ -891,8 +1140,8 @@ public class HTTPBackupAgent
          for (JobWorkspaceRestore job : jobs)
          {
             ShortInfo info =
-                     new ShortInfo(ShortInfo.RESTORE, job.getBackupChainLog(), job.getStartTime(), job.getEndTime(),
-                              job.getStateRestore(), job.getRepositoryName(), job.getWorkspaceName());
+               new ShortInfo(ShortInfo.RESTORE, job.getBackupChainLog(), job.getStartTime(), job.getEndTime(), job
+                  .getStateRestore(), job.getRepositoryName(), job.getWorkspaceName());
             list.add(info);
          }
 
@@ -904,8 +1153,8 @@ public class HTTPBackupAgent
          log.error("Can not get information about current restores.", e);
 
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
-                  "Can not get information about current restores : " + e.getMessage()).type(MediaType.TEXT_PLAIN)
-                  .cacheControl(noCache).build();
+            "Can not get information about current restores : " + e.getMessage()).type(MediaType.TEXT_PLAIN)
+            .cacheControl(noCache).build();
       }
    }
 
@@ -923,20 +1172,19 @@ public class HTTPBackupAgent
       try
       {
          String defaultWorkspaceName =
-                  repositoryService.getDefaultRepository().getConfiguration().getDefaultWorkspaceName();
+            repositoryService.getDefaultRepository().getConfiguration().getDefaultWorkspaceName();
 
          for (WorkspaceEntry wEntry : repositoryService.getDefaultRepository().getConfiguration().getWorkspaceEntries())
             if (defaultWorkspaceName.equals(wEntry.getName()))
                return Response.ok(wEntry).cacheControl(noCache).build();
 
          return Response.status(Response.Status.NOT_FOUND).entity("Can not get default workspace configuration.").type(
-                  MediaType.TEXT_PLAIN).cacheControl(noCache).build();
+            MediaType.TEXT_PLAIN).cacheControl(noCache).build();
       }
       catch (Throwable e)
       {
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
-                  "Can not get default workspace configuration.").type(MediaType.TEXT_PLAIN).cacheControl(noCache)
-                  .build();
+            "Can not get default workspace configuration.").type(MediaType.TEXT_PLAIN).cacheControl(noCache).build();
       }
    }
 
@@ -951,7 +1199,7 @@ public class HTTPBackupAgent
     *           will be generated the exception RepositoryException
     */
    private void validateRepositoryName(String repositoryName) throws RepositoryException,
-            RepositoryConfigurationException
+      RepositoryConfigurationException
    {
       repositoryService.getRepository(repositoryName);
    }
@@ -973,16 +1221,16 @@ public class HTTPBackupAgent
     *           will be generated the exception LoginException
     */
    private void validateWorkspaceName(String repositoryName, String workspaceName) throws LoginException,
-            NoSuchWorkspaceException, RepositoryException, RepositoryConfigurationException
+      NoSuchWorkspaceException, RepositoryException, RepositoryConfigurationException
    {
       Session ses =
-               sessionProviderService.getSessionProvider(null).getSession(workspaceName,
-                        repositoryService.getRepository(repositoryName));
+         sessionProviderService.getSessionProvider(null).getSession(workspaceName,
+            repositoryService.getRepository(repositoryName));
       ses.logout();
    }
 
    private boolean isWorkspaceExist(String repositoryName, String workspaceName) throws RepositoryException,
-            RepositoryConfigurationException
+      RepositoryConfigurationException
    {
       for (String workspace : repositoryService.getRepository(repositoryName).getWorkspaceNames())
       {
@@ -993,6 +1241,12 @@ public class HTTPBackupAgent
       }
 
       return false;
+   }
+
+   private boolean isRepositoryExist(String repositoryName) throws RepositoryException,
+      RepositoryConfigurationException
+   {
+      return repositoryService.getRepository(repositoryName) != null;
    }
 
    /**
@@ -1012,7 +1266,7 @@ public class HTTPBackupAgent
 
       if (bch != null)
          throw new WorkspaceRestoreExeption("The backup is already working on workspace '" + "/" + repositoryName + "/"
-                  + workspaceName + "'");
+            + workspaceName + "'");
    }
 
    /**
@@ -1030,11 +1284,30 @@ public class HTTPBackupAgent
 
       for (JobWorkspaceRestore job : backupManager.getRestores())
          if (repositoryName.equals(job.getRepositoryName())
-                  && workspaceName.endsWith(job.getWorkspaceName())
-                  && (job.getStateRestore() == JobWorkspaceRestore.RESTORE_INITIALIZED || job.getStateRestore() == JobWorkspaceRestore.RESTORE_STARTED))
+            && workspaceName.endsWith(job.getWorkspaceName())
+            && (job.getStateRestore() == JobWorkspaceRestore.RESTORE_INITIALIZED || job.getStateRestore() == JobWorkspaceRestore.RESTORE_STARTED))
          {
             throw new WorkspaceRestoreExeption("The workspace '" + "/" + repositoryName + "/" + workspaceName
-                     + "' is already restoring.");
+               + "' is already restoring.");
+         }
+   }
+
+   /**
+    * validateOneRestoreInstants.
+    * 
+    * @param repositoryName
+    *          the repository name
+    * @throws WorkspaceRestoreExeption
+    *           will be generated WorkspaceRestoreExeption
+    */
+   private void validateOneRestoreInstants(String repositoryName) throws WorkspaceRestoreExeption
+   {
+
+      for (JobWorkspaceRestore job : backupManager.getRestores())
+         if (repositoryName.equals(job.getRepositoryName())
+            && (job.getStateRestore() == JobWorkspaceRestore.RESTORE_INITIALIZED || job.getStateRestore() == JobWorkspaceRestore.RESTORE_STARTED))
+         {
+            throw new WorkspaceRestoreExeption("The workspace '" + "/" + repositoryName + "' is already restoring.");
          }
    }
 
@@ -1052,12 +1325,12 @@ public class HTTPBackupAgent
     *           will be generate RepositoryException
     */
    private int forceCloseSession(String repositoryName, String workspaceName) throws RepositoryException,
-            RepositoryConfigurationException
+      RepositoryConfigurationException
    {
       ManageableRepository mr = repositoryService.getRepository(repositoryName);
       WorkspaceContainerFacade wc = mr.getWorkspaceContainer(workspaceName);
 
-      SessionRegistry sessionRegistry = (SessionRegistry) wc.getComponent(SessionRegistry.class);
+      SessionRegistry sessionRegistry = (SessionRegistry)wc.getComponent(SessionRegistry.class);
 
       return sessionRegistry.closeSessions(workspaceName);
    }

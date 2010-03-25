@@ -20,6 +20,8 @@ package org.exoplatform.services.jcr.ext.backup.server.bean.response;
 
 import org.exoplatform.services.jcr.ext.backup.BackupChain;
 import org.exoplatform.services.jcr.ext.backup.BackupChainLog;
+import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChain;
+import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChainLog;
 import org.exoplatform.services.jcr.ext.backup.server.HTTPBackupAgent;
 
 import java.text.DateFormat;
@@ -132,6 +134,30 @@ public class ShortInfo
     * 
     * @param type
     *          int, the tupe of short info
+    * @param chain
+    *          RepositoryBackupChain, the backup chain for current backup.
+    */
+   public ShortInfo(int type, RepositoryBackupChain chain)
+   {
+      this.type = type;
+      this.backupType = chain.getBackupConfig().getBackupType();
+      this.backupId = chain.getBackupId();
+      this.repositoryName = chain.getBackupConfig().getRepository();
+      this.state = chain.getState();
+
+      DateFormat df = new SimpleDateFormat(HTTPBackupAgent.Constants.DATE_FORMAT_RFC_1123);
+      this.startedTime = df.format(chain.getStartedTime().getTime());
+
+      // no applicable
+      this.finishedTime = "";
+      this.workspaceName = "";
+   }
+
+   /**
+    * ShortInfo constructor.
+    * 
+    * @param type
+    *          int, the tupe of short info
     * @param chainLog
     *          BackupChainLog, the backup chain log for completed backup.
     */
@@ -190,6 +216,40 @@ public class ShortInfo
     * ShortInfo constructor.
     * 
     * For restore.
+    * 
+    * @param type
+    *          int, the type of short info
+    * @param chainLog
+    *          RepositoryBackupChainLog, the backup chain log for completed backup.
+    * @param startedTime
+    *          Calendar, the stated time
+    * @param finishedTime
+    *          Calendar, the finished time
+    * @param state
+    *          int, the state of restore
+    */
+   public ShortInfo(int type, RepositoryBackupChainLog chainLog, Calendar startedTime, Calendar finishedTime, int state)
+   {
+      this.type = type;
+      this.backupType = chainLog.getBackupConfig().getBackupType();
+      this.backupId = chainLog.getBackupId();
+      this.repositoryName = chainLog.getBackupConfig().getRepository();
+
+      this.state = state;
+
+      DateFormat df = new SimpleDateFormat(HTTPBackupAgent.Constants.DATE_FORMAT_RFC_1123);
+      this.startedTime = df.format(startedTime.getTime());
+
+      if (finishedTime != null)
+         this.finishedTime = df.format(finishedTime.getTime());
+      else
+         this.finishedTime = "";
+   }
+
+   /**
+    * ShortInfo constructor.
+    * 
+    * For restore.
     *
     * @param type
     *          int, the tupe of short info
@@ -212,6 +272,34 @@ public class ShortInfo
       this(type, chainLog, startedTime, finishedTime, state);
       this.repositoryName = repositroryName;
       this.workspaceName = workspaceName;
+   }
+
+   /**
+    * ShortInfo constructor.
+    * 
+    * For restore.
+    *
+    * @param type
+    *          int, the tupe of short info
+    * @param chainLog
+    *          BackupChainLog, the backup chain log for completed backup. 
+    * @param startedTime
+    *          Calendar, the stated time
+    * @param finishedTime
+    *          Calendar, the finished time
+    * @param state
+    *          int, the state of restore
+    * @param repositroryName
+    *          String, the repository name
+    */
+   public ShortInfo(int type, RepositoryBackupChainLog chainLog, Calendar startedTime, Calendar finishedTime,
+      int state, String repositroryName)
+   {
+      this(type, chainLog, startedTime, finishedTime, state);
+      this.repositoryName = repositroryName;
+
+      // no applicable
+      this.workspaceName = "";
    }
 
    /**
