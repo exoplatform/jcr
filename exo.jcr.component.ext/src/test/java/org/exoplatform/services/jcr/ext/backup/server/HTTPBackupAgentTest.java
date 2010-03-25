@@ -223,45 +223,45 @@ public class HTTPBackupAgentTest extends BaseStandaloneTest
 
       Thread.sleep(10000);
 
-      //      // Get repository backup id for backup on workspace /db6/ws2
-      //      String id = null;
-      //
-      //      {
-      //         MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
-      //         ContainerRequestUserRole creq =
-      //            new ContainerRequestUserRole("GET", new URI(HTTP_BACKUP_AGENT_PATH
-      //               + HTTPBackupAgent.Constants.OperationType.CURRENT_BACKUPS_REPOSITORY_INFO), new URI(""), null,
-      //               new InputHeadersMap(headers));
-      //
-      //         ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
-      //         ContainerResponse cres = new ContainerResponse(responseWriter);
-      //         handler.handleRequest(creq, cres);
-      //
-      //         assertEquals(200, cres.getStatus());
-      //
-      //         ShortInfoList infoList = (ShortInfoList)getObject(ShortInfoList.class, responseWriter.getBody());
-      //         List<ShortInfo> list = new ArrayList<ShortInfo>(infoList.getBackups());
-      //
-      //         assertEquals(1, list.size());
-      //
-      //         ShortInfo info = list.get(0);
-      //
-      //         assertEquals(info.getRepositoryName(), "db6");
-      //
-      //         id = info.getBackupId();
-      //      }
-      //
-      //      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
-      //      ContainerRequestUserRole creq =
-      //         new ContainerRequestUserRole("GET", new URI(HTTP_BACKUP_AGENT_PATH
-      //            + HTTPBackupAgent.Constants.OperationType.STOP_BACKUP_REPOSITORY + "/" + id), new URI(""), null,
-      //            new InputHeadersMap(headers));
-      //
-      //      ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
-      //      ContainerResponse cres = new ContainerResponse(responseWriter);
-      //      handler.handleRequest(creq, cres);
-      //
-      //      assertEquals(200, cres.getStatus());
+      // Get repository backup id for backup on workspace /db6/ws2
+      String id = null;
+
+      {
+         headers = new MultivaluedMapImpl();
+         creq =
+            new ContainerRequestUserRole("GET", new URI(HTTP_BACKUP_AGENT_PATH
+               + HTTPBackupAgent.Constants.OperationType.CURRENT_BACKUPS_REPOSITORY_INFO), new URI(""), null,
+               new InputHeadersMap(headers));
+
+         responseWriter = new ByteArrayContainerResponseWriter();
+         cres = new ContainerResponse(responseWriter);
+         handler.handleRequest(creq, cres);
+
+         assertEquals(200, cres.getStatus());
+
+         ShortInfoList infoList = (ShortInfoList)getObject(ShortInfoList.class, responseWriter.getBody());
+         List<ShortInfo> list = new ArrayList<ShortInfo>(infoList.getBackups());
+
+         assertEquals(1, list.size());
+
+         ShortInfo info = list.get(0);
+
+         assertEquals(info.getRepositoryName(), "db6");
+
+         id = info.getBackupId();
+      }
+
+      headers = new MultivaluedMapImpl();
+      creq =
+         new ContainerRequestUserRole("GET", new URI(HTTP_BACKUP_AGENT_PATH
+            + HTTPBackupAgent.Constants.OperationType.STOP_BACKUP_REPOSITORY + "/" + id), new URI(""), null,
+            new InputHeadersMap(headers));
+
+      responseWriter = new ByteArrayContainerResponseWriter();
+      cres = new ContainerResponse(responseWriter);
+      handler.handleRequest(creq, cres);
+
+      assertEquals(200, cres.getStatus());
    }
 
    public void testInfoBackup() throws Exception

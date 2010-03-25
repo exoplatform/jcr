@@ -22,6 +22,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -67,7 +68,7 @@ public class RepositoryBackupChainLog
          writer.writeStartDocument();
          writer.writeStartElement("repository-backup-cain-log");
          writer.flush();
-         
+
          writer.writeStartElement("start-time");
          writer.writeCharacters(JCRDateFormat.format(startedTime));
          writer.writeEndElement();
@@ -84,14 +85,14 @@ public class RepositoryBackupChainLog
       public void writeBackupsPath(List<String> wsLogFilePathList) throws XMLStreamException
       {
          writer.writeStartElement("workspaces-backup-info");
-         
+
          for (String path : wsLogFilePathList)
          {
             writer.writeStartElement("url");
             writer.writeCharacters(path);
             writer.writeEndElement();
          }
-         
+
          writer.writeEndElement();
 
          writer.flush();
@@ -104,7 +105,7 @@ public class RepositoryBackupChainLog
             writer.writeStartElement("finish-time");
             writer.writeCharacters(JCRDateFormat.format(finishedTime));
             writer.writeEndElement();
-            
+
             writer.writeEndElement();
             writer.writeEndDocument();
             writer.flush();
@@ -115,21 +116,27 @@ public class RepositoryBackupChainLog
          }
       }
    }
-   
+
    private class LogReader
    {
-      protected Log logger = ExoLogger.getLogger("ext.LogWriter");
+      protected Log logger = ExoLogger.getLogger("ext.LogReader");
 
       private File logFile;
 
       private XMLStreamReader reader;
 
+      private BackupConfig config;
+
+      private List<JobEntryInfo> jobEntriesNormalize;
+
       public LogReader(File logFile) throws FileNotFoundException, XMLStreamException, FactoryConfigurationError
       {
          this.logFile = logFile;
+         jobEntries = new ArrayList<JobEntryInfo>();
+
          reader = XMLInputFactory.newInstance().createXMLStreamReader(new FileInputStream(logFile));
       }
-      
+
       public void readLogFile() throws XMLStreamException, MalformedURLException, ValueFormatException
       {
          boolean endDocument = false;
@@ -146,12 +153,15 @@ public class RepositoryBackupChainLog
                   if (name.equals("system-workspace"))
                      workspaceSystem = readContent();
 
+                  if (name.equals("backup-config"))
+                     config = readBackupConfig();
+
                   if (name.equals("workspaces-backup-info"))
                      workspaceBackupsInfo = readWorkspaceBackupInfo();
-                  
+
                   if (name.equals("start-time"))
                      startedTime = JCRDateFormat.parse(readContent());
-                  
+
                   if (name.equals("finish-time"))
                      finishedTime = JCRDateFormat.parse(readContent());
 
@@ -163,7 +173,27 @@ public class RepositoryBackupChainLog
             }
          }
       }
-      
+
+      public BackupConfig getBackupConfig()
+      {
+         return config;
+      }
+
+      public Calendar getBeginTime()
+      {
+         return jobEntries.get(0).getDate();
+      }
+
+      public Calendar getEndTime()
+      {
+         return jobEntries.get(jobEntries.size() - 1).getDate();
+      }
+
+      public List<JobEntryInfo> getJobEntryInfoNormalizeList()
+      {
+         return jobEntriesNormalize;
+      }
+
       private List<String> readWorkspaceBackupInfo() throws XMLStreamException
       {
          List<String> wsBackupInfo = new ArrayList<String>();
@@ -207,6 +237,139 @@ public class RepositoryBackupChainLog
 
          return content;
       }
+
+      private JobEntryInfo readJobEntryInfo() throws XMLStreamException, MalformedURLException, ValueFormatException
+      {
+         JobEntryInfo info = new JobEntryInfo();
+
+         boolean endJobEntryInfo = false;
+
+         while (!endJobEntryInfo)
+         {
+            int eventCode = reader.next();
+            switch (eventCode)
+            {
+
+               case StartElement.START_ELEMENT :
+                  String name = reader.getLocalName();
+
+                  if (name.equals("type"))
+                     info.setType(getType(readContent()));
+
+                  if (name.equals("state"))
+                     info.setState(getState(readContent()));
+
+                  if (name.equals("url"))
+                     info.setURL(new URL(readContent()));
+
+                  if (name.equals("date"))
+                     info.setDate(JCRDateFormat.parse(readContent()));
+
+                  break;
+
+               case StartElement.END_ELEMENT :
+                  String tagName = reader.getLocalName();
+
+                  if (tagName.equals("job-entry-info"))
+                     endJobEntryInfo = true;
+                  break;
+            }
+         }
+
+         return info;
+      }
+
+      private int getState(String content)
+      {
+         int state = -1;
+
+         if (content.equals("FINISHED"))
+            state = BackupJob.FINISHED;
+
+         if (content.equals("STARTING"))
+            state = BackupJob.STARTING;
+
+         if (content.equals("WAITING"))
+            state = BackupJob.WAITING;
+
+         if (content.equals("WORKING"))
+            state = BackupJob.WORKING;
+
+         return state;
+      }
+
+      private int getType(String content)
+      {
+         int type = -1;
+
+         if (content.equals("FULL"))
+            type = BackupJob.FULL;
+
+         if (content.equals("INCREMENTAL"))
+            type = BackupJob.INCREMENTAL;
+
+         return type;
+      }
+
+      public BackupConfig readBackupConfig() throws XMLStreamException
+      {
+         BackupConfig conf = new BackupConfig();
+
+         boolean endBackupConfig = false;
+
+         while (!endBackupConfig)
+         {
+            int eventCode = reader.next();
+            switch (eventCode)
+            {
+
+               case StartElement.START_ELEMENT :
+                  String name = reader.getLocalName();
+
+                  if (name.equals("backup-dir"))
+                     conf.setBackupDir(new File(readContent()));
+
+                  if (name.equals("repository"))
+                     conf.setRepository(readContent());
+
+                  if (name.equals("incremental-job-period"))
+                     conf.setIncrementalJobPeriod(Long.valueOf(readContent()).longValue());
+
+                  if (name.equals("incremental-job-number"))
+                     conf.setIncrementalJobNumber(Integer.valueOf(readContent()).intValue());
+
+                  break;
+
+               case StartElement.END_ELEMENT :
+                  String tagName = reader.getLocalName();
+
+                  if (tagName.equals("repository-backup-cain-log"))
+                     endBackupConfig = true;
+                  break;
+            }
+         }
+
+         return conf;
+      }
+
+      public void jobEntrysNormalize()
+      {
+         jobEntriesNormalize = new ArrayList<JobEntryInfo>();
+
+         for (int i = 0; i < jobEntries.size(); i++)
+         {
+            JobEntryInfo entryInfo = jobEntries.get(i);
+
+            boolean alreadyExist = false;
+
+            for (int j = 0; j < jobEntriesNormalize.size(); j++)
+               if (jobEntriesNormalize.get(j).getURL().toString().equals(entryInfo.getURL().toString()))
+                  alreadyExist = true;
+
+            if (!alreadyExist)
+               jobEntriesNormalize.add(entryInfo);
+         }
+      }
    }
 
    protected static Log logger = ExoLogger.getLogger("ext.BackupChainLog");
@@ -223,6 +386,8 @@ public class RepositoryBackupChainLog
 
    private RepositoryBackupConfig config;
 
+   private List<JobEntryInfo> jobEntries;
+
    private String backupId;
 
    private Calendar startedTime;
@@ -230,9 +395,9 @@ public class RepositoryBackupChainLog
    private Calendar finishedTime;
 
    private boolean finalized;
-   
+
    private List<String> workspaceBackupsInfo;
-   
+
    private String workspaceSystem;
 
    /**
@@ -244,8 +409,8 @@ public class RepositoryBackupChainLog
     * @param startTime
     * @throws BackupOperationException
     */
-   public RepositoryBackupChainLog(File logDirectory, RepositoryBackupConfig config, String systemWorkspace, List<String> wsLogFilePathList,
-            String backupId, Calendar startTime) throws BackupOperationException
+   public RepositoryBackupChainLog(File logDirectory, RepositoryBackupConfig config, String systemWorkspace,
+      List<String> wsLogFilePathList, String backupId, Calendar startTime) throws BackupOperationException
    {
       try
       {
@@ -255,11 +420,12 @@ public class RepositoryBackupChainLog
          this.backupId = backupId;
          this.config = config;
          this.startedTime = Calendar.getInstance();
+         this.jobEntries = new ArrayList<JobEntryInfo>();
 
          logWriter = new LogWriter(log);
          logWriter.writeSystemWorkspaceName(systemWorkspace);
          logWriter.writeBackupsPath(wsLogFilePathList);
-         
+
          this.workspaceBackupsInfo = wsLogFilePathList;
          this.workspaceSystem = systemWorkspace;
       }
@@ -276,7 +442,7 @@ public class RepositoryBackupChainLog
          throw new BackupOperationException("Can not create backup log ...", e);
       }
    }
-   
+
    /**
     * @param log
     * @throws BackupOperationException
@@ -290,26 +456,46 @@ public class RepositoryBackupChainLog
       {
          logReader = new LogReader(log);
          logReader.readLogFile();
+         logReader.jobEntrysNormalize();
+
+         this.config = logReader.getBackupConfig();
+         this.startedTime = logReader.getBeginTime();
+         this.finishedTime = logReader.getEndTime();
+         this.jobEntries = logReader.getJobEntryInfoNormalizeList();
+
+         for (JobEntryInfo info : jobEntries)
+         {
+            if (info.getType() == BackupJob.INCREMENTAL)
+            {
+               config.setBackupType(BackupManager.FULL_AND_INCREMENTAL);
+               break;
+            }
+         }
       }
       catch (FileNotFoundException e)
       {
-         throw new BackupOperationException("Can not read RepositoryBackupChainLog from file :" + log.getAbsolutePath(), e);
+         throw new BackupOperationException(
+            "Can not read RepositoryBackupChainLog from file :" + log.getAbsolutePath(), e);
       }
       catch (XMLStreamException e)
       {
-         throw new BackupOperationException("Can not read RepositoryBackupChainLog from file :" + log.getAbsolutePath(), e);
+         throw new BackupOperationException(
+            "Can not read RepositoryBackupChainLog from file :" + log.getAbsolutePath(), e);
       }
       catch (FactoryConfigurationError e)
       {
-         throw new BackupOperationException("Can not read RepositoryBackupChainLog from file :" + log.getAbsolutePath(), e);
+         throw new BackupOperationException(
+            "Can not read RepositoryBackupChainLog from file :" + log.getAbsolutePath(), e);
       }
       catch (MalformedURLException e)
       {
-         throw new BackupOperationException("Can not read RepositoryBackupChainLog from file :" + log.getAbsolutePath(), e);
+         throw new BackupOperationException(
+            "Can not read RepositoryBackupChainLog from file :" + log.getAbsolutePath(), e);
       }
       catch (ValueFormatException e)
       {
-         throw new BackupOperationException("Can not read RepositoryBackupChainLog from file :" + log.getAbsolutePath(), e);
+         throw new BackupOperationException(
+            "Can not read RepositoryBackupChainLog from file :" + log.getAbsolutePath(), e);
       }
    }
 
@@ -361,43 +547,43 @@ public class RepositoryBackupChainLog
    {
       return finalized;
    }
-   
+
    /**
     * Finalize log.
     *
     */
    public synchronized void endLog()
    {
-      if (!finalized) 
+      if (!finalized)
       {
          finishedTime = Calendar.getInstance();
          finalized = true;
          logWriter.writeEndLog();
       }
    }
-   
+
    /**
     * Getting the system workspace name.
     * 
     * @return String
     *           return the system workspace name.
     */
-   public String getSystemWorkspace() 
+   public String getSystemWorkspace()
    {
       return workspaceSystem;
    }
-   
+
    /**
     * Getting the workspace backups info.
     * 
     * @return Collection
     *           return the list with path to backups.
     */
-   public List<String> getWorkspaceBackupsInfo() 
+   public List<String> getWorkspaceBackupsInfo()
    {
       return workspaceBackupsInfo;
    }
-   
+
    /**
     * Getting the backup id.
     *

@@ -126,7 +126,7 @@ public class HTTPBackupAgent implements ResourceContainer
          /**
           * Stop repository backup operations.
           */
-         public static final String STOP_BACKUP_REPOSITORY = "stop-repository";
+         public static final String STOP_BACKUP_REPOSITORY = "/stop-repository-backup";
 
          /**
           * The current and completed backups info operation.
@@ -152,12 +152,11 @@ public class HTTPBackupAgent implements ResourceContainer
           * The current or completed backup info operations.
           */
          public static final String CURRENT_OR_COMPLETED_BACKUP_INFO = "/info/backup";
-         
+
          /**
           * The current or completed repository backup info operations.
           */
          public static final String CURRENT_OR_COMPLETED_BACKUP_REPOSITORY_INFO = "/info/backup-repository-id";
-         
 
          /**
           * The current restore info operations for specific workspace.
@@ -794,8 +793,8 @@ public class HTTPBackupAgent implements ResourceContainer
    @GET
    @Produces(MediaType.APPLICATION_JSON)
    @RolesAllowed("administrators")
-   @Path("/stop-repository/{id}")
-   public Response stopRepository(@PathParam("id") String backupId)
+   @Path("/stop-repository-backup/{id}")
+   public Response stopRepositoryBackup(@PathParam("id") String backupId)
    {
       String failMessage;
       Response.Status status;
@@ -1269,8 +1268,8 @@ public class HTTPBackupAgent implements ResourceContainer
          log.error("Can not get information about current or completed repository backups", e);
 
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
-            "Can not get information about current or completed repository backups" + e.getMessage()).type(MediaType.TEXT_PLAIN)
-            .cacheControl(noCache).build();
+            "Can not get information about current or completed repository backups" + e.getMessage()).type(
+            MediaType.TEXT_PLAIN).cacheControl(noCache).build();
       }
    }
 
