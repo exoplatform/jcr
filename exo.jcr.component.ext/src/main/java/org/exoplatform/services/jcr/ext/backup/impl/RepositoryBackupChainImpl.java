@@ -110,16 +110,34 @@ public class RepositoryBackupChainImpl
    {
       if (state != FINISHED)
       {
+         for (BackupChain bc : workspaceBackups)
+         {
+            System.out.println( repositoryBackupId + " : " + getState(bc.getFullBackupState()));
+         }
+         
          int fullBackupsState =-1;
          int incrementalBackupsState = -1;
 
          for (BackupChain bc : workspaceBackups)
          {
             fullBackupsState = bc.getFullBackupState();
-
-            if (bc.getBackupConfig().getBackupType() == BackupManager.FULL_AND_INCREMENTAL)
+            
+            if (fullBackupsState != BackupJob.FINISHED)
             {
-               incrementalBackupsState = bc.getIncrementalBackupState();
+               break;
+            }
+         }
+         
+         for (BackupChain bChein : workspaceBackups)
+         {
+            if (bChein.getBackupConfig().getBackupType() == BackupManager.FULL_AND_INCREMENTAL)
+            {
+               incrementalBackupsState = bChein.getIncrementalBackupState();
+               
+               if (incrementalBackupsState == BackupJob.WORKING )
+               {
+                  break;
+               }
             }
          }
 
@@ -218,4 +236,19 @@ public class RepositoryBackupChainImpl
       return config;
    }
 
+   private String getState(int type)
+   {
+      String state = "UNDEFINED STATE";
+
+      if (type == BackupJob.FINISHED)
+         state = "FINISHED";
+      else if (type == BackupJob.STARTING)
+         state = "STARTING";
+      else if (type == BackupJob.WAITING)
+         state = "WAITING";
+      else if (type == BackupJob.WORKING)
+         state = "WORKING";
+
+      return state;
+   }
 }

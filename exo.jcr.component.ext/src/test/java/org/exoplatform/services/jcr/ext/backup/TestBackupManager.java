@@ -46,7 +46,7 @@ import javax.jcr.lock.Lock;
 public class TestBackupManager extends AbstractBackupTestCase
 {
 
-   /*public void testFullBackupRestore() throws Exception
+   public void testFullBackupRestore() throws Exception
    {
       // backup
       File backDir = new File("target/backup/ws1");
@@ -201,11 +201,11 @@ public class TestBackupManager extends AbstractBackupTestCase
          fail("There are no backup files in " + backDir.getAbsolutePath());
    }
 
-   *//**
+   /**
     * With BLOBs, locks, copy and move
     * 
     * @throws Exception
-    *//*
+    */
    public void testIncrementalBackupRestore2() throws Exception
    {
       // full backup with BLOBs & incremental with BLOBs
@@ -737,7 +737,7 @@ public class TestBackupManager extends AbstractBackupTestCase
       }
       else
          fail("There are no backup files in " + backDir.getAbsolutePath());
-   }*/
+   }
    
    
    public void testRepositoryFullBackupRestore() throws Exception
