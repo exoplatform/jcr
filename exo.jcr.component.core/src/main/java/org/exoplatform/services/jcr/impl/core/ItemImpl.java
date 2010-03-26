@@ -187,7 +187,9 @@ public abstract class ItemImpl implements Item
          // 6.2.8 If depth > n is specified then an ItemNotFoundException is
          // thrown.
          if (degree < 0)
+         {
             throw new ItemNotFoundException("Can't get ancestor with ancestor's degree < 0.");
+         }
 
          final QPath myPath = getData().getQPath();
          int n = myPath.getDepth() - degree;
@@ -277,7 +279,9 @@ public abstract class ItemImpl implements Item
    public boolean isNew()
    {
       if (isValid())
+      {
          return dataManager.isNew(getInternalIdentifier());
+      }
 
       // if was removed (is invalid by check), isn't new
       return false;
@@ -289,7 +293,9 @@ public abstract class ItemImpl implements Item
    public boolean isModified()
    {
       if (isValid())
+      {
          return dataManager.isModified(getData());
+      }
 
       // if was removed (is invalid by check), was modified
       return true;
@@ -304,25 +310,38 @@ public abstract class ItemImpl implements Item
       checkValid();
 
       if (isRoot())
+      {
          throw new RepositoryException("Can't remove ROOT node.");
+      }
 
       // Check constraints
       ItemDefinition def;
       if (isNode())
+      {
          def = ((NodeImpl)this).getDefinition();
+      }
       else
+      {
          def = ((PropertyImpl)this).getDefinition();
+      }
 
       if (def.isMandatory() || def.isProtected())
+      {
          throw new ConstraintViolationException("Can't remove mandatory or protected item " + getPath());
+      }
+
       NodeImpl parentNode = parent();
       // Check if versionable ancestor is not checked-in
       if (!parentNode.checkedOut())
+      {
          throw new VersionException("Node " + parent().getPath() + " or its nearest ancestor is checked-in");
+      }
 
       // Check locking
       if (!parentNode.checkLocking())
+      {
          throw new LockException("Node " + parent().getPath() + " is locked ");
+      }
 
       // launch event
       session.getActionHandler().preRemoveItem(this);
@@ -444,8 +463,10 @@ public abstract class ItemImpl implements Item
 
       PropertyDefinitionData def = defs.getDefinition(isMultiValue);
       if (def != null && def.isProtected())
+      {
          throw new ConstraintViolationException("Can not set protected property "
             + locationFactory.createJCRPath(qpath).getAsString(false));
+      }
 
       if (multiValue && (def == null || (prevProp != null && !prevProp.isMultiValued())))
       {
@@ -461,11 +482,15 @@ public abstract class ItemImpl implements Item
 
       // Check if checked-in (versionable)
       if (!parentNode.checkedOut())
+      {
          throw new VersionException("Node " + parentNode.getPath() + " or its nearest ancestor is checked-in");
+      }
 
       // Check is locked
       if (!parentNode.checkLocking())
+      {
          throw new LockException("Node " + parentNode.getPath() + " is locked ");
+      }
 
       List<ValueData> valueDataList = new ArrayList<ValueData>();
 
@@ -583,7 +608,9 @@ public abstract class ItemImpl implements Item
       checkValid();
 
       if (isNew())
+      {
          throw new RepositoryException("It is impossible to call save() on the newly added item " + getPath());
+      }
 
       NodeTypeDataManager ntManager = session.getWorkspace().getNodeTypesHolder();
 
@@ -658,9 +685,13 @@ public abstract class ItemImpl implements Item
       checkValid();
 
       if (keepChanges)
+      {
          dataManager.refresh(this.getData());
+      }
       else
+      {
          dataManager.rollback(this.getData());
+      }
    }
 
    // -------------------- Implementation ----------------------
@@ -749,11 +780,6 @@ public abstract class ItemImpl implements Item
 
       return nodeTypes;
    }
-
-   // @Deprecated
-   // public ExtendedNodeType[] getParentNodeTypes() throws RepositoryException {
-   // return nodeTypes(parentData());
-   // }
 
    public String getInternalIdentifier()
    {
@@ -856,7 +882,9 @@ public abstract class ItemImpl implements Item
    {
 
       if (value == null)
+      {
          return null;
+      }
 
       switch (type)
       {

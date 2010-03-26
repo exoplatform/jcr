@@ -1064,8 +1064,8 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     */
    public NodeType getPrimaryNodeType() throws RepositoryException
    {
-
       checkValid();
+
       ExtendedNodeTypeManager nodeTypeManager = (ExtendedNodeTypeManager)session.getWorkspace().getNodeTypeManager();
       return nodeTypeManager.findNodeType(nodeData().getPrimaryTypeName());
    }
@@ -1334,6 +1334,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    {
 
       checkValid();
+
       return session.getLockManager().holdsLock((NodeData)getData());
    }
 
@@ -1379,6 +1380,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     */
    public boolean isNodeType(InternalQName qName) throws RepositoryException
    {
+      checkValid();
 
       return session.getWorkspace().getNodeTypesHolder().isNodeType(qName, nodeData().getPrimaryTypeName(),
          nodeData().getMixinTypeNames());
@@ -1733,8 +1735,13 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     */
    public void removePermission(String identity) throws RepositoryException, AccessControlException
    {
+
+      checkValid();
+
       if (!isNodeType(Constants.EXO_PRIVILEGEABLE))
+      {
          throw new AccessControlException("Node is not exo:privilegeable " + getPath());
+      }
 
       checkPermission(PermissionType.CHANGE_PERMISSION);
 
@@ -1749,6 +1756,8 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     */
    public void removePermission(String identity, String permission) throws RepositoryException, AccessControlException
    {
+
+      checkValid();
 
       if (!isNodeType(Constants.EXO_PRIVILEGEABLE))
          throw new AccessControlException("Node is not exo:privilegeable " + getPath());
@@ -1890,14 +1899,22 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public void setPermission(String identity, String[] permission) throws RepositoryException, AccessControlException
    {
 
+      checkValid();
+
       if (!isNodeType(Constants.EXO_PRIVILEGEABLE))
+      {
          throw new AccessControlException("Node is not exo:privilegeable " + getPath());
+      }
 
       if (identity == null)
+      {
          throw new RepositoryException("Identity cannot be null");
+      }
 
       if (permission == null)
+      {
          throw new RepositoryException("Permission cannot be null");
+      }
 
       // check if changing permission allowed
       checkPermission(PermissionType.CHANGE_PERMISSION);
@@ -1918,12 +1935,18 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public void setPermissions(Map permissions) throws RepositoryException, AccessDeniedException,
       AccessControlException
    {
-
+      
+      checkValid();
+      
       if (!isNodeType(Constants.EXO_PRIVILEGEABLE))
+      {
          throw new AccessControlException("Node is not exo:privilegeable " + getPath());
+      }
 
       if (permissions.size() == 0)
+      {
          throw new RepositoryException("Permission map size cannot be 0");
+      }
 
       checkPermission(PermissionType.CHANGE_PERMISSION);
 
@@ -1944,6 +1967,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
             aces.add(ace);
          }
       }
+      
       AccessControlList acl = new AccessControlList(getACL().getOwner(), aces);
       setACL(acl);
       updatePermissions(acl);
@@ -2289,7 +2313,9 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    {
 
       if (!this.isNodeType(Constants.MIX_VERSIONABLE))
+      {
          throw new UnsupportedRepositoryOperationException("Node is not mix:versionable " + getPath());
+      }
 
       PropertyData vhProp =
          (PropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_VERSIONHISTORY, 1));
