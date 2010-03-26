@@ -139,6 +139,11 @@ public class HTTPBackupAgent implements ResourceContainer
          public static final String CURRENT_AND_COMPLETED_BACKUPS_INFO = "/info/backup";
 
          /**
+          * The current and completed repository backups info operation.
+          */
+         public static final String CURRENT_AND_COMPLETED_BACKUPS_REPOSITORY_INFO = "/info/backup-repository";
+
+         /**
           * The current and completed backups info operation for specific workspace.
           */
          public static final String CURRENT_AND_COMPLETED_BACKUPS_INFO_ON_WS = "/info/backup";
@@ -151,7 +156,7 @@ public class HTTPBackupAgent implements ResourceContainer
          /**
           * The current repository backups info operations.
           */
-         public static final String CURRENT_BACKUP_REPOSITORY_INFO = "/info/backup-repository/current";
+         public static final String CURRENT_BACKUPS_REPOSITORY_INFO = "/info/backup-repository/current";
 
          /**
           * The current or completed backup info operations.
@@ -169,9 +174,19 @@ public class HTTPBackupAgent implements ResourceContainer
          public static final String CURRENT_RESTORE_INFO_ON_WS = "/info/restore";
 
          /**
+         * The current restore info operations for specific repository.
+         */
+         public static final String CURRENT_RESTORE_INFO_ON_REPOSITORY = "/info/restore-repository";
+
+         /**
           * The current restores info operations.
           */
          public static final String CURRENT_RESTORES = "/info/restores";
+
+         /**
+          * The current repository restores info operations.
+          */
+         public static final String CURRENT_RESTORES_REPOSITORY = "/info/restores-repository";
 
          /**
           * The completed backups info operations.
@@ -1432,7 +1447,7 @@ public class HTTPBackupAgent implements ResourceContainer
             .cacheControl(noCache).build();
       }
    }
-   
+
    /**
     * Will be returned the detailed information about last restores.
     * 
@@ -1469,8 +1484,8 @@ public class HTTPBackupAgent implements ResourceContainer
          for (JobRepositoryRestore job : jobs)
          {
             ShortInfo info =
-               new ShortInfo(ShortInfo.RESTORE, job.getRepositoryBackupChainLog(), job.getStartTime(), job.getEndTime(), job
-                  .getStateRestore(), job.getRepositoryName());
+               new ShortInfo(ShortInfo.RESTORE, job.getRepositoryBackupChainLog(), job.getStartTime(),
+                  job.getEndTime(), job.getStateRestore(), job.getRepositoryName());
             list.add(info);
          }
 

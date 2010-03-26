@@ -189,7 +189,7 @@ public class HTTPBackupAgentTest extends BaseStandaloneTest
       Thread.sleep(5000);
    }
 
-   public void testRepositoryStartBackup() throws Exception
+   public void testStartBackupRepository() throws Exception
    {
       // login to workspace '/db6/ws2'
       // Start repository backup
@@ -222,46 +222,6 @@ public class HTTPBackupAgentTest extends BaseStandaloneTest
       assertEquals(200, cres.getStatus());
 
       Thread.sleep(10000);
-
-      // Get repository backup id for backup on workspace /db6/ws2
-      String id = null;
-
-      {
-         headers = new MultivaluedMapImpl();
-         creq =
-            new ContainerRequestUserRole("GET", new URI(HTTP_BACKUP_AGENT_PATH
-               + HTTPBackupAgent.Constants.OperationType.CURRENT_BACKUP_REPOSITORY_INFO), new URI(""), null,
-               new InputHeadersMap(headers));
-
-         responseWriter = new ByteArrayContainerResponseWriter();
-         cres = new ContainerResponse(responseWriter);
-         handler.handleRequest(creq, cres);
-
-         assertEquals(200, cres.getStatus());
-
-         ShortInfoList infoList = (ShortInfoList)getObject(ShortInfoList.class, responseWriter.getBody());
-         List<ShortInfo> list = new ArrayList<ShortInfo>(infoList.getBackups());
-
-         assertEquals(1, list.size());
-
-         ShortInfo info = list.get(0);
-
-         assertEquals(info.getRepositoryName(), "db6");
-
-         id = info.getBackupId();
-      }
-
-      headers = new MultivaluedMapImpl();
-      creq =
-         new ContainerRequestUserRole("GET", new URI(HTTP_BACKUP_AGENT_PATH
-            + HTTPBackupAgent.Constants.OperationType.STOP_BACKUP_REPOSITORY + "/" + id), new URI(""), null,
-            new InputHeadersMap(headers));
-
-      responseWriter = new ByteArrayContainerResponseWriter();
-      cres = new ContainerResponse(responseWriter);
-      handler.handleRequest(creq, cres);
-
-      assertEquals(200, cres.getStatus());
    }
 
    public void testInfoBackup() throws Exception
@@ -295,6 +255,36 @@ public class HTTPBackupAgentTest extends BaseStandaloneTest
       assertEquals("ws2", info.getWorkspaceName());
    }
 
+   public void testInfoBackupRepository() throws Exception
+   {
+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+      ContainerRequestUserRole creq =
+         new ContainerRequestUserRole("GET", new URI(HTTP_BACKUP_AGENT_PATH
+            + HTTPBackupAgent.Constants.OperationType.CURRENT_AND_COMPLETED_BACKUPS_REPOSITORY_INFO), new URI(""),
+            null, new InputHeadersMap(headers));
+
+      ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
+      ContainerResponse cres = new ContainerResponse(responseWriter);
+      handler.handleRequest(creq, cres);
+
+      assertEquals(200, cres.getStatus());
+
+      ShortInfoList infoList = (ShortInfoList)getObject(ShortInfoList.class, responseWriter.getBody());
+      List<ShortInfo> list = new ArrayList<ShortInfo>(infoList.getBackups());
+
+      assertEquals(1, list.size());
+
+      ShortInfo info = list.get(0);
+
+      assertNotNull(info);
+      assertEquals(BackupManager.FULL_AND_INCREMENTAL, info.getBackupType().intValue());
+      assertNotNull(info.getStartedTime());
+      assertNotNull(info.getFinishedTime());
+      assertEquals(ShortInfo.CURRENT, info.getType().intValue());
+      assertEquals(BackupJob.FINISHED, info.getState().intValue());
+      assertEquals("db6", info.getRepositoryName());
+   }
+
    public void testInfoBackupOnWorkspace() throws Exception
    {
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
@@ -324,6 +314,36 @@ public class HTTPBackupAgentTest extends BaseStandaloneTest
       assertEquals(BackupJob.FINISHED, info.getState().intValue());
       assertEquals("db6", info.getRepositoryName());
       assertEquals("ws2", info.getWorkspaceName());
+   }
+
+   public void testInfoBackupOnRepository() throws Exception
+   {
+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+      ContainerRequestUserRole creq =
+         new ContainerRequestUserRole("GET", new URI(HTTP_BACKUP_AGENT_PATH
+            + HTTPBackupAgent.Constants.OperationType.CURRENT_AND_COMPLETED_BACKUPS_REPOSITORY_INFO + "/db6"), new URI(
+            ""), null, new InputHeadersMap(headers));
+
+      ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
+      ContainerResponse cres = new ContainerResponse(responseWriter);
+      handler.handleRequest(creq, cres);
+
+      assertEquals(200, cres.getStatus());
+
+      ShortInfoList infoList = (ShortInfoList)getObject(ShortInfoList.class, responseWriter.getBody());
+      List<ShortInfo> list = new ArrayList<ShortInfo>(infoList.getBackups());
+
+      assertEquals(1, list.size());
+
+      ShortInfo info = list.get(0);
+
+      assertNotNull(info);
+      assertEquals(BackupManager.FULL_AND_INCREMENTAL, info.getBackupType().intValue());
+      assertNotNull(info.getStartedTime());
+      assertNotNull(info.getFinishedTime());
+      assertEquals(ShortInfo.CURRENT, info.getType().intValue());
+      assertEquals(BackupJob.FINISHED, info.getState().intValue());
+      assertEquals("db6", info.getRepositoryName());
    }
 
    public void testInfoBackupCurrent() throws Exception
@@ -362,7 +382,7 @@ public class HTTPBackupAgentTest extends BaseStandaloneTest
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
       ContainerRequestUserRole creq =
          new ContainerRequestUserRole("GET", new URI(HTTP_BACKUP_AGENT_PATH
-            + HTTPBackupAgent.Constants.OperationType.CURRENT_BACKUP_REPOSITORY_INFO), new URI(""), null,
+            + HTTPBackupAgent.Constants.OperationType.CURRENT_BACKUPS_REPOSITORY_INFO), new URI(""), null,
             new InputHeadersMap(headers));
 
       ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
@@ -444,6 +464,61 @@ public class HTTPBackupAgentTest extends BaseStandaloneTest
       assertNotNull(info.getBackupConfig());
    }
 
+   public void testInfoBackupRepositoryId() throws Exception
+   {
+      // Get backup id for backup on workspace /db6/ws2
+      String id = null;
+
+      {
+         MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+         ContainerRequestUserRole creq =
+            new ContainerRequestUserRole("GET", new URI(HTTP_BACKUP_AGENT_PATH
+               + HTTPBackupAgent.Constants.OperationType.CURRENT_AND_COMPLETED_BACKUPS_REPOSITORY_INFO), new URI(""),
+               null, new InputHeadersMap(headers));
+
+         ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
+         ContainerResponse cres = new ContainerResponse(responseWriter);
+         handler.handleRequest(creq, cres);
+
+         assertEquals(200, cres.getStatus());
+
+         ShortInfoList infoList = (ShortInfoList)getObject(ShortInfoList.class, responseWriter.getBody());
+         List<ShortInfo> list = new ArrayList<ShortInfo>(infoList.getBackups());
+
+         assertEquals(1, list.size());
+
+         ShortInfo info = list.get(0);
+
+         assertEquals(info.getRepositoryName(), "db6");
+         assertEquals(info.getWorkspaceName(), "ws2");
+
+         id = info.getBackupId();
+      }
+
+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+      ContainerRequestUserRole creq =
+         new ContainerRequestUserRole("GET", new URI(HTTP_BACKUP_AGENT_PATH
+            + HTTPBackupAgent.Constants.OperationType.CURRENT_OR_COMPLETED_BACKUP_REPOSITORY_INFO + "/" + id), new URI(
+            ""), null, new InputHeadersMap(headers));
+
+      ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
+      ContainerResponse cres = new ContainerResponse(responseWriter);
+      handler.handleRequest(creq, cres);
+
+      assertEquals(200, cres.getStatus());
+
+      DetailedInfo info = (DetailedInfo)getObject(DetailedInfo.class, responseWriter.getBody());
+
+      assertNotNull(info);
+      assertEquals(BackupManager.FULL_AND_INCREMENTAL, info.getBackupType().intValue());
+      assertNotNull(info.getStartedTime());
+      assertNotNull(info.getFinishedTime());
+      assertEquals(ShortInfo.CURRENT, info.getType().intValue());
+      assertEquals(BackupJob.FINISHED, info.getState().intValue());
+      assertEquals("db6", info.getRepositoryName());
+      assertNotNull(info.getBackupConfig());
+   }
+
    public void testStop() throws Exception
    {
       // Get backup id for backup on workspace /db6/ws2
@@ -480,6 +555,48 @@ public class HTTPBackupAgentTest extends BaseStandaloneTest
          new ContainerRequestUserRole("GET", new URI(HTTP_BACKUP_AGENT_PATH
             + HTTPBackupAgent.Constants.OperationType.STOP_BACKUP + "/" + id), new URI(""), null, new InputHeadersMap(
             headers));
+
+      ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
+      ContainerResponse cres = new ContainerResponse(responseWriter);
+      handler.handleRequest(creq, cres);
+
+      assertEquals(200, cres.getStatus());
+   }
+
+   public void testStopBackupRepository() throws Exception
+   {
+      String id = null;
+
+      {
+         MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+         ContainerRequestUserRole creq =
+            new ContainerRequestUserRole("GET", new URI(HTTP_BACKUP_AGENT_PATH
+               + HTTPBackupAgent.Constants.OperationType.CURRENT_BACKUPS_REPOSITORY_INFO), new URI(""), null,
+               new InputHeadersMap(headers));
+
+         ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
+         ContainerResponse cres = new ContainerResponse(responseWriter);
+         handler.handleRequest(creq, cres);
+
+         assertEquals(200, cres.getStatus());
+
+         ShortInfoList infoList = (ShortInfoList)getObject(ShortInfoList.class, responseWriter.getBody());
+         List<ShortInfo> list = new ArrayList<ShortInfo>(infoList.getBackups());
+
+         assertEquals(1, list.size());
+
+         ShortInfo info = list.get(0);
+
+         assertEquals(info.getRepositoryName(), "db6");
+
+         id = info.getBackupId();
+      }
+
+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+      ContainerRequestUserRole creq =
+         new ContainerRequestUserRole("GET", new URI(HTTP_BACKUP_AGENT_PATH
+            + HTTPBackupAgent.Constants.OperationType.START_BACKUP_REPOSITORY + "/" + id), new URI(""), null,
+            new InputHeadersMap(headers));
 
       ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
       ContainerResponse cres = new ContainerResponse(responseWriter);
@@ -613,6 +730,25 @@ public class HTTPBackupAgentTest extends BaseStandaloneTest
       ContainerRequestUserRole creq =
          new ContainerRequestUserRole("GET", new URI(HTTP_BACKUP_AGENT_PATH
             + HTTPBackupAgent.Constants.OperationType.GET_DEFAULT_WORKSPACE_CONFIG), new URI(""), null,
+            new InputHeadersMap(headers));
+
+      ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
+      ContainerResponse cres = new ContainerResponse(responseWriter);
+      handler.handleRequest(creq, cres);
+
+      assertEquals(200, cres.getStatus());
+
+      WorkspaceEntry defEntry = (WorkspaceEntry)getObject(WorkspaceEntry.class, responseWriter.getBody());
+
+      assertEquals(repository.getConfiguration().getDefaultWorkspaceName(), defEntry.getName());
+   }
+
+   public void testGetDefaultRepositoryConfig() throws Exception
+   {
+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+      ContainerRequestUserRole creq =
+         new ContainerRequestUserRole("GET", new URI(HTTP_BACKUP_AGENT_PATH
+            + HTTPBackupAgent.Constants.OperationType.GET_DEFAULT_REPOSITORY_CONFIG), new URI(""), null,
             new InputHeadersMap(headers));
 
       ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
@@ -831,7 +967,7 @@ public class HTTPBackupAgentTest extends BaseStandaloneTest
          MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
          ContainerRequestUserRole creq =
             new ContainerRequestUserRole("GET", new URI(HTTP_BACKUP_AGENT_PATH
-               + HTTPBackupAgent.Constants.OperationType.CURRENT_BACKUP_REPOSITORY_INFO), new URI(""), null,
+               + HTTPBackupAgent.Constants.OperationType.CURRENT_BACKUPS_REPOSITORY_INFO), new URI(""), null,
                new InputHeadersMap(headers));
 
          ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
@@ -929,7 +1065,7 @@ public class HTTPBackupAgentTest extends BaseStandaloneTest
          MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
          ContainerRequestUserRole creq =
             new ContainerRequestUserRole("GET", new URI(HTTP_BACKUP_AGENT_PATH
-               + HTTPBackupAgent.Constants.OperationType.CURRENT_RESTORE_INFO_ON_WS + "/" + "db6" + "/" + "ws3"),
+               + HTTPBackupAgent.Constants.OperationType.CURRENT_RESTORE_INFO_ON_REPOSITORY + "/" + "db6"),
                new URI(""), null, new InputHeadersMap(headers));
 
          ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
@@ -960,8 +1096,8 @@ public class HTTPBackupAgentTest extends BaseStandaloneTest
          MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
          ContainerRequestUserRole creq =
             new ContainerRequestUserRole("GET", new URI(HTTP_BACKUP_AGENT_PATH
-               + HTTPBackupAgent.Constants.OperationType.CURRENT_RESTORES), new URI(""), null, new InputHeadersMap(
-               headers));
+               + HTTPBackupAgent.Constants.OperationType.CURRENT_RESTORES_REPOSITORY), new URI(""), null,
+               new InputHeadersMap(headers));
 
          ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
          ContainerResponse cres = new ContainerResponse(responseWriter);
