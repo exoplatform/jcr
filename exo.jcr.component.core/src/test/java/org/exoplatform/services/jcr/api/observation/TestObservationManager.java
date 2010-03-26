@@ -19,6 +19,8 @@
 package org.exoplatform.services.jcr.api.observation;
 
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.core.CredentialsImpl;
+import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.log.Log;
 
 import java.util.Calendar;
@@ -277,6 +279,20 @@ public class TestObservationManager extends JcrAPIBaseTest
 
    }
 
+   public void testRemoveSourceNodeEvents() throws RepositoryException
+   {
+      ObservationManager observationManager = this.workspace.getObservationManager();
+      testRoot.addNode("testRemoveSourceNode");
+      EventListener listener = new RemoveDummyListener(this.log, this.repository, this.credentials);
+      observationManager.addEventListener(listener, Event.NODE_ADDED, "/", true, null, null, false);
+      root.save();
+      Session session2 = repository.login(credentials, "ws2");
+      Session session = repository.login(credentials, "ws");
+      assertFalse(session.itemExists("/testRoot/testRemoveSourceNode"));
+      assertTrue(session2.itemExists("/testRemoveSourceNode"));
+      observationManager.removeEventListener(listener);
+   }
+
    private void checkEventNumAndCleanCounter(int cnt)
    {
       assertEquals(cnt, counter);
@@ -328,6 +344,50 @@ public class TestObservationManager extends JcrAPIBaseTest
             counter++;
             if (log.isDebugEnabled())
                log.debug("EVENT fired by SimpleListener-1 " + event + " " + event.getType());
+         }
+      }
+   }
+
+   private static class RemoveDummyListener implements EventListener
+   {
+      protected Log log;
+
+      protected RepositoryImpl repository;
+
+      protected CredentialsImpl credentials;
+
+      public RemoveDummyListener(Log log, RepositoryImpl repository, CredentialsImpl credentials)
+      {
+         this.log = log;
+         this.repository = repository;
+         this.credentials = credentials;
+      }
+
+      public void onEvent(EventIterator events)
+      {
+         while (events.hasNext())
+         {
+            Event event = events.nextEvent();
+            counter++;
+            try
+            {
+               String path = event.getPath();
+               Session session2 = repository.login(credentials, "ws2");
+               session2.getWorkspace().clone("ws", path, "/testRemoveSourceNode", true);
+               Session session = repository.login(credentials, "ws");
+               session.getItem(path).remove();
+               session.save();
+            }
+            catch (RepositoryException re)
+            {
+               System.out.println(re.getMessage());
+               if (log.isErrorEnabled())
+               {
+                  log.error(re.getMessage());
+               }
+            }
+            if (log.isDebugEnabled())
+               log.debug("EVENT fired by RemoveDummyListener " + event + " " + event.getType());
          }
       }
    }
