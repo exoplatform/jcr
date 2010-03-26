@@ -33,7 +33,7 @@ import java.io.IOException;
 public class FtpClientTimeOutThread extends Thread
 {
 
-   private static Log log = ExoLogger.getLogger("jcr.FtpClientTimeOutThread");
+   private static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "FtpClientTimeOutThread");
 
    private FtpClientSession clientSession;
 

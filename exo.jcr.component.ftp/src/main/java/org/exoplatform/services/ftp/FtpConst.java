@@ -29,7 +29,7 @@ public class FtpConst
    /**
     * FTP prefix.
     */
-   public static final String FTP_PREFIX = "jcr.ftpservice.";
+   public static final String FTP_PREFIX = "exo.jcr.component.ftp.";
 
    /**
     * FTP command catalog.

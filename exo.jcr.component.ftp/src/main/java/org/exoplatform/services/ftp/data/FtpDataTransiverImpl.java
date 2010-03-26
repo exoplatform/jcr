@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.ftp.data;
 
+import org.exoplatform.services.ftp.FtpConst;
 import org.exoplatform.services.ftp.client.FtpClientSession;
 import org.exoplatform.services.ftp.config.FtpConfig;
 import org.exoplatform.services.log.ExoLogger;
@@ -40,7 +41,7 @@ import java.net.SocketAddress;
 public class FtpDataTransiverImpl implements FtpDataTransiver
 {
 
-   private static Log log = ExoLogger.getLogger("jcr.FtpDataTransiverImpl");
+   private static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "FtpDataTransiverImpl");
 
    private FtpClientSession clientSession;
 

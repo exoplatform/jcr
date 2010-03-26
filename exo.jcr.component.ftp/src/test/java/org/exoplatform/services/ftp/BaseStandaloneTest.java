@@ -51,7 +51,7 @@ import javax.jcr.Workspace;
 public abstract class BaseStandaloneTest extends TestCase
 {
 
-   private static final Log log = ExoLogger.getLogger(BaseStandaloneTest.class);
+   private static final Log log = ExoLogger.getLogger("exo.jcr.component.ftp.BaseStandaloneTest");
 
    protected SessionImpl session;
 
