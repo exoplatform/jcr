@@ -66,7 +66,7 @@ public class RepositoryBackupChainLog
          writer = XMLOutputFactory.newInstance().createXMLStreamWriter(new FileOutputStream(this.logFile));
 
          writer.writeStartDocument();
-         writer.writeStartElement("repository-backup-cain-log");
+         writer.writeStartElement("repository-backup-chain-log");
          writer.flush();
 
          writer.writeStartElement("start-time");
@@ -101,7 +101,7 @@ public class RepositoryBackupChainLog
       public synchronized void write(RepositoryBackupConfig config, String fullBackupType, String incrementalBackupType)
       throws XMLStreamException
    {
-      writer.writeStartElement("repositoy-backup-config");
+      writer.writeStartElement("repository-backup-config");
 
       writer.writeStartElement("full-backup-type");
       writer.writeCharacters(fullBackupType);
