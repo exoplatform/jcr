@@ -97,6 +97,46 @@ public class RepositoryBackupChainLog
 
          writer.flush();
       }
+      
+      public synchronized void write(RepositoryBackupConfig config, String fullBackupType, String incrementalBackupType)
+      throws XMLStreamException
+   {
+      writer.writeStartElement("repositoy-backup-config");
+
+      writer.writeStartElement("full-backup-type");
+      writer.writeCharacters(fullBackupType);
+      writer.writeEndElement();
+
+      writer.writeStartElement("incremental-backup-type");
+      writer.writeCharacters(incrementalBackupType);
+      writer.writeEndElement();
+
+      if (config.getBackupDir() != null)
+      {
+         writer.writeStartElement("backup-dir");
+         writer.writeCharacters(config.getBackupDir().getAbsolutePath());
+         writer.writeEndElement();
+      }
+
+      if (config.getRepository() != null)
+      {
+         writer.writeStartElement("repository");
+         writer.writeCharacters(config.getRepository());
+         writer.writeEndElement();
+      }
+
+      writer.writeStartElement("incremental-job-period");
+      writer.writeCharacters(Long.toString(config.getIncrementalJobPeriod()));
+      writer.writeEndElement();
+
+      writer.writeStartElement("incremental-job-number");
+      writer.writeCharacters(Integer.toString(config.getIncrementalJobNumber()));
+      writer.writeEndElement();
+
+      writer.writeEndElement();
+
+      writer.flush();
+   }
 
       public synchronized void writeEndLog()
       {
@@ -132,8 +172,6 @@ public class RepositoryBackupChainLog
       public LogReader(File logFile) throws FileNotFoundException, XMLStreamException, FactoryConfigurationError
       {
          this.logFile = logFile;
-         jobEntries = new ArrayList<JobEntryInfo>();
-
          reader = XMLInputFactory.newInstance().createXMLStreamReader(new FileInputStream(logFile));
       }
 
@@ -150,6 +188,9 @@ public class RepositoryBackupChainLog
                case StartElement.START_ELEMENT :
                   String name = reader.getLocalName();
 
+                  if (name.equals("repository-backup-config"))
+                     config = readBackupConfig();
+                  
                   if (name.equals("system-workspace"))
                      workspaceSystem = readContent();
 
@@ -177,16 +218,6 @@ public class RepositoryBackupChainLog
       public BackupConfig getBackupConfig()
       {
          return config;
-      }
-
-      public Calendar getBeginTime()
-      {
-         return jobEntries.get(0).getDate();
-      }
-
-      public Calendar getEndTime()
-      {
-         return jobEntries.get(jobEntries.size() - 1).getDate();
       }
 
       public List<JobEntryInfo> getJobEntryInfoNormalizeList()
@@ -224,6 +255,56 @@ public class RepositoryBackupChainLog
          }
 
          return wsBackupInfo;
+      }
+      
+      private BackupConfig readBackupConfig() throws XMLStreamException
+      {
+         BackupConfig conf = new BackupConfig();
+
+         boolean endBackupConfig = false;
+
+         while (!endBackupConfig)
+         {
+            int eventCode = reader.next();
+            switch (eventCode)
+            {
+
+               case StartElement.START_ELEMENT :
+                  String name = reader.getLocalName();
+
+                  if (name.equals("backup-dir"))
+                     conf.setBackupDir(new File(readContent()));
+
+                  if (name.equals("repository"))
+                     conf.setRepository(readContent());
+
+                  if (name.equals("workspace"))
+                     conf.setWorkspace(readContent());
+
+                  if (name.equals("incremental-job-period"))
+                     conf.setIncrementalJobPeriod(Long.valueOf(readContent()).longValue());
+
+                  if (name.equals("incremental-job-number"))
+                     conf.setIncrementalJobNumber(Integer.valueOf(readContent()).intValue());
+                  
+                  if (name.equals("full-backup-type"))
+                     fullBackupType = readContent();
+                  
+                  if (name.equals("full-backup-type"))
+                     fullBackupType = readContent();
+
+                  break;
+
+               case StartElement.END_ELEMENT :
+                  String tagName = reader.getLocalName();
+
+                  if (tagName.equals("repository-backup-config"))
+                     endBackupConfig = true;
+                  break;
+            }
+         }
+
+         return conf;
       }
 
       private String readContent() throws XMLStreamException
@@ -310,66 +391,6 @@ public class RepositoryBackupChainLog
 
          return type;
       }
-
-      public BackupConfig readBackupConfig() throws XMLStreamException
-      {
-         BackupConfig conf = new BackupConfig();
-
-         boolean endBackupConfig = false;
-
-         while (!endBackupConfig)
-         {
-            int eventCode = reader.next();
-            switch (eventCode)
-            {
-
-               case StartElement.START_ELEMENT :
-                  String name = reader.getLocalName();
-
-                  if (name.equals("backup-dir"))
-                     conf.setBackupDir(new File(readContent()));
-
-                  if (name.equals("repository"))
-                     conf.setRepository(readContent());
-
-                  if (name.equals("incremental-job-period"))
-                     conf.setIncrementalJobPeriod(Long.valueOf(readContent()).longValue());
-
-                  if (name.equals("incremental-job-number"))
-                     conf.setIncrementalJobNumber(Integer.valueOf(readContent()).intValue());
-
-                  break;
-
-               case StartElement.END_ELEMENT :
-                  String tagName = reader.getLocalName();
-
-                  if (tagName.equals("repository-backup-cain-log"))
-                     endBackupConfig = true;
-                  break;
-            }
-         }
-
-         return conf;
-      }
-
-      public void jobEntrysNormalize()
-      {
-         jobEntriesNormalize = new ArrayList<JobEntryInfo>();
-
-         for (int i = 0; i < jobEntries.size(); i++)
-         {
-            JobEntryInfo entryInfo = jobEntries.get(i);
-
-            boolean alreadyExist = false;
-
-            for (int j = 0; j < jobEntriesNormalize.size(); j++)
-               if (jobEntriesNormalize.get(j).getURL().toString().equals(entryInfo.getURL().toString()))
-                  alreadyExist = true;
-
-            if (!alreadyExist)
-               jobEntriesNormalize.add(entryInfo);
-         }
-      }
    }
 
    protected static Log logger = ExoLogger.getLogger("ext.BackupChainLog");
@@ -386,8 +407,6 @@ public class RepositoryBackupChainLog
 
    private RepositoryBackupConfig config;
 
-   private List<JobEntryInfo> jobEntries;
-
    private String backupId;
 
    private Calendar startedTime;
@@ -400,6 +419,10 @@ public class RepositoryBackupChainLog
 
    private String workspaceSystem;
 
+   private String fullBackupType;
+
+   private String increnetalBackupType;
+
    /**
     * @param logDirectory
     * @param config
@@ -409,8 +432,14 @@ public class RepositoryBackupChainLog
     * @param startTime
     * @throws BackupOperationException
     */
-   public RepositoryBackupChainLog(File logDirectory, RepositoryBackupConfig config, String systemWorkspace,
-      List<String> wsLogFilePathList, String backupId, Calendar startTime) throws BackupOperationException
+   public RepositoryBackupChainLog(File logDirectory, 
+            RepositoryBackupConfig config,
+            String fullBackupType, 
+            String incrementalBackupType,
+            String systemWorkspace, 
+            List<String> wsLogFilePathList,
+            String backupId, 
+            Calendar startTime) throws BackupOperationException
    {
       try
       {
@@ -420,9 +449,11 @@ public class RepositoryBackupChainLog
          this.backupId = backupId;
          this.config = config;
          this.startedTime = Calendar.getInstance();
-         this.jobEntries = new ArrayList<JobEntryInfo>();
+         this.fullBackupType = fullBackupType;
+         this.increnetalBackupType = incrementalBackupType;
 
          logWriter = new LogWriter(log);
+         logWriter.write(config, fullBackupType, incrementalBackupType);
          logWriter.writeSystemWorkspaceName(systemWorkspace);
          logWriter.writeBackupsPath(wsLogFilePathList);
 
@@ -456,21 +487,6 @@ public class RepositoryBackupChainLog
       {
          logReader = new LogReader(log);
          logReader.readLogFile();
-         logReader.jobEntrysNormalize();
-
-         this.config = logReader.getBackupConfig();
-         this.startedTime = logReader.getBeginTime();
-         this.finishedTime = logReader.getEndTime();
-         this.jobEntries = logReader.getJobEntryInfoNormalizeList();
-
-         for (JobEntryInfo info : jobEntries)
-         {
-            if (info.getType() == BackupJob.INCREMENTAL)
-            {
-               config.setBackupType(BackupManager.FULL_AND_INCREMENTAL);
-               break;
-            }
-         }
       }
       catch (FileNotFoundException e)
       {

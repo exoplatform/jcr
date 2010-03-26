@@ -844,7 +844,7 @@ public class TestBackupManager extends AbstractBackupTestCase
       RepositoryEntry re = (RepositoryEntry)ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
       
       String newRepositoryName = "repo_restored_2";
-      RepositoryEntry newRepositoryEntry = makeRepositoryEntry(newRepositoryName, re, "jdbcjcr_to_repository_restore_1", null);
+      RepositoryEntry newRepositoryEntry = makeRepositoryEntry(newRepositoryName, re, "jdbcjcr_to_repository_restore_2", null);
 
       File backLog = new File(bch.getLogFilePath());
       if (backLog.exists())
@@ -926,7 +926,7 @@ public class TestBackupManager extends AbstractBackupTestCase
       RepositoryEntry re = (RepositoryEntry)ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
       
       String newRepositoryName = "repo_restored_3";
-      RepositoryEntry newRepositoryEntry = makeRepositoryEntry(newRepositoryName, re, "jdbcjcr_to_repository_restore_1", null);
+      RepositoryEntry newRepositoryEntry = makeRepositoryEntry(newRepositoryName, re, "jdbcjcr_to_repository_restore_3", null);
       
       // create workspace mappingS
       Map<String, String> workspaceMapping  = new HashedMap();

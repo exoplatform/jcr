@@ -96,7 +96,14 @@ public class RepositoryBackupChainImpl
          workspaceBackups.add(bchain);
       }
       
-      this.repositoryChainLog = new RepositoryBackupChainLog(logDirectory, this.config, repository.getConfiguration().getSystemWorkspaceName(),  wsLogFilePathList, this.repositoryBackupId, startTime);
+      this.repositoryChainLog = new RepositoryBackupChainLog(logDirectory, 
+                                                             this.config,
+                                                             fullBackupType,
+                                                             incrementalBackupType,
+                                                             repository.getConfiguration().getSystemWorkspaceName(), 
+                                                             wsLogFilePathList, 
+                                                             this.repositoryBackupId, 
+                                                             startTime);
       
       state = INITIALIZED;
    }
