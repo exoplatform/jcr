@@ -2,6 +2,7 @@
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter>
+  <?dbhtml filename="ch-cache.html"?>
   <title>eXo Cache</title>
 
   <section>

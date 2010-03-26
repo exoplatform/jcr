@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter>
-  <?dbhtml filename="cluster-config.html"?>
+<chapter id="ch_cluster_config">
+  <?dbhtml filename="ch-cluster-config.html"?>
 
   <title>Configuring JBoss AS with eXo JCR in cluster</title>
 
