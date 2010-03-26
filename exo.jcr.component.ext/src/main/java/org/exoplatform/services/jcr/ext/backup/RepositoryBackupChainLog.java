@@ -165,10 +165,6 @@ public class RepositoryBackupChainLog
 
       private XMLStreamReader reader;
 
-      private BackupConfig config;
-
-      private List<JobEntryInfo> jobEntriesNormalize;
-
       public LogReader(File logFile) throws FileNotFoundException, XMLStreamException, FactoryConfigurationError
       {
          this.logFile = logFile;
@@ -213,16 +209,6 @@ public class RepositoryBackupChainLog
                   break;
             }
          }
-      }
-
-      public BackupConfig getBackupConfig()
-      {
-         return config;
-      }
-
-      public List<JobEntryInfo> getJobEntryInfoNormalizeList()
-      {
-         return jobEntriesNormalize;
       }
 
       private List<String> readWorkspaceBackupInfo() throws XMLStreamException

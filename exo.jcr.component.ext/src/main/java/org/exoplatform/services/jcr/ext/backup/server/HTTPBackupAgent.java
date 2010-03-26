@@ -1432,6 +1432,60 @@ public class HTTPBackupAgent implements ResourceContainer
             .cacheControl(noCache).build();
       }
    }
+   
+   /**
+    * Will be returned the detailed information about last restores.
+    * 
+    * @return Response return the response
+    */
+   @GET
+   @Produces(MediaType.APPLICATION_JSON)
+   @RolesAllowed("administrators")
+   @Path("/info/restores-repository")
+   public Response infoRestoresRepository()
+   {
+      try
+      {
+         List<JobRepositoryRestore> restoreJobs = backupManager.getRepositoryRestores();
+
+         List<JobRepositoryRestore> jobs = new ArrayList<JobRepositoryRestore>();
+
+         for (int i = restoreJobs.size() - 1; i >= 0; i--)
+         {
+            JobRepositoryRestore job = restoreJobs.get(i);
+            boolean isUnique = true;
+            for (JobRepositoryRestore unJob : jobs)
+            {
+               if (unJob.getRepositoryName().equals(job.getRepositoryName()))
+                  isUnique = false;
+            }
+
+            if (isUnique)
+               jobs.add(job);
+         }
+
+         List<ShortInfo> list = new ArrayList<ShortInfo>();
+
+         for (JobRepositoryRestore job : jobs)
+         {
+            ShortInfo info =
+               new ShortInfo(ShortInfo.RESTORE, job.getRepositoryBackupChainLog(), job.getStartTime(), job.getEndTime(), job
+                  .getStateRestore(), job.getRepositoryName());
+            list.add(info);
+         }
+
+         return Response.ok(new ShortInfoList(list)).cacheControl(noCache).build();
+
+      }
+      catch (Throwable e)
+      {
+         log.error("Can not get information about current repository restores.", e);
+
+         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
+            "Can not get information about current repository restores : " + e.getMessage()).type(MediaType.TEXT_PLAIN)
+            .cacheControl(noCache).build();
+      }
+   }
 
    /**
     * Will be returned the default workspace configuration.
