@@ -20,9 +20,12 @@ package org.exoplatform.services.jcr.ext.backup.server;
 
 import org.exoplatform.services.jcr.config.ContainerEntry;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.ext.BaseStandaloneTest;
 import org.exoplatform.services.jcr.ext.app.SessionProviderService;
 import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
@@ -38,6 +41,7 @@ import org.exoplatform.services.jcr.ext.backup.server.bean.response.DetailedInfo
 import org.exoplatform.services.jcr.ext.backup.server.bean.response.ShortInfo;
 import org.exoplatform.services.jcr.ext.backup.server.bean.response.ShortInfoList;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
+import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.rest.RequestHandler;
 import org.exoplatform.services.rest.impl.ContainerResponse;
 import org.exoplatform.services.rest.impl.InputHeadersMap;
@@ -66,6 +70,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.jcr.NoSuchWorkspaceException;
+import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.ws.rs.core.MultivaluedMap;
 
@@ -1123,6 +1128,35 @@ public class HTTPBackupAgentTest extends BaseStandaloneTest
          assertNotNull(sessin_ws);
          assertNotNull(sessin_ws.getRootNode());
       }
+   }
+
+   public void testDropRepository() throws Exception
+   {
+
+      assertNotNull(repositoryService.getRepository("db5"));
+
+      for (String workspaceName : repositoryService.getRepository("db5").getWorkspaceNames())
+         forceCloseSession("db5", workspaceName);
+
+      try
+      {
+         repositoryService.removeRepository("db5");
+      }
+      catch (Exception e)
+      {
+         fail();
+      }
+   }
+
+   private int forceCloseSession(String repositoryName, String workspaceName) throws RepositoryException,
+      RepositoryConfigurationException
+   {
+      ManageableRepository mr = repositoryService.getRepository(repositoryName);
+      WorkspaceContainerFacade wc = mr.getWorkspaceContainer(workspaceName);
+
+      SessionRegistry sessionRegistry = (SessionRegistry)wc.getComponent(SessionRegistry.class);
+
+      return sessionRegistry.closeSessions(workspaceName);
    }
 
    protected WorkspaceEntry makeWorkspaceEntry(WorkspaceEntry defWEntry, String repoNmae, String wsName,
