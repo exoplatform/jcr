@@ -591,33 +591,30 @@ public class SessionDataManager implements ItemDataConsumer
    {
       List<PropertyData> refDatas = transactionableManager.getReferencesData(identifier, true);
       List<PropertyImpl> refs = new ArrayList<PropertyImpl>(refDatas.size());
-      for (int i = 0, length = refDatas.size(); i < length; i++)
+      for (PropertyData data : refDatas)
       {
-         PropertyData data = refDatas.get(i);
+         ItemState state = changesLog.getItemState(data.getIdentifier());
+         if (state != null)
+         {
+            if (state.isDeleted())
+            {
+               // if the Property was deleted skip it for now
+               continue;
+            }
+
+            // otherwise use transient data
+            data = (PropertyData)state.getData();
+         }
+
          NodeData parent = (NodeData)getItemData(data.getParentIdentifier());
-         // if parent exists check for read permissions, otherwise the ref property was deleted in this session but not yet saved.
+         // if parent exists check for read permissions, otherwise the parent was deleted in another session.
          if (parent != null)
          {
             // skip not permitted
             if (accessManager.hasPermission(parent.getACL(), new String[]{PermissionType.READ}, session.getUserState()
                .getIdentity()))
             {
-               PropertyImpl item;
-               ItemState state = changesLog.getItemState(data.getIdentifier());
-               if (state != null)
-               {
-                  if (state.isDeleted())
-                  {
-                     // skip deleted
-                     continue;
-                  }
-
-                  item = (PropertyImpl)readItem(state.getData(), null, true, false);
-               }
-               else
-               {
-                  item = (PropertyImpl)readItem(data, null, true, false);
-               }
+               PropertyImpl item = (PropertyImpl)readItem(data, null, true, false);
 
                refs.add(item);
                session.getActionHandler().postRead(item);
