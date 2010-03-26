@@ -143,15 +143,28 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
    public void createRepository(RepositoryEntry rEntry) throws RepositoryConfigurationException, RepositoryException
    {
       if (repositoryContainers.containsKey(rEntry.getName()))
+      {
          throw new RepositoryConfigurationException("Repository container " + rEntry.getName() + " already started");
+      }
 
       RepositoryContainer repositoryContainer = new RepositoryContainer(parentContainer, rEntry);
 
       // Storing and starting the repository container under
       // key=repository_name
-      repositoryContainers.put(rEntry.getName(), repositoryContainer);
-      managerStartChanges.registerListeners(repositoryContainer);
-      repositoryContainer.start();
+      try
+      {
+         repositoryContainers.put(rEntry.getName(), repositoryContainer);
+         managerStartChanges.registerListeners(repositoryContainer);
+         repositoryContainer.start();
+      }
+      catch (Throwable t)
+      {
+         //TODO will be implemented unregistration in managerStartChanges
+         //managerStartChanges.removeListeners(repositoryContainer);
+         repositoryContainers.remove(rEntry.getName());
+         
+         throw new RepositoryConfigurationException("Repository conatainer " + rEntry.getName() + " was not started.", t);
+      }
 
       if (!config.getRepositoryConfigurations().contains(rEntry))
       {
