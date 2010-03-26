@@ -57,7 +57,7 @@ import javax.servlet.http.HttpServletRequest;
 public class JCRBrowserFilter extends AbstractFilter
 {
 
-   private static final Log LOG = ExoLogger.getLogger("jcr.JCRBrowserFilter");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.applications.browser.JCRBrowserFilter");
 
    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain)
       throws IOException, ServletException

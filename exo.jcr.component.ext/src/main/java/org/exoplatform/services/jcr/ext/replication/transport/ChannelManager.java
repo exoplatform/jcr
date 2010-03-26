@@ -69,7 +69,7 @@ public class ChannelManager implements RequestHandler, MembershipListener
    /**
     * log. the apache logger.
     */
-   private static final Log LOG = ExoLogger.getLogger("ext.AsyncChannelManager");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.AsyncChannelManager");
 
    /**
     * State of async channel manager {INITIALIZED, CONNECTED, DISCONNECTED}.

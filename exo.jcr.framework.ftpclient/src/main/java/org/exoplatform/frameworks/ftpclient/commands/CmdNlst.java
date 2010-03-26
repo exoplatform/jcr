@@ -35,7 +35,7 @@ import java.util.ArrayList;
 public class CmdNlst extends FtpCommandImpl
 {
 
-   private static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "CmdNlst");
+   private static Log log = ExoLogger.getLogger("exo.jcr.framework.command.CmdNlst");
 
    protected String path = "";
 

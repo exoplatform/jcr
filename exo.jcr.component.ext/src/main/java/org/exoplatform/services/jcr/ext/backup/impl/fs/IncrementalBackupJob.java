@@ -48,7 +48,7 @@ import java.util.List;
 public class IncrementalBackupJob extends AbstractIncrementalBackupJob
 {
 
-   protected static Log log = ExoLogger.getLogger("ext.IncrementalBackupJob");
+   protected static Log log = ExoLogger.getLogger("exo.jcr.component.ext.IncrementalBackupJob");
 
    private ObjectOutputStream oosFileData;
 

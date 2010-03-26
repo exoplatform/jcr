@@ -53,7 +53,7 @@ import javax.xml.stream.events.StartElement;
 public class BackupChainLog
 {
 
-   protected static Log logger = ExoLogger.getLogger("ext.BackupChainLog");
+   protected static Log logger = ExoLogger.getLogger("exo.jcr.component.ext.BackupChainLog");
 
    public static final String PREFIX = "backup-";
 
@@ -311,7 +311,7 @@ public class BackupChainLog
 
    private class LogReader
    {
-      protected Log logger = ExoLogger.getLogger("ext.LogWriter");
+      protected Log logger = ExoLogger.getLogger("exo.jcr.component.ext.LogReader");
 
       private File logFile;
 
@@ -536,7 +536,7 @@ public class BackupChainLog
    private class LogWriter
    {
 
-      protected Log logger = ExoLogger.getLogger("ext.LogWriter");
+      protected Log logger = ExoLogger.getLogger("exo.jcr.component.ext.LogWriter");
 
       private File logFile;
 

@@ -222,7 +222,7 @@ public class HTTPBackupAgent implements ResourceContainer
    /**
     * The apache logger.
     */
-   private static Log log = ExoLogger.getLogger("ext.HTTPBackupAgent");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.HTTPBackupAgent");
 
    /**
     * To disable cache control.

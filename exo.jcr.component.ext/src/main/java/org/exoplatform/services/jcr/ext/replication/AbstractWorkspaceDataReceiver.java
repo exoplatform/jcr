@@ -49,7 +49,7 @@ public abstract class AbstractWorkspaceDataReceiver implements PacketListener
    /**
     * The apache logger.
     */
-   private static Log log = ExoLogger.getLogger("ext.AbstractWorkspaceDataReceiver");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.AbstractWorkspaceDataReceiver");
 
    /**
     * The definition INIT_MODE for AbstractWorkspaceDataReceiver.

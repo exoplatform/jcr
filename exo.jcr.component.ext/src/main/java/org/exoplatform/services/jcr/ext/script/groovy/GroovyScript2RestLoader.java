@@ -85,7 +85,7 @@ public class GroovyScript2RestLoader implements Startable
 {
 
    /** Logger. */
-   private static final Log LOG = ExoLogger.getLogger(GroovyScript2RestLoader.class.getName());
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.GroovyScript2RestLoader");
 
    /** Default node types for Groovy scripts. */
    private static final String DEFAULT_NODETYPE = "exo:groovyResourceContainer";

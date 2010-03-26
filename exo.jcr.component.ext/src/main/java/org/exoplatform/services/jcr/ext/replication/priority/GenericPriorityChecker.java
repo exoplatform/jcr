@@ -41,7 +41,7 @@ public class GenericPriorityChecker extends AbstractPriorityChecker
    /**
     * The apache logger.
     */
-   private static Log log = ExoLogger.getLogger("ext.GenericPriorityChecker");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.GenericPriorityChecker");
 
    /**
     * GenericPriorityChecker  constructor.

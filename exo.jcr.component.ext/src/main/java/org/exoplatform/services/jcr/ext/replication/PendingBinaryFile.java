@@ -40,7 +40,7 @@ public class PendingBinaryFile
    /**
     * The apache logger.
     */
-   private static Log log = ExoLogger.getLogger("ext.PendingBinaryFile");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.PendingBinaryFile");
 
    /**
     * The map for FileDesctiptor per owner.

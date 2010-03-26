@@ -46,7 +46,7 @@ public class CopyMoveTestCase extends BaseReplicationTestCase
    /**
     * The apache logger.
     */
-   private static final Log log = ExoLogger.getLogger(CopyMoveTestCase.class);
+   private static final Log log = ExoLogger.getLogger("exo.jcr.component.ext.CopyMoveTestCase");
 
    /**
     * CopyMoveTestCase constructor.

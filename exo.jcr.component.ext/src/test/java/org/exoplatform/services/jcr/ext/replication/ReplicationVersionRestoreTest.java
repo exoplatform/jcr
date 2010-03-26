@@ -39,7 +39,7 @@ import javax.jcr.version.Version;
 public class ReplicationVersionRestoreTest extends BaseReplicationTest
 {
 
-   private static final Log log = ExoLogger.getLogger(ReplicationVersionRestoreTest.class);
+   private static final Log log = ExoLogger.getLogger("exo.jcr.component.ext.ReplicationVersionRestoreTest");
 
    public void testRestore() throws Exception
    {

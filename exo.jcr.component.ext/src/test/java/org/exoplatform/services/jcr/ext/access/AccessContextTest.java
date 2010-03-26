@@ -48,7 +48,7 @@ import javax.jcr.Value;
 public class AccessContextTest extends BaseStandaloneTest
 {
 
-   private static final Log log = ExoLogger.getLogger(AccessContextTest.class);
+   private static final Log log = ExoLogger.getLogger("exo.jcr.component.ext.AccessContextTest");
 
    private final static int MULTI_THIARD_OPERATIONS = 100;
 
@@ -188,7 +188,7 @@ public class AccessContextTest extends BaseStandaloneTest
 
       private int errorsCount;
 
-      private Log log = ExoLogger.getLogger("jcr.JCRClient4AccessContextTest");
+      private Log log = ExoLogger.getLogger("exo.jcr.component.ext.JCRClient4AccessContextTest");
 
       public JCRClient4AccessContext()
       {

@@ -32,7 +32,7 @@ import org.exoplatform.services.log.Log;
 public class CmdRnFr extends FtpCommandImpl
 {
 
-   private static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "CmdRnFr");
+   private static Log log = ExoLogger.getLogger("exo.jcr.framework.command.CmdRnFr");
 
    protected String path;
 

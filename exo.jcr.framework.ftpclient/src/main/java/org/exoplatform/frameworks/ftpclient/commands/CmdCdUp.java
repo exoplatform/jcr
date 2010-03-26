@@ -32,7 +32,7 @@ import org.exoplatform.services.log.Log;
 public class CmdCdUp extends FtpCommandImpl
 {
 
-   private static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "CmdCdUp");
+   private static Log log = ExoLogger.getLogger("exo.jcr.framework.command.CmdCdUp");
 
    public int execute()
    {

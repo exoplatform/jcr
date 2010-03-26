@@ -31,7 +31,7 @@ import org.exoplatform.services.log.Log;
 public class CmdMode extends FtpCommandImpl
 {
 
-   private static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "CmdMode");
+   private static Log log = ExoLogger.getLogger("exo.jcr.framework.command.CmdMode");
 
    private String mode;
 

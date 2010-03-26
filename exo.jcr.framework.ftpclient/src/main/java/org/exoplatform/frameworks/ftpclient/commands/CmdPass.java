@@ -32,7 +32,7 @@ import org.exoplatform.services.log.Log;
 public class CmdPass extends FtpCommandImpl
 {
 
-   private static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "CmdPass");
+   private static Log log = ExoLogger.getLogger("exo.jcr.framework.command.CmdPass");
 
    protected String pass;
 

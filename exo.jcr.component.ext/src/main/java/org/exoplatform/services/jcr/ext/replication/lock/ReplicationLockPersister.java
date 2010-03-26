@@ -45,7 +45,7 @@ public class ReplicationLockPersister extends FileSystemLockPersister
    /**
     * The apache logger.
     */
-   private static Log log = ExoLogger.getLogger("ext.ReplicationLockPersister");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.ReplicationLockPersister");
 
    /**
     * The definition start timeout.

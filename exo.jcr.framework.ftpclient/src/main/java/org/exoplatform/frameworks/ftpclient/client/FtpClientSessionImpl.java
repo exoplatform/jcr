@@ -40,7 +40,7 @@ import java.net.SocketAddress;
 public class FtpClientSessionImpl implements FtpClientSession
 {
 
-   private static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "FtpClientSessionImpl");
+   private static Log log = ExoLogger.getLogger("exo.jcr.framework.command.FtpClientSessionImpl");
 
    protected String host;
 

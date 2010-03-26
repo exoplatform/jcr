@@ -59,7 +59,7 @@ public abstract class AbstractPriorityChecker implements PacketListener
    /**
     * The apache logger.
     */
-   private static Log log = ExoLogger.getLogger("ext.AbstractPriorityChecker");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.AbstractPriorityChecker");
 
    /**
     * The ChannelManager will be transmitted the Packets.

@@ -49,7 +49,7 @@ public class WorkspaceDataManagerProxy implements ItemDataKeeper
    /**
     * The apache logger.
     */
-   private static Log log = ExoLogger.getLogger("jcr.WorkspaceDataManagerProxy");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.WorkspaceDataManagerProxy");
 
    /**
     * The ItemsPersistenceListeners.

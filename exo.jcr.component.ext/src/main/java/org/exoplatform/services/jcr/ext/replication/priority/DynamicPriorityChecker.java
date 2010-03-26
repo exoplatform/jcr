@@ -40,7 +40,7 @@ public class DynamicPriorityChecker extends AbstractPriorityChecker
    /**
     * The apache logger.
     */
-   private static Log log = ExoLogger.getLogger("ext.DynamicPriorityChecker");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.DynamicPriorityChecker");
 
    /**
     * The previous participants counter.

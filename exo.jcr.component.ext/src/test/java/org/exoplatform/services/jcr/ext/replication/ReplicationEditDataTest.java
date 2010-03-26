@@ -35,7 +35,7 @@ import javax.jcr.Node;
 public class ReplicationEditDataTest extends BaseReplicationTest
 {
 
-   private static final Log log = ExoLogger.getLogger(ReplicationEditDataTest.class);
+   private static final Log log = ExoLogger.getLogger("exo.jcr.component.ext.ReplicationEditDataTest");
 
    public void testAddNode() throws Exception
    {

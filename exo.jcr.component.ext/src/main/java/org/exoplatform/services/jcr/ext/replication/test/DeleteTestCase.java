@@ -39,7 +39,7 @@ public class DeleteTestCase extends BaseReplicationTestCase
    /**
     * The apache logger.
     */
-   private static final Log log = ExoLogger.getLogger(DeleteTestCase.class);
+   private static final Log log = ExoLogger.getLogger("exo.jcr.component.ext.DeleteTestCase");
 
    /**
     * DeleteTestCase constructor.

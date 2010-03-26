@@ -45,7 +45,7 @@ public class ConcurrentModificationTestCase extends BaseReplicationTestCase
    /**
     * The apache logger.
     */
-   private static final Log log = ExoLogger.getLogger(ConcurrentModificationTestCase.class);
+   private static final Log log = ExoLogger.getLogger("exo.jcr.component.ext.ConcurrentModificationTestCase");
 
    /**
     * ConcurrentModificationTestCase constructor.

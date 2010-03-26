@@ -51,7 +51,7 @@ public class NodeRepresentationService implements Startable
 
    ExoContainerContext containerContext;
 
-   private static final Log log = ExoLogger.getLogger("jcr.ext.resource.NodeRepresentationService");
+   private static final Log log = ExoLogger.getLogger("exo.jcr.component.ext.NodeRepresentationService");
 
    public NodeRepresentationService(ExoContainerContext containerContext)
    {

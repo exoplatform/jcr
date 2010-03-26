@@ -74,7 +74,7 @@ import javax.xml.transform.TransformerException;
 public class RegistryService extends Registry implements Startable
 {
 
-   private static Log log = ExoLogger.getLogger("jcr.RegistryService");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.RegistryService");
 
    protected final static String EXO_REGISTRY_NT = "exo:registry";
 

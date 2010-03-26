@@ -79,7 +79,7 @@ public class ReplicationService implements Startable, ManagementAware
    /**
     * The apache logger.
     */
-   private static Log log = ExoLogger.getLogger("ext.ReplicationService");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.ReplicationService");
 
    /**
     * The service name.

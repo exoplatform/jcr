@@ -32,7 +32,7 @@ import org.exoplatform.services.log.Log;
 public class FtpFileInfoImpl implements FtpFileInfo
 {
 
-   private static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "FtpFileInfoImpl");
+   private static Log log = ExoLogger.getLogger("exo.jcr.framework.command.FtpFileInfoImpl");
 
    protected String name = "";
 

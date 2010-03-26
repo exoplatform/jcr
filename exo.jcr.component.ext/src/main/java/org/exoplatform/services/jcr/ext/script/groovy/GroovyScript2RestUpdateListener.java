@@ -37,7 +37,7 @@ public class GroovyScript2RestUpdateListener implements EventListener
    /**
     * Logger.
     */
-   private static final Log LOG = ExoLogger.getLogger(GroovyScript2RestUpdateListener.class.getName());
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.GroovyScript2RestUpdateListener");
 
    /**
     * Repository name.

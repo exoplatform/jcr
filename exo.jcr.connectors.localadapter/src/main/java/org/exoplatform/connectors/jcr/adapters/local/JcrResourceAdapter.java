@@ -42,7 +42,7 @@ import javax.transaction.xa.XAResource;
 public class JcrResourceAdapter implements ResourceAdapter
 {
 
-   private static Log log = ExoLogger.getLogger("jcr.JcrResourceAdapter");
+   private static Log log = ExoLogger.getLogger("exo.jcr.connectors.localadapter.JcrResourceAdapter");
 
    String containerConfig;
 

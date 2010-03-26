@@ -32,7 +32,7 @@ import org.exoplatform.services.log.Log;
 public class CmdDele extends FtpCommandImpl
 {
 
-   private static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "CmdDele");
+   private static Log log = ExoLogger.getLogger("exo.jcr.framework.command.CmdDele");
 
    protected String path;
 

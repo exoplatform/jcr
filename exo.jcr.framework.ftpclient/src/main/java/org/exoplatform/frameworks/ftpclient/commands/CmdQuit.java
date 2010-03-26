@@ -31,7 +31,7 @@ import org.exoplatform.services.log.Log;
 public class CmdQuit extends FtpCommandImpl
 {
 
-   private static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "CmdQuit");
+   private static Log log = ExoLogger.getLogger("exo.jcr.framework.command.CmdQuit");
 
    public int execute()
    {

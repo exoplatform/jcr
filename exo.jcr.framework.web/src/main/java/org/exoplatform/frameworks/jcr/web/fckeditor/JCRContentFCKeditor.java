@@ -44,7 +44,7 @@ import javax.servlet.http.HttpServletRequest;
 public class JCRContentFCKeditor extends FCKeditor
 {
 
-   private final static Log LOG = ExoLogger.getLogger("jcr.JCRContentFCKeditor");
+   private final static Log LOG = ExoLogger.getLogger("exo.jcr.framework.command.JCRContentFCKeditor");
 
    private Node file;
 

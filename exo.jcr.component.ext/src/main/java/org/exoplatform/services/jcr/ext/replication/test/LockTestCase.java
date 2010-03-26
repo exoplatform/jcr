@@ -40,7 +40,7 @@ public class LockTestCase extends BaseReplicationTestCase
    /**
     * The apache logger.
     */
-   private static final Log log = ExoLogger.getLogger(LockTestCase.class);
+   private static final Log log = ExoLogger.getLogger("exo.jcr.component.ext.LockTestCase");
 
    /**
     * LockTestCase constructor.

@@ -101,7 +101,7 @@ import javax.xml.parsers.ParserConfigurationException;
 public class BackupManagerImpl implements BackupManager, Startable
 {
 
-   protected static Log log = ExoLogger.getLogger("ext.BackupManagerImpl");
+   protected static Log log = ExoLogger.getLogger("exo.jcr.component.ext.BackupManagerImpl");
 
    private final static String DEFAULT_INCREMENTAL_JOB_PERIOD = "default-incremental-job-period";
 

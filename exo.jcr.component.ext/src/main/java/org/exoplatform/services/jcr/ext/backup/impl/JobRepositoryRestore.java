@@ -55,7 +55,7 @@ public class JobRepositoryRestore extends Thread
    /**
     * The apache logger.
     */
-   private static Log log = ExoLogger.getLogger("ext.JobRepositoryRestore");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.JobRepositoryRestore");
 
    /**
     * REPOSITORY_RESTORE_STARTED. The state of start restore.

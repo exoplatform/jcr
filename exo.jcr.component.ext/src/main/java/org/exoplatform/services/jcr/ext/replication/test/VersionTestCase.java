@@ -37,9 +37,9 @@ public class VersionTestCase extends BaseReplicationTestCase
 {
 
    /**
-    * The apache logger.
+    * The Exo logger.
     */
-   private static final Log log = ExoLogger.getLogger(VersionTestCase.class);
+   private static final Log log = ExoLogger.getLogger("exo.jcr.component.ext.VersionTestCase");
 
    /**
     * VersionTestCase constructor.

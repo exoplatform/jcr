@@ -53,7 +53,7 @@ public class RepositoryBackupChainImpl
    /**
     * The apache logger.
     */
-   private static Log log = ExoLogger.getLogger("ext.RepositoryBackupChainImpl");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.RepositoryBackupChainImpl");
    
    private final RepositoryBackupConfig config;
 

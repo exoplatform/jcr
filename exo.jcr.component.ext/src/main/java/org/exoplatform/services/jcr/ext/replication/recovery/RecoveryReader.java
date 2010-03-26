@@ -51,7 +51,7 @@ public class RecoveryReader extends AbstractFSAccess
    /**
     * The apache logger.
     */
-   private static Log log = ExoLogger.getLogger("ext.RecoveryReader");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.RecoveryReader");
 
    /**
     * The FileCleaner for delete the temporary files and correct TransientValueData deserialization.

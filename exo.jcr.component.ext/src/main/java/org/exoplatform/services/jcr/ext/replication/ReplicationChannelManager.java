@@ -49,7 +49,7 @@ public class ReplicationChannelManager extends ChannelManager
    /**
     * log. the apache logger.
     */
-   private static final Log LOG = ExoLogger.getLogger("ext.ReplicationChannelManager");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.ReplicationChannelManager");
 
    /**
     * testChannelName. The name to JChannel. Using only testing.

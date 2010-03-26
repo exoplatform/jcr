@@ -31,7 +31,7 @@ import org.exoplatform.services.log.Log;
 public class CmdStat extends FtpCommandImpl
 {
 
-   private static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "CmdStat");
+   private static Log log = ExoLogger.getLogger("exo.jcr.framework.command.CmdStat");
 
    public int execute()
    {

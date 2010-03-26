@@ -40,7 +40,7 @@ import javax.jcr.RepositoryException;
 public class BandwidthAllocationTestCase extends BaseReplicationTestCase
 {
 
-   private static final Log log = ExoLogger.getLogger(BandwidthAllocationTestCase.class);
+   private static final Log log = ExoLogger.getLogger("exo.jcr.component.ext.BandwidthAllocationTestCase");
 
    /**
     * The alphabet to content.

@@ -51,7 +51,7 @@ public class RemoteReceiver implements PacketListener, StateListener
    /**
     * The apache logger.
     */
-   private static Log log = ExoLogger.getLogger("ext.RemoteReceiver");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.RemoteReceiver");
 
    /**
     * The temporary folder.

@@ -49,7 +49,7 @@ import javax.servlet.http.HttpServletResponse;
 public class CommandControllerServlet extends HttpServlet
 {
 
-   private static Log log = ExoLogger.getLogger("jcr:CommandControllerServlet");
+   private static Log log = ExoLogger.getLogger("exo.jcr.framework.command.CommandControllerServlet");
    
    @Override
    protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException,

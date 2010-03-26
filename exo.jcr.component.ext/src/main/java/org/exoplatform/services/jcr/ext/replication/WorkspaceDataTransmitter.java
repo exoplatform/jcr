@@ -47,7 +47,7 @@ public class WorkspaceDataTransmitter implements ItemsPersistenceListener
    /**
     * The apache logger.
     */
-   private static Log log = ExoLogger.getLogger("ext.WorksapeDataTransmitter");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.WorksapeDataTransmitter");
 
    /**
     * System identification string.

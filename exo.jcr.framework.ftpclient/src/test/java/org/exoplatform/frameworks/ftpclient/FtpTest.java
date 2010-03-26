@@ -61,7 +61,7 @@ public class FtpTest extends TestCase
 
    protected static Log getLogger(String unitName)
    {
-      return ExoLogger.getLogger("jcr." + unitName);
+      return ExoLogger.getLogger("exo.jcr.framework.command." + unitName);
    }
 
    public void testNOOP() throws Exception

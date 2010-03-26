@@ -53,7 +53,7 @@ public class RepositoryBackupChainLog
    private class LogWriter
    {
 
-      protected Log logger = ExoLogger.getLogger("ext.LogWriter");
+      protected Log logger = ExoLogger.getLogger("exo.jcr.component.ext.LogWriter");
 
       private File logFile;
 
@@ -159,7 +159,7 @@ public class RepositoryBackupChainLog
 
    private class LogReader
    {
-      protected Log logger = ExoLogger.getLogger("ext.LogReader");
+      protected Log logger = ExoLogger.getLogger("exo.jcr.component.ext.LogReader");
 
       private File logFile;
 
@@ -379,7 +379,7 @@ public class RepositoryBackupChainLog
       }
    }
 
-   protected static Log logger = ExoLogger.getLogger("ext.BackupChainLog");
+   protected static Log logger = ExoLogger.getLogger("exo.jcr.component.ext.BackupChainLog");
 
    public static final String PREFIX = "repository-backup-";
 

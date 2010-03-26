@@ -53,7 +53,7 @@ public class RecoveryWriter extends AbstractFSAccess
    /**
     * The apache logger.
     */
-   private static Log log = ExoLogger.getLogger("ext.RecoveryWriter");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.RecoveryWriter");
 
    /**
     * Definition the timeout to FileRemover.
@@ -404,7 +404,7 @@ class FileRemover extends Thread
    /**
     * The apache logger.
     */
-   private static Log log = ExoLogger.getLogger("ext.FileRemover");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.FileRemover");
 
    /**
     * Definition the constants to one second.

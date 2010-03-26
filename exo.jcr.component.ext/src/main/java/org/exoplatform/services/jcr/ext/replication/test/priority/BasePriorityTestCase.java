@@ -42,7 +42,7 @@ public class BasePriorityTestCase extends BaseReplicationTestCase
    /**
     * Logger.
     */
-   private static final Log log = ExoLogger.getLogger(BasePriorityTestCase.class);
+   private static final Log log = ExoLogger.getLogger("exo.jcr.component.ext.BasePriorityTestCase");
 
    /**
     * The workspaceDataTransmitter will be used for getting the ChannelManager.

@@ -36,7 +36,7 @@ import java.io.OutputStream;
 public abstract class FtpCommandImpl implements FtpCommand
 {
 
-   private static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "FtpCommandImpl");
+   private static Log log = ExoLogger.getLogger("exo.jcr.framework.command.FtpCommandImpl");
 
    protected FtpClientSession clientSession;
 

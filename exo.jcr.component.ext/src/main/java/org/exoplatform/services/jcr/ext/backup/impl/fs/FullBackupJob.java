@@ -40,7 +40,7 @@ import javax.jcr.RepositoryException;
 public class FullBackupJob extends AbstractFullBackupJob
 {
 
-   protected static Log log = ExoLogger.getLogger("ext.FullBackupJob");
+   protected static Log log = ExoLogger.getLogger("exo.jcr.component.ext.FullBackupJob");
 
    private String pathBackupFile;
 

@@ -32,7 +32,7 @@ import org.exoplatform.services.log.Log;
 public class CmdPort extends FtpCommandImpl
 {
 
-   private static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "CmdPort");
+   private static Log log = ExoLogger.getLogger("exo.jcr.framework.command.CmdPort");
 
    protected String host;
 

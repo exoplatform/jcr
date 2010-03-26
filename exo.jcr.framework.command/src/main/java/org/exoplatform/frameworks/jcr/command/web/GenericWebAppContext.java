@@ -48,7 +48,7 @@ public class GenericWebAppContext extends ServletWebContext implements JCRAppCon
 
    public static final String JCR_CONTENT_MAPPING = "org.exoplatform.frameworks.web.repositoryMapping";
 
-   private static Log log = ExoLogger.getLogger("jcr.JCRWebAppContext");
+   private static Log log = ExoLogger.getLogger("exo.jcr.framework.command.JCRWebAppContext");
 
    protected final SessionProvider sessionProvider;
 

@@ -53,7 +53,7 @@ public class RecoveryManager
    /**
     * The apache logger.
     */
-   private static Log log = ExoLogger.getLogger("ext.RecoveryManager");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.RecoveryManager");
 
    /**
     * The FileNameFactory will be created file names.

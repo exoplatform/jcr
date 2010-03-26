@@ -62,7 +62,7 @@ public class RESTRegistryService implements ResourceContainer
    /**
     * Logger.
     */
-   private static final Log log = ExoLogger.getLogger(RESTRegistryService.class.getName());
+   private static final Log log = ExoLogger.getLogger("exo.jcr.component.ext.RESTRegistryService");
 
    /**
     * 

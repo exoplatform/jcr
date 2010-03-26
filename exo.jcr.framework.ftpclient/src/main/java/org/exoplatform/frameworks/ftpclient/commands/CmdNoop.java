@@ -32,7 +32,7 @@ import org.exoplatform.services.log.Log;
 public class CmdNoop extends FtpCommandImpl
 {
 
-   private static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "CmdNoop");
+   private static Log log = ExoLogger.getLogger("exo.jcr.framework.command.CmdNoop");
 
    public int execute()
    {

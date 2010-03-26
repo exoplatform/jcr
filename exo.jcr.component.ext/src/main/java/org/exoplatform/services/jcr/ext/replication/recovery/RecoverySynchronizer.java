@@ -56,7 +56,7 @@ public class RecoverySynchronizer
    /**
     * The apache logger.
     */
-   private static Log log = ExoLogger.getLogger("ext.RecoverySynchronizer");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.RecoverySynchronizer");
 
    /**
     * Definition the folder to ChangesLog.

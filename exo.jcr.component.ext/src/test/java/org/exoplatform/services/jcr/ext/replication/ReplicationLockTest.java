@@ -35,7 +35,7 @@ import javax.jcr.lock.LockException;
 public class ReplicationLockTest extends BaseReplicationTest
 {
 
-   private static final Log log = ExoLogger.getLogger(ReplicationLockTest.class);
+   private static final Log log = ExoLogger.getLogger("exo.jcr.component.ext.ReplicationLockTest");
 
    public void testLock() throws Exception
    {

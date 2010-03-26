@@ -145,7 +145,7 @@ public class RestRepositoryService implements ResourceContainer
    /**
     * Class logger.
     */
-   private final Log log = ExoLogger.getLogger("jcr.ext.RestRepositoryService");
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.ext.RestRepositoryService");
 
    /**
     * 

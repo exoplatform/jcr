@@ -43,7 +43,7 @@ public class RemoteTransmitter
    /**
     * The apache logger.
     */
-   private static Log log = ExoLogger.getLogger("ext.RemoteTransmitter");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.RemoteTransmitter");
 
    /**
     * The ChannelManager will be send data.

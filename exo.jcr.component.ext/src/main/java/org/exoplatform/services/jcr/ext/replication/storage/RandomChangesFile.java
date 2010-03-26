@@ -42,7 +42,7 @@ public class RandomChangesFile implements ChangesFile
    /**
     * The logger.
     */
-   protected static final Log LOG = ExoLogger.getLogger("ext.RandomChangesFile");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.RandomChangesFile");
 
    /**
     * Checksum to file (set in constructor).

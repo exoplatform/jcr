@@ -45,7 +45,7 @@ public abstract class BaseReplicationTestCase
    /**
     * The apache logger.
     */
-   private static final Log log = ExoLogger.getLogger("ext.BaseReplicationTestCase");
+   private static final Log log = ExoLogger.getLogger("exo.jcr.component.ext.BaseReplicationTestCase");
 
    /**
     * Definition the size of buffer.

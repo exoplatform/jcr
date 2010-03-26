@@ -28,7 +28,7 @@ import java.io.OutputStream;
 public class FtpSlowOutputStream extends OutputStream
 {
 
-   private static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "FtpSlowOutputStream");
+   private static Log log = ExoLogger.getLogger("exo.jcr.framework.command.FtpSlowOutputStream");
 
    private OutputStream nativeOutputStream;
 

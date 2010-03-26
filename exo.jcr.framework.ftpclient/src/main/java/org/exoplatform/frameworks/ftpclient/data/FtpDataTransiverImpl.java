@@ -39,7 +39,7 @@ import java.net.SocketException;
 public class FtpDataTransiverImpl implements FtpDataTransiver
 {
 
-   private static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "FtpDataTransiverImpl");
+   private static Log log = ExoLogger.getLogger("exo.jcr.framework.command.FtpDataTransiverImpl");
 
    protected Socket dataSocket = null;
 
@@ -166,7 +166,7 @@ public class FtpDataTransiverImpl implements FtpDataTransiver
    protected class PassiveThread extends Thread
    {
 
-      private Log passiveLog = ExoLogger.getLogger("jcr.FtpDataTransiverImpl__PassiveThread");
+      private Log passiveLog = ExoLogger.getLogger("exo.jcr.framework.command.PassiveThread");
 
       protected String host;
 
@@ -199,7 +199,7 @@ public class FtpDataTransiverImpl implements FtpDataTransiver
    protected class ActiveThread extends Thread
    {
 
-      private Log activeLog = ExoLogger.getLogger("jcr.FtpDataTransiverImpl__ActiveThread");
+      private Log activeLog = ExoLogger.getLogger("exo.jcr.framework.command.ActiveThread");
 
       protected int port;
 

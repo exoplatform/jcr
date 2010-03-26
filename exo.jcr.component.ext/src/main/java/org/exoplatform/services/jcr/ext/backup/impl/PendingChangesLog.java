@@ -54,7 +54,7 @@ public class PendingChangesLog
    /**
     * The apache logger.
     */
-   private static Log log = ExoLogger.getLogger("ext.PendingChangesLog");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.PendingChangesLog");
 
    /**
     * The definition of ChangesLog types.

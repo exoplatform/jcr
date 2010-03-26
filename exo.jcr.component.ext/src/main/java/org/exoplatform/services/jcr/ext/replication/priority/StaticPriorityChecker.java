@@ -40,7 +40,7 @@ public class StaticPriorityChecker extends AbstractPriorityChecker
    /**
     * The apache logger.
     */
-   private static Log log = ExoLogger.getLogger("ext.StaticPriorityChecker");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.StaticPriorityChecker");
 
    /**
     * StaticPriorityChecker constructor.

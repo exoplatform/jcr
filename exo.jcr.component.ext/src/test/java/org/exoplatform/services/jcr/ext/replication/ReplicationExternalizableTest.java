@@ -37,7 +37,7 @@ import javax.jcr.RepositoryException;
 public class ReplicationExternalizableTest extends BaseReplicationTest
 {
 
-   private static final Log log = ExoLogger.getLogger(ReplicationExternalizableTest.class);
+   private static final Log log = ExoLogger.getLogger("exo.jcr.component.ext.ReplicationExternalizableTest");
 
    private static final int BUFFER_SIZE = 1024;
 

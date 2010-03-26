@@ -39,7 +39,7 @@ import java.util.List;
 public abstract class AbstractIncrementalBackupJob extends AbstractBackupJob implements ItemsPersistenceListener
 {
 
-   private static Log log = ExoLogger.getLogger("ext.IncrementalBackupJob");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.IncrementalBackupJob");
 
    protected final List<ItemStateChangesLog> suspendBuffer;
 

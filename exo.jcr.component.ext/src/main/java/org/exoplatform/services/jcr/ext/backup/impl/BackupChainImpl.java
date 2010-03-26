@@ -263,7 +263,7 @@ public class BackupChainImpl implements BackupChain
 
    private class PeriodConroller extends TimerTask
    {
-      protected Log log = ExoLogger.getLogger("ext.PeriodConroller");
+      protected Log log = ExoLogger.getLogger("exo.jcr.component.ext.PeriodConroller");
 
       protected Long period;
 

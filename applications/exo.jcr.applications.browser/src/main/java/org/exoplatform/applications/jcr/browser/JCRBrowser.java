@@ -45,7 +45,7 @@ import javax.jcr.Session;
 public class JCRBrowser
 {
 
-   private static final Log LOG = ExoLogger.getLogger("samples.JCRBrowser");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.applications.browser.JCRBrowser");
 
    protected RepositoryService repositoryService;
 

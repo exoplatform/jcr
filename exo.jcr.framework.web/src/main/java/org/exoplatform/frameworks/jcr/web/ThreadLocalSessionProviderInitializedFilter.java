@@ -54,7 +54,7 @@ public class ThreadLocalSessionProviderInitializedFilter extends AbstractFilter
 
    private SessionProviderService providerService;
 
-   private static final Log log = ExoLogger.getLogger("jcr.ThreadLocalSessionProviderInitializedFilter");
+   private static final Log log = ExoLogger.getLogger("exo.jcr.framework.command.ThreadLocalSessionProviderInitializedFilter");
 
    /*
     * (non-Javadoc)

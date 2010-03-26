@@ -43,7 +43,7 @@ public class ContainerRequestUserRole extends ContainerRequest
    /**
     * Class logger.
     */
-   private final Log log = ExoLogger.getLogger(ContainerRequestUserRole.class);
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.ext.ContainerRequestUserRole");
 
    @Override
    public boolean isUserInRole(String role)

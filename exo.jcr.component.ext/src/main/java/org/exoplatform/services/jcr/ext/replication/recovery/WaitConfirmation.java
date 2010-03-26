@@ -39,7 +39,7 @@ public class WaitConfirmation extends Thread
    /**
     * The apache logger.
     */
-   private static Log log = ExoLogger.getLogger("ext.WaitConfirmation");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.WaitConfirmation");
 
    /**
     * The wait timeout.

@@ -57,7 +57,7 @@ import javax.jcr.ValueFormatException;
 public class AddMetadataAction implements Action
 {
 
-   private static Log log = ExoLogger.getLogger("ext.AddMetadataAction");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.AddMetadataAction");
 
    public boolean execute(Context ctx) throws Exception
    {

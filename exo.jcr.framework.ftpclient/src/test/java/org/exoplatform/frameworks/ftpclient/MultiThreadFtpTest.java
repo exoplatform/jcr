@@ -60,7 +60,7 @@ public class MultiThreadFtpTest extends TestCase
 
       public FtpThreadTest(String testFolder)
       {
-         log = ExoLogger.getLogger("jcr." + this);
+         log = ExoLogger.getLogger("exo.jcr.framework.command." + this);
          this.testFolder = testFolder;
       }
 
@@ -245,7 +245,7 @@ public class MultiThreadFtpTest extends TestCase
 
    public void testMultiThread() throws Exception
    {
-      Log log = ExoLogger.getLogger("jcr.MultiThreadFtpTest");
+      Log log = ExoLogger.getLogger("exo.jcr.framework.command.MultiThreadFtpTest");
       log.info("Test...");
 
       ArrayList<FtpThreadTest> testers = new ArrayList<FtpThreadTest>();

@@ -36,7 +36,7 @@ import javax.jcr.Node;
 public class JcrURLConnectionTest extends BaseStandaloneTest
 {
 
-   private static final Log log = ExoLogger.getLogger(JcrURLConnectionTest.class);
+   private static final Log log = ExoLogger.getLogger("exo.jcr.component.ext.JcrURLConnectionTest");
 
    private String fname;
 

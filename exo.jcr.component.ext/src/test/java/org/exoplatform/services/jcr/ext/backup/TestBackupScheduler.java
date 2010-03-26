@@ -40,7 +40,7 @@ import java.util.concurrent.TimeUnit;
 public class TestBackupScheduler extends AbstractBackupTestCase
 {
 
-   private static final Log log = ExoLogger.getLogger(TestBackupScheduler.class);
+   private static final Log log = ExoLogger.getLogger("exo.jcr.component.ext.TestBackupScheduler");
 
    class BackupWaiter implements BackupJobListener
    {

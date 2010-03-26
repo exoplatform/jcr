@@ -69,7 +69,7 @@ public class BackupScheduler
       VIRGIN, EXECUTED, FINISHED
    };
 
-   protected Log log = ExoLogger.getLogger("ext.BackupScheduler");
+   protected Log log = ExoLogger.getLogger("exo.jcr.component.ext.BackupScheduler");
 
    private final BackupManagerImpl backup;
 
@@ -230,7 +230,7 @@ public class BackupScheduler
       class TaskConfigWriter
       {
 
-         Log logger = ExoLogger.getLogger("ext.TaskConfigWriter");
+         Log logger = ExoLogger.getLogger("exo.jcr.component.ext.TaskConfigWriter");
 
          final FileOutputStream logFile;
 
@@ -327,7 +327,7 @@ public class BackupScheduler
 
       class TaskConfigReader
       {
-         Log logger = ExoLogger.getLogger("ext.TaskConfigReader");
+         Log logger = ExoLogger.getLogger("exo.jcr.component.ext.TaskConfigReader");
 
          final FileInputStream logFile;
 

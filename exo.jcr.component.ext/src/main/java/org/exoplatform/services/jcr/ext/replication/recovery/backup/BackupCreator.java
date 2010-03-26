@@ -43,7 +43,7 @@ public class BackupCreator implements Runnable
    /**
     * The apache logger.
     */
-   private static Log log = ExoLogger.getLogger("ext.BackupCreator");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.BackupCreator");
 
    /**
     * The thread to BackupCreator.

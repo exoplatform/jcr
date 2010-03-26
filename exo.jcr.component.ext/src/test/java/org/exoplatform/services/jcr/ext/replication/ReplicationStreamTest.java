@@ -40,7 +40,7 @@ import javax.jcr.PathNotFoundException;
 public class ReplicationStreamTest extends BaseReplicationTest
 {
 
-   private static final Log log = ExoLogger.getLogger(ReplicationStreamTest.class);
+   private static final Log log = ExoLogger.getLogger("exo.jcr.component.ext.ReplicationStreamTest");
 
    public void testAddNode() throws Exception
    {

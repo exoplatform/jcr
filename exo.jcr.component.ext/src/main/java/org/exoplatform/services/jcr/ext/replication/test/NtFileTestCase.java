@@ -45,7 +45,7 @@ public class NtFileTestCase extends BaseReplicationTestCase
    /**
     * The apache logger.
     */
-   private static final Log log = ExoLogger.getLogger(NtFileTestCase.class);
+   private static final Log log = ExoLogger.getLogger("exo.jcr.component.ext.NtFileTestCase");
 
    /**
     * NtFileTestCase constructor.

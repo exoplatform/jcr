@@ -37,7 +37,7 @@ public class BackupMessagesLog
 
    public static final int MESSAGES_MAXSIZE = 250;
 
-   protected Log log = ExoLogger.getLogger("ext.BackupMessagesLog");
+   protected Log log = ExoLogger.getLogger("exo.jcr.component.ext.BackupMessagesLog");
 
    private final List<BackupMessage> messages = new ArrayList<BackupMessage>();
 

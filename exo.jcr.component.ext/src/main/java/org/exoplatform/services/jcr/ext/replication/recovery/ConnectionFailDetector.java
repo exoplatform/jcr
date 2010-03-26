@@ -47,7 +47,7 @@ public class ConnectionFailDetector implements StateListener
    /**
     * The apache logger.
     */
-   private static Log log = ExoLogger.getLogger("ext.ConnectionFailDetector");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.ConnectionFailDetector");
 
    /**
     * Definition the VIEW_CHECK timeout.

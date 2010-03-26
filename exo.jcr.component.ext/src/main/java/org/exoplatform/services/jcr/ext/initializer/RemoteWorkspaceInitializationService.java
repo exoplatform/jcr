@@ -106,7 +106,7 @@ public class RemoteWorkspaceInitializationService implements ResourceContainer
    /**
     * The apache logger.
     */
-   private static Log log = ExoLogger.getLogger("ext.RemoteWorkspaceInitializationService");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.RemoteWorkspaceInitializationService");
 
    /**
     * The repository service.

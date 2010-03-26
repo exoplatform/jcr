@@ -50,7 +50,7 @@ public class JobWorkspaceRestore extends Thread
    /**
     * The apache logger.
     */
-   private static Log log = ExoLogger.getLogger("ext.JobWorkspaceRestore");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.JobWorkspaceRestore");
 
    /**
     * RESTORE_STARTED. The state of start restore.

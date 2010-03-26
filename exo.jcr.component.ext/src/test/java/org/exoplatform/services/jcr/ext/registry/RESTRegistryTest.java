@@ -46,7 +46,7 @@ import javax.ws.rs.ext.MessageBodyWriter;
 public class RESTRegistryTest extends BaseStandaloneTest
 {
 
-   private static final Log log = ExoLogger.getLogger(RESTRegistryTest.class);
+   private static final Log log = ExoLogger.getLogger("exo.jcr.component.ext.RESTRegistryTest");
 
    private ThreadLocalSessionProviderService sessionProviderService;
 

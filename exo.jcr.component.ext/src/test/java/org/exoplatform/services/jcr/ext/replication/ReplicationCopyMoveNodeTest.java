@@ -38,7 +38,7 @@ import javax.jcr.Node;
 public class ReplicationCopyMoveNodeTest extends BaseReplicationTest
 {
 
-   private static final Log log = ExoLogger.getLogger(ReplicationCopyMoveNodeTest.class);
+   private static final Log log = ExoLogger.getLogger("exo.jcr.component.ext.ReplicationCopyMoveNodeTest");
 
    public void testSessionMove() throws Exception
    {

@@ -39,7 +39,7 @@ public class RegistryInitializationEntryPlugin extends BaseComponentPlugin
    /**
     * Class logger.
     */
-   private final Log log = ExoLogger.getLogger(RegistryInitializationEntryPlugin.class);
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.ext.RegistryInitializationEntryPlugin");
 
    private HashMap<String, String> appConfiguration = new HashMap<String, String>();
 

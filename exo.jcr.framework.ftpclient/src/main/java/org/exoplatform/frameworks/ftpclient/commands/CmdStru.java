@@ -31,7 +31,7 @@ import org.exoplatform.services.log.Log;
 public class CmdStru extends FtpCommandImpl
 {
 
-   private static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "CmdStru");
+   private static Log log = ExoLogger.getLogger("exo.jcr.framework.command.CmdStru");
 
    private String structureType;
 

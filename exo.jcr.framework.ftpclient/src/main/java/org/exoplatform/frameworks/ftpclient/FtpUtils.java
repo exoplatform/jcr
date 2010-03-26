@@ -33,7 +33,7 @@ import java.net.ServerSocket;
 public class FtpUtils
 {
 
-   protected static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "FtpUtils");
+   protected static Log log = ExoLogger.getLogger("exo.jcr.framework.command.FtpUtils");
 
    public static int getReplyCode(String reply)
    {
