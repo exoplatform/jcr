@@ -760,9 +760,9 @@ public class HTTPBackupAgentTest extends BaseStandaloneTest
 
       assertEquals(200, cres.getStatus());
 
-      WorkspaceEntry defEntry = (WorkspaceEntry)getObject(WorkspaceEntry.class, responseWriter.getBody());
+      RepositoryEntry defEntry = (RepositoryEntry)getObject(RepositoryEntry.class, responseWriter.getBody());
 
-      assertEquals(repository.getConfiguration().getDefaultWorkspaceName(), defEntry.getName());
+      assertEquals(repository.getConfiguration().getName(), defEntry.getName());
    }
 
    public void testWorkspaceEntryRestore() throws Exception
