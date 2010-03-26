@@ -667,7 +667,6 @@ public class HTTPBackupAgentTest extends BaseStandaloneTest
       assertEquals(ShortInfo.COMPLETED, info.getType().intValue());
       assertEquals(0, info.getState().intValue());
       assertEquals("db6", info.getRepositoryName());
-      assertEquals("ws2", info.getWorkspaceName());
    }
 
    public void testInfoBackupCompletedById() throws Exception
@@ -970,7 +969,7 @@ public class HTTPBackupAgentTest extends BaseStandaloneTest
          MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
          ContainerRequestUserRole creq =
             new ContainerRequestUserRole("GET", new URI(HTTP_BACKUP_AGENT_PATH
-               + HTTPBackupAgent.Constants.OperationType.CURRENT_BACKUPS_REPOSITORY_INFO), new URI(""), null,
+               + HTTPBackupAgent.Constants.OperationType.COMPLETED_BACKUPS_REPOSITORY_INFO), new URI(""), null,
                new InputHeadersMap(headers));
 
          ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
@@ -1026,7 +1025,7 @@ public class HTTPBackupAgentTest extends BaseStandaloneTest
       }
 
       ArrayList<WorkspaceEntry> wsEntries = new ArrayList<WorkspaceEntry>();
-      wsEntries.add(makeWorkspaceEntry(defWEntry, "db7", "ws1", "jdbcjcr24"));
+      wsEntries.add(makeWorkspaceEntry(defWEntry, "db7", "ws", "jdbcjcr24"));
       wsEntries.add(makeWorkspaceEntry(defWEntry, "db7", "ws2", "jdbcjcr24"));
       RepositoryEntry rEntry = makeRepositoryEntry(defREntry, "db7", wsEntries);
 
