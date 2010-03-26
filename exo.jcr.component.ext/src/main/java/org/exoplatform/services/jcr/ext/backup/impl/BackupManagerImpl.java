@@ -468,7 +468,7 @@ public class BackupManagerImpl implements BackupManager, Startable
 
          try
          {
-            if (!isCurrentBackup(cf))
+            if (!isCurrentRepositoryBackup(cf))
                logs.add(new RepositoryBackupChainLog(cf));
          }
          catch (BackupOperationException e)
@@ -491,6 +491,22 @@ public class BackupManagerImpl implements BackupManager, Startable
    private boolean isCurrentBackup(File log)
    {
       for (BackupChain chain : currentBackups)
+         if (log.getName().equals(new File(chain.getLogFilePath()).getName()))
+            return true;
+
+      return false;
+   }
+
+   /**
+    * isCurrentRepositoryBackup.
+    * 
+    * @param log
+    *          File, the log to backup
+    * @return boolean return the 'true' if this log is current backup.
+    */
+   private boolean isCurrentRepositoryBackup(File log)
+   {
+      for (RepositoryBackupChain chain : currentRepositoryBackups)
          if (log.getName().equals(new File(chain.getLogFilePath()).getName()))
             return true;
 
