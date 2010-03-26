@@ -126,7 +126,7 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
       }
       catch (XMLStreamException e)
       {
-         throw new RepositoryException(e);
+         throw new RepositoryException("The XML file is corrupted : " + restorePath, e);
       }
       catch (FactoryConfigurationError e)
       {
