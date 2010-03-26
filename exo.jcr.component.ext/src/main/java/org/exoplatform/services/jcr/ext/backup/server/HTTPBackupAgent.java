@@ -109,6 +109,11 @@ public class HTTPBackupAgent implements ResourceContainer
          public static final String START_BACKUP = "/start";
 
          /**
+          * Start backup repository operation.
+          */
+         public static final String START_BACKUP_REPOSITORY = "/start-backup-repository";
+
+         /**
           * Restore operations.
           */
          public static final String RESTORE = "/restore";
@@ -126,7 +131,7 @@ public class HTTPBackupAgent implements ResourceContainer
          /**
           * Stop repository backup operations.
           */
-         public static final String STOP_BACKUP_REPOSITORY = "/stop-repository-backup";
+         public static final String STOP_BACKUP_REPOSITORY = "/stop-backup-repository";
 
          /**
           * The current and completed backups info operation.
@@ -146,7 +151,7 @@ public class HTTPBackupAgent implements ResourceContainer
          /**
           * The current repository backups info operations.
           */
-         public static final String CURRENT_BACKUPS_REPOSITORY_INFO = "/info/backup-repository/current";
+         public static final String CURRENT_BACKUP_REPOSITORY_INFO = "/info/backup-repository/current";
 
          /**
           * The current or completed backup info operations.
@@ -381,8 +386,8 @@ public class HTTPBackupAgent implements ResourceContainer
    @Consumes(MediaType.APPLICATION_JSON)
    @Produces(MediaType.APPLICATION_JSON)
    @RolesAllowed("administrators")
-   @Path("/start/{repo}")
-   public Response start(BackupConfigBean bConfigBeen, @PathParam("repo") String repository)
+   @Path("/start-backup-repository/{repo}")
+   public Response startBackupRepository(BackupConfigBean bConfigBeen, @PathParam("repo") String repository)
    {
       String failMessage;
       Response.Status status;
@@ -648,7 +653,7 @@ public class HTTPBackupAgent implements ResourceContainer
    @Produces(MediaType.APPLICATION_JSON)
    @RolesAllowed("administrators")
    @Path("/restore-repository/{id}")
-   public Response restore(RepositoryEntry rEntry, @PathParam("id") String backupId)
+   public Response restoreRepository(RepositoryEntry rEntry, @PathParam("id") String backupId)
    {
       String failMessage;
       Response.Status status;
@@ -793,8 +798,8 @@ public class HTTPBackupAgent implements ResourceContainer
    @GET
    @Produces(MediaType.APPLICATION_JSON)
    @RolesAllowed("administrators")
-   @Path("/stop-repository-backup/{id}")
-   public Response stopRepositoryBackup(@PathParam("id") String backupId)
+   @Path("/stop-backup-repository/{id}")
+   public Response stopBackupRepository(@PathParam("id") String backupId)
    {
       String failMessage;
       Response.Status status;
@@ -1001,7 +1006,7 @@ public class HTTPBackupAgent implements ResourceContainer
    @Produces(MediaType.APPLICATION_JSON)
    @RolesAllowed("administrators")
    @Path("/info/backup-repository-id/{id}")
-   public Response infoRepositoryBackupId(@PathParam("id") String id)
+   public Response infoBackupRepositoryId(@PathParam("id") String id)
    {
       try
       {
@@ -1080,7 +1085,7 @@ public class HTTPBackupAgent implements ResourceContainer
    @Produces(MediaType.APPLICATION_JSON)
    @RolesAllowed("administrators")
    @Path("/info/backup-repository/current")
-   public Response infoRepositoryBackupCurrent()
+   public Response infoBackupRepositoryCurrent()
    {
       try
       {
@@ -1145,7 +1150,7 @@ public class HTTPBackupAgent implements ResourceContainer
    @Produces(MediaType.APPLICATION_JSON)
    @RolesAllowed("administrators")
    @Path("/info/backup-repository/completed")
-   public Response infoRepositoryBackupCompleted()
+   public Response infoBackupRepositoryCompleted()
    {
       try
       {
