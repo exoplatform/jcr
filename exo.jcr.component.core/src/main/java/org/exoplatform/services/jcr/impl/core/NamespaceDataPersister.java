@@ -65,7 +65,7 @@ import javax.jcr.RepositoryException;
 public class NamespaceDataPersister implements ComponentPersister
 {
 
-   public static Log log = ExoLogger.getLogger(NamespaceDataPersister.class.getName());
+   public static Log log = ExoLogger.getLogger("exo.jcr.component.core.NamespaceDataPersister");
 
    private final DataManager dataManager;
 

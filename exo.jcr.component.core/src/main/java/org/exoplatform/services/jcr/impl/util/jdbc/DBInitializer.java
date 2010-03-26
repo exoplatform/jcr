@@ -61,7 +61,7 @@ public class DBInitializer
 
    static public String SQL_TRIGGERNAME = "(([A-Z_]+JCR_[A-Z_]+){1}(\\s*?|(\\(\\))*?)+)+?";
 
-   protected final Log LOG = ExoLogger.getLogger("jcr.DBInitializer");
+   protected final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.DBInitializer");
 
    protected final Connection connection;
 
@@ -85,13 +85,12 @@ public class DBInitializer
 
    protected final Pattern dbTriggerNamePattern;
 
-   public DBInitializer(String containerName, Connection connection, String scriptPath)
-      throws IOException
+   public DBInitializer(String containerName, Connection connection, String scriptPath) throws IOException
    {
       this.connection = connection;
       this.containerName = containerName;
       this.script = script(scriptPath);
-      
+
       this.creatTablePattern = Pattern.compile(SQL_CREATETABLE, Pattern.CASE_INSENSITIVE);
       this.creatViewPattern = Pattern.compile(SQL_CREATEVIEW, Pattern.CASE_INSENSITIVE);
       this.dbObjectNamePattern = Pattern.compile(SQL_OBJECTNAME, Pattern.CASE_INSENSITIVE);

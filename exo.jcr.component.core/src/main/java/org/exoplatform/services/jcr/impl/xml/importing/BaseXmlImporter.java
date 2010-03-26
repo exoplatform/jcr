@@ -108,7 +108,7 @@ public abstract class BaseXmlImporter implements ContentImporter
 
    protected final ValueFactoryImpl valueFactory;
 
-   private final Log log = ExoLogger.getLogger("jcr.ImporterBase");
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.ImporterBase");
 
    public BaseXmlImporter(NodeData parent, QPath ancestorToSave, int uuidBehavior, ItemDataConsumer dataConsumer,
       NodeTypeDataManager ntManager, LocationFactory locationFactory, ValueFactoryImpl valueFactory,

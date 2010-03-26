@@ -124,7 +124,7 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
    /**
     * Cache implementaion logger.
     */
-   protected static final Log LOG = ExoLogger.getLogger("jcr.LinkedWorkspaceStorageCacheImpl");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.LinkedWorkspaceStorageCacheImpl");
 
    /**
     * Cache C.
@@ -553,7 +553,7 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
     */
    abstract class WorkerTask extends TimerTask
    {
-      protected Log log = ExoLogger.getLogger("jcr.LinkedWorkspaceStorageCacheImpl_Worker");
+      protected Log log = ExoLogger.getLogger("exo.jcr.component.core.LinkedWorkspaceStorageCacheImpl_Worker");
 
       protected Worker currentWorker = null;
    }

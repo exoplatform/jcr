@@ -51,7 +51,7 @@ import javax.transaction.TransactionManager;
 @SuppressWarnings("unchecked")
 public class BufferedJBossCache implements Cache<Serializable, Object>
 {
-   //   private final Log log = ExoLogger.getLogger(BufferedJbossCache.class);
+   //   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.BufferedJbossCache");
 
    /**
     * Parent cache.
@@ -160,7 +160,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
    {
       return ((CacheSPI<Serializable, Object>)parentCache).getNumberOfNodes();
    }
-   
+
    /* (non-Javadoc)
     * @see org.jboss.cache.Cache#addCacheListener(java.lang.Object)
     */

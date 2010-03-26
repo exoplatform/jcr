@@ -36,6 +36,10 @@ import javax.jcr.RepositoryException;
  */
 public class DefaultChangesFilter extends IndexerChangesFilter
 {
+   /**
+    * Logger instance for this class
+    */
+   private static final Log log = ExoLogger.getLogger("exo.jcr.component.core.DefaultChangesFilter");
 
    /**
     * @param searchManager
@@ -51,7 +55,8 @@ public class DefaultChangesFilter extends IndexerChangesFilter
     */
    public DefaultChangesFilter(SearchManager searchManager, SearchManager parentSearchManager,
       QueryHandlerEntry config, IndexingTree indexingTree, IndexingTree parentIndexingTree, QueryHandler handler,
-      QueryHandler parentHandler, ConfigurationManager cfm) throws IOException, RepositoryConfigurationException, RepositoryException
+      QueryHandler parentHandler, ConfigurationManager cfm) throws IOException, RepositoryConfigurationException,
+      RepositoryException
    {
       super(searchManager, parentSearchManager, config, indexingTree, parentIndexingTree, handler, parentHandler, cfm);
       IndexerIoModeHandler modeHandler = new IndexerIoModeHandler(IndexerIoMode.READ_WRITE);
@@ -67,11 +72,6 @@ public class DefaultChangesFilter extends IndexerChangesFilter
          handler.init();
       }
    }
-
-   /**
-    * Logger instance for this class
-    */
-   private static final Log log = ExoLogger.getLogger(DefaultChangesFilter.class);
 
    /**
     * @param removedNodes 

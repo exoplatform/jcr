@@ -40,7 +40,7 @@ import javax.sql.DataSource;
  */
 public class LockJDBCContainer
 {
-   private final Log log = ExoLogger.getLogger(LockJDBCContainer.class);
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.LockJDBCContainer");
 
    private DataSource dataSource;
 

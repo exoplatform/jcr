@@ -40,7 +40,7 @@ import javax.jcr.RepositoryException;
 public class LockJDBCConnection
 {
 
-   private final Log LOG = ExoLogger.getLogger(LockJDBCContainer.class);
+   private final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.LockJDBCContainer");
 
    // queries
    protected String ADD_LOCK_DATA;

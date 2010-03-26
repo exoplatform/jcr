@@ -70,7 +70,7 @@ import javax.jcr.ValueFormatException;
 public class JCRDateFormat
 {
 
-   public static Log log = ExoLogger.getLogger("jcr.JCRDateFormat");
+   public static Log log = ExoLogger.getLogger("exo.jcr.component.core.JCRDateFormat");
 
    /**
     * ISO 8601, RFC822 formats for JCR datas deserialization in order of priority of parse

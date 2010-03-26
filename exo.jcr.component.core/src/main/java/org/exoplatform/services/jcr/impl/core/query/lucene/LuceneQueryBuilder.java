@@ -101,8 +101,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
    /**
     * Logger for this class
     */
-   private static final Logger log =
-      LoggerFactory.getLogger("exo.jcr.component.core." + LuceneQueryBuilder.class.getSimpleName());
+   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.LuceneQueryBuilder");
 
    /**
     * Root node of the abstract query tree
