@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.jcr.ItemExistsException;
+import javax.jcr.ItemNotFoundException;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.PathNotFoundException;
@@ -971,13 +972,13 @@ public class TestOrderBefore extends JcrAPIBaseTest
       session.getRootNode().addNode("a");
       session.save();
       session.logout();
-      
+
       session = repository.login(credentials, "ws");
       Node a = session.getRootNode().getNode("a"); // We suppose it already exist
-      a.addNode("n1");
-      a.addNode("n2");
-      a.addNode("n3");
-      a.addNode("n4");
+      a.addNode("n");
+      a.addNode("n");
+      a.addNode("n");
+      a.addNode("n");
       session.save();
       session.logout();
 
@@ -992,9 +993,51 @@ public class TestOrderBefore extends JcrAPIBaseTest
 
       session = repository.login(credentials, "ws");
       a = session.getRootNode().getNode("a");
-      a.addNode("n5");
-      a.orderBefore("n5", null); // NPE happens here
-      session.save(); 
+      a.addNode("n");
+      a.orderBefore("n", null); // NPE happens here
+      session.save();
+   }
+
+   public void testDeleteOrderBefore_SNS() throws Exception
+   {
+      Session session = repository.login(credentials, "ws");
+      session.getRootNode().addNode("a");
+      session.save();
+      session.logout();
+
+      session = repository.login(credentials, "ws");
+      Node a = session.getRootNode().getNode("a"); // We suppose it already exist
+      Node n1 = a.addNode("n");
+      n1.addMixin("mix:referenceable");
+      Node n2 = a.addNode("n");
+      n2.addMixin("mix:referenceable");
+      Node n3 = a.addNode("n");
+      n3.addMixin("mix:referenceable");
+      session.save();
+      String n1id = n1.getUUID();
+      String n2id = n2.getUUID();
+      String n3id = n3.getUUID();
+      session.logout();
+
+      session = repository.login(credentials, "ws");
+      a = session.getRootNode().getNode("a");
+      a.getNode("n[2]").remove();
+      a.save();
+      session.save();
+      session.logout();
+
+      session = repository.login(credentials, "ws");
+      a = session.getRootNode().getNode("a");
+
+      try
+      {
+         session.getNodeByUUID(n2id);
+         fail("Node with id " + n2id + " is deleted");
+      }
+      catch (ItemNotFoundException e)
+      {
+         // ok
+      }
    }
 
    private EntityCollection getEntityCollection(NodeIterator nodes)
