@@ -126,7 +126,7 @@ public class RepositoryBackupChainImpl
          if (log.isDebugEnabled()) {
             for (BackupChain bc : workspaceBackups)
             {
-               log.debug( repositoryBackupId + " : " + getState(bc.getFullBackupState()));
+               log.debug(repositoryBackupId + " : " + getState(bc.getFullBackupState()));
             }
          }
          
@@ -173,7 +173,7 @@ public class RepositoryBackupChainImpl
             {
                state = FINISHED;
             }
-            else if (fullBackupsState == BackupJob.FINISHED && incrementalBackupsState != BackupJob.WORKING)
+            else if (fullBackupsState == BackupJob.FINISHED && incrementalBackupsState == BackupJob.WORKING)
             {
                state = FULL_BACKUP_FINISHED_INCREMENTAL_BACKUP_WORKING;
             }
