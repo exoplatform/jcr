@@ -29,6 +29,8 @@ import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
 import org.exoplatform.services.jcr.ext.backup.BackupJob;
 import org.exoplatform.services.jcr.ext.backup.BackupManager;
 import org.exoplatform.services.jcr.ext.backup.ContainerRequestUserRole;
+import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChain;
+import org.exoplatform.services.jcr.ext.backup.impl.JobRepositoryRestore;
 import org.exoplatform.services.jcr.ext.backup.impl.JobWorkspaceRestore;
 import org.exoplatform.services.jcr.ext.backup.server.bean.BackupConfigBean;
 import org.exoplatform.services.jcr.ext.backup.server.bean.response.BackupServiceInfoBean;
@@ -281,7 +283,8 @@ public class HTTPBackupAgentTest extends BaseStandaloneTest
       assertNotNull(info.getStartedTime());
       assertNotNull(info.getFinishedTime());
       assertEquals(ShortInfo.CURRENT, info.getType().intValue());
-      assertEquals(BackupJob.FINISHED, info.getState().intValue());
+      assertTrue(RepositoryBackupChain.WORKING == info.getState().intValue()
+         || RepositoryBackupChain.FULL_BACKUP_FINISHED_INCREMENTAL_BACKUP_WORKING == info.getState().intValue());
       assertEquals("db6", info.getRepositoryName());
    }
 
@@ -342,8 +345,8 @@ public class HTTPBackupAgentTest extends BaseStandaloneTest
       assertNotNull(info.getStartedTime());
       assertNotNull(info.getFinishedTime());
       assertEquals(ShortInfo.CURRENT, info.getType().intValue());
-      assertEquals(BackupJob.FINISHED, info.getState().intValue());
-      assertEquals("db6", info.getRepositoryName());
+      assertTrue(RepositoryBackupChain.WORKING == info.getState().intValue()
+         || RepositoryBackupChain.FULL_BACKUP_FINISHED_INCREMENTAL_BACKUP_WORKING == info.getState().intValue());
    }
 
    public void testInfoBackupCurrent() throws Exception
@@ -403,9 +406,9 @@ public class HTTPBackupAgentTest extends BaseStandaloneTest
       assertNotNull(info.getStartedTime());
       assertNotNull(info.getFinishedTime());
       assertEquals(ShortInfo.CURRENT, info.getType().intValue());
-      assertEquals(BackupJob.FINISHED, info.getState().intValue());
+      assertTrue(RepositoryBackupChain.WORKING == info.getState().intValue()
+         || RepositoryBackupChain.FULL_BACKUP_FINISHED_INCREMENTAL_BACKUP_WORKING == info.getState().intValue());
       assertEquals("db6", info.getRepositoryName());
-      assertEquals("ws2", info.getWorkspaceName());
    }
 
    public void testInfoBackupCurrentById() throws Exception
@@ -490,7 +493,6 @@ public class HTTPBackupAgentTest extends BaseStandaloneTest
          ShortInfo info = list.get(0);
 
          assertEquals(info.getRepositoryName(), "db6");
-         assertEquals(info.getWorkspaceName(), "ws2");
 
          id = info.getBackupId();
       }
@@ -514,7 +516,8 @@ public class HTTPBackupAgentTest extends BaseStandaloneTest
       assertNotNull(info.getStartedTime());
       assertNotNull(info.getFinishedTime());
       assertEquals(ShortInfo.CURRENT, info.getType().intValue());
-      assertEquals(BackupJob.FINISHED, info.getState().intValue());
+      assertTrue(RepositoryBackupChain.WORKING == info.getState().intValue()
+         || RepositoryBackupChain.FULL_BACKUP_FINISHED_INCREMENTAL_BACKUP_WORKING == info.getState().intValue());
       assertEquals("db6", info.getRepositoryName());
       assertNotNull(info.getBackupConfig());
    }
@@ -595,7 +598,7 @@ public class HTTPBackupAgentTest extends BaseStandaloneTest
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
       ContainerRequestUserRole creq =
          new ContainerRequestUserRole("GET", new URI(HTTP_BACKUP_AGENT_PATH
-            + HTTPBackupAgent.Constants.OperationType.START_BACKUP_REPOSITORY + "/" + id), new URI(""), null,
+            + HTTPBackupAgent.Constants.OperationType.STOP_BACKUP_REPOSITORY + "/" + id), new URI(""), null,
             new InputHeadersMap(headers));
 
       ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
