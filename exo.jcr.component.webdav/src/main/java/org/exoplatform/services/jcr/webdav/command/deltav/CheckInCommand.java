@@ -45,7 +45,7 @@ public class CheckInCommand
    /**
     * logger.
     */
-   private static Log log = ExoLogger.getLogger(CheckInCommand.class);
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.CheckInCommand");
 
    /**
     * Webdav CheckIn method implementation.

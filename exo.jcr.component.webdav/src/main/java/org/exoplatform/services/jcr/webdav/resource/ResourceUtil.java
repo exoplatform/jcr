@@ -44,7 +44,7 @@ public class ResourceUtil
    /**
     * logger.
     */
-   private static Log log = ExoLogger.getLogger(ResourceUtil.class);
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.ResourceUtil");
 
    /**
     * If the node is file.

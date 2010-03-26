@@ -18,34 +18,6 @@
  */
 package org.exoplatform.services.jcr.webdav;
 
-import java.io.InputStream;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
-import javax.jcr.NoSuchWorkspaceException;
-import javax.jcr.PathNotFoundException;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.nodetype.NoSuchNodeTypeException;
-import javax.jcr.nodetype.NodeType;
-import javax.jcr.nodetype.NodeTypeManager;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.HEAD;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-
 import org.exoplatform.common.http.HTTPStatus;
 import org.exoplatform.common.util.HierarchicalProperty;
 import org.exoplatform.commons.utils.MimeTypeResolver;
@@ -96,6 +68,34 @@ import org.exoplatform.services.rest.ext.webdav.method.UNLOCK;
 import org.exoplatform.services.rest.ext.webdav.method.VERSIONCONTROL;
 import org.exoplatform.services.rest.resource.ResourceContainer;
 
+import java.io.InputStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import javax.jcr.NoSuchWorkspaceException;
+import javax.jcr.PathNotFoundException;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.nodetype.NoSuchNodeTypeException;
+import javax.jcr.nodetype.NodeType;
+import javax.jcr.nodetype.NodeTypeManager;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.HEAD;
+import javax.ws.rs.HeaderParam;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+
 /**
  * Created by The eXo Platform SARL .<br/>
  * 
@@ -139,7 +139,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    /**
     * Logger.
     */
-   private static Log log = ExoLogger.getLogger(WebDavServiceImpl.class);
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.WebDavServiceImpl");
 
    /**
     * Local Thread SessionProvider.

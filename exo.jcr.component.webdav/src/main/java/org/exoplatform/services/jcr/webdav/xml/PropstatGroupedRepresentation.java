@@ -50,7 +50,7 @@ public class PropstatGroupedRepresentation
    /**
     * logger.
     */
-   private static Log log = ExoLogger.getLogger(PropstatGroupedRepresentation.class);
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.PropstatGroupedRepresentation");
 
    /**
     * properties statuses.

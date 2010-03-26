@@ -48,7 +48,7 @@ public class OrderPatchResponseEntity implements StreamingOutput
    /**
     * logger.
     */
-   private static Log log = ExoLogger.getLogger(OrderPatchResponseEntity.class);
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.OrderPatchResponseEntity");
 
    /**
     * Namespace context.

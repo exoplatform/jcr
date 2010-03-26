@@ -52,7 +52,7 @@ public class PropPatchCommand
    /**
     * logger.
     */
-   private static Log log = ExoLogger.getLogger(PropPatchCommand.class);
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.PropPatchCommand");
 
    /**
     * resource locks.

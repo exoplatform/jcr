@@ -48,7 +48,7 @@ public class MkColCommand
    /**
     * Logger.
     */
-   private static Log log = ExoLogger.getLogger(MkColCommand.class);
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.MkColCommand");
 
    /**
     * resource locks.

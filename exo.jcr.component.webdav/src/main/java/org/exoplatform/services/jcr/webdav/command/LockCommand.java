@@ -59,7 +59,7 @@ public class LockCommand
    /**
     * logger.
     */
-   private static Log log = ExoLogger.getLogger(LockCommand.class);
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.LockCommand");
 
    /**
     * Resource locks holder.

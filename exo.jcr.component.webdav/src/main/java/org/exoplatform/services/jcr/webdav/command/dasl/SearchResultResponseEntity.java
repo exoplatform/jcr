@@ -60,7 +60,7 @@ public class SearchResultResponseEntity implements StreamingOutput
    /**
     * logger.
     */
-   private static Log log = ExoLogger.getLogger(SearchResultResponseEntity.class);
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.SearchResultResponseEntity");
 
    /**
     * Namespace conetext.

@@ -64,7 +64,7 @@ import javax.ws.rs.core.MultivaluedMap;
 public abstract class BaseStandaloneTest extends TestCase
 {
 
-   protected static Log log = ExoLogger.getLogger(BaseStandaloneTest.class);
+   protected static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.BaseStandaloneTest");
 
    protected static String TEMP_PATH = "./temp/fsroot";
 

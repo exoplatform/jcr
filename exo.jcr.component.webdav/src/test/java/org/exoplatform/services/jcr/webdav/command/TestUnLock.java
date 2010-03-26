@@ -46,7 +46,7 @@ public class TestUnLock extends BaseStandaloneTest
    /**
     * Class logger.
     */
-   private final Log log = ExoLogger.getLogger(TestUnLock.class);
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.webdav.TestUnLock");
 
    /**
     * {@inheritDoc}

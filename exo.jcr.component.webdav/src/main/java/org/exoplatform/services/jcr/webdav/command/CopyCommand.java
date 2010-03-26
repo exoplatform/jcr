@@ -43,7 +43,7 @@ public class CopyCommand
    /**
     * Logger.
     */
-   private static Log log = ExoLogger.getLogger(CopyCommand.class);
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.CopyCommand");
 
    /**
     * Webdav COPY method implementation for the same workspace.

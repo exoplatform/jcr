@@ -53,7 +53,7 @@ public class OrderPatchCommand
    /**
     * logger.
     */
-   private static Log log = ExoLogger.getLogger(OrderPatchCommand.class);
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.OrderPatchCommand");
 
    /**
     * Constructor.

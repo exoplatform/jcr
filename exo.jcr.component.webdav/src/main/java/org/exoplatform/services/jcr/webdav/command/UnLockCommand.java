@@ -44,7 +44,7 @@ public class UnLockCommand
    /**
     * logger.
     */
-   private static Log log = ExoLogger.getLogger(UnLockCommand.class);
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.UnLockCommand");
 
    /**
     * resource locks.

@@ -55,7 +55,7 @@ public class PropFindResponseEntity implements StreamingOutput
    /**
     * logger.
     */
-   private static Log log = ExoLogger.getLogger(PropFindResponseEntity.class);
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.PropFindResponseEntity");
 
    /**
     * XML writer.

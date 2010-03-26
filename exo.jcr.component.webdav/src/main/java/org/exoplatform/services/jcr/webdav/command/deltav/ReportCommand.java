@@ -55,7 +55,7 @@ public class ReportCommand
    /**
     * logger.
     */
-   private static Log log = ExoLogger.getLogger(ReportCommand.class);
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.ReportCommand");
 
    /**
     * Webdav Report method implementation.

@@ -110,7 +110,7 @@ public class CollectionResource extends GenericResource
    /**
     * logger.
     */
-   private final static Log LOG = ExoLogger.getLogger(CollectionResource.class);
+   private final static Log LOG = ExoLogger.getLogger("exo.jcr.component.webdav.CollectionResource");
 
    /**
     * Properties skipped for collections.

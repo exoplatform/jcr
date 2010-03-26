@@ -46,7 +46,7 @@ public class MoveCommand
    /**
     * Logger.
     */
-   private static Log log = ExoLogger.getLogger(MoveCommand.class);
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.MoveCommand");
 
    // Fix problem with moving under Windows Explorer.
    static

@@ -53,7 +53,7 @@ public class FileResource extends GenericResource
    /**
     * logger.
     */
-   private static final Log LOG = ExoLogger.getLogger(FileResource.class);
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.webdav.FileResource");
 
    /**
     * The list of properties which are skipped for nt:file.
@@ -393,11 +393,11 @@ public class FileResource extends GenericResource
    {
       if (contentData == null)
       {
-         return contentData = contentNode().getProperty("jcr:data");  
+         return contentData = contentNode().getProperty("jcr:data");
       }
       else
       {
-         return contentData;  
+         return contentData;
       }
    }
 

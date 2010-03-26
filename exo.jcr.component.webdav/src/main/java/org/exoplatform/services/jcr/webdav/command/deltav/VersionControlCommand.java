@@ -41,7 +41,7 @@ public class VersionControlCommand
    /**
     * logger.
     */
-   private static Log log = ExoLogger.getLogger(VersionControlCommand.class);
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.VersionControlCommand");
 
    /**
     * Webdav Version-Control method implementation.

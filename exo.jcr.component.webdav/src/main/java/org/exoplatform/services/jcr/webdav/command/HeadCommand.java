@@ -49,7 +49,7 @@ public class HeadCommand
    /**
     * Logger.
     */
-   private static Log log = ExoLogger.getLogger(HeadCommand.class);
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.HeadCommand");
 
    /**
     * Webdav Head method implementation.

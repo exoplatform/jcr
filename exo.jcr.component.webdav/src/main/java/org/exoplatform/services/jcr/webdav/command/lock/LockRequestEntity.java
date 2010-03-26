@@ -38,7 +38,7 @@ public class LockRequestEntity
    /**
     * logger.
     */
-   private Log log = ExoLogger.getLogger("jcr.LockRequestEntity");
+   private Log log = ExoLogger.getLogger("exo.jcr.component.webdav.LockRequestEntity");
 
    /**
     * Lock scope.

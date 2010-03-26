@@ -46,7 +46,7 @@ public class WebDavNamespaceContext implements NamespaceContext
    /**
     * logger.
     */
-   private static Log log = ExoLogger.getLogger(WebDavNamespaceContext.class);
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.WebDavNamespaceContext");
 
    /**
     * Namespace prefixes.

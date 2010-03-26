@@ -46,7 +46,7 @@ public class UnCheckOutCommand
    /**
     * logger.
     */
-   private static Log log = ExoLogger.getLogger(UnCheckOutCommand.class);
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.UnCheckOutCommand");
 
    /**
     * Webdav Uncheckout method implementation.

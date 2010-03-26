@@ -44,7 +44,7 @@ public class MultipartByterangesEntity implements StreamingOutput
    /**
     * logger.
     */
-   private static Log log = ExoLogger.getLogger(MultipartByterangesEntity.class);
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.MultipartByterangesEntity");
 
    /**
     * resource.

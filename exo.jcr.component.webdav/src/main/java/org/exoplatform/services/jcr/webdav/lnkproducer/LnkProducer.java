@@ -50,7 +50,7 @@ public class LnkProducer implements ResourceContainer
    /**
     * logger.
     */
-   private static Log log = ExoLogger.getLogger(LnkProducer.class);
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.LnkProducer");
 
    /**
     * Default constructor.

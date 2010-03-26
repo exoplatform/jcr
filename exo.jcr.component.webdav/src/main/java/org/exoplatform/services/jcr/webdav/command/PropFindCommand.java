@@ -61,7 +61,7 @@ public class PropFindCommand
    /**
     * logger.
     */
-   private static Log log = ExoLogger.getLogger(PropFindCommand.class);
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.PropFindCommand");
 
    /**
     * Webdav Propfind method implementation.

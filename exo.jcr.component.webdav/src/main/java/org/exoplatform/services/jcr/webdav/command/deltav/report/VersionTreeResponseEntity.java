@@ -52,7 +52,7 @@ public class VersionTreeResponseEntity implements StreamingOutput
    /**
     * logger.
     */
-   private static Log log = ExoLogger.getLogger(VersionTreeResponseEntity.class);
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.VersionTreeResponseEntity");
 
    /**
     * XML writer.
