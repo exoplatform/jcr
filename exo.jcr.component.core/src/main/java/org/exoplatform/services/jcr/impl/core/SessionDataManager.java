@@ -594,31 +594,34 @@ public class SessionDataManager implements ItemDataConsumer
       for (int i = 0, length = refDatas.size(); i < length; i++)
       {
          PropertyData data = refDatas.get(i);
-         // check for permission for read
          NodeData parent = (NodeData)getItemData(data.getParentIdentifier());
-         // skip not permitted
-         if (accessManager.hasPermission(parent.getACL(), new String[]{PermissionType.READ}, session.getUserState()
-            .getIdentity()))
+         // if parent exists check for read permissions, otherwise the ref property was deleted in this session but not yet saved.
+         if (parent != null)
          {
-            PropertyImpl item;
-            ItemState state = changesLog.getItemState(data.getIdentifier());
-            if (state != null)
+            // skip not permitted
+            if (accessManager.hasPermission(parent.getACL(), new String[]{PermissionType.READ}, session.getUserState()
+               .getIdentity()))
             {
-               if (state.isDeleted())
+               PropertyImpl item;
+               ItemState state = changesLog.getItemState(data.getIdentifier());
+               if (state != null)
                {
-                  // skip deleted
-                  continue;
+                  if (state.isDeleted())
+                  {
+                     // skip deleted
+                     continue;
+                  }
+
+                  item = (PropertyImpl)readItem(state.getData(), null, true, false);
+               }
+               else
+               {
+                  item = (PropertyImpl)readItem(data, null, true, false);
                }
 
-               item = (PropertyImpl)readItem(state.getData(), null, true, false);
+               refs.add(item);
+               session.getActionHandler().postRead(item);
             }
-            else
-            {
-               item = (PropertyImpl)readItem(data, null, true, false);
-            }
-
-            refs.add(item);
-            session.getActionHandler().postRead(item);
          }
       }
       return refs;
@@ -1141,7 +1144,7 @@ public class SessionDataManager implements ItemDataConsumer
                   // We can't remove this VH now.
                   return;
                } // else -- if we has a references in workspace where the VH is being
-               // deleted we can remove VH now.
+                 // deleted we can remove VH now.
             }
          }
          finally

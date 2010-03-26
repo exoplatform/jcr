@@ -21,12 +21,16 @@ package org.exoplatform.services.jcr.api.writing;
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 
+import java.io.ByteArrayInputStream;
+import java.util.Calendar;
+
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
 import javax.jcr.PropertyType;
 import javax.jcr.ReferentialIntegrityException;
 import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 import javax.jcr.Value;
 import javax.jcr.ValueFactory;
 
@@ -342,6 +346,95 @@ public class TestNodeReference extends JcrAPIBaseTest
 
       PropertyIterator refs = testNode.getReferences();
       assertEquals(1, refs.getSize());
+   }
 
+   public void testGetTransientDeletedReferences() throws Exception
+   {
+      Node file = root.addNode("n", "nt:file");
+      Node content = file.addNode("jcr:content", "nt:resource");
+      content.setProperty("jcr:data", new ByteArrayInputStream(new byte[0]));
+      content.setProperty("jcr:mimeType", "");
+      content.setProperty("jcr:lastModified", Calendar.getInstance());
+      root.save();
+      Node link = root.addNode("link", "nt:linkedFile");
+      link.setProperty("jcr:content", content);
+      root.save();
+
+      // remove linked file but don't save it
+      content.getReferences().nextProperty().getParent().remove();
+
+      try
+      {
+         PropertyIterator it = content.getReferences();
+         assertEquals(0, it.getSize());
+
+         root.refresh(false);
+
+         it = content.getReferences();
+         assertEquals(1, it.getSize());
+      }
+      catch (Exception e)
+      {
+         fail(e.getMessage());
+      }
+   }
+
+   public void testGetTransientDeletedReferences_AnotherSession() throws Exception
+   {
+      Node file = root.addNode("n", "nt:file");
+      Node content = file.addNode("jcr:content", "nt:resource");
+      content.setProperty("jcr:data", new ByteArrayInputStream(new byte[0]));
+      content.setProperty("jcr:mimeType", "");
+      content.setProperty("jcr:lastModified", Calendar.getInstance());
+      root.save();
+      Node link = root.addNode("link", "nt:linkedFile");
+      link.setProperty("jcr:content", content);
+      root.save();
+
+      // remove linked file but don't save it
+      content.getReferences().nextProperty().getParent().remove();
+
+      Session anotherSession = repository.login(credentials, root.getSession().getWorkspace().getName());
+      try
+      {
+         // but another session still see the link as a reference
+         PropertyIterator it = ((Node)anotherSession.getItem(content.getPath())).getReferences();
+         assertEquals(1, it.getSize());
+      }
+      catch (Exception e)
+      {
+         fail(e.getMessage());
+      }
+      finally
+      {
+         anotherSession.logout();
+      }
+   }
+
+   public void testGetDeletedReferences() throws Exception
+   {
+      Node file = root.addNode("n", "nt:file");
+      Node content = file.addNode("jcr:content", "nt:resource");
+      content.setProperty("jcr:data", new ByteArrayInputStream(new byte[0]));
+      content.setProperty("jcr:mimeType", "");
+      content.setProperty("jcr:lastModified", Calendar.getInstance());
+      root.save();
+      Node link = root.addNode("link", "nt:linkedFile");
+      link.setProperty("jcr:content", content);
+      root.save();
+
+      // remove linked file but and save it
+      content.getReferences().nextProperty().getParent().remove();
+      root.save();
+
+      try
+      {
+         PropertyIterator it = content.getReferences();
+         assertEquals(0, it.getSize());
+      }
+      catch (Exception e)
+      {
+         fail(e.getMessage());
+      }
    }
 }
