@@ -37,7 +37,7 @@ public class TestRemove extends BaseQueryTest
    /**
     * Class logger.
     */
-   private static final Log LOG = ExoLogger.getLogger(TestRemove.class);
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.TestRemove");
 
    public void testRemoveProperty() throws Exception
    {

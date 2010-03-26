@@ -35,7 +35,7 @@ public class JCRAPITest extends TestSuite
    /**
     * Class logger.
     */
-   private final Log log = ExoLogger.getLogger("jcr.JCRAPInew");
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.JCRAPITest");
 
    public static Test suite() throws InterruptedException
    {

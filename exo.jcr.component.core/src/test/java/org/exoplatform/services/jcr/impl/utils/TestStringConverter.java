@@ -35,7 +35,7 @@ public class TestStringConverter extends TestCase
    /**
     * Class logger.
     */
-   private final Log log = ExoLogger.getLogger(getClass().getName());
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.TestStringConverter");
 
    public void testNormalize_() throws Exception
    {

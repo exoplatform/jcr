@@ -43,7 +43,7 @@ public class TestSuperTypeChanges extends AbstractNodeTypeTest
    /**
     * Class logger.
     */
-   private static final Log LOG = ExoLogger.getLogger(TestSuperTypeChanges.class);
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.TestSuperTypeChanges");
 
    /**
     * @throws Exception

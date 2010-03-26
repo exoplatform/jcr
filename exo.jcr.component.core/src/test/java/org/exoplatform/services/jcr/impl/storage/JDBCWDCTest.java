@@ -63,7 +63,7 @@ import javax.sql.DataSource;
 public class JDBCWDCTest extends TestCase
 {
 
-   protected static Log log = ExoLogger.getLogger("jcr.JDBCWorkspaceDataContainer");
+   protected static Log log = ExoLogger.getLogger("exo.jcr.component.core.JDBCWorkspaceDataContainer");
 
    protected WorkspaceEntry config;
 

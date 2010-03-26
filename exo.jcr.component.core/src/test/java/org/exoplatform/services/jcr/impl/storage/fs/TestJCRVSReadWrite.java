@@ -64,7 +64,7 @@ import javax.jcr.ValueFormatException;
 public class TestJCRVSReadWrite extends JcrImplBaseTest
 {
 
-   private static Log log = ExoLogger.getLogger("jcr.TestJCRVSReadWrite");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.TestJCRVSReadWrite");
 
    public static final int FILES_COUNT = 1000;
 

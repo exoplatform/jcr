@@ -50,7 +50,7 @@ public class TestWorkspaceRestore extends JcrImplBaseTest
 
    private static boolean isDefaultWsCreated = false;
 
-   private final Log log = ExoLogger.getLogger("jcr.TestWorkspaceRestore");
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.TestWorkspaceRestore");
 
    private final ConfigurationHelper helper = ConfigurationHelper.getInstence();
 

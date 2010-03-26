@@ -41,7 +41,7 @@ import javax.jcr.Session;
 public class TestSameUserLogin extends BaseUsecasesTest
 {
 
-   private final Log TLOG = ExoLogger.getLogger("jcr.LoginThread");
+   private final Log TLOG = ExoLogger.getLogger("exo.jcr.component.core.TestSameUserLogin");
 
    class LoginThread extends Thread
    {

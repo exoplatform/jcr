@@ -76,7 +76,7 @@ public class TestJira282 extends JcrAPIBaseTest
    /**
     * Class logger.
     */
-   private final Log log = ExoLogger.getLogger("jcr.TestJira282");
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.TestJira282");
 
    public void test283() throws Exception
    {

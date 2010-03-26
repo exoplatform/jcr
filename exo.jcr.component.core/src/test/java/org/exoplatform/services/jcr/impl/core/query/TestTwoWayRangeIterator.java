@@ -41,7 +41,7 @@ public class TestTwoWayRangeIterator extends JcrImplBaseTest
    /**
     * Class logger.
     */
-   private final Log log = ExoLogger.getLogger("jcr.TestScoreNodeIterator");
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.TestScoreNodeIterator");
 
    private Random random = new Random();
 

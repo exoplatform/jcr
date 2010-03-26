@@ -31,7 +31,7 @@ import javax.jcr.RepositoryException;
  */
 public class TreeGenerator
 {
-   protected static Log log = ExoLogger.getLogger(TreeGenerator.class);
+   protected static Log log = ExoLogger.getLogger("exo.jcr.component.core.TreeGenerator");
 
    private final Node root;
 

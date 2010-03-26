@@ -32,7 +32,7 @@ import org.exoplatform.services.log.Log;
  */
 public class TestSaveConfiguration extends JcrImplBaseTest
 {
-   protected static Log log = ExoLogger.getLogger("jcr.SessionDataManager");
+   protected static Log log = ExoLogger.getLogger("exo.jcr.component.core.SessionDataManager");
 
    private final TestRepositoryManagement rpm = new TestRepositoryManagement();
 

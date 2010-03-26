@@ -54,7 +54,7 @@ public class TestSystemViewCollision extends AbstractCollisionTest
    /**
     * Class logger.
     */
-   private final Log log = ExoLogger.getLogger("jcr.TestSystemViewCollisionTest");
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.TestSystemViewCollisionTest");
 
    public void testUuidBehaviourIMPORT_UUID_COLLISION_THROW() throws Exception
    {

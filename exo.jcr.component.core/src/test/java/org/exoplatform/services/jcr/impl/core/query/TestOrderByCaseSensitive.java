@@ -38,7 +38,7 @@ public class TestOrderByCaseSensitive extends BaseQueryTest
    /**
     * Class logger.
     */
-   private final Log log = ExoLogger.getLogger("jcr.TestOrderByCaseSensitive");
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.TestOrderByCaseSensitive");
 
    @Override
    public void setUp() throws Exception

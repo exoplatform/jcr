@@ -32,7 +32,7 @@ import org.exoplatform.services.log.Log;
 public class MainTest extends TestCase
 {
 
-   private Log log = ExoLogger.getLogger("jcr.Test");
+   private Log log = ExoLogger.getLogger("exo.jcr.component.core.MainTest");
 
    public static void main(String args[])
    {

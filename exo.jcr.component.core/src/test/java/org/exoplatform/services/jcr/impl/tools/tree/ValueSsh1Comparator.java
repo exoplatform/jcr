@@ -51,7 +51,7 @@ public class ValueSsh1Comparator extends ItemDataTraversingVisitor
 
    private final MessageDigest md;
 
-   protected Log log = ExoLogger.getLogger(ValueSsh1Comparator.class);
+   protected Log log = ExoLogger.getLogger("exo.jcr.component.core.ValueSsh1Comparator");
 
    public ValueSsh1Comparator(ItemDataConsumer dataManager, InputStream ssh1ChecksumStream) throws IOException,
       NoSuchAlgorithmException

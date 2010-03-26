@@ -21,7 +21,6 @@ import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.access.PermissionType;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
-import org.exoplatform.services.jcr.impl.core.query.lucene.TestRemapping;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -45,7 +44,7 @@ import javax.jcr.query.QueryResult;
 public class TestPermission extends JcrImplBaseTest
 {
 
-   public static final Log logger = ExoLogger.getLogger(TestRemapping.class);
+   public static final Log logger = ExoLogger.getLogger("exo.jcr.component.core.TestRemapping");
 
    public final String TEST_NAME = "test_name";
 

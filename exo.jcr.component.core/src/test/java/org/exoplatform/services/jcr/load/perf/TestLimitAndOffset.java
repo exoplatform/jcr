@@ -43,7 +43,7 @@ public class TestLimitAndOffset extends BaseStandaloneTest
    /**
     * Class logger.
     */
-   private final Log log = ExoLogger.getLogger("jcr.TestLimitAndOffset");
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.TestLimitAndOffset");
 
    private QueryImpl query;
 

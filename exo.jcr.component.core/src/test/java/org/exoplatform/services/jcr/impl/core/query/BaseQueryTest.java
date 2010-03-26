@@ -43,7 +43,7 @@ public class BaseQueryTest extends JcrImplBaseTest
    /**
     * Class logger.
     */
-   private final Log log = ExoLogger.getLogger("jcr.BaseQueryTest");
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.BaseQueryTest");
 
    protected SearchManager defaultSearchManager;
 

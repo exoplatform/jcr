@@ -74,7 +74,7 @@ public abstract class AbstractImportTest extends JcrAPIBaseTest
    /**
     * Logger.
     */
-   private Log log = ExoLogger.getLogger("jcr.BaseImportTest");
+   private Log log = ExoLogger.getLogger("exo.jcr.component.core.BaseImportTest");
 
    private final Random random = new Random();
 

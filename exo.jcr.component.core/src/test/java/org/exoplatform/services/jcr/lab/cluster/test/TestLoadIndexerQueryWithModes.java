@@ -45,7 +45,7 @@ import javax.jcr.query.QueryResult;
 public class TestLoadIndexerQueryWithModes extends JcrAPIBaseTest
 {
 
-   private Log log = ExoLogger.getLogger(TestLoadIndexerQueryWithModes.class);
+   private Log log = ExoLogger.getLogger("exo.jcr.component.core.TestLoadIndexerQueryWithModes");
 
    private boolean stop = false;
 
@@ -103,7 +103,7 @@ public class TestLoadIndexerQueryWithModes extends JcrAPIBaseTest
 
          while (!stop)
          {
-            Session sessionLocal = null;            
+            Session sessionLocal = null;
             try
             {
                // login
@@ -151,9 +151,9 @@ public class TestLoadIndexerQueryWithModes extends JcrAPIBaseTest
                if (sessionLocal != null)
                {
                   sessionLocal.logout();
-                  sessionLocal = null;                  
+                  sessionLocal = null;
                }
-            }            
+            }
          }
       }
 

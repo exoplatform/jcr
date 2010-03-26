@@ -37,7 +37,7 @@ public class TestMultiNodeTypes extends BaseQueryTest
    /**
     * Class logger.
     */
-   private static final Log LOG = ExoLogger.getLogger(TestMultiNodeTypes.class);
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.TestMultiNodeTypes");
 
    public void testSelect2NtSQL() throws Exception
    {

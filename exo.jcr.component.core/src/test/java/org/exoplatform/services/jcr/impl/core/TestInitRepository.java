@@ -42,7 +42,7 @@ import javax.jcr.nodetype.NodeTypeManager;
 public class TestInitRepository extends JcrImplBaseTest
 {
 
-   protected static Log log = ExoLogger.getLogger("jcr.JCRTest");
+   protected static Log log = ExoLogger.getLogger("exo.jcr.component.core.JCRTest");
 
    public void _testRepositoryServiceRegistration() throws Exception
    {

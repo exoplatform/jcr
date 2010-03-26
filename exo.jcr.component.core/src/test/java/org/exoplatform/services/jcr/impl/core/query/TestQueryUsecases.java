@@ -49,7 +49,7 @@ import javax.jcr.query.RowIterator;
 public class TestQueryUsecases extends BaseQueryTest
 {
 
-   private final Log log = ExoLogger.getLogger(TestQueryUsecases.class.getName());
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.TestQueryUsecases");
 
    /**
     * Get all nodes from repository.

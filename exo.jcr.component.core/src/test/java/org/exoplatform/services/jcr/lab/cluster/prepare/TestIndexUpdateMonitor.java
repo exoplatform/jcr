@@ -42,7 +42,7 @@ public class TestIndexUpdateMonitor extends TestCase
    /**
     * Logger instance for this class
     */
-   private final Log log = ExoLogger.getLogger(TestIndexUpdateMonitor.class);
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.TestIndexUpdateMonitor");
 
    private IndexUpdateMonitor indexUpdateMonitor;
 

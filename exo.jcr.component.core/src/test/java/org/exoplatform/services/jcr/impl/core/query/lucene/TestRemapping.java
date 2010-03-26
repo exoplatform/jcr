@@ -39,7 +39,7 @@ import javax.jcr.query.QueryResult;
 public class TestRemapping extends JcrImplBaseTest
 {
 
-   public static final Log logger = ExoLogger.getLogger(TestRemapping.class);
+   public static final Log logger = ExoLogger.getLogger("exo.jcr.component.core.TestRemapping");
 
    public final String ORIGINAL_PREFIX = "test_remap";
 

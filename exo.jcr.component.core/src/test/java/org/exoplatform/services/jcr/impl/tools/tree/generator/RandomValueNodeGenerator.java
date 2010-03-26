@@ -46,7 +46,7 @@ public class RandomValueNodeGenerator extends WeightNodeGenerator
 {
    private static final Random random = new Random();
 
-   protected static Log log = ExoLogger.getLogger(RandomValueNodeGenerator.class);
+   protected static Log log = ExoLogger.getLogger("exo.jcr.component.core.RandomValueNodeGenerator");
 
    private final int maxBinarySize;
 

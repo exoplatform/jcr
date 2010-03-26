@@ -20,8 +20,6 @@ package org.exoplatform.services.jcr.impl.storage.value.fs;
 
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.datamodel.ValueData;
-import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.FilePersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 import org.exoplatform.services.jcr.impl.storage.value.cas.RecordAlreadyExistsException;
 import org.exoplatform.services.jcr.impl.storage.value.cas.RecordNotFoundException;
@@ -46,7 +44,7 @@ import java.io.InputStream;
 public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
 {//
 
-   private static Log LOG = ExoLogger.getLogger("jcr.CASableFileIOChannelTestBase");
+   private static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.CASableFileIOChannelTestBase");
 
    protected ValueContentAddressStorage vcas;
 

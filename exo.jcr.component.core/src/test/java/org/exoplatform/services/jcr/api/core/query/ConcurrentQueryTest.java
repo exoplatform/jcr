@@ -250,7 +250,7 @@ public class ConcurrentQueryTest extends AbstractJCRTest
       /**
        * The logger instance for this class
        */
-      private static final Log log = ExoLogger.getLogger(QueryWorker.class);
+      private static final Log log = ExoLogger.getLogger("exo.jcr.component.core.QueryWorker");
 
       QueryWorker(Session s, String query, List<RepositoryException> exceptions, PrintWriter log)
       {

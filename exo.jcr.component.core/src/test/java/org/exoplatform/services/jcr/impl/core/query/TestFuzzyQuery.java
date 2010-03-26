@@ -37,7 +37,7 @@ public class TestFuzzyQuery extends JcrImplBaseTest
    /**
     * Class logger.
     */
-   private final Log log = ExoLogger.getLogger("jcr.TestFuzzyQuery");
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.TestFuzzyQuery");
 
    public void testFuzziness() throws Exception
    {

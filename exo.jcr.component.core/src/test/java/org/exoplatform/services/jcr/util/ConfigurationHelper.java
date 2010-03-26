@@ -56,7 +56,7 @@ import javax.sql.DataSource;
  */
 public class ConfigurationHelper
 {
-   private static Log log = ExoLogger.getLogger("jcr.ConfigurationHelper");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.ConfigurationHelper");
 
    private static ConfigurationHelper instence;
 

@@ -58,7 +58,7 @@ import javax.jcr.Session;
 public class ValueStoragePluginTest extends BaseStandaloneTest
 {
 
-   protected static Log log = ExoLogger.getLogger("jcr.ValueStoragePluginTest");
+   protected static Log log = ExoLogger.getLogger("exo.jcr.component.core.ValueStoragePluginTest");
 
    // protected String sourceName = "jdbc/basic";
    // JDBCWorkspaceDataContainer container;

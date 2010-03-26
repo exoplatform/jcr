@@ -33,7 +33,7 @@ import javax.jcr.SimpleCredentials;
 public class AddNodeAmongSessionsTest extends BaseUsecasesTest
 {
 
-   protected static Log log = ExoLogger.getLogger("jcr.test.AddNodeAmongSessionsTest");
+   protected static Log log = ExoLogger.getLogger("exo.jcr.component.core.AddNodeAmongSessionsTest");
 
    protected void tearDown() throws Exception
    {

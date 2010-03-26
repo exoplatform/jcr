@@ -59,7 +59,7 @@ public class TestSystemViewImport extends AbstractImportTest
 
    static protected final String BIN_STRING = "222222222222222222<=Any binary=>22222222222222222222";
 
-   private static Log log = ExoLogger.getLogger("jcr.TestSystemViewImport");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.TestSystemViewImport");
 
    private Node sysview;
 

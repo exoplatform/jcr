@@ -73,7 +73,7 @@ public class TestIndexingConfig extends BaseQueryTest
    /**
     * Class logger.
     */
-   private final Log log = ExoLogger.getLogger("jcr.TestIndexingConfig");
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.TestIndexingConfig");
 
    private SearchManager searchManager;
 

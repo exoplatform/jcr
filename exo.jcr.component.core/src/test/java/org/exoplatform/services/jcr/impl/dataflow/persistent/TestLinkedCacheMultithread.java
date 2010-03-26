@@ -51,7 +51,7 @@ import javax.jcr.PropertyType;
 public class TestLinkedCacheMultithread extends JcrImplBaseTest
 {
 
-   protected static Log log = ExoLogger.getLogger("jcr.TestLinkedCacheMultithread");
+   protected static Log log = ExoLogger.getLogger("exo.jcr.component.core.TestLinkedCacheMultithread");
 
    private LinkedWorkspaceStorageCacheImpl cache;
 

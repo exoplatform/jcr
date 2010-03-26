@@ -69,7 +69,7 @@ public class TestImport extends AbstractImportTest
    /**
     * Class logger.
     */
-   private final Log log = ExoLogger.getLogger("jcr.TestImport");
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.TestImport");
 
    private final Random random;
 

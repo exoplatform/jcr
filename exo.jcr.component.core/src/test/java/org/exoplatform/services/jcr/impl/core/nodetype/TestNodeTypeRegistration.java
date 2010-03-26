@@ -50,7 +50,7 @@ public class TestNodeTypeRegistration extends AbstractNodeTypeTest
    /**
     * Class logger.
     */
-   private static final Log LOG = ExoLogger.getLogger(TestNodeTypeRegistration.class);
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.TestNodeTypeRegistration");
 
    private NodeTypeValue testNodeTypeValue = null;
 

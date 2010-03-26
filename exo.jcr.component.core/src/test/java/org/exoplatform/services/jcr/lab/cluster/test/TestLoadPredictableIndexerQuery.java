@@ -45,7 +45,7 @@ import javax.jcr.query.QueryResult;
  */
 public class TestLoadPredictableIndexerQuery extends JcrAPIBaseTest
 {
-   protected final Log log = ExoLogger.getLogger(TestLoadPredictableIndexerQuery.class);
+   protected final Log log = ExoLogger.getLogger("exo.jcr.component.core.TestLoadPredictableIndexerQuery");
 
    private boolean stop = false;
 

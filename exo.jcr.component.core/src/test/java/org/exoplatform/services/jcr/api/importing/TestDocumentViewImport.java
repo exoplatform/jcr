@@ -53,7 +53,7 @@ import javax.jcr.nodetype.ConstraintViolationException;
  */
 public class TestDocumentViewImport extends AbstractImportTest
 {
-   private static Log log = ExoLogger.getLogger("jcr.TestDocumentViewImport");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.TestDocumentViewImport");
 
    private final String docView =
       "<exo:test xmlns:nt=\"http://www.jcp.org/jcr/nt/1.0\" "

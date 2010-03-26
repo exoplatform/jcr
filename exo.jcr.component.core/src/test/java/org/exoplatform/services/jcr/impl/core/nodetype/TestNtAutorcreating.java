@@ -42,7 +42,7 @@ public class TestNtAutorcreating extends JcrImplBaseTest
     */
    private static boolean registred = false;
 
-   private static final Log LOG = ExoLogger.getLogger(TestNtAutorcreating.class);
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.TestNtAutorcreating");
 
    public void testAutocreate() throws Exception
    {

@@ -33,7 +33,7 @@ public class TransientNodesManagerUtil
    /**
     * Class logger.
     */
-   private final Log log = ExoLogger.getLogger("jcr.SessionDatamenagerUtil");
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.SessionDatamenagerUtil");
 
    public static SessionChangesLog getChangesLog(SessionDataManager dataManager)
    {

@@ -45,7 +45,7 @@ public abstract class UserThread extends Thread
       super();
       int inx = getName().indexOf("-");
       setName(getClass().getSimpleName() + "-" + getName().substring(inx >= 0 ? inx + 1 : 0));
-      threadLog = ExoLogger.getLogger("jcr." + getName());
+      threadLog = ExoLogger.getLogger("exo.jcr.component.core." + getName());
       this.threadSession = threadSession;
       process = true;
    }

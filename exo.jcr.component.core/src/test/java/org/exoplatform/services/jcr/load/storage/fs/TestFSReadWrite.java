@@ -44,7 +44,7 @@ import java.util.logging.SimpleFormatter;
 public class TestFSReadWrite extends TestCase
 {
 
-   private static Logger log = Logger.getLogger("org.exoplatform.services.jcr.impl.storage.fs");
+   private static Logger log = Logger.getLogger("exo.jcr.component.core.TestFSReadWrite");
 
    public static final int FILES_COUNT = 50000;
 

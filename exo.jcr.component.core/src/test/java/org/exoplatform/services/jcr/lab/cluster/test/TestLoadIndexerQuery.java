@@ -43,7 +43,7 @@ import javax.jcr.query.QueryResult;
 public class TestLoadIndexerQuery extends JcrAPIBaseTest
 {
 
-   private Log log = ExoLogger.getLogger(TestLoadIndexerQuery.class);
+   private Log log = ExoLogger.getLogger("exo.jcr.component.core.TestLoadIndexerQuery");
 
    private boolean stop = false;
 
@@ -88,7 +88,7 @@ public class TestLoadIndexerQuery extends JcrAPIBaseTest
       {
          while (!stop)
          {
-            Session sessionLocal = null;            
+            Session sessionLocal = null;
             try
             {
                // login
@@ -122,7 +122,8 @@ public class TestLoadIndexerQuery extends JcrAPIBaseTest
                            + "/%' and fn:name() = '" + word + "'", Query.SQL);
                      QueryResult res = q.execute();
                      long sqlsize = res.getNodes().getSize();
-                     log.info("Exp: " + count + "\t found:" + sqlsize + " time: " + (System.currentTimeMillis() - time));
+                     log
+                        .info("Exp: " + count + "\t found:" + sqlsize + " time: " + (System.currentTimeMillis() - time));
                   }
                }
             }
@@ -135,9 +136,9 @@ public class TestLoadIndexerQuery extends JcrAPIBaseTest
                if (sessionLocal != null)
                {
                   sessionLocal.logout();
-                  sessionLocal = null;                  
+                  sessionLocal = null;
                }
-            }            
+            }
          }
       }
 
