@@ -193,9 +193,6 @@ public class HTTPBackupAgentTest extends BaseStandaloneTest
 
    public void testStartBackupRepository() throws Exception
    {
-      // login to workspace '/db6/ws2'
-      // Start repository backup
-
       Session session_db6_ws2 = repositoryService.getRepository("db6").login(credentials, "ws2");
       assertNotNull(session_db6_ws2);
 
@@ -1062,12 +1059,12 @@ public class HTTPBackupAgentTest extends BaseStandaloneTest
 
       Thread.sleep(2000);
 
-      // Get restore info to workspace /db6/ws3
+      // Get restore info
       {
          MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
          ContainerRequestUserRole creq =
             new ContainerRequestUserRole("GET", new URI(HTTP_BACKUP_AGENT_PATH
-               + HTTPBackupAgent.Constants.OperationType.CURRENT_RESTORE_INFO_ON_REPOSITORY + "/" + "db6"),
+               + HTTPBackupAgent.Constants.OperationType.CURRENT_RESTORE_INFO_ON_REPOSITORY + "/" + "db7"),
                new URI(""), null, new InputHeadersMap(headers));
 
          ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
@@ -1084,13 +1081,13 @@ public class HTTPBackupAgentTest extends BaseStandaloneTest
          assertNotNull(info.getFinishedTime());
          assertEquals(ShortInfo.RESTORE, info.getType().intValue());
          assertEquals(JobWorkspaceRestore.RESTORE_SUCCESSFUL, info.getState().intValue());
-         assertEquals("db6", info.getRepositoryName());
-         assertEquals("ws3", info.getWorkspaceName());
+         assertEquals("db7", info.getRepositoryName());
          assertNotNull(info.getBackupConfig());
 
-         Session sessin_ws3 = repositoryService.getRepository("db6").login(credentials, "ws3");
-         assertNotNull(sessin_ws3);
-         assertNotNull(sessin_ws3.getRootNode());
+         assertNotNull(repositoryService.getRepository("db7"));
+         Session sessin_ws = repositoryService.getRepository("db7").login(credentials, "ws");
+         assertNotNull(sessin_ws);
+         assertNotNull(sessin_ws.getRootNode());
       }
 
       // Get restores info
@@ -1118,13 +1115,13 @@ public class HTTPBackupAgentTest extends BaseStandaloneTest
          assertNotNull(info.getFinishedTime());
          assertEquals(ShortInfo.RESTORE, info.getType().intValue());
          assertEquals(JobWorkspaceRestore.RESTORE_SUCCESSFUL, info.getState().intValue());
-         assertEquals("db6", info.getRepositoryName());
-         assertEquals("ws3", info.getWorkspaceName());
+         assertEquals("db7", info.getRepositoryName());
          assertNotNull(info.getBackupId());
 
-         Session sessin_ws3 = repositoryService.getRepository("db6").login(credentials, "ws3");
-         assertNotNull(sessin_ws3);
-         assertNotNull(sessin_ws3.getRootNode());
+         assertNotNull(repositoryService.getRepository("db7"));
+         Session sessin_ws = repositoryService.getRepository("db7").login(credentials, "ws");
+         assertNotNull(sessin_ws);
+         assertNotNull(sessin_ws.getRootNode());
       }
    }
 

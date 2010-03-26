@@ -97,46 +97,50 @@ public class RepositoryBackupChainLog
 
          writer.flush();
       }
-      
+
       public synchronized void write(RepositoryBackupConfig config, String fullBackupType, String incrementalBackupType)
-      throws XMLStreamException
-   {
-      writer.writeStartElement("repository-backup-config");
-
-      writer.writeStartElement("full-backup-type");
-      writer.writeCharacters(fullBackupType);
-      writer.writeEndElement();
-
-      writer.writeStartElement("incremental-backup-type");
-      writer.writeCharacters(incrementalBackupType);
-      writer.writeEndElement();
-
-      if (config.getBackupDir() != null)
+         throws XMLStreamException
       {
-         writer.writeStartElement("backup-dir");
-         writer.writeCharacters(config.getBackupDir().getAbsolutePath());
+         writer.writeStartElement("repository-backup-config");
+
+         writer.writeStartElement("backup-type");
+         writer.writeCharacters(String.valueOf(config.getBackupType()));
          writer.writeEndElement();
-      }
 
-      if (config.getRepository() != null)
-      {
-         writer.writeStartElement("repository");
-         writer.writeCharacters(config.getRepository());
+         writer.writeStartElement("full-backup-type");
+         writer.writeCharacters(fullBackupType);
          writer.writeEndElement();
+
+         writer.writeStartElement("incremental-backup-type");
+         writer.writeCharacters(incrementalBackupType);
+         writer.writeEndElement();
+
+         if (config.getBackupDir() != null)
+         {
+            writer.writeStartElement("backup-dir");
+            writer.writeCharacters(config.getBackupDir().getAbsolutePath());
+            writer.writeEndElement();
+         }
+
+         if (config.getRepository() != null)
+         {
+            writer.writeStartElement("repository");
+            writer.writeCharacters(config.getRepository());
+            writer.writeEndElement();
+         }
+
+         writer.writeStartElement("incremental-job-period");
+         writer.writeCharacters(Long.toString(config.getIncrementalJobPeriod()));
+         writer.writeEndElement();
+
+         writer.writeStartElement("incremental-job-number");
+         writer.writeCharacters(Integer.toString(config.getIncrementalJobNumber()));
+         writer.writeEndElement();
+
+         writer.writeEndElement();
+
+         writer.flush();
       }
-
-      writer.writeStartElement("incremental-job-period");
-      writer.writeCharacters(Long.toString(config.getIncrementalJobPeriod()));
-      writer.writeEndElement();
-
-      writer.writeStartElement("incremental-job-number");
-      writer.writeCharacters(Integer.toString(config.getIncrementalJobNumber()));
-      writer.writeEndElement();
-
-      writer.writeEndElement();
-
-      writer.flush();
-   }
 
       public synchronized void writeEndLog()
       {
@@ -186,7 +190,7 @@ public class RepositoryBackupChainLog
 
                   if (name.equals("repository-backup-config"))
                      config = readBackupConfig();
-                  
+
                   if (name.equals("system-workspace"))
                      workspaceSystem = readContent();
 
@@ -242,7 +246,7 @@ public class RepositoryBackupChainLog
 
          return wsBackupInfo;
       }
-      
+
       private BackupConfig readBackupConfig() throws XMLStreamException
       {
          BackupConfig conf = new BackupConfig();
@@ -261,6 +265,9 @@ public class RepositoryBackupChainLog
                   if (name.equals("backup-dir"))
                      conf.setBackupDir(new File(readContent()));
 
+                  if (name.equals("backup-type"))
+                     conf.setBackupType(Integer.valueOf(readContent()));
+
                   if (name.equals("repository"))
                      conf.setRepository(readContent());
 
@@ -272,12 +279,12 @@ public class RepositoryBackupChainLog
 
                   if (name.equals("incremental-job-number"))
                      conf.setIncrementalJobNumber(Integer.valueOf(readContent()).intValue());
-                  
+
                   if (name.equals("full-backup-type"))
                      fullBackupType = readContent();
-                  
-                  if (name.equals("full-backup-type"))
-                     fullBackupType = readContent();
+
+                  if (name.equals("incremental-backup-type"))
+                     increnetalBackupType = readContent();
 
                   break;
 
@@ -418,14 +425,9 @@ public class RepositoryBackupChainLog
     * @param startTime
     * @throws BackupOperationException
     */
-   public RepositoryBackupChainLog(File logDirectory, 
-            RepositoryBackupConfig config,
-            String fullBackupType, 
-            String incrementalBackupType,
-            String systemWorkspace, 
-            List<String> wsLogFilePathList,
-            String backupId, 
-            Calendar startTime) throws BackupOperationException
+   public RepositoryBackupChainLog(File logDirectory, RepositoryBackupConfig config, String fullBackupType,
+      String incrementalBackupType, String systemWorkspace, List<String> wsLogFilePathList, String backupId,
+      Calendar startTime) throws BackupOperationException
    {
       try
       {
