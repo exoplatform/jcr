@@ -111,7 +111,6 @@ public class TestCacheableWorkspaceDataManager extends TestCase
          };
          thread.start();
       }
-      long time = System.currentTimeMillis();
       startSignal.countDown();
       doneSignal.await();
       if (!errors.isEmpty())
