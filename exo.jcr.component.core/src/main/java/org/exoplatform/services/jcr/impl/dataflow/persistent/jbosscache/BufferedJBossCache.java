@@ -252,6 +252,30 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       return parentCache.get(fqn, key);
    }
 
+   /**
+    * Look for Object by Fqn and key in internal buffer. If Buffer do not contain object, than return from JBoss-cache.
+    * 
+    * @param fqn - Fqn 
+    * @param key
+    * @return
+    */
+   public Object getFromBuffer(Fqn fqn, Serializable key)
+   {
+      //look at buffer for first
+      CompressedChangesBuffer changesContainer = getChangesBufferSafe();
+
+      Object objectFromBuffer = getObjectFromChangesContainer(changesContainer, fqn, key);
+
+      if (objectFromBuffer != null)
+      {
+         return objectFromBuffer;
+      }
+      else
+      {
+         return parentCache.get(fqn, key);
+      }
+   }
+
    /* (non-Javadoc)
     * @see org.jboss.cache.Cache#get(java.lang.String, java.lang.Object)
     */
@@ -440,6 +464,45 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
          local.get()));
 
       return parentCache.get(fqn, key);
+   }
+
+   public Object putInBuffer(Fqn fqn, Serializable key, Object value)
+   {
+      CompressedChangesBuffer changesContainer = getChangesBufferSafe();
+
+      // take Object from buffer for first 
+      Object prevObject = getObjectFromChangesContainer(changesContainer, fqn, key);
+
+      changesContainer.add(new PutKeyValueContainer(fqn, key, value, parentCache, changesContainer.getHistoryIndex(),
+         local.get()));
+
+      if (prevObject != null)
+      {
+         return prevObject;
+      }
+      else
+      {
+         return parentCache.get(fqn, key);
+      }
+   }
+
+   private Object getObjectFromChangesContainer(CompressedChangesBuffer changesContainer, Fqn fqn, Serializable key)
+   {
+      List<ChangesContainer> changes = changesContainer.getSortedList();
+      Object object = null;
+      for (ChangesContainer change : changes)
+      {
+         if (change.getChangesType().equals(ChangesType.PUT_KEY) && change.getFqn().equals(fqn))
+         {
+            PutKeyValueContainer cont = ((PutKeyValueContainer)change);
+            if (cont.key.equals(key))
+            {
+               object = ((PutKeyValueContainer)change).value;
+            }
+         }
+      }
+
+      return object;
    }
 
    /* (non-Javadoc)

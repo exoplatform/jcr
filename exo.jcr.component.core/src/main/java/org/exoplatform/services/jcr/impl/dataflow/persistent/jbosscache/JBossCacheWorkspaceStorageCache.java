@@ -406,11 +406,13 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
             {
                if (state.isPersisted())
                {
-                  ItemData prevItem = putItem(state.getData());
+                  // There was a problem with removing a list of samename siblings in on transaction, 
+                  // so putItemInBufferedCache(..) and updateInBufferedCache(..) used instead put(..) and update (..) methods.  
+                  ItemData prevItem = putItemInBufferedCache(state.getData());
                   if (prevItem != null && state.isNode())
                   {
-                     // nodes reordered, if prev is null it's InvalidItemState case
-                     update((NodeData)state.getData(), (NodeData)prevItem);
+                     // nodes reordered, if previous is null it's InvalidItemState case
+                     updateInBuffer((NodeData)state.getData(), (NodeData)prevItem);
                   }
                }
             }
@@ -749,6 +751,19 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
       }
    }
 
+   protected ItemData putItemInBufferedCache(ItemData item)
+   {
+      if (item.isNode())
+      {
+         return putNodeInBufferedCache((NodeData)item, ModifyChildOption.MODIFY);
+      }
+      else
+      {
+         return putProperty((PropertyData)item, ModifyChildOption.MODIFY);
+      }
+
+   }
+
    /**
     * Internal put Node.
     *
@@ -774,6 +789,27 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
       }
       // add in ITEMS
       return (ItemData)cache.put(makeItemFqn(node.getIdentifier()), ITEM_DATA, node);
+   }
+
+   protected ItemData putNodeInBufferedCache(NodeData node, ModifyChildOption modifyListsOfChild)
+   {
+      // if not a root node
+      if (node.getParentIdentifier() != null)
+      {
+         // add in CHILD_NODES
+         cache.put(makeChildFqn(childNodes, node.getParentIdentifier(), node.getQPath().getEntries()[node.getQPath()
+            .getEntries().length - 1]), ITEM_ID, node.getIdentifier());
+         // if MODIFY and List present OR FORCE_MODIFY, then write
+         if ((modifyListsOfChild == ModifyChildOption.MODIFY && cache.getNode(makeChildListFqn(childNodesList, node
+            .getParentIdentifier())) != null)
+            || modifyListsOfChild == ModifyChildOption.FORCE_MODIFY)
+         {
+            cache.addToList(makeChildListFqn(childNodesList, node.getParentIdentifier()), ITEM_LIST, node
+               .getIdentifier());
+         }
+      }
+      // add in ITEMS
+      return (ItemData)cache.putInBuffer(makeItemFqn(node.getIdentifier()), ITEM_DATA, node);
    }
 
    /**
@@ -878,6 +914,36 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
          makeChildFqn(childNodes, node.getParentIdentifier(), prevNode.getQPath().getEntries()[prevNode.getQPath()
             .getEntries().length - 1]);
       if (node.getIdentifier().equals(cache.get(prevFqn, ITEM_ID)))
+      {
+         // it's same-name siblings re-ordering, delete previous child
+         if (!cache.removeNode(prevFqn) && LOG.isDebugEnabled())
+         {
+            LOG.debug("Node not extists as a child but update asked " + node.getQPath().getAsString());
+         }
+      }
+
+      // update childs paths if index changed
+      int nodeIndex = node.getQPath().getEntries()[node.getQPath().getEntries().length - 1].getIndex();
+      int prevNodeIndex = prevNode.getQPath().getEntries()[prevNode.getQPath().getEntries().length - 1].getIndex();
+      if (nodeIndex != prevNodeIndex)
+      {
+         updateTreePath(node.getIdentifier(), node.getQPath(), null); // don't change ACL, it's same parent
+      }
+   }
+
+   /**
+    * This method duplicate update method, except using getFromBuffer inside.
+    * 
+    * @param node NodeData
+    * @param prevNode NodeData
+    */
+   protected void updateInBuffer(final NodeData node, final NodeData prevNode)
+   {
+      // get previously cached NodeData and using its name remove child on the parent
+      Fqn<String> prevFqn =
+         makeChildFqn(childNodes, node.getParentIdentifier(), prevNode.getQPath().getEntries()[prevNode.getQPath()
+            .getEntries().length - 1]);
+      if (node.getIdentifier().equals(cache.getFromBuffer(prevFqn, ITEM_ID)))
       {
          // it's same-name siblings re-ordering, delete previous child
          if (!cache.removeNode(prevFqn) && LOG.isDebugEnabled())
