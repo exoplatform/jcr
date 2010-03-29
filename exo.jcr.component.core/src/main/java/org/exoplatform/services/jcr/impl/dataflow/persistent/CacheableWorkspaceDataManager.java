@@ -558,11 +558,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          childNodes = super.getChildNodesData(nodeData);
          if (cache.isEnabled())
          {
-            NodeData parentData = (NodeData)cache.get(nodeData.getIdentifier());
-            if (parentData == null)
-            {
-               parentData = (NodeData)super.getItemData(nodeData.getIdentifier());
-            }
+            NodeData parentData = (NodeData)getItemData(nodeData.getIdentifier());
 
             if (parentData != null)
             {
@@ -621,11 +617,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          // TODO childProperties.size() > 0 for SDB
          if (childProperties.size() > 0 && cache.isEnabled())
          {
-            NodeData parentData = (NodeData)cache.get(nodeData.getIdentifier());
-            if (parentData == null)
-            {
-               parentData = (NodeData)super.getItemData(nodeData.getIdentifier());
-            }
+            NodeData parentData = (NodeData)getItemData(nodeData.getIdentifier());
 
             if (parentData != null)
             {
@@ -721,11 +713,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          // TODO propertiesList.size() > 0 for SDB
          if (propertiesList.size() > 0 && cache.isEnabled())
          {
-            NodeData parentData = (NodeData)cache.get(nodeData.getIdentifier());
-            if (parentData == null)
-            {
-               parentData = (NodeData)super.getItemData(nodeData.getIdentifier());
-            }
+            NodeData parentData = (NodeData)getItemData(nodeData.getIdentifier());
 
             if (parentData != null)
             {
