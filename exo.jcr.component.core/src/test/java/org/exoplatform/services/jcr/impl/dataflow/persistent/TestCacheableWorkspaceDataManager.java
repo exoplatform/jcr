@@ -114,7 +114,6 @@ public class TestCacheableWorkspaceDataManager extends TestCase
       long time = System.currentTimeMillis();
       startSignal.countDown();
       doneSignal.await();
-      System.out.println("Total Time = " + (System.currentTimeMillis() - time));
       if (!errors.isEmpty())
       {
          for (Exception e : errors)
@@ -238,6 +237,34 @@ public class TestCacheableWorkspaceDataManager extends TestCase
       };
       multiThreadingTest(task);
       assertEquals(1 + READER * TIMES, con.getChildNodesDataCalls.get());
+   }
+   
+   public void testGetChildNodesCount() throws Exception
+   {
+      final NodeData nodeData = new PersistedNodeData("getChildNodesCount", null, null, 0, 1, null, null, null); 
+      assertEquals(0, con.getChildNodesCountCalls.get());
+      MyTask task = new MyTask()
+      {
+         public void execute() throws Exception
+         {
+            int result = cwdm.getChildNodesCount(nodeData);
+            assertEquals(1, result);
+         }         
+      };
+      multiThreadingTest(task);
+      assertEquals(READER * TIMES, con.getChildNodesCountCalls.get());
+      // Add data to the cache
+      cwdm.getChildNodesData(nodeData);
+      task = new MyTask()
+      {
+         public void execute() throws Exception
+         {
+            int result = cwdm.getChildNodesCount(nodeData);
+            assertEquals(1, result);
+         }         
+      };
+      multiThreadingTest(task);
+      assertEquals(READER * TIMES, con.getChildNodesCountCalls.get());
    }
 
    private static interface MyTask
