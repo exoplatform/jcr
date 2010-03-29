@@ -1,6 +1,6 @@
 <binding>
   <!-- the default deserializer to use for String -->
-  <format type="java.lang.String" deserializer="org.exoplatform.container.xml.Deserializer.cleanString"/>
+  <format type="java.lang.String" deserializer="org.exoplatform.container.xml.Deserializer.resolveString"/>
 
   <mapping name="repository-service" class="org.exoplatform.services.jcr.config.RepositoryServiceConfiguration">
     <value name="default-repository" field="defaultRepositoryName" style="attribute" />
@@ -85,7 +85,7 @@
 
   <mapping name="property" class="org.exoplatform.services.jcr.config.SimpleParameterEntry">
     <value name="name" field="name" style="attribute" />
-    <value name="value" field="value" style="attribute" deserializer="org.exoplatform.container.xml.Deserializer.resolveString" />	
+    <value name="value" field="value" style="attribute" />	
   </mapping>
 
   <mapping name="value-storage" class="org.exoplatform.services.jcr.config.ValueStorageEntry">
