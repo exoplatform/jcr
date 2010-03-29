@@ -93,7 +93,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       /**
        * GET_LIST_PROPERTIES type.
        */
-      static private final int GET_LIST_PROPERTIES = 4;
+      static private final int GET_LIST_PROPERTIES = 5;
       
       /**
        * Request type.
