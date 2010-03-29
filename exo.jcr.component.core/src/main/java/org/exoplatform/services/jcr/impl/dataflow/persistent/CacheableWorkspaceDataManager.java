@@ -31,9 +31,9 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.transaction.TransactionService;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 
 import javax.jcr.RepositoryException;
@@ -59,7 +59,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    /**
     * Requests cache.
     */
-   protected final Map<Integer, DataRequest> requestCache;
+   protected final ConcurrentMap<Integer, DataRequest> requestCache;
 
    private TransactionManager transactionManager;
 
@@ -90,6 +90,11 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
        */
       static private final int GET_ITEM_NAME = 4;
 
+      /**
+       * GET_LIST_PROPERTIES type.
+       */
+      static private final int GET_LIST_PROPERTIES = 4;
+      
       /**
        * Request type.
        */
@@ -173,25 +178,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          this.type = GET_ITEM_ID;
 
          // hashcode
-         this.hcode = 31 * (31 + this.type) + this.id.hashCode();
-      }
-
-      /**
-       * Find the same, and if found wait till the one will be finished.
-       * 
-       * WARNING. This method effective with cache use only!!! Without cache the database will control
-       * requests performance/chaching process.
-       * 
-       * @return this data request
-       */
-      DataRequest waitSame()
-      {
-         DataRequest prev = requestCache.get(this.hashCode());
-         if (prev != null)
-         {
-            prev.await();
-         }
-         return this;
+         this.hcode = 31 * (31 + this.type) + (this.id == null ? 0 : this.id.hashCode());
       }
 
       /**
@@ -199,7 +186,11 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
        */
       void start()
       {
-         requestCache.put(this.hashCode(), this);
+         DataRequest request = requestCache.putIfAbsent(this.hashCode(), this);
+         if (request != null)
+         {
+            request.await();
+         }
       }
 
       /**
@@ -209,7 +200,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       void done()
       {
          this.ready.countDown();
-         requestCache.remove(this.hashCode());
+         requestCache.remove(this.hashCode(), this);
       }
 
       /**
@@ -298,7 +289,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       super(dataContainer, systemDataContainerHolder);
       this.cache = cache;
 
-      this.requestCache = new HashMap<Integer, DataRequest>();
+      this.requestCache = new ConcurrentHashMap<Integer, DataRequest>();
       addItemPersistenceListener(cache);
 
       transactionManager = transactionService.getTransactionManager();
@@ -320,7 +311,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       super(dataContainer, systemDataContainerHolder);
       this.cache = cache;
 
-      this.requestCache = new HashMap<Integer, DataRequest>();
+      this.requestCache = new ConcurrentHashMap<Integer, DataRequest>();
       addItemPersistenceListener(cache);
 
       if (cache instanceof JBossCacheWorkspaceStorageCache)
@@ -394,7 +385,23 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       // 2. Try from container
       if (data == null)
       {
-         data = getPersistedItemData(parentData, name);
+         final DataRequest request = new DataRequest(parentData.getIdentifier(), name);
+         
+         try
+         {
+            request.start();
+            // Try first to get the value from the cache since a
+            // request could have been launched just before
+            data = getCachedItemData(parentData, name);
+            if (data == null)
+            {
+               data = getPersistedItemData(parentData, name);               
+            }
+         }
+         finally
+         {
+            request.done();
+         }
       }
       else if (!data.isNode())
       {
@@ -415,7 +422,23 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       // 3. Try from container
       if (data == null)
       {
-         return getPersistedItemData(identifier);
+         final DataRequest request = new DataRequest(identifier);
+         
+         try
+         {
+            request.start();
+            // Try first to get the value from the cache since a
+            // request could have been launched just before
+            data = getCachedItemData(identifier);
+            if (data == null)
+            {
+               data = getPersistedItemData(identifier);               
+            }
+         }
+         finally
+         {
+            request.done();
+         }
       }
       else if (!data.isNode())
       {
@@ -508,22 +531,30 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       throws RepositoryException
    {
 
-      final DataRequest request = new DataRequest(nodeData.getIdentifier(), DataRequest.GET_NODES);
-
       List<NodeData> childNodes = null;
       if (!forcePersistentRead && cache.isEnabled())
       {
-         request.waitSame();
          childNodes = cache.getChildNodes(nodeData);
          if (childNodes != null)
          {
             return childNodes;
          }
       }
+      final DataRequest request = new DataRequest(nodeData.getIdentifier(), DataRequest.GET_NODES);
 
       try
       {
          request.start();
+         if (!forcePersistentRead && cache.isEnabled())
+         {
+            // Try first to get the value from the cache since a
+            // request could have been launched just before
+            childNodes = cache.getChildNodes(nodeData);
+            if (childNodes != null)
+            {
+               return childNodes;
+            }
+         }
          childNodes = super.getChildNodesData(nodeData);
          if (cache.isEnabled())
          {
@@ -535,9 +566,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
             if (parentData != null)
             {
-               {
-                  cache.addChildNodes(parentData, childNodes);
-               }
+               cache.addChildNodes(parentData, childNodes);
             }
          }
          return childNodes;
@@ -563,22 +592,30 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       throws RepositoryException
    {
 
-      final DataRequest request = new DataRequest(nodeData.getIdentifier(), DataRequest.GET_PROPERTIES);
-
       List<PropertyData> childProperties = null;
       if (!forcePersistentRead && cache.isEnabled())
       {
-         request.waitSame();
          childProperties = cache.getChildProperties(nodeData);
          if (childProperties != null)
          {
             return childProperties;
          }
       }
+      final DataRequest request = new DataRequest(nodeData.getIdentifier(), DataRequest.GET_PROPERTIES);
 
       try
       {
          request.start();
+         if (!forcePersistentRead && cache.isEnabled())
+         {
+            // Try first to get the value from the cache since a
+            // request could have been launched just before
+            childProperties = cache.getChildProperties(nodeData);
+            if (childProperties != null)
+            {
+               return childProperties;
+            }
+         }
 
          childProperties = super.getChildPropertiesData(nodeData);
          // TODO childProperties.size() > 0 for SDB
@@ -592,9 +629,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
             if (parentData != null)
             {
-               {
-                  cache.addChildProperties(parentData, childProperties);
-               }
+               cache.addChildProperties(parentData, childProperties);
             }
          }
          return childProperties;
@@ -621,9 +656,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       ItemData data = super.getItemData(parentData, name);
       if (data != null && cache.isEnabled())
       {
-         {
-            cache.put(data);
-         }
+         cache.put(data);
       }
       return data;
    }
@@ -640,9 +673,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       ItemData data = super.getItemData(identifier);
       if (data != null && cache.isEnabled())
       {
-         {
-            cache.put(data);
-         }
+         cache.put(data);
       }
       return data;
    }
@@ -662,12 +693,9 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       throws RepositoryException
    {
 
-      final DataRequest request = new DataRequest(nodeData.getIdentifier(), DataRequest.GET_PROPERTIES);
-
       List<PropertyData> propertiesList;
       if (!forcePersistentRead && cache.isEnabled())
       {
-         request.waitSame(); // wait if getChildProp... working somewhere
          propertiesList = cache.listChildProperties(nodeData);
          if (propertiesList != null)
          {
@@ -675,24 +703,41 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          }
       }
 
-      propertiesList = super.listChildPropertiesData(nodeData);
-      // TODO propertiesList.size() > 0 for SDB
-      if (propertiesList.size() > 0 && cache.isEnabled())
+      final DataRequest request = new DataRequest(nodeData.getIdentifier(), DataRequest.GET_LIST_PROPERTIES);
+      try
       {
-         NodeData parentData = (NodeData)cache.get(nodeData.getIdentifier());
-         if (parentData == null)
+         request.start();
+         if (!forcePersistentRead && cache.isEnabled())
          {
-            parentData = (NodeData)super.getItemData(nodeData.getIdentifier());
+            // Try first to get the value from the cache since a
+            // request could have been launched just before
+            propertiesList = cache.listChildProperties(nodeData);
+            if (propertiesList != null)
+            {
+               return propertiesList;
+            }
          }
-
-         if (parentData != null)
+         propertiesList = super.listChildPropertiesData(nodeData);
+         // TODO propertiesList.size() > 0 for SDB
+         if (propertiesList.size() > 0 && cache.isEnabled())
          {
+            NodeData parentData = (NodeData)cache.get(nodeData.getIdentifier());
+            if (parentData == null)
+            {
+               parentData = (NodeData)super.getItemData(nodeData.getIdentifier());
+            }
+
+            if (parentData != null)
             {
                cache.addChildPropertiesList(parentData, propertiesList);
             }
          }
+         return propertiesList;
       }
-      return propertiesList;
+      finally
+      {
+         request.done();
+      }      
    }
 
    protected boolean isTxAware()
