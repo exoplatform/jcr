@@ -60,11 +60,6 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    protected static final String ITEM_DATA_NULL_VALUE_ID = "$";
 
    /**
-    * The name of the <code>null</code> value
-    */
-   protected static final String ITEM_DATA_NULL_VALUE_NAME = null;
-
-   /**
     * The <code>null</code> value for the itemData
     */
    protected static final ItemData ITEM_DATA_NULL_VALUE = new NodeData()
@@ -89,7 +84,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          return 0;
       }
 
-      QPath path = new QPath(new QPathEntry[]{new QPathEntry(null, ITEM_DATA_NULL_VALUE_NAME, 0)});
+      QPath path = new QPath(new QPathEntry[]{new QPathEntry(null, null, 0)});
 
       public QPath getQPath()
       {
@@ -121,26 +116,6 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          return null;
       }
 
-      @Override
-      public boolean equals(Object obj)
-      {
-         if (obj == this)
-         {
-            return true;
-         }
-
-         if (obj == null)
-         {
-            return false;
-         }
-
-         if (obj instanceof NodeData)
-         {
-            return getIdentifier().equals(((ItemData)obj).getIdentifier());
-         }
-
-         return false;
-      }
    };
 
    /**
@@ -508,7 +483,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          fixPropertyValues((PropertyData)data);
       }
 
-      return ITEM_DATA_NULL_VALUE.equals(data) ? null : data;
+      return data == ITEM_DATA_NULL_VALUE ? null : data;
    }
 
    /**
@@ -550,7 +525,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          fixPropertyValues((PropertyData)data);
       }
 
-      return ITEM_DATA_NULL_VALUE.equals(data) ? null : data;
+      return data == ITEM_DATA_NULL_VALUE ? null : data;
    }
 
    /**
