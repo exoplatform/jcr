@@ -44,7 +44,7 @@ import javax.jcr.RepositoryException;
 import javax.transaction.TransactionManager;
 
 /**
- * Created by The eXo Platform SAS. 
+ * Created by The eXo Platform SAS.
  * 
  * <br/>
  * Author : Peter Nedonosko peter.nedonosko@exoplatform.com.ua
@@ -58,7 +58,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     * The identifier of the <code>null</code> value
     */
    protected static final String ITEM_DATA_NULL_VALUE_ID = "$";
-   
+
    /**
     * The name of the <code>null</code> value
     */
@@ -121,6 +121,26 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          return null;
       }
 
+      @Override
+      public boolean equals(Object obj)
+      {
+         if (obj == this)
+         {
+            return true;
+         }
+
+         if (obj == null)
+         {
+            return false;
+         }
+
+         if (obj instanceof NodeData)
+         {
+            return getIdentifier().equals(((ItemData)obj).getIdentifier());
+         }
+
+         return false;
+      }
    };
 
    /**
@@ -353,7 +373,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     *          Items cache
     * @param systemDataContainerHolder
     *          System Workspace data container (persistent level)
-    * @param transactionService TransactionService         
+    * @param transactionService TransactionService
     */
    public CacheableWorkspaceDataManager(WorkspaceDataContainer dataContainer, WorkspaceStorageCache cache,
       SystemDataContainerHolder systemDataContainerHolder, TransactionService transactionService)
@@ -409,6 +429,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    /**
     * {@inheritDoc}
     */
+   @Override
    public int getChildNodesCount(NodeData parent) throws RepositoryException
    {
       if (cache.isEnabled())
@@ -426,6 +447,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    /**
     * {@inheritDoc}
     */
+   @Override
    public List<NodeData> getChildNodesData(NodeData nodeData) throws RepositoryException
    {
       return getChildNodesData(nodeData, false);
@@ -434,6 +456,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    /**
     * {@inheritDoc}
     */
+   @Override
    public List<PropertyData> getChildPropertiesData(NodeData nodeData) throws RepositoryException
    {
       List<PropertyData> childs = getChildPropertiesData(nodeData, false);
@@ -448,6 +471,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    /**
     * {@inheritDoc}
     */
+   @Override
    public ItemData getItemData(NodeData parentData, QPathEntry name) throws RepositoryException
    {
 
@@ -472,7 +496,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             else if (!data.isNode())
             {
                fixPropertyValues((PropertyData)data);
-            }            
+            }
          }
          finally
          {
@@ -484,12 +508,13 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          fixPropertyValues((PropertyData)data);
       }
 
-      return data == ITEM_DATA_NULL_VALUE ? null : data;
+      return ITEM_DATA_NULL_VALUE.equals(data) ? null : data;
    }
 
    /**
     * {@inheritDoc}
     */
+   @Override
    public ItemData getItemData(String identifier) throws RepositoryException
    {
       // 2. Try from cache
@@ -525,14 +550,15 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          fixPropertyValues((PropertyData)data);
       }
 
-      return data == ITEM_DATA_NULL_VALUE ? null : data;
+      return ITEM_DATA_NULL_VALUE.equals(data) ? null : data;
    }
 
    /**
     * {@inheritDoc}
     */
+   @Override
    public List<PropertyData> getReferencesData(String identifier, boolean skipVersionStorage)
-      throws RepositoryException
+   throws RepositoryException
    {
       return super.getReferencesData(identifier, skipVersionStorage);
    }
@@ -540,6 +566,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    /**
     * {@inheritDoc}
     */
+   @Override
    public List<PropertyData> listChildPropertiesData(NodeData nodeData) throws RepositoryException
    {
       return listChildPropertiesData(nodeData, false);
@@ -558,7 +585,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       }
       else
       {
-         // save normaly 
+         // save normaly
          super.save(changesLog);
 
          // notify listeners after storage commit
@@ -608,7 +635,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     *           Repository error
     */
    protected List<NodeData> getChildNodesData(NodeData nodeData, boolean forcePersistentRead)
-      throws RepositoryException
+   throws RepositoryException
    {
 
       List<NodeData> childNodes = null;
@@ -665,7 +692,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     *           Repository error
     */
    protected List<PropertyData> getChildPropertiesData(NodeData nodeData, boolean forcePersistentRead)
-      throws RepositoryException
+   throws RepositoryException
    {
 
       List<PropertyData> childProperties = null;
@@ -761,7 +788,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     *           Repository error
     */
    protected List<PropertyData> listChildPropertiesData(NodeData nodeData, boolean forcePersistentRead)
-      throws RepositoryException
+   throws RepositoryException
    {
 
       List<PropertyData> propertiesList;
@@ -852,10 +879,10 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     * @param prop PropertyData, original Property data
     * @return PropertyData
     * @throws IllegalStateException
-    * @throws RepositoryException 
+    * @throws RepositoryException
     */
    protected ValueData getPropertyValue(String propertyId, int orderNumb, int persistedVersion)
-      throws IllegalStateException, RepositoryException
+   throws IllegalStateException, RepositoryException
    {
       // TODO use interface not JDBC
       JDBCStorageConnection conn = (JDBCStorageConnection)dataContainer.openConnection();
