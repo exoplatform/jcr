@@ -106,19 +106,24 @@ public class GetCommand
          if (ResourceUtil.isFile(node))
          {
 
+            HierarchicalProperty lastModifiedProperty; 
+            
             if (version != null)
             {
                VersionedResource versionedFile = new VersionedFileResource(uri, node, nsContext);
                resource = versionedFile.getVersionHistory().getVersion(version);
+               
+               lastModifiedProperty = resource.getProperty(FileResource.CREATIONDATE);
                istream = ((VersionResource)resource).getContentAsStream();
             }
             else
             {
                resource = new FileResource(uri, node, nsContext);
+               
+               lastModifiedProperty = resource.getProperty(FileResource.GETLASTMODIFIED);
                istream = ((FileResource)resource).getContentAsStream();
             }
 
-            HierarchicalProperty lastModifiedProperty = resource.getProperty(FileResource.GETLASTMODIFIED);
             // check before any other reads
             if ((ifModifiedSince != null) && (ifModifiedSince.equals(lastModifiedProperty.getValue())))
             {
