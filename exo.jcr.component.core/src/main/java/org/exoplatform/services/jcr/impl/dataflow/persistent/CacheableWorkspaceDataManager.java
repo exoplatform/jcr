@@ -18,11 +18,15 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
+import org.exoplatform.services.jcr.access.AccessControlList;
+import org.exoplatform.services.jcr.dataflow.ItemDataVisitor;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
+import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
+import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache;
@@ -50,6 +54,74 @@ import javax.transaction.TransactionManager;
  */
 public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManager
 {
+   /**
+    * The identifier of the <code>null</code> value
+    */
+   protected static final String ITEM_DATA_NULL_VALUE_ID = "$";
+   
+   /**
+    * The name of the <code>null</code> value
+    */
+   protected static final String ITEM_DATA_NULL_VALUE_NAME = null;
+
+   /**
+    * The <code>null</code> value for the itemData
+    */
+   protected static final ItemData ITEM_DATA_NULL_VALUE = new NodeData()
+   {
+
+      public void accept(ItemDataVisitor visitor) throws RepositoryException
+      {
+      }
+
+      public String getIdentifier()
+      {
+         return ITEM_DATA_NULL_VALUE_ID;
+      }
+
+      public String getParentIdentifier()
+      {
+         return null;
+      }
+
+      public int getPersistedVersion()
+      {
+         return 0;
+      }
+
+      QPath path = new QPath(new QPathEntry[]{new QPathEntry(null, ITEM_DATA_NULL_VALUE_NAME, 0)});
+
+      public QPath getQPath()
+      {
+         return path;
+      }
+
+      public boolean isNode()
+      {
+         return true;
+      }
+
+      public AccessControlList getACL()
+      {
+         return null;
+      }
+
+      public InternalQName[] getMixinTypeNames()
+      {
+         return null;
+      }
+
+      public int getOrderNumber()
+      {
+         return 0;
+      }
+
+      public InternalQName getPrimaryTypeName()
+      {
+         return null;
+      }
+
+   };
 
    /**
     * Items cache.
@@ -94,7 +166,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
        * GET_LIST_PROPERTIES type.
        */
       static private final int GET_LIST_PROPERTIES = 5;
-      
+
       /**
        * Request type.
        */
@@ -386,7 +458,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       if (data == null)
       {
          final DataRequest request = new DataRequest(parentData.getIdentifier(), name);
-         
+
          try
          {
             request.start();
@@ -395,7 +467,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             data = getCachedItemData(parentData, name);
             if (data == null)
             {
-               data = getPersistedItemData(parentData, name);               
+               data = getPersistedItemData(parentData, name);
             }
             else if (!data.isNode())
             {
@@ -412,7 +484,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          fixPropertyValues((PropertyData)data);
       }
 
-      return data;
+      return data == ITEM_DATA_NULL_VALUE ? null : data;
    }
 
    /**
@@ -427,7 +499,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       if (data == null)
       {
          final DataRequest request = new DataRequest(identifier);
-         
+
          try
          {
             request.start();
@@ -436,7 +508,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             data = getCachedItemData(identifier);
             if (data == null)
             {
-               data = getPersistedItemData(identifier);               
+               data = getPersistedItemData(identifier);
             }
             else if (!data.isNode())
             {
@@ -453,7 +525,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          fixPropertyValues((PropertyData)data);
       }
 
-      return data;
+      return data == ITEM_DATA_NULL_VALUE ? null : data;
    }
 
    /**
@@ -622,8 +694,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          }
 
          childProperties = super.getChildPropertiesData(nodeData);
-         // TODO childProperties.size() > 0 for SDB
-         if (childProperties.size() > 0 && cache.isEnabled())
+         if (cache.isEnabled())
          {
             NodeData parentData = (NodeData)getItemData(nodeData.getIdentifier());
 
@@ -654,9 +725,9 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    protected ItemData getPersistedItemData(NodeData parentData, QPathEntry name) throws RepositoryException
    {
       ItemData data = super.getItemData(parentData, name);
-      if (data != null && cache.isEnabled())
+      if (cache.isEnabled())
       {
-         cache.put(data);
+         cache.put(data == null ? ITEM_DATA_NULL_VALUE : data);
       }
       return data;
    }
@@ -671,9 +742,9 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    protected ItemData getPersistedItemData(String identifier) throws RepositoryException
    {
       ItemData data = super.getItemData(identifier);
-      if (data != null && cache.isEnabled())
+      if (cache.isEnabled())
       {
-         cache.put(data);
+         cache.put(data == null ? ITEM_DATA_NULL_VALUE : data);
       }
       return data;
    }
@@ -718,8 +789,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             }
          }
          propertiesList = super.listChildPropertiesData(nodeData);
-         // TODO propertiesList.size() > 0 for SDB
-         if (propertiesList.size() > 0 && cache.isEnabled())
+         if (cache.isEnabled())
          {
             NodeData parentData = (NodeData)getItemData(nodeData.getIdentifier());
 
@@ -733,7 +803,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       finally
       {
          request.done();
-      }      
+      }
    }
 
    protected boolean isTxAware()

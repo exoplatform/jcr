@@ -476,7 +476,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
          else
          {
             // cache fact of empty childs list
-            cache.put(makeChildListFqn(childNodesList, parent.getIdentifier()), ITEM_LIST, new HashSet<Object>());
+            cache.put(makeChildListFqn(childNodesList, parent.getIdentifier()), ITEM_LIST, Collections.EMPTY_SET);
          }
       }
       finally
@@ -514,11 +514,10 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
                set.add(child.getIdentifier());
             }
             cache.put(makeChildListFqn(childPropsList, parent.getIdentifier()), ITEM_LIST, set);
-
          }
          else
          {
-            LOG.warn("Empty properties list cached " + (parent != null ? parent.getQPath().getAsString() : parent));
+            cache.put(makeChildListFqn(childPropsList, parent.getIdentifier()), ITEM_LIST, Collections.EMPTY_SET);
          }
       }
       finally
