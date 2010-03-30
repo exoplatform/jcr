@@ -53,11 +53,17 @@
           </configuration>
         </plugin>
         <plugin>
-           <groupId>org.apache.maven.plugins</groupId>
-           <artifactId>maven-surefire-plugin</artifactId>
-           <configuration>
-              <skipTests>true</skipTests>           
-           </configuration>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <configuration>
+            <skipTests>true</skipTests> 
+            <includes>
+              <include>**/*.java</include>
+            </includes>
+            <excludes>
+              <excluse>**/TestAgent.java</excluse>
+            </excludes>
+          </configuration>
         </plugin>
       </plugins>      
     </pluginManagement>

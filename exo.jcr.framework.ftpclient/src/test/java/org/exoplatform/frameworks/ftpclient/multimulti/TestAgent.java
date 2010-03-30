@@ -56,6 +56,15 @@ public class TestAgent extends TestCase
    private ClientThread clientThread;
 
    private boolean successed = false;
+   
+   /**
+    * the name of the test case
+    */
+   private String fName;
+   
+   public TestAgent(String name) {
+      fName= name;
+   }
 
    public TestAgent(int agentId, int itemsCount)
    {

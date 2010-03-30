@@ -258,7 +258,7 @@
          </value-param>
          <value-param>
             <name>cache-folder-name</name>
-            <value>target/ftp_cache</value>
+            <value>../temp/ftp_cache</value>
          </value-param>
 
          <!-- bytes per second -->
