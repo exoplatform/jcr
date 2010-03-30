@@ -397,6 +397,10 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             {
                data = getPersistedItemData(parentData, name);               
             }
+            else if (!data.isNode())
+            {
+               fixPropertyValues((PropertyData)data);
+            }            
          }
          finally
          {
@@ -433,6 +437,10 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             if (data == null)
             {
                data = getPersistedItemData(identifier);               
+            }
+            else if (!data.isNode())
+            {
+               fixPropertyValues((PropertyData)data);
             }
          }
          finally
