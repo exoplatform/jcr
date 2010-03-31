@@ -270,6 +270,6 @@ public class ActionLauncher implements ItemsPersistenceListener
     */
    public boolean isTXAware()
    {
-      return true;
+      return false;
    }
 }
