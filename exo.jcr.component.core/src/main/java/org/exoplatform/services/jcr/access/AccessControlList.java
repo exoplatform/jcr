@@ -184,17 +184,54 @@ public class AccessControlList implements Externalizable
       if (obj instanceof AccessControlList)
       {
          AccessControlList another = (AccessControlList)obj;
-         return dump().equals(another.dump());
+
+         // check owners, it may be null
+         if (!((owner == null && another.owner == null) || (owner != null && owner.equals(another.owner))))
+         {
+            return false;
+         }
+
+         // check accessList
+         List<AccessControlEntry> anotherAccessList = another.accessList;
+         if (accessList == null && anotherAccessList == null)
+         {
+            return true;
+         }
+         else if (accessList != null && anotherAccessList != null && accessList.size() == anotherAccessList.size())
+         {
+            // check content of both accessLists
+            for (int i = 0; i < accessList.size(); i++)
+            {
+               if (!accessList.get(i).getAsString().equals(anotherAccessList.get(i).getAsString()))
+               {
+                  return false;
+               }
+            }
+            return true;
+         }
+         else
+         {
+            return false;
+         }
+
+         //return dump().equals(another.dump());
       }
       return false;
    }
 
    public String dump()
    {
-      String res = "OWNER: " + owner + "\n";
-      for (AccessControlEntry a : accessList)
+      String res = "OWNER: " + (owner != null ? owner : "null") + "\n";
+      if (accessList != null)
       {
-         res += a.getAsString() + "\n";
+         for (AccessControlEntry a : accessList)
+         {
+            res += a.getAsString() + "\n";
+         }
+      }
+      else
+      {
+         res += "null";
       }
       return res;
    }
