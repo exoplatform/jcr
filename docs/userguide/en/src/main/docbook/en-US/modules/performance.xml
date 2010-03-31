@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<part>
+  <?dbhtml filename="part-performance.html"?>
+
+  <title>JCR Performance Tuning Guide</title>
+
+  <!--xi:include href="performance/intro.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" /-->
+
+  <xi:include href="performance/performance-tuning-guide.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
+</part>
