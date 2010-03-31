@@ -32,9 +32,9 @@
   <packaging>pom</packaging>
   <name>eXo JCR</name>
   <scm>
-    <connection>scm:svn:http://anonsvn.jboss.org/repos/exo-jcr/jcr/tags/1.12.0-GA</connection>
-    <developerConnection>scm:svn:https://svn.jboss.org/repos/exo-jcr/jcr/tags/1.12.0-GA</developerConnection>
-    <url>https://svn.jboss.org/repos/exo-jcr/jcr/tags/1.12.0-GA</url>
+    <connection>scm:svn:http://anonsvn.jboss.org/repos/exo-jcr/jcr/tags/1.12.0-CP01</connection>
+    <developerConnection>scm:svn:https://svn.jboss.org/repos/exo-jcr/jcr/tags/1.12.0-CP01</developerConnection>
+    <url>https://svn.jboss.org/repos/exo-jcr/jcr/tags/1.12.0-CP01</url>
   </scm>
   <properties>
     <exo.product.name>exo-jcr</exo.product.name>
