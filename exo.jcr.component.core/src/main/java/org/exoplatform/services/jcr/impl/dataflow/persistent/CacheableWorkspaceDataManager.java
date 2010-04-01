@@ -18,15 +18,12 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
-import org.exoplatform.services.jcr.access.AccessControlList;
-import org.exoplatform.services.jcr.dataflow.ItemDataVisitor;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
-import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.NullNodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
-import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache;
@@ -54,69 +51,6 @@ import javax.transaction.TransactionManager;
  */
 public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManager
 {
-   /**
-    * The identifier of the <code>null</code> value
-    */
-   protected static final String ITEM_DATA_NULL_VALUE_ID = "$";
-
-   /**
-    * The <code>null</code> value for the itemData
-    */
-   protected static final ItemData ITEM_DATA_NULL_VALUE = new NodeData()
-   {
-
-      public void accept(ItemDataVisitor visitor) throws RepositoryException
-      {
-      }
-
-      public String getIdentifier()
-      {
-         return ITEM_DATA_NULL_VALUE_ID;
-      }
-
-      public String getParentIdentifier()
-      {
-         return null;
-      }
-
-      public int getPersistedVersion()
-      {
-         return 0;
-      }
-
-      QPath path = new QPath(new QPathEntry[]{new QPathEntry(null, null, 0)});
-
-      public QPath getQPath()
-      {
-         return path;
-      }
-
-      public boolean isNode()
-      {
-         return true;
-      }
-
-      public AccessControlList getACL()
-      {
-         return null;
-      }
-
-      public InternalQName[] getMixinTypeNames()
-      {
-         return null;
-      }
-
-      public int getOrderNumber()
-      {
-         return 0;
-      }
-
-      public InternalQName getPrimaryTypeName()
-      {
-         return null;
-      }
-
-   };
 
    /**
     * Items cache.
@@ -483,7 +417,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          fixPropertyValues((PropertyData)data);
       }
 
-      return data == ITEM_DATA_NULL_VALUE ? null : data;
+      return data instanceof NullNodeData ? null : data;
    }
 
    /**
@@ -492,6 +426,10 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    @Override
    public ItemData getItemData(String identifier) throws RepositoryException
    {
+      if (identifier == null)
+      {
+         return null;
+      }
       // 2. Try from cache
       ItemData data = getCachedItemData(identifier);
 
@@ -525,7 +463,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          fixPropertyValues((PropertyData)data);
       }
 
-      return data == ITEM_DATA_NULL_VALUE ? null : data;
+      return data instanceof NullNodeData  ? null : data;
    }
 
    /**
@@ -729,7 +667,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       ItemData data = super.getItemData(parentData, name);
       if (cache.isEnabled())
       {
-         cache.put(data == null ? ITEM_DATA_NULL_VALUE : data);
+         cache.put(data == null ? new NullNodeData(parentData, name) : data);
       }
       return data;
    }
@@ -746,7 +684,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       ItemData data = super.getItemData(identifier);
       if (cache.isEnabled())
       {
-         cache.put(data == null ? ITEM_DATA_NULL_VALUE : data);
+         cache.put(data == null ? new NullNodeData(identifier) : data);
       }
       return data;
    }
