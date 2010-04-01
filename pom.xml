@@ -34,7 +34,7 @@
   <scm>
     <connection>scm:svn:http://anonsvn.jboss.org/repos/exo-jcr/jcr/trunk</connection>
     <developerConnection>scm:svn:https://svn.jboss.org/repos/exo-jcr/jcr/trunk</developerConnection>
-    <url>https://svn.jboss.org/repos/exo-jcr/jcr/trunk</url>
+    <url>http://fisheye.jboss.org/browse/exo-jcr/jcr/trunk</url>
   </scm>
   <properties>
     <exo.product.name>exo-jcr</exo.product.name>
