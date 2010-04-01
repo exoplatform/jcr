@@ -28,7 +28,6 @@ import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.datamodel.NullNodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -53,7 +52,6 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import javax.jcr.RepositoryException;
-import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
 /**
@@ -372,48 +370,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
          cache.setLocal(false);
          if (!inTransaction)
          {
-            dedicatedTxCommit();
-         }
-      }
-   }
-
-   /**
-    * Allows to commit the cache changes in a dedicated XA Tx in order to avoid potential
-    * deadlocks
-    */
-   private void dedicatedTxCommit()
-   {
-      // Ensure that the commit is done in a dedicated tx to avoid deadlock due
-      // to global XA Tx
-      TransactionManager tm = getTransactionManager();
-      Transaction tx = null;
-      try
-      {
-         if (tm != null)
-         {
-            try
-            {
-               tx = tm.suspend();
-            }
-            catch (Exception e)
-            {
-               LOG.warn("Cannot suspend the current transaction", e);
-            }
-         }
-         cache.commitTransaction();
-      }
-      finally
-      {
-         if (tx != null)
-         {
-            try
-            {
-               tm.resume(tx);
-            }
-            catch (Exception e)
-            {
-               LOG.warn("Cannot resume the current transaction", e);
-            }
+            cache.commitTransaction();
          }
       }
    }
@@ -519,7 +476,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
          else
          {
             // cache fact of empty childs list
-            cache.put(makeChildListFqn(childNodesList, parent.getIdentifier()), ITEM_LIST, Collections.EMPTY_SET);
+            cache.put(makeChildListFqn(childNodesList, parent.getIdentifier()), ITEM_LIST, new HashSet<Object>());
          }
       }
       finally
@@ -527,7 +484,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
          cache.setLocal(false);
          if (!inTransaction)
          {
-            dedicatedTxCommit();
+            cache.commitTransaction();
          }
       }
    }
@@ -557,10 +514,11 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
                set.add(child.getIdentifier());
             }
             cache.put(makeChildListFqn(childPropsList, parent.getIdentifier()), ITEM_LIST, set);
+
          }
          else
          {
-            cache.put(makeChildListFqn(childPropsList, parent.getIdentifier()), ITEM_LIST, Collections.EMPTY_SET);
+            LOG.warn("Empty properties list cached " + (parent != null ? parent.getQPath().getAsString() : parent));
          }
       }
       finally
@@ -568,7 +526,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
          cache.setLocal(false);
          if (!inTransaction)
          {
-            dedicatedTxCommit();
+            cache.commitTransaction();
          }
       }
    }
@@ -821,9 +779,9 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
          cache.put(makeChildFqn(childNodes, node.getParentIdentifier(), node.getQPath().getEntries()[node.getQPath()
             .getEntries().length - 1]), ITEM_ID, node.getIdentifier());
          // if MODIFY and List present OR FORCE_MODIFY, then write
-         if (!(node instanceof NullNodeData)
-            && ((modifyListsOfChild == ModifyChildOption.MODIFY && cache.getNode(makeChildListFqn(childNodesList, node
-               .getParentIdentifier())) != null) || modifyListsOfChild == ModifyChildOption.FORCE_MODIFY))
+         if ((modifyListsOfChild == ModifyChildOption.MODIFY && cache.getNode(makeChildListFqn(childNodesList, node
+            .getParentIdentifier())) != null)
+            || modifyListsOfChild == ModifyChildOption.FORCE_MODIFY)
          {
             cache.addToList(makeChildListFqn(childNodesList, node.getParentIdentifier()), ITEM_LIST, node
                .getIdentifier());
@@ -871,14 +829,6 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
          || modifyListsOfChild == ModifyChildOption.FORCE_MODIFY)
       {
          cache.addToList(makeChildListFqn(childPropsList, prop.getParentIdentifier()), ITEM_LIST, prop.getIdentifier());
-      }
-      ItemData result =
-         get(prop.getParentIdentifier(), prop.getQPath().getEntries()[prop.getQPath().getEntries().length - 1]);
-      if (result instanceof NullNodeData)
-      {
-         // Remove null value if exists
-         cache.removeNode(makeChildFqn(childNodes, result.getParentIdentifier(), prop.getQPath().getEntries()[prop.getQPath().getEntries().length - 1]));
-         cache.removeNode(makeItemFqn(result.getIdentifier()));
       }
       // add in ITEMS
       return (PropertyData)cache.put(makeItemFqn(prop.getIdentifier()), ITEM_DATA, prop);
@@ -934,12 +884,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
     */
    protected void updateMixin(NodeData node)
    {
-      Object oPrevValue = cache.put(makeItemFqn(node.getIdentifier()), ITEM_DATA, node);
-      if (oPrevValue instanceof NullNodeData)
-      {
-         oPrevValue = null;
-      }
-      NodeData prevData = (NodeData)oPrevValue;
+      NodeData prevData = (NodeData)cache.put(makeItemFqn(node.getIdentifier()), ITEM_DATA, node);
       if (prevData != null)
       {
          // do update ACL if needed
@@ -1078,10 +1023,6 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
       for (Iterator<NodeData> iter = new ChildNodesIterator<NodeData>(parentId); iter.hasNext();)
       {
          NodeData prevNode = iter.next();
-         if (prevNode instanceof NullNodeData)
-         {
-            continue;
-         }
          // is ACL changes on this node (i.e. ACL inheritance brokes)
          for (InternalQName mixin : prevNode.getMixinTypeNames())
          {

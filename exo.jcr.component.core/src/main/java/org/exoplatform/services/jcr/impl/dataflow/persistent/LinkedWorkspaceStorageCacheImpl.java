@@ -26,7 +26,6 @@ import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.datamodel.NullNodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -905,12 +904,9 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
    protected void putItem(final ItemData data)
    {
       cache.put(new CacheId(data.getIdentifier()), new CacheValue(data, System.currentTimeMillis() + liveTime));
-      if (data.getParentIdentifier() != null || !(data instanceof NullNodeData))
-      {
-         cache.put(new CacheQPath(data.getParentIdentifier(), data.getQPath()), new CacheValue(data, System
-            .currentTimeMillis()
-            + liveTime));         
-      }
+      cache.put(new CacheQPath(data.getParentIdentifier(), data.getQPath()), new CacheValue(data, System
+         .currentTimeMillis()
+         + liveTime));
    }
 
    /**
@@ -933,11 +929,6 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
             // add child item data to list of childs of the parent
             if (item.isNode())
             {
-               if (item instanceof NullNodeData)
-               {
-                  // Skip null values
-                  return;
-               }
                // add child node
                List<NodeData> cachedParentChilds = nodesCache.get(item.getParentIdentifier());
                if (cachedParentChilds != null)
@@ -1309,11 +1300,8 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
             {
                cache.remove(k);
 
-               if (c.getParentIdentifier() != null || !(c instanceof NullNodeData))
-               {
-                  // remove by parentId + path
-                  cache.remove(new CacheQPath(c.getParentIdentifier(), c.getQPath()));                  
-               }
+               // remove by parentId + path
+               cache.remove(new CacheQPath(c.getParentIdentifier(), c.getQPath()));
 
                // remove cached child lists
                if (c.isNode())
