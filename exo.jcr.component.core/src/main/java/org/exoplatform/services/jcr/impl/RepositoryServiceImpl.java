@@ -155,6 +155,9 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
       {
          repositoryContainers.put(rEntry.getName(), repositoryContainer);
          managerStartChanges.registerListeners(repositoryContainer);
+
+         addNamespaces(rEntry.getName());
+
          repositoryContainer.start();
       }
       catch (Throwable t)
@@ -162,8 +165,9 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
          //TODO will be implemented unregistration in managerStartChanges
          //managerStartChanges.removeListeners(repositoryContainer);
          repositoryContainers.remove(rEntry.getName());
-         
-         throw new RepositoryConfigurationException("Repository conatainer " + rEntry.getName() + " was not started.", t);
+
+         throw new RepositoryConfigurationException("Repository conatainer " + rEntry.getName() + " was not started.",
+            t);
       }
 
       if (!config.getRepositoryConfigurations().contains(rEntry))
@@ -171,7 +175,6 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
          config.getRepositoryConfigurations().add(rEntry);
       }
 
-      addNamespaces(rEntry.getName());
       registerNodeTypes(rEntry.getName());
 
       // turn on Repository ONLINE
