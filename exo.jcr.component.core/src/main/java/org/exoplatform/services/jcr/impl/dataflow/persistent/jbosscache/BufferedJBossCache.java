@@ -156,6 +156,14 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       this.local.set(local);
    }
 
+   /**
+    * Returns current state.
+    */
+   public boolean isLocal()
+   {
+      return this.local.get();
+   }
+
    public int getNumberOfNodes()
    {
       return ((CacheSPI<Serializable, Object>)parentCache).getNumberOfNodes();

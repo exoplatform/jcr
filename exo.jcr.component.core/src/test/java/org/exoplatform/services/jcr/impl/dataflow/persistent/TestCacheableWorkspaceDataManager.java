@@ -24,7 +24,9 @@ import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.NullNodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
+import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
@@ -163,7 +165,8 @@ public class TestCacheableWorkspaceDataManager extends TestCase
 
    public void testGetItemDataByNodeDataNQPathEntry() throws Exception
    {
-      final NodeData nodeData = new PersistedNodeData("getItemData", null, null, 0, 1, null, null, null);
+      final NodeData nodeData =
+         new PersistedNodeData("getItemData", new QPath(new QPathEntry[]{}), null, 0, 1, null, null, null);
       assertEquals(0, con.getItemDataByNodeDataNQPathEntryCalls.get());
       MyTask task = new MyTask()
       {

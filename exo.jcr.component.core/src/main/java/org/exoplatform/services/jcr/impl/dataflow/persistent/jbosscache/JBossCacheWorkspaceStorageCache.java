@@ -28,6 +28,7 @@ import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.NullNodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -95,6 +96,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
 
    public static final String ITEMS = "$ITEMS".intern();
 
+   public static final String NULL_ITEMS = "$NULL_ITEMS".intern();
+
    public static final String CHILD_NODES = "$CHILD_NODES".intern();
 
    public static final String CHILD_PROPS = "$CHILD_PROPS".intern();
@@ -114,6 +117,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
    protected final BufferedJBossCache cache;
 
    protected final Fqn<String> itemsRoot;
+
+   protected final Fqn<String> nullItemsRoot;
 
    protected final Fqn<String> childNodes;
 
@@ -274,6 +279,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
       this.cache = new BufferedJBossCache(factory.createCache(wsConfig.getCache()));
 
       this.itemsRoot = Fqn.fromElements(ITEMS);
+      this.nullItemsRoot = Fqn.fromElements(NULL_ITEMS);
       this.childNodes = Fqn.fromElements(CHILD_NODES);
       this.childProps = Fqn.fromElements(CHILD_PROPS);
       this.childNodesList = Fqn.fromElements(CHILD_NODES_LIST);
@@ -287,6 +293,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
       createResidentNode(childProps);
       createResidentNode(childPropsList);
       createResidentNode(itemsRoot);
+      createResidentNode(nullItemsRoot);
    }
 
    /**
@@ -356,13 +363,21 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
             cache.beginTransaction();
          }
          cache.setLocal(true);
-         if (item.isNode())
+
+         if (item instanceof NullNodeData)
          {
-            putNode((NodeData)item, ModifyChildOption.NOT_MODIFY);
+            putNullNode((NullNodeData)item);
          }
          else
          {
-            putProperty((PropertyData)item, ModifyChildOption.NOT_MODIFY);
+            if (item.isNode())
+            {
+               putNode((NodeData)item, ModifyChildOption.NOT_MODIFY);
+            }
+            else
+            {
+               putProperty((PropertyData)item, ModifyChildOption.NOT_MODIFY);
+            }
          }
       }
       finally
@@ -557,18 +572,19 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
 
       // get as node first
       String itemId = (String)cache.get(makeChildFqn(childNodes, parentId, name), ITEM_ID);
-      if (itemId == null)
-      {
-         // try as property
-         itemId = (String)cache.get(makeChildFqn(childProps, parentId, name), ITEM_ID);
-      }
-
       if (itemId != null)
       {
-         return get(itemId);
+         return getFromCacheById(itemId);
       }
 
-      return null;
+      // try as property
+      itemId = (String)cache.get(makeChildFqn(childProps, parentId, name), ITEM_ID);
+      if (itemId != null)
+      {
+         return getFromCacheById(itemId);
+      }
+
+      return (ItemData)cache.get(makeNullItemFqn(parentId + "$" + name.getAsString(true)), ITEM_DATA);
    }
 
    /**
@@ -576,7 +592,9 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
     */
    public ItemData get(String id)
    {
-      return (ItemData)cache.get(makeItemFqn(id), ITEM_DATA);
+      ItemData data = getFromCacheById(id);
+
+      return data != null ? data : (ItemData)cache.get(makeNullItemFqn(id), ITEM_DATA);
    }
 
    /**
@@ -695,6 +713,17 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
    }
 
    /**
+   * Make Item absolute Fqn, i.e. /$NULL_ITEMS/itemID.
+   *
+   * @param itemId String
+   * @return Fqn
+   */
+   protected Fqn<String> makeNullItemFqn(String itemId)
+   {
+      return Fqn.fromRelativeElements(nullItemsRoot, itemId);
+   }
+
+   /**
     * Make child Item absolute Fqn, i.e. /root/parentId/childName.
     *
     * @param root Fqn
@@ -730,6 +759,14 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
    protected Fqn<String> makeChildListFqn(Fqn<String> root, String parentId)
    {
       return Fqn.fromRelativeElements(root, parentId);
+   }
+
+   /**
+    * Gets item data from cache by item identifier.
+    */
+   protected ItemData getFromCacheById(String id)
+   {
+      return (ItemData)cache.get(makeItemFqn(id), ITEM_DATA);
    }
 
    /**
@@ -771,6 +808,15 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
     */
    protected ItemData putNode(NodeData node, ModifyChildOption modifyListsOfChild)
    {
+
+      // remove possible NullNodeData from cache
+      boolean local = cache.isLocal();
+      cache.setLocal(false);
+
+      removeNullNode(node);
+
+      cache.setLocal(local);
+
       // if not a root node
       if (node.getParentIdentifier() != null)
       {
@@ -788,6 +834,41 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
       }
       // add in ITEMS
       return (ItemData)cache.put(makeItemFqn(node.getIdentifier()), ITEM_DATA, node);
+   }
+
+   /**
+    * Internal put NullNode.
+    *
+    * @param node, NodeData, new data to put in the cache
+    * @return ItemData, previous data or null
+    */
+   protected ItemData putNullNode(NullNodeData node)
+   {
+      return (ItemData)cache.put(makeNullItemFqn(node.getIdentifier()), ITEM_DATA, node);
+   }
+
+   /**
+    * Removes NullNode from cache.
+    *
+    * @param item
+    *         that possible has corresponding NullNode in cache 
+    *          
+    */
+   protected void removeNullNode(ItemData item)
+   {
+      Fqn<String> fqn = makeNullItemFqn(item.getIdentifier());
+      if ((NullNodeData)cache.get(fqn, ITEM_DATA) != null)
+      {
+         cache.removeNode(fqn);
+      }
+
+      fqn =
+         makeNullItemFqn(item.getParentIdentifier() + "$"
+            + item.getQPath().getEntries()[item.getQPath().getEntries().length - 1].getAsString(true));
+      if (cache.get(fqn, ITEM_DATA) != null)
+      {
+         cache.removeNode(fqn);
+      }
    }
 
    protected ItemData putNodeInBufferedCache(NodeData node, ModifyChildOption modifyListsOfChild)
@@ -819,6 +900,15 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
     */
    protected PropertyData putProperty(PropertyData prop, ModifyChildOption modifyListsOfChild)
    {
+
+      // remove possible NullNodeData from cache
+      boolean local = cache.isLocal();
+      cache.setLocal(false);
+
+      removeNullNode(prop);
+
+      cache.setLocal(local);
+
       // add in CHILD_PROPS
       cache.put(makeChildFqn(childProps, prop.getParentIdentifier(), prop.getQPath().getEntries()[prop.getQPath()
          .getEntries().length - 1]), ITEM_ID, prop.getIdentifier());
@@ -829,6 +919,10 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
       {
          cache.addToList(makeChildListFqn(childPropsList, prop.getParentIdentifier()), ITEM_LIST, prop.getIdentifier());
       }
+
+      ItemData result =
+         get(prop.getParentIdentifier(), prop.getQPath().getEntries()[prop.getQPath().getEntries().length - 1]);
+
       // add in ITEMS
       return (PropertyData)cache.put(makeItemFqn(prop.getIdentifier()), ITEM_DATA, prop);
    }

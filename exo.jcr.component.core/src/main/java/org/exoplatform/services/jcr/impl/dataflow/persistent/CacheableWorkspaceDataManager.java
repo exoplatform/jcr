@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.NullNodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -483,7 +484,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          fixPropertyValues((PropertyData)data);
       }
 
-      return data == ITEM_DATA_NULL_VALUE ? null : data;
+      return data instanceof NullNodeData ? null : data;
    }
 
    /**
@@ -492,10 +493,10 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    @Override
    public ItemData getItemData(String identifier) throws RepositoryException
    {
-      // 2. Try from cache
+      // 1. Try from cache
       ItemData data = getCachedItemData(identifier);
 
-      // 3. Try from container
+      // 2 Try from container
       if (data == null)
       {
          final DataRequest request = new DataRequest(identifier);
@@ -525,7 +526,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          fixPropertyValues((PropertyData)data);
       }
 
-      return data == ITEM_DATA_NULL_VALUE ? null : data;
+      return data instanceof NullNodeData ? null : data;
    }
 
    /**
@@ -533,7 +534,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     */
    @Override
    public List<PropertyData> getReferencesData(String identifier, boolean skipVersionStorage)
-   throws RepositoryException
+      throws RepositoryException
    {
       return super.getReferencesData(identifier, skipVersionStorage);
    }
@@ -610,7 +611,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     *           Repository error
     */
    protected List<NodeData> getChildNodesData(NodeData nodeData, boolean forcePersistentRead)
-   throws RepositoryException
+      throws RepositoryException
    {
 
       List<NodeData> childNodes = null;
@@ -667,7 +668,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     *           Repository error
     */
    protected List<PropertyData> getChildPropertiesData(NodeData nodeData, boolean forcePersistentRead)
-   throws RepositoryException
+      throws RepositoryException
    {
 
       List<PropertyData> childProperties = null;
@@ -729,7 +730,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       ItemData data = super.getItemData(parentData, name);
       if (cache.isEnabled())
       {
-         cache.put(data == null ? ITEM_DATA_NULL_VALUE : data);
+         cache.put(data == null ? new NullNodeData(parentData, name) : data);
       }
       return data;
    }
@@ -746,7 +747,14 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       ItemData data = super.getItemData(identifier);
       if (cache.isEnabled())
       {
-         cache.put(data == null ? ITEM_DATA_NULL_VALUE : data);
+         if (data != null)
+         {
+            cache.put(data);
+         }
+         else if (identifier != null)
+         {
+            cache.put(new NullNodeData(identifier));
+         }
       }
       return data;
    }
@@ -763,7 +771,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     *           Repository error
     */
    protected List<PropertyData> listChildPropertiesData(NodeData nodeData, boolean forcePersistentRead)
-   throws RepositoryException
+      throws RepositoryException
    {
 
       List<PropertyData> propertiesList;
@@ -857,7 +865,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     * @throws RepositoryException
     */
    protected ValueData getPropertyValue(String propertyId, int orderNumb, int persistedVersion)
-   throws IllegalStateException, RepositoryException
+      throws IllegalStateException, RepositoryException
    {
       // TODO use interface not JDBC
       JDBCStorageConnection conn = (JDBCStorageConnection)dataContainer.openConnection();
