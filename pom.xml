@@ -42,7 +42,7 @@
     <org.exoplatform.kernel.version>2.2.1-GA-SNAPSHOT</org.exoplatform.kernel.version>
     <org.exoplatform.core.version>2.3.1-GA-SNAPSHOT</org.exoplatform.core.version>
     <org.exoplatform.ws.version>2.1.1-GA-SNAPSHOT</org.exoplatform.ws.version>
-    <org.exoplatform.doc-style.version>2-SNAPSHOT</org.exoplatform.doc-style.version>
+    <org.exoplatform.doc-style.version>1</org.exoplatform.doc-style.version>
   </properties>
   <dependencyManagement>
     <dependencies>
