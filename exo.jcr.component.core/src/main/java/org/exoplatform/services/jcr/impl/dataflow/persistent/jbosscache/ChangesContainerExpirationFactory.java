@@ -42,7 +42,7 @@ extends ChangesContainerFactory
    /**
     * The expiration timeout.
     */
-   public static long expirationTimeOut;
+   public final long expirationTimeOut;
 
    public ChangesContainerExpirationFactory(long expirationTimeOut)
    {
@@ -54,11 +54,13 @@ extends ChangesContainerFactory
     */
    public static class PutObjectContainerExpiration extends PutObjectContainer
    {
+      private final long timeOut;
 
       public PutObjectContainerExpiration(Fqn fqn, Map<? extends Serializable, ? extends Object> data,
-         Cache<Serializable, Object> cache, int historicalIndex, boolean local)
+         Cache<Serializable, Object> cache, int historicalIndex, boolean local, long timeOut)
       {
          super(fqn, data, cache, historicalIndex, local);
+         this.timeOut = timeOut; 
       }
 
       @Override
@@ -68,7 +70,7 @@ extends ChangesContainerFactory
          cache.put(fqn, data);
 
          setCacheLocalMode();
-         cache.put(fqn, ExpirationAlgorithmConfig.EXPIRATION_KEY, new Long(System.currentTimeMillis() + expirationTimeOut));
+         cache.put(fqn, ExpirationAlgorithmConfig.EXPIRATION_KEY, new Long(System.currentTimeMillis() + timeOut));
       }
    }
 
@@ -77,18 +79,20 @@ extends ChangesContainerFactory
     */
    public static class PutKeyValueContainerExpiration extends PutKeyValueContainer
    {
+      private final long timeOut;
 
       public PutKeyValueContainerExpiration(Fqn fqn, Serializable key, Object value, Cache<Serializable, Object> cache,
-         int historicalIndex, boolean local)
+         int historicalIndex, boolean local, long timeOut)
       {
          super(fqn, key, value, cache, historicalIndex, local);
+         this.timeOut = timeOut;
       }
 
       @Override
       public void apply()
       {
          setCacheLocalMode();
-         cache.put(fqn, ExpirationAlgorithmConfig.EXPIRATION_KEY, new Long(System.currentTimeMillis() + expirationTimeOut));
+         cache.put(fqn, ExpirationAlgorithmConfig.EXPIRATION_KEY, new Long(System.currentTimeMillis() + timeOut));
 
          setCacheLocalMode();
          cache.put(fqn, key, value);
@@ -114,11 +118,13 @@ extends ChangesContainerFactory
     */
    public static class AddToListContainerExpiration extends AddToListContainer
    {
+      private final long timeOut;
 
       public AddToListContainerExpiration(Fqn fqn, Serializable key, Object value, Cache<Serializable, Object> cache,
-         int historicalIndex, boolean local)
+         int historicalIndex, boolean local, long timeOut)
       {
          super(fqn, key, value, cache, historicalIndex, local);
+         this.timeOut = timeOut;
       }
 
       @Override
@@ -140,7 +146,7 @@ extends ChangesContainerFactory
             newSet.add(value);
 
             setCacheLocalMode();
-            cache.put(fqn, ExpirationAlgorithmConfig.EXPIRATION_KEY, new Long(System.currentTimeMillis() + expirationTimeOut));
+            cache.put(fqn, ExpirationAlgorithmConfig.EXPIRATION_KEY, new Long(System.currentTimeMillis() + timeOut));
 
             setCacheLocalMode();
             cache.put(fqn, key, newSet);
@@ -158,11 +164,13 @@ extends ChangesContainerFactory
     */
    public static class RemoveFromListContainerExpiration extends RemoveFromListContainer
    {
+      private final long timeOut;
 
       public RemoveFromListContainerExpiration(Fqn fqn, Serializable key, Object value, Cache<Serializable, Object> cache,
-         int historicalIndex, boolean local)
+         int historicalIndex, boolean local, long timeOut)
       {
          super(fqn, key, value, cache, historicalIndex, local);
+         this.timeOut = timeOut;
       }
 
       @Override
@@ -180,40 +188,48 @@ extends ChangesContainerFactory
             newSet.remove(value);
 
             setCacheLocalMode();
-            cache.put(fqn, ExpirationAlgorithmConfig.EXPIRATION_KEY, new Long(System.currentTimeMillis() + expirationTimeOut));
+            cache.put(fqn, ExpirationAlgorithmConfig.EXPIRATION_KEY, new Long(System.currentTimeMillis() + timeOut));
 
             setCacheLocalMode();
             cache.put(fqn, key, newSet);
          }
       }
    }
-
-   @Override
+   
+   /**
+    * {@inheritDoc}
+    */
    public ChangesContainer createPutObjectContainer(Fqn fqn, Map<? extends Serializable, ? extends Object> data,
       Cache<Serializable, Object> cache, int historicalIndex, boolean local)
    {
-      return new PutObjectContainerExpiration(fqn, data, cache, historicalIndex, local);
+     return new PutObjectContainerExpiration(fqn, data, cache, historicalIndex, local, expirationTimeOut);  
    }
 
-   @Override
+   /**
+    * {@inheritDoc}
+    */
    public ChangesContainer createPutKeyValueContainer(Fqn fqn, Serializable key, Object value, Cache<Serializable, Object> cache,
       int historicalIndex, boolean local)
    {
-      return new PutKeyValueContainerExpiration(fqn, key, value, cache, historicalIndex, local);
+     return new PutKeyValueContainerExpiration(fqn, key, value, cache, historicalIndex, local, expirationTimeOut);  
    }
 
-   @Override
+   /**
+    * {@inheritDoc}
+    */
    public ChangesContainer createAddToListContainer(Fqn fqn, Serializable key, Object value, Cache<Serializable, Object> cache,
       int historicalIndex, boolean local)
    {
-      return new AddToListContainerExpiration(fqn, key, value, cache, historicalIndex, local);
+     return new AddToListContainerExpiration(fqn, key, value, cache, historicalIndex, local, expirationTimeOut);
    }
 
-   @Override
+   /**
+    * {@inheritDoc}
+    */
    public ChangesContainer createRemoveFromListContainer(Fqn fqn, Serializable key, Object value, Cache<Serializable, Object> cache,
       int historicalIndex, boolean local)
    {
-      return new RemoveFromListContainerExpiration(fqn, key, value, cache, historicalIndex, local);
+     return new RemoveFromListContainerExpiration(fqn, key, value, cache, historicalIndex, local, expirationTimeOut);
    }
 
 }
