@@ -18,20 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache;
 
-import java.io.Serializable;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.transaction.TransactionManager;
-
-import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.ChangesContainerFactory.AddToListContainer;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.ChangesContainerFactory.ChangesContainer;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.ChangesContainerFactory.PutKeyValueContainer;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.ChangesContainerFactory.PutObjectContainer;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.ChangesContainerFactory.RemoveFromListContainer;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.ChangesContainerFactory.RemoveKeyContainer;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.ChangesContainerFactory.RemoveNodeContainer;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.jboss.cache.Cache;
@@ -47,6 +35,16 @@ import org.jboss.cache.config.Configuration;
 import org.jboss.cache.interceptors.base.CommandInterceptor;
 import org.jgroups.Address;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.transaction.TransactionManager;
+
 /**
  * Decorator over the JBossCache that stores changes in buffer, then sorts and applies to JBossCache.
  * 
@@ -61,10 +59,24 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
     * Parent cache.
     */
    private final Cache<Serializable, Object> parentCache;
-   
+
    private final ChangesContainerFactory changesContatinerFactory;
 
    private final ThreadLocal<CompressedChangesBuffer> changesList = new ThreadLocal<CompressedChangesBuffer>();
+
+   /**
+    * This comparator sorts CahangesContainer collection in descending mode.
+    */
+   private final Comparator<ChangesContainer> changesComparator = new Comparator<ChangesContainer>()
+   {
+
+      public int compare(ChangesContainer o1, ChangesContainer o2)
+      {
+         int result = o1.getFqn().compareTo(o2.getFqn());
+         return result == 0 ? o2.getHistoricalIndex() - o1.getHistoricalIndex() : result;
+      }
+
+   };
 
    private ThreadLocal<Boolean> local = new ThreadLocal<Boolean>();
 
@@ -457,8 +469,8 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
    public void put(Fqn fqn, Map<? extends Serializable, ? extends Object> data)
    {
       CompressedChangesBuffer changesContainer = getChangesBufferSafe();
-      changesContainer.add(changesContatinerFactory.createPutObjectContainer(fqn, data, parentCache, changesContainer.getHistoryIndex(), local
-               .get()));
+      changesContainer.add(changesContatinerFactory.createPutObjectContainer(fqn, data, parentCache, changesContainer
+         .getHistoryIndex(), local.get()));
    }
 
    /* (non-Javadoc)
@@ -467,8 +479,8 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
    public Object put(Fqn fqn, Serializable key, Object value)
    {
       CompressedChangesBuffer changesContainer = getChangesBufferSafe();
-      changesContainer.add(changesContatinerFactory.createPutKeyValueContainer(fqn, key, value, parentCache, changesContainer.getHistoryIndex(),
-               local.get()));
+      changesContainer.add(changesContatinerFactory.createPutKeyValueContainer(fqn, key, value, parentCache,
+         changesContainer.getHistoryIndex(), local.get()));
 
       return parentCache.get(fqn, key);
    }
@@ -480,8 +492,8 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       // take Object from buffer for first 
       Object prevObject = getObjectFromChangesContainer(changesContainer, fqn, key);
 
-      changesContainer.add(changesContatinerFactory.createPutKeyValueContainer(fqn, key, value, parentCache, changesContainer.getHistoryIndex(),
-         local.get()));
+      changesContainer.add(changesContatinerFactory.createPutKeyValueContainer(fqn, key, value, parentCache,
+         changesContainer.getHistoryIndex(), local.get()));
 
       if (prevObject != null)
       {
@@ -495,16 +507,50 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
 
    private Object getObjectFromChangesContainer(CompressedChangesBuffer changesContainer, Fqn fqn, Serializable key)
    {
-      List<ChangesContainer> changes = changesContainer.getSortedList();
+      //      List<ChangesContainer> changes = changesContainer.getSortedList();
+      //      Object object = null;
+      //      for (ChangesContainer change : changes)
+      //      {
+      //         if (change.getChangesType().equals(ChangesType.PUT_KEY) && change.getFqn().equals(fqn))
+      //         {
+      //            PutKeyValueContainer cont = ((PutKeyValueContainer)change);
+      //            if (cont.getKey().equals(key))
+      //            {
+      //               object = ((PutKeyValueContainer)change).getValue();
+      //            }
+      //         }
+      //      }
+      //
+      //      return object;
+
+      List<ChangesContainer> changesContainers = new ArrayList<ChangesContainer>();
+      String parentCacheNode = (String)fqn.get(0);
+      if (JBossCacheWorkspaceStorageCache.CHILD_NODES.equals(parentCacheNode) && fqn.size() > 1)
+      {
+         changesContainers.addAll(changesContainer.childNodesMap.get(fqn.get(1)));
+      }
+      else if (JBossCacheWorkspaceStorageCache.CHILD_PROPS.equals(parentCacheNode) && fqn.size() > 1)
+      {
+         changesContainers.addAll(changesContainer.childPropertyMap.get(fqn.get(1)));
+      }
+      else
+      {
+         changesContainers.addAll(changesContainer.changes);
+      }
+
+      // sort changes in descending mode 
+      Collections.sort(changesContainers, changesComparator);
+
       Object object = null;
-      for (ChangesContainer change : changes)
+      for (ChangesContainer change : changesContainers)
       {
          if (change.getChangesType().equals(ChangesType.PUT_KEY) && change.getFqn().equals(fqn))
          {
             PutKeyValueContainer cont = ((PutKeyValueContainer)change);
-            if (cont.getKey().equals(key))
+            if (cont.key.equals(key))
             {
-               object = ((PutKeyValueContainer)change).getValue();
+               object = ((PutKeyValueContainer)change).value;
+               break;
             }
          }
       }
@@ -543,8 +589,8 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
    public Object remove(Fqn fqn, Serializable key)
    {
       CompressedChangesBuffer changesContainer = getChangesBufferSafe();
-      changesContainer.add(changesContatinerFactory.createRemoveKeyContainer(fqn, key, parentCache, changesContainer.getHistoryIndex(), local
-         .get()));
+      changesContainer.add(changesContatinerFactory.createRemoveKeyContainer(fqn, key, parentCache, changesContainer
+         .getHistoryIndex(), local.get()));
       return parentCache.get(fqn, key);
    }
 
@@ -586,7 +632,8 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
    public boolean removeNode(Fqn fqn)
    {
       CompressedChangesBuffer changesContainer = getChangesBufferSafe();
-      changesContainer.add(changesContatinerFactory.createRemoveNodeContainer(fqn, parentCache, changesContainer.getHistoryIndex(), local.get()));
+      changesContainer.add(changesContatinerFactory.createRemoveNodeContainer(fqn, parentCache, changesContainer
+         .getHistoryIndex(), local.get()));
       return true;
    }
 
@@ -654,8 +701,8 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
    public void addToList(Fqn fqn, String key, Object value)
    {
       CompressedChangesBuffer changesContainer = getChangesBufferSafe();
-      changesContainer.add(changesContatinerFactory.createAddToListContainer(fqn, key, value, parentCache, changesContainer.getHistoryIndex(),
-         local.get()));
+      changesContainer.add(changesContatinerFactory.createAddToListContainer(fqn, key, value, parentCache,
+         changesContainer.getHistoryIndex(), local.get()));
    }
 
    /**
