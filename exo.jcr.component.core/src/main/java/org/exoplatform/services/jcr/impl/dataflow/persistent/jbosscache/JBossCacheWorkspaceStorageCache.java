@@ -42,7 +42,7 @@ import org.jboss.cache.Cache;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.Node;
 import org.jboss.cache.config.EvictionRegionConfig;
-import org.jboss.cache.eviction.ExpirationAlgorithm;
+import org.jboss.cache.eviction.ExpirationAlgorithmConfig;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -287,21 +287,15 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
       evictionConfigurations.add(parentCache.getConfiguration().getEvictionConfig().getDefaultEvictionRegionConfig());
 
       boolean useExpiration = false;
-      Iterator<EvictionRegionConfig> iterator = evictionConfigurations.iterator();
-
       // looking over all eviction configurations till the end or till some expiration algorithm subclass not found.
-      while (iterator.hasNext() && !useExpiration)
+      for (EvictionRegionConfig evictionRegionConfig : evictionConfigurations)
       {
-         try
+         if (evictionRegionConfig.getEvictionAlgorithmConfig() instanceof ExpirationAlgorithmConfig)
          {
-            String evictionClassName = iterator.next().getEvictionAlgorithmConfig().getEvictionAlgorithmClassName();
-            Class<?> evictionClass = Class.forName(evictionClassName);
-            // returns true if ExpirationAlgorithm is superClass of evictionClass
-            useExpiration = useExpiration || ExpirationAlgorithm.class.isAssignableFrom(evictionClass);
-         }
-         catch (ClassNotFoundException e)
-         {
-            throw new RepositoryConfigurationException("Unable to check JBossCache eviction class.", e);
+            // force set expiration key to default value in all Expiration configurations (if any)
+            ((ExpirationAlgorithmConfig)evictionRegionConfig.getEvictionAlgorithmConfig())
+            .setExpirationKeyName(ExpirationAlgorithmConfig.EXPIRATION_KEY);
+            useExpiration = true;
          }
       }
 
