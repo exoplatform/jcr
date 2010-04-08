@@ -24,26 +24,30 @@
   <parent>
     <groupId>org.exoplatform</groupId>
     <artifactId>foundation-parent</artifactId>
-    <version>6-SNAPSHOT</version>
+    <version>6</version>
   </parent>
+
   <groupId>org.exoplatform.jcr</groupId>
   <artifactId>jcr-parent</artifactId>
   <version>1.12.1-GA-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>eXo JCR</name>
+
   <scm>
     <connection>scm:svn:http://anonsvn.jboss.org/repos/exo-jcr/jcr/trunk</connection>
     <developerConnection>scm:svn:https://svn.jboss.org/repos/exo-jcr/jcr/trunk</developerConnection>
     <url>http://fisheye.jboss.org/browse/exo-jcr/jcr/trunk</url>
   </scm>
+
   <properties>
     <exo.product.name>exo-jcr</exo.product.name>
     <exo.product.specification>1.12</exo.product.specification>
-    <org.exoplatform.kernel.version>2.2.1-GA-SNAPSHOT</org.exoplatform.kernel.version>
-    <org.exoplatform.core.version>2.3.1-GA-SNAPSHOT</org.exoplatform.core.version>
-    <org.exoplatform.ws.version>2.1.1-GA-SNAPSHOT</org.exoplatform.ws.version>
+    <org.exoplatform.kernel.version>2.2.1-CR1</org.exoplatform.kernel.version>
+    <org.exoplatform.core.version>2.3.1-CR1</org.exoplatform.core.version>
+    <org.exoplatform.ws.version>2.1.1-CR1</org.exoplatform.ws.version>
     <org.exoplatform.doc-style.version>1</org.exoplatform.doc-style.version>
   </properties>
+
   <dependencyManagement>
     <dependencies>
       <dependency>
