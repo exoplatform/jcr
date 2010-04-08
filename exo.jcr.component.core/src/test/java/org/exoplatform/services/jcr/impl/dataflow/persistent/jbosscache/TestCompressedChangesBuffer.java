@@ -18,14 +18,14 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache;
 
-import java.util.HashMap;
-
 import junit.framework.TestCase;
 
 import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.BufferedJBossCache.ChangesContainer;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.BufferedJBossCache.PutObjectContainer;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.BufferedJBossCache.RemoveNodeContainer;
 import org.jboss.cache.Fqn;
+
+import java.util.HashMap;
 
 /**
  * @author <a href="mailto:foo@bar.org">Foo Bar</a>
@@ -40,13 +40,13 @@ public class TestCompressedChangesBuffer extends TestCase
       CompressedChangesBuffer buffer = new CompressedChangesBuffer();
       ChangesContainer put1 =
          new PutObjectContainer(Fqn.fromString("/" + JBossCacheWorkspaceStorageCache.CHILD_NODES + "/b"),
-            new HashMap<String, String>(), null, buffer.getHistoryIndex(), false, false, 0);
+            new HashMap<String, String>(), null, buffer.getHistoryIndex(), false);
       ChangesContainer put2 =
          new PutObjectContainer(Fqn.fromString("/" + JBossCacheWorkspaceStorageCache.CHILD_NODES + "/b/c"),
-            new HashMap<String, String>(), null, buffer.getHistoryIndex(), false, false, 0);
+            new HashMap<String, String>(), null, buffer.getHistoryIndex(), false);
       ChangesContainer rm1 =
          new RemoveNodeContainer(Fqn.fromString("/" + JBossCacheWorkspaceStorageCache.CHILD_NODES + "/b"), null, buffer
-            .getHistoryIndex(), false, false, 0);
+            .getHistoryIndex(), false);
       buffer.add(put1);
       buffer.add(put2);
       assertTrue("List MUST contain put container", buffer.getSortedList().contains(put1));
@@ -67,17 +67,17 @@ public class TestCompressedChangesBuffer extends TestCase
       CompressedChangesBuffer buffer = new CompressedChangesBuffer();
       ChangesContainer put1 =
          new PutObjectContainer(Fqn.fromString("/" + JBossCacheWorkspaceStorageCache.CHILD_NODES + "/b"),
-            new HashMap<String, String>(), null, buffer.getHistoryIndex(), false, false, 0);
+            new HashMap<String, String>(), null, buffer.getHistoryIndex(), false);
 
       ChangesContainer put2 =
          new PutObjectContainer(Fqn.fromString("/" + JBossCacheWorkspaceStorageCache.CHILD_NODES + "/b/c"),
-            new HashMap<String, String>(), null, buffer.getHistoryIndex(), false, false, 0);
+            new HashMap<String, String>(), null, buffer.getHistoryIndex(), false);
       ChangesContainer rm1 =
          new RemoveNodeContainer(Fqn.fromString("/" + JBossCacheWorkspaceStorageCache.CHILD_NODES + "/b/c"), null,
-            buffer.getHistoryIndex(), false, false, 0);
+            buffer.getHistoryIndex(), false);
       ChangesContainer rm2 =
          new RemoveNodeContainer(Fqn.fromString("/" + JBossCacheWorkspaceStorageCache.CHILD_NODES + "/b"), null, buffer
-            .getHistoryIndex(), false, false, 0);
+            .getHistoryIndex(), false);
       buffer.add(put1);
       buffer.add(put2);
       assertTrue("List MUST contain put container", buffer.getSortedList().contains(put1));
@@ -97,11 +97,11 @@ public class TestCompressedChangesBuffer extends TestCase
       CompressedChangesBuffer buffer = new CompressedChangesBuffer();
       ChangesContainer put1 =
          new PutObjectContainer(Fqn.fromString("/" + JBossCacheWorkspaceStorageCache.CHILD_NODES_LIST + "/b"),
-            new HashMap<String, String>(), null, buffer.getHistoryIndex(), false, false, 0);
+            new HashMap<String, String>(), null, buffer.getHistoryIndex(), false);
 
       ChangesContainer rm1 =
          new RemoveNodeContainer(Fqn.fromString("/" + JBossCacheWorkspaceStorageCache.CHILD_NODES_LIST + "/b"), null,
-            buffer.getHistoryIndex(), false, false, 0);
+            buffer.getHistoryIndex(), false);
       buffer.add(put1);
       assertTrue("List MUST contain put container", buffer.getSortedList().contains(put1));
       buffer.add(rm1);

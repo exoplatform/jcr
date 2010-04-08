@@ -19,7 +19,6 @@
 package org.exoplatform.services.jcr.api.writing;
 
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
-import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.util.EntityCollection;
 
 import java.util.ArrayList;
@@ -976,14 +975,10 @@ public class TestOrderBefore extends JcrAPIBaseTest
 
       session = repository.login(credentials, "ws");
       Node a = session.getRootNode().getNode("a"); // We suppose it already exist
-      NodeImpl n1 = (NodeImpl)a.addNode("n");
-      NodeImpl n2 = (NodeImpl)a.addNode("n");
-      NodeImpl n3 = (NodeImpl)a.addNode("n");
-      NodeImpl n4 = (NodeImpl)a.addNode("n");
-      NodeImpl n5 = (NodeImpl)a.addNode("n");
-      NodeImpl n6 = (NodeImpl)a.addNode("n");
-      NodeImpl n7 = (NodeImpl)a.addNode("n");
-
+      a.addNode("n");
+      a.addNode("n");
+      a.addNode("n");
+      a.addNode("n");
       session.save();
       session.logout();
 
@@ -993,30 +988,14 @@ public class TestOrderBefore extends JcrAPIBaseTest
       i.nextNode().remove();
       i.nextNode().remove();
       i.nextNode().remove();
-      i.nextNode().remove();
-      i.nextNode().remove();
-      i.nextNode().remove();
       session.save();
       session.logout();
 
       session = repository.login(credentials, "ws");
-
-      NodeImpl n = (NodeImpl)a.getNode("n");
-      assertEquals(n7.getData().getIdentifier(), n.getData().getIdentifier());
-
-      n = (NodeImpl)a.getNode("n[1]");
-      assertEquals(n7.getData().getIdentifier(), n.getData().getIdentifier());
-
       a = session.getRootNode().getNode("a");
-      NodeImpl nOrd = (NodeImpl)a.addNode("n");
+      a.addNode("n");
       a.orderBefore("n", null); // NPE happens here
       session.save();
-
-      n = (NodeImpl)a.getNode("n[1]");
-      assertEquals(n7.getData().getIdentifier(), n.getData().getIdentifier());
-
-      n = (NodeImpl)a.getNode("n[2]");
-      assertEquals(nOrd.getData().getIdentifier(), n.getData().getIdentifier());
    }
 
    public void testDeleteOrderBefore_SNS() throws Exception
