@@ -15,7 +15,7 @@
       actionPolicyClass="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.ParentNodeEvictionActionPolicy" 
       eventQueueSize="1000000">
          <property name="maxNodes" value="50000" />
-	 <property name="warnNoExpirationKey" value="true" />
+	 <property name="warnNoExpirationKey" value="false" />
       </default>
    </eviction>
 

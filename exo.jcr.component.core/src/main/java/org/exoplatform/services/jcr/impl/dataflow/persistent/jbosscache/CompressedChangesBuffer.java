@@ -18,15 +18,15 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache;
 
-import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.BufferedJBossCache.ChangesContainer;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.BufferedJBossCache.ChangesType;
-import org.jboss.cache.Fqn;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.BufferedJBossCache.ChangesType;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.ChangesContainerFactory.ChangesContainer;
+import org.jboss.cache.Fqn;
 
 /**
  * Sorting cache modification "as is" in {@link BufferedJBossCache} may harm data consistency. 

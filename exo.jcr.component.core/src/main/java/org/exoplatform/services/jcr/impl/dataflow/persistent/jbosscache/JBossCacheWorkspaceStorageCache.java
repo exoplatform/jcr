@@ -307,7 +307,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
       }
 
       // TODO: create appropriate cache with useExpiration set or not.
-      this.cache = new BufferedJBossCache(factory.createCache(wsConfig.getCache()));
+      this.cache = new BufferedJBossCache(factory.createCache(wsConfig.getCache()), new ChangesContainerExpirationFactory());
 
       this.itemsRoot = Fqn.fromElements(ITEMS);
       this.childNodes = Fqn.fromElements(CHILD_NODES);

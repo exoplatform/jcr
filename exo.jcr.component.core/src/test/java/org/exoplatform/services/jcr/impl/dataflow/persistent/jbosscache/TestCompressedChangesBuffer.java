@@ -18,14 +18,14 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache;
 
+import java.util.HashMap;
+
 import junit.framework.TestCase;
 
-import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.BufferedJBossCache.ChangesContainer;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.BufferedJBossCache.PutObjectContainer;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.BufferedJBossCache.RemoveNodeContainer;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.ChangesContainerFactory.ChangesContainer;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.ChangesContainerFactory.PutObjectContainer;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.ChangesContainerFactory.RemoveNodeContainer;
 import org.jboss.cache.Fqn;
-
-import java.util.HashMap;
 
 /**
  * @author <a href="mailto:foo@bar.org">Foo Bar</a>
