@@ -24,8 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.BufferedJBossCache.ChangesContainer;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.BufferedJBossCache.ChangesType;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.ChangesContainerFactory.ChangesContainer;
 import org.jboss.cache.Fqn;
 
 /**
