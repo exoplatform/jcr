@@ -30,6 +30,7 @@ import org.jboss.cache.Node;
 import org.jboss.cache.NodeNotExistsException;
 import org.jboss.cache.Region;
 import org.jboss.cache.config.Configuration;
+import org.jboss.cache.eviction.ExpirationAlgorithmConfig;
 import org.jboss.cache.interceptors.base.CommandInterceptor;
 import org.jgroups.Address;
 
@@ -668,6 +669,18 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
    public static enum ChangesType {
       REMOVE, REMOVE_KEY, PUT, PUT_KEY, PUT_TO_LIST;
    }
+   
+   protected static void putMap(Fqn fqn, Map<? extends Serializable, ? extends Object> data, Cache<Serializable, Object> cache, boolean localMode) 
+   {
+      cache.getInvocationContext().getOptionOverrides().setCacheModeLocal(localMode);
+      cache.put(fqn, data);
+   }
+   
+   protected static void putObject(Fqn fqn, Serializable key, Object value, Cache<Serializable, Object> cache, boolean localMode) 
+   {
+      cache.getInvocationContext().getOptionOverrides().setCacheModeLocal(localMode);
+      cache.put(fqn, key, value);
+   }
 
    /**
     * Container for changes
@@ -760,8 +773,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       @Override
       public void apply()
       {
-         setCacheLocalMode();
-         cache.put(fqn, data);
+         putMap(fqn, data, cache, localMode);
       }
    }
 
@@ -785,8 +797,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       @Override
       public void apply()
       {
-         setCacheLocalMode();
-         cache.put(fqn, key, value);
+         putObject(fqn, key, value, cache, localMode);
       }
    }
 
@@ -825,8 +836,8 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
                newSet.addAll((Set<Object>)existingObject);
             }
             newSet.add(value);
-            setCacheLocalMode();
-            cache.put(fqn, key, newSet);
+            
+            putObject(fqn, key, newSet, cache, localMode);
          }
          else
          {
@@ -866,8 +877,8 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
          {
             Set<Object> newSet = new HashSet<Object>((Set<Object>)existingObject);
             newSet.remove(value);
-            setCacheLocalMode();
-            cache.put(fqn, key, newSet);
+            
+            putObject(fqn, key, newSet, cache, localMode);
          }
       }
    }
