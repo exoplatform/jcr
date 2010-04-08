@@ -808,14 +808,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
     */
    protected ItemData putNode(NodeData node, ModifyChildOption modifyListsOfChild)
    {
-
-      // remove possible NullNodeData from cache
-      boolean local = cache.isLocal();
-      cache.setLocal(false);
-
       removeNullNode(node);
-
-      cache.setLocal(local);
 
       // if not a root node
       if (node.getParentIdentifier() != null)
@@ -856,6 +849,10 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
     */
    protected void removeNullNode(ItemData item)
    {
+      // remove possible NullNodeData from cache
+      boolean local = cache.isLocal();
+      cache.setLocal(true);
+
       Fqn<String> fqn = makeNullItemFqn(item.getIdentifier());
       if ((NullNodeData)cache.get(fqn, ITEM_DATA) != null)
       {
@@ -869,6 +866,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
       {
          cache.removeNode(fqn);
       }
+
+      cache.setLocal(local);
    }
 
    protected ItemData putNodeInBufferedCache(NodeData node, ModifyChildOption modifyListsOfChild)
@@ -900,14 +899,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
     */
    protected PropertyData putProperty(PropertyData prop, ModifyChildOption modifyListsOfChild)
    {
-
-      // remove possible NullNodeData from cache
-      boolean local = cache.isLocal();
-      cache.setLocal(false);
-
       removeNullNode(prop);
-
-      cache.setLocal(local);
 
       // add in CHILD_PROPS
       cache.put(makeChildFqn(childProps, prop.getParentIdentifier(), prop.getQPath().getEntries()[prop.getQPath()
