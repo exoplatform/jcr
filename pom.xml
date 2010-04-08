@@ -29,14 +29,14 @@
 
   <groupId>org.exoplatform.jcr</groupId>
   <artifactId>jcr-parent</artifactId>
-  <version>1.12.1-GA-SNAPSHOT</version>
+  <version>1.12.1-CR1</version>
   <packaging>pom</packaging>
   <name>eXo JCR</name>
 
   <scm>
-    <connection>scm:svn:http://anonsvn.jboss.org/repos/exo-jcr/jcr/trunk</connection>
-    <developerConnection>scm:svn:https://svn.jboss.org/repos/exo-jcr/jcr/trunk</developerConnection>
-    <url>http://fisheye.jboss.org/browse/exo-jcr/jcr/trunk</url>
+    <connection>scm:svn:http://anonsvn.jboss.org/repos/exo-jcr/jcr/tags/1.12.1-CR1</connection>
+    <developerConnection>scm:svn:https://svn.jboss.org/repos/exo-jcr/jcr/tags/1.12.1-CR1</developerConnection>
+    <url>http://fisheye.jboss.org/browse/exo-jcr/jcr/tags/1.12.1-CR1</url>
   </scm>
 
   <properties>
