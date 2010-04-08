@@ -261,7 +261,7 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
             String[] paths = (String[])configExtensionPaths.toArray(new String[configExtensionPaths.size()]);
             for (int i = paths.length - 1; i >= 0; i--)
             {
-               // We start from the last one because as it is the one with highest priority
+               // We start from the last one because as it is the one with highest priorityn
                if (i == paths.length - 1)
                {
                   init(configurationService.getInputStream(paths[i]));
