@@ -19,6 +19,8 @@
 package org.exoplatform.services.ftp.command;
 
 import org.exoplatform.services.ftp.FtpConst;
+import org.exoplatform.services.ftp.FtpTextUtils;
+import org.exoplatform.services.ftp.config.FtpConfig;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -62,6 +64,9 @@ public class CmdMkd extends FtpCommandImpl
          reply(String.format(FtpConst.Replyes.REPLY_550, srcPath));
          return;
       }
+      
+      FtpConfig ftpConfig = clientSession().getFtpServer().getConfiguration();
+      boolean replaceForbiddenChars =ftpConfig.isReplaceForbiddenChars();
 
       try
       {
@@ -72,6 +77,11 @@ public class CmdMkd extends FtpCommandImpl
          for (int i = 1; i < newPath.size(); i++)
          {
             String curPathName = newPath.get(i);
+
+            if (replaceForbiddenChars)
+            {
+              curPathName = FtpTextUtils.replaceForbiddenChars(curPathName, ftpConfig.getForbiddenChars(), ftpConfig.getReplaceChar());
+            }
 
             if (parentNode.hasNode(curPathName))
             {

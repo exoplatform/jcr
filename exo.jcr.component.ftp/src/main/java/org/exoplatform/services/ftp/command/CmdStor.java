@@ -20,6 +20,7 @@ package org.exoplatform.services.ftp.command;
 
 import org.exoplatform.commons.utils.MimeTypeResolver;
 import org.exoplatform.services.ftp.FtpConst;
+import org.exoplatform.services.ftp.FtpTextUtils;
 import org.exoplatform.services.ftp.config.FtpConfig;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
@@ -88,6 +89,16 @@ public class CmdStor extends FtpCommandImpl
       try
       {
          ArrayList<String> newPath = clientSession().getFullPath(fileName);
+         
+         FtpConfig ftpConfig = clientSession().getFtpServer().getConfiguration();
+         if (ftpConfig.isReplaceForbiddenChars())
+         {
+            String fName = newPath.get(newPath.size()-1);
+            String newfName = FtpTextUtils.replaceForbiddenChars(fName, ftpConfig.getForbiddenChars(), ftpConfig.getReplaceChar());
+            
+            fileName  = fileName.substring(0, fileName.indexOf(fName)) + newfName;
+         }
+         
          Session curSession = clientSession().getSession(newPath.get(0));
 
          Node resourceNode = getExistedFileNode(curSession, fileName);

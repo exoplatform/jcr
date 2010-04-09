@@ -73,4 +73,31 @@ public class FtpTextUtils
       return result;
    }
 
+   public static String replaceForbiddenChars(String strVal, String forbiddenChars, char replaceChar)
+   {
+      char[] result = new char[strVal.length()];
+
+      for (int i = 0; i < strVal.length(); i++)
+      {
+         boolean replaced = false;
+
+         for (int j = 0; j < forbiddenChars.length(); j++)
+         {
+            if (strVal.charAt(i) == forbiddenChars.charAt(j))
+            {
+               result[i] = replaceChar;
+               replaced = true;
+               break;
+            }
+         }
+
+         if (!replaced)
+         {
+            result[i] = strVal.charAt(i);
+         }
+      }
+
+      return new String(result);
+   }
+
 }
