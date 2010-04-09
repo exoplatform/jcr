@@ -75,6 +75,30 @@ public class JCRSQLParser {
 //        this.resolver = resolver;
 //  } 
 
+  void handleTokenMgrError(TokenMgrError e) throws ParseException{
+    if (e.errorCode == e.LEXICAL_ERROR)
+    {
+      StringBuffer sb = new StringBuffer();
+      try
+      {
+        char c;
+        while ((c = token_source.input_stream.readChar()) != ' ')
+        {
+          sb.append(c);
+        }
+      }
+      catch (java.io.IOException ioe)
+      {
+        // probably EOF occurs, but any way, do not report this exceptions 
+      }
+
+      throw new ParseException("Unknown Query Construction : \"" + sb.toString() + "\". " + e.getMessage());
+    }
+    else
+    {
+      throw e;
+    }
+  }
 }
 
 PARSER_END(JCRSQLParser)
@@ -269,11 +293,18 @@ TOKEN:
 ASTQuery Query() :
 {}
 {
+  try{
+
   <SELECT>
   SelectList()
   TableExpression()
   [ OrderByClause() ]
   <EOF>
+  
+  }catch(TokenMgrError e){
+    handleTokenMgrError(e);
+  }
+  
   { return jjtThis; }
 }
 
