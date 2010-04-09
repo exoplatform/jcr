@@ -270,9 +270,8 @@
       <!-- dependency>
          <groupId>com.h2database</groupId>
          <artifactId>h2</artifactId>
-         <version>1.0.74</version>
-         <scope>test</scope>
-      </dependency -->
+         <version>1.2.132</version>
+      </dependency-->
       <!-- Ingres Database (local repository) -->
       <!-- dependency>
          <groupId>com.ingres.jdbc</groupId>
