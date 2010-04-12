@@ -79,6 +79,25 @@
          <!--				<name>timeout</name>-->
          <!--				<value>60</value>-->
          <!--			</value-param>-->
+	 
+      <!-- That is default configuration to mechanism "replace-forbidden-chars" 
+           We will uncoment when we need changed default configuration.
+      -->
+      <!--value-param>
+        <name>replace-forbidden-chars</name>
+        <value>true</value>
+      </value-param>
+       
+      <value-param>
+        <name>forbidden-chars</name>
+        <value>:[]*'"|</value>
+      </value-param>
+       
+      <value-param>
+        <name>replace-char</name>
+        <value>_</value>
+      </value-param -->
+	 
       </init-params>
    </component>
 </configuration>
