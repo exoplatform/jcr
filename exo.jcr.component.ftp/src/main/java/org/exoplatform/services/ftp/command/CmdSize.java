@@ -55,8 +55,15 @@ public class CmdSize extends FtpCommandImpl
       }
 
       String resName = params[1];
-
+      
       ArrayList<String> newPath = clientSession().getFullPath(resName);
+      
+      if (newPath.size() == 0) 
+      {
+         reply(String.format(FtpConst.Replyes.REPLY_550_SIZE, resName));
+         return;
+      }
+      
       String repoPath = clientSession().getRepoPath(newPath);
       try
       {
