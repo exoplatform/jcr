@@ -89,5 +89,38 @@ public class MKDTest extends TestCase
       client.close();
       log.info("Complete.\r\n");
    }
+   
+   public void testForbiddenCharsMKD() throws Exception {
+      log.info("Test...");
+
+      FtpClientSession client = FtpTestConfig.getTestFtpClient();
+      client.connect();
+
+      {
+        CmdUser cmdUser = new CmdUser(FtpTestConfig.USER_ID);
+        assertEquals(FtpConst.Replyes.REPLY_331, client.executeCommand(cmdUser));
+      }
+
+      {
+        CmdPass cmdPass = new CmdPass(FtpTestConfig.USER_PASS);
+        assertEquals(FtpConst.Replyes.REPLY_230, client.executeCommand(cmdPass));
+      }
+
+      {
+        CmdCwd cmdCwd = new CmdCwd("production");
+        assertEquals(FtpConst.Replyes.REPLY_250, client.executeCommand(cmdCwd));
+
+        String folderName = "test_folder_123" + ":[]*'\"|" + "123";
+
+        CmdMkd cmdMkd = new CmdMkd(folderName);
+        assertEquals(FtpConst.Replyes.REPLY_257, client.executeCommand(cmdMkd));
+        
+        CmdRmd cmdRmd = new CmdRmd("test_folder_123" + "_______" + "123");
+        assertEquals(FtpConst.Replyes.REPLY_250, client.executeCommand(cmdRmd));
+      }
+
+      client.close();
+      log.info("Complete.\r\n");
+    }
 
 }

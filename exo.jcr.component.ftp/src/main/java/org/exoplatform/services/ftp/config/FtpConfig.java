@@ -61,4 +61,9 @@ public interface FtpConfig
 
    PortalContainer getPortalContainer();
 
+   boolean isReplaceForbiddenChars();
+   
+   String getForbiddenChars();
+   
+   char getReplaceChar();
 }

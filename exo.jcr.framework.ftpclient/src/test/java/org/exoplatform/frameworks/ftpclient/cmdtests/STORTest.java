@@ -120,5 +120,42 @@ public class STORTest extends TestCase
       client.close();
       log.info("Complete.\r\n");
    }
+   
+   public void testForbiddenChars_STOR() throws Exception {
+      log.info("Test...");
+
+      FtpClientSession client = FtpTestConfig.getTestFtpClient();
+      client.connect();
+
+      byte[] fileContent = "THIS FILE CONTENT".getBytes();
+
+      // login
+      {
+        assertEquals(FtpConst.Replyes.REPLY_331,
+                     client.executeCommand(new CmdUser(FtpTestConfig.USER_ID)));
+        assertEquals(FtpConst.Replyes.REPLY_230,
+                     client.executeCommand(new CmdPass(FtpTestConfig.USER_PASS)));
+      }
+
+      String fileName = "test_stor_file_" + ":[]*'\"|" + ".txt";
+
+      // desired reply - 125 Data connection already open; Transfer starting
+      // 226 Transfer complete
+      {
+        assertEquals(FtpConst.Replyes.REPLY_250, client.executeCommand(new CmdCwd("production")));
+        assertEquals(FtpConst.Replyes.REPLY_227, client.executeCommand(new CmdPasv()));
+
+        CmdStor cmdStor = new CmdStor(fileName);
+        cmdStor.setFileContent(fileContent);
+        assertEquals(FtpConst.Replyes.REPLY_226, client.executeCommand(cmdStor));
+      }
+
+      {
+        assertEquals(FtpConst.Replyes.REPLY_250, client.executeCommand(new CmdDele("test_stor_file_" + "_______" + ".txt")));
+      }
+
+      client.close();
+      log.info("Complete.\r\n");
+    }
 
 }
