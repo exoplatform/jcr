@@ -214,7 +214,7 @@
     <para>In order to know exactly how your application uses eXo JCR, it cans
     be interesting to register all the JCR API accesses in order to easily
     create real life test scenario based on pure JCR calls and also to tune
-    your eXo JCR to better fit your requirements. </para>
+    your eXo JCR to better fit your requirements.</para>
 
     <para>In order to allow you to specify into the configuration which part
     of eXo JCR needs to be monitored whitout applying any changes in your code
@@ -250,11 +250,11 @@
 
     <para>By default, the configuration will collect statistcs on all the
     methods of the internal interfaces
-    <emphasis>org.exoplatform.services.jcr.core.ExtendedSession</emphasis>,
-    <emphasis>org.exoplatform.services.jcr.core.ExtendedNode</emphasis> and
-    <emphasis>org.exoplatform.services.jcr.core.ExtendedProperty</emphasis>.
-    To add and/or remove some interfaces to monitor, you have two
-    configuration files to change that are bundled into the jar
+    <emphasis>org.exoplatform.services.jcr.core.ExtendedSession</emphasis> and
+    <emphasis>org.exoplatform.services.jcr.core.ExtendedNode</emphasis>, and
+    the JCR API interface <emphasis>javax.jcr.Property</emphasis>. To add
+    and/or remove some interfaces to monitor, you have two configuration files
+    to change that are bundled into the jar
     <emphasis>exo.jcr.component.statistics-X.Y.Z</emphasis>.jar, which are
     <emphasis>conf/configuration.xml</emphasis> and
     <emphasis>META-INF/aop.xml</emphasis>.</para>
@@ -275,7 +275,7 @@
        &lt;name&gt;targetInterfaces&lt;/name&gt;
        &lt;value&gt;org.exoplatform.services.jcr.core.ExtendedSession&lt;/value&gt;
        &lt;value&gt;org.exoplatform.services.jcr.core.ExtendedNode&lt;/value&gt;
-       &lt;value&gt;org.exoplatform.services.jcr.core.ExtendedProperty&lt;/value&gt;
+       &lt;value&gt;javax.jcr.Property&lt;/value&gt;
      &lt;/values-param&gt;
    &lt;/init-params&gt;
   &lt;/component&gt;
@@ -287,17 +287,16 @@
     into the expression filter of the pointcut called
     <emphasis>JCRAPIPointcut</emphasis>. As you can see below, by default only
     JCR API calls from the exoplatform packages are took into account, don't
-    hesistate to modify also this filter to add your own package names.
-    </para>
+    hesistate to modify also this filter to add your own package names.</para>
 
     <programlisting>&lt;aspectj&gt;
   &lt;aspects&gt;
     &lt;concrete-aspect name="org.exoplatform.services.jcr.statistics.JCRAPIAspectImpl" extends="org.exoplatform.services.jcr.statistics.JCRAPIAspect"&gt;
       &lt;pointcut name="JCRAPIPointcut"
-        expression="(target(org.exoplatform.services.jcr.core.ExtendedSession) || target(org.exoplatform.services.jcr.core.ExtendedNode) || target(org.exoplatform.services.jcr.core.ExtendedProperty)) &amp;amp;&amp;amp; call(public * *(..))" /&gt;
+        expression="(target(org.exoplatform.services.jcr.core.ExtendedSession) || target(org.exoplatform.services.jcr.core.ExtendedNode) || target(javax.jcr.Property)) &amp;amp;&amp;amp; call(public * *(..))" /&gt;
     &lt;/concrete-aspect&gt;
   &lt;/aspects&gt;
-  &lt;weaver&gt;
+  &lt;weaver options="-XnoInline"&gt;
     &lt;include within="org.exoplatform..*" /&gt;
   &lt;/weaver&gt;
 &lt;/aspectj&gt; </programlisting>

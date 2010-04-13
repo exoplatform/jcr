@@ -3,10 +3,10 @@
 	<aspects>
 		<concrete-aspect name="org.exoplatform.services.jcr.statistics.JCRAPIAspectImpl" extends="org.exoplatform.services.jcr.statistics.JCRAPIAspect">
 			<pointcut name="JCRAPIPointcut"
-				expression="(target(org.exoplatform.services.jcr.core.ExtendedSession) || target(org.exoplatform.services.jcr.core.ExtendedNode) || target(org.exoplatform.services.jcr.core.ExtendedProperty)) &amp;&amp; call(public * *(..))" />
+				expression="(target(org.exoplatform.services.jcr.core.ExtendedSession) || target(org.exoplatform.services.jcr.core.ExtendedNode) || target(javax.jcr.Property)) &amp;&amp; call(public * *(..))" />
 		</concrete-aspect>
 	</aspects>
-	<weaver>
+	<weaver options="-XnoInline">
 		<include within="org.exoplatform..*" />
 	</weaver>
 </aspectj>
