@@ -25,7 +25,7 @@
     eXo JCR) is represented by the methods of the interface
     <envar>org.exoplatform.services.jcr.storage.WorkspaceStorageConnection</envar>,
     so for all the methods defined in this interface, we can have the
-    following figures: </para>
+    following figures:</para>
 
     <itemizedlist>
       <listitem>
@@ -55,17 +55,13 @@
     <para>If you want to enable the statistics, you just need to set the JVM
     parameter called
     <emphasis>JDBCWorkspaceDataContainer.statistics.enabled</emphasis> to
-    <emphasis>true</emphasis>. This will then create at startup a file called
+    <emphasis>true</emphasis>. The corresponding CSV file is
     <emphasis>StatisticsJDBCStorageConnection-${creation-timestamp}.csv</emphasis>
-    into the user directory if it is possible otherwise it will create it into
-    the temporary directory. The format of this file is <envar>CSV</envar>
-    (i.e. Comma-Seperated Values), one new line will be added every 5 seconds
-    and one last line will be added at JVM exit. Each line, will be composed
-    of the 5 figures described above for each method and globaly for all the
-    methods.</para>
+    for more details about how the csv files are managed please refer to the
+    section dedicated to the statistics manager.</para>
 
-    <para>The format of each column header is
-    ${method-alias}-${metric-alias}.</para>
+    <para>The format of each column header is ${method-alias}-${metric-alias}.
+    The metric alias are described in the statistics manager section.</para>
 
     <table>
       <title>Method Alias</title>
@@ -210,44 +206,263 @@
         </tbody>
       </tgroup>
     </table>
+  </section>
 
-    <table>
-      <title>Metric Alias</title>
+  <section>
+    <title>Statistics on the JCR API accesses</title>
 
-      <tgroup cols="2">
-        <tbody>
-          <row>
-            <entry>Min</entry>
+    <para>In order to know exactly how your application uses eXo JCR, it cans
+    be interesting to register all the JCR API accesses in order to easily
+    create real life test scenario based on pure JCR calls and also to tune
+    your eXo JCR to better fit your requirements. </para>
 
-            <entry>The minimum time spent into the method.</entry>
-          </row>
+    <para>In order to allow you to specify into the configuration which part
+    of eXo JCR needs to be monitored whitout applying any changes in your code
+    and/or building anything, we choosed to rely on the Load-time Weaving
+    proposed by AspectJ.</para>
 
-          <row>
-            <entry>Max</entry>
+    <para>To enable this feature, you will have to add in your classpath the
+    following jar files:</para>
 
-            <entry>The maximum time spent into the method.</entry>
-          </row>
+    <itemizedlist>
+      <listitem>
+        <para><emphasis>exo.jcr.component.statistics-X.Y.Z</emphasis>.jar
+        corresponding to your eXo JCR version that you can get from the jboss
+        maven repository <ulink
+        url="???"><uri>http://repository.jboss.com/maven2/org/exoplatform/jcr/exo.jcr.component.statistics</uri></ulink>.</para>
+      </listitem>
 
-          <row>
-            <entry>Total</entry>
+      <listitem>
+        <para>aspectjrt-1.6.8.jar that you can get from the main maven
+        repository <ulink
+        url="???"><uri>http://repo2.maven.org/maven2/org/aspectj/aspectjrt</uri></ulink>.</para>
+      </listitem>
+    </itemizedlist>
 
-            <entry>The total amount of time spent into the method.</entry>
-          </row>
+    <para>You will also need to get aspectjweaver-1.6.8.jar from the main
+    maven repository <ulink
+    url="???">http://repo2.maven.org/maven2/org/aspectj/aspectjweaver</ulink>.
+    At this stage, to enable the statistics on the JCR API accesses, you will
+    need to add the JVM parameter
+    <emphasis>-javaagent:${pathto}/aspectjweaver-1.6.8.jar</emphasis> to your
+    command line, for more details please refer to <ulink
+    url="???">http://www.eclipse.org/aspectj/doc/released/devguide/ltw-configuration.html</ulink>.</para>
 
-          <row>
-            <entry>Avg</entry>
+    <para>By default, the configuration will collect statistcs on all the
+    methods of the internal interfaces
+    <emphasis>org.exoplatform.services.jcr.core.ExtendedSession</emphasis>,
+    <emphasis>org.exoplatform.services.jcr.core.ExtendedNode</emphasis> and
+    <emphasis>org.exoplatform.services.jcr.core.ExtendedProperty</emphasis>.
+    To add and/or remove some interfaces to monitor, you have two
+    configuration files to change that are bundled into the jar
+    <emphasis>exo.jcr.component.statistics-X.Y.Z</emphasis>.jar, which are
+    <emphasis>conf/configuration.xml</emphasis> and
+    <emphasis>META-INF/aop.xml</emphasis>.</para>
 
-            <entry>The average time spent into the method.</entry>
-          </row>
+    <para>The file content below is the content of
+    <emphasis>conf/configuration.xml</emphasis> that you will need to modify
+    to add and/or remove the full qualified name of the interface to monitor,
+    into the list of value parameters of the init param called
+    <emphasis>targetInterfaces</emphasis>.</para>
 
-          <row>
-            <entry>Times</entry>
+    <programlisting>&lt;configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"
+ xmlns="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"&gt;
 
-            <entry>The total amount of times the method has been
-            called.</entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
+ &lt;component&gt;
+   &lt;type&gt;org.exoplatform.services.jcr.statistics.JCRAPIAspectConfig&lt;/type&gt;
+   &lt;init-params&gt;
+     &lt;values-param&gt;
+       &lt;name&gt;targetInterfaces&lt;/name&gt;
+       &lt;value&gt;org.exoplatform.services.jcr.core.ExtendedSession&lt;/value&gt;
+       &lt;value&gt;org.exoplatform.services.jcr.core.ExtendedNode&lt;/value&gt;
+       &lt;value&gt;org.exoplatform.services.jcr.core.ExtendedProperty&lt;/value&gt;
+     &lt;/values-param&gt;
+   &lt;/init-params&gt;
+  &lt;/component&gt;
+&lt;/configuration&gt;</programlisting>
+
+    <para>The file content below is the content of
+    <emphasis>META-INF/aop.xml</emphasis> that you will to need to modify to
+    add and/or remove the full qualified name of the interface to monitor,
+    into the expression filter of the pointcut called
+    <emphasis>JCRAPIPointcut</emphasis>. As you can see below, by default only
+    JCR API calls from the exoplatform packages are took into account, don't
+    hesistate to modify also this filter to add your own package names.
+    </para>
+
+    <programlisting>&lt;aspectj&gt;
+  &lt;aspects&gt;
+    &lt;concrete-aspect name="org.exoplatform.services.jcr.statistics.JCRAPIAspectImpl" extends="org.exoplatform.services.jcr.statistics.JCRAPIAspect"&gt;
+      &lt;pointcut name="JCRAPIPointcut"
+        expression="(target(org.exoplatform.services.jcr.core.ExtendedSession) || target(org.exoplatform.services.jcr.core.ExtendedNode) || target(org.exoplatform.services.jcr.core.ExtendedProperty)) &amp;amp;&amp;amp; call(public * *(..))" /&gt;
+    &lt;/concrete-aspect&gt;
+  &lt;/aspects&gt;
+  &lt;weaver&gt;
+    &lt;include within="org.exoplatform..*" /&gt;
+  &lt;/weaver&gt;
+&lt;/aspectj&gt; </programlisting>
+
+    <para>The corresponding CSV files are of type
+    <emphasis>Statistics${interface-name}-${creation-timestamp}.csv</emphasis>
+    for more details about how the csv files are managed please refer to the
+    section dedicated to the statistics manager.</para>
+
+    <para>The format of each column header is ${method-alias}-${metric-alias}.
+    The method alias will be of type ${method-name}(list of parameter types
+    separeted by ; to be compatible with the CSV format).</para>
+
+    <para>The metric alias are described in the statistics manager
+    section.</para>
+
+    <remark>Please note that this feature will affect the performances of eXo
+    JCR so it must be used with caution.</remark>
+  </section>
+
+  <section>
+    <title>Statistics Manager</title>
+
+    <para>The statistics manager manages all the statistics provided by eXo
+    JCR, it is responsible of printing the data into the CSV files but also to
+    expose the statistics through JMX and/or Rest.</para>
+
+    <para>The statistics manager will create all the CSV files for each
+    category of statistics that it manages, the format of those files is
+    <emphasis>Statistics${category-name}-${creation-timestamp}.csv</emphasis>.
+    Those files will be created into the user directory if it is possible
+    otherwise it will create them into the temporary directory. The format of
+    those files is <envar>CSV</envar> (i.e. Comma-Seperated Values), one new
+    line will be added regularily (every 5 seconds by default) and one last
+    line will be added at JVM exit. Each line, will be composed of the 5
+    figures described below for each method and globaly for all the
+    methods.</para>
+
+    <para>See below the description of each metric type:</para>
+
+    <para><table>
+        <title>Metric Alias</title>
+
+        <tgroup cols="2">
+          <tbody>
+            <row>
+              <entry>Min</entry>
+
+              <entry>The minimum time spent into the method.</entry>
+            </row>
+
+            <row>
+              <entry>Max</entry>
+
+              <entry>The maximum time spent into the method.</entry>
+            </row>
+
+            <row>
+              <entry>Total</entry>
+
+              <entry>The total amount of time spent into the method.</entry>
+            </row>
+
+            <row>
+              <entry>Avg</entry>
+
+              <entry>The average time spent into the method.</entry>
+            </row>
+
+            <row>
+              <entry>Times</entry>
+
+              <entry>The total amount of times the method has been
+              called.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>You can disable the persistence of the statistics by setting the
+    JVM parameter called
+    <emphasis>JCRStatisticsManager.persistence.enabled</emphasis> to
+    <emphasis>false</emphasis>, by default it is set to
+    <emphasis>true</emphasis>. You can aslo define the period of time between
+    each record (i.e. line of data into the file) by setting the JVM parameter
+    called <emphasis>JCRStatisticsManager.persistence.timeout</emphasis> to
+    your expected value expressed in milliseconds, by default it is set to
+    <emphasis>5000</emphasis>.</para>
+
+    <para>You can also access to the statistics thanks to JMX, the available
+    methods are the following:</para>
+
+    <para><table>
+        <title>JMX Methods</title>
+
+        <tgroup cols="2">
+          <tbody>
+            <row>
+              <entry>getMin</entry>
+
+              <entry>Gives the minimum time spent into the method
+              corresponding to the given category name and statistics name.
+              The expected arguments are the name of the category of the
+              statistics (e.g. JDBCStorageConnection) and the name of the
+              expected method or global for the global value.</entry>
+            </row>
+
+            <row>
+              <entry>getMax</entry>
+
+              <entry>Gives the maximum time spent into the method
+              corresponding to the given category name and statistics name.
+              The expected arguments are the name of the category of the
+              statistics (e.g. JDBCStorageConnection) and the name of the
+              expected method or global for the global value.</entry>
+            </row>
+
+            <row>
+              <entry>getTotal</entry>
+
+              <entry>Gives the total amount of time spent into the method
+              corresponding to the given category name and statistics name.
+              The expected arguments are the name of the category of the
+              statistics (e.g. JDBCStorageConnection) and the name of the
+              expected method or global for the global value.</entry>
+            </row>
+
+            <row>
+              <entry>getAvg</entry>
+
+              <entry>Gives the average time spent into the method
+              corresponding to the given category name and statistics name.
+              The expected arguments are the name of the category of the
+              statistics (e.g. JDBCStorageConnection) and the name of the
+              expected method or global for the global value.</entry>
+            </row>
+
+            <row>
+              <entry>getTimes</entry>
+
+              <entry>Gives the total amount of times the method has been
+              called corresponding to the given category name and statistics
+              name. The expected arguments are the name of the category of the
+              statistics (e.g. JDBCStorageConnection) and the name of the
+              expected method or global for the global value.</entry>
+            </row>
+
+            <row>
+              <entry>reset</entry>
+
+              <entry>Reset the statistics for the given category name and
+              statistics name. The expected arguments are the name of the
+              category of the statistics (e.g. JDBCStorageConnection) and the
+              name of the expected method or global for the global
+              value.</entry>
+            </row>
+
+            <row>
+              <entry>resetAll</entry>
+
+              <entry>Reset all the statistics for the given category name. The
+              expected argument is the name of the category of the statistics
+              (e.g. JDBCStorageConnection).</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>The full name of the related MBean is
+    <emphasis>exo:service=statistic, view=jcr</emphasis>.</para>
   </section>
 </chapter>
