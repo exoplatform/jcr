@@ -366,7 +366,7 @@ public class DBInitializer
          while (next != null)
          {
             errorTrace += next.getMessage() + "; ";
-            next = e.getNextException();
+            next = next.getNextException();
          }
          Throwable cause = e.getCause();
          String msg =
