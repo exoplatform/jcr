@@ -1,27 +1,3 @@
-package org.exoplatform.services.jcr.impl.storage.jdbc.statistics;
-
-import org.exoplatform.services.jcr.datamodel.ItemData;
-import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.datamodel.PropertyData;
-import org.exoplatform.services.jcr.datamodel.QPathEntry;
-import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
-import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.concurrent.atomic.AtomicLong;
-
-import javax.jcr.InvalidItemStateException;
-import javax.jcr.RepositoryException;
-
 /*
  * Copyright (C) 2003-2010 eXo Platform SAS.
  *
@@ -38,13 +14,27 @@ import javax.jcr.RepositoryException;
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see&lt;http://www.gnu.org/licenses/&gt;.
  */
+package org.exoplatform.services.jcr.impl.storage.jdbc.statistics;
+
+import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.PropertyData;
+import org.exoplatform.services.jcr.datamodel.QPathEntry;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
+import org.exoplatform.services.jcr.statistics.JCRStatisticsManager;
+import org.exoplatform.services.jcr.statistics.Statistics;
+import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
+
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.jcr.InvalidItemStateException;
+import javax.jcr.RepositoryException;
 
 /**
- * This class is used to give statistics about the time spent in the database access layer. It will
- * print all the metrics value into a file in csv format. It will provide metrics of type 
- * minimum, maximum, total, times and average for each method of {@link WorkspaceStorageConnection}
- * and the global values. It will add data into the file every 5 seconds and add the last line at
- * JVM exit. To activate the statistics, set the JVM parameter called
+ * This class is used to give statistics about the time spent in the database access layer.  
+ * To activate the statistics, set the JVM parameter called
  * "JDBCWorkspaceDataContainer.statistics.enabled" to <code>true</code>.
  * 
  * Created by The eXo Platform SAS
@@ -54,11 +44,6 @@ import javax.jcr.RepositoryException;
  */
 public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnection
 {
-
-   /**
-    * The logger
-    */
-   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.StatisticsJDBCStorageConnection");
 
    /**
     * The description of the statistics corresponding to the method 
@@ -171,7 +156,7 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
    /**
     * The global statistics for all the database accesses
     */
-   private final static Statistics GLOBAL_STATISTICS = new Statistics("global");
+   private final static Statistics GLOBAL_STATISTICS = new Statistics(null, "global");
 
    /**
     * The list of all the statistics, one per method
@@ -180,124 +165,45 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
    static
    {
       // Read Methods
-      ALL_STATISTICS.put(GET_ITEM_DATA_BY_ID_DESCR, new Statistics(GET_ITEM_DATA_BY_ID_DESCR));
-      ALL_STATISTICS.put(GET_ITEM_DATA_BY_NODE_DATA_NQ_PATH_ENTRY_DESCR, new Statistics(
+      ALL_STATISTICS.put(GET_ITEM_DATA_BY_ID_DESCR, new Statistics(GLOBAL_STATISTICS, GET_ITEM_DATA_BY_ID_DESCR));
+      ALL_STATISTICS.put(GET_ITEM_DATA_BY_NODE_DATA_NQ_PATH_ENTRY_DESCR, new Statistics(GLOBAL_STATISTICS,
          GET_ITEM_DATA_BY_NODE_DATA_NQ_PATH_ENTRY_DESCR));
-      ALL_STATISTICS.put(GET_CHILD_NODES_DATA_DESCR, new Statistics(GET_CHILD_NODES_DATA_DESCR));
-      ALL_STATISTICS.put(GET_CHILD_NODES_COUNT_DESCR, new Statistics(GET_CHILD_NODES_COUNT_DESCR));
-      ALL_STATISTICS.put(GET_CHILD_PROPERTIES_DATA_DESCR, new Statistics(GET_CHILD_PROPERTIES_DATA_DESCR));
-      ALL_STATISTICS.put(LIST_CHILD_PROPERTIES_DATA_DESCR, new Statistics(LIST_CHILD_PROPERTIES_DATA_DESCR));
-      ALL_STATISTICS.put(GET_REFERENCES_DATA_DESCR, new Statistics(GET_REFERENCES_DATA_DESCR));
+      ALL_STATISTICS.put(GET_CHILD_NODES_DATA_DESCR, new Statistics(GLOBAL_STATISTICS, GET_CHILD_NODES_DATA_DESCR));
+      ALL_STATISTICS.put(GET_CHILD_NODES_COUNT_DESCR, new Statistics(GLOBAL_STATISTICS, GET_CHILD_NODES_COUNT_DESCR));
+      ALL_STATISTICS.put(GET_CHILD_PROPERTIES_DATA_DESCR, new Statistics(GLOBAL_STATISTICS,
+         GET_CHILD_PROPERTIES_DATA_DESCR));
+      ALL_STATISTICS.put(LIST_CHILD_PROPERTIES_DATA_DESCR, new Statistics(GLOBAL_STATISTICS,
+         LIST_CHILD_PROPERTIES_DATA_DESCR));
+      ALL_STATISTICS.put(GET_REFERENCES_DATA_DESCR, new Statistics(GLOBAL_STATISTICS, GET_REFERENCES_DATA_DESCR));
       // Write Methods
       // Commit
-      ALL_STATISTICS.put(COMMIT_DESCR, new Statistics(COMMIT_DESCR));
+      ALL_STATISTICS.put(COMMIT_DESCR, new Statistics(GLOBAL_STATISTICS, COMMIT_DESCR));
       // Add methods
-      ALL_STATISTICS.put(ADD_NODE_DATA_DESCR, new Statistics(ADD_NODE_DATA_DESCR));
-      ALL_STATISTICS.put(ADD_PROPERTY_DATA_DESCR, new Statistics(ADD_PROPERTY_DATA_DESCR));
+      ALL_STATISTICS.put(ADD_NODE_DATA_DESCR, new Statistics(GLOBAL_STATISTICS, ADD_NODE_DATA_DESCR));
+      ALL_STATISTICS.put(ADD_PROPERTY_DATA_DESCR, new Statistics(GLOBAL_STATISTICS, ADD_PROPERTY_DATA_DESCR));
       // Update methods
-      ALL_STATISTICS.put(UPDATE_NODE_DATA_DESCR, new Statistics(UPDATE_NODE_DATA_DESCR));
-      ALL_STATISTICS.put(UPDATE_PROPERTY_DATA_DESCR, new Statistics(UPDATE_PROPERTY_DATA_DESCR));
+      ALL_STATISTICS.put(UPDATE_NODE_DATA_DESCR, new Statistics(GLOBAL_STATISTICS, UPDATE_NODE_DATA_DESCR));
+      ALL_STATISTICS.put(UPDATE_PROPERTY_DATA_DESCR, new Statistics(GLOBAL_STATISTICS, UPDATE_PROPERTY_DATA_DESCR));
       // Delete methods
-      ALL_STATISTICS.put(DELETE_NODE_DATA_DESCR, new Statistics(DELETE_NODE_DATA_DESCR));
-      ALL_STATISTICS.put(DELETE_PROPERTY_DATA_DESCR, new Statistics(DELETE_PROPERTY_DATA_DESCR));
+      ALL_STATISTICS.put(DELETE_NODE_DATA_DESCR, new Statistics(GLOBAL_STATISTICS, DELETE_NODE_DATA_DESCR));
+      ALL_STATISTICS.put(DELETE_PROPERTY_DATA_DESCR, new Statistics(GLOBAL_STATISTICS, DELETE_PROPERTY_DATA_DESCR));
       // Rename
-      ALL_STATISTICS.put(RENAME_NODE_DATA_DESCR, new Statistics(RENAME_NODE_DATA_DESCR));
+      ALL_STATISTICS.put(RENAME_NODE_DATA_DESCR, new Statistics(GLOBAL_STATISTICS, RENAME_NODE_DATA_DESCR));
       // Rollback
-      ALL_STATISTICS.put(ROLLBACK_DESCR, new Statistics(ROLLBACK_DESCR));
+      ALL_STATISTICS.put(ROLLBACK_DESCR, new Statistics(GLOBAL_STATISTICS, ROLLBACK_DESCR));
       // Others
-      ALL_STATISTICS.put(IS_OPENED_DESCR, new Statistics(IS_OPENED_DESCR));
-      ALL_STATISTICS.put(CLOSE_DESCR, new Statistics(CLOSE_DESCR));
+      ALL_STATISTICS.put(IS_OPENED_DESCR, new Statistics(null, IS_OPENED_DESCR));
+      ALL_STATISTICS.put(CLOSE_DESCR, new Statistics(null, CLOSE_DESCR));
    }
 
-   /**
-    * The printer used to print the statistics in csv format
-    */
-   private static PrintWriter STATISTICS_WRITER;
    static
    {
       if (JDBCWorkspaceDataContainer.STATISTICS_ENABLED)
       {
-         initWriter();
-         if (STATISTICS_WRITER != null)
-         {
-            addTriggers();
-         }
+         JCRStatisticsManager.registerStatistics("JDBCStorageConnection", GLOBAL_STATISTICS, ALL_STATISTICS);
       }
    }
 
-   /**
-    * Add all the triggers that will keep the file up to date.
-    */
-   private static void addTriggers()
-   {
-      Runtime.getRuntime().addShutdownHook(new Thread("StatisticsJDBCStorageConnection-Hook")
-      {
-         public void run()
-         {
-            printData();
-         }
-      });
-      // Define the file header
-      printHeader();
-      Thread t = new Thread("StatisticsJDBCStorageConnection-Writer")
-      {
-         public void run()
-         {
-            while (true)
-            {
-               try
-               {
-                  sleep(5000);
-               }
-               catch (InterruptedException e)
-               {
-                  LOG.debug("InterruptedException", e);
-               }
-               printData();
-            }
-         }
-      };
-      t.setDaemon(true);
-      t.start();
-   }
-
-   /**
-    * Initialize the {@link PrintWriter}.
-    * It will first try to create the file in the user directory, if it cannot, it will try
-    * to create it in the temporary folder.
-    */
-   private static void initWriter()
-   {
-      File file = null;
-      try
-      {
-         file =
-            new File(System.getProperty("user.dir"), "StatisticsJDBCStorageConnection-" + System.currentTimeMillis()
-               + ".csv");
-         file.createNewFile();
-         STATISTICS_WRITER = new PrintWriter(file);
-      }
-      catch (IOException e)
-      {
-         LOG
-            .error(
-               "Cannot create the file for the statistics in the user directory, we will try to create it in the temp directory",
-               e);
-         try
-         {
-            file = File.createTempFile("StatisticsJDBCStorageConnection", "-" + System.currentTimeMillis() + ".csv");
-            STATISTICS_WRITER = new PrintWriter(file);
-         }
-         catch (IOException e1)
-         {
-            LOG.error("Cannot create the file for the statistics", e1);
-         }
-      }
-      if (file != null)
-      {
-         LOG.info("The file for the statistics is " + file.getPath());
-      }
-   }
 
    /**
     * The nested {@link WorkspaceStorageConnection}
@@ -631,175 +537,6 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
       finally
       {
          s.end();
-      }
-   }
-
-   /**
-    * Print the header of the csv file
-    */
-   private static void printHeader()
-   {
-      GLOBAL_STATISTICS.printHeader(STATISTICS_WRITER);
-      for (Statistics s : ALL_STATISTICS.values())
-      {
-         STATISTICS_WRITER.print(',');
-         s.printHeader(STATISTICS_WRITER);
-      }
-      STATISTICS_WRITER.println();
-      STATISTICS_WRITER.flush();
-   }
-
-   /**
-    * Add one line of data
-    */
-   private static void printData()
-   {
-      GLOBAL_STATISTICS.printData(STATISTICS_WRITER);
-      for (Statistics s : ALL_STATISTICS.values())
-      {
-         STATISTICS_WRITER.print(',');
-         s.printData(STATISTICS_WRITER);
-      }
-      STATISTICS_WRITER.println();
-      STATISTICS_WRITER.flush();
-   }
-
-   /**
-    * The class used to manage all the metrics such as minimum, maximum, total, times and average.
-    */
-   private static class Statistics
-   {
-
-      /**
-       * The description of the statistics
-       */
-      private final String description;
-
-      /**
-       * The min value of the time spent for one call
-       */
-      private final AtomicLong min = new AtomicLong(Long.MAX_VALUE);
-
-      /**
-       * The max value of the time spent for one call
-       */
-      private final AtomicLong max = new AtomicLong(-1);
-
-      /**
-       * The total time spent for all the calls
-       */
-      private final AtomicLong total = new AtomicLong();
-
-      /**
-       * The total amount of calls
-       */
-      private final AtomicLong times = new AtomicLong();
-
-      /**
-       * The {@link ThreadLocal} used to keep the initial timestamp
-       */
-      private final ThreadLocal<Queue<Long>> currentTime = new ThreadLocal<Queue<Long>>()
-      {
-         protected Queue<Long> initialValue()
-         {
-            return new LinkedList<Long>();
-         }
-      };
-
-      /**
-       * The default constructor
-       * @param description the description of the statistics
-       */
-      public Statistics(String description)
-      {
-         this.description = description;
-      }
-
-      /**
-       * Start recording
-       */
-      public void begin()
-      {
-         GLOBAL_STATISTICS.onBegin();
-         onBegin();
-      }
-
-      /**
-       * Store the current timestamp in the {@link ThreadLocal}
-       */
-      private void onBegin()
-      {
-         Queue<Long> q = currentTime.get();
-         q.add(System.currentTimeMillis());
-      }
-
-      /**
-       * Stop recording
-       */
-      public void end()
-      {
-         onEnd();
-         GLOBAL_STATISTICS.onEnd();
-      }
-
-      /**
-       * Refresh the values of the metrics (min, max, total and times)
-       */
-      private void onEnd()
-      {
-         long result = System.currentTimeMillis() - currentTime.get().poll();
-         times.incrementAndGet();
-         if (result < min.get())
-         {
-            min.set(result);
-         }
-         if (max.get() < result)
-         {
-            max.set(result);
-         }
-         total.addAndGet(result);
-      }
-
-      /**
-       * Print the description of all the metrics into the given {@link PrintWriter}
-       */
-      public void printHeader(PrintWriter pw)
-      {
-         pw.print(description);
-         pw.print("-Min,");
-         pw.print(description);
-         pw.print("-Max,");
-         pw.print(description);
-         pw.print("-Total,");
-         pw.print(description);
-         pw.print("-Avg,");
-         pw.print(description);
-         pw.print("-Times");
-      }
-
-      /**
-       * Print the current snapshot of the metrics and evaluate the average value
-       */
-      public void printData(PrintWriter pw)
-      {
-         long lmin = min.get();
-         if (lmin == Long.MAX_VALUE)
-         {
-            lmin = -1;
-         }
-         long lmax = max.get();
-         long ltotal = total.get();
-         long ltimes = times.get();
-         float favg = ltimes == 0 ? 0f : (float)ltotal / ltimes;
-         pw.print(lmin);
-         pw.print(',');
-         pw.print(lmax);
-         pw.print(',');
-         pw.print(ltotal);
-         pw.print(',');
-         pw.print(favg);
-         pw.print(',');
-         pw.print(ltimes);
       }
    }
 }
