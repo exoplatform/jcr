@@ -261,8 +261,8 @@
 
     <para>The file content below is the content of
     <emphasis>conf/configuration.xml</emphasis> that you will need to modify
-    to add and/or remove the full qualified name of the interface to monitor,
-    into the list of value parameters of the init param called
+    to add and/or remove the full qualified name of the interfaces to monitor,
+    into the list of parameter values of the init param called
     <emphasis>targetInterfaces</emphasis>.</para>
 
     <programlisting>&lt;configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"
@@ -283,7 +283,7 @@
 
     <para>The file content below is the content of
     <emphasis>META-INF/aop.xml</emphasis> that you will to need to modify to
-    add and/or remove the full qualified name of the interface to monitor,
+    add and/or remove the full qualified name of the interfaces to monitor,
     into the expression filter of the pointcut called
     <emphasis>JCRAPIPointcut</emphasis>. As you can see below, by default only
     JCR API calls from the exoplatform packages are took into account, don't
@@ -335,8 +335,6 @@
     line will be added at JVM exit. Each line, will be composed of the 5
     figures described below for each method and globaly for all the
     methods.</para>
-
-    <para>See below the description of each metric type:</para>
 
     <para><table>
         <title>Metric Alias</title>
