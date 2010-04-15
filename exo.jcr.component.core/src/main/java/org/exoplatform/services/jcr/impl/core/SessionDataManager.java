@@ -47,6 +47,7 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -924,22 +925,25 @@ public class SessionDataManager implements ItemDataConsumer
       Collection<ItemImpl> pooledItems = itemsPool.getAll();
       for (ItemImpl item : pooledItems)
       {
-         if (item.getInternalPath().isDescendantOf(fromItem.getQPath())
-            || item.getInternalPath().equals(fromItem.getQPath()))
+         if (item != null)
          {
-            ItemData ri = getItemData(item.getInternalIdentifier());
-            if (ri != null)
+            if (item.getInternalPath().isDescendantOf(fromItem.getQPath())
+               || item.getInternalPath().equals(fromItem.getQPath()))
             {
-               itemsPool.reload(ri);
-            }
-            else
-            {
-               // the item is invalid, case of version restore - the item from non
-               // current version
-               item.invalidate();
-            }
+               ItemData ri = getItemData(item.getInternalIdentifier());
+               if (ri != null)
+               {
+                  itemsPool.reload(ri);
+               }
+               else
+               {
+                  // the item is invalid, case of version restore - the item from non
+                  // current version
+                  item.invalidate();
+               }
 
-            invalidated.add(item);
+               invalidated.add(item);
+            }
          }
       }
    }
@@ -1141,7 +1145,7 @@ public class SessionDataManager implements ItemDataConsumer
                   // We can't remove this VH now.
                   return;
                } // else -- if we has a references in workspace where the VH is being
-                 // deleted we can remove VH now.
+               // deleted we can remove VH now.
             }
          }
          finally
@@ -1959,25 +1963,31 @@ public class SessionDataManager implements ItemDataConsumer
    protected final class ItemReferencePool
    {
 
-      private WeakHashMap<String, ItemImpl> items;
-
-      //private WeakHashMap<String, ItemData> datas;
+      private WeakHashMap<String, WeakReference<ItemImpl>> items;
 
       ItemReferencePool()
       {
-         items = new WeakHashMap<String, ItemImpl>();
-         //datas = new WeakHashMap<String, ItemData>();
+         items = new WeakHashMap<String, WeakReference<ItemImpl>>();
       }
 
       ItemImpl remove(String identifier)
       {
-         //datas.remove(identifier);
-         return items.remove(identifier);
+         WeakReference<ItemImpl> weakItem = items.remove(identifier);
+         return weakItem != null ? weakItem.get() : null;
       }
 
       Collection<ItemImpl> getAll()
       {
-         return items.values();
+         List<ItemImpl> list = new ArrayList<ItemImpl>();
+         for (WeakReference<ItemImpl> weakItem : items.values())
+         {
+            if (weakItem != null)
+            {
+               list.add(weakItem.get());
+            }
+         }
+
+         return list;
       }
 
       int size()
@@ -2018,23 +2028,20 @@ public class SessionDataManager implements ItemDataConsumer
       ItemImpl get(final ItemData newData, final NodeData parent) throws RepositoryException
       {
          final String identifier = newData.getIdentifier();
-         ItemImpl item = items.get(identifier);
+
+         WeakReference<ItemImpl> weakItem = items.get(identifier);
+         ItemImpl item = weakItem != null ? weakItem.get() : null;
+
          if (item != null)
          {
             item.loadData(newData, parent);
          }
          else
          {
-            //            ItemData preloaded = datas.remove(identifier);
-            //            item =
-            //               itemFactory.createItem(preloaded != null
-            //                  && preloaded.getPersistedVersion() > newData.getPersistedVersion() ? preloaded : newData);
-            //datas.remove(identifier);
-
             // TODO if (changesLog.get) check if DELETED!!
 
             item = itemFactory.createItem(newData, parent);
-            items.put(item.getInternalIdentifier(), item);
+            items.put(item.getInternalIdentifier(), new WeakReference<ItemImpl>(item));
          }
          return item;
       }
@@ -2054,16 +2061,14 @@ public class SessionDataManager implements ItemDataConsumer
 
       ItemImpl reload(String identifier, ItemData newItemData) throws RepositoryException
       {
-         ItemImpl item = items.get(identifier);
+         WeakReference<ItemImpl> weakItem = items.get(identifier);
+         ItemImpl item = weakItem != null ? weakItem.get() : null;
+
          if (item != null)
          {
             item.loadData(newItemData);
             return item;
          }
-         //         else
-         //         {
-         //            datas.put(identifier, newItemData);
-         //         }
          return null;
       }
 
@@ -2081,10 +2086,13 @@ public class SessionDataManager implements ItemDataConsumer
          for (NodeImpl node : nodes)
          {
             String id = node.getInternalIdentifier();
-            NodeImpl pooled = (NodeImpl)items.get(id);
+
+            WeakReference<ItemImpl> weakItem = items.get(id);
+            NodeImpl pooled = weakItem != null ? (NodeImpl)weakItem.get() : null;
+
             if (pooled == null)
             {
-               items.put(id, node);
+               items.put(id, new WeakReference<ItemImpl>(node));
                children.add(node);
             }
             else
@@ -2110,10 +2118,13 @@ public class SessionDataManager implements ItemDataConsumer
          for (PropertyImpl prop : props)
          {
             String id = prop.getInternalIdentifier();
-            PropertyImpl pooled = (PropertyImpl)items.get(id);
+
+            WeakReference<ItemImpl> weakItem = items.get(id);
+            PropertyImpl pooled = weakItem != null ? (PropertyImpl)weakItem.get() : null;
+
             if (pooled == null)
             {
-               items.put(id, prop);
+               items.put(id, new WeakReference<ItemImpl>(prop));
                children.add(prop);
             }
             else
@@ -2135,12 +2146,15 @@ public class SessionDataManager implements ItemDataConsumer
       {
          List<ItemImpl> desc = new ArrayList<ItemImpl>();
 
-         Collection<ItemImpl> snapshort = items.values();
+         Collection<ItemImpl> snapshort = getAll();
          for (ItemImpl pitem : snapshort)
          {
-            if (pitem.getData().getQPath().isDescendantOf(parentPath))
+            if (pitem != null)
             {
-               desc.add(pitem);
+               if (pitem.getData().getQPath().isDescendantOf(parentPath))
+               {
+                  desc.add(pitem);
+               }
             }
          }
 
@@ -2152,11 +2166,14 @@ public class SessionDataManager implements ItemDataConsumer
          String str = "Items Pool: \n";
          try
          {
-            for (ItemImpl item : items.values())
+            for (ItemImpl item : getAll())
             {
-               str +=
-                  (item.isNode() ? "Node\t\t" : "Property\t") + "\t" + item.isValid() + "\t" + item.isNew() + "\t"
-                     + item.getInternalIdentifier() + "\t" + item.getPath() + "\n";
+               if (item != null)
+               {
+                  str +=
+                     (item.isNode() ? "Node\t\t" : "Property\t") + "\t" + item.isValid() + "\t" + item.isNew() + "\t"
+                        + item.getInternalIdentifier() + "\t" + item.getPath() + "\n";
+               }
             }
          }
          catch (Exception e)
