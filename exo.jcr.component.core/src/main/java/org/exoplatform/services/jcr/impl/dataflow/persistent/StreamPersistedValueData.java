@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 import org.exoplatform.services.jcr.impl.util.io.SwapFile;
 
 import java.io.File;
@@ -58,8 +59,9 @@ public class StreamPersistedValueData extends FilePersistedValueData
     *
     * @param orderNumber int
     * @param tempFile File
+    * @throws FileNotFoundException 
     */
-   public StreamPersistedValueData(int orderNumber, File tempFile)
+   public StreamPersistedValueData(int orderNumber, File tempFile) throws FileNotFoundException
    {
       this(orderNumber, tempFile, null);
    }
@@ -87,12 +89,18 @@ public class StreamPersistedValueData extends FilePersistedValueData
     *
     * @param orderNumber int
     * @param tempFile File
+    * @throws FileNotFoundException 
     */
-   public StreamPersistedValueData(int orderNumber, File tempFile, File destFile)
+   public StreamPersistedValueData(int orderNumber, File tempFile, File destFile) throws FileNotFoundException
    {
       super(orderNumber, destFile);
       this.tempFile = tempFile;
       this.stream = null;
+
+      if (tempFile != null && tempFile instanceof SpoolFile)
+      {
+         ((SpoolFile)tempFile).acquire(this);
+      }
    }
 
    /**
@@ -223,6 +231,11 @@ public class StreamPersistedValueData extends FilePersistedValueData
          if (file != null && file instanceof SwapFile)
          {
             ((SwapFile)file).release(this);
+         }
+
+         if (tempFile != null && tempFile instanceof SpoolFile)
+         {
+            ((SpoolFile)tempFile).release(this);
          }
       }
       finally
