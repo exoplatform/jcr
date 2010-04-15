@@ -443,27 +443,11 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
       return lockTimeOut;
    }
 
-   private final LockActionNonTxAware<Integer, Object> getNumLocks = new LockActionNonTxAware<Integer, Object>()
-   {
-      public Integer execute(Object arg)
-      {
-         return cache.getChildrenNames(lockRoot).size();
-      }
-   };
-
    @Managed
    @ManagedDescription("The number of active locks")
    public int getNumLocks()
    {
-      try
-      {
-         return executeLockActionNonTxAware(getNumLocks, null);
-      }
-      catch (LockException e)
-      {
-         // ignore me will never occur
-      }
-      return -1;
+      return ((CacheSPI<Serializable, Object>)cache).getNumberOfNodes() - 1;
    }
 
    /**
@@ -886,8 +870,11 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
     */
    public LockData getExactNodeOrCloseParentLock(NodeData node) throws RepositoryException
    {
-      if (node == null)
+
+      if (node == null || getNumLocks() == 0)
+      {
          return null;
+      }
       LockData retval = null;
       retval = getLockDataById(node.getIdentifier());
       if (retval == null)
@@ -906,12 +893,12 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
     */
    public LockData getExactNodeLock(NodeData node) throws RepositoryException
    {
-      LockData retval = null;
-      if (node != null)
+      if (node == null || getNumLocks() == 0)
       {
-         retval = getLockDataById(node.getIdentifier());
+         return null;
       }
-      return retval;
+
+      return getLockDataById(node.getIdentifier());
    }
 
    /**
@@ -919,6 +906,11 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
     */
    public LockData getClosedChild(NodeData node) throws RepositoryException
    {
+
+      if (node == null || getNumLocks() == 0)
+      {
+         return null;
+      }
       LockData retval = null;
 
       List<NodeData> childData = dataManager.getChildNodesData(node);
