@@ -252,10 +252,11 @@ public class TestFileIOChannel extends TestCase
       // channel.delete("testConcurrentReadFromIOChannel");
 
       // should be enough to finish all the threads
-      Thread.sleep(1000);
+      //Thread.sleep(1000);
 
       for (int i = 0; i < 10; i++)
       {
+         p[i].join();
          assertEquals(100 * 100, p[i].getLen());
       }
       channel.delete("testConcurrentReadFromIOChannel");
@@ -282,14 +283,17 @@ public class TestFileIOChannel extends TestCase
       channel.commit();
 
       File f = new File(rootDir, "testDeleteLockedFileFromIOChannel0");
-      new Probe(f).start();
+      Probe p = new Probe(f);
+      p.start();
 
+      p.join();
       f = null;
 
-      Thread.sleep(100);
+      // Thread.sleep(100);
 
       // removed by FileCleaner
-      Thread.sleep(3000);
+      //Thread.sleep(3000);
+
       f = new File(rootDir, "testDeleteLockedFileFromIOChannel0");
       // assertFalse(f.exists());
       System.out.println(">>>>>>>>>>>>>" + f.canRead() + " " + f.exists() + " " + f.canWrite());
