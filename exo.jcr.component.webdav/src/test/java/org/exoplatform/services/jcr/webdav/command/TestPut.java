@@ -117,6 +117,8 @@ public class TestPut extends BaseStandaloneTest
       assertEquals(HTTPStatus.CREATED, containerResponse.getStatus());
       NodeType[] mixins = TestUtils.getContentMixins(session, fileName);
 
+      assertEquals(2, mixins.length);
+      
       for (NodeType mixin : mixins)
       {
          assertTrue(mixin.getName().equals("mix:wdTestMixin1") || mixin.getName().equals("mix:wdTestMixin2"));

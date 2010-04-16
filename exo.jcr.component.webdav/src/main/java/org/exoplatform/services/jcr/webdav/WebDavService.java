@@ -84,7 +84,7 @@ public interface WebDavService
     * @return the instance of javax.ws.rs.core.Response
     */
    Response put(String repoName, String repoPath, String lockTokenHeader, String ifHeader, String fileNodeTypeHeader,
-      String contentNodeTypeHeader, List<String> mixinTypes, MediaType mediatype, InputStream inputStream);
+      String contentNodeTypeHeader, String mixinTypes, MediaType mediatype, InputStream inputStream);
 
    /**
     * @param repoName repository name
@@ -120,7 +120,7 @@ public interface WebDavService
     * @return the instance of javax.ws.rs.core.Response
     */
    Response mkcol(String repoName, String repoPath, String lockTokenHeader, String ifHeader, String nodeTypeHeader,
-      List<String> mixinTypesHeader);
+      String mixinTypesHeader);
 
    /**
     * @param repoName repository name

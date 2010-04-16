@@ -682,7 +682,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    public Response mkcol(@PathParam("repoName") String repoName, @PathParam("repoPath") String repoPath,
       @HeaderParam(ExtHttpHeaders.LOCKTOKEN) String lockTokenHeader, @HeaderParam(ExtHttpHeaders.IF) String ifHeader,
       @HeaderParam(ExtHttpHeaders.CONTENT_NODETYPE) String nodeTypeHeader,
-      @HeaderParam(ExtHttpHeaders.CONTENT_MIXINTYPES) List<String> mixinTypesHeader)
+      @HeaderParam(ExtHttpHeaders.CONTENT_MIXINTYPES) String mixinTypesHeader)
    {
       if (log.isDebugEnabled())
       {
@@ -942,7 +942,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       @HeaderParam(ExtHttpHeaders.LOCKTOKEN) String lockTokenHeader, @HeaderParam(ExtHttpHeaders.IF) String ifHeader,
       @HeaderParam(ExtHttpHeaders.FILE_NODETYPE) String fileNodeTypeHeader,
       @HeaderParam(ExtHttpHeaders.CONTENT_NODETYPE) String contentNodeTypeHeader,
-      @HeaderParam(ExtHttpHeaders.CONTENT_MIXINTYPES) List<String> mixinTypes,
+      @HeaderParam(ExtHttpHeaders.CONTENT_MIXINTYPES) String mixinTypes,
       @HeaderParam(ExtHttpHeaders.CONTENT_TYPE) MediaType mediatype, InputStream inputStream)
    {
 
