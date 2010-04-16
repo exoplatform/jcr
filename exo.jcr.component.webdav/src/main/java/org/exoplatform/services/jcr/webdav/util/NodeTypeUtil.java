@@ -21,7 +21,8 @@ package org.exoplatform.services.jcr.webdav.util;
 import org.exoplatform.services.jcr.webdav.WebDavConst;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
+import java.util.Collections;
 
 import javax.jcr.nodetype.NoSuchNodeTypeException;
 import javax.jcr.nodetype.NodeType;
@@ -51,6 +52,7 @@ public class NodeTypeUtil
          // Default nodetype for the file.
          return null;
    }
+
    /**
     * Returns the NodeType of content node according to the Content-NodeType
     * header.
@@ -87,14 +89,9 @@ public class NodeTypeUtil
     * @param mixinTypes list of mixins or null
     * @return list of mixins
     */
-   public static ArrayList<String> getMixinTypes(List<String> mixinTypes)
+   public static ArrayList<String> getMixinTypes(String mixinTypes)
    {
-      ArrayList<String> mixins = new ArrayList<String>();
-      if (mixinTypes == null)
-      {
-         return mixins;
-      }
-      return mixins;
+      return mixinTypes == null ? new ArrayList<String>() : new ArrayList<String>(Arrays.asList(mixinTypes.split(",")));
    }
 
 }
