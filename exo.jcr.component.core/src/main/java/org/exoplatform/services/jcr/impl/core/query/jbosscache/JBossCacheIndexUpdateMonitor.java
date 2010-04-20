@@ -108,6 +108,8 @@ public class JBossCacheIndexUpdateMonitor implements IndexUpdateMonitor, Indexer
       {
          // Currently READ_ONLY is set, so new lists should be fired to multiIndex.
          cache.addCacheListener(this);
+         Object value = cache.get(parametersFqn, PARAMETER_NAME);
+         localUpdateInProgress = value != null ? (Boolean)value : false;
       }
 
    }
@@ -136,17 +138,7 @@ public class JBossCacheIndexUpdateMonitor implements IndexUpdateMonitor, Indexer
     */
    public boolean getUpdateInProgress()
    {
-      if (IndexerIoMode.READ_ONLY == modeHandler.getMode())
-      {
-         Object value = cache.get(parametersFqn, PARAMETER_NAME);
-         return value != null ? (Boolean)value : false;
-      }
-      else
-      {
-         // this node is read-write, so must read local value.
-         // Local value is updated every time, but remote cache value is skipped is volatile changes are performed 
-         return localUpdateInProgress;
-      }
+      return localUpdateInProgress;
    }
 
    /**
@@ -212,10 +204,11 @@ public class JBossCacheIndexUpdateMonitor implements IndexUpdateMonitor, Indexer
             log.warn("The data cannot be found, we will try to get it from the cache");
             value = cache.get(parametersFqn, PARAMETER_NAME);
          }
-         boolean updateInProgress = value != null ? (Boolean)value : false;
+         localUpdateInProgress = value != null ? (Boolean)value : false;
+
          for (IndexUpdateMonitorListener listener : listeners)
          {
-            listener.onUpdateInProgressChange(updateInProgress);
+            listener.onUpdateInProgressChange(localUpdateInProgress);
          }
       }
    }
