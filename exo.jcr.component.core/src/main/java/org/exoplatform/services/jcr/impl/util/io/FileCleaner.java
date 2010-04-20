@@ -23,8 +23,9 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.File;
-import java.util.LinkedHashSet;
+import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Created by The eXo Platform SAS.
@@ -40,7 +41,7 @@ public class FileCleaner extends WorkerThread
 
    protected static Log log = ExoLogger.getLogger("exo.jcr.component.core.FileCleaner");
 
-   protected Set<File> files = new LinkedHashSet<File>();
+   protected final ConcurrentLinkedQueue<File> files = new ConcurrentLinkedQueue<File>();
 
    public FileCleaner()
    {
@@ -77,11 +78,11 @@ public class FileCleaner extends WorkerThread
    /**
     * @param file
     */
-   public synchronized void addFile(File file)
+   public void addFile(File file)
    {
       if (file.exists())
       {
-         files.add(file);
+         files.offer(file);
       }
    }
 
@@ -106,51 +107,47 @@ public class FileCleaner extends WorkerThread
     */
    protected void callPeriodically() throws Exception
    {
-      if (files != null && files.size() > 0)
+      File file = null;
+      Set<File> notRemovedFiles = new HashSet<File>();
+      while ((file = files.poll()) != null)
       {
-         Set<File> oldFiles = files;
-         files = new LinkedHashSet<File>();
-         for (File file : oldFiles)
+         if (file.exists())
          {
-            if (file.exists())
+            if (!file.delete())
             {
-               if (!file.delete())
-               {
-                  files.add(file);
+               notRemovedFiles.add(file);
 
-                  if (log.isDebugEnabled())
-                     log.debug("Could not delete " + (file.isDirectory() ? "directory" : "file")
-                        + ". Will try next time: " + file.getAbsolutePath());
-               }
-               else if (log.isDebugEnabled())
-               {
-                  log.debug((file.isDirectory() ? "Directory" : "File") + " deleted : " + file.getAbsolutePath());
-               }
+               if (log.isDebugEnabled())
+                  log.debug("Could not delete " + (file.isDirectory() ? "directory" : "file")
+                     + ". Will try next time: " + file.getAbsolutePath());
+            }
+            else if (log.isDebugEnabled())
+            {
+               log.debug((file.isDirectory() ? "Directory" : "File") + " deleted : " + file.getAbsolutePath());
             }
          }
+      }
+
+      //add do lists tail all not removed files
+      if (!notRemovedFiles.isEmpty())
+      {
+         files.addAll(notRemovedFiles);
       }
    }
 
    private void registerShutdownHook()
    {
-      // register shutdownhook for final cleaning up
+      // register shutdown hook for final cleaning up
       try
       {
          Runtime.getRuntime().addShutdownHook(new Thread()
          {
             public void run()
             {
-               Set<File> oldFiles = files;
-               files = null;
-               // synchronize on the list before iterating over it in order
-               // to avoid ConcurrentModificationException (JCR-549)
-               // @see java.lang.util.Collections.synchronizedList(java.util.List)
-               synchronized (oldFiles)
+               File file = null;
+               while ((file = files.poll()) != null)
                {
-                  for (File file : oldFiles)
-                  {
-                     file.delete();
-                  }
+                  file.delete();
                }
             }
          });
