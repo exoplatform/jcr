@@ -443,13 +443,53 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
       return lockTimeOut;
    }
 
+   private final LockActionNonTxAware<Integer, Object> getNumLocks = new LockActionNonTxAware<Integer, Object>()
+   {
+      public Integer execute(Object arg)
+      {
+         return ((CacheSPI<Serializable, Object>)cache).getNumberOfNodes() - 1;
+      }
+   };
+
    @Managed
    @ManagedDescription("The number of active locks")
    public int getNumLocks()
    {
-      return ((CacheSPI<Serializable, Object>)cache).getNumberOfNodes() - 1;
+      try
+      {
+         return executeLockActionNonTxAware(getNumLocks, null);
+      }
+      catch (LockException e)
+      {
+         // ignore me will never occur
+      }
+      return -1;
    }
 
+   private final LockActionNonTxAware<Boolean, Object> hasLocks = new LockActionNonTxAware<Boolean, Object>()
+   {
+      public Boolean execute(Object arg)
+      {
+         return ((CacheSPI<Serializable, Object>)cache).getNode(lockRoot).hasChildrenDirect();
+      }
+   };
+
+   /**
+    * Indicates if some locks have already been created
+    */
+   private boolean hasLocks()
+   {
+      try
+      {
+         return executeLockActionNonTxAware(hasLocks, null);
+      }
+      catch (LockException e)
+      {
+         // ignore me will never occur
+      }
+      return true;
+   }
+   
    /**
     * Return new instance of session lock manager.
     */
@@ -870,8 +910,13 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
     */
    public LockData getExactNodeOrCloseParentLock(NodeData node) throws RepositoryException
    {
+      return getExactNodeOrCloseParentLock(node, true);
+   }
+   
+   private LockData getExactNodeOrCloseParentLock(NodeData node, boolean checkHasLocks) throws RepositoryException
+   {
 
-      if (node == null || getNumLocks() == 0)
+      if (node == null || (checkHasLocks && !hasLocks()))
       {
          return null;
       }
@@ -882,7 +927,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
          NodeData parentData = (NodeData)dataManager.getItemData(node.getParentIdentifier());
          if (parentData != null)
          {
-            retval = getExactNodeOrCloseParentLock(parentData);
+            retval = getExactNodeOrCloseParentLock(parentData, false);
          }
       }
       return retval;
@@ -893,7 +938,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
     */
    public LockData getExactNodeLock(NodeData node) throws RepositoryException
    {
-      if (node == null || getNumLocks() == 0)
+      if (node == null || !hasLocks())
       {
          return null;
       }
@@ -906,8 +951,13 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
     */
    public LockData getClosedChild(NodeData node) throws RepositoryException
    {
+      return getClosedChild(node, true);
+   }
+   
+   private LockData getClosedChild(NodeData node, boolean checkHasLocks) throws RepositoryException
+   {
 
-      if (node == null || getNumLocks() == 0)
+      if (node == null || (checkHasLocks && !hasLocks()))
       {
          return null;
       }
@@ -923,7 +973,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
       // child not found try to find dipper
       for (NodeData nodeData : childData)
       {
-         retval = getClosedChild(nodeData);
+         retval = getClosedChild(nodeData, false);
          if (retval != null)
             return retval;
       }
