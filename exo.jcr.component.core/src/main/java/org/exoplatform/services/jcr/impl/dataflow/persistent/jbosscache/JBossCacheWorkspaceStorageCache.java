@@ -98,7 +98,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
 
    public static final String JBOSSCACHE_EXPIRATION = "jbosscache-expiration-time";
 
-   public static final int JBOSSCACHE_EXPIRATION_DEFAULT = 900000; // 15 minutes
+   public static final long JBOSSCACHE_EXPIRATION_DEFAULT = 900000; // 15 minutes
 
    public static final String ITEMS = "$ITEMS".intern();
 
@@ -307,7 +307,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
       // if expiration is used, set appropriate factory with with timeout set via configuration (or default one 15minutes)
       this.cache =
          new BufferedJBossCache(factory.createCache(wsConfig.getCache()), useExpiration,
-                  wsConfig.getCache().getParameterInteger(JBOSSCACHE_EXPIRATION, JBOSSCACHE_EXPIRATION_DEFAULT));
+                  wsConfig.getCache().getParameterTime(JBOSSCACHE_EXPIRATION, JBOSSCACHE_EXPIRATION_DEFAULT));
 
       this.itemsRoot = Fqn.fromElements(ITEMS);
       this.childNodes = Fqn.fromElements(CHILD_NODES);
