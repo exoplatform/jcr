@@ -28,7 +28,7 @@
    <modelVersion>4.0.0</modelVersion>
    <artifactId>reference-docs</artifactId>
 
-   <name>eXoJCR reference documentation</name>
+   <name>eXo JCR :: Documentation :: Reference</name>
    <packaging>pom</packaging>
 
    <modules>
