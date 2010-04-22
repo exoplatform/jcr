@@ -29,7 +29,7 @@
    <modelVersion>4.0.0</modelVersion>
    <artifactId>docs</artifactId>
 
-   <name>eXoJCR project documentation</name>
+   <name>eXo JCR :: Documentation :: Reactor</name>
    <packaging>pom</packaging>
 
    <modules>
