@@ -15,6 +15,13 @@
                eventQueueSize="1000000">
          <property name="maxNodes" value="50000" />
          <property name="warnNoExpirationKey" value="false" />
+
+      <default algorithmClass="org.jboss.cache.eviction.LRUAlgorithm"
+               actionPolicyClass="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.ParentNodeEvictionActionPolicy" eventQueueSize="1000000">
+         <property name="maxNodes" value="50000" />
+         <property name="timeToLive" value="30000" />
+      </default>
+
       </default>
    </eviction>
 
