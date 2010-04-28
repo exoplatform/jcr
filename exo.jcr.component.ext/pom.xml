@@ -91,14 +91,11 @@
     <dependency>
        <groupId>org.slf4j</groupId>
        <artifactId>slf4j-log4j12</artifactId>
+       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>javax.annotation</groupId>
       <artifactId>jsr250-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>stax</groupId>
-      <artifactId>stax-api</artifactId>
     </dependency>
     <dependency>
       <groupId>commons-chain</groupId>
@@ -121,13 +118,18 @@
       <artifactId>picocontainer</artifactId>
     </dependency>
     <dependency>
-      <groupId>jtidy</groupId>
-      <artifactId>jtidy</artifactId>
-    </dependency>
-    <dependency>
       <groupId>xml-apis</groupId>
       <artifactId>xml-apis</artifactId>
     </dependency>
+    <dependency>
+      <groupId>javax.xml.stream</groupId>
+      <artifactId>stax-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>commons-collections</groupId>
+      <artifactId>commons-collections</artifactId>
+    </dependency>
+
     <dependency>
       <groupId>hsqldb</groupId>
       <artifactId>hsqldb</artifactId>

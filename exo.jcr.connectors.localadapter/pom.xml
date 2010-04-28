@@ -107,7 +107,7 @@
     <dependency>
       <groupId>javax.resource</groupId>
       <artifactId>connector-api</artifactId>
-      <version>1.5</version>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.exoplatform.kernel</groupId>

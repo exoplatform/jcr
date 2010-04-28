@@ -74,13 +74,21 @@
       <groupId>javax.jcr</groupId>
       <artifactId>jcr</artifactId>
     </dependency>
-    <dependency>
+    <!-- dependency>
       <groupId>stax</groupId>
       <artifactId>stax-api</artifactId>
-    </dependency>
+    </dependency -->
     <dependency>
       <groupId>xml-apis</groupId>
       <artifactId>xml-apis</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>javax.xml.stream</groupId>
+      <artifactId>stax-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>xpp3</groupId>
+      <artifactId>xpp3</artifactId>
     </dependency>
     <dependency>
       <groupId>jtidy</groupId>
@@ -89,6 +97,7 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>hsqldb</groupId>
