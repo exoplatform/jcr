@@ -71,6 +71,11 @@
          <artifactId>exo.core.component.security.core</artifactId>
       </dependency>
       <dependency>
+        <groupId>org.exoplatform.ws</groupId>
+        <artifactId>exo.ws.commons</artifactId>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
          <groupId>org.exoplatform.jcr</groupId>
          <artifactId>exo.jcr.cluster.testclient</artifactId>
          <scope>test</scope>
@@ -150,6 +155,26 @@
          <groupId>commons-collections</groupId>
          <artifactId>commons-collections</artifactId>
       </dependency>
+      <dependency>
+        <groupId>commons-beanutils</groupId>
+        <artifactId>commons-beanutils</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>jgroups</groupId>
+        <artifactId>jgroups</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>commons-logging</groupId>
+        <artifactId>commons-logging</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>javax.xml.stream</groupId>
+        <artifactId>stax-api</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>xpp3</groupId>
+        <artifactId>xpp3</artifactId>
+      </dependency>      
       <dependency>
          <groupId>jboss.jbossts</groupId>
          <artifactId>jbossjts</artifactId>
