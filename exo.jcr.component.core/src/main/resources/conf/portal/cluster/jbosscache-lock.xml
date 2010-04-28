@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jbosscache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:jboss:jbosscache-core:config:3.1">
 
-   <locking useLockStriping="false" concurrencyLevel="50000" lockParentForChildInsertRemove="false"
+   <locking useLockStriping="false" concurrencyLevel="500" lockParentForChildInsertRemove="false"
       lockAcquisitionTimeout="20000" />
 
    <clustering mode="replication" clusterName="${jbosscache-cluster-name}">
