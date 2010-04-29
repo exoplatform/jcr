@@ -53,6 +53,7 @@ public class TestCacheableWorkspaceDataManager extends TestCase
 {
 
    private static final int READER = 100;
+
    private static final int TIMES = 20;
 
    private CacheableWorkspaceDataManager cwdm;
@@ -96,7 +97,7 @@ public class TestCacheableWorkspaceDataManager extends TestCase
                   startSignal.await();
                   for (int i = 0; i < TIMES; i++)
                   {
-                     task.execute();                     
+                     task.execute();
                   }
                }
                catch (Exception e)
@@ -120,9 +121,9 @@ public class TestCacheableWorkspaceDataManager extends TestCase
             e.printStackTrace();
          }
          throw errors.get(0);
-      }      
+      }
    }
-   
+
    public void testGetItemById() throws Exception
    {
       assertEquals(0, con.getItemDataByIdCalls.get());
@@ -132,15 +133,15 @@ public class TestCacheableWorkspaceDataManager extends TestCase
          {
             ItemData item = cwdm.getItemData("getItemData");
             assertNotNull(item);
-         }         
+         }
       };
       multiThreadingTest(task);
       assertEquals(1, con.getItemDataByIdCalls.get());
    }
-   
+
    public void testGetItemDataByNodeDataNQPathEntry() throws Exception
    {
-      final NodeData nodeData = new PersistedNodeData("getItemData", null, null, 0, 1, null, null, null); 
+      final NodeData nodeData = new PersistedNodeData("getItemData", null, null, 0, 1, null, null, null);
       assertEquals(0, con.getItemDataByNodeDataNQPathEntryCalls.get());
       MyTask task = new MyTask()
       {
@@ -148,15 +149,15 @@ public class TestCacheableWorkspaceDataManager extends TestCase
          {
             ItemData item = cwdm.getItemData(nodeData, new QPathEntry("http://www.foo.com", "foo", 0));
             assertNotNull(item);
-         }         
+         }
       };
       multiThreadingTest(task);
       assertEquals(1, con.getItemDataByNodeDataNQPathEntryCalls.get());
    }
-   
+
    public void testGetChildPropertiesData() throws Exception
    {
-      final NodeData nodeData = new PersistedNodeData("getChildPropertiesData", null, null, 0, 1, null, null, null); 
+      final NodeData nodeData = new PersistedNodeData("getChildPropertiesData", null, null, 0, 1, null, null, null);
       assertEquals(0, con.getChildPropertiesDataCalls.get());
       MyTask task = new MyTask()
       {
@@ -165,7 +166,7 @@ public class TestCacheableWorkspaceDataManager extends TestCase
             List<PropertyData> properties = cwdm.getChildPropertiesData(nodeData);
             assertNotNull(properties);
             assertFalse(properties.isEmpty());
-         }         
+         }
       };
       multiThreadingTest(task);
       assertEquals(1, con.getChildPropertiesDataCalls.get());
@@ -176,15 +177,15 @@ public class TestCacheableWorkspaceDataManager extends TestCase
             List<PropertyData> properties = cwdm.getChildPropertiesData(nodeData, true);
             assertNotNull(properties);
             assertFalse(properties.isEmpty());
-         }         
+         }
       };
       multiThreadingTest(task);
       assertEquals(1 + READER * TIMES, con.getChildPropertiesDataCalls.get());
    }
-   
+
    public void testListChildPropertiesData() throws Exception
    {
-      final NodeData nodeData = new PersistedNodeData("listChildPropertiesData", null, null, 0, 1, null, null, null); 
+      final NodeData nodeData = new PersistedNodeData("listChildPropertiesData", null, null, 0, 1, null, null, null);
       assertEquals(0, con.listChildPropertiesDataCalls.get());
       MyTask task = new MyTask()
       {
@@ -193,7 +194,7 @@ public class TestCacheableWorkspaceDataManager extends TestCase
             List<PropertyData> properties = cwdm.listChildPropertiesData(nodeData);
             assertNotNull(properties);
             assertFalse(properties.isEmpty());
-         }         
+         }
       };
       multiThreadingTest(task);
       assertEquals(1, con.listChildPropertiesDataCalls.get());
@@ -204,15 +205,15 @@ public class TestCacheableWorkspaceDataManager extends TestCase
             List<PropertyData> properties = cwdm.listChildPropertiesData(nodeData, true);
             assertNotNull(properties);
             assertFalse(properties.isEmpty());
-         }         
+         }
       };
       multiThreadingTest(task);
       assertEquals(1 + READER * TIMES, con.listChildPropertiesDataCalls.get());
    }
-   
+
    public void testGetChildNodes() throws Exception
    {
-      final NodeData nodeData = new PersistedNodeData("getChildNodes", null, null, 0, 1, null, null, null); 
+      final NodeData nodeData = new PersistedNodeData("getChildNodes", null, null, 0, 1, null, null, null);
       assertEquals(0, con.getChildNodesDataCalls.get());
       MyTask task = new MyTask()
       {
@@ -221,7 +222,7 @@ public class TestCacheableWorkspaceDataManager extends TestCase
             List<NodeData> nodes = cwdm.getChildNodesData(nodeData);
             assertNotNull(nodes);
             assertFalse(nodes.isEmpty());
-         }         
+         }
       };
       multiThreadingTest(task);
       assertEquals(1, con.getChildNodesDataCalls.get());
@@ -232,15 +233,15 @@ public class TestCacheableWorkspaceDataManager extends TestCase
             List<NodeData> nodes = cwdm.getChildNodesData(nodeData, true);
             assertNotNull(nodes);
             assertFalse(nodes.isEmpty());
-         }         
+         }
       };
       multiThreadingTest(task);
       assertEquals(1 + READER * TIMES, con.getChildNodesDataCalls.get());
    }
-   
+
    public void testGetChildNodesCount() throws Exception
    {
-      final NodeData nodeData = new PersistedNodeData("getChildNodesCount", null, null, 0, 1, null, null, null); 
+      final NodeData nodeData = new PersistedNodeData("getChildNodesCount", null, null, 0, 1, null, null, null);
       assertEquals(0, con.getChildNodesCountCalls.get());
       MyTask task = new MyTask()
       {
@@ -248,7 +249,7 @@ public class TestCacheableWorkspaceDataManager extends TestCase
          {
             int result = cwdm.getChildNodesCount(nodeData);
             assertEquals(1, result);
-         }         
+         }
       };
       multiThreadingTest(task);
       assertEquals(READER * TIMES, con.getChildNodesCountCalls.get());
@@ -260,7 +261,7 @@ public class TestCacheableWorkspaceDataManager extends TestCase
          {
             int result = cwdm.getChildNodesCount(nodeData);
             assertEquals(1, result);
-         }         
+         }
       };
       multiThreadingTest(task);
       assertEquals(READER * TIMES, con.getChildNodesCountCalls.get());
@@ -270,7 +271,7 @@ public class TestCacheableWorkspaceDataManager extends TestCase
    {
       void execute() throws Exception;
    }
-   
+
    private static class MyWorkspaceStorageCache implements WorkspaceStorageCache
    {
 
@@ -361,6 +362,11 @@ public class TestCacheableWorkspaceDataManager extends TestCase
 
       public void onSaveItems(ItemStateChangesLog itemStates)
       {
+      }
+
+      public int getChildNodesCount(NodeData parent)
+      {
+         return childNodes != null ? childNodes.size() : -1;
       }
 
    }
@@ -463,8 +469,10 @@ public class TestCacheableWorkspaceDataManager extends TestCase
          IllegalStateException
       {
          listChildPropertiesDataCalls.incrementAndGet();
-         return Arrays.asList((PropertyData)new PersistedPropertyData("listChildPropertiesData", null, null, 0, PropertyType.STRING,
-            false, Arrays.asList((ValueData)new ByteArrayPersistedValueData(1, "foo".getBytes()))));
+         return Arrays
+            .asList((PropertyData)new PersistedPropertyData("listChildPropertiesData", null, null, 0,
+               PropertyType.STRING, false, Arrays
+                  .asList((ValueData)new ByteArrayPersistedValueData(1, "foo".getBytes()))));
       }
 
       public void rename(NodeData data) throws RepositoryException, UnsupportedOperationException,

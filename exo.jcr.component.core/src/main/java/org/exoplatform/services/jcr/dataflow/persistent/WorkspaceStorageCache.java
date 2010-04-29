@@ -65,6 +65,13 @@ public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
    List<NodeData> getChildNodes(NodeData parent);
 
    /**
+    * @param parent
+    * @return child nodes count for parent if found; 0 if no items found; -1 if no items
+    *         initialized
+    */
+   int getChildNodesCount(NodeData parent);
+
+   /**
     * Get node child properties.<br/>
     * 
     * @param parent
@@ -136,23 +143,20 @@ public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
     * @return long value
     */
    long getSize();
-   
+
    /**
     * Start buffering process.
     */
    public void beginTransaction();
-
 
    /**
     * Sort changes and commit data to the cache.
     */
    public void commitTransaction();
 
-
    /**
     * Forget about changes
     */
    public void rollbackTransaction();
-
 
 }

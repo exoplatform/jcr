@@ -1439,6 +1439,59 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
    /**
     * {@inheritDoc}
     */
+   public int getChildNodesCount(NodeData parentData)
+   {
+      if (enabled && parentData != null)
+      {
+         long start = System.currentTimeMillis();
+         try
+         {
+            // we assume that parent cached too
+            final List<NodeData> cn = nodesCache.get(parentData.getIdentifier());
+
+            if (LOG.isDebugEnabled())
+            {
+               LOG.debug(name + ", getChildNodesCount() " + parentData.getQPath().getAsString() + " "
+                  + parentData.getIdentifier());
+               final StringBuffer blog = new StringBuffer();
+               if (cn != null)
+               {
+                  blog.append("\n");
+                  for (NodeData nd : cn)
+                  {
+                     blog.append("\t\t" + nd.getQPath().getAsString() + " " + nd.getIdentifier() + "\n");
+                  }
+                  LOG.debug("\t-->" + blog.toString());
+               }
+               else
+               {
+                  LOG.debug("\t--> null");
+               }
+            }
+
+            if (cn != null)
+               hits++;
+            else
+               miss++;
+            return cn != null ? cn.size() : -1;
+         }
+         catch (Exception e)
+         {
+            LOG.error(name + ", Error in getChildNodesCount() parentData: "
+               + (parentData != null ? parentData.getQPath().getAsString() : "[null]"), e);
+         }
+         finally
+         {
+            totalGetTime += System.currentTimeMillis() - start;
+         }
+      }
+
+      return -1; // nothing cached
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public List<PropertyData> getChildProperties(final NodeData parentData)
    {
       if (enabled && parentData != null)

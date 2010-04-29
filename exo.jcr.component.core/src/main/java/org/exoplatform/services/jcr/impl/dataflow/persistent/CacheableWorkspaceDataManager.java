@@ -94,7 +94,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
        * GET_LIST_PROPERTIES type.
        */
       static private final int GET_LIST_PROPERTIES = 5;
-      
+
       /**
        * Request type.
        */
@@ -341,10 +341,10 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    {
       if (cache.isEnabled())
       {
-         List<NodeData> childNodes = cache.getChildNodes(parent);
-         if (childNodes != null)
+         int childCount = cache.getChildNodesCount(parent);
+         if (childCount >= 0)
          {
-            return childNodes.size();
+            return childCount;
          }
       }
 
@@ -386,7 +386,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       if (data == null)
       {
          final DataRequest request = new DataRequest(parentData.getIdentifier(), name);
-         
+
          try
          {
             request.start();
@@ -395,12 +395,12 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             data = getCachedItemData(parentData, name);
             if (data == null)
             {
-               data = getPersistedItemData(parentData, name);               
+               data = getPersistedItemData(parentData, name);
             }
             else if (!data.isNode())
             {
                fixPropertyValues((PropertyData)data);
-            }            
+            }
          }
          finally
          {
@@ -427,7 +427,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       if (data == null)
       {
          final DataRequest request = new DataRequest(identifier);
-         
+
          try
          {
             request.start();
@@ -436,7 +436,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             data = getCachedItemData(identifier);
             if (data == null)
             {
-               data = getPersistedItemData(identifier);               
+               data = getPersistedItemData(identifier);
             }
             else if (!data.isNode())
             {
@@ -733,7 +733,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       finally
       {
          request.done();
-      }      
+      }
    }
 
    protected boolean isTxAware()
