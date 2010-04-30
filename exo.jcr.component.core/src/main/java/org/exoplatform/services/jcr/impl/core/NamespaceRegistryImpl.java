@@ -18,8 +18,10 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
+import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.services.jcr.dataflow.DataManager;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.impl.AddNamespacesPlugin;
 import org.exoplatform.services.jcr.impl.core.query.RepositoryIndexSearcherHolder;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -99,6 +101,8 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry, Startab
 
    private NamespaceDataPersister persister;
 
+   private AddNamespacePluginHolder addNamespacePluginHolder;
+
    /**
     * for tests.
     */
@@ -106,19 +110,35 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry, Startab
    {
       this.namespaces = new HashMap<String, String>(DEF_NAMESPACES);
       this.prefixes = new HashMap<String, String>(DEF_PREFIXES);
+
       this.dataManager = null;
       this.indexSearcherHolder = null;
+      this.persister = null;
+      this.addNamespacePluginHolder = null;
    }
 
    public NamespaceRegistryImpl(NamespaceDataPersister persister, DataManager dataManager,
       RepositoryIndexSearcherHolder indexSearcherHolder)
    {
+      this.namespaces = new HashMap<String, String>(DEF_NAMESPACES);
+      this.prefixes = new HashMap<String, String>(DEF_PREFIXES);
 
       this.dataManager = dataManager;
       this.indexSearcherHolder = indexSearcherHolder;
+      this.persister = persister;
+      this.addNamespacePluginHolder = null;
+   }
+
+   public NamespaceRegistryImpl(NamespaceDataPersister persister, DataManager dataManager,
+      RepositoryIndexSearcherHolder indexSearcherHolder, AddNamespacePluginHolder addNamespacePluginHolder)
+   {
       this.namespaces = new HashMap<String, String>(DEF_NAMESPACES);
       this.prefixes = new HashMap<String, String>(DEF_PREFIXES);
+
+      this.dataManager = dataManager;
+      this.indexSearcherHolder = indexSearcherHolder;
       this.persister = persister;
+      this.addNamespacePluginHolder = addNamespacePluginHolder;
    }
 
    /**
@@ -257,7 +277,6 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry, Startab
    {
       if (!started)
       {
-
          // save default
          if (persister != null)
          {
@@ -278,6 +297,12 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry, Startab
                throw new RuntimeException(e.getLocalizedMessage(), e);
             }
          }
+
+         if (addNamespacePluginHolder != null)
+         {
+            addPendingNamespaces();
+         }
+
          started = true;
       }
    }
@@ -368,6 +393,39 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry, Startab
          throw new RepositoryException("RepositoryIndexSearcherHolder not initialized");
       }
 
+   }
+
+   private void addPendingNamespaces()
+   {
+      for (ComponentPlugin plugin : addNamespacePluginHolder.getAddNamespacesPlugins())
+      {
+         Map<String, String> namespaces = ((AddNamespacesPlugin)plugin).getNamespaces();
+         try
+         {
+            for (Map.Entry<String, String> namespace : namespaces.entrySet())
+            {
+
+               String prefix = namespace.getKey();
+               String uri = namespace.getValue();
+
+               // register namespace if not found
+               try
+               {
+                  getURI(prefix);
+               }
+               catch (NamespaceException e)
+               {
+                  registerNamespace(prefix, uri);
+               }
+               if (log.isDebugEnabled())
+                  log.debug("Namespace is registered " + prefix + " = " + uri);
+            }
+         }
+         catch (Exception e)
+         {
+            log.error("Error load namespaces ", e);
+         }
+      }
    }
 
 }
