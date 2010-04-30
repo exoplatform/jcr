@@ -200,6 +200,15 @@ public class SessionDataManager implements ItemDataConsumer
     */
    public ItemData getItemData(NodeData parent, QPathEntry name) throws RepositoryException
    {
+      return getItemData(parent, name, false);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   private ItemData getItemData(NodeData parent, QPathEntry name, boolean skipCheckInPersistence)
+      throws RepositoryException
+   {
       if (name.getName().equals(JCRPath.PARENT_RELPATH) && name.getNamespace().equals(Constants.NS_DEFAULT_URI))
       {
          if (parent.getIdentifier().equals(Constants.ROOT_UUID))
@@ -219,7 +228,10 @@ public class SessionDataManager implements ItemDataConsumer
       if (state == null)
       {
          // 2. Try from txdatamanager
-         data = transactionableManager.getItemData(parent, name);
+         if (!(skipCheckInPersistence))
+         {
+            data = transactionableManager.getItemData(parent, name);
+         }
       }
       else if (!state.isDeleted())
       {
@@ -277,6 +289,45 @@ public class SessionDataManager implements ItemDataConsumer
       try
       {
          return item = readItem(getItemData(parent, name), pool);
+      }
+      finally
+      {
+         if (log.isDebugEnabled())
+         {
+            log.debug("getItem(" + parent.getQPath().getAsString() + " + " + name.getAsString() + ") --> "
+               + (item != null ? item.getPath() : "null") + " <<<<< " + ((System.currentTimeMillis() - start) / 1000d)
+               + "sec");
+         }
+      }
+   }
+
+   /**
+    * Return Item by parent NodeDada and the name of searched item.
+    * 
+    * @param parent
+    *          - parent of the searched item
+    * @param name
+    *          - item name
+    * @param pool
+    *          - indicates does the item fall in pool
+    * @param skipCheckInPersistence
+    *          - skip getting Item from persistence if need
+    * @return existed item or null if not found
+    * @throws RepositoryException
+    */
+   public ItemImpl getItem(NodeData parent, QPathEntry name, boolean pool, boolean skipCheckInPersistence)
+      throws RepositoryException
+   {
+      long start = System.currentTimeMillis();
+      if (log.isDebugEnabled())
+      {
+         log.debug("getItem(" + parent.getQPath().getAsString() + " + " + name.getAsString() + " ) >>>>>");
+      }
+
+      ItemImpl item = null;
+      try
+      {
+         return item = readItem(getItemData(parent, name, skipCheckInPersistence), pool);
       }
       finally
       {
