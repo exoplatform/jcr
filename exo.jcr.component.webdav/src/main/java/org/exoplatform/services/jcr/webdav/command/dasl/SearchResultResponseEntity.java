@@ -35,6 +35,7 @@ import org.exoplatform.services.log.Log;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
+import java.net.URLDecoder;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -172,7 +173,7 @@ public class SearchResultResponseEntity implements StreamingOutput
             xmlStreamWriter.writeStartElement("DAV:", "response");
 
             xmlStreamWriter.writeStartElement("DAV:", "href");
-            xmlStreamWriter.writeCharacters(resource.getIdentifier().toASCIIString());
+            xmlStreamWriter.writeCharacters(URLDecoder.decode(resource.getIdentifier().toASCIIString(), "UTF-8"));
             xmlStreamWriter.writeEndElement();
 
             PropstatGroupedRepresentation propstat = new PropstatGroupedRepresentation(resource, properties, false);
