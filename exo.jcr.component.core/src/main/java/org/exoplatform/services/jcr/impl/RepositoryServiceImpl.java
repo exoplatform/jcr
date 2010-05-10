@@ -234,7 +234,6 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
          }
          repconfig.getWorkspaceEntries().clear();
          RepositoryContainer repositoryContainer = repositoryContainers.get(name);
-         repositoryContainer.stopContainer();
          repositoryContainer.stop();
          repositoryContainers.remove(name);
          config.getRepositoryConfigurations().remove(repconfig);

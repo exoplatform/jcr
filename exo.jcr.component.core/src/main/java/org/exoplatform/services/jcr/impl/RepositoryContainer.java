@@ -407,23 +407,6 @@ public class RepositoryContainer extends ExoContainer
    }
 
    /**
-    * {@inheritDoc}
-    */
-   @Override
-   public void stop()
-   {
-      try
-      {
-         stopContainer();
-      }
-      catch (Exception e)
-      {
-         log.error(e.getLocalizedMessage(), e);
-      }
-      super.stop();
-   }
-
-   /**
     * Initialize worspaces (root node and jcr:system for system workspace).
     * <p>
     * Runs on container start.

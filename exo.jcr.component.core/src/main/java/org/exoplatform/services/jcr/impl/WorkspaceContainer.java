@@ -83,22 +83,4 @@ public class WorkspaceContainer extends ExoContainer
       return (WorkspaceInitializer)getComponentInstanceOfType(WorkspaceInitializer.class);
    }
 
-   /*
-    * (non-Javadoc)
-    * @see org.picocontainer.defaults.DefaultPicoContainer#stop()
-    */
-   @Override
-   public void stop()
-   {
-      try
-      {
-         stopContainer();
-      }
-      catch (Exception e)
-      {
-         log.error(e.getLocalizedMessage(), e);
-      }
-      super.stop();
-   }
-
 }

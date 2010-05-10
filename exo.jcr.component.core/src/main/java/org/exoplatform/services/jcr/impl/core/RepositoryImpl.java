@@ -422,7 +422,6 @@ public class RepositoryImpl implements ManageableRepository
          workspaceContainer = repositoryContainer.getWorkspaceContainer(workspaceName);
          try
          {
-            workspaceContainer.stopContainer();
             workspaceContainer.stop();
          }
          catch (Exception e)
