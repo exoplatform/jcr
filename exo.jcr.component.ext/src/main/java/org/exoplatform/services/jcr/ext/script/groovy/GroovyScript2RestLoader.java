@@ -94,37 +94,37 @@ public class GroovyScript2RestLoader implements Startable
    private static final String SERVICE_NAME = "GroovyScript2RestLoader";
 
    /** See {@link InitParams}. */
-   private InitParams initParams;
+   protected InitParams initParams;
 
    /** See {@link ResourceBinder}. */
-   private ResourceBinder binder;
+   protected ResourceBinder binder;
 
    /** See {@link GroovyScriptInstantiator}. */
-   private GroovyScriptInstantiator groovyScriptInstantiator;
+   protected GroovyScriptInstantiator groovyScriptInstantiator;
 
    /** See {@link RepositoryService}. */
-   private RepositoryService repositoryService;
+   protected RepositoryService repositoryService;
 
    /** See {@link ConfigurationManager}. */
-   private ConfigurationManager configurationManager;
+   protected ConfigurationManager configurationManager;
 
    /** See {@link RegistryService}. */
-   private RegistryService registryService;
+   protected RegistryService registryService;
 
    /**
     * See {@link SessionProviderService},
     * {@link ThreadLocalSessionProviderService}.
     */
-   private ThreadLocalSessionProviderService sessionProviderService;
+   protected ThreadLocalSessionProviderService sessionProviderService;
 
    /** Keeps configuration for observation listener. */
-   private ObservationListenerConfiguration observationListenerConfiguration;
+   protected ObservationListenerConfiguration observationListenerConfiguration;
 
    /** Node type for Groovy scripts. */
-   private String nodeType;
+   protected String nodeType;
 
    /** Mapping scripts URL (or other key) to classes. */
-   private Map<ScriptKey, Class<?>> scriptsURL2ClassMap = new HashMap<ScriptKey, Class<?>>();
+   protected Map<ScriptKey, Class<?>> scriptsURL2ClassMap = new HashMap<ScriptKey, Class<?>>();
 
    /**
     * @param binder binder for RESTful services
@@ -424,7 +424,7 @@ public class GroovyScript2RestLoader implements Startable
    /**
     * See {@link GroovyScript2RestLoaderPlugin}.
     */
-   private List<GroovyScript2RestLoaderPlugin> loadPlugins;
+   protected List<GroovyScript2RestLoaderPlugin> loadPlugins;
 
    /**
     * @param cp See {@link ComponentPlugin}
@@ -442,7 +442,7 @@ public class GroovyScript2RestLoader implements Startable
    /**
     * Add scripts that specified in configuration.
     */
-   private void addScripts()
+   protected void addScripts()
    {
       if (loadPlugins == null || loadPlugins.size() == 0)
          return;
@@ -513,7 +513,7 @@ public class GroovyScript2RestLoader implements Startable
     * @return newly created node
     * @throws Exception if any errors occurs
     */
-   private Node createScript(Node parent, String name, boolean autoload, InputStream stream) throws Exception
+   protected Node createScript(Node parent, String name, boolean autoload, InputStream stream) throws Exception
    {
       Node scriptFile = parent.addNode(name, "nt:file");
       Node script = scriptFile.addNode("jcr:content", getNodeType());
@@ -531,7 +531,7 @@ public class GroovyScript2RestLoader implements Startable
     * @throws RepositoryException
     * @throws PathNotFoundException
     */
-   private void readParamsFromRegistryService(SessionProvider sessionProvider) throws PathNotFoundException,
+   protected void readParamsFromRegistryService(SessionProvider sessionProvider) throws PathNotFoundException,
       RepositoryException
    {
 
@@ -581,7 +581,7 @@ public class GroovyScript2RestLoader implements Startable
     * @throws IOException
     * @throws RepositoryException
     */
-   private void writeParamsToRegistryService(SessionProvider sessionProvider) throws IOException, SAXException,
+   protected void writeParamsToRegistryService(SessionProvider sessionProvider) throws IOException, SAXException,
       ParserConfigurationException, RepositoryException
    {
       if (LOG.isDebugEnabled())
@@ -621,7 +621,7 @@ public class GroovyScript2RestLoader implements Startable
     * @param attr The attribute name
     * @return Value of attribute if present and null in other case
     */
-   private String getAttributeSmart(Element element, String attr)
+   protected String getAttributeSmart(Element element, String attr)
    {
       return element.hasAttribute(attr) ? element.getAttribute(attr) : null;
    }
@@ -633,7 +633,7 @@ public class GroovyScript2RestLoader implements Startable
     * @param attr The attribute name
     * @param value The value of attribute
     */
-   private void setAttributeSmart(Element element, String attr, String value)
+   protected void setAttributeSmart(Element element, String attr, String value)
    {
       if (value == null)
       {
@@ -648,7 +648,7 @@ public class GroovyScript2RestLoader implements Startable
    /**
     * Read parameters from file.
     */
-   private void readParamsFromFile()
+   protected void readParamsFromFile()
    {
       if (initParams != null)
       {
@@ -1253,7 +1253,7 @@ public class GroovyScript2RestLoader implements Startable
     * @param fullPath full path to node
     * @return node's parent path
     */
-   private static String getPath(String fullPath)
+   protected static String getPath(String fullPath)
    {
       int sl = fullPath.lastIndexOf('/');
       return sl > 0 ? "/" + fullPath.substring(0, sl) : "/";
@@ -1265,7 +1265,7 @@ public class GroovyScript2RestLoader implements Startable
     * @param fullPath full path to node
     * @return node's name
     */
-   private static String getName(String fullPath)
+   protected static String getName(String fullPath)
    {
       int sl = fullPath.lastIndexOf('/');
       return sl >= 0 ? fullPath.substring(sl + 1) : fullPath;
