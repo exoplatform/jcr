@@ -55,7 +55,7 @@ import org.w3c.dom.Element;
  * @author <a href="mailto:andrew00x@gmail.com">Andrey Parfonov</a>
  * @version $Id: $
  */
-@Path("/registry/{repository}/")
+@Path("/registry/")
 public class RESTRegistryService implements ResourceContainer
 {
 
@@ -91,12 +91,102 @@ public class RESTRegistryService implements ResourceContainer
 
    @GET
    @Produces(MediaType.APPLICATION_XML)
+   @Path("/{repository}/")
+   @Deprecated
    public Response getRegistry(@PathParam("repository") String repository, @Context UriInfo uriInfo)
+   {
+      try
+      {
+         regService.getRepositoryService().setCurrentRepositoryName(repository);
+         return getRegistry(uriInfo);
+      }
+      catch (Exception e)
+      {
+         log.error("Get registry failed", e);
+         throw new WebApplicationException(e);
+      }
+   }
+
+   @GET
+   @Path("/{repository}/{entryPath:.+}/")
+   @Produces(MediaType.APPLICATION_XML)
+   @Deprecated
+   public Response getEntry(@PathParam("repository") String repository, @PathParam("entryPath") String entryPath)
+   {
+      try
+      {
+         regService.getRepositoryService().setCurrentRepositoryName(repository);
+         return getEntry(entryPath);
+      }
+      catch (Exception e)
+      {
+         log.error("Get registry entry failed", e);
+         throw new WebApplicationException(e);
+      }
+   }
+
+   @POST
+   @Path("/{repository}/{groupName:.+}/")
+   @Consumes(MediaType.APPLICATION_XML)
+   @Deprecated
+   public Response createEntry(InputStream entryStream, @PathParam("repository") String repository,
+      @PathParam("groupName") String groupName, @Context UriInfo uriInfo)
+   {
+      try
+      {
+         regService.getRepositoryService().setCurrentRepositoryName(repository);
+         return createEntry(entryStream, groupName, uriInfo);
+      }
+      catch (Exception e)
+      {
+         log.error("Create registry entry failed", e);
+         throw new WebApplicationException(e);
+      }
+   }
+
+   @PUT
+   @Path("/{repository}/{groupName:.+}/")
+   @Consumes(MediaType.APPLICATION_XML)
+   @Deprecated
+   public Response recreateEntry(InputStream entryStream, @PathParam("repository") String repository,
+      @PathParam("groupName") String groupName, @Context UriInfo uriInfo, @QueryParam("createIfNotExist") boolean createIfNotExist)
+   {
+      try
+      {
+         regService.getRepositoryService().setCurrentRepositoryName(repository);
+         return recreateEntry(entryStream, groupName, uriInfo, createIfNotExist);
+      }
+      catch (Exception e)
+      {
+         log.error("Re-create registry entry failed", e);
+         throw new WebApplicationException(e);
+      }
+   }
+
+   @DELETE
+   @Path("/{repository}/{entryPath:.+}/")
+   @Deprecated
+   public Response removeEntry(@PathParam("repository") String repository, @PathParam("entryPath") String entryPath)
+   {
+      try
+      {
+         regService.getRepositoryService().setCurrentRepositoryName(repository);
+         return removeEntry(entryPath); 
+      }
+      catch (Exception e)
+      {
+         log.error("Remove registry entry failed", e);
+         throw new WebApplicationException(e);
+      }
+   }
+
+   @GET
+   @Produces(MediaType.APPLICATION_XML)
+   public Response getRegistry(@Context UriInfo uriInfo)
    {
       SessionProvider sessionProvider = sessionProviderService.getSessionProvider(null);
       try
       {
-         regService.getRepositoryService().setCurrentRepositoryName(repository);
          RegistryNode registryEntry = regService.getRegistry(sessionProvider);
          if (registryEntry != null)
          {
@@ -131,15 +221,14 @@ public class RESTRegistryService implements ResourceContainer
    }
 
    @GET
-   @Path("/{entryPath:.+}/")
+   @Path("/{entryPath:.+}")
    @Produces(MediaType.APPLICATION_XML)
-   public Response getEntry(@PathParam("repository") String repository, @PathParam("entryPath") String entryPath)
+   public Response getEntry(@PathParam("entryPath") String entryPath)
    {
 
       SessionProvider sessionProvider = sessionProviderService.getSessionProvider(null);
       try
       {
-         regService.getRepositoryService().setCurrentRepositoryName(repository);
          RegistryEntry entry;
          entry = regService.getEntry(sessionProvider, normalizePath(entryPath));
          return Response.ok(new DOMSource(entry.getDocument())).build();
@@ -156,17 +245,15 @@ public class RESTRegistryService implements ResourceContainer
    }
 
    @POST
-   @Path("/{groupName:.+}/")
+   @Path("/{groupName:.+}")
    @Consumes(MediaType.APPLICATION_XML)
-   public Response createEntry(InputStream entryStream, @PathParam("repository") String repository,
-      @PathParam("groupName") String groupName, @Context UriInfo uriInfo)
+   public Response createEntry(InputStream entryStream, @PathParam("groupName") String groupName, @Context UriInfo uriInfo)
    {
 
       SessionProvider sessionProvider = sessionProviderService.getSessionProvider(null);
       try
       {
          RegistryEntry entry = RegistryEntry.parse(entryStream);
-         regService.getRepositoryService().setCurrentRepositoryName(repository);
          regService.createEntry(sessionProvider, normalizePath(groupName), entry);
          URI location = uriInfo.getRequestUriBuilder().path(entry.getName()).build();
          return Response.created(location).build();
@@ -179,16 +266,14 @@ public class RESTRegistryService implements ResourceContainer
    }
 
    @PUT
-   @Path("/{groupName:.+}/")
+   @Path("/{groupName:.+}")
    @Consumes(MediaType.APPLICATION_XML)
-   public Response recreateEntry(InputStream entryStream, @PathParam("repository") String repository,
-      @PathParam("groupName") String groupName, @Context UriInfo uriInfo, @QueryParam("createIfNotExist") boolean createIfNotExist)
+   public Response recreateEntry(InputStream entryStream, @PathParam("groupName") String groupName, @Context UriInfo uriInfo, @QueryParam("createIfNotExist") boolean createIfNotExist)
    {
 
       SessionProvider sessionProvider = sessionProviderService.getSessionProvider(null);
       try
       {
-         regService.getRepositoryService().setCurrentRepositoryName(repository);
          RegistryEntry entry = RegistryEntry.parse(entryStream);
          if (createIfNotExist)
             regService.updateEntry(sessionProvider, normalizePath(groupName), entry);
@@ -205,14 +290,13 @@ public class RESTRegistryService implements ResourceContainer
    }
 
    @DELETE
-   @Path("/{entryPath:.+}/")
-   public Response removeEntry(@PathParam("repository") String repository, @PathParam("entryPath") String entryPath)
+   @Path("/{entryPath:.+}")
+   public Response removeEntry(@PathParam("entryPath") String entryPath)
    {
 
       SessionProvider sessionProvider = sessionProviderService.getSessionProvider(null);
       try
       {
-         regService.getRepositoryService().setCurrentRepositoryName(repository);
          regService.removeEntry(sessionProvider, normalizePath(entryPath));
          return null; // minds status 204 'No content'
       }
