@@ -167,7 +167,7 @@ public class GroovyScript2RestLoader implements Startable
 
    /**
     * Remove script with specified URL from ResourceBinder.
-    * 
+    *
     * @param url the URL. The <code>url.toString()</code> must be corresponded to
     *          script class.
     * @see GroovyScriptRestLoader#loadScript(URL).
@@ -179,7 +179,7 @@ public class GroovyScript2RestLoader implements Startable
 
    /**
     * Remove script by specified key from ResourceBinder.
-    * 
+    *
     * @param key the key with which script was created.
     * @see GroovyScript2RestLoader#loadScript(String, InputStream)
     * @see GroovyScript2RestLoader#loadScript(String, String, InputStream)
@@ -242,13 +242,15 @@ public class GroovyScript2RestLoader implements Startable
    /**
     * Get node type for store scripts, may throw {@link IllegalStateException} if
     * <tt>nodeType</tt> not initialized yet.
-    * 
+    *
     * @return return node type
     */
    public String getNodeType()
    {
       if (nodeType == null)
+      {
          throw new IllegalStateException("Node type not initialized, yet. ");
+      }
       return nodeType;
    }
 
@@ -274,7 +276,7 @@ public class GroovyScript2RestLoader implements Startable
 
    /**
     * Load script from given stream.
-    * 
+    *
     * @param key the key which must be corresponded to object class name.
     * @param stream the stream which represents groovy script.
     * @return if script loaded false otherwise
@@ -289,7 +291,7 @@ public class GroovyScript2RestLoader implements Startable
 
    /**
     * Load script from given stream.
-    * 
+    *
     * @param key the key which must be corresponded to object class name.
     * @param name this name will be passed to compiler to get understandable if
     *          compilation failed
@@ -389,7 +391,9 @@ public class GroovyScript2RestLoader implements Startable
                Node node = nodeIterator.nextNode();
 
                if (node.getPath().startsWith("/jcr:system"))
+               {
                   continue;
+               }
 
                loadScript(new NodeScriptKey(repositoryName, workspaceName, node), node.getPath(), node.getProperty(
                   "jcr:data").getStream());
@@ -434,7 +438,9 @@ public class GroovyScript2RestLoader implements Startable
       if (cp instanceof GroovyScript2RestLoaderPlugin)
       {
          if (loadPlugins == null)
+         {
             loadPlugins = new ArrayList<GroovyScript2RestLoaderPlugin>();
+         }
          loadPlugins.add((GroovyScript2RestLoaderPlugin)cp);
       }
    }
@@ -445,13 +451,17 @@ public class GroovyScript2RestLoader implements Startable
    protected void addScripts()
    {
       if (loadPlugins == null || loadPlugins.size() == 0)
+      {
          return;
+      }
       for (GroovyScript2RestLoaderPlugin loadPlugin : loadPlugins)
       {
          // If no one script configured then skip this item,
          // there is no reason to do anything.
          if (loadPlugin.getXMLConfigs().size() == 0)
+         {
             continue;
+         }
 
          Session session = null;
          try
@@ -473,9 +483,13 @@ public class GroovyScript2RestLoader implements Startable
                {
                   String t = tokens.nextToken();
                   if (node.hasNode(t))
+                  {
                      node = node.getNode(t);
+                  }
                   else
+                  {
                      node = node.addNode(t, "nt:folder");
+                  }
                }
             }
 
@@ -499,14 +513,16 @@ public class GroovyScript2RestLoader implements Startable
          finally
          {
             if (session != null)
+            {
                session.logout();
+            }
          }
       }
    }
 
    /**
     * Create JCR node.
-    * 
+    *
     * @param parent parent node
     * @param name name of node to be created
     * @param stream data stream for property jcr:data
@@ -526,7 +542,7 @@ public class GroovyScript2RestLoader implements Startable
 
    /**
     * Read parameters from RegistryService.
-    * 
+    *
     * @param sessionProvider the SessionProvider
     * @throws RepositoryException
     * @throws PathNotFoundException
@@ -536,7 +552,9 @@ public class GroovyScript2RestLoader implements Startable
    {
 
       if (LOG.isDebugEnabled())
+      {
          LOG.debug("<<< Read init parametrs from registry service.");
+      }
 
       observationListenerConfiguration = new ObservationListenerConfiguration();
 
@@ -574,7 +592,7 @@ public class GroovyScript2RestLoader implements Startable
 
    /**
     * Write parameters to RegistryService.
-    * 
+    *
     * @param sessionProvider the SessionProvider
     * @throws ParserConfigurationException
     * @throws SAXException
@@ -585,7 +603,9 @@ public class GroovyScript2RestLoader implements Startable
       ParserConfigurationException, RepositoryException
    {
       if (LOG.isDebugEnabled())
+      {
          LOG.debug(">>> Save init parametrs in registry service.");
+      }
 
       Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
       Element root = doc.createElement(SERVICE_NAME);
@@ -599,7 +619,9 @@ public class GroovyScript2RestLoader implements Startable
       for (String workspace : observationListenerConfiguration.getWorkspaces())
       {
          if (sb.length() > 0)
+         {
             sb.append(';');
+         }
          sb.append(workspace);
       }
       element = doc.createElement("workspaces");
@@ -616,7 +638,7 @@ public class GroovyScript2RestLoader implements Startable
 
    /**
     * Get attribute value.
-    * 
+    *
     * @param element The element to get attribute value
     * @param attr The attribute name
     * @return Value of attribute if present and null in other case
@@ -628,7 +650,7 @@ public class GroovyScript2RestLoader implements Startable
 
    /**
     * Set attribute value. If value is null the attribute will be removed.
-    * 
+    *
     * @param element The element to set attribute value
     * @param attr The attribute name
     * @param value The value of attribute
@@ -665,20 +687,11 @@ public class GroovyScript2RestLoader implements Startable
       LOG.info("Workspaces node from configuration file: " + observationListenerConfiguration.getWorkspaces());
    }
 
-   // ///////////////////
-
-   // FIXME
-   // For following resource methods use POST instead GET even there is no
-   // entity in request to prevent browsers cache when use ajax. Using no cache
-   // may not have sense currently when use gadgets.io cause apache shindig
-   // implementation ignores all headers except Set-Cookie and Location
-   // (see https://issues.apache.org/jira/browse/SHINDIG-882)
-
    /**
     * This method is useful for clients that can send script in request body
     * without form-data. At required to set specific Content-type header
     * 'script/groovy'.
-    * 
+    *
     * @param stream the stream that contains groovy source code
     * @param uriInfo see {@link UriInfo}
     * @param repository repository name
@@ -718,7 +731,9 @@ public class GroovyScript2RestLoader implements Startable
       finally
       {
          if (ses != null)
+         {
             ses.logout();
+         }
       }
    }
 
@@ -735,11 +750,17 @@ public class GroovyScript2RestLoader implements Startable
       try
       {
          if (name != null && name.startsWith("/"))
+         {
             name = name.substring(1);
+         }
          if (name == null || name.length() == 0)
+         {
             groovyScriptInstantiator.instantiateScript(script);
+         }
          else
+         {
             groovyScriptInstantiator.instantiateScript(script, name);
+         }
          return Response.status(Response.Status.OK).build();
       }
       catch (Exception e)
@@ -755,7 +776,7 @@ public class GroovyScript2RestLoader implements Startable
     * This method is useful for clients that can send script in request body
     * without form-data. At required to set specific Content-type header
     * 'script/groovy'.
-    * 
+    *
     * @param stream the stream that contains groovy source code
     * @param uriInfo see {@link UriInfo}
     * @param repository repository name
@@ -796,7 +817,9 @@ public class GroovyScript2RestLoader implements Startable
       finally
       {
          if (ses != null)
+         {
             ses.logout();
+         }
       }
    }
 
@@ -806,7 +829,7 @@ public class GroovyScript2RestLoader implements Startable
     * only one, rule one address - one script. This method is created just for
     * comfort loading script from HTML form. NOT use this script for uploading
     * few files in body of 'multipart/form-data' or other type of multipart.
-    * 
+    *
     * @param items iterator {@link FileItem}
     * @param uriInfo see {@link UriInfo}
     * @param repository repository name
@@ -835,9 +858,13 @@ public class GroovyScript2RestLoader implements Startable
             FileItem fitem = items.next();
             if (fitem.isFormField() && fitem.getFieldName() != null
                && fitem.getFieldName().equalsIgnoreCase("autoload"))
+            {
                autoload = Boolean.valueOf(fitem.getString());
-            else if (!fitem.isFormField()) // accept files
+            }
+            else if (!fitem.isFormField())
+            {
                stream = fitem.getInputStream();
+            }
          }
 
          createScript(node, getName(path), autoload, stream);
@@ -859,7 +886,9 @@ public class GroovyScript2RestLoader implements Startable
       finally
       {
          if (ses != null)
+         {
             ses.logout();
+         }
       }
    }
 
@@ -869,7 +898,7 @@ public class GroovyScript2RestLoader implements Startable
     * only one, rule one address - one script. This method is created just for
     * comfort loading script from HTML form. NOT use this script for uploading
     * few files in body of 'multipart/form-data' or other type of multipart.
-    * 
+    *
     * @param items iterator {@link FileItem}
     * @param uriInfo see {@link UriInfo}
     * @param repository repository name
@@ -889,8 +918,10 @@ public class GroovyScript2RestLoader implements Startable
       {
          FileItem fitem = items.next();
          InputStream stream = null;
-         if (!fitem.isFormField()) // if file
+         if (!fitem.isFormField())
+         {
             stream = fitem.getInputStream();
+         }
          ses =
             sessionProviderService.getSessionProvider(null).getSession(workspace,
                repositoryService.getRepository(repository));
@@ -914,13 +945,15 @@ public class GroovyScript2RestLoader implements Startable
       finally
       {
          if (ses != null)
+         {
             ses.logout();
+         }
       }
    }
 
    /**
     * Get source code of groovy script.
-    * 
+    *
     * @param repository repository name
     * @param workspace workspace name
     * @param path JCR path to node that contains script
@@ -957,13 +990,15 @@ public class GroovyScript2RestLoader implements Startable
       finally
       {
          if (ses != null)
+         {
             ses.logout();
+         }
       }
    }
 
    /**
     * Get groovy script's meta-information.
-    * 
+    *
     * @param repository repository name
     * @param workspace workspace name
     * @param path JCR path to node that contains script
@@ -1003,13 +1038,15 @@ public class GroovyScript2RestLoader implements Startable
       finally
       {
          if (ses != null)
+         {
             ses.logout();
+         }
       }
    }
 
    /**
     * Remove node that contains groovy script.
-    * 
+    *
     * @param repository repository name
     * @param workspace workspace name
     * @param path JCR path to node that contains script
@@ -1043,7 +1080,9 @@ public class GroovyScript2RestLoader implements Startable
       finally
       {
          if (ses != null)
+         {
             ses.logout();
+         }
       }
    }
 
@@ -1051,7 +1090,7 @@ public class GroovyScript2RestLoader implements Startable
     * Change exo:autoload property. If this property is 'true' script will be
     * deployed automatically when JCR repository startup and automatically
     * re-deployed when script source code changed.
-    * 
+    *
     * @param repository repository name
     * @param workspace workspace name
     * @param path JCR path to node that contains script
@@ -1090,7 +1129,9 @@ public class GroovyScript2RestLoader implements Startable
       finally
       {
          if (ses != null)
+         {
             ses.logout();
+         }
       }
    }
 
@@ -1099,7 +1140,7 @@ public class GroovyScript2RestLoader implements Startable
     * script will be deployed as REST service if 'false' the script will be
     * undeployed. NOTE is script already deployed and <tt>state</tt> is
     * <tt>true</tt> script will be re-deployed.
-    * 
+    *
     * @param repository repository name
     * @param workspace workspace name
     * @param path the path to JCR node that contains groovy script to be deployed
@@ -1120,7 +1161,9 @@ public class GroovyScript2RestLoader implements Startable
          if (state)
          {
             if (isLoaded(key))
+            {
                unloadScript(key);
+            }
             if (!loadScript(key, path, script.getProperty("jcr:data").getStream()))
             {
                String message =
@@ -1155,13 +1198,15 @@ public class GroovyScript2RestLoader implements Startable
       finally
       {
          if (ses != null)
+         {
             ses.logout();
+         }
       }
    }
 
    /**
     * Returns the list of all groovy-scripts found in workspace.
-    * 
+    *
     * @param repository Repository name.
     * @param workspace Workspace name.
     * @param name Additional search parameter. If not emtpy method returns the
@@ -1209,9 +1254,13 @@ public class GroovyScript2RestLoader implements Startable
             {
                char c = name.charAt(i);
                if (c == '*' || c == '?')
+               {
                   p.append('.');
+               }
                if (".()[]^$|".indexOf(c) != -1)
+               {
                   p.append('\\');
+               }
                p.append(c);
             }
             // add '.*' pattern at he end
@@ -1243,13 +1292,15 @@ public class GroovyScript2RestLoader implements Startable
       finally
       {
          if (ses != null)
+         {
             ses.logout();
+         }
       }
    }
 
    /**
     * Extract path to node's parent from full path.
-    * 
+    *
     * @param fullPath full path to node
     * @return node's parent path
     */
@@ -1261,7 +1312,7 @@ public class GroovyScript2RestLoader implements Startable
 
    /**
     * Extract node's name from full node path.
-    * 
+    *
     * @param fullPath full path to node
     * @return node's name
     */
@@ -1351,7 +1402,7 @@ public class GroovyScript2RestLoader implements Startable
 
       /**
        * Returns the list of scripts.
-       * 
+       *
        * @return the list of scripts.
        */
       public List<String> getList()
@@ -1361,7 +1412,7 @@ public class GroovyScript2RestLoader implements Startable
 
       /**
        * ScriptList constructor.
-       * 
+       *
        * @param the list of scripts
        */
       public ScriptList(List<String> scriptList)
