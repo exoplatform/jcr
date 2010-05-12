@@ -21,6 +21,7 @@ import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.management.ManagementContext;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
+import org.exoplatform.management.annotations.ManagedName;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
 import org.exoplatform.management.jmx.annotations.Property;
 import org.exoplatform.management.rest.annotations.RESTEndpoint;
@@ -375,7 +376,9 @@ public class JCRStatisticsManager
     */
    @Managed
    @ManagedDescription("The minimum value of the time spent for one call.")
-   public static long getMin(String category, String name)
+   public static long getMin(
+      @ManagedDescription("The name of the category of the statistics") @ManagedName("categoryName") String category,
+      @ManagedDescription("The name of the expected method or global for the global value") @ManagedName("statisticsName") String name)
    {
       Statistics statistics = getStatistics(category, name);
       return statistics == null ? 0l : statistics.getMin();
@@ -387,7 +390,9 @@ public class JCRStatisticsManager
     */
    @Managed
    @ManagedDescription("The maximum value of the time spent for one call.")
-   public static long getMax(String category, String name)
+   public static long getMax(
+      @ManagedDescription("The name of the category of the statistics") @ManagedName("categoryName") String category,
+      @ManagedDescription("The name of the expected method or global for the global value") @ManagedName("statisticsName") String name)
    {
       Statistics statistics = getStatistics(category, name);
       return statistics == null ? 0l : statistics.getMax();
@@ -399,7 +404,9 @@ public class JCRStatisticsManager
     */
    @Managed
    @ManagedDescription("The total time spent for all the calls.")
-   public static long getTotal(String category, String name)
+   public static long getTotal(
+      @ManagedDescription("The name of the category of the statistics") @ManagedName("categoryName") String category,
+      @ManagedDescription("The name of the expected method or global for the global value") @ManagedName("statisticsName") String name)
    {
       Statistics statistics = getStatistics(category, name);
       return statistics == null ? 0l : statistics.getTotal();
@@ -411,7 +418,9 @@ public class JCRStatisticsManager
     */
    @Managed
    @ManagedDescription("The total amount of calls.")
-   public static long getTimes(String category, String name)
+   public static long getTimes(
+      @ManagedDescription("The name of the category of the statistics") @ManagedName("categoryName") String category,
+      @ManagedDescription("The name of the expected method or global for the global value") @ManagedName("statisticsName") String name)
    {
       Statistics statistics = getStatistics(category, name);
       return statistics == null ? 0l : statistics.getTimes();
@@ -423,7 +432,9 @@ public class JCRStatisticsManager
     */
    @Managed
    @ManagedDescription("The average value of the time spent for one call.")
-   public static float getAvg(String category, String name)
+   public static float getAvg(
+      @ManagedDescription("The name of the category of the statistics") @ManagedName("categoryName") String category,
+      @ManagedDescription("The name of the expected method or global for the global value") @ManagedName("statisticsName") String name)
    {
       Statistics statistics = getStatistics(category, name);
       return statistics == null ? 0l : statistics.getAvg();
@@ -436,7 +447,9 @@ public class JCRStatisticsManager
     */
    @Managed
    @ManagedDescription("Reset the statistics.")
-   public static void reset(String category, String name)
+   public static void reset(
+      @ManagedDescription("The name of the category of the statistics") @ManagedName("categoryName") String category,
+      @ManagedDescription("The name of the expected method or global for the global value") @ManagedName("statisticsName") String name)
    {
       Statistics statistics = getStatistics(category, name);
       if (statistics != null)
@@ -451,7 +464,8 @@ public class JCRStatisticsManager
     */
    @Managed
    @ManagedDescription("Reset all the statistics.")
-   public static void resetAll(String category)
+   public static void resetAll(
+      @ManagedDescription("The name of the category of the statistics") @ManagedName("categoryName") String category)
    {
       StatisticsContext context = getContext(category);
       if (context != null)
