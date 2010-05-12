@@ -248,8 +248,8 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
         be used.<programlisting>java -Dorg.exoplatform.container.configuration.debug ...</programlisting></para>
 
         <para>If the property is enabled the container configuration manager
-        will report the configuration adding process to the standard output
-        (System.out).<programlisting>......
+        will log the configuration adding process at <emphasis>INFO</emphasis>
+        level.<programlisting>......
    Add configuration jar:file:/D:/Projects/eXo/dev/exo-working/exo-tomcat/lib/exo.kernel.container-trunk.jar!/conf/portal/configuration.xml
    Add configuration jar:file:/D:/Projects/eXo/dev/exo-working/exo-tomcat/lib/exo.kernel.component.cache-trunk.jar!/conf/portal/configuration.xml
    Add configuration jndi:/localhost/portal/WEB-INF/conf/configuration.xml
