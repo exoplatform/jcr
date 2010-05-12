@@ -3,6 +3,7 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter>
   <?dbhtml filename="ch-configuration.html"?>
+
   <title>Configuration</title>
 
   <section>
@@ -257,6 +258,18 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
         import jndi:/localhost/portal/WEB-INF/conf/ecm/jcr-component-plugins-configuration.xml
         import jndi:/localhost/portal/WEB-INF/conf/jcr/jcr-configuration.xml 
    ......</programlisting></para>
+      </section>
+
+      <section>
+        <title>Get the effective configuration at Runtime</title>
+
+        <para>The effective configuration of the StandaloneContainer,
+        RootContainer and/or PortalContainer can be known thanks to the method
+        <emphasis>getConfigurationXML</emphasis>() that is exposed through JMX
+        at the container's level. This method will give you the effective
+        configuration in XML format that has been really interpreted by the
+        kernel. This could be helpful to understand how a given component or
+        plugin has been initialized.</para>
       </section>
     </section>
 
