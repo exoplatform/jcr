@@ -412,13 +412,12 @@ public class SessionDataManager implements ItemDataConsumer
 
          if (apiRead)
          {
-            // TODO post read will be logically to call after the permissions check
-            session.getActionHandler().postRead(item);
             if (!item.hasPermission(PermissionType.READ))
             {
                throw new AccessDeniedException("Access denied " + itemData.getQPath().getAsString() + " for "
                   + session.getUserID());
             }
+            session.getActionHandler().postRead(item);
          }
 
          return item;
@@ -1141,7 +1140,7 @@ public class SessionDataManager implements ItemDataConsumer
                   // We can't remove this VH now.
                   return;
                } // else -- if we has a references in workspace where the VH is being
-                 // deleted we can remove VH now.
+               // deleted we can remove VH now.
             }
          }
          finally
