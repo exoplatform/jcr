@@ -228,7 +228,7 @@ public class RepositoryImpl implements ManageableRepository
     * @param workspaceName - Creates a new Workspace with the specified name
     * @throws RepositoryException
     */
-   public void createWorkspace(String workspaceName) throws RepositoryException
+   public synchronized void createWorkspace(String workspaceName) throws RepositoryException
    {
 
       if (isWorkspaceInitialized(workspaceName))

@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.jcr.NamespaceException;
 import javax.jcr.NamespaceRegistry;
@@ -140,7 +141,8 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
     * Add namespaces and nodetypes from service plugins.
     * 
     */
-   public void createRepository(RepositoryEntry rEntry) throws RepositoryConfigurationException, RepositoryException
+   public synchronized void createRepository(RepositoryEntry rEntry) throws RepositoryConfigurationException,
+      RepositoryException
    {
       if (repositoryContainers.containsKey(rEntry.getName()))
       {
@@ -162,8 +164,9 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
          //TODO will be implemented unregistration in managerStartChanges
          //managerStartChanges.removeListeners(repositoryContainer);
          repositoryContainers.remove(rEntry.getName());
-         
-         throw new RepositoryConfigurationException("Repository conatainer " + rEntry.getName() + " was not started.", t);
+
+         throw new RepositoryConfigurationException("Repository conatainer " + rEntry.getName() + " was not started.",
+            t);
       }
 
       if (!config.getRepositoryConfigurations().contains(rEntry))
@@ -423,12 +426,8 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
    public class ManagerStartChanges
    {
 
-      private HashMap<StorageKey, ItemsPersistenceListener> startChangesListeners;
-
-      ManagerStartChanges()
-      {
-         startChangesListeners = new HashMap<StorageKey, ItemsPersistenceListener>();
-      }
+      private Map<StorageKey, ItemsPersistenceListener> startChangesListeners =
+         new HashMap<StorageKey, ItemsPersistenceListener>();
 
       /**
        * Add new StartChangesPlugin to manager.
