@@ -27,18 +27,22 @@ import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
 import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
+import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
 import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
 import org.exoplatform.services.jcr.impl.storage.JCRItemExistsException;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 import org.exoplatform.services.jcr.observation.ExtendedEvent;
 
 import java.io.EOFException;
@@ -73,6 +77,11 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
    private final String restoreDir;
 
    private FileCleaner fileCleaner;
+   
+   /**
+    * Temporary directory;
+    */
+   private final File tempDir;
 
    public BackupWorkspaceInitializer(WorkspaceEntry config, RepositoryEntry repConfig,
       CacheableWorkspaceDataManager dataManager, NamespaceRegistryImpl namespaceRegistry,
@@ -92,6 +101,8 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
          throw new RepositoryException("Can't find full backup file");
       else
          restorePath = fullBackupPath;
+      
+      this.tempDir = new File(System.getProperty("java.io.tmpdir"));
    }
 
    public NodeData initWorkspace() throws RepositoryException
@@ -371,7 +382,7 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
       int bufferSize = 1024 * 8;
       byte[] buf = new byte[bufferSize];
 
-      File tempFile = File.createTempFile("jcr", "tmp");
+      File tempFile = SpoolFile.createTempFile("vdincb" + System.currentTimeMillis(), ".stmp", tempDir);
       FileOutputStream fos = new FileOutputStream(tempFile);
       long readBytes = fileSize;
 
@@ -430,20 +441,23 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
 
       public void restore() throws IOException
       {
+         List<ItemState> listItemState = itemDataChangesLog.getAllStates();
          for (int i = 0; i < this.listFixupStream.size(); i++)
          {
-            List<ItemState> listItemState = itemDataChangesLog.getAllStates();
             ItemState itemState = listItemState.get(listFixupStream.get(i).getItemSateId());
             ItemData itemData = itemState.getData();
 
-            TransientPropertyData propertyData = (TransientPropertyData)itemData;
-            TransientValueData tvd =
-               (TransientValueData)(propertyData.getValues().get(listFixupStream.get(i).getValueDataId()));
+            PersistedPropertyData propertyData = (PersistedPropertyData)itemData;
+            ValueData tvd =
+               (ValueData)(propertyData.getValues().get(listFixupStream.get(i).getValueDataId()));
 
             // re-init the value
-            tvd.delegate(new TransientValueData(tvd.getOrderNumber(), null, null, listFile.get(i), fileCleaner, -1,
-               null, true));
+            propertyData.getValues().set(listFixupStream.get(i).getValueDataId(), 
+                     new StreamPersistedValueData(tvd.getOrderNumber(), listFile.get(i)));
          }
+
+         for (int i = 0; i < listFile.size(); i++)
+            fileCleaner.addFile(listFile.get(i));
       }
    }
 
