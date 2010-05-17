@@ -18,8 +18,30 @@
  */
 package org.exoplatform.services.jcr.ext.backup.impl;
 
+import java.io.ByteArrayOutputStream;
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.jcr.PathNotFoundException;
+import javax.jcr.RepositoryException;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.apache.commons.collections.map.HashedMap;
-import org.bouncycastle.jce.interfaces.BCKeyStore;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.services.jcr.RepositoryService;
@@ -59,6 +81,7 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistent
 import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
 import org.exoplatform.services.jcr.impl.storage.JCRItemExistsException;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 import org.exoplatform.services.jcr.observation.ExtendedEvent;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
@@ -67,29 +90,6 @@ import org.picocontainer.Startable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
-
-import java.io.ByteArrayOutputStream;
-import java.io.EOFException;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.jcr.PathNotFoundException;
-import javax.jcr.RepositoryException;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * Created by The eXo Platform SAS .<br/>
@@ -162,6 +162,11 @@ public class BackupManagerImpl implements BackupManager, Startable
    private final WorkspaceBackupAutoStopper workspaceBackupStopper;
 
    private final RepositoryBackupAutoStopper repositoryBackupStopper;
+   
+   /**
+    * Temporary directory;
+    */
+   private final File tempDir;
 
    class MessagesListener implements BackupJobListener
    {
@@ -392,6 +397,7 @@ public class BackupManagerImpl implements BackupManager, Startable
       this.repoService = repoService;
       this.registryService = registryService;
       this.initParams = initParams;
+      this.tempDir = new File(System.getProperty("java.io.tmpdir"));
 
       currentBackups = Collections.synchronizedSet(new HashSet<BackupChain>());
 
@@ -1021,7 +1027,7 @@ public class BackupManagerImpl implements BackupManager, Startable
       int bufferSize = /* 8191 */1024 * 8;
       byte[] buf = new byte[bufferSize];
 
-      File tempFile = File.createTempFile("" + System.currentTimeMillis(), "" + System.nanoTime());
+      File tempFile = SpoolFile.createTempFile("" + System.currentTimeMillis(), ".stmp", tempDir);
       FileOutputStream fos = new FileOutputStream(tempFile);
       long readBytes = fileSize;
 
