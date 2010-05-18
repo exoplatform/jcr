@@ -35,9 +35,8 @@ import javax.jcr.nodetype.NodeTypeManager;
  * 
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady
  *         Azarenkov</a>
- * @version $Id: ExtendedNodeTypeManager.java 11907 2008-03-13 15:36:21Z ksm $
+ * @version $Id$
  */
-
 public interface ExtendedNodeTypeManager extends NodeTypeManager
 {
 
@@ -65,10 +64,8 @@ public interface ExtendedNodeTypeManager extends NodeTypeManager
     * @param alreadyExistsBehaviour a int
     * @throws RepositoryException
     */
-  @Deprecated
+   @Deprecated
    NodeTypeIterator registerNodeTypes(InputStream xml, int alreadyExistsBehaviour) throws RepositoryException;
-
-
 
    /**
     * Registers all node types using XML binding value objects from xml stream.

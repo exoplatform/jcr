@@ -264,9 +264,13 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
       {
          ExoContainer container = null;
          if (containerContext == null)
+         {
             container = PortalContainer.getInstance();
+         }
          else
+         {
             container = containerContext.getContainer();
+         }
 
          init(container);
 
@@ -357,14 +361,6 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
       }
    }
 
-   private void registerNodeTypes() throws RepositoryException
-   {
-      for (RepositoryEntry repoConfig : config.getRepositoryConfigurations())
-      {
-         registerNodeTypes(repoConfig.getName());
-      }
-   }
-
    private void registerNodeTypes(String repositoryName) throws RepositoryException
    {
       ConfigurationManager configService =
@@ -380,7 +376,6 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
          {
             for (String nodeTypeFilesName : autoNodeTypesFiles)
             {
-
                InputStream inXml;
                try
                {
@@ -390,18 +385,23 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
                {
                   throw new RepositoryException(e);
                }
+
                if (log.isDebugEnabled())
+               {
                   log.debug("Trying register node types from xml-file " + nodeTypeFilesName);
+               }
                ntManager.registerNodeTypes(inXml, ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
                if (log.isDebugEnabled())
+               {
                   log.debug("Node types is registered from xml-file " + nodeTypeFilesName);
+               }
             }
+            
             List<String> defaultNodeTypesFiles = plugin.getNodeTypesFiles(repositoryName);
             if (defaultNodeTypesFiles != null && defaultNodeTypesFiles.size() > 0)
             {
                for (String nodeTypeFilesName : defaultNodeTypesFiles)
                {
-
                   InputStream inXml;
                   try
                   {
@@ -411,6 +411,7 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
                   {
                      throw new RepositoryException(e);
                   }
+                  
                   log.info("Trying register node types (" + repositoryName + ") from xml-file " + nodeTypeFilesName);
                   ntManager.registerNodeTypes(inXml, ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
                   log.info("Node types is registered (" + repositoryName + ") from xml-file " + nodeTypeFilesName);

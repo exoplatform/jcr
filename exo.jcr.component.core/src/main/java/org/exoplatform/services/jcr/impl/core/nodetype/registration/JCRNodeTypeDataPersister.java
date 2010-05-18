@@ -20,7 +20,7 @@
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
- * @version $Id: $
+ * @version $Id$
  */
 package org.exoplatform.services.jcr.impl.core.nodetype.registration;
 
@@ -59,7 +59,7 @@ import javax.jcr.nodetype.NoSuchNodeTypeException;
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
- * @version $Id: $
+ * @version $Id$
  */
 public class JCRNodeTypeDataPersister implements NodeTypeDataPersister
 {
@@ -208,8 +208,10 @@ public class JCRNodeTypeDataPersister implements NodeTypeDataPersister
       }
 
       if (log.isDebugEnabled())
+      {
          log.debug("/jcr:system/jcr:nodetypes is created, creation time: " + (System.currentTimeMillis() - start)
             + " ms");
+      }
 
       dataManager.save(new TransactionChangesLog(changesLog));
 
@@ -293,9 +295,13 @@ public class JCRNodeTypeDataPersister implements NodeTypeDataPersister
                NodeData jcrNodetypes =
                   (NodeData)dataManager.getItemData(jcrSystem, new QPathEntry(Constants.JCR_NODETYPES, 1));
                if (jcrNodetypes == null)
+               {
                   this.nodeTypeStorageRoot = initNodetypesRoot(jcrSystem, addACL);
+               }
                else
+               {
                   this.nodeTypeStorageRoot = jcrNodetypes;
+               }
             }
             else
             {
@@ -357,7 +363,9 @@ public class JCRNodeTypeDataPersister implements NodeTypeDataPersister
       for (NodeData nodeData : nodeTypes)
       {
          if (Constants.NT_NODETYPE.equals(nodeData.getPrimaryTypeName()))
+         {
             result.add(definitionAccessProvider.read(nodeData));
+         }
       }
       return result;
    }
@@ -376,9 +384,10 @@ public class JCRNodeTypeDataPersister implements NodeTypeDataPersister
          if (observer != null)
          {
             if (observer.shouldSkip(nodeTypeData, changesLog))
+            {
                continue;
+            }
             observer.beforeUpdate(nodeTypeData, changesLog);
-
          }
          if (!validatate())
          {
@@ -398,12 +407,15 @@ public class JCRNodeTypeDataPersister implements NodeTypeDataPersister
          // add
          definitionAccessProvider.write(changesLog, nodeTypeStorageRoot, nodeTypeData);
          if (observer != null)
+         {
             observer.afterUpdate(nodeTypeData, changesLog);
+         }
       }
       //made changes if needed
       if (changesLog.getSize() > 0)
+      {
          dataManager.save(new TransactionChangesLog(changesLog));
-
+      }
    }
 
    private boolean validatate()
