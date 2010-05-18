@@ -54,14 +54,29 @@ public class TestPropsDeserialization extends JcrImplSerializationBaseTest
 
       session.save();
 
-      contentNode.setProperty("jcr:data", new FileInputStream(content2));
-      session.save();
-
+      // check 1
       List<TransactionChangesLog> logs = pl.pushChanges();
 
       File jcrfile = super.serializeLogs(logs);
 
       List<TransactionChangesLog> destLog = super.deSerializeLogs(jcrfile);
+
+      assertEquals(logs.size(), destLog.size());
+
+      for (int i = 0; i < logs.size(); i++)
+         checkIterator(logs.get(i).getAllStates().iterator(), destLog.get(i).getAllStates().iterator());
+      
+      // set value
+      pl = new TesterItemsPersistenceListener(this.session);
+      contentNode.setProperty("jcr:data", new FileInputStream(content2));
+      session.save();
+      
+      // check 2
+      logs = pl.pushChanges();
+
+      jcrfile = super.serializeLogs(logs);
+
+      destLog = super.deSerializeLogs(jcrfile);
 
       assertEquals(logs.size(), destLog.size());
 

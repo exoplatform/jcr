@@ -50,13 +50,8 @@ public class TestJCRSerializationEditData extends JcrImplSerializationBaseTest
       contentNode.setProperty("jcr:mimeType", "plain/text");
       contentNode.setProperty("jcr:lastModified", session.getValueFactory().createValue(Calendar.getInstance()));
       session.save();
-
-      String newData = "____________simple_data_2____________";
-
-      session.getRootNode().getNode("cms3").getNode("test").getNode("nnn").getNode("jcr:content").setProperty(
-         "jcr:data", newData);
-      session.save();
-
+      
+      // check 1
       List<TransactionChangesLog> srcLog = pl.pushChanges();
 
       File jcrfile = super.serializeLogs(srcLog);
@@ -67,5 +62,27 @@ public class TestJCRSerializationEditData extends JcrImplSerializationBaseTest
 
       for (int i = 0; i < srcLog.size(); i++)
          checkIterator(srcLog.get(i).getAllStates().iterator(), destLog.get(i).getAllStates().iterator());
+      
+      // edit 1
+      pl = new TesterItemsPersistenceListener(this.session);
+      String newData = "____________simple_data_2____________";
+      session.getRootNode().getNode("cms3").getNode("test").getNode("nnn").getNode("jcr:content").setProperty(
+         "jcr:data", newData);
+      session.save();
+
+      // check 1
+      srcLog = pl.pushChanges();
+
+      jcrfile = super.serializeLogs(srcLog);
+
+      destLog = super.deSerializeLogs(jcrfile);
+
+      assertEquals(srcLog.size(), destLog.size());
+
+      for (int i = 0; i < srcLog.size(); i++)
+         checkIterator(srcLog.get(i).getAllStates().iterator(), destLog.get(i).getAllStates().iterator());
+      
+
+      
    }
 }
