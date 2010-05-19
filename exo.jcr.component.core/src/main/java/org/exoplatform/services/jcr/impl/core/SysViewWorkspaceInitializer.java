@@ -43,6 +43,7 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
 import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -768,8 +769,8 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
                               if (pfile != null)
                               {
                                  vdata =
-                                    new TransientValueData(currentProperty.getValues().size(), null, null, pfile,
-                                       fileCleaner, maxBufferSize, null, true);
+                                    new TransientValueData(currentProperty.getValues().size(), null, null,
+                                       new SpoolFile(pfile.getAbsolutePath()), fileCleaner, maxBufferSize, null, true);
                               }
                               else
                               {

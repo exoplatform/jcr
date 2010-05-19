@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.ext.replication.FixupStream;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -472,7 +473,7 @@ public class PendingChangesLog
    public void restore() throws IOException
    {
       // TODO same code as in BackupWorkspaceInitializer?
-      
+
       List<ItemState> listItemState = itemDataChangesLog.getAllStates();
       for (int i = 0; i < this.listFixupStream.size(); i++)
       {
@@ -484,8 +485,8 @@ public class PendingChangesLog
             (TransientValueData)(propertyData.getValues().get(listFixupStream.get(i).getValueDataId()));
 
          // re-init the value
-         tvd.delegate(new TransientValueData(tvd.getOrderNumber(), null, null, listFile.get(i), fileCleaner, -1,
-            null, true));
+         tvd.delegate(new TransientValueData(tvd.getOrderNumber(), null, null, new SpoolFile(listFile.get(i)
+            .getAbsolutePath()), fileCleaner, -1, null, true));
       }
 
       if (listRandomAccessFile != null)

@@ -39,6 +39,7 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceD
 import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
 import org.exoplatform.services.jcr.impl.storage.JCRItemExistsException;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 import org.exoplatform.services.jcr.observation.ExtendedEvent;
 
 import java.io.EOFException;
@@ -441,8 +442,8 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
                (TransientValueData)(propertyData.getValues().get(listFixupStream.get(i).getValueDataId()));
 
             // re-init the value
-            tvd.delegate(new TransientValueData(tvd.getOrderNumber(), null, null, listFile.get(i), fileCleaner, -1,
-               null, true));
+            tvd.delegate(new TransientValueData(tvd.getOrderNumber(), null, null, new SpoolFile(listFile.get(i)
+               .getAbsolutePath()), fileCleaner, -1, null, true));
          }
       }
    }

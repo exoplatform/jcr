@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl.dataflow;
 
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -59,7 +60,7 @@ public class EditableValueData extends TransientValueData
       }
 
       // TODO use InputStream instead of spoolFile and use Channel.transferFrom.
-      public NewEditableValueData(File spoolFile, int orderNumber, FileCleaner fileCleaner, int maxBufferSize,
+      public NewEditableValueData(SpoolFile spoolFile, int orderNumber, FileCleaner fileCleaner, int maxBufferSize,
          File tempDirectory) throws IOException
       {
 
@@ -68,11 +69,11 @@ public class EditableValueData extends TransientValueData
 
          this.maxIOBuffSize = calcMaxIOSize();
 
-         File sf = null;
+         SpoolFile sf = null;
          FileChannel sch = null;
          try
          {
-            sf = File.createTempFile("jcrvdedit", null, tempDirectory);
+            sf = SpoolFile.createTempFile("jcrvdedit", null, tempDirectory);
 
             sch = new RandomAccessFile(sf, "rw").getChannel();
 
@@ -123,7 +124,7 @@ public class EditableValueData extends TransientValueData
 
          this.maxIOBuffSize = calcMaxIOSize();
 
-         File sf = File.createTempFile("jcrvdedit", null, tempDirectory);
+         SpoolFile sf = SpoolFile.createTempFile("jcrvdedit", null, tempDirectory);
          OutputStream sfout = new FileOutputStream(sf);
          try
          {
@@ -176,44 +177,6 @@ public class EditableValueData extends TransientValueData
          buffSize = buffSize < 1024 ? 256 : buffSize;
          return buffSize;
       }
-
-      //   public TransientValueData createTransientCopy() throws RepositoryException
-      //   {
-      //      if (isByteArray())
-      //      {
-      //         // bytes, make a copy of real data
-      //         byte[] newBytes = new byte[data.length];
-      //         System.arraycopy(data, 0, newBytes, 0, newBytes.length);
-      //         return new TransientValueData(newBytes, orderNumber);
-      //      }
-      //      else
-      //      {
-      //         // stream, make a copy
-      //         try
-      //         {
-      //            // force changes made to the file
-      //            spoolChannel.force(false);
-      //
-      //            InputStream thisStream = getAsStream();
-      //            try
-      //            {
-      //               TransientValueData copy =
-      //                  new TransientValueData(orderNumber, null, thisStream, null, fileCleaner, maxBufferSize,
-      //                     tempDirectory, true);
-      //               copy.spoolInputStream(); // force spool - read now, till the source isn't changed
-      //               return copy;
-      //            }
-      //            finally
-      //            {
-      //               thisStream.close();
-      //            }
-      //         }
-      //         catch (IOException e)
-      //         {
-      //            throw new RepositoryException("Create transient copy error. " + e, e);
-      //         }
-      //      }
-      //   }
 
       /**
        * Update with <code>length</code> bytes from the specified <code>stream</code> to this value data
@@ -294,13 +257,13 @@ public class EditableValueData extends TransientValueData
             {
 
                // switch from bytes to file/channel
-               File chf = null;
+               SpoolFile chf = null;
                FileChannel chch = null;
                long newIndex = 0; // first pos to write
 
                try
                {
-                  chf = File.createTempFile("jcrvdedit", null, tempDirectory);
+                  chf = SpoolFile.createTempFile("jcrvdedit", null, tempDirectory);
                   chch = new RandomAccessFile(chf, "rw").getChannel();
 
                   // allocate the space for whole file
@@ -397,11 +360,11 @@ public class EditableValueData extends TransientValueData
             else
             {
                // switch from bytes to file/channel
-               File chf = null;
+               SpoolFile chf = null;
                FileChannel chch = null;
                try
                {
-                  chf = File.createTempFile("jcrvdedit", null, tempDirectory);
+                  chf = SpoolFile.createTempFile("jcrvdedit", null, tempDirectory);
                   chch = new RandomAccessFile(chf, "rw").getChannel();
 
                   ReadableByteChannel bch = Channels.newChannel(new ByteArrayInputStream(this.data));
@@ -504,7 +467,7 @@ public class EditableValueData extends TransientValueData
       this.delegate = new NewEditableValueData(bytes, orderNumber, fileCleaner, maxBufferSize, tempDirectory);
    }
 
-   public EditableValueData(File spoolFile, int orderNumber, FileCleaner fileCleaner, int maxBufferSize,
+   public EditableValueData(SpoolFile spoolFile, int orderNumber, FileCleaner fileCleaner, int maxBufferSize,
       File tempDirectory) throws IOException
    {
       this.delegate = new NewEditableValueData(spoolFile, orderNumber, fileCleaner, maxBufferSize, tempDirectory);
