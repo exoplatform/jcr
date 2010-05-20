@@ -1130,4 +1130,95 @@ public class TestBackupManager extends AbstractBackupTestCase
          // ok.
       }
    }
+   
+   public void testIncrementalBackupRestoreEXOJCR_737() throws Exception
+   {
+      // full backup with BLOBs & incremental with BLOBs
+
+      // BLOBs for full
+      File tempf = createBLOBTempFile("testIncrementalBackupRestore737-", 5 * 1024); // 5M
+      tempf.deleteOnExit();
+
+      File backDir = new File("target/backup/ws1.incr737");
+      backDir.mkdirs();
+
+      BackupConfig config = new BackupConfig();
+      config.setRepository(repository.getName());
+      config.setWorkspace("ws1");
+      config.setBackupType(BackupManager.FULL_AND_INCREMENTAL);
+
+      config.setBackupDir(backDir);
+
+      backup.startBackup(config);
+
+      BackupChain bch = backup.findBackup(repository.getName(), "ws1");
+
+      // wait till full backup will be stopped
+      while (bch.getFullBackupState() != BackupJob.FINISHED)
+      {
+         Thread.yield();
+         Thread.sleep(50);
+      }
+      
+      // add data
+      ws1Session.getRootNode().addNode("node_101").setProperty("exo:data", new FileInputStream(tempf));
+      ws1Session.getRootNode().addNode("node_102").setProperty("exo:extraData", new FileInputStream(tempf));
+      ws1Session.getRootNode().save(); // log here via listener
+
+      // stop backup
+      if (bch != null)
+         backup.stopBackup(bch);
+      else
+         fail("Can't get fullBackup chain");
+      
+      //remove data 
+      ws1Session.getRootNode().getNode("node_101").remove();
+      ws1Session.getRootNode().getNode("node_102").remove();
+      ws1Session.getRootNode().save();
+
+      // restore
+      RepositoryEntry re = (RepositoryEntry)ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
+      WorkspaceEntry ws1back = makeWorkspaceEntry("ws1back.incr737", "jdbcjcr25");
+
+      File backLog = new File(bch.getLogFilePath());
+      if (backLog.exists())
+      {
+         BackupChainLog bchLog = new BackupChainLog(backLog);
+
+         assertNotNull(bchLog.getStartedTime());
+         assertNotNull(bchLog.getFinishedTime());
+
+         backup.restore(bchLog, re.getName(), ws1back, false);
+
+         // check
+         SessionImpl back1 = null;
+         try
+         {
+            back1 = (SessionImpl)repository.login(credentials, ws1back.getName());
+
+            Node node_101 = back1.getRootNode().getNode("node_101");
+            assertNotNull(node_101);
+            assertEquals(tempf.length(), node_101.getProperty("exo:data").getStream().available());
+            compareStream(new FileInputStream(tempf), node_101.getProperty("exo:data").getStream());
+            
+            Node node_102 = back1.getRootNode().getNode("node_102");
+            assertNotNull(node_102);
+            assertEquals(tempf.length(), node_102.getProperty("exo:extraData").getStream().available());
+            compareStream(new FileInputStream(tempf), node_102.getProperty("exo:extraData").getStream());
+            
+         }
+         catch (Exception e)
+         {
+            e.printStackTrace();
+            fail(e.getMessage());
+         }
+         finally
+         {
+            if (back1 != null)
+               back1.logout();
+         }
+      }
+      else
+         fail("There are no backup files in " + backDir.getAbsolutePath());
+   }
 }
