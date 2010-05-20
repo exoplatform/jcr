@@ -26,11 +26,11 @@
    </parent>
 
    <modelVersion>4.0.0</modelVersion>
-   <artifactId>exo.product.jcr</artifactId>
-   <packaging>jar</packaging>
-   <name>eXo JCR Product</name>
+   <artifactId>exo.jcr.applications.jonas</artifactId>
+   <packaging>pom</packaging>
+   <name>eXo JCR :: Applications :: Jonas AS</name>
    <url>http://www.exoplatform.org</url>
-   <description>eXo JCR Product</description>
+   <description>eXo JCR Jonas Applications Server</description>
    
    <properties>
      <enforcer.skip>true</enforcer.skip>
@@ -52,7 +52,13 @@
       </dependency>
    </dependencies>
 
-   <build>
+   <profiles>
+   <profile>
+      <id>deploy</id>
+      <activation>
+         <activeByDefault>false</activeByDefault> 
+      </activation>
+      <build>
       <plugins>
          <plugin>
             <artifactId>maven-assembly-plugin</artifactId>
@@ -74,6 +80,14 @@
          </plugin>
          <plugin>
             <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+               <execution>
+                  <phase>install</phase>
+                  <goals>
+                     <goal>run</goal>
+                  </goals>
+               </execution>
+            </executions>
             <configuration>
                <tasks>
                   <!--copying the AS-->
@@ -119,5 +133,7 @@
          </plugin>
       </plugins>
    </build>
+    </profile>
+   </profiles>
 
 </project>
