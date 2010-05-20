@@ -194,15 +194,20 @@ public class JobRepositoryRestore extends Thread
       catch (InvalidItemStateException e)
       {
          restored = false;
-         throw new RepositoryRestoreExeption("The repository '" + "/" + repositoryEntry.getName() + "/"
-            + currennWorkspaceName + "' can not be restored! There was database error!", e);
+         
+         log.error("Can not restore workspace \""  + currennWorkspaceName + " in repository \"" + repositoryEntry.getName() + "\".", e);
+         
+         throw new RepositoryRestoreExeption("Can not restore workspace \""  + currennWorkspaceName + " in repository \"" + repositoryEntry.getName() + "\"."
+            + " There was database error.", e);
 
       }
       catch (Throwable t)
       {
          restored = false;
-         throw new RepositoryRestoreExeption("The repository '" + "/" + repositoryEntry.getName() + "/"
-            + currennWorkspaceName + "' can not be restored!", t);
+         
+         log.error("Can not restore workspace \""  + currennWorkspaceName + " in repository \"" + repositoryEntry.getName() + "\".", t);
+         
+         throw new RepositoryRestoreExeption("Can not restore workspace \""  + currennWorkspaceName + " in repository \"" + repositoryEntry.getName() + "\".", t);
 
       }
       finally
@@ -231,7 +236,7 @@ public class JobRepositoryRestore extends Thread
             }
             catch (Throwable thr)
             {
-               log.error("The partly restored repository '" + "/" + repositoryEntry.getName() + "' can not be removed!", thr);
+               log.error("The partly restored repository \"" + repositoryEntry.getName() + "\" can not be removed.", thr);
             }
          }
       }
