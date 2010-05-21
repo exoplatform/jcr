@@ -41,8 +41,8 @@
       <module>exo.jcr.applications.fckeditor</module>
       <module>exo.jcr.applications.rest</module>
       <module>exo.jcr.ear</module>      
-      <module>product-exo-jcr-as-jboss-ear.xml</module>
-      <module>product-exo-jcr-as-jonas-ear.xml</module>
-      <module>product-exo-jcr-as-tomcat6.xml</module>
+      <module>exo.jcr.applications.jboss</module>
+      <module>exo.jcr.applications.jonas</module>
+      <module>exo.jcr.applications.tomcat</module>
    </modules>
 </project>
