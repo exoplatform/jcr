@@ -70,7 +70,7 @@
             </executions>
             <configuration>
                <descriptors>
-                  <descriptor>product-exo-jcr-as-descriptor.xml</descriptor>
+                  <descriptor>../product-exo-jcr-as-descriptor.xml</descriptor>
                </descriptors>
                <finalName>lib</finalName>
                <ignoreDirFormatExtensions>false</ignoreDirFormatExtensions>
@@ -102,8 +102,10 @@
                      <fileset dir="${basedir}/target/lib-binary.dir/" excludes="**/*.war" />
                   </copy>
                   <copy todir="${exo.projects.directory.working}/exo-tomcat/" verbose="true" overwrite="true">
-                     <fileset dir="${basedir}/product-patches/as/tomcat/" />
+                     <fileset dir="${basedir}/../product-patches/as/tomcat/" />
                   </copy>
+                  <chmod dir="${exo.projects.directory.working}/exo-tomcat/bin" perm="+x" includes="*.sh"/>
+
                   <move todir="${basedir}/target/lib-binary.dir/">
                      <fileset dir="${basedir}/target/lib-binary.dir/">
                         <include name="**/*.war" />

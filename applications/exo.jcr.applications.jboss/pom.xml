@@ -72,7 +72,7 @@
             </executions>
             <configuration>
                <descriptors>
-                  <descriptor>product-exo-jcr-as-descriptor.xml</descriptor>
+                  <descriptor>../product-exo-jcr-as-descriptor.xml</descriptor>
                </descriptors>
                <finalName>lib</finalName>
                <ignoreDirFormatExtensions>false</ignoreDirFormatExtensions>
@@ -95,6 +95,8 @@
                   <copy todir="${exo.projects.directory.working}/exo-jboss" verbose="false" overwrite="true">
                      <fileset dir="${exo.projects.directory.dependencies}/${exo.projects.app.jboss.version}" />
                   </copy>
+                  <chmod dir="${exo.projects.directory.working}/exo-jboss/bin" perm="+x"   includes="*.sh"/>
+
                   <!--renaming ear-->
                   <move todir="${basedir}/target/lib-binary.dir/">
                      <fileset dir="${basedir}/target/lib-binary.dir/">
@@ -113,19 +115,11 @@
                   </copy>
                   <!--copying exo-configuration.xml-->
                   <copy todir="${exo.projects.directory.working}/exo-jboss/" verbose="true" overwrite="true">
-                     <fileset dir="${basedir}/product-patches/as/jboss/" includes="*.xml" />
+                     <fileset dir="${basedir}/../product-patches/as/jboss/" includes="*.xml" />
                   </copy>
                   <copy todir="${exo.projects.directory.working}/exo-jboss/server/default/conf/" verbose="true" overwrite="true">
-                     <fileset dir="${basedir}/product-patches/as/jboss/exoplatform.sar/META-INF/" includes="login*.xml" />
+                     <fileset dir="${basedir}/../product-patches/as/jboss/exoplatform.sar/META-INF/" includes="login*.xml" />
                   </copy>
-                  <!-- we don't need it for JBossAS 5.1 -->  
-                  <!-- delete file="${exo.projects.directory.working}/exo-jboss/server/default/lib/hsqldb.jar" />
-                  <copy todir="${exo.projects.directory.working}/exo-jboss/server/default/lib/">
-                     <fileset dir="${basedir}/target/lib-binary.dir/">
-                        <include name="**/hsqldb*.jar" />
-                     </fileset>
-                  </copy
--->
                </tasks>
             </configuration>
          </plugin>
