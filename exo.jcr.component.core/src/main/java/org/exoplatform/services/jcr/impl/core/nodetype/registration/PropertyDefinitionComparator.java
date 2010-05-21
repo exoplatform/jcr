@@ -335,8 +335,7 @@ public class PropertyDefinitionComparator extends AbstractDefinitionComparator<P
       }
    }
 
-   private void checkValueConstraints(PropertyDefinitionData def, PropertyData propertyData)
-      throws ConstraintViolationException, RepositoryException
+   private void checkValueConstraints(PropertyDefinitionData def, PropertyData propertyData) throws RepositoryException
    {
 
       ValueConstraintsMatcher constraints =

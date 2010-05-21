@@ -337,8 +337,7 @@ public class PropertyImpl extends ItemImpl implements Property
 
       return new PropertyDefinitionImpl(propertyDef, session.getWorkspace().getNodeTypesHolder(),
          (ExtendedNodeTypeManager)session.getWorkspace().getNodeTypeManager(), session.getSystemLocationFactory(),
-         session.getValueFactory());
-
+         session.getValueFactory(), session.getTransientNodesManager());
    }
 
    /**

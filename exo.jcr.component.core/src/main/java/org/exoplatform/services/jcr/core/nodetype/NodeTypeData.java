@@ -25,16 +25,11 @@ import javax.jcr.RepositoryException;
 
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@exoplatform.org">Sergey Kabashnyuk</a>
- * @version $Id: exo-jboss-codetemplates.xml 34360 2009-07-22 23:58:59Z ksm $
+ * @version $Id$
  *
  */
 public interface NodeTypeData
 {
-
-//   /**
-//    * @return the isAbstract
-//    */
-//   public boolean isAbstract();
 
    /**
     * 
@@ -91,13 +86,4 @@ public interface NodeTypeData
     * @throws NodeTypeReadException
     */
    public boolean isMixin();
-
-//   /**
-//    * 
-//    * @return
-//    * @throws RepositoryException
-//    * @throws NodeTypeReadException
-//    */
-//   public boolean isQueryable();
-
 }

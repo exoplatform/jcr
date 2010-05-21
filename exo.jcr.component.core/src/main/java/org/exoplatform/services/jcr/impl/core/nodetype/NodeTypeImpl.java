@@ -24,10 +24,12 @@ import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionData;
 import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionDatas;
+import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
-import org.exoplatform.services.jcr.impl.core.nodetype.registration.NodeTypeReadException;
+import org.exoplatform.services.jcr.impl.core.value.BaseValue;
+import org.exoplatform.services.jcr.impl.core.value.ValueConstraintsMatcher;
 import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -66,19 +68,20 @@ public class NodeTypeImpl extends NodeTypeDefinitionImpl implements NodeType
    protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.NodeTypeImpl");
 
    /**
-    * @param nodeTypeData
-    * @param nodeTypeDataManager
-    * @param nodeTypeManager
-    * @param locationFactory
-    * @param valueFactory
-    * @throws RepositoryException 
-    * @throws NodeTypeReadException 
+    * NodeTypeImpl contructor.
+    * 
+    * @param nodeTypeData NodeTypeData
+    * @param nodeTypeDataManager NodeTypeDataManager
+    * @param nodeTypeManager ExtendedNodeTypeManager
+    * @param locationFactory LocationFactory
+    * @param valueFactory ValueFactory
+    * @param dataManager ItemDataConsumer 
     */
    public NodeTypeImpl(NodeTypeData nodeTypeData, NodeTypeDataManager nodeTypeDataManager,
-      ExtendedNodeTypeManager nodeTypeManager, LocationFactory locationFactory, ValueFactory valueFactory)
+      ExtendedNodeTypeManager nodeTypeManager, LocationFactory locationFactory, ValueFactory valueFactory,
+      ItemDataConsumer dataManager)
    {
-      super(nodeTypeData, nodeTypeDataManager, nodeTypeManager, locationFactory, valueFactory);
-
+      super(nodeTypeData, nodeTypeDataManager, nodeTypeManager, locationFactory, valueFactory, dataManager);
    }
 
    /**
@@ -86,7 +89,6 @@ public class NodeTypeImpl extends NodeTypeDefinitionImpl implements NodeType
     */
    public boolean canAddChildNode(String childNodeName)
    {
-
       try
       {
          InternalQName cname = locationFactory.parseJCRName(childNodeName).getInternalName();
@@ -169,14 +171,20 @@ public class NodeTypeImpl extends NodeTypeDefinitionImpl implements NodeType
             if (pd != null)
             {
                if (pd.isProtected())
+               {
                   // can set (edit)
                   return false;
+               }
                else if (value != null)
+               {
                   // can set (add or edit)
                   return canSetPropertyForType(pd.getRequiredType(), value, pd.getValueConstraints());
+               }
                else
+               {
                   // can remove
                   return !pd.isMandatory();
+               }
             }
          }
          return false;
@@ -202,8 +210,10 @@ public class NodeTypeImpl extends NodeTypeDefinitionImpl implements NodeType
          if (pd != null)
          {
             if (pd.isProtected())
+            {
                // can set (edit)
                return false;
+            }
             else if (values != null)
             {
                // can set (add or edit)
@@ -211,16 +221,22 @@ public class NodeTypeImpl extends NodeTypeDefinitionImpl implements NodeType
                for (Value value : values)
                {
                   if (canSetPropertyForType(pd.getRequiredType(), value, pd.getValueConstraints()))
+                  {
                      res++;
+                  }
                }
                return res == values.length;
             }
             else
+            {
                // can remove
                return !pd.isMandatory();
+            }
          }
          else
+         {
             return false;
+         }
       }
       catch (RepositoryException e)
       {
@@ -240,7 +256,9 @@ public class NodeTypeImpl extends NodeTypeDefinitionImpl implements NodeType
       for (int i = 0; i < nodeDefs.length; i++)
       {
          NodeDefinitionData cnd = nodeDefs[i];
-         ndefs[i] = new NodeDefinitionImpl(cnd, nodeTypeDataManager, nodeTypeManager, locationFactory, valueFactory);
+         ndefs[i] =
+            new NodeDefinitionImpl(cnd, nodeTypeDataManager, nodeTypeManager, locationFactory, valueFactory,
+               dataManager);
       }
 
       return ndefs;
@@ -256,7 +274,9 @@ public class NodeTypeImpl extends NodeTypeDefinitionImpl implements NodeType
       for (int i = 0; i < cndefs.length; i++)
       {
          NodeDefinitionData cnd = cndefs[i];
-         ndefs[i] = new NodeDefinitionImpl(cnd, nodeTypeDataManager, nodeTypeManager, locationFactory, valueFactory);
+         ndefs[i] =
+            new NodeDefinitionImpl(cnd, nodeTypeDataManager, nodeTypeManager, locationFactory, valueFactory,
+               dataManager);
       }
 
       return ndefs;
@@ -281,7 +301,8 @@ public class NodeTypeImpl extends NodeTypeDefinitionImpl implements NodeType
       {
          NodeTypeData superNodeTypeData = nodeTypeDataManager.getNodeType(snames[i]);
          supers[i] =
-            new NodeTypeImpl(superNodeTypeData, nodeTypeDataManager, nodeTypeManager, locationFactory, valueFactory);
+            new NodeTypeImpl(superNodeTypeData, nodeTypeDataManager, nodeTypeManager, locationFactory, valueFactory,
+               dataManager);
       }
 
       return supers;
@@ -421,35 +442,35 @@ public class NodeTypeImpl extends NodeTypeDefinitionImpl implements NodeType
     * 
     * @param requiredType - type.
     * @param value - value.
-    * @param constrains - constrains.
+    * @param constraints - constraints.
     * @return a boolean.
     */
-   private boolean canSetPropertyForType(int requiredType, Value value, String[] constrains)
+   private boolean canSetPropertyForType(int requiredType, Value value, String[] constraints)
    {
 
       if (requiredType == value.getType())
       {
-         return checkValueConstraints(constrains, value);
+         return checkValueConstraints(requiredType, constraints, value);
       }
       else if (requiredType == PropertyType.BINARY
          && (value.getType() == PropertyType.STRING || value.getType() == PropertyType.DATE
             || value.getType() == PropertyType.LONG || value.getType() == PropertyType.DOUBLE
             || value.getType() == PropertyType.NAME || value.getType() == PropertyType.PATH || value.getType() == PropertyType.BOOLEAN))
       {
-         return checkValueConstraints(constrains, value);
+         return checkValueConstraints(requiredType, constraints, value);
       }
       else if (requiredType == PropertyType.BOOLEAN)
       {
          if (value.getType() == PropertyType.STRING)
          {
-            return checkValueConstraints(constrains, value);
+            return checkValueConstraints(requiredType, constraints, value);
          }
          else if (value.getType() == PropertyType.BINARY)
          {
             try
             {
                return isCharsetString(value.getString(), Constants.DEFAULT_ENCODING)
-                  && checkValueConstraints(constrains, value);
+                  && checkValueConstraints(requiredType, constraints, value);
             }
             catch (Exception e)
             {
@@ -477,7 +498,7 @@ public class NodeTypeImpl extends NodeTypeDefinitionImpl implements NodeType
             }
             else if (value.getType() == PropertyType.DOUBLE || value.getType() == PropertyType.LONG)
             {
-               return checkValueConstraints(constrains, value);
+               return checkValueConstraints(requiredType, constraints, value);
             }
             else
             {
@@ -486,7 +507,7 @@ public class NodeTypeImpl extends NodeTypeDefinitionImpl implements NodeType
             // try parse...
             JCRDateFormat.parse(likeDataString);
             // validate
-            return checkValueConstraints(constrains, value);
+            return checkValueConstraints(requiredType, constraints, value);
          }
          catch (Exception e)
          {
@@ -513,14 +534,14 @@ public class NodeTypeImpl extends NodeTypeDefinitionImpl implements NodeType
             }
             else if (value.getType() == PropertyType.LONG)
             {
-               return checkValueConstraints(constrains, value);
+               return checkValueConstraints(requiredType, constraints, value);
             }
             else
             {
                return false;
             }
             Double doubleValue = new Double(likeDoubleString);
-            return doubleValue != null && checkValueConstraints(constrains, value);
+            return doubleValue != null && checkValueConstraints(requiredType, constraints, value);
          }
          catch (Exception e)
          {
@@ -554,7 +575,7 @@ public class NodeTypeImpl extends NodeTypeDefinitionImpl implements NodeType
                return false;
             }
             Long longValue = new Long(likeLongString);
-            return longValue != null && checkValueConstraints(constrains, value);
+            return longValue != null && checkValueConstraints(requiredType, constraints, value);
          }
          catch (Exception e)
          {
@@ -591,11 +612,11 @@ public class NodeTypeImpl extends NodeTypeDefinitionImpl implements NodeType
                   // Path is relative
                   // TRUE if it is one element long
                   // and has no index
-                  return checkValueConstraints(constrains, value);
+                  return checkValueConstraints(requiredType, constraints, value);
                }
                else if (pathString.startsWith("/") && pathString.lastIndexOf("/") < 1 && pathString.indexOf("[") < 0)
                {
-                  return checkValueConstraints(constrains, value);
+                  return checkValueConstraints(requiredType, constraints, value);
                }
                else
                {
@@ -609,7 +630,7 @@ public class NodeTypeImpl extends NodeTypeDefinitionImpl implements NodeType
             try
             {
                Value nameValue = valueFactory.createValue(likeNameString, requiredType);
-               return nameValue != null && checkValueConstraints(constrains, value);
+               return nameValue != null && checkValueConstraints(requiredType, constraints, value);
             }
             catch (Exception e)
             {
@@ -636,7 +657,7 @@ public class NodeTypeImpl extends NodeTypeDefinitionImpl implements NodeType
             }
             else if (value.getType() == PropertyType.NAME)
             {
-               return checkValueConstraints(constrains, value);
+               return checkValueConstraints(requiredType, constraints, value);
             }
             else
             {
@@ -645,7 +666,7 @@ public class NodeTypeImpl extends NodeTypeDefinitionImpl implements NodeType
             try
             {
                Value nameValue = valueFactory.createValue(likeNameString, requiredType);
-               return nameValue != null && checkValueConstraints(constrains, value);
+               return nameValue != null && checkValueConstraints(requiredType, constraints, value);
             }
             catch (Exception e)
             {
@@ -676,7 +697,7 @@ public class NodeTypeImpl extends NodeTypeDefinitionImpl implements NodeType
             {
                return false;
             }
-            return likeStringString != null && checkValueConstraints(constrains, value);
+            return likeStringString != null && checkValueConstraints(requiredType, constraints, value);
          }
          catch (Exception e)
          {
@@ -685,7 +706,7 @@ public class NodeTypeImpl extends NodeTypeDefinitionImpl implements NodeType
       }
       else if (requiredType == PropertyType.UNDEFINED)
       {
-         return checkValueConstraints(constrains, value);
+         return checkValueConstraints(requiredType, constraints, value);
       }
       else
       {
@@ -696,34 +717,47 @@ public class NodeTypeImpl extends NodeTypeDefinitionImpl implements NodeType
    /**
    * Check value constrains.
    * 
+   * @param requiredType int
    * @param constraints - string constrains.
    * @param value - value to check.
    * @return result of check.
    */
-   private boolean checkValueConstraints(String[] constraints, Value value)
+   private boolean checkValueConstraints(int requiredType, String[] constraints, Value value)
    {
+      ValueConstraintsMatcher constrMatcher =
+         new ValueConstraintsMatcher(constraints, locationFactory, dataManager, nodeTypeDataManager);
 
-      if (constraints != null && constraints.length > 0)
+      try
       {
-         for (int i = 0; i < constraints.length; i++)
-         {
-            try
-            {
-               if (constraints[i].equals(value.getString()))
-               {
-                  return true;
-               }
-            }
-            catch (RepositoryException e)
-            {
-               LOG.error("Can't get value's string value " + e, e);
-            }
-         }
+         return constrMatcher.match(((BaseValue)value).getInternalData(), requiredType);
       }
-      else
-         return true;
+      catch (RepositoryException e1)
+      {
+         return false;
+      }
 
-      return false;
+      // TODO old code
+      //      if (constraints != null && constraints.length > 0)
+      //      {
+      //         for (int i = 0; i < constraints.length; i++)
+      //         {
+      //            try
+      //            {
+      //               if (constraints[i].equals(value.getString()))
+      //               {
+      //                  return true;
+      //               }
+      //            }
+      //            catch (RepositoryException e)
+      //            {
+      //               LOG.error("Can't get value's string value " + e, e);
+      //            }
+      //         }
+      //      }
+      //      else
+      //         return true;
+      //
+      //      return false;
    }
 
    private String getCharsetString(String source, String charSetName)
@@ -764,7 +798,8 @@ public class NodeTypeImpl extends NodeTypeDefinitionImpl implements NodeType
       for (int i = 0; i < pdefs.length; i++)
       {
          propertyDefinitions[i] =
-            new PropertyDefinitionImpl(pdefs[i], nodeTypeDataManager, nodeTypeManager, locationFactory, valueFactory);
+            new PropertyDefinitionImpl(pdefs[i], nodeTypeDataManager, nodeTypeManager, locationFactory, valueFactory,
+               dataManager);
       }
       return propertyDefinitions;
    }
@@ -780,31 +815,5 @@ public class NodeTypeImpl extends NodeTypeDefinitionImpl implements NodeType
       {
          return false;
       }
-   }
-
-   /**
-    * @param nodeTypeData
-    * @return
-    * @throws NoSuchNodeTypeException
-    * @throws RepositoryException
-    */
-   private NodeDefinition makeNodeDefinition(NodeDefinitionData nodeTypeData) throws NoSuchNodeTypeException,
-      RepositoryException
-   {
-      InternalQName[] rnames = nodeTypeData.getRequiredPrimaryTypes();
-      NodeType[] rnts = new NodeType[rnames.length];
-      for (int j = 0; j < rnames.length; j++)
-      {
-         rnts[j] = nodeTypeManager.findNodeType(rnames[j]);
-      }
-
-      String name =
-         locationFactory
-            .createJCRName(nodeTypeData.getName() != null ? nodeTypeData.getName() : Constants.JCR_ANY_NAME)
-            .getAsString();
-      NodeType defType =
-         nodeTypeData.getDefaultPrimaryType() != null ? nodeTypeManager.findNodeType(nodeTypeData
-            .getDefaultPrimaryType()) : null;
-      return new NodeDefinitionImpl(nodeTypeData, nodeTypeDataManager, nodeTypeManager, locationFactory, valueFactory);
    }
 }

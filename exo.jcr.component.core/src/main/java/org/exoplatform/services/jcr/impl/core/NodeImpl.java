@@ -788,7 +788,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
                      new InternalQName[]{requiredName}, null, true);
                this.nodeDefinition =
                   new NodeDefinitionImpl(ntData, nodeTypesHolder, nodeTypeManager, sysLocFactory, session
-                     .getValueFactory());
+                     .getValueFactory(), session.getTransientNodesManager());
             }
          }
          else
@@ -815,7 +815,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
             nodeDefinition =
                new NodeDefinitionImpl(definition, nodeTypesHolder, nodeTypeManager, sysLocFactory, session
-                  .getValueFactory());
+                  .getValueFactory(), session.getTransientNodesManager());
          }
       }
 
@@ -1935,9 +1935,9 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public void setPermissions(Map permissions) throws RepositoryException, AccessDeniedException,
       AccessControlException
    {
-      
+
       checkValid();
-      
+
       if (!isNodeType(Constants.EXO_PRIVILEGEABLE))
       {
          throw new AccessControlException("Node is not exo:privilegeable " + getPath());
@@ -1967,7 +1967,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
             aces.add(ace);
          }
       }
-      
+
       AccessControlList acl = new AccessControlList(getACL().getOwner(), aces);
       setACL(acl);
       updatePermissions(acl);

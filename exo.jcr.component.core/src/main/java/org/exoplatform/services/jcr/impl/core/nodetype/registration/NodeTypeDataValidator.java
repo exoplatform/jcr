@@ -20,37 +20,97 @@ package org.exoplatform.services.jcr.impl.core.nodetype.registration;
 
 import org.exoplatform.services.jcr.core.nodetype.NodeDefinitionData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
+import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionData;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeRepository;
+import org.exoplatform.services.jcr.impl.core.value.ValueConstraintsValidator;
+import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.io.InputStream;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
+import javax.jcr.Value;
+import javax.jcr.ValueFormatException;
 
 /**
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
- * @version $Id: $
+ * @version $Id$
  */
 public class NodeTypeDataValidator
 {
    /**
     * Class logger.
     */
-   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.NodeTypeDataValidator");
+   private final static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.NodeTypeDataValidator");
 
    protected final NodeTypeRepository hierarchy;
 
-   public NodeTypeDataValidator(NodeTypeRepository hierarchy)
+   protected final ValueFactoryImpl valueFactory;
+   
+   protected class ValidatorValueFactory extends ValueFactoryImpl
    {
-      super();
+      ValidatorValueFactory(LocationFactory locationFactory)
+      {
+         super(locationFactory);
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      public Value createValue(String value, int type) throws ValueFormatException
+      {
+         if (type == PropertyType.BINARY)
+         {
+            LOG.warn("Not supported Value type: BINARY");
+            return null;
+         }
+
+         return super.createValue(value, type);
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      public Value createValue(InputStream value)
+      {
+         LOG.warn("Not supported Value type: BINARY");
+         return null;
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      @Override
+      public Value loadValue(ValueData data, int type) throws RepositoryException
+      {
+         if (type == PropertyType.BINARY)
+         {
+            LOG.warn("Not supported Value type: BINARY");
+            return null;
+         }
+
+         return super.loadValue(data, type);
+      }
+   }
+
+   public NodeTypeDataValidator(LocationFactory locationFactory, NodeTypeRepository hierarchy)
+   {
       this.hierarchy = hierarchy;
+
+      this.valueFactory = new ValidatorValueFactory(locationFactory); 
    }
 
    public void validateNodeType(List<NodeTypeData> nodeTypeDataList) throws RepositoryException
@@ -100,7 +160,6 @@ public class NodeTypeDataValidator
                   && !resolvedDependecies.contains(childnodeDefinitionData.getDefaultPrimaryType()))
                {
                   unresolvedDependecies.add(childnodeDefinitionData.getDefaultPrimaryType());
-
                }
             }
          }
@@ -133,36 +192,77 @@ public class NodeTypeDataValidator
          throw new RepositoryException("NodeType object " + nodeType + " is null");
       }
 
-      for (int i = 0; i < nodeType.getDeclaredSupertypeNames().length; i++)
-      {
-         if (!nodeType.getName().equals(Constants.NT_BASE)
-            && nodeType.getName().equals(nodeType.getDeclaredSupertypeNames()[i]))
-         {
-            throw new RepositoryException("Invalid super type name"
-               + nodeType.getDeclaredSupertypeNames()[i].getAsString());
-         }
-      }
-      for (int i = 0; i < nodeType.getDeclaredPropertyDefinitions().length; i++)
-      {
-         if (!nodeType.getDeclaredPropertyDefinitions()[i].getDeclaringNodeType().equals(nodeType.getName()))
-         {
-            throw new RepositoryException("Invalid declared  node type in property definitions with name "
-               + nodeType.getDeclaredPropertyDefinitions()[i].getName().getAsString() + " not registred");
-         }
-      }
-      for (int i = 0; i < nodeType.getDeclaredChildNodeDefinitions().length; i++)
-      {
-         if (!nodeType.getDeclaredChildNodeDefinitions()[i].getDeclaringNodeType().equals(nodeType.getName()))
-         {
-            throw new RepositoryException("Invalid declared  node type in child node definitions with name "
-               + nodeType.getDeclaredChildNodeDefinitions()[i].getName().getAsString() + " not registred");
-         }
-      }
-
       if (nodeType.getName() == null)
       {
          throw new RepositoryException("NodeType implementation class " + nodeType.getClass().getName()
             + " is not supported in this method");
       }
+
+      for (InternalQName sname : nodeType.getDeclaredSupertypeNames())
+      {
+         if (!nodeType.getName().equals(Constants.NT_BASE) && nodeType.getName().equals(sname))
+         {
+            throw new RepositoryException("Invalid super type name" + sname.getAsString());
+         }
+      }
+
+      for (PropertyDefinitionData pdef : nodeType.getDeclaredPropertyDefinitions())
+      {
+         if (!pdef.getDeclaringNodeType().equals(nodeType.getName()))
+         {
+            throw new RepositoryException("Invalid declared node type in property definitions with name "
+               + pdef.getName().getAsString() + " not registred");
+         }
+         
+         // validate default values
+         try
+         {
+            validateValueDefaults(pdef.getRequiredType(), pdef.getDefaultValues());
+         }
+         catch (ValueFormatException e)
+         {
+            throw new ValueFormatException("Default value is incompatible with Property type "
+               + PropertyType.nameFromValue(pdef.getRequiredType()) + " of " + pdef.getName().getAsString()
+               + " in nodetype " + nodeType.getName().getAsString(), e);
+         }
+         
+         // TODO validate constraints, we have issue with TCK nodetype tests:canSetProperty
+         try
+         {
+            validateValueConstraints(pdef.getRequiredType(), pdef.getValueConstraints());
+         }
+         catch (ValueFormatException e)
+         {
+            throw new ValueFormatException("Constraints is incompatible with Property type "
+               + PropertyType.nameFromValue(pdef.getRequiredType()) + " of " + pdef.getName().getAsString()
+               + " in nodetype " + nodeType.getName().getAsString(), e);
+         }
+      }
+
+      for (NodeDefinitionData cndef : nodeType.getDeclaredChildNodeDefinitions())
+      {
+         if (!cndef.getDeclaringNodeType().equals(nodeType.getName()))
+         {
+            throw new RepositoryException("Invalid declared node type in child node definitions with name "
+               + cndef.getName().getAsString() + " not registred");
+         }
+      }
+   }
+
+   private void validateValueDefaults(int requiredType, String[] defValues) throws ValueFormatException
+   {
+      if (requiredType != PropertyType.STRING && requiredType != PropertyType.UNDEFINED && requiredType != PropertyType.BINARY)
+      {
+         for (String dv : defValues)
+         {
+            valueFactory.createValue(dv, requiredType);
+         }
+      }
+   }
+   
+   private void validateValueConstraints(int requiredType, String[] constraints) throws ValueFormatException
+   {
+      ValueConstraintsValidator validator = new ValueConstraintsValidator(constraints);
+      validator.validateFor(requiredType);
    }
 }

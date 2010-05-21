@@ -74,7 +74,7 @@ import javax.jcr.version.VersionException;
  * Created by The eXo Platform SAS.
  * 
  * @author Gennady Azarenkov
- * @version $Id: ItemImpl.java 14590 2008-05-22 08:51:29Z pnedonosko $
+ * @version $Id$
  */
 public abstract class ItemImpl implements Item
 {
@@ -459,7 +459,9 @@ public abstract class ItemImpl implements Item
       }
 
       if (defs == null || defs.getAnyDefinition() == null)
+      {
          throw new RepositoryException("Property definition '" + propertyName.getAsString() + "' is not found.");
+      }
 
       PropertyDefinitionData def = defs.getDefinition(isMultiValue);
       if (def != null && def.isProtected())
@@ -941,9 +943,8 @@ public abstract class ItemImpl implements Item
    }
 
    private void checkValueConstraints(PropertyDefinitionData def, List<ValueData> newValues, int type)
-      throws ConstraintViolationException, RepositoryException
+      throws RepositoryException
    {
-
       ValueConstraintsMatcher constraints =
          new ValueConstraintsMatcher(def.getValueConstraints(), session.getLocationFactory(), session
             .getTransientNodesManager(), session.getWorkspace().getNodeTypesHolder());

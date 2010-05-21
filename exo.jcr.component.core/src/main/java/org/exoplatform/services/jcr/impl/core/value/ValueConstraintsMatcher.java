@@ -39,24 +39,17 @@ import javax.jcr.ItemNotFoundException;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.ValueFormatException;
-import javax.jcr.nodetype.ConstraintViolationException;
 
 /**
- * Created by The eXo Platform SAS Author : Peter Nedonosko
- * peter.nedonosko@exoplatform.com.ua 13.09.2006
+ * Created by The eXo Platform SAS.
  * 
- * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter
- *         Nedonosko</a>
- * @version $Id: ValueConstraintsMatcher.java 12171 2008-03-20 15:37:28Z ksm $
+ * @author <a href="mailto:peter.nedonosko@exoplatform.com">Peter Nedonosko</a>
+ * @version $Id$
  */
-public class ValueConstraintsMatcher
+public class ValueConstraintsMatcher extends ValueConstraintsValidator
 {
 
-   protected static Log log = ExoLogger.getLogger("exo.jcr.component.core.ValueConstraintsMatcher");
-
-   protected final static String DEFAULT_THRESHOLD = "";
-
-   private final String[] constraints;
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.ValueConstraintsMatcher");
 
    private final LocationFactory locator;
 
@@ -67,24 +60,32 @@ public class ValueConstraintsMatcher
    public ValueConstraintsMatcher(String[] constraints, LocationFactory locator, ItemDataConsumer itemDataConsumer,
       NodeTypeDataManager nodeTypeDataManager)
    {
-      this.constraints = constraints;
+      super(constraints);
       this.locator = locator;
       this.itemDataConsumer = itemDataConsumer;
       this.nodeTypeDataManager = nodeTypeDataManager;
-
    }
 
-   public boolean match(ValueData value, int type) throws ConstraintViolationException, IllegalStateException,
-      RepositoryException
+   /**
+    * Check given value on compatibility with a given type.  
+    * 
+    * @param value ValueData
+    * @param type int, property type
+    * @return boolean true if the value matches the type, false otherwise
+    * @throws RepositoryException if gathering of match conditions meets errors (IOException or ItemNotFoundException)
+    */
+   public boolean match(ValueData value, int type) throws RepositoryException
    {
 
       if (constraints == null || constraints.length <= 0)
+      {
          return true;
+      }
 
       boolean invalid = true;
 
       // do not use getString because of string consuming
-      ValueData valueData = (ValueData)value;
+      ValueData valueData = value;
       if (type == PropertyType.STRING)
       {
          try
@@ -112,7 +113,6 @@ public class ValueConstraintsMatcher
       }
       else if (type == PropertyType.NAME)
       {
-
          NameValue nameVal;
          try
          {
@@ -131,11 +131,9 @@ public class ValueConstraintsMatcher
                invalid = false;
             }
          }
-
       }
       else if (type == PropertyType.PATH)
       {
-
          PathValue pathVal;
          try
          {
@@ -147,24 +145,18 @@ public class ValueConstraintsMatcher
          }
          for (int i = 0; invalid && i < constraints.length; i++)
          {
-            String constrString = constraints[i];
-
-            JCRPathMatcher constrPath = parsePathMatcher(locator, constrString);
+            JCRPathMatcher constrPath = parsePathMatcher(locator, constraints[i]);
             if (constrPath.match(pathVal.getQPath()))
             {
                invalid = false;
             }
          }
-
       }
       else if (type == PropertyType.REFERENCE)
       {
-
          try
          {
             ReferenceValue refVal = new ReferenceValue(valueData);
-            // NodeImpl refNode = (NodeImpl)
-            // session.getNodeByUUID(refVal.getIdentifier().getString());
             NodeData refNode = (NodeData)itemDataConsumer.getItemData(refVal.getIdentifier().getString());
             for (int i = 0; invalid && i < constraints.length; i++)
             {
@@ -179,8 +171,10 @@ public class ValueConstraintsMatcher
          }
          catch (ItemNotFoundException e)
          {
-            if (log.isDebugEnabled())
-               log.debug("Reference constraint node is not found: " + e.getMessage());
+            if (LOG.isDebugEnabled())
+            {
+               LOG.debug("Reference constraint node is not found: " + e.getMessage());
+            }
             // But if it's a versionHisroy ref property for add mix:versionable...
             // we haven't a versionHisroy created until save method will be called
             // on this
@@ -190,21 +184,19 @@ public class ValueConstraintsMatcher
          }
          catch (RepositoryException e)
          {
-            log.error("Reference constraint error: " + e.getMessage(), e);
+            LOG.error("Reference constraint error: " + e.getMessage(), e);
             // [PN] Posible trouble is session.getNodeByUUID() call result,
             // till bug can be found in version restore operation.
             invalid = true;
          }
          catch (IOException e)
          {
-            log.error("Reference constraint error: " + e.getMessage(), e);
+            LOG.error("Reference constraint error: " + e.getMessage(), e);
             invalid = true;
          }
-
       }
       else if (type == PropertyType.BINARY)
       {
-
          long valueLength = valueData.getLength();
          for (int i = 0; invalid && i < constraints.length; i++)
          {
@@ -221,12 +213,16 @@ public class ValueConstraintsMatcher
             if (constraint.getMin().isExclusive())
             {
                if (valueLength > min)
+               {
                   minInvalid = false;
+               }
             }
             else
             {
                if (valueLength >= min)
+               {
                   minInvalid = false;
+               }
             }
 
             long max =
@@ -244,11 +240,9 @@ public class ValueConstraintsMatcher
             }
             invalid = maxInvalid | minInvalid;
          }
-
       }
       else if (type == PropertyType.DATE)
       {
-
          Calendar valueCalendar;
          try
          {
@@ -260,13 +254,10 @@ public class ValueConstraintsMatcher
          }
          for (int i = 0; invalid && i < constraints.length; i++)
          {
-            String constrString = constraints[i];
-
             boolean minInvalid = true;
             boolean maxInvalid = true;
 
-            MinMaxConstraint constraint = parseAsMinMax(constrString);
-
+            MinMaxConstraint constraint = parseAsMinMax(constraints[i]);
             try
             {
                if (constraint.getMin().getThreshold().length() > 0)
@@ -275,16 +266,22 @@ public class ValueConstraintsMatcher
                   if (constraint.getMin().isExclusive())
                   {
                      if (valueCalendar.compareTo(min) > 0)
+                     {
                         minInvalid = false;
+                     }
                   }
                   else
                   {
                      if (valueCalendar.compareTo(min) >= 0)
+                     {
                         minInvalid = false;
+                     }
                   }
                }
                else
+               {
                   minInvalid = false;
+               }
             }
             catch (ValueFormatException e)
             {
@@ -308,7 +305,9 @@ public class ValueConstraintsMatcher
                   }
                }
                else
+               {
                   maxInvalid = false;
+               }
             }
             catch (ValueFormatException e)
             {
@@ -317,11 +316,9 @@ public class ValueConstraintsMatcher
 
             invalid = maxInvalid | minInvalid;
          }
-
       }
       else if (type == PropertyType.LONG || type == PropertyType.DOUBLE)
       {
-
          // will be compared as double in any case
          Number valueNumber;
          try
@@ -334,12 +331,10 @@ public class ValueConstraintsMatcher
          }
          for (int i = 0; invalid && i < constraints.length; i++)
          {
-            String constrString = constraints[i];
-
             boolean minInvalid = true;
             boolean maxInvalid = true;
 
-            MinMaxConstraint constraint = parseAsMinMax(constrString);
+            MinMaxConstraint constraint = parseAsMinMax(constraints[i]);
 
             Number min =
                constraint.getMin().getThreshold().length() > 0 ? new Double(constraint.getMin().getThreshold())
@@ -347,12 +342,16 @@ public class ValueConstraintsMatcher
             if (constraint.getMin().isExclusive())
             {
                if (valueNumber.doubleValue() > min.doubleValue())
+               {
                   minInvalid = false;
+               }
             }
             else
             {
                if (valueNumber.doubleValue() >= min.doubleValue())
+               {
                   minInvalid = false;
+               }
             }
 
             Number max =
@@ -361,26 +360,43 @@ public class ValueConstraintsMatcher
             if (constraint.getMax().isExclusive())
             {
                if (valueNumber.doubleValue() < max.doubleValue())
+               {
                   maxInvalid = false;
+               }
             }
             else
             {
                if (valueNumber.doubleValue() <= max.doubleValue())
+               {
                   maxInvalid = false;
+               }
             }
             invalid = maxInvalid | minInvalid;
          }
       }
       else if (type == PropertyType.BOOLEAN)
       {
-         // JSR-283, 4.7.17.6 BOOLEAN has no Constraint
-         invalid = false;
+         try
+         {
+            boolean bvalue = Boolean.parseBoolean(new String(valueData.getAsByteArray()));
+            for (int i = 0; invalid && i < constraints.length; i++)
+            {
+               if (Boolean.parseBoolean(constraints[i]) == bvalue)
+               {
+                  invalid = false;
+               }
+            }
+         }
+         catch (IOException e)
+         {
+            throw new RepositoryException("FATAL ERROR Value data stream reading error " + e.getMessage(), e);
+         }
       }
 
       return !invalid;
    }
 
-   JCRPath parsePath(String path, LocationFactory locFactory) throws RepositoryException
+   protected JCRPath parsePath(String path, LocationFactory locFactory) throws RepositoryException
    {
       try
       {
@@ -399,58 +415,14 @@ public class ValueConstraintsMatcher
       }
    }
 
-   protected MinMaxConstraint parseAsMinMax(String constraint) throws ConstraintViolationException
-   {
-
-      // constraint as min,max range:
-      // value constraints in the form of inclusive or exclusive ranges:
-      // i.e., "[min, max]", "(min, max)", "(min, max]" or "[min, max)".
-      // Where "[" and "]" indicate "inclusive", while "(" and ")" indicate
-      // "exclusive".
-      // A missing min or max value indicates no bound in that direction
-
-      String[] parts = constraint.split(",");
-
-      if (parts.length != 2)
-         throw new ConstraintViolationException("Value constraint '" + constraint
-            + "' is invalid accrding the JSR-170 spec.");
-
-      boolean exclusive = false;
-
-      if (parts[0].startsWith("("))
-         exclusive = true;
-      else if (parts[0].startsWith("["))
-         exclusive = false;
-      else
-         throw new ConstraintViolationException("Value constraint '" + constraint
-            + "' min exclusion rule is unefined accrding the JSR-170 spec.");
-
-      ConstraintRange minValue =
-         new ConstraintRange(parts[0].length() > 1 ? parts[0].substring(1) : DEFAULT_THRESHOLD, exclusive);
-
-      if (parts[1].endsWith(")"))
-         exclusive = true;
-      else if (parts[1].endsWith("]"))
-         exclusive = false;
-      else
-         throw new ConstraintViolationException("Value constraint '" + constraint
-            + "' max exclusion rule is unefined accrding the JSR-170 spec.");
-
-      ConstraintRange maxValue =
-         new ConstraintRange(parts[1].length() > 1 ? parts[1].substring(0, parts[1].length() - 1) : DEFAULT_THRESHOLD,
-            exclusive);
-
-      return new MinMaxConstraint(minValue, maxValue);
-   }
-
    /**
-    * Parses JCR path matcher from string
+    * Parses JCR path matcher from string.
     * 
     * @param path
     * @return
     * @throws RepositoryException
     */
-   private JCRPathMatcher parsePathMatcher(LocationFactory locFactory, String path) throws RepositoryException
+   protected JCRPathMatcher parsePathMatcher(LocationFactory locFactory, String path) throws RepositoryException
    {
 
       JCRPath knownPath = null;
@@ -485,69 +457,5 @@ public class ValueConstraintsMatcher
       }
 
       return new JCRPathMatcher(knownPath.getInternalPath(), forDescendants, forAncestors);
-
    }
-
-   public class ConstraintRange
-   {
-
-      private final String value;
-
-      private final boolean exclusive;
-
-      public ConstraintRange(String value)
-      {
-         this.value = value;
-         this.exclusive = false;
-      }
-
-      public ConstraintRange(String value, boolean exclusive)
-      {
-         this.value = value;
-         this.exclusive = exclusive;
-      }
-
-      protected String getThreshold()
-      {
-         return value;
-      }
-
-      protected boolean isExclusive()
-      {
-         return exclusive;
-      }
-   }
-
-   public class MinMaxConstraint
-   {
-
-      private final ConstraintRange minValue;
-
-      private final ConstraintRange maxValue;
-
-      private final ConstraintRange singleValue;
-
-      public MinMaxConstraint(ConstraintRange minValue, ConstraintRange maxValue)
-      {
-         this.minValue = minValue;
-         this.maxValue = maxValue;
-         this.singleValue = null;
-      }
-
-      public ConstraintRange getSingleValue()
-      {
-         return singleValue;
-      }
-
-      protected ConstraintRange getMax()
-      {
-         return maxValue;
-      }
-
-      protected ConstraintRange getMin()
-      {
-         return minValue;
-      }
-   }
-
 }

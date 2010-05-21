@@ -100,6 +100,10 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
 
    protected final NodeTypeRepository nodeTypeRepository;
 
+   protected final NodeTypeConverter nodeTypeConverter;
+
+   protected final NodeTypeDataValidator nodeTypeDataValidator;
+
    /**
     * Listeners (soft references)
     */
@@ -109,37 +113,21 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
 
    private boolean started = false;
 
-   public NodeTypeDataManagerImpl(final RepositoryEntry config, final LocationFactory locationFactory,
-      final NamespaceRegistry namespaceRegistry, final NodeTypeDataPersister persister,
-      final ItemDataConsumer dataManager, final RepositoryIndexSearcherHolder indexSearcherHolder)
-      throws RepositoryException
-   {
-
-      this.namespaceRegistry = namespaceRegistry;
-
-      this.locationFactory = locationFactory;
-      this.dataManager = dataManager;
-      this.indexSearcherHolder = indexSearcherHolder;
-
-      this.valueFactory = new ValueFactoryImpl(locationFactory);
-      this.accessControlPolicy = config.getAccessControl();
-
-      this.nodeTypeRepository = new InmemoryNodeTypeRepository(persister);
-      this.listeners = Collections.synchronizedMap(new WeakHashMap<NodeTypeManagerListener, NodeTypeManagerListener>());
-      this.buildInNodeTypesNames = new HashSet<InternalQName>();
-   }
-
    /**
-    * @param accessControlPolicy
-    * @param locationFactory
-    * @param namespaceRegistry
-    * @param persister
-    * @throws RepositoryException
+    * NodeTypeDataManagerImpl constructor.
+    * 
+    * @param accessControlPolicy String
+    * @param locationFactory LocationFactory
+    * @param namespaceRegistry NamespaceRegistry
+    * @param persister NodeTypeDataPersister
+    * @param dataManager ItemDataConsumer
+    * @param indexSearcherHolder RepositoryIndexSearcherHolder
+    * @param nodeTypeRepository NodeTypeRepository
     */
    public NodeTypeDataManagerImpl(final String accessControlPolicy, final LocationFactory locationFactory,
       final NamespaceRegistry namespaceRegistry, final NodeTypeDataPersister persister,
       final ItemDataConsumer dataManager, final RepositoryIndexSearcherHolder indexSearcherHolder,
-      final NodeTypeRepository nodeTypeRepository) throws RepositoryException
+      final NodeTypeRepository nodeTypeRepository)
    {
 
       this.namespaceRegistry = namespaceRegistry;
@@ -153,6 +141,27 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       this.nodeTypeRepository = nodeTypeRepository;
       this.listeners = Collections.synchronizedMap(new WeakHashMap<NodeTypeManagerListener, NodeTypeManagerListener>());
       this.buildInNodeTypesNames = new HashSet<InternalQName>();
+
+      this.nodeTypeConverter = new NodeTypeConverter(this.locationFactory, this.accessControlPolicy);
+      this.nodeTypeDataValidator = new NodeTypeDataValidator(this.locationFactory, this.nodeTypeRepository);
+   }
+
+   /**
+    * Constructor for in-container use.
+    * 
+    * @param config RepositoryEntry
+    * @param locationFactory LocationFactory
+    * @param namespaceRegistry NamespaceRegistry
+    * @param persister NodeTypeDataPersister
+    * @param dataManager ItemDataConsumer
+    * @param indexSearcherHolder RepositoryIndexSearcherHolder
+    */
+   public NodeTypeDataManagerImpl(final RepositoryEntry config, final LocationFactory locationFactory,
+      final NamespaceRegistry namespaceRegistry, final NodeTypeDataPersister persister,
+      final ItemDataConsumer dataManager, final RepositoryIndexSearcherHolder indexSearcherHolder)
+   {
+      this(config.getAccessControl(), locationFactory, namespaceRegistry, persister, dataManager, indexSearcherHolder,
+         new InmemoryNodeTypeRepository(persister));
    }
 
    /**
@@ -580,9 +589,6 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
    public List<NodeTypeData> registerNodeTypes(final InputStream is, final int alreadyExistsBehaviour,
       final String contentType) throws RepositoryException
    {
-
-      final NodeTypeConverter nodeTypeConverter = new NodeTypeConverter(this.locationFactory, this.accessControlPolicy);
-      final NodeTypeDataValidator nodeTypeDataValidator = new NodeTypeDataValidator(this.nodeTypeRepository);
       NodeTypeDataPersister serializer = null;
       if (contentType.equalsIgnoreCase(TEXT_XML))
       {
@@ -611,9 +617,6 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
    public List<NodeTypeData> registerNodeTypes(final List<NodeTypeValue> ntvalues, final int alreadyExistsBehaviour)
       throws RepositoryException
    {
-
-      final NodeTypeConverter nodeTypeConverter = new NodeTypeConverter(this.locationFactory, this.accessControlPolicy);
-      final NodeTypeDataValidator nodeTypeDataValidator = new NodeTypeDataValidator(this.nodeTypeRepository);
       // convert to Node data.
       final List<NodeTypeData> nodeTypes = nodeTypeConverter.convertFromValueToData(ntvalues);
 

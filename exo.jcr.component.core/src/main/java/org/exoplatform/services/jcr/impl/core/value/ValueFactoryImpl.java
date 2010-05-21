@@ -54,7 +54,7 @@ import javax.jcr.ValueFormatException;
  * ValueFactory implementation
  * 
  * @author Gennady Azarenkov
- * @version $Id: ValueFactoryImpl.java 11907 2008-03-13 15:36:21Z ksm $
+ * @version $Id$
  */
 
 public class ValueFactoryImpl implements ValueFactory
@@ -87,7 +87,6 @@ public class ValueFactoryImpl implements ValueFactory
 
    public ValueFactoryImpl(LocationFactory locationFactory)
    {
-
       this.locationFactory = locationFactory;
       this.tempDirectory = new File(System.getProperty("java.io.tmpdir"));
       this.maxBufferSize = WorkspaceDataContainer.DEF_MAXBUFFERSIZE;

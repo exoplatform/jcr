@@ -275,7 +275,8 @@ public class WorkspaceImpl implements ExtendedWorkspace
    public NodeTypeManager getNodeTypeManager() throws RepositoryException
    {
       // incl Session mapping
-      return new NodeTypeManagerImpl(session.getLocationFactory(), session.getValueFactory(), nodeTypeManager);
+      return new NodeTypeManagerImpl(session.getLocationFactory(), session.getValueFactory(), nodeTypeManager, session
+         .getTransientNodesManager());
    }
 
    /**
