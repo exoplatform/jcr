@@ -5,7 +5,7 @@
 1.2. exo directory structure.
 1.3. Maven version 2.2.1 (or higher).
 1.4. Make sure you have run mvn insctal within ./config folder.  
-2. Run "mvn -f product-exo-jcr-as-tomcat6.xml clean install -P deploy" command.
+2. Go to folder "exo.jcr.applications.your_application_server_name"and run "mvn clean install -P deploy" command.
 3. If the command has executed successfully, go to exo-tomcat and run "eXo run" command.
 4. You may use other product-exo-jcr-as* and an application server if you need. 
 
