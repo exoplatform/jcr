@@ -28,7 +28,7 @@
 
    <modelVersion>4.0.0</modelVersion>
    <artifactId>exo.jcrapplications.tomcat</artifactId>
-   <packaging>jar</packaging>
+   <packaging>pom</packaging>
    <name>eXo JCR :: Applications :: Tomcat AS</name>
    <url>http://www.exoplatform.org</url>
    <description>eXo JCR Tomcat Applications Server</description>
