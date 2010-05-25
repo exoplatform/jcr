@@ -108,6 +108,9 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
 
    public boolean canRemoveRepository(String name) throws RepositoryException
    {
+      if (name.equals(config.getDefaultRepositoryName()))
+         return false;
+
       RepositoryImpl repo = (RepositoryImpl)getRepository(name);
       try
       {
