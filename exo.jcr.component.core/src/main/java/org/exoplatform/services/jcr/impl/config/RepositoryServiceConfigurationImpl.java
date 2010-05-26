@@ -251,7 +251,7 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
    {
       try
       {
-         if (configExtensionPaths.isEmpty())
+         if (configExtensionPaths.isEmpty() || (configurationPersister != null && configurationPersister.hasConfig()))
          {
             initFromStream(configurationService.getInputStream(param.getValue()));
          }
