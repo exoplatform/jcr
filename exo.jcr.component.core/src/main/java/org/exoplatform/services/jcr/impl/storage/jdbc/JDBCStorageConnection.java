@@ -121,6 +121,68 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
    protected final WriteValueHelper writeValueHelper = new WriteValueHelper();
 
+   // All statements should be closed in cloaseStatements() method.
+
+   protected PreparedStatement findItemById;
+
+   protected PreparedStatement findItemByPath;
+
+   protected PreparedStatement findItemByName;
+
+   protected PreparedStatement findChildPropertyByPath;
+
+   protected PreparedStatement findPropertyByName;
+
+   protected PreparedStatement findDescendantNodes;
+
+   protected PreparedStatement findDescendantProperties;
+
+   protected PreparedStatement findReferences;
+
+   protected PreparedStatement findValuesByPropertyId;
+
+   protected PreparedStatement findValuesStorageDescriptorsByPropertyId;
+
+   protected PreparedStatement findValuesDataByPropertyId;
+
+   protected PreparedStatement findValueByPropertyIdOrderNumber;
+
+   protected PreparedStatement findNodesByParentId;
+
+   protected PreparedStatement findNodesCountByParentId;
+
+   protected PreparedStatement findPropertiesByParentId;
+
+   protected PreparedStatement insertItem;
+
+   protected PreparedStatement insertNode;
+
+   protected PreparedStatement insertProperty;
+
+   protected PreparedStatement insertReference;
+
+   protected PreparedStatement insertValue;
+
+   protected PreparedStatement updateItem;
+
+   protected PreparedStatement updateItemPath;
+
+   protected PreparedStatement updateNode;
+
+   protected PreparedStatement updateProperty;
+
+   protected PreparedStatement deleteItem;
+
+   protected PreparedStatement deleteNode;
+
+   protected PreparedStatement deleteProperty;
+
+   protected PreparedStatement deleteReference;
+
+   protected PreparedStatement deleteValue;
+
+   protected PreparedStatement renameNode;
+
    /**
     * Read-only flag, if true the connection is marked as READ-ONLY.
     */
@@ -303,6 +365,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       checkIfOpened();
       try
       {
+         closeStatements();
+
          // If READ-ONLY status back it to READ-WRITE (we assume it was original state)
          if (readOnly)
          {
@@ -314,6 +378,164 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       catch (SQLException e)
       {
          throw new RepositoryException(e);
+      }
+   }
+
+   /**
+    * Close all statements.
+    * 
+    * @throws SQLException
+    */
+   protected void closeStatements() throws SQLException
+   {
+      if (findItemById != null)
+      {
+         findItemById.close();
+      }
+
+      if (findItemByPath != null)
+      {
+         findItemByPath.close();
+      }
+
+      if (findItemByName != null)
+      {
+         findItemByName.close();
+      }
+
+      if (findChildPropertyByPath != null)
+      {
+         findChildPropertyByPath.close();
+      }
+
+      if (findPropertyByName != null)
+      {
+         findPropertyByName.close();
+      }
+
+      if (findDescendantNodes != null)
+      {
+         findDescendantNodes.close();
+      }
+
+      if (findDescendantProperties != null)
+      {
+         findDescendantProperties.close();
+      }
+
+      if (findReferences != null)
+      {
+         findReferences.close();
+      }
+
+      if (findValuesByPropertyId != null)
+      {
+         findValuesByPropertyId.close();
+      }
+
+      if (findValuesStorageDescriptorsByPropertyId != null)
+      {
+         findValuesStorageDescriptorsByPropertyId.close();
+      }
+
+      if (findValuesDataByPropertyId != null)
+      {
+         findValuesDataByPropertyId.close();
+      }
+
+      if (findValueByPropertyIdOrderNumber != null)
+      {
+         findValueByPropertyIdOrderNumber.close();
+      }
+
+      if (findNodesByParentId != null)
+      {
+         findNodesByParentId.close();
+      }
+
+      if (findNodesCountByParentId != null)
+      {
+         findNodesCountByParentId.close();
+      }
+
+      if (findPropertiesByParentId != null)
+      {
+         findPropertiesByParentId.close();
+      }
+
+      if (insertItem != null)
+      {
+         insertItem.close();
+      }
+
+      if (insertNode != null)
+      {
+         insertNode.close();
+      }
+
+      if (insertProperty != null)
+      {
+         insertProperty.close();
+      }
+
+      if (insertReference != null)
+      {
+         insertReference.close();
+      }
+
+      if (insertValue != null)
+      {
+         insertValue.close();
+      }
+
+      if (updateItem != null)
+      {
+         updateItem.close();
+      }
+
+      if (updateItemPath != null)
+      {
+         updateItemPath.close();
+      }
+
+      if (updateNode != null)
+      {
+         updateNode.close();
+      }
+
+      if (updateProperty != null)
+      {
+         updateProperty.close();
+      }
+
+      if (deleteItem != null)
+      {
+         deleteItem.close();
+      }
+
+      if (deleteNode != null)
+      {
+         deleteNode.close();
+      }
+
+      if (deleteProperty != null)
+      {
+         deleteProperty.close();
+      }
+
+      if (deleteReference != null)
+      {
+         deleteReference.close();
+      }
+
+      if (deleteValue != null)
+      {
+         deleteValue.close();
+      }
+
+      if (renameNode != null)
+      {
+         renameNode.close();
       }
    }
 
@@ -948,7 +1170,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    {
       return traverseQPathSQ(cpid);
    }
-   
+
    /**
     * The method <code>traverseQPath</code> implemented thanks to simple queries. It allows
     * to use Simple Queries instead of Complex Queries when complex queries are much slower such

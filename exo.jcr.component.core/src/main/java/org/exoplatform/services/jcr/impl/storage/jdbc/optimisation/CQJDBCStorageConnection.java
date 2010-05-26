@@ -41,6 +41,7 @@ import org.exoplatform.services.log.Log;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -90,6 +91,14 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
     * FIND_ITEM_QPATH_BY_ID_CQ.
     */
    protected String FIND_ITEM_QPATH_BY_ID_CQ;
+
+   protected PreparedStatement findNodesByParentIdCQ;
+
+   protected PreparedStatement findPropertiesByParentIdCQ;
+
+   protected PreparedStatement findNodeMainPropertiesByParentIdentifierCQ;
+
+   protected PreparedStatement findItemQPathByIdentifierCQ;
 
    /**
     * The comparator used to sort the value data
@@ -655,6 +664,35 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
          qentries[qi++] = qrpath.get(i);
       }
       return new QPath(qentries);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected void closeStatements() throws SQLException
+   {
+      super.closeStatements();
+
+      if (findNodesByParentIdCQ != null)
+      {
+         findNodesByParentIdCQ.close();
+      }
+
+      if (findPropertiesByParentIdCQ != null)
+      {
+         findPropertiesByParentIdCQ.close();
+      }
+
+      if (findNodeMainPropertiesByParentIdentifierCQ != null)
+      {
+         findNodeMainPropertiesByParentIdentifierCQ.close();
+      }
+
+      if (findItemQPathByIdentifierCQ != null)
+      {
+         findItemQPathByIdentifierCQ.close();
+      }
    }
 
    protected abstract ResultSet findItemQPathByIdentifierCQ(String identifier) throws SQLException;

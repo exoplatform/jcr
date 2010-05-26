@@ -30,7 +30,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -48,68 +47,6 @@ import java.util.List;
  */
 public class SingleDbJDBCConnection extends JDBCStorageConnection
 {
-
-   protected PreparedStatement findItemById;
-
-   protected PreparedStatement findItemByPath;
-
-   protected PreparedStatement findItemByName;
-
-   protected PreparedStatement findChildPropertyByPath;
-
-   protected PreparedStatement findPropertyByName;
-
-   protected PreparedStatement findDescendantNodes;
-
-   protected PreparedStatement findDescendantProperties;
-
-   protected PreparedStatement findReferences;
-
-   protected PreparedStatement findValuesByPropertyId;
-
-   protected PreparedStatement findValuesStorageDescriptorsByPropertyId;
-
-   protected PreparedStatement findValuesDataByPropertyId;
-
-   protected PreparedStatement findValueByPropertyIdOrderNumber;
-
-   protected PreparedStatement findNodesByParentId;
-
-   protected PreparedStatement findNodesCountByParentId;
-
-   protected PreparedStatement findPropertiesByParentId;
-
-   protected PreparedStatement insertItem;
-
-   protected PreparedStatement insertNode;
-
-   protected PreparedStatement insertProperty;
-
-   protected PreparedStatement insertReference;
-
-   protected PreparedStatement insertValue;
-
-   protected PreparedStatement updateItem;
-
-   protected PreparedStatement updateItemPath;
-
-   protected PreparedStatement updateNode;
-
-   protected PreparedStatement updateProperty;
-
-   protected PreparedStatement updateValue;
-
-   protected PreparedStatement deleteItem;
-
-   protected PreparedStatement deleteNode;
-
-   protected PreparedStatement deleteProperty;
-
-   protected PreparedStatement deleteReference;
-
-   protected PreparedStatement deleteValue;
-
-   protected PreparedStatement renameNode;
 
    /**
     * Singledatabase JDBC Connection constructor.
@@ -190,7 +127,8 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
 
       FIND_VALUES_VSTORAGE_DESC_BY_PROPERTYID = "select distinct STORAGE_DESC from JCR_SVALUE where PROPERTY_ID=?";
 
-      FIND_VALUE_BY_PROPERTYID_OREDERNUMB = "select DATA, STORAGE_DESC from JCR_SVALUE where PROPERTY_ID=? and ORDER_NUM=?";
+      FIND_VALUE_BY_PROPERTYID_OREDERNUMB =
+         "select DATA, STORAGE_DESC from JCR_SVALUE where PROPERTY_ID=? and ORDER_NUM=?";
 
       FIND_NODES_BY_PARENTID =
          "select * from JCR_SITEM" + " where I_CLASS=1 and CONTAINER_NAME=? and PARENT_ID=?" + " order by N_ORDER_NUM";
