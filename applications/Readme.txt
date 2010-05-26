@@ -8,7 +8,6 @@
 2. Go to folder "exo.jcr.applications.tomcat" and run "mvn clean install -P deploy" command.
 2.1 If you want to deploy JBoss or Jonas use exo.jcr.applications.jboss or exo.jcr.applications.jonas respectively.
 3. If the command has executed successfully, go to exo-tomcat and run "eXo run" command.
-4. You may use other product-exo-jcr-as* and an application server if you need. 
 
 Application server's specific configs is placed in product-patches/as/ folder.
 
