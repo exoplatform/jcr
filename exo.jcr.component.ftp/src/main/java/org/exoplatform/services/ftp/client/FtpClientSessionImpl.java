@@ -417,6 +417,11 @@ public class FtpClientSessionImpl implements FtpClientSession
       ExoContainer container = ExoContainerContext.getCurrentContainer();
       IdentityRegistry identityRegistry =
          (IdentityRegistry)container.getComponentInstanceOfType(IdentityRegistry.class);
-      identityRegistry.unregister(this.userId);
+
+      // The check need for case when login failed
+      if (this.userId != null)
+      {
+         identityRegistry.unregister(this.userId);
+      }
    }
 }
