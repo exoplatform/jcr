@@ -251,10 +251,11 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
    {
       try
       {
-         if (configExtensionPaths.isEmpty() || (configurationPersister != null && configurationPersister.hasConfig()))
+         if ((configurationPersister != null && configurationPersister.hasConfig()))
          {
             initFromStream(configurationService.getInputStream(param.getValue()));
             
+            // Will be merged extension repository configuration with configuration from persister.  
             if (!configExtensionPaths.isEmpty()) 
             {
                String[] paths = (String[])configExtensionPaths.toArray(new String[configExtensionPaths.size()]);

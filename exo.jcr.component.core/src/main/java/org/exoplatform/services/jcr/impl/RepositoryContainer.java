@@ -535,30 +535,22 @@ public class RepositoryContainer extends ExoContainer
 
    private void registerWorkspacesComponents() throws RepositoryException, RepositoryConfigurationException
    {
-      List<WorkspaceEntry> wsEntries = new ArrayList<WorkspaceEntry>();
-      
-      for (WorkspaceEntry ws : config.getWorkspaceEntries())
+      // System workspace should be first initialize.
+      for (WorkspaceEntry we : config.getWorkspaceEntries())
       {
-         if (ws.getName().equals(config.getSystemWorkspaceName())) 
+         if (we.getName().equals(config.getSystemWorkspaceName()))
          {
-            if (wsEntries.size() == 0)
-            {
-               wsEntries.add(ws);
-            } 
-            else
-            {
-               wsEntries.add(0, ws);
-            }
-         } 
-         else 
-         {
-            wsEntries.add(ws);
+            registerWorkspace(we);
          }
       }
       
-      for (int i = 0; i < wsEntries.size(); i++)
+      // Initialize other (non system) workspaces.
+      for (WorkspaceEntry we : config.getWorkspaceEntries())
       {
-         registerWorkspace(wsEntries.get(i));
+         if (!we.getName().equals(config.getSystemWorkspaceName()))
+         {
+            registerWorkspace(we);
+         }
       }
    }
 
@@ -591,24 +583,5 @@ public class RepositoryContainer extends ExoContainer
       ntManager.start();
 
    }
-
-   /**
-    * Workspaces order comparator.
-    * 
-    */
-   private static class WorkspaceOrderComparator implements Comparator<WorkspaceEntry>
-   {
-      private final String sysWs;
-
-      private WorkspaceOrderComparator(String sysWs)
-      {
-         this.sysWs = sysWs;
-      }
-
-      public int compare(WorkspaceEntry o1, WorkspaceEntry o2)
-      {
-         String n1 = o1.getName();
-         return n1.equals(sysWs) ? -1 : 0;
-      }
-   }
+   
 }
