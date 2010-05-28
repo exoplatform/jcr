@@ -1,0 +1,442 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter>
+  <?dbhtml filename="ch-ws.html"?>
+
+  <title>Central Authentication Service Configuration</title>
+
+  <section>
+    <title>Introduction</title>
+
+    <para>Central Authentication Service (CAS) is a Web Single Sign-On
+    (WebSSO), developped by JA-SIG as an open-source project. CAS, like any
+    WebSSO, is very interesting in information systems where many applications
+    share a common users repository. When you enable CAS on all the
+    application, a user would log once and only once and will be recognized
+    and authentified into all the applications.</para>
+
+    <para>CAS documentation explains how to configure in details any
+    environment, that is mainly a configuration of a Web application to
+    authenticate itself against the CAS Server instead of an internal
+    mechanism. This documentation explain how to configure eXo Platform to
+    delegate the authentication to the CAS server and let it ensure the
+    single-sign-one between all the applications of an IS.</para>
+  </section>
+
+  <section>
+    <title>CAS configuration</title>
+
+    <para>This article try to explain how to configure CAS server and client
+    for exo. For this example we will use 2 the same tomcat instance, but one
+    for it has additation CAS server.</para>
+
+    <para>This configuration is not very useful, but very good example for
+    configuration CAS.</para>
+
+    <para>Tomcat 1 deployed on windows 2003 - this is CAS server, tomcat 2 on
+    Ubuntu 7.10.</para>
+
+    <section>
+      <title>Configure CAS server</title>
+
+      <para><command>(DNS name: test01-srv.exoua-int)</command></para>
+
+      <para>1.Certificates.</para>
+
+      <programlisting>E:/Program Files&gt;cd java
+E:/Program Files/Java&gt;cd jre1.5.0_11
+E:/Program Files/Java/jre1.5.0_11&gt;cd bin
+E:/Program Files/Java/jre1.5.0_11/bin&gt;keytool -genkey -alias tomcat -keypass 123456 -keyalg RSA
+Enter keystore password:  123456
+What is your first and last name?
+  [Unknown]:  test01-srv.exoua-int
+What is the name of your organizational unit?
+  [Unknown]:  .
+What is the name of your organization?
+  [Unknown]:  .
+What is the name of your City or Locality?
+  [Unknown]:  .
+What is the name of your State or Province?
+  [Unknown]:  .
+What is the two-letter country code for this unit?
+  [Unknown]:  UA
+Is CN=test01-srv.exoua-int, OU=., O=., L=., ST=., C=UA correct?
+  [no]:  yes
+
+E:/Program Files/Java/jre1.5.0_11/bin&gt;keytool -export -alias tomcat -keypass 123456 -file server.crt
+Enter keystore password: 123456
+Certificate stored in file &lt;server.crt&gt;</programlisting>
+
+      <para>This is optional, I just want to have the same password for
+      storage %JRE_HOME%/lib/security/cacerts.</para>
+
+      <programlisting>E:/Program Files/Java/jre1.5.0_11/bin&gt;keytool -storepasswd -keystore ../lib/security/cacerts
+Enter keystore password: changeit
+New keystore password: 123456
+Re-enter new keystore password: 123456</programlisting>
+
+      <para>Continue with certificates.</para>
+
+      <programlisting>E:/Program Files/Java/jre1.5.0_11/bin&gt;keytool -import -file server.crt -keypass 123456 -keystore ../lib/security/cacerts
+Enter keystore password: 123456
+Owner: CN=test01-srv.exoua-int, OU=., O=., L=., ST=., C=UA
+Issuer: CN=test01-srv.exoua-int, OU=., O=., L=., ST=., C=UA
+Serial number: 4810c6c5
+Valid from: Fri Apr 24 20:33:36 HST 2008 until: Thu Jul 23 20:33:36 HST 2008
+Certificate fingerprints:
+MD5: CC:3B:FB:FB:AE:12:AD:FB:3E:D 5:98:CB:2E:3B:0A:AD
+SHA1: A1:16:80:68:39:C7:58:EA:2F:48:59:AA:1D:73:5F:56:78:CE:A4:CE
+Trust this certificate? [no]: yes
+Certificate was added to keystore
+
+E:/Program Files/Java/jre1.5.0_11/bin&gt;</programlisting>
+
+      <para>2. Now edit server.xml file for tomcat (we are using 6.0.13
+      everywhere).Uncomment configuration for SSL connection end edit it, it
+      must looks as this:</para>
+
+      <programlisting>&lt;Connector port="8443" protocol="HTTP/1.1" SSLEnabled="true"
+maxThreads="150" scheme="https" secure="true"
+clientAuth="false" sslProtocol="TLS"
+keystoreFile="E:/Documents and Settings/admin/.keystore"
+keystorePass="123456"
+keyAlias="tomcat"
+truststoreFile="E:/Program Files/Java/jre1.5.0_11/lib/security/cacerts"
+truststorePass="123456" /&gt;</programlisting>
+
+      <para>3. Now configure client part of CAS, as example we will use
+      portal/private/* .Edit file /portal/WEB-INF/web.xml.</para>
+
+      <programlisting>&lt;context-param&gt;
+  &lt;param-name&gt;serverName&lt;/param-name&gt;
+  &lt;param-value&gt;http://test01-srv.exoua-int:8080&lt;/param-value&gt;
+&lt;/context-param&gt;</programlisting>
+
+      <para>Configure client, in this example we will protect
+      /portal/private/* resource. Note: These filter must be add before this
+      filter "SetCurrentIdentityFilter", the same think for
+      filter-mapping.</para>
+
+      <programlisting>&lt;filter&gt;
+  &lt;filter-name&gt;SingleSignOutFilter&lt;/filter-name&gt;
+  &lt;filter-class&gt;org.jasig.cas.client.session.SingleSignOutFilter&lt;/filter-class&gt;
+&lt;/filter&gt;
+&lt;filter&gt;
+  &lt;filter-name&gt;AuthenticationFilter&lt;/filter-name&gt;
+  &lt;filter-class&gt;org.jasig.cas.client.authentication.AuthenticationFilter&lt;/filter-class&gt;
+  &lt;init-param&gt;
+    &lt;param-name&gt;casServerLoginUrl&lt;/param-name&gt;
+    &lt;param-value&gt;https://test01-srv.exoua-int:8443/cas/login&lt;/param-value&gt;
+  &lt;/init-param&gt;
+&lt;/filter&gt;
+&lt;filter&gt;
+  &lt;filter-name&gt;Cas20ProxyReceivingTicketValidationFilter&lt;/filter-name&gt;
+  &lt;filter-class&gt;org.jasig.cas.client.validation.Cas20ProxyReceivingTicketValidationFilter&lt;/filter-class&gt;
+  &lt;init-param&gt;
+    &lt;param-name&gt;casServerUrlPrefix&lt;/param-name&gt;
+    &lt;param-value&gt;https://test01-srv.exoua-int:8443/cas&lt;/param-value&gt;
+  &lt;/init-param&gt;
+  &lt;init-param&gt;
+    &lt;param-name&gt;redirectAfterValidation&lt;/param-name&gt;
+    &lt;param-value&gt;true&lt;/param-value&gt;
+  &lt;/init-param&gt;
+&lt;/filter&gt;
+&lt;filter&gt;
+  &lt;filter-name&gt;HttpServletRequestWrapperFilter&lt;/filter-name&gt;
+  &lt;filter-class&gt;org.jasig.cas.client.util.HttpServletRequestWrapperFilter&lt;/filter-class&gt;
+&lt;/filter&gt;
+&lt;!-- eXo --&gt;
+&lt;filter&gt;
+  &lt;filter-name&gt;BaseIdentityInitializerFilterImpl&lt;/filter-name&gt;
+  &lt;filter-class&gt;org.exoplatform.services.security.cas.client.impl.BaseIdentityInitializerFilterImpl&lt;/filter-class&gt;
+&lt;/filter&gt;
+&lt;!-- end exo --&gt;
+....
+&lt;filter-mapping&gt;
+  &lt;filter-name&gt;SingleSignOutFilter&lt;/filter-name&gt;
+  &lt;url-pattern&gt;/private/*&lt;/url-pattern&gt;
+&lt;/filter-mapping&gt;
+&lt;filter-mapping&gt;
+  &lt;filter-name&gt;AuthenticationFilter&lt;/filter-name&gt;
+  &lt;url-pattern&gt;/private/*&lt;/url-pattern&gt;
+&lt;/filter-mapping&gt;
+&lt;filter-mapping&gt;
+  &lt;filter-name&gt;Cas20ProxyReceivingTicketValidationFilter&lt;/filter-name&gt;
+  &lt;url-pattern&gt;/private/*&lt;/url-pattern&gt;
+&lt;/filter-mapping&gt;
+&lt;filter-mapping&gt;
+  &lt;filter-name&gt;HttpServletRequestWrapperFilter&lt;/filter-name&gt;
+  &lt;url-pattern&gt;/private/*&lt;/url-pattern&gt;
+&lt;/filter-mapping&gt;
+&lt;!-- exo --&gt;
+&lt;filter-mapping&gt;
+  &lt;filter-name&gt;BaseIdentityInitializerFilterImpl&lt;/filter-name&gt;
+  &lt;url-pattern&gt;/private/*&lt;/url-pattern&gt;
+&lt;/filter-mapping&gt;
+&lt;!-- end exo --&gt;
+....
+&lt;listener&gt;
+  &lt;listener-class&gt;org.jasig.cas.client.session.SingleSignOutHttpSessionListener&lt;/listener-class&gt;
+&lt;/listener&gt;
+....
+&lt;!-- exo --&gt;
+&lt;servlet&gt;
+  &lt;servlet-name&gt;LogoutServlet&lt;/servlet-name&gt;
+  &lt;servlet-class&gt;org.exoplatform.services.security.cas.client.impl.LogoutServlet&lt;/servlet-class&gt;
+  &lt;init-param&gt;
+    &lt;param-name&gt;casServerLogoutUrl&lt;/param-name&gt;
+    &lt;param-value&gt;https://test01-srv.exoua-int:8443/cas/logout&lt;/param-value&gt;
+  &lt;/init-param&gt;
+  &lt;init-param&gt;
+    &lt;param-name&gt;redirectToUrl&lt;/param-name&gt;
+    &lt;param-value&gt;http://test01-srv.exoua-int:8080/portal/public/classic&lt;/param-value&gt;
+  &lt;/init-param&gt;
+&lt;/servlet&gt;
+&lt;!-- end exo --&gt;
+.....
+&lt;!-- exo --&gt;
+&lt;servlet-mapping&gt;
+  &lt;servlet-name&gt;LogoutServlet&lt;/servlet-name&gt;
+  &lt;url-pattern&gt;/logout/*&lt;/url-pattern&gt;
+&lt;/servlet-mapping&gt;
+&lt;!-- end exo --&gt;
+....</programlisting>
+
+      <para>4. Download and build code from <link
+      linkend="???">http://svn.exoplatform.org/svnroot/exoplatform/projects/ws/trunk/security/cas/client</link></para>
+
+      <para>5. Download and put cas-client-core-3.1.1.jar in
+      CATALINA_HOME%/lib directory.</para>
+
+      <para>6. Download CAS server source code and build it or download
+      binary. Put cas.war in webapps directoryChange configuration in file
+      /cas/WEB-INF/deployConfigContext.xml. Comment test authenticator and add
+      new one.</para>
+
+      <programlisting>&lt;!--
+&lt;bean class="org.jasig.cas.authentication.handler.support.SimpleTestUsernamePasswordAuthenticationHandler" /&gt;
+--&gt;
+&lt;!-- will check username and password at remote host --&gt;
+&lt;bean class="org.exoplatform.services.security.cas.server.HTTPAuthenticationHandler"
+p:authenticationURL="https://ubu.exoua-int:8443/portal/login" /&gt;</programlisting>
+
+      <para>7. Download and build code which can do remote
+      authentication.Download and build code from <link
+      linkend="???">http://svn.exoplatform.org/svnroot/exoplatform/projects/ws/trunk/security/cas/server</link>,
+      andput it cas/WEB-INF/lib directory. This CAS server side handler which
+      can call remote eXo authenticatiob service via HTTP.In this case
+      validation of username/password wiil be done at ubu.exoua-int, but
+      authentication sever (CAS) will be at test01-srv.exoua-int</para>
+    </section>
+
+    <section>
+      <title>Configure other tomcat instance</title>
+
+      <para><command>Configure other tomcat instance, deploy it on Ubuntu 7.10
+      (DNS name: ubu.exoua-int).</command></para>
+
+      <para>1. Generate certificates for CAS client. The same as for previous
+      but change name to ubu.exoua-int.</para>
+
+      <para>2. Edit server.xml file for tomcat.</para>
+
+      <programlisting>&lt;Connector port="8443" protocol="HTTP/1.1" SSLEnabled="true"
+maxThreads="150" scheme="https" secure="true"
+clientAuth="false" sslProtocol="TLS"
+keystoreFile="/home/andrew/.keystore"
+keystorePass="123456"
+keyAlias="tomcat"
+truststoreFile="/home/andrew/lib/java/jre/lib/security/cacerts"
+truststorePass="123456" /&gt;</programlisting>
+
+      <para>3. Edit file portal/WEB-INF/web.xml, add next strings in it.
+      Change context parameter.</para>
+
+      <programlisting>&lt;context-param&gt;
+  &lt;param-name&gt;serverName&lt;/param-name&gt;
+  &lt;param-value&gt;http://ubu.exoua-int:8080&lt;/param-value&gt;
+&lt;/context-param&gt;</programlisting>
+
+      <para>Filters configuration must be the same as in client part on
+      tomcat1. But add one more servlet which will check
+      username/password.</para>
+
+      <programlisting>&lt;filter&gt;
+  &lt;filter-name&gt;SingleSignOutFilter&lt;/filter-name&gt;
+  &lt;filter-class&gt;org.jasig.cas.client.session.SingleSignOutFilter&lt;/filter-class&gt;
+&lt;/filter&gt;
+&lt;filter&gt;
+  &lt;filter-name&gt;AuthenticationFilter&lt;/filter-name&gt;
+  &lt;filter-class&gt;org.jasig.cas.client.authentication.AuthenticationFilter&lt;/filter-class&gt;
+  &lt;init-param&gt;
+    &lt;param-name&gt;casServerLoginUrl&lt;/param-name&gt;
+    &lt;param-value&gt;https://test01-srv.exoua-int:8443/cas/login&lt;/param-value&gt;
+  &lt;/init-param&gt;
+&lt;/filter&gt;
+&lt;filter&gt;
+  &lt;filter-name&gt;Cas20ProxyReceivingTicketValidationFilter&lt;/filter-name&gt;
+  &lt;filter-class&gt;org.jasig.cas.client.validation.Cas20ProxyReceivingTicketValidationFilter&lt;/filter-class&gt;
+  &lt;init-param&gt;
+    &lt;param-name&gt;casServerUrlPrefix&lt;/param-name&gt;
+    &lt;param-value&gt;https://test01-srv.exoua-int:8443/cas&lt;/param-value&gt;
+  &lt;/init-param&gt;
+  &lt;init-param&gt;
+    &lt;param-name&gt;redirectAfterValidation&lt;/param-name&gt;
+    &lt;param-value&gt;true&lt;/param-value&gt;
+  &lt;/init-param&gt;
+&lt;/filter&gt;
+&lt;filter&gt;
+  &lt;filter-name&gt;HttpServletRequestWrapperFilter&lt;/filter-name&gt;
+  &lt;filter-class&gt;org.jasig.cas.client.util.HttpServletRequestWrapperFilter&lt;/filter-class&gt;
+&lt;/filter&gt;
+&lt;!-- exo --&gt;
+&lt;filter&gt;
+  &lt;filter-name&gt;BaseIdentityInitializerFilterImpl&lt;/filter-name&gt;
+  &lt;filter-class&gt;org.exoplatform.services.security.cas.client.impl.BaseIdentityInitializerFilterImpl\
+&lt;/filter-class&gt;
+&lt;/filter&gt;
+&lt;!-- end exo --&gt;
+....
+&lt;filter-mapping&gt;
+  &lt;filter-name&gt;SingleSignOutFilter&lt;/filter-name&gt;
+  &lt;url-pattern&gt;/private/&amp;#42;&lt;/url-pattern&gt;
+&lt;/filter-mapping&gt;
+&lt;filter-mapping&gt;
+  &lt;filter-name&gt;AuthenticationFilter&lt;/filter-name&gt;
+  &lt;url-pattern&gt;/private/&amp;#42;&lt;/url-pattern&gt;
+&lt;/filter-mapping&gt;
+&lt;filter-mapping&gt;
+  &lt;filter-name&gt;Cas20ProxyReceivingTicketValidationFilter&lt;/filter-name&gt;
+  &lt;url-pattern&gt;/private/&amp;#42;&lt;/url-pattern&gt;
+&lt;/filter-mapping&gt;
+&lt;filter-mapping&gt;
+  &lt;filter-name&gt;HttpServletRequestWrapperFilter&lt;/filter-name&gt;
+  &lt;url-pattern&gt;/private/&amp;#42;&lt;/url-pattern&gt;
+&lt;/filter-mapping&gt;
+&lt;!-- exo --&gt;
+&lt;filter-mapping&gt;
+  &lt;filter-name&gt;BaseIdentityInitializerFilterImpl&lt;/filter-name&gt;
+  &lt;url-pattern&gt;/private/&amp;#42;&lt;/url-pattern&gt;
+&lt;/filter-mapping&gt;
+&lt;!-- end exo --&gt;
+....
+&lt;listener&gt;
+  &lt;listener-class&gt;org.jasig.cas.client.session.SingleSignOutHttpSessionListener&lt;/listener-class&gt;
+&lt;/listener&gt;
+....
+&lt;!-- exo --&gt;
+&lt;servlet&gt;
+  &lt;servlet-name&gt;BaseHTTPUsernamePasswordValidator&lt;/servlet-name&gt;
+  &lt;servlet-class&gt;org.exoplatform.services.security.cas.client.impl.BaseHTTPUsernamePasswordValidatorImpl&lt;/servlet-class&gt;
+&lt;/servlet&gt;
+&lt;servlet&gt;
+  &lt;servlet-name&gt;LogoutServlet&lt;/servlet-name&gt;
+  &lt;servlet-class&gt;org.exoplatform.services.security.cas.client.impl.LogoutServlet&lt;/servlet-class&gt;
+  &lt;init-param&gt;
+    &lt;param-name&gt;casServerLogoutUrl&lt;/param-name&gt;
+    &lt;param-value&gt;https://test01-srv.exoua-int:8443/cas/logout&lt;/param-value&gt;
+  &lt;/init-param&gt;
+  &lt;init-param&gt;
+    &lt;param-name&gt;redirectToUrl&lt;/param-name&gt;
+    &lt;param-value&gt;http://ubu.exoua-int:8080/portal/public/classic&lt;/param-value&gt;
+  &lt;/init-param&gt;
+&lt;/servlet&gt;
+&lt;!-- end exo --&gt;
+.....
+&lt;!-- exo --&gt;
+&lt;servlet-mapping&gt;
+  &lt;servlet-name&gt;BaseHTTPUsernamePasswordValidator&lt;/servlet-name&gt;
+  &lt;url-pattern&gt;/login/&amp;#42;&lt;/url-pattern&gt;
+&lt;/servlet-mapping&gt;
+&lt;servlet-mapping&gt;
+  &lt;servlet-name&gt;LogoutServlet&lt;/servlet-name&gt;
+  &lt;url-pattern&gt;/logout/&amp;#42;&lt;/url-pattern&gt;
+&lt;/servlet-mapping&gt;
+&lt;!-- end exo --&gt;
+&lt;!-- not use default authentification--&gt;
+&lt;!--
+&lt;security-constraint&gt;
+    &lt;web-resource-collection&gt;
+      &lt;web-resource-name&gt;user authentication&lt;/web-resource-name&gt;
+      &lt;url-pattern&gt;/private/&amp;#42;&lt;/url-pattern&gt;
+      &lt;http-method&gt;POST&lt;/http-method&gt;
+      &lt;http-method&gt;GET&lt;/http-method&gt;
+    &lt;/web-resource-collection&gt;
+    &lt;auth-constraint&gt;
+      &lt;role-name&gt;users&lt;/role-name&gt;
+    &lt;/auth-constraint&gt;
+    &lt;user-data-constraint&gt;
+      &lt;transport-guarantee&gt;NONE&lt;/transport-guarantee&gt;
+    &lt;/user-data-constraint&gt;
+  &lt;/security-constraint&gt;
+
+  &lt;login-config&gt;
+    &lt;auth-method&gt;FORM&lt;/auth-method&gt;
+    &lt;realm-name&gt;exo-domain&lt;/realm-name&gt;
+    &lt;form-login-config&gt;
+      &lt;form-login-page&gt;/login/jsp/login.jsp&lt;/form-login-page&gt;
+      &lt;form-error-page&gt;/login/jsp/login.jsp&lt;/form-error-page&gt;
+    &lt;/form-login-config&gt;
+  &lt;/login-config&gt;
+
+  &lt;security-role&gt;
+    &lt;description&gt;a simple user role&lt;/description&gt;
+    &lt;role-name&gt;users&lt;/role-name&gt;
+  &lt;/security-role&gt;
+
+  &lt;security-role&gt;
+    &lt;description&gt;the admin role&lt;/description&gt;
+    &lt;role-name&gt;admin&lt;/role-name&gt;
+  &lt;/security-role&gt;
+--&gt;
+&lt;!-- end web.xml file--&gt;
+....</programlisting>
+
+      <para>4. Download and build code from <link
+      linkend="???">http://svn.exoplatform.org/svnroot/exoplatform/projects/ws/trunk/security/cas/client</link></para>
+
+      <para>5. Download and put cas-client-core-3.1.1.jar in
+      CATALINA_HOME%/lib directory.</para>
+
+      <para>6. Now get trusted certificate for CAS server instance. To do this
+      download and compile this file: <link
+      linkend="???">http://blogs.sun.com/andreas/resource/InstallCert.java</link>
+      Then run it:</para>
+
+      <programlisting>java InstallCert test01-srv.exoua-int:8443 123456</programlisting>
+
+      <para>Change 123456 to actual password for keystore. You can see some
+      exception but finally you must see info about certificates and prompt
+      about adding it in storage. Select certificate, usually type 1 end press
+      Enter.</para>
+
+      <para>Finish!!!</para>
+    </section>
+
+    <section>
+      <title>Usage</title>
+
+      <para>Run both servers, and try open one of protected URLs, for example
+      <link
+      linkend="???">http://test01-srv.exoua-int:8080/portal/private/classic</link>.
+      Accept certificates, and in login page username/password: root/exo. You
+      must get private area in portal as root, then open other protected
+      resource on server 'ubu.exoua-int', <link
+      linkend="???">http://ubu.exoua-int:8080/portal/private/classic</link>.
+      And you must get this private area in other portal <command>without
+      login</command>. If you get it then SSO for login work as well.</para>
+
+      <para>No try logout on 'ubu.exoua-int'. To do it directly from portal
+      one groovy script must be modified, but it is not described here.</para>
+
+      <para>After logout from 'ubu.exoua-int' you should be asked about login
+      at 'test01-srv.exoua-int'. The SSO for logout work well also.</para>
+
+      <para>That is all!</para>
+
+      <para>If it works as described above, then configuration right and SSO
+      works.</para>
+    </section>
+  </section>
+</chapter>

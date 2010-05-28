@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter>
+  <?dbhtml filename="ch-ws.html"?>
+
+  <title>JavaScript WebDAV Library</title>
+
+  <section>
+    <title>Introduction to the JavaScript WebDAV library</title>
+
+    <para>I am proud to introduce JavaScript WebDAV library webdav.js which
+    based on AJAX. This library consists the special class webdav which is
+    aimed to make all requests supported by eXo Platform WebDAV-server with
+    supported parameters.</para>
+
+    <para>Proposed library supports asynchronous (on default) and synchronous
+    mode of AJAX request processing. To set one of some of this mode you
+    should call webdav.setAsynchronous() or webdav.setSynchronous()
+    method.</para>
+
+    <para>Also this library can fulfill BASIC HTTP authentication using value
+    of preset webdav.username and webdav.password properties.</para>
+
+    <para>Scheme of WebDAV data exchange:</para>
+
+    <mediaobject>
+      <imageobject>
+        <imagedata fileref="images/javascript-webdav.png" />
+      </imageobject>
+    </mediaobject>
+  </section>
+
+  <section>
+    <title>Content of JavaScript WebDAV Library:</title>
+
+    <para>There is a list of realized methods:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>ExtensionMethod(handler, path, options) method - a simple
+        constructor of the user-defined WebDAV request.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>1. WebDAV Modifications to HTTP Operations:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>GET(handler, path, options) method - retrieves the content of a
+        resource.</para>
+      </listitem>
+
+      <listitem>
+        <para>PUT(handler, path, options) method - saves the content of a
+        resource to the server.</para>
+      </listitem>
+
+      <listitem>
+        <para>DELETE(handler, path, options) method - removes a resource or
+        collection.</para>
+      </listitem>
+
+      <listitem>
+        <para>OPTIONS(handler, path, options) method - returns the HTTP
+        methods that the server supports for specified URL.</para>
+      </listitem>
+
+      <listitem>
+        <para>MKCOL(handler, path, options) method - creates a
+        collection.</para>
+      </listitem>
+
+      <listitem>
+        <para>COPY(handler, path, options) method - copies a resource from one
+        URI to another.</para>
+      </listitem>
+
+      <listitem>
+        <para>MOVE(handler, path, options) method - moves a resource from one
+        URI to another.</para>
+      </listitem>
+
+      <listitem>
+        <para>HEAD(handler, path, options) method - asks for the response
+        identical to the one that would correspond to a HEAD request, but
+        without the response body. This is useful for retrieving
+        meta-information written in response headers, without having to
+        transport the entire content.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>2. WebDAV Property Operations:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>PROPFIND(handler, path, options) method - retrieves properties,
+        stored as XML, from a resource. It is also overloaded to allow one to
+        retrieve the collection structure (a.k.a. directory hierarchy) of a
+        remote system.</para>
+      </listitem>
+
+      <listitem>
+        <para>PROPPATCH(handler, path, options) method - changes and deletes
+        multiple properties on a resource in a single atomic act.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>3. WebDAV Lock Operations:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>LOCK(handler, path, options) method - puts a lock on a
+        resource.</para>
+      </listitem>
+
+      <listitem>
+        <para>UNLOCK(handler, path, options) method - removes a lock from a
+        resource.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>4. WebDAV Versioning Extension Operations:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>VERSIONCONTROL(handler, path, options) method - is used to
+        create a new version-controlled resource for an existing version
+        history. This allows the creation of version-controlled resources for
+        the same version history in multiple workspaces.</para>
+      </listitem>
+
+      <listitem>
+        <para>CHECKOUT(handler, path, options) method - can be applied to a
+        checked-in version-controlled resource to allow modifications to the
+        content and dead properties of that version-controlled
+        resource.</para>
+      </listitem>
+
+      <listitem>
+        <para>CHECKIN(handler, path, options) method - can be applied to a
+        checked-out version-controlled resource to produce a new version whose
+        content and dead properties are copied from the checked-out
+        resource.</para>
+      </listitem>
+
+      <listitem>
+        <para>UNCHECKOUT(handler, path, options) method - can be applied to a
+        checked-out version-controlled resource to cancel the CHECKOUT and
+        restore the pre-CHECKOUT state of the version-controlled
+        resource.</para>
+      </listitem>
+
+      <listitem>
+        <para>REPORT(handler, path, options) method - an extensible mechanism
+        for obtaining information about a resource.</para>
+      </listitem>
+
+      <listitem>
+        <para>ORDERPATCH(handler, path, options) method - is used to change
+        the ordering semantics of a collection, to change the order of the
+        collection's members in the ordering, or both.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>5. WebDAV SEARCH Operation:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>SEARCH(handler, path, options) method - a lightweight search
+        method to transport queries and result sets that allows clients to
+        make use of server-side search facilities retrieve properties, stored
+        as XML, from a resource.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>If there is no interested WebDAV method in the list above, you can
+    use ExtensionMethod(handler, path, options) to construct WebDAV request
+    you like with your own:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>name of method (passing throw parameter options.method)</para>
+      </listitem>
+
+      <listitem>
+        <para>request headers (passing throw parameter options.headers)
+        and</para>
+      </listitem>
+
+      <listitem>
+        <para>request body (passing throw parameter options.body).</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>First parameter of each method - hanlder - is an object {onSuccess ,
+    onError, onComplete}, which describes three functions to call when the
+    request either succeeds or fails, and completes:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>handler.onSuccess - will call if the request succeeds,</para>
+      </listitem>
+
+      <listitem>
+        <para>handler.onError - will call if the request fails,</para>
+      </listitem>
+
+      <listitem>
+        <para>handler.onComplete - will call if the request completes.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Additionally you can add your own headers to the request by using
+    the special parameter options.</para>
+
+    <para>Each method returns object result which consists next
+    properties:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>result.status - status of XMLHttp response,</para>
+      </listitem>
+
+      <listitem>
+        <para>result.statusstring - an explanation of status,</para>
+      </listitem>
+
+      <listitem>
+        <para>result.headers - object with hash of XMLHttpRequest
+        response.getAllResponseHeaders() (e.g. if this the response header is
+        "Content-Type: test/plain" then result.headers['Content-Type'] =
+        'test/plain'),</para>
+      </listitem>
+
+      <listitem>
+        <para>result.content = XMLHttprequest response.responseXML if
+        response.header['Content-Type'] consists 'xml', or = XMLHttpRequest
+        response.responseText otherwise.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Example of using of JavaScript WebDAV library</title>
+
+    <para>An example of using WebDAV library for the eXo Platform
+    WebDAV-server:</para>
+
+    <programlisting>&lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /&gt;
+    &lt;title&gt;Demonstration of the eXo Platform Client Library of WebDAV&lt;/title&gt;
+    &lt;script type="text/javascript" src="js/webdav.js"&gt;&lt;/script&gt;
+    &lt;script&gt;    
+
+// Example of using of eXo Platform Client Library of WebDAV
+/**
+ * Serialize an XML Document or Element and return it as a string.
+ */
+function XMLtoString(node) {
+    if (typeof node != 'object') return node; 
+    if (typeof XMLSerializer != "undefined")
+        return (new XMLSerializer( )).serializeToString(node);
+    else if (node.xml) return node.xml;
+    else throw "XML.serialize is not supported or can't serialize " + node;
+};
+
+// get and setup webdav object
+        var webdav = new Webdav('localhost', '8080');
+            
+        webdav.username = 'root';
+        webdav.password = 'exo';
+
+// define webdav methods handlers
+        function handler_onSuccess(result) {
+            alert('Request SUCCEEDED with status = ' + result.status + ': ' + result.statusstring);
+        };
+
+        function handler_onError(result) {
+            alert('Request FAILED with status = ' + result.status + ': ' + result.statusstring);
+        };
+
+var handler = {
+    onSuccess: handler_onSuccess,
+    onError: handler_onError,
+    onComplete: MKCOL_handler_onComplete
+}
+
+// for eXoPlatform webdav
+var default_webdav_path = '/rest/jcr/repository/collaboration';
+
+// create a collection 'test'
+webdav.MKCOL(handler, default_webdav_path + '/test1');
+
+// create a resource 'example.txt' with content 'an example'
+        function MKCOL_handler_onComplete(result) {
+    // create a resource 'example.txt' with content 'an example' 
+    var options = {
+content: 'an example',
+content_type: 'text/plain; charset=UTF-8'
+    }
+    handler.onComplete = PUT_handler_onComplete;
+    webdav.PUT(handler, default_webdav_path + '/test1/example.txt', options);
+        };
+
+// put resource example.txt under version control
+        function PUT_handler_onComplete(result) {
+    // put resource example.txt under version control  
+    handler.onComplete = VERSIONCONROL_handler_onComplete;
+        webdav.VERSIONCONTROL(handler, default_webdav_path + '/test1/example.txt');
+        };
+
+// obtain the 'version-tree' WebDAV report about 'example.txt'        
+        function VERSIONCONROL_handler_onComplete(result) {
+    // obtain the 'version-tree' WebDAV report about 'example.txt'
+    var options = {
+        depth: '0',
+        type: 'version-tree'
+    };
+    handler.onComplete = REPORT_handler_onComplete;
+    webdav.REPORT(handler, default_webdav_path + '/test1/example.txt', options);
+        };
+
+        // delete the collection 'test'
+        function REPORT_handler_onComplete(result) {
+            if ( result.content )
+alert( 'Response of server: ' +  XMLtoString(result.content) );
+
+            // delete the collection 'test'
+    handler.onComplete = 'function() {}';
+    webdav.DELETE(handler, default_webdav_path + '/test1/');
+        };
+    &lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h2&gt;Demonstration of the eXo Platform Client Library of WebDAV&lt;/h2&gt;
+&lt;/body&gt;
+&lt;/html&gt;</programlisting>
+  </section>
+
+  <section>
+    <title>How to get JavaScript WebDAV library</title>
+
+    <para>You can get this library at the <link
+    linkend="???">http://svn.exoplatform.org/svnroot/exoplatform/projects/ws/branches/2.0.x/frameworks/javascript/webdav/src/main/js</link></para>
+
+    <para>Demonstration page was placed as <link
+    linkend="???">http://svn.exoplatform.org/svnroot/exoplatform/projects/ws/branches/2.0.x/frameworks/javascript/webdav/src/main/index.html</link></para>
+
+    <para>JSDoc is available at the <link
+    linkend="???">http://svn.exoplatform.org/svnroot/exoplatform/projects/ws/branches/2.0.x/frameworks/javascript/webdav/src/main/doc</link></para>
+
+    <para>Another place of Javadoc will be at the <link
+    linkend="???">http://docs.exoplatform.com.ua site soon</link>.</para>
+  </section>
+</chapter>

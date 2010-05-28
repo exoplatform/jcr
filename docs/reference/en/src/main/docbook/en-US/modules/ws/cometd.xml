@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter>
+  <?dbhtml filename="ch-ws.html"?>
+
+  <title>Cometd</title>
+
+  <section>
+    <title>definition</title>
+
+    <para>Comet is a World Wide Web application architecture in which a web
+    server sends data to a client program (normally a web browser)
+    asynchronously without any need for the client to explicitly request it.
+    It allows creation of event-driven web applications, enabling real-time
+    interaction which would otherwise require much more work. Though the term
+    Comet was coined in 2006, the idea is several years older, and has been
+    called various names, including server push, HTTP push, HTTP streaming,
+    Pushlets, Reverse Ajax, and others.</para>
+
+    <para>Cometd on wikipedia <link
+    linkend="???">http://en.wikipedia.org/wiki/Comet_(programming)</link>.</para>
+
+    <para>It's an implementation of the Bayeux protocol.</para>
+  </section>
+
+  <section>
+    <title>Use</title>
+
+    <para>Cometd is deployed by default with the portal (only trunk version).
+    it's composed of a service and a webapp.</para>
+
+    <para>To get access to the cometd, you need to get a key associated with
+    the login used in the portal.</para>
+
+    <programlisting>public String getUserToken(String eXoId)</programlisting>
+
+    <para>The connection has to be initialized, for doing so you can use the
+    cometd widget available by default in the portal.</para>
+
+    <para>to send a message from the service to a user :</para>
+
+    <programlisting>public void sendMessage(String eXoId, String channel, Object data)</programlisting>
+  </section>
+
+  <section>
+    <title>Sample</title>
+
+    <para>you can find a sample here <link
+    linkend="???">http://svn.exoplatform.org/svnroot/exoplatform/projects/portal/trunk/sample/application/cometd/</link></para>
+
+    <para><command>To have it working :</command></para>
+
+    <itemizedlist>
+      <listitem>
+        <para>deploy a trunk version of the portal</para>
+      </listitem>
+
+      <listitem>
+        <para>go to ~/java/portal/trunk/sample/application/cometd/ and execute
+        exoproject --deploy=module</para>
+      </listitem>
+
+      <listitem>
+        <para>start the portal</para>
+      </listitem>
+
+      <listitem>
+        <para>load all the widgets and portlets</para>
+      </listitem>
+
+      <listitem>
+        <para>in a page, add the cometd widget and the portlet
+        "CometdDemo"</para>
+      </listitem>
+
+      <listitem>
+        <para>in the widget click on init</para>
+      </listitem>
+
+      <listitem>
+        <para>in the CometdDemo portlet, type a message and click on "send", a
+        pop up with your message will appear on the top right and disappear
+        after 3 sec</para>
+      </listitem>
+    </itemizedlist>
+
+    <para><command>What happened?</command></para>
+
+    <itemizedlist>
+      <listitem>
+        <para>the portlet (JSR 286) sent an action with the message.</para>
+      </listitem>
+
+      <listitem>
+        <para>the action called the continuation service and sent the message
+        to the user that had sent it</para>
+      </listitem>
+
+      <listitem>
+        <para>the service sent the message to the browser</para>
+      </listitem>
+
+      <listitem>
+        <para>the cometd client side received the message, and sent it to
+        topics</para>
+      </listitem>
+
+      <listitem>
+        <para>in topic, the notification window listened to the topic
+        "/eXo/portal/notification" so the notification window appeared.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>improvements</title>
+
+    <itemizedlist>
+      <listitem>
+        <para>replace the token system by oAuth would probably be good. not
+        sure of how it is possible.</para>
+      </listitem>
+
+      <listitem>
+        <para>There is no method yet to broadcast a message on a channel to
+        all the subscribers</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+</chapter>

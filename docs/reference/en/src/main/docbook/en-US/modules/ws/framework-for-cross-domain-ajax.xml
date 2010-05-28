@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter>
+  <?dbhtml 	filename="ch-ws.html"?>
+
+  <title>Framework for cross-domain AJAX</title>
+
+  <para>(<link
+  linkend="???">http://svn.exoplatform.org/projects/ws/branches/1.3/frameworks/cross-domain-ajax/</link>)</para>
+
+  <section>
+    <title>Motivation</title>
+
+    <para>XmlHttpRequest objects are bound by the same origin security policy
+    of browsers, which prevents a page from accessing data from another
+    server. This has put a serious limitation on Ajax developers: you can use
+    XmlHttpRequests to make background calls to a server, but it has to be the
+    same server that served up the current page. For detail's you can visit
+    <link
+    linkend="???">http://www.mozilla.org/projects/security/components/same-origin.html</link>.</para>
+
+    <mediaobject>
+      <imageobject>
+        <imagedata fileref="images/ajax.gif" />
+      </imageobject>
+    </mediaobject>
+
+    <para>But actually writing client web applications that use this object
+    can be tricky given restrictions imposed by web browsers on network
+    connections across domains. So need find way how to bypass this limitation
+    of AJAX.</para>
+  </section>
+
+  <section>
+    <title>Scheme (how it works)</title>
+
+    <para>To describe our method for cross-domain AJAX solution let us
+    consider the following scheme contains of 3 components:</para>
+
+    <para>1). User agent (a browser).</para>
+
+    <para>2). ServerA contains a main page with dedicated client and server
+    IFRAMEs (see below) and an HTML client page (client.html) referenced from
+    the client IFRAME. This client page contains dedicated script to push the
+    data for request into server IFRAME.</para>
+
+    <para>3). ServerB contains remote service that want get access to and an
+    HTML server page (server.html) referenced from the server IFRAME. This
+    server page contains dedicated script to push the requested data into
+    client IFRAME.</para>
+
+    <mediaobject>
+      <imageobject>
+        <imagedata fileref="images/ajax-how-it-works.png" />
+      </imageobject>
+    </mediaobject>
+  </section>
+
+  <section>
+    <title>A Working Sequence:</title>
+
+    <para>1) A Browser requests the Start page from the ServerA</para>
+
+    <para>2) The Start page is retrieved from the ServerA.</para>
+
+    <para>3) Create in the start page IFRAME (name it - "client iframe") and
+    insert on it document from ServerA (client.</para>
+
+    <para>4) In "client iframe" create ne IFRAME element ("server iframe") and
+    insert on it document from ServerB (server.html). Documents (client.html
+    and server.html) contain special script that can transfer data between
+    ifarmes.</para>
+
+    <para>5) "Client iframe" transfer information about HTTP method and URL
+    that we want do cross-domain request to "server iframe".</para>
+
+    <para>6) "Server iframe" do simple XmlHttpRequest to the service that we
+    need (it can do that because download from same domain) and get informaton
+    from service.</para>
+
+    <para>7) "Server iframe" transfer data to "client iframe" and now we get
+    information that we want.</para>
+  </section>
+
+  <section>
+    <title>How to use it</title>
+
+    <para>1). Place the file client.html and xda.js on the serverA.</para>
+
+    <para>2). Place the file server.html on the serverB.</para>
+
+    <para>3). Declare xda.js in the main page.</para>
+
+    <programlisting>&lt;script type="text/javascript" src="xda.js"&gt;&lt;/script&gt;</programlisting>
+
+    <para>4). Create JS function which performing cross domain call as in
+    following example:</para>
+
+    <programlisting>&lt;script type="text/javascript"&gt;                                                                                                                                                                                                                                                  
+  function test(){                                                                                                                                       
+                var facade = xdaInit();                                                                                                                  
+                facade.clientURI = "http://localhost/cross-domain-ajax/client/client.html";                                                              
+                facade.serverURI = "http://localhost:8080/cross-domain-ajax/server/server.html";                                                         
+                facade.apiURI = "http://localhost:8080/cross-domain-ajax/server/test.txt";                                                               
+                facade.method = "POST";                                                                                                                  
+                facade.load = function(result) {                                                                                                         
+                                alert(result.responseText);                                                                                              
+                }                                                                                                                                        
+                facade.setRequestHeader("keep-alive","200");                                                                                             
+                xda.create(facade);                                                                                                                      
+        }                                                                                                                                                
+&lt;/script&gt;</programlisting>
+
+    <para>5). Use this function (here it is bound to a button's onclick
+    event).</para>
+
+    <programlisting>&lt;button onclick='test()'&gt;test cross-domain&lt;/button&gt;</programlisting>
+  </section>
+</chapter>

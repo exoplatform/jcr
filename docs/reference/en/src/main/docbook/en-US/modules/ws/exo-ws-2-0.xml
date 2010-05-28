@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter>
+  <?dbhtml filename="ch-ws.html"?>
+
+  <title>eXo WS 2.0 Release Notes (released on 2009.02.07)</title>
+
+  <section>
+    <title>Notable Changes</title>
+
+    <para>REST framework based on JSR-311 specification including:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Support of JSR-311 annotations</para>
+      </listitem>
+
+      <listitem>
+        <para>Support all media types specified in section 4.2.4 Standard
+        Entity Providers of jaxrs-1.0-final specification. Additional support
+        for 'multipart/*' and 'application/json' media types.</para>
+      </listitem>
+
+      <listitem>
+        <para>WADL generation on receipt an OPTIONS request</para>
+      </listitem>
+
+      <listitem>
+        <para>Addition feature request and response filters. Filters is
+        similar to servlet filter and gives possibility to modify request and
+        response</para>
+      </listitem>
+
+      <listitem>
+        <para>Support for RESTful services that made in Groovy.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>OAuth implementation able to use persistent storage for
+    'tickets'</para>
+  </section>
+
+  <section>
+    <title>API changes</title>
+
+    <para>RESTful services MUST use JAX-RS annotations..</para>
+  </section>
+
+  <section>
+    <title>Dependencies changed</title>
+
+    <para>Use eXo Kernel version 2.1</para>
+
+    <para>Use eXo Core version 2.2</para>
+
+    <para>Use maven-ant-run-plugin version 1.3 instead 1.2-SNAPSHOT</para>
+
+    <para>Use jcifs version 1.2.19 instead 1.2.17</para>
+  </section>
+
+  <section>
+    <title>How to upgrade</title>
+
+    <para>See REST Migration to jsr311</para>
+  </section>
+
+  <section>
+    <title>System Requirements</title>
+
+    <para>JVM: version 1.5.x</para>
+
+    <para>Building Tools: Maven 2.0.6 and up</para>
+  </section>
+
+  <section>
+    <title>Detailed Changelog</title>
+
+    <para>Complete list of issues fixed in eXo-Ws Version 2.0. Find details on
+    <link
+    linkend="???">http://jira.exoplatform.org/secure/ReleaseNote.jspa?version=10432&amp;styleName=Text&amp;projectId=10070&amp;Create=Create</link></para>
+
+    <programlisting>Bug
+* [WS-124] - Usage of SNAPSHOT in maven dependencies
+* [WS-126] - jcifs 1.2.17 is not available in public maven repo, but 1.2.19 is.
+* [WS-127] - wrong groupId for catalina dependency declaration
+
+
+Improvement
+* [WS-69] - oAuth should be able to use with annotation JSR250.
+* [WS-74] - Add possibility transfer large data (files) via org.exoplatform.services.rest.impl.provider.MultipartFormDataEntityProvider
+* [WS-77] - Check if the class org.exoplatform.ws.rest.ejbconnector30.RestEJBConnector can better handle the Portal Container to be compatible with multiple portal instance
+* [WS-78] - Check if the class org.exoplatform.ws.rest.ejbconnector21.RestEJBConnectorBean can better handle the Portal Container to be compatible with multiple portal instance
+* [WS-97] - Add support for X-HTTP-Method-Override header
+* [WS-98] - Use URI pattern for request and response filters.
+
+
+Task
+* [WS-57] - Refactor eXo REST engine to compatibility with JSR-311.
+* [WS-68] - Refactor REST EJB conector according to new implementation of REST engine (JSR-311). See WS-57.
+* [WS-75] - Add WADL generation for request with OPTIONS HTTP method.
+* [WS-81] - Change cometd service for JSR-311
+* [WS-92] - Pre-release testing plan for QA team
+* [WS-93] - Move webdav methods to the package org.exoplatform.services.rest.ext.method.webdav
+* [WS-94] - More description of classes' purpose in rest.ext sources
+* [WS-95] - Remove StandaloneContainerInitializedListener from JCR (one from WS has to be used everywhere), move PortalContainerInitializedFilter from JCR to WS
+* [WS-117] - jsr-311 capability tests
+
+Sub-task
+* [WS-101] - Create service for administration groovy scripts for REST via HTTP.
+* [WS-116] - Merge code to the branches/2.0</programlisting>
+  </section>
+
+  <section>
+    <title>Download</title>
+
+    <para>Sources: <link
+    linkend="???">http://download.forge.objectweb.org/exoplatform/exo-ws-2.0-src.zip</link></para>
+
+    <para>Demo: <link
+    linkend="???">http://download.forge.objectweb.org/exoplatform/exo-ws-2.0-tomcat.zip</link></para>
+  </section>
+</chapter>
