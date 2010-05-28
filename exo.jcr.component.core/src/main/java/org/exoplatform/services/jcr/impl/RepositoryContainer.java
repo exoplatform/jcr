@@ -535,7 +535,7 @@ public class RepositoryContainer extends ExoContainer
 
    private void registerWorkspacesComponents() throws RepositoryException, RepositoryConfigurationException
    {
-      // System workspace should be first initialize.
+      // System workspace should be first initialized.
       for (WorkspaceEntry we : config.getWorkspaceEntries())
       {
          if (we.getName().equals(config.getSystemWorkspaceName()))
@@ -543,7 +543,7 @@ public class RepositoryContainer extends ExoContainer
             registerWorkspace(we);
          }
       }
-      
+
       // Initialize other (non system) workspaces.
       for (WorkspaceEntry we : config.getWorkspaceEntries())
       {

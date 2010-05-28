@@ -254,14 +254,14 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
          if ((configurationPersister != null && configurationPersister.hasConfig()))
          {
             initFromStream(configurationService.getInputStream(param.getValue()));
-            
+
             // Will be merged extension repository configuration with configuration from persister.  
-            if (!configExtensionPaths.isEmpty()) 
+            if (!configExtensionPaths.isEmpty())
             {
-               String[] paths = (String[])configExtensionPaths.toArray(new String[configExtensionPaths.size()]);
+               String[] paths = (String[]) configExtensionPaths.toArray(new String[configExtensionPaths.size()]);
                for (int i = paths.length - 1; i >= 0; i--)
                {
-                     merge(configurationService.getInputStream(paths[i]));
+                  merge(configurationService.getInputStream(paths[i]));
                }
                // Store the merged configuration
                if (configurationPersister != null)
@@ -273,7 +273,7 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
          else
          {
 
-            String[] paths = (String[])configExtensionPaths.toArray(new String[configExtensionPaths.size()]);
+            String[] paths = (String[]) configExtensionPaths.toArray(new String[configExtensionPaths.size()]);
             for (int i = paths.length - 1; i >= 0; i--)
             {
                // We start from the last one because as it is the one with highest priorityn
