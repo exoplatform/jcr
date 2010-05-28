@@ -254,6 +254,20 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
          if (configExtensionPaths.isEmpty() || (configurationPersister != null && configurationPersister.hasConfig()))
          {
             initFromStream(configurationService.getInputStream(param.getValue()));
+            
+            if (!configExtensionPaths.isEmpty()) 
+            {
+               String[] paths = (String[])configExtensionPaths.toArray(new String[configExtensionPaths.size()]);
+               for (int i = paths.length - 1; i >= 0; i--)
+               {
+                     merge(configurationService.getInputStream(paths[i]));
+               }
+               // Store the merged configuration
+               if (configurationPersister != null)
+               {
+                  retain();
+               }
+            }
          }
          else
          {

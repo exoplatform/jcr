@@ -62,6 +62,7 @@ import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -534,8 +535,27 @@ public class RepositoryContainer extends ExoContainer
 
    private void registerWorkspacesComponents() throws RepositoryException, RepositoryConfigurationException
    {
-      List<WorkspaceEntry> wsEntries = config.getWorkspaceEntries();
-      Collections.sort(wsEntries, new WorkspaceOrderComparator(config.getSystemWorkspaceName()));
+      List<WorkspaceEntry> wsEntries = new ArrayList<WorkspaceEntry>();
+      
+      for (WorkspaceEntry ws : config.getWorkspaceEntries())
+      {
+         if (ws.getName().equals(config.getSystemWorkspaceName())) 
+         {
+            if (wsEntries.size() == 0)
+            {
+               wsEntries.add(ws);
+            } 
+            else
+            {
+               wsEntries.add(0, ws);
+            }
+         } 
+         else 
+         {
+            wsEntries.add(ws);
+         }
+      }
+      
       for (int i = 0; i < wsEntries.size(); i++)
       {
          registerWorkspace(wsEntries.get(i));
