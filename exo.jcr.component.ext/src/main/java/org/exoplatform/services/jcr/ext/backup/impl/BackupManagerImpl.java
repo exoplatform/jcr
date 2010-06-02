@@ -1363,6 +1363,17 @@ public class BackupManagerImpl implements BackupManager, Startable
       Map<String, String> workspaceNamesCorrespondMap, boolean asynchronous) throws BackupOperationException,
       BackupConfigurationException, RepositoryException, RepositoryConfigurationException
    {
+      // Checking repository exists. 
+      try 
+      {
+         repoService.getRepository(repositoryEntry.getName());
+         throw new BackupConfigurationException("Repository \"" + repositoryEntry.getName() + "\" is already exists.");
+      } 
+      catch (RepositoryException e) 
+      {
+         //OK. Repository with "repositoryEntry.getName" is not exists.
+      } 
+      
       Map<String, BackupChainLog> workspacesMapping = new HashedMap();
 
       Map<String, BackupChainLog> backups = new HashedMap();
