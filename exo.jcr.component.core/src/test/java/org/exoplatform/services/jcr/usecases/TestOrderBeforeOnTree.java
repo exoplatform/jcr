@@ -19,8 +19,10 @@ package org.exoplatform.services.jcr.usecases;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.jcr.impl.core.PropertyImpl;
 
 import javax.jcr.Node;
+import javax.jcr.PropertyIterator;
 
 /**
  * Created by The eXo Platform SAS.
@@ -98,8 +100,13 @@ public class TestOrderBeforeOnTree extends BaseUsecasesTest
             fail("Expected path " + expectedPath + " but was " + realPath);
          }
 
+         //check properties path
+         PropertyIterator pit = n.getProperties();
+         while (pit.hasNext())
+         {
+            PropertyImpl p = (PropertyImpl)pit.nextProperty();
+            assertEquals(expectedPath, p.getInternalPath().makeParentPath());
+         }
       }
-
    }
-
 }

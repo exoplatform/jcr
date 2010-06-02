@@ -836,6 +836,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
             cache.addToList(makeChildListFqn(childNodesList, node.getParentIdentifier()), ITEM_LIST, node
                .getIdentifier());
          }
+
       }
       // add in ITEMS
       return (ItemData)cache.put(makeItemFqn(node.getIdentifier()), ITEM_DATA, node);
@@ -901,9 +902,15 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
                .getIdentifier());
 
             // remove from CHILD_NODES as parent
-            cache.removeNode(makeChildListFqn(childNodes, item.getIdentifier()));
+            Fqn<String> parentFqn = makeChildListFqn(childNodes, item.getIdentifier());
+            Node<Serializable, Object> parent = cache.getNode(parentFqn);
+            if (parent != null && parent.isLeaf())
+            {
+               cache.removeNode(parentFqn);
+            }
 
             // remove from CHILD_NODES_LIST as parent
+
             cache.removeNode(makeChildListFqn(childNodesList, item.getIdentifier()));
 
             // remove from CHILD_PROPS as parent

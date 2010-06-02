@@ -808,15 +808,7 @@ public class TestOrderBefore extends JcrAPIBaseTest
       testBase.orderBefore("n1[3]", null);
 
       String[] order = new String[]{"n1", "n1[2]", "n1[3]", "n2", "n1[4]"}; // n1
-      // [
-      // 3
-      // ]
-      // -
-      // >
-      // n1
-      // [
-      // 4
-      // ]
+      // [3]->n1[4]
 
       checkOrder(order);
 
