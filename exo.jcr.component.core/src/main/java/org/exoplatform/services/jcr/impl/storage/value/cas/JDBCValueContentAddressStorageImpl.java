@@ -29,6 +29,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -204,16 +205,17 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
             // check if table already exists
             if (!trs.next())
             {
+               Statement st = conn.createStatement();
+
                // create table
-               conn.createStatement().executeUpdate(
-                  "CREATE TABLE " + tableName
-                     + " (PROPERTY_ID VARCHAR(96) NOT NULL, ORDER_NUM INTEGER NOT NULL, CAS_ID VARCHAR(512) NOT NULL, "
-                     + "CONSTRAINT " + sqlConstraintPK + " PRIMARY KEY(PROPERTY_ID, ORDER_NUM))");
+               st.executeUpdate("CREATE TABLE " + tableName
+                  + " (PROPERTY_ID VARCHAR(96) NOT NULL, ORDER_NUM INTEGER NOT NULL, CAS_ID VARCHAR(512) NOT NULL, "
+                  + "CONSTRAINT " + sqlConstraintPK + " PRIMARY KEY(PROPERTY_ID, ORDER_NUM))");
 
                // create index on hash (CAS_ID)
-               conn.createStatement().executeUpdate(
-                  "CREATE INDEX " + sqlVCASIDX + " ON " + tableName + "(CAS_ID, PROPERTY_ID, ORDER_NUM)");
+               st.executeUpdate("CREATE INDEX " + sqlVCASIDX + " ON " + tableName + "(CAS_ID, PROPERTY_ID, ORDER_NUM)");
 
+               st.close();
                if (LOG.isDebugEnabled())
                {
                   LOG.debug("JDBC Value Content Address Storage initialized in database " + sn);
@@ -403,9 +405,10 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
       try
       {
          Connection con = dataSource.getConnection();
+         PreparedStatement ps = null;
          try
          {
-            PreparedStatement ps = con.prepareStatement(sqlSelectRecord);
+            ps = con.prepareStatement(sqlSelectRecord);
             ps.setString(1, propertyId);
             ps.setInt(2, orderNum);
             ResultSet rs = ps.executeQuery();
@@ -422,6 +425,10 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
          }
          finally
          {
+            if (ps != null)
+            {
+               ps.close();
+            }
             con.close();
          }
       }
@@ -439,10 +446,10 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
       try
       {
          Connection con = dataSource.getConnection();
+         PreparedStatement ps = null;
          try
          {
             List<String> ids = new ArrayList<String>();
-            PreparedStatement ps;
 
             if (ownOnly)
             {
@@ -488,6 +495,10 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
          }
          finally
          {
+            if (ps != null)
+            {
+               ps.close();
+            }
             con.close();
          }
       }
@@ -505,14 +516,19 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
       try
       {
          Connection con = dataSource.getConnection();
+         PreparedStatement ps = null;
          try
          {
-            PreparedStatement ps = con.prepareStatement(sqlSelectSharingProps);
+            ps = con.prepareStatement(sqlSelectSharingProps);
             ps.setString(1, propertyId);
             return ps.executeQuery().next();
          }
          finally
          {
+            if (ps != null)
+            {
+               ps.close();
+            }
             con.close();
          }
       }

@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * Created by The eXo Platform SAS
@@ -46,9 +47,10 @@ public class OracleDBInitializer extends StorageDBInitializer
    @Override
    protected boolean isSequenceExists(Connection conn, String sequenceName) throws SQLException
    {
+      Statement st = conn.createStatement();
       try
       {
-         ResultSet srs = conn.createStatement().executeQuery("SELECT " + sequenceName + ".nextval FROM DUAL");
+         ResultSet srs = st.executeQuery("SELECT " + sequenceName + ".nextval FROM DUAL");
          if (srs.next())
          {
             return true;
@@ -63,17 +65,29 @@ public class OracleDBInitializer extends StorageDBInitializer
             return false;
          throw e;
       }
+      finally
+      {
+         st.close();
+      }
    }
 
    @Override
    protected boolean isTriggerExists(Connection conn, String triggerName) throws SQLException
    {
       String sql = "SELECT COUNT(trigger_name) FROM all_triggers WHERE trigger_name = '" + triggerName + "'";
-      ResultSet r = conn.createStatement().executeQuery(sql);
-      if (r.next())
-         return r.getInt(1) > 0;
-      else
-         return false;
+      Statement st = conn.createStatement();
+      try
+      {
+         ResultSet r = st.executeQuery(sql);
+         if (r.next())
+            return r.getInt(1) > 0;
+         else
+            return false;
+      }
+      finally
+      {
+         st.close();
+      }
    }
 
    @Override
@@ -81,7 +95,9 @@ public class OracleDBInitializer extends StorageDBInitializer
    {
       try
       {
-         conn.createStatement().executeUpdate("SELECT 1 FROM " + tableName);
+         Statement st = conn.createStatement();
+         st.executeUpdate("SELECT 1 FROM " + tableName);
+         st.close();
          return true;
       }
       catch (SQLException e)
@@ -98,10 +114,18 @@ public class OracleDBInitializer extends StorageDBInitializer
    {
       // use of oracle system view
       String sql = "SELECT COUNT(index_name) FROM all_indexes WHERE index_name='" + indexName + "'";
-      ResultSet r = conn.createStatement().executeQuery(sql);
-      if (r.next())
-         return r.getInt(1) > 0;
-      else
-         return false;
+      Statement st = conn.createStatement();
+      ResultSet r = st.executeQuery(sql);
+      try
+      {
+         if (r.next())
+            return r.getInt(1) > 0;
+         else
+            return false;
+      }
+      finally
+      {
+         st.close();
+      }
    }
 }

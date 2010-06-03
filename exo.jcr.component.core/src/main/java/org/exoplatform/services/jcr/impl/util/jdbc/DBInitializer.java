@@ -28,6 +28,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -324,9 +325,11 @@ public class DBInitializer
       }
 
       String sql = null;
+      Statement st = null;
       try
       {
          connection.setAutoCommit(false);
+         st = connection.createStatement();
 
          for (String scr : scripts)
          {
@@ -341,7 +344,7 @@ public class DBInitializer
                   LOG.debug("Execute script: \n[" + sql + "]");
                }
 
-               connection.createStatement().executeUpdate(sql);
+               st.executeUpdate(sql);
             }
          }
 
@@ -379,6 +382,10 @@ public class DBInitializer
       {
          try
          {
+            if (st != null)
+            {
+               st.close();
+            }
             connection.close();
          }
          catch (SQLException e)
