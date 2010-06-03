@@ -2393,14 +2393,18 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          NodeData nodeData = siblings.get(i);
          if (srcInd == -1)
          {
-            if (nodeData.getQPath().getName().equals(srcPath.getName()))
+            if (nodeData.getQPath().getName().equals(srcPath.getName())
+               && (nodeData.getQPath().getIndex() == srcPath.getIndex() || srcPath.getIndex() == 0
+                  && nodeData.getQPath().getIndex() == 1))
             {
                srcInd = i;
             }
          }
          if (destPath != null && destInd == -1)
          {
-            if (nodeData.getQPath().getName().equals(destPath.getName()))
+            if (nodeData.getQPath().getName().equals(destPath.getName())
+               && (nodeData.getQPath().getIndex() == destPath.getIndex() || destPath.getIndex() == 0
+                  && nodeData.getQPath().getIndex() == 1))
             {
                destInd = i;
                if (srcInd != -1)
@@ -2462,7 +2466,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          NodeData sdata = siblings.get(j);
 
          // calculating same name index
-         if (sdata.getQPath().getName().getAsString().equals(srcPath.getName().getAsString()))
+         if (sdata.getQPath().getName().equals(srcPath.getName()))
             ++sameNameIndex;
 
          // skeep unchanged
@@ -2471,8 +2475,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
          NodeData newData = sdata;
          // change same name index
-         if (sdata.getQPath().getName().getAsString().equals(srcPath.getName().getAsString())
-            && sdata.getQPath().getIndex() != sameNameIndex)
+         if (sdata.getQPath().getName().equals(srcPath.getName()) && sdata.getQPath().getIndex() != sameNameIndex)
          {
             // update with new index
             QPath siblingPath =

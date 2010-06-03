@@ -25,7 +25,6 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
-import org.exoplatform.services.jcr.datamodel.IllegalPathException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
@@ -903,9 +902,15 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
                .getIdentifier());
 
             // remove from CHILD_NODES as parent
-            cache.removeNode(makeChildListFqn(childNodes, item.getIdentifier()));
+            Fqn<String> parentFqn = makeChildListFqn(childNodes, item.getIdentifier());
+            Node<Serializable, Object> parent = cache.getNode(parentFqn);
+            if (parent != null && parent.isLeaf())
+            {
+               cache.removeNode(parentFqn);
+            }
 
             // remove from CHILD_NODES_LIST as parent
+
             cache.removeNode(makeChildListFqn(childNodesList, item.getIdentifier()));
 
             // remove from CHILD_PROPS as parent
@@ -1009,83 +1014,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
       int prevNodeIndex = prevNode.getQPath().getEntries()[prevNode.getQPath().getEntries().length - 1].getIndex();
       if (nodeIndex != prevNodeIndex)
       {
-         // its a samename reordering
-         updateTreePath(prevNode.getQPath(), node.getQPath(), null); // don't change ACL, it's same parent
-      }
-   }
-
-   /**
-    * Check all items in cache - is it descendant of prevRootPath, and update path according newRootPath.
-    * 
-    * @param prevRootPath
-    * @param newRootPath
-    * @param acl
-    */
-   protected void updateTreePath(final QPath prevRootPath, final QPath newRootPath, final AccessControlList acl)
-   {
-      boolean inheritACL = acl != null;
-
-      // check all ITEMS in cache 
-      Node<Serializable, Object> items = cache.getNode(itemsRoot);
-      Set<Object> childrenNames = items.getChildrenNames();
-      Iterator<Object> namesIt = childrenNames.iterator();
-
-      while (namesIt.hasNext())
-      {
-         String id = (String)namesIt.next();
-         ItemData data = (ItemData)cache.get(makeItemFqn(id), ITEM_DATA);
-
-         // check is this descendant of prevRootPath
-         QPath nodeQPath = data.getQPath();
-         if (nodeQPath.isDescendantOf(prevRootPath))
-         {
-
-            //make relative path
-            QPathEntry[] relativePath = null;
-            try
-            {
-               relativePath = nodeQPath.getRelPath(nodeQPath.getDepth() - prevRootPath.getDepth());
-            }
-            catch (IllegalPathException e)
-            {
-               // Do nothing. Never happens.
-            }
-
-            // make new path - no matter  node or property
-            QPath newPath = QPath.makeChildPath(newRootPath, relativePath);
-
-            if (data.isNode())
-            {
-               // update node
-
-               NodeData prevNode = (NodeData)data;
-
-               TransientNodeData newNode =
-                  new TransientNodeData(newPath, prevNode.getIdentifier(), prevNode.getPersistedVersion(), prevNode
-                     .getPrimaryTypeName(), prevNode.getMixinTypeNames(), prevNode.getOrderNumber(), prevNode
-                     .getParentIdentifier(), inheritACL ? acl : prevNode.getACL()); // TODO check ACL
-               // update this node
-               cache.put(makeItemFqn(newNode.getIdentifier()), ITEM_DATA, newNode);
-            }
-            else
-            {
-               //update property
-
-               PropertyData prevProp = (PropertyData)data;
-
-               if (inheritACL
-                  && (prevProp.getQPath().getName().equals(Constants.EXO_PERMISSIONS) || prevProp.getQPath().getName()
-                     .equals(Constants.EXO_OWNER)))
-               {
-                  inheritACL = false;
-               }
-
-               TransientPropertyData newProp =
-                  new TransientPropertyData(newPath, prevProp.getIdentifier(), prevProp.getPersistedVersion(), prevProp
-                     .getType(), prevProp.getParentIdentifier(), prevProp.isMultiValued(), prevProp.getValues());
-               cache.put(makeItemFqn(newProp.getIdentifier()), ITEM_DATA, newProp);
-            }
-         }
+         updateTreePath(node.getIdentifier(), node.getQPath(), null); // don't change ACL, it's same parent
       }
    }
 

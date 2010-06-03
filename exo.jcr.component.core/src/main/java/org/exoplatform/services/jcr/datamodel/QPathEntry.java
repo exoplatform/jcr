@@ -158,18 +158,4 @@ public class QPathEntry extends InternalQName implements Comparable<QPathEntry>
       return getAsString(true);
    }
 
-   @Override
-   public boolean equals(Object o)
-   {
-      boolean result = super.equals(o);
-
-      if (result == true && (o instanceof QPathEntry))
-      {
-         return result && (index == ((QPathEntry)o).getIndex());
-      }
-      else
-      {
-         return result;
-      }
-   }
 }

@@ -176,7 +176,7 @@ public class QPath implements Comparable<QPath>
 
       for (int i = 0; i < ancestorNames.length; i++)
       {
-         if (!names[i].equals(ancestorNames[i]))
+         if (!ancestorNames[i].equals(names[i]))
             return false;
       }
       return true;
@@ -239,7 +239,7 @@ public class QPath implements Comparable<QPath>
    }
 
    /**
-    * @return last QPathEntry of this path
+    * @return last name of this path
     */
    public InternalQName getName()
    {
@@ -247,7 +247,7 @@ public class QPath implements Comparable<QPath>
    }
 
    /**
-    * @return index of last QPathEntry of this paths
+    * @return index
     */
    public int getIndex()
    {
