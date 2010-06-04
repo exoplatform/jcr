@@ -18,11 +18,11 @@
     02110-1301 USA, or see the FSF site: http://www.fsf.org.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project>
    <parent>
       <groupId>org.exoplatform.jcr</groupId>
       <artifactId>exo.jcr.applications.config</artifactId>
-      <version>1.12.3-GA-SNAPSHOT</version>
+      <version>1.12.2-GA-SNAPSHOT</version>
    </parent>
 
    <modelVersion>4.0.0</modelVersion>
@@ -40,7 +40,7 @@
       <dependency>
          <groupId>org.exoplatform.jcr</groupId>
          <artifactId>exo.jcr.ear</artifactId>
-         <version>1.12.3-GA-SNAPSHOT</version>
+         <version>1.12.2-GA-SNAPSHOT</version>
          <type>ear</type>
          <scope>runtime</scope>
       </dependency>
@@ -95,7 +95,7 @@
                   <copy todir="${exo.projects.directory.working}/exo-jboss" verbose="false" overwrite="true">
                      <fileset dir="${exo.projects.directory.dependencies}/${exo.projects.app.jboss.version}" />
                   </copy>
-                  <chmod dir="${exo.projects.directory.working}/exo-jboss/bin" perm="+x" includes="*.sh" />
+                  <chmod dir="${exo.projects.directory.working}/exo-jboss/bin" perm="+x"   includes="*.sh"/>
 
                   <!--renaming ear-->
                   <move todir="${basedir}/target/lib-binary.dir/">
