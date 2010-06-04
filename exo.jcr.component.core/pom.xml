@@ -712,6 +712,7 @@
                   <artifactId>maven-surefire-plugin</artifactId>
                   <configuration>
                      <phase>test</phase>
+                     <forkMode>never</forkMode>
                      <!-- argLine>${env.MAVEN_OPTS}</argLine -->
                      <goals>
                         <goal>test</goal>
@@ -733,7 +734,7 @@
                         <include>**/**/TestJBossCacheWorkspaceStorageCache_.java</include>
                         <exclude>**/**/TestCleanableFileStreamValueData.java</exclude>
                         <include>**/**/TestSVNodeDataOptimization_.java</include>
-                        <include>**/**/TestNodeReference.java</include>
+                        <include>**/**/TestValueConstraints.java</include>
                      </includes>
                   </configuration>
                </plugin>
