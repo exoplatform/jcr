@@ -34,7 +34,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -242,7 +241,6 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
             }
             finally
             {
-               ps.close();
                con.close();
             }
          }
@@ -266,13 +264,12 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
       try
       {
          Connection con = openConnection();
-         PreparedStatement ps = null;
          try
          {
             if (isDbInitialized(con))
             {
 
-               ps = con.prepareStatement("SELECT * FROM " + configTableName + " WHERE NAME=?");
+               PreparedStatement ps = con.prepareStatement("SELECT * FROM " + configTableName + " WHERE NAME=?");
                ps.setString(1, CONFIGNAME);
                ResultSet res = ps.executeQuery();
 
@@ -293,10 +290,6 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
          }
          finally
          {
-            if (ps != null)
-            {
-               ps.close();
-            }
             con.close();
          }
       }
@@ -331,9 +324,7 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
             if (!isDbInitialized(con))
             {
                // init db
-               Statement st = con.createStatement();
-               st.executeUpdate(sql = initSQL);
-               st.close();
+               con.createStatement().executeUpdate(sql = initSQL);
 
                con.commit();
                con.close();
@@ -371,7 +362,6 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
                      .warn("Repository service configuration doesn't stored ok. No rows was affected in JDBC operation. Datasource "
                         + sourceName + ". SQL: " + sql);
                }
-               ps.close();
             }
             else
                throw new ConfigurationNotInitializedException(

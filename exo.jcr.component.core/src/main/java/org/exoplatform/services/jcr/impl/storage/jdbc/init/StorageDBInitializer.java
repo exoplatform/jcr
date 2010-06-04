@@ -24,7 +24,6 @@ import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializer;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 /**
  * JCR Storage DB initializer.
@@ -38,7 +37,7 @@ public class StorageDBInitializer extends DBInitializer
 {
 
    protected final boolean multiDb;
-
+   
    public StorageDBInitializer(String containerName, Connection connection, String scriptPath, boolean multiDb)
       throws IOException
    {
@@ -56,8 +55,7 @@ public class StorageDBInitializer extends DBInitializer
          "select * from JCR_" + MDB + "ITEM where ID='" + Constants.ROOT_PARENT_UUID + "' and PARENT_ID='"
             + Constants.ROOT_PARENT_UUID + "'";
 
-      Statement st = connection.createStatement();
-      if (!st.executeQuery(select).next())
+      if (!connection.createStatement().executeQuery(select).next())
       {
          String insert =
             "insert into JCR_" + MDB + "ITEM(ID, PARENT_ID, NAME, " + (multiDb ? "" : "CONTAINER_NAME, ")
@@ -65,8 +63,7 @@ public class StorageDBInitializer extends DBInitializer
                + Constants.ROOT_PARENT_UUID + "', '__root_parent', " + (multiDb ? "" : "'__root_parent_container', ")
                + "0, 0, 0, 0)";
 
-         st.executeUpdate(insert);
+         connection.createStatement().executeUpdate(insert);
       }
-      st.close();
    }
 }

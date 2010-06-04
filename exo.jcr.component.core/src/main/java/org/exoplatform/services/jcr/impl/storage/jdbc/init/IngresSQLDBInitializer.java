@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 /**
  * Created by The eXo Platform SAS
@@ -69,11 +68,9 @@ public class IngresSQLDBInitializer extends StorageDBInitializer
    protected boolean isSequenceExists(Connection conn, String sequenceName) throws SQLException
    {
       String seqName = sequenceName.toUpperCase().toLowerCase();
-      Statement st = null;
       try
       {
-         st = conn.createStatement();
-         ResultSet srs = st.executeQuery("SELECT NEXT VALUE FOR " + seqName);
+         ResultSet srs = conn.createStatement().executeQuery("SELECT NEXT VALUE FOR " + seqName);
          if (srs.next())
          {
             return true;
@@ -98,13 +95,6 @@ public class IngresSQLDBInitializer extends StorageDBInitializer
                return e;
             }
          };
-      }
-      finally
-      {
-         if (st != null)
-         {
-            st.close();
-         }
       }
    }
 
