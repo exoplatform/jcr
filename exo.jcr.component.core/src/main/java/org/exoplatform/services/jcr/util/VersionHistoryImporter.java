@@ -98,6 +98,16 @@ public class VersionHistoryImporter
    private final String versionHistory;
 
    /**
+    * Versionable node uuid.
+    */
+   private String uuid;
+
+   /**
+    * Versionable node path.
+    */
+   private String path;
+
+   /**
     * VersionHistoryImporter constructor.
     * 
     * @param versionableNode - versionable node.
@@ -130,53 +140,72 @@ public class VersionHistoryImporter
     */
    public void doImport() throws RepositoryException, IOException
    {
-      String path = versionableNode.getVersionHistory().getParent().getPath();
-
-      NodeData versionable = (NodeData)versionableNode.getData();
-      // ----- VERSIONABLE properties -----
-      // jcr:versionHistory
-      TransientPropertyData vh =
-         TransientPropertyData.createPropertyData(versionable, Constants.JCR_VERSIONHISTORY, PropertyType.REFERENCE,
-            false, new TransientValueData(new Identifier(versionHistory)));
-
-      // jcr:baseVersion
-      TransientPropertyData bv =
-         TransientPropertyData.createPropertyData(versionable, Constants.JCR_BASEVERSION, PropertyType.REFERENCE,
-            false, new TransientValueData(new Identifier(baseVersionUuid)));
-
-      // jcr:predecessors
-      List<ValueData> values = new ArrayList<ValueData>();
-      for (int i = 0; i < predecessors.length; i++)
+      try
       {
-         values.add(new TransientValueData(new Identifier(predecessors[i])));
+         uuid = versionableNode.getUUID();
+         path = versionableNode.getVersionHistory().getParent().getPath();
+         LOG.info("Started: Import version history for node wiht path=" + path + " and UUID=" + uuid);
+
+         NodeData versionable = (NodeData)versionableNode.getData();
+         // ----- VERSIONABLE properties -----
+         // jcr:versionHistory
+         TransientPropertyData vh =
+            TransientPropertyData.createPropertyData(versionable, Constants.JCR_VERSIONHISTORY, PropertyType.REFERENCE,
+               false, new TransientValueData(new Identifier(versionHistory)));
+
+         // jcr:baseVersion
+         TransientPropertyData bv =
+            TransientPropertyData.createPropertyData(versionable, Constants.JCR_BASEVERSION, PropertyType.REFERENCE,
+               false, new TransientValueData(new Identifier(baseVersionUuid)));
+
+         // jcr:predecessors
+         List<ValueData> values = new ArrayList<ValueData>();
+         for (int i = 0; i < predecessors.length; i++)
+         {
+            values.add(new TransientValueData(new Identifier(predecessors[i])));
+         }
+         TransientPropertyData pd =
+            TransientPropertyData.createPropertyData(versionable, Constants.JCR_PREDECESSORS, PropertyType.REFERENCE,
+               true, values);
+
+         PlainChangesLog changesLog = new PlainChangesLogImpl();
+         RemoveVisitor rv = new RemoveVisitor();
+         rv.visit((NodeData)((NodeImpl)versionableNode.getVersionHistory()).getData());
+         changesLog.addAll(rv.getRemovedStates());
+         changesLog.add(ItemState.createAddedState(vh));
+         changesLog.add(ItemState.createAddedState(bv));
+         changesLog.add(ItemState.createAddedState(pd));
+         // remove version properties to avoid referential integrety check
+         PlainChangesLog changesLogDeltete = new PlainChangesLogImpl();
+
+         changesLogDeltete.add(ItemState.createDeletedState(((PropertyImpl)versionableNode
+            .getProperty("jcr:versionHistory")).getData()));
+         changesLogDeltete.add(ItemState.createDeletedState(((PropertyImpl)versionableNode
+            .getProperty("jcr:baseVersion")).getData()));
+         changesLogDeltete.add(ItemState.createDeletedState(((PropertyImpl)versionableNode
+            .getProperty("jcr:predecessors")).getData()));
+         dataKeeper.save(changesLogDeltete);
+         // remove version history
+         dataKeeper.save(changesLog);
+         userSession.save();
+         // import new version history
+         userSession.getWorkspace().importXML(path, versionHistoryStream, 0);
+         userSession.save();
+
+         LOG.info("Completed: Import version history for node wiht path=" + path + " and UUID=" + uuid);
       }
-      TransientPropertyData pd =
-         TransientPropertyData.createPropertyData(versionable, Constants.JCR_PREDECESSORS, PropertyType.REFERENCE,
-            true, values);
-
-      PlainChangesLog changesLog = new PlainChangesLogImpl();
-      RemoveVisitor rv = new RemoveVisitor();
-      rv.visit((NodeData)((NodeImpl)versionableNode.getVersionHistory()).getData());
-      changesLog.addAll(rv.getRemovedStates());
-      changesLog.add(ItemState.createAddedState(vh));
-      changesLog.add(ItemState.createAddedState(bv));
-      changesLog.add(ItemState.createAddedState(pd));
-      // remove version properties to avoid referential integrety check
-      PlainChangesLog changesLogDeltete = new PlainChangesLogImpl();
-
-      changesLogDeltete.add(ItemState.createDeletedState(((PropertyImpl)versionableNode
-         .getProperty("jcr:versionHistory")).getData()));
-      changesLogDeltete.add(ItemState.createDeletedState(((PropertyImpl)versionableNode.getProperty("jcr:baseVersion"))
-         .getData()));
-      changesLogDeltete.add(ItemState
-         .createDeletedState(((PropertyImpl)versionableNode.getProperty("jcr:predecessors")).getData()));
-      dataKeeper.save(changesLogDeltete);
-      // remove version history
-      dataKeeper.save(changesLog);
-      userSession.save();
-      // import new version history
-      userSession.getWorkspace().importXML(path, versionHistoryStream, 0);
-      userSession.save();
+      catch (RepositoryException exception)
+      {
+         LOG.error("Failed: Import version history for node wiht path=" + path + " and UUID=" + uuid, exception);
+         throw new RepositoryException(exception);
+      }
+      catch (IOException exception)
+      {
+         LOG.error("Failed: Import version history for node wiht path=" + path + " and UUID=" + uuid, exception);
+         IOException newException = new IOException();
+         newException.initCause(exception);
+         throw newException;
+      }
    }
 
    /**
