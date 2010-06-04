@@ -22,7 +22,7 @@
    <parent>
       <groupId>org.exoplatform.jcr</groupId>
       <artifactId>docs</artifactId>
-      <version>1.12.2-GA-SNAPSHOT</version>
+      <version>1.12.2-GA</version>
    </parent>
 
    <modelVersion>4.0.0</modelVersion>
