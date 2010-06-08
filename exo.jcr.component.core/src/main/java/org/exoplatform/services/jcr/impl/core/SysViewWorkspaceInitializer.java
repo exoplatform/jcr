@@ -776,8 +776,8 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
                               if (pfile != null)
                               {
                                  vdata =
-                                    new TransientValueData(currentProperty.getValues().size(), null, null, pfile,
-                                       fileCleaner, maxBufferSize, null, true);
+                                    new TransientValueData(currentProperty.getValues().size(), null, null,
+                                       new SpoolFile(pfile.getAbsolutePath()), fileCleaner, maxBufferSize, null, true);
                               }
                               else
                               {

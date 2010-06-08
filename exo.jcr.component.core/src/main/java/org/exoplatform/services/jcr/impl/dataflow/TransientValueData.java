@@ -70,7 +70,7 @@ public class TransientValueData implements ValueData
 
       protected InputStream tmpStream;
 
-      protected File spoolFile;
+      protected SpoolFile spoolFile;
 
       protected final boolean closeTmpStream;
 
@@ -146,7 +146,7 @@ public class TransientValueData implements ValueData
        * @throws IOException
        *           if read error
        */
-      protected NewValueData(int orderNumber, byte[] bytes, InputStream stream, File spoolFile,
+      protected NewValueData(int orderNumber, byte[] bytes, InputStream stream, SpoolFile spoolFile,
          FileCleaner fileCleaner, int maxBufferSize, File tempDirectory, boolean deleteSpoolFile, boolean closeTmpStream)
          throws IOException
       {
@@ -163,10 +163,7 @@ public class TransientValueData implements ValueData
 
          if (spoolFile != null)
          {
-            if (spoolFile instanceof SpoolFile)
-            {
-               ((SpoolFile)spoolFile).acquire(this);
-            }
+            spoolFile.acquire(this);
 
             if (this.tmpStream != null)
             {
@@ -744,7 +741,7 @@ public class TransientValueData implements ValueData
     * @throws IOException
     *           if read error
     */
-   public TransientValueData(int orderNumber, byte[] bytes, InputStream stream, File spoolFile,
+   public TransientValueData(int orderNumber, byte[] bytes, InputStream stream, SpoolFile spoolFile,
       FileCleaner fileCleaner, int maxBufferSize, File tempDirectory, boolean deleteSpoolFile, boolean closeTmpStream)
       throws IOException
    {
@@ -775,7 +772,7 @@ public class TransientValueData implements ValueData
     * @throws IOException
     *           if read error
     */
-   public TransientValueData(int orderNumber, byte[] bytes, InputStream stream, File spoolFile,
+   public TransientValueData(int orderNumber, byte[] bytes, InputStream stream, SpoolFile spoolFile,
       FileCleaner fileCleaner, int maxBufferSize, File tempDirectory, boolean deleteSpoolFile) throws IOException
    {
       this.delegate =
@@ -823,7 +820,7 @@ public class TransientValueData implements ValueData
     * @throws IOException
     *           if read error
     */
-   public TransientValueData(int orderNumber, File spoolFile, FileCleaner fileCleaner, boolean deleteSpoolFile)
+   public TransientValueData(int orderNumber, SpoolFile spoolFile, FileCleaner fileCleaner, boolean deleteSpoolFile)
       throws IOException
    {
       this.delegate =
@@ -1191,7 +1188,7 @@ public class TransientValueData implements ValueData
     * 
     * @return File temp file
     */
-   public File getSpoolFile()
+   public SpoolFile getSpoolFile()
    {
       if (delegate instanceof NewValueData)
       {

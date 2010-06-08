@@ -97,6 +97,18 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
     */
    private static final String DB2_PK_CONSTRAINT_DETECT_PATTERN =
       "(.*DB2 SQL error+.*SQLCODE: -803+.*SQLSTATE: 23505+.*%s.*)+?";
+   
+   /**
+    * MYSQL_PK_CONSTRAINT_DETECT_PATTERN.
+    */
+   private static final String H2_PK_CONSTRAINT_DETECT_PATTERN = 
+      "(.*JdbcSQLException.*violation.*PRIMARY_KEY_.*)";
+   
+   /**
+    * H2_PK_CONSTRAINT_DETECT.
+    */
+   private static final Pattern H2_PK_CONSTRAINT_DETECT = 
+      Pattern.compile(H2_PK_CONSTRAINT_DETECT_PATTERN, Pattern.CASE_INSENSITIVE);
 
    /**
     * DB2_PK_CONSTRAINT_DETECT.
@@ -302,11 +314,14 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
       // HSQLDB 8.x - java.sql.SQLException: Violation of unique constraint $$: duplicate value(s) for
       // column(s) $$:
       // JCR_VCAS_PK in statement [INSERT INTO JCR_VCAS (PROPERTY_ID, ORDER_NUM, CAS_ID)
-      // VALUES(?,?,?)]
+      // VALUES(?,?,?)]         String H2_PK_CONSTRAINT_DETECT_PATTERN = "(.*JdbcSQLException.*violation.*PRIMARY_KEY_.*)";
       // PostgreSQL 8.2.x - org.postgresql.util.PSQLException: ERROR: duplicate key violates unique
       // constraint "jcr_vcas_pk"
       // Oracle 9i x64 (on Fedora 7) - java.sql.SQLException: ORA-00001: unique constraint
       // (EXOADMIN.JCR_VCAS_PK) violated
+      // H2 - org.h2.jdbc.JdbcSQLException: Unique index or primary key violation: 
+      // "PRIMARY_KEY_4 ON PUBLIC.JCR_VCAS_TEST(PROPERTY_ID, ORDER_NUM)"; 
+      //
       String err = e.toString();
       if (DBConstants.DB_DIALECT_MYSQL.equalsIgnoreCase(dialect)
          || DBConstants.DB_DIALECT_MYSQL_UTF8.equalsIgnoreCase(dialect))
@@ -322,6 +337,10 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
       else if (DBConstants.DB_DIALECT_DB2.equalsIgnoreCase(dialect))
       {
          return DB2_PK_CONSTRAINT_DETECT.matcher(err).find();
+      }
+      else if (DBConstants.DB_DIALECT_H2.equalsIgnoreCase(dialect)) 
+      {
+         return H2_PK_CONSTRAINT_DETECT.matcher(err).find();
       }
 
       // NOTICE! As an additional check we may ask the database for property currently processed in

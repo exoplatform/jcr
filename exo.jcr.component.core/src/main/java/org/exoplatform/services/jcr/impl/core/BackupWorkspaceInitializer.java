@@ -448,12 +448,12 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
             ItemData itemData = itemState.getData();
 
             PersistedPropertyData propertyData = (PersistedPropertyData)itemData;
-            ValueData tvd =
-               (ValueData)(propertyData.getValues().get(listFixupStream.get(i).getValueDataId()));
+            TransientValueData tvd =
+               (TransientValueData)(propertyData.getValues().get(listFixupStream.get(i).getValueDataId()));
 
             // re-init the value
-            propertyData.getValues().set(listFixupStream.get(i).getValueDataId(), 
-                     new StreamPersistedValueData(tvd.getOrderNumber(), listFile.get(i)));
+            tvd.delegate(new TransientValueData(tvd.getOrderNumber(), null, null, new SpoolFile(listFile.get(i)
+               .getAbsolutePath()), fileCleaner, -1, null, true));
          }
 
          for (int i = 0; i < listFile.size(); i++)

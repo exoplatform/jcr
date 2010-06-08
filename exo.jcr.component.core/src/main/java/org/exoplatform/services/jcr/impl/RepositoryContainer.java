@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl;
 
 import org.exoplatform.container.ExoContainer;
+import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.container.jmx.MX4JComponentAdapterFactory;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
@@ -31,6 +32,7 @@ import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
+import org.exoplatform.services.jcr.impl.core.AddNamespacePluginHolder;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.NamespaceDataPersister;
 import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
@@ -99,6 +101,41 @@ public class RepositoryContainer extends ExoContainer
     * Logger.
     */
    private final Log log = ExoLogger.getLogger("exo.jcr.component.core.RepositoryContainer");
+
+   /**
+    * List of AddNamespacePlugin.
+    */
+   private List<ComponentPlugin> addNamespacePlugins;
+
+   /**
+    * RepositoryContainer constructor.
+    * 
+    * @param parent
+    *          container
+    * @param config
+    *          Repository configuration
+    * @param addNamespacePlugins
+    *          list of addNamespacePlugin
+    * @throws RepositoryException
+    *           container initialization error
+    * @throws RepositoryConfigurationException
+    *           configuration error
+    */
+   public RepositoryContainer(ExoContainer parent, RepositoryEntry config, List<ComponentPlugin> addNamespacePlugins)
+      throws RepositoryException, RepositoryConfigurationException
+   {
+
+      super(new MX4JComponentAdapterFactory(), parent);
+
+      // Defaults:
+      if (config.getAccessControl() == null)
+         config.setAccessControl(AccessControlPolicy.OPTIONAL);
+
+      this.config = config;
+      this.addNamespacePlugins = addNamespacePlugins;
+
+      registerComponents();
+   }
 
    /**
     * RepositoryContainer constructor.
@@ -487,7 +524,6 @@ public class RepositoryContainer extends ExoContainer
 
    private void registerRepositoryComponents() throws RepositoryConfigurationException, RepositoryException
    {
-
       registerComponentImplementation(IdGenerator.class);
 
       registerComponentImplementation(RepositoryIndexSearcherHolder.class);
@@ -495,6 +531,8 @@ public class RepositoryContainer extends ExoContainer
       registerComponentImplementation(WorkspaceFileCleanerHolder.class);
       registerComponentImplementation(LocationFactory.class);
       registerComponentImplementation(ValueFactoryImpl.class);
+
+      registerComponentInstance(new AddNamespacePluginHolder(addNamespacePlugins));
 
       registerComponentImplementation(JCRNodeTypeDataPersister.class);
       registerComponentImplementation(NamespaceDataPersister.class);

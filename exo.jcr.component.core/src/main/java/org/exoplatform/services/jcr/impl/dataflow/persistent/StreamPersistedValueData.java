@@ -41,7 +41,7 @@ public class StreamPersistedValueData extends FilePersistedValueData
 
    protected InputStream stream;
 
-   protected File tempFile;
+   protected SpoolFile tempFile;
 
    /**
     * StreamPersistedValueData  constructor for stream data.
@@ -61,7 +61,7 @@ public class StreamPersistedValueData extends FilePersistedValueData
     * @param tempFile File
     * @throws FileNotFoundException 
     */
-   public StreamPersistedValueData(int orderNumber, File tempFile) throws FileNotFoundException
+   public StreamPersistedValueData(int orderNumber, SpoolFile tempFile) throws FileNotFoundException
    {
       this(orderNumber, tempFile, null);
    }
@@ -91,15 +91,15 @@ public class StreamPersistedValueData extends FilePersistedValueData
     * @param tempFile File
     * @throws FileNotFoundException 
     */
-   public StreamPersistedValueData(int orderNumber, File tempFile, File destFile) throws FileNotFoundException
+   public StreamPersistedValueData(int orderNumber, SpoolFile tempFile, File destFile) throws FileNotFoundException
    {
       super(orderNumber, destFile);
       this.tempFile = tempFile;
       this.stream = null;
 
-      if (tempFile != null && tempFile instanceof SpoolFile)
+      if (tempFile != null)
       {
-         ((SpoolFile)tempFile).acquire(this);
+         tempFile.acquire(this);
       }
    }
 
@@ -129,7 +129,7 @@ public class StreamPersistedValueData extends FilePersistedValueData
     * 
     * @return File temporary file or null
     */
-   public File getTempFile()
+   public SpoolFile getTempFile()
    {
       return tempFile;
    }
@@ -233,9 +233,9 @@ public class StreamPersistedValueData extends FilePersistedValueData
             ((SwapFile)file).release(this);
          }
 
-         if (tempFile != null && tempFile instanceof SpoolFile)
+         if (tempFile != null)
          {
-            ((SpoolFile)tempFile).release(this);
+            tempFile.release(this);
          }
       }
       finally

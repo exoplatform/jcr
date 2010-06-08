@@ -294,7 +294,9 @@ public class WorkspaceImpl implements ExtendedWorkspace
    public QueryManager getQueryManager() throws RepositoryException
    {
       if (queryManager == null)
-         throw new RepositoryException("Query Manager Factory not found. Check configuration.");
+         throw new RepositoryException(
+            "Query Manager Factory not found. Check configuration of the query-handler for workspace " + getName()
+               + ".");
       return queryManager;
    }
 

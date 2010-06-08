@@ -31,6 +31,7 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
 import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
+import org.exoplatform.services.jcr.impl.core.AddNamespacePluginHolder;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.log.ExoLogger;
@@ -149,7 +150,7 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
          throw new RepositoryConfigurationException("Repository container " + rEntry.getName() + " already started");
       }
 
-      RepositoryContainer repositoryContainer = new RepositoryContainer(parentContainer, rEntry);
+      RepositoryContainer repositoryContainer = new RepositoryContainer(parentContainer, rEntry, addNamespacesPlugins);
 
       // Storing and starting the repository container under
       // key=repository_name
@@ -157,6 +158,7 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
       {
          repositoryContainers.put(rEntry.getName(), repositoryContainer);
          managerStartChanges.registerListeners(repositoryContainer);
+
          repositoryContainer.start();
       }
       catch (Throwable t)
@@ -174,7 +176,6 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
          config.getRepositoryConfigurations().add(rEntry);
       }
 
-      addNamespaces(rEntry.getName());
       registerNodeTypes(rEntry.getName());
 
       // turn on Repository ONLINE
@@ -300,53 +301,6 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
       addNamespacesPlugins.clear();
       addNodeTypePlugins.clear();
       managerStartChanges.cleanup();
-   }
-
-   private void addNamespaces() throws RepositoryException
-   {
-
-      for (RepositoryEntry repoConfig : config.getRepositoryConfigurations())
-      {
-         addNamespaces(repoConfig.getName());
-      }
-   }
-
-   private void addNamespaces(String repositoryName) throws RepositoryException
-   {
-
-      ManageableRepository repository = getRepository(repositoryName);
-      NamespaceRegistry nsRegistry = repository.getNamespaceRegistry();
-
-      for (int j = 0; j < addNamespacesPlugins.size(); j++)
-      {
-         AddNamespacesPlugin plugin = (AddNamespacesPlugin)addNamespacesPlugins.get(j);
-         Map<String, String> namespaces = plugin.getNamespaces();
-         try
-         {
-            for (Map.Entry<String, String> namespace : namespaces.entrySet())
-            {
-
-               String prefix = namespace.getKey();
-               String uri = namespace.getValue();
-
-               // register namespace if not found
-               try
-               {
-                  nsRegistry.getURI(prefix);
-               }
-               catch (NamespaceException e)
-               {
-                  nsRegistry.registerNamespace(prefix, uri);
-               }
-               if (log.isDebugEnabled())
-                  log.debug("Namespace is registered " + prefix + " = " + uri);
-            }
-         }
-         catch (Exception e)
-         {
-            log.error("Error load namespaces ", e);
-         }
-      }
    }
 
    private void init(ExoContainer container) throws RepositoryConfigurationException, RepositoryException
