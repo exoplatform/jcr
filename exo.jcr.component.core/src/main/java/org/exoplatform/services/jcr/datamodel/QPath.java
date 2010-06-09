@@ -37,7 +37,6 @@ import javax.jcr.RepositoryException;
 
 public class QPath implements Comparable<QPath>
 {
-
    /**
     * Logger.
     */
@@ -176,7 +175,7 @@ public class QPath implements Comparable<QPath>
 
       for (int i = 0; i < ancestorNames.length; i++)
       {
-         if (!ancestorNames[i].equals(names[i]))
+         if (!names[i].equals(ancestorNames[i]))
             return false;
       }
       return true;
@@ -239,7 +238,7 @@ public class QPath implements Comparable<QPath>
    }
 
    /**
-    * @return last name of this path
+    * @return last QPathEntry of this path
     */
    public InternalQName getName()
    {
@@ -247,7 +246,7 @@ public class QPath implements Comparable<QPath>
    }
 
    /**
-    * @return index
+    * @return index of last QPathEntry of this paths
     */
    public int getIndex()
    {
