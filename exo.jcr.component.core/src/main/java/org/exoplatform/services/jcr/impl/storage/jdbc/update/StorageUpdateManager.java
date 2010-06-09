@@ -30,6 +30,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
@@ -199,6 +200,7 @@ public class StorageUpdateManager
             PreparedStatement insertVersion = connection.prepareStatement(SQL_UPDATE_VERSION);
             insertVersion.setString(1, REQUIRED_STORAGE_VERSION);
             insertVersion.executeUpdate();
+            insertVersion.close();
 
             connection.commit();
          }
@@ -368,9 +370,11 @@ public class StorageUpdateManager
    private String currentVersion() throws SQLException
    {
       ResultSet version = null;
+      Statement st = null;
       try
       {
-         version = connection.createStatement().executeQuery(SQL_SELECT_VERSION);
+         st = connection.createStatement();
+         version = st.executeQuery(SQL_SELECT_VERSION);
          if (version.next())
             return version.getString("VERSION");
       }
@@ -381,12 +385,34 @@ public class StorageUpdateManager
       finally
       {
          if (version != null)
-            version.close();
+         {
+            try
+            {
+               version.close();
+            }
+            catch (SQLException e)
+            {
+               log.error("Can't close the ResultSet: " + e);
+            }
+         }
+
+         if (st != null)
+         {
+            try
+            {
+               st.close();
+            }
+            catch (SQLException e)
+            {
+               log.error("Can't close the Statement: " + e);
+            }
+         }
       }
 
       PreparedStatement insertVersion = connection.prepareStatement(SQL_INSERT_VERSION);
       insertVersion.setString(1, REQUIRED_STORAGE_VERSION);
       insertVersion.executeUpdate();
+      insertVersion.close();
       return REQUIRED_STORAGE_VERSION;
    }
 
@@ -402,9 +428,11 @@ public class StorageUpdateManager
 
       ResultSet refs = null;
       PreparedStatement update = null;
+      Statement st = null;
       try
       {
-         refs = conn.createStatement().executeQuery(SQL_SELECT_JCRUUID);
+         st = conn.createStatement();
+         refs = st.executeQuery(SQL_SELECT_JCRUUID);
          update = conn.prepareStatement(SQL_UPDATE_JCRUUID);
          while (refs.next())
          {
@@ -453,9 +481,40 @@ public class StorageUpdateManager
       finally
       {
          if (refs != null)
-            refs.close();
+         {
+            try
+            {
+               refs.close();
+            }
+            catch (SQLException e)
+            {
+               log.error("Can't close the ResultSet: " + e);
+            }
+         }
+
          if (update != null)
-            update.close();
+         {
+            try
+            {
+               update.close();
+            }
+            catch (SQLException e)
+            {
+               log.error("Can't close the Statement: " + e);
+            }
+         }
+
+         if (st != null)
+         {
+            try
+            {
+               st.close();
+            }
+            catch (SQLException e)
+            {
+               log.error("Can't close the Statement: " + e);
+            }
+         }
       }
    }
 
@@ -467,10 +526,12 @@ public class StorageUpdateManager
 
       ResultSet refs = null;
       PreparedStatement update = null;
+      Statement st = null;
       try
       {
          String sql = SQL_SELECT_FROZENJCRUUID.replaceAll(FROZENJCRUUID, searchCriteria);
-         refs = conn.createStatement().executeQuery(SQL_SELECT_FROZENJCRUUID);
+         st = conn.createStatement();
+         refs = st.executeQuery(SQL_SELECT_FROZENJCRUUID);
          while (refs.next())
          {
             try
@@ -502,9 +563,40 @@ public class StorageUpdateManager
       finally
       {
          if (refs != null)
-            refs.close();
+         {
+            try
+            {
+               refs.close();
+            }
+            catch (SQLException e)
+            {
+               log.error("Can't close the ResultSet: " + e);
+            }
+         }
+
          if (update != null)
-            update.close();
+         {
+            try
+            {
+               update.close();
+            }
+            catch (SQLException e)
+            {
+               log.error("Can't close the Statement: " + e);
+            }
+         }
+
+         if (st != null)
+         {
+            try
+            {
+               st.close();
+            }
+            catch (SQLException e)
+            {
+               log.error("Can't close the Statement: " + e);
+            }
+         }
       }
    }
 
@@ -518,9 +610,11 @@ public class StorageUpdateManager
 
       ResultSet refs = null;
       PreparedStatement update = null;
+      Statement st = null;
       try
       {
-         refs = conn.createStatement().executeQuery(SQL_SELECT_REFERENCES);
+         st = conn.createStatement();
+         refs = st.executeQuery(SQL_SELECT_REFERENCES);
          update = conn.prepareStatement(SQL_INSERT_REFERENCES);
          while (refs.next())
          {
@@ -562,9 +656,40 @@ public class StorageUpdateManager
       finally
       {
          if (refs != null)
-            refs.close();
+         {
+            try
+            {
+               refs.close();
+            }
+            catch (SQLException e)
+            {
+               log.error("Can't close the ResultSet: " + e);
+            }
+         }
+
          if (update != null)
-            update.close();
+         {
+            try
+            {
+               update.close();
+            }
+            catch (SQLException e)
+            {
+               log.error("Can't close the Statement: " + e);
+            }
+         }
+
+         if (st != null)
+         {
+            try
+            {
+               st.close();
+            }
+            catch (SQLException e)
+            {
+               log.error("Can't close the Statement: " + e);
+            }
+         }
       }
    }
 

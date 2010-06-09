@@ -85,7 +85,14 @@ public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
          }
          finally
          {
-            item.close();
+            try
+            {
+               item.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the ResultSet: " + e);
+            }
          }
       }
       return super.addNodeRecord(data);
@@ -108,7 +115,14 @@ public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
          }
          finally
          {
-            item.close();
+            try
+            {
+               item.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the ResultSet: " + e);
+            }
          }
       }
       return super.addPropertyRecord(data);
