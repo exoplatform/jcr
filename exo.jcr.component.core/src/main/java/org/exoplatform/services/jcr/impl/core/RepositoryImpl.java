@@ -60,12 +60,14 @@ import javax.jcr.Session;
 /**
  * Created by The eXo Platform SAS.<br/>
  * Implementation of javax.jcr.Repository
- * 
+ *
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov </a>
  * @version $Id: RepositoryImpl.java 14487 2008-05-20 07:08:40Z gazarenkov $
  */
 public class RepositoryImpl implements ManageableRepository
 {
+
+   private static final RuntimePermission GET_SYSTEM_SESSION_PERMISSION = new RuntimePermission("getJCRSystemSession");
 
    /**
     * Repository descriptors.
@@ -134,7 +136,7 @@ public class RepositoryImpl implements ManageableRepository
 
    /**
     * RepositoryImpl constructor.
-    * 
+    *
     * @param container Repository container
     * @throws RepositoryException error of initialization
     * @throws RepositoryConfigurationException error of configuration
@@ -215,13 +217,13 @@ public class RepositoryImpl implements ManageableRepository
    /**
     * Creation contains three steps. First
     * <code>configWorkspace(WorkspaceEntry wsConfig)</code> - registration a new
-    * configuration in RepositoryContainer and create WorkspaceContainer. Second,
-    * the main step, is
+    * configuration in RepositoryContainer and create WorkspaceContainer.
+    * Second, the main step, is
     * <code>initWorkspace(String workspaceName, String rootNodeType)</code> -
     * initializing workspace by name and root nodetype. Third, final step,
     * starting all components of workspace. Before creation workspace <b>must be
     * configured</b>
-    * 
+    *
     * @see org.exoplatform.services.jcr.core.RepositoryImpl#configWorkspace(org.exoplatform.services.jcr.config.WorkspaceEntry
     *      )
     * @see org.exoplatform.services.jcr.core.RepositoryImpl#initWorkspace(java.lang.String,java.lang.String)
@@ -327,6 +329,13 @@ public class RepositoryImpl implements ManageableRepository
     */
    public SessionImpl getSystemSession(String workspaceName) throws RepositoryException
    {
+      // Need privileges to get system session.
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+      {
+         security.checkPermission(GET_SYSTEM_SESSION_PERMISSION);
+      }
+
       if (getState() == OFFLINE)
          LOG.warn("Repository " + getName() + " is OFFLINE.");
 
@@ -410,7 +419,7 @@ public class RepositoryImpl implements ManageableRepository
 
    /**
     * Internal Remove Workspace.
-    * 
+    *
     * @param workspaceName workspace name
     * @throws RepositoryException error of remove
     */
@@ -498,7 +507,7 @@ public class RepositoryImpl implements ManageableRepository
 
    /**
     * Internal login.
-    * 
+    *
     * @param state ConversationState
     * @param workspaceName workspace name
     * @return SessionImpl
@@ -580,7 +589,7 @@ public class RepositoryImpl implements ManageableRepository
 
    /**
     * Set all repository workspaces ReadOnly status.
-    * 
+    *
     * @param wsStatus ReadOnly workspace status
     */
    private void setAllWorkspacesReadOnly(boolean wsStatus)

@@ -340,6 +340,7 @@
                <include>**/*.tiff</include>
                <include>**/*.pdf</include>
                <include>**/*.dtd</include>
+               <include>**/*.policy</include>
             </includes>
          </testResource>
       </testResources>
@@ -589,6 +590,7 @@
                         <exclude>org/apache/jackrabbit/test/api/TestAll.java</exclude>
                         <exclude>org/apache/jackrabbit/test/api/**/Abstract*.java</exclude>
                         <exclude>org/apache/jackrabbit/test/api/**/FrozenNodeTest.java</exclude>
+                        <exclude>org/exoplatform/services/jcr/impl/core/security/Test*.java</exclude>
                      </excludes>
                   </configuration>
                </plugin>
@@ -696,6 +698,8 @@
                         <exclude>org/apache/jackrabbit/test/api/TestAll.java</exclude>
                         <exclude>org/apache/jackrabbit/test/api/**/Abstract*.java</exclude>
                         <exclude>org/apache/jackrabbit/test/api/**/FrozenNodeTest.java</exclude>
+                        <!-- security -->
+                        <exclude>org/exoplatform/services/jcr/impl/core/security/Test*.java</exclude>
                      </excludes>
                   </configuration>
                </plugin>
@@ -735,6 +739,9 @@
                         <include>**/**/TestSVNodeDataOptimization_.java</include>
                         <include>**/**/TestValueConstraints.java</include>
                      </includes>
+                     <excludes>
+                        <exclude>org/exoplatform/services/jcr/impl/core/security/Test*.java</exclude>
+                     </excludes>
                   </configuration>
                </plugin>
             </plugins>
