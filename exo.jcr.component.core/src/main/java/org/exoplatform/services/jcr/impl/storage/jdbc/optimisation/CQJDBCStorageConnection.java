@@ -248,7 +248,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
             }
             catch (SQLException e)
             {
-               LOG.error(e.getMessage(), e);
+               LOG.error("Can't close the ResultSet: " + e);
             }
          }
       }
@@ -348,7 +348,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
             }
             catch (SQLException e)
             {
-               LOG.error(e.getMessage(), e);
+               LOG.error("Can't close the ResultSet: " + e);
             }
          }
       }
@@ -409,20 +409,34 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
       int cversion, int cnordernumb, AccessControlList parentACL) throws RepositoryException, SQLException
    {
       ResultSet ptProp = findNodeMainPropertiesByParentIdentifierCQ(cid);
-      Map<String, SortedSet<TempPropertyData>> properties = new HashMap<String, SortedSet<TempPropertyData>>();
-      while (ptProp.next())
+      try
       {
-         String key = ptProp.getString(COLUMN_NAME);
-         SortedSet<TempPropertyData> values = properties.get(key);
-         if (values == null)
+         Map<String, SortedSet<TempPropertyData>> properties = new HashMap<String, SortedSet<TempPropertyData>>();
+         while (ptProp.next())
          {
-            values = new TreeSet<TempPropertyData>();
-            properties.put(key, values);
+            String key = ptProp.getString(COLUMN_NAME);
+            SortedSet<TempPropertyData> values = properties.get(key);
+            if (values == null)
+            {
+               values = new TreeSet<TempPropertyData>();
+               properties.put(key, values);
+            }
+            values.add(new TempPropertyData(ptProp));
          }
-         values.add(new TempPropertyData(ptProp));
-      }
 
-      return loadNodeRecord(parentPath, cname, cid, cpid, cindex, cversion, cnordernumb, properties, parentACL);
+         return loadNodeRecord(parentPath, cname, cid, cpid, cindex, cversion, cnordernumb, properties, parentACL);
+      }
+      finally
+      {
+         try
+         {
+            ptProp.close();
+         }
+         catch (SQLException e)
+         {
+            LOG.error("Can't close the ResultSet: " + e);
+         }
+      }
    }
 
    /**
@@ -644,8 +658,19 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
          }
          finally
          {
-            result.close();
+            if (result != null)
+            {
+               try
+               {
+                  result.close();
+               }
+               catch (SQLException e)
+               {
+                  LOG.error("Can't close the ResultSet: " + e);
+               }
+            }
          }
+
          if (caid.equals(Constants.ROOT_PARENT_UUID) || (id = getIdentifier(caid)).equals(Constants.ROOT_UUID))
          {
             if (id.equals(Constants.ROOT_UUID))
@@ -670,28 +695,35 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
     * {@inheritDoc}
     */
    @Override
-   protected void closeStatements() throws SQLException
+   protected void closeStatements()
    {
       super.closeStatements();
 
-      if (findNodesByParentIdCQ != null)
+      try
       {
-         findNodesByParentIdCQ.close();
-      }
+         if (findNodesByParentIdCQ != null)
+         {
+            findNodesByParentIdCQ.close();
+         }
 
-      if (findPropertiesByParentIdCQ != null)
-      {
-         findPropertiesByParentIdCQ.close();
-      }
+         if (findPropertiesByParentIdCQ != null)
+         {
+            findPropertiesByParentIdCQ.close();
+         }
 
-      if (findNodeMainPropertiesByParentIdentifierCQ != null)
-      {
-         findNodeMainPropertiesByParentIdentifierCQ.close();
-      }
+         if (findNodeMainPropertiesByParentIdentifierCQ != null)
+         {
+            findNodeMainPropertiesByParentIdentifierCQ.close();
+         }
 
-      if (findItemQPathByIdentifierCQ != null)
+         if (findItemQPathByIdentifierCQ != null)
+         {
+            findItemQPathByIdentifierCQ.close();
+         }
+      }
+      catch (SQLException e)
       {
-         findItemQPathByIdentifierCQ.close();
+         LOG.error("Can't close the Statement: " + e);
       }
    }
 

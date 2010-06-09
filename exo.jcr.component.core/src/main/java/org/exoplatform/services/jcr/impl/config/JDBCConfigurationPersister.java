@@ -34,6 +34,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -226,25 +227,52 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
       try
       {
          Connection con = openConnection();
-         if (isDbInitialized(con))
+         ResultSet res = null;
+         PreparedStatement ps = null;
+         try
          {
-            // check that data exists
-            PreparedStatement ps = con.prepareStatement("SELECT COUNT(*) FROM " + configTableName + " WHERE NAME=?");
-            try
+            if (isDbInitialized(con))
             {
+               // check that data exists
+               ps = con.prepareStatement("SELECT COUNT(*) FROM " + configTableName + " WHERE NAME=?");
+
                ps.setString(1, CONFIGNAME);
-               ResultSet res = ps.executeQuery();
+               res = ps.executeQuery();
                if (res.next())
                {
                   return res.getInt(1) > 0;
                }
             }
-            finally
-            {
-               con.close();
-            }
+            return false;
          }
-         return false;
+         finally
+         {
+            if (res != null)
+            {
+               try
+               {
+                  res.close();
+               }
+               catch (SQLException e)
+               {
+                  LOG.error("Can't close the ResultSet: " + e);
+               }
+            }
+
+            if (ps != null)
+            {
+               try
+               {
+                  ps.close();
+               }
+               catch (SQLException e)
+               {
+                  LOG.error("Can't close the Statement: " + e);
+               }
+            }
+
+            con.close();
+         }
       }
       catch (final SQLException e)
       {
@@ -264,14 +292,16 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
       try
       {
          Connection con = openConnection();
+         ResultSet res = null;
+         PreparedStatement ps = null;
          try
          {
             if (isDbInitialized(con))
             {
 
-               PreparedStatement ps = con.prepareStatement("SELECT * FROM " + configTableName + " WHERE NAME=?");
+               ps = con.prepareStatement("SELECT * FROM " + configTableName + " WHERE NAME=?");
                ps.setString(1, CONFIGNAME);
-               ResultSet res = ps.executeQuery();
+               res = ps.executeQuery();
 
                if (res.next())
                {
@@ -281,7 +311,6 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
                else
                   throw new ConfigurationNotFoundException("No configuration data is found in database. Source name "
                      + sourceName);
-
             }
             else
                throw new ConfigurationNotInitializedException(
@@ -290,6 +319,30 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
          }
          finally
          {
+            if (res != null)
+            {
+               try
+               {
+                  res.close();
+               }
+               catch (SQLException e)
+               {
+                  LOG.error("Can't close the ResultSet: " + e);
+               }
+            }
+
+            if (ps != null)
+            {
+               try
+               {
+                  ps.close();
+               }
+               catch (SQLException e)
+               {
+                  LOG.error("Can't close the Statement: " + e);
+               }
+            }
+
             con.close();
          }
       }
@@ -316,6 +369,7 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
       try
       {
          Connection con = openConnection();
+         PreparedStatement ps = null;
          try
          {
 
@@ -324,7 +378,9 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
             if (!isDbInitialized(con))
             {
                // init db
-               con.createStatement().executeUpdate(sql = initSQL);
+               Statement st = con.createStatement();
+               st.executeUpdate(sql = initSQL);
+               st.close();
 
                con.commit();
                con.close();
@@ -336,9 +392,6 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
 
             if (isDbInitialized(con))
             {
-
-               PreparedStatement ps = null;
-
                ConfigDataHolder config = new ConfigDataHolder(confData);
 
                if (hasConfig())
@@ -372,6 +425,18 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
          }
          finally
          {
+            if (ps != null)
+            {
+               try
+               {
+                  ps.close();
+               }
+               catch (SQLException e)
+               {
+                  LOG.error("Can't close the Statement: " + e);
+               }
+            }
+
             con.close();
          }
       }
