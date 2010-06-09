@@ -18,6 +18,18 @@
  */
 package org.exoplatform.services.jcr.ext.backup.impl;
 
+import org.exoplatform.services.jcr.dataflow.ItemState;
+import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
+import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
+import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.ext.replication.FixupStream;
+import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
+import org.exoplatform.services.jcr.util.IdGenerator;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -28,20 +40,6 @@ import java.io.ObjectOutputStream;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.exoplatform.services.jcr.dataflow.ItemState;
-import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
-import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
-import org.exoplatform.services.jcr.datamodel.ItemData;
-import org.exoplatform.services.jcr.datamodel.ValueData;
-import org.exoplatform.services.jcr.ext.replication.FixupStream;
-import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
-import org.exoplatform.services.jcr.util.IdGenerator;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
 
 /**
  * Created by The eXo Platform SAS.
@@ -483,7 +481,7 @@ public class PendingChangesLog
    public void restore() throws IOException
    {
       // TODO same code as in BackupWorkspaceInitializer?
-      
+
       List<ItemState> listItemState = itemDataChangesLog.getAllStates();
       for (int i = 0; i < this.listFixupStream.size(); i++)
       {
@@ -491,12 +489,12 @@ public class PendingChangesLog
          ItemData itemData = itemState.getData();
 
          PersistedPropertyData propertyData = (PersistedPropertyData)itemData;
-         ValueData tvd =
-            (ValueData)(propertyData.getValues().get(listFixupStream.get(i).getValueDataId()));
+         TransientValueData tvd =
+            (TransientValueData)(propertyData.getValues().get(listFixupStream.get(i).getValueDataId()));
 
          // re-init the value
-         propertyData.getValues().set(listFixupStream.get(i).getValueDataId(), 
-                  new StreamPersistedValueData(tvd.getOrderNumber(), listFile.get(i)));
+         tvd.delegate(new TransientValueData(tvd.getOrderNumber(), null, null, new SpoolFile(listFile.get(i)
+            .getAbsolutePath()), fileCleaner, -1, null, true));
       }
 
       if (listRandomAccessFile != null)
