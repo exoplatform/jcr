@@ -69,6 +69,8 @@ public class RepositoryImpl implements ManageableRepository
 
    private static final RuntimePermission GET_SYSTEM_SESSION_PERMISSION = new RuntimePermission("getJCRSystemSession");
 
+   private static final RuntimePermission MANAGE_REPOSITORY_PERMISSION = new RuntimePermission("manageRepository");
+
    /**
     * Repository descriptors.
     */
@@ -158,6 +160,13 @@ public class RepositoryImpl implements ManageableRepository
     */
    public void addItemPersistenceListener(String workspaceName, ItemsPersistenceListener listener)
    {
+      // Need privileges to manage repository.
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+      {
+         security.checkPermission(MANAGE_REPOSITORY_PERMISSION);
+      }
+
       PersistentDataManager pmanager =
          (PersistentDataManager)repositoryContainer.getWorkspaceContainer(workspaceName).getComponentInstanceOfType(
             PersistentDataManager.class);
@@ -188,6 +197,13 @@ public class RepositoryImpl implements ManageableRepository
     */
    public void configWorkspace(WorkspaceEntry wsConfig) throws RepositoryConfigurationException, RepositoryException
    {
+      // Need privileges to manage repository.
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+      {
+         security.checkPermission(MANAGE_REPOSITORY_PERMISSION);
+      }
+
       if (isWorkspaceInitialized(wsConfig.getName()))
       {
          throw new RepositoryConfigurationException("Workspace '" + wsConfig.getName()
@@ -232,6 +248,12 @@ public class RepositoryImpl implements ManageableRepository
     */
    public synchronized void createWorkspace(String workspaceName) throws RepositoryException
    {
+      // Need privileges to manage repository.
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+      {
+         security.checkPermission(MANAGE_REPOSITORY_PERMISSION);
+      }
 
       if (isWorkspaceInitialized(workspaceName))
       {
@@ -257,6 +279,13 @@ public class RepositoryImpl implements ManageableRepository
     */
    public RepositoryEntry getConfiguration()
    {
+      // Need privileges to manage repository.
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+      {
+         security.checkPermission(MANAGE_REPOSITORY_PERMISSION);
+      }
+
       return config;
    }
 
@@ -425,6 +454,13 @@ public class RepositoryImpl implements ManageableRepository
     */
    public void internalRemoveWorkspace(String workspaceName) throws RepositoryException
    {
+      // Need privileges to manage repository.
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+      {
+         security.checkPermission(MANAGE_REPOSITORY_PERMISSION);
+      }
+
       WorkspaceContainer workspaceContainer = null;
       if (isWorkspaceInitialized(workspaceName))
       {
@@ -569,6 +605,13 @@ public class RepositoryImpl implements ManageableRepository
     */
    public void setState(int state)
    {
+      // Need privileges to manage repository.
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+      {
+         security.checkPermission(MANAGE_REPOSITORY_PERMISSION);
+      }
+
       switch (state)
       {
          case ONLINE :
