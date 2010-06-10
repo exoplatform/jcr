@@ -36,8 +36,8 @@
     </itemizedlist>
 
     <para>In this article we consider RESTful service compatible with JSR-311
-    specification. Currently last feature available in version 1.11-SNAPSHOT
-    of JCR, 2.0-SNAPSHOT of WS and version 2.1.4-SNAPSHOT of core.</para>
+    specification. Currently last feature available in version 1.11 of JCR,
+    2.0 of WS and version 2.1.4 of core.</para>
   </section>
 
   <section>
