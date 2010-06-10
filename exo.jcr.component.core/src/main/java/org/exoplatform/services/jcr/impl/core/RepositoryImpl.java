@@ -27,6 +27,7 @@ import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
+import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
 import org.exoplatform.services.jcr.dataflow.PersistentDataManager;
 import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
 import org.exoplatform.services.jcr.datamodel.NodeData;
@@ -66,10 +67,6 @@ import javax.jcr.Session;
  */
 public class RepositoryImpl implements ManageableRepository
 {
-
-   private static final RuntimePermission GET_SYSTEM_SESSION_PERMISSION = new RuntimePermission("getJCRSystemSession");
-
-   private static final RuntimePermission MANAGE_REPOSITORY_PERMISSION = new RuntimePermission("manageRepository");
 
    /**
     * Repository descriptors.
@@ -164,7 +161,7 @@ public class RepositoryImpl implements ManageableRepository
       SecurityManager security = System.getSecurityManager();
       if (security != null)
       {
-         security.checkPermission(MANAGE_REPOSITORY_PERMISSION);
+         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
       }
 
       PersistentDataManager pmanager =
@@ -201,7 +198,7 @@ public class RepositoryImpl implements ManageableRepository
       SecurityManager security = System.getSecurityManager();
       if (security != null)
       {
-         security.checkPermission(MANAGE_REPOSITORY_PERMISSION);
+         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
       }
 
       if (isWorkspaceInitialized(wsConfig.getName()))
@@ -252,7 +249,7 @@ public class RepositoryImpl implements ManageableRepository
       SecurityManager security = System.getSecurityManager();
       if (security != null)
       {
-         security.checkPermission(MANAGE_REPOSITORY_PERMISSION);
+         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
       }
 
       if (isWorkspaceInitialized(workspaceName))
@@ -283,7 +280,7 @@ public class RepositoryImpl implements ManageableRepository
       SecurityManager security = System.getSecurityManager();
       if (security != null)
       {
-         security.checkPermission(MANAGE_REPOSITORY_PERMISSION);
+         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
       }
 
       return config;
@@ -362,7 +359,7 @@ public class RepositoryImpl implements ManageableRepository
       SecurityManager security = System.getSecurityManager();
       if (security != null)
       {
-         security.checkPermission(GET_SYSTEM_SESSION_PERMISSION);
+         security.checkPermission(JCRRuntimePermissions.GET_SYSTEM_SESSION_PERMISSION);
       }
 
       if (getState() == OFFLINE)
@@ -458,7 +455,7 @@ public class RepositoryImpl implements ManageableRepository
       SecurityManager security = System.getSecurityManager();
       if (security != null)
       {
-         security.checkPermission(MANAGE_REPOSITORY_PERMISSION);
+         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
       }
 
       WorkspaceContainer workspaceContainer = null;
@@ -609,7 +606,7 @@ public class RepositoryImpl implements ManageableRepository
       SecurityManager security = System.getSecurityManager();
       if (security != null)
       {
-         security.checkPermission(MANAGE_REPOSITORY_PERMISSION);
+         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
       }
 
       switch (state)
