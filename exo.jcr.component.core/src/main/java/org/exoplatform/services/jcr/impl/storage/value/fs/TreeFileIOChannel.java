@@ -77,6 +77,10 @@ public class TreeFileIOChannel extends FileIOChannel
          {
             throw (IOException)cause;
          }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
          else
          {
             throw new RuntimeException(cause);
@@ -87,14 +91,40 @@ public class TreeFileIOChannel extends FileIOChannel
    @Override
    protected File[] getFiles(final String propertyId) throws IOException
    {
-      final File dir = new File(rootDir.getAbsolutePath() + buildPath(propertyId));
-      String[] fileNames = dir.list();
-      File[] files = new File[fileNames.length];
-      for (int i = 0; i < fileNames.length; i++)
+      PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
       {
-         files[i] = new TreeFile(dir.getAbsolutePath() + File.separator + fileNames[i], cleaner, rootDir);
+         public Object run() throws Exception
+         {
+            final File dir = new File(rootDir.getAbsolutePath() + buildPath(propertyId));
+            String[] fileNames = dir.list();
+            File[] files = new File[fileNames.length];
+            for (int i = 0; i < fileNames.length; i++)
+            {
+               files[i] = new TreeFile(dir.getAbsolutePath() + File.separator + fileNames[i], cleaner, rootDir);
+            }
+            return files;
+         }
+      };
+      try
+      {
+         return (File[])AccessController.doPrivileged(action);
       }
-      return files;
+      catch (PrivilegedActionException pae)
+      {
+         Throwable cause = pae.getCause();
+         if (cause instanceof IOException)
+         {
+            throw (IOException)cause;
+         }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
+      }
    }
 
    protected String buildPath(String fileName)

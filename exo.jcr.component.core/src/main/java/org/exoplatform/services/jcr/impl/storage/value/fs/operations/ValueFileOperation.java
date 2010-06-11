@@ -30,6 +30,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 
 /**
  * Created by The eXo Platform SAS.
@@ -121,14 +124,40 @@ public abstract class ValueFileOperation extends ValueFileIOHelper implements Va
        */
       public void lock() throws IOException
       {
-         // lock file in temp directory
-         lockFile = new File(tempDir, targetFile.getName() + LOCK_FILE_EXTENSION);
+         PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
+         {
+            public Object run() throws Exception
+            {
+               // lock file in temp directory
+               lockFile = new File(tempDir, targetFile.getName() + LOCK_FILE_EXTENSION);
 
-         FileOutputStream lout = new FileOutputStream(lockFile, true);
-         lout.write(operationInfo.getBytes()); // TODO write info
-         lout.getChannel().lock(); // wait for unlock (on Windows will wait for this JVM too)
+               FileOutputStream lout = new FileOutputStream(lockFile, true);
+               lout.write(operationInfo.getBytes()); // TODO write info
+               lout.getChannel().lock(); // wait for unlock (on Windows will wait for this JVM too)
 
-         lockFileStream = lout;
+               return lout;
+            }
+         };
+         try
+         {
+            lockFileStream = (FileOutputStream)AccessController.doPrivileged(action);
+         }
+         catch (PrivilegedActionException pae)
+         {
+            Throwable cause = pae.getCause();
+            if (cause instanceof IOException)
+            {
+               throw (IOException)cause;
+            }
+            else if (cause instanceof RuntimeException)
+            {
+               throw (RuntimeException)cause;
+            }
+            else
+            {
+               throw new RuntimeException(cause);
+            }
+         }
       }
 
       /**
@@ -151,13 +180,42 @@ public abstract class ValueFileOperation extends ValueFileIOHelper implements Va
        */
       public void unlock() throws IOException
       {
-         if (lockFileStream != null)
-            lockFileStream.close();
 
-         if (!lockFile.delete())
-         { // TODO don't use FileCleaner, delete should be enough
-            LOG.warn("Cannot delete lock file " + lockFile.getAbsolutePath() + ". Add to the FileCleaner");
-            cleaner.addFile(lockFile);
+         PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
+         {
+            public Object run() throws Exception
+            {
+               if (lockFileStream != null)
+                  lockFileStream.close();
+
+               if (!lockFile.delete())
+               { // TODO don't use FileCleaner, delete should be enough
+                  LOG.warn("Cannot delete lock file " + lockFile.getAbsolutePath() + ". Add to the FileCleaner");
+                  cleaner.addFile(lockFile);
+               }
+
+               return null;
+            }
+         };
+         try
+         {
+            AccessController.doPrivileged(action);
+         }
+         catch (PrivilegedActionException pae)
+         {
+            Throwable cause = pae.getCause();
+            if (cause instanceof IOException)
+            {
+               throw (IOException)cause;
+            }
+            else if (cause instanceof RuntimeException)
+            {
+               throw (RuntimeException)cause;
+            }
+            else
+            {
+               throw new RuntimeException(cause);
+            }
          }
       }
 
