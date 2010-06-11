@@ -43,7 +43,6 @@ public class TestSecurityRepositoryManagment extends BaseSecurityTest
             repository.getSystemSession();
             return null;
          }
-
       };
       try
       {
@@ -51,6 +50,7 @@ public class TestSecurityRepositoryManagment extends BaseSecurityTest
       }
       catch (AccessControlException ace)
       {
+         ace.printStackTrace();
          fail("Must be able get system session. We are under static permissions");
       }
       catch (Throwable t)
@@ -168,6 +168,7 @@ public class TestSecurityRepositoryManagment extends BaseSecurityTest
       }
       catch (AccessControlException ace)
       {
+         ace.printStackTrace();
          fail("Must be able config workspace. We are under static permissions");
       }
       catch (Throwable t)
@@ -232,6 +233,7 @@ public class TestSecurityRepositoryManagment extends BaseSecurityTest
       }
       catch (AccessControlException ace)
       {
+         ace.printStackTrace();
          fail("Must be able create workspace. We are under static permissions");
       }
       catch (Throwable t)

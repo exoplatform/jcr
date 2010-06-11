@@ -40,6 +40,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Calendar;
 
 import javax.jcr.Node;
@@ -77,7 +79,15 @@ public class ValueFactoryImpl implements ValueFactory
       this.locationFactory = locationFactory;
       this.fileCleaner = cleanerHolder.getFileCleaner();
 
-      this.tempDirectory = new File(System.getProperty("java.io.tmpdir"));
+      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
+      {
+         public Object run()
+         {
+            tempDirectory = new File(System.getProperty("java.io.tmpdir"));
+            return null;
+         }
+      };
+      AccessController.doPrivileged(action);
 
       // TODO we use WorkspaceDataContainer constants but is it ok?
       this.maxBufferSize =
@@ -88,8 +98,17 @@ public class ValueFactoryImpl implements ValueFactory
    public ValueFactoryImpl(LocationFactory locationFactory)
    {
       this.locationFactory = locationFactory;
-      this.tempDirectory = new File(System.getProperty("java.io.tmpdir"));
       this.maxBufferSize = WorkspaceDataContainer.DEF_MAXBUFFERSIZE;
+
+      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
+      {
+         public Object run()
+         {
+            tempDirectory = new File(System.getProperty("java.io.tmpdir"));
+            return null;
+         }
+      };
+      AccessController.doPrivileged(action);
    }
 
    /**

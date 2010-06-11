@@ -42,13 +42,16 @@ import java.util.Enumeration;
 public abstract class BaseSecurityTest extends BaseStandaloneTest
 {
 
+   @Override
    public void setUp() throws Exception
    {
       super.setUp();
+
       SecurityManager security = System.getSecurityManager();
       assertNotNull("SecurityManager must be ON.", security);
    }
 
+   @Override
    public String getRepositoryName()
    {
       return "db1";
@@ -141,11 +144,13 @@ public abstract class BaseSecurityTest extends BaseStandaloneTest
    protected static final PermissionCollection ALL = new PermissionCollection()
    {
 
+      @Override
       public boolean implies(Permission permission)
       {
          return true;
       }
 
+      @Override
       public Enumeration<Permission> elements()
       {
          return new Enumeration<Permission>()
@@ -165,6 +170,7 @@ public abstract class BaseSecurityTest extends BaseStandaloneTest
          };
       }
 
+      @Override
       public void add(Permission permission)
       {
       }

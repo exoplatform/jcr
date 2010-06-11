@@ -1,5 +1,13 @@
-// configure static permissions here
-grant {                                                                                                          
-    permission java.security.AllPermission;                                                                                                    
+grant codeBase "file:/home/tolusha/java/exo-jcr/jcr/trunk/exo.jcr.component.core/target/classes/-"{                                                                                                                                                       
+    permission java.security.AllPermission;
 };
- 
+
+grant codeBase "file:/home/tolusha/java/exo-dependencies/repository/-"{
+	permission java.security.AllPermission;      
+};
+
+grant codeBase "file:/home/tolusha/java/exo-jcr/jcr/trunk/exo.jcr.component.core/target/test-classes/-"{
+	permission java.lang.RuntimePermission "setSecurityManager";
+	permission java.lang.RuntimePermission "getJCRSystemSession";
+	permission java.lang.RuntimePermission "manageRepository";
+};
