@@ -195,7 +195,8 @@ public class RepositoryImpl implements ManageableRepository
    /**
     * {@inheritDoc}
     */
-   public void configWorkspace(WorkspaceEntry wsConfig) throws RepositoryConfigurationException, RepositoryException
+   public void configWorkspace(final WorkspaceEntry wsConfig) throws RepositoryConfigurationException,
+      RepositoryException
    {
       // Need privileges to manage repository.
       SecurityManager security = System.getSecurityManager();
@@ -212,7 +213,38 @@ public class RepositoryImpl implements ManageableRepository
 
       try
       {
-         repositoryContainer.registerWorkspace(wsConfig);
+         PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
+         {
+            public Object run() throws Exception
+            {
+               repositoryContainer.registerWorkspace(wsConfig);
+               return null;
+            }
+         };
+         try
+         {
+            AccessController.doPrivileged(action);
+         }
+         catch (PrivilegedActionException pae)
+         {
+            Throwable cause = pae.getCause();
+            if (cause instanceof RepositoryException)
+            {
+               throw (RepositoryException)cause;
+            }
+            else if (cause instanceof RepositoryConfigurationException)
+            {
+               throw (RepositoryConfigurationException)cause;
+            }
+            else if (cause instanceof RuntimeException)
+            {
+               throw (RuntimeException)cause;
+            }
+            else
+            {
+               throw new RuntimeException(cause);
+            }
+         }
       }
       catch (RepositoryConfigurationException e)
       {

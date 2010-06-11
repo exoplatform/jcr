@@ -25,6 +25,10 @@ import org.exoplatform.services.transaction.ExoResource;
 import org.exoplatform.services.transaction.TransactionService;
 import org.jboss.cache.transaction.TransactionManagerLookup;
 
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
+
 import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
 import javax.transaction.InvalidTransactionException;
@@ -223,7 +227,7 @@ public class GenericTransactionService implements TransactionService
     * Created by The eXo Platform SAS
     * Author : Nicolas Filotto 
     *          nicolas.filotto@exoplatform.com
-    * 1 fŽvr. 2010
+    * 1 fï¿½vr. 2010
     */
    private static class TransactionManagerTxTimeoutAware implements TransactionManager
    {
@@ -280,7 +284,54 @@ public class GenericTransactionService implements TransactionService
       public void commit() throws RollbackException, HeuristicMixedException, HeuristicRollbackException,
          SecurityException, IllegalStateException, SystemException
       {
-         tm.commit();
+         PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
+         {
+            public Object run() throws Exception
+            {
+               tm.commit();
+               return null;
+            }
+         };
+         try
+         {
+            AccessController.doPrivileged(action);
+         }
+         catch (PrivilegedActionException pae)
+         {
+            Throwable cause = pae.getCause();
+            if (cause instanceof RollbackException)
+            {
+               throw (RollbackException)cause;
+            }
+            else if (cause instanceof HeuristicMixedException)
+            {
+               throw (HeuristicMixedException)cause;
+            }
+            else if (cause instanceof HeuristicRollbackException)
+            {
+               throw (HeuristicRollbackException)cause;
+            }
+            else if (cause instanceof SecurityException)
+            {
+               throw (SecurityException)cause;
+            }
+            else if (cause instanceof IllegalStateException)
+            {
+               throw (IllegalStateException)cause;
+            }
+            else if (cause instanceof SystemException)
+            {
+               throw (SystemException)cause;
+            }
+            else if (cause instanceof RuntimeException)
+            {
+               throw (RuntimeException)cause;
+            }
+            else
+            {
+               throw new RuntimeException(cause);
+            }
+         }
       }
 
       /**

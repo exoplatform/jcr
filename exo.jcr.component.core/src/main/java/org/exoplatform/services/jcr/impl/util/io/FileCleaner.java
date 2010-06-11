@@ -23,6 +23,8 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.File;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -68,7 +70,16 @@ public class FileCleaner extends WorkerThread
       if (start)
          start();
 
-      registerShutdownHook();
+      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
+      {
+         public Object run()
+         {
+            registerShutdownHook();
+            return null;
+         }
+      };
+      AccessController.doPrivileged(action);
+
       if (log.isDebugEnabled())
       {
          log.debug("FileCleaner instantiated name= " + getName() + " timeout= " + timeout);
@@ -86,6 +97,7 @@ public class FileCleaner extends WorkerThread
       }
    }
 
+   @Override
    public void halt()
    {
       try
@@ -105,6 +117,7 @@ public class FileCleaner extends WorkerThread
    /**
     * @see org.exoplatform.services.jcr.impl.proccess.WorkerThread#callPeriodically()
     */
+   @Override
    protected void callPeriodically() throws Exception
    {
       File file = null;
@@ -142,6 +155,7 @@ public class FileCleaner extends WorkerThread
       {
          Runtime.getRuntime().addShutdownHook(new Thread()
          {
+            @Override
             public void run()
             {
                File file = null;
