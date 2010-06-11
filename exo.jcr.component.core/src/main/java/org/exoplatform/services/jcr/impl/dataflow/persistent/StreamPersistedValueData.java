@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 import org.exoplatform.services.jcr.impl.util.io.SwapFile;
 
@@ -27,8 +28,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 
 import javax.jcr.RepositoryException;
 
@@ -182,43 +181,36 @@ public class StreamPersistedValueData extends FilePersistedValueData
    @Override
    public long getLength()
    {
-      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
+      if (file != null)
       {
-         public Object run()
+         return PrivilegedFileHelper.length(file);
+      }
+      else if (tempFile != null)
+      {
+         return PrivilegedFileHelper.length(tempFile);
+      }
+      else if (stream instanceof FileInputStream)
+      {
+         try
          {
-            if (file != null)
-            {
-               return new Long(file.length());
-            }
-            else if (tempFile != null)
-            {
-               return new Long(tempFile.length());
-            }
-            else if (stream instanceof FileInputStream)
-            {
-               try
-               {
-                  return new Long(((FileInputStream)stream).getChannel().size());
-               }
-               catch (IOException e)
-               {
-                  return new Long(-1);
-               }
-            }
-            else
-            {
-               try
-               {
-                  return new Long(stream.available());
-               }
-               catch (IOException e)
-               {
-                  return new Long(-1);
-               }
-            }
+            return ((FileInputStream)stream).getChannel().size();
          }
-      };
-      return (Long)AccessController.doPrivileged(action);
+         catch (IOException e)
+         {
+            return -1;
+         }
+      }
+      else
+      {
+         try
+         {
+            return stream.available();
+         }
+         catch (IOException e)
+         {
+            return -1;
+         }
+      }
    }
 
    /**

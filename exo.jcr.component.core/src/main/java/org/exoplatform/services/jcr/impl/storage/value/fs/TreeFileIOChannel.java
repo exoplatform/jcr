@@ -20,12 +20,10 @@ package org.exoplatform.services.jcr.impl.storage.value.fs;
 
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.AccessController;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -55,76 +53,27 @@ public class TreeFileIOChannel extends FileIOChannel
    @Override
    protected File getFile(final String propertyId, final int orderNumber) throws IOException
    {
-      PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
-      {
-         public Object run() throws Exception
-         {
-            final TreeFile tfile =
-               new TreeFile(rootDir.getAbsolutePath() + makeFilePath(propertyId, orderNumber), cleaner, rootDir);
-            mkdirs(tfile.getParentFile()); // make dirs on path     
 
-            return tfile;
-         }
-      };
-      try
-      {
-         return (File)AccessController.doPrivileged(action);
-      }
-      catch (PrivilegedActionException pae)
-      {
-         Throwable cause = pae.getCause();
-         if (cause instanceof IOException)
-         {
-            throw (IOException)cause;
-         }
-         else if (cause instanceof RuntimeException)
-         {
-            throw (RuntimeException)cause;
-         }
-         else
-         {
-            throw new RuntimeException(cause);
-         }
-      }
+      final TreeFile tfile =
+         new TreeFile(rootDir.getAbsolutePath() + makeFilePath(propertyId, orderNumber), cleaner, rootDir);
+
+      PrivilegedFileHelper.mkdirs(tfile.getParentFile());
+
+      return tfile;
    }
 
    @Override
    protected File[] getFiles(final String propertyId) throws IOException
    {
-      PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
+      final File dir = PrivilegedFileHelper.file(rootDir.getAbsolutePath() + buildPath(propertyId));
+      String[] fileNames = PrivilegedFileHelper.list(dir);
+      File[] files = new File[fileNames.length];
+      for (int i = 0; i < fileNames.length; i++)
       {
-         public Object run() throws Exception
-         {
-            final File dir = new File(rootDir.getAbsolutePath() + buildPath(propertyId));
-            String[] fileNames = dir.list();
-            File[] files = new File[fileNames.length];
-            for (int i = 0; i < fileNames.length; i++)
-            {
-               files[i] = new TreeFile(dir.getAbsolutePath() + File.separator + fileNames[i], cleaner, rootDir);
-            }
-            return files;
-         }
-      };
-      try
-      {
-         return (File[])AccessController.doPrivileged(action);
+         files[i] =
+            new TreeFile(PrivilegedFileHelper.getAbsolutePath(dir) + File.separator + fileNames[i], cleaner, rootDir);
       }
-      catch (PrivilegedActionException pae)
-      {
-         Throwable cause = pae.getCause();
-         if (cause instanceof IOException)
-         {
-            throw (IOException)cause;
-         }
-         else if (cause instanceof RuntimeException)
-         {
-            throw (RuntimeException)cause;
-         }
-         else
-         {
-            throw new RuntimeException(cause);
-         }
-      }
+      return files;
    }
 
    protected String buildPath(String fileName)
