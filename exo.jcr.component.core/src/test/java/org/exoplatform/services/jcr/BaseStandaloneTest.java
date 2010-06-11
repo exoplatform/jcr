@@ -172,6 +172,8 @@ public abstract class BaseStandaloneTest extends TestCase
    @Override
    protected void tearDown() throws Exception
    {
+      System.setSecurityManager(null);
+
       if (session != null)
       {
          try

@@ -36,6 +36,9 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 
 import javax.jcr.RepositoryException;
 
@@ -86,7 +89,33 @@ public class FilePersistedValueData extends AbstractPersistedValueData implement
     */
    public InputStream getAsStream() throws IOException
    {
-      return new FileInputStream(file);
+      PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
+      {
+         public Object run() throws Exception
+         {
+            return new FileInputStream(file);
+         }
+      };
+      try
+      {
+         return (InputStream)AccessController.doPrivileged(action);
+      }
+      catch (PrivilegedActionException pae)
+      {
+         Throwable cause = pae.getCause();
+         if (cause instanceof IOException)
+         {
+            throw (IOException)cause;
+         }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
+      }
    }
 
    /**
