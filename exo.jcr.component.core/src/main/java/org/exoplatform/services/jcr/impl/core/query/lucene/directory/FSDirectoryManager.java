@@ -16,110 +16,172 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene.directory;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.io.IOException;
-
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.NativeFSLockFactory;
 import org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex;
+import org.exoplatform.services.jcr.impl.util.SecurityHelper;
+
+import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
+import java.security.PrivilegedExceptionAction;
 
 /**
  * <code>FSDirectoryManager</code> implements a directory manager for
  * {@link FSDirectory} instances.
  */
-public class FSDirectoryManager implements DirectoryManager {
+public class FSDirectoryManager implements DirectoryManager
+{
 
-    /**
-     * The base directory.
-     */
-    private File baseDir;
+   /**
+    * The base directory.
+    */
+   private File baseDir;
 
-    /**
-     * {@inheritDoc}
-     */
-    public void init(SearchIndex handler) throws IOException {
-        baseDir = new File(handler.getPath());
-    }
+   /**
+    * {@inheritDoc}
+    */
+   public void init(final SearchIndex handler) throws IOException
+   {
+      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      {
+         public Object run() throws Exception
+         {
+            baseDir = new File(handler.getPath());
+            return null;
+         }
+      });
+   }
 
-    /**
-     * {@inheritDoc}
-     */
-    public boolean hasDirectory(String name) throws IOException {
-        return new File(baseDir, name).exists();
-    }
+   /**
+    * {@inheritDoc}
+    */
+   public boolean hasDirectory(final String name) throws IOException
+   {
+      return SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Boolean>()
+      {
+         public Boolean run() throws Exception
+         {
+            return new File(baseDir, name).exists();
 
-    /**
-     * {@inheritDoc}
-     */
-    public Directory getDirectory(String name)
-            throws IOException {
-        File dir;
-        if (name.equals(".")) {
-            dir = baseDir;
-        } else {
-            dir = new File(baseDir, name);
-        }
-        return FSDirectory.getDirectory(dir, new NativeFSLockFactory(dir));
-    }
+         }
+      });
+   }
 
-    /**
-     * {@inheritDoc}
-     */
-    public String[] getDirectoryNames() throws IOException {
-        File[] dirs = baseDir.listFiles(new FileFilter() {
-            public boolean accept(File pathname) {
-                return pathname.isDirectory();
+   /**
+    * {@inheritDoc}
+    */
+   public Directory getDirectory(final String name) throws IOException
+   {
+      return SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Directory>()
+      {
+         public Directory run() throws Exception
+         {
+            File dir;
+            if (name.equals("."))
+            {
+               dir = baseDir;
             }
-        });
-        if (dirs != null) {
-            String[] names = new String[dirs.length];
-            for (int i = 0; i < dirs.length; i++) {
-                names[i] = dirs[i].getName();
+            else
+            {
+               dir = new File(baseDir, name);
             }
-            return names;
-        } else {
-            throw new IOException("listFiles for " + baseDir.getPath() + " returned null");
-        }
-    }
+            return FSDirectory.getDirectory(dir, new NativeFSLockFactory(dir));
+         }
+      });
+   }
 
-    /**
-     * {@inheritDoc}
-     */
-    public boolean delete(String name) {
-        File directory = new File(baseDir, name);
-        // trivial if it does not exist anymore
-        if (!directory.exists()) {
-            return true;
-        }
-        // delete files first
-        File[] files = directory.listFiles();
-        if (files != null) {
-            for (int i = 0; i < files.length; i++) {
-                if (!files[i].delete()) {
-                    return false;
-                }
+   /**
+    * {@inheritDoc}
+    */
+   public String[] getDirectoryNames() throws IOException
+   {
+      return SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<String[]>()
+      {
+         public String[] run() throws Exception
+         {
+            File[] dirs = baseDir.listFiles(new FileFilter()
+            {
+               public boolean accept(File pathname)
+               {
+                  return pathname.isDirectory();
+               }
+            });
+            if (dirs != null)
+            {
+               String[] names = new String[dirs.length];
+               for (int i = 0; i < dirs.length; i++)
+               {
+                  names[i] = dirs[i].getName();
+               }
+               return names;
             }
-        } else {
-            return false;
-        }
-        // now delete directory itself
-        return directory.delete();
-    }
+            else
+            {
+               throw new IOException("listFiles for " + baseDir.getPath() + " returned null");
+            }
+         }
+      });
+   }
 
-    /**
-     * {@inheritDoc}
-     */
-    public boolean rename(String from, String to) {
-        File src = new File(baseDir, from);
-        File dest = new File(baseDir, to);
-        return src.renameTo(dest);
-    }
+   /**
+    * {@inheritDoc}
+    */
+   public boolean delete(final String name)
+   {
+      return SecurityHelper.doPriviledgedAction(new PrivilegedExceptionAction<Boolean>()
+      {
+         public Boolean run() throws Exception
+         {
+            File directory = new File(baseDir, name);
+            // trivial if it does not exist anymore
+            if (!directory.exists())
+            {
+               return true;
+            }
+            // delete files first
+            File[] files = directory.listFiles();
+            if (files != null)
+            {
+               for (int i = 0; i < files.length; i++)
+               {
+                  if (!files[i].delete())
+                  {
+                     return false;
+                  }
+               }
+            }
+            else
+            {
+               return false;
+            }
+            // now delete directory itself
+            return directory.delete();
+         }
+      });
+   }
 
-    /**
-     * {@inheritDoc}
-     */
-    public void dispose() {
-    }
+   /**
+    * {@inheritDoc}
+    */
+   public boolean rename(final String from, final String to)
+   {
+      return SecurityHelper.doPriviledgedAction(new PrivilegedExceptionAction<Boolean>()
+      {
+         public Boolean run() throws Exception
+         {
+            File src = new File(baseDir, from);
+            File dest = new File(baseDir, to);
+            return src.renameTo(dest);
+         }
+      });
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void dispose()
+   {
+   }
 }
