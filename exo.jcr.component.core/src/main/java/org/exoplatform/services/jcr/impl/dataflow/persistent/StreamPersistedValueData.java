@@ -27,6 +27,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 import javax.jcr.RepositoryException;
 
@@ -180,36 +182,43 @@ public class StreamPersistedValueData extends FilePersistedValueData
    @Override
    public long getLength()
    {
-      if (file != null)
+      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
       {
-         return file.length();
-      }
-      else if (tempFile != null)
-      {
-         return tempFile.length();
-      }
-      else if (stream instanceof FileInputStream)
-      {
-         try
+         public Object run()
          {
-            return ((FileInputStream)stream).getChannel().size();
+            if (file != null)
+            {
+               return file.length();
+            }
+            else if (tempFile != null)
+            {
+               return tempFile.length();
+            }
+            else if (stream instanceof FileInputStream)
+            {
+               try
+               {
+                  return ((FileInputStream)stream).getChannel().size();
+               }
+               catch (IOException e)
+               {
+                  return -1;
+               }
+            }
+            else
+            {
+               try
+               {
+                  return stream.available();
+               }
+               catch (IOException e)
+               {
+                  return -1;
+               }
+            }
          }
-         catch (IOException e)
-         {
-            return -1;
-         }
-      }
-      else
-      {
-         try
-         {
-            return stream.available();
-         }
-         catch (IOException e)
-         {
-            return -1;
-         }
-      }
+      };
+      return (Long)AccessController.doPrivileged(action);
    }
 
    /**
@@ -224,6 +233,7 @@ public class StreamPersistedValueData extends FilePersistedValueData
    /**
     * {@inheritDoc}
     */
+   @Override
    protected void finalize() throws Throwable
    {
       try

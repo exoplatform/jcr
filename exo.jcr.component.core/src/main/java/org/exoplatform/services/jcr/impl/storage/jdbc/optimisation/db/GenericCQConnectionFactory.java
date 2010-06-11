@@ -24,6 +24,9 @@ import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 
 import java.io.File;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -155,6 +158,7 @@ public class GenericCQConnectionFactory extends GenericConnectionFactory
    /**
     * {@inheritDoc}
     */
+   @Override
    public WorkspaceStorageConnection openConnection() throws RepositoryException
    {
       return openConnection(false);
@@ -163,6 +167,7 @@ public class GenericCQConnectionFactory extends GenericConnectionFactory
    /**
     * {@inheritDoc}
     */
+   @Override
    public WorkspaceStorageConnection openConnection(boolean readOnly) throws RepositoryException
    {
       try
@@ -187,21 +192,47 @@ public class GenericCQConnectionFactory extends GenericConnectionFactory
    /**
     * {@inheritDoc}
     */
+   @Override
    public Connection getJdbcConnection(boolean readOnly) throws RepositoryException
    {
       try
       {
-         final Connection conn =
-            dbDataSource != null ? dbDataSource.getConnection() : (dbUserName != null ? DriverManager.getConnection(
-               dbUrl, dbUserName, dbPassword) : DriverManager.getConnection(dbUrl));
+         PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
+         {
+            public Object run() throws Exception
+            {
+               return dbDataSource != null ? dbDataSource.getConnection() : (dbUserName != null ? DriverManager
+                  .getConnection(dbUrl, dbUserName, dbPassword) : DriverManager.getConnection(dbUrl));
+            }
+         };
+         try
+         {
+            final Connection conn = (Connection)AccessController.doPrivileged(action);
 
-         if (readOnly)
-         { 
-            // set this feature only if it asked
-            conn.setReadOnly(readOnly);
+            if (readOnly)
+            {
+               // set this feature only if it asked
+               conn.setReadOnly(readOnly);
+            }
+
+            return conn;
          }
-
-         return conn;
+         catch (PrivilegedActionException pae)
+         {
+            Throwable cause = pae.getCause();
+            if (cause instanceof SQLException)
+            {
+               throw (SQLException)cause;
+            }
+            else if (cause instanceof RuntimeException)
+            {
+               throw (RuntimeException)cause;
+            }
+            else
+            {
+               throw new RuntimeException(cause);
+            }
+         }
       }
       catch (SQLException e)
       {
@@ -215,6 +246,7 @@ public class GenericCQConnectionFactory extends GenericConnectionFactory
    /**
     * {@inheritDoc}
     */
+   @Override
    public Connection getJdbcConnection() throws RepositoryException
    {
       return getJdbcConnection(false);

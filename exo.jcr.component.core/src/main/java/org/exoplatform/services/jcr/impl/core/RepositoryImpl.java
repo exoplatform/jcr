@@ -44,6 +44,9 @@ import org.picocontainer.ComponentAdapter;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -520,8 +523,8 @@ public class RepositoryImpl implements ManageableRepository
    /**
     * {@inheritDoc}
     */
-   public Session login(Credentials credentials, String workspaceName) throws LoginException, NoSuchWorkspaceException,
-      RepositoryException
+   public Session login(final Credentials credentials, String workspaceName) throws LoginException,
+      NoSuchWorkspaceException, RepositoryException
    {
 
       if (getState() == OFFLINE)
@@ -529,13 +532,38 @@ public class RepositoryImpl implements ManageableRepository
 
       ConversationState state;
 
-      if (credentials != null)
-         state = authenticationPolicy.authenticate(credentials);
-      else
-         state = authenticationPolicy.authenticate();
+      PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
+      {
+         public Object run() throws Exception
+         {
+            if (credentials != null)
+               return authenticationPolicy.authenticate(credentials);
+            else
+               return authenticationPolicy.authenticate();
+         }
+      };
+      try
+      {
+         state = (ConversationState)AccessController.doPrivileged(action);
+      }
+      catch (PrivilegedActionException pae)
+      {
+         Throwable cause = pae.getCause();
+         if (cause instanceof LoginException)
+         {
+            throw (LoginException)cause;
+         }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
+      }
 
       return internalLogin(state, workspaceName);
-
    }
 
    /**
