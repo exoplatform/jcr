@@ -23,6 +23,9 @@ import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -52,10 +55,33 @@ public class TreeFileIOChannel extends FileIOChannel
    @Override
    protected File getFile(final String propertyId, final int orderNumber) throws IOException
    {
-      final TreeFile tfile =
-         new TreeFile(rootDir.getAbsolutePath() + makeFilePath(propertyId, orderNumber), cleaner, rootDir);
-      mkdirs(tfile.getParentFile()); // make dirs on path
-      return tfile;
+      PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
+      {
+         public Object run() throws Exception
+         {
+            final TreeFile tfile =
+               new TreeFile(rootDir.getAbsolutePath() + makeFilePath(propertyId, orderNumber), cleaner, rootDir);
+            mkdirs(tfile.getParentFile()); // make dirs on path     
+
+            return tfile;
+         }
+      };
+      try
+      {
+         return (File)AccessController.doPrivileged(action);
+      }
+      catch (PrivilegedActionException pae)
+      {
+         Throwable cause = pae.getCause();
+         if (cause instanceof IOException)
+         {
+            throw (IOException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
+      }
    }
 
    @Override
