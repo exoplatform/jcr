@@ -36,6 +36,9 @@ import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 
 /**
  * Created by The eXo Platform SAS.
@@ -160,52 +163,81 @@ public class ValueFileIOHelper
     * @throws IOException
     *           if error occurs
     */
-   protected void writeStreamedValue(File file, ValueData value) throws IOException
+   protected void writeStreamedValue(final File file, final ValueData value) throws IOException
    {
-      // stream Value
-      if (value instanceof StreamPersistedValueData)
+      PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
       {
-         StreamPersistedValueData streamed = (StreamPersistedValueData)value;
-
-         if (streamed.isPersisted())
+         public Object run() throws Exception
          {
-            // already persisted in another Value, copy it to this Value
-            copyClose(streamed.getAsStream(), new FileOutputStream(file));
-         }
-         else
-         {
-            // the Value not yet persisted, i.e. or in client stream or spooled to a temp file
-            File tempFile;
-            if ((tempFile = streamed.getTempFile()) != null)
+            // do what you want
+            // stream Value
+            if (value instanceof StreamPersistedValueData)
             {
-               // it's spooled Value, try move its file to VS
-               if (!tempFile.renameTo(file))
+               StreamPersistedValueData streamed = (StreamPersistedValueData)value;
+
+               if (streamed.isPersisted())
                {
-                  // not succeeded - copy bytes, temp file will be deleted by transient ValueData
-                  if (LOG.isDebugEnabled())
+                  // already persisted in another Value, copy it to this Value
+                  copyClose(streamed.getAsStream(), new FileOutputStream(file));
+               }
+               else
+               {
+                  // the Value not yet persisted, i.e. or in client stream or spooled to a temp file
+                  File tempFile;
+                  if ((tempFile = streamed.getTempFile()) != null)
                   {
-                     LOG
-                        .debug("Value spool file move (rename) to Values Storage is not succeeded. Trying bytes copy. Spool file: "
-                           + tempFile.getAbsolutePath() + ". Destination: " + file.getAbsolutePath());
+                     // it's spooled Value, try move its file to VS
+                     if (!tempFile.renameTo(file))
+                     {
+                        // not succeeded - copy bytes, temp file will be deleted by transient ValueData
+                        if (LOG.isDebugEnabled())
+                        {
+                           LOG
+                              .debug("Value spool file move (rename) to Values Storage is not succeeded. Trying bytes copy. Spool file: "
+                                 + tempFile.getAbsolutePath() + ". Destination: " + file.getAbsolutePath());
+                        }
+
+                        copyClose(new FileInputStream(tempFile), new FileOutputStream(file));
+                     }
+                  }
+                  else
+                  {
+                     // not spooled, use client InputStream
+                     copyClose(streamed.getStream(), new FileOutputStream(file));
                   }
 
-                  copyClose(new FileInputStream(tempFile), new FileOutputStream(file));
+                  // link this Value to file in VS
+                  streamed.setPersistedFile(file);
                }
             }
             else
             {
-               // not spooled, use client InputStream
-               copyClose(streamed.getStream(), new FileOutputStream(file));
+               // copy from Value stream to the file, e.g. from FilePersistedValueData to this Value
+               copyClose(value.getAsStream(), new FileOutputStream(file));
             }
 
-            // link this Value to file in VS
-            streamed.setPersistedFile(file);
+            return null;
          }
-      }
-      else
+      };
+      try
       {
-         // copy from Value stream to the file, e.g. from FilePersistedValueData to this Value
-         copyClose(value.getAsStream(), new FileOutputStream(file));
+         AccessController.doPrivileged(action);
+      }
+      catch (PrivilegedActionException pae)
+      {
+         Throwable cause = pae.getCause();
+         if (cause instanceof IOException)
+         {
+            throw (IOException)cause;
+         }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
       }
    }
 

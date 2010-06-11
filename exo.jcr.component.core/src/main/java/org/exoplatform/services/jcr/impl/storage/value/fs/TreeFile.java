@@ -23,6 +23,8 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.File;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 /**
  * Created by The eXo Platform SAS
@@ -54,11 +56,18 @@ public class TreeFile extends File
    @Override
    public boolean delete()
    {
-      boolean res = super.delete();
-      if (res)
-         deleteParent(new File(getParent()));
+      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
+      {
+         public Object run()
+         {
+            boolean res = deleteFromSuper();
+            if (res)
+               deleteParent(new File(getParent()));
 
-      return res;
+            return res;
+         }
+      };
+      return (Boolean)AccessController.doPrivileged(action);
    }
 
    protected boolean deleteParent(File fp)
@@ -86,5 +95,10 @@ public class TreeFile extends File
          else
             fLog.warn("Parent can not be a file but found " + fp.getAbsolutePath());
       return res;
+   }
+
+   private boolean deleteFromSuper()
+   {
+      return super.delete();
    }
 }
