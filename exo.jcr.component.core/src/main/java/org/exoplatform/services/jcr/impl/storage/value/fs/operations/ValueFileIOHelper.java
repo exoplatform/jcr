@@ -75,35 +75,60 @@ public class ValueFileIOHelper
     * @throws IOException
     *           if error
     */
-   protected ValueData readValue(File file, int orderNum, int maxBufferSize) throws IOException
+   protected ValueData readValue(final File file, final int orderNum, final int maxBufferSize) throws IOException
    {
-
-      long fileSize = file.length();
-
-      if (fileSize > maxBufferSize)
+      PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
       {
-         return new FilePersistedValueData(orderNum, file);
-      }
-      else
-      {
-         FileInputStream is = new FileInputStream(file);
-         try
+         public Object run() throws Exception
          {
-            int buffSize = (int)fileSize;
-            byte[] res = new byte[buffSize];
-            int rpos = 0;
-            int r = -1;
-            byte[] buff = new byte[IOBUFFER_SIZE > buffSize ? IOBUFFER_SIZE : buffSize];
-            while ((r = is.read(buff)) >= 0)
+            long fileSize = file.length();
+
+            if (fileSize > maxBufferSize)
             {
-               System.arraycopy(buff, 0, res, rpos, r);
-               rpos += r;
+               return new FilePersistedValueData(orderNum, file);
             }
-            return new ByteArrayPersistedValueData(orderNum, res);
+            else
+            {
+               FileInputStream is = new FileInputStream(file);
+               try
+               {
+                  int buffSize = (int)fileSize;
+                  byte[] res = new byte[buffSize];
+                  int rpos = 0;
+                  int r = -1;
+                  byte[] buff = new byte[IOBUFFER_SIZE > buffSize ? IOBUFFER_SIZE : buffSize];
+                  while ((r = is.read(buff)) >= 0)
+                  {
+                     System.arraycopy(buff, 0, res, rpos, r);
+                     rpos += r;
+                  }
+                  return new ByteArrayPersistedValueData(orderNum, res);
+               }
+               finally
+               {
+                  is.close();
+               }
+            }
          }
-         finally
+      };
+      try
+      {
+         return (ValueData)AccessController.doPrivileged(action);
+      }
+      catch (PrivilegedActionException pae)
+      {
+         Throwable cause = pae.getCause();
+         if (cause instanceof IOException)
          {
-            is.close();
+            throw (IOException)cause;
+         }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
          }
       }
    }
@@ -140,16 +165,44 @@ public class ValueFileIOHelper
     * @throws IOException
     *           if error occurs
     */
-   protected void writeByteArrayValue(File file, ValueData value) throws IOException
+   protected void writeByteArrayValue(final File file, final ValueData value) throws IOException
    {
-      OutputStream out = new FileOutputStream(file);
+      PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
+      {
+         public Object run() throws Exception
+         {
+            OutputStream out = new FileOutputStream(file);
+            try
+            {
+               out.write(value.getAsByteArray());
+            }
+            finally
+            {
+               out.close();
+            }
+
+            return null;
+         }
+      };
       try
       {
-         out.write(value.getAsByteArray());
+         AccessController.doPrivileged(action);
       }
-      finally
+      catch (PrivilegedActionException pae)
       {
-         out.close();
+         Throwable cause = pae.getCause();
+         if (cause instanceof IOException)
+         {
+            throw (IOException)cause;
+         }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
       }
    }
 

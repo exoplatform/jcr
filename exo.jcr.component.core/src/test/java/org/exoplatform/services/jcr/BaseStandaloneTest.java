@@ -395,7 +395,13 @@ public abstract class BaseStandaloneTest extends TestCase
 
    protected File createBLOBTempFile(int sizeInKb) throws IOException
    {
-      return createBLOBTempFile("exo_jcr_test_temp_file_", sizeInKb);
+      System.setSecurityManager(null);
+
+      File file = createBLOBTempFile("exo_jcr_test_temp_file_", sizeInKb);
+
+      System.setSecurityManager(new SecurityManager());
+
+      return file;
    }
 
    protected File createBLOBTempFile(String prefix, int sizeInKb) throws IOException

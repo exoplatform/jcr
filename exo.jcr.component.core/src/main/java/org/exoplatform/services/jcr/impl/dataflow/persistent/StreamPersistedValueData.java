@@ -188,32 +188,32 @@ public class StreamPersistedValueData extends FilePersistedValueData
          {
             if (file != null)
             {
-               return file.length();
+               return new Long(file.length());
             }
             else if (tempFile != null)
             {
-               return tempFile.length();
+               return new Long(tempFile.length());
             }
             else if (stream instanceof FileInputStream)
             {
                try
                {
-                  return ((FileInputStream)stream).getChannel().size();
+                  return new Long(((FileInputStream)stream).getChannel().size());
                }
                catch (IOException e)
                {
-                  return -1;
+                  return new Long(-1);
                }
             }
             else
             {
                try
                {
-                  return stream.available();
+                  return new Long(stream.available());
                }
                catch (IOException e)
                {
-                  return -1;
+                  return new Long(-1);
                }
             }
          }

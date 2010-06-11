@@ -61,7 +61,6 @@ public class TestUpdate extends JcrAPIBaseTest
       Node corrNode = (Node)ws1session.getItem(ws1node.getPath());
 
       File propData = createBLOBTempFile(1024);
-      propData.deleteOnExit();
 
       InputStream pds = new FileInputStream(propData);
       try
