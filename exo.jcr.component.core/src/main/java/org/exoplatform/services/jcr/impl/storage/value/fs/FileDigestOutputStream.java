@@ -18,8 +18,9 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs;
 
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
+
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
@@ -43,7 +44,7 @@ public class FileDigestOutputStream extends DigestOutputStream
 
    FileDigestOutputStream(File file, MessageDigest digest) throws IOException
    {
-      super(new FileOutputStream(file), digest);
+      super(PrivilegedFileHelper.fileOutputStream(file), digest);
       this.file = file;
    }
 

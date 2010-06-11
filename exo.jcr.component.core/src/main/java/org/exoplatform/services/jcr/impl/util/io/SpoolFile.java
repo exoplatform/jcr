@@ -24,6 +24,9 @@ import org.exoplatform.services.log.Log;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -65,9 +68,36 @@ public class SpoolFile extends File
       super(absPath);
    }
 
-   public static SpoolFile createTempFile(String prefix, String suffix, File directory) throws IOException
+   public static SpoolFile createTempFile(final String prefix, final String suffix, final File directory)
+      throws IOException
    {
-      return new SpoolFile(File.createTempFile(prefix, suffix, directory).getAbsolutePath());
+      PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
+      {
+         public Object run() throws Exception
+         {
+            return new SpoolFile(File.createTempFile(prefix, suffix, directory).getAbsolutePath());
+         }
+      };
+      try
+      {
+         return (SpoolFile)AccessController.doPrivileged(action);
+      }
+      catch (PrivilegedActionException pae)
+      {
+         Throwable cause = pae.getCause();
+         if (cause instanceof IOException)
+         {
+            throw (IOException)cause;
+         }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
+      }
    }
 
    public synchronized void acquire(Object holder) throws FileNotFoundException

@@ -27,6 +27,7 @@ import org.exoplatform.services.jcr.impl.storage.value.cas.ValueContentAddressSt
 import org.exoplatform.services.jcr.impl.storage.value.fs.CASableIOSupport;
 import org.exoplatform.services.jcr.impl.storage.value.fs.FileDigestOutputStream;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
 import java.io.File;
@@ -168,15 +169,15 @@ public class CASableWriteValue extends WriteValue
                throw new RecordAlreadyExistsException("Write error: " + e, e);
             }
 
-            if (!vcasFile.exists())
+            if (!PrivilegedFileHelper.exists(vcasFile))
             {
                // it's new CAS Value, we have to move temp to vcas location
                // use RENAME only, don't copy - as copy will means that destination already exists etc.
 
                // make sure parent dir exists
-               vcasFile.getParentFile().mkdirs();
+               PrivilegedFileHelper.mkdirs(vcasFile.getParentFile());
                // rename propetynamed file to hashnamed one
-               if (!tempFile.renameTo(vcasFile))
+               if (!PrivilegedFileHelper.renameTo(tempFile, vcasFile))
                {
                   throw new VCASException("File " + tempFile.getAbsolutePath() + " can't be renamed to VCAS-named "
                      + vcasFile.getAbsolutePath());
@@ -193,7 +194,7 @@ public class CASableWriteValue extends WriteValue
          finally
          {
             // remove temp file
-            tempFile.delete(); // should be ok without file cleaner
+            PrivilegedFileHelper.delete(tempFile); // should be ok without file cleaner
 
             fileLock.unlock();
          }

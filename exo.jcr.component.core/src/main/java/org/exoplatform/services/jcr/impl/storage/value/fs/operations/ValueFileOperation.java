@@ -22,6 +22,7 @@ import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.storage.value.ValueOperation;
 import org.exoplatform.services.jcr.impl.storage.value.fs.FileLockException;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -256,7 +257,7 @@ public abstract class ValueFileOperation extends ValueFileIOHelper implements Va
          // lock in JVM (wait for unlock if required)
          try
          {
-            return resources.aquire(file.getAbsolutePath(), new ValueFileLockHolder(file));
+            return resources.aquire(PrivilegedFileHelper.getAbsolutePath(file), new ValueFileLockHolder(file));
          }
          catch (InterruptedException e)
          {
@@ -273,7 +274,7 @@ public abstract class ValueFileOperation extends ValueFileIOHelper implements Va
        */
       public boolean unlock() throws IOException
       {
-         return resources.release(file.getAbsolutePath());
+         return resources.release(PrivilegedFileHelper.getAbsolutePath(file));
       }
    }
 

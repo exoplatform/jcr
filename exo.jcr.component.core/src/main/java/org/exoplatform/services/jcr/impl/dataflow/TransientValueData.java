@@ -27,6 +27,7 @@ import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.FilePersistedValueData;
 import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -211,7 +212,7 @@ public class TransientValueData implements ValueData
             {
                if (spoolFile != null)
                {
-                  return new FileInputStream(spoolFile); // from spool file
+                  return PrivilegedFileHelper.fileInputStream(spoolFile); // from spool file
                }
                else
                {
@@ -260,7 +261,7 @@ public class TransientValueData implements ValueData
          }
          else
          {
-            return spoolFile.length();
+            return PrivilegedFileHelper.length(spoolFile);
          }
       }
 
@@ -379,6 +380,7 @@ public class TransientValueData implements ValueData
       /**
        * {@inheritDoc}
        */
+      @Override
       protected void finalize() throws Throwable
       {
          deleteCurrentSpoolFile();
@@ -568,7 +570,8 @@ public class TransientValueData implements ValueData
                   sf = SpoolFile.createTempFile("jcrvd", null, tempDirectory);
                   sf.acquire(this);
 
-                  sfout = new FileOutputStream(sf);
+                  sfout = PrivilegedFileHelper.fileOutputStream(sf);
+
                   sfout.write(buffer, 0, len);
                   sfout.write(tmpBuff, 0, read);
                   buffer = null;
@@ -691,7 +694,7 @@ public class TransientValueData implements ValueData
 
             if (spoolFile instanceof SpoolFile)
             {
-               ((SpoolFile)spoolFile).release(this);
+               (spoolFile).release(this);
             }
 
             if (deleteSpoolFile && spoolFile.exists())

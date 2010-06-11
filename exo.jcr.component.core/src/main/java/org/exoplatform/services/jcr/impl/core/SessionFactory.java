@@ -27,6 +27,9 @@ import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.transaction.TransactionService;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+
 import javax.jcr.LoginException;
 import javax.jcr.RepositoryException;
 
@@ -59,44 +62,52 @@ public class SessionFactory
     */
    public SessionFactory(TransactionService tService, WorkspaceEntry config, ExoContainerContext containerContext)
    {
-
       this.container = containerContext.getContainer();
       this.workspaceName = config.getName();
       this.tService = tService;
       this.txResourceManager = new TransactionableResourceManager();
 
-      boolean tracking = "true".equalsIgnoreCase(System.getProperty("exo.jcr.session.tracking.active", "false"));
-      if (tracking)
+      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
       {
-         long maxAgeMillis = 0;
-
-         String maxagevalue = System.getProperty("exo.jcr.jcr.session.tracking.maxage");
-         if (maxagevalue != null)
+         public Object run()
          {
-            try
+            boolean tracking = "true".equalsIgnoreCase(System.getProperty("exo.jcr.session.tracking.active", "false"));
+            if (tracking)
             {
-               maxAgeMillis = Long.parseLong(maxagevalue) * 1000;
-            }
-            catch (NumberFormatException e)
-            {
+               long maxAgeMillis = 0;
+
+               String maxagevalue = System.getProperty("exo.jcr.jcr.session.tracking.maxage");
+               if (maxagevalue != null)
+               {
+                  try
+                  {
+                     maxAgeMillis = Long.parseLong(maxagevalue) * 1000;
+                  }
+                  catch (NumberFormatException e)
+                  {
+                     //
+                  }
+               }
+               if (maxAgeMillis <= 0)
+               {
+                  maxAgeMillis = 1000 * 60 * 2; // 2 mns
+               }
+
                //
+               try
+               {
+                  SessionReference.start(maxAgeMillis);
+               }
+               catch (Exception e)
+               {
+                  e.printStackTrace();
+               }
             }
-         }
-         if (maxAgeMillis <= 0)
-         {
-            maxAgeMillis = 1000 * 60 * 2; // 2 mns
-         }
 
-         //
-         try
-         {
-            SessionReference.start(maxAgeMillis);
+            return null;
          }
-         catch (Exception e)
-         {
-            e.printStackTrace();
-         }
-      }
+      };
+      AccessController.doPrivileged(action);
    }
 
    /**
