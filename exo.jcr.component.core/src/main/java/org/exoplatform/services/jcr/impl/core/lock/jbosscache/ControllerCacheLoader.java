@@ -16,6 +16,7 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock.jbosscache;
 
+import org.exoplatform.services.jcr.impl.util.SecurityHelper;
 import org.jboss.cache.CacheSPI;
 import org.jboss.cache.CacheStatus;
 import org.jboss.cache.Fqn;
@@ -28,6 +29,7 @@ import org.jboss.cache.lock.TimeoutException;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.security.PrivilegedExceptionAction;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -44,7 +46,7 @@ import java.util.Set;
  * Created by The eXo Platform SAS
  * Author : Nicolas Filotto 
  *          nicolas.filotto@exoplatform.com
- * 9 fŽvr. 2010  
+ * 9 fï¿½vr. 2010  
  */
 @SuppressWarnings("unchecked")
 public class ControllerCacheLoader implements CacheLoader
@@ -201,9 +203,16 @@ public class ControllerCacheLoader implements CacheLoader
    /**
     * @see org.jboss.cache.loader.CacheLoader#put(org.jboss.cache.Fqn, java.lang.Object, java.lang.Object)
     */
-   public Object put(Fqn name, Object key, Object value) throws Exception
+   public Object put(final Fqn name, final Object key, final Object value) throws Exception
    {
-      return cl.put(name, key, value);
+      
+      return SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+         {
+            public Object run() throws Exception
+            {
+               return cl.put(name, key, value);
+            }
+         });
    }
 
    /**
