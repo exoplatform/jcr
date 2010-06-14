@@ -20,6 +20,8 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.NativeFSLockFactory;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
@@ -29,11 +31,14 @@ import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeListener;
 import org.exoplatform.services.jcr.impl.core.query.IndexingTree;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.DirectoryManager;
+import org.exoplatform.services.jcr.impl.util.SecurityHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -824,60 +829,67 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     * @throws IOException
     *             if an error occurs constructing the <code>IndexReader</code>.
     */
-   public synchronized CachingMultiIndexReader getIndexReader(boolean initCache) throws IOException
+   public synchronized CachingMultiIndexReader getIndexReader(final boolean initCache) throws IOException
    {
-      synchronized (updateMonitor)
+      return SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<CachingMultiIndexReader>()
       {
-         if (multiReader != null)
+         public CachingMultiIndexReader run() throws Exception
          {
-            multiReader.acquire();
-            return multiReader;
-         }
-         // no reader available
-         // wait until no update is in progress
-         while (indexUpdateMonitor.getUpdateInProgress())
-         {
-            try
+            synchronized (updateMonitor)
             {
-               updateMonitor.wait();
-            }
-            catch (InterruptedException e)
-            {
-               throw new IOException("Interrupted while waiting to aquire reader");
-            }
-         }
-         // some other read thread might have created the reader in the
-         // meantime -> check again
-         if (multiReader == null)
-         {
-            List readerList = new ArrayList();
-            for (int i = 0; i < indexes.size(); i++)
-            {
-               PersistentIndex pIdx = (PersistentIndex)indexes.get(i);
-
-               if (indexNames.contains(pIdx.getName()))
+               if (multiReader != null)
+               {
+                  multiReader.acquire();
+                  return multiReader;
+               }
+               // no reader available
+               // wait until no update is in progress
+               while (indexUpdateMonitor.getUpdateInProgress())
                {
                   try
                   {
-                     readerList.add(pIdx.getReadOnlyIndexReader(initCache));
+                     updateMonitor.wait();
                   }
-                  catch (FileNotFoundException e)
+                  catch (InterruptedException e)
                   {
-                     if (directoryManager.hasDirectory(pIdx.getName()))
-                     {
-                        throw e;
-                     }
+                     throw new IOException("Interrupted while waiting to aquire reader");
                   }
                }
+               // some other read thread might have created the reader in the
+               // meantime -> check again
+               if (multiReader == null)
+               {
+                  List readerList = new ArrayList();
+                  for (int i = 0; i < indexes.size(); i++)
+                  {
+                     PersistentIndex pIdx = (PersistentIndex)indexes.get(i);
+
+                     if (indexNames.contains(pIdx.getName()))
+                     {
+                        try
+                        {
+                           readerList.add(pIdx.getReadOnlyIndexReader(initCache));
+                        }
+                        catch (FileNotFoundException e)
+                        {
+                           if (directoryManager.hasDirectory(pIdx.getName()))
+                           {
+                              throw e;
+                           }
+                        }
+                     }
+                  }
+                  readerList.add(volatileIndex.getReadOnlyIndexReader());
+                  ReadOnlyIndexReader[] readers =
+                     (ReadOnlyIndexReader[])readerList.toArray(new ReadOnlyIndexReader[readerList.size()]);
+                  multiReader = new CachingMultiIndexReader(readers, cache);
+               }
+               multiReader.acquire();
+               return multiReader;
             }
-            readerList.add(volatileIndex.getReadOnlyIndexReader());
-            ReadOnlyIndexReader[] readers =
-               (ReadOnlyIndexReader[])readerList.toArray(new ReadOnlyIndexReader[readerList.size()]);
-            multiReader = new CachingMultiIndexReader(readers, cache);
          }
-         multiReader.acquire();
-         return multiReader;
-      }
+      });
+
    }
 
    /**
@@ -1159,6 +1171,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       // new flush task, cause canceled can't be re-used
       flushTask = new TimerTask()
       {
+         @Override
          public void run()
          {
             // check if there are any indexing jobs finished
@@ -1204,19 +1217,25 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     *             if an error occurs while executing the action or appending
     *             the action to the redo log.
     */
-   private Action executeAndLog(Action a) throws IOException
+   private Action executeAndLog(final Action a) throws IOException
    {
-      a.execute(this);
-      redoLog.append(a);
-      // please note that flushing the redo log is only required on
-      // commit, but we also want to keep track of new indexes for sure.
-      // otherwise it might happen that unused index folders are orphaned
-      // after a crash.
-      if (a.getType() == Action.TYPE_COMMIT || a.getType() == Action.TYPE_ADD_INDEX)
+      return SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Action>()
       {
-         redoLog.flush();
-      }
-      return a;
+         public Action run() throws Exception
+         {
+            a.execute(MultiIndex.this);
+            redoLog.append(a);
+            // please note that flushing the redo log is only required on
+            // commit, but we also want to keep track of new indexes for sure.
+            // otherwise it might happen that unused index folders are orphaned
+            // after a crash.
+            if (a.getType() == Action.TYPE_COMMIT || a.getType() == Action.TYPE_ADD_INDEX)
+            {
+               redoLog.flush();
+            }
+            return a;
+         }
+      });
    }
 
    /**
@@ -1670,6 +1689,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
        * 
        * @return a <code>String</code> representation of this action.
        */
+      @Override
       public abstract String toString();
 
       /**
@@ -1797,6 +1817,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
        * 
        * @inheritDoc
        */
+      @Override
       public void execute(MultiIndex index) throws IOException
       {
          PersistentIndex idx = index.getOrCreateIndex(indexName);
@@ -1812,6 +1833,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * @inheritDoc
        */
+      @Override
       public String toString()
       {
          StringBuffer logLine = new StringBuffer();
@@ -1901,6 +1923,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
        * 
        * @inheritDoc
        */
+      @Override
       public void execute(MultiIndex index) throws IOException
       {
          if (doc == null)
@@ -1924,6 +1947,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * @inheritDoc
        */
+      @Override
       public String toString()
       {
          StringBuffer logLine = new StringBuffer(ENTRY_LENGTH);
@@ -1972,6 +1996,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
        * 
        * @inheritDoc
        */
+      @Override
       public void execute(MultiIndex index) throws IOException
       {
          index.lastFlushTime = System.currentTimeMillis();
@@ -1980,6 +2005,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * @inheritDoc
        */
+      @Override
       public String toString()
       {
          return Long.toString(getTransactionId()) + ' ' + Action.COMMIT;
@@ -2035,6 +2061,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
        * 
        * @inheritDoc
        */
+      @Override
       public void execute(MultiIndex index) throws IOException
       {
          PersistentIndex idx = index.getOrCreateIndex(indexName);
@@ -2044,6 +2071,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * @inheritDoc
        */
+      @Override
       public void undo(MultiIndex index) throws IOException
       {
          if (index.hasIndex(indexName))
@@ -2057,6 +2085,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * @inheritDoc
        */
+      @Override
       public String toString()
       {
          StringBuffer logLine = new StringBuffer();
@@ -2127,6 +2156,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
        * 
        * @inheritDoc
        */
+      @Override
       public void execute(MultiIndex index) throws IOException
       {
          // get index if it exists
@@ -2145,6 +2175,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * @inheritDoc
        */
+      @Override
       public String toString()
       {
          StringBuffer logLine = new StringBuffer();
@@ -2214,6 +2245,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
        * 
        * @inheritDoc
        */
+      @Override
       public void execute(MultiIndex index) throws IOException
       {
          String uuidString = uuid.toString();
@@ -2249,6 +2281,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * @inheritDoc
        */
+      @Override
       public String toString()
       {
          StringBuffer logLine = new StringBuffer(ENTRY_LENGTH);
@@ -2297,6 +2330,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
        * 
        * @inheritDoc
        */
+      @Override
       public void execute(MultiIndex index) throws IOException
       {
          index.currentTransactionId = getTransactionId();
@@ -2305,6 +2339,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * @inheritDoc
        */
+      @Override
       public String toString()
       {
          return Long.toString(getTransactionId()) + ' ' + Action.START;
@@ -2353,6 +2388,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
        * 
        * @inheritDoc
        */
+      @Override
       public void execute(MultiIndex index) throws IOException
       {
          VolatileIndex volatileIndex = index.getVolatileIndex();
@@ -2364,6 +2400,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * @inheritDoc
        */
+      @Override
       public String toString()
       {
          StringBuffer logLine = new StringBuffer();

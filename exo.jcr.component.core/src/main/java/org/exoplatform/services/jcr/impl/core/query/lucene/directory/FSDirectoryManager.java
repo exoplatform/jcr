@@ -26,6 +26,7 @@ import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 
 /**
@@ -49,7 +50,7 @@ public class FSDirectoryManager implements DirectoryManager
       {
          public Object run() throws Exception
          {
-            baseDir = PrivilegedFileHelper.file(handler.getPath());
+            baseDir = new File(handler.getPath());
             return null;
          }
       });
@@ -64,7 +65,7 @@ public class FSDirectoryManager implements DirectoryManager
       {
          public Boolean run() throws Exception
          {
-            return PrivilegedFileHelper.file(baseDir, name).exists();
+            return new File(baseDir, name).exists();
 
          }
       });
@@ -86,7 +87,7 @@ public class FSDirectoryManager implements DirectoryManager
             }
             else
             {
-               dir = PrivilegedFileHelper.file(baseDir, name);
+               dir = new File(baseDir, name);
             }
             return FSDirectory.getDirectory(dir, new NativeFSLockFactory(dir));
          }
@@ -131,11 +132,11 @@ public class FSDirectoryManager implements DirectoryManager
     */
    public boolean delete(final String name)
    {
-      return SecurityHelper.doPriviledgedAction(new PrivilegedExceptionAction<Boolean>()
+      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<Boolean>()
       {
-         public Boolean run() throws Exception
+         public Boolean run()
          {
-            File directory = PrivilegedFileHelper.file(baseDir, name);
+            File directory = new File(baseDir, name);
             // trivial if it does not exist anymore
             if (!directory.exists())
             {
@@ -168,12 +169,12 @@ public class FSDirectoryManager implements DirectoryManager
     */
    public boolean rename(final String from, final String to)
    {
-      return SecurityHelper.doPriviledgedAction(new PrivilegedExceptionAction<Boolean>()
+      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<Boolean>()
       {
-         public Boolean run() throws Exception
+         public Boolean run()
          {
-            File src = PrivilegedFileHelper.file(baseDir, from);
-            File dest = PrivilegedFileHelper.file(baseDir, to);
+            File src = new File(baseDir, from);
+            File dest = new File(baseDir, to);
             return src.renameTo(dest);
          }
       });

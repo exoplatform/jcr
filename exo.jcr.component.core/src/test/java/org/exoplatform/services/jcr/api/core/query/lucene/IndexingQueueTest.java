@@ -21,6 +21,7 @@ import org.exoplatform.services.jcr.api.core.query.AbstractIndexingTest;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.query.lucene.IndexingQueue;
 import org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex;
+import org.exoplatform.services.jcr.impl.util.SecurityHelper;
 import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import javax.jcr.Node;
@@ -44,7 +45,7 @@ import java.util.Calendar;
 public class IndexingQueueTest extends AbstractIndexingTest
 {
 
-   private static final File TEMP_DIR = PrivilegedFileHelper.file(System.getProperty("java.io.tmpdir"));
+   private static final File TEMP_DIR = new File(SecurityHelper.getSystemProperty("java.io.tmpdir"));
 
    private static final String CONTENT_TYPE = "application/indexing-queue-test";
 

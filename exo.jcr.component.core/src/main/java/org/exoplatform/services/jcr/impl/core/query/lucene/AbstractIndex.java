@@ -25,6 +25,7 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Similarity;
 import org.apache.lucene.store.Directory;
+import org.exoplatform.services.jcr.impl.util.SecurityHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +33,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.StringReader;
+import java.security.PrivilegedAction;
+import java.security.PrivilegedExceptionAction;
 import java.util.BitSet;
 import java.util.Iterator;
 
@@ -122,7 +125,7 @@ abstract class AbstractIndex
     * @param indexingQueue the indexing queue.
     * @throws IOException if the index cannot be initialized.
     */
-   AbstractIndex(Analyzer analyzer, Similarity similarity, Directory directory, DocNumberCache cache,
+   AbstractIndex(final Analyzer analyzer, Similarity similarity, final Directory directory, DocNumberCache cache,
       IndexingQueue indexingQueue) throws IOException
    {
       this.analyzer = analyzer;
@@ -130,15 +133,24 @@ abstract class AbstractIndex
       this.directory = directory;
       this.cache = cache;
       this.indexingQueue = indexingQueue;
-      this.isExisting = IndexReader.indexExists(directory);
 
-      if (!isExisting)
+      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
-         indexWriter = new IndexWriter(directory, analyzer, IndexWriter.MaxFieldLength.LIMITED);
-         // immediately close, now that index has been created
-         indexWriter.close();
-         indexWriter = null;
-      }
+         public Object run() throws Exception
+         {
+            AbstractIndex.this.isExisting = IndexReader.indexExists(directory);
+
+            if (!isExisting)
+            {
+               indexWriter = new IndexWriter(directory, analyzer, IndexWriter.MaxFieldLength.LIMITED);
+               // immediately close, now that index has been created
+               indexWriter.close();
+               indexWriter = null;
+            }
+            return null;
+         }
+      });
+
    }
 
    /**
@@ -170,60 +182,67 @@ abstract class AbstractIndex
     * @param docs the documents to add.
     * @throws IOException if an error occurs while writing to the index.
     */
-   void addDocuments(Document[] docs) throws IOException
+   void addDocuments(final Document[] docs) throws IOException
    {
-      final IndexWriter writer = getIndexWriter();
-      DynamicPooledExecutor.Command[] commands = new DynamicPooledExecutor.Command[docs.length];
-      for (int i = 0; i < docs.length; i++)
+      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
-         // check if text extractor completed its work
-         final Document doc = getFinishedDocument(docs[i]);
-         // create a command for inverting the document
-         commands[i] = new DynamicPooledExecutor.Command()
+         public Object run() throws Exception
          {
-            public Object call() throws Exception
+            final IndexWriter writer = getIndexWriter();
+            DynamicPooledExecutor.Command[] commands = new DynamicPooledExecutor.Command[docs.length];
+            for (int i = 0; i < docs.length; i++)
             {
-               long time = System.currentTimeMillis();
-               writer.addDocument(doc);
-               return new Long(System.currentTimeMillis() - time);
-            }
-         };
-      }
-      DynamicPooledExecutor.Result[] results = EXECUTOR.executeAndWait(commands);
-      invalidateSharedReader();
-      IOException ex = null;
-      for (int i = 0; i < results.length; i++)
-      {
-         if (results[i].getException() != null)
-         {
-            Throwable cause = results[i].getException().getCause();
-            if (ex == null)
-            {
-               // only throw the first exception
-               if (cause instanceof IOException)
+               // check if text extractor completed its work
+               final Document doc = getFinishedDocument(docs[i]);
+               // create a command for inverting the document
+               commands[i] = new DynamicPooledExecutor.Command()
                {
-                  ex = (IOException)cause;
+                  public Object call() throws Exception
+                  {
+                     long time = System.currentTimeMillis();
+                     writer.addDocument(doc);
+                     return new Long(System.currentTimeMillis() - time);
+                  }
+               };
+            }
+            DynamicPooledExecutor.Result[] results = EXECUTOR.executeAndWait(commands);
+            invalidateSharedReader();
+            IOException ex = null;
+            for (int i = 0; i < results.length; i++)
+            {
+               if (results[i].getException() != null)
+               {
+                  Throwable cause = results[i].getException().getCause();
+                  if (ex == null)
+                  {
+                     // only throw the first exception
+                     if (cause instanceof IOException)
+                     {
+                        ex = (IOException)cause;
+                     }
+                     else
+                     {
+                        throw Util.createIOException(cause);
+                     }
+                  }
+                  else
+                  {
+                     // all others are logged
+                     log.warn("Exception while inverting document", cause);
+                  }
                }
                else
                {
-                  throw Util.createIOException(cause);
+                  log.debug("Inverted document in {} ms", results[i].get());
                }
             }
-            else
+            if (ex != null)
             {
-               // all others are logged
-               log.warn("Exception while inverting document", cause);
+               throw ex;
             }
+            return null;
          }
-         else
-         {
-            log.debug("Inverted document in {} ms", results[i].get());
-         }
-      }
-      if (ex != null)
-      {
-         throw ex;
-      }
+      });
    }
 
    /**
@@ -235,9 +254,15 @@ abstract class AbstractIndex
     * @throws IOException if an error occurs while removing the document.
     * @return number of documents deleted
     */
-   int removeDocument(Term idTerm) throws IOException
+   int removeDocument(final Term idTerm) throws IOException
    {
-      return getIndexReader().deleteDocuments(idTerm);
+      return SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Integer>()
+      {
+         public Integer run() throws Exception
+         {
+            return getIndexReader().deleteDocuments(idTerm);
+         }
+      });
    }
 
    /**
@@ -249,20 +274,26 @@ abstract class AbstractIndex
     */
    protected synchronized CommittableIndexReader getIndexReader() throws IOException
    {
-      if (indexWriter != null)
+      return SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<CommittableIndexReader>()
       {
-         indexWriter.close();
-         log.debug("closing IndexWriter.");
-         indexWriter = null;
-      }
+         public CommittableIndexReader run() throws Exception
+         {
+            if (indexWriter != null)
+            {
+               indexWriter.close();
+               log.debug("closing IndexWriter.");
+               indexWriter = null;
+            }
 
-      if (indexReader == null || !indexReader.isCurrent())
-      {
-         IndexReader reader = IndexReader.open(getDirectory());
-         reader.setTermInfosIndexDivisor(termInfosIndexDivisor);
-         indexReader = new CommittableIndexReader(reader);
-      }
-      return indexReader;
+            if (indexReader == null || !indexReader.isCurrent())
+            {
+               IndexReader reader = IndexReader.open(getDirectory());
+               reader.setTermInfosIndexDivisor(termInfosIndexDivisor);
+               indexReader = new CommittableIndexReader(reader);
+            }
+            return indexReader;
+         }
+      });
    }
 
    /**
@@ -276,60 +307,66 @@ abstract class AbstractIndex
     * @return a read-only index reader.
     * @throws IOException if an error occurs while obtaining the index reader.
     */
-   synchronized ReadOnlyIndexReader getReadOnlyIndexReader(boolean initCache) throws IOException
+   synchronized ReadOnlyIndexReader getReadOnlyIndexReader(final boolean initCache) throws IOException
    {
-      // get current modifiable index reader
-      CommittableIndexReader modifiableReader = getIndexReader();
-      long modCount = modifiableReader.getModificationCount();
-      if (readOnlyReader != null)
+      return SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<ReadOnlyIndexReader>()
       {
-         if (readOnlyReader.getDeletedDocsVersion() == modCount)
+         public ReadOnlyIndexReader run() throws Exception
          {
-            // reader up-to-date
+            // get current modifiable index reader
+            CommittableIndexReader modifiableReader = getIndexReader();
+            long modCount = modifiableReader.getModificationCount();
+            if (readOnlyReader != null)
+            {
+               if (readOnlyReader.getDeletedDocsVersion() == modCount)
+               {
+                  // reader up-to-date
+                  readOnlyReader.acquire();
+                  return readOnlyReader;
+               }
+               else
+               {
+                  // reader outdated
+                  if (readOnlyReader.getRefCount() == 1)
+                  {
+                     // not in use, except by this index
+                     // update the reader
+                     readOnlyReader.updateDeletedDocs(modifiableReader);
+                     readOnlyReader.acquire();
+                     return readOnlyReader;
+                  }
+                  else
+                  {
+                     // cannot update reader, it is still in use
+                     // need to create a new instance
+                     readOnlyReader.release();
+                     readOnlyReader = null;
+                  }
+               }
+            }
+            // if we get here there is no up-to-date read-only reader
+            // capture snapshot of deleted documents
+            BitSet deleted = new BitSet(modifiableReader.maxDoc());
+            for (int i = 0; i < modifiableReader.maxDoc(); i++)
+            {
+               if (modifiableReader.isDeleted(i))
+               {
+                  deleted.set(i);
+               }
+            }
+            if (sharedReader == null)
+            {
+               // create new shared reader
+               IndexReader reader = IndexReader.open(getDirectory(), true);
+               reader.setTermInfosIndexDivisor(termInfosIndexDivisor);
+               CachingIndexReader cr = new CachingIndexReader(reader, cache, initCache);
+               sharedReader = new SharedIndexReader(cr);
+            }
+            readOnlyReader = new ReadOnlyIndexReader(sharedReader, deleted, modCount);
             readOnlyReader.acquire();
             return readOnlyReader;
          }
-         else
-         {
-            // reader outdated
-            if (readOnlyReader.getRefCount() == 1)
-            {
-               // not in use, except by this index
-               // update the reader
-               readOnlyReader.updateDeletedDocs(modifiableReader);
-               readOnlyReader.acquire();
-               return readOnlyReader;
-            }
-            else
-            {
-               // cannot update reader, it is still in use
-               // need to create a new instance
-               readOnlyReader.release();
-               readOnlyReader = null;
-            }
-         }
-      }
-      // if we get here there is no up-to-date read-only reader
-      // capture snapshot of deleted documents
-      BitSet deleted = new BitSet(modifiableReader.maxDoc());
-      for (int i = 0; i < modifiableReader.maxDoc(); i++)
-      {
-         if (modifiableReader.isDeleted(i))
-         {
-            deleted.set(i);
-         }
-      }
-      if (sharedReader == null)
-      {
-         // create new shared reader
-         IndexReader reader = IndexReader.open(getDirectory(), true);
-         reader.setTermInfosIndexDivisor(termInfosIndexDivisor);
-         CachingIndexReader cr = new CachingIndexReader(reader, cache, initCache);
-         sharedReader = new SharedIndexReader(cr);
-      }
-      readOnlyReader = new ReadOnlyIndexReader(sharedReader, deleted, modCount);
-      readOnlyReader.acquire();
-      return readOnlyReader;
+      });
    }
 
    /**
@@ -353,20 +390,26 @@ abstract class AbstractIndex
     */
    protected synchronized IndexWriter getIndexWriter() throws IOException
    {
-      if (indexReader != null)
+      return SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<IndexWriter>()
       {
-         indexReader.close();
-         log.debug("closing IndexReader.");
-         indexReader = null;
-      }
-      if (indexWriter == null)
-      {
-         indexWriter = new IndexWriter(getDirectory(), analyzer, new IndexWriter.MaxFieldLength(maxFieldLength));
-         indexWriter.setSimilarity(similarity);
-         indexWriter.setUseCompoundFile(useCompoundFile);
-         indexWriter.setInfoStream(STREAM_LOGGER);
-      }
-      return indexWriter;
+         public IndexWriter run() throws Exception
+         {
+            if (indexReader != null)
+            {
+               indexReader.close();
+               log.debug("closing IndexReader.");
+               indexReader = null;
+            }
+            if (indexWriter == null)
+            {
+               indexWriter = new IndexWriter(getDirectory(), analyzer, new IndexWriter.MaxFieldLength(maxFieldLength));
+               indexWriter.setSimilarity(similarity);
+               indexWriter.setUseCompoundFile(useCompoundFile);
+               indexWriter.setInfoStream(STREAM_LOGGER);
+            }
+            return indexWriter;
+         }
+      });
    }
 
    /**
@@ -385,26 +428,33 @@ abstract class AbstractIndex
     *                 commit.
     * @throws IOException if an error occurs while commiting changes.
     */
-   protected synchronized void commit(boolean optimize) throws IOException
+   protected synchronized void commit(final boolean optimize) throws IOException
    {
-      if (indexReader != null)
+      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
-         log.debug("committing IndexReader.");
-         indexReader.flush();
-      }
-      if (indexWriter != null)
-      {
-         log.debug("committing IndexWriter.");
-         indexWriter.commit();
-      }
-      // optimize if requested
-      if (optimize)
-      {
-         IndexWriter writer = getIndexWriter();
-         writer.optimize();
-         writer.close();
-         indexWriter = null;
-      }
+         public Object run() throws Exception
+         {
+            if (indexReader != null)
+            {
+               log.debug("committing IndexReader.");
+               indexReader.flush();
+            }
+            if (indexWriter != null)
+            {
+               log.debug("committing IndexWriter.");
+               indexWriter.commit();
+            }
+            // optimize if requested
+            if (optimize)
+            {
+               IndexWriter writer = getIndexWriter();
+               writer.optimize();
+               writer.close();
+               indexWriter = null;
+            }
+            return null;
+         }
+      });
    }
 
    /**
@@ -412,18 +462,25 @@ abstract class AbstractIndex
     */
    synchronized void close()
    {
-      releaseWriterAndReaders();
-      if (directory != null)
+      SecurityHelper.doPriviledgedAction(new PrivilegedAction<Object>()
       {
-         try
+         public Object run()
          {
-            directory.close();
+            releaseWriterAndReaders();
+            if (directory != null)
+            {
+               try
+               {
+                  directory.close();
+               }
+               catch (IOException e)
+               {
+                  directory = null;
+               }
+            }
+            return null;
          }
-         catch (IOException e)
-         {
-            directory = null;
-         }
-      }
+      });
    }
 
    /**
@@ -431,54 +488,61 @@ abstract class AbstractIndex
     */
    protected void releaseWriterAndReaders()
    {
-      if (indexWriter != null)
+      SecurityHelper.doPriviledgedAction(new PrivilegedAction<Object>()
       {
-         try
+         public Object run()
          {
-            indexWriter.close();
+            if (indexWriter != null)
+            {
+               try
+               {
+                  indexWriter.close();
+               }
+               catch (IOException e)
+               {
+                  log.warn("Exception closing index writer: " + e.toString());
+               }
+               indexWriter = null;
+            }
+            if (indexReader != null)
+            {
+               try
+               {
+                  indexReader.close();
+               }
+               catch (IOException e)
+               {
+                  log.warn("Exception closing index reader: " + e.toString());
+               }
+               indexReader = null;
+            }
+            if (readOnlyReader != null)
+            {
+               try
+               {
+                  readOnlyReader.release();
+               }
+               catch (IOException e)
+               {
+                  log.warn("Exception closing index reader: " + e.toString());
+               }
+               readOnlyReader = null;
+            }
+            if (sharedReader != null)
+            {
+               try
+               {
+                  sharedReader.release();
+               }
+               catch (IOException e)
+               {
+                  log.warn("Exception closing index reader: " + e.toString());
+               }
+               sharedReader = null;
+            }
+            return null;
          }
-         catch (IOException e)
-         {
-            log.warn("Exception closing index writer: " + e.toString());
-         }
-         indexWriter = null;
-      }
-      if (indexReader != null)
-      {
-         try
-         {
-            indexReader.close();
-         }
-         catch (IOException e)
-         {
-            log.warn("Exception closing index reader: " + e.toString());
-         }
-         indexReader = null;
-      }
-      if (readOnlyReader != null)
-      {
-         try
-         {
-            readOnlyReader.release();
-         }
-         catch (IOException e)
-         {
-            log.warn("Exception closing index reader: " + e.toString());
-         }
-         readOnlyReader = null;
-      }
-      if (sharedReader != null)
-      {
-         try
-         {
-            sharedReader.release();
-         }
-         catch (IOException e)
-         {
-            log.warn("Exception closing index reader: " + e.toString());
-         }
-         sharedReader = null;
-      }
+      });
    }
 
    /**
@@ -503,18 +567,25 @@ abstract class AbstractIndex
     */
    protected synchronized void invalidateSharedReader() throws IOException
    {
-      // also close the read-only reader
-      if (readOnlyReader != null)
+      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
-         readOnlyReader.release();
-         readOnlyReader = null;
-      }
-      // invalidate shared reader
-      if (sharedReader != null)
-      {
-         sharedReader.release();
-         sharedReader = null;
-      }
+         public Object run() throws Exception
+         {
+            // also close the read-only reader
+            if (readOnlyReader != null)
+            {
+               readOnlyReader.release();
+               readOnlyReader = null;
+            }
+            // invalidate shared reader
+            if (sharedReader != null)
+            {
+               sharedReader.release();
+               sharedReader = null;
+            }
+            return null;
+         }
+      });
    }
 
    /**
@@ -708,6 +779,7 @@ abstract class AbstractIndex
       {
          super(new OutputStream()
          {
+            @Override
             public void write(int b)
             {
                // do nothing
@@ -715,11 +787,13 @@ abstract class AbstractIndex
          });
       }
 
+      @Override
       public void print(String s)
       {
          buffer.append(s);
       }
 
+      @Override
       public void println(String s)
       {
          buffer.append(s);

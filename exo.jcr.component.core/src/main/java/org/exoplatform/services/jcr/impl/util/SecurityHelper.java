@@ -18,8 +18,10 @@
  */
 package org.exoplatform.services.jcr.impl.util;
 
+import java.io.File;
 import java.io.IOException;
 import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 
@@ -73,24 +75,26 @@ public class SecurityHelper
     * @return
     * @throws IOException
     */
-   public static <E> E doPriviledgedAction(PrivilegedExceptionAction<E> action)
+   public static <E> E doPriviledgedAction(PrivilegedAction<E> action)
    {
-      try
+      return AccessController.doPrivileged(action);
+   }
+
+   /**
+    * Gets system property in privileged mode
+    * 
+    * @param name
+    * @return
+    */
+   public static String getSystemProperty(final String name)
+   {
+      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<String>()
       {
-         return AccessController.doPrivileged(action);
-      }
-      catch (PrivilegedActionException pae)
-      {
-         Throwable cause = pae.getCause();
-         if (cause instanceof RuntimeException)
+         public String run()
          {
-            throw (RuntimeException)cause;
+            return System.getProperty(name);
          }
-         else
-         {
-            throw new RuntimeException(cause);
-         }
-      }
+      });
    }
 
 }
