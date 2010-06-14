@@ -123,7 +123,7 @@ public class TestValueFileIOHelper extends JcrImplBaseTest
          out.close();
       }
 
-      testDir = new File("target/TestValueFileIOHelper");
+      testDir = PrivilegedFileHelper.file("target/TestValueFileIOHelper");
       testDir.mkdirs();
 
       dest = File.createTempFile("vdftest", "", testDir);
@@ -145,7 +145,7 @@ public class TestValueFileIOHelper extends JcrImplBaseTest
       // copy via InputStream
       long start = System.currentTimeMillis();
 
-      InputStream in = new FileInputStream(srcSerialization);
+      InputStream in = PrivilegedFileHelper.fileInputStream(srcSerialization);
       OutputStream out = PrivilegedFileHelper.fileOutputStream(dest);
 
       ObjectReader or = new ObjectReaderImpl(in);
@@ -179,7 +179,7 @@ public class TestValueFileIOHelper extends JcrImplBaseTest
       // copy via NIO
       start = System.currentTimeMillis();
 
-      in = new BufferedInputStream(new FileInputStream(srcSerialization));
+      in = new BufferedInputStream(PrivilegedFileHelper.fileInputStream(srcSerialization));
       out = PrivilegedFileHelper.fileOutputStream(dest);
       openChannel(in, out);
 
@@ -210,14 +210,14 @@ public class TestValueFileIOHelper extends JcrImplBaseTest
    public void testCopyFileToFile() throws Exception
    {
 
-      io.copyClose(new FileInputStream(src), PrivilegedFileHelper.fileOutputStream(dest));
+      io.copyClose(PrivilegedFileHelper.fileInputStream(src), PrivilegedFileHelper.fileOutputStream(dest));
 
       // check length
       assertEquals(src.length(), dest.length());
 
       // check content
-      // InputStream srcin = new FileInputStream(src);
-      // InputStream destin = new FileInputStream(dest);
+      // InputStream srcin = PrivilegedFileHelper.fileInputStream(src);
+      // InputStream destin = PrivilegedFileHelper.fileInputStream(dest);
       // try {
       // compareStream(srcin, destin);
       // } finally {
@@ -234,7 +234,7 @@ public class TestValueFileIOHelper extends JcrImplBaseTest
       // copy via InputStream
       long start = System.currentTimeMillis();
 
-      InputStream in = new FileInputStream(src);
+      InputStream in = PrivilegedFileHelper.fileInputStream(src);
       // InputStream in = new URL("http://jboss1.exoua-int:8089/browser/02.zip").openStream();
       OutputStream out = PrivilegedFileHelper.fileOutputStream(dest);
       try
@@ -261,7 +261,7 @@ public class TestValueFileIOHelper extends JcrImplBaseTest
 
       // copy via NIO
       start = System.currentTimeMillis();
-      io.copyClose(new BufferedInputStream(new FileInputStream(src)), PrivilegedFileHelper.fileOutputStream(dest));
+      io.copyClose(new BufferedInputStream(PrivilegedFileHelper.fileInputStream(src)), PrivilegedFileHelper.fileOutputStream(dest));
       // io.copyClose(new URL("http://jboss1.exoua-int:8089/browser/02.zip").openStream(), new
       // FileOutputStream(dest));
       System.out.println("\t=== NIO time " + (System.currentTimeMillis() - start));
@@ -270,8 +270,8 @@ public class TestValueFileIOHelper extends JcrImplBaseTest
       assertEquals(src.length(), dest.length());
 
       // check content
-      // InputStream srcin = new FileInputStream(src);
-      // InputStream destin = new FileInputStream(dest);
+      // InputStream srcin = PrivilegedFileHelper.fileInputStream(src);
+      // InputStream destin = PrivilegedFileHelper.fileInputStream(dest);
       // try {
       // compareStream(srcin, destin);
       // } finally {

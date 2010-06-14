@@ -59,7 +59,7 @@ public class TestByteArrayPersistedValueDataSerialization extends JcrImplBaseTes
       oos.close();
 
       //deserialize
-      ObjectInputStream ois = new ObjectInputStream(new FileInputStream(out));
+      ObjectInputStream ois = new ObjectInputStream(PrivilegedFileHelper.fileInputStream(out));
       ByteArrayPersistedValueData deserializedValueData = (ByteArrayPersistedValueData)ois.readObject();
 
       //check

@@ -25,6 +25,7 @@ import org.exoplatform.management.annotations.ManagedName;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
 import org.exoplatform.management.jmx.annotations.Property;
 import org.exoplatform.management.rest.annotations.RESTEndpoint;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -147,8 +148,8 @@ public class JCRStatisticsManager
       try
       {
          file =
-            new File(System.getProperty("user.dir"), "Statistics" + category + "-" + System.currentTimeMillis()
-               + ".csv");
+            PrivilegedFileHelper.file(System.getProperty("user.dir"), "Statistics" + category + "-"
+               + System.currentTimeMillis() + ".csv");
          file.createNewFile();
          pw = new PrintWriter(file);
       }
@@ -217,6 +218,7 @@ public class JCRStatisticsManager
       }
       Runtime.getRuntime().addShutdownHook(new Thread("JCRStatisticsManager-Hook")
       {
+         @Override
          public void run()
          {
             printData();
@@ -224,6 +226,7 @@ public class JCRStatisticsManager
       });
       Thread t = new Thread("JCRStatisticsManager-Writer")
       {
+         @Override
          public void run()
          {
             while (true)

@@ -66,14 +66,14 @@ public class TestRestoreWorkspaceInitializer extends JcrImplBaseTest
       Node blob = root.addNode("binaryTest");
       File f;
       InputStream is;
-      blob.setProperty("blob", is = new FileInputStream(f = createBLOBTempFile(2 * 1024))); // 2M
+      blob.setProperty("blob", is = PrivilegedFileHelper.fileInputStream(f = createBLOBTempFile(2 * 1024))); // 2M
 
       root.save();
 
       is.close();
-      f.renameTo(new File("./sv_export_binary.bin"));
+      f.renameTo(PrivilegedFileHelper.file("./sv_export_binary.bin"));
 
-      File outf = new File("./sv_export_root.xml");
+      File outf = PrivilegedFileHelper.file("./sv_export_root.xml");
       FileOutputStream out = PrivilegedFileHelper.fileOutputStream(outf);
       session.exportWorkspaceSystemView(out, false, false);
       out.close();
@@ -120,7 +120,7 @@ public class TestRestoreWorkspaceInitializer extends JcrImplBaseTest
             p = multiv.getProperty("exojcrtest:multiValuedName");
             p.getValues();
 
-            compareStream(new FileInputStream("./sv_export_binary.bin"), root.getNode("binaryTest").getProperty("blob")
+            compareStream(PrivilegedFileHelper.fileInputStream("./sv_export_binary.bin"), root.getNode("binaryTest").getProperty("blob")
                .getStream());
          }
          catch (ValueFormatException e)

@@ -34,6 +34,7 @@ import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.query.SearchManager;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.observation.ExtendedEvent;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -117,7 +118,7 @@ public class FileSystemLockPersister implements LockPersister
    public void add(LockData lock) throws LockException
    {
       log.debug("add event fire");
-      File lockFile = new File(rootDir, lock.getNodeIdentifier());
+      File lockFile = PrivilegedFileHelper.file(rootDir, lock.getNodeIdentifier());
 
       if (lockFile.exists())
       {
@@ -143,7 +144,7 @@ public class FileSystemLockPersister implements LockPersister
    public void remove(LockData lock) throws LockException
    {
       log.debug("remove event fire");
-      File lockFile = new File(rootDir, lock.getNodeIdentifier());
+      File lockFile = PrivilegedFileHelper.file(rootDir, lock.getNodeIdentifier());
       if (!lockFile.exists())
       {
          // throw new LockException("Persistent lock information not exists");
@@ -213,7 +214,7 @@ public class FileSystemLockPersister implements LockPersister
          // remove files
          for (int i = 0; i < list.length; i++)
          {
-            File lockFile = new File(rootDir, list[i]);
+            File lockFile = PrivilegedFileHelper.file(rootDir, list[i]);
             if (!lockFile.exists())
             {
                log.warn("Persistent lock information for node id " + list[i] + " doesn't exists");
@@ -287,7 +288,7 @@ public class FileSystemLockPersister implements LockPersister
       if (root == null)
          throw new RepositoryConfigurationException("Repository service configuration." + " Source name ("
             + PARAM_ROOT_DIR + ") is expected");
-      rootDir = new File(root);
+      rootDir = PrivilegedFileHelper.file(root);
       if (rootDir.exists())
       {
          if (!rootDir.isDirectory())

@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.api.writing;
 
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -62,7 +63,7 @@ public class TestUpdate extends JcrAPIBaseTest
 
       File propData = createBLOBTempFile(1024);
 
-      InputStream pds = new FileInputStream(propData);
+      InputStream pds = PrivilegedFileHelper.fileInputStream(propData);
       try
       {
          corrNode.setProperty("prop1", pds);

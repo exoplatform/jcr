@@ -48,7 +48,7 @@ public class TestEOFException extends JcrImplSerializationBaseTest
       ow.write(buffer);
       ow.close();
 
-      ObjectReader or = new ObjectReaderImpl(new FileInputStream(test));
+      ObjectReader or = new ObjectReaderImpl(PrivilegedFileHelper.fileInputStream(test));
 
       byte[] buf = new byte[buffer.length];
       try
@@ -78,7 +78,7 @@ public class TestEOFException extends JcrImplSerializationBaseTest
       ow.writeBoolean(true);
       ow.close();
 
-      ObjectReader or = new ObjectReaderImpl(new FileInputStream(test));
+      ObjectReader or = new ObjectReaderImpl(PrivilegedFileHelper.fileInputStream(test));
 
       boolean b = or.readBoolean();
       try
@@ -107,7 +107,7 @@ public class TestEOFException extends JcrImplSerializationBaseTest
       ow.writeInt(24);
       ow.close();
 
-      ObjectReader or = new ObjectReaderImpl(new FileInputStream(test));
+      ObjectReader or = new ObjectReaderImpl(PrivilegedFileHelper.fileInputStream(test));
 
       int b = or.readInt();
       assertEquals(24, b);
@@ -137,7 +137,7 @@ public class TestEOFException extends JcrImplSerializationBaseTest
       ow.writeLong(24);
       ow.close();
 
-      ObjectReader or = new ObjectReaderImpl(new FileInputStream(test));
+      ObjectReader or = new ObjectReaderImpl(PrivilegedFileHelper.fileInputStream(test));
 
       long b = or.readLong();
       assertEquals(24, b);

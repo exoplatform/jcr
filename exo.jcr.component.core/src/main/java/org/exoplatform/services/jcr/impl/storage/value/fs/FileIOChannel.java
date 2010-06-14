@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.impl.storage.value.fs.operations.DeleteValue
 import org.exoplatform.services.jcr.impl.storage.value.fs.operations.ValueFileIOHelper;
 import org.exoplatform.services.jcr.impl.storage.value.fs.operations.WriteValue;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -95,7 +96,7 @@ public abstract class FileIOChannel extends ValueFileIOHelper implements ValueIO
       this.storageId = storageId;
       this.resources = resources;
 
-      this.tempDir = new File(rootDir, FileValueStorage.TEMP_DIR_NAME);
+      this.tempDir = PrivilegedFileHelper.file(rootDir, FileValueStorage.TEMP_DIR_NAME);
    }
 
    /**

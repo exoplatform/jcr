@@ -135,7 +135,7 @@ public class TestExportSysView extends ExportBase
       {
          File file = createBLOBTempFile(2500);// 2.5M
          log.info("=== File has created, size " + file.length());
-         contentTestPdfNode.setProperty("jcr:data", new FileInputStream(file));
+         contentTestPdfNode.setProperty("jcr:data", PrivilegedFileHelper.fileInputStream(file));
          contentTestPdfNode.setProperty("jcr:mimeType", "application/octet-stream");
       }
       catch (IOException e)
@@ -174,7 +174,7 @@ public class TestExportSysView extends ExportBase
       session.exportSystemView(testNode.getPath(), outStream, false, false);
       outStream.close();
 
-      Document doc = builder.parse(new FileInputStream(destFile));
+      Document doc = builder.parse(PrivilegedFileHelper.fileInputStream(destFile));
       NodeList nodes = doc.getElementsByTagName("sv:node");
       assertEquals(1, nodes.getLength());
       assertEquals(3, nodes.item(0).getChildNodes().getLength());
@@ -224,7 +224,7 @@ public class TestExportSysView extends ExportBase
       session.exportSystemView(firstNode.getPath(), outStream, false, false);
       outStream.close();
 
-      Document doc = builder.parse(new FileInputStream(destFile));
+      Document doc = builder.parse(PrivilegedFileHelper.fileInputStream(destFile));
 
       // assertEquals(Constants.DEFAULT_ENCODING, doc.getXmlEncoding());
 
@@ -265,7 +265,7 @@ public class TestExportSysView extends ExportBase
       outputStream2.close();
       log.info("Export with handler done " + (System.currentTimeMillis() - startTime) / 1000 + " sec");
 
-      Document doc = builder.parse(new FileInputStream(destFile));
+      Document doc = builder.parse(PrivilegedFileHelper.fileInputStream(destFile));
 
       XPathExpression expr = xpath.compile("//sv:property");
       Object result = expr.evaluate(doc, XPathConstants.NODESET);
@@ -319,7 +319,7 @@ public class TestExportSysView extends ExportBase
       session.exportSystemView(testNode.getPath(), outStream, false, false);
       outStream.close();
 
-      Document doc = builder.parse(new FileInputStream(destFile));
+      Document doc = builder.parse(PrivilegedFileHelper.fileInputStream(destFile));
 
       XPathExpression expr = xpath.compile("//sv:property");
 
@@ -373,7 +373,7 @@ public class TestExportSysView extends ExportBase
       session.exportSystemView(testNode.getPath(), outStream, true, false);
       outStream.close();
 
-      Document doc = builder.parse(new FileInputStream(destFile));
+      Document doc = builder.parse(PrivilegedFileHelper.fileInputStream(destFile));
 
       XPathExpression expr = xpath.compile("//sv:property");
       Object result = expr.evaluate(doc, XPathConstants.NODESET);

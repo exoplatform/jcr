@@ -59,6 +59,7 @@ import org.exoplatform.services.jcr.impl.core.query.QueryHandlerContext;
 import org.exoplatform.services.jcr.impl.core.query.SearchIndexConfigurationHelper;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.DirectoryManager;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.FSDirectoryManager;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
@@ -473,6 +474,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     *             if an error occurs while initializing this handler.
     * @throws RepositoryException
     */
+   @Override
    public void doInit() throws IOException, RepositoryException
    {
       QueryHandlerContext context = getContext();
@@ -486,7 +488,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       if (path != null)
       {
 
-         indexDirectory = new File(path);
+         indexDirectory = PrivilegedFileHelper.file(path);
          if (!indexDirectory.exists())
          {
             if (!indexDirectory.mkdirs())
@@ -520,7 +522,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       else
       {
          // read local namespace mappings
-         File mapFile = new File(indexDirectory, NS_MAPPING_FILE);
+         File mapFile = PrivilegedFileHelper.file(indexDirectory, NS_MAPPING_FILE);
          if (mapFile.exists())
          {
             // be backward compatible and use ns_mappings.properties from
@@ -589,7 +591,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
             new Integer(getIndexFormatVersion().getVersion()));
       }
 
-      File file = new File(indexDirectory, ERROR_LOG);
+      File file = PrivilegedFileHelper.file(indexDirectory, ERROR_LOG);
       errorLog = new ErrorLog(file, errorLogfileSize);
       // reprocess any notfinished notifies;
       if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
@@ -865,6 +867,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       return new FilterMultiColumnQueryHits(searcher.execute(query, sort, resultFetchHint,
          QueryImpl.DEFAULT_SELECTOR_NAME))
       {
+         @Override
          public void close() throws IOException
          {
             try
@@ -912,6 +915,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       searcher.setSimilarity(getSimilarity());
       return new FilterMultiColumnQueryHits(query.execute(searcher, sort, resultFetchHint))
       {
+         @Override
          public void close() throws IOException
          {
             try
@@ -1317,14 +1321,14 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
             int lastSeparator = synonymProviderConfigPath.lastIndexOf(separator);
             if (lastSeparator != -1)
             {
-               File root = new File(path, synonymProviderConfigPath.substring(0, lastSeparator));
+               File root = PrivilegedFileHelper.file(path, synonymProviderConfigPath.substring(0, lastSeparator));
                fsr =
-                  new BufferedInputStream(new FileInputStream(new File(root, synonymProviderConfigPath
+                  new BufferedInputStream(PrivilegedFileHelper.fileInputStream(PrivilegedFileHelper.file(root, synonymProviderConfigPath
                      .substring(lastSeparator + 1))));
             }
             else
             {
-               fsr = new BufferedInputStream(new FileInputStream(new File(synonymProviderConfigPath)));
+               fsr = new BufferedInputStream(PrivilegedFileHelper.fileInputStream(PrivilegedFileHelper.file(synonymProviderConfigPath)));
 
             }
             synonymProviderConfigFs = fsr;
@@ -1386,7 +1390,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          if (indexingConfigPath != null)
          {
 
-            // File config = new File(indexingConfigPath);
+            // File config = PrivilegedFileHelper.file(indexingConfigPath);
 
             InputStream is = SearchIndex.class.getResourceAsStream(indexingConfigPath);
             if (is == null)
@@ -1798,6 +1802,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          return hi;
       }
 
+      @Override
       public boolean equals(Object obj)
       {
          if (obj instanceof CombinedIndexReader)
@@ -1808,6 +1813,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          return false;
       }
 
+      @Override
       public int hashCode()
       {
          int hash = 0;

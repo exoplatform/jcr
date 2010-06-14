@@ -86,7 +86,7 @@ public class TestWorkspaceRestore extends JcrImplBaseTest
       defRep = (RepositoryImpl)service.getDefaultRepository();
       defRep.configWorkspace(workspaceEntry);
 
-      defRep.importWorkspace(workspaceEntry.getName(), new BufferedInputStream(new FileInputStream(content)));
+      defRep.importWorkspace(workspaceEntry.getName(), new BufferedInputStream(PrivilegedFileHelper.fileInputStream(content)));
 
       doTestOnWorkspace(workspaceEntry.getName());
    }
@@ -156,7 +156,7 @@ public class TestWorkspaceRestore extends JcrImplBaseTest
 
       try
       {
-         defRep.importWorkspace(workspaceEntry.getName(), new BufferedInputStream(new FileInputStream(content)));
+         defRep.importWorkspace(workspaceEntry.getName(), new BufferedInputStream(PrivilegedFileHelper.fileInputStream(content)));
          fail();
       }
       catch (RepositoryException e)

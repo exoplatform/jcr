@@ -187,7 +187,7 @@ public class ErrorLog
     */
    public List<String> readList() throws IOException
    {
-      InputStream in = new FileInputStream(logFile);
+      InputStream in = PrivilegedFileHelper.fileInputStream(logFile);
       try
       {
          List<String> list = new ArrayList<String>();

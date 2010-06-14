@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
 import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -47,7 +48,7 @@ public class TestPropsDeserialization extends JcrImplSerializationBaseTest
 
       Node srcVersionNode = root.addNode("nt_file_node", "nt:file");
       Node contentNode = srcVersionNode.addNode("jcr:content", "nt:resource");
-      contentNode.setProperty("jcr:data", new FileInputStream(content1));
+      contentNode.setProperty("jcr:data", PrivilegedFileHelper.fileInputStream(content1));
       contentNode.setProperty("jcr:mimeType", "text/plain");
       contentNode.setProperty("jcr:lastModified", session.getValueFactory().createValue(Calendar.getInstance()));
       srcVersionNode.addMixin("mix:versionable");
@@ -65,12 +66,12 @@ public class TestPropsDeserialization extends JcrImplSerializationBaseTest
 
       for (int i = 0; i < logs.size(); i++)
          checkIterator(logs.get(i).getAllStates().iterator(), destLog.get(i).getAllStates().iterator());
-      
+
       // set value
       pl = new TesterItemsPersistenceListener(this.session);
-      contentNode.setProperty("jcr:data", new FileInputStream(content2));
+      contentNode.setProperty("jcr:data", PrivilegedFileHelper.fileInputStream(content2));
       session.save();
-      
+
       // check 2
       logs = pl.pushChanges();
 

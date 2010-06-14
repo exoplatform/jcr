@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.impl.core.query;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
 import java.io.File;
@@ -53,6 +54,7 @@ public class TestErrorMultithreading extends BaseQueryTest
 
    public static final String THREAD_NAME = "name";
 
+   @Override
    public void tearDown()
    {
 
@@ -74,7 +76,7 @@ public class TestErrorMultithreading extends BaseQueryTest
 
          public Session sess;
 
-         File file = new File("src/test/resources/LARGE.txt");
+         File file = PrivilegedFileHelper.file("src/test/resources/LARGE.txt");
 
          public FileInputStream fis = null;
 
@@ -84,6 +86,7 @@ public class TestErrorMultithreading extends BaseQueryTest
             this.sess = s;
          }
 
+         @Override
          public void run()
          {
             System.out.println(name + " - START");
@@ -99,7 +102,7 @@ public class TestErrorMultithreading extends BaseQueryTest
                   NodeImpl cont = (NodeImpl)node.addNode("jcr:content", "nt:resource");
                   cont.setProperty("jcr:mimeType", "text/plain");
                   cont.setProperty("jcr:lastModified", Calendar.getInstance());
-                  fis = new FileInputStream(file);
+                  fis = PrivilegedFileHelper.fileInputStream(file);
                   cont.setProperty("jcr:data", fis);
                   root.save();
                   System.out.println(fileName + " saved");
@@ -121,7 +124,7 @@ public class TestErrorMultithreading extends BaseQueryTest
       {
          Credentials credentials = new CredentialsImpl("admin", "admin".toCharArray());
 
-         Session ss = (SessionImpl)repository.login(credentials, "ws");
+         Session ss = repository.login(credentials, "ws");
          Writer wr = new Writer(THREAD_NAME + t, ss);
          writers.add(wr);
       }
@@ -159,6 +162,7 @@ public class TestErrorMultithreading extends BaseQueryTest
             super.setName(this.name); // super.getName() + ", " +
          }
 
+         @Override
          public void run()
          {
             System.out.println(name + " - START");
@@ -196,7 +200,7 @@ public class TestErrorMultithreading extends BaseQueryTest
       {
          Credentials credentials = new CredentialsImpl("admin", "admin".toCharArray());
 
-         Session ss = (SessionImpl)repository.login(credentials, "ws");
+         Session ss = repository.login(credentials, "ws");
          Writer wr = new Writer(THREAD_NAME + t, ss);
          writers.add(wr);
       }

@@ -27,6 +27,7 @@ import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.core.value.NameValue;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -58,6 +59,7 @@ public class TestSetProperty extends JcrAPIBaseTest implements ItemsPersistenceL
 
    private TransactionChangesLog cLog;
 
+   @Override
    public void setUp() throws Exception
    {
       super.setUp();
@@ -68,6 +70,7 @@ public class TestSetProperty extends JcrAPIBaseTest implements ItemsPersistenceL
       dm.addItemPersistenceListener(this);
    }
 
+   @Override
    public void initRepository() throws RepositoryException
    {
       Node root = session.getRootNode();
@@ -101,6 +104,7 @@ public class TestSetProperty extends JcrAPIBaseTest implements ItemsPersistenceL
       session.save();
    }
 
+   @Override
    public void tearDown() throws Exception
    {
 
@@ -198,7 +202,7 @@ public class TestSetProperty extends JcrAPIBaseTest implements ItemsPersistenceL
 
       session.refresh(false);
 
-      node.setProperty("jcr:defaultValues", new Value[]{valueFactory.createValue((long)10)});
+      node.setProperty("jcr:defaultValues", new Value[]{valueFactory.createValue(10)});
       assertEquals(PropertyType.LONG, node.getProperty("jcr:defaultValues").getValues()[0].getType());
       assertEquals(10, node.getProperty("jcr:defaultValues").getValues()[0].getLong());
       node.save();
@@ -367,13 +371,13 @@ public class TestSetProperty extends JcrAPIBaseTest implements ItemsPersistenceL
       Node node = root.addNode("testNode");
 
       File tmpFile1 = createBLOBTempFile(250);
-      node.setProperty("testProp", new FileInputStream(tmpFile1));
+      node.setProperty("testProp", PrivilegedFileHelper.fileInputStream(tmpFile1));
 
       File tmpFile2 = createBLOBTempFile(500);
-      node.setProperty("testProp", new FileInputStream(tmpFile2));
+      node.setProperty("testProp", PrivilegedFileHelper.fileInputStream(tmpFile2));
 
       File tmpFile3 = createBLOBTempFile(1000);
-      node.setProperty("testProp", new FileInputStream(tmpFile3));
+      node.setProperty("testProp", PrivilegedFileHelper.fileInputStream(tmpFile3));
 
       session.save();
 
@@ -387,7 +391,7 @@ public class TestSetProperty extends JcrAPIBaseTest implements ItemsPersistenceL
          ItemState item = cLog.getAllStates().get(i);
          // TODO doesn't pass with FileTree VS, ok with CAS if contents different
          //compareStream(((PropertyData) item.getData()).getValues().get(0).getAsStream(),
-         //              new FileInputStream(tempFiles[i - 2]));
+         //              PrivilegedFileHelper.fileInputStream(tempFiles[i - 2]));
       }
    }
 

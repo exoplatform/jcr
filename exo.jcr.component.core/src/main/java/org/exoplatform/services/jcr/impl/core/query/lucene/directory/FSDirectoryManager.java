@@ -21,6 +21,7 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.NativeFSLockFactory;
 import org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex;
 import org.exoplatform.services.jcr.impl.util.SecurityHelper;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -48,7 +49,7 @@ public class FSDirectoryManager implements DirectoryManager
       {
          public Object run() throws Exception
          {
-            baseDir = new File(handler.getPath());
+            baseDir = PrivilegedFileHelper.file(handler.getPath());
             return null;
          }
       });
@@ -63,7 +64,7 @@ public class FSDirectoryManager implements DirectoryManager
       {
          public Boolean run() throws Exception
          {
-            return new File(baseDir, name).exists();
+            return PrivilegedFileHelper.file(baseDir, name).exists();
 
          }
       });
@@ -85,7 +86,7 @@ public class FSDirectoryManager implements DirectoryManager
             }
             else
             {
-               dir = new File(baseDir, name);
+               dir = PrivilegedFileHelper.file(baseDir, name);
             }
             return FSDirectory.getDirectory(dir, new NativeFSLockFactory(dir));
          }
@@ -134,7 +135,7 @@ public class FSDirectoryManager implements DirectoryManager
       {
          public Boolean run() throws Exception
          {
-            File directory = new File(baseDir, name);
+            File directory = PrivilegedFileHelper.file(baseDir, name);
             // trivial if it does not exist anymore
             if (!directory.exists())
             {
@@ -171,8 +172,8 @@ public class FSDirectoryManager implements DirectoryManager
       {
          public Boolean run() throws Exception
          {
-            File src = new File(baseDir, from);
-            File dest = new File(baseDir, to);
+            File src = PrivilegedFileHelper.file(baseDir, from);
+            File dest = PrivilegedFileHelper.file(baseDir, to);
             return src.renameTo(dest);
          }
       });

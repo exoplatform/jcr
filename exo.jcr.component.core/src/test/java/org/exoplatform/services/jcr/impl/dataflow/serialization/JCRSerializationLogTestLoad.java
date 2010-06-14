@@ -44,7 +44,7 @@ public class JCRSerializationLogTestLoad extends JcrImplSerializationBaseTest
       TesterItemsPersistenceListener pl = new TesterItemsPersistenceListener(this.session);
 
       File file = this.createBLOBTempFile(310);
-      FileInputStream fis = new FileInputStream(file);
+      FileInputStream fis = PrivilegedFileHelper.fileInputStream(file);
 
       NodeImpl node = (NodeImpl)root.addNode("file", "nt:file");
       NodeImpl cont = (NodeImpl)node.addNode("jcr:content", "nt:resource");
@@ -82,7 +82,7 @@ public class JCRSerializationLogTestLoad extends JcrImplSerializationBaseTest
 
       System.out.println(" READ START");
       // deserialize
-      ObjectReaderImpl jcrin = new ObjectReaderImpl(new FileInputStream(jcrfile));
+      ObjectReaderImpl jcrin = new ObjectReaderImpl(PrivilegedFileHelper.fileInputStream(jcrfile));
 
       //  List<TransactionChangesLog> readed = new ArrayList<TransactionChangesLog>();
       long t3 = System.currentTimeMillis();
@@ -123,7 +123,7 @@ public class JCRSerializationLogTestLoad extends JcrImplSerializationBaseTest
 
         // deserialize
         System.out.println(" READ START");
-        ObjectInputStream jin = new ObjectInputStream(new FileInputStream(jfile));
+        ObjectInputStream jin = new ObjectInputStream(PrivilegedFileHelper.fileInputStream(jfile));
 
         long t4 = System.currentTimeMillis();
 

@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.api.nodetypes;
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -54,6 +55,7 @@ public class TestValueConstraints extends JcrAPIBaseTest
 
    private static String LOCAL_NORMAL_FILE = null;
 
+   @Override
    public void setUp() throws Exception
    {
       super.setUp();
@@ -166,8 +168,9 @@ public class TestValueConstraints extends JcrAPIBaseTest
    {
 
       Property testProperty =
-         testValueConstraintsNode.setProperty("jcr:testBINARYINCLUSIVE", new FileInputStream(LOCAL_SMALL_FILE));
-      testProperty.setValue(new FileInputStream(LOCAL_BIG_FILE));
+         testValueConstraintsNode.setProperty("jcr:testBINARYINCLUSIVE", PrivilegedFileHelper
+            .fileInputStream(LOCAL_SMALL_FILE));
+      testProperty.setValue(PrivilegedFileHelper.fileInputStream(LOCAL_BIG_FILE));
       session.save();
    }
 
@@ -177,8 +180,9 @@ public class TestValueConstraints extends JcrAPIBaseTest
       try
       {
          Property testProperty =
-            testValueConstraintsNode.setProperty("jcr:testBINARYEXCLUSIVE", new FileInputStream(LOCAL_SMALL_FILE));
-         testProperty.setValue(new FileInputStream(LOCAL_BIG_FILE));
+            testValueConstraintsNode.setProperty("jcr:testBINARYEXCLUSIVE", PrivilegedFileHelper
+               .fileInputStream(LOCAL_SMALL_FILE));
+         testProperty.setValue(PrivilegedFileHelper.fileInputStream(LOCAL_BIG_FILE));
          session.save();
          fail("setValue(BINARY value) must throw a ConstraintViolationException ");
       }
@@ -190,7 +194,8 @@ public class TestValueConstraints extends JcrAPIBaseTest
       try
       {
          Property testProperty =
-            testValueConstraintsNode.setProperty("jcr:testBINARYEXCLUSIVE", new FileInputStream(LOCAL_NORMAL_FILE));
+            testValueConstraintsNode.setProperty("jcr:testBINARYEXCLUSIVE", PrivilegedFileHelper
+               .fileInputStream(LOCAL_NORMAL_FILE));
          session.save();
          fail("setValue(BINARY value) must throw a ConstraintViolationException ");
       }
@@ -354,6 +359,7 @@ public class TestValueConstraints extends JcrAPIBaseTest
       }
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
       if (session.getRootNode().hasNode("testValueConstraints"))

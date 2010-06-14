@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.config;
 
 import org.exoplatform.container.configuration.ConfigurationManager;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
@@ -148,7 +149,7 @@ public class TemplateConfigurationHelper
          ClassLoader cl = Thread.currentThread().getContextClassLoader();
          inputStream = cl == null ? null : cl.getResourceAsStream(filename);
       }
-      
+
       // check system class loader
       if (inputStream == null)
       {
@@ -160,7 +161,7 @@ public class TemplateConfigurationHelper
       {
          try
          {
-            inputStream = new FileInputStream(filename);
+            inputStream = PrivilegedFileHelper.fileInputStream(filename);
          }
          catch (IOException e)
          {

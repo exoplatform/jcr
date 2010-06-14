@@ -58,7 +58,7 @@ public class TestExportBigFiles extends JcrAPIBaseTest
       Node localBigFile = testLocalBigFiles.addNode("bigFile" + 1, "nt:file");
       Node contentNode = localBigFile.addNode("jcr:content", "nt:resource");
       // contentNode.setProperty("jcr:encoding", "UTF-8");
-      InputStream is = new FileInputStream(TEST_FILE);
+      InputStream is = PrivilegedFileHelper.fileInputStream(TEST_FILE);
       contentNode.setProperty("jcr:data", is);
       contentNode.setProperty("jcr:mimeType", "application/octet-stream ");
       is.close();
@@ -84,7 +84,7 @@ public class TestExportBigFiles extends JcrAPIBaseTest
       testLocalBigFiles.remove();
       session.save();
 
-      BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(file));
+      BufferedInputStream bufferedInputStream = new BufferedInputStream(PrivilegedFileHelper.fileInputStream(file));
 
       // importing content
       session.importXML(root.getPath(), bufferedInputStream, ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
@@ -96,7 +96,7 @@ public class TestExportBigFiles extends JcrAPIBaseTest
       Node content = lbf.getNode("jcr:content");
 
       // comparing with source file
-      compareStream(new BufferedInputStream(new FileInputStream(TEST_FILE)), content.getProperty("jcr:data")
+      compareStream(new BufferedInputStream(PrivilegedFileHelper.fileInputStream(TEST_FILE)), content.getProperty("jcr:data")
          .getStream());
 
       n1.remove();
@@ -122,7 +122,7 @@ public class TestExportBigFiles extends JcrAPIBaseTest
       Node localBigFile = testLocalBigFiles.addNode("bigFile" + 1, "nt:file");
       Node contentNode = localBigFile.addNode("jcr:content", "nt:resource");
       // contentNode.setProperty("jcr:encoding", "UTF-8");
-      InputStream is = new FileInputStream(TEST_FILE2);
+      InputStream is = PrivilegedFileHelper.fileInputStream(TEST_FILE2);
       contentNode.setProperty("jcr:data", is);
       contentNode.setProperty("jcr:mimeType", "application/octet-stream ");
       is.close();
@@ -148,7 +148,7 @@ public class TestExportBigFiles extends JcrAPIBaseTest
       testLocalBigFiles.remove();
       session.save();
 
-      BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(file));
+      BufferedInputStream bufferedInputStream = new BufferedInputStream(PrivilegedFileHelper.fileInputStream(file));
 
       // importing content
       session.importXML(root.getPath(), bufferedInputStream, ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
@@ -160,7 +160,7 @@ public class TestExportBigFiles extends JcrAPIBaseTest
       Node content = lbf.getNode("jcr:content");
 
       // comparing with source file
-      compareStream(new BufferedInputStream(new FileInputStream(TEST_FILE2)), content.getProperty("jcr:data")
+      compareStream(new BufferedInputStream(PrivilegedFileHelper.fileInputStream(TEST_FILE2)), content.getProperty("jcr:data")
          .getStream());
 
       n1.remove();
@@ -182,7 +182,7 @@ public class TestExportBigFiles extends JcrAPIBaseTest
       Node localBigFile = testLocalBigFiles.addNode("bigFile" + 1, "nt:file");
       Node contentNode = localBigFile.addNode("jcr:content", "nt:resource");
       // contentNode.setProperty("jcr:encoding", "UTF-8");
-      InputStream is = new FileInputStream(TEST_FILE);
+      InputStream is = PrivilegedFileHelper.fileInputStream(TEST_FILE);
       contentNode.setProperty("jcr:data", is);
       contentNode.setProperty("jcr:mimeType", "application/octet-stream ");
       is.close();
@@ -208,7 +208,7 @@ public class TestExportBigFiles extends JcrAPIBaseTest
       testLocalBigFiles.remove();
       session.save();
 
-      BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(file));
+      BufferedInputStream bufferedInputStream = new BufferedInputStream(PrivilegedFileHelper.fileInputStream(file));
 
       // importing content
       session.importXML(root.getPath(), bufferedInputStream, ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
@@ -220,7 +220,7 @@ public class TestExportBigFiles extends JcrAPIBaseTest
       Node content = lbf.getNode("jcr:content");
 
       // comparing with source file
-      compareStream(new BufferedInputStream(new FileInputStream(TEST_FILE)), content.getProperty("jcr:data")
+      compareStream(new BufferedInputStream(PrivilegedFileHelper.fileInputStream(TEST_FILE)), content.getProperty("jcr:data")
          .getStream());
 
       n1.remove();
@@ -251,7 +251,7 @@ public class TestExportBigFiles extends JcrAPIBaseTest
          Node localBigFile = testLocalBigFiles.addNode("bigFile" + i, "nt:file");
          Node contentNode = localBigFile.addNode("jcr:content", "nt:resource");
          // contentNode.setProperty("jcr:encoding", "UTF-8");
-         InputStream is = new FileInputStream(TEST_FILE);
+         InputStream is = PrivilegedFileHelper.fileInputStream(TEST_FILE);
          contentNode.setProperty("jcr:data", is);
          contentNode.setProperty("jcr:mimeType", "application/octet-stream ");
          is.close();
@@ -278,7 +278,7 @@ public class TestExportBigFiles extends JcrAPIBaseTest
       testLocalBigFiles.remove();
       session.save();
 
-      BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(file));
+      BufferedInputStream bufferedInputStream = new BufferedInputStream(PrivilegedFileHelper.fileInputStream(file));
 
       // importing content
       session.importXML(root.getPath(), bufferedInputStream, ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
@@ -292,7 +292,7 @@ public class TestExportBigFiles extends JcrAPIBaseTest
          Node lbf = n1.getNode("bigFile" + i);
          Node content = lbf.getNode("jcr:content");
          // comparing with source file
-         compareStream(new BufferedInputStream(new FileInputStream(TEST_FILE)), content.getProperty("jcr:data")
+         compareStream(new BufferedInputStream(PrivilegedFileHelper.fileInputStream(TEST_FILE)), content.getProperty("jcr:data")
             .getStream());
       }
       n1.remove();

@@ -90,7 +90,7 @@ public class JCRSerializationVSJavaSerializationTestLoad extends JcrImplSerializ
          jcrout.close();
 
          // deserialize
-         ObjectReaderImpl jcrin = new ObjectReaderImpl(new FileInputStream(jcrfile));
+         ObjectReaderImpl jcrin = new ObjectReaderImpl(PrivilegedFileHelper.fileInputStream(jcrfile));
 
          long t3 = System.currentTimeMillis();
 
@@ -126,7 +126,7 @@ public class JCRSerializationVSJavaSerializationTestLoad extends JcrImplSerializ
          jout.close();
 
          // deserialize
-         ObjectInputStream jin = new ObjectInputStream(new FileInputStream(jfile));
+         ObjectInputStream jin = new ObjectInputStream(PrivilegedFileHelper.fileInputStream(jfile));
 
          it = list.iterator();
          long t4 = System.currentTimeMillis();

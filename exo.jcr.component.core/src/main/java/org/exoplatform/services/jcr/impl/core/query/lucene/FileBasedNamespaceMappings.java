@@ -150,7 +150,7 @@ public class FileBasedNamespaceMappings extends AbstractNamespaceMappings
    {
       if (storage.exists())
       {
-         InputStream in = new FileInputStream(storage);
+         InputStream in = PrivilegedFileHelper.fileInputStream(storage);
          try
          {
             Properties props = new Properties();

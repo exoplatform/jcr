@@ -45,7 +45,7 @@ public class TestFileLock extends TestCase
    public void _testSameJVMlLock() throws IOException, InterruptedException
    {
 
-      File f = new File("\\\\storm\\public\\file1.tmp");
+      File f = PrivilegedFileHelper.file("\\\\storm\\public\\file1.tmp");
       f.createNewFile();
       FileOutputStream fout = PrivilegedFileHelper.fileOutputStream(f);
       FileChannel fc = fout.getChannel();
@@ -56,7 +56,7 @@ public class TestFileLock extends TestCase
       fc.close();
 
       // reopen
-      FileInputStream fin = new FileInputStream(f);
+      FileInputStream fin = PrivilegedFileHelper.fileInputStream(f);
       fc = fin.getChannel();
 
       byte[] b = new byte[256];
@@ -82,7 +82,7 @@ public class TestFileLock extends TestCase
             try
             {
                Thread.sleep(25);
-               FileOutputStream fout1 = PrivilegedFileHelper.fileOutputStream(new File("\\\\storm\\public\\file1.tmp"));
+               FileOutputStream fout1 = PrivilegedFileHelper.fileOutputStream(PrivilegedFileHelper.file("\\\\storm\\public\\file1.tmp"));
                FileChannel fc1 = fout1.getChannel();
                try
                {
@@ -112,7 +112,7 @@ public class TestFileLock extends TestCase
       fc.close();
 
       // print final content
-      fin = new FileInputStream(f);
+      fin = PrivilegedFileHelper.fileInputStream(f);
       fc = fin.getChannel();
 
       res = -1;
@@ -134,8 +134,8 @@ public class TestFileLock extends TestCase
 
       final long timeout = Long.valueOf(System.getProperty("exo.jcr.lab.testFileLockTimeout", "20000"));
 
-      // File f = new File("\\\\storm\\public\\file2.tmp");
-      File f = new File("D:\\tmp\\file2.tmp");
+      // File f = PrivilegedFileHelper.file("\\\\storm\\public\\file2.tmp");
+      File f = PrivilegedFileHelper.file("D:\\tmp\\file2.tmp");
 
       System.out.println("Try open file for write " + System.currentTimeMillis());
       FileOutputStream fout = PrivilegedFileHelper.fileOutputStream(f);
@@ -157,7 +157,7 @@ public class TestFileLock extends TestCase
       // reopen for read
       Thread.sleep(timeout);
       System.out.println("Try read file " + System.currentTimeMillis());
-      FileInputStream fin = new FileInputStream(f);
+      FileInputStream fin = PrivilegedFileHelper.fileInputStream(f);
       fc = fin.getChannel();
       System.out.println("Try shared lock " + System.currentTimeMillis());
       FileLock shlock = fc.lock(0, fc.size(), true);
@@ -196,7 +196,7 @@ public class TestFileLock extends TestCase
       // print final content
       Thread.sleep(timeout);
       System.out.println("Try read file " + System.currentTimeMillis());
-      fin = new FileInputStream(f);
+      fin = PrivilegedFileHelper.fileInputStream(f);
       fc = fin.getChannel();
       System.out.println("Try shared lock " + System.currentTimeMillis());
       shlock = fc.lock(0, fc.size(), true);
@@ -217,8 +217,8 @@ public class TestFileLock extends TestCase
 
       final long timeout = Long.valueOf(System.getProperty("exo.jcr.lab.testFileLockTimeout", "20000"));
 
-      // File f = new File("\\\\storm\\public\\file3.tmp");
-      File f = new File("D:\\tmp\\file3.tmp");
+      // File f = PrivilegedFileHelper.file("\\\\storm\\public\\file3.tmp");
+      File f = PrivilegedFileHelper.file("D:\\tmp\\file3.tmp");
 
       // write new content
       System.out.println("Try open file for write " + System.currentTimeMillis());
@@ -238,7 +238,7 @@ public class TestFileLock extends TestCase
       // reopen for read
       Thread.sleep(timeout);
       System.out.println("Try read file " + System.currentTimeMillis());
-      FileInputStream fin = new FileInputStream(f);
+      FileInputStream fin = PrivilegedFileHelper.fileInputStream(f);
       fc = fin.getChannel();
       System.out.println("Try shared lock " + System.currentTimeMillis());
       FileLock shlock = fc.lock(0, fc.size(), true);
@@ -262,12 +262,12 @@ public class TestFileLock extends TestCase
    public void testInputStreamLock() throws IOException, InterruptedException
    {
 
-      // File f = new File("\\\\storm\\public\\file3.tmp");
-      File f = new File("D:\\tmp\\file4.tmp");
+      // File f = PrivilegedFileHelper.file("\\\\storm\\public\\file3.tmp");
+      File f = PrivilegedFileHelper.file("D:\\tmp\\file4.tmp");
 
       // write new content
       System.out.println("Try open file for read " + System.currentTimeMillis());
-      FileInputStream fin = new FileInputStream(f);
+      FileInputStream fin = PrivilegedFileHelper.fileInputStream(f);
       FileChannel fc = fin.getChannel();
       System.out.println("Try lock file " + System.currentTimeMillis());
       fin.read();

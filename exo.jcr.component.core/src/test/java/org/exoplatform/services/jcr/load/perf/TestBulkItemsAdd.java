@@ -26,6 +26,7 @@ import java.util.Calendar;
 import javax.jcr.Node;
 
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 /**
  * Created by The eXo Platform SAS Author : Peter Nedonosko peter.nedonosko@exoplatform.com.ua
@@ -74,7 +75,7 @@ public class TestBulkItemsAdd extends JcrAPIBaseTest
       log.info("Nodes saved " + nodesCount + ", " + (System.currentTimeMillis() - startTime) + "ms");
 
       // save stats
-      PrintWriter statFile = new PrintWriter(new File("stats.txt"));
+      PrintWriter statFile = new PrintWriter(PrivilegedFileHelper.file("stats.txt"));
       statFile.write(stats.toString());
       statFile.close();
 

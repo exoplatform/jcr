@@ -73,7 +73,7 @@ public class TestExportImport extends ExportBase
       testNode.remove();
       session.save();
 
-      session.importXML(root.getPath(), new FileInputStream(destFile), ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW);
+      session.importXML(root.getPath(), PrivilegedFileHelper.fileInputStream(destFile), ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW);
 
       session.save();
 
@@ -126,7 +126,7 @@ public class TestExportImport extends ExportBase
       folder.remove();
       session.save();
 
-      session.importXML(root.getPath(), new FileInputStream(destFile), ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW);
+      session.importXML(root.getPath(), PrivilegedFileHelper.fileInputStream(destFile), ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW);
 
       session.save();
 
@@ -150,7 +150,7 @@ public class TestExportImport extends ExportBase
       testNode.remove();
       session.save();
 
-      session.importXML(root.getPath(), new FileInputStream(destFile), ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW);
+      session.importXML(root.getPath(), PrivilegedFileHelper.fileInputStream(destFile), ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW);
 
       session.save();
 
@@ -396,7 +396,7 @@ public class TestExportImport extends ExportBase
          session.save();
       }
 
-      session.importXML(destParentNode != null ? destParentNode.getPath() : root.getPath(), new FileInputStream(
+      session.importXML(destParentNode != null ? destParentNode.getPath() : root.getPath(), PrivilegedFileHelper.fileInputStream(
          destFile), ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW);
 
       session.save();

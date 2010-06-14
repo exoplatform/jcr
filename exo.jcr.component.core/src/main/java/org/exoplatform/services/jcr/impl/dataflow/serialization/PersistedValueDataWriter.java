@@ -23,6 +23,7 @@ import org.exoplatform.services.jcr.dataflow.serialization.SerializationConstant
 import org.exoplatform.services.jcr.impl.dataflow.AbstractPersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.FilePersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
 import java.io.FileInputStream;
@@ -70,14 +71,14 @@ public class PersistedValueDataWriter
          FilePersistedValueData streamed = (FilePersistedValueData)vd;
 
          InputStream in = null;
-         
+
          if (streamed.getFile() == null && vd instanceof StreamPersistedValueData)
          {
-            in = new FileInputStream(((StreamPersistedValueData)vd).getTempFile());
+            in = PrivilegedFileHelper.fileInputStream(((StreamPersistedValueData)vd).getTempFile());
          }
          else
          {
-           in = streamed.getAsStream();
+            in = streamed.getAsStream();
          }
 
          // TODO optimize it, use channels

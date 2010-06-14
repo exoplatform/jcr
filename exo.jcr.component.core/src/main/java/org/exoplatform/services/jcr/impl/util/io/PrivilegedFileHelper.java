@@ -23,6 +23,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URI;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
@@ -137,6 +138,37 @@ public class PrivilegedFileHelper
          public FileInputStream run() throws Exception
          {
             return new FileInputStream(file);
+         }
+      };
+      try
+      {
+         return AccessController.doPrivileged(action);
+      }
+      catch (PrivilegedActionException pae)
+      {
+         Throwable cause = pae.getCause();
+         if (cause instanceof FileNotFoundException)
+         {
+            throw (FileNotFoundException)cause;
+         }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
+      }
+   }
+
+   public static FileInputStream fileInputStream(final String name) throws FileNotFoundException
+   {
+      PrivilegedExceptionAction<FileInputStream> action = new PrivilegedExceptionAction<FileInputStream>()
+      {
+         public FileInputStream run() throws Exception
+         {
+            return new FileInputStream(name);
          }
       };
       try
@@ -326,6 +358,42 @@ public class PrivilegedFileHelper
          public File run()
          {
             return new File(pathname);
+         }
+      };
+      return AccessController.doPrivileged(action);
+   }
+
+   public static File file(final URI uri)
+   {
+      PrivilegedAction<File> action = new PrivilegedAction<File>()
+      {
+         public File run()
+         {
+            return new File(uri);
+         }
+      };
+      return AccessController.doPrivileged(action);
+   }
+
+   public static File file(final String parent, final String child)
+   {
+      PrivilegedAction<File> action = new PrivilegedAction<File>()
+      {
+         public File run()
+         {
+            return new File(parent, child);
+         }
+      };
+      return AccessController.doPrivileged(action);
+   }
+
+   public static File file(final File parent, final String child)
+   {
+      PrivilegedAction<File> action = new PrivilegedAction<File>()
+      {
+         public File run()
+         {
+            return new File(parent, child);
          }
       };
       return AccessController.doPrivileged(action);

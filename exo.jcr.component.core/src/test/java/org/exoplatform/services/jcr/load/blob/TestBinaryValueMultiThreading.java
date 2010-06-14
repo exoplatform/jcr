@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.load.blob;
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.FileInputStream;
 import java.util.ArrayList;
@@ -71,6 +72,7 @@ public class TestBinaryValueMultiThreading extends JcrAPIBaseTest
    protected class TestJCRClient extends Thread
    {
 
+      @Override
       public void run()
       {
          log.info("Client started...");
@@ -92,13 +94,13 @@ public class TestBinaryValueMultiThreading extends JcrAPIBaseTest
             {
                // check streams
 
-               compareStream(new FileInputStream(LOCAL_SMALL_FILE), testLocalSmallFiles.getProperty(
+               compareStream(PrivilegedFileHelper.fileInputStream(LOCAL_SMALL_FILE), testLocalSmallFiles.getProperty(
                   "smallFile" + i + "/jcr:content/jcr:data").getStream());
-               compareStream(new FileInputStream(LOCAL_BIG_FILE), testLocalBigFiles.getProperty(
+               compareStream(PrivilegedFileHelper.fileInputStream(LOCAL_BIG_FILE), testLocalBigFiles.getProperty(
                   "bigFile" + i + "/jcr:content/jcr:data").getStream());
 
                /*
-                * compareStream(new FileInputStream(REMOTE_SMALL_FILE),
+                * compareStream(PrivilegedFileHelper.fileInputStream(REMOTE_SMALL_FILE),
                 * testRemoteSmallFiles.getProperty("smallFile" + i +
                 * "/jcr:content/jcr:data").getStream()); compareStream(new
                 * FileInputStream(REMOTE_BIG_FILE), testRemoteBigFiles.getProperty("bigFile" + i +
@@ -129,7 +131,7 @@ public class TestBinaryValueMultiThreading extends JcrAPIBaseTest
       {
          Node localSmallFile = testLocalSmallFiles.addNode("smallFile" + i, "nt:file");
          Node contentNode = localSmallFile.addNode("jcr:content", "nt:resource");
-         contentNode.setProperty("jcr:data", new FileInputStream(LOCAL_SMALL_FILE));
+         contentNode.setProperty("jcr:data", PrivilegedFileHelper.fileInputStream(LOCAL_SMALL_FILE));
          contentNode.setProperty("jcr:mimeType", "application/octet-stream");
          contentNode.setProperty("jcr:lastModified", Calendar.getInstance());
       }
@@ -145,7 +147,7 @@ public class TestBinaryValueMultiThreading extends JcrAPIBaseTest
       {
          Node localBigFile = testLocalBigFiles.addNode("bigFile" + i, "nt:file");
          Node contentNode = localBigFile.addNode("jcr:content", "nt:resource");
-         contentNode.setProperty("jcr:data", new FileInputStream(LOCAL_BIG_FILE));
+         contentNode.setProperty("jcr:data", PrivilegedFileHelper.fileInputStream(LOCAL_BIG_FILE));
          contentNode.setProperty("jcr:mimeType", "application/octet-stream");
          contentNode.setProperty("jcr:lastModified", Calendar.getInstance());
       }
@@ -155,13 +157,13 @@ public class TestBinaryValueMultiThreading extends JcrAPIBaseTest
        * Node testRemoteSmallFiles = root.addNode("testRemoteSmallFiles"); for (int i = 0; i <
        * FILES_COUNT; i++) { Node remoteSmallFile = testRemoteSmallFiles.addNode("smallFile" + i,
        * "nt:file"); Node contentNode = remoteSmallFile.addNode("jcr:content", "nt:resource");
-       * contentNode.setProperty("jcr:data", new FileInputStream(REMOTE_SMALL_FILE));
+       * contentNode.setProperty("jcr:data", PrivilegedFileHelper.fileInputStream(REMOTE_SMALL_FILE));
        * contentNode.setProperty("jcr:mimeType", "application/octet-stream ");
        * contentNode.setProperty("jcr:lastModified", Calendar.getInstance()); } //Remote big files
        * Node testRemoteBigFiles = root.addNode("testRemoteBigFiles"); for (int i = 0; i <
        * FILES_COUNT; i++) { Node remoteBigFile = testRemoteBigFiles.addNode("bigFile" + i,
        * "nt:file"); Node contentNode = remoteBigFile.addNode("jcr:content", "nt:resource");
-       * contentNode.setProperty("jcr:data", new FileInputStream(REMOTE_BIG_FILE));
+       * contentNode.setProperty("jcr:data", PrivilegedFileHelper.fileInputStream(REMOTE_BIG_FILE));
        * contentNode.setProperty("jcr:mimeType", "application/octet-stream ");
        * contentNode.setProperty("jcr:lastModified", Calendar.getInstance()); } //Url small files Node
        * testUrlSmallFiles = root.addNode("testUrlSmallFiles"); for (int i = 0; i < FILES_COUNT; i++)

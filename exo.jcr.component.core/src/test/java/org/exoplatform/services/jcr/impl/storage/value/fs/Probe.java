@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs;
 
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
+
 import java.io.File;
 import java.io.FileInputStream;
 
@@ -45,12 +47,13 @@ public class Probe extends Thread
       this.file = file;
    }
 
+   @Override
    public void run()
    {
       System.out.println("Thread started " + this.getName());
       try
       {
-         FileInputStream is = new FileInputStream(file);
+         FileInputStream is = PrivilegedFileHelper.fileInputStream(file);
          while (is.read() > 0)
          {
             len++;

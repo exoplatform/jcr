@@ -75,7 +75,7 @@ public class TestExportImportAmongSessions extends BaseUsecasesTest
 
       try
       {
-         session1.importXML("/", new FileInputStream(outputFile), ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW);
+         session1.importXML("/", PrivilegedFileHelper.fileInputStream(outputFile), ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW);
          session1.save();
 
          testNode = session1.getRootNode().getNode(TEST_NODE);
@@ -124,7 +124,7 @@ public class TestExportImportAmongSessions extends BaseUsecasesTest
 
       try
       {
-         session1.importXML("/", new FileInputStream(outputFile), ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW);
+         session1.importXML("/", PrivilegedFileHelper.fileInputStream(outputFile), ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW);
 
          testNode = session1.getRootNode().getNode(TEST_NODE);
          ntFile = testNode.getNode(TEST_NTFILE);

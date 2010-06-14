@@ -114,7 +114,7 @@ public class FilePersistedValueData extends AbstractPersistedValueData implement
    {
       if (channel == null)
       {
-         channel = new FileInputStream(file).getChannel();
+         channel = PrivilegedFileHelper.fileInputStream(file).getChannel();
       }
 
       // validation
@@ -198,7 +198,7 @@ public class FilePersistedValueData extends AbstractPersistedValueData implement
    private byte[] fileToByteArray() throws IOException
    {
       // TODO do refactor of work with NIO and java6
-      FileChannel fch = new FileInputStream(file).getChannel();
+      FileChannel fch = PrivilegedFileHelper.fileInputStream(file).getChannel();
 
       try
       {
@@ -236,7 +236,7 @@ public class FilePersistedValueData extends AbstractPersistedValueData implement
          byte[] buf = new byte[size];
          in.readFully(buf);
 
-         File f = new File(new String(buf, "UTF-8"));
+         File f = PrivilegedFileHelper.file(new String(buf, "UTF-8"));
          // validate if exists
          if (f.exists())
          {

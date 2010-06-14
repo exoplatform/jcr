@@ -58,10 +58,10 @@ public class TestFileIOChannel extends TestCase
    {
       super.setUp();
 
-      rootDir = new File(new File("target"), "vs1");
+      rootDir = PrivilegedFileHelper.file(PrivilegedFileHelper.file("target"), "vs1");
       rootDir.mkdirs();
 
-      new File(rootDir, FileValueStorage.TEMP_DIR_NAME).mkdirs();
+      PrivilegedFileHelper.file(rootDir, FileValueStorage.TEMP_DIR_NAME).mkdirs();
 
       if (!rootDir.exists())
          throw new Exception("Folder does not exist " + rootDir.getAbsolutePath());
@@ -72,7 +72,7 @@ public class TestFileIOChannel extends TestCase
    {
 
       byte[] buf = "0123456789".getBytes();
-      File file = new File(rootDir, "testReadFromIOChannel0");
+      File file = PrivilegedFileHelper.file(rootDir, "testReadFromIOChannel0");
       file.deleteOnExit();
       if (file.exists())
          file.delete();
@@ -82,7 +82,7 @@ public class TestFileIOChannel extends TestCase
 
       buf = "01234567890123456789".getBytes();
 
-      file = new File(rootDir, "testReadFromIOChannel1");
+      file = PrivilegedFileHelper.file(rootDir, "testReadFromIOChannel1");
       if (file.exists())
          file.delete();
       out = PrivilegedFileHelper.fileOutputStream(file);
@@ -136,11 +136,11 @@ public class TestFileIOChannel extends TestCase
       }
       channel.commit();
 
-      assertTrue(new File(rootDir, "testWriteToIOChannel0").exists());
-      assertTrue(new File(rootDir, "testWriteToIOChannel1").exists());
-      assertTrue(new File(rootDir, "testWriteToIOChannel2").exists());
+      assertTrue(PrivilegedFileHelper.file(rootDir, "testWriteToIOChannel0").exists());
+      assertTrue(PrivilegedFileHelper.file(rootDir, "testWriteToIOChannel1").exists());
+      assertTrue(PrivilegedFileHelper.file(rootDir, "testWriteToIOChannel2").exists());
 
-      assertEquals(10, new File(rootDir, "testWriteToIOChannel0").length());
+      assertEquals(10, PrivilegedFileHelper.file(rootDir, "testWriteToIOChannel0").length());
 
       channel.delete("testWriteToIOChannel");
       channel.commit();
@@ -199,16 +199,16 @@ public class TestFileIOChannel extends TestCase
       }
       channel.commit();
 
-      assertTrue(new File(rootDir, "testDeleteFromIOChannel0").exists());
-      assertTrue(new File(rootDir, "testDeleteFromIOChannel1").exists());
-      assertTrue(new File(rootDir, "testDeleteFromIOChannel2").exists());
+      assertTrue(PrivilegedFileHelper.file(rootDir, "testDeleteFromIOChannel0").exists());
+      assertTrue(PrivilegedFileHelper.file(rootDir, "testDeleteFromIOChannel1").exists());
+      assertTrue(PrivilegedFileHelper.file(rootDir, "testDeleteFromIOChannel2").exists());
 
       channel.delete("testDeleteFromIOChannel");
       channel.commit();
 
-      assertFalse(new File(rootDir, "testDeleteFromIOChannel0").exists());
-      assertFalse(new File(rootDir, "testDeleteFromIOChannel1").exists());
-      assertFalse(new File(rootDir, "testDeleteFromIOChannel2").exists());
+      assertFalse(PrivilegedFileHelper.file(rootDir, "testDeleteFromIOChannel0").exists());
+      assertFalse(PrivilegedFileHelper.file(rootDir, "testDeleteFromIOChannel1").exists());
+      assertFalse(PrivilegedFileHelper.file(rootDir, "testDeleteFromIOChannel2").exists());
 
       channel.delete("testDeleteFromIOChannel");
       channel.commit();
@@ -237,7 +237,7 @@ public class TestFileIOChannel extends TestCase
       }
       channel.commit();
 
-      File f = new File(rootDir, "testConcurrentReadFromIOChannel0");
+      File f = PrivilegedFileHelper.file(rootDir, "testConcurrentReadFromIOChannel0");
       if (!f.exists())
          throw new Exception("File does not exist " + f.getAbsolutePath());
 
@@ -283,7 +283,7 @@ public class TestFileIOChannel extends TestCase
       }
       channel.commit();
 
-      File f = new File(rootDir, "testDeleteLockedFileFromIOChannel0");
+      File f = PrivilegedFileHelper.file(rootDir, "testDeleteLockedFileFromIOChannel0");
       Probe p = new Probe(f);
       p.start();
 
@@ -295,10 +295,10 @@ public class TestFileIOChannel extends TestCase
       // removed by FileCleaner
       //Thread.sleep(3000);
 
-      f = new File(rootDir, "testDeleteLockedFileFromIOChannel0");
+      f = PrivilegedFileHelper.file(rootDir, "testDeleteLockedFileFromIOChannel0");
       // assertFalse(f.exists());
       System.out.println(">>>>>>>>>>>>>" + f.canRead() + " " + f.exists() + " " + f.canWrite());
-      System.out.println(">>>>>>>>>>>>>" + new FileInputStream(f).read());
+      System.out.println(">>>>>>>>>>>>>" + PrivilegedFileHelper.fileInputStream(f).read());
 
       // new Probe(f).start();
    }

@@ -173,7 +173,7 @@ public class ValueStoragePluginTest extends BaseStandaloneTest
             Node localBigFile = testLocalBigFiles.addNode("bigFile" + j, "nt:file");
             Node contentNode = localBigFile.addNode("jcr:content", "nt:resource");
             // contentNode.setProperty("jcr:encoding", "UTF-8");
-            InputStream is = new FileInputStream(TEST_FILE);
+            InputStream is = PrivilegedFileHelper.fileInputStream(TEST_FILE);
             contentNode.setProperty("jcr:data", is);
             contentNode.setProperty("jcr:mimeType", "application/octet-stream ");
             is.close();
@@ -195,7 +195,7 @@ public class ValueStoragePluginTest extends BaseStandaloneTest
             Node content = lbf.getNode("jcr:content");
 
             // comparing with source file
-            compareStream(new BufferedInputStream(new FileInputStream(blobFiles.get(j))), content.getProperty(
+            compareStream(new BufferedInputStream(PrivilegedFileHelper.fileInputStream(blobFiles.get(j))), content.getProperty(
                "jcr:data").getStream());
          }
          n1.remove();

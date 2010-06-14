@@ -100,7 +100,7 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
       else
          restorePath = fullBackupPath;
 
-      this.tempDir = new File(System.getProperty("java.io.tmpdir"));
+      this.tempDir = PrivilegedFileHelper.file(System.getProperty("java.io.tmpdir"));
    }
 
    @Override
@@ -179,7 +179,7 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
       ObjectInputStream ois = null;
       try
       {
-         ois = new ObjectInputStream(new FileInputStream(incrementalBackupFile));
+         ois = new ObjectInputStream(PrivilegedFileHelper.fileInputStream(incrementalBackupFile));
 
          while (true)
          {
@@ -286,7 +286,7 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
    {
       ArrayList<File> list = new ArrayList<File>();
 
-      File rDir = new File(restoreDir);
+      File rDir = PrivilegedFileHelper.file(restoreDir);
       Pattern fullBackupPattern = Pattern.compile(".+\\.0");
 
       for (File f : rDir.listFiles(new BackupFilesFilter()))
@@ -308,7 +308,7 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
 
    private String getFullBackupPath()
    {
-      File rDir = new File(restoreDir);
+      File rDir = PrivilegedFileHelper.file(restoreDir);
       Pattern p = Pattern.compile(".+\\.0");
 
       for (File f : rDir.listFiles(new BackupFilesFilter()))

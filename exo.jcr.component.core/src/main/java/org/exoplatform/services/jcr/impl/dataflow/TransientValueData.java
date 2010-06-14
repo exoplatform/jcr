@@ -228,7 +228,7 @@ public class TransientValueData implements ValueData
             }
             else if (spoolFile != null)
             {
-               return new FileInputStream(spoolFile); // from spool file if initialized
+               return PrivilegedFileHelper.fileInputStream(spoolFile); // from spool file if initialized
             }
             else if (tmpStream != null)
             {
@@ -345,7 +345,7 @@ public class TransientValueData implements ValueData
          else
          {
             if (spoolChannel == null)
-               spoolChannel = new FileInputStream(spoolFile).getChannel();
+               spoolChannel = PrivilegedFileHelper.fileInputStream(spoolFile).getChannel();
 
             // validation
             if (position >= spoolChannel.size() && position > 0)
@@ -645,7 +645,7 @@ public class TransientValueData implements ValueData
        */
       private byte[] fileToByteArray() throws IOException
       {
-         FileChannel fch = new FileInputStream(spoolFile).getChannel();
+         FileChannel fch = PrivilegedFileHelper.fileInputStream(spoolFile).getChannel();
 
          if (LOG.isDebugEnabled() && fch.size() > maxBufferSize)
          {

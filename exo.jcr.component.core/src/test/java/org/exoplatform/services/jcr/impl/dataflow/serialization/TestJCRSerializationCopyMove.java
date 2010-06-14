@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
 import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -126,7 +127,7 @@ public class TestJCRSerializationCopyMove extends JcrImplSerializationBaseTest
 
       Node file = root.addNode("testMove_", "nt:folder").addNode("childNode2", "nt:file");
       Node contentNode = file.addNode("jcr:content", "nt:resource");
-      contentNode.setProperty("jcr:data", new FileInputStream(tempFile));
+      contentNode.setProperty("jcr:data", PrivilegedFileHelper.fileInputStream(tempFile));
       contentNode.setProperty("jcr:mimeType", "text/plain");
       contentNode.setProperty("jcr:lastModified", session.getValueFactory().createValue(Calendar.getInstance()));
       session.save();

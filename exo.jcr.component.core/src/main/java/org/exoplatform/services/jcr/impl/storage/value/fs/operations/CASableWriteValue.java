@@ -120,7 +120,7 @@ public class CASableWriteValue extends WriteValue
       // write calc digest hash
       // we need hash at first to know do we have to store file or just use one
       // existing (with same hash)
-      File temp = new File(tempDir, IdGenerator.generate() + "-" + propertyId + orderNumb + TEMP_FILE_EXTENSION);
+      File temp = PrivilegedFileHelper.file(tempDir, IdGenerator.generate() + "-" + propertyId + orderNumb + TEMP_FILE_EXTENSION);
       FileDigestOutputStream out = cas.openFile(temp);
       try
       {

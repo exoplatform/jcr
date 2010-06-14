@@ -56,7 +56,7 @@ public class ExportWorkspaceSystemViewTest extends BaseUsecasesTest
          sessionWS1.save();
 
          // 1-st export
-         File f1 = new File("target/1.xml");
+         File f1 = PrivilegedFileHelper.file("target/1.xml");
          sessionWS1.exportWorkspaceSystemView(PrivilegedFileHelper.fileOutputStream(f1), false, false);
 
          // 1-st import
@@ -77,7 +77,7 @@ public class ExportWorkspaceSystemViewTest extends BaseUsecasesTest
       {
          // 2-st export
          SessionImpl back1 = (SessionImpl)repository.login(credentials, "ws1_restore_1");
-         File f2 = new File("target/2.xml");
+         File f2 = PrivilegedFileHelper.file("target/2.xml");
          back1.exportWorkspaceSystemView(PrivilegedFileHelper.fileOutputStream(f2), false, false);
 
          // 2-st import

@@ -34,6 +34,7 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.init.StorageDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.statistics.StatisticsJDBCStorageConnection;
 import org.exoplatform.services.jcr.impl.storage.jdbc.update.StorageUpdateManager;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerException;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
@@ -183,6 +184,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       /**
        * {@inheritDoc}
        */
+      @Override
       public Connection getJdbcConnection() throws RepositoryException
       {
          return connection;
@@ -380,11 +382,11 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       try
       {
          String sdParam = wsConfig.getContainer().getParameterValue(SWAPDIR_PROP);
-         this.swapDirectory = new File(sdParam);
+         this.swapDirectory = PrivilegedFileHelper.file(sdParam);
       }
       catch (RepositoryConfigurationException e1)
       {
-         this.swapDirectory = new File(DEF_SWAPDIR);
+         this.swapDirectory = PrivilegedFileHelper.file(DEF_SWAPDIR);
       }
       if (!swapDirectory.exists())
          swapDirectory.mkdirs();

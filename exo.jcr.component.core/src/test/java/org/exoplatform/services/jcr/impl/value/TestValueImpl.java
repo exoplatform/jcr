@@ -45,7 +45,7 @@ import java.io.InputStream;
 public class TestValueImpl extends TestCase
 {
 
-   private File tempDirectory = new File(System.getProperty("java.io.tmpdir"));
+   private File tempDirectory = PrivilegedFileHelper.file(System.getProperty("java.io.tmpdir"));
 
    private int maxFufferSize = 10;
 
@@ -53,14 +53,14 @@ public class TestValueImpl extends TestCase
    {
 
       byte[] buf = "012345678901234567890123456789".getBytes();
-      File file = new File("target/testNewBinaryValue");
+      File file = PrivilegedFileHelper.file("target/testNewBinaryValue");
       if (file.exists())
          file.delete();
       FileOutputStream out = PrivilegedFileHelper.fileOutputStream(file);
       out.write(buf);
       out.close();
 
-      FileInputStream fs1 = new FileInputStream(file);
+      FileInputStream fs1 = PrivilegedFileHelper.fileInputStream(file);
       BinaryValue val = new BinaryValue(fs1, new FileCleaner(), tempDirectory, maxFufferSize);
       InputStream str1 = val.getStream();
       assertNotNull(str1);

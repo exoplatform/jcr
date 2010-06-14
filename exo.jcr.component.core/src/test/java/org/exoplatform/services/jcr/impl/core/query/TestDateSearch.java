@@ -25,6 +25,7 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.TermQuery;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.query.lucene.FieldNames;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -47,10 +48,10 @@ public class TestDateSearch extends BaseQueryTest
 
    public void testSearchDate() throws Exception
    {
-      File file = new File("src/test/resources/test.xls");
+      File file = PrivilegedFileHelper.file("src/test/resources/test.xls");
       assertTrue("/test/resources/test.xls not found", file.exists());
 
-      FileInputStream fis = new FileInputStream(file);
+      FileInputStream fis = PrivilegedFileHelper.fileInputStream(file);
 
       NodeImpl node = (NodeImpl)root.addNode(fileName, "nt:file");
       NodeImpl cont = (NodeImpl)node.addNode("jcr:content", "nt:resource");

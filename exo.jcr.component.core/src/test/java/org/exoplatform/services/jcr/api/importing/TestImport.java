@@ -27,6 +27,7 @@ import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.core.ExtendedNode;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.util.VersionHistoryImporter;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -117,7 +118,7 @@ public class TestImport extends AbstractImportTest
       NodeImpl importRoot = (NodeImpl)root.addNode("ImportRoot");
 
       deserialize(importRoot, XmlSaveType.SESSION, true, ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING,
-         new BufferedInputStream(new FileInputStream(tmp)));
+         new BufferedInputStream(PrivilegedFileHelper.fileInputStream(tmp)));
       session.save();
       Node n1 = importRoot.getNode("TestRoot");
       assertTrue("Wrong ACL", accessManager.hasPermission(((NodeImpl)n1).getACL(), PermissionType.SET_PROPERTY,
@@ -162,7 +163,7 @@ public class TestImport extends AbstractImportTest
       NodeImpl importRoot = (NodeImpl)root.addNode("ImportRoot");
 
       deserialize(importRoot, XmlSaveType.SESSION, true, ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING,
-         new BufferedInputStream(new FileInputStream(tmp)));
+         new BufferedInputStream(PrivilegedFileHelper.fileInputStream(tmp)));
       session.save();
       Node n1 = importRoot.getNode("TestRoot");
       assertTrue("Wrong ACL", accessManager.hasPermission(((NodeImpl)n1).getACL(), PermissionType.SET_PROPERTY,
@@ -186,6 +187,7 @@ public class TestImport extends AbstractImportTest
 
          private Node testRoot;
 
+         @Override
          public void execute() throws RepositoryException
          {
             testRoot = testRootNode.addNode("testImportVersionable");
@@ -207,6 +209,7 @@ public class TestImport extends AbstractImportTest
             testRoot.save();
          }
 
+         @Override
          public Node getExportRoot()
          {
             return testRoot;
@@ -216,6 +219,7 @@ public class TestImport extends AbstractImportTest
       BeforeImportAction beforeImportAction = new BeforeImportAction(null, null)
       {
 
+         @Override
          public void execute() throws RepositoryException
          {
             Node testRoot2 = testRootNode.getNode("testImportVersionable");
@@ -223,6 +227,7 @@ public class TestImport extends AbstractImportTest
             testRootNode.save();
          }
 
+         @Override
          public Node getImportRoot()
          {
             return testRootNode;
@@ -236,6 +241,7 @@ public class TestImport extends AbstractImportTest
 
          private Node testRoot2;
 
+         @Override
          public void execute() throws RepositoryException
          {
             testRootNode.save();
@@ -316,6 +322,7 @@ public class TestImport extends AbstractImportTest
 
          private Node testRoot2;
 
+         @Override
          public void execute() throws RepositoryException
          {
             testRootNode.save();
@@ -364,6 +371,7 @@ public class TestImport extends AbstractImportTest
 
          private Node testRoot;
 
+         @Override
          public void execute() throws RepositoryException
          {
             testRoot = testRootNode.addNode("testImportVersionable");
@@ -385,6 +393,7 @@ public class TestImport extends AbstractImportTest
             testRoot.save();
          }
 
+         @Override
          public Node getExportRoot()
          {
             return testRoot;
@@ -394,6 +403,7 @@ public class TestImport extends AbstractImportTest
       BeforeImportAction beforeImportAction = new BeforeImportAction(null, null)
       {
 
+         @Override
          public Node getImportRoot() throws RepositoryException
          {
             Node importRoot = testRootNode.addNode("ImportRoot");
@@ -410,6 +420,7 @@ public class TestImport extends AbstractImportTest
 
          private Node testRoot2;
 
+         @Override
          public void execute() throws RepositoryException
          {
             testRootNode.save();
@@ -495,7 +506,7 @@ public class TestImport extends AbstractImportTest
       session.save();
 
       deserialize(testRootNode, XmlSaveType.SESSION, true, ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING,
-         new BufferedInputStream(new FileInputStream(versionableNodeContent)));
+         new BufferedInputStream(PrivilegedFileHelper.fileInputStream(versionableNodeContent)));
       session.save();
       testRoot = testRootNode.getNode("testImportVersionable");
       assertTrue(testRoot.isNodeType("mix:versionable"));
@@ -503,8 +514,8 @@ public class TestImport extends AbstractImportTest
       assertEquals(1, testRoot.getVersionHistory().getAllVersions().getSize());
 
       VersionHistoryImporter historyImporter =
-         new VersionHistoryImporter((NodeImpl)testRoot, new BufferedInputStream(new FileInputStream(vhNodeContent)),
-            baseVersionUuid, predecessors, versionHistory);
+         new VersionHistoryImporter((NodeImpl)testRoot, new BufferedInputStream(PrivilegedFileHelper
+            .fileInputStream(vhNodeContent)), baseVersionUuid, predecessors, versionHistory);
       historyImporter.doImport();
       session.save();
 
@@ -864,15 +875,18 @@ public class TestImport extends AbstractImportTest
    {
       protected String dumpStr = "";
 
+      @Override
       protected void entering(Node node, int level) throws RepositoryException
       {
          dumpStr += node.getPath() + "\n";
       }
 
+      @Override
       protected void leaving(Property property, int level) throws RepositoryException
       {
       }
 
+      @Override
       protected void leaving(Node node, int level) throws RepositoryException
       {
       }
@@ -885,6 +899,7 @@ public class TestImport extends AbstractImportTest
       /**
        * {@inheritDoc}
        */
+      @Override
       protected void entering(Property property, int level) throws RepositoryException
       {
          dumpStr += " " + property.getPath() + "=" + valToString(property) + " \n";

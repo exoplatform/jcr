@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.impl.storage.value.fs;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePlugin;
 import org.exoplatform.services.log.ExoLogger;
@@ -67,6 +68,7 @@ public abstract class FileValueStorage extends ValueStoragePlugin
    /**
     * {@inheritDoc}
     */
+   @Override
    public void init(Properties props, ValueDataResourceHolder resources) throws IOException,
       RepositoryConfigurationException
    {
@@ -77,6 +79,7 @@ public abstract class FileValueStorage extends ValueStoragePlugin
    /**
     * {@inheritDoc}
     */
+   @Override
    public void checkConsistency(WorkspaceStorageConnection dataConnection)
    {
 
@@ -103,7 +106,7 @@ public abstract class FileValueStorage extends ValueStoragePlugin
     */
    protected void prepareRootDir(String rootDirPath) throws IOException, RepositoryConfigurationException
    {
-      this.rootDir = new File(rootDirPath);
+      this.rootDir = PrivilegedFileHelper.file(rootDirPath);
 
       if (!rootDir.exists())
       {
@@ -112,7 +115,7 @@ public abstract class FileValueStorage extends ValueStoragePlugin
             log.info("Directory created: " + rootDir.getAbsolutePath());
 
             // create internal temp dir
-            File tempDir = new File(rootDir, TEMP_DIR_NAME);
+            File tempDir = PrivilegedFileHelper.file(rootDir, TEMP_DIR_NAME);
             tempDir.mkdirs();
 
             if (tempDir.exists() && tempDir.isDirectory())

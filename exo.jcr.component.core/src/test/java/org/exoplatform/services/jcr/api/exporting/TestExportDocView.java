@@ -140,7 +140,7 @@ public class TestExportDocView extends ExportBase
          File file = createBLOBTempFile(2500);// 2.5M
          if (log.isDebugEnabled())
             log.debug("=== File has created, size " + file.length());
-         contentTestPdfNode.setProperty("jcr:data", new FileInputStream(file));
+         contentTestPdfNode.setProperty("jcr:data", PrivilegedFileHelper.fileInputStream(file));
          contentTestPdfNode.setProperty("jcr:mimeType", "application/octet-stream");
       }
       catch (IOException e)
@@ -188,7 +188,7 @@ public class TestExportDocView extends ExportBase
       session.exportDocumentView(testNode.getPath(), outStream, false, false);
       outStream.close();
 
-      Document doc = builder.parse(new FileInputStream(destFile));
+      Document doc = builder.parse(PrivilegedFileHelper.fileInputStream(destFile));
 
       // assertEquals(Constants.DEFAULT_ENCODING, doc.getXmlEncoding());
 
@@ -273,7 +273,7 @@ public class TestExportDocView extends ExportBase
          outStream.close();
       }
 
-      Document doc = builder.parse(new FileInputStream(destFile));
+      Document doc = builder.parse(PrivilegedFileHelper.fileInputStream(destFile));
 
       // assertEquals(Constants.DEFAULT_ENCODING, doc.getXmlEncoding());
 
@@ -340,7 +340,7 @@ public class TestExportDocView extends ExportBase
       session.exportDocumentView(firstNode.getPath(), outStream, false, false);
       outStream.close();
 
-      Document doc = builder.parse(new FileInputStream(destFile));
+      Document doc = builder.parse(PrivilegedFileHelper.fileInputStream(destFile));
 
       // assertEquals(Constants.DEFAULT_ENCODING, doc.getXmlEncoding());
 

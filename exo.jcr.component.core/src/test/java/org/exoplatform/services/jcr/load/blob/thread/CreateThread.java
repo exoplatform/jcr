@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.load.blob.thread;
 
 import org.exoplatform.services.jcr.impl.core.PropertyImpl;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.load.blob.TestConcurrentItems;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
@@ -46,6 +47,7 @@ public class CreateThread extends UserThread
       super(threadSession);
    }
 
+   @Override
    public void testAction()
    {
       while (process)
@@ -73,7 +75,7 @@ public class CreateThread extends UserThread
          Node ntFile = testRoot.addNode(nodeName, "nt:file");
          Node contentNode = ntFile.addNode("jcr:content", "nt:resource");
          // dataStream = new URL(TestSwap.URL_BIG_MEDIA_FILE).openStream();
-         dataStream = new FileInputStream(TestConcurrentItems.TEST_FILE);
+         dataStream = PrivilegedFileHelper.fileInputStream(TestConcurrentItems.TEST_FILE);
          PropertyImpl data = (PropertyImpl)contentNode.setProperty("jcr:data", dataStream);
          contentNode.setProperty("jcr:mimeType", "video/avi");
          contentNode.setProperty("jcr:lastModified", Calendar.getInstance());

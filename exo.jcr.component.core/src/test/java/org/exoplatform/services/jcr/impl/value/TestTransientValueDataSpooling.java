@@ -54,7 +54,7 @@ public class TestTransientValueDataSpooling extends BaseStandaloneTest implement
 
    private TransactionChangesLog cLog;
 
-   private final File tmpdir = new File(System.getProperty("java.io.tmpdir"));
+   private final File tmpdir = PrivilegedFileHelper.file(System.getProperty("java.io.tmpdir"));
 
    private boolean haveValueStorage = false;
 
@@ -110,7 +110,7 @@ public class TestTransientValueDataSpooling extends BaseStandaloneTest implement
       });
 
       NodeImpl node = (NodeImpl)root.addNode("testNode");
-      node.setProperty("testProp", new FileInputStream(tmpFile));
+      node.setProperty("testProp", PrivilegedFileHelper.fileInputStream(tmpFile));
       root.save();
 
       System.gc();
@@ -149,7 +149,7 @@ public class TestTransientValueDataSpooling extends BaseStandaloneTest implement
       });
 
       Node node = root.addNode("testNode");
-      node.setProperty("testProp", new FileInputStream(tmpFile));
+      node.setProperty("testProp", PrivilegedFileHelper.fileInputStream(tmpFile));
       node.getProperty("testProp").getStream().close();
       root.save();
 
@@ -172,7 +172,7 @@ public class TestTransientValueDataSpooling extends BaseStandaloneTest implement
       File tmpFile = createBLOBTempFile(250);
 
       Node node = root.addNode("testNode");
-      node.setProperty("testProp", new FileInputStream(tmpFile));
+      node.setProperty("testProp", PrivilegedFileHelper.fileInputStream(tmpFile));
       session.save();
 
       TransactionChangesLog cl = new TransactionChangesLog(cLog.getLogIterator().nextLog());

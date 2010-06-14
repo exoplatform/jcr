@@ -417,7 +417,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
             + ") RestoreIntializer should have mandatory parameter "
             + SysViewWorkspaceInitializer.RESTORE_PATH_PARAMETER);
 
-      this.tempDir = new File(System.getProperty("java.io.tmpdir"));
+      this.tempDir = PrivilegedFileHelper.file(System.getProperty("java.io.tmpdir"));
    }
 
    /**
@@ -463,7 +463,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
             WorkspaceDataContainer.DEF_MAXBUFFERSIZE);
       this.restorePath = restorePath;
 
-      this.tempDir = new File(System.getProperty("java.io.tmpdir"));
+      this.tempDir = PrivilegedFileHelper.file(System.getProperty("java.io.tmpdir"));
    }
 
    /**
@@ -533,7 +533,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
       NamespaceException, RepositoryException, IllegalNameException
    {
 
-      InputStream input = new FileInputStream(restorePath);
+      InputStream input = PrivilegedFileHelper.fileInputStream(restorePath);
       try
       {
          XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(input);

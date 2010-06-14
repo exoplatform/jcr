@@ -1,6 +1,7 @@
 package org.exoplatform.services.jcr.lab.cluster.test;
 
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -31,7 +32,7 @@ public class TestBLOBValue extends JcrAPIBaseTest
       Node contentNode = file.addNode("jcr:content", "nt:resource");
       // contentNode.setProperty("jcr:encoding", "UTF-8");
       contentNode.setProperty("jcr:mimeType", "application/octet-stream");
-      InputStream is = new FileInputStream(blob);
+      InputStream is = PrivilegedFileHelper.fileInputStream(blob);
       try
       {
          contentNode.setProperty("jcr:data", is);
@@ -81,7 +82,7 @@ public class TestBLOBValue extends JcrAPIBaseTest
          {
             children.nextNode().remove();
          }
-         
+
          testRoot.save();
       }
 
@@ -96,7 +97,7 @@ public class TestBLOBValue extends JcrAPIBaseTest
       // write
       Property text = testRoot.setProperty("text", "string property");
 
-      FileInputStream fis = new FileInputStream(testFile);
+      FileInputStream fis = PrivilegedFileHelper.fileInputStream(testFile);
       Property blob = testRoot.setProperty("blob", fis);
 
       testRoot.save();
@@ -182,4 +183,3 @@ public class TestBLOBValue extends JcrAPIBaseTest
       }
    }
 }
-

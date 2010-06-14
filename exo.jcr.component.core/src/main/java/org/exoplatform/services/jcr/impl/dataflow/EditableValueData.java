@@ -77,7 +77,7 @@ public class EditableValueData extends TransientValueData
 
             sch = new RandomAccessFile(sf, "rw").getChannel();
 
-            FileChannel sourceCh = new FileInputStream(spoolFile).getChannel();
+            FileChannel sourceCh = PrivilegedFileHelper.fileInputStream(spoolFile).getChannel();
             try
             {
                sch.transferFrom(sourceCh, 0, sourceCh.size());

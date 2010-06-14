@@ -90,7 +90,7 @@ public class ValueFileIOHelper
             }
             else
             {
-               FileInputStream is = new FileInputStream(file);
+               FileInputStream is = PrivilegedFileHelper.fileInputStream(file);
                try
                {
                   int buffSize = (int)fileSize;
@@ -251,7 +251,7 @@ public class ValueFileIOHelper
                                  + tempFile.getAbsolutePath() + ". Destination: " + file.getAbsolutePath());
                         }
 
-                        copyClose(new FileInputStream(tempFile), PrivilegedFileHelper.fileOutputStream(file));
+                        copyClose(PrivilegedFileHelper.fileInputStream(tempFile), PrivilegedFileHelper.fileOutputStream(file));
                      }
                   }
                   else
@@ -329,7 +329,7 @@ public class ValueFileIOHelper
                in = streamed.getStream();
                if (in == null)
                {
-                  in = new FileInputStream(streamed.getTempFile());
+                  in = PrivilegedFileHelper.fileInputStream(streamed.getTempFile());
                }
             }
          }

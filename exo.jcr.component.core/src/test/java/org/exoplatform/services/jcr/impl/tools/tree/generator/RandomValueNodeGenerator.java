@@ -94,7 +94,7 @@ public class RandomValueNodeGenerator extends WeightNodeGenerator
             else
             {
                file = createBLOBTempFile(size);
-               inputStream = new BufferedInputStream(new FileInputStream(file));
+               inputStream = new BufferedInputStream(PrivilegedFileHelper.fileInputStream(file));
             }
 
             val = valueFactory.createValue(inputStream);

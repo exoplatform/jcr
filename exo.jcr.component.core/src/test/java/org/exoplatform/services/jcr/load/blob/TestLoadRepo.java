@@ -60,7 +60,7 @@ public class TestLoadRepo extends BaseStandaloneTest
    public void _testExport() throws Exception
    {
       Node testNode = root.addNode("testNode");
-      File checkSummValue = new File(System.getProperty("java.io.tmpdir"), "repo.ssh1");
+      File checkSummValue = PrivilegedFileHelper.file(System.getProperty("java.io.tmpdir"), "repo.ssh1");
       BufferedOutputStream sshStrream = new BufferedOutputStream(PrivilegedFileHelper.fileOutputStream(checkSummValue));
       RandomValueNodeGenerator nodeGenerator =
          new RandomValueNodeGenerator(session.getValueFactory(), 6, 5, 8, 5, 1024 * 1024);
@@ -70,7 +70,7 @@ public class TestLoadRepo extends BaseStandaloneTest
       ValueSsh1Generator ssh1Generator = new ValueSsh1Generator(session.getTransientNodesManager(), sshStrream);
       ((NodeImpl)testNode).getData().accept(ssh1Generator);
       sshStrream.close();
-      File exportFile = new File(System.getProperty("java.io.tmpdir"), "testExport.xml");
+      File exportFile = PrivilegedFileHelper.file(System.getProperty("java.io.tmpdir"), "testExport.xml");
       OutputStream os = PrivilegedFileHelper.fileOutputStream(exportFile);
       session.exportSystemView(testNode.getPath(), os, false, false);
       os.close();
@@ -85,16 +85,16 @@ public class TestLoadRepo extends BaseStandaloneTest
       ConstraintViolationException, LockException, RepositoryException, IOException, NoSuchAlgorithmException
    {
 
-      File importFile = new File(System.getProperty("java.io.tmpdir"), "testExport.xml");
-      InputStream is = new FileInputStream(importFile);
+      File importFile = PrivilegedFileHelper.file(System.getProperty("java.io.tmpdir"), "testExport.xml");
+      InputStream is = PrivilegedFileHelper.fileInputStream(importFile);
 
       session.getWorkspace().getNamespaceRegistry().registerNamespace("exojcrtest_old",
          "http://www.exoplatform.org/jcr/exojcrtest");
       session.importXML(root.getPath(), is, ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
       session.save();
 
-      File ssh1File = new File(System.getProperty("java.io.tmpdir"), "repo.ssh1");
-      InputStream isSSH1 = new FileInputStream(ssh1File);
+      File ssh1File = PrivilegedFileHelper.file(System.getProperty("java.io.tmpdir"), "repo.ssh1");
+      InputStream isSSH1 = PrivilegedFileHelper.fileInputStream(ssh1File);
 
       ValueSsh1Comparator ssh1Comparator = new ValueSsh1Comparator(session.getTransientNodesManager(), isSSH1);
       ((NodeImpl)root.getNode("testNode")).getData().accept(ssh1Comparator);

@@ -111,7 +111,7 @@ public class TestFSReadWrite extends TestCase
    {
       super.setUp();
 
-      testRoot = new File("target/fstest");
+      testRoot = PrivilegedFileHelper.file("target/fstest");
       testRoot.mkdirs();
       testRoot.deleteOnExit();
    }
@@ -137,7 +137,7 @@ public class TestFSReadWrite extends TestCase
       for (File f : filesList)
       {
          f.delete();
-         deleteFileParent(new File(f.getParent()));
+         deleteFileParent(PrivilegedFileHelper.file(f.getParent()));
       }
    }
 
@@ -151,7 +151,7 @@ public class TestFSReadWrite extends TestCase
             {
                // log.info("del " + fp.getAbsolutePath());
                fp.delete();
-               deleteFileParent(new File(fp.getParent()));
+               deleteFileParent(PrivilegedFileHelper.file(fp.getParent()));
             }
          }
          else
@@ -168,7 +168,7 @@ public class TestFSReadWrite extends TestCase
       }
       for (String fn : ls)
       {
-         File f = new File(dir.getAbsolutePath() + File.separator + fn);
+         File f = PrivilegedFileHelper.file(dir.getAbsolutePath() + File.separator + fn);
          if (f.isDirectory())
          {
             deleteDir(f);
@@ -184,7 +184,7 @@ public class TestFSReadWrite extends TestCase
       List<File> files = new ArrayList<File>();
       for (int i = 0; i < FILES_COUNT; i++)
       {
-         File f = new File(testRoot.getAbsolutePath() + File.separator + SIDGenerator.generate());
+         File f = PrivilegedFileHelper.file(testRoot.getAbsolutePath() + File.separator + SIDGenerator.generate());
          try
          {
             // f.createNewFile();
@@ -213,9 +213,9 @@ public class TestFSReadWrite extends TestCase
       for (int i = 0; i < FILES_COUNT; i++)
       {
          String fileName = SIDGenerator.generate();
-         File dir = new File(testRoot.getAbsolutePath() + buildPathX(fileName));
+         File dir = PrivilegedFileHelper.file(testRoot.getAbsolutePath() + buildPathX(fileName));
          dir.mkdirs();
-         File f = new File(dir.getAbsolutePath() + File.separator + fileName);
+         File f = PrivilegedFileHelper.file(dir.getAbsolutePath() + File.separator + fileName);
          try
          {
             // f.createNewFile();
@@ -255,9 +255,9 @@ public class TestFSReadWrite extends TestCase
       for (int i = 0; i < FILES_COUNT; i++)
       {
          String fileName = SIDGenerator.generate();
-         File dir = new File(testRoot.getAbsolutePath() + buildPathXX(fileName));
+         File dir = PrivilegedFileHelper.file(testRoot.getAbsolutePath() + buildPathXX(fileName));
          dir.mkdirs();
-         File f = new File(dir.getAbsolutePath() + File.separator + fileName);
+         File f = PrivilegedFileHelper.file(dir.getAbsolutePath() + File.separator + fileName);
          try
          {
             // f.createNewFile();
@@ -301,9 +301,9 @@ public class TestFSReadWrite extends TestCase
          String fileName = SIDGenerator.generate();
          String prefix = fileName.substring(0, 24); // time + addr hash prefix
          String rnd = fileName.substring(24); // random name
-         File dir = new File(testRoot.getAbsolutePath() + File.separator + prefix + File.separator + buildPathX(rnd));
+         File dir = PrivilegedFileHelper.file(testRoot.getAbsolutePath() + File.separator + prefix + File.separator + buildPathX(rnd));
          dir.mkdirs();
-         File f = new File(dir.getAbsolutePath() + File.separator + fileName);
+         File f = PrivilegedFileHelper.file(dir.getAbsolutePath() + File.separator + fileName);
          try
          {
             // f.createNewFile();
@@ -345,9 +345,9 @@ public class TestFSReadWrite extends TestCase
       for (int i = 0; i < FILES_COUNT; i++)
       {
          String fileName = SIDGenerator.generate();
-         File dir = new File(testRoot.getAbsolutePath() + File.separator + buildPathX8(fileName));
+         File dir = PrivilegedFileHelper.file(testRoot.getAbsolutePath() + File.separator + buildPathX8(fileName));
          dir.mkdirs();
-         File f = new File(dir.getAbsolutePath() + File.separator + fileName);
+         File f = PrivilegedFileHelper.file(dir.getAbsolutePath() + File.separator + fileName);
          try
          {
             FileOutputStream fos = PrivilegedFileHelper.fileOutputStream(f);
@@ -382,7 +382,7 @@ public class TestFSReadWrite extends TestCase
       String[] ls = filter != null ? root.list(filter) : root.list();
       for (String file : ls)
       {
-         File f = new File(testRoot.getAbsolutePath() + File.separator + file);
+         File f = PrivilegedFileHelper.file(testRoot.getAbsolutePath() + File.separator + file);
          if (f.isDirectory())
          {
             // dir
@@ -393,7 +393,7 @@ public class TestFSReadWrite extends TestCase
             // file
             try
             {
-               FileInputStream fis = new FileInputStream(f);
+               FileInputStream fis = PrivilegedFileHelper.fileInputStream(f);
                fis.close();
             }
             catch (FileNotFoundException e)
@@ -418,7 +418,7 @@ public class TestFSReadWrite extends TestCase
    protected void readTreeXFiles(File root, NameFilter filter)
    {
       String dirPath = root.getAbsolutePath() + buildPathX(filter.getName());
-      File dir = new File(dirPath);
+      File dir = PrivilegedFileHelper.file(dirPath);
       String[] ls = filter != null ? dir.list(filter) : dir.list();
       if (ls == null)
       {
@@ -428,7 +428,7 @@ public class TestFSReadWrite extends TestCase
 
       for (String file : ls)
       {
-         File f = new File(dir.getAbsolutePath() + File.separator + file);
+         File f = PrivilegedFileHelper.file(dir.getAbsolutePath() + File.separator + file);
          if (f.isDirectory())
          {
             // dir
@@ -439,7 +439,7 @@ public class TestFSReadWrite extends TestCase
             // file
             try
             {
-               FileInputStream fis = new FileInputStream(f);
+               FileInputStream fis = PrivilegedFileHelper.fileInputStream(f);
                fis.close();
             }
             catch (FileNotFoundException e)
@@ -457,7 +457,7 @@ public class TestFSReadWrite extends TestCase
    protected void readTreeX8Files(File root, NameFilter filter)
    {
       String dirPath = root.getAbsolutePath() + buildPathX8(filter.getName());
-      File dir = new File(dirPath);
+      File dir = PrivilegedFileHelper.file(dirPath);
       String[] ls = filter != null ? dir.list(filter) : dir.list();
       if (ls == null)
       {
@@ -467,7 +467,7 @@ public class TestFSReadWrite extends TestCase
 
       for (String file : ls)
       {
-         File f = new File(dir.getAbsolutePath() + File.separator + file);
+         File f = PrivilegedFileHelper.file(dir.getAbsolutePath() + File.separator + file);
          if (f.isDirectory())
          {
             // dir
@@ -478,7 +478,7 @@ public class TestFSReadWrite extends TestCase
             // file
             try
             {
-               FileInputStream fis = new FileInputStream(f);
+               FileInputStream fis = PrivilegedFileHelper.fileInputStream(f);
                fis.close();
             }
             catch (FileNotFoundException e)
@@ -501,7 +501,7 @@ public class TestFSReadWrite extends TestCase
    protected void readTreeXXFiles(File root, NameFilter filter)
    {
       String dirPath = root.getAbsolutePath() + buildPathXX(filter.getName());
-      File dir = new File(dirPath);
+      File dir = PrivilegedFileHelper.file(dirPath);
       String[] ls = filter != null ? dir.list(filter) : dir.list();
       if (ls == null)
       {
@@ -511,7 +511,7 @@ public class TestFSReadWrite extends TestCase
 
       for (String file : ls)
       {
-         File f = new File(dir.getAbsolutePath() + File.separator + file);
+         File f = PrivilegedFileHelper.file(dir.getAbsolutePath() + File.separator + file);
          if (f.isDirectory())
          {
             // dir
@@ -522,7 +522,7 @@ public class TestFSReadWrite extends TestCase
             // file
             try
             {
-               FileInputStream fis = new FileInputStream(f);
+               FileInputStream fis = PrivilegedFileHelper.fileInputStream(f);
                fis.close();
             }
             catch (FileNotFoundException e)
@@ -547,7 +547,7 @@ public class TestFSReadWrite extends TestCase
       String fileName = filter.getName();
       String prefix = fileName.substring(0, 24); // time + addr hash prefix
       String rnd = fileName.substring(24); // random name
-      File dir = new File(testRoot.getAbsolutePath() + File.separator + prefix + File.separator + buildPathX(rnd));
+      File dir = PrivilegedFileHelper.file(testRoot.getAbsolutePath() + File.separator + prefix + File.separator + buildPathX(rnd));
       String[] ls = filter != null ? dir.list(filter) : dir.list();
       if (ls == null)
       {
@@ -557,7 +557,7 @@ public class TestFSReadWrite extends TestCase
 
       for (String file : ls)
       {
-         File f = new File(dir.getAbsolutePath() + File.separator + file);
+         File f = PrivilegedFileHelper.file(dir.getAbsolutePath() + File.separator + file);
          if (f.isDirectory())
          {
             // dir
@@ -568,7 +568,7 @@ public class TestFSReadWrite extends TestCase
             // file
             try
             {
-               FileInputStream fis = new FileInputStream(f);
+               FileInputStream fis = PrivilegedFileHelper.fileInputStream(f);
                fis.close();
             }
             catch (FileNotFoundException e)

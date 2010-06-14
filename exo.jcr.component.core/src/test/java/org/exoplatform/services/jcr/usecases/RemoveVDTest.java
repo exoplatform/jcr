@@ -68,7 +68,7 @@ public class RemoveVDTest extends BaseUsecasesTest
       vd = null;
 
       // read first time
-      ObjectReader or = new ObjectReaderImpl(new FileInputStream(serf));
+      ObjectReader or = new ObjectReaderImpl(PrivilegedFileHelper.fileInputStream(serf));
 
       FilePersistedValueData vd1 = null;
 
@@ -87,7 +87,7 @@ public class RemoveVDTest extends BaseUsecasesTest
       ((StreamPersistedValueData)vd1).setPersistedFile(((StreamPersistedValueData)vd1).getTempFile());
 
       // read second time
-      or = new ObjectReaderImpl(new FileInputStream(serf));
+      or = new ObjectReaderImpl(PrivilegedFileHelper.fileInputStream(serf));
       FilePersistedValueData vd2 = null;
 
       try

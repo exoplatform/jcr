@@ -134,7 +134,7 @@ public class MultipleDeserializationTestLoad extends JcrImplSerializationBaseTes
 
       jcrout.close();
 
-      ObjectReaderImpl jcrin = new ObjectReaderImpl(new FileInputStream(jcrfile));
+      ObjectReaderImpl jcrin = new ObjectReaderImpl(PrivilegedFileHelper.fileInputStream(jcrfile));
       long jcrfread = System.currentTimeMillis();
       TransactionChangesLog mlog =
          (new TransactionChangesLogReader(fileCleaner, maxBufferSize, holder)).read(jcrin);
@@ -150,7 +150,7 @@ public class MultipleDeserializationTestLoad extends JcrImplSerializationBaseTes
       for (int j = 0; j < iterations; j++)
       {
          // deserialize
-         jcrin = new ObjectReaderImpl(new FileInputStream(jcrfile));
+         jcrin = new ObjectReaderImpl(PrivilegedFileHelper.fileInputStream(jcrfile));
          long t3 = System.currentTimeMillis();
          TransactionChangesLog log = rdr.read(jcrin);
 

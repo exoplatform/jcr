@@ -121,7 +121,7 @@ public abstract class JcrImplSerializationBaseTest extends JcrImplBaseTest
 
    protected List<TransactionChangesLog> deSerializeLogs(File jcrfile) throws IOException, UnknownClassIdException
    {
-      ObjectReaderImpl jcrin = new ObjectReaderImpl(new FileInputStream(jcrfile));
+      ObjectReaderImpl jcrin = new ObjectReaderImpl(PrivilegedFileHelper.fileInputStream(jcrfile));
 
       List<TransactionChangesLog> readed = new ArrayList<TransactionChangesLog>();
 

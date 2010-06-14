@@ -76,7 +76,7 @@ public class FileRestoreTest extends BaseUsecasesTest
 
       Node file = root.addNode("nt_file_node", "nt:file");
       Node contentNode = file.addNode("jcr:content", "nt:resource");
-      contentNode.setProperty("jcr:data", new FileInputStream(tempFile));
+      contentNode.setProperty("jcr:data", PrivilegedFileHelper.fileInputStream(tempFile));
       contentNode.setProperty("jcr:mimeType", "text/plain");
       contentNode.setProperty("jcr:lastModified", session.getValueFactory().createValue(Calendar.getInstance()));
       file.addMixin("mix:versionable");
@@ -86,37 +86,37 @@ public class FileRestoreTest extends BaseUsecasesTest
 
       file.checkin(); // v1
       file.checkout(); // file.getNode("jcr:content").getProperty("jcr:data").getStream()
-      file.getNode("jcr:content").setProperty("jcr:data", new FileInputStream(tempFile2));
+      file.getNode("jcr:content").setProperty("jcr:data", PrivilegedFileHelper.fileInputStream(tempFile2));
       session.save();
 
       log
          .info("ADD VERSION #2 : file size = " + contentNode.getProperty("jcr:data").getStream().available() + " bytes");
-      compareStream(new FileInputStream(tempFile2), contentNode.getProperty("jcr:data").getStream());
+      compareStream(PrivilegedFileHelper.fileInputStream(tempFile2), contentNode.getProperty("jcr:data").getStream());
 
       file.checkin(); // v2
       file.checkout();
-      file.getNode("jcr:content").setProperty("jcr:data", new FileInputStream(tempFile3));
+      file.getNode("jcr:content").setProperty("jcr:data", PrivilegedFileHelper.fileInputStream(tempFile3));
       session.save();
 
       log
          .info("ADD VERSION #3 : file size = " + contentNode.getProperty("jcr:data").getStream().available() + " bytes");
-      compareStream(new FileInputStream(tempFile3), contentNode.getProperty("jcr:data").getStream());
+      compareStream(PrivilegedFileHelper.fileInputStream(tempFile3), contentNode.getProperty("jcr:data").getStream());
 
       // restore version v2
       Version v2 = file.getBaseVersion();
       file.restore(v2, true);
 
-      compareStream(new FileInputStream(tempFile2), contentNode.getProperty("jcr:data").getStream());
+      compareStream(PrivilegedFileHelper.fileInputStream(tempFile2), contentNode.getProperty("jcr:data").getStream());
 
       // restore version v1
       Version v1 = file.getBaseVersion().getPredecessors()[0];
       file.restore(v1, true); // HERE
 
-      compareStream(new FileInputStream(tempFile), contentNode.getProperty("jcr:data").getStream());
+      compareStream(PrivilegedFileHelper.fileInputStream(tempFile), contentNode.getProperty("jcr:data").getStream());
 
       // restore version v2 again
       file.restore(v2, true);
 
-      compareStream(new FileInputStream(tempFile2), file.getNode("jcr:content").getProperty("jcr:data").getStream());
+      compareStream(PrivilegedFileHelper.fileInputStream(tempFile2), file.getNode("jcr:content").getProperty("jcr:data").getStream());
    }
 }

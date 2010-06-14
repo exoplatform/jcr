@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.load.blob;
 
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
 import org.exoplatform.services.jcr.impl.core.PropertyImpl;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.load.blob.thread.CreateThread;
 import org.exoplatform.services.jcr.load.blob.thread.DeleteThread;
 import org.exoplatform.services.jcr.load.blob.thread.NtFileCreatorThread;
@@ -74,6 +75,7 @@ public class TestConcurrentItems extends JcrAPIBaseTest
 
    private File testFile = null;
 
+   @Override
    public void setUp() throws Exception
    {
       super.setUp();
@@ -95,7 +97,7 @@ public class TestConcurrentItems extends JcrAPIBaseTest
          byte[] buff = new byte[1024 * 4];
          int read = 0;
          // InputStream dataStream = new URL(TEST_FILE).openStream();
-         InputStream dataStream = new FileInputStream(TEST_FILE);
+         InputStream dataStream = PrivilegedFileHelper.fileInputStream(TEST_FILE);
          while ((read = dataStream.read(buff)) >= 0)
          {
             dataSize += read;
@@ -140,7 +142,7 @@ public class TestConcurrentItems extends JcrAPIBaseTest
          Node testRoot = csession.getRootNode().getNode(TestConcurrentItems.TEST_ROOT);
          Node ntFile = testRoot.addNode(nodeName, "nt:file");
          Node contentNode = ntFile.addNode("jcr:content", "nt:resource");
-         dataStream = new FileInputStream(TestConcurrentItems.TEST_FILE);
+         dataStream = PrivilegedFileHelper.fileInputStream(TestConcurrentItems.TEST_FILE);
          PropertyImpl data = (PropertyImpl)contentNode.setProperty("jcr:data", dataStream);
          contentNode.setProperty("jcr:mimeType", "video/avi");
          contentNode.setProperty("jcr:lastModified", Calendar.getInstance());
@@ -248,12 +250,14 @@ public class TestConcurrentItems extends JcrAPIBaseTest
       for (int i = 0; i < 5; i++)
       {
          ReadThread readed =
-            new ReadThread(repository.login(
-               this.credentials /*
-                                                                                                                    * session.getCredentials(
-                                                                                                                    * )
-                                                                                                                    */,
-               "ws1"));
+            new ReadThread(
+               repository
+                  .login(
+                     this.credentials /*
+                                                                                                                                        * session.getCredentials(
+                                                                                                                                        * )
+                                                                                                                                        */,
+                     "ws1"));
          readed.start();
          readers.add(readed);
          try
@@ -268,9 +272,9 @@ public class TestConcurrentItems extends JcrAPIBaseTest
 
       log.info("Begin cleaner...");
       DeleteThread cleaner = new DeleteThread(repository.login(this.credentials /*
-                                                                                                    * session.getCredentials
-                                                                                                    * ()
-                                                                                                    */, "ws1"));
+                                                                                                         * session.getCredentials
+                                                                                                         * ()
+                                                                                                         */, "ws1"));
       cleaner.start();
 
       log.info("<<<<<<<<<<<<<<<<<<<< Wait cycle >>>>>>>>>>>>>>>>>>>>>");
@@ -411,6 +415,7 @@ public class TestConcurrentItems extends JcrAPIBaseTest
 
       Thread waiter = new Thread()
       {
+         @Override
          public void run()
          {
             try
@@ -448,7 +453,7 @@ public class TestConcurrentItems extends JcrAPIBaseTest
          Node testRoot = csession.getRootNode().getNode(TestConcurrentItems.TEST_ROOT);
          Node ntFile = testRoot.addNode(nodeName, "nt:file");
          Node contentNode = ntFile.addNode("jcr:content", "nt:resource");
-         dataStream = new FileInputStream(TEST_FILE);
+         dataStream = PrivilegedFileHelper.fileInputStream(TEST_FILE);
          PropertyImpl data = (PropertyImpl)contentNode.setProperty("jcr:data", dataStream);
          contentNode.setProperty("jcr:mimeType", "video/avi");
          contentNode.setProperty("jcr:lastModified", Calendar.getInstance());

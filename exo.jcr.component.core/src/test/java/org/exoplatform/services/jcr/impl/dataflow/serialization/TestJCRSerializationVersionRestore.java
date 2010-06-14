@@ -123,7 +123,7 @@ public class TestJCRSerializationVersionRestore extends JcrImplSerializationBase
 
       Node srcVersionNode = root.addNode("nt_file_node", "nt:file");
       Node contentNode = srcVersionNode.addNode("jcr:content", "nt:resource");
-      contentNode.setProperty("jcr:data", new FileInputStream(tempFile));
+      contentNode.setProperty("jcr:data", PrivilegedFileHelper.fileInputStream(tempFile));
       contentNode.setProperty("jcr:mimeType", "text/plain");
       contentNode.setProperty("jcr:lastModified", session.getValueFactory().createValue(Calendar.getInstance()));
       srcVersionNode.addMixin("mix:versionable");
@@ -135,14 +135,14 @@ public class TestJCRSerializationVersionRestore extends JcrImplSerializationBase
       session.save();
 
       srcVersion.checkout();
-      srcVersionNode.getNode("jcr:content").setProperty("jcr:data", new FileInputStream(tempFile2));
+      srcVersionNode.getNode("jcr:content").setProperty("jcr:data", PrivilegedFileHelper.fileInputStream(tempFile2));
       session.save();
 
       srcVersion.checkin();
       session.save();
 
       srcVersion.checkout();
-      srcVersionNode.getNode("jcr:content").setProperty("jcr:data", new FileInputStream(tempFile3));
+      srcVersionNode.getNode("jcr:content").setProperty("jcr:data", PrivilegedFileHelper.fileInputStream(tempFile3));
       session.save();
 
       Version baseVersion = srcVersion.getBaseVersion();

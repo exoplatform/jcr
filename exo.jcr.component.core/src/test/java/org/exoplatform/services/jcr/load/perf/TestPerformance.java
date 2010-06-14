@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.load.perf;
 
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
 import java.io.FileInputStream;
@@ -45,6 +46,7 @@ public class TestPerformance extends JcrAPIBaseTest
 
    private static String TEST_FILE = null;
 
+   @Override
    public void setUp() throws Exception
    {
       super.setUp();
@@ -65,6 +67,7 @@ public class TestPerformance extends JcrAPIBaseTest
       }
    }
 
+   @Override
    public void tearDown() throws Exception
    {
    }
@@ -437,7 +440,7 @@ public class TestPerformance extends JcrAPIBaseTest
          Node cool = testAddNtFilePlusNtResource.addNode(name, "nt:file");
          Node contentNode = cool.addNode("jcr:content", "nt:resource");
          contentNode.setProperty("jcr:encoding", "UTF-8");
-         InputStream is = new FileInputStream(TEST_FILE);
+         InputStream is = PrivilegedFileHelper.fileInputStream(TEST_FILE);
          contentNode.setProperty("jcr:data", is);
          contentNode.setProperty("jcr:mimeType", "text/plain");
          contentNode.setProperty("jcr:lastModified", session.getValueFactory().createValue(Calendar.getInstance()));

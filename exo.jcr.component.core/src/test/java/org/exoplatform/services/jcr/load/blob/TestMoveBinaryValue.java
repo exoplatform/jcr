@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.load.blob;
 
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -43,6 +44,7 @@ public class TestMoveBinaryValue extends JcrAPIBaseTest
    // -------------- TEST FILE ------------------
    private static String TEST_FILE = null; // URL_SMALL_FILE
 
+   @Override
    public void setUp() throws Exception
    {
       super.setUp();
@@ -64,7 +66,7 @@ public class TestMoveBinaryValue extends JcrAPIBaseTest
          Node localBigFile = testLocalBigFiles.addNode("bigFile" + i, "nt:file");
          Node contentNode = localBigFile.addNode("jcr:content", "nt:resource");
          // contentNode.setProperty("jcr:encoding", "UTF-8");
-         InputStream is = new FileInputStream(TEST_FILE);
+         InputStream is = PrivilegedFileHelper.fileInputStream(TEST_FILE);
          contentNode.setProperty("jcr:data", is);
          contentNode.setProperty("jcr:mimeType", "application/octet-stream ");
          is.close();
@@ -94,6 +96,7 @@ public class TestMoveBinaryValue extends JcrAPIBaseTest
       }
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
       testBinaryValue.remove();

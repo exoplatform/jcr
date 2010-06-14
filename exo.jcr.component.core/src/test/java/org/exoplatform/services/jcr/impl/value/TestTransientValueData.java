@@ -69,16 +69,16 @@ public class TestTransientValueData extends TestCase
    {
 
       byte[] buf = "0123456789".getBytes();
-      File file = new File("target/testCreateFileStreamTransientValueData");
+      File file = PrivilegedFileHelper.file("target/testCreateFileStreamTransientValueData");
       if (file.exists())
          file.delete();
       FileOutputStream out = PrivilegedFileHelper.fileOutputStream(file);
       out.write(buf);
       out.close();
 
-      FileInputStream fs1 = new FileInputStream(file);
+      FileInputStream fs1 = PrivilegedFileHelper.fileInputStream(file);
       TransientValueData vd =
-         new TransientValueData(0, null, fs1, null, new FileCleaner(), 5, new File("target"), true);
+         new TransientValueData(0, null, fs1, null, new FileCleaner(), 5, PrivilegedFileHelper.file("target"), true);
 
       // spool to file
       InputStream fs2 = vd.getAsStream();
