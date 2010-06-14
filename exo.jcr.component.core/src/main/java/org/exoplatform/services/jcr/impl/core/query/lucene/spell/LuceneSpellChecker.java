@@ -143,18 +143,13 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
    }
 
    /**
-    * Initializes this spell checker.
-    * 
-    * @param handler
-    *            the query handler that created this spell checker.
-    * @throws IOException
-    *             if <code>handler</code> is not of type {@link SearchIndex}.
+    * {@inheritDoc}
     */
-   public void init(QueryHandler handler) throws IOException
+   public void init(QueryHandler handler, float minDistance, boolean morePopular) throws IOException
    {
       if (handler instanceof SearchIndex)
       {
-         this.spellChecker = new InternalSpellChecker((SearchIndex)handler);
+         this.spellChecker = new InternalSpellChecker((SearchIndex)handler, minDistance, morePopular);
       }
       else
       {
@@ -183,8 +178,7 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
       spellChecker.close();
    }
 
-   // ------------------------------< internal
-   // >--------------------------------
+   // ------------------------------< internal >--------------------------------
 
    /**
     * Returns the fulltext statement of a spellcheck relation query node or
@@ -240,13 +234,19 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
        */
       private SpellChecker spellChecker;
 
+      private final boolean morePopular;
+
       /**
        * Creates a new internal spell checker.
        * 
        * @param handler
        *            the associated query handler.
+       * @param minDistance
+       *            minimal distance between  word and proposed close word. Float value 0..1.
+       * @param morePopular
+       *            return only the suggest words that are as frequent or more frequent than the searched word 
        */
-      InternalSpellChecker(SearchIndex handler) throws IOException
+      InternalSpellChecker(SearchIndex handler, float minDistance, boolean morePopular) throws IOException
       {
          this.handler = handler;
          String path = handler.getContext().getIndexDirectory() + File.separatorChar + "spellchecker";
@@ -256,7 +256,8 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
             this.lastRefresh = System.currentTimeMillis();
          }
          this.spellChecker = new SpellChecker(spellIndexDirectory);
-         this.spellChecker.setAccuracy(0.55f);
+         this.spellChecker.setAccuracy(minDistance);
+         this.morePopular = morePopular;
          refreshSpellChecker();
       }
 
@@ -291,7 +292,16 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
                   sb.replace(t.startOffset(), t.endOffset(), suggestions[i]);
                }
             }
-            return sb.toString();
+            // if suggestion is same as a statement return null
+            String result = sb.toString();
+            if (statement.equalsIgnoreCase(result))
+            {
+               return null;
+            }
+            else
+            {
+               return result;
+            }
          }
          else
          {
@@ -389,7 +399,9 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
                   String[] suggestion = new String[words.length];
                   for (int i = 0; i < words.length; i++)
                   {
-                     String[] similar = spellChecker.suggestSimilar(words[i], 5, reader, FieldNames.FULLTEXT, true);
+                     String[] similar =
+                        spellChecker.suggestSimilar(words[i], 5, reader, FieldNames.FULLTEXT, morePopular);
+
                      if (similar.length > 0)
                      {
                         suggestion[i] = similar[0];
@@ -479,6 +491,7 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
                      }
                   };
                   new Thread(refresh, "SpellChecker Refresh").start();
+
                   lastRefresh = System.currentTimeMillis();
                }
             }
