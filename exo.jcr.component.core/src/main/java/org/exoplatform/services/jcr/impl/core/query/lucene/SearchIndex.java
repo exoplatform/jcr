@@ -384,6 +384,16 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    private SpellChecker spellChecker;
 
    /**
+    * Return most popular results.
+    */
+   private boolean spellCheckerMorePopular = true;
+
+   /**
+    * Minimal distance between spell checked word and proposed word. 
+    */
+   private float spellCheckerMinDistance = 0.55f;
+
+   /**
     * The similarity in use for indexing and searching.
     */
    private Similarity similarity = Similarity.getDefault();
@@ -1360,13 +1370,14 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    protected SpellChecker createSpellChecker()
    {
+      // spell checker config
       SpellChecker spCheck = null;
       if (spellCheckerClass != null)
       {
          try
          {
             spCheck = spellCheckerClass.newInstance();
-            spCheck.init(this);
+            spCheck.init(this, spellCheckerMinDistance, spellCheckerMorePopular);
          }
          catch (Exception e)
          {
@@ -2387,6 +2398,24 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       {
          log.warn("Invalid value for spellCheckerClass," + " class {} not found.", className);
       }
+   }
+
+   /**
+    * Set SpellChecker morePopular parameter.
+    * @param morePopular boolean
+    */
+   public void setSpellCheckerMorePopuar(boolean morePopular)
+   {
+      spellCheckerMorePopular = morePopular;
+   }
+
+   /**
+    * Set SpellChecker minimal word distance.
+    * @param minDistance float
+    */
+   public void setSpellCheckerMinDistance(float minDistance)
+   {
+      spellCheckerMinDistance = minDistance;
    }
 
    /**

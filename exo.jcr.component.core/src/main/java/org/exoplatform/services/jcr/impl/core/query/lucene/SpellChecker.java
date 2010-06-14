@@ -27,38 +27,43 @@ import javax.jcr.RepositoryException;
  * <code>SpellChecker</code> defines an interface to run a spellchecker over a
  * fulltext query statement.
  */
-public interface SpellChecker {
+public interface SpellChecker
+{
 
-    /**
-     * Initializes this spell checker with an abstract query tree.
-     * 
-     * @param handler
-     *            the query handler that created this spell checker.
-     * @throws IOException
-     *             if an error occurs while initializing the spell checker.
-     */
-    void init(QueryHandler handler) throws IOException;
+   /**
+    * Initializes this spell checker.
+    * 
+    * @param handler
+    *            the query handler that created this spell checker.
+    * @param minDistance
+    *            minimal distance between  word and proposed close word. Float value 0..1.
+    * @param morePopular
+    *            return only the suggest words that are as frequent or more frequent than the searched word 
+    * @throws IOException
+    *             if an error occurs while initializing the spell checker.
+    */
+   void init(QueryHandler handler, float minDistance, boolean morePopular) throws IOException;
 
-    /**
-     * Runs the spell checker over the first spellcheck relation query node in
-     * the abstract query tree and returns a suggestion in case this
-     * spellchecker thinks the words are misspelled. If the spellchecker
-     * determines that the words are spelled correctly <code>null</code> is
-     * returned.
-     * 
-     * @param aqt
-     *            the abstract query tree, which may contain a relation query
-     *            node with a spellcheck operation.
-     * @return a suggestion or <code>null</code> if this spell checker
-     *         determines that the fulltext query statement is spelled
-     *         correctly.
-     * @throws RepositoryException
-     */
-    String check(QueryRootNode aqt) throws IOException, RepositoryException;
+   /**
+    * Runs the spell checker over the first spellcheck relation query node in
+    * the abstract query tree and returns a suggestion in case this
+    * spellchecker thinks the words are misspelled. If the spellchecker
+    * determines that the words are spelled correctly <code>null</code> is
+    * returned.
+    * 
+    * @param aqt
+    *            the abstract query tree, which may contain a relation query
+    *            node with a spellcheck operation.
+    * @return a suggestion or <code>null</code> if this spell checker
+    *         determines that the fulltext query statement is spelled
+    *         correctly.
+    * @throws RepositoryException
+    */
+   String check(QueryRootNode aqt) throws IOException, RepositoryException;
 
-    /**
-     * Closes this spell checker and allows it to free resources.
-     */
-    void close();
+   /**
+    * Closes this spell checker and allows it to free resources.
+    */
+   void close();
 
 }

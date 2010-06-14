@@ -66,7 +66,6 @@ public class SearchIndexConfigurationHelper
     */
    private void setParam(String name, String value)
    {
-
       if (QueryHandlerParams.PARAM_AUTO_REPAIR.equals(name))
       {
          searchIndex.setAutoRepair(Boolean.parseBoolean(value));
@@ -178,6 +177,14 @@ public class SearchIndexConfigurationHelper
       else if (QueryHandlerParams.PARAM_ANALYZER_CLASS.equals(name))
       {
          searchIndex.setAnalyzer(value);
+      }
+      else if (QueryHandlerParams.PARAM_SPELLCHECKER_MORE_POPULAR.equals(name))
+      {
+         searchIndex.setSpellCheckerMorePopuar(Boolean.parseBoolean(value));
+      }
+      else if (QueryHandlerParams.PARAM_SPELLCHECKER_DISTANCE.equals(name))
+      {
+         searchIndex.setSpellCheckerMinDistance(StringNumberParser.parseNumber(value).floatValue());
       }
    }
 }
