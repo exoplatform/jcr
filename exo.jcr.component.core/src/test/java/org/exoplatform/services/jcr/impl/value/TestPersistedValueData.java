@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.CleanableFilePersis
 import org.exoplatform.services.jcr.impl.dataflow.persistent.FilePersistedValueData;
 import org.exoplatform.services.jcr.impl.storage.value.fs.Probe;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.impl.util.io.SwapFile;
 
 import java.io.ByteArrayInputStream;
@@ -60,7 +61,7 @@ public class TestPersistedValueData extends TestCase
       File file = new File("target/testCreateFileStreamValueData");
       if (file.exists())
          file.delete();
-      FileOutputStream out = new FileOutputStream(file);
+      FileOutputStream out = PrivilegedFileHelper.fileOutputStream(file);
       out.write(buf);
       out.close();
 
@@ -87,7 +88,7 @@ public class TestPersistedValueData extends TestCase
       //File file = new File("target/testIfFinalizeRemovesTempFileStreamValueData");
       //if (file.exists())
       //  file.delete();
-      FileOutputStream out = new FileOutputStream(file);
+      FileOutputStream out = PrivilegedFileHelper.fileOutputStream(file);
       out.write(buf);
       out.close();
 
@@ -113,7 +114,7 @@ public class TestPersistedValueData extends TestCase
       File file = new File("target/testConcurrentFileStreamValueDataReading");
       if (file.exists())
          file.delete();
-      FileOutputStream out = new FileOutputStream(file);
+      FileOutputStream out = PrivilegedFileHelper.fileOutputStream(file);
       // approx. 10Kb file
       for (int i = 0; i < 100; i++)
       {

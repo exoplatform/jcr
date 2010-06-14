@@ -31,17 +31,15 @@ import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
 import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
-import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
 import org.exoplatform.services.jcr.impl.storage.JCRItemExistsException;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 import org.exoplatform.services.jcr.observation.ExtendedEvent;
 
@@ -77,7 +75,7 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
    private final String restoreDir;
 
    private FileCleaner fileCleaner;
-   
+
    /**
     * Temporary directory;
     */
@@ -101,10 +99,11 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
          throw new RepositoryException("Can't find full backup file");
       else
          restorePath = fullBackupPath;
-      
+
       this.tempDir = new File(System.getProperty("java.io.tmpdir"));
    }
 
+   @Override
    public NodeData initWorkspace() throws RepositoryException
    {
 
@@ -383,7 +382,7 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
       byte[] buf = new byte[bufferSize];
 
       File tempFile = SpoolFile.createTempFile("vdincb" + System.currentTimeMillis(), ".stmp", tempDir);
-      FileOutputStream fos = new FileOutputStream(tempFile);
+      FileOutputStream fos = PrivilegedFileHelper.fileOutputStream(tempFile);
       long readBytes = fileSize;
 
       while (readBytes > 0)

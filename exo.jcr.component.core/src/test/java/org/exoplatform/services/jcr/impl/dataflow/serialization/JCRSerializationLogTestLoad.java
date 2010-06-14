@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
 import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -68,7 +69,7 @@ public class JCRSerializationLogTestLoad extends JcrImplSerializationBaseTest
       long jcrread = 0;
 
       File jcrfile = File.createTempFile("jcr", "test");
-      ObjectWriterImpl jcrout = new ObjectWriterImpl(new FileOutputStream(jcrfile));
+      ObjectWriterImpl jcrout = new ObjectWriterImpl(PrivilegedFileHelper.fileOutputStream(jcrfile));
 
       System.out.println(" WRITE START");
       long t1 = System.currentTimeMillis();
@@ -89,7 +90,7 @@ public class JCRSerializationLogTestLoad extends JcrImplSerializationBaseTest
       for (int i = 0; i < iter; i++)
       {
          TransactionChangesLogReader rdr = new TransactionChangesLogReader(fileCleaner, maxBufferSize, holder);
-         TransactionChangesLog obj = (TransactionChangesLog)rdr.read(jcrin);
+         TransactionChangesLog obj = rdr.read(jcrin);
 
          //  readed.add(obj); 
       }
@@ -108,7 +109,7 @@ public class JCRSerializationLogTestLoad extends JcrImplSerializationBaseTest
         long javaRead = 0;
 
         File jfile = File.createTempFile("java", "test");
-        ObjectOutputStream jout = new ObjectOutputStream(new FileOutputStream(jfile));
+        ObjectOutputStream jout = new ObjectOutputStream(PrivilegedFileHelper.fileOutputStream(jfile));
 
         it = logs.iterator();
         

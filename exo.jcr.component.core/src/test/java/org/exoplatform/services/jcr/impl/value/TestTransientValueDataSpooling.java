@@ -29,6 +29,7 @@ import org.exoplatform.services.jcr.dataflow.serialization.ObjectWriter;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectWriterImpl;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.TransactionChangesLogWriter;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -82,6 +83,7 @@ public class TestTransientValueDataSpooling extends BaseStandaloneTest implement
    /**
     * {@inheritDoc}
     */
+   @Override
    public void tearDown() throws Exception
    {
       super.tearDown();
@@ -178,7 +180,8 @@ public class TestTransientValueDataSpooling extends BaseStandaloneTest implement
       node.getProperty("testProp").remove();
       session.save();
 
-      ObjectWriter out = new ObjectWriterImpl(new FileOutputStream(File.createTempFile("out", ".tmp")));
+      ObjectWriter out =
+         new ObjectWriterImpl(PrivilegedFileHelper.fileOutputStream(File.createTempFile("out", ".tmp")));
       TransactionChangesLogWriter lw = new TransactionChangesLogWriter();
 
       lw.write(out, cl);

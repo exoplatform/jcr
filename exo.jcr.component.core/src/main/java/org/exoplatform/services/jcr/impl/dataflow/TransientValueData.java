@@ -480,7 +480,7 @@ public class TransientValueData implements ValueData
          {
             SpoolFile sf = SpoolFile.createTempFile("jcrvd", null, tempDirectory);
             sf.acquire(this);
-            sfout = new FileOutputStream(sf);
+            sfout = PrivilegedFileHelper.fileOutputStream(sf);
 
             while ((read = tmpStream.read(tmpBuff)) >= 0)
                sfout.write(tmpBuff, 0, read);

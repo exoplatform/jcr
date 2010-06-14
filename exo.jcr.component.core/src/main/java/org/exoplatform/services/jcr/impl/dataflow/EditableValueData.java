@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl.dataflow;
 
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -26,7 +27,6 @@ import org.exoplatform.services.log.Log;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -125,7 +125,7 @@ public class EditableValueData extends TransientValueData
          this.maxIOBuffSize = calcMaxIOSize();
 
          SpoolFile sf = SpoolFile.createTempFile("jcrvdedit", null, tempDirectory);
-         OutputStream sfout = new FileOutputStream(sf);
+         OutputStream sfout = PrivilegedFileHelper.fileOutputStream(sf);
          try
          {
             byte[] tmpBuff = new byte[2048];

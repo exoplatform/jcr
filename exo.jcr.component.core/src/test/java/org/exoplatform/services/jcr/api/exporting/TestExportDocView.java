@@ -22,6 +22,7 @@ import org.apache.ws.commons.util.Base64;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.value.BinaryValue;
 import org.exoplatform.services.jcr.impl.util.StringConverter;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
@@ -30,7 +31,6 @@ import org.xml.sax.SAXException;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Calendar;
@@ -69,6 +69,7 @@ public class TestExportDocView extends ExportBase
       super();
    }
 
+   @Override
    public void initRepository() throws RepositoryException
    {
 
@@ -93,6 +94,7 @@ public class TestExportDocView extends ExportBase
 
    }
 
+   @Override
    public void tearDown() throws Exception
    {
       log.debug(">> get rootNode on TD START");
@@ -182,7 +184,7 @@ public class TestExportDocView extends ExportBase
       session.save();
       File destFile = File.createTempFile("multyValueExportStream", ".xml");
       destFile.deleteOnExit();
-      OutputStream outStream = new FileOutputStream(destFile);
+      OutputStream outStream = PrivilegedFileHelper.fileOutputStream(destFile);
       session.exportDocumentView(testNode.getPath(), outStream, false, false);
       outStream.close();
 
@@ -253,7 +255,7 @@ public class TestExportDocView extends ExportBase
       session.save();
       File destFile = File.createTempFile("multyValueExportStream", ".xml");
       destFile.deleteOnExit();
-      OutputStream outStream = new FileOutputStream(destFile);
+      OutputStream outStream = PrivilegedFileHelper.fileOutputStream(destFile);
 
       SAXTransformerFactory saxFact = (SAXTransformerFactory)SAXTransformerFactory.newInstance();
       TransformerHandler handler = saxFact.newTransformerHandler();
@@ -333,7 +335,7 @@ public class TestExportDocView extends ExportBase
 
       File destFile = File.createTempFile("docLockNodeExport", ".xml");
       destFile.deleteOnExit();
-      OutputStream outStream = new FileOutputStream(destFile);
+      OutputStream outStream = PrivilegedFileHelper.fileOutputStream(destFile);
 
       session.exportDocumentView(firstNode.getPath(), outStream, false, false);
       outStream.close();
@@ -352,9 +354,9 @@ public class TestExportDocView extends ExportBase
    {
 
       Session newSession = repository.login(this.credentials /*
-                                                                           * session.getCredentials
-                                                                           * ()
-                                                                           */);
+                                                                                * session.getCredentials
+                                                                                * ()
+                                                                                */);
 
       newSession.setNamespacePrefix("newjcr", "http://www.jcp.org/jcr/1.0");
 
@@ -381,9 +383,9 @@ public class TestExportDocView extends ExportBase
    {
 
       Session newSession = repository.login(this.credentials /*
-                                                                           * session.getCredentials
-                                                                           * ()
-                                                                           */);
+                                                                                * session.getCredentials
+                                                                                * ()
+                                                                                */);
       newSession.setNamespacePrefix("newjcr", "http://www.jcp.org/jcr/1.0");
 
       Node testNode = newSession.getRootNode().addNode("jcr:testExportNamespaceRemaping");

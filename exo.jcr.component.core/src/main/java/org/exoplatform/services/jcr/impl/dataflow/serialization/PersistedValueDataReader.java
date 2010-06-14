@@ -23,9 +23,9 @@ import org.exoplatform.services.jcr.dataflow.serialization.SerializationConstant
 import org.exoplatform.services.jcr.dataflow.serialization.UnknownClassIdException;
 import org.exoplatform.services.jcr.impl.dataflow.AbstractPersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.ByteArrayPersistedValueData;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.FilePersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 
 import java.io.File;
@@ -145,7 +145,7 @@ public class PersistedValueDataReader
    private void writeToFile(ObjectReader src, SpoolFile dest, long length) throws IOException
    {
       // write data to file
-      FileOutputStream sfout = new FileOutputStream(dest);
+      FileOutputStream sfout = PrivilegedFileHelper.fileOutputStream(dest);
       int bSize = SerializationConstants.INTERNAL_BUFFER_SIZE;
       try
       {

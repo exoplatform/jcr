@@ -19,6 +19,7 @@ package org.exoplatform.services.jcr.cluster;
 import junit.framework.TestCase;
 
 import org.exoplatform.services.jcr.cluster.JCRWebdavConnection;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -55,6 +56,7 @@ public abstract class BaseClusteringFunctionalTest extends TestCase
    /**
     * {@inheritDoc}
     */
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
@@ -79,6 +81,7 @@ public abstract class BaseClusteringFunctionalTest extends TestCase
    /**
     * {@inheritDoc}
     */
+   @Override
    protected void tearDown() throws Exception
    {
       super.tearDown();
@@ -111,7 +114,7 @@ public abstract class BaseClusteringFunctionalTest extends TestCase
       byte[] data = new byte[1024]; // 1Kb
 
       File testFile = File.createTempFile(prefix, ".tmp");
-      FileOutputStream tempOut = new FileOutputStream(testFile);
+      FileOutputStream tempOut = PrivilegedFileHelper.fileOutputStream(testFile);
       Random random = new Random();
 
       for (int i = 0; i < sizeInKb; i++)

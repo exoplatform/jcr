@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.usecases.common;
 
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
 
 import java.io.ByteArrayInputStream;
@@ -67,7 +68,7 @@ public class TestExportImportAmongSessions extends BaseUsecasesTest
       File outputFile = File.createTempFile("jcr_bin_test-", ".tmp");
       outputFile.deleteOnExit();
 
-      session1.exportDocumentView(testNode.getPath(), new FileOutputStream(outputFile), false, false);
+      session1.exportDocumentView(testNode.getPath(), PrivilegedFileHelper.fileOutputStream(outputFile), false, false);
 
       testNode.remove();
       session1.save();
@@ -116,7 +117,7 @@ public class TestExportImportAmongSessions extends BaseUsecasesTest
       File outputFile = File.createTempFile("jcr_bin_test", ".tmp");
       outputFile.deleteOnExit();
 
-      session2.exportDocumentView(testNode.getPath(), new FileOutputStream(outputFile), false, false);
+      session2.exportDocumentView(testNode.getPath(), PrivilegedFileHelper.fileOutputStream(outputFile), false, false);
 
       testNode.remove();
       session2.save();

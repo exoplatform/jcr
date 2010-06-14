@@ -20,12 +20,12 @@ import EDU.oswego.cs.dl.util.concurrent.Callable;
 import EDU.oswego.cs.dl.util.concurrent.FutureResult;
 
 import org.exoplatform.services.document.DocumentReader;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -173,6 +173,7 @@ public class TextExtractorJob extends FutureResult implements Runnable
    /**
     * @return a String description for this job with the mime type.
     */
+   @Override
    public String toString()
    {
       return "TextExtractorJob for " + type;
@@ -213,7 +214,7 @@ public class TextExtractorJob extends FutureResult implements Runnable
       Writer out;
       try
       {
-         out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(temp), ENCODING_UTF8));
+         out = new BufferedWriter(new OutputStreamWriter(PrivilegedFileHelper.fileOutputStream(temp), ENCODING_UTF8));
       }
       catch (IOException e)
       {
@@ -242,6 +243,7 @@ public class TextExtractorJob extends FutureResult implements Runnable
 
          return new InputStreamReader(in, ENCODING_UTF8)
          {
+            @Override
             public void close() throws IOException
             {
                super.close();

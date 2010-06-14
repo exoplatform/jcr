@@ -18,11 +18,11 @@
  */
 package org.exoplatform.services.jcr.api.exporting;
 
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.xml.sax.SAXException;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Calendar;
@@ -66,7 +66,7 @@ public class TestExportImport extends ExportBase
       session.save();
       File destFile = File.createTempFile("testWorkspaceExportImportValuesSysView", ".xml");
       destFile.deleteOnExit();
-      OutputStream outStream = new FileOutputStream(destFile);
+      OutputStream outStream = PrivilegedFileHelper.fileOutputStream(destFile);
       session.exportWorkspaceSystemView(outStream, false, false);
       outStream.close();
 
@@ -119,7 +119,7 @@ public class TestExportImport extends ExportBase
 
       File destFile = File.createTempFile("testExportImportValuesSysView", ".xml");
       destFile.deleteOnExit();
-      OutputStream outStream = new FileOutputStream(destFile);
+      OutputStream outStream = PrivilegedFileHelper.fileOutputStream(destFile);
       session.exportSystemView(file.getPath(), outStream, false, false);
       outStream.close();
 
@@ -143,7 +143,7 @@ public class TestExportImport extends ExportBase
       session.save();
       File destFile = File.createTempFile("testExportImportValuesSysView", ".xml");
       destFile.deleteOnExit();
-      OutputStream outStream = new FileOutputStream(destFile);
+      OutputStream outStream = PrivilegedFileHelper.fileOutputStream(destFile);
       session.exportSystemView(testNode.getPath(), outStream, false, false);
       outStream.close();
 
@@ -358,7 +358,7 @@ public class TestExportImport extends ExportBase
       Node exportNode = parentNode.getNode(nodeName);
       File destFile = File.createTempFile("testExportImport", ".xml");
       destFile.deleteOnExit();
-      OutputStream outStream = new FileOutputStream(destFile);
+      OutputStream outStream = PrivilegedFileHelper.fileOutputStream(destFile);
 
       if (isSystemView)
       {

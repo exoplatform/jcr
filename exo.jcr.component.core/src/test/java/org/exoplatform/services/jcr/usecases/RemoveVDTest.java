@@ -30,6 +30,7 @@ import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectWriterImpl
 import org.exoplatform.services.jcr.impl.dataflow.serialization.PersistedValueDataReader;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.PersistedValueDataWriter;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -57,7 +58,7 @@ public class RemoveVDTest extends BaseUsecasesTest
 
       File serf = File.createTempFile("serialization", "test");
 
-      ObjectWriter wr = new ObjectWriterImpl(new FileOutputStream(serf));
+      ObjectWriter wr = new ObjectWriterImpl(PrivilegedFileHelper.fileOutputStream(serf));
 
       PersistedValueDataWriter vdw = new PersistedValueDataWriter();
       vdw.write(wr, vd);
@@ -83,7 +84,7 @@ public class RemoveVDTest extends BaseUsecasesTest
 
       or.close();
       // Imitation save
-      ((StreamPersistedValueData) vd1).setPersistedFile(((StreamPersistedValueData) vd1).getTempFile());
+      ((StreamPersistedValueData)vd1).setPersistedFile(((StreamPersistedValueData)vd1).getTempFile());
 
       // read second time
       or = new ObjectReaderImpl(new FileInputStream(serf));
@@ -99,7 +100,7 @@ public class RemoveVDTest extends BaseUsecasesTest
       }
       or.close();
       // Imitation save
-      ((StreamPersistedValueData) vd2).setPersistedFile(((StreamPersistedValueData) vd2).getTempFile());
+      ((StreamPersistedValueData)vd2).setPersistedFile(((StreamPersistedValueData)vd2).getTempFile());
 
       assertTrue(vd1.getFile().exists());
       assertTrue(vd2.getFile().exists());

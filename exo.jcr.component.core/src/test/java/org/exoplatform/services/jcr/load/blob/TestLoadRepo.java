@@ -24,6 +24,7 @@ import org.exoplatform.services.jcr.impl.tools.tree.TreeGenerator;
 import org.exoplatform.services.jcr.impl.tools.tree.ValueSsh1Comparator;
 import org.exoplatform.services.jcr.impl.tools.tree.ValueSsh1Generator;
 import org.exoplatform.services.jcr.impl.tools.tree.generator.RandomValueNodeGenerator;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -60,7 +61,7 @@ public class TestLoadRepo extends BaseStandaloneTest
    {
       Node testNode = root.addNode("testNode");
       File checkSummValue = new File(System.getProperty("java.io.tmpdir"), "repo.ssh1");
-      BufferedOutputStream sshStrream = new BufferedOutputStream(new FileOutputStream(checkSummValue));
+      BufferedOutputStream sshStrream = new BufferedOutputStream(PrivilegedFileHelper.fileOutputStream(checkSummValue));
       RandomValueNodeGenerator nodeGenerator =
          new RandomValueNodeGenerator(session.getValueFactory(), 6, 5, 8, 5, 1024 * 1024);
       TreeGenerator generator = new TreeGenerator(testNode, nodeGenerator);
@@ -70,7 +71,7 @@ public class TestLoadRepo extends BaseStandaloneTest
       ((NodeImpl)testNode).getData().accept(ssh1Generator);
       sshStrream.close();
       File exportFile = new File(System.getProperty("java.io.tmpdir"), "testExport.xml");
-      OutputStream os = new FileOutputStream(exportFile);
+      OutputStream os = PrivilegedFileHelper.fileOutputStream(exportFile);
       session.exportSystemView(testNode.getPath(), os, false, false);
       os.close();
    }

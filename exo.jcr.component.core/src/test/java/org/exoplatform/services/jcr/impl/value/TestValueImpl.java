@@ -28,6 +28,7 @@ import org.exoplatform.services.jcr.impl.core.value.LongValue;
 import org.exoplatform.services.jcr.impl.core.value.StringValue;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -55,7 +56,7 @@ public class TestValueImpl extends TestCase
       File file = new File("target/testNewBinaryValue");
       if (file.exists())
          file.delete();
-      FileOutputStream out = new FileOutputStream(file);
+      FileOutputStream out = PrivilegedFileHelper.fileOutputStream(file);
       out.write(buf);
       out.close();
 

@@ -56,7 +56,6 @@ public class WorkspaceContainer extends ExoContainer
    public WorkspaceContainer(RepositoryContainer parent, WorkspaceEntry config) throws RepositoryException,
       RepositoryConfigurationException
    {
-
       // Before repository instantiation
       super(new MX4JComponentAdapterFactory(), parent);
 

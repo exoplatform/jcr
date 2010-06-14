@@ -22,6 +22,7 @@ import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.ByteArrayPersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.FilePersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -171,7 +172,7 @@ public class ValueFileIOHelper
       {
          public Object run() throws Exception
          {
-            OutputStream out = new FileOutputStream(file);
+            OutputStream out = PrivilegedFileHelper.fileOutputStream(file);
             try
             {
                out.write(value.getAsByteArray());
@@ -231,7 +232,7 @@ public class ValueFileIOHelper
                if (streamed.isPersisted())
                {
                   // already persisted in another Value, copy it to this Value
-                  copyClose(streamed.getAsStream(), new FileOutputStream(file));
+                  copyClose(streamed.getAsStream(), PrivilegedFileHelper.fileOutputStream(file));
                }
                else
                {
@@ -250,13 +251,13 @@ public class ValueFileIOHelper
                                  + tempFile.getAbsolutePath() + ". Destination: " + file.getAbsolutePath());
                         }
 
-                        copyClose(new FileInputStream(tempFile), new FileOutputStream(file));
+                        copyClose(new FileInputStream(tempFile), PrivilegedFileHelper.fileOutputStream(file));
                      }
                   }
                   else
                   {
                      // not spooled, use client InputStream
-                     copyClose(streamed.getStream(), new FileOutputStream(file));
+                     copyClose(streamed.getStream(), PrivilegedFileHelper.fileOutputStream(file));
                   }
 
                   // link this Value to file in VS
@@ -266,7 +267,7 @@ public class ValueFileIOHelper
             else
             {
                // copy from Value stream to the file, e.g. from FilePersistedValueData to this Value
-               copyClose(value.getAsStream(), new FileOutputStream(file));
+               copyClose(value.getAsStream(), PrivilegedFileHelper.fileOutputStream(file));
             }
 
             return null;

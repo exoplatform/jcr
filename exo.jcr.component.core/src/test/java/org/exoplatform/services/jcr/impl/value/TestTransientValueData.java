@@ -26,6 +26,7 @@ import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -71,12 +72,13 @@ public class TestTransientValueData extends TestCase
       File file = new File("target/testCreateFileStreamTransientValueData");
       if (file.exists())
          file.delete();
-      FileOutputStream out = new FileOutputStream(file);
+      FileOutputStream out = PrivilegedFileHelper.fileOutputStream(file);
       out.write(buf);
       out.close();
 
       FileInputStream fs1 = new FileInputStream(file);
-      TransientValueData vd = new TransientValueData(0, null, fs1, null, new FileCleaner(), 5, new File("target"), true);
+      TransientValueData vd =
+         new TransientValueData(0, null, fs1, null, new FileCleaner(), 5, new File("target"), true);
 
       // spool to file
       InputStream fs2 = vd.getAsStream();
@@ -118,7 +120,7 @@ public class TestTransientValueData extends TestCase
       // TODO not influenced here as will be spooled to byte array anyway
       //vd.setMaxBufferSize(5);
       //vd.setFileCleaner(new FileCleaner());
-      
+
       //
       InputStream fs2 = vd.getAsStream();
       assertEquals(10, vd.getLength());

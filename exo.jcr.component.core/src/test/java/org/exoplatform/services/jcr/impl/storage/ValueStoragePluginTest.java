@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.config.ValueStorageFilterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.util.ConfigurationHelper;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
@@ -229,7 +230,7 @@ public class ValueStoragePluginTest extends BaseStandaloneTest
       byte[] data = new byte[1024]; // 1Kb
 
       File testFile = File.createTempFile(IdGenerator.generate(), ".tmp");
-      FileOutputStream tempOut = new FileOutputStream(testFile);
+      FileOutputStream tempOut = PrivilegedFileHelper.fileOutputStream(testFile);
       Random random = new Random();
 
       for (int i = 0; i < sizeInb; i += 1024)

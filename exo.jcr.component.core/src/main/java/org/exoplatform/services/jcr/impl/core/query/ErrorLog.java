@@ -17,6 +17,7 @@
 
 package org.exoplatform.services.jcr.impl.core.query;
 
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -103,7 +104,7 @@ public class ErrorLog
          log.getParentFile().mkdirs();
          log.createNewFile();
 
-         out = new FileOutputStream(log).getChannel();
+         out = PrivilegedFileHelper.fileOutputStream(log).getChannel();
          out.position(1024 * fileSize - 1);
          out.write(ByteBuffer.wrap(new byte[]{0}));
          out.position(0);
@@ -111,7 +112,7 @@ public class ErrorLog
       }
       else
       {
-         out = new FileOutputStream(log, true).getChannel();
+         out = PrivilegedFileHelper.fileOutputStream(log, true).getChannel();
       }
    }
 
@@ -155,7 +156,7 @@ public class ErrorLog
       {
          out.truncate(0);
          out.close();
-         out = new FileOutputStream(logFile).getChannel();
+         out = PrivilegedFileHelper.fileOutputStream(logFile).getChannel();
          out.position(1024 * fileSize - 1);
          out.write(ByteBuffer.wrap(new byte[]{0}));
          out.position(0);
@@ -173,7 +174,7 @@ public class ErrorLog
    {
       if (out == null)
       {
-         FileOutputStream os = new FileOutputStream(logFile, false);
+         FileOutputStream os = PrivilegedFileHelper.fileOutputStream(logFile, false);
          out = os.getChannel();
       }
    }

@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.api.importing;
 
 import org.exoplatform.services.ext.action.InvocationContext;
 import org.exoplatform.services.jcr.core.ExtendedSession;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.impl.xml.importing.ContentImporter;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -252,7 +253,7 @@ public class TestSystemViewImport extends AbstractImportTest
 
       File tmp = File.createTempFile("__exojcr_TestSysView__", ".tmp");
 
-      OutputStream xmlOut = new FileOutputStream(tmp);
+      OutputStream xmlOut = PrivilegedFileHelper.fileOutputStream(tmp);
       sysview.getSession().exportSystemView(ref.getPath(), xmlOut, false, false);
       xmlOut.close();
 

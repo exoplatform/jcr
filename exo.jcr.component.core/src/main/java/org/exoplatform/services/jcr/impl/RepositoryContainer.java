@@ -64,9 +64,6 @@ import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import javax.jcr.NamespaceRegistry;
@@ -621,5 +618,5 @@ public class RepositoryContainer extends ExoContainer
       ntManager.start();
 
    }
-   
+
 }

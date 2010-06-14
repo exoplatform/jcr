@@ -24,6 +24,7 @@ import org.exoplatform.container.xml.ValueParam;
 import org.exoplatform.services.jcr.config.ConfigurationPersister;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryServiceConfiguration;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.naming.InitialContextInitializer;
 import org.jibx.runtime.BindingDirectory;
 import org.jibx.runtime.IBindingFactory;
@@ -35,7 +36,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -122,13 +122,14 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
     * (non-Javadoc)
     * @see org.exoplatform.services.jcr.config.RepositoryServiceConfiguration#isRetainable()
     */
+   @Override
    public boolean isRetainable()
    {
       if (configurationPersister != null)
       {
          return true;
       }
-      
+
       String strfileUri = param.getValue();
       URL fileURL;
       try
@@ -148,6 +149,7 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
     * 
     * @throws RepositoryException
     */
+   @Override
    public synchronized void retain() throws RepositoryException
    {
       try
@@ -173,7 +175,7 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
             File backUp = new File(sourceConfig.getAbsoluteFile() + "_" + format.format(new Date()));
             if (!sourceConfig.renameTo(backUp))
                throw new RepositoryException("Can't back up configuration on path " + sourceConfig.getAbsolutePath());
-            saveStream = new FileOutputStream(sourceConfig);
+            saveStream = PrivilegedFileHelper.fileOutputStream(sourceConfig);
          }
 
          IBindingFactory bfact = BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
@@ -258,7 +260,7 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
             // Will be merged extension repository configuration with configuration from persister.  
             if (!configExtensionPaths.isEmpty())
             {
-               String[] paths = (String[]) configExtensionPaths.toArray(new String[configExtensionPaths.size()]);
+               String[] paths = configExtensionPaths.toArray(new String[configExtensionPaths.size()]);
                for (int i = paths.length - 1; i >= 0; i--)
                {
                   merge(configurationService.getInputStream(paths[i]));
@@ -273,7 +275,7 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
          else
          {
 
-            String[] paths = (String[]) configExtensionPaths.toArray(new String[configExtensionPaths.size()]);
+            String[] paths = configExtensionPaths.toArray(new String[configExtensionPaths.size()]);
             for (int i = paths.length - 1; i >= 0; i--)
             {
                // We start from the last one because as it is the one with highest priorityn

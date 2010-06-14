@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.ByteArrayPersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.FilePersistedValueData;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -87,7 +88,7 @@ public class TestFileValueIO extends TestCase
       File file = new File("target/testReadByteArrayValueData");
       if (file.exists())
          file.delete();
-      FileOutputStream out = new FileOutputStream(file);
+      FileOutputStream out = PrivilegedFileHelper.fileOutputStream(file);
       out.write(buf);
       out.close();
 
@@ -109,7 +110,7 @@ public class TestFileValueIO extends TestCase
       File file = new File("target/testReadFileValueData");
       if (file.exists())
          file.delete();
-      FileOutputStream out = new FileOutputStream(file);
+      FileOutputStream out = PrivilegedFileHelper.fileOutputStream(file);
       out.write(buf);
       out.close();
 

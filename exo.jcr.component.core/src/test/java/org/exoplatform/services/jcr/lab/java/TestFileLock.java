@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.lab.java;
 
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
+
 import junit.framework.TestCase;
 
 import java.io.File;
@@ -45,7 +47,7 @@ public class TestFileLock extends TestCase
 
       File f = new File("\\\\storm\\public\\file1.tmp");
       f.createNewFile();
-      FileOutputStream fout = new FileOutputStream(f);
+      FileOutputStream fout = PrivilegedFileHelper.fileOutputStream(f);
       FileChannel fc = fout.getChannel();
 
       ByteBuffer buff = ByteBuffer.wrap("test-file1".getBytes());
@@ -65,7 +67,7 @@ public class TestFileLock extends TestCase
          System.out.println(new String(b, 0, res));
 
       // lock file
-      fout = new FileOutputStream(f);
+      fout = PrivilegedFileHelper.fileOutputStream(f);
       fc = fout.getChannel();
       FileLock lock = fc.lock();
 
@@ -74,12 +76,13 @@ public class TestFileLock extends TestCase
       // check another lock
       Thread another = new Thread()
       {
+         @Override
          public void run()
          {
             try
             {
                Thread.sleep(25);
-               FileOutputStream fout1 = new FileOutputStream(new File("\\\\storm\\public\\file1.tmp"));
+               FileOutputStream fout1 = PrivilegedFileHelper.fileOutputStream(new File("\\\\storm\\public\\file1.tmp"));
                FileChannel fc1 = fout1.getChannel();
                try
                {
@@ -135,7 +138,7 @@ public class TestFileLock extends TestCase
       File f = new File("D:\\tmp\\file2.tmp");
 
       System.out.println("Try open file for write " + System.currentTimeMillis());
-      FileOutputStream fout = new FileOutputStream(f);
+      FileOutputStream fout = PrivilegedFileHelper.fileOutputStream(f);
       FileChannel fc = fout.getChannel();
       System.out.println("Try lock file " + System.currentTimeMillis());
       FileLock lock = fc.lock();
@@ -172,7 +175,7 @@ public class TestFileLock extends TestCase
       // lock file for write
       Thread.sleep(timeout);
       System.out.println("Try open file for write " + System.currentTimeMillis());
-      fout = new FileOutputStream(f);
+      fout = PrivilegedFileHelper.fileOutputStream(f);
       fc = fout.getChannel();
       System.out.println("Try lock file " + System.currentTimeMillis());
       lock = fc.lock();
@@ -219,7 +222,7 @@ public class TestFileLock extends TestCase
 
       // write new content
       System.out.println("Try open file for write " + System.currentTimeMillis());
-      FileOutputStream fout = new FileOutputStream(f);
+      FileOutputStream fout = PrivilegedFileHelper.fileOutputStream(f);
       FileChannel fc = fout.getChannel();
       System.out.println("Try lock file " + System.currentTimeMillis());
       FileLock lock = fc.lock();

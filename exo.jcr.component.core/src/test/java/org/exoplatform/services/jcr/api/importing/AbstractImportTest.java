@@ -22,6 +22,7 @@ import org.exoplatform.services.jcr.JcrAPIBaseTest;
 import org.exoplatform.services.jcr.core.ExtendedSession;
 import org.exoplatform.services.jcr.core.ExtendedWorkspace;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -326,7 +327,7 @@ public abstract class AbstractImportTest extends JcrAPIBaseTest
    {
       ExtendedSession extendedSession = (ExtendedSession)rootNode.getSession();
 
-      OutputStream outStream = new FileOutputStream(content);
+      OutputStream outStream = PrivilegedFileHelper.fileOutputStream(content);
       if (isSystemView)
       {
 

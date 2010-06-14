@@ -43,6 +43,7 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
 import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.log.ExoLogger;
@@ -118,6 +119,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
          return buf.length;
       }
 
+      @Override
       public void close()
       {
          buf = null;
@@ -182,6 +184,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
          this.string.append(text);
       }
 
+      @Override
       boolean isText()
       {
          return true;
@@ -255,7 +258,9 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
          {
             if (buffer.length >= maxBufferSize)
             {
-               buff = new FileOutputStream(tmpFile = SpoolFile.createTempFile("jcrrestorewi", ".tmp", tempDir));
+               buff =
+                  PrivilegedFileHelper.fileOutputStream(tmpFile =
+                     SpoolFile.createTempFile("jcrrestorewi", ".tmp", tempDir));
             }
             else
             {
@@ -265,7 +270,9 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
          else if (tmpFile == null && (((TempOutputStream)buff).getSize() + buffer.length) > maxBufferSize)
          {
             // spool to file
-            FileOutputStream fout = new FileOutputStream(tmpFile = SpoolFile.createTempFile("jcrrestorewi", ".tmp", tempDir));
+            FileOutputStream fout =
+               PrivilegedFileHelper.fileOutputStream(tmpFile =
+                  SpoolFile.createTempFile("jcrrestorewi", ".tmp", tempDir));
             fout.write(((TempOutputStream)buff).getBuffer());
             buff.close();
             buff = fout; // use file
@@ -409,7 +416,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
          throw new RepositoryConfigurationException("Workspace (" + workspaceName
             + ") RestoreIntializer should have mandatory parameter "
             + SysViewWorkspaceInitializer.RESTORE_PATH_PARAMETER);
-      
+
       this.tempDir = new File(System.getProperty("java.io.tmpdir"));
    }
 
@@ -455,7 +462,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
          config.getContainer().getParameterInteger(WorkspaceDataContainer.MAXBUFFERSIZE_PROP,
             WorkspaceDataContainer.DEF_MAXBUFFERSIZE);
       this.restorePath = restorePath;
-      
+
       this.tempDir = new File(System.getProperty("java.io.tmpdir"));
    }
 
@@ -771,7 +778,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
                            }
                            else
                            {
-                              
+
                               File pfile = propertyValue.getFile();
                               if (pfile != null)
                               {

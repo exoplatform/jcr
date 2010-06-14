@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectWriter;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.EOFException;
 import java.io.File;
@@ -42,7 +43,7 @@ public class TestEOFException extends JcrImplSerializationBaseTest
       final byte[] buffer = createBLOBTempData(45);
 
       File test = File.createTempFile("testEOF", "");
-      ObjectWriter ow = new ObjectWriterImpl(new FileOutputStream(test));
+      ObjectWriter ow = new ObjectWriterImpl(PrivilegedFileHelper.fileOutputStream(test));
 
       ow.write(buffer);
       ow.close();
@@ -72,7 +73,7 @@ public class TestEOFException extends JcrImplSerializationBaseTest
    {
 
       File test = File.createTempFile("testEOF", "");
-      ObjectWriter ow = new ObjectWriterImpl(new FileOutputStream(test));
+      ObjectWriter ow = new ObjectWriterImpl(PrivilegedFileHelper.fileOutputStream(test));
 
       ow.writeBoolean(true);
       ow.close();
@@ -101,7 +102,7 @@ public class TestEOFException extends JcrImplSerializationBaseTest
    {
 
       File test = File.createTempFile("testEOF", "");
-      ObjectWriter ow = new ObjectWriterImpl(new FileOutputStream(test));
+      ObjectWriter ow = new ObjectWriterImpl(PrivilegedFileHelper.fileOutputStream(test));
 
       ow.writeInt(24);
       ow.close();
@@ -131,7 +132,7 @@ public class TestEOFException extends JcrImplSerializationBaseTest
    {
 
       File test = File.createTempFile("testEOF", "");
-      ObjectWriter ow = new ObjectWriterImpl(new FileOutputStream(test));
+      ObjectWriter ow = new ObjectWriterImpl(PrivilegedFileHelper.fileOutputStream(test));
 
       ow.writeLong(24);
       ow.close();

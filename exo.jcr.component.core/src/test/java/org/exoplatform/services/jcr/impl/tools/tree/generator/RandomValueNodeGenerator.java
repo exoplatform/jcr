@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.tools.tree.generator;
 
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -176,7 +177,7 @@ public class RandomValueNodeGenerator extends WeightNodeGenerator
       byte[] data = new byte[1024]; // 1Kb
 
       File testFile = File.createTempFile("randomsizefile", ".tmp");
-      FileOutputStream tempOut = new FileOutputStream(testFile);
+      FileOutputStream tempOut = PrivilegedFileHelper.fileOutputStream(testFile);
 
       for (int i = 0; i < sizeInb; i += 1024)
       {

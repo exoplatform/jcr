@@ -39,16 +39,78 @@ public class PrivilegedFileHelper
 
    public static FileOutputStream fileOutputStream(final File file) throws FileNotFoundException
    {
-      PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
+      PrivilegedExceptionAction<FileOutputStream> action = new PrivilegedExceptionAction<FileOutputStream>()
       {
-         public Object run() throws Exception
+         public FileOutputStream run() throws Exception
          {
             return new FileOutputStream(file);
          }
       };
       try
       {
-         return (FileOutputStream)AccessController.doPrivileged(action);
+         return AccessController.doPrivileged(action);
+      }
+      catch (PrivilegedActionException pae)
+      {
+         Throwable cause = pae.getCause();
+         if (cause instanceof FileNotFoundException)
+         {
+            throw (FileNotFoundException)cause;
+         }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
+      }
+   }
+
+   public static FileOutputStream fileOutputStream(final String name) throws FileNotFoundException
+   {
+      PrivilegedExceptionAction<FileOutputStream> action = new PrivilegedExceptionAction<FileOutputStream>()
+      {
+         public FileOutputStream run() throws Exception
+         {
+            return new FileOutputStream(name);
+         }
+      };
+      try
+      {
+         return AccessController.doPrivileged(action);
+      }
+      catch (PrivilegedActionException pae)
+      {
+         Throwable cause = pae.getCause();
+         if (cause instanceof FileNotFoundException)
+         {
+            throw (FileNotFoundException)cause;
+         }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
+      }
+   }
+
+   public static FileOutputStream fileOutputStream(final File file, final boolean append) throws FileNotFoundException
+   {
+      PrivilegedExceptionAction<FileOutputStream> action = new PrivilegedExceptionAction<FileOutputStream>()
+      {
+         public FileOutputStream run() throws Exception
+         {
+            return new FileOutputStream(file, append);
+         }
+      };
+      try
+      {
+         return AccessController.doPrivileged(action);
       }
       catch (PrivilegedActionException pae)
       {
@@ -70,16 +132,16 @@ public class PrivilegedFileHelper
 
    public static FileInputStream fileInputStream(final File file) throws FileNotFoundException
    {
-      PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
+      PrivilegedExceptionAction<FileInputStream> action = new PrivilegedExceptionAction<FileInputStream>()
       {
-         public Object run() throws Exception
+         public FileInputStream run() throws Exception
          {
             return new FileInputStream(file);
          }
       };
       try
       {
-         return (FileInputStream)AccessController.doPrivileged(action);
+         return AccessController.doPrivileged(action);
       }
       catch (PrivilegedActionException pae)
       {
@@ -102,16 +164,16 @@ public class PrivilegedFileHelper
    public static File createTempFile(final String prefix, final String suffix, final File directory)
       throws IllegalArgumentException, IOException
    {
-      PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
+      PrivilegedExceptionAction<File> action = new PrivilegedExceptionAction<File>()
       {
-         public Object run() throws Exception
+         public File run() throws Exception
          {
             return File.createTempFile(prefix, suffix, directory);
          }
       };
       try
       {
-         return (File)AccessController.doPrivileged(action);
+         return AccessController.doPrivileged(action);
       }
       catch (PrivilegedActionException pae)
       {
@@ -138,16 +200,16 @@ public class PrivilegedFileHelper
    public static File createTempFile(final String prefix, final String suffix) throws IllegalArgumentException,
       IOException
    {
-      PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
+      PrivilegedExceptionAction<File> action = new PrivilegedExceptionAction<File>()
       {
-         public Object run() throws Exception
+         public File run() throws Exception
          {
             return File.createTempFile(prefix, suffix);
          }
       };
       try
       {
-         return (File)AccessController.doPrivileged(action);
+         return AccessController.doPrivileged(action);
       }
       catch (PrivilegedActionException pae)
       {
@@ -173,14 +235,14 @@ public class PrivilegedFileHelper
 
    public static long length(final File file)
    {
-      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
+      PrivilegedAction<Long> action = new PrivilegedAction<Long>()
       {
-         public Object run()
+         public Long run()
          {
             return new Long(file.length());
          }
       };
-      return (Long)AccessController.doPrivileged(action);
+      return AccessController.doPrivileged(action);
    }
 
    public static void deleteOnExit(final File file)
@@ -198,38 +260,38 @@ public class PrivilegedFileHelper
 
    public static String getAbsolutePath(final File file)
    {
-      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
+      PrivilegedAction<String> action = new PrivilegedAction<String>()
       {
-         public Object run()
+         public String run()
          {
             return file.getAbsolutePath();
          }
       };
-      return (String)AccessController.doPrivileged(action);
+      return AccessController.doPrivileged(action);
    }
 
    public static boolean delete(final File file)
    {
-      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
+      PrivilegedAction<Boolean> action = new PrivilegedAction<Boolean>()
       {
-         public Object run()
+         public Boolean run()
          {
             return file.delete();
          }
       };
-      return (Boolean)AccessController.doPrivileged(action);
+      return AccessController.doPrivileged(action);
    }
 
    public static boolean exists(final File file)
    {
-      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
+      PrivilegedAction<Boolean> action = new PrivilegedAction<Boolean>()
       {
-         public Object run()
+         public Boolean run()
          {
             return file.exists();
          }
       };
-      return (Boolean)AccessController.doPrivileged(action);
+      return AccessController.doPrivileged(action);
    }
 
    public static void mkdirs(final File file)
@@ -247,37 +309,37 @@ public class PrivilegedFileHelper
 
    public static boolean renameTo(final File srcFile, final File dstfile)
    {
-      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
+      PrivilegedAction<Boolean> action = new PrivilegedAction<Boolean>()
       {
-         public Object run()
+         public Boolean run()
          {
             return new Boolean(srcFile.renameTo(dstfile));
          }
       };
-      return (Boolean)AccessController.doPrivileged(action);
+      return AccessController.doPrivileged(action);
    }
 
    public static File file(final String pathname)
    {
-      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
+      PrivilegedAction<File> action = new PrivilegedAction<File>()
       {
-         public Object run()
+         public File run()
          {
             return new File(pathname);
          }
       };
-      return (File)AccessController.doPrivileged(action);
+      return AccessController.doPrivileged(action);
    }
 
    public static String[] list(final File file)
    {
-      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
+      PrivilegedAction<String[]> action = new PrivilegedAction<String[]>()
       {
-         public Object run()
+         public String[] run()
          {
             return file.list();
          }
       };
-      return (String[])AccessController.doPrivileged(action);
+      return AccessController.doPrivileged(action);
    }
 }

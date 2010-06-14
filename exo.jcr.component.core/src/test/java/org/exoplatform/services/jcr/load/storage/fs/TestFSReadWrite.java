@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.load.storage.fs;
 
 import junit.framework.TestCase;
 
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.util.SIDGenerator;
 
 import java.io.File;
@@ -105,6 +106,7 @@ public class TestFSReadWrite extends TestCase
 
    }
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
@@ -114,6 +116,7 @@ public class TestFSReadWrite extends TestCase
       testRoot.deleteOnExit();
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
       long time = System.currentTimeMillis();
@@ -185,7 +188,7 @@ public class TestFSReadWrite extends TestCase
          try
          {
             // f.createNewFile();
-            FileOutputStream fos = new FileOutputStream(f);
+            FileOutputStream fos = PrivilegedFileHelper.fileOutputStream(f);
             try
             {
                fos.write(("File content " + f.getAbsolutePath()).getBytes());
@@ -216,7 +219,7 @@ public class TestFSReadWrite extends TestCase
          try
          {
             // f.createNewFile();
-            FileOutputStream fos = new FileOutputStream(f);
+            FileOutputStream fos = PrivilegedFileHelper.fileOutputStream(f);
             try
             {
                fos.write(("File content " + f.getAbsolutePath()).getBytes());
@@ -258,7 +261,7 @@ public class TestFSReadWrite extends TestCase
          try
          {
             // f.createNewFile();
-            FileOutputStream fos = new FileOutputStream(f);
+            FileOutputStream fos = PrivilegedFileHelper.fileOutputStream(f);
             try
             {
                fos.write(("File content " + f.getAbsolutePath()).getBytes());
@@ -304,7 +307,7 @@ public class TestFSReadWrite extends TestCase
          try
          {
             // f.createNewFile();
-            FileOutputStream fos = new FileOutputStream(f);
+            FileOutputStream fos = PrivilegedFileHelper.fileOutputStream(f);
             try
             {
                fos.write(("File content " + f.getAbsolutePath()).getBytes());
@@ -347,7 +350,7 @@ public class TestFSReadWrite extends TestCase
          File f = new File(dir.getAbsolutePath() + File.separator + fileName);
          try
          {
-            FileOutputStream fos = new FileOutputStream(f);
+            FileOutputStream fos = PrivilegedFileHelper.fileOutputStream(f);
             try
             {
                fos.write(("qazws").getBytes());

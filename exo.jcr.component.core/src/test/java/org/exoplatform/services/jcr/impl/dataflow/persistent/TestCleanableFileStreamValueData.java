@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.impl.dataflow.persistent;
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.impl.util.io.SwapFile;
 
 import java.io.File;
@@ -86,7 +87,7 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
       testCleaner = new FileCleaner(CLEANER_TIMEOUT);
 
       SwapFile sf = SwapFile.get(parentDir, FILE_NAME);
-      FileOutputStream fout = new FileOutputStream(sf);
+      FileOutputStream fout = PrivilegedFileHelper.fileOutputStream(sf);
       fout.write("testFileCleaned".getBytes());
       fout.close();
       sf.spoolDone();

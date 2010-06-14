@@ -23,6 +23,7 @@ import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.util.ConfigurationHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -69,7 +70,7 @@ public class TestWorkspaceRestore extends JcrImplBaseTest
 
       File content = File.createTempFile("data", ".xml");
       content.deleteOnExit();
-      OutputStream os = new BufferedOutputStream(new FileOutputStream(content));
+      OutputStream os = new BufferedOutputStream(PrivilegedFileHelper.fileOutputStream(content));
       defSession.exportSystemView(defRoot.getPath(), os, false, false);
       os.close();
       defSession.logout();
@@ -137,7 +138,7 @@ public class TestWorkspaceRestore extends JcrImplBaseTest
 
       File content = File.createTempFile("data", ".xml");
       content.deleteOnExit();
-      OutputStream os = new BufferedOutputStream(new FileOutputStream(content));
+      OutputStream os = new BufferedOutputStream(PrivilegedFileHelper.fileOutputStream(content));
       defSession.exportSystemView(node1.getPath(), os, false, false);
       os.close();
       defSession.logout();

@@ -46,6 +46,7 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 import org.exoplatform.services.jcr.impl.storage.value.fs.operations.ValueFileIOHelper;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
 
 /**
@@ -104,7 +105,7 @@ public abstract class JcrImplSerializationBaseTest extends JcrImplBaseTest
    protected File serializeLogs(List<TransactionChangesLog> logs) throws IOException, UnknownClassIdException
    {
       File jcrfile = File.createTempFile("jcr", "test");
-      ObjectWriterImpl jcrout = new ObjectWriterImpl(new FileOutputStream(jcrfile));
+      ObjectWriterImpl jcrout = new ObjectWriterImpl(PrivilegedFileHelper.fileOutputStream(jcrfile));
 
       TransactionChangesLogWriter wr = new TransactionChangesLogWriter();
       for (TransactionChangesLog tcl : logs)
@@ -129,7 +130,7 @@ public abstract class JcrImplSerializationBaseTest extends JcrImplBaseTest
          while (true)
          {
             TransactionChangesLog obj =
-               (TransactionChangesLog)(new TransactionChangesLogReader(fileCleaner, maxBufferSize, holder)).read(jcrin);
+               (new TransactionChangesLogReader(fileCleaner, maxBufferSize, holder)).read(jcrin);
             // TransactionChangesLog obj = new TransactionChangesLog();
             // obj.readObject(jcrin);
             readed.add(obj);
@@ -139,8 +140,7 @@ public abstract class JcrImplSerializationBaseTest extends JcrImplBaseTest
       {
          // ok
       }
-      
-      
+
       //Imitation of save.
       imitationSave(readed);
 
@@ -159,34 +159,37 @@ public abstract class JcrImplSerializationBaseTest extends JcrImplBaseTest
       for (TransactionChangesLog tLog : readed)
       {
          ChangesLogIterator it = tLog.getLogIterator();
-         
-         while (it.hasNextLog()) 
+
+         while (it.hasNextLog())
          {
             PlainChangesLog pLog = it.nextLog();
-            
+
             for (ItemState state : pLog.getAllStates())
             {
                ItemData itemData = state.getData();
-               
+
                if (!itemData.isNode())
                {
                   PropertyData propData = (PropertyData)itemData;
-                  
-                  for(ValueData valueData : propData.getValues())
+
+                  for (ValueData valueData : propData.getValues())
                   {
-                     if (valueData instanceof StreamPersistedValueData) {
+                     if (valueData instanceof StreamPersistedValueData)
+                     {
                         // imitation of JCR save
-                        if (((StreamPersistedValueData) valueData).getTempFile() != null)
+                        if (((StreamPersistedValueData)valueData).getTempFile() != null)
                         {
-                         ((StreamPersistedValueData) valueData).setPersistedFile(((StreamPersistedValueData) valueData).getTempFile());
+                           ((StreamPersistedValueData)valueData).setPersistedFile(((StreamPersistedValueData)valueData)
+                              .getTempFile());
                         }
                         else
                         {
                            File file = File.createTempFile("tempFile", "tmp");
                            file.deleteOnExit();
-                           
-                           copy(((StreamPersistedValueData) valueData).getStream(), new FileOutputStream(file));
-                           ((StreamPersistedValueData) valueData).setPersistedFile(file);
+
+                           copy(((StreamPersistedValueData)valueData).getStream(), PrivilegedFileHelper
+                              .fileOutputStream(file));
+                           ((StreamPersistedValueData)valueData).setPersistedFile(file);
                         }
                      }
                   }
@@ -195,7 +198,7 @@ public abstract class JcrImplSerializationBaseTest extends JcrImplBaseTest
          }
       }
    }
-   
+
    protected long copy(InputStream in, OutputStream out) throws IOException
    {
       // compare classes as in Java6 Channels.newChannel(), Java5 has a bug in newChannel().

@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
 import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -97,9 +98,9 @@ public class TestJCRSerializationVersionRestore extends JcrImplSerializationBase
       tempFile2.deleteOnExit();
       tempFile3.deleteOnExit();
 
-      FileOutputStream fos = new FileOutputStream(tempFile);
-      FileOutputStream fos2 = new FileOutputStream(tempFile2);
-      FileOutputStream fos3 = new FileOutputStream(tempFile3);
+      FileOutputStream fos = PrivilegedFileHelper.fileOutputStream(tempFile);
+      FileOutputStream fos2 = PrivilegedFileHelper.fileOutputStream(tempFile2);
+      FileOutputStream fos3 = PrivilegedFileHelper.fileOutputStream(tempFile3);
 
       String content = "this is the content #1";
       String content2 = "this is the content #2_";

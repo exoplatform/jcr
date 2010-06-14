@@ -25,6 +25,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import org.exoplatform.services.jcr.JcrImplBaseTest;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 /**
  * Created by The eXo Platform SAS.
@@ -35,17 +36,16 @@ import org.exoplatform.services.jcr.JcrImplBaseTest;
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a>
  * @version $Id$
  */
-public class TestByteArrayPersistedValueDataSerialization
-   extends JcrImplBaseTest
+public class TestByteArrayPersistedValueDataSerialization extends JcrImplBaseTest
 {
    public void testBAPVDSerialization() throws Exception
    {
-    
-      byte []buf = new byte[124578];
-      
-      for (int i = 0; i< buf.length; i++)
-         buf[i] = (byte) (Math.random()*256);
-      
+
+      byte[] buf = new byte[124578];
+
+      for (int i = 0; i < buf.length; i++)
+         buf[i] = (byte)(Math.random() * 256);
+
       // Create ValueData instants
       ByteArrayPersistedValueData vd = new ByteArrayPersistedValueData(11, buf);
 
@@ -53,21 +53,21 @@ public class TestByteArrayPersistedValueDataSerialization
       out.deleteOnExit();
 
       //serialize
-      ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(out));
+      ObjectOutputStream oos = new ObjectOutputStream(PrivilegedFileHelper.fileOutputStream(out));
       oos.writeObject(vd);
       oos.flush();
       oos.close();
 
       //deserialize
       ObjectInputStream ois = new ObjectInputStream(new FileInputStream(out));
-      ByteArrayPersistedValueData deserializedValueData = (ByteArrayPersistedValueData) ois.readObject();
+      ByteArrayPersistedValueData deserializedValueData = (ByteArrayPersistedValueData)ois.readObject();
 
       //check
       assertNotNull(deserializedValueData);
       assertEquals(vd.getLength(), deserializedValueData.getLength());
       assertEquals(vd.getOrderNumber(), deserializedValueData.getOrderNumber());
-      
+
       for (int j = 0; j < vd.getAsByteArray().length; j++)
-        assertEquals(vd.getAsByteArray()[j], deserializedValueData.getAsByteArray()[j]);
+         assertEquals(vd.getAsByteArray()[j], deserializedValueData.getAsByteArray()[j]);
    }
 }

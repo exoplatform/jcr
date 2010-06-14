@@ -24,6 +24,7 @@ import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TesterTransientValueData;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -75,7 +76,7 @@ public class TestFileIOChannel extends TestCase
       file.deleteOnExit();
       if (file.exists())
          file.delete();
-      FileOutputStream out = new FileOutputStream(file);
+      FileOutputStream out = PrivilegedFileHelper.fileOutputStream(file);
       out.write(buf);
       out.close();
 
@@ -84,7 +85,7 @@ public class TestFileIOChannel extends TestCase
       file = new File(rootDir, "testReadFromIOChannel1");
       if (file.exists())
          file.delete();
-      out = new FileOutputStream(file);
+      out = PrivilegedFileHelper.fileOutputStream(file);
       out.write(buf);
       out.close();
 

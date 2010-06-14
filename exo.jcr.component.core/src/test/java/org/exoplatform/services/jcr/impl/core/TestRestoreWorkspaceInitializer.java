@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.impl.core;
 
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -73,7 +74,7 @@ public class TestRestoreWorkspaceInitializer extends JcrImplBaseTest
       f.renameTo(new File("./sv_export_binary.bin"));
 
       File outf = new File("./sv_export_root.xml");
-      FileOutputStream out = new FileOutputStream(outf);
+      FileOutputStream out = PrivilegedFileHelper.fileOutputStream(outf);
       session.exportWorkspaceSystemView(out, false, false);
       out.close();
    }
@@ -97,7 +98,7 @@ public class TestRestoreWorkspaceInitializer extends JcrImplBaseTest
       {
          InputStream is =
             ws1root.getProperty("1_common/cargo/cargo/0.5/cargo-0.5.jar/jcr:content/jcr:data").getStream();
-         FileOutputStream fout = new FileOutputStream("./cargo-0.5.jar");
+         FileOutputStream fout = PrivilegedFileHelper.fileOutputStream("./cargo-0.5.jar");
          int r = -1;
          byte[] b = new byte[1024];
          while ((r = is.read(b)) >= 0)

@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl.xml;
 
 import org.apache.ws.commons.util.Base64;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -26,7 +27,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -129,6 +129,7 @@ public class BufferedDecoder extends Base64.Decoder
    /**
     * @return string representation for buffer
     */
+   @Override
    public String toString()
    {
       if (out instanceof ByteArrayOutputStream)
@@ -178,7 +179,7 @@ public class BufferedDecoder extends Base64.Decoder
       byte[] data = ((ByteArrayOutputStream)out).toByteArray();
       fileBuffer = File.createTempFile("decoderBuffer", ".tmp");
       fileBuffer.deleteOnExit();
-      out = new BufferedOutputStream(new FileOutputStream(fileBuffer), bufferSize);
+      out = new BufferedOutputStream(PrivilegedFileHelper.fileOutputStream(fileBuffer), bufferSize);
       out.write(data);
    }
 
@@ -195,6 +196,7 @@ public class BufferedDecoder extends Base64.Decoder
     * @exception IOException
     *              if an I/O error occurs.
     */
+   @Override
    protected void writeBuffer(byte[] buffer, int start, int length) throws IOException
    {
       if (out instanceof ByteArrayOutputStream)

@@ -27,6 +27,7 @@ import org.exoplatform.services.jcr.config.WorkspaceInitializerEntry;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.core.SysViewWorkspaceInitializer;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
 
 import java.io.File;
@@ -56,7 +57,7 @@ public class ExportWorkspaceSystemViewTest extends BaseUsecasesTest
 
          // 1-st export
          File f1 = new File("target/1.xml");
-         sessionWS1.exportWorkspaceSystemView(new FileOutputStream(f1), false, false);
+         sessionWS1.exportWorkspaceSystemView(PrivilegedFileHelper.fileOutputStream(f1), false, false);
 
          // 1-st import
          WorkspaceEntry ws1_restore_1 =
@@ -77,7 +78,7 @@ public class ExportWorkspaceSystemViewTest extends BaseUsecasesTest
          // 2-st export
          SessionImpl back1 = (SessionImpl)repository.login(credentials, "ws1_restore_1");
          File f2 = new File("target/2.xml");
-         back1.exportWorkspaceSystemView(new FileOutputStream(f2), false, false);
+         back1.exportWorkspaceSystemView(PrivilegedFileHelper.fileOutputStream(f2), false, false);
 
          // 2-st import
          WorkspaceEntry ws1_restore_2 =

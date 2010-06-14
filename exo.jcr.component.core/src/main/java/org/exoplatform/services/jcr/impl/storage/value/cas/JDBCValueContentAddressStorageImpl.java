@@ -24,6 +24,9 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -98,17 +101,16 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
     */
    private static final String DB2_PK_CONSTRAINT_DETECT_PATTERN =
       "(.*DB2 SQL error+.*SQLCODE: -803+.*SQLSTATE: 23505+.*%s.*)+?";
-   
+
    /**
     * MYSQL_PK_CONSTRAINT_DETECT_PATTERN.
     */
-   private static final String H2_PK_CONSTRAINT_DETECT_PATTERN = 
-      "(.*JdbcSQLException.*violation.*PRIMARY_KEY_.*)";
-   
+   private static final String H2_PK_CONSTRAINT_DETECT_PATTERN = "(.*JdbcSQLException.*violation.*PRIMARY_KEY_.*)";
+
    /**
     * H2_PK_CONSTRAINT_DETECT.
     */
-   private static final Pattern H2_PK_CONSTRAINT_DETECT = 
+   private static final Pattern H2_PK_CONSTRAINT_DETECT =
       Pattern.compile(H2_PK_CONSTRAINT_DETECT_PATTERN, Pattern.CASE_INSENSITIVE);
 
    /**
@@ -158,7 +160,34 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
          Statement st = null;
          try
          {
-            conn = dataSource.getConnection();
+            PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
+            {
+               public Object run() throws Exception
+               {
+                  return dataSource.getConnection();
+               }
+            };
+            try
+            {
+               conn = (Connection)AccessController.doPrivileged(action);
+            }
+            catch (PrivilegedActionException pae)
+            {
+               Throwable cause = pae.getCause();
+               if (cause instanceof SQLException)
+               {
+                  throw (SQLException)cause;
+               }
+               else if (cause instanceof RuntimeException)
+               {
+                  throw (RuntimeException)cause;
+               }
+               else
+               {
+                  throw new RuntimeException(cause);
+               }
+            }
+
             DatabaseMetaData dbMetaData = conn.getMetaData();
 
             String dialect = props.getProperty(JDBC_DIALECT_PARAM);
@@ -352,7 +381,7 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
       {
          return DB2_PK_CONSTRAINT_DETECT.matcher(err).find();
       }
-      else if (DBConstants.DB_DIALECT_H2.equalsIgnoreCase(dialect)) 
+      else if (DBConstants.DB_DIALECT_H2.equalsIgnoreCase(dialect))
       {
          return H2_PK_CONSTRAINT_DETECT.matcher(err).find();
       }

@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.load.blob;
 
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -73,7 +74,7 @@ public class TestExportBigFiles extends JcrAPIBaseTest
       // Exporting repository content
       File file = File.createTempFile("tesSysExport", ".xml");
 
-      BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(file));
+      BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(PrivilegedFileHelper.fileOutputStream(file));
       session.exportSystemView(testLocalBigFiles.getPath(), bufferedOutputStream, false, false);
       bufferedOutputStream.flush();
       bufferedOutputStream.close();
@@ -137,7 +138,7 @@ public class TestExportBigFiles extends JcrAPIBaseTest
       // Exporting repository content
       File file = File.createTempFile("tesDocExport", ".xml");
 
-      BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(file));
+      BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(PrivilegedFileHelper.fileOutputStream(file));
       session.exportDocumentView(testLocalBigFiles.getPath(), bufferedOutputStream, false, false);
       bufferedOutputStream.flush();
       bufferedOutputStream.close();
@@ -197,7 +198,7 @@ public class TestExportBigFiles extends JcrAPIBaseTest
       // Exporting repository content
       File file = File.createTempFile("tesSysExport", ".xml");
 
-      BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(file));
+      BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(PrivilegedFileHelper.fileOutputStream(file));
       session.exportSystemView(testLocalBigFiles.getPath(), bufferedOutputStream, false, false);
       bufferedOutputStream.flush();
       bufferedOutputStream.close();
@@ -267,7 +268,7 @@ public class TestExportBigFiles extends JcrAPIBaseTest
       // Exporting repository content
       File file = File.createTempFile("tesSysExport", ".xml");
 
-      BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(file));
+      BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(PrivilegedFileHelper.fileOutputStream(file));
       session.exportSystemView(testLocalBigFiles.getPath(), bufferedOutputStream, false, false);
       bufferedOutputStream.flush();
       bufferedOutputStream.close();
@@ -301,13 +302,14 @@ public class TestExportBigFiles extends JcrAPIBaseTest
 
    }
 
+   @Override
    protected File createBLOBTempFile(int sizeInb) throws IOException
    {
       // create test file
       byte[] data = new byte[1024]; // 1Kb
 
       File testFile = File.createTempFile("exportImportFileTest", ".tmp");
-      FileOutputStream tempOut = new FileOutputStream(testFile);
+      FileOutputStream tempOut = PrivilegedFileHelper.fileOutputStream(testFile);
       Random random = new Random();
 
       for (int i = 0; i < sizeInb; i += 1024)

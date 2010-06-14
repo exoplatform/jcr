@@ -40,6 +40,7 @@ import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
 import org.exoplatform.services.jcr.impl.storage.value.ValueStorageNotFoundException;
 import org.exoplatform.services.jcr.impl.storage.value.fs.operations.ValueFileIOHelper;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.impl.util.io.SwapFile;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
@@ -49,7 +50,6 @@ import org.exoplatform.services.log.Log;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -82,6 +82,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       /**
        * {@inheritDoc}
        */
+      @Override
       public void writeStreamedValue(File file, ValueData value) throws IOException
       {
          super.writeStreamedValue(file, value);
@@ -716,7 +717,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          if (LOG.isDebugEnabled())
          {
             LOG.debug("Node deleted " + data.getQPath().getAsString() + ", " + data.getIdentifier() + ", "
-               + ((NodeData)data).getPrimaryTypeName().getAsString());
+               + (data).getPrimaryTypeName().getAsString());
          }
 
       }
@@ -758,12 +759,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
          if (LOG.isDebugEnabled())
          {
-            LOG.debug("Property deleted "
-               + data.getQPath().getAsString()
-               + ", "
-               + data.getIdentifier()
-               + (((PropertyData)data).getValues() != null ? ", values count: "
-                  + ((PropertyData)data).getValues().size() : ", NULL data"));
+            LOG.debug("Property deleted " + data.getQPath().getAsString() + ", " + data.getIdentifier()
+               + ((data).getValues() != null ? ", values count: " + (data).getValues().size() : ", NULL data"));
          }
 
       }
@@ -2313,7 +2310,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
                      buffer = null;
                      break;
                   }
-                  out = new FileOutputStream(swapFile);
+                  out = PrivilegedFileHelper.fileOutputStream(swapFile);
                   out.write(buffer, 0, len);
                   out.write(spoolBuffer, 0, read);
                   buffer = null;

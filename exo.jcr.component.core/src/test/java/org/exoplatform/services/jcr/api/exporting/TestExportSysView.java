@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.api.exporting;
 import org.apache.ws.commons.util.Base64;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.util.StringConverter;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -28,7 +29,6 @@ import org.xml.sax.SAXException;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Calendar;
@@ -170,7 +170,7 @@ public class TestExportSysView extends ExportBase
       session.save();
       File destFile = File.createTempFile("testExportReferenceableNodes", ".xml");
       destFile.deleteOnExit();
-      OutputStream outStream = new FileOutputStream(destFile);
+      OutputStream outStream = PrivilegedFileHelper.fileOutputStream(destFile);
       session.exportSystemView(testNode.getPath(), outStream, false, false);
       outStream.close();
 
@@ -219,7 +219,7 @@ public class TestExportSysView extends ExportBase
 
       File destFile = File.createTempFile("sysLockNodeExport", ".xml");
       destFile.deleteOnExit();
-      OutputStream outStream = new FileOutputStream(destFile);
+      OutputStream outStream = PrivilegedFileHelper.fileOutputStream(destFile);
 
       session.exportSystemView(firstNode.getPath(), outStream, false, false);
       outStream.close();
@@ -254,7 +254,7 @@ public class TestExportSysView extends ExportBase
 
       session.save();
       File destFile = File.createTempFile("xmlTest", ".xml");
-      OutputStream outputStream2 = new FileOutputStream(destFile);
+      OutputStream outputStream2 = PrivilegedFileHelper.fileOutputStream(destFile);
 
       SAXTransformerFactory saxFact = (SAXTransformerFactory)TransformerFactory.newInstance();
       TransformerHandler handler = saxFact.newTransformerHandler();
@@ -315,7 +315,7 @@ public class TestExportSysView extends ExportBase
       session.save();
       File destFile = File.createTempFile("sysMultyValueExportStream", ".xml");
       destFile.deleteOnExit();
-      OutputStream outStream = new FileOutputStream(destFile);
+      OutputStream outStream = PrivilegedFileHelper.fileOutputStream(destFile);
       session.exportSystemView(testNode.getPath(), outStream, false, false);
       outStream.close();
 
@@ -369,7 +369,7 @@ public class TestExportSysView extends ExportBase
       session.save();
       File destFile = File.createTempFile("multyValueExportStreamSkipBinary", ".xml");
       destFile.deleteOnExit();
-      OutputStream outStream = new FileOutputStream(destFile);
+      OutputStream outStream = PrivilegedFileHelper.fileOutputStream(destFile);
       session.exportSystemView(testNode.getPath(), outStream, true, false);
       outStream.close();
 

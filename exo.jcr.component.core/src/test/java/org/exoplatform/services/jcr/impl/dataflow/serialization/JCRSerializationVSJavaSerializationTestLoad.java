@@ -22,6 +22,7 @@ import org.exoplatform.services.jcr.impl.dataflow.AbstractPersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.FilePersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -75,7 +76,7 @@ public class JCRSerializationVSJavaSerializationTestLoad extends JcrImplSerializ
          it = list.iterator();
 
          File jcrfile = File.createTempFile("jcr", "test");
-         ObjectWriterImpl jcrout = new ObjectWriterImpl(new FileOutputStream(jcrfile));
+         ObjectWriterImpl jcrout = new ObjectWriterImpl(PrivilegedFileHelper.fileOutputStream(jcrfile));
 
          long t1 = System.currentTimeMillis();
          PersistedValueDataWriter wr = new PersistedValueDataWriter();
@@ -112,7 +113,7 @@ public class JCRSerializationVSJavaSerializationTestLoad extends JcrImplSerializ
       for (int j = 0; j < iterations; j++)
       {
          File jfile = File.createTempFile("java", "test");
-         ObjectOutputStream jout = new ObjectOutputStream(new FileOutputStream(jfile));
+         ObjectOutputStream jout = new ObjectOutputStream(PrivilegedFileHelper.fileOutputStream(jfile));
 
          it = list.iterator();
          long t2 = System.currentTimeMillis();
