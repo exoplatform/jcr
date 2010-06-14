@@ -22,7 +22,6 @@ import org.exoplatform.services.jcr.JcrAPIBaseTest;
 import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 
 import javax.jcr.Node;
@@ -73,7 +72,7 @@ public class TestUpdate extends JcrAPIBaseTest
       {
          log.error(e);
          pds.close();
-         propData.delete();
+         PrivilegedFileHelper.delete(propData);
          ws1session.refresh(false);
       }
    }

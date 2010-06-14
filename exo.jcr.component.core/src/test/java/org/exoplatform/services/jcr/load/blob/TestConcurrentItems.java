@@ -113,7 +113,7 @@ public class TestConcurrentItems extends JcrAPIBaseTest
       try
       {
          if (testFile != null)
-            testFile.delete();
+            PrivilegedFileHelper.delete(testFile);
       }
       catch (Throwable e)
       {

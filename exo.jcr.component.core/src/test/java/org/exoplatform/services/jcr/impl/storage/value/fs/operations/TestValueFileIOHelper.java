@@ -132,7 +132,7 @@ public class TestValueFileIOHelper extends JcrImplBaseTest
    @Override
    public void tearDown() throws Exception
    {
-      dest.delete();
+      PrivilegedFileHelper.delete(dest);
 
       super.tearDown();
    }
@@ -173,7 +173,7 @@ public class TestValueFileIOHelper extends JcrImplBaseTest
       System.out.println("\t=== IO time  " + (System.currentTimeMillis() - start));
 
       // clean and recreate file
-      dest.delete();
+      PrivilegedFileHelper.delete(dest);
       dest = PrivilegedFileHelper.createTempFile("vdftest", "", testDir);
 
       // copy via NIO
@@ -256,7 +256,7 @@ public class TestValueFileIOHelper extends JcrImplBaseTest
       System.out.println("\t=== IO time  " + (System.currentTimeMillis() - start));
 
       // clean and recreate file
-      dest.delete();
+      PrivilegedFileHelper.delete(dest);
       dest = PrivilegedFileHelper.createTempFile("vdftest", "", testDir);
 
       // copy via NIO

@@ -28,7 +28,6 @@ import org.xml.sax.SAXException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Calendar;
@@ -237,7 +236,7 @@ public class TestExportSysView extends ExportBase
       testNode.unlock();
       testNode.remove();
       session.save();
-      assertTrue(destFile.delete());
+      assertTrue(PrivilegedFileHelper.delete(destFile));
    }
 
    public void testMultyValueExportCh() throws ItemExistsException, PathNotFoundException, VersionException,
@@ -297,7 +296,7 @@ public class TestExportSysView extends ExportBase
             }
          }
       }
-      destFile.delete();
+      PrivilegedFileHelper.delete(destFile);
    }
 
    public void testMultyValueExportStream() throws ItemExistsException, PathNotFoundException, VersionException,
@@ -351,7 +350,7 @@ public class TestExportSysView extends ExportBase
             }
          }
       }
-      destFile.delete();
+      PrivilegedFileHelper.delete(destFile);
    }
 
    public void testMultyValueExportStreamSkipBinary() throws ItemExistsException, PathNotFoundException,
@@ -403,7 +402,7 @@ public class TestExportSysView extends ExportBase
             }
          }
       }
-      destFile.delete();
+      PrivilegedFileHelper.delete(destFile);
    }
 
    public void testWithContentHandler() throws RepositoryException, SAXException

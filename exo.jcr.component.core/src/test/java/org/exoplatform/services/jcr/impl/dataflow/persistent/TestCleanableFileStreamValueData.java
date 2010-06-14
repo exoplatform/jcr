@@ -105,7 +105,7 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
 
       if (PrivilegedFileHelper.exists(testFile))
       {
-         testFile.delete();
+         PrivilegedFileHelper.delete(testFile);
       }
 
       TestSwapFile.cleanShare();

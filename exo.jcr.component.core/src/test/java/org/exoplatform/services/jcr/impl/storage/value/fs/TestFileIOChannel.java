@@ -74,7 +74,7 @@ public class TestFileIOChannel extends TestCase
       File file = new File(rootDir, "testReadFromIOChannel0");
       PrivilegedFileHelper.deleteOnExit(file);
       if (PrivilegedFileHelper.exists(file))
-         file.delete();
+         PrivilegedFileHelper.delete(file);
       FileOutputStream out = PrivilegedFileHelper.fileOutputStream(file);
       out.write(buf);
       out.close();
@@ -83,7 +83,7 @@ public class TestFileIOChannel extends TestCase
 
       file = new File(rootDir, "testReadFromIOChannel1");
       if (PrivilegedFileHelper.exists(file))
-         file.delete();
+         PrivilegedFileHelper.delete(file);
       out = PrivilegedFileHelper.fileOutputStream(file);
       out.write(buf);
       out.close();

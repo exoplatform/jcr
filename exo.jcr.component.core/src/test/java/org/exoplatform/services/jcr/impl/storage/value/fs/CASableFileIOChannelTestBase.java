@@ -628,12 +628,12 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
       {
          if (sf.isDirectory() && PrivilegedFileHelper.list(sf).length > 0)
             count += deleteRecursive(sf);
-         else if (sf.delete())
+         else if (PrivilegedFileHelper.delete(sf))
             count += 1;
          else
             LOG.warn("Can't delete file " + PrivilegedFileHelper.getAbsolutePath(sf));
       }
-      count += dir.delete() ? 1 : 0;
+      count += PrivilegedFileHelper.delete(dir) ? 1 : 0;
       return count;
    }
 

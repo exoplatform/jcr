@@ -697,7 +697,7 @@ public class TransientValueData implements ValueData
 
             if (deleteSpoolFile && PrivilegedFileHelper.exists(spoolFile))
             {
-               if (!spoolFile.delete())
+               if (!PrivilegedFileHelper.delete(spoolFile))
                {
                   if (fileCleaner != null)
                   {

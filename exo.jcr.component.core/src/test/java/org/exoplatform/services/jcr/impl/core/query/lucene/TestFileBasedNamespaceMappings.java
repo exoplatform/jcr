@@ -21,8 +21,9 @@ import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import junit.framework.TestCase;
 
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
+
 import java.io.File;
-import java.io.FileOutputStream;
 import java.util.Properties;
 
 /**
@@ -79,7 +80,7 @@ public class TestFileBasedNamespaceMappings extends TestCase
    @Override
    protected void tearDown() throws Exception
    {
-      test_mapp.delete();
+      PrivilegedFileHelper.delete(test_mapp);
    }
 
 }

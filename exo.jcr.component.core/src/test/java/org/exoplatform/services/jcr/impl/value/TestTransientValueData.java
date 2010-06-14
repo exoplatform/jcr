@@ -71,7 +71,7 @@ public class TestTransientValueData extends TestCase
       byte[] buf = "0123456789".getBytes();
       File file = new File("target/testCreateFileStreamTransientValueData");
       if (PrivilegedFileHelper.exists(file))
-         file.delete();
+         PrivilegedFileHelper.delete(file);
       FileOutputStream out = PrivilegedFileHelper.fileOutputStream(file);
       out.write(buf);
       out.close();

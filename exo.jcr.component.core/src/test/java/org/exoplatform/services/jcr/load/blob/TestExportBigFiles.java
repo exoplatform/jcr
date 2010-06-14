@@ -101,7 +101,7 @@ public class TestExportBigFiles extends JcrAPIBaseTest
       n1.remove();
       session.save();
       PrivilegedFileHelper.deleteOnExit(file);
-      file.delete();
+      PrivilegedFileHelper.delete(file);
 
    }
 
@@ -165,7 +165,7 @@ public class TestExportBigFiles extends JcrAPIBaseTest
       n1.remove();
       session.save();
       PrivilegedFileHelper.deleteOnExit(file);
-      file.delete();
+      PrivilegedFileHelper.delete(file);
    }
 
    public void testIEPdfFiles() throws Exception
@@ -225,7 +225,7 @@ public class TestExportBigFiles extends JcrAPIBaseTest
       n1.remove();
       session.save();
       PrivilegedFileHelper.deleteOnExit(file);
-      file.delete();
+      PrivilegedFileHelper.delete(file);
    }
 
    public void testRandomSizeExportImportSysView() throws Exception
@@ -297,7 +297,7 @@ public class TestExportBigFiles extends JcrAPIBaseTest
       n1.remove();
       session.save();
       PrivilegedFileHelper.deleteOnExit(file);
-      file.delete();
+      PrivilegedFileHelper.delete(file);
 
    }
 

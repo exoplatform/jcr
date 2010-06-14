@@ -87,7 +87,7 @@ public class TestFileValueIO extends TestCase
       byte[] buf = "0123456789".getBytes();
       File file = new File("target/testReadByteArrayValueData");
       if (PrivilegedFileHelper.exists(file))
-         file.delete();
+         PrivilegedFileHelper.delete(file);
       FileOutputStream out = PrivilegedFileHelper.fileOutputStream(file);
       out.write(buf);
       out.close();
@@ -109,7 +109,7 @@ public class TestFileValueIO extends TestCase
       byte[] buf = "0123456789".getBytes();
       File file = new File("target/testReadFileValueData");
       if (PrivilegedFileHelper.exists(file))
-         file.delete();
+         PrivilegedFileHelper.delete(file);
       FileOutputStream out = PrivilegedFileHelper.fileOutputStream(file);
       out.write(buf);
       out.close();
@@ -138,7 +138,7 @@ public class TestFileValueIO extends TestCase
       byte[] buf = "0123456789".getBytes();
       File file = new File("target/testWriteFileValueData");
       if (PrivilegedFileHelper.exists(file))
-         file.delete();
+         PrivilegedFileHelper.delete(file);
 
       TransientValueData vd = new TransientValueData(0, buf, null, null, null, 1024, null, false);
 

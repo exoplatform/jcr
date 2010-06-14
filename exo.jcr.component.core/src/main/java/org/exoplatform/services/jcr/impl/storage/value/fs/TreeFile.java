@@ -82,7 +82,7 @@ public class TreeFile extends File
             String[] ls = PrivilegedFileHelper.list(fp);;
             if (ls != null && ls.length <= 0)
             {
-               if (res = fp.delete())
+               if (res = PrivilegedFileHelper.delete(fp))
                {
                   res = deleteParent(new File(fp.getParent()));
                }

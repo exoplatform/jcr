@@ -91,7 +91,7 @@ public class EditableValueData extends TransientValueData
             try
             {
                sch.close();
-               sf.delete();
+               PrivilegedFileHelper.delete(sf);
             }
             catch (Exception e1)
             {
@@ -142,7 +142,7 @@ public class EditableValueData extends TransientValueData
             try
             {
                sfout.close();
-               sf.delete();
+               PrivilegedFileHelper.delete(sf);
             }
             catch (Exception e1)
             {
@@ -297,7 +297,7 @@ public class EditableValueData extends TransientValueData
                   try
                   {
                      chch.close();
-                     chf.delete();
+                     PrivilegedFileHelper.delete(chf);
                   }
                   catch (Exception e1)
                   {
@@ -382,7 +382,7 @@ public class EditableValueData extends TransientValueData
                   try
                   {
                      chch.close();
-                     chf.delete();
+                     PrivilegedFileHelper.delete(chf);
                   }
                   catch (Exception e1)
                   {
@@ -425,7 +425,7 @@ public class EditableValueData extends TransientValueData
             spoolChannel.close();
 
             // delete file
-            if (!spoolFile.delete())
+            if (!PrivilegedFileHelper.delete(spoolFile))
             {
                if (fileCleaner != null)
                {

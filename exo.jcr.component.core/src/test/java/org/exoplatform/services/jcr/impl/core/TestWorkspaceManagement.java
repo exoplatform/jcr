@@ -161,7 +161,7 @@ public class TestWorkspaceManagement extends JcrImplBaseTest
       }
       finally
       {
-         file.delete();
+         PrivilegedFileHelper.delete(file);
       }
    }
 

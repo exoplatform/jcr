@@ -122,7 +122,7 @@ public abstract class FileValueStorage extends ValueStoragePlugin
             {
                // care about storage temp dir cleanup
                for (File tmpf : tempDir.listFiles())
-                  if (!tmpf.delete())
+                  if (!PrivilegedFileHelper.delete(tmpf))
                      log.warn("Storage temporary directory contains un-deletable file "
                         + PrivilegedFileHelper.getAbsolutePath(tmpf)
                         + ". It's recommended to leave this directory for JCR External Values Storage private use.");

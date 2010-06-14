@@ -100,7 +100,7 @@ public class RandomValueNodeGenerator extends WeightNodeGenerator
             val.getStream();// to spool data;
             inputStream.close();
             if (file != null)
-               file.delete();
+               PrivilegedFileHelper.delete(file);
             break;
          case PropertyType.BOOLEAN :
             val = valueFactory.createValue(random.nextBoolean());

@@ -22,7 +22,6 @@ import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.xml.sax.SAXException;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Calendar;
@@ -102,7 +101,7 @@ public class TestExportImport extends ExportBase
 
          }
       }
-      destFile.delete();
+      PrivilegedFileHelper.delete(destFile);
    }
 
    public void testExportImportCustomNodeType() throws Exception
@@ -181,7 +180,7 @@ public class TestExportImport extends ExportBase
 
          }
       }
-      destFile.delete();
+      PrivilegedFileHelper.delete(destFile);
    }
 
    public void testMixinExportImportDocumentViewContentHandler() throws Exception

@@ -112,6 +112,6 @@ public class RemoveVDTest extends BaseUsecasesTest
       }
       assertTrue(PrivilegedFileHelper.exists(vd2.getFile()));
 
-      f.delete();
+      PrivilegedFileHelper.delete(f);
    }
 }

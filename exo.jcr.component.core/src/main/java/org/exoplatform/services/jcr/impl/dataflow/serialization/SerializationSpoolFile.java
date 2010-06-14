@@ -22,6 +22,8 @@ import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 /**
  * Created by The eXo Platform SAS. <br/>
@@ -80,7 +82,15 @@ public class SerializationSpoolFile extends SpoolFile
       {
          if (!inUse())
          {
-            boolean result = super.delete();
+            PrivilegedAction<Boolean> action = new PrivilegedAction<Boolean>()
+            {
+               public Boolean run()
+               {
+                  return SerializationSpoolFile.super.delete();
+               }
+            };
+            boolean result = AccessController.doPrivileged(action);
+
             if (result)
             {
                holder.remove(id);

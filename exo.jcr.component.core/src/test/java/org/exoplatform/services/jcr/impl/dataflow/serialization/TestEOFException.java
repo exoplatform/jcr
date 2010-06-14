@@ -24,8 +24,6 @@ import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.EOFException;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Random;
 
@@ -66,7 +64,7 @@ public class TestEOFException extends JcrImplSerializationBaseTest
          or.close();
       }
 
-      test.delete();
+      PrivilegedFileHelper.delete(test);
    }
 
    public void testReadBoolean() throws Exception
@@ -95,7 +93,7 @@ public class TestEOFException extends JcrImplSerializationBaseTest
          or.close();
       }
 
-      test.delete();
+      PrivilegedFileHelper.delete(test);
    }
 
    public void testReadInt() throws Exception
@@ -125,7 +123,7 @@ public class TestEOFException extends JcrImplSerializationBaseTest
          or.close();
       }
 
-      test.delete();
+      PrivilegedFileHelper.delete(test);
    }
 
    public void testReadLong() throws Exception
@@ -155,7 +153,7 @@ public class TestEOFException extends JcrImplSerializationBaseTest
          or.close();
       }
 
-      test.delete();
+      PrivilegedFileHelper.delete(test);
    }
 
    protected byte[] createBLOBTempData(int size) throws IOException

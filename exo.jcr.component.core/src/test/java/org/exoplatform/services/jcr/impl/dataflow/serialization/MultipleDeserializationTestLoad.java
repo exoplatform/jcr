@@ -29,8 +29,6 @@ import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -158,7 +156,7 @@ public class MultipleDeserializationTestLoad extends JcrImplSerializationBaseTes
          jcrread += t3;
          jcrin.close();
       }
-      jcrfile.delete();
+      PrivilegedFileHelper.delete(jcrfile);
 
       System.out.println(" JCR first des - " + (jcrfread));
       System.out.println(" JCR des- " + (jcrread / iterations));

@@ -20,14 +20,11 @@ package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
 import org.exoplatform.services.jcr.impl.dataflow.AbstractPersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.FilePersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -103,7 +100,7 @@ public class JCRSerializationVSJavaSerializationTestLoad extends JcrImplSerializ
          jcrread += t3;
          jcrin.close();
 
-         jcrfile.delete();
+         PrivilegedFileHelper.delete(jcrfile);
 
       }
 
@@ -138,7 +135,7 @@ public class JCRSerializationVSJavaSerializationTestLoad extends JcrImplSerializ
          javaRead += t4;
          jin.close();
 
-         jfile.delete();
+         PrivilegedFileHelper.delete(jfile);
       }
 
       System.out.println(" JCR s- " + (jcrwrite / iterations));

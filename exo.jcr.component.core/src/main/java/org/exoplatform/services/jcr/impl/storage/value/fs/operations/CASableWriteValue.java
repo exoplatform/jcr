@@ -211,7 +211,7 @@ public class CASableWriteValue extends WriteValue
          try
          {
             // delete temp file - it's new file add
-            tempFile.delete(); // should be ok without file cleaner
+            PrivilegedFileHelper.delete(tempFile); // should be ok without file cleaner
          }
          finally
          {

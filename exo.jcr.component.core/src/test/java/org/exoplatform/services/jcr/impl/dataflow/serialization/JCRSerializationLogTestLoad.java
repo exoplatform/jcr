@@ -24,7 +24,6 @@ import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.util.Calendar;
 import java.util.List;
 
@@ -57,7 +56,7 @@ public class JCRSerializationLogTestLoad extends JcrImplSerializationBaseTest
 
       fis.close();
 
-      file.delete();
+      PrivilegedFileHelper.delete(file);
 
       List<TransactionChangesLog> logs = pl.pushChanges();
 
