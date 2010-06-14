@@ -468,7 +468,7 @@
                      <goal>run</goal>
                   </goals>
                </execution>
-               <!-- execution>
+               <execution>
                   <id>prepare-test-policy</id>
                   <phase>process-test-resources</phase>
                   <configuration>
@@ -489,7 +489,7 @@
                   <goals>
                      <goal>run</goal>
                   </goals>
-               </execution -->
+               </execution>
             </executions>
             <dependencies>
                <dependency>

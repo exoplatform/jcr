@@ -164,7 +164,7 @@ public abstract class BaseStandaloneTest extends TestCase
       fileCleaner = wfcleaner.getFileCleaner();
       holder = new ReaderSpoolFileHolder();
 
-      URL url = Thread.currentThread().getContextClassLoader().getResource("test.policy");
+      URL url = Thread.currentThread().getContextClassLoader().getResource("./test.policy");
       Policy.setPolicy(new PolicyFile(url));
 
       System.setSecurityManager(new SecurityManager());
