@@ -24,6 +24,8 @@ import org.exoplatform.services.log.Log;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -106,7 +108,15 @@ public class SpoolFile extends File
          // make unusable
          users.clear();
          users = null;
-         return super.delete();
+
+         PrivilegedAction<Boolean> action = new PrivilegedAction<Boolean>()
+         {
+            public Boolean run()
+            {
+               return SpoolFile.super.delete();
+            }
+         };
+         return AccessController.doPrivileged(action);
       }
 
       return false;

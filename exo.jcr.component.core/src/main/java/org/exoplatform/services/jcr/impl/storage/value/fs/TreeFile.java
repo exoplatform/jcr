@@ -57,18 +57,20 @@ public class TreeFile extends File
    @Override
    public boolean delete()
    {
-      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
-      {
-         public Object run()
-         {
-            boolean res = deleteFromSuper();
-            if (res)
-               deleteParent(new File(getParent()));
 
-            return res;
+      PrivilegedAction<Boolean> action = new PrivilegedAction<Boolean>()
+      {
+         public Boolean run()
+         {
+            return TreeFile.super.delete();
          }
       };
-      return (Boolean)AccessController.doPrivileged(action);
+      boolean res = AccessController.doPrivileged(action);
+
+      if (res)
+         deleteParent(new File(getParent()));
+
+      return res;
    }
 
    protected boolean deleteParent(File fp)
@@ -98,8 +100,4 @@ public class TreeFile extends File
       return res;
    }
 
-   private boolean deleteFromSuper()
-   {
-      return super.delete();
-   }
 }

@@ -24,6 +24,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
@@ -265,6 +266,42 @@ public class PrivilegedFileHelper
       }
    }
 
+   public static RandomAccessFile randomAccessFile(final File file, final String mode) throws IllegalArgumentException,
+      IOException
+   {
+      PrivilegedExceptionAction<RandomAccessFile> action = new PrivilegedExceptionAction<RandomAccessFile>()
+      {
+         public RandomAccessFile run() throws Exception
+         {
+            return new RandomAccessFile(file, mode);
+         }
+      };
+      try
+      {
+         return AccessController.doPrivileged(action);
+      }
+      catch (PrivilegedActionException pae)
+      {
+         Throwable cause = pae.getCause();
+         if (cause instanceof IllegalArgumentException)
+         {
+            throw (IllegalArgumentException)cause;
+         }
+         else if (cause instanceof FileNotFoundException)
+         {
+            throw (FileNotFoundException)cause;
+         }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
+      }
+   }
+
    public static long length(final File file)
    {
       PrivilegedAction<Long> action = new PrivilegedAction<Long>()
@@ -373,4 +410,17 @@ public class PrivilegedFileHelper
       };
       return AccessController.doPrivileged(action);
    }
+
+   public static File[] listFiles(final File file)
+   {
+      PrivilegedAction<File[]> action = new PrivilegedAction<File[]>()
+      {
+         public File[] run()
+         {
+            return file.listFiles();
+         }
+      };
+      return AccessController.doPrivileged(action);
+   }
+
 }

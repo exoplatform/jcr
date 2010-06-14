@@ -160,7 +160,7 @@ public class EditableValueData extends TransientValueData
          this.data = null;
 
          this.spoolFile = sf;
-         this.spoolChannel = new RandomAccessFile(sf, "rw").getChannel();
+         this.spoolChannel = PrivilegedFileHelper.randomAccessFile(sf, "rw").getChannel();
 
          this.spooled = true;
       }

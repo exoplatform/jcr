@@ -20,6 +20,8 @@ package org.exoplatform.services.jcr.impl.util.io;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -155,7 +157,17 @@ public class SwapFile extends SpoolFile
    {
       synchronized (inShare)
       {
-         if (super.delete())
+
+         PrivilegedAction<Boolean> action = new PrivilegedAction<Boolean>()
+         {
+            public Boolean run()
+            {
+               return SwapFile.super.delete();
+            }
+         };
+         boolean res = AccessController.doPrivileged(action);
+
+         if (res)
          {
             // remove from shared files list
             inShare.remove(getAbsolutePath());

@@ -126,7 +126,7 @@ public class FileCleaner extends WorkerThread
       {
          if (PrivilegedFileHelper.exists(file))
          {
-            if (!file.delete())
+            if (!PrivilegedFileHelper.delete(file))
             {
                notRemovedFiles.add(file);
 
@@ -162,7 +162,7 @@ public class FileCleaner extends WorkerThread
                File file = null;
                while ((file = files.poll()) != null)
                {
-                  file.delete();
+                  PrivilegedFileHelper.delete(file);
                }
             }
          });

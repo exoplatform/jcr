@@ -21,11 +21,14 @@ import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
-import org.exoplatform.services.jcr.impl.storage.jdbc.init.StorageDBInitializer;
 
 import java.io.ByteArrayInputStream;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
@@ -47,6 +50,7 @@ abstract public class JDBCConnectionTestBase extends JcrAPIBaseTest
 
    private Connection connect = null;
 
+   @Override
    protected void tearDown() throws Exception
    {
 
@@ -57,8 +61,40 @@ abstract public class JDBCConnectionTestBase extends JcrAPIBaseTest
    public Connection getJNDIConnection() throws Exception
    {
 
-      DataSource ds = (DataSource)new InitialContext().lookup("jdbcjcrtest");
-      connect = ds.getConnection();
+      final DataSource ds = (DataSource)new InitialContext().lookup("jdbcjcrtest");
+
+      PrivilegedExceptionAction<Connection> action = new PrivilegedExceptionAction<Connection>()
+      {
+         public Connection run() throws Exception
+         {
+            return ds.getConnection();
+         }
+      };
+      try
+      {
+         connect = AccessController.doPrivileged(action);
+      }
+      catch (PrivilegedActionException pae)
+      {
+         Throwable cause = pae.getCause();
+         if (cause instanceof IllegalArgumentException)
+         {
+            throw (IllegalArgumentException)cause;
+         }
+         else if (cause instanceof SQLException)
+         {
+            throw (SQLException)cause;
+         }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
+      }
+
       return connect;
    }
 

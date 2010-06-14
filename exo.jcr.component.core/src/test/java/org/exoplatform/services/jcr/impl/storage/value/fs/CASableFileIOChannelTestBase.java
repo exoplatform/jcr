@@ -624,7 +624,7 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
    private long deleteRecursive(File dir)
    {
       long count = 0;
-      for (File sf : dir.listFiles())
+      for (File sf : PrivilegedFileHelper.listFiles(dir))
       {
          if (sf.isDirectory() && PrivilegedFileHelper.list(sf).length > 0)
             count += deleteRecursive(sf);

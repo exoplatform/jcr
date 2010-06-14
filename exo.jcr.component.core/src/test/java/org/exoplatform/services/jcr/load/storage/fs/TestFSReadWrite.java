@@ -125,7 +125,7 @@ public class TestFSReadWrite extends TestCase
       {
          deleteDir(testRoot);
          // deleteFiles(files);
-         testRoot.delete();
+         PrivilegedFileHelper.delete(testRoot);
          log.info("Tear down of " + getName() + ",\t" + (System.currentTimeMillis() - time));
       }
 
@@ -136,7 +136,7 @@ public class TestFSReadWrite extends TestCase
    {
       for (File f : filesList)
       {
-         f.delete();
+         PrivilegedFileHelper.delete(f);
          deleteFileParent(new File(f.getParent()));
       }
    }
@@ -150,7 +150,7 @@ public class TestFSReadWrite extends TestCase
             if (ls.length <= 0)
             {
                // log.info("del " + fp.getAbsolutePath());
-               fp.delete();
+               PrivilegedFileHelper.delete(fp);
                deleteFileParent(new File(fp.getParent()));
             }
          }
@@ -172,7 +172,7 @@ public class TestFSReadWrite extends TestCase
          if (f.isDirectory())
          {
             deleteDir(f);
-            f.delete();
+            PrivilegedFileHelper.delete(f);
          }
          else
             f.delete();

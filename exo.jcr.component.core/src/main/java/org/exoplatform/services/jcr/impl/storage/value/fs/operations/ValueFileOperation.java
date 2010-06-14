@@ -189,7 +189,7 @@ public abstract class ValueFileOperation extends ValueFileIOHelper implements Va
                if (lockFileStream != null)
                   lockFileStream.close();
 
-               if (!lockFile.delete())
+               if (!PrivilegedFileHelper.delete(lockFile))
                { // TODO don't use FileCleaner, delete should be enough
                   LOG.warn("Cannot delete lock file " + PrivilegedFileHelper.getAbsolutePath(lockFile)
                      + ". Add to the FileCleaner");

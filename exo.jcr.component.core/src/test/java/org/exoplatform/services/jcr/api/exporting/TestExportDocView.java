@@ -30,7 +30,6 @@ import org.xml.sax.SAXException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Calendar;
@@ -354,9 +353,9 @@ public class TestExportDocView extends ExportBase
    {
 
       Session newSession = repository.login(this.credentials /*
-                                                                                               * session.getCredentials
-                                                                                               * ()
-                                                                                               */);
+                                                                                                    * session.getCredentials
+                                                                                                    * ()
+                                                                                                    */);
 
       newSession.setNamespacePrefix("newjcr", "http://www.jcp.org/jcr/1.0");
 
@@ -383,9 +382,9 @@ public class TestExportDocView extends ExportBase
    {
 
       Session newSession = repository.login(this.credentials /*
-                                                                                               * session.getCredentials
-                                                                                               * ()
-                                                                                               */);
+                                                                                                    * session.getCredentials
+                                                                                                    * ()
+                                                                                                    */);
       newSession.setNamespacePrefix("newjcr", "http://www.jcp.org/jcr/1.0");
 
       Node testNode = newSession.getRootNode().addNode("jcr:testExportNamespaceRemaping");
@@ -402,7 +401,7 @@ public class TestExportDocView extends ExportBase
       // session.exportDocumentView(testNode.getPath(), bos, false, false);
 
       SAXTransformerFactory saxFact = (SAXTransformerFactory)SAXTransformerFactory.newInstance();
-      TransformerHandler handler = saxFact.newTransformerHandler();
+      final TransformerHandler handler = saxFact.newTransformerHandler();
       handler.setResult(new StreamResult(bos));
 
       newSession.exportDocumentView(testNode.getPath(), handler, false, false);
