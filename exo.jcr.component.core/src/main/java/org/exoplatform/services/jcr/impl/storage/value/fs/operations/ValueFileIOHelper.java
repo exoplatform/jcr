@@ -82,7 +82,7 @@ public class ValueFileIOHelper
       {
          public Object run() throws Exception
          {
-            long fileSize = file.length();
+            long fileSize = PrivilegedFileHelper.length(file);
 
             if (fileSize > maxBufferSize)
             {
@@ -251,7 +251,8 @@ public class ValueFileIOHelper
                                  + tempFile.getAbsolutePath() + ". Destination: " + file.getAbsolutePath());
                         }
 
-                        copyClose(PrivilegedFileHelper.fileInputStream(tempFile), PrivilegedFileHelper.fileOutputStream(file));
+                        copyClose(PrivilegedFileHelper.fileInputStream(tempFile), PrivilegedFileHelper
+                           .fileOutputStream(file));
                      }
                   }
                   else

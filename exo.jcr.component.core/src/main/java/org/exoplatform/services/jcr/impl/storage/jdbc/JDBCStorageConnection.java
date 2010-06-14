@@ -2389,7 +2389,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
                   swapFile.spoolDone();
                }
 
-               long vlen = swapFile.length();
+               long vlen = PrivilegedFileHelper.length(swapFile);
                if (vlen <= Integer.MAX_VALUE)
                {
                   streamLength = (int)vlen;

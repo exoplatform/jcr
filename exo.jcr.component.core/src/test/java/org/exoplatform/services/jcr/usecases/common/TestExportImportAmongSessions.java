@@ -65,8 +65,8 @@ public class TestExportImportAmongSessions extends BaseUsecasesTest
       testNtFileContent.setProperty("jcr:data", new ByteArrayInputStream(TEST_BINARY_CONTENT));
       session1.save();
 
-      File outputFile = File.createTempFile("jcr_bin_test-", ".tmp");
-      outputFile.deleteOnExit();
+      File outputFile = PrivilegedFileHelper.createTempFile("jcr_bin_test-", ".tmp");
+      PrivilegedFileHelper.deleteOnExit(outputFile);
 
       session1.exportDocumentView(testNode.getPath(), PrivilegedFileHelper.fileOutputStream(outputFile), false, false);
 
@@ -75,7 +75,8 @@ public class TestExportImportAmongSessions extends BaseUsecasesTest
 
       try
       {
-         session1.importXML("/", PrivilegedFileHelper.fileInputStream(outputFile), ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW);
+         session1.importXML("/", PrivilegedFileHelper.fileInputStream(outputFile),
+            ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW);
          session1.save();
 
          testNode = session1.getRootNode().getNode(TEST_NODE);
@@ -114,8 +115,8 @@ public class TestExportImportAmongSessions extends BaseUsecasesTest
       InputStream storedData = ntFile.getProperty("jcr:content/jcr:data").getStream();
       assertTrue("BEFORE EXPORT/IMPORT. Binary content must be same", checkBinaryEquals(etalonData, storedData));
 
-      File outputFile = File.createTempFile("jcr_bin_test", ".tmp");
-      outputFile.deleteOnExit();
+      File outputFile = PrivilegedFileHelper.createTempFile("jcr_bin_test", ".tmp");
+      PrivilegedFileHelper.deleteOnExit(outputFile);
 
       session2.exportDocumentView(testNode.getPath(), PrivilegedFileHelper.fileOutputStream(outputFile), false, false);
 
@@ -124,7 +125,8 @@ public class TestExportImportAmongSessions extends BaseUsecasesTest
 
       try
       {
-         session1.importXML("/", PrivilegedFileHelper.fileInputStream(outputFile), ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW);
+         session1.importXML("/", PrivilegedFileHelper.fileInputStream(outputFile),
+            ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW);
 
          testNode = session1.getRootNode().getNode(TEST_NODE);
          ntFile = testNode.getNode(TEST_NTFILE);

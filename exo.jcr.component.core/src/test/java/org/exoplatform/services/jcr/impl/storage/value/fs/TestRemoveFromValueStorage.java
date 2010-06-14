@@ -22,6 +22,7 @@ import org.exoplatform.services.jcr.BaseStandaloneTest;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.impl.core.PropertyImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 
@@ -98,7 +99,7 @@ public class TestRemoveFromValueStorage extends BaseStandaloneTest
          generator.nextBytes(smallValue);
          values[i] = testRoot.getSession().getValueFactory().createValue(new ByteArrayInputStream(smallValue));
       }
-      
+
       if (values.length == 1)
       {
          prop = testRoot.setProperty("binaryProperty", values[0]);
@@ -154,7 +155,7 @@ public class TestRemoveFromValueStorage extends BaseStandaloneTest
             // TreeFileIOChannel always returns a File. But if this file doesn't
             // really exists is size is 0.
             File value = channels.get(i).getFile(propertyId, i);
-            if (value.length() == 0)
+            if (PrivilegedFileHelper.length(value) == 0)
             {
                throw new Exception("");
             }

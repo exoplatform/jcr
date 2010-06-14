@@ -113,7 +113,7 @@ public class TestFSReadWrite extends TestCase
 
       testRoot = PrivilegedFileHelper.file("target/fstest");
       testRoot.mkdirs();
-      testRoot.deleteOnExit();
+      PrivilegedFileHelper.deleteOnExit(testRoot);
    }
 
    @Override
@@ -301,7 +301,9 @@ public class TestFSReadWrite extends TestCase
          String fileName = SIDGenerator.generate();
          String prefix = fileName.substring(0, 24); // time + addr hash prefix
          String rnd = fileName.substring(24); // random name
-         File dir = PrivilegedFileHelper.file(testRoot.getAbsolutePath() + File.separator + prefix + File.separator + buildPathX(rnd));
+         File dir =
+            PrivilegedFileHelper.file(testRoot.getAbsolutePath() + File.separator + prefix + File.separator
+               + buildPathX(rnd));
          dir.mkdirs();
          File f = PrivilegedFileHelper.file(dir.getAbsolutePath() + File.separator + fileName);
          try
@@ -547,7 +549,9 @@ public class TestFSReadWrite extends TestCase
       String fileName = filter.getName();
       String prefix = fileName.substring(0, 24); // time + addr hash prefix
       String rnd = fileName.substring(24); // random name
-      File dir = PrivilegedFileHelper.file(testRoot.getAbsolutePath() + File.separator + prefix + File.separator + buildPathX(rnd));
+      File dir =
+         PrivilegedFileHelper.file(testRoot.getAbsolutePath() + File.separator + prefix + File.separator
+            + buildPathX(rnd));
       String[] ls = filter != null ? dir.list(filter) : dir.list();
       if (ls == null)
       {

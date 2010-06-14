@@ -56,7 +56,7 @@ public class RemoveVDTest extends BaseUsecasesTest
       // vd.setMaxBufferSize(200*1024);
       //      assertNull(vd.getFile()); // not spooling by default until getAsStream() will be call
 
-      File serf = File.createTempFile("serialization", "test");
+      File serf = PrivilegedFileHelper.createTempFile("serialization", "test");
 
       ObjectWriter wr = new ObjectWriterImpl(PrivilegedFileHelper.fileOutputStream(serf));
 

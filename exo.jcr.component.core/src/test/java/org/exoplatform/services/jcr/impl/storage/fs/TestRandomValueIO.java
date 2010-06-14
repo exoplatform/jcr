@@ -62,7 +62,7 @@ public class TestRandomValueIO extends JcrImplBaseTest
       if (testFile == null)
       {
          testFile = createBLOBTempFile(this.getClass().getSimpleName() + "_", 2 * 1024); // 2M
-         testFile.deleteOnExit();
+         PrivilegedFileHelper.deleteOnExit(testFile);
       }
 
       root.getNodes();
@@ -425,7 +425,7 @@ public class TestRandomValueIO extends JcrImplBaseTest
          // test after save
          // first 2M of stream data must be same as on setProperty()
          compareStream(PrivilegedFileHelper.fileInputStream(testFile), testRoot.getProperty(pname).getStream(), 0, 0,
-            testFile.length());
+            PrivilegedFileHelper.length(testFile));
 
          compareStream(new ByteArrayInputStream(update1String.getBytes()), testRoot.getProperty(pname).getStream(), 0,
             pos, update1String.length());
@@ -452,15 +452,15 @@ public class TestRandomValueIO extends JcrImplBaseTest
 
       long fmem = Runtime.getRuntime().freeMemory();
 
-      exv.update(PrivilegedFileHelper.fileInputStream(testFile), testFile.length(), pos);
+      exv.update(PrivilegedFileHelper.fileInputStream(testFile), PrivilegedFileHelper.length(testFile), pos);
 
       long fmemAfter = Runtime.getRuntime().freeMemory();
 
-      if ((fmemAfter - fmem) >= (pos + testFile.length()))
+      if ((fmemAfter - fmem) >= (pos + PrivilegedFileHelper.length(testFile)))
          log.warn("Free memory must not be increased on value of the new Value size but does. Was " + fmem
             + " current " + fmemAfter);
 
-      assertEquals("Value data length must be increased ", pos + testFile.length(), exv.getLength());
+      assertEquals("Value data length must be increased ", pos + PrivilegedFileHelper.length(testFile), exv.getLength());
 
       // apply to the Property and save
       p.setValue(exv);
@@ -468,11 +468,12 @@ public class TestRandomValueIO extends JcrImplBaseTest
 
       EditableBinaryValue newexv = (EditableBinaryValue)testRoot.getProperty(pname).getValue();
 
-      assertEquals("Value data length must be increased ", pos + testFile.length(), newexv.getLength());
+      assertEquals("Value data length must be increased ", pos + PrivilegedFileHelper.length(testFile), newexv
+         .getLength());
 
       // update inside the big data
       int npos = 5;
-      newexv.update(PrivilegedFileHelper.fileInputStream(testFile), testFile.length(), npos);
+      newexv.update(PrivilegedFileHelper.fileInputStream(testFile), PrivilegedFileHelper.length(testFile), npos);
 
       // apply to the Property and save
       p.setValue(newexv);
@@ -484,7 +485,7 @@ public class TestRandomValueIO extends JcrImplBaseTest
       assertEquals("Value content is wrong ", content.substring(0, npos), new String(buff));
 
       compareStream(PrivilegedFileHelper.fileInputStream(testFile), testRoot.getProperty(pname).getStream(), 0, npos,
-         testFile.length());
+         PrivilegedFileHelper.length(testFile));
    }
 
    public void testAddLength_BigValue() throws Exception
@@ -628,7 +629,7 @@ public class TestRandomValueIO extends JcrImplBaseTest
       Property p = testRoot.setProperty(pname, PrivilegedFileHelper.fileInputStream(testFile));
 
       EditableBinaryValue exv = (EditableBinaryValue)p.getValue();
-      long pos = exv.getLength() - (testFile.length() - 20);
+      long pos = exv.getLength() - (PrivilegedFileHelper.length(testFile) - 20);
 
       exv.setLength(pos);
 
@@ -784,7 +785,7 @@ public class TestRandomValueIO extends JcrImplBaseTest
 
       String update1String = "update#1";
 
-      long pos = testFile.length();
+      long pos = PrivilegedFileHelper.length(testFile);
 
       exv.update(new ByteArrayInputStream(update1String.getBytes()), update1String.length(), pos);
 

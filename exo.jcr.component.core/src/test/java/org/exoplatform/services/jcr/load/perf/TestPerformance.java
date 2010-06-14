@@ -517,7 +517,7 @@ public class TestPerformance extends JcrAPIBaseTest
    // byte SYMBOL = 65; // symbol A
    // byte[] data = new byte[BUFFER_SIZE]; // 1KB
    // Arrays.fill(data, (byte) SYMBOL); // symbol A
-   // File testFile = File.createTempFile(prefix, ".tmp");
+   // File testFile = PrivilegedFileHelper.createTempFile(prefix, ".tmp");
    // FileOutputStream tempOut = PrivilegedFileHelper.fileOutputStream(testFile);
    // for (int i = 0; i < sizeInKb; i++) {
    // tempOut.write(data);

@@ -68,7 +68,7 @@ public class JCRSerializationLogTestLoad extends JcrImplSerializationBaseTest
       long jcrwrite = 0;
       long jcrread = 0;
 
-      File jcrfile = File.createTempFile("jcr", "test");
+      File jcrfile = PrivilegedFileHelper.createTempFile("jcr", "test");
       ObjectWriterImpl jcrout = new ObjectWriterImpl(PrivilegedFileHelper.fileOutputStream(jcrfile));
 
       System.out.println(" WRITE START");
@@ -108,7 +108,7 @@ public class JCRSerializationLogTestLoad extends JcrImplSerializationBaseTest
         long javaWrite = 0;
         long javaRead = 0;
 
-        File jfile = File.createTempFile("java", "test");
+        File jfile = PrivilegedFileHelper.createTempFile("java", "test");
         ObjectOutputStream jout = new ObjectOutputStream(PrivilegedFileHelper.fileOutputStream(jfile));
 
         it = logs.iterator();
@@ -137,7 +137,7 @@ public class JCRSerializationLogTestLoad extends JcrImplSerializationBaseTest
 
       System.out.println(" JCR s- " + (jcrwrite));
       //    System.out.println(" Java s- " + (javaWrite));
-      System.out.println(" JCR file size - " + jcrfile.length());
+      System.out.println(" JCR file size - " + PrivilegedFileHelper.length(jcrfile));
       //    System.out.println(" Java file size - " + jfile.length());
       System.out.println(" JCR des- " + (jcrread));
       //    System.out.println(" Java des- " + (javaRead));

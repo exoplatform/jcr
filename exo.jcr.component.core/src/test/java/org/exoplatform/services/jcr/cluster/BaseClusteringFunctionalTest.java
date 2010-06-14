@@ -113,7 +113,7 @@ public abstract class BaseClusteringFunctionalTest extends TestCase
       // create test file
       byte[] data = new byte[1024]; // 1Kb
 
-      File testFile = File.createTempFile(prefix, ".tmp");
+      File testFile = PrivilegedFileHelper.createTempFile(prefix, ".tmp");
       FileOutputStream tempOut = PrivilegedFileHelper.fileOutputStream(testFile);
       Random random = new Random();
 
@@ -123,7 +123,7 @@ public abstract class BaseClusteringFunctionalTest extends TestCase
          tempOut.write(data);
       }
       tempOut.close();
-      testFile.deleteOnExit(); // delete on test exit
+      PrivilegedFileHelper.deleteOnExit(testFile);
       return testFile;
    }
 

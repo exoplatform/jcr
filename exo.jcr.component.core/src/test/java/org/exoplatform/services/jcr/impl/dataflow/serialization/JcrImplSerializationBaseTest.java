@@ -104,7 +104,7 @@ public abstract class JcrImplSerializationBaseTest extends JcrImplBaseTest
 
    protected File serializeLogs(List<TransactionChangesLog> logs) throws IOException, UnknownClassIdException
    {
-      File jcrfile = File.createTempFile("jcr", "test");
+      File jcrfile = PrivilegedFileHelper.createTempFile("jcr", "test");
       ObjectWriterImpl jcrout = new ObjectWriterImpl(PrivilegedFileHelper.fileOutputStream(jcrfile));
 
       TransactionChangesLogWriter wr = new TransactionChangesLogWriter();
@@ -184,8 +184,8 @@ public abstract class JcrImplSerializationBaseTest extends JcrImplBaseTest
                         }
                         else
                         {
-                           File file = File.createTempFile("tempFile", "tmp");
-                           file.deleteOnExit();
+                           File file = PrivilegedFileHelper.createTempFile("tempFile", "tmp");
+                           PrivilegedFileHelper.deleteOnExit(file);
 
                            copy(((StreamPersistedValueData)valueData).getStream(), PrivilegedFileHelper
                               .fileOutputStream(file));

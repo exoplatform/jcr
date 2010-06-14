@@ -126,7 +126,7 @@ public class MultipleDeserializationTestLoad extends JcrImplSerializationBaseTes
       root.save();
 
       // Serialize with JCR
-      File jcrfile = File.createTempFile("jcr", "test");
+      File jcrfile = PrivilegedFileHelper.createTempFile("jcr", "test");
       ObjectWriterImpl jcrout = new ObjectWriterImpl(PrivilegedFileHelper.fileOutputStream(jcrfile));
       TransactionChangesLog l = pl.pushChanges().get(0);
       TransactionChangesLogWriter wr = new TransactionChangesLogWriter();

@@ -49,8 +49,8 @@ public class TestByteArrayPersistedValueDataSerialization extends JcrImplBaseTes
       // Create ValueData instants
       ByteArrayPersistedValueData vd = new ByteArrayPersistedValueData(11, buf);
 
-      File out = File.createTempFile("test", ".data");
-      out.deleteOnExit();
+      File out = PrivilegedFileHelper.createTempFile("test", ".data");
+      PrivilegedFileHelper.deleteOnExit(out);
 
       //serialize
       ObjectOutputStream oos = new ObjectOutputStream(PrivilegedFileHelper.fileOutputStream(out));

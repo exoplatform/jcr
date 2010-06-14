@@ -121,9 +121,9 @@ public class TestJCRSerializationCopyMove extends JcrImplSerializationBaseTest
       TesterItemsPersistenceListener pl = new TesterItemsPersistenceListener(this.session);
 
       File tempFile = this.createBLOBTempFile(160);
-      tempFile.deleteOnExit();
+      PrivilegedFileHelper.deleteOnExit(tempFile);
 
-      log.info("MOVE: file size = " + tempFile.length() + " bytes");
+      log.info("MOVE: file size = " + PrivilegedFileHelper.length(tempFile) + " bytes");
 
       Node file = root.addNode("testMove_", "nt:folder").addNode("childNode2", "nt:file");
       Node contentNode = file.addNode("jcr:content", "nt:resource");

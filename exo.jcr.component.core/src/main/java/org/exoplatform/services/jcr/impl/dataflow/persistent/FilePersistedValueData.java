@@ -104,7 +104,7 @@ public class FilePersistedValueData extends AbstractPersistedValueData implement
     */
    public long getLength()
    {
-      return file.length();
+      return PrivilegedFileHelper.length(file);
    }
 
    /**

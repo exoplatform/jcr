@@ -117,7 +117,7 @@ public class TestBLOBValue extends JcrAPIBaseTest
          size += r;
       }
 
-      assertEquals(testFile.length(), size);
+      assertEquals(PrivilegedFileHelper.length(testFile), size);
    }
 
    // for read on another node of a cluster 
@@ -135,7 +135,7 @@ public class TestBLOBValue extends JcrAPIBaseTest
          size += r;
       }
 
-      assertEquals(testFile.length(), size);
+      assertEquals(PrivilegedFileHelper.length(testFile), size);
    }
 
    public void testAddNTFiles() throws Exception

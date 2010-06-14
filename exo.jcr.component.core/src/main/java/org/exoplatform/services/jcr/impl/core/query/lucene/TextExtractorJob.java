@@ -203,7 +203,7 @@ public class TextExtractorJob extends FutureResult implements Runnable
       final File temp;
       try
       {
-         temp = File.createTempFile("extractor", null);
+         temp = PrivilegedFileHelper.createTempFile("extractor", null);
       }
       catch (IOException e)
       {
@@ -221,7 +221,7 @@ public class TextExtractorJob extends FutureResult implements Runnable
          // should never happend actually
          if (!temp.delete())
          {
-            temp.deleteOnExit();
+            PrivilegedFileHelper.deleteOnExit(temp);
          }
          return r;
       }
@@ -250,7 +250,7 @@ public class TextExtractorJob extends FutureResult implements Runnable
                // delete file
                if (!temp.delete())
                {
-                  temp.deleteOnExit();
+                  PrivilegedFileHelper.deleteOnExit(temp);
                }
             }
          };
@@ -265,7 +265,7 @@ public class TextExtractorJob extends FutureResult implements Runnable
 
          if (!temp.delete())
          {
-            temp.deleteOnExit();
+            PrivilegedFileHelper.deleteOnExit(temp);
          }
          // use empty string reader as fallback
          return new StringReader("");

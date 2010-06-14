@@ -68,8 +68,8 @@ public class TestWorkspaceRestore extends JcrImplBaseTest
       node1.setProperty("p1", 2);
       defSession.save();
 
-      File content = File.createTempFile("data", ".xml");
-      content.deleteOnExit();
+      File content = PrivilegedFileHelper.createTempFile("data", ".xml");
+      PrivilegedFileHelper.deleteOnExit(content);
       OutputStream os = new BufferedOutputStream(PrivilegedFileHelper.fileOutputStream(content));
       defSession.exportSystemView(defRoot.getPath(), os, false, false);
       os.close();
@@ -86,7 +86,8 @@ public class TestWorkspaceRestore extends JcrImplBaseTest
       defRep = (RepositoryImpl)service.getDefaultRepository();
       defRep.configWorkspace(workspaceEntry);
 
-      defRep.importWorkspace(workspaceEntry.getName(), new BufferedInputStream(PrivilegedFileHelper.fileInputStream(content)));
+      defRep.importWorkspace(workspaceEntry.getName(), new BufferedInputStream(PrivilegedFileHelper
+         .fileInputStream(content)));
 
       doTestOnWorkspace(workspaceEntry.getName());
    }
@@ -136,8 +137,8 @@ public class TestWorkspaceRestore extends JcrImplBaseTest
       node1.setProperty("p1", 2);
       defSession.save();
 
-      File content = File.createTempFile("data", ".xml");
-      content.deleteOnExit();
+      File content = PrivilegedFileHelper.createTempFile("data", ".xml");
+      PrivilegedFileHelper.deleteOnExit(content);
       OutputStream os = new BufferedOutputStream(PrivilegedFileHelper.fileOutputStream(content));
       defSession.exportSystemView(node1.getPath(), os, false, false);
       os.close();
@@ -156,7 +157,8 @@ public class TestWorkspaceRestore extends JcrImplBaseTest
 
       try
       {
-         defRep.importWorkspace(workspaceEntry.getName(), new BufferedInputStream(PrivilegedFileHelper.fileInputStream(content)));
+         defRep.importWorkspace(workspaceEntry.getName(), new BufferedInputStream(PrivilegedFileHelper
+            .fileInputStream(content)));
          fail();
       }
       catch (RepositoryException e)

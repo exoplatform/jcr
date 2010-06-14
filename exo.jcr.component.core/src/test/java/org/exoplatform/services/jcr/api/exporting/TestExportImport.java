@@ -64,8 +64,8 @@ public class TestExportImport extends ExportBase
          testNode.setProperty("prop" + i + "_binary", valList.get(i), PropertyType.BINARY);
       }
       session.save();
-      File destFile = File.createTempFile("testWorkspaceExportImportValuesSysView", ".xml");
-      destFile.deleteOnExit();
+      File destFile = PrivilegedFileHelper.createTempFile("testWorkspaceExportImportValuesSysView", ".xml");
+      PrivilegedFileHelper.deleteOnExit(destFile);
       OutputStream outStream = PrivilegedFileHelper.fileOutputStream(destFile);
       session.exportWorkspaceSystemView(outStream, false, false);
       outStream.close();
@@ -73,7 +73,8 @@ public class TestExportImport extends ExportBase
       testNode.remove();
       session.save();
 
-      session.importXML(root.getPath(), PrivilegedFileHelper.fileInputStream(destFile), ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW);
+      session.importXML(root.getPath(), PrivilegedFileHelper.fileInputStream(destFile),
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW);
 
       session.save();
 
@@ -117,8 +118,8 @@ public class TestExportImport extends ExportBase
 
       session.save();
 
-      File destFile = File.createTempFile("testExportImportValuesSysView", ".xml");
-      destFile.deleteOnExit();
+      File destFile = PrivilegedFileHelper.createTempFile("testExportImportValuesSysView", ".xml");
+      PrivilegedFileHelper.deleteOnExit(destFile);
       OutputStream outStream = PrivilegedFileHelper.fileOutputStream(destFile);
       session.exportSystemView(file.getPath(), outStream, false, false);
       outStream.close();
@@ -126,7 +127,8 @@ public class TestExportImport extends ExportBase
       folder.remove();
       session.save();
 
-      session.importXML(root.getPath(), PrivilegedFileHelper.fileInputStream(destFile), ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW);
+      session.importXML(root.getPath(), PrivilegedFileHelper.fileInputStream(destFile),
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW);
 
       session.save();
 
@@ -141,8 +143,8 @@ public class TestExportImport extends ExportBase
          testNode.setProperty("prop" + i + "_binary", valList.get(i), PropertyType.BINARY);
       }
       session.save();
-      File destFile = File.createTempFile("testExportImportValuesSysView", ".xml");
-      destFile.deleteOnExit();
+      File destFile = PrivilegedFileHelper.createTempFile("testExportImportValuesSysView", ".xml");
+      PrivilegedFileHelper.deleteOnExit(destFile);
       OutputStream outStream = PrivilegedFileHelper.fileOutputStream(destFile);
       session.exportSystemView(testNode.getPath(), outStream, false, false);
       outStream.close();
@@ -150,7 +152,8 @@ public class TestExportImport extends ExportBase
       testNode.remove();
       session.save();
 
-      session.importXML(root.getPath(), PrivilegedFileHelper.fileInputStream(destFile), ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW);
+      session.importXML(root.getPath(), PrivilegedFileHelper.fileInputStream(destFile),
+         ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW);
 
       session.save();
 
@@ -356,8 +359,8 @@ public class TestExportImport extends ExportBase
       Node destParentNode) throws RepositoryException, IOException, TransformerConfigurationException, SAXException
    {
       Node exportNode = parentNode.getNode(nodeName);
-      File destFile = File.createTempFile("testExportImport", ".xml");
-      destFile.deleteOnExit();
+      File destFile = PrivilegedFileHelper.createTempFile("testExportImport", ".xml");
+      PrivilegedFileHelper.deleteOnExit(destFile);
       OutputStream outStream = PrivilegedFileHelper.fileOutputStream(destFile);
 
       if (isSystemView)
@@ -396,8 +399,8 @@ public class TestExportImport extends ExportBase
          session.save();
       }
 
-      session.importXML(destParentNode != null ? destParentNode.getPath() : root.getPath(), PrivilegedFileHelper.fileInputStream(
-         destFile), ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW);
+      session.importXML(destParentNode != null ? destParentNode.getPath() : root.getPath(), PrivilegedFileHelper
+         .fileInputStream(destFile), ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW);
 
       session.save();
       assertTrue(parentNode.hasNode(nodeName));

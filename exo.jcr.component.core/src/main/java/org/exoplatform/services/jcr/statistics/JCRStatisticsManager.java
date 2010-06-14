@@ -159,7 +159,7 @@ public class JCRStatisticsManager
             + " in the user directory, we will try to create it in the temp directory", e);
          try
          {
-            file = File.createTempFile("Statistics" + category, "-" + System.currentTimeMillis() + ".csv");
+            file = PrivilegedFileHelper.createTempFile("Statistics" + category, "-" + System.currentTimeMillis() + ".csv");
             pw = new PrintWriter(file);
          }
          catch (IOException e1)

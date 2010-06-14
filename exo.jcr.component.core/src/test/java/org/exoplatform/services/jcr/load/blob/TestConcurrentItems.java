@@ -88,7 +88,7 @@ public class TestConcurrentItems extends JcrAPIBaseTest
       {
          // create test file
          testFile = createBLOBTempFile(1024);
-         dataSize = (int)testFile.length();
+         dataSize = (int)PrivilegedFileHelper.length(testFile);
          TEST_FILE = testFile.getAbsolutePath();
       }
       else
@@ -254,9 +254,9 @@ public class TestConcurrentItems extends JcrAPIBaseTest
                repository
                   .login(
                      this.credentials /*
-                                                                                                                                        * session.getCredentials(
-                                                                                                                                        * )
-                                                                                                                                        */,
+                                                                                                                                                            * session.getCredentials(
+                                                                                                                                                            * )
+                                                                                                                                                            */,
                      "ws1"));
          readed.start();
          readers.add(readed);
@@ -271,10 +271,12 @@ public class TestConcurrentItems extends JcrAPIBaseTest
       }
 
       log.info("Begin cleaner...");
-      DeleteThread cleaner = new DeleteThread(repository.login(this.credentials /*
-                                                                                                         * session.getCredentials
-                                                                                                         * ()
-                                                                                                         */, "ws1"));
+      DeleteThread cleaner =
+         new DeleteThread(repository.login(this.credentials /*
+                                                                                                                 * session.getCredentials
+                                                                                                                 * ()
+                                                                                                                 */,
+            "ws1"));
       cleaner.start();
 
       log.info("<<<<<<<<<<<<<<<<<<<< Wait cycle >>>>>>>>>>>>>>>>>>>>>");

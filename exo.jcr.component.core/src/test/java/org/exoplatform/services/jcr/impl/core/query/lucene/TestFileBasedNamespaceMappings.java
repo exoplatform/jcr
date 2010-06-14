@@ -54,7 +54,7 @@ public class TestFileBasedNamespaceMappings extends TestCase
    @Override
    public void setUp() throws Exception
    {
-      test_mapp = File.createTempFile("temp", "mapping");
+      test_mapp = PrivilegedFileHelper.createTempFile("temp", "mapping");
 
       // Fill the namespace mappings file by prefix uri pairs
 
@@ -73,7 +73,7 @@ public class TestFileBasedNamespaceMappings extends TestCase
       props.store(PrivilegedFileHelper.fileOutputStream(test_mapp), "");
 
       props.clear();
-      test_mapp.deleteOnExit();
+      PrivilegedFileHelper.deleteOnExit(test_mapp);
    }
 
    @Override

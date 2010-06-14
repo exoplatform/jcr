@@ -177,8 +177,8 @@ public class BufferedDecoder extends Base64.Decoder
    private void swapBuffers() throws IOException
    {
       byte[] data = ((ByteArrayOutputStream)out).toByteArray();
-      fileBuffer = File.createTempFile("decoderBuffer", ".tmp");
-      fileBuffer.deleteOnExit();
+      fileBuffer = PrivilegedFileHelper.createTempFile("decoderBuffer", ".tmp");
+      PrivilegedFileHelper.deleteOnExit(fileBuffer);
       out = new BufferedOutputStream(PrivilegedFileHelper.fileOutputStream(fileBuffer), bufferSize);
       out.write(data);
    }

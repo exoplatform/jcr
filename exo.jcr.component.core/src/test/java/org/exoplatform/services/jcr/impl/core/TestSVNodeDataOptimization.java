@@ -143,8 +143,8 @@ public class TestSVNodeDataOptimization extends JcrImplBaseTest
       ses.save();
 
       // Cereate backup
-      File backup = File.createTempFile("full-backup", ".xml");
-      backup.deleteOnExit();
+      File backup = PrivilegedFileHelper.createTempFile("full-backup", ".xml");
+      PrivilegedFileHelper.deleteOnExit(backup);
 
       ses.exportWorkspaceSystemView(PrivilegedFileHelper.fileOutputStream(backup), false, false);
 

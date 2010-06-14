@@ -91,12 +91,12 @@ public class TestJCRSerializationVersionRestore extends JcrImplSerializationBase
    {
       TesterItemsPersistenceListener pl = new TesterItemsPersistenceListener(this.session);
 
-      File tempFile = File.createTempFile("tempFile", "doc");
-      File tempFile2 = File.createTempFile("tempFile", "doc");
-      File tempFile3 = File.createTempFile("tempFile", "doc");
-      tempFile.deleteOnExit();
-      tempFile2.deleteOnExit();
-      tempFile3.deleteOnExit();
+      File tempFile = PrivilegedFileHelper.createTempFile("tempFile", "doc");
+      File tempFile2 = PrivilegedFileHelper.createTempFile("tempFile", "doc");
+      File tempFile3 = PrivilegedFileHelper.createTempFile("tempFile", "doc");
+      PrivilegedFileHelper.deleteOnExit(tempFile);
+      PrivilegedFileHelper.deleteOnExit(tempFile2);
+      PrivilegedFileHelper.deleteOnExit(tempFile3);
 
       FileOutputStream fos = PrivilegedFileHelper.fileOutputStream(tempFile);
       FileOutputStream fos2 = PrivilegedFileHelper.fileOutputStream(tempFile2);
@@ -117,9 +117,9 @@ public class TestJCRSerializationVersionRestore extends JcrImplSerializationBase
       fos2.close();
       fos3.close();
 
-      log.info("FILE for VERVION #1 : file size = " + tempFile.length() + " bytes");
-      log.info("FILE for VERVION #2 : file size = " + tempFile2.length() + " bytes");
-      log.info("FILE for VERVION #3 : file size = " + tempFile3.length() + " bytes");
+      log.info("FILE for VERVION #1 : file size = " + PrivilegedFileHelper.length(tempFile) + " bytes");
+      log.info("FILE for VERVION #2 : file size = " + PrivilegedFileHelper.length(tempFile2) + " bytes");
+      log.info("FILE for VERVION #3 : file size = " + PrivilegedFileHelper.length(tempFile3) + " bytes");
 
       Node srcVersionNode = root.addNode("nt_file_node", "nt:file");
       Node contentNode = srcVersionNode.addNode("jcr:content", "nt:resource");

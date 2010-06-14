@@ -182,8 +182,8 @@ public class TestExportDocView extends ExportBase
       }
 
       session.save();
-      File destFile = File.createTempFile("multyValueExportStream", ".xml");
-      destFile.deleteOnExit();
+      File destFile = PrivilegedFileHelper.createTempFile("multyValueExportStream", ".xml");
+      PrivilegedFileHelper.deleteOnExit(destFile);
       OutputStream outStream = PrivilegedFileHelper.fileOutputStream(destFile);
       session.exportDocumentView(testNode.getPath(), outStream, false, false);
       outStream.close();
@@ -253,8 +253,8 @@ public class TestExportDocView extends ExportBase
       }
 
       session.save();
-      File destFile = File.createTempFile("multyValueExportStream", ".xml");
-      destFile.deleteOnExit();
+      File destFile = PrivilegedFileHelper.createTempFile("multyValueExportStream", ".xml");
+      PrivilegedFileHelper.deleteOnExit(destFile);
       OutputStream outStream = PrivilegedFileHelper.fileOutputStream(destFile);
 
       SAXTransformerFactory saxFact = (SAXTransformerFactory)SAXTransformerFactory.newInstance();
@@ -333,8 +333,8 @@ public class TestExportDocView extends ExportBase
       session.save();
       testNode.lock(true, true);
 
-      File destFile = File.createTempFile("docLockNodeExport", ".xml");
-      destFile.deleteOnExit();
+      File destFile = PrivilegedFileHelper.createTempFile("docLockNodeExport", ".xml");
+      PrivilegedFileHelper.deleteOnExit(destFile);
       OutputStream outStream = PrivilegedFileHelper.fileOutputStream(destFile);
 
       session.exportDocumentView(firstNode.getPath(), outStream, false, false);
@@ -354,9 +354,9 @@ public class TestExportDocView extends ExportBase
    {
 
       Session newSession = repository.login(this.credentials /*
-                                                                                * session.getCredentials
-                                                                                * ()
-                                                                                */);
+                                                                                               * session.getCredentials
+                                                                                               * ()
+                                                                                               */);
 
       newSession.setNamespacePrefix("newjcr", "http://www.jcp.org/jcr/1.0");
 
@@ -383,9 +383,9 @@ public class TestExportDocView extends ExportBase
    {
 
       Session newSession = repository.login(this.credentials /*
-                                                                                * session.getCredentials
-                                                                                * ()
-                                                                                */);
+                                                                                               * session.getCredentials
+                                                                                               * ()
+                                                                                               */);
       newSession.setNamespacePrefix("newjcr", "http://www.jcp.org/jcr/1.0");
 
       Node testNode = newSession.getRootNode().addNode("jcr:testExportNamespaceRemaping");

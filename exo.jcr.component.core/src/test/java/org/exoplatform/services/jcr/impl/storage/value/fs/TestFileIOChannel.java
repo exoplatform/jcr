@@ -73,7 +73,7 @@ public class TestFileIOChannel extends TestCase
 
       byte[] buf = "0123456789".getBytes();
       File file = PrivilegedFileHelper.file(rootDir, "testReadFromIOChannel0");
-      file.deleteOnExit();
+      PrivilegedFileHelper.deleteOnExit(file);
       if (file.exists())
          file.delete();
       FileOutputStream out = PrivilegedFileHelper.fileOutputStream(file);
@@ -140,7 +140,7 @@ public class TestFileIOChannel extends TestCase
       assertTrue(PrivilegedFileHelper.file(rootDir, "testWriteToIOChannel1").exists());
       assertTrue(PrivilegedFileHelper.file(rootDir, "testWriteToIOChannel2").exists());
 
-      assertEquals(10, PrivilegedFileHelper.file(rootDir, "testWriteToIOChannel0").length());
+      assertEquals(10, PrivilegedFileHelper.length(PrivilegedFileHelper.file(rootDir, "testWriteToIOChannel0")));
 
       channel.delete("testWriteToIOChannel");
       channel.commit();
@@ -158,7 +158,7 @@ public class TestFileIOChannel extends TestCase
 
       File f = channel.getFile("testWriteUpdate", 0);
       assertTrue(f.exists());
-      assertEquals(10, f.length());
+      assertEquals(10, PrivilegedFileHelper.length(f));
 
       byte[] buf1 = "qwerty".getBytes();
       channel.write("testWriteUpdate", testerTransientValueData.getTransientValueData(buf1, 0));
@@ -166,7 +166,7 @@ public class TestFileIOChannel extends TestCase
 
       f = channel.getFile("testWriteUpdate", 0);
       assertTrue(f.exists());
-      assertEquals(6, f.length());
+      assertEquals(6, PrivilegedFileHelper.length(f));
 
       channel.delete("testWriteUpdate");
       channel.commit();

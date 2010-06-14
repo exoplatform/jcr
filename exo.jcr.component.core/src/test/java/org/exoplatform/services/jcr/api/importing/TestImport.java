@@ -109,8 +109,8 @@ public class TestImport extends AbstractImportTest
       assertTrue(accessManager.hasPermission(testRoot.getACL(), PermissionType.SET_PROPERTY, new Identity("exo")));
       assertFalse(accessManager.hasPermission(testRoot.getACL(), PermissionType.READ, new Identity("exo")));
 
-      File tmp = File.createTempFile("testAclImpormt", "tmp");
-      tmp.deleteOnExit();
+      File tmp = PrivilegedFileHelper.createTempFile("testAclImpormt", "tmp");
+      PrivilegedFileHelper.deleteOnExit(tmp);
       serialize(testRoot, false, true, tmp);
       testRoot.remove();
       session.save();
@@ -154,8 +154,8 @@ public class TestImport extends AbstractImportTest
       assertTrue(accessManager.hasPermission(testRoot.getACL(), PermissionType.SET_PROPERTY, new Identity("exo")));
       assertFalse(accessManager.hasPermission(testRoot.getACL(), PermissionType.READ, new Identity("exo")));
 
-      File tmp = File.createTempFile("testAclImpormt", "tmp");
-      tmp.deleteOnExit();
+      File tmp = PrivilegedFileHelper.createTempFile("testAclImpormt", "tmp");
+      PrivilegedFileHelper.deleteOnExit(tmp);
       serialize(testRoot, true, true, tmp);
       testRoot.remove();
       session.save();
@@ -495,10 +495,10 @@ public class TestImport extends AbstractImportTest
       }
       String versionHistory = testRoot.getVersionHistory().getUUID();
 
-      File versionableNodeContent = File.createTempFile("versionableNodeContent", "tmp");
-      File vhNodeContent = File.createTempFile("vhNodeContent", "tmp");
-      versionableNodeContent.deleteOnExit();
-      vhNodeContent.deleteOnExit();
+      File versionableNodeContent = PrivilegedFileHelper.createTempFile("versionableNodeContent", "tmp");
+      File vhNodeContent = PrivilegedFileHelper.createTempFile("vhNodeContent", "tmp");
+      PrivilegedFileHelper.deleteOnExit(versionableNodeContent);
+      PrivilegedFileHelper.deleteOnExit(vhNodeContent);
       serialize(testRoot, false, true, versionableNodeContent);
       serialize(testRoot.getVersionHistory(), false, true, vhNodeContent);
 

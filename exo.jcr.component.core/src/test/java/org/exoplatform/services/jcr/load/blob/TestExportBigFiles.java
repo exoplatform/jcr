@@ -72,13 +72,13 @@ public class TestExportBigFiles extends JcrAPIBaseTest
       log.info("Execution time after adding and saving (local big):" + ((endTime - startTime) / 1000) + "s");
 
       // Exporting repository content
-      File file = File.createTempFile("tesSysExport", ".xml");
+      File file = PrivilegedFileHelper.createTempFile("tesSysExport", ".xml");
 
       BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(PrivilegedFileHelper.fileOutputStream(file));
       session.exportSystemView(testLocalBigFiles.getPath(), bufferedOutputStream, false, false);
       bufferedOutputStream.flush();
       bufferedOutputStream.close();
-      assertTrue(file.length() > 0);
+      assertTrue(PrivilegedFileHelper.length(file) > 0);
 
       // removing source node
       testLocalBigFiles.remove();
@@ -96,12 +96,12 @@ public class TestExportBigFiles extends JcrAPIBaseTest
       Node content = lbf.getNode("jcr:content");
 
       // comparing with source file
-      compareStream(new BufferedInputStream(PrivilegedFileHelper.fileInputStream(TEST_FILE)), content.getProperty("jcr:data")
-         .getStream());
+      compareStream(new BufferedInputStream(PrivilegedFileHelper.fileInputStream(TEST_FILE)), content.getProperty(
+         "jcr:data").getStream());
 
       n1.remove();
       session.save();
-      file.deleteOnExit();
+      PrivilegedFileHelper.deleteOnExit(file);
       file.delete();
 
    }
@@ -136,13 +136,13 @@ public class TestExportBigFiles extends JcrAPIBaseTest
       log.info("Execution time after adding and saving (local big):" + ((endTime - startTime) / 1000) + "s");
 
       // Exporting repository content
-      File file = File.createTempFile("tesDocExport", ".xml");
+      File file = PrivilegedFileHelper.createTempFile("tesDocExport", ".xml");
 
       BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(PrivilegedFileHelper.fileOutputStream(file));
       session.exportDocumentView(testLocalBigFiles.getPath(), bufferedOutputStream, false, false);
       bufferedOutputStream.flush();
       bufferedOutputStream.close();
-      assertTrue(file.length() > 0);
+      assertTrue(PrivilegedFileHelper.length(file) > 0);
 
       // removing source node
       testLocalBigFiles.remove();
@@ -160,12 +160,12 @@ public class TestExportBigFiles extends JcrAPIBaseTest
       Node content = lbf.getNode("jcr:content");
 
       // comparing with source file
-      compareStream(new BufferedInputStream(PrivilegedFileHelper.fileInputStream(TEST_FILE2)), content.getProperty("jcr:data")
-         .getStream());
+      compareStream(new BufferedInputStream(PrivilegedFileHelper.fileInputStream(TEST_FILE2)), content.getProperty(
+         "jcr:data").getStream());
 
       n1.remove();
       session.save();
-      file.deleteOnExit();
+      PrivilegedFileHelper.deleteOnExit(file);
       file.delete();
    }
 
@@ -196,13 +196,13 @@ public class TestExportBigFiles extends JcrAPIBaseTest
       log.info("Execution time after adding and saving (local big):" + ((endTime - startTime) / 1000) + "s");
 
       // Exporting repository content
-      File file = File.createTempFile("tesSysExport", ".xml");
+      File file = PrivilegedFileHelper.createTempFile("tesSysExport", ".xml");
 
       BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(PrivilegedFileHelper.fileOutputStream(file));
       session.exportSystemView(testLocalBigFiles.getPath(), bufferedOutputStream, false, false);
       bufferedOutputStream.flush();
       bufferedOutputStream.close();
-      assertTrue(file.length() > 0);
+      assertTrue(PrivilegedFileHelper.length(file) > 0);
 
       // removing source node
       testLocalBigFiles.remove();
@@ -220,12 +220,12 @@ public class TestExportBigFiles extends JcrAPIBaseTest
       Node content = lbf.getNode("jcr:content");
 
       // comparing with source file
-      compareStream(new BufferedInputStream(PrivilegedFileHelper.fileInputStream(TEST_FILE)), content.getProperty("jcr:data")
-         .getStream());
+      compareStream(new BufferedInputStream(PrivilegedFileHelper.fileInputStream(TEST_FILE)), content.getProperty(
+         "jcr:data").getStream());
 
       n1.remove();
       session.save();
-      file.deleteOnExit();
+      PrivilegedFileHelper.deleteOnExit(file);
       file.delete();
    }
 
@@ -266,13 +266,13 @@ public class TestExportBigFiles extends JcrAPIBaseTest
       }
 
       // Exporting repository content
-      File file = File.createTempFile("tesSysExport", ".xml");
+      File file = PrivilegedFileHelper.createTempFile("tesSysExport", ".xml");
 
       BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(PrivilegedFileHelper.fileOutputStream(file));
       session.exportSystemView(testLocalBigFiles.getPath(), bufferedOutputStream, false, false);
       bufferedOutputStream.flush();
       bufferedOutputStream.close();
-      assertTrue(file.length() > 0);
+      assertTrue(PrivilegedFileHelper.length(file) > 0);
 
       // removing source node
       testLocalBigFiles.remove();
@@ -292,12 +292,12 @@ public class TestExportBigFiles extends JcrAPIBaseTest
          Node lbf = n1.getNode("bigFile" + i);
          Node content = lbf.getNode("jcr:content");
          // comparing with source file
-         compareStream(new BufferedInputStream(PrivilegedFileHelper.fileInputStream(TEST_FILE)), content.getProperty("jcr:data")
-            .getStream());
+         compareStream(new BufferedInputStream(PrivilegedFileHelper.fileInputStream(TEST_FILE)), content.getProperty(
+            "jcr:data").getStream());
       }
       n1.remove();
       session.save();
-      file.deleteOnExit();
+      PrivilegedFileHelper.deleteOnExit(file);
       file.delete();
 
    }
@@ -308,7 +308,7 @@ public class TestExportBigFiles extends JcrAPIBaseTest
       // create test file
       byte[] data = new byte[1024]; // 1Kb
 
-      File testFile = File.createTempFile("exportImportFileTest", ".tmp");
+      File testFile = PrivilegedFileHelper.createTempFile("exportImportFileTest", ".tmp");
       FileOutputStream tempOut = PrivilegedFileHelper.fileOutputStream(testFile);
       Random random = new Random();
 
@@ -325,8 +325,8 @@ public class TestExportBigFiles extends JcrAPIBaseTest
          tempOut.write(data);
       }
       tempOut.close();
-      testFile.deleteOnExit(); // delete on test exit
-      log.info("Temp file created: " + testFile.getAbsolutePath() + " size: " + testFile.length());
+      PrivilegedFileHelper.deleteOnExit(testFile);
+      log.info("Temp file created: " + testFile.getAbsolutePath() + " size: " + PrivilegedFileHelper.length(testFile));
       return testFile;
    }
 }

@@ -44,12 +44,12 @@ public class FileRestoreTest extends BaseUsecasesTest
    public void testBigFileRestore() throws Exception
    {
 
-      File tempFile = File.createTempFile("tempFile", "doc");
-      File tempFile2 = File.createTempFile("tempFile", "doc");
-      File tempFile3 = File.createTempFile("tempFile", "doc");
-      tempFile.deleteOnExit();
-      tempFile2.deleteOnExit();
-      tempFile3.deleteOnExit();
+      File tempFile = PrivilegedFileHelper.createTempFile("tempFile", "doc");
+      File tempFile2 = PrivilegedFileHelper.createTempFile("tempFile", "doc");
+      File tempFile3 = PrivilegedFileHelper.createTempFile("tempFile", "doc");
+      PrivilegedFileHelper.deleteOnExit(tempFile);
+      PrivilegedFileHelper.deleteOnExit(tempFile2);
+      PrivilegedFileHelper.deleteOnExit(tempFile3);
 
       FileOutputStream fos = PrivilegedFileHelper.fileOutputStream(tempFile);
       FileOutputStream fos2 = PrivilegedFileHelper.fileOutputStream(tempFile2);
@@ -70,9 +70,9 @@ public class FileRestoreTest extends BaseUsecasesTest
       fos2.close();
       fos3.close();
 
-      log.info("FILE for VERSION #1 : file size = " + tempFile.length() + " bytes");
-      log.info("FILE for VERSION #2 : file size = " + tempFile2.length() + " bytes");
-      log.info("FILE for VERSION #3 : file size = " + tempFile3.length() + " bytes");
+      log.info("FILE for VERSION #1 : file size = " + PrivilegedFileHelper.length(tempFile) + " bytes");
+      log.info("FILE for VERSION #2 : file size = " + PrivilegedFileHelper.length(tempFile2) + " bytes");
+      log.info("FILE for VERSION #3 : file size = " + PrivilegedFileHelper.length(tempFile3) + " bytes");
 
       Node file = root.addNode("nt_file_node", "nt:file");
       Node contentNode = file.addNode("jcr:content", "nt:resource");
@@ -117,6 +117,7 @@ public class FileRestoreTest extends BaseUsecasesTest
       // restore version v2 again
       file.restore(v2, true);
 
-      compareStream(PrivilegedFileHelper.fileInputStream(tempFile2), file.getNode("jcr:content").getProperty("jcr:data").getStream());
+      compareStream(PrivilegedFileHelper.fileInputStream(tempFile2), file.getNode("jcr:content")
+         .getProperty("jcr:data").getStream());
    }
 }

@@ -176,7 +176,7 @@ public class RandomValueNodeGenerator extends WeightNodeGenerator
       // create test file
       byte[] data = new byte[1024]; // 1Kb
 
-      File testFile = File.createTempFile("randomsizefile", ".tmp");
+      File testFile = PrivilegedFileHelper.createTempFile("randomsizefile", ".tmp");
       FileOutputStream tempOut = PrivilegedFileHelper.fileOutputStream(testFile);
 
       for (int i = 0; i < sizeInb; i += 1024)
@@ -192,8 +192,8 @@ public class RandomValueNodeGenerator extends WeightNodeGenerator
          tempOut.write(data);
       }
       tempOut.close();
-      testFile.deleteOnExit(); // delete on test exit
-      log.info("Temp file created: " + testFile.getAbsolutePath() + " size: " + testFile.length());
+      PrivilegedFileHelper.deleteOnExit(testFile);
+      log.info("Temp file created: " + testFile.getAbsolutePath() + " size: " + PrivilegedFileHelper.length(testFile));
       return testFile;
    }
 

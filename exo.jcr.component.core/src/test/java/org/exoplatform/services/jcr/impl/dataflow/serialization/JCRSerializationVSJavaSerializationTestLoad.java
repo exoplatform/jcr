@@ -75,7 +75,7 @@ public class JCRSerializationVSJavaSerializationTestLoad extends JcrImplSerializ
 
          it = list.iterator();
 
-         File jcrfile = File.createTempFile("jcr", "test");
+         File jcrfile = PrivilegedFileHelper.createTempFile("jcr", "test");
          ObjectWriterImpl jcrout = new ObjectWriterImpl(PrivilegedFileHelper.fileOutputStream(jcrfile));
 
          long t1 = System.currentTimeMillis();
@@ -112,7 +112,7 @@ public class JCRSerializationVSJavaSerializationTestLoad extends JcrImplSerializ
       long javaRead = 0;
       for (int j = 0; j < iterations; j++)
       {
-         File jfile = File.createTempFile("java", "test");
+         File jfile = PrivilegedFileHelper.createTempFile("java", "test");
          ObjectOutputStream jout = new ObjectOutputStream(PrivilegedFileHelper.fileOutputStream(jfile));
 
          it = list.iterator();

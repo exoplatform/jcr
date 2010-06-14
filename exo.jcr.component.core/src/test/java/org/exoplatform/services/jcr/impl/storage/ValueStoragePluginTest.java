@@ -195,8 +195,8 @@ public class ValueStoragePluginTest extends BaseStandaloneTest
             Node content = lbf.getNode("jcr:content");
 
             // comparing with source file
-            compareStream(new BufferedInputStream(PrivilegedFileHelper.fileInputStream(blobFiles.get(j))), content.getProperty(
-               "jcr:data").getStream());
+            compareStream(new BufferedInputStream(PrivilegedFileHelper.fileInputStream(blobFiles.get(j))), content
+               .getProperty("jcr:data").getStream());
          }
          n1.remove();
          currenSession.save();
@@ -229,7 +229,7 @@ public class ValueStoragePluginTest extends BaseStandaloneTest
       // create test file
       byte[] data = new byte[1024]; // 1Kb
 
-      File testFile = File.createTempFile(IdGenerator.generate(), ".tmp");
+      File testFile = PrivilegedFileHelper.createTempFile(IdGenerator.generate(), ".tmp");
       FileOutputStream tempOut = PrivilegedFileHelper.fileOutputStream(testFile);
       Random random = new Random();
 
@@ -246,8 +246,8 @@ public class ValueStoragePluginTest extends BaseStandaloneTest
          tempOut.write(data);
       }
       tempOut.close();
-      testFile.deleteOnExit(); // delete on test exit
-      log.info("Temp file created: " + testFile.getAbsolutePath() + " size: " + testFile.length());
+      PrivilegedFileHelper.deleteOnExit(testFile);
+      log.info("Temp file created: " + testFile.getAbsolutePath() + " size: " + PrivilegedFileHelper.length(testFile));
       return testFile;
    }
 

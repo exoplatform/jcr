@@ -34,7 +34,7 @@ import java.util.WeakHashMap;
  * For use in TransienValueData (may be shared in the Workspace cache with another Sessions). Spool
  * files used in ValueData for incoming values managed by SpoolFile class. Spool file may be created
  * with constructor or be obtained from static method createTempFile(String, String, File), which
- * itself create physical file using File.createTempFile(prefix, suffix, directory) call. Spool file
+ * itself create physical file using PrivilegedFileHelper.createTempFile(prefix, suffix, directory) call. Spool file
  * may be acquired for usage by any object (SpoolFile.acquire(Object)). Till this object will call
  * release (SpoolFile.release(Object)) or will be garbage collected it's impossible to delete the
  * spool file (by File.delete() method).

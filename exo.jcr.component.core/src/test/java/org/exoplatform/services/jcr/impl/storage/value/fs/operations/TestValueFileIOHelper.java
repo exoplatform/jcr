@@ -96,13 +96,13 @@ public class TestValueFileIOHelper extends JcrImplBaseTest
       if (src == null || !src.exists())
       {
          src = createBLOBTempFile(7 * 1024); // 7M
-         src.deleteOnExit();
+         PrivilegedFileHelper.deleteOnExit(src);
       }
 
       if (srcSerialization == null || !srcSerialization.exists())
       {
-         srcSerialization = File.createTempFile("srcSerialization", ".tmp");
-         srcSerialization.deleteOnExit();
+         srcSerialization = PrivilegedFileHelper.createTempFile("srcSerialization", ".tmp");
+         PrivilegedFileHelper.deleteOnExit(srcSerialization);
 
          OutputStream out = PrivilegedFileHelper.fileOutputStream(srcSerialization);
          ObjectWriter ow = new ObjectWriterImpl(out);
@@ -126,7 +126,7 @@ public class TestValueFileIOHelper extends JcrImplBaseTest
       testDir = PrivilegedFileHelper.file("target/TestValueFileIOHelper");
       testDir.mkdirs();
 
-      dest = File.createTempFile("vdftest", "", testDir);
+      dest = PrivilegedFileHelper.createTempFile("vdftest", "", testDir);
    }
 
    @Override
@@ -140,7 +140,7 @@ public class TestValueFileIOHelper extends JcrImplBaseTest
    public void testCopySerialization() throws Exception
    {
 
-      System.out.println("=== test Serialization, file size:  " + srcSerialization.length());
+      System.out.println("=== test Serialization, file size:  " + PrivilegedFileHelper.length(srcSerialization));
 
       // copy via InputStream
       long start = System.currentTimeMillis();
@@ -174,7 +174,7 @@ public class TestValueFileIOHelper extends JcrImplBaseTest
 
       // clean and recreate file
       dest.delete();
-      dest = File.createTempFile("vdftest", "", testDir);
+      dest = PrivilegedFileHelper.createTempFile("vdftest", "", testDir);
 
       // copy via NIO
       start = System.currentTimeMillis();
@@ -204,7 +204,7 @@ public class TestValueFileIOHelper extends JcrImplBaseTest
          + (System.currentTimeMillis() - start));
 
       // check length
-      assertEquals(srcSerialization.length(), dest.length());
+      assertEquals(PrivilegedFileHelper.length(srcSerialization), PrivilegedFileHelper.length(dest));
    }
 
    public void testCopyFileToFile() throws Exception
@@ -213,7 +213,7 @@ public class TestValueFileIOHelper extends JcrImplBaseTest
       io.copyClose(PrivilegedFileHelper.fileInputStream(src), PrivilegedFileHelper.fileOutputStream(dest));
 
       // check length
-      assertEquals(src.length(), dest.length());
+      assertEquals(PrivilegedFileHelper.length(src), PrivilegedFileHelper.length(dest));
 
       // check content
       // InputStream srcin = PrivilegedFileHelper.fileInputStream(src);
@@ -229,7 +229,7 @@ public class TestValueFileIOHelper extends JcrImplBaseTest
    public void testCopyBytesToFile() throws Exception
    {
 
-      System.out.println("=== test copyBytesToFile, file size:  " + src.length());
+      System.out.println("=== test copyBytesToFile, file size:  " + PrivilegedFileHelper.length(src));
 
       // copy via InputStream
       long start = System.currentTimeMillis();
@@ -257,17 +257,18 @@ public class TestValueFileIOHelper extends JcrImplBaseTest
 
       // clean and recreate file
       dest.delete();
-      dest = File.createTempFile("vdftest", "", testDir);
+      dest = PrivilegedFileHelper.createTempFile("vdftest", "", testDir);
 
       // copy via NIO
       start = System.currentTimeMillis();
-      io.copyClose(new BufferedInputStream(PrivilegedFileHelper.fileInputStream(src)), PrivilegedFileHelper.fileOutputStream(dest));
+      io.copyClose(new BufferedInputStream(PrivilegedFileHelper.fileInputStream(src)), PrivilegedFileHelper
+         .fileOutputStream(dest));
       // io.copyClose(new URL("http://jboss1.exoua-int:8089/browser/02.zip").openStream(), new
       // FileOutputStream(dest));
       System.out.println("\t=== NIO time " + (System.currentTimeMillis() - start));
 
       // check length
-      assertEquals(src.length(), dest.length());
+      assertEquals(PrivilegedFileHelper.length(src), PrivilegedFileHelper.length(dest));
 
       // check content
       // InputStream srcin = PrivilegedFileHelper.fileInputStream(src);

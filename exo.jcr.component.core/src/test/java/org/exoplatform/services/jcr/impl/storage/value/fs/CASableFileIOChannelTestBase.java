@@ -123,7 +123,8 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
       assertTrue("File should exists " + vsfile.getAbsolutePath(), vsfile.exists());
 
       InputStream etalon, tested;
-      compareStream(etalon = PrivilegedFileHelper.fileInputStream(testFile), tested = PrivilegedFileHelper.fileInputStream(vsfile));
+      compareStream(etalon = PrivilegedFileHelper.fileInputStream(testFile), tested =
+         PrivilegedFileHelper.fileInputStream(vsfile));
       etalon.close();
       tested.close();
    }
@@ -152,7 +153,8 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
       try
       {
          fch = openCASChannel(digestType);
-         fch.write(new String(propertyId), new StreamPersistedValueData(0, PrivilegedFileHelper.fileInputStream(testFile)));
+         fch.write(new String(propertyId), new StreamPersistedValueData(0, PrivilegedFileHelper
+            .fileInputStream(testFile)));
          fch.commit();
 
          fail("RecordAlreadyExistsException should be thrown, record exists");
@@ -326,8 +328,8 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
             CASableIOSupport.HASHFILE_ORDERNUMBER));
       assertTrue("File should exists " + vsfile.getAbsolutePath(), vsfile.exists());
 
-      assertEquals("Storage size must be increased on size of ONE file ", initialSize + testFile.length(),
-         calcDirSize(rootDir));
+      assertEquals("Storage size must be increased on size of ONE file ", initialSize
+         + PrivilegedFileHelper.length(testFile), calcDirSize(rootDir));
    }
 
    /**
@@ -347,7 +349,7 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
       for (int i = 0; i < 20; i++)
       {
          File f = createBLOBTempFile(300);
-         addedSize += f.length();
+         addedSize += PrivilegedFileHelper.length(f);
          fch.write(propertyId, new StreamPersistedValueData(i, PrivilegedFileHelper.fileInputStream(f)));
       }
       fch.commit();
@@ -382,8 +384,8 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
          fch.commit();
       }
 
-      assertEquals("Storage size must be increased on size of ONE file ", initialSize + testFile.length(),
-         calcDirSize(rootDir));
+      assertEquals("Storage size must be increased on size of ONE file ", initialSize
+         + PrivilegedFileHelper.length(testFile), calcDirSize(rootDir));
    }
 
    /**
@@ -404,7 +406,7 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
          propertyId = IdGenerator.generate();
 
          File f = createBLOBTempFile(300);
-         addedSize += f.length();
+         addedSize += PrivilegedFileHelper.length(f);
 
          FileIOChannel fch = openCASChannel(digestType);
          fch.write(propertyId, new StreamPersistedValueData(i, PrivilegedFileHelper.fileInputStream(f)));
@@ -446,8 +448,8 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
       fch.delete(propertyId);
       fch.commit();
 
-      assertEquals("Storage size must be unchanged after the delete ", initialSize + testFile.length(),
-         calcDirSize(rootDir));
+      assertEquals("Storage size must be unchanged after the delete ", initialSize
+         + PrivilegedFileHelper.length(testFile), calcDirSize(rootDir));
    }
 
    /**
@@ -475,7 +477,7 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
             propertyId = pid;
 
          File f = createBLOBTempFile(fileSizeKb);
-         addedSize += (fileSize = f.length());
+         addedSize += (fileSize = PrivilegedFileHelper.length(f));
 
          FileIOChannel fch = openCASChannel(digestType);
          fch.write(pid, new StreamPersistedValueData(i, PrivilegedFileHelper.fileInputStream(f)));
@@ -516,7 +518,7 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
       for (int i = 0; i < 5; i++)
       {
          File f = createBLOBTempFile(450);
-         addedSize += (m1fileSize = f.length());
+         addedSize += (m1fileSize = PrivilegedFileHelper.length(f));
 
          StreamPersistedValueData v = new StreamPersistedValueData(i, PrivilegedFileHelper.fileInputStream(f));
 
@@ -548,7 +550,7 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
             // new file
             m2filesCount++;
             File f = createBLOBTempFile(350);
-            addedSize += (m2fileSize = f.length()); // add size
+            addedSize += (m2fileSize = PrivilegedFileHelper.length(f)); // add size
             v = new StreamPersistedValueData(i, PrivilegedFileHelper.fileInputStream(f));
          }
          fch.write(property2MultivaluedId, v);
@@ -576,7 +578,7 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
          else
          {
             File f = createBLOBTempFile(425);
-            addedSize += f.length();
+            addedSize += PrivilegedFileHelper.length(f);
             v = new StreamPersistedValueData(i, PrivilegedFileHelper.fileInputStream(f));
          }
          FileIOChannel vfch = openCASChannel(digestType);
@@ -644,7 +646,7 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
          if (sf.isDirectory())
             size += calcDirSize(sf);
          else
-            size += sf.length();
+            size += PrivilegedFileHelper.length(sf);
       }
       return size;
    }

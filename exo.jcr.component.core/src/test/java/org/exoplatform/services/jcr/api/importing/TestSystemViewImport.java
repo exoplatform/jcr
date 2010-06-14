@@ -251,7 +251,7 @@ public class TestSystemViewImport extends AbstractImportTest
 
       // export
 
-      File tmp = File.createTempFile("__exojcr_TestSysView__", ".tmp");
+      File tmp = PrivilegedFileHelper.createTempFile("__exojcr_TestSysView__", ".tmp");
 
       OutputStream xmlOut = PrivilegedFileHelper.fileOutputStream(tmp);
       sysview.getSession().exportSystemView(ref.getPath(), xmlOut, false, false);
