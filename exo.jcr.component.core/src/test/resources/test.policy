@@ -1,12 +1,14 @@
-grant codeBase "file:/home/tolusha/java/exo-jcr/jcr/trunk/exo.jcr.component.core/target/classes/-"{                                                                                                                                                       
+grant codeBase "@MAVEN_REPO@/-"{
+   permission java.security.AllPermission;      
+};
+
+grant codeBase "@MAIN_CLASSES@/-"{                                                                                                                                                       
     permission java.security.AllPermission;
 };
 
-grant codeBase "file:/home/tolusha/java/exo-dependencies/repository/-"{
-	permission java.security.AllPermission;      
-};
 
-grant codeBase "file:/home/tolusha/java/exo-jcr/jcr/trunk/exo.jcr.component.core/target/test-classes/-"{
+
+grant codeBase "@TEST_CLASSES@/-"{
 	permission java.lang.RuntimePermission "setSecurityManager";
 	permission java.lang.RuntimePermission "getJCRSystemSession";
 	permission java.lang.RuntimePermission "manageRepository";
