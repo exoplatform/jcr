@@ -49,7 +49,7 @@ public class TestArabicSearch extends BaseQueryTest
    public void testSearchWithEncodingParameter() throws Exception
    {
 
-      File file = PrivilegedFileHelper.file("src/test/resources/ArabicUTF8.txt");
+      File file = new File("src/test/resources/ArabicUTF8.txt");
       assertTrue("/test/resources/ArabicUTF8.txt not found", file.exists());
 
       FileInputStream fis = PrivilegedFileHelper.fileInputStream(file);

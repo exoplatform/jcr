@@ -170,9 +170,9 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
          else
          {
             URL filePath = configurationService.getURL(param.getValue());
-            File sourceConfig = PrivilegedFileHelper.file(filePath.toURI());
+            File sourceConfig = new File(filePath.toURI());
             SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmm");
-            File backUp = PrivilegedFileHelper.file(sourceConfig.getAbsoluteFile() + "_" + format.format(new Date()));
+            File backUp = new File(sourceConfig.getAbsoluteFile() + "_" + format.format(new Date()));
             if (!sourceConfig.renameTo(backUp))
                throw new RepositoryException("Can't back up configuration on path " + sourceConfig.getAbsolutePath());
             saveStream = PrivilegedFileHelper.fileOutputStream(sourceConfig);

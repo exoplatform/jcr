@@ -66,7 +66,7 @@ public class TreeFileIOChannel extends FileIOChannel
    @Override
    protected File[] getFiles(final String propertyId) throws IOException
    {
-      final File dir = PrivilegedFileHelper.file(PrivilegedFileHelper.getAbsolutePath(rootDir) + buildPath(propertyId));
+      final File dir = new File(PrivilegedFileHelper.getAbsolutePath(rootDir) + buildPath(propertyId));
       String[] fileNames = PrivilegedFileHelper.list(dir);
       File[] files = new File[fileNames.length];
       for (int i = 0; i < fileNames.length; i++)

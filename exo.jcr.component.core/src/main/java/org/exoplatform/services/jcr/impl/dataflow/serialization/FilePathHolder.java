@@ -19,7 +19,6 @@
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -86,7 +85,7 @@ public class FilePathHolder
       List<String> ls = new ArrayList<String>(filePathMap.values());
 
       for (String fPath : ls)
-         cleaner.addFile(PrivilegedFileHelper.file(fPath));
+         cleaner.addFile(new File(fPath));
    }
 
 }

@@ -130,7 +130,7 @@ public abstract class ValueFileOperation extends ValueFileIOHelper implements Va
             public Object run() throws Exception
             {
                // lock file in temp directory
-               lockFile = PrivilegedFileHelper.file(tempDir, targetFile.getName() + LOCK_FILE_EXTENSION);
+               lockFile = new File(tempDir, targetFile.getName() + LOCK_FILE_EXTENSION);
 
                FileOutputStream lout = PrivilegedFileHelper.fileOutputStream(lockFile, true);
                lout.write(operationInfo.getBytes()); // TODO write info

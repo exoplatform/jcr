@@ -23,7 +23,6 @@ import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.Calendar;
@@ -71,9 +70,9 @@ public class TestRestoreWorkspaceInitializer extends JcrImplBaseTest
       root.save();
 
       is.close();
-      f.renameTo(PrivilegedFileHelper.file("./sv_export_binary.bin"));
+      f.renameTo(new File("./sv_export_binary.bin"));
 
-      File outf = PrivilegedFileHelper.file("./sv_export_root.xml");
+      File outf = new File("./sv_export_root.xml");
       FileOutputStream out = PrivilegedFileHelper.fileOutputStream(outf);
       session.exportWorkspaceSystemView(out, false, false);
       out.close();
@@ -120,8 +119,8 @@ public class TestRestoreWorkspaceInitializer extends JcrImplBaseTest
             p = multiv.getProperty("exojcrtest:multiValuedName");
             p.getValues();
 
-            compareStream(PrivilegedFileHelper.fileInputStream("./sv_export_binary.bin"), root.getNode("binaryTest").getProperty("blob")
-               .getStream());
+            compareStream(PrivilegedFileHelper.fileInputStream("./sv_export_binary.bin"), root.getNode("binaryTest")
+               .getProperty("blob").getStream());
          }
          catch (ValueFormatException e)
          {

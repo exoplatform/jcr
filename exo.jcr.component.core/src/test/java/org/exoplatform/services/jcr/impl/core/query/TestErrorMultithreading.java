@@ -19,7 +19,6 @@ package org.exoplatform.services.jcr.impl.core.query;
 
 import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
@@ -76,7 +75,7 @@ public class TestErrorMultithreading extends BaseQueryTest
 
          public Session sess;
 
-         File file = PrivilegedFileHelper.file("src/test/resources/LARGE.txt");
+         File file = new File("src/test/resources/LARGE.txt");
 
          public FileInputStream fis = null;
 

@@ -23,6 +23,7 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.TesterItemsPersistenceListener;
 
+import java.io.FileNotFoundException;
 import java.security.AccessControlException;
 import java.security.PrivilegedExceptionAction;
 
@@ -34,7 +35,7 @@ public class TestSecurityRepositoryManagment extends BaseSecurityTest
 {
    private static String testWorkspaceName = "testWorkspace";
 
-   public void testGetSystemSessionSuccess()
+   public void testGetSystemSessionSuccess() throws FileNotFoundException
    {
       PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
       {

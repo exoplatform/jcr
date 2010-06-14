@@ -19,7 +19,6 @@
 package org.exoplatform.services.jcr.impl.storage.value.fs;
 
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -63,7 +62,7 @@ public class TreeFile extends File
          {
             boolean res = deleteFromSuper();
             if (res)
-               deleteParent(PrivilegedFileHelper.file(getParent()));
+               deleteParent(new File(getParent()));
 
             return res;
          }
@@ -84,7 +83,7 @@ public class TreeFile extends File
             {
                if (res = fp.delete())
                {
-                  res = deleteParent(PrivilegedFileHelper.file(fp.getParent()));
+                  res = deleteParent(new File(fp.getParent()));
                }
                else
                {

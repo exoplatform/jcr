@@ -18,13 +18,13 @@ package org.exoplatform.services.jcr.api.core.query;
 
 import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
-import javax.jcr.Node;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.InputStream;
-import java.io.FileInputStream;
-import java.io.BufferedInputStream;
 import java.net.URLConnection;
 import java.util.Calendar;
+
+import javax.jcr.Node;
 
 /**
  * <code>TextExtractorTest</code> implements a file / folder import from the
@@ -39,7 +39,7 @@ public class TextExtractorTest extends AbstractQueryTest
 
    public void testImport() throws Exception
    {
-      File sourceFolder = PrivilegedFileHelper.file(TEST_FOLDER);
+      File sourceFolder = new File(TEST_FOLDER);
       // only run if there is test data
       if (!sourceFolder.exists())
       {
@@ -60,7 +60,7 @@ public class TextExtractorTest extends AbstractQueryTest
       String[] names = folder.list();
       for (int i = 0; i < names.length; i++)
       {
-         File f = PrivilegedFileHelper.file(folder, names[i]);
+         File f = new File(folder, names[i]);
          if (f.canRead())
          {
             if (f.isDirectory())
@@ -88,7 +88,7 @@ public class TextExtractorTest extends AbstractQueryTest
     */
    public void testRepeatedUpdate() throws Exception
    {
-      File testFile = PrivilegedFileHelper.file("test.pdf");
+      File testFile = new File("test.pdf");
       if (!testFile.exists())
       {
          return;

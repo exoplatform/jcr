@@ -148,8 +148,8 @@ public class JCRStatisticsManager
       try
       {
          file =
-            PrivilegedFileHelper.file(System.getProperty("user.dir"), "Statistics" + category + "-"
-               + System.currentTimeMillis() + ".csv");
+            new File(System.getProperty("user.dir"), "Statistics" + category + "-" + System.currentTimeMillis()
+               + ".csv");
          file.createNewFile();
          pw = new PrintWriter(file);
       }
@@ -159,7 +159,8 @@ public class JCRStatisticsManager
             + " in the user directory, we will try to create it in the temp directory", e);
          try
          {
-            file = PrivilegedFileHelper.createTempFile("Statistics" + category, "-" + System.currentTimeMillis() + ".csv");
+            file =
+               PrivilegedFileHelper.createTempFile("Statistics" + category, "-" + System.currentTimeMillis() + ".csv");
             pw = new PrintWriter(file);
          }
          catch (IOException e1)

@@ -123,7 +123,7 @@ public class TestValueFileIOHelper extends JcrImplBaseTest
          out.close();
       }
 
-      testDir = PrivilegedFileHelper.file("target/TestValueFileIOHelper");
+      testDir = new File("target/TestValueFileIOHelper");
       testDir.mkdirs();
 
       dest = PrivilegedFileHelper.createTempFile("vdftest", "", testDir);

@@ -87,7 +87,7 @@ public class PersistedValueDataReader
     */
    public AbstractPersistedValueData read(ObjectReader in) throws UnknownClassIdException, IOException
    {
-      File tempDirectory = PrivilegedFileHelper.file(SerializationConstants.TEMP_DIR);
+      File tempDirectory = new File(SerializationConstants.TEMP_DIR);
       tempDirectory.mkdirs();
 
       // read id

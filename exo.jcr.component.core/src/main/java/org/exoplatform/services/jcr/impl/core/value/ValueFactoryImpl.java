@@ -30,7 +30,6 @@ import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.impl.util.io.WorkspaceFileCleanerHolder;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.log.ExoLogger;
@@ -84,7 +83,7 @@ public class ValueFactoryImpl implements ValueFactory
       {
          public Object run()
          {
-            tempDirectory = PrivilegedFileHelper.file(System.getProperty("java.io.tmpdir"));
+            tempDirectory = new File(System.getProperty("java.io.tmpdir"));
             return null;
          }
       };
@@ -105,7 +104,7 @@ public class ValueFactoryImpl implements ValueFactory
       {
          public Object run()
          {
-            tempDirectory = PrivilegedFileHelper.file(System.getProperty("java.io.tmpdir"));
+            tempDirectory = new File(System.getProperty("java.io.tmpdir"));
             return null;
          }
       };

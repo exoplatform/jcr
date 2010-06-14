@@ -23,7 +23,6 @@ import org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.DirectoryManager;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.FSDirectoryManager;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.RAMDirectoryManager;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.File;
 import java.util.Arrays;
@@ -48,15 +47,14 @@ public class DirectoryManagerTest extends TestCase
 
    static
    {
-      INDEX.setPath(PrivilegedFileHelper.file(PrivilegedFileHelper.file("target"), "directory-factory-test")
-         .getAbsolutePath());
+      INDEX.setPath(new File(new File("target"), "directory-factory-test").getAbsolutePath());
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      PrivilegedFileHelper.file(INDEX.getPath(), TEST).delete();
-      PrivilegedFileHelper.file(INDEX.getPath(), RENAMED).delete();
+      new File(INDEX.getPath(), TEST).delete();
+      new File(INDEX.getPath(), RENAMED).delete();
    }
 
    public void testHasDirectory() throws Exception

@@ -23,7 +23,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URI;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
@@ -346,54 +345,6 @@ public class PrivilegedFileHelper
          public Boolean run()
          {
             return new Boolean(srcFile.renameTo(dstfile));
-         }
-      };
-      return AccessController.doPrivileged(action);
-   }
-
-   public static File file(final String pathname)
-   {
-      PrivilegedAction<File> action = new PrivilegedAction<File>()
-      {
-         public File run()
-         {
-            return new File(pathname);
-         }
-      };
-      return AccessController.doPrivileged(action);
-   }
-
-   public static File file(final URI uri)
-   {
-      PrivilegedAction<File> action = new PrivilegedAction<File>()
-      {
-         public File run()
-         {
-            return new File(uri);
-         }
-      };
-      return AccessController.doPrivileged(action);
-   }
-
-   public static File file(final String parent, final String child)
-   {
-      PrivilegedAction<File> action = new PrivilegedAction<File>()
-      {
-         public File run()
-         {
-            return new File(parent, child);
-         }
-      };
-      return AccessController.doPrivileged(action);
-   }
-
-   public static File file(final File parent, final String child)
-   {
-      PrivilegedAction<File> action = new PrivilegedAction<File>()
-      {
-         public File run()
-         {
-            return new File(parent, child);
          }
       };
       return AccessController.doPrivileged(action);

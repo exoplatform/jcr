@@ -67,7 +67,6 @@ import org.xml.sax.SAXException;
 
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -488,7 +487,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       if (path != null)
       {
 
-         indexDirectory = PrivilegedFileHelper.file(path);
+         indexDirectory = new File(path);
          if (!indexDirectory.exists())
          {
             if (!indexDirectory.mkdirs())
@@ -522,7 +521,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       else
       {
          // read local namespace mappings
-         File mapFile = PrivilegedFileHelper.file(indexDirectory, NS_MAPPING_FILE);
+         File mapFile = new File(indexDirectory, NS_MAPPING_FILE);
          if (mapFile.exists())
          {
             // be backward compatible and use ns_mappings.properties from
@@ -591,7 +590,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
             new Integer(getIndexFormatVersion().getVersion()));
       }
 
-      File file = PrivilegedFileHelper.file(indexDirectory, ERROR_LOG);
+      File file = new File(indexDirectory, ERROR_LOG);
       errorLog = new ErrorLog(file, errorLogfileSize);
       // reprocess any notfinished notifies;
       if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
@@ -1321,14 +1320,14 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
             int lastSeparator = synonymProviderConfigPath.lastIndexOf(separator);
             if (lastSeparator != -1)
             {
-               File root = PrivilegedFileHelper.file(path, synonymProviderConfigPath.substring(0, lastSeparator));
+               File root = new File(path, synonymProviderConfigPath.substring(0, lastSeparator));
                fsr =
-                  new BufferedInputStream(PrivilegedFileHelper.fileInputStream(PrivilegedFileHelper.file(root, synonymProviderConfigPath
+                  new BufferedInputStream(PrivilegedFileHelper.fileInputStream(new File(root, synonymProviderConfigPath
                      .substring(lastSeparator + 1))));
             }
             else
             {
-               fsr = new BufferedInputStream(PrivilegedFileHelper.fileInputStream(PrivilegedFileHelper.file(synonymProviderConfigPath)));
+               fsr = new BufferedInputStream(PrivilegedFileHelper.fileInputStream(new File(synonymProviderConfigPath)));
 
             }
             synonymProviderConfigFs = fsr;

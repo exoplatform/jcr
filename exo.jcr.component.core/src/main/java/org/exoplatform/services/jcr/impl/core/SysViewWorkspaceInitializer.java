@@ -51,7 +51,6 @@ import org.exoplatform.services.log.Log;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -417,7 +416,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
             + ") RestoreIntializer should have mandatory parameter "
             + SysViewWorkspaceInitializer.RESTORE_PATH_PARAMETER);
 
-      this.tempDir = PrivilegedFileHelper.file(System.getProperty("java.io.tmpdir"));
+      this.tempDir = new File(System.getProperty("java.io.tmpdir"));
    }
 
    /**
@@ -463,7 +462,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
             WorkspaceDataContainer.DEF_MAXBUFFERSIZE);
       this.restorePath = restorePath;
 
-      this.tempDir = PrivilegedFileHelper.file(System.getProperty("java.io.tmpdir"));
+      this.tempDir = new File(System.getProperty("java.io.tmpdir"));
    }
 
    /**

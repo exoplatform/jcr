@@ -46,9 +46,9 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
 
    private static final String FILE_NAME = "testFileCleaned";
 
-   private File parentDir = PrivilegedFileHelper.file("./target");
+   private File parentDir = new File("./target");
 
-   private File testFile = PrivilegedFileHelper.file(parentDir, FILE_NAME);
+   private File testFile = new File(parentDir, FILE_NAME);
 
    private FileCleaner testCleaner;
 

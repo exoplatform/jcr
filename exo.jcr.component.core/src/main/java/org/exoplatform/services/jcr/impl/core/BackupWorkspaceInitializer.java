@@ -47,7 +47,6 @@ import java.io.EOFException;
 import java.io.Externalizable;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -100,7 +99,7 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
       else
          restorePath = fullBackupPath;
 
-      this.tempDir = PrivilegedFileHelper.file(System.getProperty("java.io.tmpdir"));
+      this.tempDir = new File(System.getProperty("java.io.tmpdir"));
    }
 
    @Override
@@ -286,7 +285,7 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
    {
       ArrayList<File> list = new ArrayList<File>();
 
-      File rDir = PrivilegedFileHelper.file(restoreDir);
+      File rDir = new File(restoreDir);
       Pattern fullBackupPattern = Pattern.compile(".+\\.0");
 
       for (File f : rDir.listFiles(new BackupFilesFilter()))
@@ -308,7 +307,7 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
 
    private String getFullBackupPath()
    {
-      File rDir = PrivilegedFileHelper.file(restoreDir);
+      File rDir = new File(restoreDir);
       Pattern p = Pattern.compile(".+\\.0");
 
       for (File f : rDir.listFiles(new BackupFilesFilter()))

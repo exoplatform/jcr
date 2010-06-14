@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs;
 
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -89,6 +88,6 @@ public class CASableIOSupport
    public File getFile(String hash)
    {
       // work with digest
-      return PrivilegedFileHelper.file(channel.rootDir, channel.makeFilePath(hash, 0));
+      return new File(channel.rootDir, channel.makeFilePath(hash, 0));
    }
 }

@@ -58,7 +58,7 @@ public class TestPersistedValueData extends TestCase
    {
 
       byte[] buf = "0123456789".getBytes();
-      File file = PrivilegedFileHelper.file("target/testCreateFileStreamValueData");
+      File file = new File("target/testCreateFileStreamValueData");
       if (file.exists())
          file.delete();
       FileOutputStream out = PrivilegedFileHelper.fileOutputStream(file);
@@ -84,7 +84,7 @@ public class TestPersistedValueData extends TestCase
    {
 
       byte[] buf = "0123456789".getBytes();
-      SwapFile file = SwapFile.get(PrivilegedFileHelper.file("target"), "testIfFinalizeRemovesTempFileStreamValueData");
+      SwapFile file = SwapFile.get(new File("target"), "testIfFinalizeRemovesTempFileStreamValueData");
       //File file = PrivilegedFileHelper.file("target/testIfFinalizeRemovesTempFileStreamValueData");
       //if (file.exists())
       //  file.delete();
@@ -111,7 +111,7 @@ public class TestPersistedValueData extends TestCase
       byte[] buf =
          "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"
             .getBytes();
-      File file = PrivilegedFileHelper.file("target/testConcurrentFileStreamValueDataReading");
+      File file = new File("target/testConcurrentFileStreamValueDataReading");
       if (file.exists())
          file.delete();
       FileOutputStream out = PrivilegedFileHelper.fileOutputStream(file);

@@ -31,7 +31,6 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 
 /**
@@ -70,10 +69,10 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
 
       if (rootDir == null)
       {
-         rootDir = PrivilegedFileHelper.file("target/temp/values-test");
+         rootDir = new File("target/temp/values-test");
          rootDir.mkdirs();
 
-         PrivilegedFileHelper.file(rootDir, FileValueStorage.TEMP_DIR_NAME).mkdirs();
+         new File(rootDir, FileValueStorage.TEMP_DIR_NAME).mkdirs();
 
          if (!rootDir.exists())
             throw new Exception("Folder does not exist " + rootDir.getAbsolutePath());
@@ -117,8 +116,7 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
       fch.commit();
 
       File vsfile =
-         PrivilegedFileHelper.file(rootDir, fch.makeFilePath(vcas.getIdentifier(propertyId, 0),
-            CASableIOSupport.HASHFILE_ORDERNUMBER)); // orderNum
+         new File(rootDir, fch.makeFilePath(vcas.getIdentifier(propertyId, 0), CASableIOSupport.HASHFILE_ORDERNUMBER)); // orderNum
       // =0
       assertTrue("File should exists " + vsfile.getAbsolutePath(), vsfile.exists());
 
@@ -239,8 +237,7 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
       fch.commit();
 
       File vsfile =
-         PrivilegedFileHelper.file(rootDir, fch.makeFilePath(vcas.getIdentifier(propertyId, 0),
-            CASableIOSupport.HASHFILE_ORDERNUMBER)); // orderNum
+         new File(rootDir, fch.makeFilePath(vcas.getIdentifier(propertyId, 0), CASableIOSupport.HASHFILE_ORDERNUMBER)); // orderNum
       // =0
 
       fch.delete(propertyId);
@@ -324,8 +321,7 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
       fch.commit();
 
       File vsfile =
-         PrivilegedFileHelper.file(rootDir, fch.makeFilePath(vcas.getIdentifier(propertyId, 15),
-            CASableIOSupport.HASHFILE_ORDERNUMBER));
+         new File(rootDir, fch.makeFilePath(vcas.getIdentifier(propertyId, 15), CASableIOSupport.HASHFILE_ORDERNUMBER));
       assertTrue("File should exists " + vsfile.getAbsolutePath(), vsfile.exists());
 
       assertEquals("Storage size must be increased on size of ONE file ", initialSize
@@ -355,8 +351,7 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
       fch.commit();
 
       File vsfile =
-         PrivilegedFileHelper.file(rootDir, fch.makeFilePath(vcas.getIdentifier(propertyId, 15),
-            CASableIOSupport.HASHFILE_ORDERNUMBER));
+         new File(rootDir, fch.makeFilePath(vcas.getIdentifier(propertyId, 15), CASableIOSupport.HASHFILE_ORDERNUMBER));
       assertTrue("File should exists " + vsfile.getAbsolutePath(), vsfile.exists());
 
       assertEquals("Storage size must be increased on size of ALL files ", initialSize + addedSize,

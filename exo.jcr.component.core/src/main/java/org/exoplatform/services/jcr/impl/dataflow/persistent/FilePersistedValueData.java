@@ -25,7 +25,6 @@ import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.Externalizable;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -236,7 +235,7 @@ public class FilePersistedValueData extends AbstractPersistedValueData implement
          byte[] buf = new byte[size];
          in.readFully(buf);
 
-         File f = PrivilegedFileHelper.file(new String(buf, "UTF-8"));
+         File f = new File(new String(buf, "UTF-8"));
          // validate if exists
          if (f.exists())
          {

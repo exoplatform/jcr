@@ -21,7 +21,6 @@ package org.exoplatform.services.jcr.impl.storage.value.fs;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePlugin;
 import org.exoplatform.services.log.ExoLogger;
@@ -106,7 +105,7 @@ public abstract class FileValueStorage extends ValueStoragePlugin
     */
    protected void prepareRootDir(String rootDirPath) throws IOException, RepositoryConfigurationException
    {
-      this.rootDir = PrivilegedFileHelper.file(rootDirPath);
+      this.rootDir = new File(rootDirPath);
 
       if (!rootDir.exists())
       {
@@ -115,7 +114,7 @@ public abstract class FileValueStorage extends ValueStoragePlugin
             log.info("Directory created: " + rootDir.getAbsolutePath());
 
             // create internal temp dir
-            File tempDir = PrivilegedFileHelper.file(rootDir, TEMP_DIR_NAME);
+            File tempDir = new File(rootDir, TEMP_DIR_NAME);
             tempDir.mkdirs();
 
             if (tempDir.exists() && tempDir.isDirectory())

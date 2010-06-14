@@ -18,9 +18,9 @@
  */
 package org.exoplatform.services.jcr.lab.java;
 
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
-
 import junit.framework.TestCase;
+
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -45,7 +45,7 @@ public class TestFileLock extends TestCase
    public void _testSameJVMlLock() throws IOException, InterruptedException
    {
 
-      File f = PrivilegedFileHelper.file("\\\\storm\\public\\file1.tmp");
+      File f = new File("\\\\storm\\public\\file1.tmp");
       f.createNewFile();
       FileOutputStream fout = PrivilegedFileHelper.fileOutputStream(f);
       FileChannel fc = fout.getChannel();
@@ -82,7 +82,7 @@ public class TestFileLock extends TestCase
             try
             {
                Thread.sleep(25);
-               FileOutputStream fout1 = PrivilegedFileHelper.fileOutputStream(PrivilegedFileHelper.file("\\\\storm\\public\\file1.tmp"));
+               FileOutputStream fout1 = PrivilegedFileHelper.fileOutputStream(new File("\\\\storm\\public\\file1.tmp"));
                FileChannel fc1 = fout1.getChannel();
                try
                {
@@ -135,7 +135,7 @@ public class TestFileLock extends TestCase
       final long timeout = Long.valueOf(System.getProperty("exo.jcr.lab.testFileLockTimeout", "20000"));
 
       // File f = PrivilegedFileHelper.file("\\\\storm\\public\\file2.tmp");
-      File f = PrivilegedFileHelper.file("D:\\tmp\\file2.tmp");
+      File f = new File("D:\\tmp\\file2.tmp");
 
       System.out.println("Try open file for write " + System.currentTimeMillis());
       FileOutputStream fout = PrivilegedFileHelper.fileOutputStream(f);
@@ -218,7 +218,7 @@ public class TestFileLock extends TestCase
       final long timeout = Long.valueOf(System.getProperty("exo.jcr.lab.testFileLockTimeout", "20000"));
 
       // File f = PrivilegedFileHelper.file("\\\\storm\\public\\file3.tmp");
-      File f = PrivilegedFileHelper.file("D:\\tmp\\file3.tmp");
+      File f = new File("D:\\tmp\\file3.tmp");
 
       // write new content
       System.out.println("Try open file for write " + System.currentTimeMillis());
@@ -263,7 +263,7 @@ public class TestFileLock extends TestCase
    {
 
       // File f = PrivilegedFileHelper.file("\\\\storm\\public\\file3.tmp");
-      File f = PrivilegedFileHelper.file("D:\\tmp\\file4.tmp");
+      File f = new File("D:\\tmp\\file4.tmp");
 
       // write new content
       System.out.println("Try open file for read " + System.currentTimeMillis());
