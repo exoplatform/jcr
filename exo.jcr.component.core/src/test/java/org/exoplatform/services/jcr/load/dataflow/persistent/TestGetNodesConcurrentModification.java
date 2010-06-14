@@ -22,6 +22,7 @@ import org.exoplatform.commons.utils.MimeTypeResolver;
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.File;
 import java.io.IOException;
@@ -164,7 +165,8 @@ public class TestGetNodesConcurrentModification extends JcrImplBaseTest
       super.setUp();
 
       fails = new ArrayList<String>();
-      contentFile = new URL("file:///" + new File("src/test/resources/index/test_index.doc").getAbsolutePath());
+      contentFile =
+         new URL("file:///" + PrivilegedFileHelper.getAbsolutePath(new File("src/test/resources/index/test_index.doc")));
       initDB();
    }
 

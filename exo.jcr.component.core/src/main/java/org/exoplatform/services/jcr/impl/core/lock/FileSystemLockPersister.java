@@ -34,6 +34,7 @@ import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.query.SearchManager;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.observation.ExtendedEvent;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -119,7 +120,7 @@ public class FileSystemLockPersister implements LockPersister
       log.debug("add event fire");
       File lockFile = new File(rootDir, lock.getNodeIdentifier());
 
-      if (lockFile.exists())
+      if (PrivilegedFileHelper.exists(lockFile))
       {
          throw new LockException("Persistent lock information already exists");
       }
@@ -144,13 +145,13 @@ public class FileSystemLockPersister implements LockPersister
    {
       log.debug("remove event fire");
       File lockFile = new File(rootDir, lock.getNodeIdentifier());
-      if (!lockFile.exists())
+      if (!PrivilegedFileHelper.exists(lockFile))
       {
          // throw new LockException("Persistent lock information not exists");
          log.warn("Persistent lock information  for node " + lock.getNodeIdentifier() + " doesn't exists");
          return;
       }
-      if (!lockFile.delete())
+      if (!PrivilegedFileHelper.delete(lockFile))
          throw new LockException("Fail to remove lock information");
 
    }
@@ -168,7 +169,7 @@ public class FileSystemLockPersister implements LockPersister
 
       TransactionChangesLog transactionChangesLog = new TransactionChangesLog();
 
-      String[] list = rootDir.list();
+      String[] list = PrivilegedFileHelper.list(rootDir);
 
       try
       {
@@ -214,11 +215,11 @@ public class FileSystemLockPersister implements LockPersister
          for (int i = 0; i < list.length; i++)
          {
             File lockFile = new File(rootDir, list[i]);
-            if (!lockFile.exists())
+            if (!PrivilegedFileHelper.exists(lockFile))
             {
                log.warn("Persistent lock information for node id " + list[i] + " doesn't exists");
             }
-            if (!lockFile.delete())
+            if (!PrivilegedFileHelper.delete(lockFile))
                throw new LockException("Fail to remove lock information");
          }
       }
@@ -288,7 +289,7 @@ public class FileSystemLockPersister implements LockPersister
          throw new RepositoryConfigurationException("Repository service configuration." + " Source name ("
             + PARAM_ROOT_DIR + ") is expected");
       rootDir = new File(root);
-      if (rootDir.exists())
+      if (PrivilegedFileHelper.exists(rootDir))
       {
          if (!rootDir.isDirectory())
          {
@@ -297,7 +298,7 @@ public class FileSystemLockPersister implements LockPersister
       }
       else
       {
-         if (!rootDir.mkdirs())
+         if (!PrivilegedFileHelper.mkdirs(rootDir))
             throw new RepositoryException("Can't create dir" + root);
       }
    }

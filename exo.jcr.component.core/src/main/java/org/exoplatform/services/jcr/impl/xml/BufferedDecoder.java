@@ -26,7 +26,6 @@ import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -117,11 +116,12 @@ public class BufferedDecoder extends Base64.Decoder
     */
    public void remove() throws IOException
    {
-      if ((fileBuffer != null) && fileBuffer.exists())
+      if ((fileBuffer != null) && PrivilegedFileHelper.exists(fileBuffer))
       {
-         if (!fileBuffer.delete())
+         if (!PrivilegedFileHelper.delete(fileBuffer))
          {
-            throw new IOException("Cannot remove file " + fileBuffer.getAbsolutePath() + " Close all streams.");
+            throw new IOException("Cannot remove file " + PrivilegedFileHelper.getAbsolutePath(fileBuffer)
+               + " Close all streams.");
          }
       }
    }

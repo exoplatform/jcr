@@ -21,7 +21,6 @@ package org.exoplatform.services.jcr.load.blob;
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
 import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Calendar;
 
@@ -59,7 +58,7 @@ public class TestMoveBinaryValue extends JcrAPIBaseTest
       startTime = System.currentTimeMillis(); // to get the time of start
 
       // 300 Kb
-      TEST_FILE = createBLOBTempFile(300).getAbsolutePath();
+      TEST_FILE = PrivilegedFileHelper.getAbsolutePath(createBLOBTempFile(300));
 
       for (int i = 0; i < FILES_COUNT; i++)
       {

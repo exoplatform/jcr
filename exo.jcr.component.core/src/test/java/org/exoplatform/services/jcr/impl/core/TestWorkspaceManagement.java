@@ -144,8 +144,10 @@ public class TestWorkspaceManagement extends JcrImplBaseTest
       PrivilegedFileHelper.deleteOnExit(file);
 
       WorkspaceEntry workspaceEntry =
-         helper.getNewWs("WsInvalidVs", isDefaultWsMultiDb, wsEntry.getContainer().getParameterValue(
-            JDBCWorkspaceDataContainer.SOURCE_NAME), file.getAbsolutePath(), wsEntry.getContainer());
+         helper
+            .getNewWs("WsInvalidVs", isDefaultWsMultiDb, wsEntry.getContainer().getParameterValue(
+               JDBCWorkspaceDataContainer.SOURCE_NAME), PrivilegedFileHelper.getAbsolutePath(file), wsEntry
+               .getContainer());
       try
       {
          helper.createWorkspace(workspaceEntry, container);

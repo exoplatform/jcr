@@ -34,9 +34,7 @@ import org.exoplatform.services.log.Log;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -697,7 +695,7 @@ public class TransientValueData implements ValueData
                (spoolFile).release(this);
             }
 
-            if (deleteSpoolFile && spoolFile.exists())
+            if (deleteSpoolFile && PrivilegedFileHelper.exists(spoolFile))
             {
                if (!spoolFile.delete())
                {
@@ -707,12 +705,14 @@ public class TransientValueData implements ValueData
 
                      if (LOG.isDebugEnabled())
                      {
-                        LOG.debug("Could not remove file. Add to fileCleaner " + spoolFile.getAbsolutePath());
+                        LOG.debug("Could not remove file. Add to fileCleaner "
+                           + PrivilegedFileHelper.getAbsolutePath(spoolFile));
                      }
                   }
                   else
                   {
-                     LOG.warn("Could not remove temporary file on finalize " + spoolFile.getAbsolutePath());
+                     LOG.warn("Could not remove temporary file on finalize "
+                        + PrivilegedFileHelper.getAbsolutePath(spoolFile));
                   }
                }
             }

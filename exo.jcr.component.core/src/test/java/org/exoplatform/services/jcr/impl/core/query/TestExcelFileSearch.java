@@ -46,7 +46,7 @@ public class TestExcelFileSearch extends BaseQueryTest
    public void testFindFileContent() throws Exception
    {
       File file = new File("src/test/resources/test.xls");
-      assertTrue("/test/resources/book.xls not found", file.exists());
+      assertTrue("/test/resources/book.xls not found", PrivilegedFileHelper.exists(file));
 
       FileInputStream fis = PrivilegedFileHelper.fileInputStream(file);
 

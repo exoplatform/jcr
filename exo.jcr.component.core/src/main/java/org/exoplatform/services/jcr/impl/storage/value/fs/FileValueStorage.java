@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.impl.storage.value.fs;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePlugin;
 import org.exoplatform.services.log.ExoLogger;
@@ -107,22 +108,23 @@ public abstract class FileValueStorage extends ValueStoragePlugin
    {
       this.rootDir = new File(rootDirPath);
 
-      if (!rootDir.exists())
+      if (!PrivilegedFileHelper.exists(rootDir))
       {
-         if (rootDir.mkdirs())
+         if (PrivilegedFileHelper.mkdirs(rootDir))
          {
-            log.info("Directory created: " + rootDir.getAbsolutePath());
+            log.info("Directory created: " + PrivilegedFileHelper.getAbsolutePath(rootDir));
 
             // create internal temp dir
             File tempDir = new File(rootDir, TEMP_DIR_NAME);
-            tempDir.mkdirs();
+            PrivilegedFileHelper.mkdirs(tempDir);
 
-            if (tempDir.exists() && tempDir.isDirectory())
+            if (PrivilegedFileHelper.exists(tempDir) && tempDir.isDirectory())
             {
                // care about storage temp dir cleanup
                for (File tmpf : tempDir.listFiles())
                   if (!tmpf.delete())
-                     log.warn("Storage temporary directory contains un-deletable file " + tmpf.getAbsolutePath()
+                     log.warn("Storage temporary directory contains un-deletable file "
+                        + PrivilegedFileHelper.getAbsolutePath(tmpf)
                         + ". It's recommended to leave this directory for JCR External Values Storage private use.");
             }
             else
@@ -131,7 +133,7 @@ public abstract class FileValueStorage extends ValueStoragePlugin
          }
          else
          {
-            log.warn("Directory IS NOT created: " + rootDir.getAbsolutePath());
+            log.warn("Directory IS NOT created: " + PrivilegedFileHelper.getAbsolutePath(rootDir));
          }
       }
       else

@@ -91,7 +91,7 @@ public class FileCleaner extends WorkerThread
     */
    public void addFile(File file)
    {
-      if (file.exists())
+      if (PrivilegedFileHelper.exists(file))
       {
          files.offer(file);
       }
@@ -124,7 +124,7 @@ public class FileCleaner extends WorkerThread
       Set<File> notRemovedFiles = new HashSet<File>();
       while ((file = files.poll()) != null)
       {
-         if (file.exists())
+         if (PrivilegedFileHelper.exists(file))
          {
             if (!file.delete())
             {
@@ -132,11 +132,12 @@ public class FileCleaner extends WorkerThread
 
                if (log.isDebugEnabled())
                   log.debug("Could not delete " + (file.isDirectory() ? "directory" : "file")
-                     + ". Will try next time: " + file.getAbsolutePath());
+                     + ". Will try next time: " + PrivilegedFileHelper.getAbsolutePath(file));
             }
             else if (log.isDebugEnabled())
             {
-               log.debug((file.isDirectory() ? "Directory" : "File") + " deleted : " + file.getAbsolutePath());
+               log.debug((file.isDirectory() ? "Directory" : "File") + " deleted : "
+                  + PrivilegedFileHelper.getAbsolutePath(file));
             }
          }
       }

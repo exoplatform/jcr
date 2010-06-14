@@ -59,7 +59,7 @@ public class TestPersistedValueData extends TestCase
 
       byte[] buf = "0123456789".getBytes();
       File file = new File("target/testCreateFileStreamValueData");
-      if (file.exists())
+      if (PrivilegedFileHelper.exists(file))
          file.delete();
       FileOutputStream out = PrivilegedFileHelper.fileOutputStream(file);
       out.write(buf);
@@ -93,7 +93,7 @@ public class TestPersistedValueData extends TestCase
       out.close();
 
       CleanableFilePersistedValueData vd = new CleanableFilePersistedValueData(0, file, new FileCleaner(1000, true));
-      assertTrue(file.exists());
+      assertTrue(PrivilegedFileHelper.exists(file));
 
       vd = null;
       System.gc();
@@ -102,7 +102,7 @@ public class TestPersistedValueData extends TestCase
       Thread.sleep(2500);
       System.gc();
 
-      assertFalse(file.exists());
+      assertFalse(PrivilegedFileHelper.exists(file));
    }
 
    public void testConcurrentFileStreamValueDataReading() throws Exception
@@ -112,7 +112,7 @@ public class TestPersistedValueData extends TestCase
          "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"
             .getBytes();
       File file = new File("target/testConcurrentFileStreamValueDataReading");
-      if (file.exists())
+      if (PrivilegedFileHelper.exists(file))
          file.delete();
       FileOutputStream out = PrivilegedFileHelper.fileOutputStream(file);
       // approx. 10Kb file

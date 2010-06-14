@@ -23,7 +23,6 @@ import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -220,7 +219,7 @@ public class TestMoveNode extends JcrImplBaseTest
 
       for (int i = 0; i < FILES_COUNT; i++)
       {
-         TEST_FILE = createBLOBTempFile("testMove", random.nextInt(1024)).getAbsolutePath();
+         TEST_FILE = PrivilegedFileHelper.getAbsolutePath(createBLOBTempFile("testMove", random.nextInt(1024)));
          filesList.add(TEST_FILE);
          Node localBigFile = testLocalBigFiles.addNode("bigFile" + i, "nt:file");
          Node contentNode = localBigFile.addNode("jcr:content", "nt:resource");

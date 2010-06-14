@@ -26,7 +26,6 @@ import org.exoplatform.services.log.Log;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -436,7 +435,7 @@ public class EditableValueData extends TransientValueData
                else
                {
                   LOG.warn("Could not remove temporary file on switch to bytes, fileCleaner not found. "
-                     + spoolFile.getAbsolutePath());
+                     + PrivilegedFileHelper.getAbsolutePath(spoolFile));
                }
             }
 

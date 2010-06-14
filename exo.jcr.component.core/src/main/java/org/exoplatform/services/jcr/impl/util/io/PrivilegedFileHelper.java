@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -325,17 +326,16 @@ public class PrivilegedFileHelper
       return AccessController.doPrivileged(action);
    }
 
-   public static void mkdirs(final File file)
+   public static boolean mkdirs(final File file)
    {
-      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
+      PrivilegedAction<Boolean> action = new PrivilegedAction<Boolean>()
       {
-         public Object run()
+         public Boolean run()
          {
-            file.mkdirs();
-            return null;
+            return file.mkdirs();
          }
       };
-      AccessController.doPrivileged(action);
+      return AccessController.doPrivileged(action);
    }
 
    public static boolean renameTo(final File srcFile, final File dstfile)
@@ -357,6 +357,18 @@ public class PrivilegedFileHelper
          public String[] run()
          {
             return file.list();
+         }
+      };
+      return AccessController.doPrivileged(action);
+   }
+
+   public static String[] list(final File file, final FilenameFilter filter)
+   {
+      PrivilegedAction<String[]> action = new PrivilegedAction<String[]>()
+      {
+         public String[] run()
+         {
+            return file.list(filter);
          }
       };
       return AccessController.doPrivileged(action);

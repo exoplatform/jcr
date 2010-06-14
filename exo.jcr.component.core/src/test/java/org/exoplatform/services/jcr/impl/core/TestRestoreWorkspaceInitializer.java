@@ -70,7 +70,7 @@ public class TestRestoreWorkspaceInitializer extends JcrImplBaseTest
       root.save();
 
       is.close();
-      f.renameTo(new File("./sv_export_binary.bin"));
+      PrivilegedFileHelper.renameTo(f, new File("./sv_export_binary.bin"));
 
       File outf = new File("./sv_export_root.xml");
       FileOutputStream out = PrivilegedFileHelper.fileOutputStream(outf);

@@ -34,6 +34,7 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.init.StorageDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.statistics.StatisticsJDBCStorageConnection;
 import org.exoplatform.services.jcr.impl.storage.jdbc.update.StorageUpdateManager;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerException;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
@@ -387,8 +388,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       {
          this.swapDirectory = new File(DEF_SWAPDIR);
       }
-      if (!swapDirectory.exists())
-         swapDirectory.mkdirs();
+      if (!PrivilegedFileHelper.exists(swapDirectory))
+         PrivilegedFileHelper.mkdirs(swapDirectory);
 
       this.swapCleaner = new FileCleaner(false);
 
@@ -814,7 +815,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
             + "data source JNDI name: " + dbSourceName + "\n" + "is multi database: " + multiDb + "\n"
             + "storage version: " + storageVersion + "\n" + "value storage provider: " + valueStorageProvider + "\n"
             + "max buffer size (bytes): " + maxBufferSize + "\n" + "swap directory path: "
-            + swapDirectory.getAbsolutePath();
+            + PrivilegedFileHelper.getAbsolutePath(swapDirectory);
       return str;
    }
 

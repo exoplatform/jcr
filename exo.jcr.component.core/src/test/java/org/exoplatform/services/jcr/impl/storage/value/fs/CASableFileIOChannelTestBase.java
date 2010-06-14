@@ -70,12 +70,12 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
       if (rootDir == null)
       {
          rootDir = new File("target/temp/values-test");
-         rootDir.mkdirs();
+         PrivilegedFileHelper.mkdirs(rootDir);
 
-         new File(rootDir, FileValueStorage.TEMP_DIR_NAME).mkdirs();
+         PrivilegedFileHelper.mkdirs(new File(rootDir, FileValueStorage.TEMP_DIR_NAME));
 
-         if (!rootDir.exists())
-            throw new Exception("Folder does not exist " + rootDir.getAbsolutePath());
+         if (!PrivilegedFileHelper.exists(rootDir))
+            throw new Exception("Folder does not exist " + PrivilegedFileHelper.getAbsolutePath(rootDir));
       }
 
       if (storageId == null)
@@ -118,7 +118,8 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
       File vsfile =
          new File(rootDir, fch.makeFilePath(vcas.getIdentifier(propertyId, 0), CASableIOSupport.HASHFILE_ORDERNUMBER)); // orderNum
       // =0
-      assertTrue("File should exists " + vsfile.getAbsolutePath(), vsfile.exists());
+      assertTrue("File should exists " + PrivilegedFileHelper.getAbsolutePath(vsfile), PrivilegedFileHelper
+         .exists(vsfile));
 
       InputStream etalon, tested;
       compareStream(etalon = PrivilegedFileHelper.fileInputStream(testFile), tested =
@@ -243,7 +244,8 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
       fch.delete(propertyId);
       fch.commit();
 
-      assertFalse("File should not exists " + vsfile.getAbsolutePath(), vsfile.exists());
+      assertFalse("File should not exists " + PrivilegedFileHelper.getAbsolutePath(vsfile), PrivilegedFileHelper
+         .exists(vsfile));
    }
 
    /**
@@ -322,7 +324,8 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
 
       File vsfile =
          new File(rootDir, fch.makeFilePath(vcas.getIdentifier(propertyId, 15), CASableIOSupport.HASHFILE_ORDERNUMBER));
-      assertTrue("File should exists " + vsfile.getAbsolutePath(), vsfile.exists());
+      assertTrue("File should exists " + PrivilegedFileHelper.getAbsolutePath(vsfile), PrivilegedFileHelper
+         .exists(vsfile));
 
       assertEquals("Storage size must be increased on size of ONE file ", initialSize
          + PrivilegedFileHelper.length(testFile), calcDirSize(rootDir));
@@ -352,7 +355,8 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
 
       File vsfile =
          new File(rootDir, fch.makeFilePath(vcas.getIdentifier(propertyId, 15), CASableIOSupport.HASHFILE_ORDERNUMBER));
-      assertTrue("File should exists " + vsfile.getAbsolutePath(), vsfile.exists());
+      assertTrue("File should exists " + PrivilegedFileHelper.getAbsolutePath(vsfile), PrivilegedFileHelper
+         .exists(vsfile));
 
       assertEquals("Storage size must be increased on size of ALL files ", initialSize + addedSize,
          calcDirSize(rootDir));
@@ -622,12 +626,12 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
       long count = 0;
       for (File sf : dir.listFiles())
       {
-         if (sf.isDirectory() && sf.list().length > 0)
+         if (sf.isDirectory() && PrivilegedFileHelper.list(sf).length > 0)
             count += deleteRecursive(sf);
          else if (sf.delete())
             count += 1;
          else
-            LOG.warn("Can't delete file " + sf.getAbsolutePath());
+            LOG.warn("Can't delete file " + PrivilegedFileHelper.getAbsolutePath(sf));
       }
       count += dir.delete() ? 1 : 0;
       return count;

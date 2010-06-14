@@ -28,7 +28,6 @@ import org.exoplatform.services.jcr.load.blob.thread.ReadThread;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -89,7 +88,7 @@ public class TestConcurrentItems extends JcrAPIBaseTest
          // create test file
          testFile = createBLOBTempFile(1024);
          dataSize = (int)PrivilegedFileHelper.length(testFile);
-         TEST_FILE = testFile.getAbsolutePath();
+         TEST_FILE = PrivilegedFileHelper.getAbsolutePath(testFile);
       }
       else
       {
@@ -254,9 +253,9 @@ public class TestConcurrentItems extends JcrAPIBaseTest
                repository
                   .login(
                      this.credentials /*
-                                                                                                                                                            * session.getCredentials(
-                                                                                                                                                            * )
-                                                                                                                                                            */,
+                                                                                                                                                                                * session.getCredentials(
+                                                                                                                                                                                * )
+                                                                                                                                                                                */,
                      "ws1"));
          readed.start();
          readers.add(readed);
@@ -272,11 +271,14 @@ public class TestConcurrentItems extends JcrAPIBaseTest
 
       log.info("Begin cleaner...");
       DeleteThread cleaner =
-         new DeleteThread(repository.login(this.credentials /*
-                                                                                                                 * session.getCredentials
-                                                                                                                 * ()
-                                                                                                                 */,
-            "ws1"));
+         new DeleteThread(
+            repository
+               .login(
+                  this.credentials /*
+                                                                                                                                  * session.getCredentials
+                                                                                                                                  * ()
+                                                                                                                                  */,
+                  "ws1"));
       cleaner.start();
 
       log.info("<<<<<<<<<<<<<<<<<<<< Wait cycle >>>>>>>>>>>>>>>>>>>>>");

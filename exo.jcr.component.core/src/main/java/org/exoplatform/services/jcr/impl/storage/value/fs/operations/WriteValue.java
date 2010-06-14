@@ -21,12 +21,10 @@ package org.exoplatform.services.jcr.impl.storage.value.fs.operations;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.AccessController;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 
 /**
  * Created by The eXo Platform SAS.
@@ -100,36 +98,8 @@ public class WriteValue extends ValueFileOperation
       if (fileLock != null)
          try
          {
-            PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
-            {
-               public Object run() throws Exception
-               {
-                  // be sure the destination dir exists (case for Tree-style storage)
-                  file.getParentFile().mkdirs();
-
-                  return null;
-               }
-            };
-            try
-            {
-               AccessController.doPrivileged(action);
-            }
-            catch (PrivilegedActionException pae)
-            {
-               Throwable cause = pae.getCause();
-               if (cause instanceof IOException)
-               {
-                  throw (IOException)cause;
-               }
-               else if (cause instanceof RuntimeException)
-               {
-                  throw (RuntimeException)cause;
-               }
-               else
-               {
-                  throw new RuntimeException(cause);
-               }
-            }
+            // be sure the destination dir exists (case for Tree-style storage)
+            PrivilegedFileHelper.mkdirs(file.getParentFile());
 
             // write value to the file
             writeValue(file, value);

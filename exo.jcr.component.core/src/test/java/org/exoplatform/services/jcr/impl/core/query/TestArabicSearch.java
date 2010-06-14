@@ -50,7 +50,7 @@ public class TestArabicSearch extends BaseQueryTest
    {
 
       File file = new File("src/test/resources/ArabicUTF8.txt");
-      assertTrue("/test/resources/ArabicUTF8.txt not found", file.exists());
+      assertTrue("/test/resources/ArabicUTF8.txt not found", PrivilegedFileHelper.exists(file));
 
       FileInputStream fis = PrivilegedFileHelper.fileInputStream(file);
 

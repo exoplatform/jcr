@@ -161,9 +161,10 @@ public class CASableWriteValue extends WriteValue
             }
             catch (RecordAlreadyExistsException e)
             {
-               if (tempFile != null && tempFile.exists() && !tempFile.delete())
+               if (tempFile != null && PrivilegedFileHelper.exists(tempFile) && !tempFile.delete())
                {
-                  LOG.warn("Can't delete CAS temp file. Added to file cleaner. " + tempFile.getAbsolutePath());
+                  LOG.warn("Can't delete CAS temp file. Added to file cleaner. "
+                     + PrivilegedFileHelper.getAbsolutePath(tempFile));
                   cleaner.addFile(tempFile);
                }
                throw new RecordAlreadyExistsException("Write error: " + e, e);
@@ -179,8 +180,8 @@ public class CASableWriteValue extends WriteValue
                // rename propetynamed file to hashnamed one
                if (!PrivilegedFileHelper.renameTo(tempFile, vcasFile))
                {
-                  throw new VCASException("File " + tempFile.getAbsolutePath() + " can't be renamed to VCAS-named "
-                     + vcasFile.getAbsolutePath());
+                  throw new VCASException("File " + PrivilegedFileHelper.getAbsolutePath(tempFile)
+                     + " can't be renamed to VCAS-named " + PrivilegedFileHelper.getAbsolutePath(vcasFile));
                }
             } // else - CASed Value already exists
 

@@ -191,7 +191,8 @@ public abstract class ValueFileOperation extends ValueFileIOHelper implements Va
 
                if (!lockFile.delete())
                { // TODO don't use FileCleaner, delete should be enough
-                  LOG.warn("Cannot delete lock file " + lockFile.getAbsolutePath() + ". Add to the FileCleaner");
+                  LOG.warn("Cannot delete lock file " + PrivilegedFileHelper.getAbsolutePath(lockFile)
+                     + ". Add to the FileCleaner");
                   cleaner.addFile(lockFile);
                }
 
@@ -261,7 +262,7 @@ public abstract class ValueFileOperation extends ValueFileIOHelper implements Va
          }
          catch (InterruptedException e)
          {
-            throw new FileLockException("Lock error on " + file.getAbsolutePath(), e);
+            throw new FileLockException("Lock error on " + PrivilegedFileHelper.getAbsolutePath(file), e);
          }
       }
 

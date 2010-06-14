@@ -54,7 +54,7 @@ public class TestValueImpl extends TestCase
 
       byte[] buf = "012345678901234567890123456789".getBytes();
       File file = new File("target/testNewBinaryValue");
-      if (file.exists())
+      if (PrivilegedFileHelper.exists(file))
          file.delete();
       FileOutputStream out = PrivilegedFileHelper.fileOutputStream(file);
       out.write(buf);

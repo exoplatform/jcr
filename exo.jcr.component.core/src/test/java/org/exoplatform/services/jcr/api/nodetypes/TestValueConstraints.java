@@ -25,7 +25,6 @@ import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.InputStream;
 
 import javax.jcr.Node;
@@ -60,9 +59,9 @@ public class TestValueConstraints extends JcrAPIBaseTest
    {
       super.setUp();
 
-      LOCAL_SMALL_FILE = createBLOBTempFile(16).getAbsolutePath(); // 16Kb
-      LOCAL_BIG_FILE = createBLOBTempFile(16 * 1024).getAbsolutePath(); // 16Mb
-      LOCAL_NORMAL_FILE = createBLOBTempFile(17).getAbsolutePath(); // 17Kb
+      LOCAL_SMALL_FILE = PrivilegedFileHelper.getAbsolutePath(createBLOBTempFile(16)); // 16Kb
+      LOCAL_BIG_FILE = PrivilegedFileHelper.getAbsolutePath(createBLOBTempFile(16 * 1024)); // 16Mb
+      LOCAL_NORMAL_FILE = PrivilegedFileHelper.getAbsolutePath(createBLOBTempFile(17)); // 17Kb
 
       byte[] xmlData = readXmlContent("/org/exoplatform/services/jcr/api/nodetypes/nodetypes-api-test.xml");
       ByteArrayInputStream xmlInput = new ByteArrayInputStream(xmlData);

@@ -22,7 +22,6 @@ import org.exoplatform.services.jcr.JcrAPIBaseTest;
 import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -432,7 +431,7 @@ public class TestPerformance extends JcrAPIBaseTest
       // variables for the execution time
       int FILE_SIZE = 100;// 100 K
       Node testAddNtFilePlusNtResource = testRoot.addNode("testAddNtFilePlusNtResource", "nt:unstructured");
-      TEST_FILE = createBLOBTempFile(FILE_SIZE).getAbsolutePath();
+      TEST_FILE = PrivilegedFileHelper.getAbsolutePath(createBLOBTempFile(FILE_SIZE));
       long startTime = System.currentTimeMillis();
       for (int i = 0; i < NODES_COUNT_SHORT_SESSION; i++)
       {

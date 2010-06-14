@@ -89,7 +89,7 @@ public class SwapFile extends SpoolFile
       synchronized (inShare)
       {
          SwapFile newsf = new SwapFile(parent, child);
-         String absPath = newsf.getAbsolutePath();
+         String absPath = PrivilegedFileHelper.getAbsolutePath(newsf);
 
          SwapFile swapped = inShare.get(absPath);
          if (swapped != null)
@@ -104,7 +104,8 @@ public class SwapFile extends SpoolFile
                catch (final InterruptedException e)
                {
                   // thinking that is ok, i.e. this thread is interrupted
-                  throw new IOException("Swap file read error " + swapped.getAbsolutePath() + ". " + e)
+                  throw new IOException("Swap file read error " + PrivilegedFileHelper.getAbsolutePath(swapped) + ". "
+                     + e)
                   {
                      @Override
                      public Throwable getCause()

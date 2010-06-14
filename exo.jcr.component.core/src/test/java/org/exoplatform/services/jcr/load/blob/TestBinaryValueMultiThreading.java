@@ -23,7 +23,6 @@ import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
-import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -140,7 +139,7 @@ public class TestBinaryValueMultiThreading extends JcrAPIBaseTest
       if (LOCAL_BIG_FILE == null)
       {
          // create test file
-         LOCAL_BIG_FILE = createBLOBTempFile(3).getAbsolutePath();
+         LOCAL_BIG_FILE = PrivilegedFileHelper.getAbsolutePath(createBLOBTempFile(3));
       }
       Node testLocalBigFiles = root.addNode("testLocalBigFiles");
       for (int i = 0; i < FILES_COUNT; i++)

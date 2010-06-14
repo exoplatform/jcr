@@ -23,6 +23,7 @@ import org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.DirectoryManager;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.FSDirectoryManager;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.RAMDirectoryManager;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.File;
 import java.util.Arrays;
@@ -47,7 +48,7 @@ public class DirectoryManagerTest extends TestCase
 
    static
    {
-      INDEX.setPath(new File(new File("target"), "directory-factory-test").getAbsolutePath());
+      INDEX.setPath(PrivilegedFileHelper.getAbsolutePath(new File(new File("target"), "directory-factory-test")));
    }
 
    @Override

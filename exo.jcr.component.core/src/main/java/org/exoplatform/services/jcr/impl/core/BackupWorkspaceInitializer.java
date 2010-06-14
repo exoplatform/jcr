@@ -314,7 +314,7 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
       {
          Matcher m = p.matcher(f.getName());
          if (m.matches())
-            return f.getAbsolutePath();
+            return PrivilegedFileHelper.getAbsolutePath(f);
       }
 
       return null;
@@ -450,8 +450,8 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
                (TransientValueData)(propertyData.getValues().get(listFixupStream.get(i).getValueDataId()));
 
             // re-init the value
-            tvd.delegate(new TransientValueData(tvd.getOrderNumber(), null, null, new SpoolFile(listFile.get(i)
-               .getAbsolutePath()), fileCleaner, -1, null, true));
+            tvd.delegate(new TransientValueData(tvd.getOrderNumber(), null, null, new SpoolFile(PrivilegedFileHelper
+               .getAbsolutePath(listFile.get(i))), fileCleaner, -1, null, true));
          }
 
          for (int i = 0; i < listFile.size(); i++)

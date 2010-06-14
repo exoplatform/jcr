@@ -45,7 +45,7 @@ public class TestErrorLog extends BaseQueryTest
    {
       super.setUp();
       file = PrivilegedFileHelper.createTempFile("error", "log");
-      if (file.exists())
+      if (PrivilegedFileHelper.exists(file))
       {
          file.delete();
       }

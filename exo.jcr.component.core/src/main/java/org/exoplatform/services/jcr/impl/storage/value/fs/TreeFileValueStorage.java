@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl.storage.value.fs;
 
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
 
 import java.io.File;
@@ -38,7 +39,7 @@ public class TreeFileValueStorage extends FileValueStorage
       @Override
       public synchronized void addFile(File file)
       {
-         super.addFile(new TreeFile(file.getAbsolutePath(), cleaner, rootDir));
+         super.addFile(new TreeFile(PrivilegedFileHelper.getAbsolutePath(file), cleaner, rootDir));
       }
    }
 

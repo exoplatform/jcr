@@ -41,7 +41,7 @@ public class TextExtractorTest extends AbstractQueryTest
    {
       File sourceFolder = new File(TEST_FOLDER);
       // only run if there is test data
-      if (!sourceFolder.exists())
+      if (!PrivilegedFileHelper.exists(sourceFolder))
       {
          return;
       }
@@ -57,7 +57,7 @@ public class TextExtractorTest extends AbstractQueryTest
     */
    private void addContents(File folder, Node n) throws Exception
    {
-      String[] names = folder.list();
+      String[] names = PrivilegedFileHelper.list(folder);
       for (int i = 0; i < names.length; i++)
       {
          File f = new File(folder, names[i]);
@@ -65,13 +65,13 @@ public class TextExtractorTest extends AbstractQueryTest
          {
             if (f.isDirectory())
             {
-               log.println("Added folder: " + f.getAbsolutePath());
+               log.println("Added folder: " + PrivilegedFileHelper.getAbsolutePath(f));
                addContents(f, n.addNode(names[i], "nt:folder"));
             }
             else
             {
                addFile(n, f);
-               log.println("Added file: " + f.getAbsolutePath());
+               log.println("Added file: " + PrivilegedFileHelper.getAbsolutePath(f));
                // save after 100 files
                if (++fileCount % 100 == 0)
                {
@@ -89,7 +89,7 @@ public class TextExtractorTest extends AbstractQueryTest
    public void testRepeatedUpdate() throws Exception
    {
       File testFile = new File("test.pdf");
-      if (!testFile.exists())
+      if (!PrivilegedFileHelper.exists(testFile))
       {
          return;
       }

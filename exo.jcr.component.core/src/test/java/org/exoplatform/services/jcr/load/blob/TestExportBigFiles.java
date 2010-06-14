@@ -24,7 +24,6 @@ import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,7 +48,7 @@ public class TestExportBigFiles extends JcrAPIBaseTest
     */
    public void testBigExportSysView() throws Exception
    {
-      String TEST_FILE = createBLOBTempFile(1024 * 5).getAbsolutePath();// 5M
+      String TEST_FILE = PrivilegedFileHelper.getAbsolutePath(createBLOBTempFile(1024 * 5));// 5M
       Node testLocalBigFiles = root.addNode("testLocalBigFiles");
 
       // add file to repository
@@ -113,7 +112,7 @@ public class TestExportBigFiles extends JcrAPIBaseTest
     */
    public void testBigImportExportDocView() throws Exception
    {
-      String TEST_FILE2 = createBLOBTempFile(1024 * 5).getAbsolutePath(); // 5M
+      String TEST_FILE2 = PrivilegedFileHelper.getAbsolutePath(createBLOBTempFile(1024 * 5)); // 5M
       Node testLocalBigFiles = root.addNode("testDocView");
 
       // add file to repository
@@ -238,7 +237,7 @@ public class TestExportBigFiles extends JcrAPIBaseTest
 
       for (int i = 0; i < FILES_COUNT; i++)
       {
-         fileList.add(createBLOBTempFile(random.nextInt(1024 * 1024)).getAbsolutePath());
+         fileList.add(PrivilegedFileHelper.getAbsolutePath(createBLOBTempFile(random.nextInt(1024 * 1024))));
       }
       Node testLocalBigFiles = root.addNode("testLocalBigFiles");
 
@@ -326,7 +325,8 @@ public class TestExportBigFiles extends JcrAPIBaseTest
       }
       tempOut.close();
       PrivilegedFileHelper.deleteOnExit(testFile);
-      log.info("Temp file created: " + testFile.getAbsolutePath() + " size: " + PrivilegedFileHelper.length(testFile));
+      log.info("Temp file created: " + PrivilegedFileHelper.getAbsolutePath(testFile) + " size: "
+         + PrivilegedFileHelper.length(testFile));
       return testFile;
    }
 }

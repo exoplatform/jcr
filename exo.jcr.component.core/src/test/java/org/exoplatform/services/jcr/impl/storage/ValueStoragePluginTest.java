@@ -33,7 +33,6 @@ import org.exoplatform.services.log.Log;
 
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -247,7 +246,8 @@ public class ValueStoragePluginTest extends BaseStandaloneTest
       }
       tempOut.close();
       PrivilegedFileHelper.deleteOnExit(testFile);
-      log.info("Temp file created: " + testFile.getAbsolutePath() + " size: " + PrivilegedFileHelper.length(testFile));
+      log.info("Temp file created: " + PrivilegedFileHelper.getAbsolutePath(testFile) + " size: "
+         + PrivilegedFileHelper.length(testFile));
       return testFile;
    }
 

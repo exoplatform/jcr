@@ -93,13 +93,13 @@ public class TestValueFileIOHelper extends JcrImplBaseTest
 
       io = new ValueFileIOHelper();
 
-      if (src == null || !src.exists())
+      if (src == null || !PrivilegedFileHelper.exists(src))
       {
          src = createBLOBTempFile(7 * 1024); // 7M
          PrivilegedFileHelper.deleteOnExit(src);
       }
 
-      if (srcSerialization == null || !srcSerialization.exists())
+      if (srcSerialization == null || !PrivilegedFileHelper.exists(srcSerialization))
       {
          srcSerialization = PrivilegedFileHelper.createTempFile("srcSerialization", ".tmp");
          PrivilegedFileHelper.deleteOnExit(srcSerialization);
@@ -124,7 +124,7 @@ public class TestValueFileIOHelper extends JcrImplBaseTest
       }
 
       testDir = new File("target/TestValueFileIOHelper");
-      testDir.mkdirs();
+      PrivilegedFileHelper.mkdirs(testDir);
 
       dest = PrivilegedFileHelper.createTempFile("vdftest", "", testDir);
    }

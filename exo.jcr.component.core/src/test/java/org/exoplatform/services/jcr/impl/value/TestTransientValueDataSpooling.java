@@ -99,7 +99,7 @@ public class TestTransientValueDataSpooling extends BaseStandaloneTest implement
       System.gc();
       Thread.sleep(2000);
 
-      String[] countBefore = tmpdir.list(new FilenameFilter()
+      String[] countBefore = PrivilegedFileHelper.list(tmpdir, new FilenameFilter()
       {
          public boolean accept(File dir, String name)
          {
@@ -114,7 +114,7 @@ public class TestTransientValueDataSpooling extends BaseStandaloneTest implement
       System.gc();
       Thread.sleep(2000);
 
-      String[] countAfter = tmpdir.list(new FilenameFilter()
+      String[] countAfter = PrivilegedFileHelper.list(tmpdir, new FilenameFilter()
       {
          public boolean accept(File dir, String name)
          {
@@ -138,7 +138,7 @@ public class TestTransientValueDataSpooling extends BaseStandaloneTest implement
       System.gc();
       Thread.sleep(2000);
 
-      String[] countBefore = tmpdir.list(new FilenameFilter()
+      String[] countBefore = PrivilegedFileHelper.list(tmpdir, new FilenameFilter()
       {
          public boolean accept(File dir, String name)
          {
@@ -154,7 +154,7 @@ public class TestTransientValueDataSpooling extends BaseStandaloneTest implement
       System.gc();
       Thread.sleep(2000);
 
-      String[] countAfter = tmpdir.list(new FilenameFilter()
+      String[] countAfter = PrivilegedFileHelper.list(tmpdir, new FilenameFilter()
       {
          public boolean accept(File dir, String name)
          {

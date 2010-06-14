@@ -241,14 +241,16 @@ public class ValueFileIOHelper
                   if ((tempFile = streamed.getTempFile()) != null)
                   {
                      // it's spooled Value, try move its file to VS
-                     if (!tempFile.renameTo(file))
+                     if (!PrivilegedFileHelper.renameTo(tempFile, file))
                      {
                         // not succeeded - copy bytes, temp file will be deleted by transient ValueData
                         if (LOG.isDebugEnabled())
                         {
                            LOG
                               .debug("Value spool file move (rename) to Values Storage is not succeeded. Trying bytes copy. Spool file: "
-                                 + tempFile.getAbsolutePath() + ". Destination: " + file.getAbsolutePath());
+                                 + PrivilegedFileHelper.getAbsolutePath(tempFile)
+                                 + ". Destination: "
+                                 + PrivilegedFileHelper.getAbsolutePath(file));
                         }
 
                         copyClose(PrivilegedFileHelper.fileInputStream(tempFile), PrivilegedFileHelper

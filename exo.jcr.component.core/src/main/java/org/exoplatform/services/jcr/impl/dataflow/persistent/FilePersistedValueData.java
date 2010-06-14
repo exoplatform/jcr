@@ -237,7 +237,7 @@ public class FilePersistedValueData extends AbstractPersistedValueData implement
 
          File f = new File(new String(buf, "UTF-8"));
          // validate if exists
-         if (f.exists())
+         if (PrivilegedFileHelper.exists(f))
          {
             file = f;
          }

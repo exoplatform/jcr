@@ -21,20 +21,15 @@ package org.exoplatform.services.jcr.usecases;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectWriter;
 import org.exoplatform.services.jcr.dataflow.serialization.UnknownClassIdException;
-import org.exoplatform.services.jcr.impl.dataflow.AbstractPersistedValueData;
-import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.FilePersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectReaderImpl;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectWriterImpl;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.PersistedValueDataReader;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.PersistedValueDataWriter;
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 
 /**
@@ -102,9 +97,8 @@ public class RemoveVDTest extends BaseUsecasesTest
       // Imitation save
       ((StreamPersistedValueData)vd2).setPersistedFile(((StreamPersistedValueData)vd2).getTempFile());
 
-      assertTrue(vd1.getFile().exists());
-      assertTrue(vd2.getFile().exists());
-
+      assertTrue(PrivilegedFileHelper.exists(vd1.getFile()));
+      assertTrue(PrivilegedFileHelper.exists(vd2.getFile()));
       // remove first one
       vd1 = null;
       try
@@ -116,7 +110,7 @@ public class RemoveVDTest extends BaseUsecasesTest
          // TODO Auto-generated catch block
          e.printStackTrace();
       }
-      assertTrue(vd2.getFile().exists());
+      assertTrue(PrivilegedFileHelper.exists(vd2.getFile()));
 
       f.delete();
    }

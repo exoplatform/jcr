@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl.storage.value.fs;
 
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -73,12 +74,12 @@ public class TreeFile extends File
    protected boolean deleteParent(File fp)
    {
       boolean res = false;
-      String fpPath = fp.getAbsolutePath();
-      String rootPath = rootDir.getAbsolutePath();
+      String fpPath = PrivilegedFileHelper.getAbsolutePath(fp);
+      String rootPath = PrivilegedFileHelper.getAbsolutePath(rootDir);
       if (fpPath.startsWith(rootPath) && fpPath.length() > rootPath.length())
          if (fp.isDirectory())
          {
-            String[] ls = fp.list();
+            String[] ls = PrivilegedFileHelper.list(fp);;
             if (ls != null && ls.length <= 0)
             {
                if (res = fp.delete())
@@ -87,13 +88,13 @@ public class TreeFile extends File
                }
                else
                {
-                  fLog.warn("Parent directory can not be deleted now. " + fp.getAbsolutePath());
-                  cleaner.addFile(new TreeFile(fp.getAbsolutePath(), cleaner, rootDir));
+                  fLog.warn("Parent directory can not be deleted now. " + PrivilegedFileHelper.getAbsolutePath(fp));
+                  cleaner.addFile(new TreeFile(PrivilegedFileHelper.getAbsolutePath(fp), cleaner, rootDir));
                }
             }
          }
          else
-            fLog.warn("Parent can not be a file but found " + fp.getAbsolutePath());
+            fLog.warn("Parent can not be a file but found " + PrivilegedFileHelper.getAbsolutePath(fp));
       return res;
    }
 

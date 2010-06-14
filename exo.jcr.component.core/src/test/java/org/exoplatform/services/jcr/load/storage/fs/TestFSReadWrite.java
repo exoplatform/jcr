@@ -112,7 +112,7 @@ public class TestFSReadWrite extends TestCase
       super.setUp();
 
       testRoot = new File("target/fstest");
-      testRoot.mkdirs();
+      PrivilegedFileHelper.mkdirs(testRoot);
       PrivilegedFileHelper.deleteOnExit(testRoot);
    }
 
@@ -121,7 +121,7 @@ public class TestFSReadWrite extends TestCase
    {
       long time = System.currentTimeMillis();
 
-      if (testRoot.exists())
+      if (PrivilegedFileHelper.exists(testRoot))
       {
          deleteDir(testRoot);
          // deleteFiles(files);
@@ -143,10 +143,10 @@ public class TestFSReadWrite extends TestCase
 
    protected void deleteFileParent(File fp)
    {
-      if (fp.getAbsolutePath().startsWith(testRoot.getAbsolutePath()))
+      if (PrivilegedFileHelper.getAbsolutePath(fp).startsWith(PrivilegedFileHelper.getAbsolutePath(testRoot)))
          if (fp.isDirectory())
          {
-            String[] ls = fp.list();
+            String[] ls = PrivilegedFileHelper.list(fp);
             if (ls.length <= 0)
             {
                // log.info("del " + fp.getAbsolutePath());
@@ -155,20 +155,20 @@ public class TestFSReadWrite extends TestCase
             }
          }
          else
-            fail("Dir can't be a file but found " + fp.getAbsolutePath());
+            fail("Dir can't be a file but found " + PrivilegedFileHelper.getAbsolutePath(fp));
    }
 
    protected void deleteDir(File dir)
    {
-      String[] ls = dir.list();
+      String[] ls = PrivilegedFileHelper.list(dir);
       if (ls == null)
       {
-         log.log(Level.WARNING, "Dir not found " + dir.getAbsolutePath());
-         fail("Dir not found " + dir.getAbsolutePath());
+         log.log(Level.WARNING, "Dir not found " + PrivilegedFileHelper.getAbsolutePath(dir));
+         fail("Dir not found " + PrivilegedFileHelper.getAbsolutePath(dir));
       }
       for (String fn : ls)
       {
-         File f = new File(dir.getAbsolutePath() + File.separator + fn);
+         File f = new File(PrivilegedFileHelper.getAbsolutePath(dir) + File.separator + fn);
          if (f.isDirectory())
          {
             deleteDir(f);
@@ -184,14 +184,14 @@ public class TestFSReadWrite extends TestCase
       List<File> files = new ArrayList<File>();
       for (int i = 0; i < FILES_COUNT; i++)
       {
-         File f = new File(testRoot.getAbsolutePath() + File.separator + SIDGenerator.generate());
+         File f = new File(PrivilegedFileHelper.getAbsolutePath(testRoot) + File.separator + SIDGenerator.generate());
          try
          {
             // f.createNewFile();
             FileOutputStream fos = PrivilegedFileHelper.fileOutputStream(f);
             try
             {
-               fos.write(("File content " + f.getAbsolutePath()).getBytes());
+               fos.write(("File content " + PrivilegedFileHelper.getAbsolutePath(f)).getBytes());
             }
             finally
             {
@@ -213,16 +213,16 @@ public class TestFSReadWrite extends TestCase
       for (int i = 0; i < FILES_COUNT; i++)
       {
          String fileName = SIDGenerator.generate();
-         File dir = new File(testRoot.getAbsolutePath() + buildPathX(fileName));
-         dir.mkdirs();
-         File f = new File(dir.getAbsolutePath() + File.separator + fileName);
+         File dir = new File(PrivilegedFileHelper.getAbsolutePath(testRoot) + buildPathX(fileName));
+         PrivilegedFileHelper.mkdirs(dir);
+         File f = new File(PrivilegedFileHelper.getAbsolutePath(dir) + File.separator + fileName);
          try
          {
             // f.createNewFile();
             FileOutputStream fos = PrivilegedFileHelper.fileOutputStream(f);
             try
             {
-               fos.write(("File content " + f.getAbsolutePath()).getBytes());
+               fos.write(("File content " + PrivilegedFileHelper.getAbsolutePath(f)).getBytes());
             }
             finally
             {
@@ -255,16 +255,16 @@ public class TestFSReadWrite extends TestCase
       for (int i = 0; i < FILES_COUNT; i++)
       {
          String fileName = SIDGenerator.generate();
-         File dir = new File(testRoot.getAbsolutePath() + buildPathXX(fileName));
-         dir.mkdirs();
-         File f = new File(dir.getAbsolutePath() + File.separator + fileName);
+         File dir = new File(PrivilegedFileHelper.getAbsolutePath(testRoot) + buildPathXX(fileName));
+         PrivilegedFileHelper.mkdirs(dir);
+         File f = new File(PrivilegedFileHelper.getAbsolutePath(dir) + File.separator + fileName);
          try
          {
             // f.createNewFile();
             FileOutputStream fos = PrivilegedFileHelper.fileOutputStream(f);
             try
             {
-               fos.write(("File content " + f.getAbsolutePath()).getBytes());
+               fos.write(("File content " + PrivilegedFileHelper.getAbsolutePath(f)).getBytes());
             }
             finally
             {
@@ -301,16 +301,18 @@ public class TestFSReadWrite extends TestCase
          String fileName = SIDGenerator.generate();
          String prefix = fileName.substring(0, 24); // time + addr hash prefix
          String rnd = fileName.substring(24); // random name
-         File dir = new File(testRoot.getAbsolutePath() + File.separator + prefix + File.separator + buildPathX(rnd));
-         dir.mkdirs();
-         File f = new File(dir.getAbsolutePath() + File.separator + fileName);
+         File dir =
+            new File(PrivilegedFileHelper.getAbsolutePath(testRoot) + File.separator + prefix + File.separator
+               + buildPathX(rnd));
+         PrivilegedFileHelper.mkdirs(dir);
+         File f = new File(PrivilegedFileHelper.getAbsolutePath(dir) + File.separator + fileName);
          try
          {
             // f.createNewFile();
             FileOutputStream fos = PrivilegedFileHelper.fileOutputStream(f);
             try
             {
-               fos.write(("File content " + f.getAbsolutePath()).getBytes());
+               fos.write(("File content " + PrivilegedFileHelper.getAbsolutePath(f)).getBytes());
             }
             finally
             {
@@ -345,9 +347,9 @@ public class TestFSReadWrite extends TestCase
       for (int i = 0; i < FILES_COUNT; i++)
       {
          String fileName = SIDGenerator.generate();
-         File dir = new File(testRoot.getAbsolutePath() + File.separator + buildPathX8(fileName));
-         dir.mkdirs();
-         File f = new File(dir.getAbsolutePath() + File.separator + fileName);
+         File dir = new File(PrivilegedFileHelper.getAbsolutePath(testRoot) + File.separator + buildPathX8(fileName));
+         PrivilegedFileHelper.mkdirs(dir);
+         File f = new File(PrivilegedFileHelper.getAbsolutePath(dir) + File.separator + fileName);
          try
          {
             FileOutputStream fos = PrivilegedFileHelper.fileOutputStream(f);
@@ -379,10 +381,10 @@ public class TestFSReadWrite extends TestCase
       // long time = System.currentTimeMillis();
       // log.info(">>> Step into directory " + root.getAbsolutePath() +
       // (filter != null ? ", searched file " + filter.getName() : ""));
-      String[] ls = filter != null ? root.list(filter) : root.list();
+      String[] ls = filter != null ? PrivilegedFileHelper.list(root, filter) : root.list();
       for (String file : ls)
       {
-         File f = new File(testRoot.getAbsolutePath() + File.separator + file);
+         File f = new File(PrivilegedFileHelper.getAbsolutePath(testRoot) + File.separator + file);
          if (f.isDirectory())
          {
             // dir
@@ -417,22 +419,22 @@ public class TestFSReadWrite extends TestCase
 
    protected void readTreeXFiles(File root, NameFilter filter)
    {
-      String dirPath = root.getAbsolutePath() + buildPathX(filter.getName());
+      String dirPath = PrivilegedFileHelper.getAbsolutePath(root) + buildPathX(filter.getName());
       File dir = new File(dirPath);
-      String[] ls = filter != null ? dir.list(filter) : dir.list();
+      String[] ls = filter != null ? PrivilegedFileHelper.list(dir, filter) : dir.list();
       if (ls == null)
       {
-         log.log(Level.WARNING, "Dir not found " + dir.getAbsolutePath());
-         fail("Dir not found " + dir.getAbsolutePath());
+         log.log(Level.WARNING, "Dir not found " + PrivilegedFileHelper.getAbsolutePath(dir));
+         fail("Dir not found " + PrivilegedFileHelper.getAbsolutePath(dir));
       }
 
       for (String file : ls)
       {
-         File f = new File(dir.getAbsolutePath() + File.separator + file);
+         File f = new File(PrivilegedFileHelper.getAbsolutePath(dir) + File.separator + file);
          if (f.isDirectory())
          {
             // dir
-            fail("The file can't be a dir but found " + f.getAbsolutePath());
+            fail("The file can't be a dir but found " + PrivilegedFileHelper.getAbsolutePath(f));
          }
          else
          {
@@ -456,22 +458,22 @@ public class TestFSReadWrite extends TestCase
 
    protected void readTreeX8Files(File root, NameFilter filter)
    {
-      String dirPath = root.getAbsolutePath() + buildPathX8(filter.getName());
+      String dirPath = PrivilegedFileHelper.getAbsolutePath(root) + buildPathX8(filter.getName());
       File dir = new File(dirPath);
-      String[] ls = filter != null ? dir.list(filter) : dir.list();
+      String[] ls = filter != null ? PrivilegedFileHelper.list(dir, filter) : dir.list();
       if (ls == null)
       {
-         log.log(Level.WARNING, "Dir not found " + dir.getAbsolutePath());
-         fail("Dir not found " + dir.getAbsolutePath());
+         log.log(Level.WARNING, "Dir not found " + PrivilegedFileHelper.getAbsolutePath(dir));
+         fail("Dir not found " + PrivilegedFileHelper.getAbsolutePath(dir));
       }
 
       for (String file : ls)
       {
-         File f = new File(dir.getAbsolutePath() + File.separator + file);
+         File f = new File(PrivilegedFileHelper.getAbsolutePath(dir) + File.separator + file);
          if (f.isDirectory())
          {
             // dir
-            fail("The file can't be a dir but found " + f.getAbsolutePath());
+            fail("The file can't be a dir but found " + PrivilegedFileHelper.getAbsolutePath(f));
          }
          else
          {
@@ -500,22 +502,22 @@ public class TestFSReadWrite extends TestCase
 
    protected void readTreeXXFiles(File root, NameFilter filter)
    {
-      String dirPath = root.getAbsolutePath() + buildPathXX(filter.getName());
+      String dirPath = PrivilegedFileHelper.getAbsolutePath(root) + buildPathXX(filter.getName());
       File dir = new File(dirPath);
-      String[] ls = filter != null ? dir.list(filter) : dir.list();
+      String[] ls = filter != null ? PrivilegedFileHelper.list(dir, filter) : dir.list();
       if (ls == null)
       {
-         log.log(Level.WARNING, "Dir not found " + dir.getAbsolutePath());
-         fail("Dir not found " + dir.getAbsolutePath());
+         log.log(Level.WARNING, "Dir not found " + PrivilegedFileHelper.getAbsolutePath(dir));
+         fail("Dir not found " + PrivilegedFileHelper.getAbsolutePath(dir));
       }
 
       for (String file : ls)
       {
-         File f = new File(dir.getAbsolutePath() + File.separator + file);
+         File f = new File(PrivilegedFileHelper.getAbsolutePath(dir) + File.separator + file);
          if (f.isDirectory())
          {
             // dir
-            fail("The file can't be a dir but found " + f.getAbsolutePath());
+            fail("The file can't be a dir but found " + PrivilegedFileHelper.getAbsolutePath(f));
          }
          else
          {
@@ -547,21 +549,23 @@ public class TestFSReadWrite extends TestCase
       String fileName = filter.getName();
       String prefix = fileName.substring(0, 24); // time + addr hash prefix
       String rnd = fileName.substring(24); // random name
-      File dir = new File(testRoot.getAbsolutePath() + File.separator + prefix + File.separator + buildPathX(rnd));
-      String[] ls = filter != null ? dir.list(filter) : dir.list();
+      File dir =
+         new File(PrivilegedFileHelper.getAbsolutePath(testRoot) + File.separator + prefix + File.separator
+            + buildPathX(rnd));
+      String[] ls = filter != null ? PrivilegedFileHelper.list(dir, filter) : dir.list();
       if (ls == null)
       {
-         log.log(Level.WARNING, "Dir not found " + dir.getAbsolutePath());
-         fail("Dir not found " + dir.getAbsolutePath());
+         log.log(Level.WARNING, "Dir not found " + PrivilegedFileHelper.getAbsolutePath(dir));
+         fail("Dir not found " + PrivilegedFileHelper.getAbsolutePath(dir));
       }
 
       for (String file : ls)
       {
-         File f = new File(dir.getAbsolutePath() + File.separator + file);
+         File f = new File(PrivilegedFileHelper.getAbsolutePath(dir) + File.separator + file);
          if (f.isDirectory())
          {
             // dir
-            fail("The file can't be a dir but found " + f.getAbsolutePath());
+            fail("The file can't be a dir but found " + PrivilegedFileHelper.getAbsolutePath(f));
          }
          else
          {

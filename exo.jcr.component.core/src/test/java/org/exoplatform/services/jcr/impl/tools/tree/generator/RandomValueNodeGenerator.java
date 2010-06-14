@@ -26,7 +26,6 @@ import org.exoplatform.services.log.Log;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -193,7 +192,8 @@ public class RandomValueNodeGenerator extends WeightNodeGenerator
       }
       tempOut.close();
       PrivilegedFileHelper.deleteOnExit(testFile);
-      log.info("Temp file created: " + testFile.getAbsolutePath() + " size: " + PrivilegedFileHelper.length(testFile));
+      log.info("Temp file created: " + PrivilegedFileHelper.getAbsolutePath(testFile) + " size: "
+         + PrivilegedFileHelper.length(testFile));
       return testFile;
    }
 

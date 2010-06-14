@@ -164,13 +164,14 @@ public class TreeFileIOChannel extends FileIOChannel
       try
       {
          mkdirsLock.acquire();
-         return dir.mkdirs();
+         return PrivilegedFileHelper.mkdirs(dir);
       }
       catch (InterruptedException e)
       {
          // chLog.error("mkdirs error on " + dir.getAbsolutePath() + ". " + e, e);
          // return false;
-         throw new IllegalStateException("mkdirs error on " + dir.getAbsolutePath() + " due to " + e, e);
+         throw new IllegalStateException("mkdirs error on " + PrivilegedFileHelper.getAbsolutePath(dir) + " due to "
+            + e, e);
       }
       finally
       {
