@@ -1151,10 +1151,33 @@ sh run.sh -Dexo.profiles=foo,bar</programlisting>
   &lt;type&gt;Component&lt;/type&gt;
 &lt;/component&gt;
 
-&lt;component profile="foo"&gt;
+&lt;component profiles="foo"&gt;
   &lt;key&gt;Component&lt;/key&gt;
   &lt;type&gt;FooComponent&lt;/type&gt;
 &lt;/component&gt;</programlisting>
+        </section>
+
+        <section>
+          <title>Component plugin element</title>
+
+          <para>The component-plugin element is used to dynamically extend the
+          configuration of a given component. Thanks to the profiles the
+          component-plugins could be enabled or disabled:</para>
+
+          <programlisting>&lt;external-component-plugins&gt;
+  &lt;target-component&gt;Component&lt;/target-component&gt;
+  &lt;component-plugin profiles="foo"&gt;
+    &lt;name&gt;foo&lt;/name&gt;
+    &lt;set-method&gt;addPlugin&lt;/set-method&gt;
+    &lt;type&gt;type&lt;/type&gt;
+    &lt;init-params&gt;
+      &lt;value-param&gt;
+        &lt;name&gt;param&lt;/name&gt;
+        &lt;value&gt;empty&lt;/value&gt;
+      &lt;/value-param&gt;
+    &lt;/init-params&gt;
+  &lt;/component-plugin&gt;
+&lt;/external-component-plugins&gt;</programlisting>
         </section>
 
         <section>
@@ -1164,8 +1187,8 @@ sh run.sh -Dexo.profiles=foo,bar</programlisting>
           when activated:</para>
 
           <programlisting>&lt;import&gt;empty&lt;/import&gt;
-&lt;import profile="foo"&gt;foo&lt;/import&gt;
-&lt;import profile="bar"&gt;bar&lt;/import&gt;</programlisting>
+&lt;import profiles="foo"&gt;foo&lt;/import&gt;
+&lt;import profiles="bar"&gt;bar&lt;/import&gt;</programlisting>
         </section>
 
         <section>
@@ -1182,11 +1205,11 @@ sh run.sh -Dexo.profiles=foo,bar</programlisting>
       &lt;name&gt;param&lt;/name&gt;
       &lt;value&gt;empty&lt;/value&gt;
     &lt;/value-param&gt;
-    &lt;value-param profile="foo"&gt;
+    &lt;value-param profiles="foo"&gt;
       &lt;name&gt;param&lt;/name&gt;
       &lt;value&gt;foo&lt;/value&gt;
     &lt;/value-param&gt;
-    &lt;value-param profile="bar"&gt;
+    &lt;value-param profiles="bar"&gt;
       &lt;name&gt;param&lt;/name&gt;
       &lt;value&gt;bar&lt;/value&gt;
     &lt;/value-param&gt;
@@ -1204,8 +1227,8 @@ sh run.sh -Dexo.profiles=foo,bar</programlisting>
   &lt;field name="role"&gt;
     &lt;collection type="java.util.ArrayList"&gt;
       &lt;value&gt;&lt;string&gt;manager&lt;/string&gt;&lt;/value&gt;
-      &lt;value profile="foo"&gt;&lt;string&gt;foo_manager&lt;/string&gt;&lt;/value&gt;
-      &lt;value profile="foo,bar"&gt;&lt;string&gt;foo_bar_manager&lt;/string&gt;&lt;/value&gt;
+      &lt;value profiles="foo"&gt;&lt;string&gt;foo_manager&lt;/string&gt;&lt;/value&gt;
+      &lt;value profiles="foo,bar"&gt;&lt;string&gt;foo_bar_manager&lt;/string&gt;&lt;/value&gt;
     &lt;/collection&gt;
   &lt;/field&gt;
 &lt;/object&gt;</programlisting>
@@ -1225,12 +1248,12 @@ sh run.sh -Dexo.profiles=foo,bar</programlisting>
         &lt;value&gt;&lt;string&gt;manager&lt;/string&gt;&lt;/value&gt;
       &lt;/collection&gt;
     &lt;/field&gt;
-    &lt;field name="role" profile="foo,bar"&gt;
+    &lt;field name="role" profiles="foo,bar"&gt;
       &lt;collection type="java.util.ArrayList"&gt;
         &lt;value&gt;&lt;string&gt;foo_bar_manager&lt;/string&gt;&lt;/value&gt;
       &lt;/collection&gt;
     &lt;/field&gt;
-    &lt;field name="role" profile="foo"&gt;
+    &lt;field name="role" profiles="foo"&gt;
       &lt;collection type="java.util.ArrayList"&gt;
         &lt;value&gt;&lt;string&gt;foo_manager&lt;/string&gt;&lt;/value&gt;
       &lt;/collection&gt;
