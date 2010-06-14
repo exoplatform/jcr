@@ -31,6 +31,7 @@ import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ReaderSpoolFileHolder;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.impl.util.io.WorkspaceFileCleanerHolder;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.log.ExoLogger;
@@ -395,13 +396,7 @@ public abstract class BaseStandaloneTest extends TestCase
 
    protected File createBLOBTempFile(int sizeInKb) throws IOException
    {
-      System.setSecurityManager(null);
-
-      File file = createBLOBTempFile("exo_jcr_test_temp_file_", sizeInKb);
-
-      System.setSecurityManager(new SecurityManager());
-
-      return file;
+      return createBLOBTempFile("exo_jcr_test_temp_file_", sizeInKb);
    }
 
    protected File createBLOBTempFile(String prefix, int sizeInKb) throws IOException
@@ -409,8 +404,8 @@ public abstract class BaseStandaloneTest extends TestCase
       // create test file
       byte[] data = new byte[1024]; // 1Kb
 
-      File testFile = File.createTempFile(prefix, ".tmp");
-      FileOutputStream tempOut = new FileOutputStream(testFile);
+      File testFile = PrivilegedFileHelper.createTempFile(prefix, ".tmp");
+      FileOutputStream tempOut = PrivilegedFileHelper.fileOutputStream(testFile);
       Random random = new Random();
 
       for (int i = 0; i < sizeInKb; i++)
@@ -419,10 +414,11 @@ public abstract class BaseStandaloneTest extends TestCase
          tempOut.write(data);
       }
       tempOut.close();
-      testFile.deleteOnExit(); // delete on test exit
+      PrivilegedFileHelper.deleteOnExit(testFile); // delete on test exit
       if (log.isDebugEnabled())
       {
-         log.debug("Temp file created: " + testFile.getAbsolutePath() + " size: " + testFile.length());
+         log.debug("Temp file created: " + PrivilegedFileHelper.getAbsolutePath(testFile) + " size: "
+            + PrivilegedFileHelper.length(testFile));
       }
       return testFile;
    }

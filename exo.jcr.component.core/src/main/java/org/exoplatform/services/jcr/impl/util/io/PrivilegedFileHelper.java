@@ -135,6 +135,42 @@ public class PrivilegedFileHelper
       }
    }
 
+   public static File createTempFile(final String prefix, final String suffix) throws IllegalArgumentException,
+      IOException
+   {
+      PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
+      {
+         public Object run() throws Exception
+         {
+            return File.createTempFile(prefix, suffix);
+         }
+      };
+      try
+      {
+         return (File)AccessController.doPrivileged(action);
+      }
+      catch (PrivilegedActionException pae)
+      {
+         Throwable cause = pae.getCause();
+         if (cause instanceof IllegalArgumentException)
+         {
+            throw (IllegalArgumentException)cause;
+         }
+         else if (cause instanceof IOException)
+         {
+            throw (IOException)cause;
+         }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
+      }
+   }
+
    public static long length(final File file)
    {
       PrivilegedAction<Object> action = new PrivilegedAction<Object>()
@@ -145,6 +181,19 @@ public class PrivilegedFileHelper
          }
       };
       return (Long)AccessController.doPrivileged(action);
+   }
+
+   public static void deleteOnExit(final File file)
+   {
+      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
+      {
+         public Object run()
+         {
+            file.deleteOnExit();
+            return null;
+         }
+      };
+      AccessController.doPrivileged(action);
    }
 
    public static String getAbsolutePath(final File file)
