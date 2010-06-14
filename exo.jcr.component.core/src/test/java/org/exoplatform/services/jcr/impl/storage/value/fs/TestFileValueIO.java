@@ -107,7 +107,7 @@ public class TestFileValueIO extends TestCase
    {
 
       byte[] buf = "0123456789".getBytes();
-      File file = new File"target/testReadFileValueData");
+      File file = new File("target/testReadFileValueData");
       if (file.exists())
          file.delete();
       FileOutputStream out = PrivilegedFileHelper.fileOutputStream(file);
