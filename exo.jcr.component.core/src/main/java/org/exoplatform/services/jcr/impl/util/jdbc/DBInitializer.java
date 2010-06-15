@@ -109,18 +109,25 @@ public class DBInitializer
       return readScriptResource(scriptPath);
    }
 
-   protected String readScriptResource(String path) throws IOException
+   protected String readScriptResource(final String path) throws IOException
    {
-      final InputStream is = this.getClass().getResourceAsStream(path);
+      PrivilegedAction<InputStream> action = new PrivilegedAction<InputStream>()
+      {
+         public InputStream run()
+         {
+            return this.getClass().getResourceAsStream(path);
+         }
+      };
+      final InputStream is = AccessController.doPrivileged(action);
 
-      PrivilegedAction<InputStreamReader> action = new PrivilegedAction<InputStreamReader>()
+      PrivilegedAction<InputStreamReader> action_ = new PrivilegedAction<InputStreamReader>()
       {
          public InputStreamReader run()
          {
             return new InputStreamReader(is);
          }
       };
-      InputStreamReader isr = AccessController.doPrivileged(action);
+      InputStreamReader isr = AccessController.doPrivileged(action_);
 
       try
       {
