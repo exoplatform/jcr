@@ -31,22 +31,22 @@ import junit.framework.TestCase;
 
 public class TestSpoolFile extends TestCase
 {
-   private static final String dirName = "../";
+   private static final String DIR_NAME = "../";
 
-   private static final String fileName = "testSpoolFile";
+   private static final String FILE_NAME = "testSpoolFile";
 
    public void testCreateTempFile() throws IOException
    {
       // This method creates a file on disk space.
       // When calling a method delete() it should be removed.
-      SpoolFile sf = SpoolFile.createTempFile("prefix", "suffics", new File(dirName));
+      SpoolFile sf = SpoolFile.createTempFile("prefix", "suffics", new File(DIR_NAME));
       assertNotNull("File should be created.", sf);
       assertTrue("File should be deleted.", sf.delete());
    }
 
    public void testAcquireFile() throws FileNotFoundException
    {
-      SpoolFile sf = new SpoolFile(dirName + fileName);
+      SpoolFile sf = new SpoolFile(DIR_NAME + FILE_NAME);
 
       // Add new holder of file, now file must be in use.
       sf.acquire("holder");
@@ -69,7 +69,7 @@ public class TestSpoolFile extends TestCase
 
    public void testReleaseFile() throws FileNotFoundException
    {
-      SpoolFile sf = new SpoolFile(dirName + fileName);
+      SpoolFile sf = new SpoolFile(DIR_NAME + FILE_NAME);
 
       // Add new holder of file.
       sf.acquire("holder");
@@ -94,7 +94,7 @@ public class TestSpoolFile extends TestCase
 
    public void testFileInUse() throws FileNotFoundException
    {
-      SpoolFile sf = new SpoolFile(dirName + fileName);
+      SpoolFile sf = new SpoolFile(DIR_NAME + FILE_NAME);
 
       sf.acquire("holder");
       assertTrue("The file has holder. It must be in use.", sf.inUse());
@@ -119,7 +119,7 @@ public class TestSpoolFile extends TestCase
    public void testDeleteFile() throws FileNotFoundException
    {
       // This method not creates a file on disk space.
-      SpoolFile sf = new SpoolFile(dirName + fileName);
+      SpoolFile sf = new SpoolFile(DIR_NAME + FILE_NAME);
 
       // Add and release new holder of file.
       sf.acquire("holder");

@@ -30,16 +30,16 @@ import junit.framework.TestCase;
 
 public class TestSwapFile extends TestCase
 {
-   private static final String dirName = "../";
+   private static final String DIR_NAME = "../";
 
-   private static final String fileName = "childSwapFile";
+   private static final String FILE_NAME = "childSwapFile";
 
    public void testCreateTempFile()
    {
       // Not applicable creation.
       try
       {
-         SwapFile.createTempFile("prefix", "suffix", new File(dirName));
+         SwapFile.createTempFile("prefix", "suffix", new File(DIR_NAME));
          fail("IOException should have been thrown.");
       }
       catch (IOException e)
@@ -51,7 +51,7 @@ public class TestSwapFile extends TestCase
    public void testGetSwapFile() throws IOException
    {
       // Get swap file is possible only in this way.
-      SwapFile sf = SwapFile.get(new File(dirName), fileName);
+      SwapFile sf = SwapFile.get(new File(DIR_NAME), FILE_NAME);
       assertNotNull("File should be created.", sf);
       sf.spoolDone();
       sf.delete();
@@ -59,7 +59,7 @@ public class TestSwapFile extends TestCase
 
    public void testIsSpooled() throws IOException
    {
-      SwapFile sf = SwapFile.get(new File(dirName), fileName);
+      SwapFile sf = SwapFile.get(new File(DIR_NAME), FILE_NAME);
       assertFalse("Spool is not over.", sf.isSpooled());
       sf.spoolDone();
       assertTrue("Spool is over.", sf.isSpooled());
@@ -68,7 +68,7 @@ public class TestSwapFile extends TestCase
 
    public void testSpoolDone() throws IOException
    {
-      SwapFile sf = SwapFile.get(new File(dirName), fileName);
+      SwapFile sf = SwapFile.get(new File(DIR_NAME), FILE_NAME);
       sf.spoolDone();
       assertTrue("Spool should be done.", sf.isSpooled());
       sf.delete();
@@ -76,7 +76,7 @@ public class TestSwapFile extends TestCase
 
    public void testDeleteSpoolFile() throws IOException
    {
-      SwapFile sf = SwapFile.get(new File(dirName), fileName);
+      SwapFile sf = SwapFile.get(new File(DIR_NAME), FILE_NAME);
       sf.spoolDone();
 
       // File on disk does not exist. It will not be removed from disk space.
