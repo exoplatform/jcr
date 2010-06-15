@@ -50,26 +50,25 @@ public class TesterSecurityManager extends SecurityManager
             StackTraceElement[] traceElements = e.getStackTrace();
             for (int i = 0; i < traceElements.length; i++)
             {
-               StackTraceElement el = traceElements[i];
-               String cl = el.getClassName();
-               String fn = el.getFileName();
+               String className = traceElements[i].getClassName();
+               String fileName = traceElements[i].getFileName();
 
-               if (cl.startsWith("org.exoplatform"))
+               if (className.startsWith("org.exoplatform"))
                {
                   // TesterSecurityManager is not a part of source code
-                  if (fn.equals("TesterSecurityManager.java"))
+                  if (fileName.equals("TesterSecurityManager.java"))
                   {
                      continue;
                   }
 
                   // hide Exception
-                  if (fn.equals("BaseStandaloneTest.java") || fn.equals("SLF4JExoLogFactory.java"))
+                  if (fileName.equals("BaseStandaloneTest.java") || fileName.equals("SLF4JExoLogFactory.java"))
                   {
                      return;
                   }
 
-                  if (fn.startsWith("Test") || fn.endsWith("Test.java") || fn.endsWith("TestBase.java")
-                     || fn.equals("Probe.java"))
+                  if (fileName.startsWith("Test") || fileName.endsWith("Test.java")
+                     || fileName.endsWith("TestBase.java") || fileName.equals("Probe.java"))
                   {
                      testCode = true;
                   }
@@ -78,15 +77,25 @@ public class TesterSecurityManager extends SecurityManager
                      srcCode = true;
                   }
                }
-               else if (cl.startsWith("org.apache.jackrabbit.test"))
+               else if (className.startsWith("org.apache.jackrabbit.test"))
                {
                   // hide Exception
-                  if (fn.equals("JCRTestResult.java"))
+                  if (fileName.equals("JCRTestResult.java") || fileName.equals("RepositoryHelper.java"))
                   {
                      return;
                   }
+
+                  if (fileName.endsWith("Test.java"))
+                  {
+                     testCode = true;
+                  }
+                  else
+                  {
+                     srcCode = true;
+                  }
+
                }
-               else if (cl.startsWith("org.exoplatform.services.log.impl.SLF4JExoLogFactory"))
+               else if (className.startsWith("org.slf4j.impl.Log4jLoggerFactory"))
                {
                   return;
                }
