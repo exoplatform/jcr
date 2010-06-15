@@ -576,7 +576,7 @@
                   <artifactId>maven-surefire-plugin</artifactId>
                   <configuration>
                   <!-- TAKE CARE TO UPDATE ALSO run-all PROFILE -->
-                     <argLine>${env.MAVEN_OPTS}</argLine>
+                     <argLine>-Djava.security.manager=org.exoplatform.services.jcr.impl.util.TesterSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
                      <systemProperties>
                         <property>
                            <name>jcr.test.configuration.file</name>
@@ -649,7 +649,7 @@
                   <artifactId>maven-surefire-plugin</artifactId>
                   <configuration>
                      <!-- TAKE CARE TO UPDATE ALSO run-tck PROFILE -->
-                     <argLine>${env.MAVEN_OPTS}</argLine>
+                     <argLine>-Djava.security.manager=org.exoplatform.services.jcr.impl.util.TesterSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
                      <systemProperties>
                         <property>
                            <name>jcr.test.configuration.file</name>

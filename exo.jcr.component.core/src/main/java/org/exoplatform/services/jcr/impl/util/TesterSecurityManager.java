@@ -61,7 +61,7 @@ public class TesterSecurityManager extends SecurityManager
                      continue;
                   }
 
-                  // hide Exception
+                  // hide Exception during JCR initialization
                   if (fileName.equals("BaseStandaloneTest.java"))
                   {
                      return;
@@ -79,7 +79,7 @@ public class TesterSecurityManager extends SecurityManager
                }
                else if (className.startsWith("org.apache.jackrabbit.test"))
                {
-                  // hide Exception 
+                  // hide Exception during JCR initialization 
                   if (fileName.equals("RepositoryHelper.java") && methodName.equals("getRepository"))
                   {
                      return;
