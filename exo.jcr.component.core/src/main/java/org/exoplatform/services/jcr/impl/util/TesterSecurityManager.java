@@ -23,7 +23,6 @@ import java.security.Permission;
 /**
  * @author <a href="anatoliy.bazko@exoplatform.org">Anatoliy Bazko</a>
  * @version $Id: TesterSecurityManager.java 111 2010-11-11 11:11:11Z tolusha $
- *
  */
 public class TesterSecurityManager extends SecurityManager
 {
@@ -52,6 +51,7 @@ public class TesterSecurityManager extends SecurityManager
             {
                String className = traceElements[i].getClassName();
                String fileName = traceElements[i].getFileName();
+               String methodName = traceElements[i].getMethodName();
 
                if (className.startsWith("org.exoplatform"))
                {
@@ -62,7 +62,7 @@ public class TesterSecurityManager extends SecurityManager
                   }
 
                   // hide Exception
-                  if (fileName.equals("BaseStandaloneTest.java") || fileName.equals("SLF4JExoLogFactory.java"))
+                  if (fileName.equals("BaseStandaloneTest.java"))
                   {
                      return;
                   }
@@ -79,13 +79,13 @@ public class TesterSecurityManager extends SecurityManager
                }
                else if (className.startsWith("org.apache.jackrabbit.test"))
                {
-                  // hide Exception
-                  if (fileName.equals("JCRTestResult.java") || fileName.equals("RepositoryHelper.java"))
+                  // hide Exception 
+                  if (fileName.equals("RepositoryHelper.java") && methodName.equals("getRepository"))
                   {
                      return;
                   }
 
-                  if (fileName.endsWith("Test.java"))
+                  if (fileName.endsWith("Test.java") || fileName.equals("JCRTestResult.java"))
                   {
                      testCode = true;
                   }
@@ -93,13 +93,11 @@ public class TesterSecurityManager extends SecurityManager
                   {
                      srcCode = true;
                   }
-
                }
                else if (className.startsWith("org.slf4j.impl.Log4jLoggerFactory"))
                {
                   return;
                }
-
             }
 
             e = e.getCause();
