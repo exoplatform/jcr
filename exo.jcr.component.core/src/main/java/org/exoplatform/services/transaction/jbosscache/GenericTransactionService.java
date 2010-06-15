@@ -363,7 +363,42 @@ public class GenericTransactionService implements TransactionService
        */
       public void rollback() throws IllegalStateException, SecurityException, SystemException
       {
-         tm.rollback();
+         PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
+         {
+            public Object run() throws Exception
+            {
+               tm.rollback();
+               return null;
+            }
+         };
+         try
+         {
+            AccessController.doPrivileged(action);
+         }
+         catch (PrivilegedActionException pae)
+         {
+            Throwable cause = pae.getCause();
+            if (cause instanceof SecurityException)
+            {
+               throw (SecurityException)cause;
+            }
+            else if (cause instanceof IllegalStateException)
+            {
+               throw (IllegalStateException)cause;
+            }
+            else if (cause instanceof SystemException)
+            {
+               throw (SystemException)cause;
+            }
+            else if (cause instanceof RuntimeException)
+            {
+               throw (RuntimeException)cause;
+            }
+            else
+            {
+               throw new RuntimeException(cause);
+            }
+         }
       }
 
       /**

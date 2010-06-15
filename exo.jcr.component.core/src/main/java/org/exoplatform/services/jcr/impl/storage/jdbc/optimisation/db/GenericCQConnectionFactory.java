@@ -197,6 +197,8 @@ public class GenericCQConnectionFactory extends GenericConnectionFactory
    {
       try
       {
+         Connection conn = null;
+
          PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
          {
             public Object run() throws Exception
@@ -207,15 +209,7 @@ public class GenericCQConnectionFactory extends GenericConnectionFactory
          };
          try
          {
-            final Connection conn = (Connection)AccessController.doPrivileged(action);
-
-            if (readOnly)
-            {
-               // set this feature only if it asked
-               conn.setReadOnly(readOnly);
-            }
-
-            return conn;
+            conn = (Connection)AccessController.doPrivileged(action);
          }
          catch (PrivilegedActionException pae)
          {
@@ -233,6 +227,14 @@ public class GenericCQConnectionFactory extends GenericConnectionFactory
                throw new RuntimeException(cause);
             }
          }
+
+         if (readOnly)
+         {
+            // set this feature only if it asked
+            conn.setReadOnly(readOnly);
+         }
+
+         return conn;
       }
       catch (SQLException e)
       {

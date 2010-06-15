@@ -120,14 +120,14 @@ public class DBInitializer
       };
       final InputStream is = AccessController.doPrivileged(action);
 
-      PrivilegedAction<InputStreamReader> action_ = new PrivilegedAction<InputStreamReader>()
+      PrivilegedAction<InputStreamReader> actionGetReader = new PrivilegedAction<InputStreamReader>()
       {
          public InputStreamReader run()
          {
             return new InputStreamReader(is);
          }
       };
-      InputStreamReader isr = AccessController.doPrivileged(action_);
+      InputStreamReader isr = AccessController.doPrivileged(actionGetReader);
 
       try
       {
