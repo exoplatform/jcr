@@ -19,10 +19,12 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 import org.apache.lucene.document.Document;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.impl.util.SecurityHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -114,12 +116,20 @@ class ConsistencyCheck
       int notRepairable = 0;
       for (Iterator<ConsistencyCheckError> it = errors.iterator(); it.hasNext();)
       {
-         ConsistencyCheckError error = it.next();
+         final ConsistencyCheckError error = it.next();
          try
          {
             if (error.repairable())
             {
-               error.repair();
+               SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+               {
+                  public Object run() throws Exception
+                  {
+                     // running in privileged mode
+                     error.repair();
+                     return null;
+                  }
+               });
             }
             else
             {
@@ -170,21 +180,29 @@ class ConsistencyCheck
       Set multipleEntries = new HashSet();
       // collect all documents UUIDs
       documentUUIDs = new HashSet();
-      CachingMultiIndexReader reader = index.getIndexReader();
+      final CachingMultiIndexReader reader = index.getIndexReader();
       try
       {
          for (int i = 0; i < reader.maxDoc(); i++)
          {
             if (i > 10 && i % (reader.maxDoc() / 5) == 0)
             {
-               long progress = Math.round((100.0 * (float)i) / ((float)reader.maxDoc() * 2f));
+               long progress = Math.round((100.0 * i) / (reader.maxDoc() * 2f));
                log.info("progress: " + progress + "%");
             }
             if (reader.isDeleted(i))
             {
                continue;
             }
-            Document d = reader.document(i, FieldSelectors.UUID);
+            final int currentIndex = i;
+            Document d = SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Document>()
+            {
+               public Document run() throws Exception
+               {
+                  return reader.document(currentIndex, FieldSelectors.UUID);
+               }
+            });
+
             String uuid = d.get(FieldNames.UUID);
             if (stateMgr.getItemData(uuid) != null)
             {
@@ -201,7 +219,14 @@ class ConsistencyCheck
       }
       finally
       {
-         reader.release();
+         SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+         {
+            public Object run() throws Exception
+            {
+               reader.release();
+               return null;
+            }
+         });
       }
 
       // create multiple entries errors
@@ -210,22 +235,30 @@ class ConsistencyCheck
          errors.add(new MultipleEntries((String)it.next()));
       }
 
-      reader = index.getIndexReader();
+      final CachingMultiIndexReader newReader = index.getIndexReader();
       try
       {
          // run through documents again and check parent
-         for (int i = 0; i < reader.maxDoc(); i++)
+         for (int i = 0; i < newReader.maxDoc(); i++)
          {
-            if (i > 10 && i % (reader.maxDoc() / 5) == 0)
+            if (i > 10 && i % (newReader.maxDoc() / 5) == 0)
             {
-               long progress = Math.round((100.0 * (float)i) / ((float)reader.maxDoc() * 2f));
+               long progress = Math.round((100.0 * i) / (newReader.maxDoc() * 2f));
                log.info("progress: " + (progress + 50) + "%");
             }
-            if (reader.isDeleted(i))
+            if (newReader.isDeleted(i))
             {
                continue;
             }
-            Document d = reader.document(i, FieldSelectors.UUID_AND_PARENT);
+            final int currentIndex = i;
+            Document d = SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Document>()
+            {
+               public Document run() throws Exception
+               {
+                  return newReader.document(currentIndex, FieldSelectors.UUID_AND_PARENT);
+               }
+            });
+
             String uuid = d.get(FieldNames.UUID);
             String parentUUIDString = d.get(FieldNames.PARENT);
 
@@ -248,7 +281,14 @@ class ConsistencyCheck
       }
       finally
       {
-         reader.release();
+         SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+         {
+            public Object run() throws Exception
+            {
+               newReader.release();
+               return null;
+            }
+         });
       }
    }
 
@@ -285,6 +325,7 @@ class ConsistencyCheck
        * Returns <code>true</code>.
        * @return <code>true</code>.
        */
+      @Override
       public boolean repairable()
       {
          return true;
@@ -294,6 +335,7 @@ class ConsistencyCheck
        * Repairs the missing node by indexing the missing ancestors.
        * @throws IOException if an error occurs while repairing.
        */
+      @Override
       public void repair() throws IOException
       {
          String parentId = parentUUID;
@@ -331,6 +373,7 @@ class ConsistencyCheck
        * Not reparable (yet).
        * @return <code>false</code>.
        */
+      @Override
       public boolean repairable()
       {
          return false;
@@ -339,6 +382,7 @@ class ConsistencyCheck
       /**
        * No operation.
        */
+      @Override
       public void repair() throws IOException
       {
          log.warn("Unknown parent for " + uuid + " cannot be repaired");
@@ -360,6 +404,7 @@ class ConsistencyCheck
        * Returns <code>true</code>.
        * @return <code>true</code>.
        */
+      @Override
       public boolean repairable()
       {
          return true;
@@ -370,6 +415,7 @@ class ConsistencyCheck
        * re-index the node.
        * @throws IOException if an error occurs while repairing.
        */
+      @Override
       public void repair() throws IOException
       {
          // first remove all occurrences
@@ -405,6 +451,7 @@ class ConsistencyCheck
        * Returns <code>true</code>.
        * @return <code>true</code>.
        */
+      @Override
       public boolean repairable()
       {
          return true;
@@ -414,6 +461,7 @@ class ConsistencyCheck
        * Deletes the nodes from the index.
        * @throws IOException if an error occurs while repairing.
        */
+      @Override
       public void repair() throws IOException
       {
          log.info("Removing deleted node from index: " + uuid);

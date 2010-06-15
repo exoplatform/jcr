@@ -20,8 +20,6 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.store.NativeFSLockFactory;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
@@ -35,9 +33,9 @@ import org.exoplatform.services.jcr.impl.util.SecurityHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -245,6 +243,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       this.modeHandler = modeHandler;
       this.indexUpdateMonitor = indexUpdateMonitor;
       this.directoryManager = handler.getDirectoryManager();
+      // this method is run in privileged mode internally
       this.indexDir = directoryManager.getDirectory(".");
       this.handler = handler;
       this.cache = new DocNumberCache(handler.getCacheSize());
@@ -253,10 +252,13 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       this.flushTask = null;
       this.indexNames = indexInfos;
       this.indexNames.setDirectory(indexDir);
+      // this method is run in privileged mode internally
       this.indexNames.read();
 
       modeHandler.addIndexerIoModeListener(this);
       indexUpdateMonitor.addIndexUpdateMonitorListener(this);
+
+      // this method is run in privileged mode internally
       // as of 1.5 deletable file is not used anymore
       removeDeletable();
 
@@ -266,6 +268,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       merger.setMergeFactor(handler.getMergeFactor());
       merger.setMinMergeDocs(handler.getMinMergeDocs());
 
+      // this method is run in privileged mode internally
       IndexingQueueStore store = new IndexingQueueStore(indexDir);
 
       // initialize indexing queue
@@ -301,14 +304,21 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
 
       // set index format version and at the same time
       // initialize hierarchy cache if requested.
-      CachingMultiIndexReader reader = getIndexReader(handler.isInitializeHierarchyCache());
+      final CachingMultiIndexReader reader = getIndexReader(handler.isInitializeHierarchyCache());
       try
       {
          version = IndexFormatVersion.getVersion(reader);
       }
       finally
       {
-         reader.release();
+         SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+         {
+            public Object run() throws Exception
+            {
+               reader.release();
+               return null;
+            }
+         });
       }
       indexingQueue.initialize(this);
       if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
@@ -333,14 +343,21 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       }
       else
       {
-         CachingMultiIndexReader reader = getIndexReader();
+         final CachingMultiIndexReader reader = getIndexReader();
          try
          {
             return reader.numDocs();
          }
          finally
          {
-            reader.release();
+            SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+            {
+               public Object run() throws Exception
+               {
+                  reader.release();
+                  return null;
+               }
+            });
          }
       }
    }
@@ -418,71 +435,78 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     * @throws IOException
     *             if an error occurs while updating the index.
     */
-   synchronized void update(Collection remove, Collection add) throws IOException
+   synchronized void update(final Collection remove, final Collection add) throws IOException
    {
-      // make sure a reader is available during long updates
-      if (add.size() > handler.getBufferSize())
+      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
-         try
+         public Object run() throws Exception
          {
-            getIndexReader().release();
-         }
-         catch (IOException e)
-         {
-            // do not fail if an exception is thrown here
-            log.warn("unable to prepare index reader " + "for queries during update", e);
-         }
-      }
-
-      synchronized (updateMonitor)
-      {
-         //updateInProgress = true;
-         indexUpdateMonitor.setUpdateInProgress(true, false);
-      }
-      boolean flush = false;
-      try
-      {
-         long transactionId = nextTransactionId++;
-         executeAndLog(new Start(transactionId));
-
-         for (Iterator it = remove.iterator(); it.hasNext();)
-         {
-            executeAndLog(new DeleteNode(transactionId, (String)it.next()));
-         }
-         for (Iterator it = add.iterator(); it.hasNext();)
-         {
-            Document doc = (Document)it.next();
-            if (doc != null)
+            // make sure a reader is available during long updates
+            if (add.size() > handler.getBufferSize())
             {
-               executeAndLog(new AddNode(transactionId, doc));
-               // commit volatile index if needed
-               flush |= checkVolatileCommit();
+               try
+               {
+                  getIndexReader().release();
+               }
+               catch (IOException e)
+               {
+                  // do not fail if an exception is thrown here
+                  log.warn("unable to prepare index reader " + "for queries during update", e);
+               }
             }
-         }
-         executeAndLog(new Commit(transactionId));
 
-         // flush whole index when volatile index has been commited.
-         if (flush)
-         {
-            // if we are going to flush, need to set persistent update
             synchronized (updateMonitor)
             {
-               indexUpdateMonitor.setUpdateInProgress(true, true);
+               //updateInProgress = true;
+               indexUpdateMonitor.setUpdateInProgress(true, false);
             }
-            flush();
-         }
-      }
-      finally
-      {
-         synchronized (updateMonitor)
-         {
-            //updateInProgress = false;
+            boolean flush = false;
+            try
+            {
+               long transactionId = nextTransactionId++;
+               executeAndLog(new Start(transactionId));
 
-            indexUpdateMonitor.setUpdateInProgress(false, flush);
-            updateMonitor.notifyAll();
-            releaseMultiReader();
+               for (Iterator it = remove.iterator(); it.hasNext();)
+               {
+                  executeAndLog(new DeleteNode(transactionId, (String)it.next()));
+               }
+               for (Iterator it = add.iterator(); it.hasNext();)
+               {
+                  Document doc = (Document)it.next();
+                  if (doc != null)
+                  {
+                     executeAndLog(new AddNode(transactionId, doc));
+                     // commit volatile index if needed
+                     flush |= checkVolatileCommit();
+                  }
+               }
+               executeAndLog(new Commit(transactionId));
+
+               // flush whole index when volatile index has been commited.
+               if (flush)
+               {
+                  // if we are going to flush, need to set persistent update
+                  synchronized (updateMonitor)
+                  {
+                     indexUpdateMonitor.setUpdateInProgress(true, true);
+                  }
+                  flush();
+               }
+            }
+            finally
+            {
+               synchronized (updateMonitor)
+               {
+                  //updateInProgress = false;
+
+                  indexUpdateMonitor.setUpdateInProgress(false, flush);
+                  updateMonitor.notifyAll();
+                  releaseMultiReader();
+               }
+            }
+            return null;
          }
-      }
+      });
    }
 
    /**
@@ -606,10 +630,17 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          for (Iterator it = indexReaders.entrySet().iterator(); it.hasNext();)
          {
             Map.Entry entry = (Map.Entry)it.next();
-            ReadOnlyIndexReader reader = (ReadOnlyIndexReader)entry.getKey();
+            final ReadOnlyIndexReader reader = (ReadOnlyIndexReader)entry.getKey();
             try
             {
-               reader.release();
+               SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+               {
+                  public Object run() throws Exception
+                  {
+                     reader.release();
+                     return null;
+                  }
+               });
             }
             catch (IOException ex)
             {
@@ -727,14 +758,21 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     * @throws IOException
     *             if an exception occurs while replacing the indexes.
     */
-   void replaceIndexes(String[] obsoleteIndexes, PersistentIndex index, Collection deleted) throws IOException
+   void replaceIndexes(String[] obsoleteIndexes, final PersistentIndex index, Collection deleted) throws IOException
    {
 
       if (handler.isInitializeHierarchyCache())
       {
          // force initializing of caches
          long time = System.currentTimeMillis();
-         index.getReadOnlyIndexReader(true).release();
+         SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+         {
+            public Object run() throws Exception
+            {
+               index.getReadOnlyIndexReader(true).release();
+               return null;
+            }
+         });
          time = System.currentTimeMillis() - time;
          log.debug("hierarchy cache initialized in {} ms", new Long(time));
       }
@@ -1119,17 +1157,24 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    void releaseMultiReader() throws IOException
    {
-      if (multiReader != null)
+      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
-         try
+         public Object run() throws Exception
          {
-            multiReader.release();
+            if (multiReader != null)
+            {
+               try
+               {
+                  multiReader.release();
+               }
+               finally
+               {
+                  multiReader = null;
+               }
+            }
+            return null;
          }
-         finally
-         {
-            multiReader = null;
-         }
-      }
+      });
    }
 
    // -------------------------< internal
@@ -1161,28 +1206,35 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    private void scheduleFlushTask()
    {
-      // cancel task
-      if (flushTask != null)
+      SecurityHelper.doPriviledgedAction(new PrivilegedAction<Object>()
       {
-         flushTask.cancel();
-      }
-      // clear canceled tasks
-      FLUSH_TIMER.purge();
-      // new flush task, cause canceled can't be re-used
-      flushTask = new TimerTask()
-      {
-         @Override
-         public void run()
+         public Object run()
          {
-            // check if there are any indexing jobs finished
-            checkIndexingQueue();
-            // check if volatile index should be flushed
-            checkFlush();
+            // cancel task
+            if (flushTask != null)
+            {
+               flushTask.cancel();
+            }
+            // clear canceled tasks
+            FLUSH_TIMER.purge();
+            // new flush task, cause canceled can't be re-used
+            flushTask = new TimerTask()
+            {
+               @Override
+               public void run()
+               {
+                  // check if there are any indexing jobs finished
+                  checkIndexingQueue();
+                  // check if volatile index should be flushed
+                  checkFlush();
+               }
+            };
+            FLUSH_TIMER.schedule(flushTask, 0, 1000);
+            lastFlushTime = System.currentTimeMillis();
+            lastFileSystemFlushTime = System.currentTimeMillis();
+            return null;
          }
-      };
-      FLUSH_TIMER.schedule(flushTask, 0, 1000);
-      lastFlushTime = System.currentTimeMillis();
-      lastFileSystemFlushTime = System.currentTimeMillis();
+      });
    }
 
    /**
@@ -1386,18 +1438,25 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    private void removeDeletable()
    {
-      String fileName = "deletable";
-      try
+      SecurityHelper.doPriviledgedAction(new PrivilegedAction<Object>()
       {
-         if (indexDir.fileExists(fileName))
+         public Object run()
          {
-            indexDir.deleteFile(fileName);
+            String fileName = "deletable";
+            try
+            {
+               if (indexDir.fileExists(fileName))
+               {
+                  indexDir.deleteFile(fileName);
+               }
+            }
+            catch (IOException e)
+            {
+               log.warn("Unable to remove file 'deletable'.", e);
+            }
+            return null;
          }
-      }
-      catch (IOException e)
-      {
-         log.warn("Unable to remove file 'deletable'.", e);
-      }
+      });
    }
 
    /**

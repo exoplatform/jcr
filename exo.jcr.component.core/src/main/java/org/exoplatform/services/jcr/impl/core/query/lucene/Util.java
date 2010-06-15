@@ -25,11 +25,14 @@ import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.ValueDataConvertor;
+import org.exoplatform.services.jcr.impl.util.SecurityHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.security.PrivilegedAction;
+import java.security.PrivilegedExceptionAction;
 import java.util.Iterator;
 import java.util.regex.Pattern;
 
@@ -55,28 +58,35 @@ public class Util
     *
     * @param old the document to dispose.
     */
-   public static void disposeDocument(Document old)
+   public static void disposeDocument(final Document old)
    {
-      for (Iterator it = old.getFields().iterator(); it.hasNext();)
+      SecurityHelper.doPriviledgedAction(new PrivilegedAction<Object>()
       {
-         Fieldable f = (Fieldable)it.next();
-         try
+         public Object run()
          {
-            if (f.readerValue() != null)
+            for (Iterator it = old.getFields().iterator(); it.hasNext();)
             {
-               f.readerValue().close();
+               Fieldable f = (Fieldable)it.next();
+               try
+               {
+                  if (f.readerValue() != null)
+                  {
+                     f.readerValue().close();
+                  }
+                  else if (f instanceof LazyTextExtractorField)
+                  {
+                     LazyTextExtractorField field = (LazyTextExtractorField)f;
+                     field.dispose();
+                  }
+               }
+               catch (IOException ex)
+               {
+                  log.warn("Exception while disposing index document: " + ex);
+               }
             }
-            else if (f instanceof LazyTextExtractorField)
-            {
-               LazyTextExtractorField field = (LazyTextExtractorField)f;
-               field.dispose();
-            }
+            return null;
          }
-         catch (IOException ex)
-         {
-            log.warn("Exception while disposing index document: " + ex);
-         }
-      }
+      });
    }
 
    /**
@@ -147,16 +157,23 @@ public class Util
     * @throws IOException if an error occurs while closing or releasing the
     *                     index reader.
     */
-   public static void closeOrRelease(IndexReader reader) throws IOException
+   public static void closeOrRelease(final IndexReader reader) throws IOException
    {
-      if (reader instanceof ReleaseableIndexReader)
+      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
-         ((ReleaseableIndexReader)reader).release();
-      }
-      else
-      {
-         reader.close();
-      }
+         public Object run() throws Exception
+         {
+            if (reader instanceof ReleaseableIndexReader)
+            {
+               ((ReleaseableIndexReader)reader).release();
+            }
+            else
+            {
+               reader.close();
+            }
+            return null;
+         }
+      });
    }
 
    /**

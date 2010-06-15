@@ -19,10 +19,12 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
+import org.exoplatform.services.jcr.impl.util.SecurityHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -75,54 +77,62 @@ public class IndexingQueue
     * @param index the multi index this indexing queue belongs to.
     * @throws IOException if an error occurs while reading from the index.
     */
-   void initialize(MultiIndex index) throws IOException
+   void initialize(final MultiIndex index) throws IOException
    {
-      if (initialized)
+      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
-         throw new IllegalStateException("already initialized");
-      }
-      // check index for nodes that need to be reindexed
-      CachingMultiIndexReader reader = index.getIndexReader();
-      try
-      {
-         TermDocs tDocs = reader.termDocs(new Term(FieldNames.REINDEXING_REQUIRED, ""));
-         try
+         public Object run() throws Exception
          {
-            while (tDocs.next())
+            if (initialized)
             {
-               queueStore.addUUID(reader.document(tDocs.doc(), FieldSelectors.UUID).get(FieldNames.UUID));
+               throw new IllegalStateException("already initialized");
             }
+            // check index for nodes that need to be reindexed
+            CachingMultiIndexReader reader = index.getIndexReader();
+            try
+            {
+               TermDocs tDocs = reader.termDocs(new Term(FieldNames.REINDEXING_REQUIRED, ""));
+               try
+               {
+                  while (tDocs.next())
+                  {
+                     queueStore.addUUID(reader.document(tDocs.doc(), FieldSelectors.UUID).get(FieldNames.UUID));
+                  }
+               }
+               finally
+               {
+                  tDocs.close();
+               }
+            }
+            finally
+            {
+               reader.release();
+            }
+            String[] uuids = queueStore.getPending();
+            for (int i = 0; i < uuids.length; i++)
+            {
+               try
+               {
+                  Document doc = index.createDocument(uuids[i]);
+                  pendingDocuments.put(uuids[i], doc);
+                  log.debug("added node {}. New size of indexing queue: {}", uuids[i], new Integer(pendingDocuments
+                     .size()));
+               }
+               catch (IllegalArgumentException e)
+               {
+                  log.warn("Invalid UUID in indexing queue store: " + uuids[i]);
+               }
+               catch (RepositoryException e)
+               {
+                  // node does not exist anymore
+                  log.debug("Node with uuid {} does not exist anymore", uuids[i]);
+                  queueStore.removeUUID(uuids[i]);
+               }
+            }
+            initialized = true;
+            return null;
          }
-         finally
-         {
-            tDocs.close();
-         }
-      }
-      finally
-      {
-         reader.release();
-      }
-      String[] uuids = queueStore.getPending();
-      for (int i = 0; i < uuids.length; i++)
-      {
-         try
-         {
-            Document doc = index.createDocument(uuids[i]);
-            pendingDocuments.put(uuids[i], doc);
-            log.debug("added node {}. New size of indexing queue: {}", uuids[i], new Integer(pendingDocuments.size()));
-         }
-         catch (IllegalArgumentException e)
-         {
-            log.warn("Invalid UUID in indexing queue store: " + uuids[i]);
-         }
-         catch (RepositoryException e)
-         {
-            // node does not exist anymore
-            log.debug("Node with uuid {} does not exist anymore", uuids[i]);
-            queueStore.removeUUID(uuids[i]);
-         }
-      }
-      initialized = true;
+      });
    }
 
    /**

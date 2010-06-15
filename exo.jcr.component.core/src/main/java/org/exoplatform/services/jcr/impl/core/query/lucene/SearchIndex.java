@@ -59,6 +59,7 @@ import org.exoplatform.services.jcr.impl.core.query.QueryHandlerContext;
 import org.exoplatform.services.jcr.impl.core.query.SearchIndexConfigurationHelper;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.DirectoryManager;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.FSDirectoryManager;
+import org.exoplatform.services.jcr.impl.util.SecurityHelper;
 import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,6 +70,8 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.PrivilegedAction;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -129,6 +132,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     *             calculated as follows: 2 *
     *             Runtime.getRuntime().availableProcessors().
     */
+   @Deprecated
    public static final int DEFAULT_EXTRACTOR_POOL_SIZE = 0;
 
    /**
@@ -493,18 +497,24 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          throw new IOException("SearchIndex requires 'path' parameter in configuration!");
       }
 
-      File indexDirectory;
+      final File indexDirectory;
       if (path != null)
       {
-
          indexDirectory = new File(path);
-         if (!indexDirectory.exists())
+         SecurityHelper.doPriviledgedRepositoryExceptionAction(new PrivilegedExceptionAction<Object>()
          {
-            if (!indexDirectory.mkdirs())
+            public Object run() throws Exception
             {
-               throw new RepositoryException("fail to create index dir " + path);
+               if (!indexDirectory.exists())
+               {
+                  if (!indexDirectory.mkdirs())
+                  {
+                     throw new RepositoryException("fail to create index dir " + path);
+                  }
+               }
+               return null;
             }
-         }
+         });
       }
       else
       {
@@ -531,8 +541,15 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       else
       {
          // read local namespace mappings
-         File mapFile = new File(indexDirectory, NS_MAPPING_FILE);
-         if (mapFile.exists())
+         final File mapFile = new File(indexDirectory, NS_MAPPING_FILE);
+         boolean fileExists = SecurityHelper.doPriviledgedAction(new PrivilegedAction<Boolean>()
+         {
+            public Boolean run()
+            {
+               return mapFile.exists();
+            }
+         });
+         if (fileExists)
          {
             // be backward compatible and use ns_mappings.properties from
             // index folder
@@ -1376,8 +1393,15 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       {
          try
          {
-            spCheck = spellCheckerClass.newInstance();
-            spCheck.init(this, spellCheckerMinDistance, spellCheckerMorePopular);
+            spCheck = SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<SpellChecker>()
+            {
+               public SpellChecker run() throws Exception
+               {
+                  SpellChecker spCheck = spellCheckerClass.newInstance();
+                  spCheck.init(SearchIndex.this, spellCheckerMinDistance, spellCheckerMorePopular);
+                  return spCheck;
+               }
+            });
          }
          catch (Exception e)
          {

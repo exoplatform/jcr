@@ -18,12 +18,13 @@
  */
 package org.exoplatform.services.jcr.impl.util;
 
-import java.io.File;
 import java.io.IOException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+
+import javax.jcr.RepositoryException;
 
 /**
  * Helps running code in privileged 
@@ -68,6 +69,40 @@ public class SecurityHelper
    }
 
    /**
+    * Launches action in privileged mode. Can throw only repository exception.
+    * 
+    * @param <E>
+    * @param action
+    * @return
+    * @throws RepositoryException
+    */
+   public static <E> E doPriviledgedRepositoryExceptionAction(PrivilegedExceptionAction<E> action)
+      throws RepositoryException
+   {
+      try
+      {
+         return AccessController.doPrivileged(action);
+      }
+      catch (PrivilegedActionException pae)
+      {
+         Throwable cause = pae.getCause();
+         if (cause instanceof RepositoryException)
+         {
+            throw (RepositoryException)cause;
+         }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
+      }
+   }
+
+
+   /**
     * Launches action in privileged mode. Can throw only runtime exceptions.
     * 
     * @param <E>
@@ -78,23 +113,6 @@ public class SecurityHelper
    public static <E> E doPriviledgedAction(PrivilegedAction<E> action)
    {
       return AccessController.doPrivileged(action);
-   }
-
-   /**
-    * Gets system property in privileged mode
-    * 
-    * @param name
-    * @return
-    */
-   public static String getSystemProperty(final String name)
-   {
-      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<String>()
-      {
-         public String run()
-         {
-            return System.getProperty(name);
-         }
-      });
    }
 
 }

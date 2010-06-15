@@ -16,16 +16,17 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
+import org.exoplatform.services.jcr.impl.util.SecurityHelper;
 import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -148,33 +149,40 @@ public class FileBasedNamespaceMappings extends AbstractNamespaceMappings
     */
    private void load() throws IOException
    {
-      if (storage.exists())
+      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
-         InputStream in = PrivilegedFileHelper.fileInputStream(storage);
-         try
+         public Object run() throws Exception
          {
-            Properties props = new Properties();
-            log.debug("loading namespace mappings...");
-            props.load(in);
-
-            // read mappings from properties
-            Iterator iter = props.keySet().iterator();
-            while (iter.hasNext())
+            if (storage.exists())
             {
-               String prefix = (String)iter.next();
-               String uri = props.getProperty(prefix);
-               log.debug(prefix + " -> " + uri);
-               prefixToURI.put(prefix, uri);
-               uriToPrefix.put(uri, prefix);
+               InputStream in = PrivilegedFileHelper.fileInputStream(storage);
+               try
+               {
+                  Properties props = new Properties();
+                  log.debug("loading namespace mappings...");
+                  props.load(in);
+
+                  // read mappings from properties
+                  Iterator iter = props.keySet().iterator();
+                  while (iter.hasNext())
+                  {
+                     String prefix = (String)iter.next();
+                     String uri = props.getProperty(prefix);
+                     log.debug(prefix + " -> " + uri);
+                     prefixToURI.put(prefix, uri);
+                     uriToPrefix.put(uri, prefix);
+                  }
+                  prefixCount = props.size();
+                  log.debug("namespace mappings loaded.");
+               }
+               finally
+               {
+                  in.close();
+               }
             }
-            prefixCount = props.size();
-            log.debug("namespace mappings loaded.");
+            return null;
          }
-         finally
-         {
-            in.close();
-         }
-      }
+      });
    }
 
    /**
@@ -184,28 +192,35 @@ public class FileBasedNamespaceMappings extends AbstractNamespaceMappings
     */
    private void store() throws IOException
    {
-      Properties props = new Properties();
+      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      {
+         public Object run() throws Exception
+         {
+            Properties props = new Properties();
 
-      // store mappings in properties
-      Iterator iter = prefixToURI.keySet().iterator();
-      while (iter.hasNext())
-      {
-         String prefix = (String)iter.next();
-         String uri = (String)prefixToURI.get(prefix);
-         props.setProperty(prefix, uri);
-      }
+            // store mappings in properties
+            Iterator iter = prefixToURI.keySet().iterator();
+            while (iter.hasNext())
+            {
+               String prefix = (String)iter.next();
+               String uri = (String)prefixToURI.get(prefix);
+               props.setProperty(prefix, uri);
+            }
 
-      OutputStream out = PrivilegedFileHelper.fileOutputStream(storage);
-      try
-      {
-         out = new BufferedOutputStream(out);
-         props.store(out, null);
-      }
-      finally
-      {
-         // make sure stream is closed
-         out.close();
-      }
+            OutputStream out = PrivilegedFileHelper.fileOutputStream(storage);
+            try
+            {
+               out = new BufferedOutputStream(out);
+               props.store(out, null);
+            }
+            finally
+            {
+               // make sure stream is closed
+               out.close();
+            }
+            return null;
+         }
+      });
    }
 
    public String[] getAllNamespacePrefixes() throws RepositoryException
