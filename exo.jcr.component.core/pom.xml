@@ -391,10 +391,10 @@
             </property-->
                </systemProperties>
                <includes>
-                  <!--include>org/exoplatform/services/jcr/api/**/Test*.java</include-->
+                  <include>org/exoplatform/services/jcr/api/**/Test*.java</include>
                   <include>org/exoplatform/services/jcr/usecases/**/Test*.java</include>
                   <include>org/exoplatform/services/jcr/usecases/**/*Test.java</include>
-                  <!--include>org/exoplatform/services/jcr/impl/**/Test*.java</include-->
+                  <include>org/exoplatform/services/jcr/impl/**/Test*.java</include>
                </includes>
                <excludes>
                   <exclude>org/exoplatform/services/jcr/**/TestQueryUsecases.java</exclude>
