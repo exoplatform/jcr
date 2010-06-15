@@ -24,6 +24,8 @@ import org.exoplatform.services.log.Log;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -109,8 +111,17 @@ public class DBInitializer
 
    protected String readScriptResource(String path) throws IOException
    {
-      InputStream is = this.getClass().getResourceAsStream(path);
-      InputStreamReader isr = new InputStreamReader(is);
+      final InputStream is = this.getClass().getResourceAsStream(path);
+
+      PrivilegedAction<InputStreamReader> action = new PrivilegedAction<InputStreamReader>()
+      {
+         public InputStreamReader run()
+         {
+            return new InputStreamReader(is);
+         }
+      };
+      InputStreamReader isr = AccessController.doPrivileged(action);
+
       try
       {
          StringBuilder sbuff = new StringBuilder();
