@@ -40,6 +40,7 @@ import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
 import org.exoplatform.services.jcr.impl.storage.JCRItemExistsException;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedSystemHelper;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 import org.exoplatform.services.jcr.observation.ExtendedEvent;
 
@@ -99,7 +100,7 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
       else
          restorePath = fullBackupPath;
 
-      this.tempDir = new File(System.getProperty("java.io.tmpdir"));
+      this.tempDir = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
    }
 
    @Override

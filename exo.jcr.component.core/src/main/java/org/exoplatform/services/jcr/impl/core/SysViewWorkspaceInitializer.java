@@ -44,6 +44,7 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceD
 import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedSystemHelper;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.log.ExoLogger;
@@ -416,7 +417,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
             + ") RestoreIntializer should have mandatory parameter "
             + SysViewWorkspaceInitializer.RESTORE_PATH_PARAMETER);
 
-      this.tempDir = new File(System.getProperty("java.io.tmpdir"));
+      this.tempDir = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
    }
 
    /**
@@ -462,7 +463,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
             WorkspaceDataContainer.DEF_MAXBUFFERSIZE);
       this.restorePath = restorePath;
 
-      this.tempDir = new File(System.getProperty("java.io.tmpdir"));
+      this.tempDir = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
    }
 
    /**

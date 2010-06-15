@@ -29,25 +29,38 @@ import java.security.PrivilegedAction;
 public class PrivilegedSystemHelper
 {
 
-   public static String getProperty(final String name)
+   /**
+    * Gets system property in privileged mode.
+    * 
+    * @param key
+    * @return
+    */
+   public static String getProperty(final String key)
    {
       PrivilegedAction<String> action = new PrivilegedAction<String>()
       {
          public String run()
          {
-            return System.getProperty(name);
+            return System.getProperty(key);
          }
       };
       return AccessController.doPrivileged(action);
    }
 
-   public static String getProperty(final String name, final String def)
+   /**
+    * Gets system property in privileged mode.
+    * 
+    * @param key
+    * @param def
+    * @return
+    */
+   public static String getProperty(final String key, final String def)
    {
       PrivilegedAction<String> action = new PrivilegedAction<String>()
       {
          public String run()
          {
-            return System.getProperty(name, def);
+            return System.getProperty(key, def);
          }
       };
       return AccessController.doPrivileged(action);

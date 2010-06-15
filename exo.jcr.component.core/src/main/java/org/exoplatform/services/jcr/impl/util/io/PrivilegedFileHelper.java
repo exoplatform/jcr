@@ -39,6 +39,13 @@ import java.security.PrivilegedExceptionAction;
 public class PrivilegedFileHelper
 {
 
+   /**
+    * Create FileOutputStream in privileged mode.
+    * 
+    * @param file
+    * @return
+    * @throws FileNotFoundException
+    */
    public static FileOutputStream fileOutputStream(final File file) throws FileNotFoundException
    {
       PrivilegedExceptionAction<FileOutputStream> action = new PrivilegedExceptionAction<FileOutputStream>()
@@ -70,6 +77,13 @@ public class PrivilegedFileHelper
       }
    }
 
+   /**
+    * Create FileOutputStream in privileged mode.
+    * 
+    * @param name
+    * @return
+    * @throws FileNotFoundException
+    */
    public static FileOutputStream fileOutputStream(final String name) throws FileNotFoundException
    {
       PrivilegedExceptionAction<FileOutputStream> action = new PrivilegedExceptionAction<FileOutputStream>()
@@ -101,6 +115,14 @@ public class PrivilegedFileHelper
       }
    }
 
+   /**
+    * Create FileOutputStream in privileged mode.
+    * 
+    * @param file
+    * @param append
+    * @return
+    * @throws FileNotFoundException
+    */
    public static FileOutputStream fileOutputStream(final File file, final boolean append) throws FileNotFoundException
    {
       PrivilegedExceptionAction<FileOutputStream> action = new PrivilegedExceptionAction<FileOutputStream>()
@@ -132,6 +154,13 @@ public class PrivilegedFileHelper
       }
    }
 
+   /**
+    * Create FileInputStream in privileged mode.
+    * 
+    * @param file
+    * @return
+    * @throws FileNotFoundException
+    */
    public static FileInputStream fileInputStream(final File file) throws FileNotFoundException
    {
       PrivilegedExceptionAction<FileInputStream> action = new PrivilegedExceptionAction<FileInputStream>()
@@ -163,6 +192,13 @@ public class PrivilegedFileHelper
       }
    }
 
+   /**
+    * Create FileInputStream in privileged mode.
+    * 
+    * @param name
+    * @return
+    * @throws FileNotFoundException
+    */
    public static FileInputStream fileInputStream(final String name) throws FileNotFoundException
    {
       PrivilegedExceptionAction<FileInputStream> action = new PrivilegedExceptionAction<FileInputStream>()
@@ -194,6 +230,16 @@ public class PrivilegedFileHelper
       }
    }
 
+   /**
+    * Create temporary file in privileged mode.
+    * 
+    * @param prefix
+    * @param suffix
+    * @param directory
+    * @return
+    * @throws IllegalArgumentException
+    * @throws IOException
+    */
    public static File createTempFile(final String prefix, final String suffix, final File directory)
       throws IllegalArgumentException, IOException
    {
@@ -230,6 +276,16 @@ public class PrivilegedFileHelper
       }
    }
 
+   /**
+    * Create teamporary file in privileged mode.
+    * 
+    * 
+    * @param prefix
+    * @param suffix
+    * @return
+    * @throws IllegalArgumentException
+    * @throws IOException
+    */
    public static File createTempFile(final String prefix, final String suffix) throws IllegalArgumentException,
       IOException
    {
@@ -266,6 +322,15 @@ public class PrivilegedFileHelper
       }
    }
 
+   /**
+    * Create RandomAccessFile in privileged mode.
+    * 
+    * @param file
+    * @param mode
+    * @return
+    * @throws IllegalArgumentException
+    * @throws IOException
+    */
    public static RandomAccessFile randomAccessFile(final File file, final String mode) throws IllegalArgumentException,
       IOException
    {
@@ -302,6 +367,12 @@ public class PrivilegedFileHelper
       }
    }
 
+   /**
+    * Get file length in privileged mode.
+    * 
+    * @param file
+    * @return
+    */
    public static long length(final File file)
    {
       PrivilegedAction<Long> action = new PrivilegedAction<Long>()
@@ -314,6 +385,12 @@ public class PrivilegedFileHelper
       return AccessController.doPrivileged(action);
    }
 
+   /**
+    * Requests in privileged mode that the file or directory denoted by this abstract 
+    * pathname be deleted when the virtual machine terminates.
+    * 
+    * @param file
+    */
    public static void deleteOnExit(final File file)
    {
       PrivilegedAction<Object> action = new PrivilegedAction<Object>()
@@ -327,6 +404,12 @@ public class PrivilegedFileHelper
       AccessController.doPrivileged(action);
    }
 
+   /**
+    * Get file absolute path in privileged mode.
+    * 
+    * @param file
+    * @return
+    */
    public static String getAbsolutePath(final File file)
    {
       PrivilegedAction<String> action = new PrivilegedAction<String>()
@@ -339,6 +422,12 @@ public class PrivilegedFileHelper
       return AccessController.doPrivileged(action);
    }
 
+   /**
+    * Delete file in privileged mode.
+    * 
+    * @param file
+    * @return
+    */
    public static boolean delete(final File file)
    {
       PrivilegedAction<Boolean> action = new PrivilegedAction<Boolean>()
@@ -351,6 +440,13 @@ public class PrivilegedFileHelper
       return AccessController.doPrivileged(action);
    }
 
+   /**
+    * Tests in privileged mode whether the file denoted by this abstract pathname is a
+    * directory.
+    * 
+    * @param file
+    * @return
+    */
    public static boolean isDirectory(final File file)
    {
       PrivilegedAction<Boolean> action = new PrivilegedAction<Boolean>()
@@ -363,6 +459,13 @@ public class PrivilegedFileHelper
       return AccessController.doPrivileged(action);
    }
 
+   /**
+    * Tests in privileged mode whether the file or directory denoted by this abstract pathname
+    * exists.
+    *  
+    * @param file
+    * @return
+    */
    public static boolean exists(final File file)
    {
       PrivilegedAction<Boolean> action = new PrivilegedAction<Boolean>()
@@ -375,6 +478,12 @@ public class PrivilegedFileHelper
       return AccessController.doPrivileged(action);
    }
 
+   /**
+    * Creates the directory in privileged mode.
+    * 
+    * @param file
+    * @return
+    */
    public static boolean mkdirs(final File file)
    {
       PrivilegedAction<Boolean> action = new PrivilegedAction<Boolean>()
@@ -387,6 +496,13 @@ public class PrivilegedFileHelper
       return AccessController.doPrivileged(action);
    }
 
+   /**
+    * Rename File in privileged mode.
+    * 
+    * @param srcFile
+    * @param dstfile
+    * @return
+    */
    public static boolean renameTo(final File srcFile, final File dstfile)
    {
       PrivilegedAction<Boolean> action = new PrivilegedAction<Boolean>()
@@ -399,6 +515,12 @@ public class PrivilegedFileHelper
       return AccessController.doPrivileged(action);
    }
 
+   /**
+    * Get file's list in privileged mode.
+    * 
+    * @param file
+    * @return
+    */
    public static String[] list(final File file)
    {
       PrivilegedAction<String[]> action = new PrivilegedAction<String[]>()
@@ -411,6 +533,12 @@ public class PrivilegedFileHelper
       return AccessController.doPrivileged(action);
    }
 
+   /**
+    * Get file's list in privileged mode.
+    * 
+    * @param file
+    * @return
+    */
    public static String[] list(final File file, final FilenameFilter filter)
    {
       PrivilegedAction<String[]> action = new PrivilegedAction<String[]>()
@@ -423,6 +551,12 @@ public class PrivilegedFileHelper
       return AccessController.doPrivileged(action);
    }
 
+   /**
+    * Get file's list in privileged mode.
+    * 
+    * @param file
+    * @return
+    */
    public static File[] listFiles(final File file)
    {
       PrivilegedAction<File[]> action = new PrivilegedAction<File[]>()

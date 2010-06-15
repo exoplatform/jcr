@@ -35,6 +35,7 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.statistics.StatisticsJDBCS
 import org.exoplatform.services.jcr.impl.storage.jdbc.update.StorageUpdateManager;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedSystemHelper;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerException;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
@@ -70,7 +71,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     * Indicates if the statistics has to be enabled.
     */
    public static final boolean STATISTICS_ENABLED =
-      Boolean.valueOf(System.getProperty("JDBCWorkspaceDataContainer.statistics.enabled"));
+      Boolean.valueOf(PrivilegedSystemHelper.getProperty("JDBCWorkspaceDataContainer.statistics.enabled"));
    static
    {
       if (STATISTICS_ENABLED)
