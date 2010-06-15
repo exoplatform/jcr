@@ -77,7 +77,7 @@ public class SpoolFile extends File
    public synchronized void acquire(Object holder) throws FileNotFoundException
    {
       if (users == null)
-         throw new FileNotFoundException("File was deleted " + getAbsolutePath());
+         throw new FileNotFoundException("File was deleted " + PrivilegedFileHelper.getAbsolutePath(this));
 
       users.put(holder, System.currentTimeMillis());
    }
@@ -85,7 +85,7 @@ public class SpoolFile extends File
    public synchronized void release(Object holder) throws FileNotFoundException
    {
       if (users == null)
-         throw new FileNotFoundException("File was deleted " + getAbsolutePath());
+         throw new FileNotFoundException("File was deleted " + PrivilegedFileHelper.getAbsolutePath(this));
 
       users.remove(holder);
    }
@@ -93,7 +93,7 @@ public class SpoolFile extends File
    public synchronized boolean inUse() throws FileNotFoundException
    {
       if (users == null)
-         throw new FileNotFoundException("File was deleted " + getAbsolutePath());
+         throw new FileNotFoundException("File was deleted " + PrivilegedFileHelper.getAbsolutePath(this));
 
       return users.size() > 0;
    }

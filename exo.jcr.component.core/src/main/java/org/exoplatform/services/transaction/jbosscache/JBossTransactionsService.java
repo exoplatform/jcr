@@ -23,6 +23,9 @@ import com.arjuna.ats.jta.xa.XidImple;
 import org.exoplatform.container.xml.InitParams;
 import org.jboss.cache.transaction.TransactionManagerLookup;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+
 import javax.transaction.UserTransaction;
 import javax.transaction.xa.Xid;
 
@@ -35,15 +38,15 @@ import javax.transaction.xa.Xid;
  */
 public class JBossTransactionsService extends GenericTransactionService
 {
-   
+
    public JBossTransactionsService(TransactionManagerLookup tmLookup)
    {
       super(tmLookup);
    }
-      
+
    public JBossTransactionsService(TransactionManagerLookup tmLookup, InitParams params)
    {
-      super(tmLookup, params);      
+      super(tmLookup, params);
    }
 
    /**
@@ -61,6 +64,13 @@ public class JBossTransactionsService extends GenericTransactionService
    @Override
    public UserTransaction getUserTransaction()
    {
-      return com.arjuna.ats.jta.UserTransaction.userTransaction();
+      PrivilegedAction<UserTransaction> action = new PrivilegedAction<UserTransaction>()
+      {
+         public UserTransaction run()
+         {
+            return com.arjuna.ats.jta.UserTransaction.userTransaction();
+         }
+      };
+      return AccessController.doPrivileged(action);
    }
 }

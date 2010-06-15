@@ -56,7 +56,6 @@ import org.exoplatform.services.log.Log;
 import org.exoplatform.services.naming.InitialContextInitializer;
 import org.exoplatform.services.transaction.TransactionService;
 import org.jboss.cache.Cache;
-import org.jboss.cache.CacheException;
 import org.jboss.cache.CacheSPI;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.Node;
@@ -72,6 +71,7 @@ import java.math.BigInteger;
 import java.security.AccessController;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
@@ -258,38 +258,28 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
 
          cache = factory.createCache(config.getLockManager());
 
-         PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
+         PrivilegedAction<Object> action = new PrivilegedAction<Object>()
          {
-            public Object run() throws Exception
+            public Object run()
             {
                cache.create();
-               // Add the cache loader needed to prevent TimeoutException
-               addCacheLoader();
-               cache.start();
-
                return null;
             }
          };
-         try
+         AccessController.doPrivileged(action);
+
+         // Add the cache loader needed to prevent TimeoutException
+         addCacheLoader();
+
+         action = new PrivilegedAction<Object>()
          {
-            AccessController.doPrivileged(action);
-         }
-         catch (PrivilegedActionException pae)
-         {
-            Throwable cause = pae.getCause();
-            if (cause instanceof CacheException)
+            public Object run()
             {
-               throw (CacheException)cause;
+               cache.start();
+               return null;
             }
-            else if (cause instanceof RuntimeException)
-            {
-               throw (RuntimeException)cause;
-            }
-            else
-            {
-               throw new RuntimeException(cause);
-            }
-         }
+         };
+         AccessController.doPrivileged(action);
 
          createStructuredNode(lockRoot);
 
@@ -839,7 +829,16 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
       lockRemover.halt();
       lockRemover.interrupt();
       sessionLockManagers.clear();
-      cache.stop();
+
+      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
+      {
+         public Object run()
+         {
+            cache.stop();
+            return null;
+         }
+      };
+      AccessController.doPrivileged(action);
    }
 
    /**

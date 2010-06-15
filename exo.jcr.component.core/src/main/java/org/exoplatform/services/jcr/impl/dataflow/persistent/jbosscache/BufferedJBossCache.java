@@ -36,8 +36,7 @@ import org.jgroups.Address;
 
 import java.io.Serializable;
 import java.security.AccessController;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
+import java.security.PrivilegedAction;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -216,34 +215,15 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
     */
    public void create() throws CacheException
    {
-      PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
+      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
       {
-         public Object run() throws Exception
+         public Object run()
          {
             parentCache.create();
             return null;
          }
       };
-      try
-      {
-         AccessController.doPrivileged(action);
-      }
-      catch (PrivilegedActionException pae)
-      {
-         Throwable cause = pae.getCause();
-         if (cause instanceof CacheException)
-         {
-            throw (CacheException)cause;
-         }
-         else if (cause instanceof RuntimeException)
-         {
-            throw (RuntimeException)cause;
-         }
-         else
-         {
-            throw new RuntimeException(cause);
-         }
-      }
+      AccessController.doPrivileged(action);
    }
 
    /* (non-Javadoc)
@@ -648,34 +628,15 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
     */
    public void start() throws CacheException
    {
-      PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
+      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
       {
-         public Object run() throws Exception
+         public Object run()
          {
             parentCache.start();
             return null;
          }
       };
-      try
-      {
-         AccessController.doPrivileged(action);
-      }
-      catch (PrivilegedActionException pae)
-      {
-         Throwable cause = pae.getCause();
-         if (cause instanceof CacheException)
-         {
-            throw (CacheException)cause;
-         }
-         else if (cause instanceof RuntimeException)
-         {
-            throw (RuntimeException)cause;
-         }
-         else
-         {
-            throw new RuntimeException(cause);
-         }
-      }
+      AccessController.doPrivileged(action);
    }
 
    /* (non-Javadoc)
@@ -691,7 +652,15 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
     */
    public void stop()
    {
-      parentCache.stop();
+      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
+      {
+         public Object run()
+         {
+            parentCache.stop();
+            return null;
+         }
+      };
+      AccessController.doPrivileged(action);
    }
 
    public TransactionManager getTransactionManager()

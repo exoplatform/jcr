@@ -45,6 +45,7 @@ import org.picocontainer.ComponentAdapter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
@@ -293,7 +294,7 @@ public class RepositoryImpl implements ManageableRepository
          return;
       }
 
-      WorkspaceContainer wsContainer = repositoryContainer.getWorkspaceContainer(workspaceName);
+      final WorkspaceContainer wsContainer = repositoryContainer.getWorkspaceContainer(workspaceName);
 
       if (wsContainer == null)
          throw new RepositoryException("Workspace " + workspaceName
@@ -301,7 +302,16 @@ public class RepositoryImpl implements ManageableRepository
 
       repositoryContainer.getWorkspaceContainer(workspaceName).getWorkspaceInitializer().initWorkspace();
 
-      wsContainer.start();
+      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
+      {
+         public Object run()
+         {
+            wsContainer.start();
+            return null;
+         }
+      };
+
+      AccessController.doPrivileged(action);
 
       LOG.info("Workspace " + workspaceName + "@" + this.name + " is initialized");
    }
