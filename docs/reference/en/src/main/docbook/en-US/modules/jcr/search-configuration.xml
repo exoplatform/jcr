@@ -301,6 +301,31 @@
           </row>
 
           <row>
+            <entry>spellchecker-more-popular</entry>
+
+            <entry>true</entry>
+
+            <entry>If set true - spellchecker return only the suggest words
+            that are as frequent or more frequent than the checked word. If
+            set false, spellchecker return null (if checked word exit in
+            dictionary), or spellchecker will return most close suggest
+            word.</entry>
+
+            <entry>1.10</entry>
+          </row>
+
+          <row>
+            <entry>spellchecker-min-distance</entry>
+
+            <entry>0.55f</entry>
+
+            <entry>Minimal distance between checked word and proposed suggest
+            word.</entry>
+
+            <entry>1.10</entry>
+          </row>
+
+          <row>
             <entry>errorlog-size</entry>
 
             <entry>50(Kb)</entry>
