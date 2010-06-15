@@ -18,14 +18,14 @@
  */
 package org.exoplatform.services.jcr.load.perf;
 
-import org.exoplatform.services.jcr.JcrAPIBaseTest;
-
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.Calendar;
 
 import javax.jcr.Node;
+
+import org.exoplatform.services.jcr.JcrAPIBaseTest;
 
 /**
  * Created by The eXo Platform SAS Author : Peter Nedonosko peter.nedonosko@exoplatform.com.ua

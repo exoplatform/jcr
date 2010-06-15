@@ -21,7 +21,6 @@ package org.exoplatform.services.jcr.api.importing;
 import org.exoplatform.services.ext.action.InvocationContext;
 import org.exoplatform.services.jcr.core.ExtendedSession;
 import org.exoplatform.services.jcr.impl.util.StringConverter;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.impl.xml.importing.ContentImporter;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -340,7 +339,7 @@ public class TestDocumentViewImport extends AbstractImportTest
       {
          File file = createBLOBTempFile(25);// 2.5M
          log.info("=== File has created, size " + file.length());
-         contentTestPdfNode.setProperty("jcr:data", PrivilegedFileHelper.fileInputStream(file));
+         contentTestPdfNode.setProperty("jcr:data", new FileInputStream(file));
          contentTestPdfNode.setProperty("jcr:mimeType", "application/octet-stream");
       }
       catch (IOException e)

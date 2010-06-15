@@ -19,9 +19,9 @@
 package org.exoplatform.services.jcr.load.perf;
 
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -45,7 +45,6 @@ public class TestPerformance extends JcrAPIBaseTest
 
    private static String TEST_FILE = null;
 
-   @Override
    public void setUp() throws Exception
    {
       super.setUp();
@@ -66,7 +65,6 @@ public class TestPerformance extends JcrAPIBaseTest
       }
    }
 
-   @Override
    public void tearDown() throws Exception
    {
    }
@@ -431,7 +429,7 @@ public class TestPerformance extends JcrAPIBaseTest
       // variables for the execution time
       int FILE_SIZE = 100;// 100 K
       Node testAddNtFilePlusNtResource = testRoot.addNode("testAddNtFilePlusNtResource", "nt:unstructured");
-      TEST_FILE = PrivilegedFileHelper.getAbsolutePath(createBLOBTempFile(FILE_SIZE));
+      TEST_FILE = createBLOBTempFile(FILE_SIZE).getAbsolutePath();
       long startTime = System.currentTimeMillis();
       for (int i = 0; i < NODES_COUNT_SHORT_SESSION; i++)
       {
@@ -439,7 +437,7 @@ public class TestPerformance extends JcrAPIBaseTest
          Node cool = testAddNtFilePlusNtResource.addNode(name, "nt:file");
          Node contentNode = cool.addNode("jcr:content", "nt:resource");
          contentNode.setProperty("jcr:encoding", "UTF-8");
-         InputStream is = PrivilegedFileHelper.fileInputStream(TEST_FILE);
+         InputStream is = new FileInputStream(TEST_FILE);
          contentNode.setProperty("jcr:data", is);
          contentNode.setProperty("jcr:mimeType", "text/plain");
          contentNode.setProperty("jcr:lastModified", session.getValueFactory().createValue(Calendar.getInstance()));
@@ -516,8 +514,8 @@ public class TestPerformance extends JcrAPIBaseTest
    // byte SYMBOL = 65; // symbol A
    // byte[] data = new byte[BUFFER_SIZE]; // 1KB
    // Arrays.fill(data, (byte) SYMBOL); // symbol A
-   // File testFile = PrivilegedFileHelper.createTempFile(prefix, ".tmp");
-   // FileOutputStream tempOut = PrivilegedFileHelper.fileOutputStream(testFile);
+   // File testFile = File.createTempFile(prefix, ".tmp");
+   // FileOutputStream tempOut = new FileOutputStream(testFile);
    // for (int i = 0; i < sizeInKb; i++) {
    // tempOut.write(data);
    // }

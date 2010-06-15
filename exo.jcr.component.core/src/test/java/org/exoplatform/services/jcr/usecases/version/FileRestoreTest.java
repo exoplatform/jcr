@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.usecases.version;
 
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
 
 import java.io.File;
@@ -44,16 +43,16 @@ public class FileRestoreTest extends BaseUsecasesTest
    public void testBigFileRestore() throws Exception
    {
 
-      File tempFile = PrivilegedFileHelper.createTempFile("tempFile", "doc");
-      File tempFile2 = PrivilegedFileHelper.createTempFile("tempFile", "doc");
-      File tempFile3 = PrivilegedFileHelper.createTempFile("tempFile", "doc");
-      PrivilegedFileHelper.deleteOnExit(tempFile);
-      PrivilegedFileHelper.deleteOnExit(tempFile2);
-      PrivilegedFileHelper.deleteOnExit(tempFile3);
+      File tempFile = File.createTempFile("tempFile", "doc");
+      File tempFile2 = File.createTempFile("tempFile", "doc");
+      File tempFile3 = File.createTempFile("tempFile", "doc");
+      tempFile.deleteOnExit();
+      tempFile2.deleteOnExit();
+      tempFile3.deleteOnExit();
 
-      FileOutputStream fos = PrivilegedFileHelper.fileOutputStream(tempFile);
-      FileOutputStream fos2 = PrivilegedFileHelper.fileOutputStream(tempFile2);
-      FileOutputStream fos3 = PrivilegedFileHelper.fileOutputStream(tempFile3);
+      FileOutputStream fos = new FileOutputStream(tempFile);
+      FileOutputStream fos2 = new FileOutputStream(tempFile2);
+      FileOutputStream fos3 = new FileOutputStream(tempFile3);
 
       String content = "this is the content #1";
       String content2 = "this is the content #2_";
@@ -70,13 +69,13 @@ public class FileRestoreTest extends BaseUsecasesTest
       fos2.close();
       fos3.close();
 
-      log.info("FILE for VERSION #1 : file size = " + PrivilegedFileHelper.length(tempFile) + " bytes");
-      log.info("FILE for VERSION #2 : file size = " + PrivilegedFileHelper.length(tempFile2) + " bytes");
-      log.info("FILE for VERSION #3 : file size = " + PrivilegedFileHelper.length(tempFile3) + " bytes");
+      log.info("FILE for VERSION #1 : file size = " + tempFile.length() + " bytes");
+      log.info("FILE for VERSION #2 : file size = " + tempFile2.length() + " bytes");
+      log.info("FILE for VERSION #3 : file size = " + tempFile3.length() + " bytes");
 
       Node file = root.addNode("nt_file_node", "nt:file");
       Node contentNode = file.addNode("jcr:content", "nt:resource");
-      contentNode.setProperty("jcr:data", PrivilegedFileHelper.fileInputStream(tempFile));
+      contentNode.setProperty("jcr:data", new FileInputStream(tempFile));
       contentNode.setProperty("jcr:mimeType", "text/plain");
       contentNode.setProperty("jcr:lastModified", session.getValueFactory().createValue(Calendar.getInstance()));
       file.addMixin("mix:versionable");
@@ -86,38 +85,37 @@ public class FileRestoreTest extends BaseUsecasesTest
 
       file.checkin(); // v1
       file.checkout(); // file.getNode("jcr:content").getProperty("jcr:data").getStream()
-      file.getNode("jcr:content").setProperty("jcr:data", PrivilegedFileHelper.fileInputStream(tempFile2));
+      file.getNode("jcr:content").setProperty("jcr:data", new FileInputStream(tempFile2));
       session.save();
 
       log
          .info("ADD VERSION #2 : file size = " + contentNode.getProperty("jcr:data").getStream().available() + " bytes");
-      compareStream(PrivilegedFileHelper.fileInputStream(tempFile2), contentNode.getProperty("jcr:data").getStream());
+      compareStream(new FileInputStream(tempFile2), contentNode.getProperty("jcr:data").getStream());
 
       file.checkin(); // v2
       file.checkout();
-      file.getNode("jcr:content").setProperty("jcr:data", PrivilegedFileHelper.fileInputStream(tempFile3));
+      file.getNode("jcr:content").setProperty("jcr:data", new FileInputStream(tempFile3));
       session.save();
 
       log
          .info("ADD VERSION #3 : file size = " + contentNode.getProperty("jcr:data").getStream().available() + " bytes");
-      compareStream(PrivilegedFileHelper.fileInputStream(tempFile3), contentNode.getProperty("jcr:data").getStream());
+      compareStream(new FileInputStream(tempFile3), contentNode.getProperty("jcr:data").getStream());
 
       // restore version v2
       Version v2 = file.getBaseVersion();
       file.restore(v2, true);
 
-      compareStream(PrivilegedFileHelper.fileInputStream(tempFile2), contentNode.getProperty("jcr:data").getStream());
+      compareStream(new FileInputStream(tempFile2), contentNode.getProperty("jcr:data").getStream());
 
       // restore version v1
       Version v1 = file.getBaseVersion().getPredecessors()[0];
       file.restore(v1, true); // HERE
 
-      compareStream(PrivilegedFileHelper.fileInputStream(tempFile), contentNode.getProperty("jcr:data").getStream());
+      compareStream(new FileInputStream(tempFile), contentNode.getProperty("jcr:data").getStream());
 
       // restore version v2 again
       file.restore(v2, true);
 
-      compareStream(PrivilegedFileHelper.fileInputStream(tempFile2), file.getNode("jcr:content")
-         .getProperty("jcr:data").getStream());
+      compareStream(new FileInputStream(tempFile2), file.getNode("jcr:content").getProperty("jcr:data").getStream());
    }
 }

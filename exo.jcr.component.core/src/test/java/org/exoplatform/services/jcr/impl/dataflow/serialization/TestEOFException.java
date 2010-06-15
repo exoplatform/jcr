@@ -20,10 +20,11 @@ package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectWriter;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.EOFException;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Random;
 
@@ -40,13 +41,13 @@ public class TestEOFException extends JcrImplSerializationBaseTest
    {
       final byte[] buffer = createBLOBTempData(45);
 
-      File test = PrivilegedFileHelper.createTempFile("testEOF", "");
-      ObjectWriter ow = new ObjectWriterImpl(PrivilegedFileHelper.fileOutputStream(test));
+      File test = File.createTempFile("testEOF", "");
+      ObjectWriter ow = new ObjectWriterImpl(new FileOutputStream(test));
 
       ow.write(buffer);
       ow.close();
 
-      ObjectReader or = new ObjectReaderImpl(PrivilegedFileHelper.fileInputStream(test));
+      ObjectReader or = new ObjectReaderImpl(new FileInputStream(test));
 
       byte[] buf = new byte[buffer.length];
       try
@@ -64,19 +65,19 @@ public class TestEOFException extends JcrImplSerializationBaseTest
          or.close();
       }
 
-      PrivilegedFileHelper.delete(test);
+      test.delete();
    }
 
    public void testReadBoolean() throws Exception
    {
 
-      File test = PrivilegedFileHelper.createTempFile("testEOF", "");
-      ObjectWriter ow = new ObjectWriterImpl(PrivilegedFileHelper.fileOutputStream(test));
+      File test = File.createTempFile("testEOF", "");
+      ObjectWriter ow = new ObjectWriterImpl(new FileOutputStream(test));
 
       ow.writeBoolean(true);
       ow.close();
 
-      ObjectReader or = new ObjectReaderImpl(PrivilegedFileHelper.fileInputStream(test));
+      ObjectReader or = new ObjectReaderImpl(new FileInputStream(test));
 
       boolean b = or.readBoolean();
       try
@@ -93,19 +94,19 @@ public class TestEOFException extends JcrImplSerializationBaseTest
          or.close();
       }
 
-      PrivilegedFileHelper.delete(test);
+      test.delete();
    }
 
    public void testReadInt() throws Exception
    {
 
-      File test = PrivilegedFileHelper.createTempFile("testEOF", "");
-      ObjectWriter ow = new ObjectWriterImpl(PrivilegedFileHelper.fileOutputStream(test));
+      File test = File.createTempFile("testEOF", "");
+      ObjectWriter ow = new ObjectWriterImpl(new FileOutputStream(test));
 
       ow.writeInt(24);
       ow.close();
 
-      ObjectReader or = new ObjectReaderImpl(PrivilegedFileHelper.fileInputStream(test));
+      ObjectReader or = new ObjectReaderImpl(new FileInputStream(test));
 
       int b = or.readInt();
       assertEquals(24, b);
@@ -123,19 +124,19 @@ public class TestEOFException extends JcrImplSerializationBaseTest
          or.close();
       }
 
-      PrivilegedFileHelper.delete(test);
+      test.delete();
    }
 
    public void testReadLong() throws Exception
    {
 
-      File test = PrivilegedFileHelper.createTempFile("testEOF", "");
-      ObjectWriter ow = new ObjectWriterImpl(PrivilegedFileHelper.fileOutputStream(test));
+      File test = File.createTempFile("testEOF", "");
+      ObjectWriter ow = new ObjectWriterImpl(new FileOutputStream(test));
 
       ow.writeLong(24);
       ow.close();
 
-      ObjectReader or = new ObjectReaderImpl(PrivilegedFileHelper.fileInputStream(test));
+      ObjectReader or = new ObjectReaderImpl(new FileInputStream(test));
 
       long b = or.readLong();
       assertEquals(24, b);
@@ -153,7 +154,7 @@ public class TestEOFException extends JcrImplSerializationBaseTest
          or.close();
       }
 
-      PrivilegedFileHelper.delete(test);
+      test.delete();
    }
 
    protected byte[] createBLOBTempData(int size) throws IOException

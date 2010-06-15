@@ -17,13 +17,10 @@
 
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
-
 import junit.framework.TestCase;
 
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
-
 import java.io.File;
+import java.io.FileOutputStream;
 import java.util.Properties;
 
 /**
@@ -52,10 +49,9 @@ public class TestFileBasedNamespaceMappings extends TestCase
       assertEquals("mix", namereg.getNamespacePrefixByURI("http://www.jcp.org/jcr/mix/1.0"));
    }
 
-   @Override
    public void setUp() throws Exception
    {
-      test_mapp = PrivilegedFileHelper.createTempFile("temp", "mapping");
+      test_mapp = File.createTempFile("temp", "mapping");
 
       // Fill the namespace mappings file by prefix uri pairs
 
@@ -71,16 +67,15 @@ public class TestFileBasedNamespaceMappings extends TestCase
       props.setProperty("xs", "http://www.w3.org/2001/XMLSchema");
       props.setProperty("fn", "http://www.w3.org/2004/10/xpath-functions");
 
-      props.store(PrivilegedFileHelper.fileOutputStream(test_mapp), "");
+      props.store(new FileOutputStream(test_mapp), "");
 
       props.clear();
-      PrivilegedFileHelper.deleteOnExit(test_mapp);
+      test_mapp.deleteOnExit();
    }
 
-   @Override
    protected void tearDown() throws Exception
    {
-      PrivilegedFileHelper.delete(test_mapp);
+      test_mapp.delete();
    }
 
 }

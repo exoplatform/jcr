@@ -25,7 +25,6 @@ import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.util.ConfigurationHelper;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
@@ -140,14 +139,12 @@ public class TestWorkspaceManagement extends JcrImplBaseTest
 
    public void testAddWorkspaceWithIvalidVs() throws RepositoryConfigurationException, Exception
    {
-      File file = PrivilegedFileHelper.createTempFile("test", ".dat");
-      PrivilegedFileHelper.deleteOnExit(file);
+      File file = File.createTempFile("test", ".dat");
+      file.deleteOnExit();
 
       WorkspaceEntry workspaceEntry =
-         helper
-            .getNewWs("WsInvalidVs", isDefaultWsMultiDb, wsEntry.getContainer().getParameterValue(
-               JDBCWorkspaceDataContainer.SOURCE_NAME), PrivilegedFileHelper.getAbsolutePath(file), wsEntry
-               .getContainer());
+         helper.getNewWs("WsInvalidVs", isDefaultWsMultiDb, wsEntry.getContainer().getParameterValue(
+            JDBCWorkspaceDataContainer.SOURCE_NAME), file.getAbsolutePath(), wsEntry.getContainer());
       try
       {
          helper.createWorkspace(workspaceEntry, container);
@@ -161,7 +158,7 @@ public class TestWorkspaceManagement extends JcrImplBaseTest
       }
       finally
       {
-         PrivilegedFileHelper.delete(file);
+         file.delete();
       }
    }
 

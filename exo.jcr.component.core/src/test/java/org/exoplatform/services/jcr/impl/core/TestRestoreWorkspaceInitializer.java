@@ -20,9 +20,9 @@ package org.exoplatform.services.jcr.impl.core;
 
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.Calendar;
@@ -65,15 +65,15 @@ public class TestRestoreWorkspaceInitializer extends JcrImplBaseTest
       Node blob = root.addNode("binaryTest");
       File f;
       InputStream is;
-      blob.setProperty("blob", is = PrivilegedFileHelper.fileInputStream(f = createBLOBTempFile(2 * 1024))); // 2M
+      blob.setProperty("blob", is = new FileInputStream(f = createBLOBTempFile(2 * 1024))); // 2M
 
       root.save();
 
       is.close();
-      PrivilegedFileHelper.renameTo(f, new File("./sv_export_binary.bin"));
+      f.renameTo(new File("./sv_export_binary.bin"));
 
       File outf = new File("./sv_export_root.xml");
-      FileOutputStream out = PrivilegedFileHelper.fileOutputStream(outf);
+      FileOutputStream out = new FileOutputStream(outf);
       session.exportWorkspaceSystemView(out, false, false);
       out.close();
    }
@@ -97,7 +97,7 @@ public class TestRestoreWorkspaceInitializer extends JcrImplBaseTest
       {
          InputStream is =
             ws1root.getProperty("1_common/cargo/cargo/0.5/cargo-0.5.jar/jcr:content/jcr:data").getStream();
-         FileOutputStream fout = PrivilegedFileHelper.fileOutputStream("./cargo-0.5.jar");
+         FileOutputStream fout = new FileOutputStream("./cargo-0.5.jar");
          int r = -1;
          byte[] b = new byte[1024];
          while ((r = is.read(b)) >= 0)
@@ -119,8 +119,8 @@ public class TestRestoreWorkspaceInitializer extends JcrImplBaseTest
             p = multiv.getProperty("exojcrtest:multiValuedName");
             p.getValues();
 
-            compareStream(PrivilegedFileHelper.fileInputStream("./sv_export_binary.bin"), root.getNode("binaryTest")
-               .getProperty("blob").getStream());
+            compareStream(new FileInputStream("./sv_export_binary.bin"), root.getNode("binaryTest").getProperty("blob")
+               .getStream());
          }
          catch (ValueFormatException e)
          {

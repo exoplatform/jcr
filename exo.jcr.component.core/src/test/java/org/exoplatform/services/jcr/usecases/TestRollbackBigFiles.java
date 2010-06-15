@@ -34,7 +34,6 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
 import java.io.File;
@@ -84,7 +83,7 @@ public class TestRollbackBigFiles extends JcrImplBaseTest
       File f = this.createBLOBTempFile(1024);
       TransientPropertyData newProperty =
          new TransientPropertyData(propPath.getInternalPath(), IdGenerator.generate(), -1, PropertyType.BINARY, newNode
-            .getIdentifier(), false, new TransientValueData(PrivilegedFileHelper.fileInputStream(f)));
+            .getIdentifier(), false, new TransientValueData(new FileInputStream(f)));
 
       list.add(new ItemState(newProperty, ItemState.ADDED, false, parent.getQPath()));
 

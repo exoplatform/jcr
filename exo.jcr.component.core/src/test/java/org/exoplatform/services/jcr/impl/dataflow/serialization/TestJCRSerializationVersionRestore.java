@@ -19,7 +19,6 @@
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
 import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -91,16 +90,16 @@ public class TestJCRSerializationVersionRestore extends JcrImplSerializationBase
    {
       TesterItemsPersistenceListener pl = new TesterItemsPersistenceListener(this.session);
 
-      File tempFile = PrivilegedFileHelper.createTempFile("tempFile", "doc");
-      File tempFile2 = PrivilegedFileHelper.createTempFile("tempFile", "doc");
-      File tempFile3 = PrivilegedFileHelper.createTempFile("tempFile", "doc");
-      PrivilegedFileHelper.deleteOnExit(tempFile);
-      PrivilegedFileHelper.deleteOnExit(tempFile2);
-      PrivilegedFileHelper.deleteOnExit(tempFile3);
+      File tempFile = File.createTempFile("tempFile", "doc");
+      File tempFile2 = File.createTempFile("tempFile", "doc");
+      File tempFile3 = File.createTempFile("tempFile", "doc");
+      tempFile.deleteOnExit();
+      tempFile2.deleteOnExit();
+      tempFile3.deleteOnExit();
 
-      FileOutputStream fos = PrivilegedFileHelper.fileOutputStream(tempFile);
-      FileOutputStream fos2 = PrivilegedFileHelper.fileOutputStream(tempFile2);
-      FileOutputStream fos3 = PrivilegedFileHelper.fileOutputStream(tempFile3);
+      FileOutputStream fos = new FileOutputStream(tempFile);
+      FileOutputStream fos2 = new FileOutputStream(tempFile2);
+      FileOutputStream fos3 = new FileOutputStream(tempFile3);
 
       String content = "this is the content #1";
       String content2 = "this is the content #2_";
@@ -117,13 +116,13 @@ public class TestJCRSerializationVersionRestore extends JcrImplSerializationBase
       fos2.close();
       fos3.close();
 
-      log.info("FILE for VERVION #1 : file size = " + PrivilegedFileHelper.length(tempFile) + " bytes");
-      log.info("FILE for VERVION #2 : file size = " + PrivilegedFileHelper.length(tempFile2) + " bytes");
-      log.info("FILE for VERVION #3 : file size = " + PrivilegedFileHelper.length(tempFile3) + " bytes");
+      log.info("FILE for VERVION #1 : file size = " + tempFile.length() + " bytes");
+      log.info("FILE for VERVION #2 : file size = " + tempFile2.length() + " bytes");
+      log.info("FILE for VERVION #3 : file size = " + tempFile3.length() + " bytes");
 
       Node srcVersionNode = root.addNode("nt_file_node", "nt:file");
       Node contentNode = srcVersionNode.addNode("jcr:content", "nt:resource");
-      contentNode.setProperty("jcr:data", PrivilegedFileHelper.fileInputStream(tempFile));
+      contentNode.setProperty("jcr:data", new FileInputStream(tempFile));
       contentNode.setProperty("jcr:mimeType", "text/plain");
       contentNode.setProperty("jcr:lastModified", session.getValueFactory().createValue(Calendar.getInstance()));
       srcVersionNode.addMixin("mix:versionable");
@@ -135,14 +134,14 @@ public class TestJCRSerializationVersionRestore extends JcrImplSerializationBase
       session.save();
 
       srcVersion.checkout();
-      srcVersionNode.getNode("jcr:content").setProperty("jcr:data", PrivilegedFileHelper.fileInputStream(tempFile2));
+      srcVersionNode.getNode("jcr:content").setProperty("jcr:data", new FileInputStream(tempFile2));
       session.save();
 
       srcVersion.checkin();
       session.save();
 
       srcVersion.checkout();
-      srcVersionNode.getNode("jcr:content").setProperty("jcr:data", PrivilegedFileHelper.fileInputStream(tempFile3));
+      srcVersionNode.getNode("jcr:content").setProperty("jcr:data", new FileInputStream(tempFile3));
       session.save();
 
       Version baseVersion = srcVersion.getBaseVersion();

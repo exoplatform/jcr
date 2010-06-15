@@ -29,9 +29,10 @@ import org.exoplatform.services.jcr.dataflow.serialization.ObjectWriter;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectWriterImpl;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.TransactionChangesLogWriter;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.List;
@@ -81,7 +82,6 @@ public class TestTransientValueDataSpooling extends BaseStandaloneTest implement
    /**
     * {@inheritDoc}
     */
-   @Override
    public void tearDown() throws Exception
    {
       super.tearDown();
@@ -99,7 +99,7 @@ public class TestTransientValueDataSpooling extends BaseStandaloneTest implement
       System.gc();
       Thread.sleep(2000);
 
-      String[] countBefore = PrivilegedFileHelper.list(tmpdir, new FilenameFilter()
+      String[] countBefore = tmpdir.list(new FilenameFilter()
       {
          public boolean accept(File dir, String name)
          {
@@ -108,13 +108,13 @@ public class TestTransientValueDataSpooling extends BaseStandaloneTest implement
       });
 
       NodeImpl node = (NodeImpl)root.addNode("testNode");
-      node.setProperty("testProp", PrivilegedFileHelper.fileInputStream(tmpFile));
+      node.setProperty("testProp", new FileInputStream(tmpFile));
       root.save();
 
       System.gc();
       Thread.sleep(2000);
 
-      String[] countAfter = PrivilegedFileHelper.list(tmpdir, new FilenameFilter()
+      String[] countAfter = tmpdir.list(new FilenameFilter()
       {
          public boolean accept(File dir, String name)
          {
@@ -138,7 +138,7 @@ public class TestTransientValueDataSpooling extends BaseStandaloneTest implement
       System.gc();
       Thread.sleep(2000);
 
-      String[] countBefore = PrivilegedFileHelper.list(tmpdir, new FilenameFilter()
+      String[] countBefore = tmpdir.list(new FilenameFilter()
       {
          public boolean accept(File dir, String name)
          {
@@ -147,14 +147,14 @@ public class TestTransientValueDataSpooling extends BaseStandaloneTest implement
       });
 
       Node node = root.addNode("testNode");
-      node.setProperty("testProp", PrivilegedFileHelper.fileInputStream(tmpFile));
+      node.setProperty("testProp", new FileInputStream(tmpFile));
       node.getProperty("testProp").getStream().close();
       root.save();
 
       System.gc();
       Thread.sleep(2000);
 
-      String[] countAfter = PrivilegedFileHelper.list(tmpdir, new FilenameFilter()
+      String[] countAfter = tmpdir.list(new FilenameFilter()
       {
          public boolean accept(File dir, String name)
          {
@@ -170,7 +170,7 @@ public class TestTransientValueDataSpooling extends BaseStandaloneTest implement
       File tmpFile = createBLOBTempFile(250);
 
       Node node = root.addNode("testNode");
-      node.setProperty("testProp", PrivilegedFileHelper.fileInputStream(tmpFile));
+      node.setProperty("testProp", new FileInputStream(tmpFile));
       session.save();
 
       TransactionChangesLog cl = new TransactionChangesLog(cLog.getLogIterator().nextLog());
@@ -178,8 +178,7 @@ public class TestTransientValueDataSpooling extends BaseStandaloneTest implement
       node.getProperty("testProp").remove();
       session.save();
 
-      ObjectWriter out =
-         new ObjectWriterImpl(PrivilegedFileHelper.fileOutputStream(File.createTempFile("out", ".tmp")));
+      ObjectWriter out = new ObjectWriterImpl(new FileOutputStream(File.createTempFile("out", ".tmp")));
       TransactionChangesLogWriter lw = new TransactionChangesLogWriter();
 
       lw.write(out, cl);

@@ -19,8 +19,8 @@
 package org.exoplatform.services.jcr.load.blob;
 
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Calendar;
 
@@ -69,7 +69,6 @@ public class TestBinaryValue extends JcrAPIBaseTest
    // -------------- TEST FILE ------------------
    private static String TEST_FILE = null; // URL_SMALL_FILE
 
-   @Override
    public void setUp() throws Exception
    {
       super.setUp();// .repository
@@ -79,7 +78,7 @@ public class TestBinaryValue extends JcrAPIBaseTest
       if (TEST_FILE == null)
       {
          // create test file
-         TEST_FILE = PrivilegedFileHelper.getAbsolutePath(createBLOBTempFile(2));
+         TEST_FILE = createBLOBTempFile(2).getAbsolutePath();
       }
    }
 
@@ -90,14 +89,14 @@ public class TestBinaryValue extends JcrAPIBaseTest
       startTime = System.currentTimeMillis(); // to get the time of start
 
       // 300 Kb
-      TEST_FILE = PrivilegedFileHelper.getAbsolutePath(createBLOBTempFile(300));
+      TEST_FILE = createBLOBTempFile(300).getAbsolutePath();
 
       for (int i = 0; i < FILES_COUNT; i++)
       {
          Node localBigFile = testLocalBigFiles.addNode("bigFile" + i, "nt:file");
          Node contentNode = localBigFile.addNode("jcr:content", "nt:resource");
          // contentNode.setProperty("jcr:encoding", "UTF-8");
-         InputStream is = PrivilegedFileHelper.fileInputStream(TEST_FILE);
+         InputStream is = new FileInputStream(TEST_FILE);
          contentNode.setProperty("jcr:data", is);
          contentNode.setProperty("jcr:mimeType", "application/octet-stream ");
          is.close();
@@ -134,14 +133,14 @@ public class TestBinaryValue extends JcrAPIBaseTest
     * "application/octet-stream "); contentNode.setProperty("jcr:lastModified",
     * Calendar.getInstance()); } session.save(); endTime = System.currentTimeMillis();
     * log.info("Execution time after adding and saving: (local small)" + ((endTime - startTime) /
-    * 1000) + "s"); // check streams //compareStream(PrivilegedFileHelper.fileInputStream(LOCAL_SMALL_FILE), //
+    * 1000) + "s"); // check streams //compareStream(new FileInputStream(LOCAL_SMALL_FILE), //
     * testLocalSmallFiles.getProperty("smallFile0/jcr:content/jcr:data").getStream()); } public void
     * testRemoteBigFiles() throws Exception { Node testRemoteBigFiles =
     * testBinaryValue.addNode("testRemoteBigFiles"); long startTime, endTime; startTime =
     * System.currentTimeMillis(); // to get the time of start for (int i = 0; i < FILES_COUNT; i++) {
     * Node remoteBigFile = testRemoteBigFiles.addNode("bigFile" + i, "nt:file"); Node contentNode =
     * remoteBigFile.addNode("jcr:content", "nt:resource"); //contentNode.setProperty("jcr:encoding",
-    * "UTF-8"); contentNode.setProperty("jcr:data", PrivilegedFileHelper.fileInputStream(REMOTE_BIG_FILE));
+    * "UTF-8"); contentNode.setProperty("jcr:data", new FileInputStream(REMOTE_BIG_FILE));
     * contentNode.setProperty("jcr:mimeType", "application/octet-stream ");
     * contentNode.setProperty("jcr:lastModified", Calendar.getInstance()); } session.save(); endTime
     * = System.currentTimeMillis(); log.info("Execution time after adding and saving (remote big):" +
@@ -158,7 +157,7 @@ public class TestBinaryValue extends JcrAPIBaseTest
     * "application/octet-stream "); contentNode.setProperty("jcr:lastModified",
     * Calendar.getInstance()); } session.save(); endTime = System.currentTimeMillis();
     * log.info("Execution time after adding and saving: (remote small)" + ((endTime - startTime) /
-    * 1000) + "s"); // check streams compareStream(PrivilegedFileHelper.fileInputStream(LOCAL_SMALL_FILE),
+    * 1000) + "s"); // check streams compareStream(new FileInputStream(LOCAL_SMALL_FILE),
     * testRemoteSmallFiles.getProperty("smallFile0/jcr:content/jcr:data").getStream()); } public void
     * testUrlBigFiles() throws Exception { Node testUrlBigFiles =
     * testBinaryValue.addNode("testUrlBigFiles"); long startTime, endTime; startTime =
@@ -182,7 +181,6 @@ public class TestBinaryValue extends JcrAPIBaseTest
     * + "s"); }
     */
 
-   @Override
    protected void tearDown() throws Exception
    {
       testBinaryValue.remove();

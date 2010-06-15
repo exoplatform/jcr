@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.usecases.common;
 
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
 
 import java.io.ByteArrayInputStream;
@@ -65,18 +64,17 @@ public class TestExportImportAmongSessions extends BaseUsecasesTest
       testNtFileContent.setProperty("jcr:data", new ByteArrayInputStream(TEST_BINARY_CONTENT));
       session1.save();
 
-      File outputFile = PrivilegedFileHelper.createTempFile("jcr_bin_test-", ".tmp");
-      PrivilegedFileHelper.deleteOnExit(outputFile);
+      File outputFile = File.createTempFile("jcr_bin_test-", ".tmp");
+      outputFile.deleteOnExit();
 
-      session1.exportDocumentView(testNode.getPath(), PrivilegedFileHelper.fileOutputStream(outputFile), false, false);
+      session1.exportDocumentView(testNode.getPath(), new FileOutputStream(outputFile), false, false);
 
       testNode.remove();
       session1.save();
 
       try
       {
-         session1.importXML("/", PrivilegedFileHelper.fileInputStream(outputFile),
-            ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW);
+         session1.importXML("/", new FileInputStream(outputFile), ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW);
          session1.save();
 
          testNode = session1.getRootNode().getNode(TEST_NODE);
@@ -115,18 +113,17 @@ public class TestExportImportAmongSessions extends BaseUsecasesTest
       InputStream storedData = ntFile.getProperty("jcr:content/jcr:data").getStream();
       assertTrue("BEFORE EXPORT/IMPORT. Binary content must be same", checkBinaryEquals(etalonData, storedData));
 
-      File outputFile = PrivilegedFileHelper.createTempFile("jcr_bin_test", ".tmp");
-      PrivilegedFileHelper.deleteOnExit(outputFile);
+      File outputFile = File.createTempFile("jcr_bin_test", ".tmp");
+      outputFile.deleteOnExit();
 
-      session2.exportDocumentView(testNode.getPath(), PrivilegedFileHelper.fileOutputStream(outputFile), false, false);
+      session2.exportDocumentView(testNode.getPath(), new FileOutputStream(outputFile), false, false);
 
       testNode.remove();
       session2.save();
 
       try
       {
-         session1.importXML("/", PrivilegedFileHelper.fileInputStream(outputFile),
-            ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW);
+         session1.importXML("/", new FileInputStream(outputFile), ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW);
 
          testNode = session1.getRootNode().getNode(TEST_NODE);
          ntFile = testNode.getNode(TEST_NTFILE);

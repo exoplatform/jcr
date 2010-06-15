@@ -18,10 +18,11 @@
  */
 package org.exoplatform.services.jcr.api.exporting;
 
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.xml.sax.SAXException;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Calendar;
@@ -63,17 +64,16 @@ public class TestExportImport extends ExportBase
          testNode.setProperty("prop" + i + "_binary", valList.get(i), PropertyType.BINARY);
       }
       session.save();
-      File destFile = PrivilegedFileHelper.createTempFile("testWorkspaceExportImportValuesSysView", ".xml");
-      PrivilegedFileHelper.deleteOnExit(destFile);
-      OutputStream outStream = PrivilegedFileHelper.fileOutputStream(destFile);
+      File destFile = File.createTempFile("testWorkspaceExportImportValuesSysView", ".xml");
+      destFile.deleteOnExit();
+      OutputStream outStream = new FileOutputStream(destFile);
       session.exportWorkspaceSystemView(outStream, false, false);
       outStream.close();
 
       testNode.remove();
       session.save();
 
-      session.importXML(root.getPath(), PrivilegedFileHelper.fileInputStream(destFile),
-         ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW);
+      session.importXML(root.getPath(), new FileInputStream(destFile), ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW);
 
       session.save();
 
@@ -101,7 +101,7 @@ public class TestExportImport extends ExportBase
 
          }
       }
-      PrivilegedFileHelper.delete(destFile);
+      destFile.delete();
    }
 
    public void testExportImportCustomNodeType() throws Exception
@@ -117,17 +117,16 @@ public class TestExportImport extends ExportBase
 
       session.save();
 
-      File destFile = PrivilegedFileHelper.createTempFile("testExportImportValuesSysView", ".xml");
-      PrivilegedFileHelper.deleteOnExit(destFile);
-      OutputStream outStream = PrivilegedFileHelper.fileOutputStream(destFile);
+      File destFile = File.createTempFile("testExportImportValuesSysView", ".xml");
+      destFile.deleteOnExit();
+      OutputStream outStream = new FileOutputStream(destFile);
       session.exportSystemView(file.getPath(), outStream, false, false);
       outStream.close();
 
       folder.remove();
       session.save();
 
-      session.importXML(root.getPath(), PrivilegedFileHelper.fileInputStream(destFile),
-         ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW);
+      session.importXML(root.getPath(), new FileInputStream(destFile), ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW);
 
       session.save();
 
@@ -142,17 +141,16 @@ public class TestExportImport extends ExportBase
          testNode.setProperty("prop" + i + "_binary", valList.get(i), PropertyType.BINARY);
       }
       session.save();
-      File destFile = PrivilegedFileHelper.createTempFile("testExportImportValuesSysView", ".xml");
-      PrivilegedFileHelper.deleteOnExit(destFile);
-      OutputStream outStream = PrivilegedFileHelper.fileOutputStream(destFile);
+      File destFile = File.createTempFile("testExportImportValuesSysView", ".xml");
+      destFile.deleteOnExit();
+      OutputStream outStream = new FileOutputStream(destFile);
       session.exportSystemView(testNode.getPath(), outStream, false, false);
       outStream.close();
 
       testNode.remove();
       session.save();
 
-      session.importXML(root.getPath(), PrivilegedFileHelper.fileInputStream(destFile),
-         ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW);
+      session.importXML(root.getPath(), new FileInputStream(destFile), ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW);
 
       session.save();
 
@@ -180,7 +178,7 @@ public class TestExportImport extends ExportBase
 
          }
       }
-      PrivilegedFileHelper.delete(destFile);
+      destFile.delete();
    }
 
    public void testMixinExportImportDocumentViewContentHandler() throws Exception
@@ -358,9 +356,9 @@ public class TestExportImport extends ExportBase
       Node destParentNode) throws RepositoryException, IOException, TransformerConfigurationException, SAXException
    {
       Node exportNode = parentNode.getNode(nodeName);
-      File destFile = PrivilegedFileHelper.createTempFile("testExportImport", ".xml");
-      PrivilegedFileHelper.deleteOnExit(destFile);
-      OutputStream outStream = PrivilegedFileHelper.fileOutputStream(destFile);
+      File destFile = File.createTempFile("testExportImport", ".xml");
+      destFile.deleteOnExit();
+      OutputStream outStream = new FileOutputStream(destFile);
 
       if (isSystemView)
       {
@@ -398,8 +396,8 @@ public class TestExportImport extends ExportBase
          session.save();
       }
 
-      session.importXML(destParentNode != null ? destParentNode.getPath() : root.getPath(), PrivilegedFileHelper
-         .fileInputStream(destFile), ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW);
+      session.importXML(destParentNode != null ? destParentNode.getPath() : root.getPath(), new FileInputStream(
+         destFile), ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW);
 
       session.save();
       assertTrue(parentNode.hasNode(nodeName));

@@ -20,8 +20,6 @@ package org.exoplatform.services.jcr.lab.java;
 
 import junit.framework.TestCase;
 
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -47,7 +45,7 @@ public class TestFileLock extends TestCase
 
       File f = new File("\\\\storm\\public\\file1.tmp");
       f.createNewFile();
-      FileOutputStream fout = PrivilegedFileHelper.fileOutputStream(f);
+      FileOutputStream fout = new FileOutputStream(f);
       FileChannel fc = fout.getChannel();
 
       ByteBuffer buff = ByteBuffer.wrap("test-file1".getBytes());
@@ -56,7 +54,7 @@ public class TestFileLock extends TestCase
       fc.close();
 
       // reopen
-      FileInputStream fin = PrivilegedFileHelper.fileInputStream(f);
+      FileInputStream fin = new FileInputStream(f);
       fc = fin.getChannel();
 
       byte[] b = new byte[256];
@@ -67,7 +65,7 @@ public class TestFileLock extends TestCase
          System.out.println(new String(b, 0, res));
 
       // lock file
-      fout = PrivilegedFileHelper.fileOutputStream(f);
+      fout = new FileOutputStream(f);
       fc = fout.getChannel();
       FileLock lock = fc.lock();
 
@@ -76,13 +74,12 @@ public class TestFileLock extends TestCase
       // check another lock
       Thread another = new Thread()
       {
-         @Override
          public void run()
          {
             try
             {
                Thread.sleep(25);
-               FileOutputStream fout1 = PrivilegedFileHelper.fileOutputStream(new File("\\\\storm\\public\\file1.tmp"));
+               FileOutputStream fout1 = new FileOutputStream(new File("\\\\storm\\public\\file1.tmp"));
                FileChannel fc1 = fout1.getChannel();
                try
                {
@@ -112,7 +109,7 @@ public class TestFileLock extends TestCase
       fc.close();
 
       // print final content
-      fin = PrivilegedFileHelper.fileInputStream(f);
+      fin = new FileInputStream(f);
       fc = fin.getChannel();
 
       res = -1;
@@ -134,11 +131,11 @@ public class TestFileLock extends TestCase
 
       final long timeout = Long.valueOf(System.getProperty("exo.jcr.lab.testFileLockTimeout", "20000"));
 
-      // File f = PrivilegedFileHelper.file("\\\\storm\\public\\file2.tmp");
+      // File f = new File("\\\\storm\\public\\file2.tmp");
       File f = new File("D:\\tmp\\file2.tmp");
 
       System.out.println("Try open file for write " + System.currentTimeMillis());
-      FileOutputStream fout = PrivilegedFileHelper.fileOutputStream(f);
+      FileOutputStream fout = new FileOutputStream(f);
       FileChannel fc = fout.getChannel();
       System.out.println("Try lock file " + System.currentTimeMillis());
       FileLock lock = fc.lock();
@@ -157,7 +154,7 @@ public class TestFileLock extends TestCase
       // reopen for read
       Thread.sleep(timeout);
       System.out.println("Try read file " + System.currentTimeMillis());
-      FileInputStream fin = PrivilegedFileHelper.fileInputStream(f);
+      FileInputStream fin = new FileInputStream(f);
       fc = fin.getChannel();
       System.out.println("Try shared lock " + System.currentTimeMillis());
       FileLock shlock = fc.lock(0, fc.size(), true);
@@ -175,7 +172,7 @@ public class TestFileLock extends TestCase
       // lock file for write
       Thread.sleep(timeout);
       System.out.println("Try open file for write " + System.currentTimeMillis());
-      fout = PrivilegedFileHelper.fileOutputStream(f);
+      fout = new FileOutputStream(f);
       fc = fout.getChannel();
       System.out.println("Try lock file " + System.currentTimeMillis());
       lock = fc.lock();
@@ -196,7 +193,7 @@ public class TestFileLock extends TestCase
       // print final content
       Thread.sleep(timeout);
       System.out.println("Try read file " + System.currentTimeMillis());
-      fin = PrivilegedFileHelper.fileInputStream(f);
+      fin = new FileInputStream(f);
       fc = fin.getChannel();
       System.out.println("Try shared lock " + System.currentTimeMillis());
       shlock = fc.lock(0, fc.size(), true);
@@ -217,12 +214,12 @@ public class TestFileLock extends TestCase
 
       final long timeout = Long.valueOf(System.getProperty("exo.jcr.lab.testFileLockTimeout", "20000"));
 
-      // File f = PrivilegedFileHelper.file("\\\\storm\\public\\file3.tmp");
+      // File f = new File("\\\\storm\\public\\file3.tmp");
       File f = new File("D:\\tmp\\file3.tmp");
 
       // write new content
       System.out.println("Try open file for write " + System.currentTimeMillis());
-      FileOutputStream fout = PrivilegedFileHelper.fileOutputStream(f);
+      FileOutputStream fout = new FileOutputStream(f);
       FileChannel fc = fout.getChannel();
       System.out.println("Try lock file " + System.currentTimeMillis());
       FileLock lock = fc.lock();
@@ -238,7 +235,7 @@ public class TestFileLock extends TestCase
       // reopen for read
       Thread.sleep(timeout);
       System.out.println("Try read file " + System.currentTimeMillis());
-      FileInputStream fin = PrivilegedFileHelper.fileInputStream(f);
+      FileInputStream fin = new FileInputStream(f);
       fc = fin.getChannel();
       System.out.println("Try shared lock " + System.currentTimeMillis());
       FileLock shlock = fc.lock(0, fc.size(), true);
@@ -262,12 +259,12 @@ public class TestFileLock extends TestCase
    public void testInputStreamLock() throws IOException, InterruptedException
    {
 
-      // File f = PrivilegedFileHelper.file("\\\\storm\\public\\file3.tmp");
+      // File f = new File("\\\\storm\\public\\file3.tmp");
       File f = new File("D:\\tmp\\file4.tmp");
 
       // write new content
       System.out.println("Try open file for read " + System.currentTimeMillis());
-      FileInputStream fin = PrivilegedFileHelper.fileInputStream(f);
+      FileInputStream fin = new FileInputStream(f);
       FileChannel fc = fin.getChannel();
       System.out.println("Try lock file " + System.currentTimeMillis());
       fin.read();

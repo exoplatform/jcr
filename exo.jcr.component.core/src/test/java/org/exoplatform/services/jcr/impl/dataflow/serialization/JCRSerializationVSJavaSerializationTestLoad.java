@@ -20,11 +20,13 @@ package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
 import org.exoplatform.services.jcr.impl.dataflow.AbstractPersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.FilePersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -72,8 +74,8 @@ public class JCRSerializationVSJavaSerializationTestLoad extends JcrImplSerializ
 
          it = list.iterator();
 
-         File jcrfile = PrivilegedFileHelper.createTempFile("jcr", "test");
-         ObjectWriterImpl jcrout = new ObjectWriterImpl(PrivilegedFileHelper.fileOutputStream(jcrfile));
+         File jcrfile = File.createTempFile("jcr", "test");
+         ObjectWriterImpl jcrout = new ObjectWriterImpl(new FileOutputStream(jcrfile));
 
          long t1 = System.currentTimeMillis();
          PersistedValueDataWriter wr = new PersistedValueDataWriter();
@@ -87,7 +89,7 @@ public class JCRSerializationVSJavaSerializationTestLoad extends JcrImplSerializ
          jcrout.close();
 
          // deserialize
-         ObjectReaderImpl jcrin = new ObjectReaderImpl(PrivilegedFileHelper.fileInputStream(jcrfile));
+         ObjectReaderImpl jcrin = new ObjectReaderImpl(new FileInputStream(jcrfile));
 
          long t3 = System.currentTimeMillis();
 
@@ -100,7 +102,7 @@ public class JCRSerializationVSJavaSerializationTestLoad extends JcrImplSerializ
          jcrread += t3;
          jcrin.close();
 
-         PrivilegedFileHelper.delete(jcrfile);
+         jcrfile.delete();
 
       }
 
@@ -109,8 +111,8 @@ public class JCRSerializationVSJavaSerializationTestLoad extends JcrImplSerializ
       long javaRead = 0;
       for (int j = 0; j < iterations; j++)
       {
-         File jfile = PrivilegedFileHelper.createTempFile("java", "test");
-         ObjectOutputStream jout = new ObjectOutputStream(PrivilegedFileHelper.fileOutputStream(jfile));
+         File jfile = File.createTempFile("java", "test");
+         ObjectOutputStream jout = new ObjectOutputStream(new FileOutputStream(jfile));
 
          it = list.iterator();
          long t2 = System.currentTimeMillis();
@@ -123,7 +125,7 @@ public class JCRSerializationVSJavaSerializationTestLoad extends JcrImplSerializ
          jout.close();
 
          // deserialize
-         ObjectInputStream jin = new ObjectInputStream(PrivilegedFileHelper.fileInputStream(jfile));
+         ObjectInputStream jin = new ObjectInputStream(new FileInputStream(jfile));
 
          it = list.iterator();
          long t4 = System.currentTimeMillis();
@@ -135,7 +137,7 @@ public class JCRSerializationVSJavaSerializationTestLoad extends JcrImplSerializ
          javaRead += t4;
          jin.close();
 
-         PrivilegedFileHelper.delete(jfile);
+         jfile.delete();
       }
 
       System.out.println(" JCR s- " + (jcrwrite / iterations));

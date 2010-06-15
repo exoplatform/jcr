@@ -21,7 +21,6 @@ package org.exoplatform.services.jcr.impl.dataflow.persistent;
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.impl.util.io.SwapFile;
 
 import java.io.File;
@@ -87,7 +86,7 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
       testCleaner = new FileCleaner(CLEANER_TIMEOUT);
 
       SwapFile sf = SwapFile.get(parentDir, FILE_NAME);
-      FileOutputStream fout = PrivilegedFileHelper.fileOutputStream(sf);
+      FileOutputStream fout = new FileOutputStream(sf);
       fout.write("testFileCleaned".getBytes());
       fout.close();
       sf.spoolDone();
@@ -103,9 +102,9 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
       testCleaner.halt();
       testCleaner = null;
 
-      if (PrivilegedFileHelper.exists(testFile))
+      if (testFile.exists())
       {
-         PrivilegedFileHelper.delete(testFile);
+         testFile.delete();
       }
 
       TestSwapFile.cleanShare();
@@ -121,7 +120,7 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
    public void testFileCleaned() throws InterruptedException
    {
 
-      assertTrue(PrivilegedFileHelper.exists(testFile));
+      assertTrue(testFile.exists());
 
       cleanableValueData = null; // CleanableVD dies
 
@@ -131,20 +130,20 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
       Thread.yield();
       System.gc();
 
-      assertFalse(PrivilegedFileHelper.exists(testFile)); // file released and deleted
+      assertFalse(testFile.exists()); // file released and deleted
    }
 
    public void testSharedFileNotCleaned() throws InterruptedException, IOException
    {
 
-      assertTrue(PrivilegedFileHelper.exists(testFile));
+      assertTrue(testFile.exists());
 
       System.gc();
       Thread.sleep(CLEANER_TIMEOUT / 2);
 
       CleanableFilePersistedValueData cfvd2 =
          new CleanableFilePersistedValueData(1, SwapFile.get(parentDir, FILE_NAME), testCleaner);
-      assertTrue(PrivilegedFileHelper.exists(testFile));
+      assertTrue(testFile.exists());
 
       cleanableValueData = null; // CleanableVD dies but another instance points swapped file
 
@@ -154,7 +153,7 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
       Thread.yield();
       System.gc();
 
-      assertTrue(PrivilegedFileHelper.exists(testFile));
+      assertTrue(testFile.exists());
 
       // clean ValueData
       cfvd2 = null;
@@ -165,19 +164,19 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
       Thread.yield();
       System.gc();
 
-      assertFalse(PrivilegedFileHelper.exists(testFile));
+      assertFalse(testFile.exists());
    }
 
    public void testTransientFileNotCleaned() throws InterruptedException, IOException, RepositoryException
    {
 
-      assertTrue(PrivilegedFileHelper.exists(testFile));
+      assertTrue(testFile.exists());
 
       System.gc();
       Thread.sleep(CLEANER_TIMEOUT / 2);
 
       TransientValueData trvd = cleanableValueData.createTransientCopy();
-      assertTrue(PrivilegedFileHelper.exists(testFile));
+      assertTrue(testFile.exists());
 
       trvd = null; // TransientVD dies
 
@@ -187,19 +186,19 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
       Thread.yield();
       System.gc();
 
-      assertTrue(PrivilegedFileHelper.exists(testFile)); // but Swapped CleanableVD lives and uses the file
+      assertTrue(testFile.exists()); // but Swapped CleanableVD lives and uses the file
    }
 
    public void testTransientFileCleaned() throws InterruptedException, IOException, RepositoryException
    {
 
-      assertTrue(PrivilegedFileHelper.exists(testFile));
+      assertTrue(testFile.exists());
 
       System.gc();
       Thread.sleep(CLEANER_TIMEOUT / 2);
 
       TransientValueData trvd = cleanableValueData.createTransientCopy();
-      assertTrue(PrivilegedFileHelper.exists(testFile));
+      assertTrue(testFile.exists());
 
       cleanableValueData = null; // CleanableVD dies but TransientVD still uses swapped file
 
@@ -209,7 +208,7 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
       Thread.yield();
       System.gc();
 
-      assertTrue(PrivilegedFileHelper.exists(testFile));
+      assertTrue(testFile.exists());
 
       trvd = null; // TransientVD dies
 
@@ -219,13 +218,13 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
       Thread.yield();
       System.gc();
 
-      assertFalse(PrivilegedFileHelper.exists(testFile)); // swapped file deleted
+      assertFalse(testFile.exists()); // swapped file deleted
    }
 
    public void testTransientSharedFileCleaned() throws InterruptedException, IOException, RepositoryException
    {
 
-      assertTrue(PrivilegedFileHelper.exists(testFile));
+      assertTrue(testFile.exists());
 
       System.gc();
       Thread.sleep(CLEANER_TIMEOUT / 2);
@@ -233,7 +232,7 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
       // file shared with TransientVD
       TransientValueData trvd = cleanableValueData.createTransientCopy();
 
-      assertTrue(PrivilegedFileHelper.exists(testFile));
+      assertTrue(testFile.exists());
 
       // 1st CleanableVD die
       cleanableValueData = null;
@@ -247,7 +246,7 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
       // file shared with third CleanableVD, i.e. file still exists (aquired by TransientVD)
       CleanableFilePersistedValueData cfvd2 =
          new CleanableFilePersistedValueData(1, SwapFile.get(parentDir, FILE_NAME), testCleaner);
-      assertTrue(PrivilegedFileHelper.exists(testFile));
+      assertTrue(testFile.exists());
 
       trvd = null; // TransientVD dies
 
@@ -257,7 +256,7 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
       Thread.yield();
       System.gc();
 
-      assertTrue(PrivilegedFileHelper.exists(testFile)); // still exists, aquired by 2nd CleanableVD
+      assertTrue(testFile.exists()); // still exists, aquired by 2nd CleanableVD
 
       cfvd2 = null; // 2nd CleanableVD dies
 
@@ -267,7 +266,7 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
       Thread.yield();
       System.gc();
 
-      assertFalse(PrivilegedFileHelper.exists(testFile)); // file should be deleted
+      assertFalse(testFile.exists()); // file should be deleted
    }
 
 }

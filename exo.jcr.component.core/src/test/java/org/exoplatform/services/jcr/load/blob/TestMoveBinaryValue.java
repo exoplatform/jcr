@@ -19,8 +19,8 @@
 package org.exoplatform.services.jcr.load.blob;
 
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Calendar;
 
@@ -43,7 +43,6 @@ public class TestMoveBinaryValue extends JcrAPIBaseTest
    // -------------- TEST FILE ------------------
    private static String TEST_FILE = null; // URL_SMALL_FILE
 
-   @Override
    public void setUp() throws Exception
    {
       super.setUp();
@@ -58,14 +57,14 @@ public class TestMoveBinaryValue extends JcrAPIBaseTest
       startTime = System.currentTimeMillis(); // to get the time of start
 
       // 300 Kb
-      TEST_FILE = PrivilegedFileHelper.getAbsolutePath(createBLOBTempFile(300));
+      TEST_FILE = createBLOBTempFile(300).getAbsolutePath();
 
       for (int i = 0; i < FILES_COUNT; i++)
       {
          Node localBigFile = testLocalBigFiles.addNode("bigFile" + i, "nt:file");
          Node contentNode = localBigFile.addNode("jcr:content", "nt:resource");
          // contentNode.setProperty("jcr:encoding", "UTF-8");
-         InputStream is = PrivilegedFileHelper.fileInputStream(TEST_FILE);
+         InputStream is = new FileInputStream(TEST_FILE);
          contentNode.setProperty("jcr:data", is);
          contentNode.setProperty("jcr:mimeType", "application/octet-stream ");
          is.close();
@@ -95,7 +94,6 @@ public class TestMoveBinaryValue extends JcrAPIBaseTest
       }
    }
 
-   @Override
    protected void tearDown() throws Exception
    {
       testBinaryValue.remove();

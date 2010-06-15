@@ -25,7 +25,6 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.CleanableFilePersis
 import org.exoplatform.services.jcr.impl.dataflow.persistent.FilePersistedValueData;
 import org.exoplatform.services.jcr.impl.storage.value.fs.Probe;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.impl.util.io.SwapFile;
 
 import java.io.ByteArrayInputStream;
@@ -59,9 +58,9 @@ public class TestPersistedValueData extends TestCase
 
       byte[] buf = "0123456789".getBytes();
       File file = new File("target/testCreateFileStreamValueData");
-      if (PrivilegedFileHelper.exists(file))
-         PrivilegedFileHelper.delete(file);
-      FileOutputStream out = PrivilegedFileHelper.fileOutputStream(file);
+      if (file.exists())
+         file.delete();
+      FileOutputStream out = new FileOutputStream(file);
       out.write(buf);
       out.close();
 
@@ -85,15 +84,15 @@ public class TestPersistedValueData extends TestCase
 
       byte[] buf = "0123456789".getBytes();
       SwapFile file = SwapFile.get(new File("target"), "testIfFinalizeRemovesTempFileStreamValueData");
-      //File file = PrivilegedFileHelper.file("target/testIfFinalizeRemovesTempFileStreamValueData");
+      //File file = new File("target/testIfFinalizeRemovesTempFileStreamValueData");
       //if (file.exists())
       //  file.delete();
-      FileOutputStream out = PrivilegedFileHelper.fileOutputStream(file);
+      FileOutputStream out = new FileOutputStream(file);
       out.write(buf);
       out.close();
 
       CleanableFilePersistedValueData vd = new CleanableFilePersistedValueData(0, file, new FileCleaner(1000, true));
-      assertTrue(PrivilegedFileHelper.exists(file));
+      assertTrue(file.exists());
 
       vd = null;
       System.gc();
@@ -102,7 +101,7 @@ public class TestPersistedValueData extends TestCase
       Thread.sleep(2500);
       System.gc();
 
-      assertFalse(PrivilegedFileHelper.exists(file));
+      assertFalse(file.exists());
    }
 
    public void testConcurrentFileStreamValueDataReading() throws Exception
@@ -112,9 +111,9 @@ public class TestPersistedValueData extends TestCase
          "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"
             .getBytes();
       File file = new File("target/testConcurrentFileStreamValueDataReading");
-      if (PrivilegedFileHelper.exists(file))
-         PrivilegedFileHelper.delete(file);
-      FileOutputStream out = PrivilegedFileHelper.fileOutputStream(file);
+      if (file.exists())
+         file.delete();
+      FileOutputStream out = new FileOutputStream(file);
       // approx. 10Kb file
       for (int i = 0; i < 100; i++)
       {

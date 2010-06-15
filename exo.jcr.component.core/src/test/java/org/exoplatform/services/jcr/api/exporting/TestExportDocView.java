@@ -22,7 +22,6 @@ import org.apache.ws.commons.util.Base64;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.value.BinaryValue;
 import org.exoplatform.services.jcr.impl.util.StringConverter;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
@@ -30,6 +29,8 @@ import org.xml.sax.SAXException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Calendar;
@@ -68,7 +69,6 @@ public class TestExportDocView extends ExportBase
       super();
    }
 
-   @Override
    public void initRepository() throws RepositoryException
    {
 
@@ -93,7 +93,6 @@ public class TestExportDocView extends ExportBase
 
    }
 
-   @Override
    public void tearDown() throws Exception
    {
       log.debug(">> get rootNode on TD START");
@@ -139,7 +138,7 @@ public class TestExportDocView extends ExportBase
          File file = createBLOBTempFile(2500);// 2.5M
          if (log.isDebugEnabled())
             log.debug("=== File has created, size " + file.length());
-         contentTestPdfNode.setProperty("jcr:data", PrivilegedFileHelper.fileInputStream(file));
+         contentTestPdfNode.setProperty("jcr:data", new FileInputStream(file));
          contentTestPdfNode.setProperty("jcr:mimeType", "application/octet-stream");
       }
       catch (IOException e)
@@ -181,13 +180,13 @@ public class TestExportDocView extends ExportBase
       }
 
       session.save();
-      File destFile = PrivilegedFileHelper.createTempFile("multyValueExportStream", ".xml");
-      PrivilegedFileHelper.deleteOnExit(destFile);
-      OutputStream outStream = PrivilegedFileHelper.fileOutputStream(destFile);
+      File destFile = File.createTempFile("multyValueExportStream", ".xml");
+      destFile.deleteOnExit();
+      OutputStream outStream = new FileOutputStream(destFile);
       session.exportDocumentView(testNode.getPath(), outStream, false, false);
       outStream.close();
 
-      Document doc = builder.parse(PrivilegedFileHelper.fileInputStream(destFile));
+      Document doc = builder.parse(new FileInputStream(destFile));
 
       // assertEquals(Constants.DEFAULT_ENCODING, doc.getXmlEncoding());
 
@@ -252,9 +251,9 @@ public class TestExportDocView extends ExportBase
       }
 
       session.save();
-      File destFile = PrivilegedFileHelper.createTempFile("multyValueExportStream", ".xml");
-      PrivilegedFileHelper.deleteOnExit(destFile);
-      OutputStream outStream = PrivilegedFileHelper.fileOutputStream(destFile);
+      File destFile = File.createTempFile("multyValueExportStream", ".xml");
+      destFile.deleteOnExit();
+      OutputStream outStream = new FileOutputStream(destFile);
 
       SAXTransformerFactory saxFact = (SAXTransformerFactory)SAXTransformerFactory.newInstance();
       TransformerHandler handler = saxFact.newTransformerHandler();
@@ -272,7 +271,7 @@ public class TestExportDocView extends ExportBase
          outStream.close();
       }
 
-      Document doc = builder.parse(PrivilegedFileHelper.fileInputStream(destFile));
+      Document doc = builder.parse(new FileInputStream(destFile));
 
       // assertEquals(Constants.DEFAULT_ENCODING, doc.getXmlEncoding());
 
@@ -332,14 +331,14 @@ public class TestExportDocView extends ExportBase
       session.save();
       testNode.lock(true, true);
 
-      File destFile = PrivilegedFileHelper.createTempFile("docLockNodeExport", ".xml");
-      PrivilegedFileHelper.deleteOnExit(destFile);
-      OutputStream outStream = PrivilegedFileHelper.fileOutputStream(destFile);
+      File destFile = File.createTempFile("docLockNodeExport", ".xml");
+      destFile.deleteOnExit();
+      OutputStream outStream = new FileOutputStream(destFile);
 
       session.exportDocumentView(firstNode.getPath(), outStream, false, false);
       outStream.close();
 
-      Document doc = builder.parse(PrivilegedFileHelper.fileInputStream(destFile));
+      Document doc = builder.parse(new FileInputStream(destFile));
 
       // assertEquals(Constants.DEFAULT_ENCODING, doc.getXmlEncoding());
 
@@ -353,9 +352,9 @@ public class TestExportDocView extends ExportBase
    {
 
       Session newSession = repository.login(this.credentials /*
-                                                                                                    * session.getCredentials
-                                                                                                    * ()
-                                                                                                    */);
+                                                                           * session.getCredentials
+                                                                           * ()
+                                                                           */);
 
       newSession.setNamespacePrefix("newjcr", "http://www.jcp.org/jcr/1.0");
 
@@ -382,9 +381,9 @@ public class TestExportDocView extends ExportBase
    {
 
       Session newSession = repository.login(this.credentials /*
-                                                                                                    * session.getCredentials
-                                                                                                    * ()
-                                                                                                    */);
+                                                                           * session.getCredentials
+                                                                           * ()
+                                                                           */);
       newSession.setNamespacePrefix("newjcr", "http://www.jcp.org/jcr/1.0");
 
       Node testNode = newSession.getRootNode().addNode("jcr:testExportNamespaceRemaping");
@@ -401,7 +400,7 @@ public class TestExportDocView extends ExportBase
       // session.exportDocumentView(testNode.getPath(), bos, false, false);
 
       SAXTransformerFactory saxFact = (SAXTransformerFactory)SAXTransformerFactory.newInstance();
-      final TransformerHandler handler = saxFact.newTransformerHandler();
+      TransformerHandler handler = saxFact.newTransformerHandler();
       handler.setResult(new StreamResult(bos));
 
       newSession.exportDocumentView(testNode.getPath(), handler, false, false);

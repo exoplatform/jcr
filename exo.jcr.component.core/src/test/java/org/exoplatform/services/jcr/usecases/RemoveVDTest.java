@@ -21,15 +21,19 @@ package org.exoplatform.services.jcr.usecases;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectWriter;
 import org.exoplatform.services.jcr.dataflow.serialization.UnknownClassIdException;
+import org.exoplatform.services.jcr.impl.dataflow.AbstractPersistedValueData;
+import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.FilePersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectReaderImpl;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectWriterImpl;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.PersistedValueDataReader;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.PersistedValueDataWriter;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
+import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 /**
@@ -51,9 +55,9 @@ public class RemoveVDTest extends BaseUsecasesTest
       // vd.setMaxBufferSize(200*1024);
       //      assertNull(vd.getFile()); // not spooling by default until getAsStream() will be call
 
-      File serf = PrivilegedFileHelper.createTempFile("serialization", "test");
+      File serf = File.createTempFile("serialization", "test");
 
-      ObjectWriter wr = new ObjectWriterImpl(PrivilegedFileHelper.fileOutputStream(serf));
+      ObjectWriter wr = new ObjectWriterImpl(new FileOutputStream(serf));
 
       PersistedValueDataWriter vdw = new PersistedValueDataWriter();
       vdw.write(wr, vd);
@@ -63,7 +67,7 @@ public class RemoveVDTest extends BaseUsecasesTest
       vd = null;
 
       // read first time
-      ObjectReader or = new ObjectReaderImpl(PrivilegedFileHelper.fileInputStream(serf));
+      ObjectReader or = new ObjectReaderImpl(new FileInputStream(serf));
 
       FilePersistedValueData vd1 = null;
 
@@ -79,10 +83,10 @@ public class RemoveVDTest extends BaseUsecasesTest
 
       or.close();
       // Imitation save
-      ((StreamPersistedValueData)vd1).setPersistedFile(((StreamPersistedValueData)vd1).getTempFile());
+      ((StreamPersistedValueData) vd1).setPersistedFile(((StreamPersistedValueData) vd1).getTempFile());
 
       // read second time
-      or = new ObjectReaderImpl(PrivilegedFileHelper.fileInputStream(serf));
+      or = new ObjectReaderImpl(new FileInputStream(serf));
       FilePersistedValueData vd2 = null;
 
       try
@@ -95,10 +99,11 @@ public class RemoveVDTest extends BaseUsecasesTest
       }
       or.close();
       // Imitation save
-      ((StreamPersistedValueData)vd2).setPersistedFile(((StreamPersistedValueData)vd2).getTempFile());
+      ((StreamPersistedValueData) vd2).setPersistedFile(((StreamPersistedValueData) vd2).getTempFile());
 
-      assertTrue(PrivilegedFileHelper.exists(vd1.getFile()));
-      assertTrue(PrivilegedFileHelper.exists(vd2.getFile()));
+      assertTrue(vd1.getFile().exists());
+      assertTrue(vd2.getFile().exists());
+
       // remove first one
       vd1 = null;
       try
@@ -110,8 +115,8 @@ public class RemoveVDTest extends BaseUsecasesTest
          // TODO Auto-generated catch block
          e.printStackTrace();
       }
-      assertTrue(PrivilegedFileHelper.exists(vd2.getFile()));
+      assertTrue(vd2.getFile().exists());
 
-      PrivilegedFileHelper.delete(f);
+      f.delete();
    }
 }

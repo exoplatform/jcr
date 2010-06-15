@@ -19,11 +19,11 @@
 package org.exoplatform.services.jcr.load.blob;
 
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -48,7 +48,7 @@ public class TestExportBigFiles extends JcrAPIBaseTest
     */
    public void testBigExportSysView() throws Exception
    {
-      String TEST_FILE = PrivilegedFileHelper.getAbsolutePath(createBLOBTempFile(1024 * 5));// 5M
+      String TEST_FILE = createBLOBTempFile(1024 * 5).getAbsolutePath();// 5M
       Node testLocalBigFiles = root.addNode("testLocalBigFiles");
 
       // add file to repository
@@ -57,7 +57,7 @@ public class TestExportBigFiles extends JcrAPIBaseTest
       Node localBigFile = testLocalBigFiles.addNode("bigFile" + 1, "nt:file");
       Node contentNode = localBigFile.addNode("jcr:content", "nt:resource");
       // contentNode.setProperty("jcr:encoding", "UTF-8");
-      InputStream is = PrivilegedFileHelper.fileInputStream(TEST_FILE);
+      InputStream is = new FileInputStream(TEST_FILE);
       contentNode.setProperty("jcr:data", is);
       contentNode.setProperty("jcr:mimeType", "application/octet-stream ");
       is.close();
@@ -71,19 +71,19 @@ public class TestExportBigFiles extends JcrAPIBaseTest
       log.info("Execution time after adding and saving (local big):" + ((endTime - startTime) / 1000) + "s");
 
       // Exporting repository content
-      File file = PrivilegedFileHelper.createTempFile("tesSysExport", ".xml");
+      File file = File.createTempFile("tesSysExport", ".xml");
 
-      BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(PrivilegedFileHelper.fileOutputStream(file));
+      BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(file));
       session.exportSystemView(testLocalBigFiles.getPath(), bufferedOutputStream, false, false);
       bufferedOutputStream.flush();
       bufferedOutputStream.close();
-      assertTrue(PrivilegedFileHelper.length(file) > 0);
+      assertTrue(file.length() > 0);
 
       // removing source node
       testLocalBigFiles.remove();
       session.save();
 
-      BufferedInputStream bufferedInputStream = new BufferedInputStream(PrivilegedFileHelper.fileInputStream(file));
+      BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(file));
 
       // importing content
       session.importXML(root.getPath(), bufferedInputStream, ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
@@ -95,13 +95,13 @@ public class TestExportBigFiles extends JcrAPIBaseTest
       Node content = lbf.getNode("jcr:content");
 
       // comparing with source file
-      compareStream(new BufferedInputStream(PrivilegedFileHelper.fileInputStream(TEST_FILE)), content.getProperty(
-         "jcr:data").getStream());
+      compareStream(new BufferedInputStream(new FileInputStream(TEST_FILE)), content.getProperty("jcr:data")
+         .getStream());
 
       n1.remove();
       session.save();
-      PrivilegedFileHelper.deleteOnExit(file);
-      PrivilegedFileHelper.delete(file);
+      file.deleteOnExit();
+      file.delete();
 
    }
 
@@ -112,7 +112,7 @@ public class TestExportBigFiles extends JcrAPIBaseTest
     */
    public void testBigImportExportDocView() throws Exception
    {
-      String TEST_FILE2 = PrivilegedFileHelper.getAbsolutePath(createBLOBTempFile(1024 * 5)); // 5M
+      String TEST_FILE2 = createBLOBTempFile(1024 * 5).getAbsolutePath(); // 5M
       Node testLocalBigFiles = root.addNode("testDocView");
 
       // add file to repository
@@ -121,7 +121,7 @@ public class TestExportBigFiles extends JcrAPIBaseTest
       Node localBigFile = testLocalBigFiles.addNode("bigFile" + 1, "nt:file");
       Node contentNode = localBigFile.addNode("jcr:content", "nt:resource");
       // contentNode.setProperty("jcr:encoding", "UTF-8");
-      InputStream is = PrivilegedFileHelper.fileInputStream(TEST_FILE2);
+      InputStream is = new FileInputStream(TEST_FILE2);
       contentNode.setProperty("jcr:data", is);
       contentNode.setProperty("jcr:mimeType", "application/octet-stream ");
       is.close();
@@ -135,19 +135,19 @@ public class TestExportBigFiles extends JcrAPIBaseTest
       log.info("Execution time after adding and saving (local big):" + ((endTime - startTime) / 1000) + "s");
 
       // Exporting repository content
-      File file = PrivilegedFileHelper.createTempFile("tesDocExport", ".xml");
+      File file = File.createTempFile("tesDocExport", ".xml");
 
-      BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(PrivilegedFileHelper.fileOutputStream(file));
+      BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(file));
       session.exportDocumentView(testLocalBigFiles.getPath(), bufferedOutputStream, false, false);
       bufferedOutputStream.flush();
       bufferedOutputStream.close();
-      assertTrue(PrivilegedFileHelper.length(file) > 0);
+      assertTrue(file.length() > 0);
 
       // removing source node
       testLocalBigFiles.remove();
       session.save();
 
-      BufferedInputStream bufferedInputStream = new BufferedInputStream(PrivilegedFileHelper.fileInputStream(file));
+      BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(file));
 
       // importing content
       session.importXML(root.getPath(), bufferedInputStream, ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
@@ -159,13 +159,13 @@ public class TestExportBigFiles extends JcrAPIBaseTest
       Node content = lbf.getNode("jcr:content");
 
       // comparing with source file
-      compareStream(new BufferedInputStream(PrivilegedFileHelper.fileInputStream(TEST_FILE2)), content.getProperty(
-         "jcr:data").getStream());
+      compareStream(new BufferedInputStream(new FileInputStream(TEST_FILE2)), content.getProperty("jcr:data")
+         .getStream());
 
       n1.remove();
       session.save();
-      PrivilegedFileHelper.deleteOnExit(file);
-      PrivilegedFileHelper.delete(file);
+      file.deleteOnExit();
+      file.delete();
    }
 
    public void testIEPdfFiles() throws Exception
@@ -181,7 +181,7 @@ public class TestExportBigFiles extends JcrAPIBaseTest
       Node localBigFile = testLocalBigFiles.addNode("bigFile" + 1, "nt:file");
       Node contentNode = localBigFile.addNode("jcr:content", "nt:resource");
       // contentNode.setProperty("jcr:encoding", "UTF-8");
-      InputStream is = PrivilegedFileHelper.fileInputStream(TEST_FILE);
+      InputStream is = new FileInputStream(TEST_FILE);
       contentNode.setProperty("jcr:data", is);
       contentNode.setProperty("jcr:mimeType", "application/octet-stream ");
       is.close();
@@ -195,19 +195,19 @@ public class TestExportBigFiles extends JcrAPIBaseTest
       log.info("Execution time after adding and saving (local big):" + ((endTime - startTime) / 1000) + "s");
 
       // Exporting repository content
-      File file = PrivilegedFileHelper.createTempFile("tesSysExport", ".xml");
+      File file = File.createTempFile("tesSysExport", ".xml");
 
-      BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(PrivilegedFileHelper.fileOutputStream(file));
+      BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(file));
       session.exportSystemView(testLocalBigFiles.getPath(), bufferedOutputStream, false, false);
       bufferedOutputStream.flush();
       bufferedOutputStream.close();
-      assertTrue(PrivilegedFileHelper.length(file) > 0);
+      assertTrue(file.length() > 0);
 
       // removing source node
       testLocalBigFiles.remove();
       session.save();
 
-      BufferedInputStream bufferedInputStream = new BufferedInputStream(PrivilegedFileHelper.fileInputStream(file));
+      BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(file));
 
       // importing content
       session.importXML(root.getPath(), bufferedInputStream, ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
@@ -219,13 +219,13 @@ public class TestExportBigFiles extends JcrAPIBaseTest
       Node content = lbf.getNode("jcr:content");
 
       // comparing with source file
-      compareStream(new BufferedInputStream(PrivilegedFileHelper.fileInputStream(TEST_FILE)), content.getProperty(
-         "jcr:data").getStream());
+      compareStream(new BufferedInputStream(new FileInputStream(TEST_FILE)), content.getProperty("jcr:data")
+         .getStream());
 
       n1.remove();
       session.save();
-      PrivilegedFileHelper.deleteOnExit(file);
-      PrivilegedFileHelper.delete(file);
+      file.deleteOnExit();
+      file.delete();
    }
 
    public void testRandomSizeExportImportSysView() throws Exception
@@ -237,7 +237,7 @@ public class TestExportBigFiles extends JcrAPIBaseTest
 
       for (int i = 0; i < FILES_COUNT; i++)
       {
-         fileList.add(PrivilegedFileHelper.getAbsolutePath(createBLOBTempFile(random.nextInt(1024 * 1024))));
+         fileList.add(createBLOBTempFile(random.nextInt(1024 * 1024)).getAbsolutePath());
       }
       Node testLocalBigFiles = root.addNode("testLocalBigFiles");
 
@@ -250,7 +250,7 @@ public class TestExportBigFiles extends JcrAPIBaseTest
          Node localBigFile = testLocalBigFiles.addNode("bigFile" + i, "nt:file");
          Node contentNode = localBigFile.addNode("jcr:content", "nt:resource");
          // contentNode.setProperty("jcr:encoding", "UTF-8");
-         InputStream is = PrivilegedFileHelper.fileInputStream(TEST_FILE);
+         InputStream is = new FileInputStream(TEST_FILE);
          contentNode.setProperty("jcr:data", is);
          contentNode.setProperty("jcr:mimeType", "application/octet-stream ");
          is.close();
@@ -265,19 +265,19 @@ public class TestExportBigFiles extends JcrAPIBaseTest
       }
 
       // Exporting repository content
-      File file = PrivilegedFileHelper.createTempFile("tesSysExport", ".xml");
+      File file = File.createTempFile("tesSysExport", ".xml");
 
-      BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(PrivilegedFileHelper.fileOutputStream(file));
+      BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(file));
       session.exportSystemView(testLocalBigFiles.getPath(), bufferedOutputStream, false, false);
       bufferedOutputStream.flush();
       bufferedOutputStream.close();
-      assertTrue(PrivilegedFileHelper.length(file) > 0);
+      assertTrue(file.length() > 0);
 
       // removing source node
       testLocalBigFiles.remove();
       session.save();
 
-      BufferedInputStream bufferedInputStream = new BufferedInputStream(PrivilegedFileHelper.fileInputStream(file));
+      BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(file));
 
       // importing content
       session.importXML(root.getPath(), bufferedInputStream, ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
@@ -291,24 +291,23 @@ public class TestExportBigFiles extends JcrAPIBaseTest
          Node lbf = n1.getNode("bigFile" + i);
          Node content = lbf.getNode("jcr:content");
          // comparing with source file
-         compareStream(new BufferedInputStream(PrivilegedFileHelper.fileInputStream(TEST_FILE)), content.getProperty(
-            "jcr:data").getStream());
+         compareStream(new BufferedInputStream(new FileInputStream(TEST_FILE)), content.getProperty("jcr:data")
+            .getStream());
       }
       n1.remove();
       session.save();
-      PrivilegedFileHelper.deleteOnExit(file);
-      PrivilegedFileHelper.delete(file);
+      file.deleteOnExit();
+      file.delete();
 
    }
 
-   @Override
    protected File createBLOBTempFile(int sizeInb) throws IOException
    {
       // create test file
       byte[] data = new byte[1024]; // 1Kb
 
-      File testFile = PrivilegedFileHelper.createTempFile("exportImportFileTest", ".tmp");
-      FileOutputStream tempOut = PrivilegedFileHelper.fileOutputStream(testFile);
+      File testFile = File.createTempFile("exportImportFileTest", ".tmp");
+      FileOutputStream tempOut = new FileOutputStream(testFile);
       Random random = new Random();
 
       for (int i = 0; i < sizeInb; i += 1024)
@@ -324,9 +323,8 @@ public class TestExportBigFiles extends JcrAPIBaseTest
          tempOut.write(data);
       }
       tempOut.close();
-      PrivilegedFileHelper.deleteOnExit(testFile);
-      log.info("Temp file created: " + PrivilegedFileHelper.getAbsolutePath(testFile) + " size: "
-         + PrivilegedFileHelper.length(testFile));
+      testFile.deleteOnExit(); // delete on test exit
+      log.info("Temp file created: " + testFile.getAbsolutePath() + " size: " + testFile.length());
       return testFile;
    }
 }

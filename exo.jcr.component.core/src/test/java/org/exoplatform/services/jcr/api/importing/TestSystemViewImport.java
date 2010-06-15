@@ -20,7 +20,6 @@ package org.exoplatform.services.jcr.api.importing;
 
 import org.exoplatform.services.ext.action.InvocationContext;
 import org.exoplatform.services.jcr.core.ExtendedSession;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.impl.xml.importing.ContentImporter;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -31,6 +30,8 @@ import org.xml.sax.helpers.XMLReaderFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -249,9 +250,9 @@ public class TestSystemViewImport extends AbstractImportTest
 
       // export
 
-      File tmp = PrivilegedFileHelper.createTempFile("__exojcr_TestSysView__", ".tmp");
+      File tmp = File.createTempFile("__exojcr_TestSysView__", ".tmp");
 
-      OutputStream xmlOut = PrivilegedFileHelper.fileOutputStream(tmp);
+      OutputStream xmlOut = new FileOutputStream(tmp);
       sysview.getSession().exportSystemView(ref.getPath(), xmlOut, false, false);
       xmlOut.close();
 
@@ -266,7 +267,7 @@ public class TestSystemViewImport extends AbstractImportTest
       Node importTarget = sysview.addNode("import target");
       sysview.save();
 
-      sysview.getSession().importXML(importTarget.getPath(), PrivilegedFileHelper.fileInputStream(xmlContent),
+      sysview.getSession().importXML(importTarget.getPath(), new FileInputStream(xmlContent),
          ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
 
       sysview.save();
@@ -280,7 +281,7 @@ public class TestSystemViewImport extends AbstractImportTest
 
       // try one more (for same-name sibling nodes test), mus replace before
       // imported node
-      sysview.getSession().importXML(importTarget.getPath(), PrivilegedFileHelper.fileInputStream(xmlContent),
+      sysview.getSession().importXML(importTarget.getPath(), new FileInputStream(xmlContent),
          ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING);
 
       sysview.save();
@@ -305,7 +306,7 @@ public class TestSystemViewImport extends AbstractImportTest
       Node importTarget = sysview.addNode("import target");
       sysview.save();
 
-      sysview.getSession().importXML(importTarget.getPath(), PrivilegedFileHelper.fileInputStream(xmlContent),
+      sysview.getSession().importXML(importTarget.getPath(), new FileInputStream(xmlContent),
          ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
 
       sysview.save();
@@ -323,7 +324,7 @@ public class TestSystemViewImport extends AbstractImportTest
          .hasProperty("jcr:content/New property 2, string"));
 
       // create one more same-name sibling node
-      sysview.getSession().importXML(importTarget.getPath(), PrivilegedFileHelper.fileInputStream(xmlContent),
+      sysview.getSession().importXML(importTarget.getPath(), new FileInputStream(xmlContent),
          ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
 
       sysview.save();
@@ -353,7 +354,7 @@ public class TestSystemViewImport extends AbstractImportTest
 
       try
       {
-         sysview.getSession().importXML(importTarget.getPath(), PrivilegedFileHelper.fileInputStream(xmlContent),
+         sysview.getSession().importXML(importTarget.getPath(), new FileInputStream(xmlContent),
             ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW);
 
          fail("An exception ItemExistsException must be throwed. Node with same uuid already exists");
@@ -366,7 +367,7 @@ public class TestSystemViewImport extends AbstractImportTest
       // one more time...:)
       try
       {
-         sysview.getSession().importXML(importTarget.getPath(), PrivilegedFileHelper.fileInputStream(xmlContent),
+         sysview.getSession().importXML(importTarget.getPath(), new FileInputStream(xmlContent),
             ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW);
          fail("An exception ItemExistsException must be throwed. Node with same uuid already exists. TEST CYCLE2");
       }
@@ -383,7 +384,7 @@ public class TestSystemViewImport extends AbstractImportTest
       Node importTarget = sysview.addNode("import target");
       sysview.save();
 
-      sysview.getSession().importXML(importTarget.getPath(), PrivilegedFileHelper.fileInputStream(xmlContent),
+      sysview.getSession().importXML(importTarget.getPath(), new FileInputStream(xmlContent),
          ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW);
 
       sysview.save();
@@ -394,7 +395,7 @@ public class TestSystemViewImport extends AbstractImportTest
       assertFalse("Uuids must be different. " + uuid + " != " + importedUuid, uuid.equals(importedUuid));
 
       // create one more same-name sibling node
-      sysview.getSession().importXML(importTarget.getPath(), PrivilegedFileHelper.fileInputStream(xmlContent),
+      sysview.getSession().importXML(importTarget.getPath(), new FileInputStream(xmlContent),
          ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW);
 
       sysview.save();
@@ -620,7 +621,7 @@ public class TestSystemViewImport extends AbstractImportTest
 
       if (xmlContent != null)
       {
-         PrivilegedFileHelper.delete(xmlContent);
+         xmlContent.delete();
       }
 
       super.tearDown();

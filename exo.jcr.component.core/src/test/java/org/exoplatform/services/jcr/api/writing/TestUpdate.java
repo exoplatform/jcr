@@ -19,9 +19,9 @@
 package org.exoplatform.services.jcr.api.writing;
 
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 
 import javax.jcr.Node;
@@ -61,8 +61,9 @@ public class TestUpdate extends JcrAPIBaseTest
       Node corrNode = (Node)ws1session.getItem(ws1node.getPath());
 
       File propData = createBLOBTempFile(1024);
+      propData.deleteOnExit();
 
-      InputStream pds = PrivilegedFileHelper.fileInputStream(propData);
+      InputStream pds = new FileInputStream(propData);
       try
       {
          corrNode.setProperty("prop1", pds);
@@ -72,7 +73,7 @@ public class TestUpdate extends JcrAPIBaseTest
       {
          log.error(e);
          pds.close();
-         PrivilegedFileHelper.delete(propData);
+         propData.delete();
          ws1session.refresh(false);
       }
    }

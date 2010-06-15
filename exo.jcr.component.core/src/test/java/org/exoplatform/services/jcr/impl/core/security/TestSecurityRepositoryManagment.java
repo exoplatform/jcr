@@ -23,7 +23,6 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.TesterItemsPersistenceListener;
 
-import java.io.FileNotFoundException;
 import java.security.AccessControlException;
 import java.security.PrivilegedExceptionAction;
 
@@ -35,7 +34,7 @@ public class TestSecurityRepositoryManagment extends BaseSecurityTest
 {
    private static String testWorkspaceName = "testWorkspace";
 
-   public void testGetSystemSessionSuccess() throws FileNotFoundException
+   public void testGetSystemSessionSuccess()
    {
       PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
       {
@@ -44,6 +43,7 @@ public class TestSecurityRepositoryManagment extends BaseSecurityTest
             repository.getSystemSession();
             return null;
          }
+
       };
       try
       {
@@ -51,7 +51,6 @@ public class TestSecurityRepositoryManagment extends BaseSecurityTest
       }
       catch (AccessControlException ace)
       {
-         ace.printStackTrace();
          fail("Must be able get system session. We are under static permissions");
       }
       catch (Throwable t)
@@ -169,7 +168,6 @@ public class TestSecurityRepositoryManagment extends BaseSecurityTest
       }
       catch (AccessControlException ace)
       {
-         ace.printStackTrace();
          fail("Must be able config workspace. We are under static permissions");
       }
       catch (Throwable t)
@@ -234,7 +232,6 @@ public class TestSecurityRepositoryManagment extends BaseSecurityTest
       }
       catch (AccessControlException ace)
       {
-         ace.printStackTrace();
          fail("Must be able create workspace. We are under static permissions");
       }
       catch (Throwable t)

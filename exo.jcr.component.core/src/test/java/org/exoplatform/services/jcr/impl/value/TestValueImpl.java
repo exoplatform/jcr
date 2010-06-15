@@ -28,7 +28,6 @@ import org.exoplatform.services.jcr.impl.core.value.LongValue;
 import org.exoplatform.services.jcr.impl.core.value.StringValue;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -54,13 +53,13 @@ public class TestValueImpl extends TestCase
 
       byte[] buf = "012345678901234567890123456789".getBytes();
       File file = new File("target/testNewBinaryValue");
-      if (PrivilegedFileHelper.exists(file))
-         PrivilegedFileHelper.delete(file);
-      FileOutputStream out = PrivilegedFileHelper.fileOutputStream(file);
+      if (file.exists())
+         file.delete();
+      FileOutputStream out = new FileOutputStream(file);
       out.write(buf);
       out.close();
 
-      FileInputStream fs1 = PrivilegedFileHelper.fileInputStream(file);
+      FileInputStream fs1 = new FileInputStream(file);
       BinaryValue val = new BinaryValue(fs1, new FileCleaner(), tempDirectory, maxFufferSize);
       InputStream str1 = val.getStream();
       assertNotNull(str1);

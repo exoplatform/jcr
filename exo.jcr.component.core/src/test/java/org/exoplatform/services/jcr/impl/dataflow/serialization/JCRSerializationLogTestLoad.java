@@ -20,10 +20,10 @@ package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
 import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.util.Calendar;
 import java.util.List;
 
@@ -43,7 +43,7 @@ public class JCRSerializationLogTestLoad extends JcrImplSerializationBaseTest
       TesterItemsPersistenceListener pl = new TesterItemsPersistenceListener(this.session);
 
       File file = this.createBLOBTempFile(310);
-      FileInputStream fis = PrivilegedFileHelper.fileInputStream(file);
+      FileInputStream fis = new FileInputStream(file);
 
       NodeImpl node = (NodeImpl)root.addNode("file", "nt:file");
       NodeImpl cont = (NodeImpl)node.addNode("jcr:content", "nt:resource");
@@ -56,7 +56,7 @@ public class JCRSerializationLogTestLoad extends JcrImplSerializationBaseTest
 
       fis.close();
 
-      PrivilegedFileHelper.delete(file);
+      file.delete();
 
       List<TransactionChangesLog> logs = pl.pushChanges();
 
@@ -67,8 +67,8 @@ public class JCRSerializationLogTestLoad extends JcrImplSerializationBaseTest
       long jcrwrite = 0;
       long jcrread = 0;
 
-      File jcrfile = PrivilegedFileHelper.createTempFile("jcr", "test");
-      ObjectWriterImpl jcrout = new ObjectWriterImpl(PrivilegedFileHelper.fileOutputStream(jcrfile));
+      File jcrfile = File.createTempFile("jcr", "test");
+      ObjectWriterImpl jcrout = new ObjectWriterImpl(new FileOutputStream(jcrfile));
 
       System.out.println(" WRITE START");
       long t1 = System.currentTimeMillis();
@@ -81,7 +81,7 @@ public class JCRSerializationLogTestLoad extends JcrImplSerializationBaseTest
 
       System.out.println(" READ START");
       // deserialize
-      ObjectReaderImpl jcrin = new ObjectReaderImpl(PrivilegedFileHelper.fileInputStream(jcrfile));
+      ObjectReaderImpl jcrin = new ObjectReaderImpl(new FileInputStream(jcrfile));
 
       //  List<TransactionChangesLog> readed = new ArrayList<TransactionChangesLog>();
       long t3 = System.currentTimeMillis();
@@ -89,7 +89,7 @@ public class JCRSerializationLogTestLoad extends JcrImplSerializationBaseTest
       for (int i = 0; i < iter; i++)
       {
          TransactionChangesLogReader rdr = new TransactionChangesLogReader(fileCleaner, maxBufferSize, holder);
-         TransactionChangesLog obj = rdr.read(jcrin);
+         TransactionChangesLog obj = (TransactionChangesLog)rdr.read(jcrin);
 
          //  readed.add(obj); 
       }
@@ -107,8 +107,8 @@ public class JCRSerializationLogTestLoad extends JcrImplSerializationBaseTest
         long javaWrite = 0;
         long javaRead = 0;
 
-        File jfile = PrivilegedFileHelper.createTempFile("java", "test");
-        ObjectOutputStream jout = new ObjectOutputStream(PrivilegedFileHelper.fileOutputStream(jfile));
+        File jfile = File.createTempFile("java", "test");
+        ObjectOutputStream jout = new ObjectOutputStream(new FileOutputStream(jfile));
 
         it = logs.iterator();
         
@@ -122,7 +122,7 @@ public class JCRSerializationLogTestLoad extends JcrImplSerializationBaseTest
 
         // deserialize
         System.out.println(" READ START");
-        ObjectInputStream jin = new ObjectInputStream(PrivilegedFileHelper.fileInputStream(jfile));
+        ObjectInputStream jin = new ObjectInputStream(new FileInputStream(jfile));
 
         long t4 = System.currentTimeMillis();
 
@@ -136,7 +136,7 @@ public class JCRSerializationLogTestLoad extends JcrImplSerializationBaseTest
 
       System.out.println(" JCR s- " + (jcrwrite));
       //    System.out.println(" Java s- " + (javaWrite));
-      System.out.println(" JCR file size - " + PrivilegedFileHelper.length(jcrfile));
+      System.out.println(" JCR file size - " + jcrfile.length());
       //    System.out.println(" Java file size - " + jfile.length());
       System.out.println(" JCR des- " + (jcrread));
       //    System.out.println(" Java des- " + (javaRead));

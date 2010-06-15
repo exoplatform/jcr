@@ -21,8 +21,8 @@ package org.exoplatform.services.jcr.impl.core;
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.QPath;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -219,12 +219,12 @@ public class TestMoveNode extends JcrImplBaseTest
 
       for (int i = 0; i < FILES_COUNT; i++)
       {
-         TEST_FILE = PrivilegedFileHelper.getAbsolutePath(createBLOBTempFile("testMove", random.nextInt(1024)));
+         TEST_FILE = createBLOBTempFile("testMove", random.nextInt(1024)).getAbsolutePath();
          filesList.add(TEST_FILE);
          Node localBigFile = testLocalBigFiles.addNode("bigFile" + i, "nt:file");
          Node contentNode = localBigFile.addNode("jcr:content", "nt:resource");
          // contentNode.setProperty("jcr:encoding", "UTF-8");
-         is[i] = PrivilegedFileHelper.fileInputStream(TEST_FILE);
+         is[i] = new FileInputStream(TEST_FILE);
          contentNode.setProperty("jcr:data", is[i]);
          contentNode.setProperty("jcr:mimeType", "application/octet-stream ");
          if (log.isDebugEnabled())
@@ -269,8 +269,7 @@ public class TestMoveNode extends JcrImplBaseTest
       {
          Node localBigFile = dstNode.getNode("bigFile" + i);
          Node contentNode = localBigFile.getNode("jcr:content");
-         compareStream(PrivilegedFileHelper.fileInputStream(filesList.get(i)), contentNode.getProperty("jcr:data")
-            .getStream());
+         compareStream(new FileInputStream(filesList.get(i)), contentNode.getProperty("jcr:data").getStream());
       }
    }
 }

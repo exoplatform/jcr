@@ -30,7 +30,6 @@ import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ReaderSpoolFileHolder;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.impl.util.io.WorkspaceFileCleanerHolder;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.log.ExoLogger;
@@ -102,7 +101,6 @@ public abstract class BaseStandaloneTest extends TestCase
       }
    }
 
-   @Override
    public void setUp() throws Exception
    {
       String configPath = System.getProperty("jcr.test.configuration.file");
@@ -159,14 +157,8 @@ public abstract class BaseStandaloneTest extends TestCase
          (WorkspaceFileCleanerHolder)wsc.getComponent(WorkspaceFileCleanerHolder.class);
       fileCleaner = wfcleaner.getFileCleaner();
       holder = new ReaderSpoolFileHolder();
-
-      //      URL url = Thread.currentThread().getContextClassLoader().getResource("./test.policy");
-      //      Policy.setPolicy(new PolicyFile(url));
-      //
-      //      System.setSecurityManager(new TesterSecurityManager());
    }
 
-   @Override
    protected void tearDown() throws Exception
    {
       if (session != null)
@@ -398,8 +390,8 @@ public abstract class BaseStandaloneTest extends TestCase
       // create test file
       byte[] data = new byte[1024]; // 1Kb
 
-      File testFile = PrivilegedFileHelper.createTempFile(prefix, ".tmp");
-      FileOutputStream tempOut = PrivilegedFileHelper.fileOutputStream(testFile);
+      File testFile = File.createTempFile(prefix, ".tmp");
+      FileOutputStream tempOut = new FileOutputStream(testFile);
       Random random = new Random();
 
       for (int i = 0; i < sizeInKb; i++)
@@ -408,11 +400,10 @@ public abstract class BaseStandaloneTest extends TestCase
          tempOut.write(data);
       }
       tempOut.close();
-      PrivilegedFileHelper.deleteOnExit(testFile); // delete on test exit
+      testFile.deleteOnExit(); // delete on test exit
       if (log.isDebugEnabled())
       {
-         log.debug("Temp file created: " + PrivilegedFileHelper.getAbsolutePath(testFile) + " size: "
-            + PrivilegedFileHelper.length(testFile));
+         log.debug("Temp file created: " + testFile.getAbsolutePath() + " size: " + testFile.length());
       }
       return testFile;
    }

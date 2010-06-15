@@ -25,10 +25,11 @@ import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -124,18 +125,18 @@ public class MultipleDeserializationTestLoad extends JcrImplSerializationBaseTes
       root.save();
 
       // Serialize with JCR
-      File jcrfile = PrivilegedFileHelper.createTempFile("jcr", "test");
-      ObjectWriterImpl jcrout = new ObjectWriterImpl(PrivilegedFileHelper.fileOutputStream(jcrfile));
+      File jcrfile = File.createTempFile("jcr", "test");
+      ObjectWriterImpl jcrout = new ObjectWriterImpl(new FileOutputStream(jcrfile));
       TransactionChangesLog l = pl.pushChanges().get(0);
       TransactionChangesLogWriter wr = new TransactionChangesLogWriter();
       wr.write(jcrout, l);
 
       jcrout.close();
 
-      ObjectReaderImpl jcrin = new ObjectReaderImpl(PrivilegedFileHelper.fileInputStream(jcrfile));
+      ObjectReaderImpl jcrin = new ObjectReaderImpl(new FileInputStream(jcrfile));
       long jcrfread = System.currentTimeMillis();
       TransactionChangesLog mlog =
-         (new TransactionChangesLogReader(fileCleaner, maxBufferSize, holder)).read(jcrin);
+         (TransactionChangesLog)(new TransactionChangesLogReader(fileCleaner, maxBufferSize, holder)).read(jcrin);
       //TransactionChangesLog mlog = new TransactionChangesLog();
       //mlog.readObject(jcrin);
       jcrfread = System.currentTimeMillis() - jcrfread;
@@ -148,15 +149,15 @@ public class MultipleDeserializationTestLoad extends JcrImplSerializationBaseTes
       for (int j = 0; j < iterations; j++)
       {
          // deserialize
-         jcrin = new ObjectReaderImpl(PrivilegedFileHelper.fileInputStream(jcrfile));
+         jcrin = new ObjectReaderImpl(new FileInputStream(jcrfile));
          long t3 = System.currentTimeMillis();
-         TransactionChangesLog log = rdr.read(jcrin);
+         TransactionChangesLog log = (TransactionChangesLog)rdr.read(jcrin);
 
          t3 = System.currentTimeMillis() - t3;
          jcrread += t3;
          jcrin.close();
       }
-      PrivilegedFileHelper.delete(jcrfile);
+      jcrfile.delete();
 
       System.out.println(" JCR first des - " + (jcrfread));
       System.out.println(" JCR des- " + (jcrread / iterations));

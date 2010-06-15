@@ -23,7 +23,6 @@ import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.util.ConfigurationHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -68,9 +67,9 @@ public class TestWorkspaceRestore extends JcrImplBaseTest
       node1.setProperty("p1", 2);
       defSession.save();
 
-      File content = PrivilegedFileHelper.createTempFile("data", ".xml");
-      PrivilegedFileHelper.deleteOnExit(content);
-      OutputStream os = new BufferedOutputStream(PrivilegedFileHelper.fileOutputStream(content));
+      File content = File.createTempFile("data", ".xml");
+      content.deleteOnExit();
+      OutputStream os = new BufferedOutputStream(new FileOutputStream(content));
       defSession.exportSystemView(defRoot.getPath(), os, false, false);
       os.close();
       defSession.logout();
@@ -86,8 +85,7 @@ public class TestWorkspaceRestore extends JcrImplBaseTest
       defRep = (RepositoryImpl)service.getDefaultRepository();
       defRep.configWorkspace(workspaceEntry);
 
-      defRep.importWorkspace(workspaceEntry.getName(), new BufferedInputStream(PrivilegedFileHelper
-         .fileInputStream(content)));
+      defRep.importWorkspace(workspaceEntry.getName(), new BufferedInputStream(new FileInputStream(content)));
 
       doTestOnWorkspace(workspaceEntry.getName());
    }
@@ -137,9 +135,9 @@ public class TestWorkspaceRestore extends JcrImplBaseTest
       node1.setProperty("p1", 2);
       defSession.save();
 
-      File content = PrivilegedFileHelper.createTempFile("data", ".xml");
-      PrivilegedFileHelper.deleteOnExit(content);
-      OutputStream os = new BufferedOutputStream(PrivilegedFileHelper.fileOutputStream(content));
+      File content = File.createTempFile("data", ".xml");
+      content.deleteOnExit();
+      OutputStream os = new BufferedOutputStream(new FileOutputStream(content));
       defSession.exportSystemView(node1.getPath(), os, false, false);
       os.close();
       defSession.logout();
@@ -157,8 +155,7 @@ public class TestWorkspaceRestore extends JcrImplBaseTest
 
       try
       {
-         defRep.importWorkspace(workspaceEntry.getName(), new BufferedInputStream(PrivilegedFileHelper
-            .fileInputStream(content)));
+         defRep.importWorkspace(workspaceEntry.getName(), new BufferedInputStream(new FileInputStream(content)));
          fail();
       }
       catch (RepositoryException e)

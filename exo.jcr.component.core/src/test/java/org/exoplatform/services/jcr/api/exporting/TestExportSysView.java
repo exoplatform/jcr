@@ -21,13 +21,14 @@ package org.exoplatform.services.jcr.api.exporting;
 import org.apache.ws.commons.util.Base64;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.util.StringConverter;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Calendar;
@@ -134,7 +135,7 @@ public class TestExportSysView extends ExportBase
       {
          File file = createBLOBTempFile(2500);// 2.5M
          log.info("=== File has created, size " + file.length());
-         contentTestPdfNode.setProperty("jcr:data", PrivilegedFileHelper.fileInputStream(file));
+         contentTestPdfNode.setProperty("jcr:data", new FileInputStream(file));
          contentTestPdfNode.setProperty("jcr:mimeType", "application/octet-stream");
       }
       catch (IOException e)
@@ -167,13 +168,13 @@ public class TestExportSysView extends ExportBase
       Node testNode = root.addNode("refNode");
       testNode.addMixin("mix:referenceable");
       session.save();
-      File destFile = PrivilegedFileHelper.createTempFile("testExportReferenceableNodes", ".xml");
-      PrivilegedFileHelper.deleteOnExit(destFile);
-      OutputStream outStream = PrivilegedFileHelper.fileOutputStream(destFile);
+      File destFile = File.createTempFile("testExportReferenceableNodes", ".xml");
+      destFile.deleteOnExit();
+      OutputStream outStream = new FileOutputStream(destFile);
       session.exportSystemView(testNode.getPath(), outStream, false, false);
       outStream.close();
 
-      Document doc = builder.parse(PrivilegedFileHelper.fileInputStream(destFile));
+      Document doc = builder.parse(new FileInputStream(destFile));
       NodeList nodes = doc.getElementsByTagName("sv:node");
       assertEquals(1, nodes.getLength());
       assertEquals(3, nodes.item(0).getChildNodes().getLength());
@@ -216,14 +217,14 @@ public class TestExportSysView extends ExportBase
       session.save();
       testNode.lock(true, true);
 
-      File destFile = PrivilegedFileHelper.createTempFile("sysLockNodeExport", ".xml");
-      PrivilegedFileHelper.deleteOnExit(destFile);
-      OutputStream outStream = PrivilegedFileHelper.fileOutputStream(destFile);
+      File destFile = File.createTempFile("sysLockNodeExport", ".xml");
+      destFile.deleteOnExit();
+      OutputStream outStream = new FileOutputStream(destFile);
 
       session.exportSystemView(firstNode.getPath(), outStream, false, false);
       outStream.close();
 
-      Document doc = builder.parse(PrivilegedFileHelper.fileInputStream(destFile));
+      Document doc = builder.parse(new FileInputStream(destFile));
 
       // assertEquals(Constants.DEFAULT_ENCODING, doc.getXmlEncoding());
 
@@ -236,7 +237,7 @@ public class TestExportSysView extends ExportBase
       testNode.unlock();
       testNode.remove();
       session.save();
-      assertTrue(PrivilegedFileHelper.delete(destFile));
+      assertTrue(destFile.delete());
    }
 
    public void testMultyValueExportCh() throws ItemExistsException, PathNotFoundException, VersionException,
@@ -252,8 +253,8 @@ public class TestExportSysView extends ExportBase
       }
 
       session.save();
-      File destFile = PrivilegedFileHelper.createTempFile("xmlTest", ".xml");
-      OutputStream outputStream2 = PrivilegedFileHelper.fileOutputStream(destFile);
+      File destFile = File.createTempFile("xmlTest", ".xml");
+      OutputStream outputStream2 = new FileOutputStream(destFile);
 
       SAXTransformerFactory saxFact = (SAXTransformerFactory)TransformerFactory.newInstance();
       TransformerHandler handler = saxFact.newTransformerHandler();
@@ -264,7 +265,7 @@ public class TestExportSysView extends ExportBase
       outputStream2.close();
       log.info("Export with handler done " + (System.currentTimeMillis() - startTime) / 1000 + " sec");
 
-      Document doc = builder.parse(PrivilegedFileHelper.fileInputStream(destFile));
+      Document doc = builder.parse(new FileInputStream(destFile));
 
       XPathExpression expr = xpath.compile("//sv:property");
       Object result = expr.evaluate(doc, XPathConstants.NODESET);
@@ -296,7 +297,7 @@ public class TestExportSysView extends ExportBase
             }
          }
       }
-      PrivilegedFileHelper.delete(destFile);
+      destFile.delete();
    }
 
    public void testMultyValueExportStream() throws ItemExistsException, PathNotFoundException, VersionException,
@@ -312,13 +313,13 @@ public class TestExportSysView extends ExportBase
       }
 
       session.save();
-      File destFile = PrivilegedFileHelper.createTempFile("sysMultyValueExportStream", ".xml");
-      PrivilegedFileHelper.deleteOnExit(destFile);
-      OutputStream outStream = PrivilegedFileHelper.fileOutputStream(destFile);
+      File destFile = File.createTempFile("sysMultyValueExportStream", ".xml");
+      destFile.deleteOnExit();
+      OutputStream outStream = new FileOutputStream(destFile);
       session.exportSystemView(testNode.getPath(), outStream, false, false);
       outStream.close();
 
-      Document doc = builder.parse(PrivilegedFileHelper.fileInputStream(destFile));
+      Document doc = builder.parse(new FileInputStream(destFile));
 
       XPathExpression expr = xpath.compile("//sv:property");
 
@@ -350,7 +351,7 @@ public class TestExportSysView extends ExportBase
             }
          }
       }
-      PrivilegedFileHelper.delete(destFile);
+      destFile.delete();
    }
 
    public void testMultyValueExportStreamSkipBinary() throws ItemExistsException, PathNotFoundException,
@@ -366,13 +367,13 @@ public class TestExportSysView extends ExportBase
       }
 
       session.save();
-      File destFile = PrivilegedFileHelper.createTempFile("multyValueExportStreamSkipBinary", ".xml");
-      PrivilegedFileHelper.deleteOnExit(destFile);
-      OutputStream outStream = PrivilegedFileHelper.fileOutputStream(destFile);
+      File destFile = File.createTempFile("multyValueExportStreamSkipBinary", ".xml");
+      destFile.deleteOnExit();
+      OutputStream outStream = new FileOutputStream(destFile);
       session.exportSystemView(testNode.getPath(), outStream, true, false);
       outStream.close();
 
-      Document doc = builder.parse(PrivilegedFileHelper.fileInputStream(destFile));
+      Document doc = builder.parse(new FileInputStream(destFile));
 
       XPathExpression expr = xpath.compile("//sv:property");
       Object result = expr.evaluate(doc, XPathConstants.NODESET);
@@ -402,7 +403,7 @@ public class TestExportSysView extends ExportBase
             }
          }
       }
-      PrivilegedFileHelper.delete(destFile);
+      destFile.delete();
    }
 
    public void testWithContentHandler() throws RepositoryException, SAXException

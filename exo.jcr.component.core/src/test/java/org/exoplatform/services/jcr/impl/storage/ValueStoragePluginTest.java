@@ -25,7 +25,6 @@ import org.exoplatform.services.jcr.config.ValueStorageFilterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.util.ConfigurationHelper;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
@@ -33,6 +32,7 @@ import org.exoplatform.services.log.Log;
 
 import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -172,7 +172,7 @@ public class ValueStoragePluginTest extends BaseStandaloneTest
             Node localBigFile = testLocalBigFiles.addNode("bigFile" + j, "nt:file");
             Node contentNode = localBigFile.addNode("jcr:content", "nt:resource");
             // contentNode.setProperty("jcr:encoding", "UTF-8");
-            InputStream is = PrivilegedFileHelper.fileInputStream(TEST_FILE);
+            InputStream is = new FileInputStream(TEST_FILE);
             contentNode.setProperty("jcr:data", is);
             contentNode.setProperty("jcr:mimeType", "application/octet-stream ");
             is.close();
@@ -194,8 +194,8 @@ public class ValueStoragePluginTest extends BaseStandaloneTest
             Node content = lbf.getNode("jcr:content");
 
             // comparing with source file
-            compareStream(new BufferedInputStream(PrivilegedFileHelper.fileInputStream(blobFiles.get(j))), content
-               .getProperty("jcr:data").getStream());
+            compareStream(new BufferedInputStream(new FileInputStream(blobFiles.get(j))), content.getProperty(
+               "jcr:data").getStream());
          }
          n1.remove();
          currenSession.save();
@@ -228,8 +228,8 @@ public class ValueStoragePluginTest extends BaseStandaloneTest
       // create test file
       byte[] data = new byte[1024]; // 1Kb
 
-      File testFile = PrivilegedFileHelper.createTempFile(IdGenerator.generate(), ".tmp");
-      FileOutputStream tempOut = PrivilegedFileHelper.fileOutputStream(testFile);
+      File testFile = File.createTempFile(IdGenerator.generate(), ".tmp");
+      FileOutputStream tempOut = new FileOutputStream(testFile);
       Random random = new Random();
 
       for (int i = 0; i < sizeInb; i += 1024)
@@ -245,9 +245,8 @@ public class ValueStoragePluginTest extends BaseStandaloneTest
          tempOut.write(data);
       }
       tempOut.close();
-      PrivilegedFileHelper.deleteOnExit(testFile);
-      log.info("Temp file created: " + PrivilegedFileHelper.getAbsolutePath(testFile) + " size: "
-         + PrivilegedFileHelper.length(testFile));
+      testFile.deleteOnExit(); // delete on test exit
+      log.info("Temp file created: " + testFile.getAbsolutePath() + " size: " + testFile.length());
       return testFile;
    }
 

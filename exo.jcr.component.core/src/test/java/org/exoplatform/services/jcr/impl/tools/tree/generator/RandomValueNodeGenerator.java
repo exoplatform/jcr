@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.tools.tree.generator;
 
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -26,6 +25,7 @@ import org.exoplatform.services.log.Log;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -93,14 +93,14 @@ public class RandomValueNodeGenerator extends WeightNodeGenerator
             else
             {
                file = createBLOBTempFile(size);
-               inputStream = new BufferedInputStream(PrivilegedFileHelper.fileInputStream(file));
+               inputStream = new BufferedInputStream(new FileInputStream(file));
             }
 
             val = valueFactory.createValue(inputStream);
             val.getStream();// to spool data;
             inputStream.close();
             if (file != null)
-               PrivilegedFileHelper.delete(file);
+               file.delete();
             break;
          case PropertyType.BOOLEAN :
             val = valueFactory.createValue(random.nextBoolean());
@@ -175,8 +175,8 @@ public class RandomValueNodeGenerator extends WeightNodeGenerator
       // create test file
       byte[] data = new byte[1024]; // 1Kb
 
-      File testFile = PrivilegedFileHelper.createTempFile("randomsizefile", ".tmp");
-      FileOutputStream tempOut = PrivilegedFileHelper.fileOutputStream(testFile);
+      File testFile = File.createTempFile("randomsizefile", ".tmp");
+      FileOutputStream tempOut = new FileOutputStream(testFile);
 
       for (int i = 0; i < sizeInb; i += 1024)
       {
@@ -191,9 +191,8 @@ public class RandomValueNodeGenerator extends WeightNodeGenerator
          tempOut.write(data);
       }
       tempOut.close();
-      PrivilegedFileHelper.deleteOnExit(testFile);
-      log.info("Temp file created: " + PrivilegedFileHelper.getAbsolutePath(testFile) + " size: "
-         + PrivilegedFileHelper.length(testFile));
+      testFile.deleteOnExit(); // delete on test exit
+      log.info("Temp file created: " + testFile.getAbsolutePath() + " size: " + testFile.length());
       return testFile;
    }
 
