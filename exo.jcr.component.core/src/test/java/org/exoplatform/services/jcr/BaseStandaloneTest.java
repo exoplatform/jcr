@@ -19,7 +19,6 @@
 package org.exoplatform.services.jcr;
 
 import junit.framework.TestCase;
-import sun.security.provider.PolicyFile;
 
 import org.exoplatform.container.StandaloneContainer;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
@@ -43,7 +42,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.net.URL;
-import java.security.Policy;
 import java.util.Random;
 
 import javax.jcr.Node;
@@ -107,8 +105,6 @@ public abstract class BaseStandaloneTest extends TestCase
    @Override
    public void setUp() throws Exception
    {
-      System.setSecurityManager(null);
-
       String configPath = System.getProperty("jcr.test.configuration.file");
       if (configPath == null)
       {
@@ -164,17 +160,15 @@ public abstract class BaseStandaloneTest extends TestCase
       fileCleaner = wfcleaner.getFileCleaner();
       holder = new ReaderSpoolFileHolder();
 
-      URL url = Thread.currentThread().getContextClassLoader().getResource("./test.policy");
-      Policy.setPolicy(new PolicyFile(url));
-
-      System.setSecurityManager(new SecurityManager());
+      //      URL url = Thread.currentThread().getContextClassLoader().getResource("./test.policy");
+      //      Policy.setPolicy(new PolicyFile(url));
+      //
+      //      System.setSecurityManager(new TesterSecurityManager());
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      System.setSecurityManager(null);
-
       if (session != null)
       {
          try
