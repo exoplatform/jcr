@@ -626,7 +626,7 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
       long count = 0;
       for (File sf : PrivilegedFileHelper.listFiles(dir))
       {
-         if (sf.isDirectory() && PrivilegedFileHelper.list(sf).length > 0)
+         if (PrivilegedFileHelper.isDirectory(sf) && PrivilegedFileHelper.list(sf).length > 0)
             count += deleteRecursive(sf);
          else if (PrivilegedFileHelper.delete(sf))
             count += 1;
@@ -640,9 +640,9 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
    private long calcDirSize(File dir)
    {
       long size = 0;
-      for (File sf : dir.listFiles())
+      for (File sf : PrivilegedFileHelper.listFiles(dir))
       {
-         if (sf.isDirectory())
+         if (PrivilegedFileHelper.isDirectory(sf))
             size += calcDirSize(sf);
          else
             size += PrivilegedFileHelper.length(sf);

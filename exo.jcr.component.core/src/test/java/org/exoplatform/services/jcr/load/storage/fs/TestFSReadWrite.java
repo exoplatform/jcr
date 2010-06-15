@@ -175,7 +175,7 @@ public class TestFSReadWrite extends TestCase
             PrivilegedFileHelper.delete(f);
          }
          else
-            f.delete();
+            PrivilegedFileHelper.delete(f);;
       }
    }
 

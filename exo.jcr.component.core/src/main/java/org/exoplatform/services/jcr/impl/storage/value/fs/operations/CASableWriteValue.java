@@ -161,7 +161,7 @@ public class CASableWriteValue extends WriteValue
             }
             catch (RecordAlreadyExistsException e)
             {
-               if (tempFile != null && PrivilegedFileHelper.exists(tempFile) && !tempFile.delete())
+               if (tempFile != null && PrivilegedFileHelper.exists(tempFile) && !PrivilegedFileHelper.delete(tempFile))
                {
                   LOG.warn("Can't delete CAS temp file. Added to file cleaner. "
                      + PrivilegedFileHelper.getAbsolutePath(tempFile));

@@ -351,6 +351,18 @@ public class PrivilegedFileHelper
       return AccessController.doPrivileged(action);
    }
 
+   public static boolean isDirectory(final File file)
+   {
+      PrivilegedAction<Boolean> action = new PrivilegedAction<Boolean>()
+      {
+         public Boolean run()
+         {
+            return file.isDirectory();
+         }
+      };
+      return AccessController.doPrivileged(action);
+   }
+
    public static boolean exists(final File file)
    {
       PrivilegedAction<Boolean> action = new PrivilegedAction<Boolean>()
