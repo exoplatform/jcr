@@ -18,14 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache;
 
-import java.io.Serializable;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.transaction.TransactionManager;
-
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.jboss.cache.Cache;
@@ -41,6 +33,17 @@ import org.jboss.cache.config.Configuration;
 import org.jboss.cache.eviction.ExpirationAlgorithmConfig;
 import org.jboss.cache.interceptors.base.CommandInterceptor;
 import org.jgroups.Address;
+
+import java.io.Serializable;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.transaction.TransactionManager;
 
 /**
  * Decorator over the JBossCache that stores changes in buffer, then sorts and applies to JBossCache.
@@ -60,9 +63,9 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
    private final ThreadLocal<CompressedChangesBuffer> changesList = new ThreadLocal<CompressedChangesBuffer>();
 
    private ThreadLocal<Boolean> local = new ThreadLocal<Boolean>();
-   
+
    private final boolean useExpiration;
-   
+
    private final long expirationTimeOut;
 
    protected static final Log LOG =
@@ -213,7 +216,34 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
     */
    public void create() throws CacheException
    {
-      parentCache.create();
+      PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
+      {
+         public Object run() throws Exception
+         {
+            parentCache.create();
+            return null;
+         }
+      };
+      try
+      {
+         AccessController.doPrivileged(action);
+      }
+      catch (PrivilegedActionException pae)
+      {
+         Throwable cause = pae.getCause();
+         if (cause instanceof CacheException)
+         {
+            throw (CacheException)cause;
+         }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
+      }
    }
 
    /* (non-Javadoc)
@@ -584,8 +614,8 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
    public boolean removeNode(Fqn fqn)
    {
       CompressedChangesBuffer changesContainer = getChangesBufferSafe();
-      changesContainer.add(new RemoveNodeContainer(fqn, parentCache, changesContainer.getHistoryIndex(), local.get(), 
-               useExpiration, expirationTimeOut));
+      changesContainer.add(new RemoveNodeContainer(fqn, parentCache, changesContainer.getHistoryIndex(), local.get(),
+         useExpiration, expirationTimeOut));
       return true;
    }
 
@@ -618,7 +648,34 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
     */
    public void start() throws CacheException
    {
-      parentCache.start();
+      PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
+      {
+         public Object run() throws Exception
+         {
+            parentCache.start();
+            return null;
+         }
+      };
+      try
+      {
+         AccessController.doPrivileged(action);
+      }
+      catch (PrivilegedActionException pae)
+      {
+         Throwable cause = pae.getCause();
+         if (cause instanceof CacheException)
+         {
+            throw (CacheException)cause;
+         }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
+      }
    }
 
    /* (non-Javadoc)
@@ -691,9 +748,9 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       protected final boolean localMode;
 
       protected final boolean useExpiration;
-      
+
       protected final long timeOut;
-      
+
       public ChangesContainer(Fqn fqn, ChangesType changesType, Cache<Serializable, Object> cache, int historicalIndex,
          boolean localMode, boolean useExpiration, long timeOut)
       {
@@ -750,7 +807,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       {
          cache.getInvocationContext().getOptionOverrides().setCacheModeLocal(localMode);
       }
-      
+
       public final void putExpiration(Fqn efqn)
       {
          setCacheLocalMode();
@@ -780,7 +837,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       {
          setCacheLocalMode();
          cache.put(fqn, data);
-         
+
          if (useExpiration)
          {
             putExpiration(fqn);
@@ -812,7 +869,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
          {
             putExpiration(fqn);
          }
-         
+
          setCacheLocalMode();
          cache.put(fqn, key, value);
       }
@@ -853,12 +910,12 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
                newSet.addAll((Set<Object>)existingObject);
             }
             newSet.add(value);
-            
+
             if (useExpiration)
             {
                putExpiration(fqn);
             }
-            
+
             setCacheLocalMode();
             cache.put(fqn, key, newSet);
          }
@@ -900,12 +957,12 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
          {
             Set<Object> newSet = new HashSet<Object>((Set<Object>)existingObject);
             newSet.remove(value);
-            
+
             if (useExpiration)
             {
                putExpiration(fqn);
             }
-            
+
             setCacheLocalMode();
             cache.put(fqn, key, newSet);
          }
@@ -941,8 +998,8 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
    public static class RemoveNodeContainer extends ChangesContainer
    {
 
-      public RemoveNodeContainer(Fqn fqn, Cache<Serializable, Object> cache, int historicalIndex, boolean local, 
-               boolean useExpiration, long timeOut)
+      public RemoveNodeContainer(Fqn fqn, Cache<Serializable, Object> cache, int historicalIndex, boolean local,
+         boolean useExpiration, long timeOut)
       {
          super(fqn, ChangesType.REMOVE, cache, historicalIndex, local, useExpiration, timeOut);
       }

@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.impl.storage.value.fs;
 
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -71,6 +72,6 @@ public class SimpleFileIOChannel extends FileIOChannel
    @Override
    protected File[] getFiles(String propertyId) throws IOException
    {
-      return rootDir.listFiles(new PropertyIDFilter(propertyId));
+      return PrivilegedFileHelper.listFiles(rootDir, new PropertyIDFilter(propertyId));
    }
 }

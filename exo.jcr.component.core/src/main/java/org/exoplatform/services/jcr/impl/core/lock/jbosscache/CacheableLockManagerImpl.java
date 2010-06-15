@@ -56,6 +56,7 @@ import org.exoplatform.services.log.Log;
 import org.exoplatform.services.naming.InitialContextInitializer;
 import org.exoplatform.services.transaction.TransactionService;
 import org.jboss.cache.Cache;
+import org.jboss.cache.CacheException;
 import org.jboss.cache.CacheSPI;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.Node;
@@ -68,8 +69,11 @@ import org.picocontainer.Startable;
 
 import java.io.Serializable;
 import java.math.BigInteger;
+import java.security.AccessController;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -254,10 +258,38 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
 
          cache = factory.createCache(config.getLockManager());
 
-         cache.create();
-         // Add the cache loader needed to prevent TimeoutException
-         addCacheLoader();
-         cache.start();
+         PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
+         {
+            public Object run() throws Exception
+            {
+               cache.create();
+               // Add the cache loader needed to prevent TimeoutException
+               addCacheLoader();
+               cache.start();
+
+               return null;
+            }
+         };
+         try
+         {
+            AccessController.doPrivileged(action);
+         }
+         catch (PrivilegedActionException pae)
+         {
+            Throwable cause = pae.getCause();
+            if (cause instanceof CacheException)
+            {
+               throw (CacheException)cause;
+            }
+            else if (cause instanceof RuntimeException)
+            {
+               throw (RuntimeException)cause;
+            }
+            else
+            {
+               throw new RuntimeException(cause);
+            }
+         }
 
          createStructuredNode(lockRoot);
 
@@ -285,7 +317,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
          // detect dialect of data-source
          try
          {
-            DataSource dataSource = (DataSource)new InitialContext().lookup(dataSourceName);
+            final DataSource dataSource = (DataSource)new InitialContext().lookup(dataSourceName);
             if (dataSource == null)
             {
                throw new RepositoryException("DataSource (" + dataSourceName + ") can't be null");
@@ -294,7 +326,34 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
             Connection jdbcConn = null;
             try
             {
-               jdbcConn = dataSource.getConnection();
+               PrivilegedExceptionAction<Connection> action = new PrivilegedExceptionAction<Connection>()
+               {
+                  public Connection run() throws Exception
+                  {
+                     return dataSource.getConnection();
+                  }
+               };
+               try
+               {
+                  jdbcConn = AccessController.doPrivileged(action);
+               }
+               catch (PrivilegedActionException pae)
+               {
+                  Throwable cause = pae.getCause();
+                  if (cause instanceof SQLException)
+                  {
+                     throw (SQLException)cause;
+                  }
+                  else if (cause instanceof RuntimeException)
+                  {
+                     throw (RuntimeException)cause;
+                  }
+                  else
+                  {
+                     throw new RuntimeException(cause);
+                  }
+               }
+
                dialect = DialectDetecter.detect(jdbcConn.getMetaData());
             }
             finally
@@ -489,7 +548,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
       }
       return true;
    }
-   
+
    /**
     * Return new instance of session lock manager.
     */
@@ -912,7 +971,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
    {
       return getExactNodeOrCloseParentLock(node, true);
    }
-   
+
    private LockData getExactNodeOrCloseParentLock(NodeData node, boolean checkHasLocks) throws RepositoryException
    {
 
@@ -953,7 +1012,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
    {
       return getClosedChild(node, true);
    }
-   
+
    private LockData getClosedChild(NodeData node, boolean checkHasLocks) throws RepositoryException
    {
 

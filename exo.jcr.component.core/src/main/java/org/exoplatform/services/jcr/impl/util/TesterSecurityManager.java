@@ -52,28 +52,24 @@ public class TesterSecurityManager extends SecurityManager
             {
                StackTraceElement el = traceElements[i];
                String cl = el.getClassName();
+               String fn = el.getFileName();
 
                if (cl.startsWith("org.exoplatform"))
                {
-                  int p = cl.lastIndexOf('.');
-                  if (p != -1)
-                  {
-                     cl = cl.substring(p + 1);
-                  }
-
                   // TesterSecurityManager is not a part of source code
-                  if (cl.equals("TesterSecurityManager"))
+                  if (fn.equals("TesterSecurityManager.java"))
                   {
                      continue;
                   }
 
                   // hide Exception
-                  if (cl.equals("BaseStandaloneTest"))
+                  if (fn.equals("BaseStandaloneTest.java") || fn.equals("SLF4JExoLogFactory.java"))
                   {
                      return;
                   }
 
-                  if (cl.startsWith("Test") || cl.endsWith("Test") || cl.endsWith("TestBase"))
+                  if (fn.startsWith("Test") || fn.endsWith("Test.java") || fn.endsWith("TestBase.java")
+                     || fn.equals("Probe.java"))
                   {
                      testCode = true;
                   }
@@ -82,6 +78,19 @@ public class TesterSecurityManager extends SecurityManager
                      srcCode = true;
                   }
                }
+               else if (cl.startsWith("org.apache.jackrabbit.test"))
+               {
+                  // hide Exception
+                  if (fn.equals("JCRTestResult.java"))
+                  {
+                     return;
+                  }
+               }
+               else if (cl.startsWith("org.exoplatform.services.log.impl.SLF4JExoLogFactory"))
+               {
+                  return;
+               }
+
             }
 
             e = e.getCause();

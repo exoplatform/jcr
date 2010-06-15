@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl.util.io;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -564,6 +565,24 @@ public class PrivilegedFileHelper
          public File[] run()
          {
             return file.listFiles();
+         }
+      };
+      return AccessController.doPrivileged(action);
+   }
+
+   /**
+    * Get file's list in privileged mode.
+    * 
+    * @param file
+    * @return
+    */
+   public static File[] listFiles(final File file, final FileFilter filter)
+   {
+      PrivilegedAction<File[]> action = new PrivilegedAction<File[]>()
+      {
+         public File[] run()
+         {
+            return file.listFiles(filter);
          }
       };
       return AccessController.doPrivileged(action);
