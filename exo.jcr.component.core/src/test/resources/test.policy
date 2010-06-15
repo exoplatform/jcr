@@ -1,14 +1,14 @@
-grant codeBase "file:@MAVEN_REPO@/-"{
+grant codeBase "file:@MAVEN_REPO@-"{
    permission java.security.AllPermission;      
 };
 
-grant codeBase "file:@MAIN_CLASSES@/-"{                                                                                                                                                       
+grant codeBase "file:@MAIN_CLASSES@-"{                                                                                             
     permission java.security.AllPermission;
 };
 
 
 
-grant codeBase "file:@TEST_CLASSES@/-"{
+grant codeBase "file:@TEST_CLASSES@-"{
 	permission java.lang.RuntimePermission "setSecurityManager";
 	permission java.lang.RuntimePermission "getJCRSystemSession";
 	permission java.lang.RuntimePermission "manageRepository";

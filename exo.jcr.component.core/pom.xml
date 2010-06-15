@@ -479,9 +479,9 @@
                               <include name="test.policy"/>
                            </fileset>
                            <filterset>
-                              <filter token="MAVEN_REPO" value="${settings.localRepository}"/>
-                              <filter token="MAIN_CLASSES" value="${project.build.outputDirectory}"/>
-                              <filter token="TEST_CLASSES" value="${project.build.testOutputDirectory}"/>
+                              <filter token="MAVEN_REPO" value="${settings.localRepository}${file.separator}"/>
+                              <filter token="MAIN_CLASSES" value="${project.build.outputDirectory}${file.separator}"/>
+                              <filter token="TEST_CLASSES" value="${project.build.testOutputDirectory}${file.separator}"/>
                            </filterset>
                         </copy>
                      </tasks>                     
