@@ -374,7 +374,7 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
-               <argLine>${env.MAVEN_OPTS} -Djava.security.manager=org.exoplatform.services.jcr.impl.util.TesterSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
+               <argLine>-Djava.security.manager=org.exoplatform.services.jcr.impl.util.TesterSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
                <systemProperties>
                   <property>
                      <name>jcr.test.configuration.file</name>
@@ -391,10 +391,10 @@
             </property-->
                </systemProperties>
                <includes>
-                  <include>org/exoplatform/services/jcr/api/**/Test*.java</include>
+                  <!--include>org/exoplatform/services/jcr/api/**/Test*.java</include-->
                   <include>org/exoplatform/services/jcr/usecases/**/Test*.java</include>
                   <include>org/exoplatform/services/jcr/usecases/**/*Test.java</include>
-                  <include>org/exoplatform/services/jcr/impl/**/Test*.java</include>
+                  <!--include>org/exoplatform/services/jcr/impl/**/Test*.java</include-->
                </includes>
                <excludes>
                   <exclude>org/exoplatform/services/jcr/**/TestQueryUsecases.java</exclude>
