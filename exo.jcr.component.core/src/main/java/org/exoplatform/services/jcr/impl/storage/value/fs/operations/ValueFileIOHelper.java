@@ -37,9 +37,6 @@ import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.security.AccessController;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 
 /**
  * Created by The eXo Platform SAS.
@@ -78,58 +75,32 @@ public class ValueFileIOHelper
     */
    protected ValueData readValue(final File file, final int orderNum, final int maxBufferSize) throws IOException
    {
-      PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
-      {
-         public Object run() throws Exception
-         {
-            long fileSize = PrivilegedFileHelper.length(file);
+      long fileSize = PrivilegedFileHelper.length(file);
 
-            if (fileSize > maxBufferSize)
-            {
-               return new FilePersistedValueData(orderNum, file);
-            }
-            else
-            {
-               FileInputStream is = PrivilegedFileHelper.fileInputStream(file);
-               try
-               {
-                  int buffSize = (int)fileSize;
-                  byte[] res = new byte[buffSize];
-                  int rpos = 0;
-                  int r = -1;
-                  byte[] buff = new byte[IOBUFFER_SIZE > buffSize ? IOBUFFER_SIZE : buffSize];
-                  while ((r = is.read(buff)) >= 0)
-                  {
-                     System.arraycopy(buff, 0, res, rpos, r);
-                     rpos += r;
-                  }
-                  return new ByteArrayPersistedValueData(orderNum, res);
-               }
-               finally
-               {
-                  is.close();
-               }
-            }
-         }
-      };
-      try
+      if (fileSize > maxBufferSize)
       {
-         return (ValueData)AccessController.doPrivileged(action);
+         return new FilePersistedValueData(orderNum, file);
       }
-      catch (PrivilegedActionException pae)
+      else
       {
-         Throwable cause = pae.getCause();
-         if (cause instanceof IOException)
+         FileInputStream is = PrivilegedFileHelper.fileInputStream(file);
+         try
          {
-            throw (IOException)cause;
+            int buffSize = (int)fileSize;
+            byte[] res = new byte[buffSize];
+            int rpos = 0;
+            int r = -1;
+            byte[] buff = new byte[IOBUFFER_SIZE > buffSize ? IOBUFFER_SIZE : buffSize];
+            while ((r = is.read(buff)) >= 0)
+            {
+               System.arraycopy(buff, 0, res, rpos, r);
+               rpos += r;
+            }
+            return new ByteArrayPersistedValueData(orderNum, res);
          }
-         else if (cause instanceof RuntimeException)
+         finally
          {
-            throw (RuntimeException)cause;
-         }
-         else
-         {
-            throw new RuntimeException(cause);
+            is.close();
          }
       }
    }
@@ -168,42 +139,14 @@ public class ValueFileIOHelper
     */
    protected void writeByteArrayValue(final File file, final ValueData value) throws IOException
    {
-      PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
-      {
-         public Object run() throws Exception
-         {
-            OutputStream out = PrivilegedFileHelper.fileOutputStream(file);
-            try
-            {
-               out.write(value.getAsByteArray());
-            }
-            finally
-            {
-               out.close();
-            }
-
-            return null;
-         }
-      };
+      OutputStream out = PrivilegedFileHelper.fileOutputStream(file);
       try
       {
-         AccessController.doPrivileged(action);
+         out.write(value.getAsByteArray());
       }
-      catch (PrivilegedActionException pae)
+      finally
       {
-         Throwable cause = pae.getCause();
-         if (cause instanceof IOException)
-         {
-            throw (IOException)cause;
-         }
-         else if (cause instanceof RuntimeException)
-         {
-            throw (RuntimeException)cause;
-         }
-         else
-         {
-            throw new RuntimeException(cause);
-         }
+         out.close();
       }
    }
 
@@ -219,82 +162,53 @@ public class ValueFileIOHelper
     */
    protected void writeStreamedValue(final File file, final ValueData value) throws IOException
    {
-      PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
+      // do what you want
+      // stream Value
+      if (value instanceof StreamPersistedValueData)
       {
-         public Object run() throws Exception
+         StreamPersistedValueData streamed = (StreamPersistedValueData)value;
+
+         if (streamed.isPersisted())
          {
-            // do what you want
-            // stream Value
-            if (value instanceof StreamPersistedValueData)
+            // already persisted in another Value, copy it to this Value
+            copyClose(streamed.getAsStream(), PrivilegedFileHelper.fileOutputStream(file));
+         }
+         else
+         {
+            // the Value not yet persisted, i.e. or in client stream or spooled to a temp file
+            File tempFile;
+            if ((tempFile = streamed.getTempFile()) != null)
             {
-               StreamPersistedValueData streamed = (StreamPersistedValueData)value;
-
-               if (streamed.isPersisted())
+               // it's spooled Value, try move its file to VS
+               if (!PrivilegedFileHelper.renameTo(tempFile, file))
                {
-                  // already persisted in another Value, copy it to this Value
-                  copyClose(streamed.getAsStream(), PrivilegedFileHelper.fileOutputStream(file));
-               }
-               else
-               {
-                  // the Value not yet persisted, i.e. or in client stream or spooled to a temp file
-                  File tempFile;
-                  if ((tempFile = streamed.getTempFile()) != null)
+                  // not succeeded - copy bytes, temp file will be deleted by transient ValueData
+                  if (LOG.isDebugEnabled())
                   {
-                     // it's spooled Value, try move its file to VS
-                     if (!PrivilegedFileHelper.renameTo(tempFile, file))
-                     {
-                        // not succeeded - copy bytes, temp file will be deleted by transient ValueData
-                        if (LOG.isDebugEnabled())
-                        {
-                           LOG
-                              .debug("Value spool file move (rename) to Values Storage is not succeeded. Trying bytes copy. Spool file: "
-                                 + PrivilegedFileHelper.getAbsolutePath(tempFile)
-                                 + ". Destination: "
-                                 + PrivilegedFileHelper.getAbsolutePath(file));
-                        }
-
-                        copyClose(PrivilegedFileHelper.fileInputStream(tempFile), PrivilegedFileHelper
-                           .fileOutputStream(file));
-                     }
-                  }
-                  else
-                  {
-                     // not spooled, use client InputStream
-                     copyClose(streamed.getStream(), PrivilegedFileHelper.fileOutputStream(file));
+                     LOG
+                        .debug("Value spool file move (rename) to Values Storage is not succeeded. Trying bytes copy. Spool file: "
+                           + PrivilegedFileHelper.getAbsolutePath(tempFile)
+                           + ". Destination: "
+                           + PrivilegedFileHelper.getAbsolutePath(file));
                   }
 
-                  // link this Value to file in VS
-                  streamed.setPersistedFile(file);
+                  copyClose(PrivilegedFileHelper.fileInputStream(tempFile), PrivilegedFileHelper.fileOutputStream(file));
                }
             }
             else
             {
-               // copy from Value stream to the file, e.g. from FilePersistedValueData to this Value
-               copyClose(value.getAsStream(), PrivilegedFileHelper.fileOutputStream(file));
+               // not spooled, use client InputStream
+               copyClose(streamed.getStream(), PrivilegedFileHelper.fileOutputStream(file));
             }
 
-            return null;
+            // link this Value to file in VS
+            streamed.setPersistedFile(file);
          }
-      };
-      try
-      {
-         AccessController.doPrivileged(action);
       }
-      catch (PrivilegedActionException pae)
+      else
       {
-         Throwable cause = pae.getCause();
-         if (cause instanceof IOException)
-         {
-            throw (IOException)cause;
-         }
-         else if (cause instanceof RuntimeException)
-         {
-            throw (RuntimeException)cause;
-         }
-         else
-         {
-            throw new RuntimeException(cause);
-         }
+         // copy from Value stream to the file, e.g. from FilePersistedValueData to this Value
+         copyClose(value.getAsStream(), PrivilegedFileHelper.fileOutputStream(file));
       }
    }
 

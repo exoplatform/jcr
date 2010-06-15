@@ -31,8 +31,6 @@ import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 
 /**
  * Created by The eXo Platform SAS. <br/>
@@ -89,14 +87,7 @@ public class PersistedValueDataReader
     */
    public AbstractPersistedValueData read(ObjectReader in) throws UnknownClassIdException, IOException
    {
-      PrivilegedAction<String> action = new PrivilegedAction<String>()
-      {
-         public String run()
-         {
-            return SerializationConstants.TEMP_DIR;
-         }
-      };
-      File tempDirectory = new File(AccessController.doPrivileged(action));
+      File tempDirectory = new File(SerializationConstants.TEMP_DIR);
       PrivilegedFileHelper.mkdirs(tempDirectory);
 
       // read id

@@ -125,40 +125,14 @@ public abstract class ValueFileOperation extends ValueFileIOHelper implements Va
        */
       public void lock() throws IOException
       {
-         PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
-         {
-            public Object run() throws Exception
-            {
-               // lock file in temp directory
-               lockFile = new File(tempDir, targetFile.getName() + LOCK_FILE_EXTENSION);
+         // lock file in temp directory
+         lockFile = new File(tempDir, targetFile.getName() + LOCK_FILE_EXTENSION);
 
-               FileOutputStream lout = PrivilegedFileHelper.fileOutputStream(lockFile, true);
-               lout.write(operationInfo.getBytes()); // TODO write info
-               lout.getChannel().lock(); // wait for unlock (on Windows will wait for this JVM too)
+         FileOutputStream lout = PrivilegedFileHelper.fileOutputStream(lockFile, true);
+         lout.write(operationInfo.getBytes()); // TODO write info
+         lout.getChannel().lock(); // wait for unlock (on Windows will wait for this JVM too)
 
-               return lout;
-            }
-         };
-         try
-         {
-            lockFileStream = (FileOutputStream)AccessController.doPrivileged(action);
-         }
-         catch (PrivilegedActionException pae)
-         {
-            Throwable cause = pae.getCause();
-            if (cause instanceof IOException)
-            {
-               throw (IOException)cause;
-            }
-            else if (cause instanceof RuntimeException)
-            {
-               throw (RuntimeException)cause;
-            }
-            else
-            {
-               throw new RuntimeException(cause);
-            }
-         }
+         lockFileStream = lout;
       }
 
       /**

@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.dataflow.serialization;
 
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedSystemHelper;
+
 import java.io.File;
 
 /**
@@ -33,7 +35,8 @@ public class SerializationConstants
    /**
     * Serialization temp dir.
     */
-   public static final String TEMP_DIR = System.getProperty("java.io.tmpdir") + File.separator + "_jcrser.tmp";
+   public static final String TEMP_DIR =
+      PrivilegedSystemHelper.getProperty("java.io.tmpdir") + File.separator + "_jcrser.tmp";
 
    /**
     * TransientValueData class.
