@@ -113,13 +113,49 @@ public class GenericTransactionService implements TransactionService
    /**
     * {@inheritDoc}
     */
-   public void delistResource(ExoResource exores) throws RollbackException, SystemException
+   public void delistResource(final ExoResource exores) throws RollbackException, SystemException
    {
       TransactionManager tm = getTransactionManager();
-      Transaction tx = tm.getTransaction();
+      final Transaction tx = tm.getTransaction();
       if (tx != null)
       {
-         tx.delistResource(exores.getXAResource(), XAResource.TMNOFLAGS);
+         PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
+         {
+            public Object run() throws Exception
+            {
+               tx.delistResource(exores.getXAResource(), XAResource.TMNOFLAGS);
+               return null;
+            }
+         };
+         try
+         {
+            AccessController.doPrivileged(action);
+         }
+         catch (PrivilegedActionException pae)
+         {
+            Throwable cause = pae.getCause();
+
+            if (cause instanceof RollbackException)
+            {
+               throw (RollbackException)cause;
+            }
+            else if (cause instanceof IllegalStateException)
+            {
+               throw (IllegalStateException)cause;
+            }
+            else if (cause instanceof SystemException)
+            {
+               throw (SystemException)cause;
+            }
+            else if (cause instanceof RuntimeException)
+            {
+               throw (RuntimeException)cause;
+            }
+            else
+            {
+               throw new RuntimeException(cause);
+            }
+         }
       }
       else
       {
@@ -130,13 +166,49 @@ public class GenericTransactionService implements TransactionService
    /**
     * {@inheritDoc}
     */
-   public void enlistResource(ExoResource exores) throws RollbackException, SystemException
+   public void enlistResource(final ExoResource exores) throws RollbackException, SystemException
    {
       TransactionManager tm = getTransactionManager();
-      Transaction tx = tm.getTransaction();
+      final Transaction tx = tm.getTransaction();
       if (tx != null)
       {
-         tx.enlistResource(exores.getXAResource());
+         PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
+         {
+            public Object run() throws Exception
+            {
+               tx.enlistResource(exores.getXAResource());
+               return null;
+            }
+         };
+         try
+         {
+            AccessController.doPrivileged(action);
+         }
+         catch (PrivilegedActionException pae)
+         {
+            Throwable cause = pae.getCause();
+
+            if (cause instanceof RollbackException)
+            {
+               throw (RollbackException)cause;
+            }
+            else if (cause instanceof IllegalStateException)
+            {
+               throw (IllegalStateException)cause;
+            }
+            else if (cause instanceof SystemException)
+            {
+               throw (SystemException)cause;
+            }
+            else if (cause instanceof RuntimeException)
+            {
+               throw (RuntimeException)cause;
+            }
+            else
+            {
+               throw new RuntimeException(cause);
+            }
+         }
       }
       else
       {
