@@ -116,7 +116,21 @@ public class TestSpoolFile extends TestCase
       }
    }
 
-   public void testDeleteFile() throws FileNotFoundException
+   public void testDeleteAquireFile() throws FileNotFoundException, IOException
+   {
+      // This method creates a file on disk space.
+      SpoolFile sf = SpoolFile.createTempFile("prefix", "suffics", new File(DIR_NAME));
+
+      // Add new holder of file and try to delete a file with holder.
+      sf.acquire("holder");
+      assertFalse("File in use.", sf.delete());
+
+      // Release file and try to delete a file without holder.
+      sf.release("holder");
+      assertTrue("File not in use. It should be deleted", sf.delete());
+   }
+
+   public void testDeleteAbstractFile() throws FileNotFoundException
    {
       // This method not creates a file on disk space.
       SpoolFile sf = new SpoolFile(DIR_NAME + FILE_NAME);
@@ -127,6 +141,20 @@ public class TestSpoolFile extends TestCase
 
       // Now file is free. It can be deleted.
       // File on disk does not exist. It will not be removed from disk space.
-      assertFalse("Deleted file was not created on the disk.", sf.delete());
+      assertTrue("Deleted file was not created on the disk.", sf.delete());
+   }
+
+   public void testDeleteExistingFile() throws FileNotFoundException, IOException
+   {
+      // This method creates a file on disk space.
+      SpoolFile sf = SpoolFile.createTempFile("prefix", "suffics", new File(DIR_NAME));
+
+      // Add and release new holder of file.
+      sf.acquire("holder");
+      sf.release("holder");
+
+      // Now file is free. It can be deleted.
+      // File is present on the disk. It will be removed from disk space.
+      assertTrue("File should be removed.", sf.delete());
    }
 }

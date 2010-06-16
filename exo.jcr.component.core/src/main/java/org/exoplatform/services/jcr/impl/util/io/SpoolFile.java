@@ -109,14 +109,17 @@ public class SpoolFile extends File
          users.clear();
          users = null;
 
+         final SpoolFile sf = this;
+
          PrivilegedAction<Boolean> action = new PrivilegedAction<Boolean>()
          {
             public Boolean run()
             {
-               return SpoolFile.super.delete();
+               return sf.exists() ? SpoolFile.super.delete() : true;
             }
          };
          return AccessController.doPrivileged(action);
+
       }
 
       return false;

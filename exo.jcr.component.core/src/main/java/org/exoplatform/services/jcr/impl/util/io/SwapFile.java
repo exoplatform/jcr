@@ -157,12 +157,13 @@ public class SwapFile extends SpoolFile
    {
       synchronized (inShare)
       {
+         final SpoolFile sf = this;
 
          PrivilegedAction<Boolean> action = new PrivilegedAction<Boolean>()
          {
             public Boolean run()
             {
-               return SwapFile.super.delete();
+               return sf.exists() ? SwapFile.super.delete() : true;
             }
          };
          boolean res = AccessController.doPrivileged(action);
@@ -170,13 +171,14 @@ public class SwapFile extends SpoolFile
          if (res)
          {
             // remove from shared files list
-            inShare.remove(getAbsolutePath());
+            inShare.remove(PrivilegedFileHelper.getAbsolutePath(this));
 
             // make sure that the file doesn't make any other thread await in 'get' method
             // impossible case as 'delete' and 'get' which may waiting for, synchronized by inShare map.
             // spoolDone();
 
             return true;
+
          }
 
          return false;

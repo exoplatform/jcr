@@ -17,7 +17,10 @@
 package org.exoplatform.services.jcr.impl.utils.io;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import org.exoplatform.services.jcr.impl.util.io.SwapFile;
 
@@ -74,12 +77,27 @@ public class TestSwapFile extends TestCase
       sf.delete();
    }
 
-   public void testDeleteSpoolFile() throws IOException
+   public void testDeleteAbstractSwapFile() throws IOException
    {
       SwapFile sf = SwapFile.get(new File(DIR_NAME), FILE_NAME);
       sf.spoolDone();
 
       // File on disk does not exist. It will not be removed from disk space.
-      assertFalse("Deleted file was not created on the disk.", sf.delete());
+      assertTrue("File should be deleted.", sf.delete());
+   }
+
+   public void testDeleteExistingSwapFile() throws IOException
+   {
+      SwapFile sf = SwapFile.get(new File(DIR_NAME), FILE_NAME);
+
+      // write to file
+      OutputStream out = new FileOutputStream(sf);
+      byte[] outWrite = new byte[]{1, 2, 3};
+      out.write(outWrite);
+      out.close();
+      sf.spoolDone();
+
+      // File is present on the disk. It will be removed from disk space.
+      assertTrue("File should be deleted.", sf.delete());
    }
 }
