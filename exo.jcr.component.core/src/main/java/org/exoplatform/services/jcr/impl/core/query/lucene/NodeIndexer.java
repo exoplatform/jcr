@@ -34,6 +34,7 @@ import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
+import org.exoplatform.services.jcr.impl.util.SecurityHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,6 +42,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -186,7 +188,7 @@ public class NodeIndexer
    protected Document createDoc() throws RepositoryException
    {
       doNotUseInExcerpt.clear();
-      Document doc = new Document();
+      final Document doc = new Document();
 
       doc.setBoost(getNodeBoost());
 
@@ -214,7 +216,7 @@ public class NodeIndexer
          // unknown uri<->prefix mappings
       }
 
-      for (PropertyData prop : stateProvider.listChildPropertiesData(node))
+      for (final PropertyData prop : stateProvider.listChildPropertiesData(node))
       {
 
          // add each property to the _PROPERTIES_SET for searching
@@ -224,7 +226,14 @@ public class NodeIndexer
             addPropertyName(doc, prop.getQPath().getName());
          }
 
-         addValues(doc, prop);
+         SecurityHelper.doPriviledgedRepositoryExceptionAction(new PrivilegedExceptionAction<Object>()
+         {
+            public Object run() throws Exception
+            {
+               addValues(doc, prop);
+               return null;
+            }
+         });
 
       }
 
@@ -311,7 +320,9 @@ public class NodeIndexer
                   data = propData.getValues();
 
                   if (data == null)
+                  {
                      log.warn("null value found at property " + prop.getQPath().getAsString());
+                  }
 
                   // check the jcr:encoding property
                   PropertyData encProp =
@@ -420,7 +431,9 @@ public class NodeIndexer
                   .getIdentifier())).getValues();
 
             if (data == null)
+            {
                log.warn("null value found at property " + prop.getQPath().getAsString());
+            }
 
             ExtendedValue val = null;
             InternalQName name = prop.getQPath().getName();
@@ -504,8 +517,10 @@ public class NodeIndexer
                }
             }
             if (data.size() > 1)
+            {
                // real multi-valued
                addMVPName(doc, prop.getQPath().getName());
+            }
          }
          catch (RepositoryException e)
          {
@@ -673,6 +688,7 @@ public class NodeIndexer
     * @deprecated Use {@link #addStringValue(Document, String, Object, boolean)
     *             addStringValue(Document, String, Object, boolean)} instead.
     */
+   @Deprecated
    protected void addStringValue(Document doc, String fieldName, Object internalValue)
    {
       addStringValue(doc, fieldName, internalValue, true, true, DEFAULT_BOOST);
@@ -711,6 +727,7 @@ public class NodeIndexer
     * @param boost              the boost value for this string field.
     * @deprecated use {@link #addStringValue(Document, String, Object, boolean, boolean, float, boolean)} instead.
     */
+   @Deprecated
    protected void addStringValue(Document doc, String fieldName, Object internalValue, boolean tokenized,
       boolean includeInNodeIndex, float boost)
    {
@@ -794,6 +811,7 @@ public class NodeIndexer
     * @return a lucene field.
     * @deprecated use {@link #createFulltextField(String, boolean, boolean)} instead.
     */
+   @Deprecated
    protected Field createFulltextField(String value)
    {
       return createFulltextField(value, supportHighlighting, supportHighlighting);
