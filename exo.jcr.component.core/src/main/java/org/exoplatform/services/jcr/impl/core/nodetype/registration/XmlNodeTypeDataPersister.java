@@ -30,6 +30,9 @@ import org.jibx.runtime.JiBXException;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.List;
 
 import javax.jcr.RepositoryException;
@@ -135,7 +138,35 @@ public class XmlNodeTypeDataPersister implements NodeTypeDataPersister
    {
       try
       {
-         IBindingFactory factory = BindingDirectory.getFactory(NodeTypeValuesList.class);
+         IBindingFactory factory = null;
+         PrivilegedExceptionAction<IBindingFactory> action = new PrivilegedExceptionAction<IBindingFactory>()
+         {
+            public IBindingFactory run() throws Exception
+            {
+               return BindingDirectory.getFactory(NodeTypeValuesList.class);
+            }
+         };
+         try
+         {
+            factory = AccessController.doPrivileged(action);
+         }
+         catch (PrivilegedActionException pae)
+         {
+            Throwable cause = pae.getCause();
+            if (cause instanceof JiBXException)
+            {
+               throw (JiBXException)cause;
+            }
+            else if (cause instanceof RuntimeException)
+            {
+               throw (RuntimeException)cause;
+            }
+            else
+            {
+               throw new RuntimeException(cause);
+            }
+         }
+
          IUnmarshallingContext uctx = factory.createUnmarshallingContext();
          NodeTypeValuesList nodeTypeValuesList = (NodeTypeValuesList)uctx.unmarshalDocument(is, null);
          List ntvList = nodeTypeValuesList.getNodeTypeValuesList();

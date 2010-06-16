@@ -138,7 +138,7 @@ public class TestSecurityRepositoryManagment extends BaseSecurityTest
       }
    }
 
-   public void testConfigWorkspaceSuccess()
+   public void testConfigWorkspaceSuccess() throws Exception
    {
       PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
       {
@@ -173,9 +173,13 @@ public class TestSecurityRepositoryManagment extends BaseSecurityTest
          t.printStackTrace();
          fail();
       }
+
+      // remove configured workspace
+      repository.createWorkspace("testConfigWorkspaceSuccess");
+      repository.internalRemoveWorkspace("testConfigWorkspaceSuccess");
    }
 
-   public void testConfigWorkspaceFail()
+   public void testConfigWorkspaceFail() throws Exception
    {
       PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
       {
@@ -215,6 +219,7 @@ public class TestSecurityRepositoryManagment extends BaseSecurityTest
 
    public void testCreateWorkspaceSuccess() throws Exception
    {
+      // configures workspace for creation
       WorkspaceEntry defConfig =
          (WorkspaceEntry)session.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
 
@@ -250,6 +255,9 @@ public class TestSecurityRepositoryManagment extends BaseSecurityTest
          t.printStackTrace();
          fail();
       }
+
+      // remove configured workspace
+      repository.internalRemoveWorkspace("testCreateWorkspaceSuccess");
    }
 
    public void testCreateWorkspaceFail()
@@ -281,6 +289,7 @@ public class TestSecurityRepositoryManagment extends BaseSecurityTest
 
    public void testInternalRemoveWorkspaceSuccess() throws Exception
    {
+      // configures and create workspace
       WorkspaceEntry defConfig =
          (WorkspaceEntry)session.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
 
@@ -453,4 +462,5 @@ public class TestSecurityRepositoryManagment extends BaseSecurityTest
          fail();
       }
    }
+
 }

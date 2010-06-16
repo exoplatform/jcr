@@ -67,7 +67,8 @@ public class TesterSecurityManager extends SecurityManager
                   }
 
                   if (fileName.startsWith("Test") || fileName.endsWith("Test.java")
-                     || fileName.endsWith("TestBase.java") || fileName.equals("Probe.java"))
+                     || fileName.endsWith("TestBase.java") || fileName.equals("Probe.java")
+                     || fileName.equals("ExportBase.java"))
                   {
                      testCode = true;
                   }
