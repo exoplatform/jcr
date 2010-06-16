@@ -61,6 +61,7 @@ import org.exoplatform.services.jcr.impl.core.query.lucene.directory.DirectoryMa
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.FSDirectoryManager;
 import org.exoplatform.services.jcr.impl.util.SecurityHelper;
 import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedSystemHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
@@ -1336,8 +1337,8 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       {
          InputStream fsr;
          // simple sanity check
-         String separator = System.getProperty("file.separator");
-         if (synonymProviderConfigPath.endsWith(System.getProperty("file.separator")))
+         String separator = PrivilegedSystemHelper.getProperty("file.separator");
+         if (synonymProviderConfigPath.endsWith(PrivilegedSystemHelper.getProperty("file.separator")))
          {
             throw new IOException("Invalid synonymProviderConfigPath: " + synonymProviderConfigPath);
          }
@@ -1949,7 +1950,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    public void setPath(String path)
    {
 
-      this.path = path.replace("${java.io.tmpdir}", System.getProperty("java.io.tmpdir"));
+      this.path = path.replace("${java.io.tmpdir}", PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
 
    }
 
