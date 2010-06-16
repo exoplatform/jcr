@@ -474,15 +474,9 @@
                   <configuration>
                      <tasks>
                         <echo>Creating Access Policy for tests</echo>
-
                         <makeurl file="${settings.localRepository}" property="localRepositoryURL"/>
                         <makeurl file="${project.build.outputDirectory}" property="outputDirectoryURL"/>
                         <makeurl file="${project.build.testOutputDirectory}" property="testOutputDirectoryURL"/>
-
-                        <echo message="Local repository URL:    ${localRepositoryURL}"/>
-                        <echo message="Output directory URL:    ${outputDirectoryURL}"/>
-                        <echo message="Test output directory URL:    ${testOutputDirectoryURL}"/>
- 
                         <copy todir="${project.build.testOutputDirectory}" overwrite="true">
                            <fileset dir="${project.basedir}/src/test/resources/">
                               <include name="test.policy"/>
