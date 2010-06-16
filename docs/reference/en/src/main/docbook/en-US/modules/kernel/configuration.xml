@@ -560,7 +560,7 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
   &lt;/external-component-plugins&gt;</programlisting></para>
 
         <table>
-          <title>Descriptions of the fields of
+          <title>Descriptions of the fields of a
           <envar>PortalContainerDefinition</envar> when it is used to define a
           new portal container</title>
 
@@ -703,7 +703,7 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
         </table>
 
         <table>
-          <title>Descriptions of the fields of
+          <title>Descriptions of the fields of a
           <envar>PortalContainerDefinition</envar> when it is used to define
           the default portal container</title>
 
@@ -999,6 +999,457 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
         level, the value of this variable for a portal container called
         <emphasis>"foo"</emphasis> will be <emphasis>value of the portal
         container "foo"</emphasis>.</para>
+      </section>
+
+      <section>
+        <title>Add dynamically settings and/or dependencies to a
+        <envar>PortalContainer</envar></title>
+
+        <para>It is possible to use <envar>component-plugin</envar> elements
+        in order to dynamically change a PortalContainerDefinition. In the
+        example below, we add the dependency <envar>foo</envar> to the default
+        portal container and to the portal containers called
+        <envar>foo1</envar> and <envar>foo2</envar>:</para>
+
+        <programlisting>&lt;external-component-plugins&gt;
+  &lt;!-- The full qualified name of the PortalContainerConfig --&gt;
+  &lt;target-component&gt;org.exoplatform.container.definition.PortalContainerConfig&lt;/target-component&gt;
+  &lt;component-plugin&gt;
+    &lt;!-- The name of the plugin --&gt;
+    &lt;name&gt;Change PortalContainer Definitions&lt;/name&gt;
+    &lt;!-- The name of the method to call on the PortalContainerConfig in order to register the changes on the PortalContainerDefinitions --&gt;
+    &lt;set-method&gt;registerChangePlugin&lt;/set-method&gt;
+    &lt;!-- The full qualified name of the PortalContainerDefinitionChangePlugin --&gt;
+    &lt;type&gt;org.exoplatform.container.definition.PortalContainerDefinitionChangePlugin&lt;/type&gt;
+    &lt;init-params&gt;
+      &lt;value-param&gt;
+        &lt;name&gt;apply.default&lt;/name&gt;
+        &lt;value&gt;true&lt;/value&gt;
+      &lt;/value-param&gt;
+      &lt;values-param&gt;
+        &lt;name&gt;apply.specific&lt;/name&gt;
+        &lt;value&gt;foo1&lt;/value&gt;
+        &lt;value&gt;foo2&lt;/value&gt;
+      &lt;/values-param&gt;  
+      &lt;object-param&gt;
+        &lt;name&gt;change&lt;/name&gt;
+        &lt;object type="org.exoplatform.container.definition.PortalContainerDefinitionChange$AddDependencies"&gt;
+          &lt;!-- The list of name of the dependencies to add --&gt;
+          &lt;field name="dependencies"&gt;
+            &lt;collection type="java.util.ArrayList"&gt;
+              &lt;value&gt;
+                &lt;string&gt;foo&lt;/string&gt;
+              &lt;/value&gt;
+            &lt;/collection&gt;
+          &lt;/field&gt;
+        &lt;/object&gt;
+      &lt;/object-param&gt;     
+    &lt;/init-params&gt;
+  &lt;/component-plugin&gt;
+&lt;/external-component-plugins&gt;</programlisting>
+
+        <table>
+          <title>Descriptions of the fields of a
+          <envar>PortalContainerDefinitionChangePlugin</envar></title>
+
+          <tgroup cols="2">
+            <tbody>
+              <row>
+                <entry>apply.all</entry>
+
+                <entry>Indicates whether the changes have to be applied to all
+                the portal containers or not. The default value of this field
+                is <envar>false</envar>. This field is a
+                <envar>ValueParam</envar> and is not mandatory.</entry>
+              </row>
+
+              <row>
+                <entry>apply.default</entry>
+
+                <entry>Indicates whether the changes have to be applied to the
+                default portal container or not. The default value of this
+                field is <envar>false</envar>. This field is a
+                <envar>ValueParam</envar> and is not mandatory.</entry>
+              </row>
+
+              <row>
+                <entry>apply.specific</entry>
+
+                <entry>A set of specific portal container names to which we
+                want to apply the changes. This field is a
+                <envar>ValuesParam</envar> and is not mandatory.</entry>
+              </row>
+
+              <row>
+                <entry><envar>Rest of the expected parameters </envar></entry>
+
+                <entry>The rest of the expected paramaters are
+                <envar>ObjectParam</envar> of type
+                <envar>PortalContainerDefinitionChange</envar>. Those
+                parameters are in fact the list of changes that we want to
+                apply to one or several portal containers. If the list of
+                changes is empty, the component plugin will be ignored. The
+                supported implementations of PortalContainerDefinitionChange
+                are described later in this section.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+
+        <para>To identify the portal containers to which the changes have to
+        be applied, we use the follwing algorithm:</para>
+
+        <orderedlist>
+          <listitem>
+            <para>The parameter <envar>apply.all</envar> has been set to
+            <envar>true</envar>. The corresponding changes will be applied to
+            all the portal containers. The other parameters will be
+            ignored.</para>
+          </listitem>
+
+          <listitem>
+            <para>The parameter <envar>apply.default</envar> has been set to
+            <envar>true</envar> and the parameter
+            <envar>apply.specific</envar> is <envar>null</envar>. The
+            corresponding changes will be applied to the default portal
+            container only.</para>
+          </listitem>
+
+          <listitem>
+            <para>The parameter <envar>apply.default</envar> has been set to
+            <envar>true</envar> and the parameter
+            <envar>apply.specific</envar> is not <envar>null</envar>. The
+            corresponding changes will be applied to the default portal
+            container and the given list of specific portal containers.</para>
+          </listitem>
+
+          <listitem>
+            <para>The parameter <envar>apply.default</envar> has been set to
+            <envar>false</envar> or has not been set and the parameter
+            <envar>apply.specific</envar> is <envar>null</envar>. The
+            corresponding changes will be applied to the default portal
+            container only.</para>
+          </listitem>
+
+          <listitem>
+            <para>The parameter <envar>apply.default</envar> has been set to
+            <envar>false</envar> or has not been set and the parameter
+            <envar>apply.specific</envar> is not <envar>null</envar>. The
+            corresponding changes will be applied to the given list of
+            specific portal containers.</para>
+          </listitem>
+        </orderedlist>
+
+        <section>
+          <title>The existing implementations of
+          <envar>PortalContainerDefinitionChange</envar></title>
+
+          <para>The modifications that can be applied to a
+          <envar>PortalContainerDefinition</envar> must be a class of type
+          <envar>PortalContainerDefinitionChange</envar>. The product proposes
+          out of the box some implementations that we describe in the next sub
+          sections. </para>
+
+          <section>
+            <title><envar>AddDependencies</envar></title>
+
+            <para>This modification adds a list of dependencies at the end of
+            the list of dependencies defined into the
+            <envar>PortalContainerDefinition</envar>. The full qualified name
+            is
+            <emphasis>org.exoplatform.container.definition.PortalContainerDefinitionChange$AddDependencies</emphasis>.</para>
+
+            <table>
+              <title>Descriptions of the fields of an
+              <envar>AddDependencies</envar></title>
+
+              <tgroup cols="2">
+                <tbody>
+                  <row>
+                    <entry>dependencies</entry>
+
+                    <entry>A list of <emphasis>String</emphasis> corresponding
+                    to the list of name of the dependencies to add. If the
+                    value of this field is empty, the change will be
+                    ignored.</entry>
+                  </row>
+                </tbody>
+              </tgroup>
+            </table>
+
+            <para>See an example below, that will add <envar>foo</envar> at
+            the end of the dependency list of the default portal
+            container:</para>
+
+            <programlisting>&lt;external-component-plugins&gt;
+  &lt;!-- The full qualified name of the PortalContainerConfig --&gt;
+  &lt;target-component&gt;org.exoplatform.container.definition.PortalContainerConfig&lt;/target-component&gt;
+  &lt;component-plugin&gt;
+    &lt;!-- The name of the plugin --&gt;
+    &lt;name&gt;Change PortalContainer Definitions&lt;/name&gt;
+    &lt;!-- The name of the method to call on the PortalContainerConfig in order to register the changes on the PortalContainerDefinitions --&gt;
+    &lt;set-method&gt;registerChangePlugin&lt;/set-method&gt;
+    &lt;!-- The full qualified name of the PortalContainerDefinitionChangePlugin --&gt;
+    &lt;type&gt;org.exoplatform.container.definition.PortalContainerDefinitionChangePlugin&lt;/type&gt;
+    &lt;init-params&gt;
+      &lt;value-param&gt;
+        &lt;name&gt;apply.default&lt;/name&gt;
+        &lt;value&gt;true&lt;/value&gt;
+      &lt;/value-param&gt;
+      &lt;object-param&gt;
+        &lt;name&gt;change&lt;/name&gt;
+        &lt;object type="org.exoplatform.container.definition.PortalContainerDefinitionChange$AddDependencies"&gt;
+          &lt;!-- The list of name of the dependencies to add --&gt;
+          &lt;field name="dependencies"&gt;
+            &lt;collection type="java.util.ArrayList"&gt;
+              &lt;value&gt;
+                &lt;string&gt;foo&lt;/string&gt;
+              &lt;/value&gt;
+            &lt;/collection&gt;
+          &lt;/field&gt;
+        &lt;/object&gt;
+      &lt;/object-param&gt;     
+    &lt;/init-params&gt;
+  &lt;/component-plugin&gt;
+&lt;/external-component-plugins&gt;</programlisting>
+          </section>
+
+          <section>
+            <title><envar>AddDependenciesBefore</envar></title>
+
+            <para>This modification adds a list of dependencies before a given
+            target dependency defined into the list of dependencies of the
+            <envar>PortalContainerDefinition</envar>. The full qualified name
+            is
+            <emphasis>org.exoplatform.container.definition.PortalContainerDefinitionChange$AddDependenciesBefore</emphasis>.</para>
+
+            <table>
+              <title>Descriptions of the fields of an
+              <envar>AddDependenciesBefore</envar></title>
+
+              <tgroup cols="2">
+                <tbody>
+                  <row>
+                    <entry>dependencies</entry>
+
+                    <entry>A list of <emphasis>String</emphasis> corresponding
+                    to the list of name of the dependencies to add. If the
+                    value of this field is empty, the change will be
+                    ignored.</entry>
+                  </row>
+
+                  <row>
+                    <entry>target</entry>
+
+                    <entry>The name of the dependency before which we would
+                    like to add the new dependencies. If this field is
+                    <envar>null</envar> or the target dependency cannot be
+                    found in the list of dependencies defined into the
+                    <envar>PortalContainerDefinition</envar>, the new
+                    dependencies will be added in first position to the
+                    list.</entry>
+                  </row>
+                </tbody>
+              </tgroup>
+            </table>
+
+            <para>See an example below, that will add <envar>foo</envar>
+            before <envar>foo2</envar> in the dependency list of the default
+            portal container:</para>
+
+            <programlisting>&lt;external-component-plugins&gt;
+  &lt;!-- The full qualified name of the PortalContainerConfig --&gt;
+  &lt;target-component&gt;org.exoplatform.container.definition.PortalContainerConfig&lt;/target-component&gt;
+  &lt;component-plugin&gt;
+    &lt;!-- The name of the plugin --&gt;
+    &lt;name&gt;Change PortalContainer Definitions&lt;/name&gt;
+    &lt;!-- The name of the method to call on the PortalContainerConfig in order to register the changes on the PortalContainerDefinitions --&gt;
+    &lt;set-method&gt;registerChangePlugin&lt;/set-method&gt;
+    &lt;!-- The full qualified name of the PortalContainerDefinitionChangePlugin --&gt;
+    &lt;type&gt;org.exoplatform.container.definition.PortalContainerDefinitionChangePlugin&lt;/type&gt;
+    &lt;init-params&gt;
+      &lt;value-param&gt;
+        &lt;name&gt;apply.default&lt;/name&gt;
+        &lt;value&gt;true&lt;/value&gt;
+      &lt;/value-param&gt;
+      &lt;object-param&gt;
+        &lt;name&gt;change&lt;/name&gt;
+        &lt;object type="org.exoplatform.container.definition.PortalContainerDefinitionChange$AddDependenciesBefore"&gt;
+          &lt;!-- The list of name of the dependencies to add --&gt;
+          &lt;field name="dependencies"&gt;
+            &lt;collection type="java.util.ArrayList"&gt;
+              &lt;value&gt;
+                &lt;string&gt;foo&lt;/string&gt;
+              &lt;/value&gt;
+            &lt;/collection&gt;
+          &lt;/field&gt;
+          &lt;!-- The name of the target dependency --&gt;
+          &lt;field name="target"&gt;
+            &lt;string&gt;foo2&lt;/string&gt;
+          &lt;/field&gt;
+        &lt;/object&gt;
+      &lt;/object-param&gt;     
+    &lt;/init-params&gt;
+  &lt;/component-plugin&gt;
+&lt;/external-component-plugins&gt;</programlisting>
+          </section>
+
+          <section>
+            <title><envar>AddDependenciesAfter</envar></title>
+
+            <para>This modification adds a list of dependencies before a given
+            target dependency defined into the list of dependencies of the
+            <envar>PortalContainerDefinition</envar>. The full qualified name
+            is
+            <emphasis>org.exoplatform.container.definition.PortalContainerDefinitionChange$AddDependenciesAfter</emphasis>.</para>
+
+            <table>
+              <title>Descriptions of the fields of an
+              <envar>AddDependenciesAfter</envar></title>
+
+              <tgroup cols="2">
+                <tbody>
+                  <row>
+                    <entry>dependencies</entry>
+
+                    <entry>A list of <emphasis>String</emphasis> corresponding
+                    to the list of name of the dependencies to add. If the
+                    value of this field is empty, the change will be
+                    ignored.</entry>
+                  </row>
+
+                  <row>
+                    <entry>target</entry>
+
+                    <entry>The name of the dependency after which we would
+                    like to add the new dependencies. If this field is
+                    <envar>null</envar> or the target dependency cannot be
+                    found in the list of dependencies defined into the
+                    <envar>PortalContainerDefinition</envar>, the new
+                    dependencies will be added in last position to the
+                    list.</entry>
+                  </row>
+                </tbody>
+              </tgroup>
+            </table>
+
+            <para>See an example below, that will add <envar>foo</envar> after
+            <envar>foo2</envar> in the dependency list of the default portal
+            container:</para>
+
+            <programlisting>&lt;external-component-plugins&gt;
+  &lt;!-- The full qualified name of the PortalContainerConfig --&gt;
+  &lt;target-component&gt;org.exoplatform.container.definition.PortalContainerConfig&lt;/target-component&gt;
+  &lt;component-plugin&gt;
+    &lt;!-- The name of the plugin --&gt;
+    &lt;name&gt;Change PortalContainer Definitions&lt;/name&gt;
+    &lt;!-- The name of the method to call on the PortalContainerConfig in order to register the changes on the PortalContainerDefinitions --&gt;
+    &lt;set-method&gt;registerChangePlugin&lt;/set-method&gt;
+    &lt;!-- The full qualified name of the PortalContainerDefinitionChangePlugin --&gt;
+    &lt;type&gt;org.exoplatform.container.definition.PortalContainerDefinitionChangePlugin&lt;/type&gt;
+    &lt;init-params&gt;
+      &lt;value-param&gt;
+        &lt;name&gt;apply.default&lt;/name&gt;
+        &lt;value&gt;true&lt;/value&gt;
+      &lt;/value-param&gt;
+      &lt;object-param&gt;
+        &lt;name&gt;change&lt;/name&gt;
+        &lt;object type="org.exoplatform.container.definition.PortalContainerDefinitionChange$AddDependenciesAfter"&gt;
+          &lt;!-- The list of name of the dependencies to add --&gt;
+          &lt;field name="dependencies"&gt;
+            &lt;collection type="java.util.ArrayList"&gt;
+              &lt;value&gt;
+                &lt;string&gt;foo&lt;/string&gt;
+              &lt;/value&gt;
+            &lt;/collection&gt;
+          &lt;/field&gt;
+          &lt;!-- The name of the target dependency --&gt;
+          &lt;field name="target"&gt;
+            &lt;string&gt;foo2&lt;/string&gt;
+          &lt;/field&gt;
+        &lt;/object&gt;
+      &lt;/object-param&gt;     
+    &lt;/init-params&gt;
+  &lt;/component-plugin&gt;
+&lt;/external-component-plugins&gt;</programlisting>
+          </section>
+
+          <section>
+            <title><envar>AddSettings</envar></title>
+
+            <para>This modification adds new settings to a
+            <envar>PortalContainerDefinition</envar>. The full qualified name
+            is
+            <emphasis>org.exoplatform.container.definition.PortalContainerDefinitionChange$AddSettings</emphasis>.</para>
+
+            <table>
+              <title>Descriptions of the fields of an
+              <envar>AddSettings</envar></title>
+
+              <tgroup cols="2">
+                <tbody>
+                  <row>
+                    <entry>settings</entry>
+
+                    <entry>A map of <emphasis>&lt;String,
+                    Object&gt;</emphasis> corresponding to the settings to
+                    add. If the value of this field is empty, the change will
+                    be ignored.</entry>
+                  </row>
+                </tbody>
+              </tgroup>
+            </table>
+
+            <para>See an example below, that will add the settings
+            <envar>string</envar> and <envar>stringX</envar> to the settings
+            of the default portal container:</para>
+
+            <programlisting>&lt;external-component-plugins&gt;
+  &lt;!-- The full qualified name of the PortalContainerConfig --&gt;
+  &lt;target-component&gt;org.exoplatform.container.definition.PortalContainerConfig&lt;/target-component&gt;
+  &lt;component-plugin&gt;
+    &lt;!-- The name of the plugin --&gt;
+    &lt;name&gt;Change PortalContainer Definitions&lt;/name&gt;
+    &lt;!-- The name of the method to call on the PortalContainerConfig in order to register the changes on the PortalContainerDefinitions --&gt;
+    &lt;set-method&gt;registerChangePlugin&lt;/set-method&gt;
+    &lt;!-- The full qualified name of the PortalContainerDefinitionChangePlugin --&gt;
+    &lt;type&gt;org.exoplatform.container.definition.PortalContainerDefinitionChangePlugin&lt;/type&gt;
+    &lt;init-params&gt;
+      &lt;value-param&gt;
+        &lt;name&gt;apply.default&lt;/name&gt;
+        &lt;value&gt;true&lt;/value&gt;
+      &lt;/value-param&gt;
+      &lt;object-param&gt;
+        &lt;name&gt;change&lt;/name&gt;
+        &lt;object type="org.exoplatform.container.definition.PortalContainerDefinitionChange$AddSettings"&gt;
+          &lt;!-- The settings to add to the to the portal containers --&gt;
+          &lt;field name="settings"&gt;
+            &lt;map type="java.util.HashMap"&gt;
+              &lt;entry&gt;
+                &lt;key&gt;
+                  &lt;string&gt;string&lt;/string&gt;
+                &lt;/key&gt;
+                &lt;value&gt;
+                  &lt;string&gt;value1&lt;/string&gt;
+                &lt;/value&gt;
+              &lt;/entry&gt;
+              &lt;entry&gt;
+                &lt;key&gt;
+                  &lt;string&gt;stringX&lt;/string&gt;
+                &lt;/key&gt;
+                &lt;value&gt;
+                  &lt;string&gt;value1&lt;/string&gt;
+                &lt;/value&gt;
+              &lt;/entry&gt;
+            &lt;/map&gt;
+          &lt;/field&gt;
+        &lt;/object&gt;
+      &lt;/object-param&gt;     
+    &lt;/init-params&gt;
+  &lt;/component-plugin&gt;
+&lt;/external-component-plugins&gt;</programlisting>
+          </section>
+        </section>
       </section>
     </section>
   </section>
