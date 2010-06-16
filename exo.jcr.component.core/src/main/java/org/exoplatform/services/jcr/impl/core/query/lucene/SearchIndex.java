@@ -1426,39 +1426,45 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          {
 
             // File config = PrivilegedFileHelper.file(indexingConfigPath);
-
-            InputStream is = SearchIndex.class.getResourceAsStream(indexingConfigPath);
-            if (is == null)
+            SecurityHelper.doPriviledgedAction(new PrivilegedAction<Object>()
             {
-               try
+               public Object run()
                {
-                  is = cfm.getInputStream(indexingConfigPath);
-               }
-               catch (Exception e1)
-               {
-                  log.warn("Unable to load configuration " + indexingConfigPath);
-               }
-            }
+                  InputStream is = SearchIndex.class.getResourceAsStream(indexingConfigPath);
+                  if (is == null)
+                  {
+                     try
+                     {
+                        is = cfm.getInputStream(indexingConfigPath);
+                     }
+                     catch (Exception e1)
+                     {
+                        log.warn("Unable to load configuration " + indexingConfigPath);
+                     }
+                  }
 
-            try
-            {
-               DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-               DocumentBuilder builder = factory.newDocumentBuilder();
-               builder.setEntityResolver(new IndexingConfigurationEntityResolver());
-               indexingConfiguration = builder.parse(is).getDocumentElement();
-            }
-            catch (ParserConfigurationException e)
-            {
-               log.warn("Unable to create XML parser", e);
-            }
-            catch (IOException e)
-            {
-               log.warn("Exception parsing " + indexingConfigPath, e);
-            }
-            catch (SAXException e)
-            {
-               log.warn("Exception parsing " + indexingConfigPath, e);
-            }
+                  try
+                  {
+                     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                     DocumentBuilder builder = factory.newDocumentBuilder();
+                     builder.setEntityResolver(new IndexingConfigurationEntityResolver());
+                     indexingConfiguration = builder.parse(is).getDocumentElement();
+                  }
+                  catch (ParserConfigurationException e)
+                  {
+                     log.warn("Unable to create XML parser", e);
+                  }
+                  catch (IOException e)
+                  {
+                     log.warn("Exception parsing " + indexingConfigPath, e);
+                  }
+                  catch (SAXException e)
+                  {
+                     log.warn("Exception parsing " + indexingConfigPath, e);
+                  }
+                  return null;
+               }
+            });
          }
       }
       return indexingConfiguration;
@@ -1662,10 +1668,9 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     *            aggregate roots are collected in this map. Key=UUID,
     *            value=NodeState.
     */
-   protected void retrieveAggregateRoot(Set<String> removedNodeIds, Map<String, NodeData> map)
+   protected void retrieveAggregateRoot(final Set<String> removedNodeIds, final Map<String, NodeData> map)
 
    {
-
       if (indexingConfig != null)
       {
          AggregateRule[] aggregateRules = indexingConfig.getAggregateRules();
@@ -1673,55 +1678,62 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          {
             return;
          }
-         int found = 0;
          long time = System.currentTimeMillis();
-         try
+         int found = SecurityHelper.doPriviledgedAction(new PrivilegedAction<Integer>()
          {
-            CachingMultiIndexReader reader = index.getIndexReader();
-            try
+            public Integer run()
             {
-               Term aggregateUUIDs = new Term(FieldNames.AGGREGATED_NODE_UUID, "");
-               TermDocs tDocs = reader.termDocs();
+               int found = 0;
                try
                {
-                  ItemDataConsumer ism = getContext().getItemStateManager();
-                  for (Iterator<String> it = removedNodeIds.iterator(); it.hasNext();)
+                  CachingMultiIndexReader reader = index.getIndexReader();
+                  try
                   {
-                     String id = it.next();
-                     aggregateUUIDs = aggregateUUIDs.createTerm(id);
-                     tDocs.seek(aggregateUUIDs);
-                     while (tDocs.next())
+                     Term aggregateUUIDs = new Term(FieldNames.AGGREGATED_NODE_UUID, "");
+                     TermDocs tDocs = reader.termDocs();
+                     try
                      {
-                        Document doc = reader.document(tDocs.doc(), FieldSelectors.UUID);
-                        String uuid = doc.get(FieldNames.UUID);
-                        ItemData itd = ism.getItemData(uuid);
-                        if (itd == null)
+                        ItemDataConsumer ism = getContext().getItemStateManager();
+                        for (Iterator<String> it = removedNodeIds.iterator(); it.hasNext();)
                         {
-                           continue;
+                           String id = it.next();
+                           aggregateUUIDs = aggregateUUIDs.createTerm(id);
+                           tDocs.seek(aggregateUUIDs);
+                           while (tDocs.next())
+                           {
+                              Document doc = reader.document(tDocs.doc(), FieldSelectors.UUID);
+                              String uuid = doc.get(FieldNames.UUID);
+                              ItemData itd = ism.getItemData(uuid);
+                              if (itd == null)
+                              {
+                                 continue;
+                              }
+                              if (!itd.isNode())
+                              {
+                                 throw new RepositoryException("Item with id:" + uuid + " is not a node");
+                              }
+                              map.put(uuid, (NodeData)itd);
+                              found++;
+                           }
                         }
-                        if (!itd.isNode())
-                        {
-                           throw new RepositoryException("Item with id:" + uuid + " is not a node");
-                        }
-                        map.put(uuid, (NodeData)itd);
-                        found++;
+                     }
+                     finally
+                     {
+                        tDocs.close();
                      }
                   }
+                  finally
+                  {
+                     reader.release();
+                  }
                }
-               finally
+               catch (Exception e)
                {
-                  tDocs.close();
+                  log.warn("Exception while retrieving aggregate roots", e);
                }
+               return found;
             }
-            finally
-            {
-               reader.release();
-            }
-         }
-         catch (Exception e)
-         {
-            log.warn("Exception while retrieving aggregate roots", e);
-         }
+         });
          time = System.currentTimeMillis() - time;
          log.debug("Retrieved {} aggregate roots in {} ms.", new Integer(found), new Long(time));
       }
