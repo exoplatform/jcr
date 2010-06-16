@@ -32,8 +32,6 @@ import java.security.PrivilegedExceptionAction;
  */
 public class TestSecurityRepositoryManagment extends BaseSecurityTest
 {
-   private static String testWorkspaceName = "testWorkspace";
-
    public void testGetSystemSessionSuccess()
    {
       PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
@@ -260,7 +258,7 @@ public class TestSecurityRepositoryManagment extends BaseSecurityTest
       {
          public Object run() throws Exception
          {
-            repository.createWorkspace(testWorkspaceName);
+            repository.createWorkspace("testCreateWorkspaceFail");
             return null;
          }
 
@@ -281,13 +279,27 @@ public class TestSecurityRepositoryManagment extends BaseSecurityTest
       }
    }
 
-   public void testInternalRemoveWorkspaceSuccess()
+   public void testInternalRemoveWorkspaceSuccess() throws Exception
    {
+      WorkspaceEntry defConfig =
+         (WorkspaceEntry)session.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
+
+      WorkspaceEntry wsConfig = new WorkspaceEntry();
+      wsConfig.setName("testInternalRemoveWorkspaceSuccess");
+
+      wsConfig.setAccessManager(defConfig.getAccessManager());
+      wsConfig.setCache(defConfig.getCache());
+      wsConfig.setContainer(defConfig.getContainer());
+      wsConfig.setLockManager(defConfig.getLockManager());
+
+      repository.configWorkspace(wsConfig);
+      repository.createWorkspace("testInternalRemoveWorkspaceSuccess");
+
       PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
       {
          public Object run() throws Exception
          {
-            repository.internalRemoveWorkspace(testWorkspaceName);
+            repository.internalRemoveWorkspace("testInternalRemoveWorkspaceSuccess");
             return null;
          }
 
