@@ -150,7 +150,7 @@ public class TestSecurityRepositoryManagment extends BaseSecurityTest
                (WorkspaceEntry)session.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
 
             WorkspaceEntry wsConfig = new WorkspaceEntry();
-            wsConfig.setName(testWorkspaceName);
+            wsConfig.setName("testConfigWorkspaceSuccess");
 
             wsConfig.setAccessManager(defConfig.getAccessManager());
             wsConfig.setCache(defConfig.getCache());
@@ -187,7 +187,7 @@ public class TestSecurityRepositoryManagment extends BaseSecurityTest
                (WorkspaceEntry)session.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
 
             WorkspaceEntry wsConfig = new WorkspaceEntry();
-            wsConfig.setName(testWorkspaceName);
+            wsConfig.setName("testConfigWorkspaceFail");
 
             wsConfig.setAccessManager(defConfig.getAccessManager());
             wsConfig.setCache(defConfig.getCache());
@@ -215,13 +215,26 @@ public class TestSecurityRepositoryManagment extends BaseSecurityTest
       }
    }
 
-   public void testCreateWorkspaceSuccess()
+   public void testCreateWorkspaceSuccess() throws Exception
    {
+      WorkspaceEntry defConfig =
+         (WorkspaceEntry)session.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
+
+      WorkspaceEntry wsConfig = new WorkspaceEntry();
+      wsConfig.setName("testCreateWorkspaceSuccess");
+
+      wsConfig.setAccessManager(defConfig.getAccessManager());
+      wsConfig.setCache(defConfig.getCache());
+      wsConfig.setContainer(defConfig.getContainer());
+      wsConfig.setLockManager(defConfig.getLockManager());
+
+      repository.configWorkspace(wsConfig);
+
       PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
       {
          public Object run() throws Exception
          {
-            repository.createWorkspace(testWorkspaceName);
+            repository.createWorkspace("testCreateWorkspaceSuccess");
             return null;
          }
 
@@ -300,7 +313,7 @@ public class TestSecurityRepositoryManagment extends BaseSecurityTest
       {
          public Object run() throws Exception
          {
-            repository.internalRemoveWorkspace(testWorkspaceName);
+            repository.internalRemoveWorkspace("testInternalRemoveWorkspaceFail");
             return null;
          }
 
