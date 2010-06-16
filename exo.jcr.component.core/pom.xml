@@ -379,7 +379,7 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
-               <argLine>-Djava.security.manager=org.exoplatform.commons.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
+               <argLine>-Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
                <systemProperties>
                   <property>
                      <name>jcr.test.configuration.file</name>
@@ -575,7 +575,7 @@
                   <artifactId>maven-surefire-plugin</artifactId>
                   <configuration>
                   <!-- TAKE CARE TO UPDATE ALSO run-all PROFILE -->
-                     <argLine>-Djava.security.manager=org.exoplatform.commons.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
+                     <argLine>-Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
                      <systemProperties>
                         <property>
                            <name>jcr.test.configuration.file</name>
@@ -648,7 +648,7 @@
                   <artifactId>maven-surefire-plugin</artifactId>
                   <configuration>
                      <!-- TAKE CARE TO UPDATE ALSO run-tck PROFILE -->
-                     <argLine>-Djava.security.manager=org.exoplatform.commons.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
+                     <argLine>-Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
                      <systemProperties>
                         <property>
                            <name>jcr.test.configuration.file</name>
