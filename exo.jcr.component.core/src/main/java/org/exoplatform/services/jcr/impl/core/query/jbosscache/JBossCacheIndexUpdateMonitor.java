@@ -24,6 +24,7 @@ import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeListener;
 import org.exoplatform.services.jcr.impl.core.query.lucene.IndexInfos;
 import org.exoplatform.services.jcr.impl.core.query.lucene.IndexUpdateMonitor;
 import org.exoplatform.services.jcr.impl.core.query.lucene.IndexUpdateMonitorListener;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedCacheHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.jboss.cache.Cache;
@@ -156,7 +157,7 @@ public class JBossCacheIndexUpdateMonitor implements IndexUpdateMonitor, Indexer
          localUpdateInProgress = updateInProgress;
          if (persitentUpdate)
          {
-            cache.put(parametersFqn, PARAMETER_NAME, new Boolean(updateInProgress));
+            PrivilegedCacheHelper.put(cache, parametersFqn, PARAMETER_NAME, new Boolean(updateInProgress));
 
          }
          for (IndexUpdateMonitorListener listener : listeners)

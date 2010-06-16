@@ -49,6 +49,7 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistent
 import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedCacheHelper;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory;
 import org.exoplatform.services.jcr.observation.ExtendedEvent;
 import org.exoplatform.services.log.ExoLogger;
@@ -71,7 +72,6 @@ import java.math.BigInteger;
 import java.security.AccessController;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
@@ -258,28 +258,12 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
 
          cache = factory.createCache(config.getLockManager());
 
-         PrivilegedAction<Object> action = new PrivilegedAction<Object>()
-         {
-            public Object run()
-            {
-               cache.create();
-               return null;
-            }
-         };
-         AccessController.doPrivileged(action);
+         PrivilegedCacheHelper.create(cache);
 
          // Add the cache loader needed to prevent TimeoutException
          addCacheLoader();
 
-         action = new PrivilegedAction<Object>()
-         {
-            public Object run()
-            {
-               cache.start();
-               return null;
-            }
-         };
-         AccessController.doPrivileged(action);
+         PrivilegedCacheHelper.start(cache);
 
          createStructuredNode(lockRoot);
 
@@ -768,7 +752,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
       public Object execute(LockData newLockData) throws LockException
       {
          Fqn<String> fqn = makeLockFqn(newLockData.getNodeIdentifier());
-         Object oldValue = cache.put(fqn, LOCK_DATA, newLockData);
+         Object oldValue = PrivilegedCacheHelper.put(cache, fqn, LOCK_DATA, newLockData);
          if (oldValue == null)
          {
             throw new LockException("Can't refresh lock for node " + newLockData.getNodeIdentifier()
@@ -830,15 +814,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
       lockRemover.interrupt();
       sessionLockManagers.clear();
 
-      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
-      {
-         public Object run()
-         {
-            cache.stop();
-            return null;
-         }
-      };
-      AccessController.doPrivileged(action);
+      PrivilegedCacheHelper.stop(cache);
    }
 
    /**

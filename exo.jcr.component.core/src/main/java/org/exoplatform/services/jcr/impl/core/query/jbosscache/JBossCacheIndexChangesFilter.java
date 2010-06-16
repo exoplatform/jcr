@@ -28,6 +28,7 @@ import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
 import org.exoplatform.services.jcr.impl.core.query.IndexingTree;
 import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
 import org.exoplatform.services.jcr.impl.core.query.SearchManager;
+import org.exoplatform.services.jcr.impl.util.io.PrivilegedCacheHelper;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
@@ -90,8 +91,7 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
 
       // try to get pushState parameters, since they are set programmatically only
       Boolean pushState = config.getParameterBoolean(QueryHandlerParams.PARAM_JBOSSCACHE_PUSHSTATE, false);
-      Long pushStateTimeOut =
-         config.getParameterTime(QueryHandlerParams.PARAM_JBOSSCACHE_PUSHSTATE_TIMEOUT, 10000L);
+      Long pushStateTimeOut = config.getParameterTime(QueryHandlerParams.PARAM_JBOSSCACHE_PUSHSTATE_TIMEOUT, 10000L);
 
       singletonStoreProperties.setProperty("pushStateWhenCoordinator", pushState.toString());
       singletonStoreProperties.setProperty("pushStateWhenCoordinatorTimeout", pushStateTimeOut.toString());
@@ -115,8 +115,10 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
       cacheLoaderConfig.addIndividualCacheLoaderConfig(individualCacheLoaderConfig);
       // insert CacheLoaderConfig
       this.cache.getConfiguration().setCacheLoaderConfig(cacheLoaderConfig);
-      this.cache.create();
-      this.cache.start();
+
+      PrivilegedCacheHelper.create(cache);
+      PrivilegedCacheHelper.start(cache);
+
       // start will invoke cache listener which will notify handler that mode is changed
       IndexerIoMode ioMode =
          ((CacheSPI)cache).getRPCManager().isCoordinator() ? IndexerIoMode.READ_WRITE : IndexerIoMode.READ_ONLY;
@@ -149,8 +151,8 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
       String id = IdGenerator.generate();
       try
       {
-         cache.put(id, LISTWRAPPER, new ChangesFilterListsWrapper(addedNodes, removedNodes, parentAddedNodes,
-            parentRemovedNodes));
+         PrivilegedCacheHelper.put(cache, id, LISTWRAPPER, new ChangesFilterListsWrapper(addedNodes, removedNodes,
+            parentAddedNodes, parentRemovedNodes));
       }
       catch (CacheException e)
       {
