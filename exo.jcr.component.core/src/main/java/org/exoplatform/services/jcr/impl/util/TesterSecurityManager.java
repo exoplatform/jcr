@@ -51,11 +51,10 @@ public class TesterSecurityManager extends SecurityManager
             {
                String className = traceElements[i].getClassName();
                String fileName = traceElements[i].getFileName();
-               String methodName = traceElements[i].getMethodName();
 
                if (className.startsWith("org.exoplatform"))
                {
-                  // TesterSecurityManager is not a part of source code
+                  // TesterSecurityManager should not be a part of source code
                   if (fileName.equals("TesterSecurityManager.java"))
                   {
                      continue;
@@ -79,8 +78,8 @@ public class TesterSecurityManager extends SecurityManager
                }
                else if (className.startsWith("org.apache.jackrabbit.test"))
                {
-                  // hide Exception during JCR initialization 
-                  if (fileName.equals("RepositoryHelper.java") && methodName.equals("getRepository"))
+                  // Allow access to instances
+                  if (fileName.equals("RepositoryHelper.java"))
                   {
                      return;
                   }
@@ -88,10 +87,6 @@ public class TesterSecurityManager extends SecurityManager
                   if (fileName.endsWith("Test.java") || fileName.equals("JCRTestResult.java"))
                   {
                      testCode = true;
-                  }
-                  else
-                  {
-                     srcCode = true;
                   }
                }
                else if (className.startsWith("org.slf4j.impl.Log4jLoggerFactory"))
