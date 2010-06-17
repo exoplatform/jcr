@@ -1,0 +1,111 @@
+<?xml version='1.0' ?><!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+	<chapter id="HowtoimplementWorkspaceDataContainer">
+		<title>How-to implement Workspace Data Container</title>
+		<section id="ShortintrointoWorkspacedatacontainerimplementationpractices">
+			<title>Short intro into Workspace data container implementation practices:</title>
+			<orderedlist>
+				<listitem>
+					<para>Read a bit about the <link linkend="JCRWorkspaceDataContainerarchitecturecontract">contract</link>.</para>
+				</listitem>
+				<listitem>
+					<para>Start new implementation project pom.xml with org.exoplatform.jcr parent. (optional,  but will makes the development easy)</para>
+				</listitem>
+				<listitem>
+					<para>Update sources of JCR Core and read JavaDoc on 
+						<emphasis role="bold">org.exoplatform.services.jcr.storage.WorkspaceDataContainer</emphasis> and 
+						<emphasis role="bold">org.exoplatform.services.jcr.storage.WorkspaceStorageConnection</emphasis> interfaces. This two are main part for the implemenation.
+					</para>
+				</listitem>
+				<listitem>
+					<para>Look at 
+						<emphasis role="bold">org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager</emphasis> sourcecode,  check how data meneger uses container and its connections (see in save() method)
+					</para>
+				</listitem>
+				<listitem>
+					<para>Create 
+						<emphasis role="bold">WorkspaceStorageConnection</emphasis> dummy implementation class. It's freeform class,  but  to be close to the eXo JCR,  check how implemented JDBC or SimpleDB containers (
+						<emphasis role="bold">org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection</emphasis> and 
+						<emphasis role="bold">org.exoplatform.services.jcr.aws.storage.sdb.SDBWorkspaceStorageConnection</emphasis>). Take in account usage of 
+						<emphasis role="bold">ValueStoragePluginProvider</emphasis> in both implementations.Value storage is an useful option for production versions. But leave it to the end of implementation work.
+					</para>
+				</listitem>
+				<listitem>
+					<para>Create the connection implementation unit tests to play TTD. (optional,  but takes many benefits for the process)</para>
+				</listitem>
+				<listitem>
+					<para>Implement CRUD starting from the read to write etc. Test the methods using external to the implementation ways of data read/write in your backend.</para>
+				</listitem>
+				<listitem>
+					<para>When all methods of the connection done start 
+						<emphasis role="bold">WorkspaceDataContainer</emphasis>. Container class very simple,  it's like a factory for the connections only.
+					</para>
+				</listitem>
+				<listitem>
+					<para>Care about container reuseConnection(WorkspaceStorageConnection) method logic. For some backends it cab be same as openConnection(),  but for some others it's important to reuse physical backend connection,  e.g. to be in same transaction - see JDBC container.</para>
+				</listitem>
+				<listitem>
+					<para>It's almost ready for use in data manager. Start another test and go on.</para>
+				</listitem>
+			</orderedlist>
+			<para>When the container will be ready for run as JCR persistence storage (e.g. for this level testing) it should be configured in Repository configuration.</para>
+			<para>Assuming that our new implementation class name is 
+				<emphasis role="bold">org.project.jcr.impl.storage.MyWorkspaceDataContainer</emphasis>.
+			</para>
+			<programlisting>  &lt;repository-service default-repository="repository">
+  &lt;repositories>
+    &lt;repository name="repository" system-workspace="production" default-workspace="production">
+      .............
+      &lt;workspaces>
+        &lt;workspace name="production">
+          &lt;container class="org.project.jcr.impl.storage.MyWorkspaceDataContainer">
+            &lt;properties>
+              &lt;property name="propertyName1" value="propertyValue1" />
+              &lt;property name="propertyName2" value="propertyValue2" />
+              .......
+              &lt;property name="propertyNameN" value="propertyValueN" />
+            &lt;/properties>
+            &lt;value-storages>
+              .......
+            &lt;/value-storages>
+          &lt;/container>
+
+</programlisting>
+			<para>Container can be configured using set properties.</para>
+		</section>
+		<section id="Valuestorageusagenotes">
+			<title>Value storage usage notes:</title>
+			<para>Value storages pluggable to the container but if it used the container implementation should respect set of interfaces and external storage usage principles.</para>
+			<para>If the container have 
+				<emphasis role="bold">ValueStoragePluginProvider</emphasis> (e.g. via constructor) it's just few methods to manipulate external Values data.
+			</para>
+			<programlisting>// get channel for ValueData write (add or update)
+ValueIOChannel channel = valueStorageProvider.getApplicableChannel(data,  i);
+if (channel == null) {
+  // write
+  channel.write(data.getIdentifier(),  vd);
+  // obtain storage id,  id can be used for linkage of external ValueData and PropertyData in main backend
+  String storageId = channel.getStorageId();
+}
+
+....
+
+// delete all Property Values in external storage
+ValueIOChannel channel = valueStorageProvider.getChannel(storageId);
+channel.delete(propertyData.getIdentifier());
+
+....
+
+// read ValueData from external storage
+ValueIOChannel channel = valueStorageProvider.getChannel(storageId);
+ValueData vdata = channel.read(propertyData.getIdentifier(),  orderNumber,  maxBufferSize);
+
+</programlisting>
+			<important>
+				<title>Important</title>
+				<para>After a sequence of write and/or delete operations on the storage channel, the channel should be committed (or rolled back on an error). See 
+					<emphasis role="bold">ValueIOChannel.commit()</emphasis> and 
+					<emphasis role="bold">ValueIOChannel.rollback()</emphasis> and how those methods used in JDBC container.
+				</para>
+			</important>
+		</section>
+	</chapter>

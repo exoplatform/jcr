@@ -56,4 +56,13 @@
 
   <xi:include href="jcr/statistics.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
+
+  <!-- data container configs -->
+
+  <xi:include href="jcr/data-container.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
+  <xi:include href="jcr/data-container-howto.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
 </part>
