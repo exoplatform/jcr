@@ -356,54 +356,7 @@ public class GenericTransactionService implements TransactionService
       public void commit() throws RollbackException, HeuristicMixedException, HeuristicRollbackException,
          SecurityException, IllegalStateException, SystemException
       {
-         PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
-         {
-            public Object run() throws Exception
-            {
-               tm.commit();
-               return null;
-            }
-         };
-         try
-         {
-            AccessController.doPrivileged(action);
-         }
-         catch (PrivilegedActionException pae)
-         {
-            Throwable cause = pae.getCause();
-            if (cause instanceof RollbackException)
-            {
-               throw (RollbackException)cause;
-            }
-            else if (cause instanceof HeuristicMixedException)
-            {
-               throw (HeuristicMixedException)cause;
-            }
-            else if (cause instanceof HeuristicRollbackException)
-            {
-               throw (HeuristicRollbackException)cause;
-            }
-            else if (cause instanceof SecurityException)
-            {
-               throw (SecurityException)cause;
-            }
-            else if (cause instanceof IllegalStateException)
-            {
-               throw (IllegalStateException)cause;
-            }
-            else if (cause instanceof SystemException)
-            {
-               throw (SystemException)cause;
-            }
-            else if (cause instanceof RuntimeException)
-            {
-               throw (RuntimeException)cause;
-            }
-            else
-            {
-               throw new RuntimeException(cause);
-            }
-         }
+         tm.commit();
       }
 
       /**
@@ -435,42 +388,7 @@ public class GenericTransactionService implements TransactionService
        */
       public void rollback() throws IllegalStateException, SecurityException, SystemException
       {
-         PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
-         {
-            public Object run() throws Exception
-            {
-               tm.rollback();
-               return null;
-            }
-         };
-         try
-         {
-            AccessController.doPrivileged(action);
-         }
-         catch (PrivilegedActionException pae)
-         {
-            Throwable cause = pae.getCause();
-            if (cause instanceof SecurityException)
-            {
-               throw (SecurityException)cause;
-            }
-            else if (cause instanceof IllegalStateException)
-            {
-               throw (IllegalStateException)cause;
-            }
-            else if (cause instanceof SystemException)
-            {
-               throw (SystemException)cause;
-            }
-            else if (cause instanceof RuntimeException)
-            {
-               throw (RuntimeException)cause;
-            }
-            else
-            {
-               throw new RuntimeException(cause);
-            }
-         }
+         tm.rollback();
       }
 
       /**

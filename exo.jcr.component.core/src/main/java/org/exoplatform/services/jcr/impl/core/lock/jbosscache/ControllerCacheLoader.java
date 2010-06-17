@@ -29,6 +29,9 @@ import org.jboss.cache.lock.TimeoutException;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.List;
 import java.util.Map;
@@ -55,17 +58,17 @@ public class ControllerCacheLoader implements CacheLoader
     * The nested cache loader
     */
    private final CacheLoader cl;
-   
+
    /**
     * The related cache
     */
    private CacheSPI cache;
-   
+
    /**
     * The configuration of the current cache loader
     */
    private IndividualCacheLoaderConfig config;
-   
+
    /**
     * The default constructor
     * @param cl the cache loader that will be managed by the controller
@@ -73,14 +76,38 @@ public class ControllerCacheLoader implements CacheLoader
    public ControllerCacheLoader(CacheLoader cl)
    {
       this.cl = cl;
-   }   
+   }
 
    /**
     * @see org.jboss.cache.loader.CacheLoader#commit(java.lang.Object)
     */
-   public void commit(Object tx) throws Exception
+   public void commit(final Object tx) throws Exception
    {
-      cl.commit(tx);
+      PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
+      {
+         public Object run() throws Exception
+         {
+            cl.commit(tx);
+            return null;
+         }
+      };
+      try
+      {
+         AccessController.doPrivileged(action);
+      }
+      catch (PrivilegedActionException pae)
+      {
+         Throwable cause = pae.getCause();
+
+         if (cause instanceof Exception)
+         {
+            throw (Exception)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
+      }
    }
 
    /**
@@ -96,13 +123,13 @@ public class ControllerCacheLoader implements CacheLoader
          if (node != null)
          {
             // The node already exists in the local cache, so we return true
-            return true;            
+            return true;
          }
          else
          {
             // The node doesn't exist in the local cache, so we need to check through the nested
             // cache loader
-            return cl.exists(name);         
+            return cl.exists(name);
          }
       }
       // All the data is loaded at startup, so no need to call the nested cache loader for another
@@ -123,13 +150,13 @@ public class ControllerCacheLoader implements CacheLoader
          if (node != null)
          {
             // The node already exists in the local cache, so we return the corresponding data
-            return node.getDataDirect();            
+            return node.getDataDirect();
          }
          else
          {
             // The node doesn't exist in the local cache, so we need to check through the nested
             // cache loader            
-            return cl.get(name);         
+            return cl.get(name);
          }
       }
       // All the data is loaded at startup, so no need to call the nested cache loader for another
@@ -145,11 +172,11 @@ public class ControllerCacheLoader implements CacheLoader
       if (cache.getCacheStatus() == CacheStatus.STARTING)
       {
          // Try to get the list of children name from the nested cache loader
-         return cl.getChildrenNames(fqn);         
+         return cl.getChildrenNames(fqn);
       }
       // All the data is loaded at startup, so no need to call the nested cache loader for another
       // cache status other than CacheStatus.STARTING
-     return null;
+      return null;
    }
 
    /**
@@ -179,9 +206,34 @@ public class ControllerCacheLoader implements CacheLoader
    /**
     * @see org.jboss.cache.loader.CacheLoader#prepare(java.lang.Object, java.util.List, boolean)
     */
-   public void prepare(Object tx, List<Modification> modifications, boolean onePhase) throws Exception
+   public void prepare(final Object tx, final List<Modification> modifications, final boolean onePhase)
+      throws Exception
    {
-      cl.prepare(tx, modifications, onePhase);
+      PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
+      {
+         public Object run() throws Exception
+         {
+            cl.prepare(tx, modifications, onePhase);
+            return null;
+         }
+      };
+      try
+      {
+         AccessController.doPrivileged(action);
+      }
+      catch (PrivilegedActionException pae)
+      {
+         Throwable cause = pae.getCause();
+
+         if (cause instanceof Exception)
+         {
+            throw (Exception)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
+      }
    }
 
    /**
@@ -205,14 +257,14 @@ public class ControllerCacheLoader implements CacheLoader
     */
    public Object put(final Fqn name, final Object key, final Object value) throws Exception
    {
-      
+
       return SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      {
+         public Object run() throws Exception
          {
-            public Object run() throws Exception
-            {
-               return cl.put(name, key, value);
-            }
-         });
+            return cl.put(name, key, value);
+         }
+      });
    }
 
    /**
@@ -242,9 +294,17 @@ public class ControllerCacheLoader implements CacheLoader
    /**
     * @see org.jboss.cache.loader.CacheLoader#rollback(java.lang.Object)
     */
-   public void rollback(Object tx)
+   public void rollback(final Object tx)
    {
-      cl.rollback(tx);
+      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
+      {
+         public Object run()
+         {
+            cl.rollback(tx);
+            return null;
+         }
+      };
+      AccessController.doPrivileged(action);
    }
 
    /**

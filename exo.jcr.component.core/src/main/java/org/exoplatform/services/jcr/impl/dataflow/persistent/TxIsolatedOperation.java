@@ -4,6 +4,10 @@ import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
+
 import javax.jcr.InvalidItemStateException;
 import javax.jcr.ItemExistsException;
 import javax.jcr.RepositoryException;
@@ -49,12 +53,94 @@ public abstract class TxIsolatedOperation
    protected void commitTx() throws SecurityException, IllegalStateException, RollbackException,
       HeuristicMixedException, HeuristicRollbackException, SystemException
    {
-      txManager.commit(); // commit global tx
+      PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
+      {
+         public Object run() throws Exception
+         {
+            txManager.commit(); // commit global tx
+            return null;
+         }
+      };
+      try
+      {
+         AccessController.doPrivileged(action);
+      }
+      catch (PrivilegedActionException pae)
+      {
+         Throwable cause = pae.getCause();
+         if (cause instanceof RollbackException)
+         {
+            throw (RollbackException)cause;
+         }
+         else if (cause instanceof HeuristicMixedException)
+         {
+            throw (HeuristicMixedException)cause;
+         }
+         else if (cause instanceof HeuristicRollbackException)
+         {
+            throw (HeuristicRollbackException)cause;
+         }
+         else if (cause instanceof SecurityException)
+         {
+            throw (SecurityException)cause;
+         }
+         else if (cause instanceof IllegalStateException)
+         {
+            throw (IllegalStateException)cause;
+         }
+         else if (cause instanceof SystemException)
+         {
+            throw (SystemException)cause;
+         }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
+      }
    }
 
    protected void rollbackTx() throws NotSupportedException, SystemException
    {
-      txManager.rollback(); // rollback global tx
+      PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
+      {
+         public Object run() throws Exception
+         {
+            txManager.rollback(); // rollback global tx
+            return null;
+         }
+      };
+      try
+      {
+         AccessController.doPrivileged(action);
+      }
+      catch (PrivilegedActionException pae)
+      {
+         Throwable cause = pae.getCause();
+         if (cause instanceof SecurityException)
+         {
+            throw (SecurityException)cause;
+         }
+         else if (cause instanceof IllegalStateException)
+         {
+            throw (IllegalStateException)cause;
+         }
+         else if (cause instanceof SystemException)
+         {
+            throw (SystemException)cause;
+         }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
+      }
    }
 
    /**
