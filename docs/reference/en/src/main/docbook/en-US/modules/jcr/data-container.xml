@@ -1,0 +1,391 @@
+<?xml version='1.0' ?><!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="JCRWorkspaceDataContainerarchitecturecontract">
+   <title>JCR Workspace Data Container (architecture contract)</title>
+   <section id="Goals">
+      <title>Goals</title>
+      <itemizedlist>
+         <listitem>
+            <para>Cover Workspace Data Container implementation requirements</para>
+         </listitem>
+         <listitem>
+            <para>Describe container life cycle</para>
+         </listitem>
+         <listitem>
+            <para>Describe relations between container and high-level DataManagers</para>
+         </listitem>
+      </itemizedlist>
+   </section>
+   <section id="Concepts">
+      <title>Concepts</title>
+      <section id="Containerandconnection">
+         <title>Container and connection</title>
+         <para>Workspace Data Container (container) serves Repository Workspace persistent storage.
+            WorkspacePersistentDataManager (data manager) uses container to perform CRUD operation on the persistent
+            storage.
+            Access to the storage in data manager makes via storage connection obtained from the container (WorkspaceDataContainer
+            interface implemenatiton). Each connection represents a transaction on the storage. Storage Connection
+            (connection) should be an implementation of WorkspaceStorageConnection.</para>
+         <itemizedlist>
+            <listitem>
+               <para>Container acts as a factory of a new storage connections. Usually this method is designed to be
+                  synchronized, to avoid possible concurrent issues.</para>
+            </listitem>
+         </itemizedlist>
+         <programlisting>WorkspaceStorageConnection openConnection() throws RepositoryException;
+</programlisting>
+         <itemizedlist>
+            <listitem>
+               <para>Open read-only WorkspaceStorageConnection. Read-only connections can be potentially a bit faster in
+                  some cases.</para>
+            </listitem>
+         </itemizedlist>
+         <programlisting>WorkspaceStorageConnection openConnection(boolean readOnly) throws RepositoryException;
+</programlisting>
+         <note>
+            <title>*EXPERIMENTAL*</title>
+            <para>Read-only WorkspaceStorageConnection is experimental feature and not currently handled in JCR.
+               Actually such connections didn't prove their performance, so JCR Core doesn't use them.</para>
+         </note>
+         <itemizedlist>
+            <listitem>
+               <para>Storage connection might be reused also. Reuse of the connection means reuse of physical resource
+                  (e.g. JDBC Connection) allocated by one connection in another. This feature used in data manager for
+                  saving ordinary and system changes on the system Workspace. But the reuse is an optional feature and
+                  it works only if possible, otherwise the new connection opens.</para>
+            </listitem>
+         </itemizedlist>
+         <programlisting>WorkspaceStorageConnection reuseConnection(WorkspaceStorageConnection original) throws RepositoryException;
+</programlisting>
+         <itemizedlist>
+            <listitem>
+               <para>When checking Same-Name Siblings (SNS) existence, JCR Core can use new connection or not. This is
+                  defined via Workspace Data Container configuration and retrieved using special method.</para>
+            </listitem>
+         </itemizedlist>
+         <programlisting>boolean isCheckSNSNewConnection();
+</programlisting>
+         <important>
+            <title>New connection for SNS</title>
+            <para> Sometimes there is a need of checking if there are some nodes with equal names. Usually new Workspace
+               Storage Connection is used for purpose. The improvement came from JDBC Workspace Data Container, which
+               shows better performance on Oracle RDBMS when using new connection for checking SNS existence. But later
+               this led to deadlocks on Sybase RDBMS, so feature was made as an optional and configurable.</para>
+         </important>
+         <para>Container initialization based on a configuration only. After the container created it's not possible to
+            change parameters. Configuration consists of implementation class and set of properties and Value Storages
+            configuration.</para>
+      </section>
+      <section id="Valuestorages">
+         <title>Value storages</title>
+         <para>Container provides optional special mechanism for Value storing. It's possible to configure external
+            Value Storages via container configuration (available only via configuration).
+            Value Storage works as fully independent pluggable storage. All required parameters storage obtains from its
+            configuration. Some storages are possible for one container.
+            Configuration describes such parameters as ValueStoragePluginimplementation class, set of implementation specific properties and
+            filters. The filters declares criteria for Value matching to the storage. Only matched Property Values will
+            be stored. So, in common case, the storage might contains only the part of the Workspace content.
+            Value Storages are very useful for BLOB storing. E.g. storing on the File System instead of a database.</para>
+         <para>Container obtains Values Storages from ValueStoragePluginProvider component. Provider acts as a factory
+            of Value channels (ValueIOChannel). Channel provides all CRUD operation for Value Storage respecting the
+            transaction manner of work (how it can be possible due to implementation specifics of the storages).</para>
+      </section>
+      <section id="Lifecycle">
+         <title>Lifecycle</title>
+         <para>Container used by data manager for read and write operations.
+            Read operations (getters) uses connection once and close it on the finally.
+            Write operations performs in commit method as a sequence of create/update calls and final commit (or rollback on error).
+            Writes uses one connection (or two - another for system workspace) per commit call. One connection
+            guaranties transaction support for write operations.
+            Commit or rollback should free/clean all resources consumed by the container (connection).</para>
+      </section>
+      <section id="Valuestoragelifecycle">
+         <title>Value storage lifecycle</title>
+         <para>Value storage used from the container inside. Reads are related to a container reads. Writes are commit
+            related.
+            Container (connection) implementation should use transaction capabilities of the storages in same way as for other
+            operations.</para>
+      </section>
+   </section>
+   <section id="Requirements">
+      <title>Requirements</title>
+      <para>Connection create and reuse should be a thread safe operation.
+         Connection provides CRUD operations support on the storage.</para>
+      <section id="Readoperations">
+         <title>Read operations</title>
+         <itemizedlist>
+            <listitem>
+               <para>Reads ItemData from the storage by item identifier.</para>
+            </listitem>
+         </itemizedlist>
+         <programlisting>ItemData getItemData(String identifier) throws RepositoryException, IllegalStateException;
+</programlisting>
+         <itemizedlist>
+            <listitem>
+               <para>Reads ItemData from the storage using item's parent and name relative the parent location.</para>
+            </listitem>
+         </itemizedlist>
+         <programlisting>ItemData getItemData(NodeData parentData, QPathEntry name) throws RepositoryException,IllegalStateException;
+</programlisting>
+         <itemizedlist>
+            <listitem>
+               <para>Reads List of NodeData from the storage using item's parent location.</para>
+            </listitem>
+         </itemizedlist>
+         <programlisting>List&lt;NodeData> getChildNodesData(NodeData parent) throws RepositoryException, IllegalStateException;
+</programlisting>
+				<itemizedlist>
+					<listitem>
+						<para>Reads List of PropertyData from the storage using  item's parent location</para>
+					</listitem>
+				</itemizedlist>
+				<programlisting>List&lt;PropertyData> getChildPropertiesData(NodeData parent) throws RepositoryException, IllegalStateException;
+</programlisting>
+				<itemizedlist>
+					<listitem>
+						<para>Reads List of PropertyData with empty  ValueData from the storage using item's parent location.</para>
+					</listitem>
+				</itemizedlist>
+				<para>This  methiod specially dedicated for non-content modification operations (e.g. Items  delete).</para>
+				<programlisting>List&lt;PropertyData> listChildPropertiesData(NodeData parent) throws RepositoryException, IllegalStateException;
+</programlisting>
+				<itemizedlist>
+					<listitem>
+						<para>Reads List of PropertyData from the storage using  item's parent location.</para>
+					</listitem>
+				</itemizedlist>
+				<para>It's REFERENCE type Properties referencing Node with  given nodeIdentifier. See more in javax.jcr.Node.getReferences()</para>
+				<programlisting>List&lt;PropertyData> getReferencesData(String nodeIdentifier) throws RepositoryException,IllegalStateException,UnsupportedOperationException;
+</programlisting>
+			</section>
+			<section id="Writeoperations">
+				<title>Write operations</title>
+				<itemizedlist>
+					<listitem>
+						<para>Adds single NodeData.</para>
+					</listitem>
+				</itemizedlist>
+				<programlisting>void add(NodeData data) throws RepositoryException,UnsupportedOperationException,InvalidItemStateException,IllegalStateException;
+</programlisting>
+				<itemizedlist>
+					<listitem>
+						<para>Adds single PropertyData.</para>
+					</listitem>
+				</itemizedlist>
+				<programlisting>void add(PropertyData data) throws RepositoryException,UnsupportedOperationException,InvalidItemStateException,IllegalStateException;
+</programlisting>
+				<itemizedlist>
+					<listitem>
+						<para>Updates NodeData.</para>
+					</listitem>
+				</itemizedlist>
+				<programlisting>void update(NodeData data) throws RepositoryException,UnsupportedOperationException,InvalidItemStateException,IllegalStateException;
+</programlisting>
+				<itemizedlist>
+					<listitem>
+						<para>Updates PropertyData.</para>
+					</listitem>
+				</itemizedlist>
+				<programlisting>void update(PropertyData data) throws RepositoryException,UnsupportedOperationException,InvalidItemStateException,IllegalStateException;
+</programlisting>
+				<itemizedlist>
+					<listitem>
+						<para>Renames NodeData using Node identifier and new name and index from the data.</para>
+					</listitem>
+				</itemizedlist>
+				<programlisting>void rename(NodeData data) throws RepositoryException,UnsupportedOperationException,InvalidItemStateException,IllegalStateException;
+</programlisting>
+				<itemizedlist>
+					<listitem>
+						<para>Deletes NodeData.</para>
+					</listitem>
+				</itemizedlist>
+				<programlisting>void delete(NodeData data) throws RepositoryException,UnsupportedOperationException,InvalidItemStateException,IllegalStateException;
+</programlisting>
+				<itemizedlist>
+					<listitem>
+						<para>Deletes PropertyData.</para>
+					</listitem>
+				</itemizedlist>
+				<programlisting>void delete(PropertyData data) throws RepositoryException,UnsupportedOperationException,InvalidItemStateException,IllegalStateException;
+</programlisting>
+				<itemizedlist>
+					<listitem>
+						<para>Persist changes and closes  connection. It can be database transaction commit for instance etc.</para>
+					</listitem>
+				</itemizedlist>
+				<programlisting>void commit() throws IllegalStateException, RepositoryException;
+</programlisting>
+				<itemizedlist>
+					<listitem>
+						<para>Refuses persistent changes and closes  connection. It can be database transaction rollback for instance etc.</para>
+					</listitem>
+				</itemizedlist>
+				<programlisting>void rollback() throws IllegalStateException, RepositoryException;
+</programlisting>
+				<para>All methods throws IllegalStateException if connection is closed.
+					UnsupportedOperationException if the method is not supported (e.g. JCR Level 1 implementation etc).
+					RepositoryException if some error occurs during preparation, validation or persistence.</para>
+			</section>
+			<section id="Stateoperations">
+				<title>State operations</title>
+				<itemizedlist>
+					<listitem>
+						<para>Returns true if connection can be used.</para>
+					</listitem>
+				</itemizedlist>
+				<programlisting>boolean isOpened();
+</programlisting>
+			</section>
+			<section id="Validationofwriteoperations">
+				<title>Validation of write operations</title>
+				<para>Container have to care about storage consistency (JCR constraints) on write operations:
+					(InvalidItemStateException should be thrown according the spec)
+					At least following checks should be performed:</para>
+				<itemizedlist>
+					<listitem>
+						<para>On ADD errors</para>
+						<itemizedlist>
+							<listitem>
+								<para>Parent not found. Condition: Parent ID (Item with ID is not exists).</para>
+							</listitem>
+							<listitem>
+								<para>Item already exists. Condition: ID (Item with ID already exists).</para>
+							</listitem>
+							<listitem>
+								<para>Item already exists. Condition: Parent ID, Name, Index (Item with parent ID, name and index already exists).</para>
+							</listitem>
+						</itemizedlist>
+					</listitem>
+				</itemizedlist>
+				<itemizedlist>
+					<listitem>
+						<para>On DELETE errors</para>
+						<itemizedlist>
+							<listitem>
+								<para>Item not found. Condition ID.</para>
+							</listitem>
+							<listitem>
+								<para>Can not delete parent till children exists.</para>
+							</listitem>
+						</itemizedlist>
+					</listitem>
+				</itemizedlist>
+				<itemizedlist>
+					<listitem>
+						<para>On UPDATE errors</para>
+						<itemizedlist>
+							<listitem>
+								<para>Item not found. Condition ID.</para>
+							</listitem>
+							<listitem>
+								<para>Item already exists with higher Version. Condition: ID, Version (Some Session had updated Item with ID prior this update).</para>
+							</listitem>
+						</itemizedlist>
+					</listitem>
+				</itemizedlist>
+			</section>
+			<section id="Consistencyofsave">
+				<title>Consistency of save</title>
+				<para>The container (connection) should implement consistency of Commit (Rollback) in 
+					<emphasis role="bold">transaction manner</emphasis>.
+					I.e. if set of operations were performed 
+					<emphasis role="bold">before</emphasis> the future 
+					<emphasis role="bold">Commit</emphasis> and another next operation 
+					<emphasis role="bold">fails</emphasis>. 
+					<emphasis role="bold">It should be possible to</emphasis> rollback applied changes using 
+					<emphasis role="bold">Rollback</emphasis> command.
+				</para>
+			</section>
+		</section>
+		<section id="ValuestoragesAPI">
+			<title>Value storages API</title>
+			<section id="Storagesprovider">
+				<title>Storages provider:</title>
+				<para>Container implementation obtains Values Storages option via ValueStoragePluginProvider component. Provider acts as a factory of Value channels (ValueIOChannel) and has two methods for this purpose:</para>
+				<itemizedlist>
+					<listitem>
+						<para>Return ValueIOChannel matched this property and valueOrderNumer. Null will be returned if no channel matches.</para>
+					</listitem>
+				</itemizedlist>
+				<programlisting>ValueIOChannel getApplicableChannel(PropertyData property, int valueOrderNumer) throws IOException;
+</programlisting>
+				<itemizedlist>
+					<listitem>
+						<para>Return ValueIOChannel associated with given storageId.</para>
+					</listitem>
+				</itemizedlist>
+				<programlisting>ValueIOChannel getChannel(String storageId) throws IOException, ValueStorageNotFoundException;
+</programlisting>
+				<para>There is also method for consistency check, but this method doesn't used anywhere and storage implementations has it empty.</para>
+			</section>
+			<section id="Valuestorageplugin">
+				<title>Value storage plugin</title>
+				<para>Provider implementation should use ValueStoragePlugin abstract class as a base for all storage implementations.
+					Plugin provides support for provider implementation methods. Plugin's methods should be implemented:</para>
+				<itemizedlist>
+					<listitem>
+						<para>Initialize this plugin. Used at start time in ValueStoragePluginProvider.</para>
+					</listitem>
+				</itemizedlist>
+				<programlisting>public abstract void init(Properties props, ValueDataResourceHolder resources) throws RepositoryConfigurationException, IOException;
+</programlisting>
+				<itemizedlist>
+					<listitem>
+						<para>Open ValueIOChannel.Used in ValueStoragePluginProvider.getApplicableChannel(PropertyData, int) and getChannel(String)</para>
+					</listitem>
+				</itemizedlist>
+				<programlisting>public abstract ValueIOChannel openIOChannel() throws IOException;
+</programlisting>
+				<itemizedlist>
+					<listitem>
+						<para>Return true if this storage has same storageId.</para>
+					</listitem>
+				</itemizedlist>
+				<programlisting>public abstract boolean isSame(String valueDataDescriptor);
+</programlisting>
+			</section>
+			<section id="ValueIOchannel">
+				<title>Value I/O channel</title>
+				<para>Channel should implement ValueIOChannel interface. CRUD operation for Value Storage:</para>
+				<itemizedlist>
+					<listitem>
+						<para>Read Property value.</para>
+					</listitem>
+				</itemizedlist>
+				<programlisting>ValueData read(String propertyId, int orderNumber, int maxBufferSize) throws IOException;
+</programlisting>
+				<itemizedlist>
+					<listitem>
+						<para>Add or update Property value.</para>
+					</listitem>
+				</itemizedlist>
+				<programlisting>void write(String propertyId, ValueData data) throws IOException;
+</programlisting>
+				<itemizedlist>
+					<listitem>
+						<para>Delete Property all values.</para>
+					</listitem>
+				</itemizedlist>
+				<programlisting>void delete(String propertyId) throws IOException;
+</programlisting>
+			</section>
+			<section id="Transactionsupportviachannel">
+				<title>Transaction support via channel</title>
+				<para>Modification operations should be applied only on commit. Rollback is required for data created cleanup.</para>
+				<itemizedlist>
+					<listitem>
+						<para>Commit channel changes.</para>
+					</listitem>
+				</itemizedlist>
+				<programlisting>void commit() throws IOException;
+</programlisting>
+				<itemizedlist>
+					<listitem>
+						<para>Rollback channel changes.</para>
+					</listitem>
+				</itemizedlist>
+				<programlisting>void rollback() throws IOException;
+</programlisting>
+			</section>
+		</section>
+	</chapter>
