@@ -25,6 +25,8 @@ import org.exoplatform.services.transaction.ExoResource;
 import org.exoplatform.services.transaction.TransactionService;
 import org.jboss.cache.transaction.TransactionManagerLookup;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
@@ -346,8 +348,40 @@ public class GenericTransactionService implements TransactionService
                LOG.warn("Cannot set the transaction timeout", e);
             }
          }
+
          // Start the transaction
-         tm.begin();
+         PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
+         {
+            public Object run() throws Exception
+            {
+               tm.begin();
+               return null;
+            }
+         };
+         try
+         {
+            AccessController.doPrivileged(action);
+         }
+         catch (PrivilegedActionException pae)
+         {
+            Throwable cause = pae.getCause();
+            if (cause instanceof NotSupportedException)
+            {
+               throw (NotSupportedException)cause;
+            }
+            else if (cause instanceof SystemException)
+            {
+               throw (SystemException)cause;
+            }
+            else if (cause instanceof RuntimeException)
+            {
+               throw (RuntimeException)cause;
+            }
+            else
+            {
+               throw new RuntimeException(cause);
+            }
+         }
       }
 
       /**
@@ -356,7 +390,54 @@ public class GenericTransactionService implements TransactionService
       public void commit() throws RollbackException, HeuristicMixedException, HeuristicRollbackException,
          SecurityException, IllegalStateException, SystemException
       {
-         tm.commit();
+         PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
+         {
+            public Object run() throws Exception
+            {
+               tm.commit();
+               return null;
+            }
+         };
+         try
+         {
+            AccessController.doPrivileged(action);
+         }
+         catch (PrivilegedActionException pae)
+         {
+            Throwable cause = pae.getCause();
+            if (cause instanceof RollbackException)
+            {
+               throw (RollbackException)cause;
+            }
+            else if (cause instanceof HeuristicMixedException)
+            {
+               throw (HeuristicMixedException)cause;
+            }
+            else if (cause instanceof HeuristicRollbackException)
+            {
+               throw (HeuristicRollbackException)cause;
+            }
+            else if (cause instanceof SecurityException)
+            {
+               throw (SecurityException)cause;
+            }
+            else if (cause instanceof IllegalStateException)
+            {
+               throw (IllegalStateException)cause;
+            }
+            else if (cause instanceof SystemException)
+            {
+               throw (SystemException)cause;
+            }
+            else if (cause instanceof RuntimeException)
+            {
+               throw (RuntimeException)cause;
+            }
+            else
+            {
+               throw new RuntimeException(cause);
+            }
+         }
       }
 
       /**
@@ -378,9 +459,45 @@ public class GenericTransactionService implements TransactionService
       /**
        * {@inheritDoc}
        */
-      public void resume(Transaction tx) throws InvalidTransactionException, IllegalStateException, SystemException
+      public void resume(final Transaction tx) throws InvalidTransactionException, IllegalStateException,
+         SystemException
       {
-         tm.resume(tx);
+         PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
+         {
+            public Object run() throws Exception
+            {
+               tm.resume(tx);
+               return null;
+            }
+         };
+         try
+         {
+            AccessController.doPrivileged(action);
+         }
+         catch (PrivilegedActionException pae)
+         {
+            Throwable cause = pae.getCause();
+            if (cause instanceof InvalidTransactionException)
+            {
+               throw (InvalidTransactionException)cause;
+            }
+            else if (cause instanceof IllegalStateException)
+            {
+               throw (IllegalStateException)cause;
+            }
+            else if (cause instanceof SystemException)
+            {
+               throw (SystemException)cause;
+            }
+            else if (cause instanceof RuntimeException)
+            {
+               throw (RuntimeException)cause;
+            }
+            else
+            {
+               throw new RuntimeException(cause);
+            }
+         }
       }
 
       /**
@@ -388,7 +505,42 @@ public class GenericTransactionService implements TransactionService
        */
       public void rollback() throws IllegalStateException, SecurityException, SystemException
       {
-         tm.rollback();
+         PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
+         {
+            public Object run() throws Exception
+            {
+               tm.rollback();
+               return null;
+            }
+         };
+         try
+         {
+            AccessController.doPrivileged(action);
+         }
+         catch (PrivilegedActionException pae)
+         {
+            Throwable cause = pae.getCause();
+            if (cause instanceof IllegalStateException)
+            {
+               throw (IllegalStateException)cause;
+            }
+            else if (cause instanceof SecurityException)
+            {
+               throw (SecurityException)cause;
+            }
+            else if (cause instanceof SystemException)
+            {
+               throw (SystemException)cause;
+            }
+            else if (cause instanceof RuntimeException)
+            {
+               throw (RuntimeException)cause;
+            }
+            else
+            {
+               throw new RuntimeException(cause);
+            }
+         }
       }
 
       /**
@@ -413,7 +565,33 @@ public class GenericTransactionService implements TransactionService
        */
       public Transaction suspend() throws SystemException
       {
-         return tm.suspend();
+         PrivilegedExceptionAction<Transaction> action = new PrivilegedExceptionAction<Transaction>()
+         {
+            public Transaction run() throws Exception
+            {
+               return tm.suspend();
+            }
+         };
+         try
+         {
+            return AccessController.doPrivileged(action);
+         }
+         catch (PrivilegedActionException pae)
+         {
+            Throwable cause = pae.getCause();
+            if (cause instanceof SystemException)
+            {
+               throw (SystemException)cause;
+            }
+            else if (cause instanceof RuntimeException)
+            {
+               throw (RuntimeException)cause;
+            }
+            else
+            {
+               throw new RuntimeException(cause);
+            }
+         }
       }
    }
 }
