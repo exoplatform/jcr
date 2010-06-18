@@ -31,6 +31,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 
 /**
  * Created by The eXo Platform SAS.
@@ -243,7 +246,35 @@ public abstract class ValueFileOperation extends ValueFileIOHelper implements Va
       try
       {
          // get the inet address
-         InetAddress local = InetAddress.getLocalHost();
+         InetAddress local = null;
+         PrivilegedExceptionAction<InetAddress> action = new PrivilegedExceptionAction<InetAddress>()
+         {
+            public InetAddress run() throws Exception
+            {
+               return InetAddress.getLocalHost();
+            }
+         };
+         try
+         {
+            local = AccessController.doPrivileged(action);
+         }
+         catch (PrivilegedActionException pae)
+         {
+            Throwable cause = pae.getCause();
+            if (cause instanceof UnknownHostException)
+            {
+               throw (UnknownHostException)cause;
+            }
+            else if (cause instanceof RuntimeException)
+            {
+               throw (RuntimeException)cause;
+            }
+            else
+            {
+               throw new RuntimeException(cause);
+            }
+         }
+
          localAddr = local.getHostAddress() + " (" + local.getHostName() + ")";
       }
       catch (UnknownHostException e)
