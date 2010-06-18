@@ -18,11 +18,14 @@
  */
 package org.exoplatform.services.jcr.ext.script.groovy;
 
+import org.exoplatform.services.rest.ext.groovy.ResourceId;
+
 /**
  * @author <a href="mailto:andrew00x@gmail.com">Andrey Parfonov</a>
  * @version $Id: ScriptKey.java 34445 2009-07-24 07:51:18Z dkatayev $
+ * @deprecated use {@link ResourceId} instead
  */
-public interface ScriptKey
+public interface ScriptKey extends ResourceId
 {
 
 }

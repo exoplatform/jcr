@@ -76,7 +76,7 @@ public class GroovyScript2RestLoaderTest extends BaseStandaloneTest
             .getComponentInstanceOfType(ThreadLocalSessionProviderService.class);
       sesProv.setSessionProvider(null, new SessionProvider(new ConversationState(new Identity("root"))));
       binder = (ResourceBinder)container.getComponentInstanceOfType(ResourceBinder.class);
-      resourceNumber = binder.getRootResources().size();
+      resourceNumber = binder.getSize();
       handler = (RequestHandler)container.getComponentInstanceOfType(RequestHandler.class);
 
       testRoot = root.addNode("testRoot", "nt:unstructured");
@@ -105,10 +105,10 @@ public class GroovyScript2RestLoaderTest extends BaseStandaloneTest
 
    public void testBindScripts() throws Exception
    {
-      assertEquals(resourceNumber + 1, binder.getRootResources().size());
+      assertEquals(resourceNumber + 1, binder.getSize());
       script.getParent().remove();
       session.save();
-      assertEquals(resourceNumber, binder.getRootResources().size());
+      assertEquals(resourceNumber, binder.getSize());
    }
 
    public void testRemoteAccessGetMetatData() throws Exception
@@ -158,7 +158,7 @@ public class GroovyScript2RestLoaderTest extends BaseStandaloneTest
       handler.handleRequest(creq, cres);
 
       assertEquals(204, cres.getStatus());
-      assertEquals(resourceNumber, binder.getRootResources().size());
+      assertEquals(resourceNumber, binder.getSize());
       creq =
          new ContainerRequest("POST", new URI("/script/groovy/load/db1/ws/testRoot/script"), new URI(""), null,
             new InputHeadersMap(headers));
@@ -166,7 +166,7 @@ public class GroovyScript2RestLoaderTest extends BaseStandaloneTest
       handler.handleRequest(creq, cres);
 
       assertEquals(204, cres.getStatus());
-      assertEquals(resourceNumber + 1, binder.getRootResources().size());
+      assertEquals(resourceNumber + 1, binder.getSize());
    }
 
    public void testRemoteAccessDelete() throws Exception
@@ -179,7 +179,7 @@ public class GroovyScript2RestLoaderTest extends BaseStandaloneTest
       handler.handleRequest(creq, cres);
 
       assertEquals(204, cres.getStatus());
-      assertEquals(resourceNumber, binder.getRootResources().size());
+      assertEquals(resourceNumber, binder.getSize());
    }
 
    public void testRemoteAccessGetScript() throws Exception
@@ -232,7 +232,7 @@ public class GroovyScript2RestLoaderTest extends BaseStandaloneTest
       session.save();
 
       // must be rebounded , not created other one
-      assertEquals(resourceNumber + 1, binder.getRootResources().size());
+      assertEquals(resourceNumber + 1, binder.getSize());
       creq =
          new ContainerRequest("GET", new URI("/groovy-test/groovy2/test"), new URI(""), null, new InputHeadersMap(
             new MultivaluedMapImpl()));

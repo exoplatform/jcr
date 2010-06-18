@@ -18,50 +18,19 @@
  */
 package org.exoplatform.services.jcr.ext.script.groovy;
 
+import org.exoplatform.services.rest.ext.groovy.BaseResourceId;
+
 /**
  * @author <a href="mailto:andrew00x@gmail.com">Andrey Parfonov</a>
  * @version $Id: SimpleScriptKey.java 34445 2009-07-24 07:51:18Z dkatayev $
+ * @deprecated use {@link BaseResourceId} instead
  */
-// Need this for back compatibility, see @deprecated methods in
-// GroovyScript2RestLoader.
-public class SimpleScriptKey implements ScriptKey
+public class SimpleScriptKey extends BaseResourceId implements ScriptKey
 {
-
-   protected final String key;
 
    public SimpleScriptKey(String key)
    {
-      this.key = key;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public boolean equals(Object obj)
-   {
-      if (obj == null)
-         return false;
-      if (getClass() != obj.getClass())
-         return false;
-      return key.equals(((SimpleScriptKey)obj).key);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public int hashCode()
-   {
-      return key.hashCode();
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public String toString()
-   {
-      return key;
+      super(key);
    }
 
 }

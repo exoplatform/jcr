@@ -112,7 +112,7 @@ public class GroovyScript2RestUpdateListener implements EventListener
 
    /**
     * Load script form supplied node.
-    * 
+    *
     * @param node JCR node
     * @throws Exception if any error occurs
     */
@@ -121,12 +121,12 @@ public class GroovyScript2RestUpdateListener implements EventListener
       ScriptKey key = new NodeScriptKey(repository, workspace, node);
       if (groovyScript2RestLoader.isLoaded(key))
          groovyScript2RestLoader.unloadScript(key);
-      groovyScript2RestLoader.loadScript(key, node.getPath(), node.getProperty("jcr:data").getStream());
+      groovyScript2RestLoader.loadScript(key, node.getProperty("jcr:data").getStream());
    }
 
    /**
     * Unload script.
-    * 
+    *
     * @param path unified JCR node path
     * @throws Exception if any error occurs
     */
