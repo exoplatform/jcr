@@ -23,6 +23,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.sql.SQLException;
 
 import javax.jcr.RepositoryException;
 
@@ -69,6 +70,38 @@ public class SecurityHelper
    }
 
    /**
+    * Launches action in privileged mode. Can throw only IO exception.
+    * 
+    * @param <E>
+    * @param action
+    * @return
+    * @throws IOException
+    */
+   public static <E> E doPriviledgedSQLExceptionAction(PrivilegedExceptionAction<E> action) throws SQLException
+   {
+      try
+      {
+         return AccessController.doPrivileged(action);
+      }
+      catch (PrivilegedActionException pae)
+      {
+         Throwable cause = pae.getCause();
+         if (cause instanceof SQLException)
+         {
+            throw (SQLException)cause;
+         }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
+      }
+   }
+
+   /**
     * Launches action in privileged mode. Can throw only repository exception.
     * 
     * @param <E>
@@ -100,7 +133,6 @@ public class SecurityHelper
          }
       }
    }
-
 
    /**
     * Launches action in privileged mode. Can throw only runtime exceptions.
