@@ -16,11 +16,19 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.db;
 
+import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.PropertyData;
+import org.exoplatform.services.jcr.impl.util.SecurityHelper;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.PrivilegedAction;
+import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
@@ -33,6 +41,253 @@ import java.sql.SQLException;
  */
 public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
 {
+
+   @Override
+   protected int addNodeRecord(final NodeData data) throws SQLException
+   {
+      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Integer>()
+      {
+         public Integer run() throws Exception
+         {
+            return HSQLDBMultiDbJDBCConnection.super.addNodeRecord(data);
+         }
+      });
+   }
+
+   @Override
+   protected int addPropertyRecord(final PropertyData data) throws SQLException
+   {
+      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Integer>()
+      {
+         public Integer run() throws Exception
+         {
+            return HSQLDBMultiDbJDBCConnection.super.addPropertyRecord(data);
+         }
+      });
+   }
+
+   @Override
+   protected int addReference(final PropertyData data) throws SQLException, IOException
+   {
+      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Integer>()
+      {
+         public Integer run() throws Exception
+         {
+            return HSQLDBMultiDbJDBCConnection.super.addReference(data);
+         }
+      });
+   }
+
+   @Override
+   protected int addValueData(final String cid, final int orderNumber, final InputStream stream,
+      final int streamLength, final String storageDesc) throws SQLException
+   {
+      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Integer>()
+      {
+         public Integer run() throws Exception
+         {
+            return HSQLDBMultiDbJDBCConnection.super.addValueData(cid, orderNumber, stream, streamLength, storageDesc);
+
+         }
+      });
+   }
+
+   @Override
+   protected int deleteItemByIdentifier(final String identifier) throws SQLException
+   {
+      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Integer>()
+      {
+         public Integer run() throws Exception
+         {
+            return HSQLDBMultiDbJDBCConnection.super.deleteItemByIdentifier(identifier);
+         }
+      });
+   }
+
+   @Override
+   protected int deleteReference(final String propertyIdentifier) throws SQLException
+   {
+      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Integer>()
+      {
+         public Integer run() throws Exception
+         {
+            return HSQLDBMultiDbJDBCConnection.super.deleteReference(propertyIdentifier);
+
+         }
+      });
+   }
+
+   @Override
+   protected int deleteValueData(final String cid) throws SQLException
+   {
+      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Integer>()
+      {
+         public Integer run() throws Exception
+         {
+            return HSQLDBMultiDbJDBCConnection.super.deleteValueData(cid);
+         }
+      });
+   }
+
+   @Override
+   protected ResultSet findChildNodesByParentIdentifier(final String parentIdentifier) throws SQLException
+   {
+      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<ResultSet>()
+      {
+         public ResultSet run() throws Exception
+         {
+            return HSQLDBMultiDbJDBCConnection.super.findChildNodesByParentIdentifier(parentIdentifier);
+         }
+      });
+   }
+
+   @Override
+   protected ResultSet findChildNodesCountByParentIdentifier(final String parentIdentifier) throws SQLException
+   {
+      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<ResultSet>()
+      {
+         public ResultSet run() throws Exception
+         {
+            return HSQLDBMultiDbJDBCConnection.super.findChildNodesCountByParentIdentifier(parentIdentifier);
+         }
+      });
+   }
+
+   @Override
+   protected ResultSet findChildPropertiesByParentIdentifier(final String parentIdentifier) throws SQLException
+   {
+      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<ResultSet>()
+      {
+         public ResultSet run() throws Exception
+         {
+            return HSQLDBMultiDbJDBCConnection.super.findChildPropertiesByParentIdentifier(parentIdentifier);
+         }
+      });
+   }
+
+   @Override
+   protected ResultSet findItemByIdentifier(final String identifier) throws SQLException
+   {
+      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<ResultSet>()
+      {
+         public ResultSet run() throws Exception
+         {
+            return HSQLDBMultiDbJDBCConnection.super.findItemByIdentifier(identifier);
+         }
+      });
+   }
+
+   @Override
+   protected ResultSet findItemByName(final String parentId, final String name, final int index) throws SQLException
+   {
+      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<ResultSet>()
+      {
+         public ResultSet run() throws Exception
+         {
+            return HSQLDBMultiDbJDBCConnection.super.findItemByName(parentId, name, index);
+         }
+      });
+   }
+
+   @Override
+   protected ResultSet findPropertyByName(final String parentId, final String name) throws SQLException
+   {
+      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<ResultSet>()
+      {
+         public ResultSet run() throws Exception
+         {
+            return HSQLDBMultiDbJDBCConnection.super.findPropertyByName(parentId, name);
+         }
+      });
+   }
+
+   @Override
+   protected ResultSet findReferences(final String nodeIdentifier) throws SQLException
+   {
+      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<ResultSet>()
+      {
+         public ResultSet run() throws Exception
+         {
+            return HSQLDBMultiDbJDBCConnection.super.findReferences(nodeIdentifier);
+         }
+      });
+   }
+
+   @Override
+   protected ResultSet findValueByPropertyIdOrderNumber(final String cid, final int orderNumb) throws SQLException
+   {
+      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<ResultSet>()
+      {
+         public ResultSet run() throws Exception
+         {
+            return HSQLDBMultiDbJDBCConnection.super.findValueByPropertyIdOrderNumber(cid, orderNumb);
+         }
+      });
+   }
+
+   @Override
+   protected ResultSet findValuesByPropertyId(final String cid) throws SQLException
+   {
+      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<ResultSet>()
+      {
+         public ResultSet run() throws Exception
+         {
+            return HSQLDBMultiDbJDBCConnection.super.findValuesByPropertyId(cid);
+         }
+      });
+   }
+
+   @Override
+   protected ResultSet findValuesStorageDescriptorsByPropertyId(final String cid) throws SQLException
+   {
+      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<ResultSet>()
+      {
+         public ResultSet run() throws Exception
+         {
+            return HSQLDBMultiDbJDBCConnection.super.findValuesStorageDescriptorsByPropertyId(cid);
+
+         }
+      });
+   }
+
+   @Override
+   protected int renameNode(final NodeData data) throws SQLException
+   {
+      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Integer>()
+      {
+         public Integer run() throws Exception
+         {
+            return HSQLDBMultiDbJDBCConnection.super.renameNode(data);
+
+         }
+      });
+   }
+
+   @Override
+   protected int updateNodeByIdentifier(final int version, final int index, final int orderNumb, final String identifier)
+      throws SQLException
+   {
+      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Integer>()
+      {
+         public Integer run() throws Exception
+         {
+            return HSQLDBMultiDbJDBCConnection.super.updateNodeByIdentifier(version, index, orderNumb, identifier);
+         }
+      });
+   }
+
+   @Override
+   protected int updatePropertyByIdentifier(final int version, final int type, final String identifier)
+      throws SQLException
+   {
+      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Integer>()
+      {
+         public Integer run() throws Exception
+         {
+            return HSQLDBMultiDbJDBCConnection.super.updatePropertyByIdentifier(version, type, identifier);
+         }
+      });
+   }
 
    /**
       * HSQLDB Multidatabase JDBC Connection constructor.
