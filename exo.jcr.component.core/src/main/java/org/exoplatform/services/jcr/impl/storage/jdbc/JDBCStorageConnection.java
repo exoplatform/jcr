@@ -122,7 +122,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
    protected final WriteValueHelper writeValueHelper = new WriteValueHelper();
 
-   // All statements should be closed in cloaseStatements() method.
+   // All statements should be closed in closeStatements() method.
 
    protected PreparedStatement findItemById;
 
