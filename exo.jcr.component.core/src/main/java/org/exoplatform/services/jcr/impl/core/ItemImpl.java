@@ -111,15 +111,12 @@ public abstract class ItemImpl implements Item
    protected ValueFactoryImpl valueFactory;
 
    /**
-   * ItemImpl constructor.
-   * 
-   * @param data
-   *          ItemData object
-   * @param session
-   *          Session object
-   * @throws RepositoryException
-   *           if any Exception is occurred
-   */
+    * ItemImpl constructor.
+    * 
+    * @param data ItemData object
+    * @param session Session object
+    * @throws RepositoryException if any Exception is occurred
+    */
    ItemImpl(ItemData data, SessionImpl session) throws RepositoryException
    {
 
@@ -137,7 +134,8 @@ public abstract class ItemImpl implements Item
    }
 
    /**
-    * Return a status of the item state. If the state is invalid the item can't be used anymore.
+    * Return a status of the item state. If the state is invalid the item can't
+    * be used anymore.
     * 
     * @return boolean flag, true if an item is usable in the session.
     */
@@ -147,7 +145,8 @@ public abstract class ItemImpl implements Item
    }
 
    /**
-    * Checking if this item has valid item state, i.e. wasn't removed (and saved).
+    * Checking if this item has valid item state, i.e. wasn't removed (and
+    * saved).
     * 
     * @return true or throws an InvalidItemStateException exception otherwise
     * @throws InvalidItemStateException
@@ -353,8 +352,8 @@ public abstract class ItemImpl implements Item
    }
 
    /**
-    * Check when it's a Node and is versionable will a version history removed. Case of last version
-    * in version history.
+    * Check when it's a Node and is versionable will a version history removed.
+    * Case of last version in version history.
     * 
     * @throws RepositoryException
     * @throws ConstraintViolationException
@@ -423,6 +422,7 @@ public abstract class ItemImpl implements Item
       NodeTypeDataManager ntm = session.getWorkspace().getNodeTypesHolder();
       NodeData parentData = (NodeData)parentNode.getData();
       boolean isMultiValue = multiValue;
+      PropertyImpl prevProperty = null;
       if (prevItem == null || prevItem.isNode())
       { // new property
          identifier = IdGenerator.generate();
@@ -446,6 +446,7 @@ public abstract class ItemImpl implements Item
       {
          // update of the property
          prevProp = (PropertyImpl)prevItem;
+         prevProperty = new PropertyImpl(prevProp.getData(), prevProp.parentData(), prevProp.getSession());
          isMultiValue = prevProp.isMultiValued();
          defs =
             ntm.getPropertyDefinitions(propertyName, parentData.getPrimaryTypeName(), parentData.getMixinTypeNames());
@@ -569,7 +570,7 @@ public abstract class ItemImpl implements Item
       PropertyImpl prop;
       if (state != ItemState.DELETED)
       {
-         // add or update
+         // add or update       
          TransientPropertyData newData =
             new TransientPropertyData(qpath, identifier, version, propType, parentNode.getInternalIdentifier(),
                multiValue, valueDataList);
@@ -578,7 +579,7 @@ public abstract class ItemImpl implements Item
          prop = (PropertyImpl)dataManager.update(itemState, true);
 
          // launch event: post-set 
-         session.getActionHandler().postSetProperty(prop, state);
+         session.getActionHandler().postSetProperty(prevProperty, prop, state);
       }
       else
       {
@@ -734,8 +735,7 @@ public abstract class ItemImpl implements Item
     * Get parent node item.
     * 
     * @return parent item
-    * @throws RepositoryException
-    *           if parent item is null
+    * @throws RepositoryException if parent item is null
     */
    protected NodeImpl parent() throws RepositoryException
    {
@@ -753,8 +753,7 @@ public abstract class ItemImpl implements Item
     * Get and return parent node data.
     * 
     * @return parent node data
-    * @throws RepositoryException
-    *           if parent item is null
+    * @throws RepositoryException if parent item is null
     */
    public NodeData parentData() throws RepositoryException
    {
@@ -815,29 +814,25 @@ public abstract class ItemImpl implements Item
 
    /**
     * Loads data.
-    *
-    * @param data
-    *          source item data
-    * @throws RepositoryException 
-    *          if errors occurs
+    * 
+    * @param data source item data
+    * @throws RepositoryException if errors occurs
     */
    abstract void loadData(ItemData data) throws RepositoryException;
 
    /**
-    * Loads data using existing parent data (used primary and mixin types for Item Definition discovery).
-    *
-    * @param data
-    *          source item data
-    * @param parent NodeData 
-    *          Items's parent
-    * @throws RepositoryException 
-    *          if errors occurs
+    * Loads data using existing parent data (used primary and mixin types for
+    * Item Definition discovery).
+    * 
+    * @param data source item data
+    * @param parent NodeData Items's parent
+    * @throws RepositoryException if errors occurs
     */
    abstract void loadData(ItemData data, NodeData parent) throws RepositoryException;
 
    /**
     * Returns Item definition data.
-    *
+    * 
     * @return
     */
    abstract ItemDefinitionData getItemDefinitionData();
@@ -898,7 +893,7 @@ public abstract class ItemImpl implements Item
             ValueData vd;
             if (value instanceof BaseValue || value instanceof ExtendedValue)
             {
-               // create Transient copy 
+               // create Transient copy
                vd = ((BaseValue)getSession().getValueFactory().createValue(value.getStream())).getInternalData();
             }
             else

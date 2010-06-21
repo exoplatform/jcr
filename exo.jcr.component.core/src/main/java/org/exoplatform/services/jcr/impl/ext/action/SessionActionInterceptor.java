@@ -254,13 +254,14 @@ public class SessionActionInterceptor
       }
    }
 
-   public void postSetProperty(PropertyImpl property, int state) throws RepositoryException
+   public void postSetProperty(PropertyImpl previousProperty, PropertyImpl currentProperty, int state)
+      throws RepositoryException
    {
       if (catalog == null)
          return;
 
       if (activeItem == null)
-         activeItem = property;
+         activeItem = currentProperty;
       else
          return;
 
@@ -284,11 +285,12 @@ public class SessionActionInterceptor
 
          Condition conditions = new Condition();
          conditions.put(SessionEventMatcher.EVENTTYPE_KEY, event);
-         conditions.put(SessionEventMatcher.PATH_KEY, property.getInternalPath());
-         conditions.put(SessionEventMatcher.NODETYPES_KEY, readNodeTypeNames(property.parentData()));
+         conditions.put(SessionEventMatcher.PATH_KEY, currentProperty.getInternalPath());
+         conditions.put(SessionEventMatcher.NODETYPES_KEY, readNodeTypeNames(currentProperty.parentData()));
 
          InvocationContext ctx = new InvocationContext();
-         ctx.put(InvocationContext.CURRENT_ITEM, property);
+         ctx.put(InvocationContext.CURRENT_ITEM, currentProperty);
+         ctx.put(InvocationContext.PREVIOUS_ITEM, previousProperty);
          ctx.put(InvocationContext.EXO_CONTAINER, container);
          ctx.put(InvocationContext.EVENT, event);
          launch(conditions, ctx);
