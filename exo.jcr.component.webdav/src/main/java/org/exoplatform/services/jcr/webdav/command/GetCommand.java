@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.webdav.command;
 import org.exoplatform.common.http.HTTPStatus;
 import org.exoplatform.common.util.HierarchicalProperty;
 import org.exoplatform.services.jcr.webdav.Range;
+import org.exoplatform.services.jcr.webdav.WebDavConst;
 import org.exoplatform.services.jcr.webdav.resource.CollectionResource;
 import org.exoplatform.services.jcr.webdav.resource.FileResource;
 import org.exoplatform.services.jcr.webdav.resource.Resource;
@@ -40,8 +41,11 @@ import org.exoplatform.services.rest.impl.header.MediaTypeHelper;
 
 import java.io.InputStream;
 import java.net.URI;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -125,9 +129,17 @@ public class GetCommand
             }
 
             // check before any other reads
-            if ((ifModifiedSince != null) && (ifModifiedSince.equals(lastModifiedProperty.getValue())))
+            if (ifModifiedSince != null) 
             {
-               return Response.notModified().entity("Not Modified").build();
+               DateFormat dateFormat = new SimpleDateFormat(WebDavConst.DateFormat.IF_MODIFIED_SINCE_PATTERN);
+               Date lastModifiedDate = dateFormat.parse(lastModifiedProperty.getValue());
+               
+               dateFormat = new SimpleDateFormat(WebDavConst.DateFormat.MODIFICATION);
+               Date ifModifiedSinceDate = dateFormat.parse(ifModifiedSince);
+               
+               if(ifModifiedSinceDate.getTime() >= lastModifiedDate.getTime()){
+                  return Response.notModified().entity("Not Modified").build();
+               }
             }
 
             HierarchicalProperty contentLengthProperty = resource.getProperty(FileResource.GETCONTENTLENGTH);

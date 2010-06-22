@@ -22,7 +22,6 @@ import org.exoplatform.services.jcr.webdav.WebDavConst;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 
 import javax.jcr.nodetype.NoSuchNodeTypeException;
 import javax.jcr.nodetype.NodeType;

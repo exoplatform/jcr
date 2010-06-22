@@ -464,6 +464,11 @@ public final class WebDavConst
        * Last modification date psttern.
        */
       public static final String MODIFICATION = "EEE, dd MMM yyyy HH:mm:ss z";
+      
+      /**
+       * If-Modified-Since date psttern.
+       */
+      public static final String IF_MODIFIED_SINCE_PATTERN = "EEE, d MMM yyyy HH:mm:ss z";
    }
 
    /**

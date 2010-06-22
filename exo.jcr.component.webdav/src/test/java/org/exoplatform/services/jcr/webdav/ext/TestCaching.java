@@ -18,31 +18,31 @@
  */
 package org.exoplatform.services.jcr.webdav.ext;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Locale;
-import java.util.TimeZone;
-
-import javax.jcr.Node;
-import javax.jcr.Property;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MultivaluedMap;
-
 import org.exoplatform.common.http.HTTPStatus;
 import org.exoplatform.services.jcr.webdav.BaseStandaloneTest;
+import org.exoplatform.services.jcr.webdav.WebDavConst;
 import org.exoplatform.services.jcr.webdav.WebDavConstants.WebDAVMethods;
 import org.exoplatform.services.jcr.webdav.utils.TestUtils;
 import org.exoplatform.services.rest.ExtHttpHeaders;
 import org.exoplatform.services.rest.impl.ContainerResponse;
 import org.exoplatform.services.rest.impl.MultivaluedMapImpl;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+
+import javax.jcr.Node;
+import javax.jcr.Property;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MultivaluedMap;
+
 /**
  * Created by The eXo Platform SAS Author : Dmytro Katayev
  * work.visor.ck@gmail.com Aug 13, 2008
  */
-public class TestCashing extends BaseStandaloneTest
+public class TestCaching extends BaseStandaloneTest
 {
    private String path = TestUtils.getFileName();
 
@@ -58,17 +58,40 @@ public class TestCashing extends BaseStandaloneTest
       node = TestUtils.addContent(session, path, inputStream, defaultFileNodeType, "");
    }
 
+   public void testNotModifiedSince() throws Exception
+   {
+      Node contentNode = node.getNode("jcr:content");
+      Property lastModifiedProperty = contentNode.getProperty("jcr:lastModified");
+      
+      SimpleDateFormat dateFormat = new SimpleDateFormat(WebDavConst.DateFormat.IF_MODIFIED_SINCE_PATTERN);
+      Calendar lastModifiedDate = lastModifiedProperty.getDate();
+      
+      lastModifiedDate.roll(Calendar.WEEK_OF_MONTH, -1);
+      // Rollback If-Modified-Since date a week earlier.
+      String ifModifiedDate = dateFormat.format(lastModifiedDate.getTime());
+      
+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+      headers.add(ExtHttpHeaders.IF_MODIFIED_SINCE, ifModifiedDate);
+      ContainerResponse response = service(WebDAVMethods.GET, getPathWS() + path, "", headers, null);
+      
+      assertEquals(HTTPStatus.OK, response.getStatus());
+   }
+   
    public void testIfModifiedSince() throws Exception
    {
       Node contentNode = node.getNode("jcr:content");
       Property lastModifiedProperty = contentNode.getProperty("jcr:lastModified");
-      String formatPattern = "EEE, dd MMM yyyy HH:mm:ss z";
-      SimpleDateFormat dateFormat = new SimpleDateFormat(formatPattern, Locale.ENGLISH);
-      dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-      String lastModified = dateFormat.format(lastModifiedProperty.getDate().getTime());
+      
+      SimpleDateFormat dateFormat = new SimpleDateFormat(WebDavConst.DateFormat.IF_MODIFIED_SINCE_PATTERN);
+      Calendar lastModifiedDate = lastModifiedProperty.getDate();
+      
+      lastModifiedDate.add(Calendar.WEEK_OF_MONTH, 1);
+      String ifModifiedDate = dateFormat.format(lastModifiedDate.getTime());
+      
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
-      headers.add(ExtHttpHeaders.IF_MODIFIED_SINCE, lastModified);
+      headers.add(ExtHttpHeaders.IF_MODIFIED_SINCE, ifModifiedDate);
       ContainerResponse response = service(WebDAVMethods.GET, getPathWS() + path, "", headers, null);
+      
       assertEquals(HTTPStatus.NOT_MODIFIED, response.getStatus());
    }
 

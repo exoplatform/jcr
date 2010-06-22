@@ -18,6 +18,10 @@
  */
 package org.exoplatform.services.jcr.webdav.command;
 
+import org.exoplatform.common.http.HTTPStatus;
+import org.exoplatform.services.jcr.webdav.lock.NullResourceLocksHolder;
+import org.exoplatform.services.jcr.webdav.util.TextUtil;
+
 import java.io.InputStream;
 import java.util.Calendar;
 import java.util.List;
@@ -29,10 +33,6 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.lock.LockException;
 import javax.ws.rs.core.Response;
-
-import org.exoplatform.common.http.HTTPStatus;
-import org.exoplatform.services.jcr.webdav.lock.NullResourceLocksHolder;
-import org.exoplatform.services.jcr.webdav.util.TextUtil;
 
 /**
  * Created by The eXo Platform SAS Author : <a
