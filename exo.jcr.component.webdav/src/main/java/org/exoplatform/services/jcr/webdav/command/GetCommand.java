@@ -20,7 +20,6 @@ package org.exoplatform.services.jcr.webdav.command;
 
 import org.exoplatform.common.http.HTTPStatus;
 import org.exoplatform.common.util.HierarchicalProperty;
-import org.exoplatform.commons.utils.ISO8601;
 import org.exoplatform.services.jcr.webdav.Range;
 import org.exoplatform.services.jcr.webdav.WebDavConst;
 import org.exoplatform.services.jcr.webdav.resource.CollectionResource;

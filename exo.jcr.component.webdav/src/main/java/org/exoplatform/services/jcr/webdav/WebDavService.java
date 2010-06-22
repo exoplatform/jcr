@@ -18,14 +18,13 @@
  */
 package org.exoplatform.services.jcr.webdav;
 
+import org.exoplatform.common.util.HierarchicalProperty;
+
 import java.io.InputStream;
-import java.util.List;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-
-import org.exoplatform.common.util.HierarchicalProperty;
 
 /**
  * Created by The eXo Platform SARL .<br/>
