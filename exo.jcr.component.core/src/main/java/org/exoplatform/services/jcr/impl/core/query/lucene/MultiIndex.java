@@ -250,6 +250,9 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       this.indexNames.setDirectory(indexDir);
       this.indexNames.read();
 
+      this.lastFileSystemFlushTime = System.currentTimeMillis();
+      this.lastFlushTime = System.currentTimeMillis();
+
       modeHandler.addIndexerIoModeListener(this);
       indexUpdateMonitor.addIndexUpdateMonitorListener(this);
       // as of 1.5 deletable file is not used anymore
@@ -1085,7 +1088,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          redoLog.clear();
 
          lastFlushTime = System.currentTimeMillis();
-         lastFileSystemFlushTime = System.currentTimeMillis();
       }
 
       // delete obsolete indexes
@@ -1159,6 +1161,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       // new flush task, cause canceled can't be re-used
       flushTask = new TimerTask()
       {
+         @Override
          public void run()
          {
             // check if there are any indexing jobs finished
@@ -1273,6 +1276,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
 
          // create new volatile index
          resetVolatileIndex();
+         lastFileSystemFlushTime = System.currentTimeMillis();
 
          time = System.currentTimeMillis() - time;
          log.debug("Committed in-memory index in " + time + "ms.");
@@ -1430,7 +1434,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     * Checks the indexing queue for finished text extrator jobs and updates the
     * index accordingly if there are any new ones. This method is synchronized
     * and should only be called by the timer task that periodically checks if
-    * there are documents ready in the indexing queue. A new transaction is
+    * there are documents ready in the indexing qlastFileSystemFlushTime = System.currentTimeMillis();ueue. A new transaction is
     * used when documents are transfered from the indexing queue to the index.
     */
    private synchronized void checkIndexingQueue()
@@ -1670,6 +1674,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
        * 
        * @return a <code>String</code> representation of this action.
        */
+      @Override
       public abstract String toString();
 
       /**
@@ -1797,6 +1802,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
        * 
        * @inheritDoc
        */
+      @Override
       public void execute(MultiIndex index) throws IOException
       {
          PersistentIndex idx = index.getOrCreateIndex(indexName);
@@ -1812,6 +1818,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * @inheritDoc
        */
+      @Override
       public String toString()
       {
          StringBuffer logLine = new StringBuffer();
@@ -1901,6 +1908,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
        * 
        * @inheritDoc
        */
+      @Override
       public void execute(MultiIndex index) throws IOException
       {
          if (doc == null)
@@ -1924,6 +1932,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * @inheritDoc
        */
+      @Override
       public String toString()
       {
          StringBuffer logLine = new StringBuffer(ENTRY_LENGTH);
@@ -1972,6 +1981,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
        * 
        * @inheritDoc
        */
+      @Override
       public void execute(MultiIndex index) throws IOException
       {
          index.lastFlushTime = System.currentTimeMillis();
@@ -1980,6 +1990,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * @inheritDoc
        */
+      @Override
       public String toString()
       {
          return Long.toString(getTransactionId()) + ' ' + Action.COMMIT;
@@ -2035,6 +2046,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
        * 
        * @inheritDoc
        */
+      @Override
       public void execute(MultiIndex index) throws IOException
       {
          PersistentIndex idx = index.getOrCreateIndex(indexName);
@@ -2044,6 +2056,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * @inheritDoc
        */
+      @Override
       public void undo(MultiIndex index) throws IOException
       {
          if (index.hasIndex(indexName))
@@ -2057,6 +2070,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * @inheritDoc
        */
+      @Override
       public String toString()
       {
          StringBuffer logLine = new StringBuffer();
@@ -2127,6 +2141,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
        * 
        * @inheritDoc
        */
+      @Override
       public void execute(MultiIndex index) throws IOException
       {
          // get index if it exists
@@ -2145,6 +2160,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * @inheritDoc
        */
+      @Override
       public String toString()
       {
          StringBuffer logLine = new StringBuffer();
@@ -2214,6 +2230,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
        * 
        * @inheritDoc
        */
+      @Override
       public void execute(MultiIndex index) throws IOException
       {
          String uuidString = uuid.toString();
@@ -2249,6 +2266,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * @inheritDoc
        */
+      @Override
       public String toString()
       {
          StringBuffer logLine = new StringBuffer(ENTRY_LENGTH);
@@ -2297,6 +2315,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
        * 
        * @inheritDoc
        */
+      @Override
       public void execute(MultiIndex index) throws IOException
       {
          index.currentTransactionId = getTransactionId();
@@ -2305,6 +2324,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * @inheritDoc
        */
+      @Override
       public String toString()
       {
          return Long.toString(getTransactionId()) + ' ' + Action.START;
@@ -2353,6 +2373,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
        * 
        * @inheritDoc
        */
+      @Override
       public void execute(MultiIndex index) throws IOException
       {
          VolatileIndex volatileIndex = index.getVolatileIndex();
@@ -2364,6 +2385,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * @inheritDoc
        */
+      @Override
       public String toString()
       {
          StringBuffer logLine = new StringBuffer();
