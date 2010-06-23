@@ -155,25 +155,53 @@ public class DBInitializer
    protected boolean isTableExists(Connection conn, String tableName) throws SQLException
    {
       ResultSet trs = conn.getMetaData().getTables(null, null, tableName, null);
-      boolean res = false;
-      while (trs.next())
+      try
       {
-         res = true; // check for columns/table type matching etc.
+         boolean res = false;
+         while (trs.next())
+         {
+            res = true; // check for columns/table type matching etc.
+         }
+         return res;
       }
-      return res;
+      finally
+      {
+         try
+         {
+            trs.close();
+         }
+         catch (SQLException e)
+         {
+            LOG.error("Can't close the ResultSet: " + e);
+         }
+      }
    }
 
    protected boolean isIndexExists(Connection conn, String tableName, String indexName) throws SQLException
    {
       ResultSet irs = conn.getMetaData().getIndexInfo(null, null, tableName, false, true);
-      boolean res = false;
-      while (irs.next())
+      try
       {
-         if (irs.getShort("TYPE") != DatabaseMetaData.tableIndexStatistic
-            && irs.getString("INDEX_NAME").equalsIgnoreCase(indexName))
-            res = true; // check for index params matching etc.
+         boolean res = false;
+         while (irs.next())
+         {
+            if (irs.getShort("TYPE") != DatabaseMetaData.tableIndexStatistic
+               && irs.getString("INDEX_NAME").equalsIgnoreCase(indexName))
+               res = true; // check for index params matching etc.
+         }
+         return res;
       }
-      return res;
+      finally
+      {
+         try
+         {
+            irs.close();
+         }
+         catch (SQLException e)
+         {
+            LOG.error("Can't close the ResultSet: " + e);
+         }
+      }
    }
 
    protected boolean isSequenceExists(Connection conn, String sequenceName) throws SQLException
