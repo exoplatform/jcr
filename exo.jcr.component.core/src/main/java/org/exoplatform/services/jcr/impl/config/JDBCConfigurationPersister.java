@@ -211,7 +211,21 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
       try
       {
          ResultSet trs = con.getMetaData().getTables(null, null, configTableName, null);
-         return trs.next();
+         try
+         {
+            return trs.next();
+         }
+         finally
+         {
+            try
+            {
+               trs.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the ResultSet: " + e);
+            }
+         }
       }
       catch (SQLException e)
       {
