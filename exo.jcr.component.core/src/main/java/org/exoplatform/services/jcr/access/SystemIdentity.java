@@ -18,20 +18,18 @@
  */
 package org.exoplatform.services.jcr.access;
 
+import org.exoplatform.services.security.IdentityConstants;
+
 /**
  * Created by The eXo Platform SAS.
+ * Please use {@link IdentityConstants} instead.
  * 
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov</a>
  * @version $Id: SystemIdentity.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class SystemIdentity
+@Deprecated
+public class SystemIdentity extends IdentityConstants
 {
-
-   public static final String ANY = "any".intern();
-
-   public static final String SYSTEM = "__system".intern();
-
-   public static final String ANONIM = "__anonim".intern();
 
 }
