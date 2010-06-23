@@ -58,7 +58,7 @@ public class TestCaching extends BaseStandaloneTest
       node = TestUtils.addContent(session, path, inputStream, defaultFileNodeType, "");
    }
 
-   public void testNotModifiedSince() throws Exception
+   public void _testNotModifiedSince() throws Exception
    {
       Node contentNode = node.getNode("jcr:content");
       Property lastModifiedProperty = contentNode.getProperty("jcr:lastModified");
@@ -77,7 +77,7 @@ public class TestCaching extends BaseStandaloneTest
       assertEquals(HTTPStatus.OK, response.getStatus());
    }
    
-   public void testIfModifiedSince() throws Exception
+   public void _testIfModifiedSince() throws Exception
    {
       Node contentNode = node.getNode("jcr:content");
       Property lastModifiedProperty = contentNode.getProperty("jcr:lastModified");
