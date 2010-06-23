@@ -255,6 +255,9 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       // this method is run in privileged mode internally
       this.indexNames.read();
 
+      this.lastFileSystemFlushTime = System.currentTimeMillis();
+      this.lastFlushTime = System.currentTimeMillis();
+
       modeHandler.addIndexerIoModeListener(this);
       indexUpdateMonitor.addIndexUpdateMonitorListener(this);
 
@@ -1135,7 +1138,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          redoLog.clear();
 
          lastFlushTime = System.currentTimeMillis();
-         lastFileSystemFlushTime = System.currentTimeMillis();
       }
 
       // delete obsolete indexes
@@ -1344,6 +1346,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
 
          // create new volatile index
          resetVolatileIndex();
+         lastFileSystemFlushTime = System.currentTimeMillis();
 
          time = System.currentTimeMillis() - time;
          log.debug("Committed in-memory index in " + time + "ms.");
