@@ -62,6 +62,8 @@ public class GroovyScript2RestLoaderTest extends BaseStandaloneTest
 
    private Node script;
 
+   private Node groovyRepo;
+
    private int resourceNumber = 0;
 
    /**
@@ -87,6 +89,10 @@ public class GroovyScript2RestLoaderTest extends BaseStandaloneTest
       script.setProperty("jcr:lastModified", Calendar.getInstance());
       script
          .setProperty("jcr:data", Thread.currentThread().getContextClassLoader().getResourceAsStream("test1.groovy"));
+
+      // repository for groovy dependencies
+      groovyRepo = root.addNode("repo", "nt:folder");
+
       session.save();
    }
 
@@ -285,5 +291,32 @@ public class GroovyScript2RestLoaderTest extends BaseStandaloneTest
             .getBytes()), new InputHeadersMap(headers));
       handler.handleRequest(creq, cres);
       assertEquals(200, cres.getStatus());
+   }
+
+   public void testGroovyDependency() throws Exception
+   {
+      // Add script in dependency repository
+      Node deps = groovyRepo.addNode("dependencies", "nt:folder");
+      Node dep = deps.addNode("Dep1.groovy", "nt:file");
+      dep = dep.addNode("jcr:content", "nt:resource");
+      dep.setProperty("jcr:mimeType", "script/groovy");
+      dep.setProperty("jcr:lastModified", Calendar.getInstance());
+      dep.setProperty("jcr:data", "package dependencies; class Dep1 { String name = getClass().getName() }");
+
+      script.setProperty("jcr:data", Thread.currentThread().getContextClassLoader().getResourceAsStream(
+         "TestDependency.groovy"));
+
+      session.save();
+
+      // must be rebounded , not created other one
+      assertEquals(resourceNumber + 1, binder.getSize());
+      ContainerRequest creq =
+         new ContainerRequest("GET", new URI("/groovy-test-dependency"), new URI(""), null, new InputHeadersMap(
+            new MultivaluedMapImpl()));
+      ContainerResponse cres = new ContainerResponse(new DummyContainerResponseWriter());
+      handler.handleRequest(creq, cres);
+      assertEquals(200, cres.getStatus());
+      assertEquals("dependencies.Dep1", cres.getEntity());
+
    }
 }

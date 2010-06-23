@@ -939,6 +939,23 @@
    </component>
 
    <external-component-plugins>
+      <target-component>org.exoplatform.services.jcr.ext.script.groovy.GroovyScript2RestLoader</target-component>
+      <component-plugin>
+         <name>add groovy repo</name>
+         <set-method>addPlugin</set-method>
+         <type>org.exoplatform.services.jcr.ext.script.groovy.GroovyScriptAddRepoPlugin</type>
+         <init-params>
+            <properties-param>
+               <name>repo1</name>
+               <property name="repository" value="db1"/>
+               <property name="workspace" value="ws"/>
+               <property name="path" value="/repo"/>
+            </properties-param>
+         </init-params>
+      </component-plugin>
+   </external-component-plugins>
+
+   <external-component-plugins>
       <target-component>org.exoplatform.services.naming.InitialContextInitializer</target-component>
       <component-plugin>
          <name>bind.datasource</name>

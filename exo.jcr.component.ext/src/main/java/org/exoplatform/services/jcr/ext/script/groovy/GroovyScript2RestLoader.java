@@ -34,6 +34,7 @@ import org.exoplatform.services.jcr.ext.registry.RegistryEntry;
 import org.exoplatform.services.jcr.ext.registry.RegistryService;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.services.rest.ext.groovy.DefaultGroovyResourceLoader;
 import org.exoplatform.services.rest.ext.groovy.GroovyJaxrsPublisher;
 import org.exoplatform.services.rest.ext.groovy.ResourceId;
 import org.exoplatform.services.rest.impl.ResourceBinder;
@@ -47,13 +48,16 @@ import org.xml.sax.SAXException;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
@@ -135,10 +139,11 @@ public class GroovyScript2RestLoader implements Startable
     */
    public GroovyScript2RestLoader(ResourceBinder binder, GroovyScriptInstantiator groovyScriptInstantiator,
       RepositoryService repositoryService, ThreadLocalSessionProviderService sessionProviderService,
-      ConfigurationManager configurationManager, InitParams params)
+      ConfigurationManager configurationManager, org.exoplatform.services.jcr.ext.resource.jcr.Handler jcrUrlHandler,
+      InitParams params)
    {
       this(binder, groovyScriptInstantiator, repositoryService, sessionProviderService, configurationManager, null,
-         new GroovyJaxrsPublisher(binder, groovyScriptInstantiator), params);
+         new GroovyJaxrsPublisher(binder, groovyScriptInstantiator), jcrUrlHandler, params);
    }
 
    /**
@@ -152,16 +157,17 @@ public class GroovyScript2RestLoader implements Startable
     */
    public GroovyScript2RestLoader(ResourceBinder binder, GroovyScriptInstantiator groovyScriptInstantiator,
       RepositoryService repositoryService, ThreadLocalSessionProviderService sessionProviderService,
-      ConfigurationManager configurationManager, RegistryService registryService, InitParams params)
+      ConfigurationManager configurationManager, RegistryService registryService,
+      org.exoplatform.services.jcr.ext.resource.jcr.Handler jcrUrlHandler, InitParams params)
    {
       this(binder, groovyScriptInstantiator, repositoryService, sessionProviderService, configurationManager,
-         registryService, new GroovyJaxrsPublisher(binder, groovyScriptInstantiator), params);
+         registryService, new GroovyJaxrsPublisher(binder, groovyScriptInstantiator), jcrUrlHandler, params);
    }
 
    public GroovyScript2RestLoader(ResourceBinder binder, GroovyScriptInstantiator groovyScriptInstantiator,
       RepositoryService repositoryService, ThreadLocalSessionProviderService sessionProviderService,
       ConfigurationManager configurationManager, RegistryService registryService, GroovyJaxrsPublisher groovyPublisher,
-      InitParams params)
+      org.exoplatform.services.jcr.ext.resource.jcr.Handler jcrUrlHandler, InitParams params)
    {
       this.binder = binder;
       this.repositoryService = repositoryService;
@@ -393,6 +399,25 @@ public class GroovyScript2RestLoader implements Startable
             LOG.error("Error occurs ", e);
          }
       }
+
+      if (addRepoPlugins != null && addRepoPlugins.size() > 0)
+      {
+         try
+         {
+            Set<URL> repos = new HashSet<URL>();
+            for (GroovyScriptAddRepoPlugin pl : addRepoPlugins)
+            {
+               repos.addAll(pl.getRepositories());
+            }
+            this.groovyPublisher.getGroovyClassLoader().setResourceLoader(
+               new JcrGroovyResourceLoader(repos.toArray(new URL[repos.size()])));
+         }
+         catch (MalformedURLException e)
+         {
+            LOG.error("Unable add groovy script repository. ", e);
+         }
+      }
+
       // Finally bind this object as RESTful service.
       // NOTE this service does not implement ResourceContainer, as usually
       // done for this type of services. It can't be binded in common way cause
@@ -414,6 +439,8 @@ public class GroovyScript2RestLoader implements Startable
     */
    protected List<GroovyScript2RestLoaderPlugin> loadPlugins;
 
+   protected List<GroovyScriptAddRepoPlugin> addRepoPlugins;
+
    /**
     * @param cp See {@link ComponentPlugin}
     */
@@ -426,6 +453,14 @@ public class GroovyScript2RestLoader implements Startable
             loadPlugins = new ArrayList<GroovyScript2RestLoaderPlugin>();
          }
          loadPlugins.add((GroovyScript2RestLoaderPlugin)cp);
+      }
+      if (cp instanceof GroovyScriptAddRepoPlugin)
+      {
+         if (addRepoPlugins == null)
+         {
+            addRepoPlugins = new ArrayList<GroovyScriptAddRepoPlugin>();
+         }
+         addRepoPlugins.add((GroovyScriptAddRepoPlugin)cp);
       }
    }
 
@@ -1313,6 +1348,93 @@ public class GroovyScript2RestLoader implements Startable
    {
       int sl = fullPath.lastIndexOf('/');
       return sl >= 0 ? fullPath.substring(sl + 1) : fullPath;
+   }
+
+   /**
+    * JCR groovy resource resolver.
+    */
+   class JcrGroovyResourceLoader extends DefaultGroovyResourceLoader
+   {
+
+      public JcrGroovyResourceLoader(URL[] roots) throws MalformedURLException
+      {
+         super(normalizeJcrURL(roots));
+      }
+
+      @Override
+      protected URL getResource(String filename) throws MalformedURLException
+      {
+         filename = filename.intern();
+         URL resource = null;
+         synchronized (filename)
+         {
+            resource = resources.get(filename);
+            boolean inCache = resource != null;
+            for (URL root : roots)
+            {
+               if (resource == null)
+               {
+                  if ("jcr".equals(root.getProtocol()))
+                  {
+                     // In JCR URL path represented by fragment
+                     // jcr://repository/workspace#/path
+                     String ref = root.getRef();
+                     resource = new URL(root, "#" + ref + filename);
+                  }
+                  else
+                  {
+                     resource = new URL(root, filename);
+                  }
+               }
+               try
+               {
+                  if (LOG.isDebugEnabled())
+                     LOG.debug("Try to load resource from URL : " + resource);
+
+                  InputStream script = resource.openStream();
+                  script.close();
+
+                  break;
+               }
+               catch (IOException e)
+               {
+                  if (LOG.isDebugEnabled())
+                     LOG.debug("Can't open URL : " + resource);
+
+                  resource = null;
+               }
+            }
+            if (resource != null)
+            {
+               resources.put(filename, resource);
+            }
+            else if (inCache)
+            {
+               // Remove from map if resource is unreachable
+               resources.remove(filename);
+            }
+         }
+         return resource;
+      }
+   }
+
+   private static URL[] normalizeJcrURL(URL[] src) throws MalformedURLException
+   {
+      URL[] res = new URL[src.length];
+      for (int i = 0; i < src.length; i++)
+      {
+         String ref = src[i].getRef();
+         if (ref == null)
+         {
+            ref = "/";
+         }
+         else if (ref.charAt(ref.length() - 1) != '/')
+         {
+            ref = ref + "/";
+         }
+         res[i] = new URL(src[i], "#" + ref);
+      }
+      return res;
    }
 
    /**

@@ -37,7 +37,7 @@ import javax.jcr.Session;
 
 /**
  * URLStreamHandler for protocol <tt>jcr://</tt>.
- * 
+ *
  * @author <a href="mailto:andrew00x@gmail.com">Andrey Parfonov</a>
  * @version $Id: $
  */
@@ -48,12 +48,13 @@ public class Handler extends URLStreamHandler implements Startable
     * This is implements as Startable to be independent from other services. It
     * should be guaranty created, and set special system property.
     * Static fields repositoryService, nodeRepresentationService should be
-    * initialized once when Handler created by container. 
+    * initialized once when Handler created by container.
     */
 
    /**
-    * It specifies the package prefix name with should be added in System property
-    * java.protocol.handler.pkgs. Protocol handlers will be in a class called <tt>jcr</tt>.Handler.
+    * It specifies the package prefix name with should be added in System
+    * property java.protocol.handler.pkgs. Protocol handlers will be in a class
+    * called <tt>jcr</tt>.Handler.
     */
    private static final String protocolPathPkg = "org.exoplatform.services.jcr.ext.resource";
 
@@ -110,10 +111,6 @@ public class Handler extends URLStreamHandler implements Startable
             sessionProvider =
                (SessionProvider)ConversationState.getCurrent().getAttribute(SessionProvider.SESSION_PROVIDER);
 
-         // if still not set use anonymous session provider
-         if (sessionProvider == null)
-            sessionProvider = SessionProvider.createAnonimProvider();
-
          ManageableRepository repository;
          String repositoryName = nodeReference.getRepository();
          if (repositoryName == null || repositoryName.length() == 0)
@@ -132,7 +129,7 @@ public class Handler extends URLStreamHandler implements Startable
       }
       catch (Exception e)
       {
-         e.printStackTrace();
+         //e.printStackTrace();
          throw new IOException("Open connection to URL '" + url.toString() + "' failed!");
       }
    }

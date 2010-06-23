@@ -82,7 +82,7 @@ public class JcrURLConnection extends URLConnection
       }
       catch (Exception e)
       {
-         e.printStackTrace();
+         //e.printStackTrace();
          throw new IOException("Connection refused!");
       }
    }
@@ -103,7 +103,7 @@ public class JcrURLConnection extends URLConnection
       }
       catch (Exception e)
       {
-         e.printStackTrace();
+         //e.printStackTrace();
          throw new IOException("can't get input stream");
       }
    }
@@ -148,7 +148,7 @@ public class JcrURLConnection extends URLConnection
       }
       catch (Exception e)
       {
-         e.printStackTrace();
+         //e.printStackTrace();
       }
       return null;
    }
@@ -169,10 +169,13 @@ public class JcrURLConnection extends URLConnection
       }
       catch (Exception e)
       {
-         e.printStackTrace();
+         //e.printStackTrace();
       }
       return -1;
    }
+
+
+
 
    /*
     * (non-Javadoc)
@@ -202,7 +205,7 @@ public class JcrURLConnection extends URLConnection
       }
       catch (Exception e)
       {
-         e.printStackTrace();
+         //e.printStackTrace();
       }
       return null;
    }
@@ -216,11 +219,14 @@ public class JcrURLConnection extends URLConnection
    {
       try
       {
+         if (!connected)
+            connect();
+
          return nodeRepresentation.getLastModified();
       }
       catch (Exception e)
       {
-         e.printStackTrace();
+         //e.printStackTrace();
       }
       return 0;
    }
