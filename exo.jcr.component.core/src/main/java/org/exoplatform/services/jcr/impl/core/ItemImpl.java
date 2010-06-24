@@ -224,7 +224,7 @@ public abstract class ItemImpl implements Item
       if (isRoot())
          throw new ItemNotFoundException("Root node does not have a parent");
 
-      return parent();
+      return parent(true);
    }
 
    /**
@@ -723,27 +723,32 @@ public abstract class ItemImpl implements Item
       return getData().getQPath().getName();
    }
 
-   protected ItemImpl item(String identifier) throws RepositoryException
-   {
-      return dataManager.getItemByIdentifier(identifier, false);
-   }
-
    /**
-    * Get parent node item.
+    * Get parent node item. Session pool is ignored.
     * 
     * @return parent item
-    * @throws RepositoryException
-    *           if parent item is null
+    * @throws RepositoryException if parent item is null
     */
    protected NodeImpl parent() throws RepositoryException
    {
-      NodeImpl parent = (NodeImpl)item(getParentIdentifier());
+      return parent(false);
+   }
+
+   /**
+    * Get parent node item. 
+    * 
+    * @param pool - take a parent from session pool
+    * @return parent item
+    * @throws RepositoryException if parent item is null
+    */
+   protected NodeImpl parent(final boolean pool) throws RepositoryException
+   {
+      NodeImpl parent = (NodeImpl)dataManager.getItemByIdentifier(getParentIdentifier(), pool);
       if (parent == null)
       {
          throw new ItemNotFoundException("FATAL: Parent is null for " + getPath() + " parent UUID: "
             + getParentIdentifier());
       }
-
       return parent;
    }
 
