@@ -728,8 +728,6 @@
                         <exclude>org/apache/jackrabbit/test/api/TestAll.java</exclude>
                         <exclude>org/apache/jackrabbit/test/api/**/Abstract*.java</exclude>
                         <exclude>org/apache/jackrabbit/test/api/**/FrozenNodeTest.java</exclude>
-                        <!-- security -->
-                        <exclude>org/exoplatform/services/jcr/impl/core/security/Test*.java</exclude>
                      </excludes>
                   </configuration>
                </plugin>

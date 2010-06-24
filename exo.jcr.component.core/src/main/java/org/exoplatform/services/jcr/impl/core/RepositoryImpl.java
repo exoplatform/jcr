@@ -400,12 +400,6 @@ public class RepositoryImpl implements ManageableRepository
     */
    public SessionImpl getSystemSession(String workspaceName) throws RepositoryException
    {
-      // Need privileges to get system session.
-      SecurityManager security = System.getSecurityManager();
-      if (security != null)
-      {
-         security.checkPermission(JCRRuntimePermissions.GET_SYSTEM_SESSION_PERMISSION);
-      }
 
       if (getState() == OFFLINE)
          LOG.warn("Repository " + getName() + " is OFFLINE.");
@@ -574,9 +568,9 @@ public class RepositoryImpl implements ManageableRepository
 
       ConversationState state;
 
-      PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
+      PrivilegedExceptionAction<ConversationState> action = new PrivilegedExceptionAction<ConversationState>()
       {
-         public Object run() throws Exception
+         public ConversationState run() throws Exception
          {
             if (credentials != null)
                return authenticationPolicy.authenticate(credentials);
@@ -586,7 +580,7 @@ public class RepositoryImpl implements ManageableRepository
       };
       try
       {
-         state = (ConversationState)AccessController.doPrivileged(action);
+         state = AccessController.doPrivileged(action);
       }
       catch (PrivilegedActionException pae)
       {

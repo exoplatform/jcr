@@ -25,7 +25,7 @@ package org.exoplatform.services.jcr.core.security;
 public class JCRRuntimePermissions
 {
 
-   public static final RuntimePermission GET_SYSTEM_SESSION_PERMISSION = new RuntimePermission("getJCRSystemSession");
+   public static final RuntimePermission CREATE_SYSTEM_SESSION_PERMISSION = new RuntimePermission("createSystemSession");
 
    public static final RuntimePermission MANAGE_REPOSITORY_PERMISSION = new RuntimePermission("manageRepository");
 

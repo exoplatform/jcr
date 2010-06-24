@@ -21,11 +21,13 @@ package org.exoplatform.services.jcr.impl.core;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
 import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableResourceManager;
 import org.exoplatform.services.jcr.impl.util.io.PrivilegedSystemHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.ConversationState;
+import org.exoplatform.services.security.IdentityConstants;
 import org.exoplatform.services.transaction.TransactionService;
 
 import javax.jcr.LoginException;
@@ -116,11 +118,20 @@ public class SessionFactory
     * Creates Session object by given Credentials
     * 
     * @param credentials
-    * @return XASessionImpl if TransactionService present or SessionImpl otherwice
+    * @return XASessionImpl if TransactionService present or SessionImpl otherwise
     * @throws RepositoryException
     */
    SessionImpl createSession(ConversationState user) throws RepositoryException, LoginException
    {
+      if (IdentityConstants.SYSTEM.equals(user.getIdentity().getUserId()))
+      {
+         // Need privileges to get system session.
+         SecurityManager security = System.getSecurityManager();
+         if (security != null)
+         {
+            security.checkPermission(JCRRuntimePermissions.CREATE_SYSTEM_SESSION_PERMISSION);
+         }         
+      }
       if (tService == null)
       {
          if (SessionReference.isStarted())

@@ -20,8 +20,10 @@
 package org.exoplatform.services.jcr.impl.core.security;
 
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.TesterItemsPersistenceListener;
+import org.exoplatform.services.security.IdentityConstants;
 
 import java.security.AccessControlException;
 import java.security.PrivilegedExceptionAction;
@@ -85,6 +87,32 @@ public class TestSecurityRepositoryManagment extends BaseSecurityTest
       }
    }
 
+   public void testGetSystemSessionFail2()
+   {
+      PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
+      {
+         public Object run() throws Exception
+         {
+            repository.login(new CredentialsImpl(IdentityConstants.SYSTEM, "".toCharArray()), repository.getSystemWorkspaceName());
+            return null;
+         }
+
+      };
+      try
+      {
+         doPrivilegedAction(action);
+         fail("Must not be able get system session.");
+      }
+      catch (AccessControlException ace)
+      {
+         // OK
+      }
+      catch (Throwable t)
+      {
+         t.printStackTrace();
+         fail();
+      }
+   }
    public void testAddItemPersistenceListenerSuccess()
    {
       PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
@@ -174,9 +202,30 @@ public class TestSecurityRepositoryManagment extends BaseSecurityTest
          fail();
       }
 
-      // remove configured workspace
-      repository.createWorkspace("testConfigWorkspaceSuccess");
-      repository.internalRemoveWorkspace("testConfigWorkspaceSuccess");
+      action = new PrivilegedExceptionAction<Object>()
+      {
+         public Object run() throws Exception
+         {
+            // remove configured workspace
+            repository.createWorkspace("testConfigWorkspaceSuccess");
+            repository.internalRemoveWorkspace("testConfigWorkspaceSuccess");
+            return null;
+         }
+
+      };
+      try
+      {
+         doPrivilegedActionStaticPermissions(action);
+      }
+      catch (AccessControlException ace)
+      {
+         fail("Must be able config workspace. We are under static permissions");
+      }
+      catch (Throwable t)
+      {
+         t.printStackTrace();
+         fail();
+      }
    }
 
    public void testConfigWorkspaceFail() throws Exception
@@ -223,7 +272,7 @@ public class TestSecurityRepositoryManagment extends BaseSecurityTest
       WorkspaceEntry defConfig =
          (WorkspaceEntry)session.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
 
-      WorkspaceEntry wsConfig = new WorkspaceEntry();
+      final WorkspaceEntry wsConfig = new WorkspaceEntry();
       wsConfig.setName("testCreateWorkspaceSuccess");
 
       wsConfig.setAccessManager(defConfig.getAccessManager());
@@ -231,12 +280,11 @@ public class TestSecurityRepositoryManagment extends BaseSecurityTest
       wsConfig.setContainer(defConfig.getContainer());
       wsConfig.setLockManager(defConfig.getLockManager());
 
-      repository.configWorkspace(wsConfig);
-
       PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
       {
          public Object run() throws Exception
          {
+            repository.configWorkspace(wsConfig);
             repository.createWorkspace("testCreateWorkspaceSuccess");
             return null;
          }
@@ -255,9 +303,30 @@ public class TestSecurityRepositoryManagment extends BaseSecurityTest
          t.printStackTrace();
          fail();
       }
+      action = new PrivilegedExceptionAction<Object>()
+      {
+         public Object run() throws Exception
+         {
+            // remove configured workspace
+            repository.internalRemoveWorkspace("testCreateWorkspaceSuccess");
+            return null;
+         }
 
-      // remove configured workspace
-      repository.internalRemoveWorkspace("testCreateWorkspaceSuccess");
+      };
+      try
+      {
+         doPrivilegedActionStaticPermissions(action);
+      }
+      catch (AccessControlException ace)
+      {
+         fail("Must be able config workspace. We are under static permissions");
+      }
+      catch (Throwable t)
+      {
+         t.printStackTrace();
+         fail();
+      }
+
    }
 
    public void testCreateWorkspaceFail()
@@ -293,7 +362,7 @@ public class TestSecurityRepositoryManagment extends BaseSecurityTest
       WorkspaceEntry defConfig =
          (WorkspaceEntry)session.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
 
-      WorkspaceEntry wsConfig = new WorkspaceEntry();
+      final WorkspaceEntry wsConfig = new WorkspaceEntry();
       wsConfig.setName("testInternalRemoveWorkspaceSuccess");
 
       wsConfig.setAccessManager(defConfig.getAccessManager());
@@ -301,13 +370,13 @@ public class TestSecurityRepositoryManagment extends BaseSecurityTest
       wsConfig.setContainer(defConfig.getContainer());
       wsConfig.setLockManager(defConfig.getLockManager());
 
-      repository.configWorkspace(wsConfig);
-      repository.createWorkspace("testInternalRemoveWorkspaceSuccess");
 
       PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
       {
          public Object run() throws Exception
          {
+            repository.configWorkspace(wsConfig);
+            repository.createWorkspace("testInternalRemoveWorkspaceSuccess");
             repository.internalRemoveWorkspace("testInternalRemoveWorkspaceSuccess");
             return null;
          }

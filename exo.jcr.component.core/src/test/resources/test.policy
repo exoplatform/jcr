@@ -7,6 +7,6 @@ grant codeBase "@MAIN_CLASSES@-"{
 };
 
 grant codeBase "@TEST_CLASSES@-"{
-   permission java.lang.RuntimePermission "getJCRSystemSession";
+   permission java.lang.RuntimePermission "createSystemSession";
    permission java.lang.RuntimePermission "manageRepository";
 };
