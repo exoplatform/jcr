@@ -303,6 +303,8 @@ public class GroovyScript2RestLoaderTest extends BaseStandaloneTest
       dep.setProperty("jcr:lastModified", Calendar.getInstance());
       dep.setProperty("jcr:data", "package dependencies; class Dep1 { String name = getClass().getName() }");
 
+      session.save();
+
       script.setProperty("jcr:data", Thread.currentThread().getContextClassLoader().getResourceAsStream(
          "TestDependency.groovy"));
 
