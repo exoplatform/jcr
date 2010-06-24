@@ -32,6 +32,7 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Locale;
 
 import javax.jcr.Node;
 import javax.jcr.Property;
@@ -58,7 +59,7 @@ public class TestCaching extends BaseStandaloneTest
       node = TestUtils.addContent(session, path, inputStream, defaultFileNodeType, "");
    }
 
-   public void _testNotModifiedSince() throws Exception
+   public void testNotModifiedSince() throws Exception
    {
       Node contentNode = node.getNode("jcr:content");
       Property lastModifiedProperty = contentNode.getProperty("jcr:lastModified");
@@ -77,7 +78,7 @@ public class TestCaching extends BaseStandaloneTest
       assertEquals(HTTPStatus.OK, response.getStatus());
    }
    
-   public void _testIfModifiedSince() throws Exception
+   public void testIfModifiedSince() throws Exception
    {
       Node contentNode = node.getNode("jcr:content");
       Property lastModifiedProperty = contentNode.getProperty("jcr:lastModified");
@@ -95,6 +96,22 @@ public class TestCaching extends BaseStandaloneTest
       assertEquals(HTTPStatus.NOT_MODIFIED, response.getStatus());
    }
 
+   public void _testNotModifiedSinceFRLocale() throws Exception
+   {
+      Node contentNode = node.getNode("jcr:content");
+      Property lastModifiedProperty = contentNode.getProperty("jcr:lastModified");
+      
+      SimpleDateFormat sdf = new SimpleDateFormat(WebDavConst.DateFormat.IF_MODIFIED_SINCE_PATTERN, Locale.FRENCH);  
+
+      String ifModifiedDate = sdf.format(sdf.getCalendar().getTime());
+      
+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+      headers.add(ExtHttpHeaders.IF_MODIFIED_SINCE, ifModifiedDate);
+      ContainerResponse response = service(WebDAVMethods.GET, getPathWS() + path, "", headers, null);
+      
+      assertEquals(HTTPStatus.OK, response.getStatus());
+   }
+   
    public void testCacheConf() throws Exception
    {
       ArrayList<CacheControlType> testValues = new ArrayList<CacheControlType>();
