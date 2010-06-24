@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
@@ -131,7 +132,7 @@ public class GetCommand
             // check before any other reads
             if (ifModifiedSince != null) 
             {
-               DateFormat dateFormat = new SimpleDateFormat(WebDavConst.DateFormat.IF_MODIFIED_SINCE_PATTERN);
+               DateFormat dateFormat = new SimpleDateFormat(WebDavConst.DateFormat.IF_MODIFIED_SINCE_PATTERN, Locale.US);
                Date lastModifiedDate = dateFormat.parse(lastModifiedProperty.getValue());
                
                dateFormat = new SimpleDateFormat(WebDavConst.DateFormat.MODIFICATION);

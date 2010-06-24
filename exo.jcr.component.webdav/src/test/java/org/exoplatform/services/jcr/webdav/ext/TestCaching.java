@@ -94,7 +94,7 @@ public class TestCaching extends BaseStandaloneTest
       
       assertEquals(HTTPStatus.NOT_MODIFIED, response.getStatus());
    }
-
+   
    public void testCacheConf() throws Exception
    {
       ArrayList<CacheControlType> testValues = new ArrayList<CacheControlType>();
