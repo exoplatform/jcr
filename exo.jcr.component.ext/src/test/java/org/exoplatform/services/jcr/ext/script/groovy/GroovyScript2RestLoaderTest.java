@@ -24,17 +24,18 @@ import org.exoplatform.services.jcr.ext.common.SessionProvider;
 import org.exoplatform.services.jcr.ext.registry.RESTRegistryTest.DummyContainerResponseWriter;
 import org.exoplatform.services.jcr.ext.script.groovy.GroovyScript2RestLoader.ScriptMetadata;
 import org.exoplatform.services.rest.RequestHandler;
-import org.exoplatform.services.rest.impl.ContainerRequest;
 import org.exoplatform.services.rest.impl.ContainerResponse;
-import org.exoplatform.services.rest.impl.InputHeadersMap;
 import org.exoplatform.services.rest.impl.MultivaluedMapImpl;
 import org.exoplatform.services.rest.impl.ResourceBinder;
 import org.exoplatform.services.rest.tools.ByteArrayContainerResponseWriter;
+import org.exoplatform.services.rest.tools.ResourceLauncher;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.Identity;
 
 import java.io.ByteArrayInputStream;
-import java.net.URI;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Calendar;
 
 import javax.jcr.Node;
@@ -54,6 +55,7 @@ public class GroovyScript2RestLoaderTest extends BaseStandaloneTest
 
    private ResourceBinder binder;
 
+   @Deprecated
    private RequestHandler handler;
 
    private ThreadLocalSessionProviderService sesProv;
@@ -65,6 +67,8 @@ public class GroovyScript2RestLoaderTest extends BaseStandaloneTest
    private Node groovyRepo;
 
    private int resourceNumber = 0;
+
+   private ResourceLauncher launcher;
 
    /**
     * {@inheritDoc}
@@ -92,6 +96,8 @@ public class GroovyScript2RestLoaderTest extends BaseStandaloneTest
 
       // repository for groovy dependencies
       groovyRepo = root.addNode("repo", "nt:folder");
+
+      launcher = new ResourceLauncher(handler);
 
       session.save();
    }
@@ -121,34 +127,24 @@ public class GroovyScript2RestLoaderTest extends BaseStandaloneTest
    {
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
       headers.putSingle("Accept", MediaType.APPLICATION_JSON);
-      ContainerRequest creq =
-         new ContainerRequest("POST", new URI("/script/groovy/meta/db1/ws/testRoot/script"), new URI(""), null,
-            new InputHeadersMap(headers));
-      ContainerResponse cres = new ContainerResponse(new DummyContainerResponseWriter());
-      handler.handleRequest(creq, cres);
-
-      assertEquals(200, cres.getStatus());
-      ScriptMetadata data = (ScriptMetadata)cres.getEntity();
+      ContainerResponse response =
+         launcher.service("POST", "/script/groovy/meta/db1/ws/testRoot/script", "", headers, null, null);
+      assertEquals(200, response.getStatus());
+      ScriptMetadata data = (ScriptMetadata)response.getEntity();
       assertEquals("script/groovy", data.getMediaType());
       assertTrue(Boolean.valueOf(data.getLoad()));
    }
 
    public void testRemoteAccessAutoload() throws Exception
    {
-      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
-      ContainerRequest creq =
-         new ContainerRequest("POST", new URI("/script/groovy/autoload/db1/ws/testRoot/script?state=false"),
-            new URI(""), null, new InputHeadersMap(headers));
-      ContainerResponse cres = new ContainerResponse(new DummyContainerResponseWriter());
-      handler.handleRequest(creq, cres);
+
+      ContainerResponse cres =
+         launcher.service("POST", "/script/groovy/autoload/db1/ws/testRoot/script?state=false", "", null, null, null);
 
       assertEquals(204, cres.getStatus());
       assertFalse(script.getProperty("exo:autoload").getBoolean());
-      creq =
-         new ContainerRequest("POST", new URI("/script/groovy/autoload/db1/ws/testRoot/script"), new URI(""), null,
-            new InputHeadersMap(headers));
-      cres = new ContainerResponse(new DummyContainerResponseWriter());
-      handler.handleRequest(creq, cres);
+
+      cres = launcher.service("POST", "/script/groovy/autoload/db1/ws/testRoot/script", "", null, null, null);
 
       assertEquals(204, cres.getStatus());
       assertTrue(script.getProperty("exo:autoload").getBoolean());
@@ -156,20 +152,13 @@ public class GroovyScript2RestLoaderTest extends BaseStandaloneTest
 
    public void testRemoteAccessLoad() throws Exception
    {
-      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
-      ContainerRequest creq =
-         new ContainerRequest("POST", new URI("/script/groovy/load/db1/ws/testRoot/script?state=false"), new URI(""),
-            null, new InputHeadersMap(headers));
-      ContainerResponse cres = new ContainerResponse(new DummyContainerResponseWriter());
-      handler.handleRequest(creq, cres);
+      ContainerResponse cres =
+         launcher.service("POST", "/script/groovy/load/db1/ws/testRoot/script?state=false", "", null, null, null);
 
       assertEquals(204, cres.getStatus());
       assertEquals(resourceNumber, binder.getSize());
-      creq =
-         new ContainerRequest("POST", new URI("/script/groovy/load/db1/ws/testRoot/script"), new URI(""), null,
-            new InputHeadersMap(headers));
-      cres = new ContainerResponse(new DummyContainerResponseWriter());
-      handler.handleRequest(creq, cres);
+
+      launcher.service("POST", "/script/groovy/load/db1/ws/testRoot/script", "", null, null, null);
 
       assertEquals(204, cres.getStatus());
       assertEquals(resourceNumber + 1, binder.getSize());
@@ -177,12 +166,8 @@ public class GroovyScript2RestLoaderTest extends BaseStandaloneTest
 
    public void testRemoteAccessDelete() throws Exception
    {
-      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
-      ContainerRequest creq =
-         new ContainerRequest("POST", new URI("/script/groovy/delete/db1/ws/testRoot/script"), new URI(""), null,
-            new InputHeadersMap(headers));
-      ContainerResponse cres = new ContainerResponse(new DummyContainerResponseWriter());
-      handler.handleRequest(creq, cres);
+      ContainerResponse cres =
+         launcher.service("POST", "/script/groovy/delete/db1/ws/testRoot/script", "", null, null, null);
 
       assertEquals(204, cres.getStatus());
       assertEquals(resourceNumber, binder.getSize());
@@ -192,13 +177,9 @@ public class GroovyScript2RestLoaderTest extends BaseStandaloneTest
    {
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
       headers.putSingle("Accept", "script/groovy");
-      ContainerRequest creq =
-         new ContainerRequest("POST", new URI("/script/groovy/src/db1/ws/testRoot/script"), new URI(""), null,
-            new InputHeadersMap(headers));
       ByteArrayContainerResponseWriter wr = new ByteArrayContainerResponseWriter();
-      ContainerResponse cres = new ContainerResponse(wr);
-      handler.handleRequest(creq, cres);
-
+      ContainerResponse cres =
+         launcher.service("POST", "/script/groovy/src/db1/ws/testRoot/script", "", headers, null, wr, null);
       assertEquals(200, cres.getStatus());
       compareStream(script.getProperty("jcr:data").getStream(), new ByteArrayInputStream(wr.getBody()));
    }
@@ -209,25 +190,17 @@ public class GroovyScript2RestLoaderTest extends BaseStandaloneTest
       session.save();
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
       headers.putSingle("Content-type", "script/groovy");
-      ContainerRequest creq =
-         new ContainerRequest("POST", new URI("/script/groovy/add/db1/ws/testRoot/script"), new URI(""), Thread
-            .currentThread().getContextClassLoader().getResourceAsStream("test1.groovy"), new InputHeadersMap(headers));
-      ByteArrayContainerResponseWriter wr = new ByteArrayContainerResponseWriter();
-      ContainerResponse cres = new ContainerResponse(wr);
-      handler.handleRequest(creq, cres);
+
+      ContainerResponse cres =
+         launcher.service("POST", "/script/groovy/add/db1/ws/testRoot/script", "", headers,
+            getResourceAsBytes("test1.groovy"), null, null);
 
       assertEquals(201, cres.getStatus());
    }
 
    public void testDispatchScript() throws Exception
    {
-      ContainerRequest creq =
-         new ContainerRequest("GET", new URI("/groovy-test/groovy1/test"), new URI(""), null, new InputHeadersMap(
-            new MultivaluedMapImpl()));
-
-      ContainerResponse cres = new ContainerResponse(new DummyContainerResponseWriter());
-
-      handler.handleRequest(creq, cres);
+      ContainerResponse cres = launcher.service("GET", "/groovy-test/groovy1/test", "", null, null, null);
 
       assertEquals(200, cres.getStatus());
       assertEquals("Hello from groovy to test", cres.getEntity());
@@ -239,12 +212,9 @@ public class GroovyScript2RestLoaderTest extends BaseStandaloneTest
 
       // must be rebounded , not created other one
       assertEquals(resourceNumber + 1, binder.getSize());
-      creq =
-         new ContainerRequest("GET", new URI("/groovy-test/groovy2/test"), new URI(""), null, new InputHeadersMap(
-            new MultivaluedMapImpl()));
 
       cres = new ContainerResponse(new DummyContainerResponseWriter());
-      handler.handleRequest(creq, cres);
+      cres = launcher.service("GET", "/groovy-test/groovy2/test", "", null, null, null);
       assertEquals(200, cres.getStatus());
       assertEquals("Hello from groovy to >>>>> test", cres.getEntity());
    }
@@ -254,20 +224,14 @@ public class GroovyScript2RestLoaderTest extends BaseStandaloneTest
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
       headers.putSingle("Content-Type", "script/groovy");
       String script = "public class Test { def a = 0\ndef =\n}\n";
-      ContainerRequest creq =
-         new ContainerRequest("POST", new URI("/script/groovy/validate/%5Bno-name%5D"), new URI(""),
-            new ByteArrayInputStream(script.getBytes()), new InputHeadersMap(headers));
-      ContainerResponse cres = new ContainerResponse(new DummyContainerResponseWriter());
-      handler.handleRequest(creq, cres);
+
+      ContainerResponse cres =
+         launcher.service("POST", "/script/groovy/validate/%5Bno-name%5D", "", headers, script.getBytes(), null);
       assertEquals(400, cres.getStatus());
       System.out.println(cres.getEntity());
 
-      // cres.setResponse(null); //reset response
       script = "public class Test { def a = 0\ndef b = 1\n }\n";
-      creq =
-         new ContainerRequest("POST", new URI("/script/groovy/validate/%5Bno-name%5D"), new URI(""),
-            new ByteArrayInputStream(script.getBytes()), new InputHeadersMap(headers));
-      handler.handleRequest(creq, cres);
+      cres = launcher.service("POST", "/script/groovy/validate/%5Bno-name%5D", "", headers, script.getBytes(), null);
       assertEquals(200, cres.getStatus());
    }
 
@@ -276,21 +240,16 @@ public class GroovyScript2RestLoaderTest extends BaseStandaloneTest
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
       headers.putSingle("Content-Type", "script/groovy");
       String script = "public class Test { def a = 0\ndef =\n}\n";
-      ContainerRequest creq =
-         new ContainerRequest("POST", new URI("/script/groovy/validate/"), new URI(""), new ByteArrayInputStream(script
-            .getBytes()), new InputHeadersMap(headers));
-      ContainerResponse cres = new ContainerResponse(new DummyContainerResponseWriter());
-      handler.handleRequest(creq, cres);
+
+      ContainerResponse cres =
+         launcher.service("POST", "/script/groovy/validate/", "", headers, script.getBytes(), null);
       assertEquals(400, cres.getStatus());
       System.out.println(cres.getEntity());
 
-      // cres.setResponse(null); //reset response
       script = "public class Test { def a = 0\ndef b = 1\n }\n";
-      creq =
-         new ContainerRequest("POST", new URI("/script/groovy/validate/"), new URI(""), new ByteArrayInputStream(script
-            .getBytes()), new InputHeadersMap(headers));
-      handler.handleRequest(creq, cres);
+      cres = launcher.service("POST", "/script/groovy/validate/", "", headers, script.getBytes(), null);
       assertEquals(200, cres.getStatus());
+
    }
 
    public void testGroovyDependency() throws Exception
@@ -312,13 +271,29 @@ public class GroovyScript2RestLoaderTest extends BaseStandaloneTest
 
       // must be rebounded , not created other one
       assertEquals(resourceNumber + 1, binder.getSize());
-      ContainerRequest creq =
-         new ContainerRequest("GET", new URI("/groovy-test-dependency"), new URI(""), null, new InputHeadersMap(
-            new MultivaluedMapImpl()));
-      ContainerResponse cres = new ContainerResponse(new DummyContainerResponseWriter());
-      handler.handleRequest(creq, cres);
+
+      ContainerResponse cres = launcher.service("GET", "/groovy-test-dependency", "", null, null, null);
       assertEquals(200, cres.getStatus());
       assertEquals("dependencies.Dep1", cres.getEntity());
 
    }
+
+   private byte[] getResourceAsBytes(String resource) throws IOException
+   {
+      byte[] data = null;
+      InputStream stream = Thread.currentThread().getContextClassLoader().getResourceAsStream(resource);
+      if (stream != null)
+      {
+         ByteArrayOutputStream bout = new ByteArrayOutputStream();
+         byte[] buf = new byte[1024];
+         int r = -1;
+         while ((r = stream.read(buf)) != -1)
+         {
+            bout.write(buf, 0, r);
+         }
+         data = bout.toByteArray();
+      }
+      return data;
+   }
+
 }
