@@ -180,6 +180,10 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
          configTableName = configTableName.toUpperCase().toLowerCase(); // ingres needs it
          binType = "LONG BYTE";
       }
+      else if (DBConstants.DB_DIALECT_MYSQL.equalsIgnoreCase(dialect) 
+               || DBConstants.DB_DIALECT_MYSQL_UTF8.equalsIgnoreCase(dialect)) {
+         binType = "LONGBLOB";
+      }
 
       this.initSQL =
          "CREATE TABLE " + configTableName + " (" + "NAME VARCHAR(64) NOT NULL, " + "CONFIG " + binType + " NOT NULL, "
