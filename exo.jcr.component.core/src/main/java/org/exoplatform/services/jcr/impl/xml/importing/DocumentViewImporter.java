@@ -53,7 +53,9 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.ConversationState;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -421,11 +423,20 @@ public class DocumentViewImporter extends BaseXmlImporter
    {
       try
       {
+         InputStream vStream = new ByteArrayInputStream(Base64.decode(propertiesMap.get(propName)));
+         TransientValueData binaryValue =
+            new TransientValueData(0, vStream, valueFactory.getFileCleaner(), valueFactory.getMaxBufferSize(), null,
+               true);
+         binaryValue.getAsStream().close();
+
          newProperty =
-            TransientPropertyData.createPropertyData(getParent(), propName, PropertyType.BINARY, false,
-               new TransientValueData(0, Base64.decode(propertiesMap.get(propName))));
+            TransientPropertyData.createPropertyData(getParent(), propName, PropertyType.BINARY, false, binaryValue);
       }
       catch (DecodingException e)
+      {
+         throw new RepositoryException(e);
+      }
+      catch (IOException e)
       {
          throw new RepositoryException(e);
       }
