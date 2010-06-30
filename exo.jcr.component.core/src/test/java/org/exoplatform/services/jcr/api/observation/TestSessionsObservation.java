@@ -59,6 +59,9 @@ public class TestSessionsObservation extends JcrAPIBaseTest
       testRootWs.remove();
       session.save();
 
+      sessionWs1 = (SessionImpl)repository.login(credentials, "ws1");
+      testRootWs1 = sessionWs1.getRootNode().getNode("observationTest");
+
       testRootWs1.remove();
       sessionWs1.save();
 

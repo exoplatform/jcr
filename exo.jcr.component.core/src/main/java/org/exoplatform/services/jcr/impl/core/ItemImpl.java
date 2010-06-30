@@ -153,8 +153,18 @@ public abstract class ItemImpl implements Item
     */
    protected boolean checkValid() throws InvalidItemStateException
    {
+      if (!session.isLive())
+      {
+         log
+            .warn(
+               "This kind of operation is forbidden after a session.logout(), please note that an exception will be raised in the next jcr version.",
+               new Exception());
+      }
+
       if (data == null)
+      {
          throw new InvalidItemStateException("Invalid item state. Item was removed or discarded.");
+      }
 
       session.updateLastAccessTime();
       return true;
@@ -221,7 +231,9 @@ public abstract class ItemImpl implements Item
       checkValid();
 
       if (isRoot())
+      {
          throw new ItemNotFoundException("Root node does not have a parent");
+      }
 
       return parent(true);
    }
@@ -251,10 +263,14 @@ public abstract class ItemImpl implements Item
       if (isValid())
       {
          if (otherItem == null)
+         {
             return false;
+         }
 
          if (!this.getClass().equals(otherItem.getClass()))
+         {
             return false;
+         }
 
          try
          {
@@ -454,7 +470,9 @@ public abstract class ItemImpl implements Item
          identifier = prevProp.getInternalIdentifier();
          version = prevProp.getData().getPersistedVersion();
          if (propertyValues == null)
+         {
             state = ItemState.DELETED;
+         }
          else
          {
             state = ItemState.UPDATED;
@@ -551,7 +569,9 @@ public abstract class ItemImpl implements Item
             else
             {
                if (log.isDebugEnabled())
+               {
                   log.debug("Set null value (" + getPath() + ", multivalued: " + multiValue + ")");
+               }
             }
          }
       }
@@ -642,10 +662,14 @@ public abstract class ItemImpl implements Item
 
                   // mix:referenceable
                   if (changedItem.isDeleted())
+                  {
                      refNodes.add(refNode); // add to refs (delete - alway is first)
+                  }
                   else if (changedItem.isAdded() || changedItem.isRenamed())
+                  {
                      refNodes.remove(refNode); // remove from refs (add - always at the
-                  // end)
+                     // end)
+                  }
                }
             }
          }
@@ -659,7 +683,9 @@ public abstract class ItemImpl implements Item
                // if ref property is deleted in this session
                ItemState refState = dataManager.getChangesLog().getItemState(refProp.getIdentifier());
                if (refState != null && refState.isDeleted())
+               {
                   continue;
+               }
 
                NodeData refParent = (NodeData)dataManager.getItemData(refProp.getParentIdentifier());
                AccessControlList acl = refParent.getACL();
@@ -803,7 +829,9 @@ public abstract class ItemImpl implements Item
    public JCRPath getLocation() throws RepositoryException
    {
       if (this.location == null)
+      {
          this.location = session.getLocationFactory().createJCRPath(qpath);
+      }
 
       return this.location;
    }
@@ -869,7 +897,9 @@ public abstract class ItemImpl implements Item
          ItemImpl otherItem = (ItemImpl)obj;
 
          if (!otherItem.isValid() || !this.isValid())
+         {
             return false;
+         }
 
          try
          {

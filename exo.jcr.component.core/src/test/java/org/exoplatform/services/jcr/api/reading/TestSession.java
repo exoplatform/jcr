@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.api.reading;
 
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
 
 import java.util.Calendar;
 
@@ -86,7 +87,8 @@ public class TestSession extends JcrAPIBaseTest
 
    public void testLogout() throws Exception
    {
-      session.logout();
+      Session localSession = repository.login(credentials, "ws");
+      localSession.logout();
    }
 
    public void testGetRootNode() throws RepositoryException
@@ -150,7 +152,9 @@ public class TestSession extends JcrAPIBaseTest
       {
          // folder.refresh(false);
          if (log.isDebugEnabled())
+         {
             log.debug("SDM before remove: " + session.getTransientNodesManager().dump());
+         }
          folder.remove();
          session.save();
       }
