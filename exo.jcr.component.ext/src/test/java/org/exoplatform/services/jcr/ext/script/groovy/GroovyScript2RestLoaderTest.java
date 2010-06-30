@@ -55,9 +55,6 @@ public class GroovyScript2RestLoaderTest extends BaseStandaloneTest
 
    private ResourceBinder binder;
 
-   @Deprecated
-   private RequestHandler handler;
-
    private ThreadLocalSessionProviderService sesProv;
 
    private Node scriptFile;
@@ -83,7 +80,7 @@ public class GroovyScript2RestLoaderTest extends BaseStandaloneTest
       sesProv.setSessionProvider(null, new SessionProvider(new ConversationState(new Identity("root"))));
       binder = (ResourceBinder)container.getComponentInstanceOfType(ResourceBinder.class);
       resourceNumber = binder.getSize();
-      handler = (RequestHandler)container.getComponentInstanceOfType(RequestHandler.class);
+      RequestHandler handler = (RequestHandler)container.getComponentInstanceOfType(RequestHandler.class);
 
       testRoot = root.addNode("testRoot", "nt:unstructured");
       scriptFile = testRoot.addNode("script", "nt:file");
