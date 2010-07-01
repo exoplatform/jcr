@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
+import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.access.AccessManager;
@@ -31,8 +32,8 @@ import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.core.lock.WorkspaceLockManager;
 import org.exoplatform.services.jcr.impl.core.lock.SessionLockManager;
+import org.exoplatform.services.jcr.impl.core.lock.WorkspaceLockManager;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeImpl;
 import org.exoplatform.services.jcr.impl.core.observation.ObservationManagerImpl;
 import org.exoplatform.services.jcr.impl.core.observation.ObservationManagerRegistry;
@@ -246,7 +247,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    {
 
       checkLive();
-      
+
       LocationFactory factory = new LocationFactory(((NamespaceRegistryImpl)repository.getNamespaceRegistry()));
 
       WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
@@ -287,7 +288,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    {
 
       checkLive();
-      
+
       LocationFactory factory = new LocationFactory(((NamespaceRegistryImpl)repository.getNamespaceRegistry()));
 
       WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
@@ -329,9 +330,9 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    public void exportWorkspaceSystemView(OutputStream out, boolean skipBinary, boolean noRecurse) throws IOException,
       PathNotFoundException, RepositoryException
    {
-      
+
       checkLive();
-      
+
       LocationFactory factory = new LocationFactory(((NamespaceRegistryImpl)repository.getNamespaceRegistry()));
 
       WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
@@ -371,9 +372,9 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    public void exportSystemView(String absPath, ContentHandler contentHandler, boolean skipBinary, boolean noRecurse)
       throws PathNotFoundException, SAXException, RepositoryException
    {
-      
+
       checkLive();
-      
+
       LocationFactory factory = new LocationFactory(((NamespaceRegistryImpl)repository.getNamespaceRegistry()));
 
       WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
@@ -411,7 +412,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       throws IOException, PathNotFoundException, RepositoryException
    {
       checkLive();
-      
+
       LocationFactory factory = new LocationFactory(((NamespaceRegistryImpl)repository.getNamespaceRegistry()));
 
       WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
@@ -864,10 +865,14 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    {
       if (!live)
       {
-         log
-            .warn(
-               "This kind of operation is forbidden after a session.logout(), please note that an exception will be raised in the next jcr version.",
-               new Exception());
+         // warn in debug mode only
+         if (PropertyManager.isDevelopping())
+         {
+            log
+               .warn(
+                  "This kind of operation is forbidden after a session.logout(), please note that an exception will be raised in the next jcr version.",
+                  new Exception());
+         }
       }
    }
 
