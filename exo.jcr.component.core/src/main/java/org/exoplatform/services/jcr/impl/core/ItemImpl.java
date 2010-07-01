@@ -191,6 +191,7 @@ public abstract class ItemImpl implements Item
     */
    public Item getAncestor(int degree) throws ItemNotFoundException, AccessDeniedException, RepositoryException
    {
+      checkValid();
       try
       {
          // 6.2.8 If depth > n is specified then an ItemNotFoundException is
@@ -789,6 +790,7 @@ public abstract class ItemImpl implements Item
     */
    public NodeData parentData() throws RepositoryException
    {
+      checkValid();
       NodeData parent = (NodeData)dataManager.getItemData(getData().getParentIdentifier());
       if (parent == null)
       {
@@ -873,6 +875,7 @@ public abstract class ItemImpl implements Item
 
    public boolean hasPermission(String action) throws RepositoryException
    {
+      checkValid();
       NodeData ndata;
       if (isNode())
       {

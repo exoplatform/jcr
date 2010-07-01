@@ -116,10 +116,14 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
             String videntifier = new String(successorsValues.get(i).getAsByteArray());
             VersionImpl version = (VersionImpl)dataManager.getItemByIdentifier(videntifier, true);
             if (version != null)
+            {
                successors[i] = version;
+            }
             else
+            {
                throw new RepositoryException("Successor version is not found " + videntifier + ", this version "
                   + getPath());
+            }
          }
       }
       catch (IOException e)
@@ -175,6 +179,8 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
 
    public void addSuccessor(String successorIdentifier, PlainChangesLog changesLog) throws RepositoryException
    {
+      checkValid();
+
       ValueData successorRef = new TransientValueData(new Identifier(successorIdentifier));
 
       PropertyData successorsProp =
@@ -219,6 +225,8 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
 
    public void addPredecessor(String predeccessorIdentifier, PlainChangesLog changesLog) throws RepositoryException
    {
+      checkValid();
+
       ValueData predeccessorRef = new TransientValueData(new Identifier(predeccessorIdentifier));
 
       PropertyData predeccessorsProp =
@@ -442,9 +450,13 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
       SessionImpl restoreSession, boolean removeExisting, SessionChangesLog delegatedLog) throws RepositoryException
    {
 
+      checkValid();
+
       if (LOG.isDebugEnabled())
+      {
          LOG.debug("Restore on parent " + destParent.getQPath().getAsString() + " as " + name.getAsString()
             + ", removeExisting=" + removeExisting);
+      }
 
       DataManager dmanager = restoreSession.getTransientNodesManager().getTransactManager();
 
@@ -461,6 +473,8 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
    public void restore(SessionImpl restoreSession, NodeData destParent, InternalQName name, boolean removeExisting)
       throws RepositoryException
    {
+
+      checkValid();
 
       DataManager dmanager = restoreSession.getTransientNodesManager().getTransactManager();
 
@@ -480,7 +494,9 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
       {
          if (prds[i].getUUID().equals(anotherVersion.getUUID())
             || ((VersionImpl)prds[i]).isSuccessorOrSameOf(anotherVersion))
+         {
             return true;
+         }
       }
       return false;
    }

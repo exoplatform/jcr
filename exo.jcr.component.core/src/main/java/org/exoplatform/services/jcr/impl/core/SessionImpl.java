@@ -49,6 +49,8 @@ import org.exoplatform.services.jcr.impl.xml.exporting.BaseXmlExporter;
 import org.exoplatform.services.jcr.impl.xml.importing.ContentImporter;
 import org.exoplatform.services.jcr.impl.xml.importing.StreamImporter;
 import org.exoplatform.services.jcr.util.IdGenerator;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.Identity;
 import org.xml.sax.ContentHandler;
@@ -98,6 +100,11 @@ import javax.xml.stream.XMLStreamException;
  */
 public class SessionImpl implements ExtendedSession, NamespaceAccessor
 {
+
+   /**
+    * Logger.
+    */
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.SessionImpl");
 
    public static final int DEFAULT_LAZY_READ_THRESHOLD = 100;
 
@@ -216,13 +223,14 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
     */
    public void checkPermission(String absPath, String actions) throws AccessControlException
    {
-
       try
       {
          JCRPath jcrPath = locationFactory.parseAbsPath(absPath);
          AccessControlList acl = dataManager.getACL(jcrPath.getInternalPath());
          if (!accessManager.hasPermission(acl, actions, getUserState().getIdentity()))
+         {
             throw new AccessControlException("Permission denied " + absPath + " : " + actions);
+         }
       }
       catch (RepositoryException e)
       {
@@ -237,6 +245,8 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       throws InvalidSerializedDataException, PathNotFoundException, SAXException, RepositoryException
    {
 
+      checkLive();
+      
       LocationFactory factory = new LocationFactory(((NamespaceRegistryImpl)repository.getNamespaceRegistry()));
 
       WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
@@ -276,6 +286,8 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       throws InvalidSerializedDataException, IOException, PathNotFoundException, RepositoryException
    {
 
+      checkLive();
+      
       LocationFactory factory = new LocationFactory(((NamespaceRegistryImpl)repository.getNamespaceRegistry()));
 
       WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
@@ -317,6 +329,9 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    public void exportWorkspaceSystemView(OutputStream out, boolean skipBinary, boolean noRecurse) throws IOException,
       PathNotFoundException, RepositoryException
    {
+      
+      checkLive();
+      
       LocationFactory factory = new LocationFactory(((NamespaceRegistryImpl)repository.getNamespaceRegistry()));
 
       WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
@@ -356,6 +371,9 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    public void exportSystemView(String absPath, ContentHandler contentHandler, boolean skipBinary, boolean noRecurse)
       throws PathNotFoundException, SAXException, RepositoryException
    {
+      
+      checkLive();
+      
       LocationFactory factory = new LocationFactory(((NamespaceRegistryImpl)repository.getNamespaceRegistry()));
 
       WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
@@ -392,6 +410,8 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    public void exportSystemView(String absPath, OutputStream out, boolean skipBinary, boolean noRecurse)
       throws IOException, PathNotFoundException, RepositoryException
    {
+      checkLive();
+      
       LocationFactory factory = new LocationFactory(((NamespaceRegistryImpl)repository.getNamespaceRegistry()));
 
       WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
@@ -466,7 +486,9 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       String[] names = new String[attributes.size()];
       int i = 0;
       for (String name : attributes)
+      {
          names[i++] = name;
+      }
       return names;
    }
 
@@ -477,6 +499,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
     * @deprecated use WorkspaceContainerFacade instead of using container
     *             directly
     */
+   @Deprecated
    public ExoContainer getContainer()
    {
       return container;
@@ -497,6 +520,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
 
    PathNotFoundException, ConstraintViolationException, VersionException, RepositoryException
    {
+      checkLive();
       NodeImpl node = (NodeImpl)getItem(parentAbsPath);
       // checked-in check
       if (!node.checkedOut())
@@ -531,12 +555,14 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
     */
    public ItemImpl getItem(String absPath) throws PathNotFoundException, RepositoryException
    {
-
+      checkLive();
       JCRPath loc = locationFactory.parseAbsPath(absPath);
 
       ItemImpl item = dataManager.getItem(loc.getInternalPath(), true);
       if (item != null)
+      {
          return item;
+      }
 
       throw new PathNotFoundException("Item not found " + absPath + " in workspace " + workspaceName);
    }
@@ -618,7 +644,9 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       {
          uri = namespaces.get(prefix);
          if (uri != null)
+         {
             return uri;
+         }
       }
 
       return workspace.getNamespaceRegistry().getURI(prefix);
@@ -637,9 +665,12 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
     */
    public Node getNodeByIdentifier(String identifier) throws ItemNotFoundException, RepositoryException
    {
+      checkLive();
       Item item = dataManager.getItemByIdentifier(identifier, true);
       if (item != null && item.isNode())
+      {
          return (Node)item;
+      }
 
       throw new ItemNotFoundException("Node not found " + identifier + " at " + workspaceName);
    }
@@ -649,6 +680,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
     */
    public Node getNodeByUUID(String uuid) throws ItemNotFoundException, RepositoryException
    {
+      checkLive();
       Item item = dataManager.getItemByIdentifier(uuid, true);
 
       if (item != null && item.isNode())
@@ -675,6 +707,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
     */
    public Node getRootNode() throws RepositoryException
    {
+      checkLive();
       Item item = dataManager.getItemByIdentifier(Constants.ROOT_UUID, true);
       if (item != null && item.isNode())
       {
@@ -737,15 +770,17 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
          name = ((SimpleCredentials)credentials).getUserID();
       }
       else
+      {
          throw new LoginException(
             "Credentials for the authentication should be CredentialsImpl or SimpleCredentials type");
+      }
 
       SessionFactory sessionFactory = (SessionFactory)container.getComponentInstanceOfType(SessionFactory.class);
 
       ConversationState newState =
          new ConversationState(new Identity(name, userState.getIdentity().getMemberships(), userState.getIdentity()
             .getRoles()));
-      return (Session)sessionFactory.createSession(newState);
+      return sessionFactory.createSession(newState);
 
    }
 
@@ -785,6 +820,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       throws IOException, PathNotFoundException, ItemExistsException, ConstraintViolationException,
       InvalidSerializedDataException, RepositoryException
    {
+      checkLive();
       NodeImpl node = (NodeImpl)getItem(parentAbsPath);
       if (!node.checkedOut())
       {
@@ -821,6 +857,21 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    }
 
    /**
+    * Checks if session is alive. Currently only logs a warning, but newer JCR versions will throw an exception. 
+    * @throws RepositoryException
+    */
+   public void checkLive() throws RepositoryException
+   {
+      if (!live)
+      {
+         log
+            .warn(
+               "This kind of operation is forbidden after a session.logout(), please note that an exception will be raised in the next jcr version.",
+               new Exception());
+      }
+   }
+
+   /**
     * {@inheritDoc}
     */
    public boolean itemExists(String absPath)
@@ -828,7 +879,9 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       try
       {
          if (getItem(absPath) != null)
+         {
             return true;
+         }
       }
       catch (RepositoryException e)
       {
@@ -855,13 +908,16 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    public void move(String srcAbsPath, String destAbsPath) throws ItemExistsException, PathNotFoundException,
       VersionException, LockException, RepositoryException
    {
+      checkLive();
       JCRPath srcNodePath = getLocationFactory().parseAbsPath(srcAbsPath);
 
       NodeImpl srcNode = (NodeImpl)dataManager.getItem(srcNodePath.getInternalPath(), false);
       JCRPath destNodePath = getLocationFactory().parseAbsPath(destAbsPath);
       if (destNodePath.isIndexSetExplicitly())
+      {
          throw new RepositoryException("The relPath provided must not have an index on its final element. "
             + destNodePath.getAsString(false));
+      }
 
       NodeImpl destParentNode = (NodeImpl)dataManager.getItem(destNodePath.makeParentPath().getInternalPath(), true);
 
@@ -889,10 +945,14 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
 
       // Check if versionable ancestor is not checked-in
       if (!srcNode.parent().checkedOut())
+      {
          throw new VersionException("Parent or source Node or its nearest ancestor is checked-in");
+      }
 
       if (!srcNode.checkLocking())
+      {
          throw new LockException("Source parent node " + srcNode.getPath() + " is locked ");
+      }
 
       ItemDataMoveVisitor initializer =
          new ItemDataMoveVisitor((NodeData)destParentNode.getData(), destNodePath.getName().getInternalName(),
@@ -939,20 +999,27 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
     */
    public void setNamespacePrefix(String prefix, String uri) throws NamespaceException, RepositoryException
    {
+      checkLive();
       NamespaceRegistryImpl nrg = (NamespaceRegistryImpl)workspace.getNamespaceRegistry();
       if (!nrg.isUriRegistered(uri))
+      {
          throw new NamespaceException("The specified uri:" + uri + " is not among "
             + "those registered in the NamespaceRegistry");
+      }
       if (nrg.isPrefixMaped(prefix))
+      {
          throw new NamespaceException("A prefix '" + prefix + "' is currently already mapped to " + nrg.getURI(prefix)
             + " URI persistently in the repository NamespaceRegistry "
             + "and cannot be remapped to a new URI using this method, since this would make any "
             + "content stored using the old URI unreadable.");
+      }
       if (namespaces.containsKey(prefix))
+      {
          throw new NamespaceException("A prefix '" + prefix + "' is currently already mapped to "
             + namespaces.get(prefix) + " URI transiently within this Session and cannot be "
             + "remapped to a new URI using this method, since this would make any "
             + "content stored using the old URI unreadable.");
+      }
       nrg.validateNamespace(prefix, uri);
       namespaces.put(prefix, uri);
       prefixes.put(uri, prefix);
