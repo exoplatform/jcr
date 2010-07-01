@@ -153,12 +153,14 @@ public abstract class ItemImpl implements Item
     */
    protected boolean checkValid() throws InvalidItemStateException
    {
-      if (!session.isLive())
+      try
       {
-         log
-            .warn(
-               "This kind of operation is forbidden after a session.logout(), please note that an exception will be raised in the next jcr version.",
-               new Exception());
+         // Currently it only warns, but newer jcr versions (1.15+) will throw an exception
+         session.checkLive();
+      }
+      catch (RepositoryException e)
+      {
+         throw new InvalidItemStateException("This kind of operation is forbidden after a session.logout().", e);
       }
 
       if (data == null)

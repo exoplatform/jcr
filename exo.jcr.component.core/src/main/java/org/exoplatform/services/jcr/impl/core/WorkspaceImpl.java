@@ -109,9 +109,13 @@ public class WorkspaceImpl implements ExtendedWorkspace
 
       QueryManagerFactory qf = (QueryManagerFactory)container.getComponentInstanceOfType(QueryManagerFactory.class);
       if (qf == null)
+      {
          this.queryManager = null;
+      }
       else
+      {
          this.queryManager = qf.getQueryManager(session);
+      }
    }
 
    /**
@@ -121,6 +125,7 @@ public class WorkspaceImpl implements ExtendedWorkspace
       throws NoSuchWorkspaceException, ConstraintViolationException, VersionException, AccessDeniedException,
       PathNotFoundException, ItemExistsException, RepositoryException
    {
+      session.checkLive();
 
       SessionChangesLog changes = new SessionChangesLog(session.getId());
 
@@ -146,7 +151,7 @@ public class WorkspaceImpl implements ExtendedWorkspace
       ConstraintViolationException, VersionException, AccessDeniedException, PathNotFoundException,
       ItemExistsException, RepositoryException
    {
-
+      session.checkLive();
       // get source session
       SessionImpl srcSession = null;
       if (getName() != srcWorkspace)
@@ -161,8 +166,10 @@ public class WorkspaceImpl implements ExtendedWorkspace
       // get destination node
       JCRPath destNodePath = session.getLocationFactory().parseAbsPath(destAbsPath);
       if (destNodePath.isIndexSetExplicitly())
+      {
          throw new RepositoryException("The path provided must not have an index on its final element. "
             + destNodePath.getAsString(false));
+      }
       // get source node
       JCRPath srcNodePath = srcSession.getLocationFactory().parseAbsPath(srcAbsPath);
 
@@ -226,6 +233,7 @@ public class WorkspaceImpl implements ExtendedWorkspace
    public ContentHandler getImportContentHandler(String parentAbsPath, int uuidBehavior) throws PathNotFoundException,
       ConstraintViolationException, VersionException, RepositoryException
    {
+      session.checkLive();
       NodeImpl node = (NodeImpl)session.getItem(parentAbsPath);
       // checked-in check
       if (!node.checkedOut())
@@ -294,9 +302,11 @@ public class WorkspaceImpl implements ExtendedWorkspace
    public QueryManager getQueryManager() throws RepositoryException
    {
       if (queryManager == null)
+      {
          throw new RepositoryException(
             "Query Manager Factory not found. Check configuration of the query-handler for workspace " + getName()
                + ".");
+      }
       return queryManager;
    }
 
@@ -344,6 +354,8 @@ public class WorkspaceImpl implements ExtendedWorkspace
       throws IOException, PathNotFoundException, ItemExistsException, ConstraintViolationException,
       InvalidSerializedDataException, RepositoryException
    {
+      session.checkLive();
+      
       NodeImpl node = (NodeImpl)session.getItem(parentAbsPath);
       if (!node.checkedOut())
       {
@@ -378,12 +390,14 @@ public class WorkspaceImpl implements ExtendedWorkspace
    public void move(String srcAbsPath, String destAbsPath) throws ConstraintViolationException, VersionException,
       AccessDeniedException, PathNotFoundException, ItemExistsException, RepositoryException
    {
-
+      session.checkLive();
       // get destination node
       JCRPath destNodePath = session.getLocationFactory().parseAbsPath(destAbsPath);
       if (destNodePath.isIndexSetExplicitly())
+      {
          throw new RepositoryException("The path provided must not have an index on its final element. "
             + destNodePath.getAsString(false));
+      }
       // get source node
       JCRPath srcNodePath = session.getLocationFactory().parseAbsPath(srcAbsPath);
 
@@ -427,11 +441,15 @@ public class WorkspaceImpl implements ExtendedWorkspace
 
       // Check if versionable ancestor is not checked-in
       if (!srcNode.checkedOut())
+      {
          throw new VersionException("Source parent node " + srcNode.getPath()
             + " or its nearest ancestor is checked-in");
+      }
       // Check locking
       if (!srcNode.checkLocking())
+      {
          throw new LockException("Source parent node " + srcNode.getPath() + " is     locked ");
+      }
 
       ItemDataMoveVisitor initializer =
          new ItemDataMoveVisitor((NodeData)destParentNode.getData(), destNodePath.getName().getInternalName(),
@@ -460,13 +478,17 @@ public class WorkspaceImpl implements ExtendedWorkspace
    {
 
       if (srcWorkspace.equals(getName()))
+      {
          throw new RepositoryException("Source and destination workspace are equals " + name);
+      }
 
       // make dest node path
       JCRPath destNodePath = session.getLocationFactory().parseAbsPath(destAbsPath);
 
       if (destNodePath.isIndexSetExplicitly())
+      {
          throw new RepositoryException("DestPath should not contain an index " + destAbsPath);
+      }
 
       // find src node
       SessionImpl srcSession = repository().internalLogin(session.getUserState(), srcWorkspace);
@@ -538,9 +560,11 @@ public class WorkspaceImpl implements ExtendedWorkspace
    protected void restoreVersions(Version[] versions, boolean removeExisting)
       throws UnsupportedRepositoryOperationException, VersionException, RepositoryException, InvalidItemStateException
    {
-
+      session.checkLive();
       if (session.hasPendingChanges())
+      {
          throw new InvalidItemStateException("Session has pending changes ");
+      }
 
       // for restore operation
       List<String> existedIdentifiers = new ArrayList<String>(); // InWorkspace
@@ -575,9 +599,13 @@ public class WorkspaceImpl implements ExtendedWorkspace
                   ((SessionImpl)v.getSession()).getTransientNodesManager().getTransactManager();
                corrNode = (NodeData)vDataManager.getItemData(versionableIdentifier);
                if (corrNode != null)
+               {
                   versionableParentIdentifier = corrNode.getParentIdentifier();
+               }
                else
+               {
                   log.warn("Workspace.restore(). Correspondent node is not found " + versionableIdentifier);
+               }
             }
             if (versionableParentIdentifier != null && existedIdentifiers.contains(versionableParentIdentifier))
             {
@@ -605,7 +633,7 @@ public class WorkspaceImpl implements ExtendedWorkspace
             // parent
             // it's a VH
             VersionHistoryDataHelper historyHelper =
-               new VersionHistoryDataHelper((NodeData)vh, dataManager, nodeTypeManager);
+               new VersionHistoryDataHelper(vh, dataManager, nodeTypeManager);
 
             changesLog.addAll(v.restoreLog(destParent, node.getQPath().getName(), historyHelper, session,
                removeExisting, changesLog).getAllStates());
@@ -643,7 +671,7 @@ public class WorkspaceImpl implements ExtendedWorkspace
                // version parent it's a VH
                NodeData vh = (NodeData)dataManager.getItemData(v.getParentIdentifier());
                VersionHistoryDataHelper historyHelper =
-                  new VersionHistoryDataHelper((NodeData)vh, dataManager, nodeTypeManager);
+                  new VersionHistoryDataHelper(vh, dataManager, nodeTypeManager);
 
                changesLog.addAll(v.restoreLog(destParent, node.getQPath().getName(), historyHelper, session,
                   removeExisting, changesLog).getAllStates());
