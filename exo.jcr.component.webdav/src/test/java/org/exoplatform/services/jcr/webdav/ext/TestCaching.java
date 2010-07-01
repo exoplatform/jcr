@@ -65,9 +65,9 @@ public class TestCaching extends BaseStandaloneTest
       
       SimpleDateFormat dateFormat = new SimpleDateFormat(WebDavConst.DateFormat.IF_MODIFIED_SINCE_PATTERN);
       Calendar lastModifiedDate = lastModifiedProperty.getDate();
-      
-      lastModifiedDate.roll(Calendar.WEEK_OF_MONTH, -1);
-      // Rollback If-Modified-Since date a week earlier.
+
+      lastModifiedDate.roll(Calendar.SECOND, -10);
+      // Rollback If-Modified-Since 10 seconds earlier.
       String ifModifiedDate = dateFormat.format(lastModifiedDate.getTime());
       
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
