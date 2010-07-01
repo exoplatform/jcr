@@ -209,8 +209,11 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       throws RepositoryConfigurationException, NamingException, RepositoryException, IOException
    {
 
-      checkIntegrity(wsConfig, repConfig);
+      // This recall is workaround for tenants creation. There is a trouble in visibility datasource
+      // binded in one tomcat context from another tomcat context. 
+      contextInit.recall();
 
+      checkIntegrity(wsConfig, repConfig);
       this.containerName = wsConfig.getName();
       this.multiDb = Boolean.parseBoolean(wsConfig.getContainer().getParameterValue(MULTIDB));
       this.valueStorageProvider = valueStorageProvider;
