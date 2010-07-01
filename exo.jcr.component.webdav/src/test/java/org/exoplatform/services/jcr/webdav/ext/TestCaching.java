@@ -67,8 +67,8 @@ public class TestCaching extends BaseStandaloneTest
       SimpleDateFormat dateFormat = new SimpleDateFormat(WebDavConst.DateFormat.IF_MODIFIED_SINCE_PATTERN);
       Calendar lastModifiedDate = lastModifiedProperty.getDate();
       
-      lastModifiedDate.roll(Calendar.WEEK_OF_MONTH, -1);
-      // Rollback If-Modified-Since date a week earlier.
+      lastModifiedDate.roll(Calendar.SECOND, -10);
+      // Rollback If-Modified-Since 10 seconds earlier.
       String ifModifiedDate = dateFormat.format(lastModifiedDate.getTime());
       
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
@@ -96,11 +96,8 @@ public class TestCaching extends BaseStandaloneTest
       assertEquals(HTTPStatus.NOT_MODIFIED, response.getStatus());
    }
 
-   public void _testNotModifiedSinceFRLocale() throws Exception
+   public void _testModifiedSinceLocaleFR() throws Exception
    {
-      Node contentNode = node.getNode("jcr:content");
-      Property lastModifiedProperty = contentNode.getProperty("jcr:lastModified");
-      
       SimpleDateFormat sdf = new SimpleDateFormat(WebDavConst.DateFormat.IF_MODIFIED_SINCE_PATTERN, Locale.FRENCH);  
 
       String ifModifiedDate = sdf.format(sdf.getCalendar().getTime());
