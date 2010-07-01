@@ -162,7 +162,7 @@ public class BackupManagerImpl implements BackupManager, Startable
    private final WorkspaceBackupAutoStopper workspaceBackupStopper;
 
    private final RepositoryBackupAutoStopper repositoryBackupStopper;
-   
+
    /**
     * Temporary directory;
     */
@@ -284,6 +284,7 @@ public class BackupManagerImpl implements BackupManager, Startable
       /**
        * {@inheritDoc}
        */
+      @Override
       public void run()
       {
          while (true)
@@ -331,6 +332,7 @@ public class BackupManagerImpl implements BackupManager, Startable
       /**
        * {@inheritDoc}
        */
+      @Override
       public void run()
       {
          while (true)
@@ -1364,16 +1366,16 @@ public class BackupManagerImpl implements BackupManager, Startable
       BackupConfigurationException, RepositoryException, RepositoryConfigurationException
    {
       // Checking repository exists. 
-      try 
+      try
       {
          repoService.getRepository(repositoryEntry.getName());
          throw new BackupConfigurationException("Repository \"" + repositoryEntry.getName() + "\" is already exists.");
-      } 
-      catch (RepositoryException e) 
+      }
+      catch (RepositoryException e)
       {
          //OK. Repository with "repositoryEntry.getName" is not exists.
-      } 
-      
+      }
+
       Map<String, BackupChainLog> workspacesMapping = new HashedMap();
 
       Map<String, BackupChainLog> backups = new HashedMap();
@@ -1469,9 +1471,9 @@ public class BackupManagerImpl implements BackupManager, Startable
       JobRepositoryRestore jobRepositoryRestore =
          new JobRepositoryRestore(repoService, this, repositoryEntry, workspacesMapping, rblog);
 
+      restoreRepositoryJobs.add(jobRepositoryRestore);
       if (asynchronous)
       {
-         restoreRepositoryJobs.add(jobRepositoryRestore);
          jobRepositoryRestore.start();
       }
       else

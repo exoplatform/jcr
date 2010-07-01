@@ -119,13 +119,40 @@ public class JobRepositoryRestore extends Thread
    }
 
    /**
+    * Restore repository. Provide information about start and finish process.
+    * 
+    * @throws RepositoryRestoreExeption
+    *       if exception occurred during restore 
+    */
+   protected void restore() throws RepositoryRestoreExeption
+   {
+      try
+      {
+         stateRestore = REPOSITORY_RESTORE_STARTED;
+         startTime = Calendar.getInstance();
+
+         restoreRepository();
+
+         stateRestore = REPOSITORY_RESTORE_SUCCESSFUL;
+         endTime = Calendar.getInstance();
+      }
+      catch (Throwable t)
+      {
+         stateRestore = REPOSITORY_RESTORE_FAIL;
+         restoreException = t;
+
+         throw new RepositoryRestoreExeption(t.getMessage(), t);
+      }
+   }
+
+   /**
     * Will be restored the workspace.
     * @throws RepositoryRestoreExeption 
     * 
     * @throws Throwable
     *           will be generated the Throwable
     */
-   protected void restore() throws RepositoryRestoreExeption
+   protected void restoreRepository() throws RepositoryRestoreExeption
    {
       List<WorkspaceEntry> originalWorkspaceEntrys = repositoryEntry.getWorkspaceEntries();
 
@@ -187,27 +214,30 @@ public class JobRepositoryRestore extends Thread
             {
                currennWorkspaceName = wsEntry.getName();
                backupManager.restore(workspacesMapping.get(wsEntry.getName()), repositoryEntry.getName(), wsEntry,
-                        false);
+                  false);
             }
          }
       }
       catch (InvalidItemStateException e)
       {
          restored = false;
-         
-         log.error("Can not restore workspace \""  + currennWorkspaceName + " in repository \"" + repositoryEntry.getName() + "\".", e);
-         
-         throw new RepositoryRestoreExeption("Can not restore workspace \""  + currennWorkspaceName + " in repository \"" + repositoryEntry.getName() + "\"."
-            + " There was database error.", e);
+
+         log.error("Can not restore workspace \"" + currennWorkspaceName + " in repository \""
+            + repositoryEntry.getName() + "\".", e);
+
+         throw new RepositoryRestoreExeption("Can not restore workspace \"" + currennWorkspaceName
+            + " in repository \"" + repositoryEntry.getName() + "\"." + " There was database error.", e);
 
       }
       catch (Throwable t)
       {
          restored = false;
-         
-         log.error("Can not restore workspace \""  + currennWorkspaceName + " in repository \"" + repositoryEntry.getName() + "\".", t);
-         
-         throw new RepositoryRestoreExeption("Can not restore workspace \""  + currennWorkspaceName + " in repository \"" + repositoryEntry.getName() + "\".", t);
+
+         log.error("Can not restore workspace \"" + currennWorkspaceName + " in repository \""
+            + repositoryEntry.getName() + "\".", t);
+
+         throw new RepositoryRestoreExeption("Can not restore workspace \"" + currennWorkspaceName
+            + " in repository \"" + repositoryEntry.getName() + "\".", t);
 
       }
       finally
@@ -236,7 +266,8 @@ public class JobRepositoryRestore extends Thread
             }
             catch (Throwable thr)
             {
-               log.error("The partly restored repository \"" + repositoryEntry.getName() + "\" can not be removed.", thr);
+               log.error("The partly restored repository \"" + repositoryEntry.getName() + "\" can not be removed.",
+                  thr);
             }
          }
       }
@@ -265,15 +296,15 @@ public class JobRepositoryRestore extends Thread
    /**
     * {@inheritDoc}
     */
+   @Override
    public void run()
    {
-
       try
       {
          stateRestore = REPOSITORY_RESTORE_STARTED;
          startTime = Calendar.getInstance();
 
-         restore();
+         restoreRepository();
 
          stateRestore = REPOSITORY_RESTORE_SUCCESSFUL;
          endTime = Calendar.getInstance();

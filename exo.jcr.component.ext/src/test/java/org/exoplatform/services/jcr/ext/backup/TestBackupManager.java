@@ -502,8 +502,8 @@ public class TestBackupManager extends AbstractBackupTestCase
       {
          SessionImpl sessionWS1 = (SessionImpl)repository.login(credentials, "ws3");
 
-         sessionWS1.getRootNode().addNode("asdasdasda", "nt:unstructured")
-            .setProperty("data", new FileInputStream(createBLOBTempFile(1024)));
+         sessionWS1.getRootNode().addNode("asdasdasda", "nt:unstructured").setProperty("data",
+            new FileInputStream(createBLOBTempFile(1024)));
          sessionWS1.save();
 
          // 1-st backup
@@ -540,8 +540,8 @@ public class TestBackupManager extends AbstractBackupTestCase
             assertNotNull(back1.getRootNode().getNode("asdasdasda").getProperty("data"));
 
             // add date to restored workspace
-            back1.getRootNode().addNode("gdfgrghfhf", "nt:unstructured")
-               .setProperty("data", new FileInputStream(createBLOBTempFile(1024)));
+            back1.getRootNode().addNode("gdfgrghfhf", "nt:unstructured").setProperty("data",
+               new FileInputStream(createBLOBTempFile(1024)));
             back1.save();
          }
          else
@@ -739,8 +739,7 @@ public class TestBackupManager extends AbstractBackupTestCase
       else
          fail("There are no backup files in " + backDir.getAbsolutePath());
    }
-   
-   
+
    public void testRepositoryFullBackupRestore() throws Exception
    {
       // backup
@@ -767,13 +766,13 @@ public class TestBackupManager extends AbstractBackupTestCase
       // stop fullBackup
 
       backup.stopBackup(bch);
-      
 
       // restore
       RepositoryEntry re = (RepositoryEntry)ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
-      
+
       String newRepositoryName = "repo_restored_1";
-      RepositoryEntry newRepositoryEntry = makeRepositoryEntry(newRepositoryName, re, "jdbcjcr_to_repository_restore_1", null);
+      RepositoryEntry newRepositoryEntry =
+         makeRepositoryEntry(newRepositoryName, re, "jdbcjcr_to_repository_restore_1", null);
 
       File backLog = new File(bch.getLogFilePath());
       if (backLog.exists())
@@ -784,6 +783,8 @@ public class TestBackupManager extends AbstractBackupTestCase
          assertNotNull(bchLog.getFinishedTime());
 
          backup.restore(bchLog, newRepositoryEntry, false);
+         assertEquals(JobWorkspaceRestore.RESTORE_SUCCESSFUL, backup.getLastRepositoryRestore(
+            newRepositoryEntry.getName()).getStateRestore());
 
          // check
          ManageableRepository restoredRepository = repositoryService.getRepository(newRepositoryName);
@@ -813,7 +814,7 @@ public class TestBackupManager extends AbstractBackupTestCase
       else
          fail("There are no backup files in " + backDir.getAbsolutePath());
    }
-   
+
    public void testRepositoryFullAndIncrementalBackupRestore() throws Exception
    {
       // backup
@@ -844,9 +845,10 @@ public class TestBackupManager extends AbstractBackupTestCase
 
       // restore
       RepositoryEntry re = (RepositoryEntry)ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
-      
+
       String newRepositoryName = "repo_restored_4";
-      RepositoryEntry newRepositoryEntry = makeRepositoryEntry(newRepositoryName, re, "jdbcjcr_to_repository_restore_4", null);
+      RepositoryEntry newRepositoryEntry =
+         makeRepositoryEntry(newRepositoryName, re, "jdbcjcr_to_repository_restore_4", null);
 
       File backLog = new File(bch.getLogFilePath());
       if (backLog.exists())
@@ -886,7 +888,7 @@ public class TestBackupManager extends AbstractBackupTestCase
       else
          fail("There are no backup files in " + backDir.getAbsolutePath());
    }
-   
+
    public void testRepositoryFullBackupAsynchronusRestore() throws Exception
    {
       // backup
@@ -916,9 +918,10 @@ public class TestBackupManager extends AbstractBackupTestCase
 
       // restore
       RepositoryEntry re = (RepositoryEntry)ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
-      
+
       String newRepositoryName = "repo_restored_2";
-      RepositoryEntry newRepositoryEntry = makeRepositoryEntry(newRepositoryName, re, "jdbcjcr_to_repository_restore_2", null);
+      RepositoryEntry newRepositoryEntry =
+         makeRepositoryEntry(newRepositoryName, re, "jdbcjcr_to_repository_restore_2", null);
 
       File backLog = new File(bch.getLogFilePath());
       if (backLog.exists())
@@ -929,11 +932,11 @@ public class TestBackupManager extends AbstractBackupTestCase
          assertNotNull(bchLog.getFinishedTime());
 
          backup.restore(bchLog, newRepositoryEntry, true);
-         
+
          JobRepositoryRestore job = backup.getLastRepositoryRestore(newRepositoryName);
-         
+
          while (job.getStateRestore() != JobRepositoryRestore.REPOSITORY_RESTORE_SUCCESSFUL
-                  || job.getStateRestore() == JobRepositoryRestore.REPOSITORY_RESTORE_FAIL)
+            || job.getStateRestore() == JobRepositoryRestore.REPOSITORY_RESTORE_FAIL)
          {
             Thread.yield();
             Thread.sleep(50);
@@ -967,7 +970,7 @@ public class TestBackupManager extends AbstractBackupTestCase
       else
          fail("There are no backup files in " + backDir.getAbsolutePath());
    }
-   
+
    public void testRepositoryFullBackupAsynchronusRestoreWorkspaceMapping() throws Exception
    {
       // backup
@@ -994,21 +997,21 @@ public class TestBackupManager extends AbstractBackupTestCase
       // stop fullBackup
 
       backup.stopBackup(bch);
-      
 
       // restore
       RepositoryEntry re = (RepositoryEntry)ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
-      
+
       String newRepositoryName = "repo_restored_3";
-      RepositoryEntry newRepositoryEntry = makeRepositoryEntry(newRepositoryName, re, "jdbcjcr_to_repository_restore_3", null);
-      
+      RepositoryEntry newRepositoryEntry =
+         makeRepositoryEntry(newRepositoryName, re, "jdbcjcr_to_repository_restore_3", null);
+
       // create workspace mappingS
-      Map<String, String> workspaceMapping  = new HashedMap();
+      Map<String, String> workspaceMapping = new HashedMap();
       for (WorkspaceEntry we : newRepositoryEntry.getWorkspaceEntries())
       {
          workspaceMapping.put(we.getName(), we.getName() + "_mapped");
       }
-      
+
       // Change workspaeNames
       for (WorkspaceEntry we : newRepositoryEntry.getWorkspaceEntries())
       {
@@ -1017,7 +1020,7 @@ public class TestBackupManager extends AbstractBackupTestCase
             newRepositoryEntry.setSystemWorkspaceName(workspaceMapping.get(we.getName()));
             newRepositoryEntry.setDefaultWorkspaceName(workspaceMapping.get(we.getName()));
          }
-         
+
          we.setName(workspaceMapping.get(we.getName()));
          we.setUniqueName(we.getUniqueName() + workspaceMapping.get(we.getName()));
       }
@@ -1030,12 +1033,12 @@ public class TestBackupManager extends AbstractBackupTestCase
          assertNotNull(bchLog.getStartedTime());
          assertNotNull(bchLog.getFinishedTime());
 
-         backup.restore(bchLog, newRepositoryEntry, workspaceMapping,true);
-         
+         backup.restore(bchLog, newRepositoryEntry, workspaceMapping, true);
+
          JobRepositoryRestore job = backup.getLastRepositoryRestore(newRepositoryName);
-         
+
          while (job.getStateRestore() != JobRepositoryRestore.REPOSITORY_RESTORE_SUCCESSFUL
-                  || job.getStateRestore() == JobRepositoryRestore.REPOSITORY_RESTORE_FAIL)
+            || job.getStateRestore() == JobRepositoryRestore.REPOSITORY_RESTORE_FAIL)
          {
             Thread.yield();
             Thread.sleep(50);
@@ -1093,26 +1096,28 @@ public class TestBackupManager extends AbstractBackupTestCase
          if (bch.getBackupId().equals(chain.getBackupId()))
             fail("The backup with id '" + chain.getBackupId() + "' should not be active");
    }
-   
+
    public void testRepositoryRestoreFail() throws Exception
    {
       // restore
       RepositoryEntry re = (RepositoryEntry)ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
-      
+
       String newRepositoryName = "repo_restored_5";
-      RepositoryEntry newRepositoryEntry = makeRepositoryEntry(newRepositoryName, re, "jdbcjcr_to_repository_restore_5", null);
-      
+      RepositoryEntry newRepositoryEntry =
+         makeRepositoryEntry(newRepositoryName, re, "jdbcjcr_to_repository_restore_5", null);
+
       //create broken system workspaceEntry
       newRepositoryEntry.getWorkspaceEntries().get(0).getQueryHandler().setType("gg");
 
       File backLog = new File(backup.getRepositoryBackupsLogs()[0].getLogFilePath());
-      
+
       RepositoryBackupChainLog bchLog = new RepositoryBackupChainLog(backLog);
 
-      try {
+      try
+      {
          backup.restore(bchLog, newRepositoryEntry, false);
-         fail("The backup " + backLog.getAbsolutePath()  + "shoulde not restored.");
-      } 
+         fail("The backup " + backLog.getAbsolutePath() + "shoulde not restored.");
+      }
       catch (RepositoryRestoreExeption e)
       {
          // ok.  
@@ -1130,7 +1135,7 @@ public class TestBackupManager extends AbstractBackupTestCase
          // ok.
       }
    }
-   
+
    public void testIncrementalBackupRestoreEXOJCR_737() throws Exception
    {
       // full backup with BLOBs & incremental with BLOBs
@@ -1159,7 +1164,7 @@ public class TestBackupManager extends AbstractBackupTestCase
          Thread.yield();
          Thread.sleep(50);
       }
-      
+
       // add data
       ws1Session.getRootNode().addNode("node_101").setProperty("exo:data", new FileInputStream(tempf));
       ws1Session.getRootNode().addNode("node_102").setProperty("exo:extraData", new FileInputStream(tempf));
@@ -1170,7 +1175,7 @@ public class TestBackupManager extends AbstractBackupTestCase
          backup.stopBackup(bch);
       else
          fail("Can't get fullBackup chain");
-      
+
       //remove data 
       ws1Session.getRootNode().getNode("node_101").remove();
       ws1Session.getRootNode().getNode("node_102").remove();
@@ -1200,12 +1205,12 @@ public class TestBackupManager extends AbstractBackupTestCase
             assertNotNull(node_101);
             assertEquals(tempf.length(), node_101.getProperty("exo:data").getStream().available());
             compareStream(new FileInputStream(tempf), node_101.getProperty("exo:data").getStream());
-            
+
             Node node_102 = back1.getRootNode().getNode("node_102");
             assertNotNull(node_102);
             assertEquals(tempf.length(), node_102.getProperty("exo:extraData").getStream().available());
             compareStream(new FileInputStream(tempf), node_102.getProperty("exo:extraData").getStream());
-            
+
          }
          catch (Exception e)
          {
