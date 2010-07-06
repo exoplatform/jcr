@@ -368,7 +368,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       }
       catch (RepositoryConfigurationException e)
       {
-         this.checkSNSNewConnection = true;
+         this.checkSNSNewConnection = DBConstants.DB_DIALECT_SYBASE.equals(this.dbDialect) ? false : true;
       }
 
       // ------------- Values swap config ------------------
