@@ -1783,12 +1783,12 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
                   // delete parent
                   remove(parent);
 
-                  // delete parent containing child nodes list
-                  nodesCache.remove(parent.getParentIdentifier());
-
                   writeLock.lock();
                   try
                   {
+                     // delete parent containing child nodes list
+                     nodesCache.remove(parent.getParentIdentifier());
+
                      // traverse itemCache
                      Iterator<CacheValue> cacheIterator = cache.values().iterator();
                      while (cacheIterator.hasNext())
