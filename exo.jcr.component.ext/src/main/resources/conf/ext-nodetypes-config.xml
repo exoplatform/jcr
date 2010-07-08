@@ -145,14 +145,6 @@
             protected="true" multiple="false">
             <valueConstraints />
          </propertyDefinition>
-         <propertyDefinition name="exo:newValue" requiredType="Value" autoCreated="false" mandatory="false" onParentVersion="IGNORE"
-            protected="true" multiple="true">
-            <valueConstraints/>
-         </propertyDefinition>
-         <propertyDefinition name="exo:oldValue" requiredType="Value" autoCreated="false" mandatory="false" onParentVersion="IGNORE"
-            protected="true" multiple="true">
-            <valueConstraints/>
-         </propertyDefinition>
       </propertyDefinitions>
    </nodeType>
 
