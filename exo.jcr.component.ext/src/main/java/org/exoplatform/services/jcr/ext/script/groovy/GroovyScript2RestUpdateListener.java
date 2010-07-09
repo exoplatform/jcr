@@ -20,6 +20,9 @@ package org.exoplatform.services.jcr.ext.script.groovy;
 
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.services.rest.ObjectFactory;
+import org.exoplatform.services.rest.ext.groovy.ResourceId;
+import org.exoplatform.services.rest.resource.AbstractResourceDescriptor;
 
 import javax.jcr.Node;
 import javax.jcr.Session;
@@ -29,34 +32,25 @@ import javax.jcr.observation.EventListener;
 
 /**
  * @author <a href="mailto:andrew00x@gmail.com">Andrey Parfonov</a>
- * @version $Id: GroovyScript2RestUpdateListener.java 34445 2009-07-24 07:51:18Z dkatayev $
+ * @version $Id: GroovyScript2RestUpdateListener.java 34445 2009-07-24 07:51:18Z
+ *          dkatayev $
  */
 public class GroovyScript2RestUpdateListener implements EventListener
 {
 
-   /**
-    * Logger.
-    */
+   /** Logger. */
    private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.GroovyScript2RestUpdateListener");
 
-   /**
-    * Repository name.
-    */
+   /** Repository name. */
    private final String repository;
 
-   /**
-    * Workspace name.
-    */
+   /** Workspace name. */
    private final String workspace;
 
-   /**
-    * See {@link GroovyScript2RestLoader}.
-    */
+   /** See {@link GroovyScript2RestLoader}. */
    private final GroovyScript2RestLoader groovyScript2RestLoader;
 
-   /**
-    * See {@link Session}.
-    */
+   /** See {@link Session}. */
    private final Session session;
 
    /**
@@ -118,10 +112,18 @@ public class GroovyScript2RestUpdateListener implements EventListener
     */
    private void loadScript(Node node) throws Exception
    {
-      ScriptKey key = new NodeScriptKey(repository, workspace, node);
-      if (groovyScript2RestLoader.isLoaded(key))
-         groovyScript2RestLoader.unloadScript(key);
-      groovyScript2RestLoader.loadScript(key, node.getProperty("jcr:data").getStream());
+      ResourceId key = new NodeScriptKey(repository, workspace, node);
+      ObjectFactory<AbstractResourceDescriptor> resource =
+         groovyScript2RestLoader.groovyPublisher.unpublishResource(key);
+      if (resource != null)
+      {
+         groovyScript2RestLoader.groovyPublisher.publishPerRequest(node.getProperty("jcr:data").getStream(), key,
+            resource.getObjectModel().getProperties());
+      }
+      else
+      {
+         groovyScript2RestLoader.groovyPublisher.publishPerRequest(node.getProperty("jcr:data").getStream(), key, null);
+      }
    }
 
    /**
@@ -132,9 +134,8 @@ public class GroovyScript2RestUpdateListener implements EventListener
     */
    private void unloadScript(String path) throws Exception
    {
-      ScriptKey key = new NodeScriptKey(repository, workspace, path);
-      if (groovyScript2RestLoader.isLoaded(key))
-         groovyScript2RestLoader.unloadScript(key);
+      ResourceId key = new NodeScriptKey(repository, workspace, path);
+      groovyScript2RestLoader.groovyPublisher.unpublishResource(key);
    }
 
 }

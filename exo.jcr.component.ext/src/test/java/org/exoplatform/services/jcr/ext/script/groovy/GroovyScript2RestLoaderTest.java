@@ -24,8 +24,10 @@ import org.exoplatform.services.jcr.ext.common.SessionProvider;
 import org.exoplatform.services.jcr.ext.registry.RESTRegistryTest.DummyContainerResponseWriter;
 import org.exoplatform.services.jcr.ext.script.groovy.GroovyScript2RestLoader.ScriptMetadata;
 import org.exoplatform.services.rest.RequestHandler;
+import org.exoplatform.services.rest.ext.method.filter.MethodAccessFilter;
 import org.exoplatform.services.rest.impl.ContainerResponse;
 import org.exoplatform.services.rest.impl.MultivaluedMapImpl;
+import org.exoplatform.services.rest.impl.ProviderBinder;
 import org.exoplatform.services.rest.impl.ResourceBinder;
 import org.exoplatform.services.rest.tools.ByteArrayContainerResponseWriter;
 import org.exoplatform.services.rest.tools.ResourceLauncher;
@@ -95,6 +97,10 @@ public class GroovyScript2RestLoaderTest extends BaseStandaloneTest
       groovyRepo = root.addNode("repo", "nt:folder");
 
       launcher = new ResourceLauncher(handler);
+
+      ProviderBinder.setInstance(new ProviderBinder());
+      ProviderBinder providers = ProviderBinder.getInstance();
+      providers.addMethodInvokerFilter(new MethodAccessFilter());
 
       session.save();
    }
