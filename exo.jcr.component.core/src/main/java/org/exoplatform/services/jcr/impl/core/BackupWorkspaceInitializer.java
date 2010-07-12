@@ -441,75 +441,19 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
 
       public void restore() throws IOException
       {
-         int index = 0;
-         int restoredItemStateId = index < listFixupStream.size() ? listFixupStream.get(index).getItemSateId() : -1;
-         int restoredValueDataId = index < listFixupStream.size() ? listFixupStream.get(index).getValueDataId() : -1;
-
-         TransactionChangesLog restoredItemDataChangesLog = new TransactionChangesLog();
-
-         ChangesLogIterator logIterator = itemDataChangesLog.getLogIterator();
-         int curItemStateId = 0;
-         while (logIterator.hasNextLog())
+         List<ItemState> listItemState = itemDataChangesLog.getAllStates();
+         for (int i = 0; i < this.listFixupStream.size(); i++)
          {
-            List<ItemState> restoredItems = new ArrayList<ItemState>();
+            ItemState itemState = listItemState.get(listFixupStream.get(i).getItemSateId());
+            ItemData itemData = itemState.getData();
 
-            PlainChangesLog log = logIterator.nextLog();
-            for (ItemState item : log.getAllStates())
-            {
-               if (curItemStateId != restoredItemStateId)
-               {
-                  restoredItems.add(item);
-               }
-               else
-               {
-                  List<ValueData> restoredValues = new ArrayList<ValueData>();
+            PersistedPropertyData propertyData = (PersistedPropertyData)itemData;
+            ValueData vd = (propertyData.getValues().get(listFixupStream.get(i).getValueDataId()));
 
-                  PersistedPropertyData propertyData = (PersistedPropertyData)item.getData();
-                  for (int curValueDataId = 0; curValueDataId < propertyData.getValues().size(); curValueDataId++)
-                  {
-                     ValueData valueData = propertyData.getValues().get(curValueDataId);
-
-                     if (curItemStateId == restoredItemStateId && curValueDataId == restoredValueDataId)
-                     {
-                        // reinit valuedata
-                        ValueData restoredValueData =
-                           new StreamPersistedValueData(valueData.getOrderNumber(), new SpoolFile(listFile.get(index)
-                              .getAbsolutePath()));
-
-                        restoredValues.add(restoredValueData);
-
-                        index++;
-                        restoredItemStateId =
-                           index < listFixupStream.size() ? listFixupStream.get(index).getItemSateId() : -1;
-                        restoredValueDataId =
-                           index < listFixupStream.size() ? listFixupStream.get(index).getValueDataId() : -1;
-                     }
-                     else
-                     {
-                        restoredValues.add(valueData);
-                     }
-                  }
-
-                  PersistedPropertyData restoredPropertyData =
-                     new PersistedPropertyData(propertyData.getIdentifier(), propertyData.getQPath(), propertyData
-                        .getParentIdentifier(), propertyData.getPersistedVersion(), propertyData.getType(),
-                        propertyData.isMultiValued(), restoredValues);
-
-                  ItemState restoredItem =
-                     new ItemState(restoredPropertyData, item.getState(), item.isEventFire(), item.getAncestorToSave(),
-                        item.isInternallyCreated(), item.isPersisted());
-
-                  restoredItems.add(restoredItem);
-               }
-
-               curItemStateId++;
-            }
-
-            PlainChangesLog restoredLog =
-               new PlainChangesLogImpl(restoredItems, log.getSessionId(), log.getEventType(), log.getPairId());
-            restoredItemDataChangesLog.addLog(restoredLog);
+            // re-init the value
+            propertyData.getValues().set(listFixupStream.get(i).getValueDataId(),
+               new StreamPersistedValueData(vd.getOrderNumber(), new SpoolFile(listFile.get(i).getAbsolutePath())));
          }
-         itemDataChangesLog = restoredItemDataChangesLog;
 
          for (int i = 0; i < listFile.size(); i++)
             fileCleaner.addFile(listFile.get(i));
