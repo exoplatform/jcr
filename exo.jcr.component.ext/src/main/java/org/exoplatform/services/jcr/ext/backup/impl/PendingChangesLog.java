@@ -18,12 +18,16 @@
  */
 package org.exoplatform.services.jcr.ext.backup.impl;
 
+import org.exoplatform.services.jcr.dataflow.ChangesLogIterator;
 import org.exoplatform.services.jcr.dataflow.ItemState;
+import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
+import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
 import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.ext.replication.FixupStream;
-import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 import org.exoplatform.services.jcr.util.IdGenerator;
@@ -482,20 +486,75 @@ public class PendingChangesLog
    {
       // TODO same code as in BackupWorkspaceInitializer?
 
-      List<ItemState> listItemState = itemDataChangesLog.getAllStates();
-      for (int i = 0; i < this.listFixupStream.size(); i++)
+      int index = 0;
+      int restoredItemStateId = index < listFixupStream.size() ? listFixupStream.get(index).getItemSateId() : -1;
+      int restoredValueDataId = index < listFixupStream.size() ? listFixupStream.get(index).getValueDataId() : -1;
+
+      TransactionChangesLog restoredItemDataChangesLog = new TransactionChangesLog();
+
+      ChangesLogIterator logIterator = itemDataChangesLog.getLogIterator();
+      int curItemStateId = 0;
+      while (logIterator.hasNextLog())
       {
-         ItemState itemState = listItemState.get(listFixupStream.get(i).getItemSateId());
-         ItemData itemData = itemState.getData();
+         List<ItemState> restoredItems = new ArrayList<ItemState>();
 
-         PersistedPropertyData propertyData = (PersistedPropertyData)itemData;
-         TransientValueData tvd =
-            (TransientValueData)(propertyData.getValues().get(listFixupStream.get(i).getValueDataId()));
+         PlainChangesLog log = logIterator.nextLog();
+         for (ItemState item : log.getAllStates())
+         {
+            if (curItemStateId != restoredItemStateId)
+            {
+               restoredItems.add(item);
+            }
+            else
+            {
+               List<ValueData> restoredValues = new ArrayList<ValueData>();
 
-         // re-init the value
-         tvd.delegate(new TransientValueData(tvd.getOrderNumber(), null, null, new SpoolFile(listFile.get(i)
-            .getAbsolutePath()), fileCleaner, -1, null, true));
+               PersistedPropertyData propertyData = (PersistedPropertyData)item.getData();
+               for (int curValueDataId = 0; curValueDataId < propertyData.getValues().size(); curValueDataId++)
+               {
+                  ValueData valueData = propertyData.getValues().get(curValueDataId);
+
+                  if (curItemStateId == restoredItemStateId && curValueDataId == restoredValueDataId)
+                  {
+                     // reinit valuedata
+                     ValueData restoredValueData =
+                        new StreamPersistedValueData(valueData.getOrderNumber(), new SpoolFile(listFile.get(index)
+                           .getAbsolutePath()));
+
+                     restoredValues.add(restoredValueData);
+
+                     index++;
+                     restoredItemStateId =
+                        index < listFixupStream.size() ? listFixupStream.get(index).getItemSateId() : -1;
+                     restoredValueDataId =
+                        index < listFixupStream.size() ? listFixupStream.get(index).getValueDataId() : -1;
+                  }
+                  else
+                  {
+                     restoredValues.add(valueData);
+                  }
+               }
+
+               PersistedPropertyData restoredPropertyData =
+                  new PersistedPropertyData(propertyData.getIdentifier(), propertyData.getQPath(), propertyData
+                     .getParentIdentifier(), propertyData.getPersistedVersion(), propertyData.getType(), propertyData
+                     .isMultiValued(), restoredValues);
+
+               ItemState restoredItem =
+                  new ItemState(restoredPropertyData, item.getState(), item.isEventFire(), item.getAncestorToSave(),
+                     item.isInternallyCreated(), item.isPersisted());
+
+               restoredItems.add(restoredItem);
+            }
+
+            curItemStateId++;
+         }
+
+         PlainChangesLog restoredLog =
+            new PlainChangesLogImpl(restoredItems, log.getSessionId(), log.getEventType(), log.getPairId());
+         restoredItemDataChangesLog.addLog(restoredLog);
       }
+      itemDataChangesLog = restoredItemDataChangesLog;
 
       if (listRandomAccessFile != null)
          for (int i = 0; i < listRandomAccessFile.size(); i++)
@@ -503,7 +562,6 @@ public class PendingChangesLog
 
       for (int i = 0; i < listFile.size(); i++)
          fileCleaner.addFile(listFile.get(i));
-
    }
 
 }
