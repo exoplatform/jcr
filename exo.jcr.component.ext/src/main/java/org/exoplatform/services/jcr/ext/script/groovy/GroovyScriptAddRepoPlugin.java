@@ -23,6 +23,8 @@ import org.exoplatform.container.component.BaseComponentPlugin;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.services.jcr.ext.resource.UnifiedNodeReference;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -39,6 +41,9 @@ import java.util.Set;
 public class GroovyScriptAddRepoPlugin extends BaseComponentPlugin
 {
 
+   /** Logger. */
+   private static final Log LOG = ExoLogger.getLogger(GroovyScriptAddRepoPlugin.class);
+
    private final InitParams params;
 
    public GroovyScriptAddRepoPlugin(InitParams params)
@@ -46,6 +51,7 @@ public class GroovyScriptAddRepoPlugin extends BaseComponentPlugin
       this.params = params;
    }
 
+   @SuppressWarnings("unchecked")
    public Collection<URL> getRepositories()
    {
       if (params == null)
@@ -65,8 +71,7 @@ public class GroovyScriptAddRepoPlugin extends BaseComponentPlugin
          }
          catch (MalformedURLException e)
          {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            LOG.error("Failed add groovy script repository. " + e.getMessage());
          }
       }
       return repos;
