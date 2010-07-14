@@ -33,8 +33,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 
-import javax.jcr.Session;
-
 /**
  * URLStreamHandler for protocol <tt>jcr://</tt>.
  *
@@ -111,19 +109,26 @@ public class Handler extends URLStreamHandler implements Startable
             sessionProvider =
                (SessionProvider)ConversationState.getCurrent().getAttribute(SessionProvider.SESSION_PROVIDER);
 
-         ManageableRepository repository;
+         if (sessionProvider == null)
+            sessionProvider = SessionProvider.createSystemProvider();
+
          String repositoryName = nodeReference.getRepository();
-         if (repositoryName == null || repositoryName.length() == 0)
-            repository = sessionProvider.getCurrentRepository();
-         else
-            repository = repositoryService.getRepository(repositoryName);
+         if (repositoryName != null && repositoryName.length() > 0)
+         {
+            ManageableRepository repository = repositoryService.getRepository(repositoryName);
+            sessionProvider.setCurrentRepository(repository);
+         }
 
          String workspaceName = nodeReference.getWorkspace();
-         if (workspaceName == null || workspaceName.length() == 0)
-            workspaceName = sessionProvider.getCurrentWorkspace();
+         if (workspaceName != null && workspaceName.length() > 0)
+         {
+            sessionProvider.setCurrentWorkspace(workspaceName);
+         }
 
-         Session ses = sessionProvider.getSession(workspaceName, repository);
-         JcrURLConnection conn = new JcrURLConnection(nodeReference, ses, nodeRepresentationService);
+//         JcrURLConnection conn =
+//            new JcrURLConnection(repositoryService.getRepository(repositoryName), nodeReference,
+//               nodeRepresentationService);
+          JcrURLConnection conn = new JcrURLConnection(nodeReference, sessionProvider, nodeRepresentationService);
          return conn;
 
       }

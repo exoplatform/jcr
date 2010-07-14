@@ -32,6 +32,7 @@ import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
 import org.exoplatform.services.jcr.ext.registry.RegistryEntry;
 import org.exoplatform.services.jcr.ext.registry.RegistryService;
+import org.exoplatform.services.jcr.ext.resource.JcrURLConnection;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.rest.ext.groovy.DefaultGroovyResourceLoader;
@@ -52,6 +53,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -1507,13 +1509,14 @@ public class GroovyScript2RestLoader implements Startable
                      resource = new URL(root, filename);
                   }
                }
+               URLConnection connection = null;
                try
                {
                   if (LOG.isDebugEnabled())
                      LOG.debug("Try to load resource from URL : " + resource);
 
-                  InputStream script = resource.openStream();
-                  script.close();
+                  connection = resource.openConnection();
+                  connection.getInputStream().close();
 
                   break;
                }
@@ -1523,6 +1526,13 @@ public class GroovyScript2RestLoader implements Startable
                      LOG.debug("Can't open URL : " + resource);
 
                   resource = null;
+               }
+               finally
+               {
+                  if (connection != null && resource != null && "jcr".equals(resource.getProtocol()))
+                  {
+                     ((JcrURLConnection)connection).disconnect();
+                  }
                }
             }
             if (resource != null)

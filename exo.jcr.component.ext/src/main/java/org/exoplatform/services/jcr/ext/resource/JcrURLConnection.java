@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.ext.resource;
 
+import org.exoplatform.services.jcr.ext.common.SessionProvider;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -33,7 +35,7 @@ import javax.jcr.Session;
 public class JcrURLConnection extends URLConnection
 {
 
-   private Session session;
+   private SessionProvider sessionProvider;
 
    private NodeRepresentationService nodeRepresentationService;
 
@@ -41,12 +43,14 @@ public class JcrURLConnection extends URLConnection
 
    private NodeRepresentation nodeRepresentation;
 
-   public JcrURLConnection(UnifiedNodeReference nodeReference, Session session,
+   private Session session;
+
+   public JcrURLConnection(UnifiedNodeReference nodeReference, SessionProvider sessionProvider,
       NodeRepresentationService nodeRepresentationService) throws MalformedURLException
    {
 
       super(nodeReference.getURL());
-      this.session = session;
+      this.sessionProvider = sessionProvider;
       this.nodeReference = nodeReference;
       this.nodeRepresentationService = nodeRepresentationService;
 
@@ -68,16 +72,24 @@ public class JcrURLConnection extends URLConnection
 
       try
       {
+         session =
+            sessionProvider.getSession(sessionProvider.getCurrentWorkspace(), sessionProvider.getCurrentRepository());
+
          Node node = null;
          if (nodeReference.isPath())
-            node = session.getRootNode().getNode(nodeReference.getPath().substring(1));
+         {
+            node = (Node)session.getItem(nodeReference.getPath());
+         }
          else if (nodeReference.isIdentitifier())
+         {
             node = session.getNodeByUUID(nodeReference.getIdentitifier().getString());
+         }
          else
+         {
             throw new IllegalArgumentException("Absolute path or Identifier was not found!");
+         }
 
          nodeRepresentation = nodeRepresentationService.getNodeRepresentation(node, "text/xml");
-
          connected = true;
       }
       catch (Exception e)
@@ -85,6 +97,17 @@ public class JcrURLConnection extends URLConnection
          //e.printStackTrace();
          throw new IOException("Connection refused!");
       }
+   }
+
+   /**
+    * Close connection to JCR.
+    */
+   public void disconnect()
+   {
+      if (!connected)
+         return;
+      session.logout();
+      connected = false;
    }
 
    /*
@@ -173,9 +196,6 @@ public class JcrURLConnection extends URLConnection
       }
       return -1;
    }
-
-
-
 
    /*
     * (non-Javadoc)
@@ -285,6 +305,23 @@ public class JcrURLConnection extends URLConnection
    public void setRequestProperty(String key, String value)
    {
       throw new UnsupportedOperationException("protocol doesn't support request properties!");
+   }
+
+   @Override
+   protected void finalize() throws Throwable
+   {
+      try
+      {
+         sessionProvider.close();
+      }
+      catch (Throwable t)
+      {
+         ;
+      }
+      finally
+      {
+         super.finalize();
+      }
    }
 
 }
