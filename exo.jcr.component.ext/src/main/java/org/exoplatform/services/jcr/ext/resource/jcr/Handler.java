@@ -125,9 +125,6 @@ public class Handler extends URLStreamHandler implements Startable
             sessionProvider.setCurrentWorkspace(workspaceName);
          }
 
-//         JcrURLConnection conn =
-//            new JcrURLConnection(repositoryService.getRepository(repositoryName), nodeReference,
-//               nodeRepresentationService);
           JcrURLConnection conn = new JcrURLConnection(nodeReference, sessionProvider, nodeRepresentationService);
          return conn;
 
