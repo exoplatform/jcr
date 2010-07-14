@@ -1544,16 +1544,23 @@ public class GroovyScript2RestLoader implements Startable
       URL[] res = new URL[src.length];
       for (int i = 0; i < src.length; i++)
       {
-         String ref = src[i].getRef();
-         if (ref == null)
+         if ("jcr".equals(src[i].getProtocol()))
          {
-            ref = "/";
+            String ref = src[i].getRef();
+            if (ref == null)
+            {
+               ref = "/";
+            }
+            else if (ref.charAt(ref.length() - 1) != '/')
+            {
+               ref = ref + "/";
+            }
+            res[i] = new URL(src[i], "#" + ref);
          }
-         else if (ref.charAt(ref.length() - 1) != '/')
+         else
          {
-            ref = ref + "/";
+            res[i] = src[i];
          }
-         res[i] = new URL(src[i], "#" + ref);
       }
       return res;
    }
