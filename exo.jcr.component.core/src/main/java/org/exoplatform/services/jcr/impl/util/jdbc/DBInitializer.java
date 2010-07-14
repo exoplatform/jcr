@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.util.jdbc;
 
+import org.exoplatform.services.jcr.impl.util.SecurityHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -26,6 +27,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -205,7 +207,9 @@ public class DBInitializer
          {
             if (irs.getShort("TYPE") != DatabaseMetaData.tableIndexStatistic
                && irs.getString("INDEX_NAME").equalsIgnoreCase(indexName))
+            {
                res = true; // check for index params matching etc.
+            }
          }
          return res;
       }
@@ -246,7 +250,9 @@ public class DBInitializer
             if (isTableExists(conn, tableName))
             {
                if (LOG.isDebugEnabled())
+               {
                   LOG.debug("Table is already exists " + tableName);
+               }
                return true;
             }
          }
@@ -262,7 +268,9 @@ public class DBInitializer
             if (isTableExists(conn, tableName))
             {
                if (LOG.isDebugEnabled())
+               {
                   LOG.debug("View is already exists " + tableName);
+               }
                return true;
             }
          }
@@ -284,7 +292,9 @@ public class DBInitializer
                   if (isIndexExists(conn, tableName, indexName))
                   {
                      if (LOG.isDebugEnabled())
+                     {
                         LOG.debug("Index is already exists " + indexName);
+                     }
                      return true;
                   }
                }
@@ -313,7 +323,9 @@ public class DBInitializer
             if (isSequenceExists(conn, sequenceName))
             {
                if (LOG.isDebugEnabled())
+               {
                   LOG.debug("Sequence is already exists " + sequenceName);
+               }
                return true;
             }
          }
@@ -328,7 +340,9 @@ public class DBInitializer
             if (isTriggerExists(conn, triggerName))
             {
                if (LOG.isDebugEnabled())
+               {
                   LOG.debug("Trigger is already exists " + triggerName);
+               }
                return true;
             }
          }
@@ -336,7 +350,9 @@ public class DBInitializer
       else
       {
          if (LOG.isDebugEnabled())
+         {
             LOG.debug("Command is not detected for check '" + sql + "'");
+         }
       }
 
       return false;
@@ -383,14 +399,23 @@ public class DBInitializer
             if (s.length() > 0)
             {
                if (isObjectExists(connection, sql = s))
+               {
                   continue;
+               }
 
                if (LOG.isDebugEnabled())
                {
                   LOG.debug("Execute script: \n[" + sql + "]");
                }
-
-               st.executeUpdate(sql);
+               final Statement finalSt = st;
+               final String finalSql = sql;
+               SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Object>(){
+                  public Object run() throws Exception
+                  {
+                     finalSt.executeUpdate(finalSql);
+                     return null;
+                  }
+               });
             }
          }
 
