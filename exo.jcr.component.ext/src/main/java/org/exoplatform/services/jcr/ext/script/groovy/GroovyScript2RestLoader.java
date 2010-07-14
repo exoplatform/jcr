@@ -373,6 +373,24 @@ public class GroovyScript2RestLoader implements Startable
       // Add script from configuration files to JCR.
       addScripts();
 
+      if (addRepoPlugins != null && addRepoPlugins.size() > 0)
+      {
+         try
+         {
+            Set<URL> repos = new HashSet<URL>();
+            for (GroovyScriptAddRepoPlugin pl : addRepoPlugins)
+            {
+               repos.addAll(pl.getRepositories());
+            }
+            this.groovyPublisher.getGroovyClassLoader().setResourceLoader(
+               new JcrGroovyResourceLoader(repos.toArray(new URL[repos.size()])));
+         }
+         catch (MalformedURLException e)
+         {
+            LOG.error("Unable add groovy script repository. ", e);
+         }
+      }
+
       if (observationListenerConfiguration != null)
       {
          try
@@ -414,24 +432,6 @@ public class GroovyScript2RestLoader implements Startable
          catch (Exception e)
          {
             LOG.error("Error occurs ", e);
-         }
-      }
-
-      if (addRepoPlugins != null && addRepoPlugins.size() > 0)
-      {
-         try
-         {
-            Set<URL> repos = new HashSet<URL>();
-            for (GroovyScriptAddRepoPlugin pl : addRepoPlugins)
-            {
-               repos.addAll(pl.getRepositories());
-            }
-            this.groovyPublisher.getGroovyClassLoader().setResourceLoader(
-               new JcrGroovyResourceLoader(repos.toArray(new URL[repos.size()])));
-         }
-         catch (MalformedURLException e)
-         {
-            LOG.error("Unable add groovy script repository. ", e);
          }
       }
 
