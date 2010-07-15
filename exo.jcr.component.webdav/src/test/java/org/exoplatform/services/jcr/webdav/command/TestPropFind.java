@@ -166,7 +166,8 @@ public class TestPropFind extends BaseStandaloneTest
       String content = TestUtils.getFileContent();
       String file = TestUtils.getFileName();
       TestUtils.addContent(session, file, new ByteArrayInputStream(content.getBytes()), nt_webdave_file, "");
-      TestUtils.addNodeProperty(session, file, authorProp, "bla % bla");
+      String authorValue = "bla % bla";
+      TestUtils.addNodeProperty(session, file, authorProp, authorValue);
       ContainerResponse responseFind =
          service(WebDAVMethods.PROPFIND, getPathWS() + file, "", null, allPropsXML.getBytes());
       assertEquals(HTTPStatus.MULTISTATUS, responseFind.getStatus());
@@ -176,7 +177,7 @@ public class TestPropFind extends BaseStandaloneTest
       String find = outputStream.toString();
       assertTrue(find.contains("D:getlastmodified"));
       assertTrue(find.contains(authorProp));
-      assertTrue(find.contains(author));
+      assertTrue(find.contains(authorValue));
    }
    
 
