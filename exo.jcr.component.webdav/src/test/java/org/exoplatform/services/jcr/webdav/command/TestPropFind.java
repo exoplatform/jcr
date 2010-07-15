@@ -161,7 +161,7 @@ public class TestPropFind extends BaseStandaloneTest
    
    
    
-   public void _testPropWithPercent() throws Exception
+   public void testPropWithPercent() throws Exception
    {
       String content = TestUtils.getFileContent();
       String file = TestUtils.getFileName();

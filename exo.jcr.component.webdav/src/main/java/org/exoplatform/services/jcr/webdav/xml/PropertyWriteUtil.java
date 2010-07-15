@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -133,15 +135,21 @@ public class PropertyWriteUtil
          }
 
          writeAttributes(xmlStreamWriter, prop);
-
-         try
+         
+         if (prop.getName().getLocalPart().equals("displayname") && containsEncodedChar(prop.getValue()))
          {
-            xmlStreamWriter.writeCharacters(URLDecoder.decode(prop.getValue(), "UTF-8"));
+            try
+            {
+               xmlStreamWriter.writeCharacters(URLDecoder.decode(prop.getValue(), "UTF-8"));
+            }
+            catch (UnsupportedEncodingException e)
+            {
+               e.printStackTrace();
+            }
+         } else {
+            xmlStreamWriter.writeCharacters(prop.getValue());
          }
-         catch (UnsupportedEncodingException e)
-         {
-            e.printStackTrace();
-         }
+         
          xmlStreamWriter.writeEndElement();
       }
    }
@@ -164,6 +172,18 @@ public class PropertyWriteUtil
          String attrValue = attributes.get(attrName);
          xmlStreamWriter.writeAttribute(attrName, attrValue);
       }
+   }
+   
+   /**
+    * Checks if string contains encoded characters like %2f.
+    * @param str string to check.
+    * @return <code>true</code> if string contains encoded characters, otherwise returns <code>false</code> 
+    */
+   private static boolean containsEncodedChar(String str){
+      Pattern p = Pattern.compile("%[0-9a-fA-F]{2}");
+      Matcher matcher = p.matcher(str);
+      return matcher.find();
+      
    }
 
 }
