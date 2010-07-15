@@ -134,9 +134,14 @@ public class PropertyWriteUtil
 
          writeAttributes(xmlStreamWriter, prop);
 
-         // xmlStreamWriter.writeCharacters(URLDecoder.decode(prop.getValue(), "UTF-8"));
-         xmlStreamWriter.writeCharacters(prop.getValue());
-         
+         try
+         {
+            xmlStreamWriter.writeCharacters(URLDecoder.decode(prop.getValue(), "UTF-8"));
+         }
+         catch (UnsupportedEncodingException e)
+         {
+            e.printStackTrace();
+         }
          xmlStreamWriter.writeEndElement();
       }
    }
