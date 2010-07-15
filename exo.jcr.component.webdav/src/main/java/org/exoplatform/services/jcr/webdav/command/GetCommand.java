@@ -135,7 +135,7 @@ public class GetCommand
                DateFormat dateFormat = new SimpleDateFormat(WebDavConst.DateFormat.IF_MODIFIED_SINCE_PATTERN, Locale.US);
                Date lastModifiedDate = dateFormat.parse(lastModifiedProperty.getValue());
                
-               dateFormat = new SimpleDateFormat(WebDavConst.DateFormat.MODIFICATION);
+               dateFormat = new SimpleDateFormat(WebDavConst.DateFormat.MODIFICATION, Locale.US);
                Date ifModifiedSinceDate = dateFormat.parse(ifModifiedSince);
                
                if(ifModifiedSinceDate.getTime() >= lastModifiedDate.getTime()){
