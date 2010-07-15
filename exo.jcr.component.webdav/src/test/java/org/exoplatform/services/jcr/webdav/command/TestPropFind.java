@@ -154,6 +154,30 @@ public class TestPropFind extends BaseStandaloneTest
       assertTrue(find.contains(authorProp));
       assertTrue(find.contains(author));
    }
+ 
+   
+   
+   
+   
+   public void testPropWithPercent() throws Exception
+   {
+      String content = TestUtils.getFileContent();
+      String file = TestUtils.getFileName();
+      TestUtils.addContent(session, file, new ByteArrayInputStream(content.getBytes()), nt_webdave_file, "");
+      String authorValue = "bla % bla";
+      TestUtils.addNodeProperty(session, file, authorProp, authorValue);
+      ContainerResponse responseFind =
+         service(WebDAVMethods.PROPFIND, getPathWS() + file, "", null, allPropsXML.getBytes());
+      assertEquals(HTTPStatus.MULTISTATUS, responseFind.getStatus());
+      ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+      PropFindResponseEntity entity = (PropFindResponseEntity)responseFind.getEntity();
+      entity.write(outputStream);
+      String find = outputStream.toString();
+      assertTrue(find.contains("D:getlastmodified"));
+      assertTrue(find.contains(authorProp));
+      assertTrue(find.contains(authorValue));
+   }
+   
 
    @Override
    protected String getRepositoryName()
