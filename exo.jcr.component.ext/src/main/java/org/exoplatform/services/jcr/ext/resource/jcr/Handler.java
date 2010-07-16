@@ -105,12 +105,18 @@ public class Handler extends URLStreamHandler implements Startable
          // ThreadLocalSessionProvider or System SessionProvider
          SessionProvider sessionProvider = threadLocalSessionProviderService.getSessionProvider(null);
 
+         boolean closeSessionProvider = false;
          if (sessionProvider == null && ConversationState.getCurrent() != null)
+         {
             sessionProvider =
                (SessionProvider)ConversationState.getCurrent().getAttribute(SessionProvider.SESSION_PROVIDER);
+         }
 
          if (sessionProvider == null)
-            sessionProvider = SessionProvider.createSystemProvider();
+         {
+            sessionProvider = SessionProvider.createAnonimProvider();
+            closeSessionProvider = true;
+         }
 
          String repositoryName = nodeReference.getRepository();
          if (repositoryName != null && repositoryName.length() > 0)
@@ -125,7 +131,8 @@ public class Handler extends URLStreamHandler implements Startable
             sessionProvider.setCurrentWorkspace(workspaceName);
          }
 
-          JcrURLConnection conn = new JcrURLConnection(nodeReference, sessionProvider, nodeRepresentationService);
+         JcrURLConnection conn =
+            new JcrURLConnection(nodeReference, sessionProvider, nodeRepresentationService, closeSessionProvider);
          return conn;
 
       }

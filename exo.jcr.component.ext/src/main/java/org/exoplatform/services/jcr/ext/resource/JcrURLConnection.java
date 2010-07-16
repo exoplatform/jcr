@@ -45,6 +45,24 @@ public class JcrURLConnection extends URLConnection
 
    private Session session;
 
+   private boolean closeSessionProvider;
+
+   public JcrURLConnection(UnifiedNodeReference nodeReference, SessionProvider sessionProvider,
+      NodeRepresentationService nodeRepresentationService, boolean closeSessionProvider) throws MalformedURLException
+   {
+
+      super(nodeReference.getURL());
+      this.sessionProvider = sessionProvider;
+      this.nodeReference = nodeReference;
+      this.nodeRepresentationService = nodeRepresentationService;
+      this.closeSessionProvider = closeSessionProvider;
+
+      doOutput = false;
+      allowUserInteraction = false;
+      useCaches = false;
+      ifModifiedSince = 0;
+   }
+
    public JcrURLConnection(UnifiedNodeReference nodeReference, SessionProvider sessionProvider,
       NodeRepresentationService nodeRepresentationService) throws MalformedURLException
    {
@@ -312,7 +330,10 @@ public class JcrURLConnection extends URLConnection
    {
       try
       {
-         sessionProvider.close();
+         if (closeSessionProvider)
+         {
+            sessionProvider.close();
+         }
       }
       catch (Throwable t)
       {
