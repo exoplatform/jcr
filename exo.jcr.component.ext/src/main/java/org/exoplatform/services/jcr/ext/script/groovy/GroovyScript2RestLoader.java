@@ -1253,108 +1253,11 @@ public class GroovyScript2RestLoader implements Startable
       }
    }
 
-   //   @POST
-   //   @Path("load/development/{repository}/{workspace}/{path:.*}")
-   //   @RolesAllowed({"developers"})
-   //   public Response loadDevelopment(@PathParam("repository") String repository,
-   //      @PathParam("workspace") String workspace, @PathParam("path") String path,
-   //      @DefaultValue("true") @QueryParam("state") boolean state, @Context SecurityContext security,
-   //      MultivaluedMap<String, String> properties)
-   //   {
-   //      if (state)
-   //      {
-   //         return loadResource(repository, workspace, path, security, properties == null ? new MultivaluedMapImpl()
-   //            : properties);
-   //      }
-   //      return unloadResource(repository, workspace, path, security);
-   //   }
-
-   //   /**
-   //    * @param repository JCR repository
-   //    * @param workspace JCR workspace
-   //    * @param path path to script
-   //    * @param security see {@link SecurityContext}
-   //    * @param properties resource properties
-   //    * @return response with corresponded status and info
-   //    */
-   //   private Response loadResource(String repository, String workspace, String path, SecurityContext security,
-   //      MultivaluedMap<String, String> properties)
-   //   {
-   //      Session ses = null;
-   //      try
-   //      {
-   //         ses =
-   //            sessionProviderService.getSessionProvider(null).getSession(workspace,
-   //               repositoryService.getRepository(repository));
-   //         Node script = ((Node)ses.getItem("/" + path)).getNode("jcr:content");
-   //         ResourceId key = new NodeScriptKey(repository, workspace, script);
-   //         groovyPublisher.unpublishResource(key, security);
-   //         groovyPublisher.publishPerRequest(script.getProperty("jcr:data").getStream(), key, properties, security);
-   //         return Response.status(Response.Status.NO_CONTENT).build();
-   //      }
-   //      catch (PathNotFoundException e)
-   //      {
-   //         String msg = "Path " + path + " does not exists";
-   //         LOG.error(msg);
-   //         return Response.status(Response.Status.NOT_FOUND).entity(msg).type(MediaType.TEXT_PLAIN).build();
-   //      }
-   //      catch (ResourcePublicationException e)
-   //      {
-   //         return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).type(MediaType.TEXT_PLAIN).build();
-   //      }
-   //      catch (Exception e)
-   //      {
-   //         LOG.error(e.getMessage(), e);
-   //         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage())
-   //            .type(MediaType.TEXT_PLAIN).build();
-   //      }
-   //      finally
-   //      {
-   //         if (ses != null)
-   //         {
-   //            ses.logout();
-   //         }
-   //      }
-   //   }
-   //
-   //   private Response unloadResource(String repository, String workspace, String path, SecurityContext security)
-   //   {
-   //      Session ses = null;
-   //      try
-   //      {
-   //         ses =
-   //            sessionProviderService.getSessionProvider(null).getSession(workspace,
-   //               repositoryService.getRepository(repository));
-   //         Node script = ((Node)ses.getItem("/" + path)).getNode("jcr:content");
-   //         ResourceId key = new NodeScriptKey(repository, workspace, script);
-   //         if (null == groovyPublisher.unpublishResource(key, security))
-   //         {
-   //            return Response.status(Response.Status.BAD_REQUEST).entity(
-   //               "Can't unbind script " + path + ", not bound or has wrong mapping to the resource class ").type(
-   //               MediaType.TEXT_PLAIN).build();
-   //         }
-   //         return Response.status(Response.Status.NO_CONTENT).build();
-   //      }
-   //      catch (PathNotFoundException e)
-   //      {
-   //         String msg = "Path " + path + " does not exists";
-   //         LOG.error(msg);
-   //         return Response.status(Response.Status.NOT_FOUND).entity(msg).type(MediaType.TEXT_PLAIN).build();
-   //      }
-   //      catch (Exception e)
-   //      {
-   //         LOG.error(e.getMessage(), e);
-   //         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage())
-   //            .type(MediaType.TEXT_PLAIN).build();
-   //      }
-   //      finally
-   //      {
-   //         if (ses != null)
-   //         {
-   //            ses.logout();
-   //         }
-   //      }
-   //   }
+   @Deprecated
+   public Response load(String repository, String workspace, String path, boolean state)
+   {
+      return load(repository, workspace, path, state, null);
+   }
 
    /**
     * Returns the list of all groovy-scripts found in workspace.
