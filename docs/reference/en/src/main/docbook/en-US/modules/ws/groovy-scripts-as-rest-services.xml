@@ -381,4 +381,102 @@ http://localhost:8080/rest/script/groovy/delete/repository/production/script/gro
 
     <para>That is all.</para>
   </section>
+
+  <section>
+    <title>Dependencies resolving</title>
+
+    <para>Since WS version 2.2.0-Beta01 and JCR version 1.14.0-Beta01 there is
+    support of script dependency resolving. If Groovy RESTful service use some
+    classes from other Groovy scripts they can be loaded when service will be
+    deployed. There is special
+    org.exoplatform.container.component.ComponentPlugin for this
+    (configuration example below).</para>
+
+    <programlisting>&lt;external-component-plugins&gt;
+      &lt;target-component&gt;org.exoplatform.services.jcr.ext.script.groovy.GroovyScript2RestLoader&lt;/target-component&gt;
+      &lt;component-plugin&gt;
+         &lt;name&gt;add groovy repo&lt;/name&gt;
+         &lt;set-method&gt;addPlugin&lt;/set-method&gt;
+         &lt;type&gt;org.exoplatform.services.jcr.ext.script.groovy.GroovyScriptAddRepoPlugin&lt;/type&gt;
+         &lt;init-params&gt;
+            &lt;properties-param&gt;
+               &lt;name&gt;repo1&lt;/name&gt;
+               &lt;property name="repository" value="repository"/&gt;
+               &lt;property name="workspace" value="production"/&gt;
+               &lt;property name="path" value="/dependencies"/&gt;
+            &lt;/properties-param&gt;
+         &lt;/init-params&gt;
+      &lt;/component-plugin&gt;
+   &lt;/external-component-plugins&gt;</programlisting>
+
+    <para>It is possible to add more then one dependencies location, just one
+    more "properties-param" should be used.</para>
+
+    <para>When Groovy ClassLoader need load class in will try to load from
+    repository "repository", workspace "production" and from folder
+    "/dependencies/...". For example, we have simple Groovy RESTful service
+    :</para>
+
+    <programlisting>package org.exoplatform.groovy.test
+
+import javax.ws.rs.GET
+import javax.ws.rs.Path
+
+import org.exoplatform.groovy.lib.Dependency1
+
+@Path("groovy-test-dependency")
+public class TestDependency {
+  
+  @GET
+  def method() {
+    return new Dependency1().getName()
+  }
+  
+}</programlisting>
+
+    <para>and other script</para>
+
+    <programlisting>package org.exoplatform.groovy.lib
+
+class Dependency1
+{
+   String name = getClass().getName()
+}</programlisting>
+
+    <para>Script org.exoplatform.groovy.lib.Dependency1 MUST be located with
+    respect to package name. So if we make a decision to store dependencies in
+    repository "repository", workspace "production" and in folder
+    "/dependencies" then full path to org.exoplatform.groovy.lib.Dependency1
+    must be /dependencies/org/exoplatform/groovy/lib/Dependency1.groovy. If
+    script located as described it will be found automatically when "main"
+    service will be deployed.</para>
+  </section>
+
+  <section>
+    <title>Security</title>
+
+    <para>Since WS version 2.2.0-Beta01 and JCR version 1.14.0-Beta01 it is
+    possible to configure permissions of Groovy based RESTful services by
+    using special codebase. Let's see how we allow a dynamic (possibly user
+    defined) services to execute with limited permissions.</para>
+
+    <para>Add in existed or create new policy file and add next lines in
+    it</para>
+
+    <programlisting>grant codeBase "file:/groovy/script/jaxrs" {
+};</programlisting>
+
+    <para>In this case groovy services have not any privileges. Detailed list
+    of JDK permissions available here <link
+    linkend="???">http://java.sun.com/j2se/1.5.0/docs/guide/security/permissions.html#PropertyPermission</link>
+    To give all permissions to Groovy services simply add next in policy
+    file</para>
+
+    <programlisting>grant codeBase "file:/groovy/script/jaxrs" {
+   permission java.security.AllPermission;
+};</programlisting>
+
+    <para>NOTE URL file:/groovy/script/jaxrs is virtual and not need be
+    present on file system.</para>
+  </section>
 </chapter>
