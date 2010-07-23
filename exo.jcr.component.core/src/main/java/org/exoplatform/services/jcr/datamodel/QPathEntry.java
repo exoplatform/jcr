@@ -32,6 +32,10 @@ public class QPathEntry extends InternalQName implements Comparable<QPathEntry>
     */
    private final int index;
 
+   private String cachedToString;
+
+   private String cachedToStringShowIndex;
+
    /**
     * QPathEntry constructor.
     * 
@@ -128,7 +132,44 @@ public class QPathEntry extends InternalQName implements Comparable<QPathEntry>
     */
    public String getAsString(boolean showIndex)
    {
-      return super.getAsString() + (showIndex ? QPath.PREFIX_DELIMITER + this.index : "");
+      if (showIndex)
+      {
+         if (cachedToStringShowIndex != null)
+         {
+            return cachedToStringShowIndex;
+         }
+      }
+      else
+      {
+         if (cachedToString != null)
+         {
+            return cachedToString;
+         }
+      }
+
+      //
+      String res;
+      if (showIndex)
+      {
+         res = super.getAsString() + QPath.PREFIX_DELIMITER + this.index;
+      }
+      else
+      {
+         res = super.getAsString();
+      }
+
+      //
+      if (showIndex)
+      {
+         cachedToStringShowIndex = res;
+      }
+      else
+      {
+         cachedToString = res;
+      }
+
+      //
+      return res;
    }
 
    /**
