@@ -18,6 +18,9 @@
   <xi:include href="kernel/transaction-service.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
+  <xi:include href="kernel/listener-service.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
   <xi:include href="kernel/jndi-naming.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
