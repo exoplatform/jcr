@@ -24,7 +24,7 @@
    <parent>
       <groupId>org.exoplatform.jcr</groupId>
       <artifactId>jcr-parent</artifactId>
-      <version>1.14.0-Beta01-SNAPSHOT</version>
+      <version>1.14.0-Beta01</version>
    </parent>
    <artifactId>exo.jcr.component.core</artifactId>
    <name>eXo JCR :: Component :: Core Service</name>
@@ -479,17 +479,17 @@
                   <configuration>
                      <tasks>
                         <echo>Creating Access Policy for tests</echo>
-                        <makeurl file="${settings.localRepository}" property="localRepositoryURL"/>
-                        <makeurl file="${project.build.outputDirectory}" property="outputDirectoryURL"/>
-                        <makeurl file="${project.build.testOutputDirectory}" property="testOutputDirectoryURL"/>
+                        <makeurl file="${settings.localRepository}" property="localRepositoryURL" />
+                        <makeurl file="${project.build.outputDirectory}" property="outputDirectoryURL" />
+                        <makeurl file="${project.build.testOutputDirectory}" property="testOutputDirectoryURL" />
                         <copy todir="${project.build.testOutputDirectory}" overwrite="true">
                            <fileset dir="${project.basedir}/src/test/resources/">
-                              <include name="test.policy"/>
+                              <include name="test.policy" />
                            </fileset>
                            <filterset>
-                              <filter token="MAVEN_REPO" value="${localRepositoryURL}"/>
-                              <filter token="MAIN_CLASSES" value="${outputDirectoryURL}"/>
-                              <filter token="TEST_CLASSES" value="${testOutputDirectoryURL}"/>
+                              <filter token="MAVEN_REPO" value="${localRepositoryURL}" />
+                              <filter token="MAIN_CLASSES" value="${outputDirectoryURL}" />
+                              <filter token="TEST_CLASSES" value="${testOutputDirectoryURL}" />
                            </filterset>
                         </copy>
                      </tasks>                     
