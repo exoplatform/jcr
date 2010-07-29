@@ -96,6 +96,7 @@
                   <delete dir="${exo.projects.directory.working}/exo-jetty/etc" includeEmptyDirs="true" quiet="yes" />
                   <delete dir="${exo.projects.directory.working}/exo-jetty/contexts" includeEmptyDirs="true" quiet="yes" />
                   <delete dir="${exo.projects.directory.working}/exo-jetty/webapps" includeEmptyDirs="true" quiet="yes" />
+                  <delete file="${exo.projects.directory.working}/exo-jetty/lib/jsp/org.apache.taglibs.standard.glassfish_1.2.0.v201004190952.jar" />
                   <copy todir="${exo.projects.directory.working}/exo-jetty/lib/ext/" verbose="true" overwrite="true">
                      <fileset dir="${basedir}/target/lib-binary.dir/" excludes="**/*.war" />
                   </copy>
