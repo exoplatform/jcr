@@ -1000,4 +1000,172 @@ public class TestImport extends AbstractImportTest
       {
       }
    }
+   
+   /**
+    * https://jira.jboss.org/browse/EXOJCR-865
+    * 
+    * @throws Exception
+    */
+   public void testEXOJCR865_Doc() throws Exception
+   {
+
+      Node testRoot = root.addNode("testRoot");
+      Node fileNode = testRoot.addNode("TestEXOJCR865", "nt:file");
+      Node contentNode = fileNode.addNode("jcr:content", "nt:resource");
+      contentNode.setProperty("jcr:data", new ByteArrayInputStream("".getBytes()));
+      contentNode.setProperty("jcr:mimeType", "image/jpg");
+      contentNode.setProperty("jcr:lastModified", Calendar.getInstance());
+      root.save();
+      Node contentNodeBeforeAddVersion = fileNode.getNode("jcr:content");
+      assertNotNull(contentNodeBeforeAddVersion.getProperty("jcr:lastModified"));
+      if (fileNode.canAddMixin("mix:versionable"))
+      {
+         fileNode.addMixin("mix:versionable");
+      }
+      fileNode.save();
+      fileNode.checkin();
+      fileNode.checkout();
+      root.save();
+      
+      fileNode.checkin();
+      fileNode.checkout();
+      root.save();
+      
+      fileNode.checkin();
+      fileNode.checkout();
+      root.save();
+
+      String nodeDump = dumpVersionable(fileNode);
+      // Export VersionHistory
+
+      assertTrue(fileNode.isNodeType("mix:versionable"));
+
+      VersionableNodeInfo nodeInfo = new VersionableNodeInfo(fileNode);
+
+      // node content
+      byte[] versionableNode = serialize(fileNode, false, true);
+      // version history
+      byte[] versionHistory = serialize(fileNode.getVersionHistory(), false, true);
+      System.out.println(new String(versionHistory));
+
+      
+      
+      // restore node content
+      Node restoreRoot = testRoot.addNode("restRoot");
+      testRoot.save();
+      
+      deserialize(restoreRoot, XmlSaveType.SESSION, true, ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING,
+         new ByteArrayInputStream(versionableNode));
+      root.save();
+
+      assertTrue(restoreRoot.hasNode("TestEXOJCR865"));
+
+      Node fileImport = restoreRoot.getNode("TestEXOJCR865");
+      assertTrue(fileImport.isNodeType("mix:versionable"));
+
+      VersionHistoryImporter versionHistoryImporter =
+         new VersionHistoryImporter((NodeImpl)fileImport, new ByteArrayInputStream(versionHistory), nodeInfo
+            .getBaseVersion(), nodeInfo.getPredecessorsHistory(), nodeInfo.getVersionHistory());
+      versionHistoryImporter.doImport();
+      root.save();
+      
+      Property property = fileImport.getProperty("jcr:predecessors");
+      assertNotNull(property);
+      assertNotNull(property.getDefinition());
+      
+      fileImport.restore("3", true);
+      root.save();
+      
+      property = fileImport.getProperty("jcr:predecessors");
+      assertNotNull(property);
+      assertNotNull(property.getDefinition());
+      
+      fileImport.checkin();
+      fileImport.checkout();
+      root.save();
+   }
+   
+   /**
+    * https://jira.jboss.org/browse/EXOJCR-865
+    * 
+    * @throws Exception
+    */
+   public void testEXOJCR865_Sys() throws Exception
+   {
+
+      Node testRoot = root.addNode("testRoot");
+      Node fileNode = testRoot.addNode("TestEXOJCR865", "nt:file");
+      Node contentNode = fileNode.addNode("jcr:content", "nt:resource");
+      contentNode.setProperty("jcr:data", new ByteArrayInputStream("".getBytes()));
+      contentNode.setProperty("jcr:mimeType", "image/jpg");
+      contentNode.setProperty("jcr:lastModified", Calendar.getInstance());
+      root.save();
+      Node contentNodeBeforeAddVersion = fileNode.getNode("jcr:content");
+      assertNotNull(contentNodeBeforeAddVersion.getProperty("jcr:lastModified"));
+      if (fileNode.canAddMixin("mix:versionable"))
+      {
+         fileNode.addMixin("mix:versionable");
+      }
+      fileNode.save();
+      fileNode.checkin();
+      fileNode.checkout();
+      root.save();
+      
+      fileNode.checkin();
+      fileNode.checkout();
+      root.save();
+      
+      fileNode.checkin();
+      fileNode.checkout();
+      root.save();
+
+      String nodeDump = dumpVersionable(fileNode);
+      // Export VersionHistory
+
+      assertTrue(fileNode.isNodeType("mix:versionable"));
+
+      VersionableNodeInfo nodeInfo = new VersionableNodeInfo(fileNode);
+
+      // node content
+      byte[] versionableNode = serialize(fileNode, true, true);
+      // version history
+      byte[] versionHistory = serialize(fileNode.getVersionHistory(), false, true);
+      System.out.println(new String(versionHistory));
+
+      
+      
+      // restore node content
+      Node restoreRoot = testRoot.addNode("restRoot");
+      testRoot.save();
+      
+      deserialize(restoreRoot, XmlSaveType.SESSION, true, ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING,
+         new ByteArrayInputStream(versionableNode));
+      root.save();
+
+      assertTrue(restoreRoot.hasNode("TestEXOJCR865"));
+
+      Node fileImport = restoreRoot.getNode("TestEXOJCR865");
+      assertTrue(fileImport.isNodeType("mix:versionable"));
+
+      VersionHistoryImporter versionHistoryImporter =
+         new VersionHistoryImporter((NodeImpl)fileImport, new ByteArrayInputStream(versionHistory), nodeInfo
+            .getBaseVersion(), nodeInfo.getPredecessorsHistory(), nodeInfo.getVersionHistory());
+      versionHistoryImporter.doImport();
+      root.save();
+      
+      Property property = fileImport.getProperty("jcr:predecessors");
+      assertNotNull(property);
+      assertNotNull(property.getDefinition());
+      
+      fileImport.restore("3", true);
+      root.save();
+      
+      property = fileImport.getProperty("jcr:predecessors");
+      assertNotNull(property);
+      assertNotNull(property.getDefinition());
+      
+      fileImport.checkin();
+      fileImport.checkout();
+      root.save();
+   }
 }

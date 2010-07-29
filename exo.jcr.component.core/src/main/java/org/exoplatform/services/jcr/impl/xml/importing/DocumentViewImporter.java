@@ -347,7 +347,16 @@ public class DocumentViewImporter extends BaseXmlImporter
                   // there is single-value defeniton
                   if (defs.getDefinition(false) != null)
                   {
-                     isMultivalue = false;
+                     if (defs.getDefinition(false).isResidualSet() && nodeData.getPrimaryTypeName().equals(Constants.NT_FROZENNODE) 
+                              && propName.equals(Constants.JCR_PREDECESSORS))
+                     {
+                        /// TODO EXOJCR-865
+                        isMultivalue = true;
+                     }
+                     else
+                     {
+                        isMultivalue = false;
+                     }
                   }
                }
                else
