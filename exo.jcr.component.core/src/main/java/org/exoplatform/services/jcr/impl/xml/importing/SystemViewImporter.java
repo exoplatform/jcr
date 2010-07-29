@@ -414,7 +414,16 @@ public class SystemViewImporter extends BaseXmlImporter
             // there is single-value defeniton
             if (defs.getDefinition(false) != null)
             {
-               isMultivalue = false;
+               if (defs.getDefinition(false).isResidualSet() && currentNodeInfo.getPrimaryTypeName().equals(Constants.NT_FROZENNODE) 
+                        && propertyInfo.getName().equals(Constants.JCR_PREDECESSORS))
+               {
+                  /// TODO EXOJCR-865
+                  isMultivalue = true;
+               }
+               else
+               {
+                  isMultivalue = false;
+               }
             }
          }
          else
