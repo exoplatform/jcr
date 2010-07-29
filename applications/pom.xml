@@ -44,5 +44,6 @@
       <module>exo.jcr.applications.jboss</module>
       <module>exo.jcr.applications.jonas</module>
       <module>exo.jcr.applications.tomcat</module>
+      <module>exo.jcr.applications.jetty</module>
    </modules>
 </project>
