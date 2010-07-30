@@ -1,0 +1,670 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="CoreSpringSecurityIntegration">
+  <title>Spring Security Integration</title>
+
+  <section>
+    <title>Introduction</title>
+
+    <para>How to Integrate the spring security framework in the eXo
+    portal?</para>
+
+    <para>This tutorial will guide you through a few steps and show you how
+    easy it is to integrate spring security (or the Spring framework in
+    general) in eXo portal. We will create a login portlet example as a
+    support all along the document reading. The login portlet example has been
+    developed and deployed using the eXo WCM product running on the
+    application server JBoss 4.2.3. But it can easily be adapted to another
+    eXo product (such as ECM) and to other servers such as tomcat. Moreover,
+    the example, claiming to be a real world example, is implemented using JSF
+    1.2, the JBoss portlet bridge and Spring and can serve as a example
+    project from where you can start your own portlet development targeting
+    the eXo platform.</para>
+  </section>
+
+  <section>
+    <title>Installation</title>
+
+    <para>This tutorial assumes that you have a working eXo WCM installation
+    running under JBoss 4.2.x.</para>
+
+    <para>Download the spring framework: <ulink
+    url="http://s3.amazonaws.com/dist.springframework.org/release/SPR/spring-framework-2.5.6-with-dependencies.zip">http://s3.amazonaws.com/dist.springframework.org/release/SPR/spring-framework-2.5.6-with-dependencies.zip</ulink></para>
+
+    <para>Download spring-security: <ulink
+    url="http://sourceforge.net/project/showfiles.php?group_id=73357&amp;package_id=270072&amp;release_id=630203">http://sourceforge.net/project/showfiles.php?group_id=73357&amp;package_id=270072&amp;release_id=630203</ulink></para>
+
+    <para>Unzip the 02portal.war file in the jboss
+    server/default/deploy/exoplatform.sar directory and copy the following
+    jars in WEB-INF/lib:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>spring.jar</para>
+      </listitem>
+
+      <listitem>
+        <para>spring-security-core.jar</para>
+      </listitem>
+
+      <listitem>
+        <para>aspectjrt-1.5.4.jar</para>
+      </listitem>
+
+      <listitem>
+        <para>exo-spring.jar (contains the filters and event handlers
+        described in this tutorial - see the attachment section of this
+        page)</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Configuration</title>
+
+    <para>To enable spring security in exo we need to go through a few
+    configuration steps:</para>
+
+    <section>
+      <title>JAAS disabling</title>
+
+      <para>First we need to disable the JAAS security which is the default
+      authentication mechanism in exo. Edit 02portal.war web.xml file and
+      comment out the JAAS configuration related lines:</para>
+
+      <programlisting>...
+   &lt;session-config&gt;
+      &lt;session-timeout&gt;15&lt;/session-timeout&gt;
+   &lt;/session-config&gt;
+
+   &lt;!--
+   &lt;security-constraint&gt;
+      &lt;web-resource-collection&gt;
+         &lt;web-resource-name&gt;user authentication&lt;/web-resource-name&gt;
+         &lt;url-pattern&gt;/private/*&lt;/url-pattern&gt;
+         &lt;http-method&gt;POST&lt;/http-method&gt;
+         &lt;http-method&gt;GET&lt;/http-method&gt;
+      &lt;/web-resource-collection&gt;
+      &lt;auth-constraint&gt;
+         &lt;role-name&gt;users&lt;/role-name&gt;
+      &lt;/auth-constraint&gt;
+      &lt;user-data-constraint&gt;
+         &lt;transport-guarantee&gt;NONE&lt;/transport-guarantee&gt;
+      &lt;/user-data-constraint&gt;
+   &lt;/security-constraint&gt;
+   
+   &lt;login-config&gt;
+      &lt;auth-method&gt;FORM&lt;/auth-method&gt;
+      &lt;realm-name&gt;exo-domain&lt;/realm-name&gt;
+      &lt;form-login-config&gt;
+         &lt;form-login-page&gt;/login/jsp/login.jsp&lt;/form-login-page&gt;
+         &lt;form-error-page&gt;/login/jsp/login.jsp&lt;/form-error-page&gt;
+      &lt;/form-login-config&gt;
+   &lt;/login-config&gt;
+     --&gt;
+
+   &lt;security-role&gt;
+      &lt;description&gt;a simple user role&lt;/description&gt;
+      &lt;role-name&gt;users&lt;/role-name&gt;
+   &lt;/security-role&gt;
+...</programlisting>
+    </section>
+
+    <section>
+      <title>Enabling spring security</title>
+
+      <para>To enable spring and set the spring security filter, add the
+      following lines:</para>
+
+      <programlisting>...
+   &lt;context-param&gt;
+      &lt;param-name&gt;contextConfigLocation&lt;/param-name&gt;
+      &lt;param-value&gt;/WEB-INF/security-context.xml&lt;/param-value&gt;
+   &lt;/context-param&gt;
+
+   &lt;listener&gt;
+      &lt;listener-class&gt;org.springframework.web.context.ContextLoaderListener&lt;/listener-class&gt;
+   &lt;/listener&gt;
+
+   &lt;filter&gt;
+      &lt;filter-name&gt;springSecurityFilterChain&lt;/filter-name&gt;
+      &lt;filter-class&gt;org.springframework.web.filter.DelegatingFilterProxy&lt;/filter-class&gt;
+   &lt;/filter&gt;
+...</programlisting>
+
+      <para>Activate the spring security filter at the right position, i.e.
+      just after the filter responsible of exo container
+      initialization.</para>
+
+      <programlisting>...
+   &lt;filter-mapping&gt;
+      &lt;filter-name&gt;PortalContainerInitializedFilter&lt;/filter-name&gt;
+      &lt;url-pattern&gt;/*&lt;/url-pattern&gt;
+   &lt;/filter-mapping&gt;
+
+   &lt;filter-mapping&gt;
+      &lt;filter-name&gt;springSecurityFilterChain&lt;/filter-name&gt;
+      &lt;url-pattern&gt;/*&lt;/url-pattern&gt;
+   &lt;/filter-mapping&gt;
+
+   &lt;filter-mapping&gt;
+      &lt;filter-name&gt;SetCurrentIdentityFilter&lt;/filter-name&gt;
+      &lt;url-pattern&gt;/*&lt;/url-pattern&gt;
+   &lt;/filter-mapping&gt;
+...</programlisting>
+    </section>
+
+    <section>
+      <title>security-context.xml</title>
+
+      <para>We need to configure the spring security filter chain for our
+      purposes. Create a file named security-context.xml in 02portal.war
+      WEB-INF directory containing the following lines:</para>
+
+      <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;beans:beans xmlns="http://www.springframework.org/schema/security"
+   xmlns:beans="http://www.springframework.org/schema/beans"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+                       http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-2.0.1.xsd"&gt;
+
+   &lt;http auto-config="true"&gt;
+      &lt;intercept-url pattern="/private/**" access="ROLE_USER" /&gt;   
+      &lt;form-login login-page='/public/classic/Login' default-target-url='/private/classic/home' /&gt;
+   &lt;/http&gt;
+  
+   &lt;authentication-provider&gt;
+      &lt;user-service&gt;
+         &lt;user name="rod" password="koala" authorities="ROLE_SUPERVISOR, ROLE_USER, ROLE_TELLER" /&gt;
+         &lt;user name="root" password="exo" authorities="ROLE_USER" /&gt;
+      &lt;/user-service&gt;
+   &lt;/authentication-provider&gt;   
+
+&lt;/beans:beans&gt;</programlisting>
+
+      <para>The file contains two elements. The http node which is responsible
+      of configuring the filter chain. The auto-config mode set to true allows
+      us to do just a minimal configuration, everything else being smartly
+      initialized by default. We just set an intercept URL pointing to
+      '/private/**' with the ROLE_USER authority which corresponds to secured
+      resources in exo. In case of successful auhentication, the user will be
+      redirected to the specified default target URL.</para>
+
+      <para>The second element defines a simple authentication provider based
+      on the spring security InMemoryDaoImpl implementation of the
+      UserDetailsService. Note that we define the exo root user in the
+      configuration which will allow us to log in with admin privileges in the
+      exo portal.</para>
+    </section>
+  </section>
+
+  <section>
+    <title>Login portlet example</title>
+
+    <para>Now that we have successfully installed and configured spring
+    security in exo, we need a login portlet example to capture user
+    credentials and serve as an entry point in the authentication process. The
+    login portlet itself is based on JSF 1.2, Jboss portlet bridge and the
+    spring framework, but you can obviously use whatever web framework you
+    want to achieve the same.</para>
+
+    <section>
+      <title>Building the portlet</title>
+
+      <para>So we need a login form to capture user credentials inputs. The
+      portlet login form consists of the following lines of xml:</para>
+
+      <programlisting>&lt;f:view xmlns:f="http://java.sun.com/jsf/core"
+   xmlns:h="http://java.sun.com/jsf/html"
+   xmlns:ice="http://www.icesoft.com/icefaces/component"
+   xmlns:liferay-faces="http://liferay.com/tld/faces"
+   xmlns:ui="http://java.sun.com/jsf/facelets"
+   xmlns:c="http://java.sun.com/jstl/core"
+   xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+   xmlns:t="http://myfaces.apache.org/tomahawk"&gt;   
+          
+   &lt;style type="text/css" media="screen"&gt;   
+      @import "/loginportlet/css/starter.css";
+      @import "/loginportlet/css/uni-form.css";
+   &lt;/style&gt;
+
+   &lt;script src="/loginportlet/js/jquery.js" type="text/javascript"&gt;&lt;/script&gt;
+   &lt;script src="/loginportlet/js/uni-form.jquery.js" type="text/javascript"&gt;&lt;/script&gt;
+       
+   &lt;h:form styleClass="uniForm" &gt;
+      &lt;fieldset class="inlineLabels"&gt;
+         &lt;legend&gt;Sign in&lt;/legend&gt;       
+
+         &lt;div class="ctrlHolder"&gt;            
+            &lt;h:outputLabel for="login" style="width: 70px"&gt;&lt;em&gt;*&lt;/em&gt;Login:&lt;/h:outputLabel&gt;
+            &lt;h:inputText id="login" value="#{loginBean.login}" required="true" styleClass="textInput" /&gt;         
+            &lt;h:message for="login" styleClass="portlet-msg-error" /&gt;
+         &lt;/div&gt;
+         &lt;div class="ctrlHolder"&gt;        
+            &lt;h:outputLabel for="password" style="width: 70px"&gt;&lt;em&gt;*&lt;/em&gt;Password:&lt;/h:outputLabel&gt;
+            &lt;h:inputSecret id="password" value="#{loginBean.passwd}" required="true" styleClass="textInput" /&gt;
+            &lt;h:message for="password" styleClass="portlet-msg-error" /&gt;        
+         &lt;/div&gt;       
+      &lt;/fieldset&gt;
+   
+      &lt;div class="buttonHolder" style="margin-top: 20px; margin-right: 20px"&gt;
+         &lt;h:commandButton styleClass="primaryAction" value="Submit" action="#{loginBean.login}" /&gt;                          
+      &lt;/div&gt;
+   &lt;/h:form&gt;
+&lt;/f:view&gt;</programlisting>
+
+      <para>The interesting part resides in the backing bean which implements
+      the login action triggered when the user clicks the login form submit
+      button.</para>
+
+      <programlisting>package org.exoplatform.loginportlet;
+
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Controller;
+
+@Controller
+@Scope("request")
+public class LoginBean {
+
+    String login;
+
+    String passwd;
+
+    public String login() throws Exception {
+        String redirect = "/portal/j_spring_security_check?j_username=" + login + "&amp;j_password=" + passwd;
+        PortalUtils.sendRedirect(redirect);       
+        return null;
+    }
+
+    ...
+}</programlisting>
+
+      <para>The login action simply sends a HTTP redirect to the spring
+      security login URL passing the user login and password as parameters.
+      This URL informs the filter to try to authenticate the supplied user
+      credentials. This is the Spring security authentication process entry
+      point.</para>
+    </section>
+
+    <section>
+      <title>Setting up the login portal page</title>
+
+      <para>Now that we have a login portlet available we need to set it up
+      into a portal page.</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>Log in as root in exo portal.</para>
+        </listitem>
+
+        <listitem>
+          <para>Go to application registry and import the loginportlet</para>
+        </listitem>
+
+        <listitem>
+          <para>Add a new hidden page named 'Login' under the portal classic's
+          navigation (read more on page creation <ulink
+          url="here&gt;WCM.Tutorial">here&gt;WCM.Tutorial</ulink>). Make sure
+          that the visible flag is unchecked to hide the page. Also declare
+          the page as public so that everyone can access it without being
+          authenticated for obvious reasons.</para>
+        </listitem>
+
+        <listitem>
+          <para>Finally, drag &amp; drop the login portlet in the page with
+          the desired layout.</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>Customization of portal login and logout urls</title>
+
+      <para>In the portal header there is a login or logout action displayed
+      depending whether you are already logged in or not. We need to customize
+      those actions so that when the user clicks on it she or he will be
+      redirected either to our login page or to the spring security logout
+      url. Edit the article, go to the default.js tab and apply the following
+      changes to the code:</para>
+
+      <programlisting>function validateUser() {
+
+    var user = eXo.env.portal.userName;
+    var rootObj = document.getElementById("classic-access");
+    var loginContentObj = eXo.core.DOMUtil.findFirstDescendantByClass(rootObj, "div", "UIWCMLoginPortlet");
+    var welcomeObj = eXo.core.DOMUtil.findFirstDescendantByClass(rootObj, "span", "Welcome");
+    var userObj = eXo.core.DOMUtil.findFirstDescendantByClass(rootObj, "span", "LoggedUser");
+    var languageObj = eXo.core.DOMUtil.findFirstDescendantByClass(rootObj, "a", "LanguageIcon");
+    var logXXXObj = eXo.core.DOMUtil.findPreviousElementByTagName(languageObj, "a");
+
+    if (user != "null") {
+        welcomeObj.innerHTML = "Welcome: ";       
+        userObj.innerHTML = user;
+        logXXXObj.innerHTML = "Logout";
+        if (eXo.core.DOMUtil.hasClass(logXXXObj, "LoginIcon")) {
+            eXo.core.DOMUtil.removeClass(logXXXObj, "LoginIcon");
+            eXo.core.DOMUtil.addClass(logXXXObj, "LogoutIcon");
+        }
+        logXXXObj.onclick = function() { document.location.href = '/portal/j_spring_security_logout' }
+    } else {
+        if (eXo.core.DOMUtil.hasClass(logXXXObj, "LogoutIcon")) {
+            eXo.core.DOMUtil.removeClass(logXXXObj, "LogoutIcon");
+            eXo.core.DOMUtil.addClass(logXXXObj, "LoginIcon");
+        }
+        logXXXObj.innerHTML = "Login";
+        logXXXObj.onclick = function() { document.location.href = '/portal/public/classic/Login' };
+    }
+
+    languageObj.onclick = function () { if(document.getElementById('UIMaskWorkspace')) ajaxGet(eXo.env.server.createPortalURL('UIPortal', 'ChangeLanguage', true)); }
+}
+
+eXo.core.Browser.addOnLoadCallback("validateUser", validateUser);</programlisting>
+
+      <para>As you can see, the two onclick event handler function bodies have
+      been changed to a simple redirect to the login page or the logout
+      URL.</para>
+    </section>
+
+    <section>
+      <title>A look at the login page</title>
+
+      <para>Once you are done with all this, just click on the login action
+      and you should be redirect to the login page looking something like
+      that:</para>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="images/login-page.jpg" />
+        </imageobject>
+      </mediaobject>
+    </section>
+  </section>
+
+  <section>
+    <title>Integration strategies</title>
+
+    <para>Until now we haven't discussed about any integration strategies
+    concerning a potential existing security realm outside of the eXo
+    platform. To address this problem we have the choice between at least two
+    different strategies:</para>
+
+    <para>1.1.1 <emphasis role="bold">Direct integration</emphasis> We can
+    directly integrate eXo with the external realm. Everything related to
+    organisation and user management in exo is cleanly separated in its own
+    abstraction accessible through the OrganisationService. The authentication
+    process itself is encapsulated in the Authenticator abstraction which sits
+    on top of the organization service. eXo provides several implementations
+    of both. So whether your realm is based on LDAP or JDBC and because the
+    default implementations are generic enough, you will be able to use them
+    and fits them to your needs with a matter of a little configuration. You
+    can even develop a custom implementation to meet your more specific
+    needs.</para>
+
+    <section>
+      <title>Replication</title>
+
+      <para>Or we can go through a replication process between the external
+      realm and the eXo platform realm. This is the strategy that we are going
+      to use to build our login portlet example. Furthermore the replication
+      will occur dynamically on any user authentication attempt.</para>
+    </section>
+  </section>
+
+  <section>
+    <title>Integration with eXo portal</title>
+
+    <para>Being successfully authenticated against an external realm is not
+    sufficient by itself. We also need to propagate the newly created security
+    context to the portal own security mechanism. In eXo portal terminology,
+    it means we have to create an Identity object for the user and register it
+    into the Identity Registry.</para>
+
+    <para>Spring framework provides a simple notification model where a bean
+    can listen to application events published by other beans. Fortunately
+    spring security uses this mechanism and publishes an
+    InteractiveAuthenticationSuccessEvent in case of successful
+    authentication. That will allow us to hook up custom code to that
+    event.</para>
+
+    <para>Furthermore, we need to replicate the user details from the external
+    realm to the eXo portal one according to the integration strategy defined
+    above.</para>
+
+    <para>We create a SpringSecurityEventHandler bean that implements the
+    ApplicationListener interface and listens to the
+    InteractiveAuthenticationSuccessEvent event.</para>
+
+    <programlisting>package org.exoplatform.spring.security.web;
+
+...
+
+public class SpringSecurityEventHandler implements ApplicationListener {
+
+    private String portalContainerName = "portal";
+
+    public void onApplicationEvent(ApplicationEvent event) {
+        if (event instanceof InteractiveAuthenticationSuccessEvent) {
+            try {
+                InteractiveAuthenticationSuccessEvent successEvent = (InteractiveAuthenticationSuccessEvent) event;
+                ExoContainer container = getContainer();
+
+                String login = successEvent.getAuthentication().getName();
+                String passwd = successEvent.getAuthentication().getCredentials().toString();
+
+                IdentityRegistry identityRegistry = (IdentityRegistry) container.getComponentInstanceOfType(IdentityRegistry.class);
+                Authenticator authenticator = (Authenticator) container.getComponentInstanceOfType(Authenticator.class);
+                OrganizationService orgService = (OrganizationService) container.getComponentInstanceOfType(OrganizationService.class);
+
+                User user = orgService.getUserHandler().findUserByName(login);
+                if (user == null) {
+                    user = orgService.getUserHandler().createUserInstance(login);               
+                    user.setFirstName(login);
+                    user.setLastName(login);
+                    orgService.getUserHandler().createUser(user, false);   
+                    orgService.getUserHandler().saveUser(user, false);
+                    //TODO: put some more integration code here
+                }
+
+                Identity identity = authenticator.createIdentity(login);
+
+                Subject subject = new Subject();
+                subject.getPrivateCredentials().add(passwd);
+                subject.getPublicCredentials().add(new UsernameCredential(login));
+
+                identity.setSubject(subject);
+                identityRegistry.register(identity);
+
+            } catch (Exception e) {
+                e.getMessage();
+            }
+        }
+    }
+
+    protected ExoContainer getContainer() {
+        // TODO set correct current container
+        ExoContainer container = ExoContainerContext.getCurrentContainer();
+        if (container instanceof RootContainer) {
+            container = RootContainer.getInstance().getPortalContainer(portalContainerName);
+        }
+        return container;
+    }
+
+...
+
+}</programlisting>
+
+    <para>Basically the bean retrieves user login and password from the
+    InteractiveAuthenticationSuccessEvent object and tries to get the user
+    from the organization service. In case he cannot find it in the
+    repository, he simply creates it on the fly. In this example the user is
+    created with just a few details, but you can put some custom integration
+    code with the external realm here, and create the user with all the
+    details (email, birth date, roles, etc.) it seems appropriate to you.
+    After that, the bean creates an Identity object with the help of the
+    authenticator service, populates it with a subject containing the user
+    credentials and registers it. That's all we have to do to make the portal
+    aware of the user logging in.</para>
+
+    <para>Registering our bean is done the usual way in security-context.xml
+    file:</para>
+
+    <programlisting>...
+&lt;beans:bean id="myEventHandler" class="org.exoplatform.spring.security.web.SpringSecurityEventHandler" /&gt;
+...</programlisting>
+  </section>
+
+  <section>
+    <title>Security context propagation to portlets</title>
+
+    <para>Part of the problem is the question of security context propagation
+    between on one side the portal webapp and at the other side the portlets
+    webapps. This means that the security context has to be available in the
+    portlet side allowing the application logic to deal the with current user
+    principal and granted authorities. By default Spring security uses a
+    thread local variable to partially achieve this. But a problem may arise
+    due to the fact that the portal invokes the portlet through a webapp cross
+    context call. This means that it can lead to a class cast exceptions (two
+    different classloaders involved), or that the security context is simply
+    not propagated at all. To accommodate this we will need to set up two
+    request filters, one at the portal webapp side and the other at the
+    portlet webapp side and use the http request to propagate the context in
+    between.</para>
+
+    <section>
+      <title>Portal side filter</title>
+
+      <para>We will use the spring security extensible filter chain to plug in
+      our filter.</para>
+
+      <programlisting>package org.exoplatform.spring.security.web;
+
+...
+
+public class PortalSideSecurityContextFilter extends SpringSecurityFilter {
+
+    @Override
+    protected void doFilterHttp(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
+        //fill request with security context
+        SecurityContext context = SecurityContextHolder.getContext();       
+         request.setAttribute(HttpSessionContextIntegrationFilter.SPRING_SECURITY_CONTEXT_KEY, context);       
+        
+         //fill request with security last exception
+         Object e = request.getSession().getAttribute(AbstractProcessingFilter.SPRING_SECURITY_LAST_EXCEPTION_KEY);
+        request.setAttribute(AbstractProcessingFilter.SPRING_SECURITY_LAST_EXCEPTION_KEY, e);
+       
+        chain.doFilter(request, response);
+    }
+
+    public int getOrder() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+}</programlisting>
+
+      <para>The PortalSideSecurityContextFilter simply fills the request with
+      the security context and security last exception using the
+      HttpSessionContextIntegrationFilter.SPRING_SECURITY_CONTEXT_KEY and
+      AbstractProcessingFilter.SPRING_SECURITY_LAST_EXCEPTION_KEY attribute
+      names. The portlet can have a look to the
+      AbstractProcessingFilter.SPRING_SECURITY_LAST_EXCEPTION_KEY attribute to
+      check if a security exception has occured.</para>
+
+      <para>The following lines in the security-context file register our
+      custom filter in the chain at the last position.</para>
+
+      <programlisting>...
+   &lt;beans:bean id="myCustomFilter" class="org.exoplatform.spring.security.web.PortalSideSecurityContextFilter"&gt;
+      &lt;custom-filter after="LAST" /&gt;
+   &lt;/beans:bean&gt;
+...</programlisting>
+    </section>
+
+    <section>
+      <title>Portlet side filter</title>
+
+      <para>In the portlet webapp we create a regular filter named
+      PortletSideSecurityContextFilter.</para>
+
+      <programlisting>package org.exoplatform.spring.security.web;
+
+...
+
+public class PortletSideSecurityContextFilter implements Filter {
+
+    public void destroy() {       
+       
+    }
+
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws IOException, ServletException {
+        Object object = request.getAttribute(HttpSessionContextIntegrationFilter.SPRING_SECURITY_CONTEXT_KEY);
+        SecurityContext context = (SecurityContext) serializeDeserialize(object);
+        if (context != null) {
+            SecurityContextHolder.setContext(context);
+        } else {
+            SecurityContextHolder.clearContext();
+        }       
+       
+        filterChain.doFilter(request, response);
+    }
+
+    public void init(FilterConfig arg0) throws ServletException {       
+       
+    }
+
+    private Object serializeDeserialize(Object obj) {
+        Object result = null;       
+        try {
+            ByteArrayOutputStream bout = new ByteArrayOutputStream();
+            ObjectOutputStream out = new ObjectOutputStream(bout);
+
+            out.writeObject(obj);
+
+            ByteArrayInputStream bin =    new ByteArrayInputStream(bout.toByteArray());
+            ObjectInputStream in = new ObjectInputStream(bin);
+
+            result = in.readObject();           
+        } catch (Exception e) {
+            //TODO: handle exception
+        }
+        return result;
+    }
+   
+}</programlisting>
+
+      <para>The PortletSideSecurityContextFilter retrieves the security
+      context from the request and proceeds to a serialization
+      de-serialization of it to avoid a potential class cast exception that
+      may occur when propagating an object across webapps. Then the context is
+      simply set or cleared whether the context is null or not.</para>
+
+      <para>To register your filter simply add the following lines to your
+      portlet webapp web.xml file.</para>
+
+      <programlisting>...
+   &lt;filter&gt;
+      &lt;filter-name&gt;portletSideSecurityContextFilter&lt;/filter-name&gt;
+      &lt;filter-class&gt;org.exoplatform.spring.security.web.PortletSideSecurityContextFilter&lt;/filter-class&gt;
+   &lt;/filter&gt;
+     
+   &lt;filter-mapping&gt;
+      &lt;filter-name&gt;portletSideSecurityContextFilter&lt;/filter-name&gt;
+      &lt;url-pattern&gt;/*&lt;/url-pattern&gt;
+      &lt;dispatcher&gt;REQUEST&lt;/dispatcher&gt;
+      &lt;dispatcher&gt;INCLUDE&lt;/dispatcher&gt;
+      &lt;dispatcher&gt;FORWARD&lt;/dispatcher&gt;
+   &lt;/filter-mapping&gt;
+...</programlisting>
+    </section>
+  </section>
+
+  <section>
+    <title>Conclusion</title>
+
+    <para>We are done! Now we know how to integrate the spring security
+    framework in the eXo portal. Thanks to the the great integration
+    capabilities of both eXo portal and Spring framework. You can have a look
+    to the attachment section on this page and get the source code of this
+    tutorial.</para>
+  </section>
+</chapter>

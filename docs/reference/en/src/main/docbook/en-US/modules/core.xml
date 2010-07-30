@@ -12,4 +12,37 @@
   <xi:include href="core/db-creator-service.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
+  <xi:include href="core/security-service.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
+  <xi:include href="core/spring-security-integration.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
+  <xi:include href="core/organization-service.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />              
+
+  <xi:include href="core/organization-service-initalizer.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />                            
+
+  <xi:include href="core/organization-service-listener.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
+  <xi:include href="core/conversationstate-when-membership-changed.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" /> 
+              
+  <xi:include href="core/db-schema-creator-service.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
+  <xi:include href="core/db-configuration-hibernate.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />                      
+              
+  <xi:include href="core/ldap-configuration.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />                                    
+              
+              
+
+              
+              
+              
+
 </part>
