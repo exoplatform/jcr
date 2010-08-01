@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.ext.resource;
 
+import org.exoplatform.services.jcr.ext.common.SessionProvider;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -33,7 +35,7 @@ import javax.jcr.Session;
 public class JcrURLConnection extends URLConnection
 {
 
-   private Session session;
+   private SessionProvider sessionProvider;
 
    private NodeRepresentationService nodeRepresentationService;
 
@@ -41,12 +43,30 @@ public class JcrURLConnection extends URLConnection
 
    private NodeRepresentation nodeRepresentation;
 
-   public JcrURLConnection(UnifiedNodeReference nodeReference, Session session,
+   private Session session;
+
+   private boolean closeSessionProvider;
+
+   public JcrURLConnection(UnifiedNodeReference nodeReference, SessionProvider sessionProvider,
+      NodeRepresentationService nodeRepresentationService, boolean closeSessionProvider) throws MalformedURLException
+   {
+      super(nodeReference.getURL());
+      this.sessionProvider = sessionProvider;
+      this.nodeReference = nodeReference;
+      this.nodeRepresentationService = nodeRepresentationService;
+      this.closeSessionProvider = closeSessionProvider;
+
+      doOutput = false;
+      allowUserInteraction = false;
+      useCaches = false;
+      ifModifiedSince = 0;
+   }
+
+   public JcrURLConnection(UnifiedNodeReference nodeReference, SessionProvider sessionProvider,
       NodeRepresentationService nodeRepresentationService) throws MalformedURLException
    {
-
       super(nodeReference.getURL());
-      this.session = session;
+      this.sessionProvider = sessionProvider;
       this.nodeReference = nodeReference;
       this.nodeRepresentationService = nodeRepresentationService;
 
@@ -68,23 +88,42 @@ public class JcrURLConnection extends URLConnection
 
       try
       {
+         session =
+            sessionProvider.getSession(sessionProvider.getCurrentWorkspace(), sessionProvider.getCurrentRepository());
+
          Node node = null;
          if (nodeReference.isPath())
-            node = session.getRootNode().getNode(nodeReference.getPath().substring(1));
+         {
+            node = (Node)session.getItem(nodeReference.getPath());
+         }
          else if (nodeReference.isIdentitifier())
+         {
             node = session.getNodeByUUID(nodeReference.getIdentitifier().getString());
+         }
          else
+         {
             throw new IllegalArgumentException("Absolute path or Identifier was not found!");
+         }
 
          nodeRepresentation = nodeRepresentationService.getNodeRepresentation(node, "text/xml");
-
          connected = true;
       }
       catch (Exception e)
       {
-         e.printStackTrace();
+         //e.printStackTrace();
          throw new IOException("Connection refused!");
       }
+   }
+
+   /**
+    * Close connection to JCR.
+    */
+   public void disconnect()
+   {
+      if (!connected)
+         return;
+      session.logout();
+      connected = false;
    }
 
    /*
@@ -103,7 +142,7 @@ public class JcrURLConnection extends URLConnection
       }
       catch (Exception e)
       {
-         e.printStackTrace();
+         //e.printStackTrace();
          throw new IOException("can't get input stream");
       }
    }
@@ -148,7 +187,7 @@ public class JcrURLConnection extends URLConnection
       }
       catch (Exception e)
       {
-         e.printStackTrace();
+         //e.printStackTrace();
       }
       return null;
    }
@@ -169,7 +208,7 @@ public class JcrURLConnection extends URLConnection
       }
       catch (Exception e)
       {
-         e.printStackTrace();
+         //e.printStackTrace();
       }
       return -1;
    }
@@ -202,7 +241,7 @@ public class JcrURLConnection extends URLConnection
       }
       catch (Exception e)
       {
-         e.printStackTrace();
+         //e.printStackTrace();
       }
       return null;
    }
@@ -216,11 +255,14 @@ public class JcrURLConnection extends URLConnection
    {
       try
       {
+         if (!connected)
+            connect();
+
          return nodeRepresentation.getLastModified();
       }
       catch (Exception e)
       {
-         e.printStackTrace();
+         //e.printStackTrace();
       }
       return 0;
    }
@@ -279,6 +321,26 @@ public class JcrURLConnection extends URLConnection
    public void setRequestProperty(String key, String value)
    {
       throw new UnsupportedOperationException("protocol doesn't support request properties!");
+   }
+
+   @Override
+   protected void finalize() throws Throwable
+   {
+      try
+      {
+         if (closeSessionProvider)
+         {
+            sessionProvider.close();
+         }
+      }
+      catch (Throwable t)
+      {
+         ;
+      }
+      finally
+      {
+         super.finalize();
+      }
    }
 
 }

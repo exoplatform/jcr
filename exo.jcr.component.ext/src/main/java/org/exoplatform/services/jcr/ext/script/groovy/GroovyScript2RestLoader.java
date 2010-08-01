@@ -18,6 +18,9 @@
  */
 package org.exoplatform.services.jcr.ext.script.groovy;
 
+import groovy.lang.GroovyClassLoader;
+import groovy.lang.GroovyCodeSource;
+
 import org.apache.commons.fileupload.FileItem;
 import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.container.configuration.ConfigurationManager;
@@ -42,15 +45,18 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
@@ -78,7 +84,8 @@ import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * @author <a href="mailto:andrew00x@gmail.com">Andrey Parfonov</a>
- * @version $Id: GroovyScript2RestLoader.java 34445 2009-07-24 07:51:18Z dkatayev $
+ * @version $Id: GroovyScript2RestLoader.java 34445 2009-07-24 07:51:18Z
+ *          dkatayev $
  */
 @Path("script/groovy")
 public class GroovyScript2RestLoader implements Startable
@@ -126,6 +133,13 @@ public class GroovyScript2RestLoader implements Startable
    /** Mapping scripts URL (or other key) to classes. */
    protected Map<ScriptKey, Class<?>> scriptsURL2ClassMap = new HashMap<ScriptKey, Class<?>>();
 
+   protected GroovyClassLoader groovyClassLoader;
+
+   protected List<GroovyScriptAddRepoPlugin> addRepoPlugins;
+
+   /** See {@link GroovyScript2RestLoaderPlugin}. */
+   protected List<GroovyScript2RestLoaderPlugin> loadPlugins;
+
    /**
     * @param binder binder for RESTful services
     * @param groovyScriptInstantiator instantiate groovy scripts
@@ -136,10 +150,11 @@ public class GroovyScript2RestLoader implements Startable
     */
    public GroovyScript2RestLoader(ResourceBinder binder, GroovyScriptInstantiator groovyScriptInstantiator,
       RepositoryService repositoryService, ThreadLocalSessionProviderService sessionProviderService,
-      ConfigurationManager configurationManager, InitParams params)
+      ConfigurationManager configurationManager, org.exoplatform.services.jcr.ext.resource.jcr.Handler jcrUrlHandler,
+      InitParams params)
    {
       this(binder, groovyScriptInstantiator, repositoryService, sessionProviderService, configurationManager, null,
-         params);
+         jcrUrlHandler, params);
    }
 
    /**
@@ -153,7 +168,8 @@ public class GroovyScript2RestLoader implements Startable
     */
    public GroovyScript2RestLoader(ResourceBinder binder, GroovyScriptInstantiator groovyScriptInstantiator,
       RepositoryService repositoryService, ThreadLocalSessionProviderService sessionProviderService,
-      ConfigurationManager configurationManager, RegistryService registryService, InitParams params)
+      ConfigurationManager configurationManager, RegistryService registryService,
+      org.exoplatform.services.jcr.ext.resource.jcr.Handler jcrUrlHandler, InitParams params)
    {
 
       this.binder = binder;
@@ -168,8 +184,8 @@ public class GroovyScript2RestLoader implements Startable
    /**
     * Remove script with specified URL from ResourceBinder.
     *
-    * @param url the URL. The <code>url.toString()</code> must be corresponded to
-    *          script class.
+    * @param url the URL. The <code>url.toString()</code> must be corresponded
+    *        to script class.
     * @see GroovyScriptRestLoader#loadScript(URL).
     */
    public void unloadScript(URL url)
@@ -240,8 +256,8 @@ public class GroovyScript2RestLoader implements Startable
    }
 
    /**
-    * Get node type for store scripts, may throw {@link IllegalStateException} if
-    * <tt>nodeType</tt> not initialized yet.
+    * Get node type for store scripts, may throw {@link IllegalStateException}
+    * if <tt>nodeType</tt> not initialized yet.
     *
     * @return return node type
     */
@@ -260,7 +276,7 @@ public class GroovyScript2RestLoader implements Startable
     */
    public boolean loadScript(URL url) throws IOException
    {
-      Object resource = groovyScriptInstantiator.instantiateScript(url);
+      Object resource = groovyScriptInstantiator.instantiateScript(new GroovyCodeSource(url), groovyClassLoader);
       if (binder.bind(resource))
       {
          // add mapping script URL to name of class.
@@ -294,7 +310,7 @@ public class GroovyScript2RestLoader implements Startable
     *
     * @param key the key which must be corresponded to object class name.
     * @param name this name will be passed to compiler to get understandable if
-    *          compilation failed
+    *        compilation failed
     * @param stream the stream which represents groovy script.
     * @return if script loaded false otherwise
     * @throws IOException if script can't be loaded or parsed.
@@ -309,16 +325,16 @@ public class GroovyScript2RestLoader implements Startable
    /**
     * @param key the key which must be corresponded to object class name
     * @param name this name will be passed to compiler to get understandable if
-    *          compilation failed. This parameter may be set as null then groovy
-    *          compiler will user automatically generated name for script.
-    *          (script000001.groovy)
+    *        compilation failed. This parameter may be set as null then groovy
+    *        compiler will user automatically generated name for script.
+    *        (script000001.groovy)
     * @param stream the stream which represents groovy script.
     * @return if script loaded false otherwise
     * @throws IOException if script can't be loaded or parsed
     */
    public boolean loadScript(ScriptKey key, String name, InputStream stream) throws IOException
    {
-      Object resource = groovyScriptInstantiator.instantiateScript(stream, name);
+      Object resource = groovyScriptInstantiator.instantiateScript(createCodeSource(stream, name), groovyClassLoader);
       if (binder.bind(resource))
       {
          scriptsURL2ClassMap.put(key, resource.getClass());
@@ -336,7 +352,7 @@ public class GroovyScript2RestLoader implements Startable
     */
    public void start()
    {
-      if (registryService != null && !registryService.getForceXMLConfigurationValue(initParams))
+      if (registryService != null && initParams != null && !registryService.getForceXMLConfigurationValue(initParams))
       {
          SessionProvider sessionProvider = SessionProvider.createSystemProvider();
          try
@@ -367,6 +383,25 @@ public class GroovyScript2RestLoader implements Startable
 
       // Add script from configuration files to JCR.
       addScripts();
+
+      ClassLoader cl = getClass().getClassLoader();
+      groovyClassLoader = new GroovyClassLoader(cl);
+      if (addRepoPlugins != null && addRepoPlugins.size() > 0)
+      {
+         try
+         {
+            Set<URL> repos = new HashSet<URL>();
+            for (GroovyScriptAddRepoPlugin pl : addRepoPlugins)
+            {
+               repos.addAll(pl.getRepositories());
+            }
+            groovyClassLoader.setResourceLoader(new JcrGroovyResourceLoader(repos.toArray(new URL[repos.size()])));
+         }
+         catch (MalformedURLException e)
+         {
+            LOG.error("Unable add groovy script repository. ", e);
+         }
+      }
 
       try
       {
@@ -426,11 +461,6 @@ public class GroovyScript2RestLoader implements Startable
    }
 
    /**
-    * See {@link GroovyScript2RestLoaderPlugin}.
-    */
-   protected List<GroovyScript2RestLoaderPlugin> loadPlugins;
-
-   /**
     * @param cp See {@link ComponentPlugin}
     */
    public void addPlugin(ComponentPlugin cp)
@@ -443,6 +473,21 @@ public class GroovyScript2RestLoader implements Startable
          }
          loadPlugins.add((GroovyScript2RestLoaderPlugin)cp);
       }
+      if (cp instanceof GroovyScriptAddRepoPlugin)
+      {
+         if (addRepoPlugins == null)
+         {
+            addRepoPlugins = new ArrayList<GroovyScriptAddRepoPlugin>();
+         }
+         addRepoPlugins.add((GroovyScriptAddRepoPlugin)cp);
+      }
+   }
+
+   private GroovyCodeSource createCodeSource(InputStream in, String name)
+   {
+      GroovyCodeSource gcs = new GroovyCodeSource(in, name, "/groovy/script/jaxrs");
+      gcs.setCachable(false);
+      return gcs;
    }
 
    /**
@@ -755,12 +800,10 @@ public class GroovyScript2RestLoader implements Startable
          }
          if (name == null || name.length() == 0)
          {
-            groovyScriptInstantiator.instantiateScript(script);
+            name = groovyClassLoader.generateScriptName();
          }
-         else
-         {
-            groovyScriptInstantiator.instantiateScript(script, name);
-         }
+
+         groovyScriptInstantiator.instantiateScript(createCodeSource(script, name), groovyClassLoader);
          return Response.status(Response.Status.OK).build();
       }
       catch (Exception e)
@@ -825,10 +868,11 @@ public class GroovyScript2RestLoader implements Startable
 
    /**
     * This method is useful for clients that send scripts as file in
-    * 'multipart/*' request body. <br/> NOTE even we use iterator item should be
-    * only one, rule one address - one script. This method is created just for
-    * comfort loading script from HTML form. NOT use this script for uploading
-    * few files in body of 'multipart/form-data' or other type of multipart.
+    * 'multipart/*' request body. <br/>
+    * NOTE even we use iterator item should be only one, rule one address - one
+    * script. This method is created just for comfort loading script from HTML
+    * form. NOT use this script for uploading few files in body of
+    * 'multipart/form-data' or other type of multipart.
     *
     * @param items iterator {@link FileItem}
     * @param uriInfo see {@link UriInfo}
@@ -894,10 +938,11 @@ public class GroovyScript2RestLoader implements Startable
 
    /**
     * This method is useful for clients that send scripts as file in
-    * 'multipart/*' request body. <br/> NOTE even we use iterator item should be
-    * only one, rule one address - one script. This method is created just for
-    * comfort loading script from HTML form. NOT use this script for uploading
-    * few files in body of 'multipart/form-data' or other type of multipart.
+    * 'multipart/*' request body. <br/>
+    * NOTE even we use iterator item should be only one, rule one address - one
+    * script. This method is created just for comfort loading script from HTML
+    * form. NOT use this script for uploading few files in body of
+    * 'multipart/form-data' or other type of multipart.
     *
     * @param items iterator {@link FileItem}
     * @param uriInfo see {@link UriInfo}
@@ -1095,9 +1140,9 @@ public class GroovyScript2RestLoader implements Startable
     * @param workspace workspace name
     * @param path JCR path to node that contains script
     * @param state value for property exo:autoload, if it is not specified then
-    *          'true' will be used as default. <br /> Example:
-    *          .../scripts/groovy/test1.groovy/load is the same to
-    *          .../scripts/groovy/test1.groovy/load?state=true
+    *        'true' will be used as default. <br />
+    *        Example: .../scripts/groovy/test1.groovy/load is the same to
+    *        .../scripts/groovy/test1.groovy/load?state=true
     */
    @POST
    @Path("autoload/{repository}/{workspace}/{path:.*}")
@@ -1143,7 +1188,8 @@ public class GroovyScript2RestLoader implements Startable
     *
     * @param repository repository name
     * @param workspace workspace name
-    * @param path the path to JCR node that contains groovy script to be deployed
+    * @param path the path to JCR node that contains groovy script to be
+    *        deployed
     */
    @POST
    @Path("load/{repository}/{workspace}/{path:.*}")
@@ -1210,8 +1256,8 @@ public class GroovyScript2RestLoader implements Startable
     * @param repository Repository name.
     * @param workspace Workspace name.
     * @param name Additional search parameter. If not emtpy method returns the
-    *          list of script names matching wildcard else returns all the
-    *          scripts found in workspace.
+    *        list of script names matching wildcard else returns all the scripts
+    *        found in workspace.
     * @return
     */
    @POST
