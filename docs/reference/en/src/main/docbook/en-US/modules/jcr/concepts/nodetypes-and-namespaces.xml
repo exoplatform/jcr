@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="JCR.NodeTypesandNamespaces">
+  <title>Node Types and Namespaces</title>
+
+  <section>
+    <title>Introduction</title>
+
+    <para>Support of node types and namespaces is required by the JSR-170
+    specification. Beyond the methods required by the specification, eXo JCR
+    has its own API extension for the <ulink
+    url="JCR.NodeTypeRegistration">Node type
+    registration&gt;NodeType+registration</ulink> as well as the ability to
+    declaratively define node types in the Repository at the start-up
+    time.</para>
+  </section>
+
+  <section>
+    <title>Node Types definition</title>
+
+    <para>Node type registration extension is declared in
+    org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager
+    interface</para>
+
+    <para>Your custom service can register some neccessary predefined node
+    types at the start-up time. The node definition should be placed in a
+    special XML file (see DTD below) and declared in the service's
+    configuration file thanks to eXo component plugin mechanism, described as
+    follows:</para>
+
+    <programlisting>&lt;external-component-plugins&gt;
+  &lt;target-component&gt;org.exoplatform.services.jcr.RepositoryService&lt;/target-component&gt;
+      &lt;component-plugin&gt;
+        &lt;name&gt;add.nodeType&lt;/name&gt;
+        &lt;set-method&gt;addPlugin&lt;/set-method&gt;
+        &lt;type&gt;org.exoplatform.services.jcr.impl.AddNodeTypePlugin&lt;/type&gt;
+        &lt;init-params&gt;
+          &lt;values-param&gt;
+            &lt;name&gt;autoCreatedInNewRepository&lt;/name&gt;
+            &lt;description&gt;Node types configuration file&lt;/description&gt;
+            &lt;value&gt;jar:/conf/test/nodetypes-tck.xml&lt;/value&gt;
+            &lt;value&gt;jar:/conf/test/nodetypes-impl.xml&lt;/value&gt;
+          &lt;/values-param&gt;
+    &lt;values-param&gt; 
+            &lt;name&gt;repo1&lt;/name&gt; 
+            &lt;description&gt;Node types configuration file for repository with name repo1&lt;/description&gt; 
+            &lt;value&gt;jar:/conf/test/nodetypes-test.xml&lt;/value&gt; 
+          &lt;/values-param&gt;
+    &lt;values-param&gt; 
+            &lt;name&gt;repo2&lt;/name&gt; 
+            &lt;description&gt;Node types configuration file for repository with name repo2&lt;/description&gt; 
+            &lt;value&gt;jar:/conf/test/nodetypes-test2.xml&lt;/value&gt; 
+          &lt;/values-param&gt;
+        &lt;/init-params&gt;
+      &lt;/component-plugin&gt;</programlisting>
+
+    <para>There are two types of registration. First type of registration is
+    the registration of node types in all created repositories, it is
+    configured in values-param with the name <emphasis
+    role="bold">autoCreatedInNewRepository</emphasis>. The second type of
+    registration is registration of node types in specified repository and it
+    is configured in values-param with the name of repository.</para>
+
+    <para>Node type definition file format:</para>
+
+    <programlisting>  &lt;?xml version="1.0" encoding="UTF-8"?&gt;
+  &lt;!DOCTYPE nodeTypes [
+   &lt;!ELEMENT nodeTypes (nodeType)*&gt;
+      &lt;!ELEMENT nodeType (supertypes?|propertyDefinitions?|childNodeDefinitions?)&gt;
+
+      &lt;!ATTLIST nodeType
+         name CDATA #REQUIRED
+         isMixin (true|false) #REQUIRED
+         hasOrderableChildNodes (true|false)
+         primaryItemName CDATA
+      &gt;
+      &lt;!ELEMENT supertypes (supertype*)&gt;
+      &lt;!ELEMENT supertype (CDATA)&gt;
+   
+      &lt;!ELEMENT propertyDefinitions (propertyDefinition*)&gt;
+
+      &lt;!ELEMENT propertyDefinition (valueConstraints?|defaultValues?)&gt;
+      &lt;!ATTLIST propertyDefinition
+         name CDATA #REQUIRED
+         requiredType (String|Date|Path|Name|Reference|Binary|Double|Long|Boolean|undefined) #REQUIRED
+         autoCreated (true|false) #REQUIRED
+         mandatory (true|false) #REQUIRED
+         onParentVersion (COPY|VERSION|INITIALIZE|COMPUTE|IGNORE|ABORT) #REQUIRED
+         protected (true|false) #REQUIRED
+         multiple  (true|false) #REQUIRED
+      &gt;    
+    &lt;!-- For example if you need to set ValueConstraints [], 
+      you have to add an empty element &lt;valueConstraints/&gt;. 
+      The same order is for other properties like defaultValues, requiredPrimaryTypes etc.
+      --&gt;  
+      &lt;!ELEMENT valueConstraints (valueConstraint*)&gt;
+      &lt;!ELEMENT valueConstraint (CDATA)&gt;
+      &lt;!ELEMENT defaultValues (defaultValue*)&gt;
+      &lt;!ELEMENT defaultValue (CDATA)&gt;
+
+      &lt;!ELEMENT childNodeDefinitions (childNodeDefinition*)&gt;
+
+      &lt;!ELEMENT childNodeDefinition (requiredPrimaryTypes)&gt;
+      &lt;!ATTLIST childNodeDefinition
+         name CDATA #REQUIRED
+         defaultPrimaryType  CDATA #REQUIRED
+         autoCreated (true|false) #REQUIRED
+         mandatory (true|false) #REQUIRED
+         onParentVersion (COPY|VERSION|INITIALIZE|COMPUTE|IGNORE|ABORT) #REQUIRED
+         protected (true|false) #REQUIRED
+         sameNameSiblings (true|false) #REQUIRED
+      &gt;
+      &lt;!ELEMENT requiredPrimaryTypes (requiredPrimaryType+)&gt;
+      &lt;!ELEMENT requiredPrimaryType (CDATA)&gt;  
+]&gt;</programlisting>
+  </section>
+
+  <section>
+    <title>Namespaces definition</title>
+
+    <para>Default namespaces are registered by repository at the start-up
+    time</para>
+
+    <para>Your custom service can extend a set of namespaces with some
+    application specific ones declaring it in service's configuration file
+    thanks to eXo component plugin mechanism, described as follows:</para>
+
+    <programlisting>      &lt;component-plugin&gt; 
+          &lt;name&gt;add.namespaces&lt;/name&gt;
+          &lt;set-method&gt;addPlugin&lt;/set-method&gt;
+          &lt;type&gt;org.exoplatform.services.jcr.impl.AddNamespacesPlugin&lt;/type&gt;
+          &lt;init-params&gt;
+            &lt;properties-param&gt;
+              &lt;name&gt;namespaces&lt;/name&gt;
+              &lt;property name="test" value="http://www.test.org/test"/&gt;
+            &lt;/properties-param&gt;      
+          &lt;/init-params&gt;                  
+      &lt;/component-plugin&gt;</programlisting>
+  </section>
+</chapter>

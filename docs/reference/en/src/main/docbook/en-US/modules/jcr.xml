@@ -65,10 +65,35 @@
   <xi:include href="jcr/data-container-howto.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
               
+  <xi:include href="jcr/concepts/why-jcr.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+              
+  <xi:include href="jcr/concepts/jcr-advantages.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />              
+              
   <xi:include href="jcr/concepts/jcr-compatibility-levels.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
               
   <xi:include href="jcr/concepts/jcr-usage.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />              
+              
+  <xi:include href="jcr/concepts/jcr-extensions.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />                            
+              
+  <xi:include href="jcr/concepts/jcr-applications.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />                                          
+              
+  <xi:include href="jcr/concepts/nodetype-registration.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
 
+  <xi:include href="jcr/concepts/jcr-registry-service.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude"  />
+
+  <xi:include href="jcr/concepts/jcr-namespace-altering.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+              
+  <xi:include href="jcr/concepts/nodetypes-and-namespaces.xml" 
+              xmlns:xi="http://www.w3.org/2001/XInclude" />               
+              
+              
 </part>

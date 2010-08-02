@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="JCR.AdvantagesofeXoJCR">
+  <title>Advantages of eXo JCR</title>
+
+  <section>
+    <title>Advantages for application developers:</title>
+
+    <para>* Data repository and application are isolated from each other so an
+    application developer should not learn the details of particular data
+    storage's interfaces and can concentrate on business logic of a particular
+    application built on top of JCR</para>
+
+    <para>* Repositories can be simply exchanged between different
+    applications without changing the applications themselves. This is the
+    matter of the repository configuration</para>
+
+    <para>* Data storage types/versions can be changed and moreover different
+    types of data storages can be combined in one repository data model (of
+    course the complexity and work of building interfaces between the
+    repository and its data storage don't disappear but these changes are
+    isolated in the repository and thus manageable from the point of view of
+    the customer)</para>
+
+    <mediaobject>
+      <imageobject>
+        <imagedata fileref="images/concepts/jcr-490x333.gif" />
+      </imageobject>
+    </mediaobject>
+  </section>
+
+  <section>
+    <title>Advantages for managers</title>
+
+    <para>* Using a standardized repository for content management reduces the
+    risk of being dependent on a particular software vendor and proprietary
+    API.</para>
+
+    <para>* Costs for maintaining and developing a content repository based
+    custom application is significantly lower than developing and supporting
+    your own interfaces and maintaining your own data repository applications
+    (staff can be trained once, it is possible to take help from community and
+    third party consulters).</para>
+
+    <para>* Thanks to flexible layered JCR API (see below) it is possible to
+    fit the legacy storage subsystem into new interfaces and again decrease
+    the costs and risk of losing data.</para>
+
+    <para>An extension to the API exists as we can see in the following layer
+    schema.</para>
+
+    <mediaobject>
+      <imageobject>
+        <imagedata fileref="images/concepts/JCR-Application2.jpg" />
+      </imageobject>
+    </mediaobject>
+  </section>
+</chapter>

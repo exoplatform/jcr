@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="JCR.eXoJCRApplicationModel">
+  <title>eXo JCR Application Model</title>
+
+  <para>A large picture of interaction between Applications and JCR looks as
+  follows:</para>
+
+  <mediaobject>
+    <imageobject>
+      <imagedata fileref="images/concepts/jcr-applications.gif" />
+    </imageobject>
+  </mediaobject>
+
+  <para>Every Content (JCR) dependent application interacts with eXo JCR via
+  JSR-170 and eXo JCR API extension (mostly for administration) directly or
+  using some intermediate Framework (Neither Application nor Framework should
+  ever rely on Implementation directly!)</para>
+
+  <para>We call <emphasis role="bold">Content Application</emphasis> all
+  applications that may use JCR as a data storage. Some of them are generic
+  and completely decoupled from JCR API as interaction protocol hides Content
+  storage nature (like WebDav client), some partially decoupled (like Command
+  framework based) meaning that they do not use JCR API directly, and some
+  (most part) use JSR-170 directly.</para>
+
+  <para><emphasis role="bold">Frameworks</emphasis> is a special kind of JCR
+  client that acts as an intermediate level between Content Repository and End
+  Client Application. There are <emphasis role="bold">Protocol</emphasis>
+  (WebDav, RMI or FTP servers for example) and <emphasis
+  role="bold">Pattern</emphasis> (Command, Web(servlet), J2EE connector)
+  specific Frameworks. It is possible to build a multi-layered (in framework
+  sense) JCR application, for example Web application uses Web framework that
+  uses Command framework underneath.</para>
+
+  <para>To READ:</para>
+
+  <para>Deployment JCR standalone (ver 1_5)</para>
+</chapter>
