@@ -64,5 +64,11 @@
 
   <xi:include href="jcr/data-container-howto.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
+              
+  <xi:include href="jcr/concepts/jcr-compatibility-levels.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+              
+  <xi:include href="jcr/concepts/jcr-usage.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />              
 
 </part>
