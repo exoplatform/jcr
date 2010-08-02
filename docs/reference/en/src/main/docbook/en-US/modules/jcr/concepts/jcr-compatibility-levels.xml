@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="JCR.CompatibilityLevels">
+  <title>Compatibility Levels</title>
+
+  <section>
+    <title>Introduction</title>
+
+    <para>The Java Content Repository specification JSR-170 has been split
+    into two compliance levels as well as a set of optional features. Level 1
+    defines a read-only repository, level 2 defines methods for writing
+    content and bidirectional interaction with the repository.</para>
+
+    <para>Exo JCR supports JSR-170 level 1 and level 2 and all optional
+    features. The recent JSR-283 is not yet supported.</para>
+  </section>
+
+  <section>
+    <title>Level 1</title>
+
+    <para>Includes read only functionality for very simple repositories.
+    Useful to port an existing data repository and convert it to a more
+    advanced form step by step. JCR uses a well known Session abstraction to
+    access the repository data (similar to the sessions we have in OS, web
+    etc)</para>
+
+    <para>Level 1 features:</para>
+
+    <para>* Initiating a session calling login method with the name of desired
+    workspace and client credentials. Involves some security mechanisms (JAAS)
+    to authenticate the client and in case the client is authorized to use the
+    data from a particular workspace, he retrieves the session with a
+    workspace tied to it.</para>
+
+    <para>* Using the obtained session the client can retrieve data (items)
+    using: traversing the tree, directly accessing a particular item
+    (requesting path or UUID) or traversing the query result. So an
+    application developer can choose the "best" form depending on the content
+    structure and desired operation.</para>
+
+    <para>* Reading property values. All content of a repository is ultimately
+    accessed through properties and stored in property values of predefined
+    types (Boolean, Binary Data, Double, Long, String) and special types Name,
+    Reference, and Path. It is possible to read property value without knowing
+    its real name as a primary item.</para>
+
+    <para>* Export to XML. Repository supports two XML/JCR data model
+    mappings: system and doc view. The ~~system view~~ provides complete XML
+    serialization without loss of information and is somewhat difficult for a
+    human to read. In contrast, the ~~document view~~ is well readable but
+    does not completely reflect the state of repository, it is used for Xpath
+    queries.</para>
+
+    <para>* Query facility with Xpath syntax. Xpath, originally developed for
+    XML, suits the JCR data model as well because the JCR data model is very
+    close to XML's one. It is applied to JCR as it would be applied to the
+    document view of the serialized repository content, returning a table of
+    property names and content matching the query.</para>
+
+    <para>* Discovery of available node types. Every node should have only one
+    ~~primary node~~ type that defines names, types and other characteristics
+    of child nodes and properties. It also can have one or more mixin data
+    types that defines additional characteristics. Level 1 provides methods
+    for discovering available in repository node types and node types of a
+    concrete node.</para>
+
+    <para>* Transient namespace remapping. Item name can have prefix delimited
+    by a single colon ":" character indicating the namespace of this name. It
+    is patterned after XML namespaces, prefix is mapped to URI to minimize
+    names collisions. In Level 1 a prefix can be temporary overridden by
+    another prefix in the scope of a session.</para>
+
+    <mediaobject>
+      <imageobject>
+        <imagedata fileref="images/concepts/level_1.gif" />
+      </imageobject>
+    </mediaobject>
+  </section>
+
+  <section>
+    <title>Level 2</title>
+
+    <para>JCR level 2 includes reading/writing content functionality,
+    importing from other sources and managing content definition and
+    structuring using extensible node types.</para>
+
+    <para>In addition to the Level 1 it must support the following major
+    features:</para>
+
+    <para>* Adding, moving, copying and removing items inside workspace and
+    moving, copying and cloning items between workspaces. The client can also
+    compare the persisted state of an item with its unsaved states and either
+    save the new state or discard it.</para>
+
+    <para>* Modifying and writing value of properties. Property types are
+    checked and can be converted to the defined format.</para>
+
+    <para>* Import from XML document into the repository as a tree of nodes
+    and properties. If the XML document is an export of JCR system view the
+    content of repository can be completely restored. If this is not the case,
+    the document is interpreted as a document view and the import procedure
+    builds a tree of JCR nodes and properties that matches the tree structure
+    of the XML document.</para>
+
+    <para>* Assigning node types to nodes. The primary node type is assigned
+    when adding a node. This can be done automatically based on the parent
+    node type definition and mixin node types.</para>
+
+    <para>* Persistent namespaces changes. Add, change and remove namespaces
+    stored in the namespace registry, excluding built-in namespaces required
+    by JCR.</para>
+
+    <mediaobject>
+      <imageobject>
+        <imagedata fileref="images/concepts/level_2.gif" />
+      </imageobject>
+    </mediaobject>
+  </section>
+
+  <section>
+    <title>1 Optional features</title>
+
+    <para>On top of Level 1 or Level 2 a number of optional features are
+    defined for a more advanced repository functionality. This includes
+    functions like: Versioning, (JTA) Transactions, Query using SQL, Explicit
+    Locking and Content Observation. Exo JCR supports all optional
+    features.</para>
+
+    <mediaobject>
+      <imageobject>
+        <imagedata fileref="images/concepts/optional.gif" />
+      </imageobject>
+    </mediaobject>
+  </section>
+</chapter>
