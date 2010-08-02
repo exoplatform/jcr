@@ -1,0 +1,477 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="KernelJobSchedulerService">
+  <?dbhtml filename="ch-kenel-job-scheduler-service.html"?>
+
+  <title>Job Scheduler Service</title>
+
+  <section>
+    <title>What is Job Scheduler</title>
+
+    <para><emphasis role="bold">Job scheduler</emphasis> defines a job to
+    execute a given number of times during a given period. It is a a software
+    application that is in charge of unattended background executions,
+    commonly known for historical reasons as batch processing.</para>
+
+    <para>Today's job schedulers typically provide a graphical user interface
+    and a single point of control for definition and monitoring of background
+    executions in a distributed network of computers. Increasingly job
+    schedulers are required to orchestrate the integration of real-time
+    business activities with traditional background IT processing, across
+    different operating system platforms and business application
+    environments.</para>
+
+    <para>Some features that may be found in a job scheduler include:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Continuously automatic monitoring of jobs and completion
+        notification</para>
+      </listitem>
+    </itemizedlist>
+
+    <itemizedlist>
+      <listitem>
+        <para>Event-driven job scheduling</para>
+      </listitem>
+    </itemizedlist>
+
+    <itemizedlist>
+      <listitem>
+        <para>Performance monitoring</para>
+      </listitem>
+    </itemizedlist>
+
+    <itemizedlist>
+      <listitem>
+        <para>Report scheduling</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>How does Job Scheduler work?</title>
+
+    <para>Jobs are scheduled to run when a given Trigger occurs. Triggers can
+    be created with nearly any combination of the following directives:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>at a certain time of day (to the millisecond)</para>
+      </listitem>
+
+      <listitem>
+        <para>on certain days of the week</para>
+      </listitem>
+    </itemizedlist>
+
+    <itemizedlist>
+      <listitem>
+        <para>on certain days of the month</para>
+      </listitem>
+
+      <listitem>
+        <para>on certain days of the year</para>
+      </listitem>
+    </itemizedlist>
+
+    <itemizedlist>
+      <listitem>
+        <para>not on certain days listed within a registered Calendar (such as
+        business holidays)</para>
+      </listitem>
+    </itemizedlist>
+
+    <itemizedlist>
+      <listitem>
+        <para>repeated a specific number of times</para>
+      </listitem>
+    </itemizedlist>
+
+    <itemizedlist>
+      <listitem>
+        <para>repeated until a specific time/date</para>
+      </listitem>
+
+      <listitem>
+        <para>repeated indefinitely</para>
+      </listitem>
+    </itemizedlist>
+
+    <itemizedlist>
+      <listitem>
+        <para>repeated with a delay interval</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Jobs are given names by their creator and can also be organized into
+    named groups. Triggers may also be given names and placed into groups, in
+    order to easily organize them within the scheduler. Jobs can be added to
+    the scheduler once, but registered with multiple Triggers. Within a J2EE
+    environment, Jobs can perform their work as part of a distributed (XA)
+    transaction.</para>
+
+    <section>
+      <title>How can Job Scheduler Service be used in Kernel?</title>
+
+      <para>Kernel leverages <ulink
+      url="http://www.quartz-scheduler.org">Quartz</ulink> for its scheduler
+      service and wraps <classname>org.quartz.Scheduler</classname> in
+      <classname>org.exoplatform.services.scheduler.impl.QuartzSheduler</classname>
+      for easier service wiring and configuration like any other services. To
+      work with Quartz in Kernel, you'll mostly work with
+      <classname>org.exoplatform.services.scheduler.JobSchedulerService</classname>
+      (implemented by
+      <classname>org.exoplatform.services.scheduler.impl.JobSchedulerServiceImpl</classname>.</para>
+
+      <para>To use <classname>JobSchedulerService</classname>, you can
+      configure it as a component in the configuration.xml. Because
+      <classname>JobSchedulerService</classname> requires
+      <classname>QuartzSheduler</classname> and
+      <classname>QueueTasks</classname>, you also have to configure these two
+      components.</para>
+
+      <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;configuration
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"
+  xmlns="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"&gt;
+
+  &lt;component&gt;
+    &lt;type&gt;org.exoplatform.services.scheduler.impl.QuartzSheduler&lt;/type&gt;
+  &lt;/component&gt;
+
+  &lt;component&gt;
+    &lt;type&gt;org.exoplatform.services.scheduler.QueueTasks&lt;/type&gt;
+  &lt;/component&gt;
+
+  &lt;component&gt;
+    &lt;key&gt;org.exoplatform.services.scheduler.JobSchedulerService&lt;/key&gt;
+    &lt;type&gt;org.exoplatform.services.scheduler.impl.JobSchedulerServiceImpl&lt;/type&gt;
+  &lt;/component&gt;
+
+&lt;/configuration&gt;</programlisting>
+    </section>
+
+    <section>
+      <title>Samples</title>
+
+      <para>We will work with <classname>JobSchedulerService</classname> by
+      creating a sample project and use GateIn-3.1.0-GA for testing.</para>
+
+      <para>Firstly, create a project:</para>
+
+      <programlisting>mvn archetype:generate
+//....
+Choose version: 
+1: 1.0
+2: 1.0-alpha-1
+3: 1.0-alpha-2
+4: 1.0-alpha-3
+5: 1.0-alpha-4
+Choose a number: : 1  
+Define value for property 'groupId': : org.exoplatform.samples
+Define value for property 'artifactId': : exo.samples.scheduler
+Define value for property 'version': 1.0-SNAPSHOT: 1.0-SNAPSHOT
+Define value for property 'package': org.exoplatform.samples: jar
+Confirm properties configuration:
+groupId: org.exoplatform.samples
+artifactId: exo.samples.scheduler
+version: 1.0-SNAPSHOT
+package: jar
+Y: Y</programlisting>
+
+      <para>Choose version as <emphasis role="bold">1.0-SNAPSHOT</emphasis>,
+      groupId as <emphasis role="bold">org.exoplatform.samples</emphasis>,
+      artifactId as <emphasis role="bold">exo.samples.scheduler</emphasis> and
+      package as <emphasis role="bold">jar</emphasis>. Edit the pom.xml as
+      following:</para>
+
+      <programlisting>&lt;project
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"&gt;
+
+  &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+
+  &lt;parent&gt;
+    &lt;artifactId&gt;exo.portal.parent&lt;/artifactId&gt;
+    &lt;groupId&gt;org.exoplatform.portal&lt;/groupId&gt;
+    &lt;version&gt;3.1.0-GA&lt;/version&gt;
+  &lt;/parent&gt;
+
+  &lt;groupId&gt;org.exoplatform.samples&lt;/groupId&gt;
+  &lt;artifactId&gt;exo.samples.scheduler&lt;/artifactId&gt;
+  &lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
+  &lt;name&gt;eXo Samples For Scheduler&lt;/name&gt;
+  &lt;description&gt;eXo Samples Code For Scheduler&lt;/description&gt;
+  &lt;dependencies&gt;
+
+    &lt;dependency&gt;
+      &lt;groupId&gt;quartz&lt;/groupId&gt;
+      &lt;artifactId&gt;quartz&lt;/artifactId&gt;
+      &lt;version&gt;1.5.2&lt;/version&gt;
+      &lt;scope&gt;provided&lt;/scope&gt;
+    &lt;/dependency&gt;
+
+    &lt;dependency&gt;
+      &lt;groupId&gt;picocontainer&lt;/groupId&gt;
+      &lt;artifactId&gt;picocontainer&lt;/artifactId&gt;
+      &lt;version&gt;1.1&lt;/version&gt;
+      &lt;scope&gt;provided&lt;/scope&gt;
+    &lt;/dependency&gt;
+
+    &lt;dependency&gt;
+      &lt;groupId&gt;org.exoplatform.kernel&lt;/groupId&gt;
+      &lt;artifactId&gt;exo.kernel.commons&lt;/artifactId&gt;
+      &lt;scope&gt;provided&lt;/scope&gt;
+    &lt;/dependency&gt;
+
+    &lt;dependency&gt;
+      &lt;groupId&gt;org.exoplatform.kernel&lt;/groupId&gt;
+      &lt;artifactId&gt;exo.kernel.component.common&lt;/artifactId&gt;
+      &lt;scope&gt;provided&lt;/scope&gt;
+    &lt;/dependency&gt;
+
+  &lt;/dependencies&gt;
+&lt;/project&gt;</programlisting>
+
+      <para>After that, create a eclipse project and then import into
+      eclipse:</para>
+
+      <programlisting>mvn eclipse:eclipse</programlisting>
+
+      <para>We'll work with this project all the time through samples.</para>
+
+      <section>
+        <title>StartableScheduler for DumbJob example</title>
+
+        <itemizedlist>
+          <listitem>
+            <para>See how it works on Quartz at: <ulink
+            url="http://www.quartz-scheduler.org/docs/tutorial/TutorialLesson03.html">http://www.quartz-scheduler.org/docs/tutorial/TutorialLesson03.html</ulink></para>
+          </listitem>
+        </itemizedlist>
+
+        <itemizedlist>
+          <listitem>
+            <para>Create a package in created project: conf/portal and add a
+            configuration configuration.xml as follows:</para>
+          </listitem>
+        </itemizedlist>
+
+        <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;configuration
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"
+  xmlns="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"&gt;
+
+  &lt;component&gt;
+    &lt;type&gt;org.exoplatform.services.scheduler.impl.QuartzSheduler&lt;/type&gt;
+  &lt;/component&gt;
+
+  &lt;component&gt;
+    &lt;type&gt;org.exoplatform.services.scheduler.QueueTasks&lt;/type&gt;
+  &lt;/component&gt;
+
+  &lt;component&gt;
+    &lt;key&gt;org.exoplatform.services.scheduler.JobSchedulerService&lt;/key&gt;
+    &lt;type&gt;org.exoplatform.services.scheduler.impl.JobSchedulerServiceImpl&lt;/type&gt;
+  &lt;/component&gt;
+
+  &lt;component&gt;
+    &lt;type&gt;org.exoplatform.samples.scheduler.StartableScheduler&lt;/type&gt;
+  &lt;/component&gt;
+
+&lt;/configuration&gt;</programlisting>
+
+        <itemizedlist>
+          <listitem>
+            <para>Note: You can see a component: StartableSheduler to be
+            defined. It's a component startable when portal containers are
+            initialized.</para>
+          </listitem>
+        </itemizedlist>
+
+        <programlisting>package org.exoplatform.samples.scheduler;
+
+import java.util.Date;
+
+import org.exoplatform.samples.scheduler.jobs.DumbJob;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+import org.exoplatform.services.scheduler.impl.QuartzSheduler;
+import org.picocontainer.Startable;
+import org.quartz.JobDetail;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.Trigger;
+import org.quartz.TriggerUtils;
+
+/**
+ * Created by The eXo Platform SAS
+ * Author : eXoPlatform
+ *          exo@exoplatform.com
+ * Jul 1, 2010
+ */
+public class StartableScheduler implements Startable {
+  private static final Log LOG = ExoLogger.getLogger(StartableScheduler.class);
+
+  public StartableScheduler(QuartzSheduler quartzScheduler) throws SchedulerException {
+    LOG.info("Init StartableScheduler");
+    JobDetail jobDetail = new JobDetail("myJob",
+                                        Scheduler.DEFAULT_GROUP,
+                                        DumbJob.class);
+    Trigger trigger = TriggerUtils.makeImmediateTrigger(3, 5000);
+    trigger.setStartTime(new Date());
+    trigger.setName("myTrigger");
+
+    Scheduler scheduler = quartzScheduler.getQuartzSheduler();
+
+    scheduler.scheduleJob(jobDetail, trigger);
+  }
+
+  @Override
+  public void start() {
+    // TODO Auto-generated method stub
+
+  }
+  @Override
+  public void stop() {
+    // TODO Auto-generated method stub
+
+  }
+}</programlisting>
+
+        <itemizedlist>
+          <listitem>
+            <para>DumbJob is defined as a job:</para>
+          </listitem>
+        </itemizedlist>
+
+        <programlisting>package org.exoplatform.samples.scheduler.jobs;
+
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+import org.quartz.Job;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
+
+/**
+ * DumbJob.java
+ *
+ * @author     &lt;a href="http://hoatle.net"&gt;hoatle (hoatlevan at gmail dot com)&lt;/a&gt;
+ * @since      Jul 1, 2010
+ * @copyright  eXo SAS
+ */
+public class DumbJob implements Job {
+  private static final Log LOG = ExoLogger.getLogger(DumbJob.class);
+  @Override
+  public void execute(JobExecutionContext context) throws JobExecutionException {
+    LOG.info("DumbJob is executing!");
+  }
+
+}</programlisting>
+
+        <para>mvn clean install the project. Copy jar file to lib in tomcat
+        bundled with GateIn-3.1.0-GA. Run bin/gatein.sh to see the DumbJob
+        executed on the terminal when portal containers are
+        initialized.</para>
+      </section>
+    </section>
+
+    <section>
+      <title>Where is Job Scheduler Service used in eXo Products?</title>
+
+      <para>Job Service Scheduler (JSS) is used in many eXo products such as
+      Social, DMS, WCM, KS and CS.</para>
+
+      <para>For example: It is used in Schedule lifecycle in DMS.</para>
+
+      <para>Also, it is used for News Letter Email Job in ECM, Reminder Job
+      for calendar and History Job for chat in CS, Auto-count Active Users in
+      KS.</para>
+
+      <para>By using Job Scheduler Service in eXo kernel, many kinds of job
+      can be configured to run. You can addPeriodJob, addCronJob,
+      addGlobalJobListener, addJobListener and many more. Just write a job (a
+      class implements Job interface of quartz library and config plugin for
+      JobSchedulerService and you're done.</para>
+    </section>
+  </section>
+
+  <section>
+    <title>Advantages of Job Scheduler</title>
+
+    <para>It's very useful to use Job Scheduler to create schedules for a lot
+    of work, especially if they are spread across multiple machines. It's a
+    tool to make that task a lot easier. Job Schedule is also widely used in
+    almost eXo products such as: WCM, DMS, KS, CS, Social thanks to its
+    benefits and advantages.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>The Job Scheduler provides automatically log files for running
+        programs</para>
+      </listitem>
+
+      <listitem>
+        <para>The execution status of programs is automatically checked and an
+        administrator will receive protocols by eMail</para>
+      </listitem>
+
+      <listitem>
+        <para>The sequence of job starts can be organized depending on their
+        execution status</para>
+      </listitem>
+
+      <listitem>
+        <para>Job Schedulers are controlled by a graphical user
+        interface</para>
+      </listitem>
+
+      <listitem>
+        <para>Job Schedulers can be used to create complex job chains and job
+        dependencies</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Also, a wide variety of enterprise applications can take advantage
+    of job schedulers. Job schedulers can enhance the functionality of
+    enterprise applications as well as simplify their design. Furthermore, job
+    scheduling components allow software development teams to focus on their
+    applications and not on the intricate details of scheduling. By using
+    server-side components, software teams can reduce development costs and
+    bring their applications to market sooner.</para>
+  </section>
+
+  <section>
+    <title>Reference</title>
+
+    <para>To further understand about Job Scheduler, you can refer the
+    following links:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para><ulink
+        url="http://www.quartz-scheduler.org/">http://www.quartz-scheduler.org/</ulink></para>
+      </listitem>
+
+      <listitem>
+        <para><ulink
+        url="http://en.wikipedia.org/wiki/Job_scheduler">http://en.wikipedia.org/wiki/Job_scheduler</ulink></para>
+      </listitem>
+
+      <listitem>
+        <para><ulink
+        url="http://www.theserverside.com/news/1364726/Job-Scheduling-in-J2EE-Applications">http://www.theserverside.com/news/1364726/Job-Scheduling-in-J2EE-Applications</ulink></para>
+      </listitem>
+
+      <listitem>
+        <para><ulink
+        url="http://technet.microsoft.com/en-us/library/cc720070%28WS.10%29.aspx">http://technet.microsoft.com/en-us/library/cc720070%28WS.10%29.aspx</ulink></para>
+      </listitem>
+    </itemizedlist>
+  </section>
+</chapter>

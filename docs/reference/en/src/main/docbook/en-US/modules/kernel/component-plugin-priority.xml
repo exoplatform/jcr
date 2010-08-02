@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="KernelComponentPluginPriority">
+  <?dbhtml filename="ch-kernel-component-plugin-priority.html"?>
+  <title>Component Plugin Priority</title>
+
+  <para>Since kernel version 2.0.6 it is possible to setup order of loading
+  for ComponentPlugin. Use the ' <emphasis role="bold">priority</emphasis>'
+  tag to define plugin's load priority. By <emphasis
+  role="bold">default</emphasis> all plugins get <emphasis
+  role="bold">priority '0'</emphasis>; they will be loaded in the container's
+  natural way. If you want one plugin to be loaded later than the others then
+  just set priority for it <emphasis role="bold">higher than
+  zero</emphasis>.</para>
+
+  <para>Simple example of fragment of a <emphasis
+  role="bold">configuration.xml</emphasis>.</para>
+
+  <programlisting>...
+&lt;component&gt;
+  &lt;type&gt;org.exoplatform.services.Component1&lt;/type&gt;
+&lt;/component&gt;
+
+&lt;external-component-plugins&gt;
+  &lt;target-component&gt;org.exoplatform.services.Component1&lt;/target-component&gt;
+
+  &lt;component-plugin&gt;
+    &lt;name&gt;Plugin1&lt;/name&gt;
+    &lt;set-method&gt;addPlugin&lt;/set-method&gt;
+    &lt;type&gt;org.exoplatform.services.plugins.Plugin1&lt;/type&gt;
+    &lt;description&gt;description&lt;/description&gt;
+    &lt;priority&gt;1&lt;/priority&gt;
+  &lt;/component-plugin&gt;
+
+  &lt;component-plugin&gt;
+    &lt;name&gt;Plugin2&lt;/name&gt;
+    &lt;set-method&gt;addPlugin&lt;/set-method&gt;
+    &lt;type&gt;org.exoplatform.services.plugins.Plugin2&lt;/type&gt;
+    &lt;description&gt;description&lt;/description&gt;
+    &lt;priority&gt;2&lt;/priority&gt;
+  &lt;/component-plugin&gt;
+
+&lt;/external-component-plugins&gt;
+
+&lt;external-component-plugins&gt;
+  &lt;target-component&gt;org.exoplatform.services.Component1&lt;/target-component&gt;
+  &lt;component-plugin&gt;
+    &lt;name&gt;Plugin3&lt;/name&gt;
+    &lt;set-method&gt;addPlugin&lt;/set-method&gt;
+    &lt;type&gt;org.exoplatform.services.plugins.Plugin3&lt;/type&gt;
+    &lt;description&gt;description&lt;/description&gt;
+  &lt;/component-plugin&gt;
+&lt;/external-component-plugins&gt;
+...</programlisting>
+
+  <para>In the above example plugin 'Plugin3' will be loaded first because it
+  has the default priority '0'. Then plugin 'Plugin1' will be loaded and as
+  last one plugin 'Plugin2'.</para>
+</chapter>

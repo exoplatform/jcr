@@ -9,7 +9,37 @@
   <xi:include href="kernel/kernel.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-  <xi:include href="kernel/configuration.xml"
+  <xi:include href="kernel/exo-container.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
+  <xi:include href="kernel/service-configuration-for-beginners.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
+  <xi:include href="kernel/service-configuration-in-detail.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
+  <xi:include href="kernel/container-configuration.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
+  <xi:include href="kernel/inversion-of-control.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
+  <xi:include href="kernel/services-wiring.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
+  <xi:include href="kernel/jmx-bean-server.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
+  <xi:include href="kernel/component-plugin-priority.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
+  <xi:include href="kernel/understanding-listnerservice.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
+  <xi:include href="kernel/initialcontext-binder-service.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
+  <xi:include href="kernel/job-scheduler-service.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
   <xi:include href="kernel/cache.xml"
@@ -23,5 +53,10 @@
 
   <xi:include href="kernel/logging.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
+
+
+
+
+
 
 </part>

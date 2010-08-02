@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="KernelServicesWiring">
+  <?dbhtml filename="ch-kenel-services-wiring.html"?>
+
+  <title id="KernelServicesWiring.Title">Services Wiring</title>
+
+  <section>
+    <title>Overview</title>
+
+    <para>The container package is responsible of building a hierarchy of
+    containers. Each service will then be registered in one container or the
+    other according to the XML configuration file it is defined in. It is
+    important to understand that there can be several PortalContainer
+    instances that all are children of the RootContainer.</para>
+
+    <para>The behavior of the hierarchy is similar to a class loader one,
+    hence when you will lookup a service that depends on another one, the
+    container will look for it in the current container and if it does not
+    find it then it will look in the parent container. That way you can load
+    all the reusable business logic components in the same container (here the
+    RootContainer) and differentiate the service implementation from one
+    portal instance to the other by just loading different service
+    implementations in two sibling PortalContainers.</para>
+
+    <para>Therefore, if you look at the Portal Container as a service
+    repository for all the business logic in a portal instance then you
+    understand why having several PortalContainers allows you to manage
+    several portals (each one deployed as a single war) in the same server by
+    just changing XML configuration files.</para>
+
+    <para>The default configuration XML files are packaged in the service jar.
+    There are three configuration.xml files, one for each container type. In
+    that XML file, we define the list of services and their init parameters
+    that will be loaded in the corresponding container.</para>
+  </section>
+
+  <section>
+    <title>Portal Instance</title>
+
+    <para>As there can be several portal container instances per JVM it is
+    important to be able to configure the loaded services per instance.
+    Therefore all the default configuration files located in the service impl
+    jar can be overridden from the portal war. For more information refer to
+    <link linkend="KernelServiceConfigurationforBeginners">Service
+    Configuration for Beginners</link>.</para>
+  </section>
+
+  <section>
+    <title>Introduction to the XML schema of the configuration.xml
+    file</title>
+
+    <para>After deploying you find the configuration.xml file in
+    webapps/portal/WEB-INF/conf Use component registration tags. Let's look at
+    the key tag that defines the interface and the type tag that defines the
+    implementation. Note that the key tag is not mandatory, but its use
+    improves performance.</para>
+
+    <programlisting>&lt;!-- Portlet container hooks --&gt;
+  &lt;component&gt;
+    &lt;key&gt;org.exoplatform.services.portletcontainer.persistence.PortletPreferencesPersister&lt;/key&gt;
+    &lt;type&gt;org.exoplatform.services.portal.impl.PortletPreferencesPersisterImpl&lt;/type&gt;
+  &lt;/component&gt;</programlisting>
+
+    <para>Register plugins that can act as listeners or external plugin to
+    bundle some plugin classes in other jar modules. The usual example is the
+    hibernate service to which we can add hbm mapping files even if those are
+    deployed in an other maven artifact.</para>
+
+    <programlisting>&lt;external-component-plugins&gt;
+  &lt;target-component&gt;org.exoplatform.services.database.HibernateService&lt;/target-component&gt;
+  &lt;component-plugin&gt; 
+    &lt;name&gt;add.hibernate.mapping&lt;/name&gt;
+    &lt;set-method&gt;addPlugin&lt;/set-method&gt;
+    &lt;type&gt;org.exoplatform.services.database.impl.AddHibernateMappingPlugin&lt;/type&gt;
+    &lt;init-params&gt;
+      &lt;values-param&gt;
+        &lt;name&gt;hibernate.mapping&lt;/name&gt;
+        &lt;value&gt;org/exoplatform/services/portal/impl/PortalConfigData.hbm.xml&lt;/value&gt;
+        &lt;value&gt;org/exoplatform/services/portal/impl/PageData.hbm.xml&lt;/value&gt;
+        &lt;value&gt;org/exoplatform/services/portal/impl/NodeNavigationData.hbm.xml&lt;/value&gt;
+      &lt;/values-param&gt;        
+    &lt;/init-params&gt;
+  &lt;/component-plugin&gt;
+&lt;/external-component-plugins&gt;</programlisting>
+
+    <para>In that sample we target the HibernateService and we will call its
+    addPlugin() method with an argument of the type AddHibernateMappingPlugin.
+    That object will first have been filled with the init parameters.</para>
+
+    <para>Therefore, it is possible to define services that will be able to
+    receive plugins without implementing any framework interface.</para>
+
+    <para>Another example of use is the case of listeners as in the following
+    code where a listener is added to the OrganisationService and will be
+    called each time a new user is created:</para>
+
+    <programlisting>&lt;external-component-plugins&gt;
+  &lt;target-component&gt;org.exoplatform.services.organization.OrganizationService&lt;/target-component&gt;
+  &lt;component-plugin&gt;
+    &lt;name&gt;portal.new.user.event.listener&lt;/name&gt;
+    &lt;set-method&gt;addListenerPlugin&lt;/set-method&gt;
+    &lt;type&gt;org.exoplatform.services.portal.impl.PortalUserEventListenerImpl&lt;/type&gt;
+    &lt;description&gt;this listener create the portal configuration for the new user&lt;/description&gt;
+    &lt;init-params&gt;
+      &lt;object-param&gt;
+        &lt;name&gt;configuration&lt;/name&gt;
+        &lt;description&gt;description&lt;/description&gt;
+        &lt;object type="org.exoplatform.services.portal.impl.NewPortalConfig"&gt;
+          &lt;field  name="predefinedUser"&gt;
+            &lt;collection type="java.util.HashSet"&gt;
+              &lt;value&gt;&lt;string&gt;admin&lt;/string&gt;&lt;/value&gt;
+              &lt;value&gt;&lt;string&gt;exo&lt;/string&gt;&lt;/value&gt;
+              &lt;value&gt;&lt;string&gt;company&lt;/string&gt;&lt;/value&gt;
+              &lt;value&gt;&lt;string&gt;community&lt;/string&gt;&lt;/value&gt;
+              &lt;value&gt;&lt;string&gt;portal&lt;/string&gt;&lt;/value&gt;
+              &lt;value&gt;&lt;string&gt;exotest&lt;/string&gt;&lt;/value&gt;
+            &lt;/collection&gt;
+          &lt;/field&gt;
+          &lt;field  name="templateUser"&gt;&lt;string&gt;template&lt;/string&gt;&lt;/field&gt;
+          &lt;field  name="templateLocation"&gt;&lt;string&gt;war:/conf/users&lt;/string&gt;&lt;/field&gt;
+        &lt;/object&gt;
+      &lt;/object-param&gt;
+    &lt;/init-params&gt;
+  &lt;/component-plugin&gt;
+...</programlisting>
+
+    <para>In the previous XML configuration we reference the organization
+    service and we will call its method addListenerPlugin with an object of
+    type PortalUserEventListenerImpl. Each time a new user will be created
+    (apart the predefined ones in the list above) methods of the
+    PortalUserEventListenerImpl will be called by the service.</para>
+
+    <para>As you can see there are several types of init parameters, from a
+    simple value param which binds a key with a value to a more complex object
+    mapping that fills a JavaBean with the info defined in the XML.</para>
+
+    <para>Many other examples exist such as for the Scheduler Service where
+    you can add a job with a simple XML configuration or the JCR Service where
+    you can add a NodeType from your own configuration.xml file.</para>
+  </section>
+
+  <section>
+    <title>JMX auto wiring</title>
+
+    <para>For JMX wiring please refer to <link
+    linkend="KernelJMXMBeanServer">JMX MBean Server</link>.</para>
+  </section>
+
+  <section>
+    <title>Configuration retrieval and log of this retrieval</title>
+
+    <para>When the RootContainer is starting the configuration retrieval looks
+    for configuration files in each jar available from the classpath at jar
+    path /conf/portal/configuration.xml and from each war at path
+    /WEB-INF/conf/configuration.xml. These configurations are added to a set.
+    If a component was configured in a previous jar and the current jar
+    contains a new configuration of that component the latest (from the
+    current jar) will replace the previous configuration.</para>
+
+    <para>After the processing of all configurations available on the system
+    the container will initialize it and start each component in order of the
+    dependency injection (DI).</para>
+
+    <para>So, in general the user/developer should be careful when configuring
+    the same components in different configuration files. It's recommended to
+    configure service in its own jar only. Or, in case of a portal
+    configuration, strictly reconfigure the component in portal files.</para>
+
+    <para>But, there are components that can be (or should be) configured more
+    than one time. This depends on the business logic of the component. A
+    component may initialize the same resource (shared with other players) or
+    may add a particular object to a set of objects (shared with other players
+    too). In the first case it's critical who will be the last, i.e. whose
+    configuration will be used. In second case it doesn't matter who is the
+    first and who is the last (if the parameter objects are
+    independent).</para>
+
+    <para>In case of problems with configuration of component it's important
+    to know from which jar/war it comes. For that purpose user/developer can
+    set JVM system property <emphasis
+    role="bold">org.exoplatform.container.configuration.debug</emphasis>, in
+    command line:</para>
+
+    <programlisting>java -Dorg.exoplatform.container.configuration.debug ...</programlisting>
+
+    <para>With that property container configuration manager will report
+    configuration adding process to the standard output (System.out).</para>
+
+    <programlisting>   ......
+   Add configuration jar:file:/D:/Projects/eXo/dev/exo-working/exo-tomcat/lib/exo.kernel.container-trunk.jar!/conf/portal/configuration.xml
+   Add configuration jar:file:/D:/Projects/eXo/dev/exo-working/exo-tomcat/lib/exo.kernel.component.cache-trunk.jar!/conf/portal/configuration.xml
+   Add configuration jndi:/localhost/portal/WEB-INF/conf/configuration.xml
+        import jndi:/localhost/portal/WEB-INF/conf/common/common-configuration.xml
+        import jndi:/localhost/portal/WEB-INF/conf/database/database-configuration.xml
+        import jndi:/localhost/portal/WEB-INF/conf/ecm/jcr-component-plugins-configuration.xml
+        import jndi:/localhost/portal/WEB-INF/conf/jcr/jcr-configuration.xml 
+   ......</programlisting>
+  </section>
+</chapter>

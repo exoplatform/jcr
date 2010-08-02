@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="KernelJMXMBeanServer">
+  <?dbhtml filename="ch-kenel-jmxbeanserver.html"?>
+  <title>JMX MBean Server</title>
+
+  <section>
+    <title>JMX MBean Server</title>
+
+    <para>Each component loaded in the container will be automatically wrapped
+    by a MBean that will be registered in an associated MBean server. There
+    exist one MBean server per eXo container and you can get the instance from
+    the ExoContainer class using the method</para>
+
+    <programlisting>public MBeanServer getMBeanServer()</programlisting>
+
+    <para>By default the created MBean will be given a conventional name that
+    you can override from the configuration.xml file using the jmx-name XML
+    tag:</para>
+
+    <programlisting>&lt;component&gt; 
+  &lt;key&gt;org.exoplatform.services.database.HibernateService&lt;/key&gt;
+  &lt;jmx-name&gt;exo-service:type=HibernateService&lt;/jmx-name&gt;
+  &lt;type&gt;org.exoplatform.services.database.impl.HibernateServiceImpl&lt;/type&gt;
+  [...]
+&lt;/component&gt;</programlisting>
+
+    <para><emphasis role="bold">Before kernel 2.0.7</emphasis>, you can access
+    to your MBeanServers by adding the patch jar attached to this page to your
+    classpath. By default this new component will bind your MBean servers to a
+    RMI registry on localhost at 9999. You will be able to access your MBeans
+    from any JMX Console which supports remote access like the JConsole by
+    using the following URLs :</para>
+
+    <table>
+      <title>Container Type and Access URLs</title>
+
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>Container Type</entry>
+
+            <entry>Access URL</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry>RootContainer or StandaloneContainer</entry>
+
+            <entry>service:jmx:rmi:///jndi/rmi://localhost:9999/eXo/root</entry>
+          </row>
+
+          <row>
+            <entry>PortalContainer (in Portal mode)</entry>
+
+            <entry>service:jmx:rmi:///jndi/rmi://localhost:9999/eXo/root/PORTAL_NAME</entry>
+          </row>
+
+          <row>
+            <entry>RepositoryContainer</entry>
+
+            <entry>service:jmx:rmi:///jndi/rmi://localhost:9999/eXo/root/PORTAL_NAME/REPOSITORY_NAME
+            in Portal mode or
+            service:jmx:rmi:///jndi/rmi://localhost:9999/eXo/root/REPOSITORY_NAME
+            in Standalone mode</entry>
+          </row>
+
+          <row>
+            <entry>WorkspaceContainer</entry>
+
+            <entry>service:jmx:rmi:///jndi/rmi://localhost:9999/eXo/root/PORTAL_NAME/REPOSITORY_NAME/WORKSPACE_NAME
+            in Portal mode or
+            service:jmx:rmi:///jndi/rmi://localhost:9999/eXo/root/REPOSITORY_NAME/WORKSPACE_NAME
+            in Standalone mode</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+
+    <para>You can of course change these properties by overloading them. Here
+    are all the parameters</para>
+
+    <programlisting>&lt;init-params&gt;
+  &lt;value-param&gt;
+    &lt;name&gt;protocol&lt;/name&gt;
+    &lt;description&gt;protocol is a short string that represent the protocol such as "rmi", "iiop", "jmxmp" or "soap"&lt;/description&gt;
+    &lt;value&gt;rmi:///jndi/rmi&lt;/value&gt;
+  &lt;/value-param&gt;
+  &lt;value-param&gt;
+    &lt;name&gt;host&lt;/name&gt;
+    &lt;description&gt;optional hostname&lt;/description&gt;
+    &lt;value&gt;localhost&lt;/value&gt;
+  &lt;/value-param&gt;
+  &lt;value-param&gt;
+    &lt;name&gt;port&lt;/name&gt;
+    &lt;description&gt;optional port&lt;/description&gt;
+    &lt;value&gt;9999&lt;/value&gt;
+  &lt;/value-param&gt;
+  &lt;value-param&gt;
+    &lt;name&gt;path-prefix&lt;/name&gt;
+    &lt;description&gt;optional path prefix&lt;/description&gt;
+    &lt;value&gt;eXo/&lt;/value&gt;
+  &lt;/value-param&gt;
+  &lt;value-param&gt;
+    &lt;name&gt;name-separator&lt;/name&gt;
+    &lt;description&gt;the separator used between the container names&lt;/description&gt;
+    &lt;value&gt;/&lt;/value&gt;
+  &lt;/value-param&gt;
+  &lt;properties-param&gt;
+    &lt;name&gt;environment&lt;/name&gt;
+    &lt;description&gt;a set of attributes to control the new connector server's behaviour&lt;/description&gt;
+    &lt;property name="jmx.remote.jndi.rebind" value="true"/&gt;
+  &lt;/properties-param&gt;
+&lt;/init-params&gt;</programlisting>
+
+    <note>
+      <para>Please, make sure that an RMI registry has been properly started
+      (locally on 9999) before launching eXo. If you use the RMI registry
+      provided in JDK 1.5, you can just launch rmiregistry 9999.</para>
+    </note>
+
+    <mediaobject>
+      <imageobject>
+        <imagedata fileref="images/jconsole2.png" />
+      </imageobject>
+    </mediaobject>
+
+    <para><emphasis role="bold">Since kernel 2.0.7</emphasis>, it is possible
+    to register all eXo MBeans in a single local MBeanServer in order to be
+    able to manage them through the JConsole or any another JMX
+    Console.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>The JVM system property <emphasis
+        role="bold">org.exoplatform.container.jmx.useExistingServer</emphasis>
+        can set to specify that we would like to use a local MBean server. By
+        default, the default behavior will be preserved.</para>
+      </listitem>
+    </itemizedlist>
+
+    <programlisting>java -Dorg.exoplatform.container.jmx.useExistingServer ...</programlisting>
+
+    <itemizedlist>
+      <listitem>
+        <para>The JVM system property <emphasis
+        role="bold">org.exoplatform.container.jmx.findExistingServer</emphasis>
+        can set to specify that we would like to find a specific local MBean
+        server. The value of this parameter is the MBean server agent id. By
+        default, the platform MBean Server will be used.</para>
+      </listitem>
+    </itemizedlist>
+
+    <programlisting>java -Dorg.exoplatform.container.jmx.findExistingServer=${agent_id} ...</programlisting>
+
+    <para>If you have no agent id to set just set the JVM system property
+    without any value as below:</para>
+
+    <programlisting>java -Dorg.exoplatform.container.jmx.findExistingServer ...</programlisting>
+
+    <itemizedlist>
+      <listitem>
+        <para>The JVM system property <emphasis
+        role="bold">org.exoplatform.container.jmx.findExistingServerFromDefaultDomain</emphasis>
+        can set to specify our local MBean server research. The value of this
+        parameter is the MBean server default domain name. By default, only
+        the agent id is used to find the local MBean server so if several
+        MBean servers have the same agent id, the first one will be
+        used.</para>
+      </listitem>
+    </itemizedlist>
+
+    <programlisting>java -Dorg.exoplatform.container.jmx.findExistingServerFromDefaultDomain=${default_domain} ...</programlisting>
+
+    <mediaobject>
+      <imageobject>
+        <imagedata fileref="images/jconsole.png" />
+      </imageobject>
+    </mediaobject>
+  </section>
+</chapter>
