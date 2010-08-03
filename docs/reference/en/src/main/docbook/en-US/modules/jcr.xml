@@ -97,6 +97,14 @@
 
   <xi:include href="jcr/searching/searching-repository-content.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />    
+              
+  <!-- protocols -->
+  
+  <xi:include href="jcr/protocols/webdav.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
+  <xi:include href="jcr/protocols/ftp.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />              
 
   <!-- other  -->
 

@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="JCR.WebDAV">
+  <title>WebDAV</title>
+
+  <section>
+    <title>Related documents</title>
+
+    <para>* Link Producer * Microsoft Office plugin * Open Office Add-On *
+    WebDav Client Libraries</para>
+  </section>
+
+  <section>
+    <title>Introduction</title>
+
+    <para>The WebDAV protocol allows you to use third party tools to
+    communicate with hierarchical content servers via HTTP. It is possible to
+    add and remove documents or a set of documents from a path on the server.
+    DeltaV is an extension of the WebDav protocol that allows to manage
+    document versioning. Locking guarantees protection against multiple access
+    when writing resources. The ordering support allows to change the position
+    of the resource in the list, sorting the directory for the convenience of
+    viewing the directory tree. The full-text search makes it easy to find the
+    necessary documents. You can search using two languages: SQL and XPATH is
+    supported.</para>
+
+    <para>In eXo JCR we plug in the WebDAV layer - based on the code taken
+    from the extension modules of the reference implementation - on top of our
+    JCR implementation so that it is possible to browse a workspace using the
+    third party tools (it can be Windows folders or Mac ones as well as a Java
+    WebDAV client such as DAVExplorer or IE using File-&gt;Open as a Web
+    Folder).</para>
+
+    <para>Now WebDav is an extension of the REST service. To get the WebDav
+    server ready you must deploy the REST application. Then you can access any
+    workspace of your repository using the following URL:</para>
+
+    <para>Standalone mode:</para>
+
+    <para><ulink
+    url="http://host:port/rest/jcr/">http://host:port/rest/jcr/</ulink>{RepositoryName}/{WorkspaceName}/{Path}</para>
+
+    <para>Portal mode:</para>
+
+    <para><ulink
+    url="http://host:port/portal/rest/private/jcr/">http://host:port/portal/rest/private/jcr/</ulink>{RepositoryName}/{WorkspaceName}/{Path}</para>
+
+    <para>When accessing the WebDAV server - here URL is <ulink
+    url="http://localhost:8080/rest/jcr/repository/production">http://localhost:8080/rest/jcr/repository/production</ulink>,
+    you might also use "collaboration" (instead of "production") which is the
+    default workspace in eXo products - the user will be asked to enter his
+    login and password. Those will then be checked using the organization
+    service (that can be implemented thanks to an Inmemory(dummy) module or DB
+    module or LDAP one) and the JCR user session will be created with the
+    correct JCR Credentials.</para>
+
+    <para><emphasis role="bold">NOTE:</emphasis> If you try the "in ECM"
+    option, add "@ecm" to the user's password. Alternatively, you may modify
+    jaas.conf adding the <emphasis role="bold">domain=ecm</emphasis> option
+    like:</para>
+
+    <programlisting>exo-domain {
+     org.exoplatform.services.security.jaas.BasicLoginModule required domain=ecm;
+};</programlisting>
+  </section>
+
+  <section>
+    <title>Configuration</title>
+
+    <programlisting>&lt;component&gt;
+  &lt;key&gt;org.exoplatform.services.webdav.WebDavServiceImpl&lt;/key&gt;
+  &lt;type&gt;org.exoplatform.services.webdav.WebDavServiceImpl&lt;/type&gt;
+  &lt;init-params&gt;
+
+    &lt;!-- this parameter indicates the default login and password values
+         used as credentials for accessing the repository --&gt;
+    &lt;!-- value-param&gt;
+      &lt;name&gt;default-identity&lt;/name&gt;
+      &lt;value&gt;admin:admin&lt;/value&gt;    
+    &lt;/value-param --&gt;
+
+    &lt;!-- this is the value of WWW-Authenticate header --&gt;
+    &lt;value-param&gt;
+      &lt;name&gt;auth-header&lt;/name&gt;
+      &lt;value&gt;Basic realm="eXo-Platform Webdav Server 1.6.1"&lt;/value&gt;
+    &lt;/value-param&gt;
+
+    &lt;!-- default node type which is used for the creation of collections --&gt;
+    &lt;value-param&gt;
+      &lt;name&gt;def-folder-node-type&lt;/name&gt;
+      &lt;value&gt;nt:folder&lt;/value&gt;
+    &lt;/value-param&gt;
+
+    &lt;!-- default node type which is used for the creation of files --&gt;
+    &lt;value-param&gt;
+      &lt;name&gt;def-file-node-type&lt;/name&gt;
+      &lt;value&gt;nt:file&lt;/value&gt;
+    &lt;/value-param&gt;
+
+    &lt;!-- if MimeTypeResolver can't find the required mime type, 
+         which conforms with the file extension, and the mimeType header is absent
+         in the HTTP request header, this parameter is used 
+         as the default mime type--&gt;
+    &lt;value-param&gt;
+      &lt;name&gt;def-file-mimetype&lt;/name&gt;
+      &lt;value&gt;application/octet-stream&lt;/value&gt;
+    &lt;/value-param&gt;
+
+    &lt;!-- This parameter indicates one of the three cases when you update the content of the resource by PUT command.
+         In case of "create-version", PUT command creates the new version of the resource if this resource  exists.
+         In case of "replace" - if the resource  exists, PUT command updates the content of the resource and  its last modification date.
+         In case of "add", the PUT command tries to create the new resource with the same name (if the parent node allows same-name siblings).--&gt;
+
+    &lt;value-param&gt;
+      &lt;name&gt;update-policy&lt;/name&gt;
+      &lt;value&gt;create-version&lt;/value&gt;
+      &lt;!--value&gt;replace&lt;/value --&gt;
+      &lt;!-- value&gt;add&lt;/value --&gt;
+    &lt;/value-param&gt;
+
+    &lt;!--
+        This parameter determines how service responds to a method that attempts to modify file content.
+        In case of "checkout-checkin" value, when a modification request is applied to a checked-in version-controlled resource, the request is  automatically preceded by a checkout and followed by a checkin operation.
+        In case of "checkout" value, when a modification request is applied to a checked-in version-controlled resource, the request is automatically preceded by a checkout operation.
+    --&gt;         
+    &lt;value-param&gt;
+      &lt;name&gt;auto-version&lt;/name&gt;
+      &lt;value&gt;checkout-checkin&lt;/value&gt;
+      &lt;!--value&gt;checkout&lt;/value --&gt;
+    &lt;/value-param&gt;
+
+    &lt;!--
+        This parameter is responsible for managing Cache-Control header value which will be returned to the client.
+        You can use patterns like "text/*", "image/*" or wildcard to define the type of content.
+    --&gt;  
+    &lt;value-param&gt;
+      &lt;name&gt;cache-control&lt;/name&gt;
+      &lt;value&gt;text/xml,text/html:max-age=3600;image/png,image/jpg:max-age=1800;*/*:no-cache;&lt;/value&gt;
+    &lt;/value-param&gt;
+
+  &lt;/init-params
+&lt;/component&gt;</programlisting>
+  </section>
+
+  <section>
+    <title>Screenshots</title>
+
+    <para>For the time being eXo JCR WebDav server was tested using MS
+    Internet Explorer, <ulink url="http://www.ics.uci.edu/~webdav">Dav
+    Explorer</ulink>, <ulink
+    url="http://www.xythos.com/home/xythos/products/xythos_drive.html">Xythos
+    Drive</ulink>, Microsoft Office 2003 (as client), and Ubuntu Linux.</para>
+
+    <section>
+      <title>MS Internet Explorer</title>
+
+      <para>(File -&gt; Open as Web Folder)</para>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="images/protocols/webdav_explorer.jpg" />
+        </imageobject>
+      </mediaobject>
+    </section>
+
+    <section>
+      <title>Dav Explorer</title>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="images/protocols/webdav_davexplorer.jpg" />
+        </imageobject>
+      </mediaobject>
+    </section>
+
+    <section>
+      <title>Xythos Drive</title>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="images/protocols/webdav_xythosdrive.jpg" />
+        </imageobject>
+      </mediaobject>
+    </section>
+
+    <section>
+      <title>Microsoft Office 2003</title>
+
+      <para>(as client) (File-&gt;Open with typing http://... href in the file
+      name box)</para>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="images/protocols/webdav_msoffice2003.jpg" />
+        </imageobject>
+      </mediaobject>
+    </section>
+
+    <section>
+      <title>Ubuntu Linux</title>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="images/protocols/webdav_ubuntulinux.jpg" />
+        </imageobject>
+      </mediaobject>
+    </section>
+  </section>
+
+  <section>
+    <title>Comparison table of WebDav and JCR commands</title>
+
+    <table>
+      <title></title>
+
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>WebDav</entry>
+
+            <entry>JCR</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry>COPY</entry>
+
+            <entry>Workspace.copy(...)</entry>
+          </row>
+
+          <row>
+            <entry>DELETE</entry>
+
+            <entry>Node.remove()</entry>
+          </row>
+
+          <row>
+            <entry>GET</entry>
+
+            <entry>Node.getProperty(...); Property.getValue()</entry>
+          </row>
+
+          <row>
+            <entry>HEAD</entry>
+
+            <entry>Node.getProperty(...); Property.getLength()</entry>
+          </row>
+
+          <row>
+            <entry>MKCOL</entry>
+
+            <entry>Node.addNode(...)</entry>
+          </row>
+
+          <row>
+            <entry>MOVE</entry>
+
+            <entry>Session.move(...) or Workspace.move(...)</entry>
+          </row>
+
+          <row>
+            <entry>PROPFIND</entry>
+
+            <entry>Session.getNode(...); Node.getNode(...);
+            Node.getNodes(...); Node.getProperties()</entry>
+          </row>
+
+          <row>
+            <entry>PROPPATCH</entry>
+
+            <entry>Node.setProperty(...);
+            Node.getProperty(...).remove()</entry>
+          </row>
+
+          <row>
+            <entry>PUT</entry>
+
+            <entry>Node.addNode("node","nt:file");
+            Node.setProperty("jcr:data", "data")</entry>
+          </row>
+
+          <row>
+            <entry>CHECKIN</entry>
+
+            <entry>Node.checkin()</entry>
+          </row>
+
+          <row>
+            <entry>CHECKOUT</entry>
+
+            <entry>Node.checkout()</entry>
+          </row>
+
+          <row>
+            <entry>REPORT</entry>
+
+            <entry>Node.getVersionHistory(); VersionHistory.getAllVersions();
+            Version.getProperties()</entry>
+          </row>
+
+          <row>
+            <entry>RESTORE</entry>
+
+            <entry>Node.restore(...)</entry>
+          </row>
+
+          <row>
+            <entry>UNCHECKOUT</entry>
+
+            <entry>Node.restore(...)</entry>
+          </row>
+
+          <row>
+            <entry>VERSION-CONTROL</entry>
+
+            <entry>Node.addMixin("mix:versionable")</entry>
+          </row>
+
+          <row>
+            <entry>LOCK</entry>
+
+            <entry>Node.lock(...)</entry>
+          </row>
+
+          <row>
+            <entry>UNLOCK</entry>
+
+            <entry>Node.unlock()</entry>
+          </row>
+
+          <row>
+            <entry>ORDERPATCH</entry>
+
+            <entry>Node.orderBefore(...)</entry>
+          </row>
+
+          <row>
+            <entry>SEARCH</entry>
+
+            <entry>Workspace.getQueryManager(); QueryManager.createQuery();
+            Query.execute()</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </section>
+</chapter>
