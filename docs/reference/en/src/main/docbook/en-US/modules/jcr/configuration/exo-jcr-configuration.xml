@@ -38,7 +38,7 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id ="JCR.eXoJCRconfiguration.PortalAndStandaloneConfiguration">
     <title>Portal and Standalone configuration</title>
 
     <para>Like other eXo services eXo JCR can be configured and used in portal
