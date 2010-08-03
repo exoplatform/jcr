@@ -106,6 +106,15 @@
   <xi:include href="jcr/protocols/ftp.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />              
 
+
+  <!-- backup -->
+  <xi:include href="jcr/backup/exojcr-backup-service.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />    
+  <!--xi:include href="jcr/backup/backup-client.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" /-->    
+
+
+
   <!-- other  -->
 
   <xi:include href="jcr/statistics.xml"
