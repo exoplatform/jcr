@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="JCR.FindNodesByMixinType">
+  <title>Find Nodes by Mixin Type</title>
+
+  <para>Find all nodes in repository, that contain a mixin type
+  "mix:title".</para>
+
+  <section>
+    <title>Repository structure:</title>
+
+    <para>The repository contains nodes with different primary types and mixin
+    types.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>root</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>document1 primarytype = "nt:unstructured" mixintype =
+            "mix:title"</para>
+          </listitem>
+
+          <listitem>
+            <para>document2 primarytype = "nt:file" mixintype =
+            "mix:lockable"</para>
+          </listitem>
+
+          <listitem>
+            <para>document3 primarytype = "nt:file" mixintype =
+            "mix:title"</para>
+          </listitem>
+        </itemizedlist>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Query execution</title>
+
+    <para><emphasis role="bold">SQL</emphasis></para>
+
+    <programlisting>// make SQL query
+QueryManager queryManager = workspace.getQueryManager();
+// create query
+String sqlStatement = "SELECT * FROM mix:title";
+Query query = queryManager.createQuery(sqlStatement, Query.SQL);
+// execute query and fetch result
+QueryResult result = query.execute();</programlisting>
+
+    <para><emphasis role="bold">XPath</emphasis></para>
+
+    <programlisting>// make XPath query
+QueryManager queryManager = workspace.getQueryManager();
+// create query
+String xpathStatement = "//element(*,mix:title)";
+Query query = queryManager.createQuery(xpathStatement, Query.XPATH);
+// execute query and fetch result
+QueryResult result = query.execute();</programlisting>
+  </section>
+
+  <section>
+    <title>Fetch result</title>
+
+    <para>Lets get nodes:</para>
+
+    <programlisting>NodeIterator it = result.getNodes();
+
+if(it.hasNext())
+{
+   Node findedNode = it.nextNode();
+}</programlisting>
+
+    <para>The NodeIterator will return "document1" and "document3".</para>
+
+    <para>We can also get a table:</para>
+
+    <programlisting>String[] columnNames = result.getColumnNames();
+RowIterator rit = result.getRows();
+while (rit.hasNext())
+{
+   Row row = rit.nextRow();
+   // get values of the row
+   Value[] values = row.getValues();
+}</programlisting>
+
+    <para>Table content is <table>
+        <title>Table content</title>
+
+        <tgroup cols="4">
+          <thead>
+            <row>
+              <entry>jcr:title</entry>
+
+              <entry>...</entry>
+
+              <entry>jcr:path</entry>
+
+              <entry>jcr:score</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry>First document</entry>
+
+              <entry>...</entry>
+
+              <entry>/document1</entry>
+
+              <entry>2674</entry>
+            </row>
+
+            <row>
+              <entry>Second document</entry>
+
+              <entry>...</entry>
+
+              <entry>/document3</entry>
+
+              <entry>2674</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table></para>
+  </section>
+</section>

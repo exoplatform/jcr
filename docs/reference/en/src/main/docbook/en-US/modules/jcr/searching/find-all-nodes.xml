@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="JCR.FindAllNodes">
+  <title>Find All Nodes</title>
+
+  <para>Find all nodes in the repository. Only those nodes are found to which
+  the session has READ permission. See also <ulink
+  url="JCR.AccessControl">Access Control</ulink>.</para>
+
+  <section>
+    <title>Repository structure:</title>
+
+    <para>Repository contains many different nodes.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>root</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>folder1 (nt:folder)</para>
+
+            <itemizedlist>
+              <listitem>
+                <para>document1 (nt:file)</para>
+              </listitem>
+
+              <listitem>
+                <para>folder2 (nt:folder)</para>
+
+                <itemizedlist>
+                  <listitem>
+                    <para>document2 (nt:unstructured)</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>document3 (nt:folder)</para>
+                  </listitem>
+                </itemizedlist>
+              </listitem>
+            </itemizedlist>
+          </listitem>
+        </itemizedlist>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Query execution</title>
+
+    <para><emphasis role="bold">SQL</emphasis></para>
+
+    <programlisting>// make SQL query
+QueryManager queryManager = workspace.getQueryManager();
+// create query
+String sqlStatement = "SELECT * FROM nt:base";
+Query query = queryManager.createQuery(sqlStatement, Query.SQL);
+// execute query and fetch result
+QueryResult result = query.execute();</programlisting>
+
+    <para><emphasis role="bold">XPath</emphasis></para>
+
+    <programlisting>// make XPath query
+QueryManager queryManager = workspace.getQueryManager();
+// create query
+String xpathStatement = "//element(*,nt:base)";
+Query query = queryManager.createQuery(xpathStatement, Query.XPATH);
+// execute query and fetch result
+QueryResult result = query.execute();</programlisting>
+  </section>
+
+  <section>
+    <title>Fetch result</title>
+
+    <para>Lets get nodes:</para>
+
+    <programlisting>NodeIterator it = result.getNodes();
+
+if(it.hasNext())
+{
+   Node findedNode = it.nextNode();
+}</programlisting>
+
+    <para>NodeIterator will return "folder1",
+    "folder2","document1","document2","document3", and each other nodes in
+    workspace if they are here.</para>
+
+    <para>We can also get a table:</para>
+
+    <programlisting>String[] columnNames = result.getColumnNames();
+RowIterator rit = result.getRows();
+while (rit.hasNext())
+{
+   Row row = rit.nextRow();
+   // get values of the row
+   Value[] values = row.getValues();
+}</programlisting>
+
+    <para>Table content is</para>
+
+    <table>
+      <title>Table content</title>
+
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>jcr:path</entry>
+
+            <entry>jcr:score</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry>/folder1</entry>
+
+            <entry>1000</entry>
+          </row>
+
+          <row>
+            <entry>/folder1/document1</entry>
+
+            <entry>1000</entry>
+          </row>
+
+          <row>
+            <entry>/folder1/folder2</entry>
+
+            <entry>1000</entry>
+          </row>
+
+          <row>
+            <entry>/folder1/folder2/document2</entry>
+
+            <entry>1000</entry>
+          </row>
+
+          <row>
+            <entry>/folder1/folder2/document3</entry>
+
+            <entry>1000</entry>
+          </row>
+
+          <row>
+            <entry>...</entry>
+
+            <entry>...</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </section>
+</section>

@@ -80,8 +80,8 @@ while(rowIterator.hasNext()){
       <para>Score may be increased for specified nodes, see <ulink
       url="Index Boost Value">Index Boost Value</ulink></para>
 
-      <para>Also, see an example <ulink url="JCR.Order by Score">JCR.Order by
-      Score</ulink></para>
+      <para>Also, see an example <link linkend="JCR.OrderByScore">Order by
+      Score</link></para>
     </section>
   </section>
 
@@ -96,11 +96,6 @@ while(rowIterator.hasNext()){
           <para><link linkend="JCR.SetOffsetandSetLimit">Set Offset And
           Limit</link></para>
         </listitem>
-
-        <!--listitem>
-           <xi:include href="offset-and-limit.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
-        </listitem-->
       </itemizedlist>
     </section>
 
@@ -109,18 +104,17 @@ while(rowIterator.hasNext()){
 
       <itemizedlist>
         <listitem>
-          <para><ulink url="JCR.Find All Nodes">JCR.Find All
-          Nodes</ulink></para>
+          <para><link linkend="JCR.FindAllNodes">Find All Nodes</link></para>
         </listitem>
 
         <listitem>
-          <para><ulink url="JCR.Find Nodes by Primary Type">JCR.Find Nodes by
-          Primary Type</ulink></para>
+          <para><link linkend="JCR.FindNodesByPrimaryType">Find Nodes by
+          Primary Type</link></para>
         </listitem>
 
         <listitem>
-          <para><ulink url="JCR.Find Nodes by Mixin Type">JCR.Find Nodes by
-          Mixin Type</ulink></para>
+          <para><link linkend="JCR.FindNodesByMixinType">Find Nodes by Mixin
+          Type</link></para>
         </listitem>
       </itemizedlist>
     </section>
@@ -130,43 +124,40 @@ while(rowIterator.hasNext()){
 
       <itemizedlist>
         <listitem>
-          <para><ulink url="JCR.Property Comparison">JCR.Property
-          Comparison</ulink></para>
+          <para><link linkend="JCR.PropertyComparison">Property
+          Comparison</link></para>
         </listitem>
 
         <listitem>
-          <para><ulink url="JCR.LIKE Constraint">JCR.LIKE
-          Constraint</ulink></para>
+          <para><link linkend="JCR.LIKEConstraint">LIKE
+          Constraint</link></para>
         </listitem>
 
         <listitem>
-          <para><ulink url="JCR.Escaping in LIKE Statements">JCR.Escaping in
-          LIKE Statements</ulink></para>
+          <para><link linkend="JCR.EscapinginLIKEStatements">Escaping in LIKE
+          Statements</link></para>
         </listitem>
 
         <listitem>
-          <para><ulink url="JCR.NOT Constraint">JCR.NOT
-          Constraint</ulink></para>
+          <para><link linkend="JCR.NOTConstraint">NOT Constraint</link></para>
         </listitem>
 
         <listitem>
-          <para><ulink url="JCR.AND Constraint">JCR.AND
-          Constraint</ulink></para>
+          <para><link linkend="JCR.ANDConstraint">AND Constraint</link></para>
         </listitem>
 
         <listitem>
-          <para><ulink url="JCR.OR Constraint">JCR.OR
-          Constraint</ulink></para>
+          <para><link linkend="JCR.ORConstraint">OR Constraint</link></para>
         </listitem>
 
         <listitem>
-          <para><ulink url="JCR.Property Existence Constraint">JCR.Property
-          Existence Constraint</ulink></para>
+          <para><link linkend="JCR.PropertyExistenceConstraint">Property
+          Existence Constraint</link></para>
         </listitem>
 
         <listitem>
-          <para><ulink url="JCR.Upper and Lower Case Constraints">JCR.Upper
-          and Lower Case Constraints</ulink></para>
+          <para><link linkend="JCR.FindNodesCaseInsensitive">Upper and Lower
+          Case Constraints</link></para>
         </listitem>
 
         <listitem>
@@ -308,6 +299,13 @@ while(rowIterator.hasNext()){
           Nodes</ulink></para>
         </listitem>
       </itemizedlist>
+    </section>
+
+    <section>
+      <title>List of examples</title>
+
+      <xi:include href="offset-and-limit.xml"
+                  xmlns:xi="http://www.w3.org/2001/XInclude" />
     </section>
   </section>
 
