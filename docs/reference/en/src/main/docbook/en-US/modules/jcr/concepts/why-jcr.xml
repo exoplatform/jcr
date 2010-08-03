@@ -2,6 +2,7 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="JCR.WhyuseJCR">
+  <?dbhtml filename="ch-why-jcr.html"?>
   <title>Why use JCR?</title>
 
   <section>

@@ -2,7 +2,7 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="JCR.RESTServicesOnGroovy">
-  <?dbhtml filename="ch-jcr-rest-services-on-groovy.html"?>
+  <?dbhtml filename="ch-rest-services-on-groovy.html"?>
 
   <title>REST Services on Groovy</title>
 

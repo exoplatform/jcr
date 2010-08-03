@@ -2,6 +2,7 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="JCR.AccessControl">
+  <?dbhtml filename="ch-acl.html"?>
   <title>Access Control</title>
 
   <para>eXo JCR is a complete implementation of the standard JSR 170: <ulink

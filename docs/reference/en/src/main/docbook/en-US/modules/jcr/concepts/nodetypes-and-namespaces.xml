@@ -2,6 +2,7 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="JCR.NodeTypesandNamespaces">
+  <?dbhtml filename="ch-nodetypes-and-namespaces.html"?>
   <title>Node Types and Namespaces</title>
 
   <section>

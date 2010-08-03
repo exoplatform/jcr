@@ -2,7 +2,7 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="JCR.WorkspaceDataContainer">
-  <?dbhtml filename="ch-jcr-workspace-data-container.html"?>
+  <?dbhtml filename="ch-workspace-data-container.html"?>
   <title>Workspace Data Container</title>
 
   <para>Each Workspace of JCR has its own persistent storage to hold

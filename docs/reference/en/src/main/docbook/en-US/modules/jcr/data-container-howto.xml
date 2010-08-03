@@ -1,6 +1,7 @@
 <?xml version='1.0' ?><!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-	<chapter id="HowtoimplementWorkspaceDataContainer">
+	<chapter id="JCR.HowtoimplementWorkspaceDataContainer">
 		<title>How-to implement Workspace Data Container</title>
+		<?dbhtml filename="ch-data-container-howto.html"?>
 		<section id="ShortintrointoWorkspacedatacontainerimplementationpractices">
 			<title>Short intro into Workspace data container implementation practices:</title>
 			<orderedlist>
