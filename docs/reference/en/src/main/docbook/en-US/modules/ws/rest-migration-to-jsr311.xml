@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter>
-  <?dbhtml filename="ch-ws.html"?>
+<chapter id = "WS.RESTMigrationJSR311">
+  <?dbhtml filename="ch-rest-migration-to-jsr311.html"?>
 
   <title>REST Migration to jsr311</title>
 
