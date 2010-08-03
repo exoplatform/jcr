@@ -182,18 +182,18 @@ while(rowIterator.hasNext()){
 
       <itemizedlist>
         <listitem>
-          <para><ulink url="JCR.Exact Path Constraint">JCR.Exact Path
-          Constraint</ulink></para>
+          <para><link linkend="JCR.ExactPathConstraint">Exact Path
+          Constraint</link></para>
         </listitem>
 
         <listitem>
-          <para><ulink url="JCR.Child Node Constraint">JCR.Child Node
-          Constraint</ulink></para>
+          <para><link linkend="JCR.ChildNodeConstraint">Child Node
+          Constraint</link></para>
         </listitem>
 
         <listitem>
-          <para><ulink url="JCR.Find All Descendant Nodes">JCR.Find All
-          Descendant Nodes</ulink></para>
+          <para><link linkend="JCR.FindAllDescendantNodes">Find All Descendant
+          Nodes</link></para>
         </listitem>
       </itemizedlist>
     </section>
@@ -203,40 +203,36 @@ while(rowIterator.hasNext()){
 
       <itemizedlist>
         <listitem>
-          <para><ulink url="JCR.Order by Property">JCR.Order by
-          Property</ulink></para>
+          <para><link linkend="???">JCR.Order by Property</link></para>
         </listitem>
 
         <listitem>
-          <para><ulink url="JCR.Order by Descendant Node Property">JCR.Order
-          by Descendant Node Property</ulink></para>
+          <para><link linkend="???">JCR.Order by Descendant Node
+          Property</link></para>
         </listitem>
 
         <listitem>
-          <para><ulink url="JCR.Order by Score">JCR.Order by
-          Score</ulink></para>
+          <para><link linkend="???">JCR.Order by Score</link></para>
         </listitem>
 
         <listitem>
-          <para><ulink url="JCR.Order by Path or Name">JCR.Order by Path or
-          Name</ulink></para>
+          <para><link linkend="???">JCR.Order by Path or Name</link></para>
         </listitem>
       </itemizedlist>
     </section>
 
     <section>
-      <title><ulink url="Fulltext Search">Fulltext Search</ulink></title>
+      <title><link linkend="???">Fulltext Search</link></title>
 
       <itemizedlist>
         <listitem>
-          <para><ulink url="JCR.Fulltext Search by Property">JCR.Fulltext
-          Search by Property</ulink></para>
+          <para><link linkend="???">JCR.Fulltext Search by
+          Property</link></para>
         </listitem>
 
         <listitem>
-          <para><ulink
-          url="JCR.Fulltext Search by All Properties">JCR.Fulltext Search by
-          All Properties</ulink></para>
+          <para><link linkend="???">JCR.Fulltext Search by All
+          Properties</link></para>
         </listitem>
 
         <listitem>
