@@ -161,18 +161,18 @@ while(rowIterator.hasNext()){
         </listitem>
 
         <listitem>
-          <para><ulink url="JCR.Date Property Comparison">JCR.Date Property
-          Comparison</ulink></para>
+          <para><link linkend="JCR.DatePropertyComparison">Date Property
+          Comparison</link></para>
         </listitem>
 
         <listitem>
-          <para><ulink url="JCR.Node Name Constraint">JCR.Node Name
-          Constraint</ulink></para>
+          <para><link linkend="JCR.NodeNameConstraint">Node Name
+          Constraint</link></para>
         </listitem>
 
         <listitem>
-          <para><ulink url="JCR.Multivalue Property Comparison">JCR.Multivalue
-          Property Comparison</ulink></para>
+          <para><link linkend="JCR.MultivaluePropertyComparison">Multivalue
+          Property Comparison</link></para>
         </listitem>
       </itemizedlist>
     </section>
