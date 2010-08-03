@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="JCR.QueryUsecases">
+  <title>JCR Query Usecases</title>
+
+  <section>
+    <title>Intro</title>
+
+    <para>JCR supports two query languages - JCR and XPath. A query, whether
+    XPath or SQL, specifies a subset of nodes within a workspace, called the
+    result set. The result set constitutes all the nodes in the workspace that
+    meet the constraints stated in the query.</para>
+  </section>
+
+  <section>
+    <title>Query Lifecycle</title>
+
+    <section>
+      <title>Query Creation and Execution</title>
+
+      <para><emphasis role="bold">SQL</emphasis></para>
+
+      <programlisting>// get QueryManager
+QueryManager queryManager = workspace.getQueryManager(); 
+// make SQL query
+Query query = queryManager.createQuery("SELECT * FROM nt:base ", Query.SQL);
+// execute query
+QueryResult result = query.execute();</programlisting>
+
+      <para><emphasis role="bold">XPath</emphasis></para>
+
+      <programlisting>// get QueryManager
+QueryManager queryManager = workspace.getQueryManager(); 
+// make XPath query
+Query query = queryManager.createQuery("//element(*,nt:base)", Query.XPATH);
+// execute query
+QueryResult result = query.execute();</programlisting>
+    </section>
+
+    <section>
+      <title>Query Result Processing</title>
+
+      <programlisting>// fetch query result
+QueryResult result = query.execute();</programlisting>
+
+      <para>Now we can get result in an iterator of nodes:</para>
+
+      <programlisting>NodeIterator it = result.getNodes();</programlisting>
+
+      <para>or we get the result in a table:</para>
+
+      <programlisting>// get column names
+String[] columnNames = result.getColumnNames();
+// get column rows
+RowIterator rowIterator = result.getRows();
+while(rowIterator.hasNext()){
+   // get next row
+   Row row = rowIterator.nextRow();
+   // get all values of row
+   Value[] values = row.getValues();
+}</programlisting>
+    </section>
+
+    <section>
+      <title>Scoring</title>
+
+      <para>The result returns a score for each row in the result set. The
+      score contains a value that indicates a rating of how well the result
+      node matches the query. A high value means a better matching than a low
+      value. This score can be used for ordering the result.</para>
+
+      <para>eXo JCR Scoring is a mapping of Lucene scoring. For a more
+      in-depth understanding, please study <ulink
+      url="http://lucene.apache.org/java/2_4_1/scoring.html">Lucene
+      documentation</ulink>.</para>
+
+      <para>jcr:score counted in next way - (lucene score)*1000f.</para>
+
+      <para>Score may be increased for specified nodes, see <ulink
+      url="Index Boost Value">Index Boost Value</ulink></para>
+
+      <para>Also, see an example <ulink url="JCR.Order by Score">JCR.Order by
+      Score</ulink></para>
+    </section>
+  </section>
+
+  <section>
+    <title>Query Examples</title>
+
+    <section>
+      <title>Query result settings</title>
+
+      <itemizedlist>
+        <listitem>
+          <para><link linkend="JCR.SetOffsetandSetLimit">Set Offset And
+          Limit</link></para>
+        </listitem>
+
+        <!--listitem>
+           <xi:include href="offset-and-limit.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+        </listitem-->
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>Type Constraints</title>
+
+      <itemizedlist>
+        <listitem>
+          <para><ulink url="JCR.Find All Nodes">JCR.Find All
+          Nodes</ulink></para>
+        </listitem>
+
+        <listitem>
+          <para><ulink url="JCR.Find Nodes by Primary Type">JCR.Find Nodes by
+          Primary Type</ulink></para>
+        </listitem>
+
+        <listitem>
+          <para><ulink url="JCR.Find Nodes by Mixin Type">JCR.Find Nodes by
+          Mixin Type</ulink></para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>Property Constraints</title>
+
+      <itemizedlist>
+        <listitem>
+          <para><ulink url="JCR.Property Comparison">JCR.Property
+          Comparison</ulink></para>
+        </listitem>
+
+        <listitem>
+          <para><ulink url="JCR.LIKE Constraint">JCR.LIKE
+          Constraint</ulink></para>
+        </listitem>
+
+        <listitem>
+          <para><ulink url="JCR.Escaping in LIKE Statements">JCR.Escaping in
+          LIKE Statements</ulink></para>
+        </listitem>
+
+        <listitem>
+          <para><ulink url="JCR.NOT Constraint">JCR.NOT
+          Constraint</ulink></para>
+        </listitem>
+
+        <listitem>
+          <para><ulink url="JCR.AND Constraint">JCR.AND
+          Constraint</ulink></para>
+        </listitem>
+
+        <listitem>
+          <para><ulink url="JCR.OR Constraint">JCR.OR
+          Constraint</ulink></para>
+        </listitem>
+
+        <listitem>
+          <para><ulink url="JCR.Property Existence Constraint">JCR.Property
+          Existence Constraint</ulink></para>
+        </listitem>
+
+        <listitem>
+          <para><ulink url="JCR.Upper and Lower Case Constraints">JCR.Upper
+          and Lower Case Constraints</ulink></para>
+        </listitem>
+
+        <listitem>
+          <para><ulink url="JCR.Date Property Comparison">JCR.Date Property
+          Comparison</ulink></para>
+        </listitem>
+
+        <listitem>
+          <para><ulink url="JCR.Node Name Constraint">JCR.Node Name
+          Constraint</ulink></para>
+        </listitem>
+
+        <listitem>
+          <para><ulink url="JCR.Multivalue Property Comparison">JCR.Multivalue
+          Property Comparison</ulink></para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>Path Constraint</title>
+
+      <itemizedlist>
+        <listitem>
+          <para><ulink url="JCR.Exact Path Constraint">JCR.Exact Path
+          Constraint</ulink></para>
+        </listitem>
+
+        <listitem>
+          <para><ulink url="JCR.Child Node Constraint">JCR.Child Node
+          Constraint</ulink></para>
+        </listitem>
+
+        <listitem>
+          <para><ulink url="JCR.Find All Descendant Nodes">JCR.Find All
+          Descendant Nodes</ulink></para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>Ordering specifing</title>
+
+      <itemizedlist>
+        <listitem>
+          <para><ulink url="JCR.Order by Property">JCR.Order by
+          Property</ulink></para>
+        </listitem>
+
+        <listitem>
+          <para><ulink url="JCR.Order by Descendant Node Property">JCR.Order
+          by Descendant Node Property</ulink></para>
+        </listitem>
+
+        <listitem>
+          <para><ulink url="JCR.Order by Score">JCR.Order by
+          Score</ulink></para>
+        </listitem>
+
+        <listitem>
+          <para><ulink url="JCR.Order by Path or Name">JCR.Order by Path or
+          Name</ulink></para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title><ulink url="Fulltext Search">Fulltext Search</ulink></title>
+
+      <itemizedlist>
+        <listitem>
+          <para><ulink url="JCR.Fulltext Search by Property">JCR.Fulltext
+          Search by Property</ulink></para>
+        </listitem>
+
+        <listitem>
+          <para><ulink
+          url="JCR.Fulltext Search by All Properties">JCR.Fulltext Search by
+          All Properties</ulink></para>
+        </listitem>
+
+        <listitem>
+          <para><ulink
+          url="Find nt:file document by content of child jcr:content node&gt;Aggregation rule">Find
+          nt:file document by content of child jcr:content node&gt;Aggregation
+          rule</ulink></para>
+        </listitem>
+
+        <listitem>
+          <para><ulink
+          url="How to set new Analyzer. Accent symblos ignoring&gt;JCR.Ignore Accent Symbols">How
+          to set new Analyzer. Accent symblos ignoring&gt;JCR.Ignore Accent
+          Symbols</ulink></para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>Indexing rules and additional features</title>
+
+      <itemizedlist>
+        <listitem>
+          <para><ulink url="Aggregation rule">Aggregation rule</ulink></para>
+        </listitem>
+
+        <listitem>
+          <para><ulink url="JCR.Search Result Highlighting">JCR.Search Result
+          Highlighting</ulink></para>
+        </listitem>
+
+        <listitem>
+          <para><ulink url="Index Boost Value">Index Boost
+          Value</ulink></para>
+        </listitem>
+
+        <listitem>
+          <para><ulink
+          url="Exclusion from the Node Scope Index&gt;JCR.Node Scope Index">Exclusion
+          from the Node Scope Index&gt;JCR.Node Scope Index</ulink></para>
+        </listitem>
+
+        <listitem>
+          <para><ulink
+          url="Regular expressions as property name in indexing rule &gt; Regexp Indexing Rule">Regular
+          expressions as property name in indexing rule &gt; Regexp Indexing
+          Rule</ulink></para>
+        </listitem>
+
+        <listitem>
+          <para><ulink url="Synonim Provider">Synonim Provider</ulink></para>
+        </listitem>
+
+        <listitem>
+          <para><ulink url="Spell Checking">Spell Checking</ulink></para>
+        </listitem>
+
+        <listitem>
+          <para><ulink url="Find Similar Nodes">Find Similar
+          Nodes</ulink></para>
+        </listitem>
+      </itemizedlist>
+    </section>
+  </section>
+
+  <section>
+    <title>Tips and tricks</title>
+
+    <itemizedlist>
+      <listitem>
+        <para><ulink url="Xpath and numbers in node names">Xpath and numbers
+        in node names</ulink></para>
+      </listitem>
+    </itemizedlist>
+  </section>
+</chapter>

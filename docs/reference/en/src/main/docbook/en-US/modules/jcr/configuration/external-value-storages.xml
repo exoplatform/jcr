@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="ch_external_value_storages">
-  <?dbhtml filename="ch-external-value-storages.html"?>
+<chapter id="JCR.ExternalValueStorages">
+  <?dbhtml filename="ch-jcr-external-value-storages.html"?>
 
   <title>External Value Storages</title>
 
@@ -13,11 +13,12 @@
     along with the JCR structure (i.e. Nodes and Properties). eXo JCR offers
     an additional option of storing JCR Values separately from Workspace Data
     container, which can be extremely helpful to keep Binary Large Objects
-    (BLOBs) for example (see [TODOBinary values processing link]).</para>
+    (BLOBs) for example (see [TODO<link linkend="TODO"> Binary values
+    processing</link>]).</para>
 
     <para>Value storage configuration is a part of Repository configuration,
     find more details <link
-    linkend="sect_repository_service_configuration">there</link>.</para>
+    linkend="JCR.ConfigurationPersister.ValueStoragePlugin">there</link>.</para>
 
     <para>Tree-based storage is recommended for most of cases. If you run an
     application on Amazon EC2 - the S3 option may be interesting for

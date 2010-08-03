@@ -537,7 +537,7 @@
     <para>Some databases supports hints to increase query performance (like
     Oracle, MySQL, etc). eXo JCR have separate Complex Query implementation
     for Orcale dialect, that uses query hints to increase performance for few
-    important queries. </para>
+    important queries.</para>
 
     <para>To enable this option put next configuration
     property:<programlisting>&lt;workspace name="ws" auto-init-root-nodetype="nt:unstructured"&gt;
@@ -547,7 +547,7 @@
       &lt;property name="force.query.hints" value="true" /&gt;
       ......</programlisting></para>
 
-    <para>Query hints enabled by default. </para>
+    <para>Query hints enabled by default.</para>
 
     <para>eXo JCR uses query hints only for Complex Query Oracle dialect. For
     all other dialects this parameter is ignored.</para>
@@ -556,8 +556,8 @@
   <section>
     <title>Notes for Microsoft Windows users</title>
 
-    <para>The current configuration of eXo JCR uses Apache DBCP connection
-    pool
+    <para>The current configuration of eXo JCR uses <ulink
+    url="http://commons.apache.org/dbcp/">Apache DBCP</ulink> connection pool
     (<classname>org.apache.commons.dbcp.BasicDataSourceFactory</classname>).
     It's possible to set a big value for maxActive parameter in
     <filename>configuration.xml</filename>. That means usage of lots of TCP/IP
