@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="KernelServiceConfigurationforBeginners">
-  <?dbhtml filename="ch-kenel-service-configuration-for-beginners.html"?>
+<chapter id="Kernel.ServiceConfigurationforBeginners">
+  <?dbhtml filename="ch-service-configuration-for-beginners.html"?>
 
   <title>Service Configuration for Beginners</title>
 
