@@ -115,12 +115,32 @@
   <xi:include href="jcr/backup/search-index-backup.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />    
 
-
-
   <!-- other  -->
 
   <xi:include href="jcr/statistics.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
+              
+  <xi:include href="jcr/other/acl.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />                            
+              
+  <xi:include href="jcr/other/acl-ext.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />                                          
+              
+  <xi:include href="jcr/other/link-producer.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+              
+  <xi:include href="jcr/other/binary-values-processing.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+              
+  <xi:include href="jcr/other/jcr-organization-service.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />              
+              
+              
+              
+              
+              
+  <xi:include href="jcr/other/jcr-resources.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />              
 
   <!-- data container configs -->
 

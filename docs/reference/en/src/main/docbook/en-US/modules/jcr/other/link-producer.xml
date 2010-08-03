@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="JCR.LinkProducerService">
+  <title>Link Producer Service</title>
+
+  <para>Link Producer Service - a simple service, which generates an .lnk
+  file, that is compatible with the Microsoft link file format. It is an
+  extension of the REST Framework library and is included into the WebDav
+  service. On dispatching a GET request the service generates the content of
+  an .lnk file, which points to a JCR resource via WebDav.</para>
+
+  <para>Link Producer has a simple configuration like described below:</para>
+
+  <programlisting>&lt;component&gt;
+  &lt;key&gt;org.exoplatform.services.webdav.lnkproducer.LnkProducer&lt;/key&gt;
+  &lt;type&gt;org.exoplatform.services.webdav.lnkproducer.LnkProducer&lt;/type&gt;
+&lt;/component&gt;</programlisting>
+
+  <para>When using JCR the resource can be addressed by WebDav reference
+  (href) like <emphasis role="bold"> <ulink
+  url="http://host:port/rest/jcr/repository/workspace/somenode/somefile.extention">http://host:port/rest/jcr/repository/workspace/somenode/somefile.extention</ulink>
+  </emphasis>, the link servlet must be called for this resource by several
+  hrefs, like <emphasis role="bold"> <ulink
+  url="http://localhost:8080/rest/lnkproducer/openit.lnk?path=/repository/workspace/somenode/somefile.extention">http://localhost:8080/rest/lnkproducer/openit.lnk?path=/repository/workspace/somenode/somefile.extention</ulink>
+  </emphasis></para>
+
+  <para>Please note, that when using the portal mode the REST servlet is
+  available using a reference (href) like <emphasis role="bold"> <ulink
+  url="http://localhost:8080/portal/rest/">http://localhost:8080/portal/rest/</ulink>...
+  </emphasis></para>
+
+  <para>The name of the .lnk file can be any. But for the best compatibility
+  it must be the same as the name of the JCR resource.</para>
+
+  <para>Here is a step by step sample of a use case of the link producer... At
+  first, type valid reference to the resource, using the link producer in your
+  browser's adress field:</para>
+
+  <mediaobject>
+    <imageobject>
+      <imagedata fileref="images/other/lnkproducer1.JPG" />
+    </imageobject>
+  </mediaobject>
+
+  <para>Internet Explorer will give a dialog window requesting to Open a file
+  or to Save it. Click on the Open button</para>
+
+  <mediaobject>
+    <imageobject>
+      <imagedata fileref="images/other/lnkproducer2.JPG" />
+    </imageobject>
+  </mediaobject>
+
+  <para>In Windows system an .lnk file will be downloaded and opened with the
+  application which is registered to open the files, which are pointed to by
+  the .lnk file. In case of a .doc file, Windows opens Microsoft Office Word
+  which will try to open a remote file (test0000.doc). Maybe it will be
+  necessary to enter USERNAME and PASSWORD.</para>
+
+  <mediaobject>
+    <imageobject>
+      <imagedata fileref="images/other/lnkproducer3.JPG" />
+    </imageobject>
+  </mediaobject>
+
+  <para>Next, you will be able to edit the file in Microsoft Word.</para>
+
+  <mediaobject>
+    <imageobject>
+      <imagedata fileref="images/other/lnkproducer4.JPG" />
+    </imageobject>
+  </mediaobject>
+
+  <para>The Link Producer is necessary for opening/editing and then saving the
+  remote files in Microsoft Office Word, without any further updates.</para>
+
+  <para>Also the Link Producer can be referenced to from an HTML page. If page
+  contains code like</para>
+
+  <programlisting>&lt;a href="http://localhost:8080/rest/lnkproducer/openit.lnk?path=/repository/workspace/somenode/somefile.extention"&gt;somefile.extention&lt;/a&gt;</programlisting>
+
+  <para>the file "somefile.extention" will open directly.</para>
+</chapter>

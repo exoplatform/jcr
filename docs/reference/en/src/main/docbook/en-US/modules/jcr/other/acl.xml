@@ -1,0 +1,407 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="JCR.AccessControl">
+  <title>Access Control</title>
+
+  <para>eXo JCR is a complete implementation of the standard JSR 170: <ulink
+  url="Content Repository for Java TM Technology API &gt; http://jcp.org/en/jsr/detail?id=170">Content
+  Repository for Java TM Technology API</ulink>, including <emphasis
+  role="bold">Level 1, Level 2 and Additional Features</emphasis> as is
+  specified in the JCR Specification.</para>
+
+  <section>
+    <title>Standard Action Permissions</title>
+
+    <para>The JCR specification (JSR 170), does not have many requirements
+    about Access Control. It only requires the implementation of the
+    Session.checkPermission(String absPath, String actions) method. This
+    method checks if a current session has permissions to perform some actions
+    on absPath:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>absPath : the string representation of a JCR absolute
+        path</para>
+      </listitem>
+
+      <listitem>
+        <para>actions : eXo JCR interprets this string as a comma separated
+        list of individual action names such as the 4 types defined in JSR 170
+        :</para>
+
+        <itemizedlist>
+          <listitem>
+            <para><emphasis role="bold">add_node</emphasis> : Permission to
+            add a node</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis role="bold">set_property</emphasis> : Permission
+            to set a property</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis role="bold">remove</emphasis> : Permission to
+            remove an item (node or property)</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis role="bold">read</emphasis> : Permission to
+            retrieve a node or read a property value</para>
+          </listitem>
+        </itemizedlist>
+      </listitem>
+    </itemizedlist>
+
+    <para>Examples :</para>
+
+    <para>session.checkPermission("/Groups/organization",
+    "add_node,set_property") will check if the session is allowed to add a
+    child node to "organization" and to modify its properties. If one the two
+    permissions is denied an AccessDeniedException is thrown.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>session.checkPermission("/Groups/organization/exo:name",
+        "read,set_property") will check if the session is allowed to read and
+        change the "exo:name" property of the "organization" node.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>eXo Access Control</title>
+
+    <para>The JSR170 specification does not define how permissions are managed
+    or checked. So eXo JCR has implemented its own proprietary extension to
+    manage and check permissions on nodes. In essence, this extension uses an
+    <ulink url="http://en.wikipedia.org/wiki/Access_control_list">Access
+    Control List (ACL)</ulink> policy model applied to eXo Organization model
+    (see eXo Platform Organization Service).</para>
+
+    <section>
+      <title>Principal and Identity</title>
+
+      <para>At the heart of eXo Access Control, is the notion of the <emphasis
+      role="bold">identity</emphasis> concept. Access to JCR is made through
+      sessions acquired against a repository. Sessions can be authenticated
+      through the standard (but optional) repository login mechanism. Each
+      session is associated with a <emphasis role="bold">principal</emphasis>.
+      The principal is an authenticated user or group that may act on JCR
+      data. The identity is a string identifying this <emphasis
+      role="bold">group or user</emphasis>.</para>
+
+      <para>There are 3 reserved identities that have special meanings in eXo
+      JCR:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para><emphasis role="bold">any</emphasis> : represents any
+          authenticated session.</para>
+        </listitem>
+
+        <listitem>
+          <para><emphasis role="bold">anonim</emphasis> : represents a
+          principal for non authenticated sessions. (No error, it's really
+          "\_\_anonim".)</para>
+        </listitem>
+
+        <listitem>
+          <para><emphasis role="bold">system</emphasis> : represents a
+          principal for system sessions, typically used for administrative
+          purposes. System session have full access (all permissions) to all
+          nodes; therefore be careful when working with system
+          sessions.</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>ACL</title>
+
+      <para>An access control list (ACL) is a list of permissions attached to
+      an object. An ACL specifies which users, groups or system processes are
+      granted access to JCR nodes, as well as what operations are allowed to
+      be performed on given objects.</para>
+
+      <para>eXo JCR Access Control is based on two facets applied to nodes
+      :</para>
+
+      <itemizedlist>
+        <listitem>
+          <para><emphasis role="bold">Privilegeable</emphasis> : Means that
+          the user or group (also called principal) needs the appropriate
+          privileges to access to this node. The privileges are defined as
+          (positive) permissions that are granted to users or groups.</para>
+        </listitem>
+
+        <listitem>
+          <para><emphasis role="bold">Ownable</emphasis> : The node has an
+          <emphasis role="bold">owner</emphasis>. The owner has always
+          <emphasis role="bold">full access</emphasis> (all permissions) to
+          the node, independent of the privilegeable facet.</para>
+        </listitem>
+      </itemizedlist>
+
+      <section>
+        <title>Privilegeable</title>
+
+        <para>A privilegeable node defines the permissions required for
+        actions on this node. For this purpose it contains an ACL.</para>
+
+        <para>At JCR level, this is implemented by an <emphasis
+        role="bold">exo:privilegeable</emphasis> mixin.</para>
+
+        <programlisting>&lt;nodeType name="exo:privilegeable" isMixin="true" hasOrderableChildNodes="false" primaryItemName=""&gt;
+   &lt;propertyDefinitions&gt;
+      &lt;propertyDefinition name="exo:permissions" requiredType="Permission" autoCreated="true" mandatory="true"
+                          onParentVersion="COPY" protected="true" multiple="true"&gt;
+         &lt;valueConstraints/&gt;  
+      &lt;/propertyDefinition&gt;        
+   &lt;/propertyDefinitions&gt;  
+&lt;/nodeType&gt;</programlisting>
+
+        <para>A privilegeable node can have multiple exo:permissions values.
+        The type of these values is the eXo JCR specific type Permission. The
+        Permission type contains a list of ACL.</para>
+
+        <para>The possible values are corresponding to JCR standard
+        actions:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para><emphasis role="bold">read</emphasis>: The node or its
+            properties can be read.</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis role="bold">remove</emphasis>: The node or its
+            properties can be removed.</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis role="bold">add_node</emphasis> : Child nodes can
+            be added to this node.</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis role="bold">set_property</emphasis> : The node's
+            properties can be modified, added or removed.</para>
+          </listitem>
+        </itemizedlist>
+      </section>
+
+      <section>
+        <title>Ownable</title>
+
+        <para>An ownable node defines an owner identity. The <emphasis
+        role="bold">owner</emphasis> has always <emphasis role="bold">full
+        privileges</emphasis>. These privileges are independent of the
+        permissions set by exo:permissions. At JCR level, the ownership is
+        implemented by an <emphasis role="bold">exo:owneable</emphasis> mixin.
+        This mixin holds an owner property.</para>
+
+        <programlisting>&lt;nodeType name="exo:owneable" isMixin="true" hasOrderableChildNodes="false" primaryItemName=""&gt;
+   &lt;propertyDefinitions&gt;
+      &lt;propertyDefinition name="exo:owner" requiredType="String" autoCreated="true" mandatory="true" onParentVersion="COPY"
+                          protected="true" multiple="false"&gt;
+         &lt;valueConstraints/&gt;
+      &lt;/propertyDefinition&gt;        
+   &lt;/propertyDefinitions&gt;
+&lt;/nodeType&gt;</programlisting>
+
+        <para>The exo:owner property value contains exactly one identity
+        string value. There might be a long list of different permissions for
+        different identities (user or groups). All permissions are always
+        positive permissions; denials are not possible. When checking for a
+        permission of an action it's therefore perfectly sufficient that the
+        principal of a session belongs to one the groups, to who the concerned
+        action is granted.</para>
+      </section>
+
+      <section>
+        <title>ACL Inheritance</title>
+
+        <para>In order to grant or deny access to a node, eXo JCR applies a
+        privilege resolving logic at node access time.</para>
+
+        <para>If a node is <emphasis role="bold">privilegeable</emphasis>, the
+        node's ACL is used exclusively. If the ACL does not match the
+        principal's identity the principal has no access (except if he is the
+        owner of the node).</para>
+
+        <para>Non-privilegeable nodes inherit permissions from their parent
+        node. If the parent node isn't privilegeable either, the resolving
+        logic looks further up the node hierarchy and stops with the first
+        privilegeable ancestor of the current node. All nodes potentially
+        inherit from the <emphasis role="bold">workspace</emphasis> root
+        node.</para>
+
+        <para>The owner of a node is inherited following the same logic: If
+        the node has no owner, the owner information of the closest owneable
+        ancestor is inherited.</para>
+
+        <para>This inheritance is implemented by browsing up the node's
+        hierarchy. At access time, if the node does not have owner or
+        permissions the system looks up into the node's ancestor hierarchy for
+        the <emphasis role="bold">first</emphasis> ACL.</para>
+      </section>
+
+      <section>
+        <title>Default ACL of the root node</title>
+
+        <para>When no matching ACL is found in the ancestor hierarchy, the
+        system may end up looking at the root node's ACL. As ACL are optional,
+        even for the root node, if the root node has no ACL, the following
+        rule is ultimately applied to resolve privileges :</para>
+
+        <itemizedlist>
+          <listitem>
+            <para><emphasis role="bold">any</emphasis> identity (any
+            authenticated session) is granted all permissions</para>
+          </listitem>
+        </itemizedlist>
+      </section>
+    </section>
+
+    <section>
+      <title>Notes</title>
+
+      <para><emphasis role="bold">Access Control nodetypes are not
+      extendible</emphasis> The access control mechanism works for <emphasis
+      role="bold">exo:owneable</emphasis> and <emphasis
+      role="bold">exo:privilegeable</emphasis> nodetypes only, not for their
+      subtypes! So you can NOT extend those nodetypes.</para>
+
+      <para><emphasis role="bold">Autocreation</emphasis> By default, newly
+      created nodes are neither <emphasis
+      role="bold">exo:privilegeable</emphasis> nor <emphasis
+      role="bold">exo:owneable</emphasis> but it is possible to configure the
+      repository to auto-create <emphasis
+      role="bold">exo:privilegeable</emphasis> or/and <emphasis
+      role="bold">exo:owneable</emphasis> thanks to eXo's JCR interceptors
+      extension (see <ulink
+      url="http://wiki.exoplatform.org/xwiki/bin/view/JCR/JCR+Extensions">http://wiki.exoplatform.org/xwiki/bin/view/JCR/JCR+Extensions</ulink>)</para>
+
+      <para><emphasis role="bold">OR-based Privilege Inheritance</emphasis>
+      Note, that eXo's Access Control implementation supports an privilege
+      inheritance that follows a strategy of either...or and has only an ALLOW
+      privilege mechanism (there is no DENY feature). This means that a
+      session is allowed to perform some operation on some node if its
+      identity has an appropriate permission assigned to this node. Only if
+      there is no exo:permission property assigned to the node itself, the
+      permissions of the node's ancestors are used.</para>
+    </section>
+
+    <section>
+      <title>Example</title>
+
+      <section>
+        <title>XML Example</title>
+
+        <para>In the following example, you see a node named "Politics" which
+        contains two nodes named "Cats" and "Dogs".</para>
+
+        <para>#info("These examples are exported from eXo DMS using the
+        \"document view\" representation of JCR. Each value of a multivalue
+        property is separated by a whitespace, each whitespace is escaped by
+        <emphasis>x0020</emphasis>.")</para>
+
+        <programlisting>&lt;Politics  jcr:primaryType="nt:unstructured" jcr:mixinTypes="exo:owneable exo:datetime exo:privilegeable" exo:dateCreated="2009-10-08T18:02:43.687+02:00" 
+exo:dateModified="2009-10-08T18:02:43.703+02:00" 
+exo:owner="root" 
+exo:permissions="any_x0020_read *:/platform/administrators_x0020_read *:/platform/administrators_x0020_add_node *:/platform/administrators_x0020_set_property *:/platform/administrators_x0020_remove"&gt;
+
+&lt;Cats jcr:primaryType="exo:article" 
+jcr:mixinTypes="exo:owneable" 
+exo:owner="marry" 
+exo:summary="The_x0020_secret_x0020_power_x0020_of_x0020_cats_x0020_influences_x0020_the_x0020_leaders_x0020_of_x0020_the_x0020_world." 
+exo:text="" exo:title="Cats_x0020_rule_x0020_the_x0020_world" /&gt;
+
+&lt;Dogs jcr:primaryType="exo:article" 
+jcr:mixinTypes="exo:privilegeable" 
+exo:permissions="manager:/organization_x0020_read manager:/organization_x0020_set_property"
+exo:summary="Dogs" 
+exo:text="" exo:title="Dogs_x0020_are_x0020_friends" /&gt;
+
+&lt;/Politics&gt;</programlisting>
+
+        <para>The "Politics" node is <emphasis
+        role="bold">exo:owneable</emphasis> and <emphasis
+        role="bold">exo:privilegeable</emphasis>. It has both an <emphasis
+        role="bold">exo:owner</emphasis> property and also an <emphasis
+        role="bold">exo:permissions</emphasis> property. There is an <emphasis
+        role="bold">exo:owner="root"</emphasis> property so that the user root
+        is the owner. In the exo:permissions value you can see the ACL, a list
+        of access controls. In this example the group <emphasis
+        role="bold">\</emphasis>:/platform/administrators* has all rights on
+        this node (remember that the "\*" means any kind of membership/role).
+        Furthermore <emphasis role="bold">any</emphasis> has the read
+        permission.</para>
+
+        <para>As you can see in the jcr:mixinTypes property the "Cats" node is
+        <emphasis role="bold">exo:owneable</emphasis>; hence there is an
+        <emphasis role="bold">exo:owner="marry"</emphasis> property so that
+        the user marry is the owner. The "Cats" node is <emphasis
+        role="bold">not exo:privilegeable</emphasis> and has <emphasis
+        role="bold">no exo:permissions</emphasis>. In this case the <emphasis
+        role="bold">inheritance mechanism</emphasis> enters the game: The
+        "Cats" node has the same permissions as "Politics" node.</para>
+
+        <para>Finally the "Dogs" node is also a child node of "Politics". This
+        node is <emphasis role="bold">not exo:owneable</emphasis> and inherits
+        the owner of the "Politics" node (which is the user root). Otherwise
+        "Dogs" is <emphasis role="bold">exo:privilegeable</emphasis> and does
+        therefore have its own <emphasis
+        role="bold">exo:permissions</emphasis>. That means only the users
+        having a "manager" role in the group "/organization" and the user
+        "root" have the rights to access this node - all others have no access
+        rights.</para>
+      </section>
+
+      <section>
+        <title>Inheritance Examples</title>
+
+        <para>Here is an example showing the accessibility of two nodes (to
+        show inheritance) for two sample users named <emphasis
+        role="bold">manager</emphasis> and <emphasis
+        role="bold">user</emphasis>:</para>
+
+        <para>The "+" symbol means that there is a child node
+        "exo:owneable".</para>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="images/other.acl.gif" />
+          </imageobject>
+        </mediaobject>
+      </section>
+    </section>
+
+    <section>
+      <title>Java API</title>
+
+      <para>eXo JCR's ExtendedNode interface which extends javax.jcr.Node
+      interface provides additional methods for Access Control
+      management.</para>
+
+      <para>{table} Method signature |Description void
+      setPermissions(Map\&lt;String, String\ <ulink url="\">\</ulink>\&gt;
+      permissions)| Assigns a set of Permissions to a node void
+      setPermission(String identity, String\ <ulink url="\">\</ulink>
+      permission)| Assigns some Identity's Permission to a node void
+      removePermission(String identity)| Remove Identity's Permission void
+      removePermission(String identity, String permission)|Remove the
+      specified permission for a particular identity void clearACL()| Clears
+      the current ACL so it becomes default AccessControlList getACL()|
+      Returns the current ACL void checkPermission(String actions)| Checks
+      Permission (AccessDeniedException will be thrown if denied)
+      {table}</para>
+
+      <para>The "identity" parameter is the user or group name. The
+      permissions are the literal strings of the standard action permissions
+      (add_node, set_property, remove, read.</para>
+    </section>
+  </section>
+</chapter>

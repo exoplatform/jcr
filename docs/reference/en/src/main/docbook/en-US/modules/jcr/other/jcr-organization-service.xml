@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="JCR.Organizationservice">
+  <title>JCR Organization service</title>
+
+  <para>This is an implementation of the exo.core.component.organization.api
+  API. The information will be stored in the root node /exo:organization of
+  the workspace. The workspace name has to be configured in the configuration
+  file (see below).</para>
+
+  <itemizedlist>
+    <listitem>
+      <para>You need to comment out the previous initialization of the
+      organization service, e.g. DummyOrganizationService</para>
+    </listitem>
+  </itemizedlist>
+
+  <programlisting>&lt;!--component&gt;
+   &lt;type&gt;org.exoplatform.services.organization.impl.mock.DummyOrganizationService&lt;/type&gt;
+&lt;/component--&gt;</programlisting>
+
+  <itemizedlist>
+    <listitem>
+      <para>Add jcr organization service</para>
+    </listitem>
+  </itemizedlist>
+
+  <programlisting>&lt;component&gt;
+   &lt;key&gt;org.exoplatform.services.organization.OrganizationService&lt;/key&gt;
+   &lt;type&gt;org.exoplatform.services.jcr.ext.organization.JCROrganizationServiceImpl&lt;/type&gt;
+   &lt;init-params&gt;
+      &lt;value-param&gt;
+         &lt;name&gt;storage-workspace&lt;/name&gt;
+         &lt;description&gt;Workspace in default repository where organization storage will be created&lt;/description&gt;
+         &lt;value&gt;ws&lt;/value&gt;
+      &lt;/value-param&gt;
+   &lt;/init-params&gt;
+&lt;/component&gt;</programlisting>
+
+  <para>where storage-workspace is the name of the workspace in the default
+  repository where the organization storage will be created.</para>
+
+  <para>Sice eXo JCR 1.11 you can add two new params:</para>
+
+  <programlisting>&lt;value-param&gt;
+   &lt;name&gt;repository&lt;/name&gt;
+   &lt;description&gt;The name of repository where organization storage will be created&lt;/description&gt;
+   &lt;value&gt;db1&lt;/value&gt;
+&lt;/value-param&gt;
+&lt;value-param&gt;
+   &lt;name&gt;storage-path&lt;/name&gt;
+   &lt;description&gt;The relative path where organization storage will be created&lt;/description&gt;
+   &lt;value&gt;/exo:organization&lt;/value&gt;
+&lt;/value-param&gt;</programlisting>
+
+  <para>where repository is the name of the repository where the organization
+  storage will be created&lt;br&gt; storage-path - the relative path to the
+  stored data&lt;br&gt;</para>
+
+  <para>You should also read how to use the <ulink
+  url="Core.Organization Service Initializer">Core.Organization Service
+  Initializer</ulink>.</para>
+</chapter>
