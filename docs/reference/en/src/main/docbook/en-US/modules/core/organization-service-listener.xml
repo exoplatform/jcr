@@ -2,6 +2,7 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "hp://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="Core.OrganizationListener">
+  <?dbhtml filename="ch-organization-service-listener.html"?>
   <title>Organization Listener</title>
 
   <section>

@@ -2,6 +2,7 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="Core.LDAPConfiguration">
+  <?dbhtml filename="ch-ldap-configuration.html"?>
   <title>LDAP Configuration</title>
 
   <section>

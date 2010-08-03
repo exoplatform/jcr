@@ -2,6 +2,7 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="Core.DatabaseConfigurationforHibernate">
+  <?dbhtml filename="ch-db-configuration-hibernate.html"?>
   <title>Database Configuration for Hibernate</title>
 
   <para>As usual, it is quite simple to use our configuration XML syntax to
