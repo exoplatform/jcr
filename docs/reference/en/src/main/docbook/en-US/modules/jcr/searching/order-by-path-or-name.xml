@@ -24,8 +24,8 @@
   </itemizedlist>
 
   <para>If no order specification is supplied in the query statement,
-  implementations may support document order on the result nodes (see 6.6.4.2
-  Document Order). And its sorted by order number.</para>
+  implementations may support document order on the result nodes (see jsr-170
+  / 6.6.4.2 Document Order). And its sorted by order number.</para>
 
   <para>By default (if query do not contains any ordering statements) result
   nodes is sorted by document order.</para>

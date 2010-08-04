@@ -95,8 +95,13 @@
   <xi:include href="jcr/searching/jcr-query-usecases.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />    
 
+
   <xi:include href="jcr/searching/searching-repository-content.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />    
+
+  <xi:include href="jcr/searching/fulltext-search-and-settings.xml"
+                  xmlns:xi="http://www.w3.org/2001/XInclude" />
+
               
   <!-- protocols -->
   

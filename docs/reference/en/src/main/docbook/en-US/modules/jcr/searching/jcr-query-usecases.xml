@@ -224,17 +224,18 @@ while(rowIterator.hasNext()){
     </section>
 
     <section>
-      <title><link linkend="???">Fulltext Search</link></title>
+      <title><link linkend="JCR.FulltextSearchAndSettings">Fulltext
+      Search</link></title>
 
       <itemizedlist>
         <listitem>
-          <para><link linkend="???">JCR.Fulltext Search by
-          Property</link></para>
+          <para><link linkend="JCR.FulltextSearchByProperty">Fulltext Search
+          by Property</link></para>
         </listitem>
 
         <listitem>
-          <para><link linkend="???">JCR.Fulltext Search by All
-          Properties</link></para>
+          <para><link linkend="JCR.FulltextSearchByAllProperties">Fulltext
+          Search by All Properties</link></para>
         </listitem>
 
         <listitem>
