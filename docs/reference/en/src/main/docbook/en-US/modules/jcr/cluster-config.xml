@@ -42,10 +42,10 @@
 
         <listitem>
           <para>Ensure that you use JBossTS <link
-          linkend="ch_transaction_service">Transaction Service</link> and
-          JBossCache <link
-          linkend="ch-jbossts-tranasction-service">Transaction Manager</link>.
-          Your exo-configuration.xml must contain such parts:</para>
+          linkend="Kernel.TransactionService">Transaction Service</link> and
+          JBossCache <link linkend="JCR.JBossTransactionsService">Transaction
+          Manager</link>. Your exo-configuration.xml must contain such
+          parts:</para>
 
           <programlisting>&lt;component&gt;
    &lt;key&gt;org.jboss.cache.transaction.TransactionManagerLookup&lt;/key&gt;
@@ -79,10 +79,9 @@
         </listitem>
 
         <listitem>
-          <para>Try accessing <ulink
-          url="http://localhost:8080/browser">http://localhost:8080/browser</ulink>
-          with root/exo as login/password if you have done everything right,
-          you'll get access to repository browser.</para>
+          <para>Try accessing <uri>http://localhostu:8080/browser</uri> with
+          root/exo as login/password if you have done everything right, you'll
+          get access to repository browser.</para>
         </listitem>
       </orderedlist>
     </section>
@@ -93,9 +92,9 @@
       <itemizedlist>
         <listitem>
           <para>To manually configure repository create a new configuration
-          file (f.e. exo-jcr-configuration.xml). For details see <ulink
-          url="http://wiki.exoplatform.org/xwiki/bin/view/JCR/#HConfiguration">JCR
-          Configuration</ulink>. Your configuration must look like:</para>
+          file (f.e. exo-jcr-configuration.xml). For details see <link
+          linkend="JCR.eXoJCRconfiguration">JCR Configuration</link>. Your
+          configuration must look like:</para>
 
           <programlisting>&lt;repository-service default-repository="repository1"&gt;
    &lt;repositories&gt;

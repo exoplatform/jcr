@@ -48,7 +48,7 @@
     volatile index by timeout. Volatile index timeout configured by
     "max-volatile-time" paremeter.</para>
 
-    <para>See more about <link linkend="ch_search_configuration">Search
+    <para>See more about <link linkend="JCR.SearchConfiguration">Search
     Configuration</link>.</para>
 
     <para>Common scheme of Shared Index<mediaobject>
@@ -188,7 +188,7 @@
 &lt;/jbosscache&gt;</programlisting></para>
 
       <para>See more about template configurations <link
-      linkend="ch_jbosscache_config_templates">here</link>.</para>
+      linkend="JCR.JBossCacheConfigurationTemplates">here</link>.</para>
     </section>
   </section>
 </chapter>
