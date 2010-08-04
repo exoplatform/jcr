@@ -203,20 +203,22 @@ while(rowIterator.hasNext()){
 
       <itemizedlist>
         <listitem>
-          <para><link linkend="???">JCR.Order by Property</link></para>
-        </listitem>
-
-        <listitem>
-          <para><link linkend="???">JCR.Order by Descendant Node
+          <para><link linkend="JCR.OrderByProperty">Order by
           Property</link></para>
         </listitem>
 
         <listitem>
-          <para><link linkend="???">JCR.Order by Score</link></para>
+          <para><link linkend="JCR.OrderByDescendant">Order by Descendant Node
+          Property</link></para>
         </listitem>
 
         <listitem>
-          <para><link linkend="???">JCR.Order by Path or Name</link></para>
+          <para><link linkend="JCR.OrderByScore">Order by Score</link></para>
+        </listitem>
+
+        <listitem>
+          <para><link linkend="JCR.OrderByPathOrName">Order by Path or
+          Name</link></para>
         </listitem>
       </itemizedlist>
     </section>
