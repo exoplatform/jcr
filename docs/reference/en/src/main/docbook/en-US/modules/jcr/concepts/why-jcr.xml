@@ -3,6 +3,7 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="JCR.WhyuseJCR">
   <?dbhtml filename="ch-why-jcr.html"?>
+
   <title>Why use JCR?</title>
 
   <section>
@@ -79,23 +80,21 @@
     <para>In order to understand the theory of JCR and the API please read
     some external documents about this standard:</para>
 
-    <para>* Tom Wheeler, <ulink
-    url="http://www.tomwheeler.com/java_content_repository_tomwheeler_20071007.pdf">The
-    Java Content Repository</ulink> (2007)</para>
+    <itemizedlist>
+      <listitem>
+        <para>Roy T. Fielding, <ulink
+        url="http://www.day.com/content/dam/day/whitepapers/JSR_170_White_Paper.pdf">JSR
+        170 Overview: Standardizing the Content Repository Interface</ulink>
+        (March 13, 2005)</para>
+      </listitem>
 
-    <para>* Roy T. Fielding, <ulink
-    url="http://www.day.com/content/dam/day/whitepapers/JSR_170_White_Paper.pdf">JSR
-    170 Overview: Standardizing the Content Repository Interface</ulink>
-    (March 13, 2005)</para>
-
-    <para>* David Nuescheler and Janus Boye, <ulink
-    url="http://www.cmswatch.com/Feature/123">JSR-170 What's in it for
-    me?</ulink> (April 20, 2005)</para>
-
-    <para>* Benjamin Mestrallet, Tuan Nguyen, Gennady Azarenkov, Francois
-    Moron and Brice Revenant <ulink
-    url="http://www.theserverside.com/tt/articles/article.tss?l=eXoPlatform2">eXo
-    Platform v2, Portal, JCR, ECM, Groupware and Business
-    Intelligence.</ulink> (January 2006)</para>
+      <listitem>
+        <para>Benjamin Mestrallet, Tuan Nguyen, Gennady Azarenkov, Francois
+        Moron and Brice Revenant <ulink
+        url="http://www.theserverside.com/tt/articles/article.tss?l=eXoPlatform2">eXo
+        Platform v2, Portal, JCR, ECM, Groupware and Business
+        Intelligence.</ulink> (January 2006)</para>
+      </listitem>
+    </itemizedlist>
   </section>
 </chapter>

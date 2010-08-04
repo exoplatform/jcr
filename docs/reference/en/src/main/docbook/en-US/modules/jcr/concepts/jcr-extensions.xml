@@ -3,6 +3,7 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="JCR.Extensions">
   <?dbhtml filename="ch-jcr-extensions.html"?>
+
   <title>JCR Extensions</title>
 
   <section>
@@ -158,18 +159,15 @@
   <section>
     <title>Related Pages</title>
 
-    <para>Access Control extension</para>
+    <para><link linkend="JCR.AccessControlExtension">Access Control
+    extension</link></para>
 
-    <para>Auditing Backup service CIFS(SMB)</para>
+    <para><link linkend="JCR.Organizationservice">Organization
+    Service</link></para>
 
-    <para>Clustering Groovy REST Services </para>
+    <para><link linkend="JCR.RegistryService">Registry Service</link></para>
 
-    <para>Metadata Extensions </para>
-
-    <para>Organization Service </para>
-
-    <para>Registry Service </para>
-
-    <para>REST Groovy services</para>
+    <para><link linkend="JCR.RESTServicesOnGroovy">REST Groovy
+    services</link></para>
   </section>
 </chapter>

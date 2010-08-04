@@ -3,6 +3,7 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="JCR.UsingJCR">
   <?dbhtml filename="ch-jcr-usage.html"?>
+
   <title>Using JCR</title>
 
   <section>
@@ -31,9 +32,8 @@
   Repository repository = repositoryService.getCurrentRepository();</programlisting>
 
       <para>* Using JNDI as specified in JSR-170. This way you have to
-      configure the reference (see eXo <ulink
-      url="JNDI Naming configuration&gt;Core.JNDI Naming">JNDI Naming
-      configuration&gt;Core.JNDI Naming</ulink> )</para>
+      configure the reference (see eXo <link linkend="Kernel.JNDINaming"> JNDI
+      Naming configuration </link> )</para>
 
       <programlisting>  Context ctx = new InitialContext();
   Repository repository =(Repository) ctx.lookup("repositoryName");</programlisting>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id = "JCR.Introduction">
+<chapter id="JCR.Introduction">
   <?dbhtml filename="ch-intro.html"?>
 
   <title>Introduction in eXoJCR</title>
@@ -12,8 +12,9 @@
     <para>Java Content Repository API as well as other Java language related
     standards is created within the Java Community Process http://jcp.org/ as
     a result of collaboration of an expert group and the Java community and
-    known as JSR-170 (Java Specification Request)
-    http://www.jcp.org/en/jsr/detail?id=170.</para>
+    known as <ulink
+    url="http://www.jcp.org/en/jsr/detail?id=170">JSR-170</ulink> (Java
+    Specification Request).</para>
 
     <section>
       <title>Data model</title>
