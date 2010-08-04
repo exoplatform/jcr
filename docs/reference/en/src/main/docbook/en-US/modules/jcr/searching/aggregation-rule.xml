@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="JCR.AggregationRule">
+  <title>Find nt:file node by content of child jcr:content node</title>
+
+  <para>The node type nt:file represents a file. It requires a single child
+  node, called jcr:content. This node type represents images and other binary
+  content in a JCRWiki entry. The node type of jcr:conent is nt:resource which
+  represents the actual content of a file.</para>
+
+  <para>Find node with the primary type is 'nt:file' and which whose
+  'jcr:content' child node contains "cats".</para>
+
+  <para>Normally, we can't find nodes (in our case) using just JCR SQL or
+  XPath queries. But we can configure indexing so that nt:file aggregates
+  jcr:content child node.</para>
+
+  <para>So, change indexing-configuration.xml:</para>
+
+  <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;!DOCTYPE configuration SYSTEM "http://www.exoplatform.org/dtd/indexing-configuration-1.2.dtd"&gt;
+&lt;configuration xmlns:jcr="http://www.jcp.org/jcr/1.0"
+               xmlns:nt="http://www.jcp.org/jcr/nt/1.0"&gt;
+    &lt;aggregate primaryType="nt:file"&gt;
+        &lt;include&gt;jcr:content&lt;/include&gt;
+        &lt;include&gt;jcr:content/*&lt;/include&gt;
+        &lt;include-property&gt;jcr:content/jcr:lastModified&lt;/include-property&gt;
+    &lt;/aggregate&gt;
+&lt;/configuration&gt;</programlisting>
+
+  <para>Now the content of 'nt:file' and 'jcr:content' ('nt:resource') nodes
+  are concatenated in a single Lucene document. Then, we can make a fulltext
+  search query by content of 'nt:file'; this search includes the content of
+  child 'jcr:content' node.</para>
+
+  <section>
+    <title>Repository structure:</title>
+
+    <para>Repository contains different nt:file nodes.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>root</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>document1 (nt:file)</para>
+
+            <itemizedlist>
+              <listitem>
+                <para>jcr:content (nt:resource) jcr:data = "The quick brown
+                fox jumps over the lazy dog."</para>
+              </listitem>
+            </itemizedlist>
+          </listitem>
+
+          <listitem>
+            <para>document2 (nt:file)</para>
+
+            <itemizedlist>
+              <listitem>
+                <para>jcr:content (nt:resource) jcr:data = "Dogs do not like
+                cats."</para>
+              </listitem>
+            </itemizedlist>
+          </listitem>
+
+          <listitem>
+            <para>document3 (nt:file)</para>
+
+            <itemizedlist>
+              <listitem>
+                <para>jcr:content (nt:resource) jcr:data = "Cats jumping
+                high."</para>
+              </listitem>
+            </itemizedlist>
+          </listitem>
+        </itemizedlist>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Query execution</title>
+
+    <para><emphasis role="bold">SQL</emphasis></para>
+
+    <programlisting>// make SQL query
+QueryManager queryManager = workspace.getQueryManager();
+// create query
+String sqlStatement = "SELECT * FROM nt:file WHERE CONTAINS(*,'cats')";
+Query query = queryManager.createQuery(sqlStatement, Query.SQL);
+// execute query and fetch result
+QueryResult result = query.execute();</programlisting>
+
+    <para><emphasis role="bold">XPath</emphasis></para>
+
+    <programlisting>// make XPath query
+QueryManager queryManager = workspace.getQueryManager();
+// create query
+String xpathStatement = "//element(*,nt:file)[jcr:contains(.,'cats')]";
+Query query = queryManager.createQuery(xpathStatement, Query.XPATH);
+// execute query and fetch result
+QueryResult result = query.execute();</programlisting>
+  </section>
+
+  <section>
+    <title>Fetching the result</title>
+
+    <para>Let's get nodes:</para>
+
+    <programlisting>NodeIterator it = result.getNodes();
+
+if(it.hasNext())
+{
+   Node findedNode = it.nextNode();
+}</programlisting>
+
+    <para>NodeIterator will return "document2" and "document3".</para>
+
+    <para>We can also get a table:</para>
+
+    <programlisting>String[] columnNames = result.getColumnNames();
+RowIterator rit = result.getRows();
+while (rit.hasNext())
+{
+   Row row = rit.nextRow();
+   // get values of the row
+   Value[] values = row.getValues();
+}</programlisting>
+
+    <para>Table content is:</para>
+
+    <table>
+      <title>Table content</title>
+
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>jcr:path</entry>
+
+            <entry>jcr:score</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry>/document2</entry>
+
+            <entry>1030</entry>
+          </row>
+
+          <row>
+            <entry>/document3</entry>
+
+            <entry>1030</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </section>
+</section>

@@ -239,17 +239,13 @@ while(rowIterator.hasNext()){
         </listitem>
 
         <listitem>
-          <para><ulink
-          url="Find nt:file document by content of child jcr:content node&gt;Aggregation rule">Find
-          nt:file document by content of child jcr:content node&gt;Aggregation
-          rule</ulink></para>
+          <para><link linkend="JCR.AggregationRule">Find nt:file document by
+          content of child jcr:content node</link></para>
         </listitem>
 
         <listitem>
-          <para><ulink
-          url="How to set new Analyzer. Accent symblos ignoring&gt;JCR.Ignore Accent Symbols">How
-          to set new Analyzer. Accent symblos ignoring&gt;JCR.Ignore Accent
-          Symbols</ulink></para>
+          <para><link linkend="JCR.IgnoreAccentSymbols">How to set new
+          Analyzer. Accent symblos ignoring</link></para>
         </listitem>
       </itemizedlist>
     </section>

@@ -151,7 +151,7 @@
     can it be searched like fulltext by property or not.</para>
 
     <para>Only two property types are indexed as fulltext searcheable: STRING
-    and BINARY. </para>
+    and BINARY.</para>
 
     <table>
       <title>Fulltext search by different properties</title>
@@ -206,23 +206,23 @@
 
     <itemizedlist>
       <listitem>
-        <para><link linkend="???">JCR.Fulltext Search by
-        Property</link></para>
+        <para><link linkend="JCR.FulltextSearchByProperty">JCR.Fulltext Search
+        by Property</link></para>
       </listitem>
 
       <listitem>
-        <para><link linkend="???">JCR.Fulltext Search by All
-        Properties</link></para>
+        <para><link linkend="JCR.FulltextSearchByAllProperties">JCR.Fulltext
+        Search by All Properties</link></para>
       </listitem>
 
       <listitem>
-        <para><link linkend="???">Find nt:file document by content of its
-        child jcr:content node&gt;Aggregation rule</link></para>
+        <para><link linkend="JCR.AggregationRule">Find nt:file document by
+        content of its child jcr:content node</link></para>
       </listitem>
 
       <listitem>
-        <para><link linkend="???">How to set a new analyzer. Accent symbols
-        ignoring&gt;JCR.Ignore Accent Symbols</link></para>
+        <para><link linkend="JCR.IgnoreAccentSymbols">How to set a new
+        analyzer. Accent symbols ignoring</link></para>
       </listitem>
     </itemizedlist>
   </section>
