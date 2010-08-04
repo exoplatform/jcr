@@ -58,7 +58,7 @@
     not support replication in any way.</para>
 
     <para>See more about LockManager Configuration <link
-    linkend="ch_configuration">here</link>.</para>
+    linkend="JCR.eXoJCRconfiguration">here</link>.</para>
   </section>
 
   <section>
@@ -85,7 +85,7 @@
       <para>Replication requirements are same as for Cache</para>
 
       <para>Full JCR configuration example you can see <link
-      linkend="sect_conf_cluster_jcr">here</link>.</para>
+      linkend="JCR.ClusterConfig.JCRExternalConfig">here</link>.</para>
 
       <para>Common tips:</para>
 

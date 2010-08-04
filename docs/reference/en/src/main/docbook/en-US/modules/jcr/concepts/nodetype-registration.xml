@@ -358,9 +358,7 @@ public void setReadOnly(boolean readOnly);</programlisting>
     <title>Node type registration</title>
 
     <para>eXo JCR implementation supports various methods of the node-type
-    registration. The most used is registration from <link
-    linkend="JCR.NodeTypesandNamespaces">xml file</link> on JCR
-    startup.</para>
+    registration. </para>
 
     <section>
       <title>Run time registration from xml file.</title>

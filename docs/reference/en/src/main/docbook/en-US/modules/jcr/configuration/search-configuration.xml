@@ -805,31 +805,31 @@
       <itemizedlist>
         <listitem>
           <para>Get a text excerpt with <emphasis role="bold">highlighted
-          words</emphasis> that matches the query: <ulink
-          url="ExcerptProvider&gt;http://wiki.exoplatform.com/xwiki/bin/view/JCR/Searching+Repository+Content">ExcerptProvider</ulink>.</para>
+          words</emphasis> that matches the query: <link
+          linkend="JCR.SearchingRepositoryContent.Highlighting">ExcerptProvider</link>.</para>
         </listitem>
 
         <listitem>
           <para>Search for a term and its <emphasis
-          role="bold">synonyms</emphasis>: <ulink
-          url="SynonymSearch&gt;http://wiki.exoplatform.com/xwiki/bin/view/JCR/Searching+Repository+Content">SynonymSearch</ulink></para>
+          role="bold">synonyms</emphasis>: <link
+          linkend="JCR.SearchingRepositoryContent.SynonimProvider">SynonymSearch</link></para>
         </listitem>
 
         <listitem>
           <para>Search for <emphasis role="bold">similar</emphasis> nodes:
-          <ulink
-          url="SimilaritySearch&gt;http://wiki.exoplatform.com/xwiki/bin/view/JCR/Searching+Repository+Content">SimilaritySearch</ulink></para>
+          <link
+          linkend="JCR.SearchingRepositoryContent.Similarity">SimilaritySearch</link></para>
         </listitem>
 
         <listitem>
           <para>Check <emphasis role="bold">spelling</emphasis> of a fulltext
-          query statement: <ulink
-          url="SpellChecker&gt;http://wiki.exoplatform.com/xwiki/bin/view/JCR/Searching+Repository+Content">SpellChecker</ulink></para>
+          query statement: <link
+          linkend="JCR.SearchingRepositoryContent.SpellChecker">SpellChecker</link></para>
         </listitem>
 
         <listitem>
           <para>Define index <emphasis role="bold">aggregates and
-          rules</emphasis>: IndexingConfiguration (see this article)</para>
+          rules</emphasis>: IndexingConfiguration.</para>
         </listitem>
       </itemizedlist>
     </section>

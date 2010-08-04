@@ -11,11 +11,10 @@
 
     <para>Support of node types and namespaces is required by the JSR-170
     specification. Beyond the methods required by the specification, eXo JCR
-    has its own API extension for the <ulink
-    url="JCR.NodeTypeRegistration"><link
-    linkend="JCR.NodeTypeRegistration">Node type registration</link></ulink>
-    as well as the ability to declaratively define node types in the
-    Repository at the start-up time.</para>
+    has its own API extension for the <link
+    linkend="JCR.NodeTypeRegistration">Node type registration</link> as well
+    as the ability to declaratively define node types in the Repository at the
+    start-up time.</para>
   </section>
 
   <section>

@@ -110,8 +110,7 @@ NLS_NCHAR_CHARACTERSET   AL16UTF16</programlisting></para>
     <title>MySQL</title>
 
     <para>JCR MySQL-backend requires special dialect <ulink
-    url="http://dev.mysql.com/doc/refman/5.0/en/charset-unicode-utf8.html"><ulink
-    url="http://jira.exoplatform.org/browse/JCR-375">MySQL-UTF8</ulink></ulink>
+    url="http://dev.mysql.com/doc/refman/5.0/en/charset-unicode-utf8.html">MySQL-UTF8</ulink>
     to be used for internationalization support. But the database default
     charset should be latin1 to use limited index space effectively (1000
     bytes for MyISAM engine, 767 for InnoDB). If database default charset is

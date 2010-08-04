@@ -2,7 +2,8 @@
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="JCR.ConfigurationPersister">
-  <?dbhtml filename="ch-external-value-storages.html"?>
+  <?dbhtml filename="ch-jcr-configuration-persister.html"?>
+
   <title>JCR Configuration persister</title>
 
   <section>
@@ -67,14 +68,14 @@
           <para><parameter>source-name</parameter> - JNDI source name
           configured in <classname>InitialContextInitializer</classname>
           component. (<parameter>sourceName</parameter> prior v.1.9.) Find
-          more in <link linkend="ch_configuration">database
+          more in <link linkend="JCR.JDBCDataContainerConfig">database
           configuration</link>.</para>
         </listitem>
 
         <listitem>
           <para><parameter>dialect</parameter> - SQL dialect which will be
           used with database from <parameter>source-name</parameter>. Find
-          more in <link linkend="ch_configuration">database
+          more in <link linkend="JCR.JDBCDataContainerConfig">database
           configuration</link>.</para>
         </listitem>
 

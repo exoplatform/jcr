@@ -89,7 +89,7 @@
     Repository Service and related serivces) and repository-configuration.xml
     (repositories configuration).</para>
 
-    <para>Read more about <link linkend="ch_configuration">Repository
+    <para>Read more about <link linkend="JCR.eXoJCRconfiguration">Repository
     configuration</link>.</para>
   </section>
 
@@ -320,9 +320,10 @@
     in two different databases (ws in HSQLDB, ws1 in MySQL).</para>
 
     <note>
-      <para>Starting from v.1.9 <link linkend="ch_configuration">repository
-      configuration</link> parameters supports human-readable formats of
-      values (e.g. 200K - 200 Kbytes, 30m - 30 minutes etc)</para>
+      <para>Starting from v.1.9 <link
+      linkend="JCR.eXoJCRconfiguration">repository configuration</link>
+      parameters supports human-readable formats of values (e.g. 200K - 200
+      Kbytes, 30m - 30 minutes etc)</para>
     </note>
   </section>
 

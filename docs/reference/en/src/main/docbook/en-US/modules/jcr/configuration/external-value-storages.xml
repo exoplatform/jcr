@@ -13,8 +13,7 @@
     along with the JCR structure (i.e. Nodes and Properties). eXo JCR offers
     an additional option of storing JCR Values separately from Workspace Data
     container, which can be extremely helpful to keep Binary Large Objects
-    (BLOBs) for example (see [TODO<link linkend="TODO"> Binary values
-    processing</link>]).</para>
+    (BLOBs) for example.</para>
 
     <para>Value storage configuration is a part of Repository configuration,
     find more details <link

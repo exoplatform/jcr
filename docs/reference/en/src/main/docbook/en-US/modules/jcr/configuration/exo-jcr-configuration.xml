@@ -21,21 +21,18 @@
       </listitem>
 
       <listitem>
-        <para><link linkend="ch_jdbc_data_container">JDBC Data Container
+        <para><link linkend="JCR.JDBCDataContainerConfig">JDBC Data Container
         config</link></para>
       </listitem>
 
       <listitem>
-        <para><link linkend="ch_external_value_storages">External Value
+        <para><link linkend="JCR.ExternalValueStorages">External Value
         Storages</link></para>
       </listitem>
 
       <listitem>
-        <para><link linkend="none">Workspace SimpleDB storage</link></para>
-      </listitem>
-
-      <listitem>
-        <para><link linkend="none">Workspace Persistence Storage</link></para>
+        <para><link linkend="JCR.WorkspacePersistenceStorage">Workspace
+        Persistence Storage</link></para>
       </listitem>
     </itemizedlist>
   </section>
