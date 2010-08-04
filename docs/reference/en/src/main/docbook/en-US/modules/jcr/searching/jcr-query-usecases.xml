@@ -2,6 +2,8 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="JCR.QueryUsecases">
+ <?dbhtml filename="ch-jcr-query-usecases.html"?>
+
   <title>JCR Query Usecases</title>
 
   <section>
@@ -86,232 +88,327 @@ while(rowIterator.hasNext()){
   </section>
 
   <section>
+    <title>Query result settings</title>
+
+    <itemizedlist>
+      <listitem>
+        <para><link linkend="JCR.SetOffsetandSetLimit">Set Offset And
+        Limit</link></para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Type Constraints</title>
+
+    <itemizedlist>
+      <listitem>
+        <para><link linkend="JCR.FindAllNodes">Find All Nodes</link></para>
+      </listitem>
+
+      <listitem>
+        <para><link linkend="JCR.FindNodesByPrimaryType">Find Nodes by Primary
+        Type</link></para>
+      </listitem>
+
+      <listitem>
+        <para><link linkend="JCR.FindNodesByMixinType">Find Nodes by Mixin
+        Type</link></para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Property Constraints</title>
+
+    <itemizedlist>
+      <listitem>
+        <para><link linkend="JCR.PropertyComparison">Property
+        Comparison</link></para>
+      </listitem>
+
+      <listitem>
+        <para><link linkend="JCR.LIKEConstraint">LIKE Constraint</link></para>
+      </listitem>
+
+      <listitem>
+        <para><link linkend="JCR.EscapinginLIKEStatements">Escaping in LIKE
+        Statements</link></para>
+      </listitem>
+
+      <listitem>
+        <para><link linkend="JCR.NOTConstraint">NOT Constraint</link></para>
+      </listitem>
+
+      <listitem>
+        <para><link linkend="JCR.ANDConstraint">AND Constraint</link></para>
+      </listitem>
+
+      <listitem>
+        <para><link linkend="JCR.ORConstraint">OR Constraint</link></para>
+      </listitem>
+
+      <listitem>
+        <para><link linkend="JCR.PropertyExistenceConstraint">Property
+        Existence Constraint</link></para>
+      </listitem>
+
+      <listitem>
+        <para><link linkend="JCR.FindNodesCaseInsensitive">Upper and Lower
+        Case Constraints</link></para>
+      </listitem>
+
+      <listitem>
+        <para><link linkend="JCR.DatePropertyComparison">Date Property
+        Comparison</link></para>
+      </listitem>
+
+      <listitem>
+        <para><link linkend="JCR.NodeNameConstraint">Node Name
+        Constraint</link></para>
+      </listitem>
+
+      <listitem>
+        <para><link linkend="JCR.MultivaluePropertyComparison">Multivalue
+        Property Comparison</link></para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Path Constraint</title>
+
+    <itemizedlist>
+      <listitem>
+        <para><link linkend="JCR.ExactPathConstraint">Exact Path
+        Constraint</link></para>
+      </listitem>
+
+      <listitem>
+        <para><link linkend="JCR.ChildNodeConstraint">Child Node
+        Constraint</link></para>
+      </listitem>
+
+      <listitem>
+        <para><link linkend="JCR.FindAllDescendantNodes">Find All Descendant
+        Nodes</link></para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Ordering specifing</title>
+
+    <itemizedlist>
+      <listitem>
+        <para><link linkend="JCR.OrderByProperty">Order by
+        Property</link></para>
+      </listitem>
+
+      <listitem>
+        <para><link linkend="JCR.OrderByDescendant">Order by Descendant Node
+        Property</link></para>
+      </listitem>
+
+      <listitem>
+        <para><link linkend="JCR.OrderByScore">Order by Score</link></para>
+      </listitem>
+
+      <listitem>
+        <para><link linkend="JCR.OrderByPathOrName">Order by Path or
+        Name</link></para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title><link linkend="JCR.FulltextSearchAndSettings">Fulltext
+    Search</link></title>
+
+    <itemizedlist>
+      <listitem>
+        <para><link linkend="JCR.FulltextSearchByProperty">Fulltext Search by
+        Property</link></para>
+      </listitem>
+
+      <listitem>
+        <para><link linkend="JCR.FulltextSearchByAllProperties">Fulltext
+        Search by All Properties</link></para>
+      </listitem>
+
+      <listitem>
+        <para><link linkend="JCR.AggregationRule">Find nt:file document by
+        content of child jcr:content node</link></para>
+      </listitem>
+
+      <listitem>
+        <para><link linkend="JCR.IgnoreAccentSymbols">How to set new Analyzer.
+        Accent symblos ignoring</link></para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Indexing rules and additional features</title>
+
+    <itemizedlist>
+      <listitem>
+        <para><link linkend="JCR.AggregationRule">Aggregation
+        rule</link></para>
+      </listitem>
+
+      <listitem>
+        <para><link linkend="JCR.HiglightResultofFulltextSearch">Search Result
+        Highlighting</link></para>
+      </listitem>
+
+      <listitem>
+        <para><link linkend="JCR.IndexBoostRule">Index Boost
+        Value</link></para>
+      </listitem>
+
+      <listitem>
+        <para><link linkend="JCR.NodeScopeIndex">Exclusion from the Node Scope
+        Index</link></para>
+      </listitem>
+
+      <listitem>
+        <para><link linkend="JCR.RegexpIndexingRule">Regular expressions as
+        property name in indexing rule</link></para>
+      </listitem>
+
+      <listitem>
+        <para><link linkend="JCR.SynonimProvider">Synonim
+        Provider</link></para>
+      </listitem>
+
+      <listitem>
+        <para><link linkend="JCR.SpellChecker">Spell Checking</link></para>
+      </listitem>
+
+      <listitem>
+        <para><link linkend="JCR.FindSimilarNodes">Find Similar
+        Nodes</link></para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
     <title>Query Examples</title>
 
-    <section>
-      <title>Query result settings</title>
+    <xi:include href="offset-and-limit.xml"
+                xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-      <itemizedlist>
-        <listitem>
-          <para><link linkend="JCR.SetOffsetandSetLimit">Set Offset And
-          Limit</link></para>
-        </listitem>
-      </itemizedlist>
-    </section>
+    <xi:include href="find-all-nodes.xml"
+                xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-    <section>
-      <title>Type Constraints</title>
+    <xi:include href="find-nodes-by-primary-type.xml"
+                xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-      <itemizedlist>
-        <listitem>
-          <para><link linkend="JCR.FindAllNodes">Find All Nodes</link></para>
-        </listitem>
+    <xi:include href="find-nodes-by-mixin-type.xml"
+                xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-        <listitem>
-          <para><link linkend="JCR.FindNodesByPrimaryType">Find Nodes by
-          Primary Type</link></para>
-        </listitem>
+    <xi:include href="property-comparison.xml"
+                xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-        <listitem>
-          <para><link linkend="JCR.FindNodesByMixinType">Find Nodes by Mixin
-          Type</link></para>
-        </listitem>
-      </itemizedlist>
-    </section>
+    <xi:include href="like-constraint.xml"
+                xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-    <section>
-      <title>Property Constraints</title>
+    <xi:include href="escaping-like-statements.xml"
+                xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-      <itemizedlist>
-        <listitem>
-          <para><link linkend="JCR.PropertyComparison">Property
-          Comparison</link></para>
-        </listitem>
+    <xi:include href="not-constraint.xml"
+                xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-        <listitem>
-          <para><link linkend="JCR.LIKEConstraint">LIKE
-          Constraint</link></para>
-        </listitem>
+    <xi:include href="and-constraint.xml"
+                xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-        <listitem>
-          <para><link linkend="JCR.EscapinginLIKEStatements">Escaping in LIKE
-          Statements</link></para>
-        </listitem>
+    <xi:include href="or-constraint.xml"
+                xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-        <listitem>
-          <para><link linkend="JCR.NOTConstraint">NOT Constraint</link></para>
-        </listitem>
+    <xi:include href="property-existance-constraint.xml"
+                xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-        <listitem>
-          <para><link linkend="JCR.ANDConstraint">AND Constraint</link></para>
-        </listitem>
+    <xi:include href="find-nodes-case-insensitive.xml"
+                xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-        <listitem>
-          <para><link linkend="JCR.ORConstraint">OR Constraint</link></para>
-        </listitem>
+    <xi:include href="date-property-comparison.xml"
+                xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-        <listitem>
-          <para><link linkend="JCR.PropertyExistenceConstraint">Property
-          Existence Constraint</link></para>
-        </listitem>
+    <xi:include href="node-name-constraint.xml"
+                xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-        <listitem>
-          <para><link linkend="JCR.FindNodesCaseInsensitive">Upper and Lower
-          Case Constraints</link></para>
-        </listitem>
+    <xi:include href="multivalue-property-comparison.xml"
+                xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-        <listitem>
-          <para><link linkend="JCR.DatePropertyComparison">Date Property
-          Comparison</link></para>
-        </listitem>
+    <xi:include href="exact-path-constraint.xml"
+                xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-        <listitem>
-          <para><link linkend="JCR.NodeNameConstraint">Node Name
-          Constraint</link></para>
-        </listitem>
+    <xi:include href="child-node-constraint.xml"
+                xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-        <listitem>
-          <para><link linkend="JCR.MultivaluePropertyComparison">Multivalue
-          Property Comparison</link></para>
-        </listitem>
-      </itemizedlist>
-    </section>
+    <xi:include href="find-all-descendant-nodes.xml"
+                xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-    <section>
-      <title>Path Constraint</title>
+    <xi:include href="order-by-property.xml"
+                xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-      <itemizedlist>
-        <listitem>
-          <para><link linkend="JCR.ExactPathConstraint">Exact Path
-          Constraint</link></para>
-        </listitem>
+    <xi:include href="order-by-descendant.xml"
+                xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-        <listitem>
-          <para><link linkend="JCR.ChildNodeConstraint">Child Node
-          Constraint</link></para>
-        </listitem>
+    <xi:include href="order-by-score.xml"
+                xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-        <listitem>
-          <para><link linkend="JCR.FindAllDescendantNodes">Find All Descendant
-          Nodes</link></para>
-        </listitem>
-      </itemizedlist>
-    </section>
+    <xi:include href="order-by-path-or-name.xml"
+                xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-    <section>
-      <title>Ordering specifing</title>
+    <xi:include href="fulltext-search-by-property.xml"
+                xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-      <itemizedlist>
-        <listitem>
-          <para><link linkend="JCR.OrderByProperty">Order by
-          Property</link></para>
-        </listitem>
+    <xi:include href="fulltext-search-by-all-properties.xml"
+                xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-        <listitem>
-          <para><link linkend="JCR.OrderByDescendant">Order by Descendant Node
-          Property</link></para>
-        </listitem>
+    <xi:include href="ignore-accent-symbols.xml"
+                xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-        <listitem>
-          <para><link linkend="JCR.OrderByScore">Order by Score</link></para>
-        </listitem>
+    <xi:include href="aggregation-rule.xml"
+                xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-        <listitem>
-          <para><link linkend="JCR.OrderByPathOrName">Order by Path or
-          Name</link></para>
-        </listitem>
-      </itemizedlist>
-    </section>
+    <xi:include href="index-boost-value.xml"
+                xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-    <section>
-      <title><link linkend="JCR.FulltextSearchAndSettings">Fulltext
-      Search</link></title>
+    <xi:include href="node-scope-index.xml"
+                xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-      <itemizedlist>
-        <listitem>
-          <para><link linkend="JCR.FulltextSearchByProperty">Fulltext Search
-          by Property</link></para>
-        </listitem>
+    <xi:include href="regexp-indexing-rule.xml"
+                xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-        <listitem>
-          <para><link linkend="JCR.FulltextSearchByAllProperties">Fulltext
-          Search by All Properties</link></para>
-        </listitem>
+    <xi:include href="higlight.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-        <listitem>
-          <para><link linkend="JCR.AggregationRule">Find nt:file document by
-          content of child jcr:content node</link></para>
-        </listitem>
+    <xi:include href="synonim-provider.xml"
+                xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-        <listitem>
-          <para><link linkend="JCR.IgnoreAccentSymbols">How to set new
-          Analyzer. Accent symblos ignoring</link></para>
-        </listitem>
-      </itemizedlist>
-    </section>
+    <xi:include href="regexp-indexing-rule.xml"
+                xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-    <section>
-      <title>Indexing rules and additional features</title>
+    <xi:include href="spell-checker.xml"
+                xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-      <itemizedlist>
-        <listitem>
-          <para><ulink url="Aggregation rule">Aggregation rule</ulink></para>
-        </listitem>
-
-        <listitem>
-          <para><ulink url="JCR.Search Result Highlighting">JCR.Search Result
-          Highlighting</ulink></para>
-        </listitem>
-
-        <listitem>
-          <para><ulink url="Index Boost Value">Index Boost
-          Value</ulink></para>
-        </listitem>
-
-        <listitem>
-          <para><ulink
-          url="Exclusion from the Node Scope Index&gt;JCR.Node Scope Index">Exclusion
-          from the Node Scope Index&gt;JCR.Node Scope Index</ulink></para>
-        </listitem>
-
-        <listitem>
-          <para><ulink
-          url="Regular expressions as property name in indexing rule &gt; Regexp Indexing Rule">Regular
-          expressions as property name in indexing rule &gt; Regexp Indexing
-          Rule</ulink></para>
-        </listitem>
-
-        <listitem>
-          <para><ulink url="Synonim Provider">Synonim Provider</ulink></para>
-        </listitem>
-
-        <listitem>
-          <para><ulink url="Spell Checking">Spell Checking</ulink></para>
-        </listitem>
-
-        <listitem>
-          <para><ulink url="Find Similar Nodes">Find Similar
-          Nodes</ulink></para>
-        </listitem>
-      </itemizedlist>
-    </section>
-
-    <section>
-      <title>List of examples</title>
-
-      <xi:include href="offset-and-limit.xml"
-                  xmlns:xi="http://www.w3.org/2001/XInclude" />
-    </section>
+    <xi:include href="find-similar-nodes.xml"
+                xmlns:xi="http://www.w3.org/2001/XInclude" />
   </section>
 
   <section>
     <title>Tips and tricks</title>
 
-    <itemizedlist>
+    <xi:include href="tip-nodename-with-number.xml"
+                xmlns:xi="http://www.w3.org/2001/XInclude" />
+
+    <!--itemizedlist>
       <listitem>
-        <para><ulink url="Xpath and numbers in node names">Xpath and numbers
-        in node names</ulink></para>
+        <para><link linkend="JCR.TipNodeNameWithNumber">Xpath and numbers in
+        node names</link></para>
       </listitem>
-    </itemizedlist>
+    </itemizedlist-->
   </section>
 </chapter>

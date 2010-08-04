@@ -6,7 +6,7 @@
 
   <title>Searching Repository Content</title>
 
-  <section id="Introduction">
+  <section>
     <title>Introduction</title>
 
     <para>You can find the JCR configuration file here:
@@ -15,7 +15,7 @@
     more information about index configuration.</para>
   </section>
 
-  <section id="BidirectionalRangeIteratorsince1.9">
+  <section>
     <title>Bi-directional RangeIterator (since 1.9)</title>
 
     <para>QueryResult.getNodes() will return bi-directional NodeIterator
@@ -63,7 +63,7 @@ while (iter.hasNext()) {
 }</programlisting>
   </section>
 
-  <section id="FuzzySearchessince1.0">
+  <section>
     <title>Fuzzy Searches (since 1.0)</title>
 
     <para>JCR supports such features as Lucene Fuzzy Searches <ulink
@@ -77,7 +77,7 @@ Query q = qman.createQuery("select * from nt:base where contains(field, 'ccccc~'
 QueryResult res = q.execute();</programlisting>
   </section>
 
-  <section id="SynonymSearchsince1.9">
+  <section>
     <title>SynonymSearch (since 1.9)</title>
 
     <para>Searching with synonyms is integrated in the jcr:contains() function
@@ -127,7 +127,7 @@ public interface SynonymProvider {
 }</programlisting>
   </section>
 
-  <section id="HighlightingSince1.9">
+  <section id="JCR.SearchingRepositoryContent.Highlighting">
     <title>Highlighting (Since 1.9)</title>
 
     <para>An ExcerptProvider retrieves text excerpts for a node in the query
@@ -149,7 +149,7 @@ public interface SynonymProvider {
 
     <programlisting>&lt;param name="excerptprovider-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.DefaultXMLExcerpt"/&gt;</programlisting>
 
-    <section id="DefaultXMLExcerpt">
+    <section>
       <title>DefaultXMLExcerpt</title>
 
       <para>This excerpt provider creates an XML fragment of the following
@@ -167,7 +167,7 @@ public interface SynonymProvider {
 &lt;/excerpt&gt;</programlisting>
     </section>
 
-    <section id="DefaultHTMLExcerpt">
+    <section>
       <title>DefaultHTMLExcerpt</title>
 
       <para>This excerpt provider creates an HTML fragment of the following
@@ -185,7 +185,7 @@ public interface SynonymProvider {
 &lt;/div&gt;</programlisting>
     </section>
 
-    <section id="Howtouseit">
+    <section>
       <title>How to use it</title>
 
       <para>If you are using XPath you must use the rep:excerpt() function in
@@ -226,7 +226,7 @@ for (RowIterator it = result.getRows(); it.hasNext(); ) {
     </section>
   </section>
 
-  <section id="SpellChecker">
+  <section>
     <title>SpellChecker</title>
 
     <para>The lucene based query handler implementation supports a pluggable
@@ -282,7 +282,7 @@ for (RowIterator it = result.getRows(); it.hasNext(); ) {
     dictionary refresh is also done in a background thread to not block
     regular queries.</para>
 
-    <section id="HowdoIuseit">
+    <section>
       <title>How do I use it?</title>
 
       <para>You can spell check a fulltext statement either with an XPath or a
@@ -320,7 +320,7 @@ if (v == null) {
     </section>
   </section>
 
-  <section id="SimilaritySince1.12">
+  <section>
     <title>Similarity (Since 1.12)</title>
 
     <para>Starting with version, 1.12 JCR allows you to search for nodes that
