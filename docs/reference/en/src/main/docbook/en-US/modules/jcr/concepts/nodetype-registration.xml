@@ -3,6 +3,7 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="JCR.NodeTypeRegistration">
   <?dbhtml filename="ch-nodetype-registration.html"?>
+
   <title>NodeType Registration</title>
 
   <para>eXo JCR implementation supports two ways of Nodetypes
@@ -357,9 +358,9 @@ public void setReadOnly(boolean readOnly);</programlisting>
     <title>Node type registration</title>
 
     <para>eXo JCR implementation supports various methods of the node-type
-    registration. The most used is registration from xml file <ulink
-    url="on JCR startup&gt;Node+types+and+Namespaces">on JCR
-    startup&gt;Node+types+and+Namespaces</ulink>.</para>
+    registration. The most used is registration from <link
+    linkend="JCR.NodeTypesandNamespaces">xml file</link> on JCR
+    startup.</para>
 
     <section>
       <title>Run time registration from xml file.</title>

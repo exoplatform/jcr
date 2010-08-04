@@ -3,6 +3,7 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="JCR.eXoJCRApplicationModel">
   <?dbhtml filename="ch-jcr-applications.html"?>
+
   <title>eXo JCR Application Model</title>
 
   <para>A large picture of interaction between Applications and JCR looks as
@@ -34,8 +35,4 @@
   specific Frameworks. It is possible to build a multi-layered (in framework
   sense) JCR application, for example Web application uses Web framework that
   uses Command framework underneath.</para>
-
-  <para>To READ:</para>
-
-  <para>Deployment JCR standalone (ver 1_5)</para>
 </chapter>

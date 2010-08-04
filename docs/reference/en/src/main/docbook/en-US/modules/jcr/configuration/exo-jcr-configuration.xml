@@ -3,7 +3,9 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="JCR.eXoJCRconfiguration">
   <?dbhtml filename="ch-exo-jcr-configuration.html"?>
+
   <title>eXo JCR configuration</title>
+
   <section>
     <title>Related documents</title>
 
@@ -38,7 +40,7 @@
     </itemizedlist>
   </section>
 
-  <section id ="JCR.eXoJCRconfiguration.PortalAndStandaloneConfiguration">
+  <section id="JCR.eXoJCRconfiguration.PortalAndStandaloneConfiguration">
     <title>Portal and Standalone configuration</title>
 
     <para>Like other eXo services eXo JCR can be configured and used in portal
@@ -50,7 +52,7 @@
     difference between these container types is that the first one is intended
     to be used in a Portal (Web) environment, while the second one can be used
     standalone (see the comprehensive page <link
-    linkend="Kernel.ServiceConfigurationForBeginners">Service Configuration
+    linkend="Kernel.ServiceConfigurationforBeginners">Service Configuration
     for Beginners</link> for more details).</para>
 
     <para>The following setup procedure is used to obtain a Standalone
@@ -366,10 +368,6 @@
 
     <para><emphasis role="bold">path</emphasis> - a lock folder, each
     workspace has its own.</para>
-
-    <para>Additional information about the configuration of the lock you can
-    see in <link linkend="TODO.JCR.Locking">JCR Locks Implementation
-    Specification</link>.</para>
 
     <programlisting>&lt;!ELEMENT repository-service (repositories)&gt;
 &lt;!ATTLIST repository-service default-repository NMTOKEN #REQUIRED&gt;

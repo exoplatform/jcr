@@ -110,14 +110,15 @@ NLS_NCHAR_CHARACTERSET   AL16UTF16</programlisting></para>
     <title>MySQL</title>
 
     <para>JCR MySQL-backend requires special dialect <ulink
-    url="http://jira.exoplatform.org/browse/JCR-375">MySQL-UTF8</ulink> to be
-    used for internationalization support. But the database default charset
-    should be latin1 to use limited index space effectively (1000 bytes for
-    MyISAM engine, 767 for InnoDB). If database default charset is multibyte,
-    a JCR database initialization error is thrown concerning index creation
-    failure. In other words JCR can work on any singlebyte default charset of
-    database, with UTF8 supported by MySQL server. But we have tested it only
-    on latin1 database default charset.</para>
+    url="http://dev.mysql.com/doc/refman/5.0/en/charset-unicode-utf8.html"><ulink
+    url="http://jira.exoplatform.org/browse/JCR-375">MySQL-UTF8</ulink></ulink>
+    to be used for internationalization support. But the database default
+    charset should be latin1 to use limited index space effectively (1000
+    bytes for MyISAM engine, 767 for InnoDB). If database default charset is
+    multibyte, a JCR database initialization error is thrown concerning index
+    creation failure. In other words JCR can work on any singlebyte default
+    charset of database, with UTF8 supported by MySQL server. But we have
+    tested it only on latin1 database default charset.</para>
 
     <para>Repository configuration, workspace container entry
     example:<programlisting>&lt;workspace name="collaboration"&gt;

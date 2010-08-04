@@ -3,6 +3,7 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="JCR.RegistryService">
   <?dbhtml filename="ch-jcr-registry-service.html"?>
+
   <title>Registry Service</title>
 
   <section id="Concept">
@@ -27,8 +28,7 @@
     <para>The proposed structure of the Registry Service storage.It is divided
     into 3 logical groups: services, applications and users:</para>
 
-    <programlisting>/
- exo:registry/          &lt;-- registry "root" (exo:registry)
+    <programlisting> exo:registry/          &lt;-- registry "root" (exo:registry)
    exo:services/        &lt;-- service data storage (exo:registryGroup)
      service1/
        Consumer data    (exo:registryEntry)
