@@ -51,10 +51,4 @@
   <xi:include href="ws/javascript-webdav-library.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-  <xi:include href="ws/exo-ws-2-0.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
-
-  <xi:include href="ws/exo-ws-2-0-1.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
-
 </part>
