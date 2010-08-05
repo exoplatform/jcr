@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id = "WS.oAuth">
+<chapter id="WS.oAuth">
   <?dbhtml filename="ch-oauth.html"?>
 
   <title>oAuth</title>
@@ -12,17 +12,17 @@
     <para>OAuth allows to grant access to private resources on one site (which
     is called the Service Provider), to another site (called Consumer). OAuth
     is giving access to a resource without sharing your identity at all. More
-    about oAuth at the site <link linkend="???">http://oauth.net/</link>.
-    (OAuth protocol: <link
-    linkend="???">http://oauth.net/core/1.0/</link>).</para>
+    about oAuth at the site <ulink
+    url="http://oauth.net/">http://oauth.net/</ulink>. (OAuth protocol: <ulink
+    url="http://oauth.net/core/1.0/">http://oauth.net/core/1.0/</ulink>).</para>
 
     <para>This article describes how to configure our implementation of oAuth
     service and client part. Both parts, service (Provider) and client
-    (Consumer) are based on oAuth core, this code can be found here <link
-    linkend="???">http://oauth.googlecode.com/svn/code/java/core/</link>.</para>
+    (Consumer) are based on oAuth core, this code can be found here <ulink
+    url="http://oauth.googlecode.com/svn/code/java/core/">http://oauth.googlecode.com/svn/code/java/core/</ulink>.</para>
 
-    <para>Our implementation can be found here <link
-    linkend="???">http://svn.exoplatform.org/svnroot/exoplatform/projects/ws/trunk/security/oauth</link>.</para>
+    <para>Our implementation can be found here <ulink
+    url="http://svn.exoplatform.org/svnroot/exoplatform/projects/ws/trunk/security/oauth">http://svn.exoplatform.org/svnroot/exoplatform/projects/ws/trunk/security/oauth</ulink>.</para>
   </section>
 
   <section>

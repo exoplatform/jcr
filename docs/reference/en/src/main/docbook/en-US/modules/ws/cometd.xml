@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id = "WS.Cometd">
+<chapter id="WS.Cometd">
   <?dbhtml filename="ch-cometd.html"?>
 
   <title>Cometd</title>
@@ -18,8 +18,8 @@
     called various names, including server push, HTTP push, HTTP streaming,
     Pushlets, Reverse Ajax, and others.</para>
 
-    <para>Cometd on wikipedia <link
-    linkend="???">http://en.wikipedia.org/wiki/Comet_(programming)</link>.</para>
+    <para>Cometd on wikipedia <ulink
+    url="http://en.wikipedia.org/wiki/Comet_(programming)">http://en.wikipedia.org/wiki/Comet_(programming)</ulink>.</para>
 
     <para>It's an implementation of the Bayeux protocol.</para>
   </section>

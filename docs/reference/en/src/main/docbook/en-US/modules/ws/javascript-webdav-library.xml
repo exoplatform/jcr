@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id = "WS.JavaScriptWebDAVLibrary">
+<chapter id="WS.JavaScriptWebDAVLibrary">
   <?dbhtml filename="ch-javascript-webdav-library.html"?>
 
   <title>JavaScript WebDAV Library</title>
@@ -343,16 +343,13 @@ alert( 'Response of server: ' +  XMLtoString(result.content) );
   <section>
     <title>How to get JavaScript WebDAV library</title>
 
-    <para>You can get this library at the <link
-    linkend="???">http://svn.exoplatform.org/svnroot/exoplatform/projects/ws/branches/2.0.x/frameworks/javascript/webdav/src/main/js</link></para>
+    <para>You can get this library at the <ulink
+    url="http://svn.exoplatform.org/svnroot/exoplatform/projects/ws/branches/2.0.x/frameworks/javascript/webdav/src/main/js">http://svn.exoplatform.org/svnroot/exoplatform/projects/ws/branches/2.0.x/frameworks/javascript/webdav/src/main/js</ulink></para>
 
-    <para>Demonstration page was placed as <link
-    linkend="???">http://svn.exoplatform.org/svnroot/exoplatform/projects/ws/branches/2.0.x/frameworks/javascript/webdav/src/main/index.html</link></para>
+    <para>Demonstration page was placed as <ulink
+    url="http://svn.exoplatform.org/svnroot/exoplatform/projects/ws/branches/2.0.x/frameworks/javascript/webdav/src/main/index.html">http://svn.exoplatform.org/svnroot/exoplatform/projects/ws/branches/2.0.x/frameworks/javascript/webdav/src/main/index.html</ulink></para>
 
-    <para>JSDoc is available at the <link
-    linkend="???">http://svn.exoplatform.org/svnroot/exoplatform/projects/ws/branches/2.0.x/frameworks/javascript/webdav/src/main/doc</link></para>
-
-    <para>Another place of Javadoc will be at the <link
-    linkend="???">http://docs.exoplatform.com.ua site soon</link>.</para>
+    <para>JSDoc is available at the <ulink
+    url="http://svn.exoplatform.org/svnroot/exoplatform/projects/ws/branches/2.0.x/frameworks/javascript/webdav/src/main/doc">http://svn.exoplatform.org/svnroot/exoplatform/projects/ws/branches/2.0.x/frameworks/javascript/webdav/src/main/doc</ulink></para>
   </section>
 </chapter>

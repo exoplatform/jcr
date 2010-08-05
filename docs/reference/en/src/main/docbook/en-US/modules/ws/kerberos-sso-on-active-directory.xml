@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id = "WS.KerberosSSOOnActiveDirectory">
+<chapter id="WS.KerberosSSOOnActiveDirectory">
   <?dbhtml filename="ch-kerberos-sso-on-active-directory.html"?>
 
   <title>Kerberos SSO on Active Directory</title>
@@ -226,10 +226,10 @@ ktutil: wkt http.keytab</programlisting>
   &lt;/security-constraint&gt;</programlisting>
 
     <para>NOTE At list one roles in web.xml must be corresponding to user
-    group in AD. </para>
+    group in AD.</para>
 
     <para>3. Download in lib folder jcif-1.2.17.jar . We need this for support
-    NTLM authentication. </para>
+    NTLM authentication.</para>
 
     <para>4. In exo-tomcat/conf/jaas.conf, add :</para>
 
@@ -279,9 +279,8 @@ JAVA_OPTS="$YOURKIT_PROFILE_OPTION $JAVA_OPTS $LOG_OPTS $SECURITY_OPTS $EXO_OPTS
     of the machine where webserver run (in this exemple : set "ubu"). For IE,
     there is no additional configuration.</para>
 
-    <para>8. Go to <link
-    linkend="???">http://ubu.exoua-int:8080/portal/private/classic</link> If
-    use was login windows (domain authentication) then, Active directory
+    <para>8. Go to <uri>http://ubu.exoua-int:8080/portal/private/classic</uri>
+    If use was login windows (domain authentication) then, Active directory
     authentication will be used.</para>
 
     <para>Instead tomcat valve

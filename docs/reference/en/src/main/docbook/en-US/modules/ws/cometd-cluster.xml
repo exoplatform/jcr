@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id = "WS.Cometdcluster">
+<chapter id="WS.Cometdcluster">
   <?dbhtml filename="ch-cometd-cluster.html"?>
 
   <title>Cometd cluster</title>
@@ -9,12 +9,12 @@
   <section>
     <title>Motivation</title>
 
-    <para>When we run Stress Testing Cometd (Jetty implementation) <link
-    linkend="???">http://docs.codehaus.org/display/JETTY/Stress+Testing+Cometd</link>
+    <para>When we run Stress Testing Cometd (Jetty implementation) <ulink
+    url="http://docs.codehaus.org/display/JETTY/Stress+Testing+Cometd">http://docs.codehaus.org/display/JETTY/Stress+Testing+Cometd</ulink>
     we see that if we connect many clients, deliver message latency tends to
     grow up. This situation described in article "20,000 Reasons Why Comet
-    Scales". <link
-    linkend="???">http://cometdaily.com/2008/01/07/20000-reasons-that-comet-scales/</link>
+    Scales". <ulink
+    url="http://cometdaily.com/2008/01/07/20000-reasons-that-comet-scales/">http://cometdaily.com/2008/01/07/20000-reasons-that-comet-scales/</ulink>
     So, in order to support a lot of concurrent cometd connections we need a
     mean to horizontally scale eXo cometd support.</para>
 
@@ -215,16 +215,10 @@
     sleep-connection = "500" (мс), will be subscribe on the channel
     "/eXo/comedt/test". Then it will be sent two message "hello" "hello!!!"
     the First individually to each of the clients, the second broadcast on the
-    channel. Messages delivered with an interval sleep-sending = "200". <link
-    linkend="???">http://localhost:8080/rest/</link> - base URL of Exo -
-    server. For start test execute a command:</para>
+    channel. Messages delivered with an interval sleep-sending = "200".
+    <uri>http://localhost:8080/rest/</uri> - base URL of Exo - server. For
+    start test execute a command:</para>
 
     <programlisting>mvn clean install -f pom-test.xml -Dexo.test.skip=false -Djetty.home = "./target/jetty"</programlisting>
-  </section>
-
-  <section>
-    <title>Bench</title>
-
-    <para>See Cometd Cluster Bench</para>
   </section>
 </chapter>
