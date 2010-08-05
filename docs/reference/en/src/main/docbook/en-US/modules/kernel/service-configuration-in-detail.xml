@@ -10,17 +10,19 @@
 
   <itemizedlist>
     <listitem>
-      <para><link linkend="KernelServiceConfigurationforBeginners">Service
+      <para><link linkend="Kernel.ServiceConfigurationforBeginners">Service
       Configuration for Beginners</link></para>
     </listitem>
 
     <listitem>
-      <para><link linkend="KernelServicesWiring">Services Wiring</link></para>
+      <para><link linkend="Kernel.ServicesWiring">Services
+      Wiring</link></para>
     </listitem>
 
     <listitem>
-      <para><link linkend="KernelConfigurationNamespace">Kernel Configuration
-      File</link></para>
+      <para><link
+      linkend="Kernel.ContainerConfiguration.ConfigurationNamespace">Kernel
+      Configuration File</link></para>
     </listitem>
   </itemizedlist>
 
@@ -41,12 +43,12 @@
     <title>Requirements</title>
 
     <para>You should have read and understood <link
-    linkend="KernelServiceConfigurationforBeginners">Service Configuration for
-    Beginners</link>. Obviously you should know java and xml. We are working
-    with examples that are created for teaching reasons only and you will see
-    extracts from the eXo Products default installation. When reading do not
-    forget that the terms service and component are interchangeable in eXo
-    Products.</para>
+    linkend="Kernel.ServiceConfigurationforBeginners">Service Configuration
+    for Beginners</link>. Obviously you should know java and xml. We are
+    working with examples that are created for teaching reasons only and you
+    will see extracts from the eXo Products default installation. When reading
+    do not forget that the terms service and component are interchangeable in
+    eXo Products.</para>
   </section>
 
   <section id="SampleService">
@@ -357,8 +359,7 @@ public class HibernateServiceImpl implements HibernateService, ComponentRequestL
       <para>Let's have a look at the configuration of the LDAPService. It's
       not important to know LDAP, we only discuss the parameters.</para>
 
-      <programlisting>
-&lt;component&gt;
+      <programlisting>&lt;component&gt;
     &lt;key&gt;org.exoplatform.services.ldap.LDAPService&lt;/key&gt;
     &lt;type&gt;org.exoplatform.services.ldap.impl.LDAPServiceImpl&lt;/type&gt;
     &lt;init-params&gt;
@@ -524,12 +525,12 @@ public class LDAPConnectionConfig {
     fly.</para>
 
     <para>As you have carefully read <link
-    linkend="KernelServiceConfigurationforBeginners">Service Configuration for
-    Beginners</link> you know that <emphasis role="bold">normally</emphasis>
-    newer configurations always <emphasis role="bold">replaces</emphasis>
-    previous configurations. An external plugin allows you to <emphasis
-    role="bold">add</emphasis> configuration without replacing previous
-    configurations.</para>
+    linkend="Kernel.ServiceConfigurationforBeginners">Service Configuration
+    for Beginners</link> you know that <emphasis
+    role="bold">normally</emphasis> newer configurations always <emphasis
+    role="bold">replaces</emphasis> previous configurations. An external
+    plugin allows you to <emphasis role="bold">add</emphasis> configuration
+    without replacing previous configurations.</para>
 
     <para>That can be interesting if you adapt a service configuration for
     your project-specific needs (country, language, branch, project,

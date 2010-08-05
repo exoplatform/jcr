@@ -10,17 +10,17 @@
 
   <itemizedlist>
     <listitem>
-      <para><link linkend="KernelServiceConfigurationinDetail">Service
+      <para><link linkend="Kernel.ServiceConfigurationinDetail">Service
       Configuration in Detail</link></para>
     </listitem>
 
     <listitem>
       <para><link endterm="KernelServicesWiring.Title"
-      linkend="KernelServicesWiring">ServicesWiring</link></para>
+      linkend="Kernel.ServicesWiring">Services Wiring</link></para>
     </listitem>
 
     <listitem>
-      <para><link linkend="KernelContainerConfiguration">Container
+      <para><link linkend="Kernel.ContainerConfiguration">Container
       Configuration</link></para>
     </listitem>
   </itemizedlist>
@@ -40,7 +40,7 @@
     <title>Requirements</title>
 
     <para>By reading this article you are already glancing at the heart of eXo
-    Kernel. </para>
+    Kernel.</para>
 
     <para>Even you will read in this article to open the directory
     "exo-tomcat", you may have installed eXo Portal on any application server,
@@ -174,7 +174,7 @@
     <emphasis>plugins</emphasis> and they are special because the container
     calls the setters of your service in order to <emphasis>inject</emphasis>
     your plugin in your service (called <emphasis>setter injection</emphasis>)
-    see <link linkend="KernelServiceConfigurationinDetail">Service
+    see <link linkend="Kernel.ServiceConfigurationinDetail">Service
     Configuration in Detail</link>. In general your service is free to use
     init parameters, they are not required.</para>
 
@@ -250,7 +250,7 @@
     <classname>PicoContainer</classname>. <ulink
     url="http://www.picocontainer.org/">PicoContainer</ulink> is a framework
     which allows eXo to apply the IoC (<link
-    linkend="KernelInversionOfControl">Inversion of Control</link>)
+    linkend="Kernel.InversionOfControl">Inversion of Control</link>)
     principles. The precise implementations of any service is unknown at
     compile time. Various implementations can be used, eXo supplies different
     implementations but they also may be delivered by other vendors. The
@@ -662,7 +662,7 @@
           <para>Setter injection: Whenever you use
           <emphasis>external-plugins</emphasis> to provide your service with
           plugins (see <link
-          linkend="KernelServiceConfigurationinDetail">Service Configuration
+          linkend="Kernel.ServiceConfigurationinDetail">Service Configuration
           in Detail</link>.</para>
         </listitem>
       </itemizedlist>
@@ -754,10 +754,10 @@ import jndi:/localhost/portal/WEB-INF/conf/jcr/jcr-configuration.xml
     <title>Further Reading</title>
 
     <para>Do you feel an expert now? Not yet. Get a deeper look and read this
-    <link linkend="KernelServicesWiring">Services Wiring</link> article. You
+    <link linkend="Kernel.ServicesWiring">Services Wiring</link> article. You
     read so much about configuration, that you should wonder what the <link
-    linkend="KernelConfigurationNamespace">XML Schema of the configuration
-    file</link> looks like. </para>
+    linkend="Kernel.ContainerConfiguration.ConfigurationNamespace">XML Schema
+    of the configuration file</link> looks like.</para>
 
     <para>If you wish to see a examples of service configurations you should
     study the <link linkend="Core">Core.</link> Where you find descriptions of
