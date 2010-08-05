@@ -12,50 +12,72 @@
     <section>
       <title>Obtaining a Repository object</title>
 
-      <para>A javax.jcr.Repository object can be obtained either by ...: *
-      Using the eXo Container "native" mechanism. All Repositories are kept
-      with a single RepositoryService component. So it can be obtained from
-      eXo Container, described as following:</para>
+      <para>A javax.jcr.Repository object can be obtained either by ...:
+      <itemizedlist>
+          <listitem>
+            <para>Using the eXo Container "native" mechanism. All Repositories
+            are kept with a single RepositoryService component. So it can be
+            obtained from eXo Container, described as
+            following:<programlisting>  RepositoryService repositoryService = (RepositoryService) container.getComponentInstanceOfType(RepositoryService.class);
+  Repository repository = repositoryService.getRepository("repositoryName"); </programlisting></para>
+          </listitem>
 
-      <programlisting>  RepositoryService repositoryService = (RepositoryService) container.getComponentInstanceOfType(RepositoryService.class);
-  Repository repository = repositoryService.getRepository("repositoryName"); </programlisting>
-
-      <para>* Using the eXo Container "native" mechanism with a thread local
-      saved "current" repository (especially if you plan using a single
-      repository which covers more than 90% of use cases)</para>
-
-      <programlisting>  // set current repository at initial time
+          <listitem>
+            <para>Using the eXo Container "native" mechanism with a thread
+            local saved "current" repository (especially if you plan using a
+            single repository which covers more than 90% of use
+            cases)<programlisting>  // set current repository at initial time
   RepositoryService repositoryService = (RepositoryService) container.getComponentInstanceOfType(RepositoryService.class);
   repositoryService.setCurrentRepositoryName("repositoryName");
   ....
   // retrieve and use this repository
-  Repository repository = repositoryService.getCurrentRepository();</programlisting>
+  Repository repository = repositoryService.getCurrentRepository();</programlisting></para>
+          </listitem>
 
-      <para>* Using JNDI as specified in JSR-170. This way you have to
-      configure the reference (see eXo <link linkend="Kernel.JNDINaming"> JNDI
-      Naming configuration </link> )</para>
-
-      <programlisting>  Context ctx = new InitialContext();
-  Repository repository =(Repository) ctx.lookup("repositoryName");</programlisting>
+          <listitem>
+            <para>Using JNDI as specified in JSR-170. This way you have to
+            configure the reference (see eXo <link
+            linkend="Kernel.JNDINaming">JNDI Naming configuration</link>
+            )<programlisting>  Context ctx = new InitialContext();
+  Repository repository =(Repository) ctx.lookup("repositoryName");</programlisting></para>
+          </listitem>
+        </itemizedlist></para>
     </section>
 
     <section>
       <title>JCR Session common considerations</title>
 
-      <para>* Remember javax.jcr.Session is not a thread safe object.
-      <emphasis role="bold">Never try to share it between threads</emphasis> *
-      Do not use <emphasis role="bold">System session</emphasis> from the
-      <emphasis role="bold">user</emphasis> related code because a system
-      session has <emphasis role="bold">unlimited rights</emphasis>. Call
-      ManageableRepository.getSystemSession() from <emphasis
-      role="bold">process</emphasis> related code only. * Call
-      Session.logout() explicitly to <emphasis role="bold">release
-      resources</emphasis> assigned to the session. * When designing your
-      application take care of the Session policy inside your application. Two
-      <emphasis role="bold">strategies</emphasis> are possible: <emphasis
-      role="bold">Stateless</emphasis> (Session per business request) and
-      <emphasis role="bold">Stateful</emphasis> (Session per User) or some
-      mix.</para>
+      <para><itemizedlist>
+          <listitem>
+            <para>Remember javax.jcr.Session is not a thread safe object.
+            <emphasis role="bold">Never try to share it between
+            threads</emphasis>.</para>
+          </listitem>
+
+          <listitem>
+            <para>Do not use <emphasis role="bold">System session</emphasis>
+            from the <emphasis role="bold">user</emphasis> related code
+            because a system session has <emphasis role="bold">unlimited
+            rights</emphasis>. Call ManageableRepository.getSystemSession()
+            from <emphasis role="bold">process</emphasis> related code
+            only.</para>
+          </listitem>
+
+          <listitem>
+            <para>Call Session.logout() explicitly to <emphasis
+            role="bold">release resources</emphasis> assigned to the
+            session.</para>
+          </listitem>
+
+          <listitem>
+            <para>When designing your application take care of the Session
+            policy inside your application. Two <emphasis
+            role="bold">strategies</emphasis> are possible: <emphasis
+            role="bold">Stateless</emphasis> (Session per business request)
+            and <emphasis role="bold">Stateful</emphasis> (Session per User)
+            or some mix.</para>
+          </listitem>
+        </itemizedlist></para>
     </section>
   </section>
 
@@ -154,7 +176,7 @@ Session session = sessionProvider.getSession("workspaceName", repository);
       provides two implementations :</para>
 
       <table>
-        <title></title>
+        <title>SessionProvider implementations</title>
 
         <tgroup cols="3">
           <thead>
@@ -192,14 +214,25 @@ Session session = sessionProvider.getSession("workspaceName", repository);
       <para>For any implementation, your code should follow the following
       sequence :</para>
 
-      <para>* Call SessionProviderService.setSessionProvider(Object key,
-      SessionProvider sessionProvider) at the beginning of a business request
-      for Stateless application or application's session for Statefull policy.
-      * Call SessionProviderService.getSessionProvider(Object key) for
-      obtaining a SessionProvider object * Call
-      SessionProviderService.removeSessionProvider(Object key) at the end of a
-      business request for Stateless application or application's session for
-      Statefull policy.</para>
+      <itemizedlist>
+        <listitem>
+          <para>Call SessionProviderService.setSessionProvider(Object key,
+          SessionProvider sessionProvider) at the beginning of a business
+          request for Stateless application or application's session for
+          Statefull policy.</para>
+        </listitem>
+
+        <listitem>
+          <para>Call SessionProviderService.getSessionProvider(Object key) for
+          obtaining a SessionProvider object</para>
+        </listitem>
+
+        <listitem>
+          <para>Call SessionProviderService.removeSessionProvider(Object key)
+          at the end of a business request for Stateless application or
+          application's session for Statefull policy.</para>
+        </listitem>
+      </itemizedlist>
     </section>
   </section>
 </chapter>
