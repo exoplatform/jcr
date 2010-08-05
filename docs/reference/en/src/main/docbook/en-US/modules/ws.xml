@@ -12,43 +12,13 @@
   <xi:include href="ws/introduction-to-rest.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-  <xi:include href="ws/rest-service-tutorial.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
-
-  <xi:include href="ws/rest-migration-to-jsr311.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
-
   <xi:include href="ws/groovy-scripts-as-rest-services.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
   <xi:include href="ws/rest-framework.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-  <xi:include href="ws/soap-service-tutorial.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
-
-  <xi:include href="ws/central-authentication-service-configuration.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
-
-  <xi:include href="ws/kerberos-sso-on-active-directory.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
-
-  <xi:include href="ws/oauth.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
-
-  <xi:include href="ws/cometd.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
-
-  <xi:include href="ws/cometd-cluster.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
-
   <xi:include href="ws/framework-for-cross-domain-ajax.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
-
-  <xi:include href="ws/cometd-cluster-bench.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
-
-  <xi:include href="ws/javascript-webdav-library.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
 </part>
