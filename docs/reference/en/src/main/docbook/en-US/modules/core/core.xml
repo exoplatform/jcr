@@ -13,8 +13,6 @@
     products and modules, it also can be used in the business logic.</para>
 
     <para>It's Authentication and Security, Organization, Database, Logging,
-    JNDI, LDAP, Document reader and other services. Find more on <ulink
-    url="http://wiki.exoplatform.org/xwiki/bin/view/Core/">eXo
-    site</ulink></para>
+    JNDI, LDAP, Document reader and other services.</para>
   </section>
 </chapter>

@@ -3,6 +3,7 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="Core.SecurityService">
   <?dbhtml filename="ch-security-service.html"?>
+
   <title>Security Service</title>
 
   <section>
@@ -14,8 +15,8 @@
     mechanism but the Security Service framework should not prevent other
     (custom or standard) mechanisms from being used. You can learn more about
     JAAS in the <ulink
-    url="Java Tutorial&gt;http://java.sun.com/j2se/1.5.0/docs/guide/security/jaas/tutorials/GeneralAcnAndAzn.html">Java
-    Tutorial&gt;http://java.sun.com/j2se/1.5.0/docs/guide/security/jaas/tutorials/GeneralAcnAndAzn.html</ulink></para>
+    url="http://java.sun.com/j2se/1.5.0/docs/guide/security/jaas/tutorials/GeneralAcnAndAzn.html">Java
+    Tutorial</ulink></para>
   </section>
 
   <section>
@@ -120,7 +121,6 @@ conversationRegistry.getState("key");</programlisting>
    * @throws Exception
    */
   Identity createIdentity(String userId) throws Exception;  
-
 }</programlisting>
 
       <para>It is up to the application developer (and deployer) whether to
@@ -259,9 +259,6 @@ if (conversationState != null) {
       org.exoplatform.services.security.jaas package, which can be used in
       appropriate AS. In particular, we have dedicated Login modules for
       Tomcat, JBoss, Jonas and WebSphere.</para>
-
-      <para><emphasis role="bold">TODO: configuration examples for Tomcat,
-      JBoss, Jonas and WebSphere</emphasis></para>
 
       <para>Besides that, for the case when third party authentication
       mechanism required, we have <emphasis

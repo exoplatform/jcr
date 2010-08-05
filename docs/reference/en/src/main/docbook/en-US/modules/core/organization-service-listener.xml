@@ -3,14 +3,14 @@
 "hp://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="Core.OrganizationListener">
   <?dbhtml filename="ch-organization-service-listener.html"?>
+
   <title>Organization Listener</title>
 
   <section>
     <title>Overview</title>
 
-    <para>The <link linkend="CoreOrganizationService">Organization
-    Service</link>The Core Organization Service provides a mechanism to
-    receive notifications when :</para>
+    <para>The <link linkend="Core.OrganizationService">Organization
+    Service</link> provides a mechanism to receive notifications when :</para>
 
     <itemizedlist>
       <listitem>
@@ -141,8 +141,8 @@
 
     <para>Registering the listeners is then achieved by using the ExoContainer
     plugin mechanism. Learn more about it on the <link
-    linkend="KernelServiceConfigurationForBeginners">Service Configuration for
-    Beginners</link> article.</para>
+    linkend="Kernel.ServiceConfigurationforBeginners">Service Configuration
+    for Beginners</link> article.</para>
 
     <para>To effectively register organization service's listeners you simply
     need to use the &lt;&gt;addListenerPlugin&lt;/&gt; seer injector.</para>

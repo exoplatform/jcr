@@ -3,6 +3,7 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="Core.SpringSecurityIntegration">
   <?dbhtml filename="ch-spring-security-integration.html"?>
+
   <title>Spring Security Integration</title>
 
   <section>

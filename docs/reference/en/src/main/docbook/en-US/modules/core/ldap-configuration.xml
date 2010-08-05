@@ -3,6 +3,7 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="Core.LDAPConfiguration">
   <?dbhtml filename="ch-ldap-configuration.html"?>
+
   <title>LDAP Configuration</title>
 
   <section>
@@ -91,10 +92,9 @@
 
       <para>Firstly, start by connection settings which will tell eXo how to
       connect to your directory server. These settings are very close to
-      <ulink url="JNDI API&gt;http://java.sun.com/products/jndi">JNDI
-      API&gt;http://java.sun.com/products/jndi</ulink> context parameters.
-      This configuration is activated by the init-param ldap.config of service
-      LDAPServiceImpl.</para>
+      <ulink url="http://java.sun.com/products/jndi">JNDI API</ulink> context
+      parameters. This configuration is activated by the init-param
+      ldap.config of service LDAPServiceImpl.</para>
 
       <programlisting>&lt;component&gt;
   &lt;key&gt;org.exoplatform.services.ldap.LDAPService&lt;/key&gt;
@@ -120,7 +120,7 @@
         <listitem>
           <para><emphasis role="bold">providerURL</emphasis>: LDAP server URL
           (see <ulink
-          url="PROVIDER_URL&gt;http://java.sun.com/products/jndi/1.2/javadoc/javax/naming/Context.html#PROVIDER_URL">PROVIDER_URL&gt;http://java.sun.com/products/jndi/1.2/javadoc/javax/naming/Context.html#PROVIDER_URL</ulink>).
+          url="http://java.sun.com/products/jndi/1.2/javadoc/javax/naming/Context.html#PROVIDER_URL">PROVIDER_URL</ulink>).
           For multiple ldap servers, use comma separated list of host:port
           (Ex. ldap://127.0.0.1:389,10.0.0.1:389).</para>
         </listitem>
@@ -128,33 +128,33 @@
         <listitem>
           <para><emphasis role="bold">rootdn</emphasis>: dn of user that will
           be used by the service to authenticate on the server (see <ulink
-          url="SECURITY_PRINCIPAL&gt;http://java.sun.com/products/jndi/1.2/javadoc/javax/naming/Context.html#SECURITY_PRINCIPAL">SECURITY_PRINCIPAL&gt;http://java.sun.com/products/jndi/1.2/javadoc/javax/naming/Context.html#SECURITY_PRINCIPAL</ulink>).</para>
+          url="http://java.sun.com/products/jndi/1.2/javadoc/javax/naming/Context.html#SECURITY_PRINCIPAL">SECURITY_PRINCIPAL</ulink>).</para>
         </listitem>
 
         <listitem>
           <para><emphasis role="bold">password</emphasis>: password for user
           rootdn (see <ulink
-          url="SECURITY_CREDENTIALS&gt;http://java.sun.com/products/jndi/1.2/javadoc/javax/naming/Context.html#SECURITY_CREDENTIALS">SECURITY_CREDENTIALS&gt;http://java.sun.com/products/jndi/1.2/javadoc/javax/naming/Context.html#SECURITY_CREDENTIALS</ulink>).</para>
+          url="http://java.sun.com/products/jndi/1.2/javadoc/javax/naming/Context.html#SECURITY_CREDENTIALS">SECURITY_CREDENTIALS</ulink>).</para>
         </listitem>
 
         <listitem>
           <para><emphasis role="bold">authenticationType</emphasis>: type of
           authentication to be used (see <ulink
-          url="SECURITY_AUTHENTICATION&gt;http://java.sun.com/products/jndi/1.2/javadoc/javax/naming/Context.html#SECURITY_AUTHENTICATION">SECURITY_AUTHENTICATION&gt;http://java.sun.com/products/jndi/1.2/javadoc/javax/naming/Context.html#SECURITY_AUTHENTICATION</ulink>).
+          url="http://java.sun.com/products/jndi/1.2/javadoc/javax/naming/Context.html#SECURITY_AUTHENTICATION">SECURITY_AUTHENTICATION</ulink>).
           Use one of none, simple, strong. Default is simple.</para>
         </listitem>
 
         <listitem>
           <para><emphasis role="bold">version</emphasis>: LDAP protocol
           version (see <ulink
-          url="java.naming.ldap.version&gt;http://java.sun.com/products/jndi/tutorial/ldap/misc/version.html">java.naming.ldap.version&gt;http://java.sun.com/products/jndi/tutorial/ldap/misc/version.html</ulink>).
+          url="http://java.sun.com/products/jndi/tutorial/ldap/misc/version.html">java.naming.ldap.version</ulink>).
           Set to 3 if your server supports LDAP V3.</para>
         </listitem>
 
         <listitem>
           <para><emphasis role="bold">referalMode</emphasis>: one of follow,
           ignore,throw (see <ulink
-          url="REFERRAL&gt;http://java.sun.com/products/jndi/1.2/javadoc/javax/naming/Context.html#REFERRAL">REFERRAL&gt;http://java.sun.com/products/jndi/1.2/javadoc/javax/naming/Context.html#REFERRAL</ulink>).</para>
+          url="http://java.sun.com/products/jndi/1.2/javadoc/javax/naming/Context.html#REFERRAL">REFERRAL</ulink>).</para>
         </listitem>
 
         <listitem>
@@ -247,14 +247,14 @@
             </listitem>
           </itemizedlist>
 
-          <para>Example : </para>
+          <para>Example :</para>
 
           <programlisting>uid=john,cn=People,o=MyCompany,c=com</programlisting>
 
           <para>However, if users exist deeply under userURL, eXo will be able
           to retrieve them.</para>
 
-          <para>Example : </para>
+          <para>Example :</para>
 
           <programlisting>uid=tom,ou=France,ou=EMEA,cn=People,o=MyCompany,c=com</programlisting>
 
@@ -548,7 +548,7 @@ l=London,dc=sites,dc=mycompany,dc=com
         the given objectClass attributes. The classes must at least define the
         attribute designated by membershipTypeMemberValue.</para>
 
-        <para>Example : Adding membership validator would produce : </para>
+        <para>Example : Adding membership validator would produce :</para>
 
         <programlisting>cn=validator,ou=human-resources,ou=groups,ou=portal,dc=exoplatform,dc=org
   objectclass: top
@@ -780,12 +780,10 @@ l=London,dc=sites,dc=mycompany,dc=com
       <title>OpenLDAP dynlist overlays</title>
 
       <para>If you use OpenLDAP, you may want to use the <ulink
-      url="overlays &gt; http://www.openldap.org/faq/data/cache/1169.html">overlays
-      &gt; http://www.openldap.org/faq/data/cache/1169.html</ulink>. Here is
-      how you can use the <ulink
-      url="dynlist overlay &gt; http://www.openldap.org/faq/data/cache/1209.html">dynlist
-      overlay &gt; http://www.openldap.org/faq/data/cache/1209.html</ulink> to
-      have memberships dynamically populated.</para>
+      url="http://www.openldap.org/faq/data/cache/1169.html">overlays</ulink>.
+      Here is how you can use the <ulink
+      url="http://www.openldap.org/faq/data/cache/1209.html">dynlist
+      overlay</ulink> to have memberships dynamically populated.</para>
 
       <para>The main idea is to have your memberships populated dynamically by
       an ldap query. Thus, you no longer have to maintain manually the roles
