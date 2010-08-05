@@ -22,8 +22,8 @@
     places the configuration override mechanism will be used.</para>
 
     <para>Confused? - You might be interested in the <link
-    linkend="KernelServiceConfigurationforBeginners">Service Configuration for
-    Beginners</link> article, which explains the basics.</para>
+    linkend="Kernel.ServiceConfigurationforBeginners">Service Configuration
+    for Beginners</link> article, which explains the basics.</para>
   </section>
 
   <section id="Kernel.ContainerConfiguration.ConfigurationNamespace">

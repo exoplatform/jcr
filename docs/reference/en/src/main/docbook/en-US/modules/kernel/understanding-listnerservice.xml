@@ -10,17 +10,17 @@
 
   <itemizedlist>
     <listitem>
-      <para><link linkend="KernelServiceConfigurationforBeginners">Service
+      <para><link linkend="Kernel.ServiceConfigurationforBeginners">Service
       Configuration for Beginners</link></para>
     </listitem>
 
     <listitem>
-      <para><link linkend="KernelServiceConfigurationinDetail">Service
+      <para><link linkend="Kernel.ServiceConfigurationinDetail">Service
       Configuration in Detail</link></para>
     </listitem>
 
     <listitem>
-      <para><link linkend="KernelContainerConfiguration">Container
+      <para><link linkend="Kernel.ContainerConfiguration">Container
       Configuration</link></para>
     </listitem>
   </itemizedlist>

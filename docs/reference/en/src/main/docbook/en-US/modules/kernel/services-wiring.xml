@@ -43,7 +43,7 @@
     important to be able to configure the loaded services per instance.
     Therefore all the default configuration files located in the service impl
     jar can be overridden from the portal war. For more information refer to
-    <link linkend="KernelServiceConfigurationforBeginners">Service
+    <link linkend="Kernel.ServiceConfigurationforBeginners">Service
     Configuration for Beginners</link>.</para>
   </section>
 
@@ -145,7 +145,7 @@
     <title>JMX auto wiring</title>
 
     <para>For JMX wiring please refer to <link
-    linkend="KernelJMXMBeanServer">JMX MBean Server</link>.</para>
+    linkend="Kernel.JMXMBeanServer">JMX MBean Server</link>.</para>
   </section>
 
   <section>
