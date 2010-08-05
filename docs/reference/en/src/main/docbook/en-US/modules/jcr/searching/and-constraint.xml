@@ -11,7 +11,7 @@
   whose "prop_pagecount" property value is less than 90.</para>
 
   <note>
-    <para>See also <link linkend="JCR.MultiValuePropertyComparison">Multivalue
+    <para>See also <link linkend="JCR.MultivaluePropertyComparison">Multivalue
     Property Comparison</link>.</para>
   </note>
 

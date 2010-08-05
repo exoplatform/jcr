@@ -2,7 +2,7 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="JCR.QueryUsecases">
- <?dbhtml filename="ch-jcr-query-usecases.html"?>
+  <?dbhtml filename="ch-jcr-query-usecases.html"?>
 
   <title>JCR Query Usecases</title>
 
@@ -79,8 +79,8 @@ while(rowIterator.hasNext()){
 
       <para>jcr:score counted in next way - (lucene score)*1000f.</para>
 
-      <para>Score may be increased for specified nodes, see <ulink
-      url="Index Boost Value">Index Boost Value</ulink></para>
+      <para>Score may be increased for specified nodes, see <link
+      linkend="JCR.IndexBoostRule">Index Boost Value</link></para>
 
       <para>Also, see an example <link linkend="JCR.OrderByScore">Order by
       Score</link></para>

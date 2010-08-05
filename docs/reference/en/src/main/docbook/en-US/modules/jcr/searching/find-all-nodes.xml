@@ -5,8 +5,8 @@
   <title>Find All Nodes</title>
 
   <para>Find all nodes in the repository. Only those nodes are found to which
-  the session has READ permission. See also <ulink
-  url="JCR.AccessControl">Access Control</ulink>.</para>
+  the session has READ permission. See also <link
+  linkend="JCR.AccessControl">Access Control</link>.</para>
 
   <section>
     <title>Repository structure:</title>
