@@ -597,11 +597,13 @@ public class LDAPConnectionConfig {
     <para>The content of <emphasis role="bold">&lt;init-params&gt;</emphasis>
     corresponds to the structure of the TaxonomyPlugin object.</para>
 
-    <para>#info("You can configure the component CategoriesService using the
-    addTaxonomyPlugin as often as you wish, you can also call
-    addTaxonomyPlugin in different configuration files. The method
-    addTaxonomyPlugin is then called several times, everything else depends on
-    the implementation of the method")</para>
+    <note>
+      <para>You can configure the component CategoriesService using the
+      addTaxonomyPlugin as often as you wish, you can also call
+      addTaxonomyPlugin in different configuration files. The method
+      addTaxonomyPlugin is then called several times, everything else depends
+      on the implementation of the method</para>
+    </note>
   </section>
 
   <section id="Import">

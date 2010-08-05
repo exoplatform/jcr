@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id = "WS.SOAPTutorial">
+<chapter id="WS.SOAPTutorial">
   <?dbhtml filename="ch-soap-service-tutorial.html"?>
 
   <title>SOAP Service Tutorial</title>
@@ -242,7 +242,6 @@ INFO: Setting the server's publish address to be /TicketOrderService/TicketOrder
 03.09.2009 17:21:27 *INFO * [http-8080-1] TicketOrderServiceImpl: Confirmation : false for order '1251991287079'. (TicketOrderServiceImpl.java, line 65)</programlisting>
 
     <para>Now, your service is started and you can retrieve the WSDL at :
-    <link
-    linkend="???">http://localhost:8080/ws-examples/soap/services/TicketOrderService/TicketOrderServicePort?wsdl</link></para>
+    <uri>http://localhost:8080/ws-examples/soap/services/TicketOrderService/TicketOrderServicePort?wsdl</uri></para>
   </section>
 </chapter>

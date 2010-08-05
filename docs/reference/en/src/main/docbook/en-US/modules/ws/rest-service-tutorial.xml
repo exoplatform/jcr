@@ -168,8 +168,8 @@ public class Calculator implements ResourceContainer {
 
     <para>We have done all now. Then copy the jar file from the target
     directory of project exo-tomcat into the server with all prepared stuff
-    for REST services. (You can download it here: <link
-    linkend="???">http://forge.objectweb.org/project/download.php?group_id=151&amp;file_id=9862</link>)</para>
+    for REST services. (You can download it here: <ulink
+    url="http://forge.ow2.org/project/download.php?group_id=151&amp;file_id=9862">http://forge.objectweb.org/project/download.php?group_id=151&amp;file_id=9862</ulink>)</para>
 
     <para>So just put the jar file into the lib directory of the tomcat and
     restart it. In the console you should see this message:</para>
@@ -183,9 +183,9 @@ public class Calculator implements ResourceContainer {
   <section>
     <title>Usage</title>
 
-    <para>Open your browser and type the following URL: <link
-    linkend="???">http://localhost:8080/rest/calculator/12/5/?operation=add</link>
-    and you should see the next page:</para>
+    <para>Open your browser and type the following URL:
+    <uri>http://localhost:8080/rest/calculator/12/5/?operation=add</uri> and
+    you should see the next page:</para>
 
     <mediaobject>
       <imageobject>
@@ -200,20 +200,17 @@ public class Calculator implements ResourceContainer {
 
     <itemizedlist>
       <listitem>
-        <para><link
-        linkend="???">http://localhost:8080/rest/calculator/12/5/?operation=subtract</link>
+        <para><uri>http://localhost:8080/rest/calculator/12/5/?operation=subtract</uri>
         - must give "12 - 5 = 7";</para>
       </listitem>
 
       <listitem>
-        <para><link
-        linkend="???">http://localhost:8080/rest/calculator/12/5/?operation=multiply</link>
+        <para><uri>http://localhost:8080/rest/calculator/12/5/?operation=multiply</uri>
         - must give "12 * 5 = 60";</para>
       </listitem>
 
       <listitem>
-        <para><link
-        linkend="???">http://localhost:8080/rest/calculator/12/5/?operation=divide</link>-
+        <para><uri>http://localhost:8080/rest/calculator/12/5/?operation=divide</uri>-
         must give "12 / 5 = 2" (we are working with integers!);</para>
       </listitem>
     </itemizedlist>

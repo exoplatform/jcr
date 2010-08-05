@@ -716,9 +716,6 @@ l=London,dc=sites,dc=mycompany,dc=com
         unsecured connection you have to use the ldaps protocol</para>
       </note>
 
-      <para>#info("There is a microsoft limitation: password can't be set in
-      AD via unsecured connection you have to use the ldaps protocol")</para>
-
       <para>here is how to use LDAPS protocol with Active Directory :</para>
 
       <programlisting>1 setup AD to use SSL:
