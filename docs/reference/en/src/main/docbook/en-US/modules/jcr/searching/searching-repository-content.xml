@@ -34,8 +34,6 @@
           <para>XPath query: //* .</para>
         </listitem>
       </itemizedlist>
-
-      <para>")</para>
     </note>
 
     <para>TwoWayRangeIterator interface:</para>

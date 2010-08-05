@@ -55,26 +55,35 @@
     <para>The following setup procedure is used to obtain a Standalone
     configuration (find more in <link
     linkend="Kernel.ContainerConfiguration">Container
-    configuration</link>):</para>
+    configuration</link>):<itemizedlist>
+        <listitem>
+          <para>Configuration that is set explicitly using
+          StandaloneContainer.addConfigurationURL(String url) or
+          StandaloneContainer.addConfigurationPath(String path) before
+          getInstance()</para>
+        </listitem>
 
-    <para>* Configuration that is set explicitly using
-    StandaloneContainer.addConfigurationURL(String url) or
-    StandaloneContainer.addConfigurationPath(String path) before
-    getInstance()</para>
+        <listitem>
+          <para>Configuration from $base:directory/exo-configuration.xml or
+          $base:directory/conf/exo-configuration.xml file. Where
+          $base:directory is either AS's home directory in case of J2EE AS
+          environment or just the current directory in case of a standalone
+          application.</para>
+        </listitem>
 
-    <para>* Configuration from $base:directory/exo-configuration.xml or
-    $base:directory/conf/exo-configuration.xml file. Where $base:directory is
-    either AS's home directory in case of J2EE AS environment or just the
-    current directory in case of a standalone application.</para>
+        <listitem>
+          <para>/conf/exo-configuration.xml in the current classloader (e.g.
+          war, ear archive)</para>
+        </listitem>
 
-    <para>* /conf/exo-configuration.xml in the current classloader (e.g. war,
-    ear archive)</para>
-
-    <para>* Configuration from
-    $service_jar_file/conf/portal/configuration.xml. WARNING: do not rely on
-    some concrete jar's configuration if you have more than one jar containing
-    conf/portal/configuration.xml file. In this case choosing a configuration
-    is unpredictable.</para>
+        <listitem>
+          <para>Configuration from
+          $service_jar_file/conf/portal/configuration.xml. WARNING: do not
+          rely on some concrete jar's configuration if you have more than one
+          jar containing conf/portal/configuration.xml file. In this case
+          choosing a configuration is unpredictable.</para>
+        </listitem>
+      </itemizedlist></para>
 
     <para>JCR service configuration looks like:</para>
 
