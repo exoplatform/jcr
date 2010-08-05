@@ -3,6 +3,7 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="JCR.LinkProducerService">
   <?dbhtml filename="ch-link-producer.html"?>
+
   <title>Link Producer Service</title>
 
   <para>Link Producer Service - a simple service, which generates an .lnk
@@ -19,17 +20,15 @@
 &lt;/component&gt;</programlisting>
 
   <para>When using JCR the resource can be addressed by WebDav reference
-  (href) like <emphasis role="bold"> <ulink
-  url="http://host:port/rest/jcr/repository/workspace/somenode/somefile.extention">http://host:port/rest/jcr/repository/workspace/somenode/somefile.extention</ulink>
-  </emphasis>, the link servlet must be called for this resource by several
-  hrefs, like <emphasis role="bold"> <ulink
-  url="http://localhost:8080/rest/lnkproducer/openit.lnk?path=/repository/workspace/somenode/somefile.extention">http://localhost:8080/rest/lnkproducer/openit.lnk?path=/repository/workspace/somenode/somefile.extention</ulink>
-  </emphasis></para>
+  (href) like
+  <uri>http://host:port/rest/jcr/repository/workspace/somenode/somefile.extention</uri>
+  , the link servlet must be called for this resource by several hrefs, like
+  <uri>http://localhost:8080/rest/lnkproducer/openit.lnk?path=/repository/workspace/somenode/somefile.extention</uri>
+  </para>
 
   <para>Please note, that when using the portal mode the REST servlet is
-  available using a reference (href) like <emphasis role="bold"> <ulink
-  url="http://localhost:8080/portal/rest/">http://localhost:8080/portal/rest/</ulink>...
-  </emphasis></para>
+  available using a reference (href) like
+  <uri>http://localhost:8080/portal/rest/...</uri></para>
 
   <para>The name of the .lnk file can be any. But for the best compatibility
   it must be the same as the name of the JCR resource.</para>

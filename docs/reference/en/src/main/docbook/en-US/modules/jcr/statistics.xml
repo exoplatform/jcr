@@ -229,24 +229,24 @@
         <para><emphasis>exo.jcr.component.statistics-X.Y.Z</emphasis>.jar
         corresponding to your eXo JCR version that you can get from the jboss
         maven repository <ulink
-        url="???"><uri>http://repository.jboss.com/maven2/org/exoplatform/jcr/exo.jcr.component.statistics</uri></ulink>.</para>
+        url="http://repository.jboss.com/maven2/org/exoplatform/jcr/exo.jcr.component.statistics">http://repository.jboss.com/maven2/org/exoplatform/jcr/exo.jcr.component.statistics</ulink>.</para>
       </listitem>
 
       <listitem>
         <para>aspectjrt-1.6.8.jar that you can get from the main maven
         repository <ulink
-        url="???"><uri>http://repo2.maven.org/maven2/org/aspectj/aspectjrt</uri></ulink>.</para>
+        url="http://repo2.maven.org/maven2/org/aspectj/aspectjrt"><uri>http://repo2.maven.org/maven2/org/aspectj/aspectjrt</uri></ulink>.</para>
       </listitem>
     </itemizedlist>
 
     <para>You will also need to get aspectjweaver-1.6.8.jar from the main
     maven repository <ulink
-    url="???">http://repo2.maven.org/maven2/org/aspectj/aspectjweaver</ulink>.
+    url="http://repo2.maven.org/maven2/org/aspectj/aspectjweaver">http://repo2.maven.org/maven2/org/aspectj/aspectjweaver</ulink>.
     At this stage, to enable the statistics on the JCR API accesses, you will
     need to add the JVM parameter
     <emphasis>-javaagent:${pathto}/aspectjweaver-1.6.8.jar</emphasis> to your
     command line, for more details please refer to <ulink
-    url="???">http://www.eclipse.org/aspectj/doc/released/devguide/ltw-configuration.html</ulink>.</para>
+    url="http://www.eclipse.org/aspectj/doc/released/devguide/ltw-configuration.html">http://www.eclipse.org/aspectj/doc/released/devguide/ltw-configuration.html</ulink>.</para>
 
     <para>By default, the configuration will collect statistcs on all the
     methods of the internal interfaces

@@ -3,13 +3,18 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="JCR.WebDAV">
   <?dbhtml filename="ch-webdav.html"?>
+
   <title>WebDAV</title>
 
   <section>
     <title>Related documents</title>
 
-    <para>* Link Producer * Microsoft Office plugin * Open Office Add-On *
-    WebDav Client Libraries</para>
+    <itemizedlist>
+      <listitem>
+        <para><link linkend="JCR.LinkProducerService">Link
+        Producer</link></para>
+      </listitem>
+    </itemizedlist>
   </section>
 
   <section>
@@ -39,22 +44,20 @@
 
     <para>Standalone mode:</para>
 
-    <para><ulink
-    url="http://host:port/rest/jcr/">http://host:port/rest/jcr/</ulink>{RepositoryName}/{WorkspaceName}/{Path}</para>
+    <para><uri>http://host:port/rest/jcr/{RepositoryName}/{WorkspaceName}/{Path}</uri></para>
 
     <para>Portal mode:</para>
 
-    <para><ulink
-    url="http://host:port/portal/rest/private/jcr/">http://host:port/portal/rest/private/jcr/</ulink>{RepositoryName}/{WorkspaceName}/{Path}</para>
+    <para><uri>http://host:port/portal/rest/private/jcr/{RepositoryName}/{WorkspaceName}/{Path}</uri></para>
 
-    <para>When accessing the WebDAV server - here URL is <ulink
-    url="http://localhost:8080/rest/jcr/repository/production">http://localhost:8080/rest/jcr/repository/production</ulink>,
-    you might also use "collaboration" (instead of "production") which is the
-    default workspace in eXo products - the user will be asked to enter his
-    login and password. Those will then be checked using the organization
-    service (that can be implemented thanks to an Inmemory(dummy) module or DB
-    module or LDAP one) and the JCR user session will be created with the
-    correct JCR Credentials.</para>
+    <para>When accessing the WebDAV server - here URL is
+    <uri>http://localhost:8080/rest/jcr/repository/production</uri>, you might
+    also use "collaboration" (instead of "production") which is the default
+    workspace in eXo products - the user will be asked to enter his login and
+    password. Those will then be checked using the organization service (that
+    can be implemented thanks to an Inmemory(dummy) module or DB module or
+    LDAP one) and the JCR user session will be created with the correct JCR
+    Credentials.</para>
 
     <para><emphasis role="bold">NOTE:</emphasis> If you try the "in ECM"
     option, add "@ecm" to the user's password. Alternatively, you may modify

@@ -102,7 +102,7 @@
       <itemizedlist>
         <listitem>
           <para><emphasis role="bold">types of full and incremental
-          backup</emphasis> ? (fullBackupType, incrementalBackupType) Strings
+          backup</emphasis> - (fullBackupType, incrementalBackupType) Strings
           with full names of classes which will cover the type
           functional.</para>
         </listitem>
@@ -115,12 +115,12 @@
 
         <listitem>
           <para><emphasis role="bold">target repository and workspace
-          names</emphasis> ? Strings with described names</para>
+          names</emphasis> - Strings with described names</para>
         </listitem>
 
         <listitem>
           <para><emphasis role="bold">destination directory</emphasis> for
-          result files ? String with a path to a folder where operation result
+          result files - String with a path to a folder where operation result
           files will be stored.</para>
         </listitem>
       </itemizedlist>
@@ -129,7 +129,7 @@
       the principle of initial Full backup execution and manages Incrementals
       operations. BackupChain is used as a key object for accessing current
       backups during runtime via BackupManager. Each BackupJob performs a
-      single atomic operation ? a Full or Incremental process. The result of
+      single atomic operation - a Full or Incremental process. The result of
       that operation is data for a Restore. BackupChain can contain one or
       more BackupJobs. But at least the initial Full job is always there. Each
       BackupJobs has its own unique number which means its Job order in the
@@ -180,9 +180,6 @@
         <para>The target workspace should not be in the repository. Otherwise
         a BackupConfigurationException exception will be thrown.</para>
       </note>
-
-      <para>For creation and manipulation with Workspaces check the article
-      <link linkend="TODO">Repository and Workspace management</link>.</para>
 
       <para>Finally we may say that a Restore is a process of a new Workspace
       creation and filling it with a Backup content. In case you already have
@@ -351,7 +348,7 @@ repo.removeWorkspace(workspace);</programlisting></para>
             </listitem>
 
             <listitem>
-              <para>clean database, value storage, index; </para>
+              <para>clean database, value storage, index;</para>
             </listitem>
 
             <listitem>

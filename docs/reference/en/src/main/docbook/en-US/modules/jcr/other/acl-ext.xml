@@ -3,31 +3,46 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="JCR.AccessControlExtension">
   <?dbhtml filename="ch-acl-ext.html"?>
+
   <title>Access Control Extension</title>
 
   <section>
     <title>Prerequisites</title>
 
     <para>This is an extension of eXo JCR Access Control features. Please read
-    <ulink url="Access Control">Access Control</ulink> and <ulink
-    url="JCR Extensions">JCR Extensions</ulink> topics before.</para>
+    <link linkend="JCR.AccessControl">Access Control</link> and <link
+    linkend="JCR.Extensions">JCR Extensions</link> topics before.</para>
   </section>
 
   <section>
     <title>Overview</title>
 
-    <para>An extended Access Control system consists of: * Specifically
-    configured custom <emphasis role="bold">Extended Access Manager</emphasis>
-    which is called by eXo JCR internals to check if some user's Session
-    (user) has some privilege to perform some operation * The <emphasis
-    role="bold">Action</emphasis> which sets the thread local <emphasis
-    role="bold">Invocation Context</emphasis> at runtime. This invocation
-    context is used by the Extended Access Manager to make a decision about
-    the current Session's permission * <emphasis role="bold">Invocation
-    Context</emphasis> is a collection of properties which reflect the state
-    of a current Session. For the time being it contains: the type of the
-    current operation on Session (event), current Item (javax.jcr.Item) on
-    which this operation is performed and the current eXo Container</para>
+    <para>An extended Access Control system consists of:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Specifically configured custom <emphasis role="bold">Extended
+        Access Manager</emphasis> which is called by eXo JCR internals to
+        check if some user's Session (user) has some privilege to perform some
+        operation</para>
+      </listitem>
+
+      <listitem>
+        <para>The <emphasis role="bold">Action</emphasis> which sets the
+        thread local <emphasis role="bold">Invocation Context</emphasis> at
+        runtime. This invocation context is used by the Extended Access
+        Manager to make a decision about the current Session's
+        permission</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">Invocation Context</emphasis> is a
+        collection of properties which reflect the state of a current Session.
+        For the time being it contains: the type of the current operation on
+        Session (event), current Item (javax.jcr.Item) on which this operation
+        is performed and the current eXo Container</para>
+      </listitem>
+    </itemizedlist>
   </section>
 
   <section>
@@ -148,7 +163,6 @@
       return false;
     }
   }
-}
-</programlisting>
+}</programlisting>
   </section>
 </chapter>

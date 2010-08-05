@@ -3,13 +3,14 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="JCR.AccessControl">
   <?dbhtml filename="ch-acl.html"?>
+
   <title>Access Control</title>
 
   <para>eXo JCR is a complete implementation of the standard JSR 170: <ulink
-  url="Content Repository for Java TM Technology API &gt; http://jcp.org/en/jsr/detail?id=170">Content
-  Repository for Java TM Technology API</ulink>, including <emphasis
-  role="bold">Level 1, Level 2 and Additional Features</emphasis> as is
-  specified in the JCR Specification.</para>
+  url="http://jcp.org/en/jsr/detail?id=170">Content Repository for Java TM
+  Technology API</ulink>, including <emphasis role="bold">Level 1, Level 2 and
+  Additional Features</emphasis> as is specified in the JCR
+  Specification.</para>
 
   <section>
     <title>Standard Action Permissions</title>
@@ -282,8 +283,8 @@
       repository to auto-create <emphasis
       role="bold">exo:privilegeable</emphasis> or/and <emphasis
       role="bold">exo:owneable</emphasis> thanks to eXo's JCR interceptors
-      extension (see <ulink
-      url="http://wiki.exoplatform.org/xwiki/bin/view/JCR/JCR+Extensions">http://wiki.exoplatform.org/xwiki/bin/view/JCR/JCR+Extensions</ulink>)</para>
+      extension (see <link linkend="JCR.Extensions">JCR
+      Extensions</link>)</para>
 
       <para><emphasis role="bold">OR-based Privilege Inheritance</emphasis>
       Note, that eXo's Access Control implementation supports an privilege
@@ -304,10 +305,12 @@
         <para>In the following example, you see a node named "Politics" which
         contains two nodes named "Cats" and "Dogs".</para>
 
-        <para>#info("These examples are exported from eXo DMS using the
-        \"document view\" representation of JCR. Each value of a multivalue
-        property is separated by a whitespace, each whitespace is escaped by
-        <emphasis>x0020</emphasis>.")</para>
+        <note>
+          <para>These examples are exported from eXo DMS using the \"document
+          view\" representation of JCR. Each value of a multivalue property is
+          separated by a whitespace, each whitespace is escaped by
+          <emphasis>x0020</emphasis>.</para>
+        </note>
 
         <programlisting>&lt;Politics  jcr:primaryType="nt:unstructured" jcr:mixinTypes="exo:owneable exo:datetime exo:privilegeable" exo:dateCreated="2009-10-08T18:02:43.687+02:00" 
 exo:dateModified="2009-10-08T18:02:43.703+02:00" 
@@ -374,7 +377,7 @@ exo:text="" exo:title="Dogs_x0020_are_x0020_friends" /&gt;
 
         <mediaobject>
           <imageobject>
-            <imagedata fileref="images/other.acl.gif" />
+            <imagedata fileref="images/other/acl.gif" />
           </imageobject>
         </mediaobject>
       </section>
@@ -387,18 +390,68 @@ exo:text="" exo:title="Dogs_x0020_are_x0020_friends" /&gt;
       interface provides additional methods for Access Control
       management.</para>
 
-      <para>{table} Method signature |Description void
-      setPermissions(Map\&lt;String, String\ <ulink url="\">\</ulink>\&gt;
-      permissions)| Assigns a set of Permissions to a node void
-      setPermission(String identity, String\ <ulink url="\">\</ulink>
-      permission)| Assigns some Identity's Permission to a node void
-      removePermission(String identity)| Remove Identity's Permission void
-      removePermission(String identity, String permission)|Remove the
-      specified permission for a particular identity void clearACL()| Clears
-      the current ACL so it becomes default AccessControlList getACL()|
-      Returns the current ACL void checkPermission(String actions)| Checks
-      Permission (AccessDeniedException will be thrown if denied)
-      {table}</para>
+      <table>
+        <title>Additional methods</title>
+
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Method signature</entry>
+
+              <entry>Description</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry>void setPermissions(Map&lt;String, String[]&gt;
+              permissions)</entry>
+
+              <entry>Assigns a set of Permissions to a node</entry>
+            </row>
+
+            <row>
+              <entry>void setPermission(String identity, String[]
+              permission)</entry>
+
+              <entry>Assigns some Identity's Permission to a node</entry>
+            </row>
+
+            <row>
+              <entry>void removePermission(String identity)</entry>
+
+              <entry>Remove Identity's Permission</entry>
+            </row>
+
+            <row>
+              <entry>void removePermission(String identity, String
+              permission)</entry>
+
+              <entry>Remove the specified permission for a particular
+              identity</entry>
+            </row>
+
+            <row>
+              <entry>void clearACL()</entry>
+
+              <entry>Clears the current ACL so it becomes default</entry>
+            </row>
+
+            <row>
+              <entry>AccessControlList getACL()</entry>
+
+              <entry>Returns the current ACL</entry>
+            </row>
+
+            <row>
+              <entry>void checkPermission(String actions)</entry>
+
+              <entry>Checks Permission (AccessDeniedException will be thrown
+              if denied)</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
 
       <para>The "identity" parameter is the user or group name. The
       permissions are the literal strings of the standard action permissions

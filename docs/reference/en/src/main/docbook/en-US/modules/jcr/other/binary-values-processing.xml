@@ -3,6 +3,7 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="JCR.BinaryValuesProcessing">
   <?dbhtml filename="ch-binary-values-processing.html"?>
+
   <title>Binary Values Processing</title>
 
   <section>
@@ -28,17 +29,15 @@
 
     <note>
       <para>eXo JCR Repository service configuration basics is discussed in
-      <ulink
-      url="Configuration&gt;http://wiki.exoplatform.com/xwiki/bin/view/JCR/Configuration">Configuration</ulink></para>
+      <link linkend="JCR.eXoJCRconfiguration">Configuration</link></para>
 
       <para>Database and workspace persistence storage configuration is
-      discussed in <ulink
-      url="http://wiki.exoplatform.com/xwiki/bin/view/JCR/JDBC+Data+Container+config">JDBC
-      Data Container config</ulink></para>
+      discussed in <link linkend="JCR.JDBCDataContainerConfig">JDBC Data
+      Container config</link></para>
 
-      <para>Configuration details for <ulink
-      url="http://wiki.exoplatform.com/xwiki/bin/view/JCR/External+Value+Storages">External
-      Value Storages</ulink>.</para>
+      <para>Configuration details for <link
+      linkend="JCR.ExternalValueStorages">External Value
+      Storages</link>.</para>
     </note>
   </section>
 

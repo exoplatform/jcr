@@ -3,6 +3,7 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="JCR.Organizationservice">
   <?dbhtml filename="ch-jcr-organization-service.html"?>
+
   <title>JCR Organization service</title>
 
   <para>This is an implementation of the exo.core.component.organization.api
@@ -59,7 +60,7 @@
   storage will be created&lt;br&gt; storage-path - the relative path to the
   stored data&lt;br&gt;</para>
 
-  <para>You should also read how to use the <ulink
-  url="Core.Organization Service Initializer">Core.Organization Service
-  Initializer</ulink>.</para>
+  <para>You should also read how to use the <link
+  linkend="Core.OrganizationServiceInitializer">Organization Service
+  Initializer</link>.</para>
 </chapter>
