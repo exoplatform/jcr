@@ -149,7 +149,7 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="JCR.eXoJCRconfiguration.RepositoryConfiguration">
     <title>Repository service configuration (JCR repositories
     configuration)</title>
 

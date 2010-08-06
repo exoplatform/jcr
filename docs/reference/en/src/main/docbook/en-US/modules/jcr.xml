@@ -13,9 +13,12 @@
   <xi:include href="jcr/concepts/why-jcr.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
               
-  <xi:include href="jcr/concepts/jcr-advantages.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />              
+ <xi:include href="jcr/concepts/jcr-exo-implementation.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
               
+  <xi:include href="jcr/concepts/jcr-advantages.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
   <xi:include href="jcr/concepts/jcr-compatibility-levels.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
               
