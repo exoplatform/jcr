@@ -95,7 +95,7 @@ public class CmdList extends FtpCommandImpl
 
             dataTransiver.close();
 
-            String dd = new String(fileData, "windows-1251");
+            String dd = new String(fileData, "utf-8");
 
             String[] lines = dd.split("\r\n");
 
