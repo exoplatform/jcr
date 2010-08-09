@@ -26,13 +26,13 @@
    </parent>
 
    <modelVersion>4.0.0</modelVersion>
-   <artifactId>exo.jcr.docs</artifactId>
+   <artifactId>exo.jcr.docs.developer</artifactId>
 
-   <name>eXo JCR :: Documentation :: Reactor</name>
+   <name>eXo JCR :: Developer Documentation :: Reactor</name>
    <packaging>pom</packaging>
 
    <modules>
-      <module>exo.jcr.docs.developer</module>
-      <!--module>exo.jcr.docs.user</module-->
+      <module>reference</module>
+      <module>userguide</module>
    </modules>
 </project>
