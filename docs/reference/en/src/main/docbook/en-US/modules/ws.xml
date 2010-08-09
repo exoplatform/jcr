@@ -12,6 +12,9 @@
   <xi:include href="ws/introduction-to-rest.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
+  <xi:include href="ws/restservicelist-service.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
   <xi:include href="ws/groovy-scripts-as-rest-services.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
