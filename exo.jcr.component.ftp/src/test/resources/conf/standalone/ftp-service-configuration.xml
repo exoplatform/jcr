@@ -45,7 +45,7 @@
          </value-param>
          <value-param>
             <name>client-side-encoding</name>
-            <value>windows-1251</value>
+            <value>utf-8</value>
             <!-- value>KOI8-R</value -->
          </value-param>
          <value-param>
