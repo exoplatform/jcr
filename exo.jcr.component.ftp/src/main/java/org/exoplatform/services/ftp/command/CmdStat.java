@@ -43,7 +43,7 @@ public class CmdStat extends FtpCommandImpl
          "  _/        _/    _/         _/_/_/     _/   _/   _/   _/     ",
          "  ____________________________________________________________", "  Connected from: [127.0.0.1]",
          "  Logged in as: [admin]", "  TYPE: ASCII", "  STRUcture: File", "  MODE: Stream", "  SYSTEM: Unix L8",
-         "  CLIENT-SIDE-ENCODING: WINDOWS-1251", "  ____________________________________  http://eXoPlatform.org", "",
+         "  CLIENT-SIDE-ENCODING: UTF-8", "  ____________________________________  http://eXoPlatform.org", "",
          "211 -"};
 
    public void run(String[] params) throws IOException
