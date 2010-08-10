@@ -64,7 +64,7 @@ public class TestCaching extends BaseStandaloneTest
       Node contentNode = node.getNode("jcr:content");
       Property lastModifiedProperty = contentNode.getProperty("jcr:lastModified");
       
-      SimpleDateFormat dateFormat = new SimpleDateFormat(WebDavConst.DateFormat.IF_MODIFIED_SINCE_PATTERN);
+      SimpleDateFormat dateFormat = new SimpleDateFormat(WebDavConst.DateFormat.IF_MODIFIED_SINCE_PATTERN, Locale.US);
       Calendar lastModifiedDate = lastModifiedProperty.getDate();
       
       lastModifiedDate.roll(Calendar.SECOND, -10);
@@ -83,7 +83,7 @@ public class TestCaching extends BaseStandaloneTest
       Node contentNode = node.getNode("jcr:content");
       Property lastModifiedProperty = contentNode.getProperty("jcr:lastModified");
       
-      SimpleDateFormat dateFormat = new SimpleDateFormat(WebDavConst.DateFormat.IF_MODIFIED_SINCE_PATTERN);
+      SimpleDateFormat dateFormat = new SimpleDateFormat(WebDavConst.DateFormat.IF_MODIFIED_SINCE_PATTERN, Locale.US);
       Calendar lastModifiedDate = lastModifiedProperty.getDate();
       
       lastModifiedDate.add(Calendar.WEEK_OF_MONTH, 1);
