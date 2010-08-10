@@ -248,7 +248,7 @@ public class DocumentViewImporter extends BaseXmlImporter
          }
          else if (nodeData.isMixReferenceable() && propName.equals(Constants.JCR_UUID))
          {
-            newProperty = endUuid(nodeData, propName);
+            newProperty = endUuid(nodeData, propName, propertiesMap.get(Constants.JCR_UUID));
          }
          else
          {
@@ -479,19 +479,24 @@ public class DocumentViewImporter extends BaseXmlImporter
       return newProperty;
    }
 
-   private PropertyData endUuid(ImportNodeData nodeData, InternalQName key) throws ValueFormatException,
+   private PropertyData endUuid(ImportNodeData nodeData, InternalQName key, String properyValueUUID) throws ValueFormatException,
       UnsupportedRepositoryOperationException, RepositoryException, IllegalStateException
    {
       PropertyData newProperty;
-      Value value = valueFactory.createValue(nodeData.getIdentifier(), PropertyType.STRING);
-      if (log.isDebugEnabled())
+      
+      if (nodeData.getQPath().isDescendantOf(Constants.JCR_VERSION_STORAGE_PATH))
       {
-         log.debug("Property STRING: " + key + "=" + value.getString());
+         newProperty =
+            TransientPropertyData.createPropertyData(getParent(), Constants.JCR_UUID, PropertyType.STRING, false,
+                     new TransientValueData(properyValueUUID));
       }
-
-      newProperty =
-         TransientPropertyData.createPropertyData(getParent(), Constants.JCR_UUID, PropertyType.STRING, false,
-            new TransientValueData(nodeData.getIdentifier()));
+      else
+      {
+         newProperty =
+                  TransientPropertyData.createPropertyData(getParent(), Constants.JCR_UUID, PropertyType.STRING, false,
+                           new TransientValueData(nodeData.getIdentifier()));
+      }
+      
       return newProperty;
    }
 
