@@ -1048,9 +1048,7 @@ public class TestImport extends AbstractImportTest
       byte[] versionableNode = serialize(fileNode, false, true);
       // version history
       byte[] versionHistory = serialize(fileNode.getVersionHistory(), false, true);
-      System.out.println(new String(versionHistory));
-
-      
+      //System.out.println(new String(versionHistory));
       
       // restore node content
       Node restoreRoot = testRoot.addNode("restRoot");
@@ -1132,9 +1130,7 @@ public class TestImport extends AbstractImportTest
       byte[] versionableNode = serialize(fileNode, true, true);
       // version history
       byte[] versionHistory = serialize(fileNode.getVersionHistory(), false, true);
-      System.out.println(new String(versionHistory));
-
-      
+      //System.out.println(new String(versionHistory));
       
       // restore node content
       Node restoreRoot = testRoot.addNode("restRoot");
@@ -1160,6 +1156,640 @@ public class TestImport extends AbstractImportTest
       assertNotNull(property.getDefinition());
       
       fileImport.restore("3", true);
+      root.save();
+      
+      property = fileImport.getProperty("jcr:predecessors");
+      assertNotNull(property);
+      assertNotNull(property.getDefinition());
+      
+      fileImport.checkin();
+      fileImport.checkout();
+      root.save();
+   }
+   
+   public void testEXOJCR865_Doc_exo_webContent_1() throws Exception
+   {
+      // node content
+      Node testRoot = root.addNode("testRoot");
+      root.save();
+      
+      Node web = testRoot.addNode("web", "exo:webContent");
+      
+      web.addMixin("exo:datetime");
+      web.addMixin("exo:owneable");
+      web.addMixin("exo:modify");
+      web.addMixin("mix:votable");
+      web.addMixin("mix:commentable");
+      web.addMixin("publication:stateAndVersionBasedPublication");
+      web.addMixin("mix:versionable");
+      
+      web.setProperty("exo:dateCreated", Calendar.getInstance());
+      web.setProperty("exo:dateModified", Calendar.getInstance());
+      web.setProperty("exo:lastModifiedDate", Calendar.getInstance());
+      web.setProperty("exo:lastModifier", "root");
+      web.setProperty("exo:summary", "text summary");
+      web.setProperty("exo:title", "web title");
+      web.setProperty("exo:voteTotal", "1");
+      web.setProperty("exo:voteTotalOfLang", "1");
+      web.setProperty("exo:votingRate", "1");
+      web.setProperty("publication:currentState", "draft");
+      web.setProperty("publication:history", new String[] {"13","12", "14"});
+      web.setProperty("publication:lifecycleName", "lf_name");
+      web.setProperty("publication:revisionData", new String[] {"r_data_1", "r_data_2"});
+      
+      Node defHtml = web.addNode("default.html", "nt:file");
+      defHtml.addMixin("exo:datetime");
+      defHtml.addMixin("exo:owneable");
+      defHtml.addMixin("exo:modify");
+      defHtml.addMixin("exo:htmlFile");
+      
+      defHtml.setProperty("exo:dateCreated", Calendar.getInstance());
+      defHtml.setProperty("exo:dateModified", Calendar.getInstance());
+      defHtml.setProperty("exo:lastModifiedDate", Calendar.getInstance());
+      defHtml.setProperty("exo:lastModifier", "root");
+      
+      Node contentDefHtml = defHtml.addNode("jcr:content", "nt:resource");
+      contentDefHtml.addMixin("exo:datetime");
+      contentDefHtml.addMixin("exo:owneable");
+      contentDefHtml.addMixin("dc:elementSet");
+      
+      contentDefHtml.setProperty("exo:dateCreated", Calendar.getInstance());
+      contentDefHtml.setProperty("exo:dateModified", Calendar.getInstance());
+      contentDefHtml.setProperty("jcr:data", "def_html_data");
+      contentDefHtml.setProperty("jcr:encoding", "UTF-8");
+      contentDefHtml.setProperty("jcr:lastModified", Calendar.getInstance());
+      contentDefHtml.setProperty("jcr:mimeType", "text/html");
+      
+      Node css = web.addNode("css", "exo:cssFolder");
+      css.addMixin("exo:datetime");
+      css.addMixin("exo:owneable");
+      css.addMixin("exo:modify");
+      
+      css.setProperty("exo:dateCreated", Calendar.getInstance());
+      css.setProperty("exo:dateModified", Calendar.getInstance());
+      css.setProperty("exo:lastModifiedDate", Calendar.getInstance());
+      css.setProperty("exo:lastModifier", "root");
+      
+      Node defCss = css.addNode("default.css", "nt:file");
+      
+      defCss.addMixin("exo:datetime");
+      defCss.addMixin("exo:owneable");
+      defCss.addMixin("exo:modify");
+      
+      defCss.setProperty("exo:dateCreated", Calendar.getInstance());
+      defCss.setProperty("exo:dateModified", Calendar.getInstance());
+      defCss.setProperty("exo:lastModifiedDate", Calendar.getInstance());
+      defCss.setProperty("exo:lastModifier", "root");
+      
+      Node contentDefCss = defCss.addNode("jcr:content", "nt:resource");
+      contentDefCss.addMixin("exo:datetime");
+      contentDefCss.addMixin("exo:owneable");
+      contentDefCss.addMixin("dc:elementSet");
+      
+      contentDefCss.setProperty("exo:dateCreated", Calendar.getInstance());
+      contentDefCss.setProperty("exo:dateModified", Calendar.getInstance());
+      contentDefCss.setProperty("jcr:data", "def_css_data");
+      contentDefCss.setProperty("jcr:encoding", "UTF-8");
+      contentDefCss.setProperty("jcr:lastModified", Calendar.getInstance());
+      contentDefCss.setProperty("jcr:mimeType", "text/css");
+      
+      Node medias = web.addNode("medias", "exo:multimediaFolder");
+      medias.addMixin("exo:datetime");
+      medias.addMixin("exo:owneable");
+      medias.addMixin("exo:modify");
+      
+      medias.setProperty("exo:dateCreated", Calendar.getInstance());
+      medias.setProperty("exo:dateModified", Calendar.getInstance());
+      medias.setProperty("exo:lastModifiedDate", Calendar.getInstance());
+      medias.setProperty("exo:lastModifier", "root");
+      
+      Node videos = medias.addNode("videos", "nt:folder");
+      videos.addMixin("exo:datetime");
+      videos.addMixin("exo:owneable");
+      videos.addMixin("exo:modify");
+      
+      videos.setProperty("exo:dateCreated", Calendar.getInstance());
+      videos.setProperty("exo:dateModified", Calendar.getInstance());
+      videos.setProperty("exo:lastModifiedDate", Calendar.getInstance());
+      videos.setProperty("exo:lastModifier", "root");
+      
+      Node images = medias.addNode("images", "nt:folder");
+      images.addMixin("exo:datetime");
+      images.addMixin("exo:owneable");
+      images.addMixin("exo:modify");
+      
+      images.setProperty("exo:dateCreated", Calendar.getInstance());
+      images.setProperty("exo:dateModified", Calendar.getInstance());
+      images.setProperty("exo:lastModifiedDate", Calendar.getInstance());
+      images.setProperty("exo:lastModifier", "root");
+      
+      Node illustration= images.addNode("illustration", "nt:file");
+      illustration.addMixin("exo:datetime");
+      illustration.addMixin("exo:owneable");
+      illustration.addMixin("exo:modify");
+      illustration.addMixin("mix:referenceable");
+      
+      illustration.setProperty("exo:dateCreated", Calendar.getInstance());
+      illustration.setProperty("exo:dateModified", Calendar.getInstance());
+      illustration.setProperty("exo:lastModifiedDate", Calendar.getInstance());
+      illustration.setProperty("exo:lastModifier", "root");
+      
+      Node contentIllustration = illustration.addNode("jcr:content", "nt:resource");
+      contentIllustration.addMixin("exo:datetime");
+      contentIllustration.addMixin("exo:owneable");
+      contentIllustration.addMixin("dc:elementSet");
+      
+      contentIllustration.setProperty("exo:dateCreated", Calendar.getInstance());
+      contentIllustration.setProperty("exo:dateModified", Calendar.getInstance());
+      contentIllustration.setProperty("jcr:data", "illustration_data");
+      contentIllustration.setProperty("jcr:encoding", "UTF-8");
+      contentIllustration.setProperty("jcr:lastModified", Calendar.getInstance());
+      contentIllustration.setProperty("jcr:mimeType", "text/jpeg");
+      
+      Node documents = web.addNode("documents", "nt:unstructured");
+      documents.addMixin("exo:datetime");
+      documents.addMixin("exo:owneable");
+      documents.addMixin("exo:modify");
+      documents.addMixin("exo:documentFolder");
+      
+      documents.setProperty("exo:dateCreated", Calendar.getInstance());
+      documents.setProperty("exo:dateModified", Calendar.getInstance());
+      documents.setProperty("exo:lastModifiedDate", Calendar.getInstance());
+      documents.setProperty("exo:lastModifier", "root");
+      
+      Node js = web.addNode("js", "exo:jsFolder");
+      js.addMixin("exo:datetime");
+      js.addMixin("exo:owneable");
+      js.addMixin("exo:modify");
+      
+      js.setProperty("exo:dateCreated", Calendar.getInstance());
+      js.setProperty("exo:dateModified", Calendar.getInstance());
+      js.setProperty("exo:lastModifiedDate", Calendar.getInstance());
+      js.setProperty("exo:lastModifier", "root");
+      
+      Node defJs = js.addNode("default.js", "nt:file");
+      defJs.addMixin("exo:datetime");
+      defJs.addMixin("exo:owneable");
+      defJs.addMixin("exo:modify");
+      
+      defJs.setProperty("exo:dateCreated", Calendar.getInstance());
+      defJs.setProperty("exo:dateModified", Calendar.getInstance());
+      defJs.setProperty("exo:lastModifiedDate", Calendar.getInstance());
+      defJs.setProperty("exo:lastModifier", "root");
+      
+      Node contentDefJs = defJs.addNode("jcr:content", "nt:resource");
+      contentDefJs.addMixin("exo:datetime");
+      contentDefJs.addMixin("exo:owneable");
+      contentDefJs.addMixin("dc:elementSet");
+      
+      contentDefJs.setProperty("exo:dateCreated", Calendar.getInstance());
+      contentDefJs.setProperty("exo:dateModified", Calendar.getInstance());
+      contentDefJs.setProperty("jcr:data", "def_js_data");
+      contentDefJs.setProperty("jcr:encoding", "UTF-8");
+      contentDefJs.setProperty("jcr:lastModified", Calendar.getInstance());
+      contentDefJs.setProperty("jcr:mimeType", "text/js");
+      
+      root.save();
+      
+      web.checkin();
+      web.checkout();
+      root.save();
+      
+      web.checkin();
+      web.checkout();
+      root.save();
+      
+      VersionableNodeInfo nodeInfo = new VersionableNodeInfo(testRoot.getNode("web"));
+      
+      // node content
+      byte[] versionableNode = serialize(web, false, true);
+      // version history
+      byte[] versionHistory = serialize(web.getVersionHistory(), false, true);
+      //System.out.println(new String(versionHistory));
+      
+      
+      // restore node content
+      Node restoreRoot = testRoot.addNode("restRootWeb");
+      testRoot.save();
+      
+      deserialize(restoreRoot, XmlSaveType.SESSION, true, ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING,
+         new ByteArrayInputStream(versionableNode));
+      root.save();
+      
+      assertTrue(restoreRoot.hasNode("web"));
+      
+      Node fileImport = restoreRoot.getNode("web");
+      assertTrue(fileImport.isNodeType("mix:versionable"));
+
+      VersionHistoryImporter versionHistoryImporter =
+         new VersionHistoryImporter((NodeImpl)fileImport, new ByteArrayInputStream(versionHistory), nodeInfo
+            .getBaseVersion(), nodeInfo.getPredecessorsHistory(), nodeInfo.getVersionHistory());
+      versionHistoryImporter.doImport();
+      root.save();
+      
+      
+      Property property = fileImport.getProperty("jcr:predecessors");
+      assertNotNull(property);
+      assertNotNull(property.getDefinition());
+      
+      fileImport.restore("1", true);
+      root.save();
+      
+      property = fileImport.getProperty("jcr:predecessors");
+      assertNotNull(property);
+      assertNotNull(property.getDefinition());
+      
+      fileImport.checkin();
+      fileImport.checkout();
+      root.save();
+   }
+   
+   public void testEXOJCR865_Sys_exo_webContent_1() throws Exception
+   {
+      // node content
+      Node testRoot = root.addNode("testRoot");
+      root.save();
+      
+      Node web = testRoot.addNode("web", "exo:webContent");
+      
+      web.addMixin("exo:datetime");
+      web.addMixin("exo:owneable");
+      web.addMixin("exo:modify");
+      web.addMixin("mix:votable");
+      web.addMixin("mix:commentable");
+      web.addMixin("publication:stateAndVersionBasedPublication");
+      web.addMixin("mix:versionable");
+      
+      web.setProperty("exo:dateCreated", Calendar.getInstance());
+      web.setProperty("exo:dateModified", Calendar.getInstance());
+      web.setProperty("exo:lastModifiedDate", Calendar.getInstance());
+      web.setProperty("exo:lastModifier", "root");
+      web.setProperty("exo:summary", "text summary");
+      web.setProperty("exo:title", "web title");
+      web.setProperty("exo:voteTotal", "1");
+      web.setProperty("exo:voteTotalOfLang", "1");
+      web.setProperty("exo:votingRate", "1");
+      web.setProperty("publication:currentState", "draft");
+      web.setProperty("publication:history", new String[] {"13","12", "14"});
+      web.setProperty("publication:lifecycleName", "lf_name");
+      web.setProperty("publication:revisionData", new String[] {"r_data_1", "r_data_2"});
+      
+      Node defHtml = web.addNode("default.html", "nt:file");
+      defHtml.addMixin("exo:datetime");
+      defHtml.addMixin("exo:owneable");
+      defHtml.addMixin("exo:modify");
+      defHtml.addMixin("exo:htmlFile");
+      
+      defHtml.setProperty("exo:dateCreated", Calendar.getInstance());
+      defHtml.setProperty("exo:dateModified", Calendar.getInstance());
+      defHtml.setProperty("exo:lastModifiedDate", Calendar.getInstance());
+      defHtml.setProperty("exo:lastModifier", "root");
+      
+      Node contentDefHtml = defHtml.addNode("jcr:content", "nt:resource");
+      contentDefHtml.addMixin("exo:datetime");
+      contentDefHtml.addMixin("exo:owneable");
+      contentDefHtml.addMixin("dc:elementSet");
+      
+      contentDefHtml.setProperty("exo:dateCreated", Calendar.getInstance());
+      contentDefHtml.setProperty("exo:dateModified", Calendar.getInstance());
+      contentDefHtml.setProperty("jcr:data", "def_html_data");
+      contentDefHtml.setProperty("jcr:encoding", "UTF-8");
+      contentDefHtml.setProperty("jcr:lastModified", Calendar.getInstance());
+      contentDefHtml.setProperty("jcr:mimeType", "text/html");
+      
+      Node css = web.addNode("css", "exo:cssFolder");
+      css.addMixin("exo:datetime");
+      css.addMixin("exo:owneable");
+      css.addMixin("exo:modify");
+      
+      css.setProperty("exo:dateCreated", Calendar.getInstance());
+      css.setProperty("exo:dateModified", Calendar.getInstance());
+      css.setProperty("exo:lastModifiedDate", Calendar.getInstance());
+      css.setProperty("exo:lastModifier", "root");
+      
+      Node defCss = css.addNode("default.css", "nt:file");
+      
+      defCss.addMixin("exo:datetime");
+      defCss.addMixin("exo:owneable");
+      defCss.addMixin("exo:modify");
+      
+      defCss.setProperty("exo:dateCreated", Calendar.getInstance());
+      defCss.setProperty("exo:dateModified", Calendar.getInstance());
+      defCss.setProperty("exo:lastModifiedDate", Calendar.getInstance());
+      defCss.setProperty("exo:lastModifier", "root");
+      
+      Node contentDefCss = defCss.addNode("jcr:content", "nt:resource");
+      contentDefCss.addMixin("exo:datetime");
+      contentDefCss.addMixin("exo:owneable");
+      contentDefCss.addMixin("dc:elementSet");
+      
+      contentDefCss.setProperty("exo:dateCreated", Calendar.getInstance());
+      contentDefCss.setProperty("exo:dateModified", Calendar.getInstance());
+      contentDefCss.setProperty("jcr:data", "def_css_data");
+      contentDefCss.setProperty("jcr:encoding", "UTF-8");
+      contentDefCss.setProperty("jcr:lastModified", Calendar.getInstance());
+      contentDefCss.setProperty("jcr:mimeType", "text/css");
+      
+      Node medias = web.addNode("medias", "exo:multimediaFolder");
+      medias.addMixin("exo:datetime");
+      medias.addMixin("exo:owneable");
+      medias.addMixin("exo:modify");
+      
+      medias.setProperty("exo:dateCreated", Calendar.getInstance());
+      medias.setProperty("exo:dateModified", Calendar.getInstance());
+      medias.setProperty("exo:lastModifiedDate", Calendar.getInstance());
+      medias.setProperty("exo:lastModifier", "root");
+      
+      Node videos = medias.addNode("videos", "nt:folder");
+      videos.addMixin("exo:datetime");
+      videos.addMixin("exo:owneable");
+      videos.addMixin("exo:modify");
+      
+      videos.setProperty("exo:dateCreated", Calendar.getInstance());
+      videos.setProperty("exo:dateModified", Calendar.getInstance());
+      videos.setProperty("exo:lastModifiedDate", Calendar.getInstance());
+      videos.setProperty("exo:lastModifier", "root");
+      
+      Node images = medias.addNode("images", "nt:folder");
+      images.addMixin("exo:datetime");
+      images.addMixin("exo:owneable");
+      images.addMixin("exo:modify");
+      
+      images.setProperty("exo:dateCreated", Calendar.getInstance());
+      images.setProperty("exo:dateModified", Calendar.getInstance());
+      images.setProperty("exo:lastModifiedDate", Calendar.getInstance());
+      images.setProperty("exo:lastModifier", "root");
+      
+      Node illustration= images.addNode("illustration", "nt:file");
+      illustration.addMixin("exo:datetime");
+      illustration.addMixin("exo:owneable");
+      illustration.addMixin("exo:modify");
+      illustration.addMixin("mix:referenceable");
+      
+      illustration.setProperty("exo:dateCreated", Calendar.getInstance());
+      illustration.setProperty("exo:dateModified", Calendar.getInstance());
+      illustration.setProperty("exo:lastModifiedDate", Calendar.getInstance());
+      illustration.setProperty("exo:lastModifier", "root");
+      
+      Node contentIllustration = illustration.addNode("jcr:content", "nt:resource");
+      contentIllustration.addMixin("exo:datetime");
+      contentIllustration.addMixin("exo:owneable");
+      contentIllustration.addMixin("dc:elementSet");
+      
+      contentIllustration.setProperty("exo:dateCreated", Calendar.getInstance());
+      contentIllustration.setProperty("exo:dateModified", Calendar.getInstance());
+      contentIllustration.setProperty("jcr:data", "illustration_data");
+      contentIllustration.setProperty("jcr:encoding", "UTF-8");
+      contentIllustration.setProperty("jcr:lastModified", Calendar.getInstance());
+      contentIllustration.setProperty("jcr:mimeType", "text/jpeg");
+      
+      Node documents = web.addNode("documents", "nt:unstructured");
+      documents.addMixin("exo:datetime");
+      documents.addMixin("exo:owneable");
+      documents.addMixin("exo:modify");
+      documents.addMixin("exo:documentFolder");
+      
+      documents.setProperty("exo:dateCreated", Calendar.getInstance());
+      documents.setProperty("exo:dateModified", Calendar.getInstance());
+      documents.setProperty("exo:lastModifiedDate", Calendar.getInstance());
+      documents.setProperty("exo:lastModifier", "root");
+      
+      Node js = web.addNode("js", "exo:jsFolder");
+      js.addMixin("exo:datetime");
+      js.addMixin("exo:owneable");
+      js.addMixin("exo:modify");
+      
+      js.setProperty("exo:dateCreated", Calendar.getInstance());
+      js.setProperty("exo:dateModified", Calendar.getInstance());
+      js.setProperty("exo:lastModifiedDate", Calendar.getInstance());
+      js.setProperty("exo:lastModifier", "root");
+      
+      Node defJs = js.addNode("default.js", "nt:file");
+      defJs.addMixin("exo:datetime");
+      defJs.addMixin("exo:owneable");
+      defJs.addMixin("exo:modify");
+      
+      defJs.setProperty("exo:dateCreated", Calendar.getInstance());
+      defJs.setProperty("exo:dateModified", Calendar.getInstance());
+      defJs.setProperty("exo:lastModifiedDate", Calendar.getInstance());
+      defJs.setProperty("exo:lastModifier", "root");
+      
+      Node contentDefJs = defJs.addNode("jcr:content", "nt:resource");
+      contentDefJs.addMixin("exo:datetime");
+      contentDefJs.addMixin("exo:owneable");
+      contentDefJs.addMixin("dc:elementSet");
+      
+      contentDefJs.setProperty("exo:dateCreated", Calendar.getInstance());
+      contentDefJs.setProperty("exo:dateModified", Calendar.getInstance());
+      contentDefJs.setProperty("jcr:data", "def_js_data");
+      contentDefJs.setProperty("jcr:encoding", "UTF-8");
+      contentDefJs.setProperty("jcr:lastModified", Calendar.getInstance());
+      contentDefJs.setProperty("jcr:mimeType", "text/js");
+      
+      root.save();
+      
+      web.checkin();
+      web.checkout();
+      root.save();
+      
+      web.checkin();
+      web.checkout();
+      root.save();
+      
+      VersionableNodeInfo nodeInfo = new VersionableNodeInfo(testRoot.getNode("web"));
+      
+      // node content
+      byte[] versionableNode = serialize(web, true, true);
+      // version history
+      byte[] versionHistory = serialize(web.getVersionHistory(), true, true);
+      //System.out.println(new String(versionHistory));
+      
+      
+      // restore node content
+      Node restoreRoot = testRoot.addNode("restRootWeb");
+      testRoot.save();
+      
+      deserialize(restoreRoot, XmlSaveType.SESSION, true, ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING,
+         new ByteArrayInputStream(versionableNode));
+      root.save();
+      
+      assertTrue(restoreRoot.hasNode("web"));
+      
+      Node fileImport = restoreRoot.getNode("web");
+      assertTrue(fileImport.isNodeType("mix:versionable"));
+
+      VersionHistoryImporter versionHistoryImporter =
+         new VersionHistoryImporter((NodeImpl)fileImport, new ByteArrayInputStream(versionHistory), nodeInfo
+            .getBaseVersion(), nodeInfo.getPredecessorsHistory(), nodeInfo.getVersionHistory());
+      versionHistoryImporter.doImport();
+      root.save();
+      
+      
+      Property property = fileImport.getProperty("jcr:predecessors");
+      assertNotNull(property);
+      assertNotNull(property.getDefinition());
+      
+      fileImport.restore("1", true);
+      root.save();
+      
+      property = fileImport.getProperty("jcr:predecessors");
+      assertNotNull(property);
+      assertNotNull(property.getDefinition());
+      
+      fileImport.checkin();
+      fileImport.checkout();
+      root.save();
+   }
+   
+   public void testEXOJCR865_Doc_exo_webContent_2() throws Exception
+   {
+      // node content
+      Node testRoot = root.addNode("testRoot");
+      root.save();
+      
+      Node web = testRoot.addNode("web", "exo:webContent");
+      
+      web.addMixin("mix:versionable");
+      
+      web.setProperty("exo:summary", "text summary");
+      web.setProperty("exo:title", "web title");
+      
+      Node defHtml = web.addNode("default.html", "nt:file");
+      defHtml.addMixin("mix:referenceable");
+      
+      Node contentDefHtml = defHtml.addNode("jcr:content", "nt:resource");
+
+      contentDefHtml.setProperty("jcr:data", "def_html_data");
+      contentDefHtml.setProperty("jcr:encoding", "UTF-8");
+      contentDefHtml.setProperty("jcr:lastModified", Calendar.getInstance());
+      contentDefHtml.setProperty("jcr:mimeType", "text/html");
+      root.save();
+      
+      web.checkin();
+      web.checkout();
+      root.save();
+      
+      web.checkin();
+      web.checkout();
+      root.save();
+      
+      web.restore("1", true);
+      root.save();
+      
+      VersionableNodeInfo nodeInfo = new VersionableNodeInfo(testRoot.getNode("web"));
+      
+      // node content
+      byte[] versionableNode = serialize(web, false, true);
+      // version history
+      byte[] versionHistory = serialize(web.getVersionHistory(), false, true);
+      //System.out.println(new String(versionHistory));
+      
+      
+      // restore node content
+      Node restoreRoot = testRoot.addNode("restRootWeb");
+      testRoot.save();
+      
+      deserialize(restoreRoot, XmlSaveType.SESSION, true, ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING,
+         new ByteArrayInputStream(versionableNode));
+      root.save();
+      
+      assertTrue(restoreRoot.hasNode("web"));
+      
+      Node fileImport = restoreRoot.getNode("web");
+      Node dHtml = fileImport.getNode("default.html"); fileImport.getNode("default.html").getProperty("jcr:uuid").getString();
+      assertTrue(fileImport.isNodeType("mix:versionable"));
+
+      VersionHistoryImporter versionHistoryImporter =
+         new VersionHistoryImporter((NodeImpl)fileImport, new ByteArrayInputStream(versionHistory), nodeInfo
+            .getBaseVersion(), nodeInfo.getPredecessorsHistory(), nodeInfo.getVersionHistory());
+      versionHistoryImporter.doImport();
+      root.save();
+      
+      Property property = fileImport.getProperty("jcr:predecessors");
+      assertNotNull(property);
+      assertNotNull(property.getDefinition());
+      
+      fileImport.restore("1", true);
+      root.save();
+      
+      property = fileImport.getProperty("jcr:predecessors");
+      assertNotNull(property);
+      assertNotNull(property.getDefinition());
+      
+      fileImport.checkin();
+      fileImport.checkout();
+      root.save();
+   }
+   
+   public void testEXOJCR865_Sys_exo_webContent_2() throws Exception
+   {
+      // node content
+      Node testRoot = root.addNode("testRoot");
+      root.save();
+      
+      Node web = testRoot.addNode("web", "exo:webContent");
+      
+      web.addMixin("mix:versionable");
+      
+      web.setProperty("exo:summary", "text summary");
+      web.setProperty("exo:title", "web title");
+      
+      Node defHtml = web.addNode("default.html", "nt:file");
+      defHtml.addMixin("mix:referenceable");
+      
+      Node contentDefHtml = defHtml.addNode("jcr:content", "nt:resource");
+
+      contentDefHtml.setProperty("jcr:data", "def_html_data");
+      contentDefHtml.setProperty("jcr:encoding", "UTF-8");
+      contentDefHtml.setProperty("jcr:lastModified", Calendar.getInstance());
+      contentDefHtml.setProperty("jcr:mimeType", "text/html");
+      root.save();
+      
+      web.checkin();
+      web.checkout();
+      root.save();
+      
+      web.checkin();
+      web.checkout();
+      root.save();
+      
+      web.restore("1", true);
+      root.save();
+      
+      VersionableNodeInfo nodeInfo = new VersionableNodeInfo(testRoot.getNode("web"));
+      
+      // node content
+      byte[] versionableNode = serialize(web, true, true);
+      // version history
+      byte[] versionHistory = serialize(web.getVersionHistory(), true, true);
+      //System.out.println(new String(versionHistory));
+      
+      // restore node content
+      Node restoreRoot = testRoot.addNode("restRootWeb");
+      testRoot.save();
+      
+      deserialize(restoreRoot, XmlSaveType.SESSION, true, ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING,
+         new ByteArrayInputStream(versionableNode));
+      root.save();
+      
+      assertTrue(restoreRoot.hasNode("web"));
+      
+      Node fileImport = restoreRoot.getNode("web");
+      Node dHtml = fileImport.getNode("default.html"); fileImport.getNode("default.html").getProperty("jcr:uuid").getString();
+      assertTrue(fileImport.isNodeType("mix:versionable"));
+
+      VersionHistoryImporter versionHistoryImporter =
+         new VersionHistoryImporter((NodeImpl)fileImport, new ByteArrayInputStream(versionHistory), nodeInfo
+            .getBaseVersion(), nodeInfo.getPredecessorsHistory(), nodeInfo.getVersionHistory());
+      versionHistoryImporter.doImport();
+      root.save();
+      
+      
+      Property property = fileImport.getProperty("jcr:predecessors");
+      assertNotNull(property);
+      assertNotNull(property.getDefinition());
+      
+      fileImport.restore("1", true);
       root.save();
       
       property = fileImport.getProperty("jcr:predecessors");

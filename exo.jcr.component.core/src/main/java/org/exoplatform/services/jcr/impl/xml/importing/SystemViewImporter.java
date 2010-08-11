@@ -470,7 +470,15 @@ public class SystemViewImporter extends BaseXmlImporter
       propertyData =
          new ImportPropertyData(QPath.makeChildPath(currentNodeInfo.getQPath(), propertyInfo.getName()), propertyInfo
             .getIndentifer(), 0, propertyInfo.getType(), currentNodeInfo.getIdentifier(), false);
-      propertyData.setValue(new TransientValueData(currentNodeInfo.getIdentifier()));
+      
+      if (currentNodeInfo.getQPath().isDescendantOf(Constants.JCR_VERSION_STORAGE_PATH))
+      {
+         propertyData.setValue(new TransientValueData(propertyInfo.getValues().get(0).toString()));
+      }
+      else
+      {
+         propertyData.setValue(new TransientValueData(currentNodeInfo.getIdentifier()));
+      }
 
       tree.push(currentNodeInfo);
       return propertyData;

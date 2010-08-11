@@ -258,7 +258,7 @@
       </childNodeDefinitions>
    </nodeType>
 
-   <!-- nodeType name="exo:metadata" isMixin="true" hasOrderableChildNodes="false" primaryItemName="">
+   <nodeType name="exo:metadata" isMixin="true" hasOrderableChildNodes="false" primaryItemName="">
       <propertyDefinitions>
          <propertyDefinition name="exo:internalUse" requiredType="Boolean" autoCreated="true" mandatory="false" onParentVersion="COPY"
             protected="false" multiple="false">
@@ -336,6 +336,6 @@
             <valueConstraints />
          </propertyDefinition>
       </propertyDefinitions>
-   </nodeType -->
+   </nodeType>
 
 </nodeTypes>
