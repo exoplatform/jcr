@@ -398,7 +398,7 @@
                </includes>
                <excludes>
                   <exclude>org/exoplatform/services/jcr/**/TestQueryUsecases.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/TestImport.java</exclude>
+                  <!-- exclude>org/exoplatform/services/jcr/**/TestImport.java</exclude -->
                   <exclude>org/exoplatform/services/jcr/**/TestRollbackBigFiles.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/TestErrorMultithreading.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/api/TestAll.java</exclude>
