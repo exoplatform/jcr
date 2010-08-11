@@ -162,9 +162,6 @@
     <para><link linkend="JCR.AccessControlExtension">Access Control
     extension</link></para>
 
-    <para><link linkend="JCR.Organizationservice">Organization
-    Service</link></para>
-
     <para><link linkend="JCR.RegistryService">Registry Service</link></para>
 
     <para><link linkend="JCR.RESTServicesOnGroovy">REST Groovy

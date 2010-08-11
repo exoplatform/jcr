@@ -137,13 +137,6 @@
   <xi:include href="jcr/other/binary-values-processing.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
               
-  <xi:include href="jcr/other/jcr-organization-service.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />              
-              
-              
-              
-              
-              
   <xi:include href="jcr/other/jcr-resources.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />              
 
