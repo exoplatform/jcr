@@ -1050,4 +1050,11 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       return lazyReadThreshold;
    }
 
+   @Override
+   public String toString()
+   {
+      return String.format("Session {\n id: %s;\n userId: %s;\n workspace: %s/%s ;\n alive: %b\n}", id, getUserID(),
+         repository.getName(), workspaceName, live);
+   }
+
 }

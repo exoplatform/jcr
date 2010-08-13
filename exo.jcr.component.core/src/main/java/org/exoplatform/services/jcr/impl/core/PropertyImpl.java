@@ -608,4 +608,22 @@ public class PropertyImpl extends ItemImpl implements Property
       return false;
    }
 
+   @Override
+   public String toString()
+   {
+      String typeName;
+      try
+      {
+         typeName = PropertyType.nameFromValue(type);
+      }
+      catch (IllegalArgumentException e)
+      {
+         // Value has abnormal type
+         typeName = String.valueOf(type);
+      }
+      return String.format("Property {\n id: %s;\n path: %s;\n type: %s;\n multi-valued: %b\n}", data == null
+         ? "not valid property" : data.getIdentifier(), qpath == null ? "undefined" : qpath.getAsString(), typeName,
+         data == null ? false : isMultiValued());
+   }
+
 }

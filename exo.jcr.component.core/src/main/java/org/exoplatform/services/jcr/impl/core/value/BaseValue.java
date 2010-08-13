@@ -421,4 +421,22 @@ public abstract class BaseValue implements ExtendedValue, ReadableBinaryValue
          return bytes != null;
       }
    }
+
+   @Override
+   public String toString()
+   {
+      String typeName;
+      try
+      {
+         typeName = PropertyType.nameFromValue(type);
+      }
+      catch (IllegalArgumentException e)
+      {
+         // Value has abnormal type
+         typeName = String.valueOf(type);
+      }
+      return String.format("Value {\n type: %s;\n data-class: %s;\n size: %s bytes\n}", typeName, internalData == null
+         ? null : internalData.getClass().getName(), internalData == null ? "undefined" : internalData.getLength());
+   }
+
 }

@@ -707,4 +707,26 @@ public class RepositoryImpl implements ManageableRepository
       }
    }
 
+   @Override
+   public String toString()
+   {
+      String stateTitle;
+      switch (state)
+      {
+         case ONLINE :
+            stateTitle = "online";
+            break;
+         case OFFLINE :
+            stateTitle = "offline";
+            break;
+         case READONLY :
+            stateTitle = "readonly";
+            break;
+         default :
+            stateTitle = "undefined";
+      }
+      return String.format("Repository {\n name: %s;\n system workspace: %s;\n state: %s \n}", name,
+         systemWorkspaceName, stateTitle);
+   }
+
 }

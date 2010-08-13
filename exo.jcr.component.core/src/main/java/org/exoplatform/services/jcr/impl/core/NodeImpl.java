@@ -67,6 +67,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.AccessControlException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
@@ -3355,5 +3356,70 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       {
          return (Property)nextItem();
       }
+   }
+
+   @Override
+   public String toString()
+   {
+      // toString can be invoked on invalid node, so need to ensure no exceptions thrown by skipping them 
+      String primaryType;
+      String mixinTypes;
+      String acl;
+      boolean locked;
+      boolean checkedOut;
+      // get primary type name
+      try
+      {
+         primaryType = getPrimaryNodeType().getName();
+      }
+      catch (RepositoryException e)
+      {
+         primaryType = "Error requesting primary type";
+      }
+      // get mixins
+      try
+      {
+         mixinTypes = Arrays.toString(getMixinTypeNames());
+      }
+      catch (RepositoryException e)
+      {
+         mixinTypes = "Error requesting mixin types";
+      }
+      // get ACL
+      try
+      {
+         AccessControlList list = getACL();
+         acl = list == null ? "-;" : list.dump();
+         acl = acl.replaceAll("\\n", "; ");
+      }
+      catch (RepositoryException e)
+      {
+         acl = "Error requesting ACL";
+      }
+      // check if locked
+      try
+      {
+         locked = isLocked();
+      }
+      catch (RepositoryException e)
+      {
+         // not valid node 
+         locked = false;
+      }
+      // check if checkedOut
+      try
+      {
+         checkedOut = isCheckedOut();
+      }
+      catch (RepositoryException e)
+      {
+         // not valid, or versioning not supported
+         checkedOut = false;
+      }
+      return String
+         .format(
+            "Node {\n id: %s;\n path: %s;\n primary-type: %s;\n mixin-types: %s;\n acl: %s\n locked: %b;\n checked-out: %b \n}",
+            data == null ? "not valid node" : data.getIdentifier(), qpath == null ? "undefined" : qpath.getAsString(),
+            primaryType, mixinTypes, acl, locked, checkedOut);
    }
 }

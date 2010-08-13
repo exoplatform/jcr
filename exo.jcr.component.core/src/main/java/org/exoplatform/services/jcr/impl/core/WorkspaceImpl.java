@@ -708,4 +708,11 @@ public class WorkspaceImpl implements ExtendedWorkspace
       return nodeTypeManager;
    }
 
+   @Override
+   public String toString()
+   {
+      return String.format("Workspace {\n name: %s/%s;\n session-id: %s \n}", repository().getName(), name, session
+         .getId());
+   }
+
 }
