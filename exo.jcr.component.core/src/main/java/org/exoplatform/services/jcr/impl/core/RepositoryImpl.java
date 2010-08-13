@@ -49,6 +49,7 @@ import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -637,7 +638,7 @@ public class RepositoryImpl implements ManageableRepository
    public void removeWorkspace(String workspaceName) throws RepositoryException
    {
       if (!canRemoveWorkspace(workspaceName))
-
+         
          throw new RepositoryException("Workspace " + workspaceName + " in use. If you want to "
             + " remove workspace close all open sessions");
 
@@ -725,8 +726,10 @@ public class RepositoryImpl implements ManageableRepository
          default :
             stateTitle = "undefined";
       }
-      return String.format("Repository {\n name: %s;\n system workspace: %s;\n state: %s \n}", name,
-         systemWorkspaceName, stateTitle);
+      String defaultWorkspaceName = config.getDefaultWorkspaceName();
+      return String.format(
+         "Repository {\n name: %s;\n system workspace: %s;\n default workspace: %s;\n workspaces: %s;\n state: %s \n}",
+         name, systemWorkspaceName, defaultWorkspaceName, Arrays.toString(getWorkspaceNames()), stateTitle);
    }
 
 }
