@@ -33,6 +33,7 @@ import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
+import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
@@ -42,6 +43,7 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.dataflow.ValueDataConvertor;
 import org.exoplatform.services.jcr.impl.util.NodeDataReader;
+import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -343,15 +345,15 @@ public class NamespaceDataPersister implements ComponentPersister
    private void initStorage(NodeData nsSystem, boolean addACL) throws RepositoryException
    {
       PlainChangesLog changesLog = new PlainChangesLogImpl();
-      TransientNodeData exoNamespaces;
+      TransientNodeData exoNamespaces =
+         new TransientNodeData(QPath.makeChildPath(nsSystem.getQPath(), Constants.EXO_NAMESPACES), IdGenerator
+            .generate(), -1, Constants.NT_UNSTRUCTURED, new InternalQName[0], 0, nsSystem.getIdentifier(), nsSystem
+            .getACL());
 
       if (addACL)
       {
-         AccessControlList acl = new AccessControlList();
+         AccessControlList acl = exoNamespaces.getACL();
          InternalQName[] mixins = new InternalQName[]{Constants.EXO_OWNEABLE, Constants.EXO_PRIVILEGEABLE};
-
-         exoNamespaces =
-            TransientNodeData.createNodeData(nsSystem, Constants.EXO_NAMESPACES, Constants.NT_UNSTRUCTURED, mixins);
 
          TransientPropertyData primaryType =
             TransientPropertyData.createPropertyData(exoNamespaces, Constants.JCR_PRIMARYTYPE, PropertyType.NAME,
@@ -389,9 +391,6 @@ public class NamespaceDataPersister implements ComponentPersister
       }
       else
       {
-         exoNamespaces =
-            TransientNodeData.createNodeData(nsSystem, Constants.EXO_NAMESPACES, Constants.NT_UNSTRUCTURED);
-
          TransientPropertyData primaryType =
             TransientPropertyData.createPropertyData(exoNamespaces, Constants.JCR_PRIMARYTYPE, PropertyType.NAME,
                false, new TransientValueData(exoNamespaces.getPrimaryTypeName()));
