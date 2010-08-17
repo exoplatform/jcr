@@ -12,16 +12,10 @@
   <xi:include href="ws/introduction-to-rest.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-  <xi:include href="ws/rest-service-tutorial.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
-
   <xi:include href="ws/rest-migration-to-jsr311.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
   <xi:include href="ws/groovy-scripts-as-rest-services.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
-
-  <xi:include href="ws/rest-framework.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
   <xi:include href="ws/soap-service-tutorial.xml"
