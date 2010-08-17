@@ -142,13 +142,6 @@
   </section>
 
   <section>
-    <title>JMX auto wiring</title>
-
-    <para>For JMX wiring please refer to <link
-    linkend="Kernel.JMXMBeanServer">JMX MBean Server</link>.</para>
-  </section>
-
-  <section>
     <title>Configuration retrieval and log of this retrieval</title>
 
     <para>When the RootContainer is starting the configuration retrieval looks
