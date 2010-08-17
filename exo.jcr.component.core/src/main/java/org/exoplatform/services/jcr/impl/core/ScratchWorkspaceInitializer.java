@@ -76,6 +76,8 @@ public class ScratchWorkspaceInitializer implements WorkspaceInitializer
 
    private final String accessControlType;
 
+   // private final NamespaceDataPersister nsPersister;
+
    private final String rootPermissions;
 
    private final InternalQName rootNodeType;
@@ -264,15 +266,17 @@ public class ScratchWorkspaceInitializer implements WorkspaceInitializer
       boolean addACL = !accessControlType.equals(AccessControlPolicy.DISABLE);
 
       PlainChangesLog changesLog = new PlainChangesLogImpl();
-
-      TransientNodeData jcrSystem =
-         new TransientNodeData(QPath.makeChildPath(root.getQPath(), Constants.JCR_SYSTEM), Constants.SYSTEM_UUID, -1,
-            Constants.NT_UNSTRUCTURED, new InternalQName[0], 0, root.getIdentifier(), root.getACL());
+      TransientNodeData jcrSystem;
 
       if (addACL)
       {
-         AccessControlList acl = jcrSystem.getACL();
          InternalQName[] mixins = new InternalQName[]{Constants.EXO_OWNEABLE, Constants.EXO_PRIVILEGEABLE};
+
+         jcrSystem =
+            TransientNodeData.createNodeData(root, Constants.JCR_SYSTEM, Constants.NT_UNSTRUCTURED, mixins,
+               Constants.SYSTEM_UUID);
+
+         AccessControlList acl = jcrSystem.getACL();
 
          TransientPropertyData primaryType =
             TransientPropertyData.createPropertyData(jcrSystem, Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false,
@@ -310,6 +314,10 @@ public class ScratchWorkspaceInitializer implements WorkspaceInitializer
       }
       else
       {
+         jcrSystem =
+            TransientNodeData.createNodeData(root, Constants.JCR_SYSTEM, Constants.NT_UNSTRUCTURED,
+               Constants.SYSTEM_UUID);
+
          TransientPropertyData primaryType =
             TransientPropertyData.createPropertyData(jcrSystem, Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false,
                new TransientValueData(jcrSystem.getPrimaryTypeName()));

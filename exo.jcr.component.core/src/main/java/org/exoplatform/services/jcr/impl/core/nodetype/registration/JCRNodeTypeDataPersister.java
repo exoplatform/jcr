@@ -38,7 +38,6 @@ import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
@@ -148,16 +147,19 @@ public class JCRNodeTypeDataPersister implements NodeTypeDataPersister
    public NodeData initNodetypesRoot(NodeData nsSystem, boolean addACL) throws RepositoryException
    {
       PlainChangesLog changesLog = new PlainChangesLogImpl();
-      TransientNodeData jcrNodetypes =
-         new TransientNodeData(QPath.makeChildPath(nsSystem.getQPath(), Constants.JCR_NODETYPES),
-            Constants.NODETYPESROOT_UUID, -1, Constants.NT_UNSTRUCTURED, new InternalQName[0], 0, nsSystem
-               .getIdentifier(), nsSystem.getACL());
+      TransientNodeData jcrNodetypes;
+
       long start = System.currentTimeMillis();
 
       if (addACL)
       {
-         AccessControlList acl = jcrNodetypes.getACL();
          InternalQName[] mixins = new InternalQName[]{Constants.EXO_OWNEABLE, Constants.EXO_PRIVILEGEABLE};
+
+         jcrNodetypes =
+            TransientNodeData.createNodeData(nsSystem, Constants.JCR_NODETYPES, Constants.NT_UNSTRUCTURED, mixins,
+               Constants.NODETYPESROOT_UUID);
+
+         AccessControlList acl = jcrNodetypes.getACL();
 
          TransientPropertyData primaryType =
             TransientPropertyData.createPropertyData(jcrNodetypes, Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false,
@@ -195,6 +197,10 @@ public class JCRNodeTypeDataPersister implements NodeTypeDataPersister
       }
       else
       {
+         jcrNodetypes =
+            TransientNodeData.createNodeData(nsSystem, Constants.JCR_NODETYPES, Constants.NT_UNSTRUCTURED,
+               Constants.NODETYPESROOT_UUID);
+
          TransientPropertyData primaryType =
             TransientPropertyData.createPropertyData(jcrNodetypes, Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false,
                new TransientValueData(jcrNodetypes.getPrimaryTypeName()));
