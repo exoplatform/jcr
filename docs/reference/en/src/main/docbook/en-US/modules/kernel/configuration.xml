@@ -1148,7 +1148,7 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
           <envar>PortalContainerDefinition</envar> must be a class of type
           <envar>PortalContainerDefinitionChange</envar>. The product proposes
           out of the box some implementations that we describe in the next sub
-          sections. </para>
+          sections.</para>
 
           <section>
             <title><envar>AddDependencies</envar></title>
@@ -1450,6 +1450,71 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
 &lt;/external-component-plugins&gt;</programlisting>
           </section>
         </section>
+      </section>
+
+      <section>
+        <title>Disable dynamically a portal container</title>
+
+        <para>It is possible to use <envar>component-plugin</envar> elements
+        in order to dynamically disable one or several portal containers. In
+        the example below, we disable the portal container named
+        <envar>foo</envar>:</para>
+
+        <programlisting>&lt;external-component-plugins&gt;
+  &lt;!-- The full qualified name of the PortalContainerConfig --&gt;
+  &lt;target-component&gt;org.exoplatform.container.definition.PortalContainerConfig&lt;/target-component&gt;
+  &lt;component-plugin&gt;
+    &lt;!-- The name of the plugin --&gt;
+    &lt;name&gt;Disable a PortalContainer&lt;/name&gt;
+    &lt;!-- The name of the method to call on the PortalContainerConfig in order to register the changes on the PortalContainerDefinitions --&gt;
+    &lt;set-method&gt;registerDisablePlugin&lt;/set-method&gt;
+    &lt;!-- The full qualified name of the PortalContainerDefinitionDisablePlugin --&gt;
+    &lt;type&gt;org.exoplatform.container.definition.PortalContainerDefinitionDisablePlugin&lt;/type&gt;
+    &lt;init-params&gt;
+      &lt;!-- The list of the name of the portal containers to disable --&gt;
+      &lt;values-param&gt;
+        &lt;name&gt;names&lt;/name&gt;
+        &lt;value&gt;foo&lt;/value&gt;
+      &lt;/values-param&gt;
+    &lt;/init-params&gt;
+  &lt;/component-plugin&gt;
+&lt;/external-component-plugins&gt;</programlisting>
+
+        <table>
+          <title>Descriptions of the fields of a
+          <envar>PortalContainerDefinitionDisablePlugin</envar></title>
+
+          <tgroup cols="2">
+            <tbody>
+              <row>
+                <entry>names</entry>
+
+                <entry>The list of the name of the portal containers to
+                disable.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+
+        <para>To prevent any accesses to a web application corresponding to
+        <envar>PortalContainer</envar> that has been disabled, you need to
+        make sure that the following Http Filter (or a sub class of it) has
+        been added to your web.xml in first position as below:</para>
+
+        <programlisting>&lt;filter&gt;
+  &lt;filter-name&gt;PortalContainerFilter&lt;/filter-name&gt;
+  &lt;filter-class&gt;org.exoplatform.container.web.PortalContainerFilter&lt;/filter-class&gt;
+&lt;/filter&gt;  
+
+&lt;filter-mapping&gt;
+  &lt;filter-name&gt;PortalContainerFilter&lt;/filter-name&gt;
+  &lt;url-pattern&gt;/*&lt;/url-pattern&gt;
+&lt;/filter-mapping&gt;</programlisting>
+
+        <note>
+          <para>It is only possible to disable a portal container when at
+          least one PortalContainerDefinition has been registered.</para>
+        </note>
       </section>
     </section>
   </section>
