@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.value;
 
-import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.access.PermissionType;
 import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.core.ExtendedPropertyType;
@@ -42,6 +41,8 @@ public class PermissionValue extends BaseValue
 {
 
    private static final int TYPE = ExtendedPropertyType.PERMISSION;
+
+   private static final String IDENTITY_DELIMITER = " ";
 
    private String identity;
 
@@ -84,7 +85,7 @@ public class PermissionValue extends BaseValue
 
    static public String[] parse(String pstring)
    {
-      StringTokenizer parser = new StringTokenizer(pstring, AccessControlEntry.DELIMITER);
+      StringTokenizer parser = new StringTokenizer(pstring, IDENTITY_DELIMITER);
       String identityString = parser.nextToken();
       String permissionString = parser.nextToken();
 
@@ -112,6 +113,7 @@ public class PermissionValue extends BaseValue
    /**
     * {@inheritDoc}
     */
+   @Override
    protected String getInternalString() throws ValueFormatException
    {
       return asString(identity, permission);
@@ -120,7 +122,7 @@ public class PermissionValue extends BaseValue
    static protected String asString(String identity, String permission)
    {
       if (identity != null || permission != null) // SystemIdentity.ANY, PermissionType.ALL
-         return (identity != null ? identity : SystemIdentity.ANY) + AccessControlEntry.DELIMITER
+         return (identity != null ? identity : SystemIdentity.ANY) + IDENTITY_DELIMITER
             + (permission != null ? permission : PermissionType.READ);
       else
          return "";
