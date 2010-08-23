@@ -150,7 +150,7 @@ final class DocNumberCache
       {
          entry = (Entry)cacheSegment.get(key);
       }
-      if (log.isInfoEnabled())
+      if (log.isDebugEnabled())
       {
          accesses++;
          if (entry == null)
@@ -177,7 +177,7 @@ final class DocNumberCache
             statistics.append(", #hits=").append((accesses - misses));
             statistics.append(", #misses=").append(misses);
             statistics.append(", cacheRatio=").append(ratio).append("%");
-            log.info(statistics.toString());
+            log.debug(statistics.toString());
             accesses = 0;
             misses = 0;
             lastLog = System.currentTimeMillis();
