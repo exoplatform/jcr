@@ -99,11 +99,11 @@
                      <stylesheetResource>classpath:/xslt/org/exojcr/xhtml-single.xsl</stylesheetResource>
                      <finalName>index.html</finalName>
                   </format>
-                  <format>
+                  <!--format>
                      <formatName>pdf</formatName>
                      <stylesheetResource>classpath://xslt/org/exojcr/pdf.xsl</stylesheetResource>
                      <finalName>index.pdf</finalName>
-                  </format>
+                  </format-->
                   <!-- format>
                      <formatName>eclipse</formatName>
                      <stylesheetResource>classpath:/xslt/org/exojcr/eclipse.xsl</stylesheetResource>
