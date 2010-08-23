@@ -283,6 +283,7 @@ class IndexMerger extends Thread implements IndexListener
    /**
     * Implements the index merging.
     */
+   @Override
    public void run()
    {
       for (;;)
@@ -344,7 +345,7 @@ class IndexMerger extends Thread implements IndexListener
                   {
                      docCount += readers[i].numDocs();
                   }
-                  log.info("merged " + docCount + " documents in " + time + " ms into " + index.getName() + ".");
+                  log.debug("merged " + docCount + " documents in " + time + " ms into " + index.getName() + ".");
                }
                finally
                {
@@ -483,6 +484,7 @@ class IndexMerger extends Thread implements IndexListener
       /**
        * @inheritDoc
        */
+      @Override
       public String toString()
       {
          return name + ":" + numDocs;
