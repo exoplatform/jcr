@@ -69,6 +69,11 @@ and https://svn.jboss.org/repos/richfaces/tags/3.3.2.GA/docs/userguide/en/src/ma
               xmlns:xi="http://www.w3.org/2001/XInclude" />
               
   <xi:include href="modules/faq.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />              
+              xmlns:xi="http://www.w3.org/2001/XInclude" />       
+
+  <xi:include href="modules/jcr-with-gatein.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />       
+
+       
 
 </book>

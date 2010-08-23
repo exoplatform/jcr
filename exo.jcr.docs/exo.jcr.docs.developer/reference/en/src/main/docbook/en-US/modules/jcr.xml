@@ -148,4 +148,7 @@
   <xi:include href="jcr/data-container-howto.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
+  <!-- tuning guide --> 
+  <xi:include href="jcr/performance-tuning-guide.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
 </part>
