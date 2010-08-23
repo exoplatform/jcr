@@ -6,7 +6,7 @@
 
   <title>eXo JCR Backup Service</title>
 
-  <section id="Concept">
+  <section>
     <title>Concept</title>
 
     <para>The main purpose of that feature is to restore data in case of

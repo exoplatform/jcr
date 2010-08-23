@@ -2,7 +2,7 @@
 <chapter id="JCR.WorkspaceDataContainer">
    <?dbhtml filename="ch-data-container.html"?>
    <title>JCR Workspace Data Container (architecture contract)</title>
-   <section id="Goals">
+   <section>
       <title>Goals</title>
       <itemizedlist>
          <listitem>
@@ -16,9 +16,9 @@
          </listitem>
       </itemizedlist>
    </section>
-   <section id="Concepts">
+   <section>
       <title>Concepts</title>
-      <section id="Containerandconnection">
+      <section>
          <title>Container and connection</title>
          <para>Workspace Data Container (container) serves Repository Workspace persistent storage.
             WorkspacePersistentDataManager (data manager) uses container to perform CRUD operation on the persistent
@@ -76,7 +76,7 @@
             change parameters. Configuration consists of implementation class and set of properties and Value Storages
             configuration.</para>
       </section>
-      <section id="Valuestorages">
+      <section>
          <title>Value storages</title>
          <para>Container provides optional special mechanism for Value storing. It's possible to configure external
             Value Storages via container configuration (available only via configuration).
@@ -90,7 +90,7 @@
             of Value channels (ValueIOChannel). Channel provides all CRUD operation for Value Storage respecting the
             transaction manner of work (how it can be possible due to implementation specifics of the storages).</para>
       </section>
-      <section id="Lifecycle">
+      <section>
          <title>Lifecycle</title>
          <para>Container used by data manager for read and write operations.
             Read operations (getters) uses connection once and close it on the finally.
@@ -99,7 +99,7 @@
             guaranties transaction support for write operations.
             Commit or rollback should free/clean all resources consumed by the container (connection).</para>
       </section>
-      <section id="Valuestoragelifecycle">
+      <section>
          <title>Value storage lifecycle</title>
          <para>Value storage used from the container inside. Reads are related to a container reads. Writes are commit
             related.
@@ -107,11 +107,11 @@
             operations.</para>
       </section>
    </section>
-   <section id="Requirements">
+   <section>
       <title>Requirements</title>
       <para>Connection create and reuse should be a thread safe operation.
          Connection provides CRUD operations support on the storage.</para>
-      <section id="Readoperations">
+      <section>
          <title>Read operations</title>
          <itemizedlist>
             <listitem>
@@ -158,7 +158,7 @@
 				<programlisting>List&lt;PropertyData> getReferencesData(String nodeIdentifier) throws RepositoryException,IllegalStateException,UnsupportedOperationException;
 </programlisting>
 			</section>
-			<section id="Writeoperations">
+			<section>
 				<title>Write operations</title>
 				<itemizedlist>
 					<listitem>
@@ -227,7 +227,7 @@
 					UnsupportedOperationException if the method is not supported (e.g. JCR Level 1 implementation etc).
 					RepositoryException if some error occurs during preparation, validation or persistence.</para>
 			</section>
-			<section id="Stateoperations">
+			<section>
 				<title>State operations</title>
 				<itemizedlist>
 					<listitem>
@@ -237,7 +237,7 @@
 				<programlisting>boolean isOpened();
 </programlisting>
 			</section>
-			<section id="Validationofwriteoperations">
+			<section>
 				<title>Validation of write operations</title>
 				<para>Container have to care about storage consistency (JCR constraints) on write operations:
 					(InvalidItemStateException should be thrown according the spec)
@@ -285,7 +285,7 @@
 					</listitem>
 				</itemizedlist>
 			</section>
-			<section id="Consistencyofsave">
+			<section>
 				<title>Consistency of save</title>
 				<para>The container (connection) should implement consistency of Commit (Rollback) in 
 					<emphasis role="bold">transaction manner</emphasis>.
@@ -298,9 +298,9 @@
 				</para>
 			</section>
 		</section>
-		<section id="ValuestoragesAPI">
+		<section>
 			<title>Value storages API</title>
-			<section id="Storagesprovider">
+			<section>
 				<title>Storages provider:</title>
 				<para>Container implementation obtains Values Storages option via ValueStoragePluginProvider component. Provider acts as a factory of Value channels (ValueIOChannel) and has two methods for this purpose:</para>
 				<itemizedlist>
@@ -319,7 +319,7 @@
 </programlisting>
 				<para>There is also method for consistency check, but this method doesn't used anywhere and storage implementations has it empty.</para>
 			</section>
-			<section id="Valuestorageplugin">
+			<section>
 				<title>Value storage plugin</title>
 				<para>Provider implementation should use ValueStoragePlugin abstract class as a base for all storage implementations.
 					Plugin provides support for provider implementation methods. Plugin's methods should be implemented:</para>
@@ -345,7 +345,7 @@
 				<programlisting>public abstract boolean isSame(String valueDataDescriptor);
 </programlisting>
 			</section>
-			<section id="ValueIOchannel">
+			<section>
 				<title>Value I/O channel</title>
 				<para>Channel should implement ValueIOChannel interface. CRUD operation for Value Storage:</para>
 				<itemizedlist>
@@ -370,7 +370,7 @@
 				<programlisting>void delete(String propertyId) throws IOException;
 </programlisting>
 			</section>
-			<section id="Transactionsupportviachannel">
+			<section>
 				<title>Transaction support via channel</title>
 				<para>Modification operations should be applied only on commit. Rollback is required for data created cleanup.</para>
 				<itemizedlist>

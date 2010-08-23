@@ -26,7 +26,7 @@
     </listitem>
   </itemizedlist>
 
-  <section id="Objectives">
+  <section>
     <title>Objectives</title>
 
     <para>This article shows in the first chapters how to setup a sample
@@ -39,7 +39,7 @@
     the beginning to the end.</para>
   </section>
 
-  <section id="Requirements">
+  <section>
     <title>Requirements</title>
 
     <para>You should have read and understood <link
@@ -51,7 +51,7 @@
     eXo Products.</para>
   </section>
 
-  <section id="SampleService">
+  <section>
     <title>Sample Service</title>
 
     <section id="JavaClass">
@@ -89,7 +89,7 @@ public interface ArticleStatsService {
       com/laverdad/services/ArticleStatsService subfolder.</para>
     </section>
 
-    <section id="Firstconfigurationfile">
+    <section>
       <title>First configuration file</title>
 
       <para>When creating a service you also should declare its existence to
@@ -125,7 +125,7 @@ public interface ArticleStatsService {
       </note>
     </section>
 
-    <section id="InitParameters">
+    <section>
       <title>Init Parameters</title>
 
       <para>You see your service has a configuration file, but you wonder how
@@ -207,7 +207,7 @@ public interface ArticleStatsService {
       of init-param.</para>
     </section>
 
-    <section id="ServiceAccess">
+    <section>
       <title>Service Access</title>
 
       <para>As you want to follow the principle of <emphasis
@@ -282,10 +282,10 @@ public class Statistics {
     </section>
   </section>
 
-  <section id="Parameters">
+  <section>
     <title>Parameters</title>
 
-    <section id="ValueParam">
+    <section>
       <title>Value-Param</title>
 
       <para>There is an value-param example:</para>
@@ -316,7 +316,7 @@ public class UserACL {
 ...</programlisting>
     </section>
 
-    <section id="PropertiesParam">
+    <section>
       <title>Properties-Param</title>
 
       <para>Properties are name-value pairs. Both the name and the value are
@@ -353,7 +353,7 @@ public class HibernateServiceImpl implements HibernateService, ComponentRequestL
 }</programlisting>
     </section>
 
-    <section id="ObjectParam">
+    <section>
       <title>Object-Param</title>
 
       <para>Let's have a look at the configuration of the LDAPService. It's
@@ -435,7 +435,7 @@ public class LDAPConnectionConfig {
       url="https://anonsvn.jboss.org/repos/exo-jcr/kernel/trunk/exo.kernel.container/src/test/resources/object.xml">https://anonsvn.jboss.org/repos/exo-jcr/kernel/trunk/exo.kernel.container/src/test/resources/object.xml</ulink>.</para>
     </section>
 
-    <section id="Collection">
+    <section>
       <title>Collection</title>
 
       <para>You also can use java collections to configure your service. In
@@ -518,7 +518,7 @@ public class LDAPConnectionConfig {
     </section>
   </section>
 
-  <section id="ExternalPlugin">
+  <section>
     <title>External Plugin</title>
 
     <para>The External Plugin allows you to add configuration on the
@@ -606,7 +606,7 @@ public class LDAPConnectionConfig {
     </note>
   </section>
 
-  <section id="Import">
+  <section>
     <title>Import</title>
 
     <para>The import tag allows to link to other configuration files. These
@@ -662,7 +662,7 @@ public class LDAPConnectionConfig {
 ... </programlisting></para>
   </section>
 
-  <section id="Systemproperties">
+  <section>
     <title>System properties</title>
 
     <para>Since kernel 2.0.7 and 2.1, it is possible to use system properties

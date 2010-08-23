@@ -388,9 +388,6 @@ while(rowIterator.hasNext()){
     <xi:include href="synonim-provider.xml"
                 xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-    <xi:include href="regexp-indexing-rule.xml"
-                xmlns:xi="http://www.w3.org/2001/XInclude" />
-
     <xi:include href="spell-checker.xml"
                 xmlns:xi="http://www.w3.org/2001/XInclude" />
 
@@ -404,11 +401,5 @@ while(rowIterator.hasNext()){
     <xi:include href="tip-nodename-with-number.xml"
                 xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-    <!--itemizedlist>
-      <listitem>
-        <para><link linkend="JCR.TipNodeNameWithNumber">Xpath and numbers in
-        node names</link></para>
-      </listitem>
-    </itemizedlist-->
   </section>
 </chapter>
