@@ -63,52 +63,52 @@ public class TestCaching extends BaseStandaloneTest
    {
       Node contentNode = node.getNode("jcr:content");
       Property lastModifiedProperty = contentNode.getProperty("jcr:lastModified");
-      
+
       SimpleDateFormat dateFormat = new SimpleDateFormat(WebDavConst.DateFormat.IF_MODIFIED_SINCE_PATTERN, Locale.US);
       Calendar lastModifiedDate = lastModifiedProperty.getDate();
-      
-      lastModifiedDate.roll(Calendar.SECOND, -10);
+
+      lastModifiedDate.add(Calendar.SECOND, -10);
       // Rollback If-Modified-Since 10 seconds earlier.
       String ifModifiedDate = dateFormat.format(lastModifiedDate.getTime());
-      
+
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
       headers.add(ExtHttpHeaders.IF_MODIFIED_SINCE, ifModifiedDate);
       ContainerResponse response = service(WebDAVMethods.GET, getPathWS() + path, "", headers, null);
-      
+
       assertEquals(HTTPStatus.OK, response.getStatus());
    }
-   
+
    public void testIfModifiedSince() throws Exception
    {
       Node contentNode = node.getNode("jcr:content");
       Property lastModifiedProperty = contentNode.getProperty("jcr:lastModified");
-      
+
       SimpleDateFormat dateFormat = new SimpleDateFormat(WebDavConst.DateFormat.IF_MODIFIED_SINCE_PATTERN, Locale.US);
       Calendar lastModifiedDate = lastModifiedProperty.getDate();
-      
+
       lastModifiedDate.add(Calendar.WEEK_OF_MONTH, 1);
       String ifModifiedDate = dateFormat.format(lastModifiedDate.getTime());
-      
+
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
       headers.add(ExtHttpHeaders.IF_MODIFIED_SINCE, ifModifiedDate);
       ContainerResponse response = service(WebDAVMethods.GET, getPathWS() + path, "", headers, null);
-      
+
       assertEquals(HTTPStatus.NOT_MODIFIED, response.getStatus());
    }
 
    public void _testModifiedSinceLocaleFR() throws Exception
    {
-      SimpleDateFormat sdf = new SimpleDateFormat(WebDavConst.DateFormat.IF_MODIFIED_SINCE_PATTERN, Locale.FRENCH);  
+      SimpleDateFormat sdf = new SimpleDateFormat(WebDavConst.DateFormat.IF_MODIFIED_SINCE_PATTERN, Locale.FRENCH);
 
       String ifModifiedDate = sdf.format(sdf.getCalendar().getTime());
-      
+
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
       headers.add(ExtHttpHeaders.IF_MODIFIED_SINCE, ifModifiedDate);
       ContainerResponse response = service(WebDAVMethods.GET, getPathWS() + path, "", headers, null);
-      
+
       assertEquals(HTTPStatus.OK, response.getStatus());
    }
-   
+
    public void testCacheConf() throws Exception
    {
       ArrayList<CacheControlType> testValues = new ArrayList<CacheControlType>();
