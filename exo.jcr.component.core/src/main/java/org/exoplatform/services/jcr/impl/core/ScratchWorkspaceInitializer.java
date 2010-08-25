@@ -139,6 +139,9 @@ public class ScratchWorkspaceInitializer implements WorkspaceInitializer
             : Constants.NT_UNSTRUCTURED;
 
       this.dataManager = dataManager;
+      // this.nsPersister = nsPersister;
+      // this.ntRegistry = ntRegistry;
+
    }
 
    public NodeData initWorkspace() throws RepositoryException
@@ -270,13 +273,12 @@ public class ScratchWorkspaceInitializer implements WorkspaceInitializer
 
       if (addACL)
       {
+         AccessControlList acl = new AccessControlList();
          InternalQName[] mixins = new InternalQName[]{Constants.EXO_OWNEABLE, Constants.EXO_PRIVILEGEABLE};
 
          jcrSystem =
             TransientNodeData.createNodeData(root, Constants.JCR_SYSTEM, Constants.NT_UNSTRUCTURED, mixins,
                Constants.SYSTEM_UUID);
-
-         AccessControlList acl = jcrSystem.getACL();
 
          TransientPropertyData primaryType =
             TransientPropertyData.createPropertyData(jcrSystem, Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false,
@@ -338,6 +340,15 @@ public class ScratchWorkspaceInitializer implements WorkspaceInitializer
 
       dataManager.save(new TransactionChangesLog(changesLog));
 
+      //nsPersister.initStorage(jcrSystem, addACL, NamespaceRegistryImpl.DEF_NAMESPACES);
+      // nodeTypes save
+      // changesLog = new PlainChangesLogImpl();
+      // changesLog.addAll(ntPersister.initNodetypesRoot(jcrSystem,
+      // addACL).getAllStates());
+      // changesLog.addAll(ntPersister.initStorage(nodeTypeDataManager.getAllNodeTypes()).getAllStates());
+      // ntPersister.saveChanges(changesLog);
+
+      // nodeTypeDataManager.initDefaultNodeTypes(addACL);
       return jcrSystem;
    }
 
