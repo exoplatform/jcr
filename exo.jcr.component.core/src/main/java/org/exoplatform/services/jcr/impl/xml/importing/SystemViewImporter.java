@@ -381,20 +381,14 @@ public class SystemViewImporter extends BaseXmlImporter
          }
          catch (IllegalStateException e)
          {
-            log.error(e,e);
-            System.exit(0);
             throw new RepositoryException(e.getMessage(), e);
          }
          catch (IllegalNameException e)
          {
-            log.error(e,e);
-            System.exit(0);
             throw new RepositoryException(e.getMessage(), e);
          }
          catch (IOException e)
          {
-            log.error(e,e);
-            System.exit(0);
             throw new RepositoryException(e.getMessage(), e);
          }
 
