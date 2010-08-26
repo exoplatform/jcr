@@ -24,6 +24,7 @@ import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionDatas;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.dataflow.ItemState;
+import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.IllegalPathException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.NodeData;
@@ -49,6 +50,7 @@ import org.exoplatform.services.security.ConversationState;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -74,7 +76,9 @@ public class SystemViewImporter extends BaseXmlImporter
    private static Log log = ExoLogger.getLogger("exo.jcr.component.core.SystemViewImporter");
 
    protected PropertyInfo propertyInfo = new PropertyInfo();
-
+   
+   protected Map<String, NodePropertiesInfo> mapNodePropertiesInfo = new HashMap<String, NodePropertiesInfo>();
+   
    /**
     * Root node name.
     */
@@ -150,7 +154,15 @@ public class SystemViewImporter extends BaseXmlImporter
 
          ImportPropertyData propertyData = endProperty();
          if (propertyData != null)
+         {
             changesLog.add(new ItemState(propertyData, ItemState.ADDED, true, getAncestorToSave()));
+            
+            ImportNodeData currentNodeInfo = (ImportNodeData)getParent();
+            
+            NodePropertiesInfo currentNodePropertiesInfo = mapNodePropertiesInfo.get(currentNodeInfo.getQPath().getAsString());
+            
+            currentNodePropertiesInfo.addProperty(propertyData);
+         }
       }
       else if (Constants.SV_VALUE_NAME.equals(elementName))
       {
@@ -204,8 +216,10 @@ public class SystemViewImporter extends BaseXmlImporter
          newNodeData.setACL(parentData.getACL());
          newNodeData.setOrderNumber(getNextChildOrderNum(parentData));
          newNodeData.setIdentifier(IdGenerator.generate());
-
+         
          changesLog.add(new ItemState(newNodeData, ItemState.ADDED, true, getAncestorToSave()));
+         
+         mapNodePropertiesInfo.put(newNodeData.getQPath().getAsString(), new NodePropertiesInfo(newNodeData));  
 
          tree.push(newNodeData);
 
@@ -292,6 +306,15 @@ public class SystemViewImporter extends BaseXmlImporter
    private void endNode() throws RepositoryException
    {
       ImportNodeData currentNodeInfo = (ImportNodeData)tree.pop();
+      
+      NodePropertiesInfo currentNodePropertiesInfo = mapNodePropertiesInfo.get(currentNodeInfo.getQPath().getAsString()); 
+      
+      if (currentNodePropertiesInfo != null)
+      {
+         checkPropertis(currentNodePropertiesInfo);
+      }
+      
+      mapNodePropertiesInfo.remove(currentNodeInfo.getQPath().getAsString());
 
       currentNodeInfo.setMixinTypeNames(currentNodeInfo.getMixinTypeNames());
 
@@ -302,6 +325,92 @@ public class SystemViewImporter extends BaseXmlImporter
 
       currentNodeInfo.setACL(initAcl(currentNodeInfo.getACL(), currentNodeInfo.isExoOwneable(), currentNodeInfo
          .isExoPrivilegeable(), currentNodeInfo.getExoOwner(), currentNodeInfo.getExoPrivileges()));
+   }
+
+   
+   /**
+    * Checking priopertis if nodetype is nt:frozennode
+    * 
+    * @param currentNodePropertiesInfo
+    * @throws RepositoryException 
+    * @throws IOException 
+    * @throws IllegalNameException 
+    * @throws IllegalStateException 
+    */
+   private void checkPropertis(NodePropertiesInfo currentNodePropertiesInfo) throws RepositoryException
+   {
+      currentNodePropertiesInfo.getNode();
+      currentNodePropertiesInfo.getNode().getQPath();
+      currentNodePropertiesInfo.getNode().getQPath().isDescendantOf(Constants.JCR_VERSION_STORAGE_PATH);
+      
+      currentNodePropertiesInfo.getNode();
+      currentNodePropertiesInfo.getNode().getPrimaryTypeName();
+      currentNodePropertiesInfo.getNode().getPrimaryTypeName().equals(Constants.NT_FROZENNODE);
+      
+      
+      
+      if (currentNodePropertiesInfo.getNode().getQPath().isDescendantOf(Constants.JCR_VERSION_STORAGE_PATH)
+               && currentNodePropertiesInfo.getNode().getPrimaryTypeName().equals(Constants.NT_FROZENNODE))
+      {
+         // name of frozenPrimaryType property 
+         InternalQName fptPropertyName = locationFactory.parseJCRName("jcr:frozenPrimaryType").getInternalName();
+
+         // node of frozenMixinTypes property
+         InternalQName fmtPropertyName = locationFactory.parseJCRName("jcr:frozenMixinTypes").getInternalName();
+
+         InternalQName fptName = null;
+         List<InternalQName> fmtNames = new ArrayList<InternalQName>();
+
+         // get frozenPrimaryType and frozenMixinTypes
+         try
+         {
+            for (ImportPropertyData propertyData : currentNodePropertiesInfo.getProperties())
+            {
+               if (propertyData.getQName().equals(fptPropertyName))
+               {
+                  fptName = InternalQName.parse(new String(propertyData.getValues().get(0).getAsByteArray()));
+               }
+               else if (propertyData.getQName().equals(fmtPropertyName))
+               {
+                  for (ValueData valueData : propertyData.getValues())
+                  {
+                     fmtNames.add(InternalQName.parse(new String(valueData.getAsByteArray())));
+                  }
+               }
+            }
+         }
+         catch (IllegalStateException e)
+         {
+            log.error(e,e);
+            System.exit(0);
+            throw new RepositoryException(e.getMessage(), e);
+         }
+         catch (IllegalNameException e)
+         {
+            log.error(e,e);
+            System.exit(0);
+            throw new RepositoryException(e.getMessage(), e);
+         }
+         catch (IOException e)
+         {
+            log.error(e,e);
+            System.exit(0);
+            throw new RepositoryException(e.getMessage(), e);
+         }
+
+         for (ImportPropertyData propertyData : currentNodePropertiesInfo.getProperties())
+         {
+            PropertyDefinitionDatas vhdefs =
+                     nodeTypeDataManager.getPropertyDefinitions(propertyData.getQName(), fptName, fmtNames
+                              .toArray(new InternalQName[fmtNames.size()]));
+
+            if (vhdefs != null)
+            {
+               boolean isMultivalue = (vhdefs.getDefinition(true) != null ? true : false);
+               propertyData.setMultivalue(isMultivalue);
+            }
+         }
+      }
    }
 
    /**
@@ -341,7 +450,9 @@ public class SystemViewImporter extends BaseXmlImporter
          new ImportPropertyData(QPath.makeChildPath(nodeData.getQPath(), propertyInfo.getName()), propertyInfo
             .getIndentifer(), 0, propertyInfo.getType(), nodeData.getIdentifier(), false);
       propertyData.setValues(parseValues());
+      
       tree.push(nodeData);
+      
       return propertyData;
    }
 
@@ -414,16 +525,7 @@ public class SystemViewImporter extends BaseXmlImporter
             // there is single-value defeniton
             if (defs.getDefinition(false) != null)
             {
-               if (defs.getDefinition(false).isResidualSet() && currentNodeInfo.getPrimaryTypeName().equals(Constants.NT_FROZENNODE) 
-                        && propertyInfo.getName().equals(Constants.JCR_PREDECESSORS))
-               {
-                  /// TODO EXOJCR-865
-                  isMultivalue = true;
-               }
-               else
-               {
-                  isMultivalue = false;
-               }
+               isMultivalue = false;
             }
          }
          else
@@ -443,6 +545,7 @@ public class SystemViewImporter extends BaseXmlImporter
          propertyData.setValues(values);
 
       }
+      
       return propertyData;
    }
 
@@ -481,6 +584,9 @@ public class SystemViewImporter extends BaseXmlImporter
       }
 
       tree.push(currentNodeInfo);
+      
+      mapNodePropertiesInfo.put(currentNodeInfo.getQPath().getAsString(), new NodePropertiesInfo(currentNodeInfo));
+      
       return propertyData;
    }
 
