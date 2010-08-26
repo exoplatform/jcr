@@ -33,8 +33,8 @@ import org.exoplatform.services.jcr.impl.core.query.QueryManagerFactory;
 import org.exoplatform.services.jcr.impl.core.query.QueryManagerImpl;
 import org.exoplatform.services.jcr.impl.core.version.VersionImpl;
 import org.exoplatform.services.jcr.impl.dataflow.ItemDataCloneVisitor;
-import org.exoplatform.services.jcr.impl.dataflow.ItemDataCopyVisitor;
 import org.exoplatform.services.jcr.impl.dataflow.ItemDataMoveVisitor;
+import org.exoplatform.services.jcr.impl.dataflow.WorkspaceItemDataCopyVisitor;
 import org.exoplatform.services.jcr.impl.dataflow.session.SessionChangesLog;
 import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableDataManager;
 import org.exoplatform.services.jcr.impl.dataflow.version.VersionHistoryDataHelper;
@@ -208,9 +208,10 @@ public class WorkspaceImpl implements ExtendedWorkspace
          }
       }
 
-      ItemDataCopyVisitor initializer =
-         new ItemDataCopyVisitor((NodeData)destParentNode.getData(), destNodePath.getName().getInternalName(),
-            nodeTypeManager, srcSession.getTransientNodesManager(), false);
+      WorkspaceItemDataCopyVisitor initializer =
+         new WorkspaceItemDataCopyVisitor((NodeData)destParentNode.getData(), destNodePath.getName().getInternalName(),
+            nodeTypeManager, srcSession.getTransientNodesManager(), session.getTransientNodesManager(), false);
+
       srcNode.getData().accept(initializer);
 
       PlainChangesLogImpl changesLog = new PlainChangesLogImpl(initializer.getItemAddStates(), session.getId());
@@ -355,7 +356,7 @@ public class WorkspaceImpl implements ExtendedWorkspace
       InvalidSerializedDataException, RepositoryException
    {
       session.checkLive();
-      
+
       NodeImpl node = (NodeImpl)session.getItem(parentAbsPath);
       if (!node.checkedOut())
       {
@@ -632,8 +633,7 @@ public class WorkspaceImpl implements ExtendedWorkspace
             NodeData vh = (NodeData)dataManager.getItemData(v.getParentIdentifier()); // version
             // parent
             // it's a VH
-            VersionHistoryDataHelper historyHelper =
-               new VersionHistoryDataHelper(vh, dataManager, nodeTypeManager);
+            VersionHistoryDataHelper historyHelper = new VersionHistoryDataHelper(vh, dataManager, nodeTypeManager);
 
             changesLog.addAll(v.restoreLog(destParent, node.getQPath().getName(), historyHelper, session,
                removeExisting, changesLog).getAllStates());
@@ -670,8 +670,7 @@ public class WorkspaceImpl implements ExtendedWorkspace
                NodeData destParent = (NodeData)dataManager.getItemData(node.getParentIdentifier());
                // version parent it's a VH
                NodeData vh = (NodeData)dataManager.getItemData(v.getParentIdentifier());
-               VersionHistoryDataHelper historyHelper =
-                  new VersionHistoryDataHelper(vh, dataManager, nodeTypeManager);
+               VersionHistoryDataHelper historyHelper = new VersionHistoryDataHelper(vh, dataManager, nodeTypeManager);
 
                changesLog.addAll(v.restoreLog(destParent, node.getQPath().getName(), historyHelper, session,
                   removeExisting, changesLog).getAllStates());
