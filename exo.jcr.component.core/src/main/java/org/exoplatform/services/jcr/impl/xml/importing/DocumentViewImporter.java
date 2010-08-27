@@ -348,29 +348,31 @@ public class DocumentViewImporter extends BaseXmlImporter
                {
                   
                   PropertyDefinitionDatas vhdefs = null;
-
-                  if (nodeData.getQPath().isDescendantOf(Constants.JCR_VERSION_STORAGE_PATH))
+                  if (defs.getAnyDefinition().isResidualSet()) 
                   {
-                     if (nodeData.getPrimaryTypeName().equals(Constants.NT_FROZENNODE))
+                     if (nodeData.getQPath().isDescendantOf(Constants.JCR_VERSION_STORAGE_PATH))
                      {
-                        // get primaryType
-                        InternalQName fptName = locationFactory.parseJCRName(atts.get("jcr:frozenPrimaryType")).getInternalName();
-
-                        // get mixin types
-                        List<JCRName> mtNames = getJCRNames(atts.get("jcr:frozenMixinTypes"));
-
-                        InternalQName fmtName[] = new InternalQName[mtNames.size()];
-
-                        for (int i = 0; i < mtNames.size(); i++)
+                        if (nodeData.getPrimaryTypeName().equals(Constants.NT_FROZENNODE))
                         {
-                           fmtName[i] = new InternalQName(mtNames.get(i).getNamespace(), mtNames.get(i).getName());
-                        }
-
-                        vhdefs = nodeTypeDataManager.getPropertyDefinitions(propName, fptName, fmtName);
-
-                        if (vhdefs != null)
-                        {
-                           isMultivalue = (vhdefs.getDefinition(true) != null ? true : false);
+                           // get primaryType
+                           InternalQName fptName = locationFactory.parseJCRName(atts.get("jcr:frozenPrimaryType")).getInternalName();
+   
+                           // get mixin types
+                           List<JCRName> mtNames = getJCRNames(atts.get("jcr:frozenMixinTypes"));
+   
+                           InternalQName fmtName[] = new InternalQName[mtNames.size()];
+   
+                           for (int i = 0; i < mtNames.size(); i++)
+                           {
+                              fmtName[i] = new InternalQName(mtNames.get(i).getNamespace(), mtNames.get(i).getName());
+                           }
+   
+                           vhdefs = nodeTypeDataManager.getPropertyDefinitions(propName, fptName, fmtName);
+   
+                           if (vhdefs != null)
+                           {
+                              isMultivalue = (vhdefs.getDefinition(true) != null ? true : false);
+                           }
                         }
                      }
                   }

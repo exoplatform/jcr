@@ -339,16 +339,6 @@ public class SystemViewImporter extends BaseXmlImporter
     */
    private void checkPropertis(NodePropertiesInfo currentNodePropertiesInfo) throws RepositoryException
    {
-      currentNodePropertiesInfo.getNode();
-      currentNodePropertiesInfo.getNode().getQPath();
-      currentNodePropertiesInfo.getNode().getQPath().isDescendantOf(Constants.JCR_VERSION_STORAGE_PATH);
-      
-      currentNodePropertiesInfo.getNode();
-      currentNodePropertiesInfo.getNode().getPrimaryTypeName();
-      currentNodePropertiesInfo.getNode().getPrimaryTypeName().equals(Constants.NT_FROZENNODE);
-      
-      
-      
       if (currentNodePropertiesInfo.getNode().getQPath().isDescendantOf(Constants.JCR_VERSION_STORAGE_PATH)
                && currentNodePropertiesInfo.getNode().getPrimaryTypeName().equals(Constants.NT_FROZENNODE))
       {
@@ -391,17 +381,25 @@ public class SystemViewImporter extends BaseXmlImporter
          {
             throw new RepositoryException(e.getMessage(), e);
          }
+         
+         InternalQName nodePrimaryTypeName = currentNodePropertiesInfo.getNode().getPrimaryTypeName();
+         InternalQName[] nodeMixinTypeName = currentNodePropertiesInfo.getNode().getMixinTypeNames();
 
          for (ImportPropertyData propertyData : currentNodePropertiesInfo.getProperties())
          {
-            PropertyDefinitionDatas vhdefs =
-                     nodeTypeDataManager.getPropertyDefinitions(propertyData.getQName(), fptName, fmtNames
-                              .toArray(new InternalQName[fmtNames.size()]));
-
-            if (vhdefs != null)
+            PropertyDefinitionDatas defs = nodeTypeDataManager.getPropertyDefinitions(propertyData.getQName(), nodePrimaryTypeName, nodeMixinTypeName);
+            
+            if (defs == null  || (defs != null && defs.getAnyDefinition().isResidualSet()))
             {
-               boolean isMultivalue = (vhdefs.getDefinition(true) != null ? true : false);
-               propertyData.setMultivalue(isMultivalue);
+               PropertyDefinitionDatas vhdefs =
+                        nodeTypeDataManager.getPropertyDefinitions(propertyData.getQName(), fptName, fmtNames
+                                 .toArray(new InternalQName[fmtNames.size()]));
+   
+               if (vhdefs != null)
+               {
+                  boolean isMultivalue = (vhdefs.getDefinition(true) != null ? true : false);
+                  propertyData.setMultivalue(isMultivalue);
+               }
             }
          }
       }
