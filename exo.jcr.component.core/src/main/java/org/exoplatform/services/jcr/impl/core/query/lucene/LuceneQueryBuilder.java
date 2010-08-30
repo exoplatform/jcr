@@ -1175,11 +1175,17 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
                }
                catch (RepositoryException e)
                {
-                  log.warn("Unable to coerce '" + literal + "' into a NAME: " + e.toString());
+                  if (types.length == 1)
+                  {
+                     log.warn("Unable to coerce '" + literal + "' into a NAME: " + e.toString());
+                  }
                }
                catch (IllegalNameException e)
                {
-                  log.warn("Unable to coerce '" + literal + "' into a NAME: " + e.toString());
+                  if (types.length == 1)
+                  {
+                     log.warn("Unable to coerce '" + literal + "' into a NAME: " + e.toString());
+                  }
                }
                break;
             case PropertyType.PATH :
@@ -1192,7 +1198,10 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
                }
                catch (RepositoryException e)
                {
-                  log.warn("Unable to coerce '" + literal + "' into a PATH: " + e.toString());
+                  if (types.length == 1)
+                  {
+                     log.warn("Unable to coerce '" + literal + "' into a PATH: " + e.toString());
+                  }
                }
                break;
             case PropertyType.DATE :
@@ -1205,7 +1214,10 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
                }
                else
                {
-                  log.warn("Unable to coerce '" + literal + "' into a DATE.");
+                  if (types.length == 1)
+                  {
+                     log.warn("Unable to coerce '" + literal + "' into a DATE.");
+                  }
                }
                break;
             case PropertyType.DOUBLE :
@@ -1218,7 +1230,10 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
                }
                catch (NumberFormatException e)
                {
-                  log.warn("Unable to coerce '" + literal + "' into a DOUBLE: " + e.toString());
+                  if (types.length == 1)
+                  {
+                     log.warn("Unable to coerce '" + literal + "' into a DOUBLE: " + e.toString());
+                  }
                }
                break;
             case PropertyType.LONG :
@@ -1231,7 +1246,10 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
                }
                catch (NumberFormatException e)
                {
-                  log.warn("Unable to coerce '" + literal + "' into a LONG: " + e.toString());
+                  if (types.length == 1)
+                  {
+                     log.warn("Unable to coerce '" + literal + "' into a LONG: " + e.toString());
+                  }
                }
                break;
             case PropertyType.STRING :
@@ -1240,6 +1258,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
                break;
          }
       }
+
       if (values.size() == 0)
       {
          // use literal as is then try to guess other types
