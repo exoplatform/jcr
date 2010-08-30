@@ -1088,6 +1088,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          redoLog.clear();
 
          lastFlushTime = System.currentTimeMillis();
+         lastFileSystemFlushTime = System.currentTimeMillis();
       }
 
       // delete obsolete indexes
@@ -1238,12 +1239,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          commitVolatileIndex();
          return true;
       }
-      long volatileTime = System.currentTimeMillis() - lastFileSystemFlushTime;
-      if (handler.getMaxVolatileTime() > 0 && volatileTime >= handler.getMaxVolatileTime() * 1000)
-      {
-         commitVolatileIndex();
-         return true;
-      }
       return false;
    }
 
@@ -1276,7 +1271,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
 
          // create new volatile index
          resetVolatileIndex();
-         lastFileSystemFlushTime = System.currentTimeMillis();
 
          time = System.currentTimeMillis() - time;
          log.debug("Committed in-memory index in " + time + "ms.");
@@ -1394,8 +1388,10 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    private synchronized void checkFlush()
    {
       long idleTime = System.currentTimeMillis() - lastFlushTime;
+      long volatileTime = System.currentTimeMillis() - lastFileSystemFlushTime;
       // do not flush if volatileIdleTime is zero or negative
-      if (handler.getVolatileIdleTime() > 0 && idleTime > handler.getVolatileIdleTime() * 1000)
+      if ((handler.getVolatileIdleTime() > 0 && idleTime > handler.getVolatileIdleTime() * 1000)
+         || (handler.getMaxVolatileTime() > 0 && volatileTime > handler.getMaxVolatileTime() * 1000))
       {
          try
          {
