@@ -80,6 +80,19 @@ public class ImportPropertyData extends TransientPropertyData implements ImportI
    {
       this.parentIdentifier = identifer;
    }
+   
+   /**
+    * Set multiValued;
+    * 
+    * @param multiValue
+    *          - multi value
+    */
+   public void setMultivalue(boolean multiValue)
+   {
+      this.multiValued = multiValue;
+   }
+
+   /**
 
    /**
     * Set path of item.
