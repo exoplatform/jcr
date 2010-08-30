@@ -24,7 +24,7 @@ function getModule(params) {
     addDependency(new Project("jgroups", "jgroups", "jar", "2.6.13.GA")).
     addDependency(new Project("stax", "stax-api", "jar", "1.0")).
 //	addDependency(new Project("stax", "stax", "jar", "1.2.0")).
-	addDependency(new Project("org.jboss.cache","jbosscache-core","jar","3.2.4.GA")).		
+	addDependency(new Project("org.jboss.cache","jbosscache-core","jar","3.2.6.GA")).		
 	addDependency(new Project("jboss.jbossts","jbossjts","jar","4.6.1.GA")).		
 	addDependency(new Project("jboss.jbossts","jbossts-common","jar","4.6.1.GA")).		
 	addDependency(new Project("org.apache.ws.commons","ws-commons-util","jar","1.0.1")).		
