@@ -65,7 +65,7 @@ public class CmdRnFr extends FtpCommandImpl
 
          curSession.getItem(repoPath);
 
-         clientSession().setPrevParamsEx(repoPath);
+         clientSession().setPrevParamsEx(resName);
 
          reply(FtpConst.Replyes.REPLY_350);
          return;
