@@ -374,7 +374,7 @@
       <dependency>
         <groupId>org.jboss.cache</groupId>
         <artifactId>jbosscache-core</artifactId>
-        <version>3.2.4.GA</version>
+        <version>3.2.6.GA</version>
       </dependency>
       <dependency>
         <groupId>jboss.jbossts</groupId>
