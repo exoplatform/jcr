@@ -311,7 +311,7 @@ public class SystemViewImporter extends BaseXmlImporter
       
       if (currentNodePropertiesInfo != null)
       {
-         checkPropertis(currentNodePropertiesInfo);
+         checkProperties(currentNodePropertiesInfo);
       }
       
       mapNodePropertiesInfo.remove(currentNodeInfo.getQPath().getAsString());
@@ -337,17 +337,11 @@ public class SystemViewImporter extends BaseXmlImporter
     * @throws IllegalNameException 
     * @throws IllegalStateException 
     */
-   private void checkPropertis(NodePropertiesInfo currentNodePropertiesInfo) throws RepositoryException
+   private void checkProperties(NodePropertiesInfo currentNodePropertiesInfo) throws RepositoryException
    {
       if (currentNodePropertiesInfo.getNode().getQPath().isDescendantOf(Constants.JCR_VERSION_STORAGE_PATH)
                && currentNodePropertiesInfo.getNode().getPrimaryTypeName().equals(Constants.NT_FROZENNODE))
       {
-         // name of frozenPrimaryType property 
-         InternalQName fptPropertyName = locationFactory.parseJCRName("jcr:frozenPrimaryType").getInternalName();
-
-         // node of frozenMixinTypes property
-         InternalQName fmtPropertyName = locationFactory.parseJCRName("jcr:frozenMixinTypes").getInternalName();
-
          InternalQName fptName = null;
          List<InternalQName> fmtNames = new ArrayList<InternalQName>();
 
@@ -356,15 +350,15 @@ public class SystemViewImporter extends BaseXmlImporter
          {
             for (ImportPropertyData propertyData : currentNodePropertiesInfo.getProperties())
             {
-               if (propertyData.getQName().equals(fptPropertyName))
+               if (propertyData.getQName().equals(Constants.JCR_FROZENPRIMARYTYPE))
                {
                   fptName = InternalQName.parse(new String(propertyData.getValues().get(0).getAsByteArray()));
                }
-               else if (propertyData.getQName().equals(fmtPropertyName))
+               else if (propertyData.getQName().equals(Constants.JCR_FROZENMIXINTYPES))
                {
                   for (ValueData valueData : propertyData.getValues())
                   {
-                     fmtNames.add(InternalQName.parse(new String(valueData.getAsByteArray())));
+                     fmtNames.add(InternalQName.parse(new String(valueData.getAsByteArray(), Constants.DEFAULT_ENCODING)));
                   }
                }
             }
