@@ -34,6 +34,7 @@ import javax.jcr.ImportUUIDBehavior;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.Property;
+import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Value;
@@ -1985,6 +1986,102 @@ public class TestImport extends AbstractImportTest
       property = fileImport.getProperty("exo:links");
       assertNotNull(property);
       assertNotNull(property.getDefinition());
+      
+      fileImport.checkin();
+      fileImport.checkout();
+      root.save();
+   }
+   
+   /**
+    * https://jira.jboss.org/browse/EXOJCR-933
+    * 
+    * @throws Exception
+    */
+   public void testEXOJCR933_Doc_exo_datetime() throws Exception
+   {
+
+      Node testRoot = root.addNode("testRoot");
+      Node fileNode = testRoot.addNode("TestEXOJCR933_exo_datetime");
+      fileNode.setProperty("exo:datetime", Calendar.getInstance());
+      
+      if (fileNode.canAddMixin("mix:versionable"))
+      {
+         fileNode.addMixin("mix:versionable");
+      }
+      
+      fileNode.addMixin("exo:datetime");
+      
+      fileNode.setProperty("exo:dateCreated", Calendar.getInstance());
+      fileNode.setProperty("exo:dateModified", Calendar.getInstance());
+      
+      root.save();
+      
+      fileNode.checkin();
+      fileNode.checkout();
+      root.save();
+      
+      fileNode.checkin();
+      fileNode.checkout();
+      root.save();
+      
+      fileNode.checkin();
+      fileNode.checkout();
+      root.save();
+
+      String nodeDump = dumpVersionable(fileNode);
+      // Export VersionHistory
+
+      assertTrue(fileNode.isNodeType("mix:versionable"));
+
+      VersionableNodeInfo nodeInfo = new VersionableNodeInfo(fileNode);
+
+      // node content
+      byte[] versionableNode = serialize(fileNode, false, true);
+      // version history
+      byte[] versionHistory = serialize(fileNode.getVersionHistory(), false, true);
+      //System.out.println(new String(versionHistory));
+      
+      // restore node content
+      Node restoreRoot = testRoot.addNode("restRoot");
+      testRoot.save();
+      
+      deserialize(restoreRoot, XmlSaveType.SESSION, true, ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING,
+         new ByteArrayInputStream(versionableNode));
+      root.save();
+
+      assertTrue(restoreRoot.hasNode("TestEXOJCR933_exo_datetime"));
+
+      Node fileImport = restoreRoot.getNode("TestEXOJCR933_exo_datetime");
+      assertTrue(fileImport.isNodeType("mix:versionable"));
+
+      VersionHistoryImporter versionHistoryImporter =
+         new VersionHistoryImporter((NodeImpl)fileImport, new ByteArrayInputStream(versionHistory), nodeInfo
+            .getBaseVersion(), nodeInfo.getPredecessorsHistory(), nodeInfo.getVersionHistory());
+      versionHistoryImporter.doImport();
+      root.save();
+      
+      Property property = fileImport.getProperty("exo:dateCreated");
+      assertNotNull(property);
+      assertNotNull(property.getDefinition());
+      assertEquals(PropertyType.DATE, property.getType());
+      
+      property = fileImport.getProperty("exo:dateModified");
+      assertNotNull(property);
+      assertNotNull(property.getDefinition());
+      assertEquals(PropertyType.DATE, property.getType());
+      
+      fileImport.restore("2", true);
+      root.save();
+      
+      property = fileImport.getProperty("exo:dateCreated");
+      assertNotNull(property);
+      assertNotNull(property.getDefinition());
+      assertEquals(PropertyType.DATE, property.getType());
+      
+      property = fileImport.getProperty("exo:dateModified");
+      assertNotNull(property);
+      assertNotNull(property.getDefinition());
+      assertEquals(PropertyType.DATE, property.getType());
       
       fileImport.checkin();
       fileImport.checkout();

@@ -286,7 +286,36 @@ public class DocumentViewImporter extends BaseXmlImporter
 
                List<ValueData> values = new ArrayList<ValueData>();
                int pType = pDef.getRequiredType() > 0 ? pDef.getRequiredType() : PropertyType.STRING;
+               
+               if (defs.getAnyDefinition().isResidualSet()) 
+               {
+                  if (nodeData.getQPath().isDescendantOf(Constants.JCR_VERSION_STORAGE_PATH))
+                  {
+                     if (nodeData.getPrimaryTypeName().equals(Constants.NT_FROZENNODE))
+                     {
+                        // get primaryType
+                        InternalQName fptName = locationFactory.parseJCRName(atts.get("jcr:frozenPrimaryType")).getInternalName();
 
+                        // get mixin types
+                        List<JCRName> mtNames = getJCRNames(atts.get("jcr:frozenMixinTypes"));
+
+                        InternalQName fmtName[] = new InternalQName[mtNames.size()];
+
+                        for (int i = 0; i < mtNames.size(); i++)
+                        {
+                           fmtName[i] = new InternalQName(mtNames.get(i).getNamespace(), mtNames.get(i).getName());
+                        }
+
+                        PropertyDefinitionDatas ptVhdefs = nodeTypeDataManager.getPropertyDefinitions(propName, fptName, fmtName);
+
+                        if (ptVhdefs != null)
+                        {
+                           pType = (ptVhdefs.getAnyDefinition().getRequiredType() > 0 ? ptVhdefs.getAnyDefinition().getRequiredType() : PropertyType.STRING);
+                        }
+                     }
+                  }
+               }
+               
                if ("".equals(propertiesMap.get(propName)))
                {
                   // Skip empty non string values
@@ -294,7 +323,7 @@ public class DocumentViewImporter extends BaseXmlImporter
                   {
                      continue;
                   }
-
+                  
                   String denormalizeString = StringConverter.denormalizeString(propertiesMap.get(propName));
                   Value value = valueFactory.createValue(denormalizeString, pType);
                   values.add(((BaseValue)value).getInternalData());
