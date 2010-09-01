@@ -51,16 +51,12 @@ public class IndexExcelFileTest extends BaseUsecasesTest
    {
       InputStream is = IndexExcelFileTest.class.getResourceAsStream("/index/test_index.xls");
       assertNotNull("Can not create an input stream from file for indexing", is);
-      int size = is.available();
-      byte b[] = new byte[size];
-      is.read(b);
-      is.close();
 
       Node cmr = root.addNode("cmr").addNode("categories").addNode("cmr");
       Node cool = cmr.addNode("cool", "nt:file");
       Node contentNode = cool.addNode("jcr:content", "nt:resource");
       contentNode.setProperty("jcr:encoding", "UTF-8");
-      contentNode.setProperty("jcr:data", session.getValueFactory().createValue(new String(b)));
+      contentNode.setProperty("jcr:data", is);
       contentNode.setProperty("jcr:mimeType", "application/excel");
       contentNode.setProperty("jcr:lastModified", session.getValueFactory().createValue(Calendar.getInstance()));
       assertNotNull("Can not create a cmr node for indexing", cmr);

@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.storage.fs;
 
-import org.exoplatform.commons.utils.MimeTypeResolver;
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.core.value.EditableBinaryValue;
 import org.exoplatform.services.jcr.core.value.ReadableBinaryValue;
@@ -675,16 +674,12 @@ public class TestRandomValueIO extends JcrImplBaseTest
       // create property
 
       String type = "nt:file";
-      String name = "foo.doc";
+      String name = "foo.txt";
 
       Node createdNodeRef = testRoot.addNode(name, type);
       Node dataNode = createdNodeRef.addNode("jcr:content", "nt:resource");
 
-      MimeTypeResolver mimetypeResolver = new MimeTypeResolver();
-      mimetypeResolver.setDefaultMimeType("application/zip");
-      String mimeType = mimetypeResolver.getMimeType(name);
-
-      dataNode.setProperty("jcr:mimeType", mimeType);
+      dataNode.setProperty("jcr:mimeType", "text/plain");
       dataNode.setProperty("jcr:lastModified", Calendar.getInstance());
       dataNode.setProperty("jcr:data", new ByteArrayInputStream(new byte[]{}));
 
