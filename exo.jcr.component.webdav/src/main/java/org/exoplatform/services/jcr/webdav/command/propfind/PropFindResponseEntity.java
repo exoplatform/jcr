@@ -36,6 +36,7 @@ import java.net.URLDecoder;
 import java.util.Set;
 
 import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 import javax.ws.rs.core.StreamingOutput;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLOutputFactory;
@@ -91,6 +92,11 @@ public class PropFindResponseEntity implements StreamingOutput
     * Boolean flag, shows if only property names a requested.
     */
    protected final boolean propertyNamesOnly;
+   
+   /**
+    * Session.
+    */
+   protected final Session session;
 
    /**
     * Constructor.
@@ -100,13 +106,14 @@ public class PropFindResponseEntity implements StreamingOutput
     * @param propertyNames the list of properties requested
     * @param propertyNamesOnly if only property names a requested
     */
-   public PropFindResponseEntity(int depth, Resource rootResource, Set<QName> propertyNames, boolean propertyNamesOnly)
+   public PropFindResponseEntity(int depth, Resource rootResource, Set<QName> propertyNames, boolean propertyNamesOnly, Session session)
    {
       this.rootResource = rootResource;
       this.namespaceContext = rootResource.getNamespaceContext();
       this.propertyNames = propertyNames;
       this.depth = depth;
       this.propertyNamesOnly = propertyNamesOnly;
+      this.session = session;
    }
 
    /**
@@ -173,7 +180,7 @@ public class PropFindResponseEntity implements StreamingOutput
       xmlStreamWriter.writeEndElement();
 
       PropstatGroupedRepresentation propstat =
-         new PropstatGroupedRepresentation(resource, propertyNames, propertyNamesOnly);
+         new PropstatGroupedRepresentation(resource, propertyNames, propertyNamesOnly, session);
 
       PropertyWriteUtil.writePropStats(xmlStreamWriter, propstat.getPropStats());
 
