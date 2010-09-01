@@ -2087,5 +2087,86 @@ public class TestImport extends AbstractImportTest
       fileImport.checkout();
       root.save();
    }
-   
+
+   public void testBigRestore_Sys() throws Exception
+   {
+      File file = createBLOBTempFile(1000);
+      int depth = 1;
+      
+      Node testRoot = root.addNode("testRoot");
+      Node fileNode = testRoot.addNode("TestBigRestore_Sys");
+      
+      for (int i=0; i<depth; i++)
+      {
+         Node l1 = fileNode.addNode("node_l1_" + i);
+         for (int j=0; j<depth; j++)
+         {
+            Node l2 = l1.addNode("node_l2_" + j);
+            for (int k=0; k<depth; k++)
+            {
+               Node l3 = l2.addNode("node_l3_" + k, "nt:file");
+               
+               Node contentNode = l3.addNode("jcr:content", "nt:resource");
+               contentNode.setProperty("jcr:data", new FileInputStream(file));
+               contentNode.setProperty("jcr:mimeType", "image/jpg");
+               contentNode.setProperty("jcr:lastModified", Calendar.getInstance());
+               
+               l3.addMixin("exo:linkable");
+               l3.setProperty("exo:links", new String[] {"http://ya.ru"});
+               
+               l3.addMixin("exo:datetime");
+               l3.setProperty("exo:dateCreated", Calendar.getInstance());
+               l3.setProperty("exo:dateModified", Calendar.getInstance());
+            }
+            root.save();
+         }
+      }
+      
+      root.save();
+      
+      fileNode.addMixin("mix:versionable");
+      root.save();
+      
+      fileNode.checkin();
+      fileNode.checkout();
+      root.save();
+      
+      fileNode.checkin();
+      fileNode.checkout();
+      root.save();
+      
+      //export
+      VersionableNodeInfo nodeInfo = new VersionableNodeInfo(fileNode);
+
+      // node content
+      File versionableNode = serializeToFile(fileNode, true, true);
+      // version history
+      File versionHistory = serializeToFile(fileNode.getVersionHistory(), true, true);
+      
+      versionableNode.deleteOnExit();
+      versionHistory.deleteOnExit();
+      
+      System.out.println("VersionNode export size : " + versionableNode.length());
+      System.out.println("VersionHistory export size : " + versionHistory.length());
+      
+      
+      // restore node content
+      Node restoreRoot = testRoot.addNode("restRoot");
+      testRoot.save();
+      
+      deserialize(restoreRoot, XmlSaveType.SESSION, true, ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING,
+         new FileInputStream(versionableNode));
+      root.save();
+
+      assertTrue(restoreRoot.hasNode("TestBigRestore_Sys"));
+
+      Node fileImport = restoreRoot.getNode("TestBigRestore_Sys");
+      assertTrue(fileImport.isNodeType("mix:versionable"));
+
+      VersionHistoryImporter versionHistoryImporter =
+         new VersionHistoryImporter((NodeImpl)fileImport, new FileInputStream(versionHistory), nodeInfo
+            .getBaseVersion(), nodeInfo.getPredecessorsHistory(), nodeInfo.getVersionHistory());
+      versionHistoryImporter.doImport();
+      root.save();
+   }
 }
