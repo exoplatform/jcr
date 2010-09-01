@@ -320,6 +320,53 @@ public abstract class AbstractImportTest extends JcrAPIBaseTest
       outStream.close();
       return outStream.toByteArray();
    }
+   
+   /**
+    * Serialize content of MIX_REFERENCEABLE_NODE_NAME to file.
+    * 
+    * @param rootNode
+    * @param isSystemView
+    * @param isStream
+    * @return
+    * @throws IOException
+    * @throws RepositoryException
+    * @throws SAXException
+    * @throws TransformerConfigurationException
+    */
+   protected File serializeToFile(Node exportRootNode, boolean isSystemView, boolean isStream) throws IOException,
+                                                                                          RepositoryException,
+                                                                                          SAXException,
+                                                                                          TransformerConfigurationException {
+
+     ExtendedSession extendedSession = (ExtendedSession) exportRootNode.getSession();
+
+     File file = File.createTempFile("export", ".xml");
+     
+     FileOutputStream outStream = new FileOutputStream(file);
+
+     if (isSystemView) {
+
+       if (isStream) {
+         extendedSession.exportSystemView(exportRootNode.getPath(), outStream, false, false);
+       } else {
+         SAXTransformerFactory saxFact = (SAXTransformerFactory) TransformerFactory.newInstance();
+         TransformerHandler handler = saxFact.newTransformerHandler();
+         handler.setResult(new StreamResult(outStream));
+         extendedSession.exportSystemView(exportRootNode.getPath(), handler, false, false);
+       }
+     } else {
+       if (isStream) {
+         extendedSession.exportDocumentView(exportRootNode.getPath(), outStream, false, false);
+       } else {
+         SAXTransformerFactory saxFact = (SAXTransformerFactory) TransformerFactory.newInstance();
+         TransformerHandler handler = saxFact.newTransformerHandler();
+         handler.setResult(new StreamResult(outStream));
+         extendedSession.exportDocumentView(exportRootNode.getPath(), handler, false, false);
+       }
+     }
+     outStream.close();
+     return file;
+   }
 
    protected void serialize(Node rootNode, boolean isSystemView, boolean isStream, File content) throws IOException,
       RepositoryException, SAXException, TransformerConfigurationException
