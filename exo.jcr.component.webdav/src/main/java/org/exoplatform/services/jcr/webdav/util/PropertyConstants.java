@@ -202,6 +202,11 @@ public interface PropertyConstants
    QName JCR_CONTENT = new QName("jcr:", "content");
 
    /**
+    * dav:isreadonly property for MicroSoft Webfolders extension.
+    */
+   QName IS_READ_ONLY = new QName("DAV:", "isreadonly");
+
+   /**
     * Creation date pattern.
     */
    String CREATION_PATTERN = "yyyy-MM-dd'T'HH:mm:ss'Z'";
