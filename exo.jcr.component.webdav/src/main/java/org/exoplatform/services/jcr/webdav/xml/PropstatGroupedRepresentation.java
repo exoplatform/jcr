@@ -111,6 +111,11 @@ public class PropstatGroupedRepresentation
       }
    }
 
+   public PropstatGroupedRepresentation(Resource resource, Set<QName> propNames, boolean namesOnly)  throws RepositoryException
+   {
+      this(resource, propNames, namesOnly, null);
+   }
+
    /**
     * Returns properties statuses.
     * 
@@ -132,7 +137,7 @@ public class PropstatGroupedRepresentation
             HierarchicalProperty prop = new HierarchicalProperty(propName);
             try
             {
-               if (propName.equals(PropertyConstants.IS_READ_ONLY))
+               if (propName.equals(PropertyConstants.IS_READ_ONLY) && session != null)
                {
                   if (isReadOnly())
                   {

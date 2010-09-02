@@ -176,7 +176,7 @@ public class SearchResultResponseEntity implements StreamingOutput
             xmlStreamWriter.writeCharacters(URLDecoder.decode(resource.getIdentifier().toASCIIString(), "UTF-8"));
             xmlStreamWriter.writeEndElement();
 
-            PropstatGroupedRepresentation propstat = new PropstatGroupedRepresentation(resource, properties, false, null);
+            PropstatGroupedRepresentation propstat = new PropstatGroupedRepresentation(resource, properties, false);
 
             PropertyWriteUtil.writePropStats(xmlStreamWriter, propstat.getPropStats());
 
