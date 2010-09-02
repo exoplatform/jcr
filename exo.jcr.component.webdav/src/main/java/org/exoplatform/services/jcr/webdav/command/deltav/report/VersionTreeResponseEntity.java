@@ -120,7 +120,7 @@ public class VersionTreeResponseEntity implements StreamingOutput
             xmlStreamWriter.writeEndElement();
 
             PropstatGroupedRepresentation propstat =
-               new PropstatGroupedRepresentation(versionResource, properties, false, null);
+               new PropstatGroupedRepresentation(versionResource, properties, false);
             PropertyWriteUtil.writePropStats(xmlStreamWriter, propstat.getPropStats());
 
             xmlStreamWriter.writeEndElement();

@@ -116,6 +116,11 @@ public class PropFindResponseEntity implements StreamingOutput
       this.session = session;
    }
 
+   public PropFindResponseEntity(int depth, Resource rootResource, Set<QName> propertyNames, boolean propertyNamesOnly)
+   {
+      this(depth, rootResource, propertyNames, propertyNamesOnly, null);
+   }
+
    /**
     * {@inheritDoc}
     */
