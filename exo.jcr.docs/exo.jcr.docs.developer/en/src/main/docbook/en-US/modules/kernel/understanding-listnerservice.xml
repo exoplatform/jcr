@@ -28,8 +28,8 @@
   <section>
     <title>Objectives</title>
 
-    <para>This article will first describe how the ListenerService works then
-    it will show you how to configure the ListenerService.</para>
+    <para>This article will first describe how the ListenerService works and
+    then it will show you how to configure the ListenerService.</para>
   </section>
 
   <section>
@@ -133,7 +133,7 @@ public &lt;T extends Event&gt; void broadcast(T event) throws Exception {
       </warning>
 
       <para>Each listener is also a ComponentPlugin with a name and a
-      description, in other words the name of the listener will be the name
+      description, in other words, the name of the listener will be the name
       given in the configuration file, for more details see the next
       section.</para>
 

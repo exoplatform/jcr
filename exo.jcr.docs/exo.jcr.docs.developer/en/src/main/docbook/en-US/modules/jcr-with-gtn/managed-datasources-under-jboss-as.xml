@@ -21,7 +21,7 @@
       <title>Declaring the datasources in the AS</title>
 
       <para>Under JBoss, just put a file XXX-ds.xml in the deploy server
-      (example: \server\default\deploy). In this file we will configure all
+      (example: \server\default\deploy). In this file, we will configure all
       datasources which eXo will need. (there should be 4 named:
       jdbcjcr_portal, jdbcjcr_portal-sample, jdbcidm_portal &amp;
       jdbcidm_sample-portal).</para>

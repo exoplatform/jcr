@@ -18,7 +18,7 @@ Query query = queryManager.createQuery("/jcr:root/Documents/Publie/2010//element
   <ulink
   url="http://www.w3.org/TR/REC-xml/#NT-Name">http://www.w3.org/TR/REC-xml/#NT-Name</ulink></para>
 
-  <para>Therefore you cannot do XPath requests using a node name that starts
+  <para>Therefore, you cannot do XPath requests using a node name that starts
   with a number.</para>
 
   <para>Easy workarounds:</para>

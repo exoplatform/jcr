@@ -17,18 +17,18 @@
 
     <para>The behavior of the hierarchy is similar to a class loader one,
     hence when you will lookup a service that depends on another one, the
-    container will look for it in the current container and if it does not
-    find it then it will look in the parent container. That way you can load
+    container will look for it in the current container and if it cannot be
+    found, then it will look in the parent container. That way you can load
     all the reusable business logic components in the same container (here the
     RootContainer) and differentiate the service implementation from one
     portal instance to the other by just loading different service
     implementations in two sibling PortalContainers.</para>
 
     <para>Therefore, if you look at the Portal Container as a service
-    repository for all the business logic in a portal instance then you
-    understand why having several PortalContainers allows you to manage
-    several portals (each one deployed as a single war) in the same server by
-    just changing XML configuration files.</para>
+    repository for all the business logic in a portal instance, then you
+    understand why several PortalContainers allows you to manage several
+    portals (each one deployed as a single war) in the same server by just
+    changing XML configuration files.</para>
 
     <para>The default configuration XML files are packaged in the service jar.
     There are three configuration.xml files, one for each container type. In
@@ -39,7 +39,7 @@
   <section>
     <title>Portal Instance</title>
 
-    <para>As there can be several portal container instances per JVM it is
+    <para>As there can be several portal container instances per JVM. it is
     important to be able to configure the loaded services per instance.
     Therefore all the default configuration files located in the service impl
     jar can be overridden from the portal war. For more information refer to
@@ -54,8 +54,8 @@
     <para>After deploying you find the configuration.xml file in
     webapps/portal/WEB-INF/conf Use component registration tags. Let's look at
     the key tag that defines the interface and the type tag that defines the
-    implementation. Note that the key tag is not mandatory, but its use
-    improves performance.</para>
+    implementation. Note that the key tag is not mandatory, but it improves
+    performance.</para>
 
     <programlisting>&lt;!-- Portlet container hooks --&gt;
   &lt;component&gt;
@@ -126,13 +126,13 @@
   &lt;/component-plugin&gt;
 ...</programlisting>
 
-    <para>In the previous XML configuration we reference the organization
-    service and we will call its method addListenerPlugin with an object of
-    type PortalUserEventListenerImpl. Each time a new user will be created
-    (apart the predefined ones in the list above) methods of the
+    <para>In the previous XML configuration, we refer the organization service
+    and we will call its method addListenerPlugin with an object of type
+    PortalUserEventListenerImpl. Each time a new user will be created (apart
+    the predefined ones in the list above) methods of the
     PortalUserEventListenerImpl will be called by the service.</para>
 
-    <para>As you can see there are several types of init parameters, from a
+    <para>As you can see, there are several types of init parameters, from a
     simple value param which binds a key with a value to a more complex object
     mapping that fills a JavaBean with the info defined in the XML.</para>
 

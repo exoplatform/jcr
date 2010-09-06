@@ -12,7 +12,7 @@
     <section>
       <title>Deploying eXo JCR to JBoss As</title>
 
-      <para>To deploy eXo JCR to JBoss As follow next steps:</para>
+      <para>To deploy eXo JCR to JBoss, do the following steps:</para>
 
       <orderedlist>
         <listitem>
@@ -92,7 +92,7 @@
       <itemizedlist>
         <listitem>
           <para>To manually configure repository create a new configuration
-          file (f.e. exo-jcr-configuration.xml). For details see <link
+          file (f.e. exo-jcr-configuration.xml). For details, see <link
           linkend="JCR.eXoJCRconfiguration">JCR Configuration</link>. Your
           configuration must look like:</para>
 

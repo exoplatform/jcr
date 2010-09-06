@@ -25,14 +25,14 @@
     &lt;/init-params&gt;
   &lt;/component&gt;</programlisting>
 
-    <para>In the example Repository Service will read the configuration from
+    <para>In the example, Repository Service will read the configuration from
     the file <filename>/conf/standalone/exo-jcr-config.xml</filename>.</para>
 
-    <para>But in some cases it's required to change the configuration on the
+    <para>But in some cases, it's required to change the configuration on the
     fly. And know that the new one will be used. Additionally we wish not to
     modify the original file.</para>
 
-    <para>In this case we have to use the configuration persister feature
+    <para>In this case, we have to use the configuration persister feature
     which allows to store the configuration in different locations.</para>
   </section>
 
@@ -40,8 +40,8 @@
     <title>Usage</title>
 
     <para>On startup <classname>RepositoryServiceConfiguration</classname>
-    component checks if a configuration persister was configured. In that case
-    it uses the provided <classname>ConfigurationPersister</classname>
+    component checks if a configuration persister was configured. In that
+    case, it uses the provided <classname>ConfigurationPersister</classname>
     implementation class to instantiate the persister object.</para>
 
     <para>Configuration with persister:<programlisting>&lt;component&gt;
@@ -65,7 +65,7 @@
 
     <para>Where:<itemizedlist>
         <listitem>
-          <para><parameter>source-name</parameter> - JNDI source name
+          <para><parameter>source-name</parameter>: JNDI source name
           configured in <classname>InitialContextInitializer</classname>
           component. (<parameter>sourceName</parameter> prior v.1.9.) Find
           more in <link linkend="JCR.JDBCDataContainerConfig">database
@@ -73,9 +73,9 @@
         </listitem>
 
         <listitem>
-          <para><parameter>dialect</parameter> - SQL dialect which will be
-          used with database from <parameter>source-name</parameter>. Find
-          more in <link linkend="JCR.JDBCDataContainerConfig">database
+          <para><parameter>dialect</parameter>: SQL dialect which will be used
+          with database from <parameter>source-name</parameter>. Find more in
+          <link linkend="JCR.JDBCDataContainerConfig">database
           configuration</link>.</para>
         </listitem>
 

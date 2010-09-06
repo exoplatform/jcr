@@ -15,7 +15,7 @@
     </listitem>
 
     <listitem>
-      <para>from an XML document (stream).</para>
+      <para>From an XML document (stream).</para>
     </listitem>
   </itemizedlist>
 
@@ -166,7 +166,7 @@ public void setDeclaredPropertyDefinitionValues(List&lt;PropertyDefinitionValue&
       <title>NodeDefinitionValue</title>
 
       <para>The NodeDefinitionValue interface extends ItemDefinitionValue with
-      the addition of write methods, enabling the characteristics of a child
+      the addition of writing methods, enabling the characteristics of a child
       node definition to be set, after which the NodeDefinitionValue is added
       to a NodeTypeValue.</para>
 
@@ -254,7 +254,7 @@ public void setDeclaredPropertyDefinitionValues(List&lt;PropertyDefinitionValue&
       <title>PropertyDefinitionValue</title>
 
       <para>The PropertyDefinitionValue interface extends ItemDefinitionValue
-      with the addition of write methods, enabling the characteristics of a
+      with the addition of writing methods, enabling the characteristics of a
       child property definition to be set, after which the
       PropertyDefinitionValue is added to a NodeTypeValue.</para>
 
@@ -358,7 +358,7 @@ public void setReadOnly(boolean readOnly);</programlisting>
     <title>Node type registration</title>
 
     <para>eXo JCR implementation supports various methods of the node-type
-    registration. </para>
+    registration.</para>
 
     <section>
       <title>Run time registration from xml file.</title>
@@ -398,11 +398,11 @@ nodeTypeManager.registerNodeType(testNValue, ExtendedNodeTypeManager.FAIL_IF_EXI
   </section>
 
   <section>
-    <title>Change existing node type</title>
+    <title>Changing existing node type</title>
 
-    <para>If you want to replace existing node type definition you should pass
-    ExtendedNodeTypeManager.REPLACE_IF_EXISTS as a second parameter for the
-    method ExtendedNodeTypeManager.registerNodeType.</para>
+    <para>If you want to replace existing node type definition, you should
+    pass ExtendedNodeTypeManager.REPLACE_IF_EXISTS as a second parameter for
+    the method ExtendedNodeTypeManager.registerNodeType.</para>
 
     <programlisting>ExtendedNodeTypeManager nodeTypeManager = (ExtendedNodeTypeManager) session.getWorkspace()
                                                                            .getNodeTypeManager();
@@ -412,11 +412,11 @@ nodeTypeManager.registerNodeTypes(is,ExtendedNodeTypeManager.REPLACE_IF_EXISTS )
   </section>
 
   <section>
-    <title>Remove node type</title>
+    <title>Removing node type</title>
 
     <note>
-      <para>Removing node type is only possible when repository doesn't
-      contains nodes of this type</para>
+      <para>: Node type is only possibly removed when repository doesn't
+      contains this node type.</para>
     </note>
 
     <programlisting>nodeTypeManager.unregisterNodeType("myNodeType");</programlisting>
@@ -426,7 +426,7 @@ nodeTypeManager.registerNodeTypes(is,ExtendedNodeTypeManager.REPLACE_IF_EXISTS )
     <title>Practical How to</title>
 
     <section>
-      <title>Add new PropertyDefinition</title>
+      <title>Adding new PropertyDefinition</title>
 
       <programlisting>
 NodeTypeValue myNodeTypeValue = nodeTypeManager.getNodeTypeValue(myNodeTypeName);
@@ -446,7 +446,7 @@ nodeTypeManager.registerNodeType(myNodeTypeValue, ExtendedNodeTypeManager.REPLAC
     </section>
 
     <section>
-      <title>Add new child NodeDefinition</title>
+      <title>Adding new child NodeDefinition</title>
 
       <programlisting>NodeTypeValue myNodeTypeValue = nodeTypeManager.getNodeTypeValue(myNodeTypeName);
 
@@ -465,18 +465,18 @@ nodeTypeManager.registerNodeType(myNodeTypeValue, ExtendedNodeTypeManager.REPLAC
     </section>
 
     <section>
-      <title>Change or removing existing PropertyDefinition or child
+      <title>Changing or removing existing PropertyDefinition or child
       NodeDefinition</title>
 
-      <para>The main note what you should remember before changing or removing
-      existing definition is <emphasis role="bold">consistency of the existing
-      data</emphasis>. JCR <emphasis role="bold">do not allow</emphasis> you
-      to change the node type in that way in which the the existing data would
-      be incompatible with new node type. But if these changes are needed, you
-      can do it in several phases, consistently changing the node type and the
-      existing data.</para>
+      <para>Note to <emphasis role="bold">consistency of the existing
+      data</emphasis> before changing or removing existing definition . JCR
+      <emphasis role="bold">does not allow</emphasis> you to change the node
+      type in the way in which the the existing data would be incompatible
+      with new node type. But if these changes are needed, you can do it in
+      several phases, consistently changing the node type and the existing
+      data.</para>
 
-      <para>Example</para>
+      <para>For example:</para>
 
       <para>Add new residual property definition with name "downloadCount" to
       the existing node type "myNodeType".</para>
@@ -486,9 +486,9 @@ nodeTypeManager.registerNodeType(myNodeTypeValue, ExtendedNodeTypeManager.REPLAC
 
       <itemizedlist>
         <listitem>
-          <para>Existing nodes of the type "myNodeType", wich does not contain
-          properties "downloadCount" that conflicts with node type what we
-          need.</para>
+          <para>Existing nodes of the type "myNodeType", which does not
+          contain properties "downloadCount" that conflicts with node type
+          what we need.</para>
         </listitem>
 
         <listitem>
@@ -498,28 +498,28 @@ nodeTypeManager.registerNodeType(myNodeTypeValue, ExtendedNodeTypeManager.REPLAC
         </listitem>
       </itemizedlist>
 
-      <para>To complete the task we need to make 3 steps</para>
+      <para>To complete the task, we need to make 3 steps:</para>
 
       <itemizedlist>
         <listitem>
-          <para>We change the existing node type "myNodeType" by adding not
+          <para>Changing the existing node type "myNodeType" by adding not
           mandatory property "downloadCount".</para>
         </listitem>
 
         <listitem>
-          <para>We add to all existing nodes of the node type "myNodeType"
+          <para>Adding to all existing nodes of the node type "myNodeType"
           property "downloadCount".</para>
         </listitem>
 
         <listitem>
-          <para>We change definition of the property "downloadCount" of the
+          <para>Changing definition of the property "downloadCount" of the
           node type "myNodeType" to mandatory.</para>
         </listitem>
       </itemizedlist>
     </section>
 
     <section>
-      <title>Changing list of super types</title>
+      <title>Changing the list of super types</title>
 
       <programlisting>NodeTypeValue testNValue = nodeTypeManager.getNodeTypeValue("exo:myNodeType");
 

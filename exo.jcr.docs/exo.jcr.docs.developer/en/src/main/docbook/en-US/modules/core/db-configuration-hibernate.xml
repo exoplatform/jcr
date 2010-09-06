@@ -3,6 +3,7 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="Core.DatabaseConfigurationforHibernate">
   <?dbhtml filename="ch-db-configuration-hibernate.html"?>
+
   <title>Database Configuration for Hibernate</title>
 
   <para>As usual, it is quite simple to use our configuration XML syntax to
@@ -43,7 +44,7 @@
     properties including the DB URL, the driver and the credentials in
     use.</para>
 
-    <para>As for any portal that configuration can be overridden depending on
+    <para>For any portals that configuration can be overridden, depending on
     the needs of your environment.</para>
 
     <para>Several databases have been tested and can be used in
@@ -82,13 +83,13 @@
   </section>
 
   <section>
-    <title>Register custom Hibernate XML files into the service</title>
+    <title>Registering custom Hibernate XML files into the service</title>
 
     <para>It is possible to use the eXo hibernate service and register your
     hibernate hbm.xml files to leverage some add-on features of the service
     such as the table automatic creation as well as the cache of the hibernate
-    session in a ThreadLocal object during all the request lifecycle. To do so
-    you just have to add a plugin and indicate the location of your
+    session in a ThreadLocal object during all the request lifecycle. To do
+    so, you just have to add a plugin and indicate the location of your
     files.</para>
 
     <programlisting>&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;

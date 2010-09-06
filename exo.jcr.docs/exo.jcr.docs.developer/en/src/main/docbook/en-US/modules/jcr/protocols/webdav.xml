@@ -26,21 +26,21 @@
     DeltaV is an extension of the WebDav protocol that allows to manage
     document versioning. Locking guarantees protection against multiple access
     when writing resources. The ordering support allows to change the position
-    of the resource in the list, sorting the directory for the convenience of
+    of the resource in the list and sort the directory for the convenience of
     viewing the directory tree. The full-text search makes it easy to find the
-    necessary documents. You can search using two languages: SQL and XPATH is
-    supported.</para>
+    necessary documents. You can search by using two languages: SQL and
+    XPATH.</para>
 
-    <para>In eXo JCR we plug in the WebDAV layer - based on the code taken
-    from the extension modules of the reference implementation - on top of our
-    JCR implementation so that it is possible to browse a workspace using the
-    third party tools (it can be Windows folders or Mac ones as well as a Java
-    WebDAV client such as DAVExplorer or IE using File-&gt;Open as a Web
+    <para>In eXo JCR, we plug in the WebDAV layer - based on the code taken
+    from the extension modules of the reference implementation - on the top of
+    our JCR implementation so that it is possible to browse a workspace using
+    the third party tools (it can be Windows folders or Mac ones as well as a
+    Java WebDAV client such as DAVExplorer or IE using File-&gt;Open as a Web
     Folder).</para>
 
     <para>Now WebDav is an extension of the REST service. To get the WebDav
-    server ready you must deploy the REST application. Then you can access any
-    workspace of your repository using the following URL:</para>
+    server ready, you must deploy the REST application. Then, you can access
+    any workspaces of your repository by using the following URL:</para>
 
     <para>Standalone mode:</para>
 
@@ -54,9 +54,9 @@
     <uri>http://localhost:8080/rest/jcr/repository/production</uri>, you might
     also use "collaboration" (instead of "production") which is the default
     workspace in eXo products - the user will be asked to enter his login and
-    password. Those will then be checked using the organization service (that
-    can be implemented thanks to an Inmemory(dummy) module or DB module or
-    LDAP one) and the JCR user session will be created with the correct JCR
+    password. Those will then be checked by using the organization service
+    (that can be implemented thanks to an Inmemory(dummy) module or DB module
+    or LDAP one) and the JCR user session will be created with the correct JCR
     Credentials.</para>
 
     <para><emphasis role="bold">NOTE:</emphasis> If you try the "in ECM"
@@ -150,8 +150,8 @@
   <section>
     <title>Screenshots</title>
 
-    <para>For the time being eXo JCR WebDav server was tested using MS
-    Internet Explorer, <ulink url="http://www.ics.uci.edu/~webdav">Dav
+    <para>At present, eXo JCR WebDav server was tested by using MS Internet
+    Explorer, <ulink url="http://www.ics.uci.edu/~webdav">Dav
     Explorer</ulink>, <ulink
     url="http://www.xythos.com/home/xythos/products/xythos_drive.html">Xythos
     Drive</ulink>, Microsoft Office 2003 (as client), and Ubuntu Linux.</para>

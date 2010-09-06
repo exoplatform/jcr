@@ -7,10 +7,10 @@
   <title>Multilanguage support in eXo JCR RDB backend</title>
 
   <section>
-    <title>Intro</title>
+    <title>Introduction</title>
 
     <para>Whenever relational database is used to store multilingual text data
-    of eXo Java Content Repository we need to adapt configuration in order to
+    of eXo Java Content Repository, we need to adapt configuration in order to
     support UTF-8 encoding. Here is a short HOWTO instruction for several
     supported RDBMS with examples.</para>
 
@@ -33,7 +33,7 @@
     to modify is <constant>NLS_CHARACTERSET</constant>.</para>
 
     <para>We have tested <constant>NLS_CHARACTERSET</constant> =
-    <constant>AL32UTF8</constant> and it's works well for many European and
+    <constant>AL32UTF8</constant> and it works well for many European and
     Asian languages.</para>
 
     <para>Example of database configuration (used for JCR
@@ -115,7 +115,7 @@ NLS_NCHAR_CHARACTERSET   AL16UTF16</programlisting></para>
     charset should be latin1 to use limited index space effectively (1000
     bytes for MyISAM engine, 767 for InnoDB). If database default charset is
     multibyte, a JCR database initialization error is thrown concerning index
-    creation failure. In other words JCR can work on any singlebyte default
+    creation failure. In other words, JCR can work on any singlebyte default
     charset of database, with UTF8 supported by MySQL server. But we have
     tested it only on latin1 database default charset.</para>
 
@@ -135,7 +135,7 @@ NLS_NCHAR_CHARACTERSET   AL16UTF16</programlisting></para>
   <section>
     <title>PostgreSQL</title>
 
-    <para>On PostgreSQL-backend multilingual support can be enabled in <ulink
+    <para>On PostgreSQL-backend, multilingual support can be enabled in <ulink
     url="http://www.postgresql.org/docs/8.3/interactive/charset.html">different
     ways</ulink>:<itemizedlist>
         <listitem>
@@ -148,7 +148,7 @@ NLS_NCHAR_CHARACTERSET   AL16UTF16</programlisting></para>
         <listitem>
           <para>Providing a number of different character sets defined in the
           PostgreSQL server, including multiple-byte character sets, to
-          support storing text any language, and providing character set
+          support storing text of any languages, and providing character set
           translation between client and server. We recommend to use UTF-8
           database charset, it will allow any-to-any conversations and make
           this issue transparent for the JCR.</para>

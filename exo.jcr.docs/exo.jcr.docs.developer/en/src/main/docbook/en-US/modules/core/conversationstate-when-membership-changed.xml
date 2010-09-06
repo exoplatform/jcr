@@ -3,14 +3,15 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="Core.ConversationStateUserMembershipUpdated">
   <?dbhtml filename="ch-conversationstate-when-membership-changed.html"?>
+
   <title>Update ConversationState when user's Membership changed</title>
 
-  <para>When user logged in portal in ConversationRegistry added
+  <para>When a user logged in portal in ConversationRegistry added
   ConversationSate for this user. ConversationState keeps user's Identity that
   is actual for logged in time. In this case even user's Membership updated in
   OrganizationService ConversationState still keeps old (not actual Identity).
   User must logged out and loggin in again to update Identity. To fix this
-  issue need add special listener in configuration of OrganizationServicer.
+  issue, need add special listener in configuration of OrganizationServicer.
   This listener is extended MembershipEventListener.</para>
 
   <para>Example of configuration.</para>

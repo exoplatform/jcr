@@ -2,7 +2,7 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.FindNodesByPrimaryType">
-  <title>Find Nodes by Primary Type</title>
+  <title>Finding Nodes by Primary Type</title>
 
   <para>Find all nodes whose primary type is "nt:file".</para>
 
@@ -61,9 +61,9 @@ QueryResult result = query.execute();</programlisting>
   </section>
 
   <section>
-    <title>Fetch result</title>
+    <title>Fetching result</title>
 
-    <para>Lets get nodes:</para>
+    <para>Let's get nodes:</para>
 
     <programlisting>NodeIterator it = result.getNodes();
 
@@ -99,7 +99,7 @@ while (rit.hasNext())
 
           <tbody>
             <row>
-              <entry> /document2</entry>
+              <entry>/document2</entry>
 
               <entry>2674</entry>
             </row>

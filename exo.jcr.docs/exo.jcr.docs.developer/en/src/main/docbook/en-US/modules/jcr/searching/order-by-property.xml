@@ -2,7 +2,7 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.OrderByProperty">
-  <title>Sort Nodes by Property</title>
+  <title>Sorting Nodes by Property</title>
 
   <para>Select all nodes with the mixin type ''mix:title' and order them by
   the 'prop_pagecount' property.</para>
@@ -101,7 +101,7 @@ while (rit.hasNext())
 
             <entry>prop_pagecount</entry>
 
-            <entry> jcr:path</entry>
+            <entry>jcr:path</entry>
 
             <entry>jcr:score</entry>
           </row>

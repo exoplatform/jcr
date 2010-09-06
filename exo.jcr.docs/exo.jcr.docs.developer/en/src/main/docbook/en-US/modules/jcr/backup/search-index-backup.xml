@@ -4,17 +4,17 @@
 <chapter id="JCR.SearchIndexBackup">
   <?dbhtml filename="ch-search-index-backup.html"?>
 
-  <title>Search index backup</title>
+  <title>Searching index backup</title>
 
   <section>
     <title>Manual backup (file copy)</title>
 
-    <para>It can be useful for some reason. The backup may be performed
+    <para>It can be useful for some reasons. The backup may be performed
     manually or using third part software.</para>
 
-    <para>You can make a copy of the search index ($AS_HOME/temp/jcrlucenedb).
-    And use it to replace the current index by this copy in case of an index
-    damage or lost.</para>
+    <para>You can make a copy of the search index ($AS_HOME/temp/jcrlucenedb)
+    and use it to replace the current index by this copy in case of an index
+    damaged or lost.</para>
 
     <para>All repository changes that are applied between the index backup and
     the point of time when the backup index is restored, are not in the index
@@ -26,32 +26,32 @@
     <para>For example: You have configured the workspace index to be in the
     "/index/workspace" directory.<itemizedlist>
         <listitem>
-          <para>make a backup of the search index - copy the content of the
+          <para>Make a backup of the search index - copy the content of the
           "/index" directory;</para>
         </listitem>
 
         <listitem>
-          <para>add the node "/anynode" to the workspace. Now this node exists
+          <para>Add the node "/anynode" to the workspace. Now this node exists
           in the workspace database and the search index has information about
           this node, so you can find it using query <code>select * from
           nt:base where jcr:path="/anynode"</code>;</para>
         </listitem>
 
         <listitem>
-          <para>rollback to the last backup - replace current
+          <para>Rollback to the last backup - replace current
           "/index/workspace" directory by the backup;</para>
         </listitem>
 
         <listitem>
-          <para>node "/anynode" still exists and is accessible in the
+          <para>Node "/anynode" still exists and is accessible in the
           workspace (Session.getItem("/anynode")), but you can't find it via
           the search query<code> select * from nt:base where
           jcr:path="/anynode"</code>;</para>
         </listitem>
       </itemizedlist></para>
 
-    <para>If you want to find changes made after update you have to reindex
-    whole workspace content. One way to do this is to stop the repository
+    <para>If you want to find changes made after updating, you have to reindex
+    the whole workspace content. The way to do this is to stop the repository
     container and delete the "/index/workspace" folder. The workspace database
     content will be reindexed on repository startup.</para>
   </section>

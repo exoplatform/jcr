@@ -3,6 +3,7 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="WS.RestServicesList">
   <?dbhtml filename="ch-ws-restserviceslist-service.html"?>
+
   <title>RestServicesList Service</title>
 
   <section>
@@ -32,7 +33,7 @@
     <title>Usage</title>
 
     <note>
-      <para>Class do not implement
+      <para>Class does not implement
       org.exoplatform.services.rest.resource.ResourceContainer and must never
       be binded to RESTful framework by using eXoContainer. This service must
       works as per-request resource.</para>
@@ -51,7 +52,7 @@ public byte[] listHTML()
    ...
 }  </programlisting>
 
-      <para>to do this perform a simple GET request to the RestServicesList
+      <para>To do this, perform a simple GET request to the RestServicesList
       link.</para>
 
       <para>f.e. curl -u root:exo http://localhost:8080/rest/ will return such
@@ -99,8 +100,8 @@ public byte[] listHTML()
    &lt;/body&gt;
 &lt;/html&gt;    </programlisting>
 
-      <para>If you perform the same request with your browser you'll see the
-      table with the list of deployed services like this</para>
+      <para>If you perform the same request with your browser, you'll see the
+      table with the list of deployed services like this:</para>
 
       <table>
         <title>Root resources</title>
@@ -174,7 +175,7 @@ public RootResourcesList listJSON()
    ...
 }</programlisting>
 
-      <para>to do this add "Accept:application/json" header to your GET
+      <para>To do this, add "Accept:application/json" header to your GET
       request</para>
 
       <para>f.e. curl -u root:exo http://localhost:8080/rest/ -H

@@ -29,14 +29,14 @@
   <section>
     <title>Objectives</title>
 
-    <para>This article shows in the first chapters how to setup a sample
-    service with some configurations and how to access to the configuration
-    parameters. The later chapters describe all details of the configuration
-    file (parameters, object-params, plugins, imports, etc.) it also shows how
-    to access the configuration values. You may consider this article as a
-    <emphasis role="bold">reference</emphasis>, but you can also use this
-    article as a <emphasis role="bold">tutorial</emphasis> and read it from
-    the beginning to the end.</para>
+    <para>This article shows how to setup a sample service with some
+    configurations and how to access to the configuration parameters. The
+    later chapters describe all details of the configuration file (parameters,
+    object-params, plugins, imports, etc.), it also shows how to access the
+    configuration values. You may consider this article as a <emphasis
+    role="bold">reference</emphasis>, but you can also use this article as a
+    <emphasis role="bold">tutorial</emphasis> and read it from the beginning
+    to the end.</para>
   </section>
 
   <section>
@@ -47,8 +47,8 @@
     for Beginners</link>. Obviously you should know java and xml. We are
     working with examples that are created for teaching reasons only and you
     will see extracts from the eXo Products default installation. When reading
-    do not forget that the terms service and component are interchangeable in
-    eXo Products.</para>
+    this article, you do not forget that the terms service and component are
+    interchangeable in eXo Products.</para>
   </section>
 
   <section>
@@ -57,14 +57,14 @@
     <section id="JavaClass">
       <title>Java Class</title>
 
-      <para>Imagine you are working for a publishing company called "La
+      <para>Imagine that you are working for a publishing company called "La
       Verdad" that is going to use eXo platform. Your boss asks you be able to
       calculate the number of sentences of an article.</para>
 
       <para>You remember in eXo product everything is a <emphasis
       role="bold">service</emphasis> so you decide to create a simple class.
-      In future you want to be able to plug different implementations of your
-      service, so that you should define an <emphasis
+      In the future, you want to be able to plug different implementations of
+      your service, so that you should define an <emphasis
       role="bold">interface</emphasis> that defines your service.</para>
 
       <programlisting>package com.laverdad.services; 
@@ -92,13 +92,12 @@ public interface ArticleStatsService {
     <section>
       <title>First configuration file</title>
 
-      <para>When creating a service you also should declare its existence to
+      <para>When creating a service, you also should declare its existence to
       the <emphasis role="bold">Container</emphasis>, therefore you create a
-      first simple configuration file. Copy the following code to a file that
-      is called "configuration.xml" and place this file in a /conf
-      subdirectory of your service base folder. As you already know the
-      container looks for a "/conf/configuration.xml" file in each
-      jar-file.</para>
+      first simple configuration file. Copy the following code to a file
+      called "configuration.xml" and place this file in a /conf subdirectory
+      of your service base folder. As you already know the container looks for
+      a "/conf/configuration.xml" file in each jar-file.</para>
 
       <programlisting>&lt;?xml version="1.0" encoding="UTF8"?&gt;
 &lt;configuration
@@ -114,13 +113,13 @@ public interface ArticleStatsService {
       <note>
         <para>You are correctly using the namespace of the configuration
         schema ( <uri>http://www.exoplaform.org/xml/ns/kernel_1_1.xsd</uri>).
-        Most of the configuration schema is explained in this
-        articles,therefore you do not need to open and understand the schema.
-        For backward compatibility it is not necessary to declare the
+        Most of the configuration schema is explained in this article,
+        therefore you do not need to open and understand the schema. For
+        backward compatibility it is not necessary to declare the
         schema.</para>
 
-        <para>When eXo kernel reads a configuration it loads the file from the
-        kernel jar using the classloader and does not use an internet
+        <para>When eXo kernel reads a configuration, it loads the file from
+        the kernel jar using the classloader and does not use an internet
         connection to resolve the file.</para>
       </note>
     </section>
@@ -129,13 +128,13 @@ public interface ArticleStatsService {
       <title>Init Parameters</title>
 
       <para>You see your service has a configuration file, but you wonder how
-      the file could possibly access to its configuration. Imagine you are
-      asked to implement two different calculation methods: fast and
+      the file could possibly access to its configuration. Imagine that you
+      are asked to implement two different calculation methods: fast and
       exact.</para>
 
       <para>You create one init parameter containing the calculation methods.
-      For the exact method you wish to configure more details for the service.
-      Let's enhance the word service configuration file:</para>
+      For the exact method, you wish to configure more details for the
+      service. Let's enhance the word service configuration file:</para>
 
       <programlisting>  &lt;component&gt;
     &lt;key&gt;com.laverdad.services.ArticleStatsService&lt;/key&gt;
@@ -211,7 +210,7 @@ public interface ArticleStatsService {
       <title>Service Access</title>
 
       <para>As you want to follow the principle of <emphasis
-      role="bold">Inversion of Control</emphasis> you <emphasis
+      role="bold">Inversion of Control,</emphasis> you <emphasis
       role="bold">must not</emphasis> access the service directly. You need a
       <emphasis role="bold">Container</emphasis> to access the service.</para>
 
@@ -439,7 +438,7 @@ public class LDAPConnectionConfig {
       <title>Collection</title>
 
       <para>You also can use java collections to configure your service. In
-      order to see an example let's open the
+      order to see an example, let's open the
       database-organization-configuration.xml file. This file defines a
       default user organization (users, groups, memberships/roles) of your
       portal. They use component-plugins which are explained later. You wil
@@ -602,7 +601,7 @@ public class LDAPConnectionConfig {
       addTaxonomyPlugin as often as you wish, you can also call
       addTaxonomyPlugin in different configuration files. The method
       addTaxonomyPlugin is then called several times, everything else depends
-      on the implementation of the method</para>
+      on the implementation of the method.</para>
     </note>
   </section>
 

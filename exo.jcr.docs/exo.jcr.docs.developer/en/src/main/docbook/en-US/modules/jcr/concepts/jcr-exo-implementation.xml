@@ -9,21 +9,21 @@
   <section>
     <title>Related Documents</title>
 
-    <para>Access Control Configuration Export Import Implementation External
-    Value Storages JDBC Data Container config Locking Multilanguage support
-    Node types and Namespaces Repository and Workspace management Repository
-    container life cycle Workspace Persistence Storage Workspace SimpleDB
-    storage</para>
+    <para>Access Control Configuration, Export Import Implementation, External
+    Value Storages, JDBC Data Container config, Locking, Multilanguage
+    support, Node types and Namespaces, Repository and Workspace management,
+    Repository container life cycle, Workspace, Persistence Storage Workspace,
+    SimpleDB storage</para>
   </section>
 
   <section>
     <title>How it works</title>
 
     <para>eXo Repository Service is a standard eXo service and is a registered
-    IoC component, i.e. can be deployed in some ExoContainer (see <link
+    IoC component, i.e. can be deployed in some eXo Containers (see <link
     linkend="JCR.eXoJCRconfiguration.RepositoryConfiguration">Service
-    configuration</link> for details) Relationships between components are
-    shown in the picture below:</para>
+    configuration</link> for details). The relationships between components
+    are shown in the picture below:</para>
 
     <mediaobject>
       <imageobject>
@@ -31,29 +31,29 @@
       </imageobject>
     </mediaobject>
 
-    <para><emphasis role="bold">Exo Container</emphasis> some subclass of
+    <para><keycap>eXo Container: </keycap>some subclasses of
     org.exoplatform.container.ExoContainer (usually
     org.exoplatform.container.StandaloneContainer or
     org.exoplatform.container.PortalContainer) that holds a reference to
-    RepositoryService</para>
+    Repository Service.</para>
 
     <itemizedlist>
       <listitem>
-        <para><emphasis role="bold">Repository Service</emphasis> contains
-        information about repositories, eXo JCR is able to manage many
-        Repositories</para>
+        <para><emphasis role="bold">Repository Service:</emphasis> contains
+        information about repositories. eXo JCR is able to manage many
+        Repositories.</para>
       </listitem>
 
       <listitem>
-        <para><emphasis role="bold">Repository</emphasis> Implementation of
+        <para><emphasis role="bold">Repository:</emphasis> Implementation of
         javax.jcr.Repository. It holds references to one or more
-        Workspace(s)</para>
+        Workspace(s).</para>
       </listitem>
 
       <listitem>
-        <para><emphasis role="bold">Workspace</emphasis> container of a single
-        rooted tree of Items (Note that here it is not exactly the same as
-        javax.jcr.Workspace as it is not a per Session object)</para>
+        <para><keycap>Workspace:</keycap> Container of a single rooted tree of
+        Items. (Note that here it is not exactly the same as
+        javax.jcr.Workspace as it is not a per Session object).</para>
       </listitem>
     </itemizedlist>
 
@@ -62,21 +62,21 @@
     <itemizedlist>
       <listitem>
         <para>Obtaining Repository object by getting <emphasis
-        role="bold">RepositoryService</emphasis> from current ExoContainer
-        (eXo "native" way) or via JNDI lookup if eXo repository is bound to
-        the naming context using (see <link
+        role="bold">Repository Service</emphasis> from the current eXo
+        Container (eXo "native" way) or via JNDI lookup if eXo repository is
+        bound to the naming context using (see <link
         linkend="JCR.eXoJCRconfiguration">Service configuration</link> for
-        details)</para>
+        details).</para>
       </listitem>
 
       <listitem>
         <para>Creating javax.jcr.Session object that calls
-        Repository.login(..)</para>
+        Repository.login(..).</para>
       </listitem>
 
       <listitem>
         <para>Creating javax.jcr.Session object that calls
-        Repository.login(..)</para>
+        Repository.login(..).</para>
       </listitem>
     </itemizedlist>
   </section>
@@ -101,56 +101,55 @@
       <listitem>
         <para>eXo JCR core implements <emphasis role="bold">JCR API</emphasis>
         intefaces such as Item, Node, Property. It contains JCR "logical" view
-        on stored data</para>
+        on stored data.</para>
       </listitem>
 
       <listitem>
-        <para><emphasis role="bold">Session Level</emphasis> isolates
+        <para><emphasis role="bold">Session Level</emphasis>: isolates
         transient data viewable inside one JCR Session and interacts with API
-        level using eXo JCR internal API</para>
+        level using eXo JCR internal API.</para>
       </listitem>
 
       <listitem>
-        <para><emphasis role="bold">Session Data Manager</emphasis> maintains
-        transient session data. Along with data
-        accessing/modification/validation logic it contains Modified Items
-        Storage to hold the data changed between subsequent save() calling and
-        Session Items Cache</para>
+        <para><emphasis role="bold">Session Data Manager</emphasis>: maintains
+        transient session data. With data access/ modification/ validation
+        logic, it contains Modified Items Storage to hold the data changed
+        between subsequent save() calling and Session Items Cache.</para>
       </listitem>
 
       <listitem>
-        <para><emphasis role="bold">Transaction Data Manager</emphasis>
-        maintains session data between save() and transaction commit/rollback
-        if the current session is part of a transaction</para>
+        <para><emphasis role="bold">Transaction Data Manager</emphasis>:
+        maintains session data between save() and transaction commit/ rollback
+        if the current session is part of a transaction.</para>
       </listitem>
 
       <listitem>
-        <para><emphasis role="bold">Workspace Level</emphasis> operates for
+        <para><emphasis role="bold">Workspace Level</emphasis>: operates for
         particular workspace shared data. It contains per-Workspace
         objects</para>
       </listitem>
 
       <listitem>
-        <para><emphasis role="bold">Workspace Storage Data Manager</emphasis>
-        maintains workspace data including final validation, events firing,
+        <para><emphasis role="bold">Workspace Storage Data Manager:</emphasis>
+        maintains workspace data, including final validation, events firing,
         caching.</para>
       </listitem>
 
       <listitem>
-        <para><emphasis role="bold">Workspace Data Container</emphasis>
+        <para><emphasis role="bold">Workspace Data Container</emphasis>:
         implements physical data storage. It allows different types of backend
-        (like RDB, FS files etc) to be used as a storage for JCR data. Along
-        with the main Data Container other storages for persisted Property
-        Values can be configured and used.</para>
+        (like RDB, FS files, etc) to be used as a storage for JCR data. With
+        the main Data Container, other storages for persisted Property Values
+        can be configured and used.</para>
       </listitem>
 
       <listitem>
-        <para><emphasis role="bold">Indexer</emphasis> maintains workspace
+        <para><emphasis role="bold">Indexer:</emphasis> maintains workspace
         data indexing for further queries.</para>
       </listitem>
 
       <listitem>
-        <para><emphasis role="bold">Storage Level</emphasis> persistent
+        <para><emphasis role="bold">Storage Level</emphasis>: Persistent
         storages for:</para>
 
         <itemizedlist>

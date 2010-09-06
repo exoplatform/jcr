@@ -2,7 +2,7 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.FindAllNodes">
-  <title>Find All Nodes</title>
+  <title>Finding All Nodes</title>
 
   <para>Find all nodes in the repository. Only those nodes are found to which
   the session has READ permission. See also <link
@@ -71,9 +71,9 @@ QueryResult result = query.execute();</programlisting>
   </section>
 
   <section>
-    <title>Fetch result</title>
+    <title>Fetching result</title>
 
-    <para>Lets get nodes:</para>
+    <para>Let's get nodes:</para>
 
     <programlisting>NodeIterator it = result.getNodes();
 

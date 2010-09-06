@@ -2,9 +2,9 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.SpellChecker">
-  <title>Check Spelling of Phrase</title>
+  <title>Checking the spelling of Phrase</title>
 
-  <para>Check correct spelling of phrase 'quik OR (-foo bar)' according to
+  <para>Check the correct spelling of phrase 'quik OR (-foo bar)' according to
   data already stored in index.</para>
 
   <note>
@@ -13,7 +13,7 @@
     Content</link></para>
   </note>
 
-  <para>SpellChecker must be settled in query-handler config. </para>
+  <para>SpellChecker must be settled in query-handler config.</para>
 
   <para>test-jcr-config.xml:</para>
 
@@ -73,7 +73,7 @@ QueryResult result = query.execute();</programlisting>
   </section>
 
   <section>
-    <title>Fetch result</title>
+    <title>Fetching result</title>
 
     <para>Get suggestion of coorect spelling our phrase:</para>
 

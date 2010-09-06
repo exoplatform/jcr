@@ -3,13 +3,14 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="Kernel.InversionOfControl">
   <?dbhtml filename="ch-inversion-of-control.html"?>
+
   <title>Inversion Of Control</title>
 
   <section>
     <title>Overview</title>
 
     <para>The services are not responsible for the instantiation of the
-    components they depend on.</para>
+    components on which they depend.</para>
 
     <para>This architecture provides a loosely coupled design where the
     implementation of dependant services can be transparently
@@ -35,8 +36,8 @@
   <section>
     <title>How</title>
 
-    <para>Not to let the object create itself the instances of the object it
-    references. This job is delegated to the container (assembler in the
+    <para>Don't let the object create itself the instances of the object that
+    it references. This job is delegated to the container (assembler in the
     picture).</para>
 
     <mediaobject>
@@ -51,11 +52,11 @@
 
     <para>There are two ways to inject a dependency :</para>
 
-    <para>using a constructor:</para>
+    <para>Using a constructor:</para>
 
     <programlisting>public ServiceA(ServiceB serviceB)</programlisting>
 
-    <para>using setter methods:</para>
+    <para>Using setter methods:</para>
 
     <programlisting>public void setServiceB(ServiceB serviceB)</programlisting>
 
@@ -76,7 +77,7 @@
       </listitem>
 
       <listitem>
-        <para>Ease Maintainability </para>
+        <para>Ease Maintainability</para>
       </listitem>
 
       <listitem>

@@ -61,7 +61,7 @@
     </itemizedlist>
 
     <para>eXo starts and autocreates its organization model in your directory
-    tree. Finally the structure of the default LDAP schema looks like:</para>
+    tree. Finally, the structure of the default LDAP schema looks like:</para>
 
     <mediaobject>
       <imageobject>
@@ -646,7 +646,8 @@ l=London,dc=sites,dc=mycompany,dc=com
     <section>
       <title>Automatic directory population</title>
 
-      <para>At startup eXo can populate the organization model based on</para>
+      <para>At startup, eXo can populate the organization model based
+      on</para>
 
       <para>eXo organizational model has User,Group,Membership and Profile
       entities. For each, we define a base dn that should be below baseURL. At

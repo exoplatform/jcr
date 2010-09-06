@@ -12,12 +12,12 @@
     <para>eXo JCR persistent data container can work in two configuration
     modes:<itemizedlist>
         <listitem>
-          <para><phrase>Multi-database</phrase>: one database for each
+          <para><phrase>Multi-database</phrase>: One database for each
           workspace (used in standalone eXo JCR service mode)</para>
         </listitem>
 
         <listitem>
-          <para><phrase>Single-database</phrase>: all workspaces persisted in
+          <para><phrase>Single-database</phrase>: All workspaces persisted in
           one database (used in embedded eXo JCR service mode, e.g. in eXo
           portal)</para>
         </listitem>
@@ -62,13 +62,13 @@
         </listitem>
       </itemizedlist></para>
 
-    <para>Each database software supports ANSI SQL standards but has its own
-    specifics too. So, each database has its own configuration in eXo JCR as a
+    <para>Each database software supports ANSI SQL standards but also has its
+    own specifics. So, each database has its own configuration in eXo JCR as a
     database dialect parameter. If you need a more detailed configuration of
-    the database it's possible to do that by editing the metadata SQL-script
+    the database, it's possible to do that by editing the metadata SQL-script
     files.</para>
 
-    <para>In case the non-ANSI node name is used it's necessary to use a
+    <para>In case the non-ANSI node name is used, it's necessary to use a
     database with MultiLanguage support[TODO link to MultiLanguage]. Some JDBC
     drivers need additional parameters for establishing a Unicode friendly
     connection. E.g. under mysql it's necessary to add an additional parameter
@@ -80,11 +80,11 @@
     <package>exo.jcr.component.core-XXX.XXX.jar</package> or
     source-distribution of eXo JCR implementation.</para>
 
-    <para>By default the configuration files are located in service jars
+    <para>By default, the configuration files are located in service jars
     <filename>/conf/portal/configuration.xml</filename> (eXo services
     including JCR Repository Service) and
     <filename>exo-jcr-config.xml</filename> (repositories configuration). In
-    eXo portal product JCR is configured in portal web application
+    eXo portal product, JCR is configured in portal web application
     <filename>portal/WEB-INF/conf/jcr/jcr-configuration.xml</filename> (JCR
     Repository Service and related serivces) and repository-configuration.xml
     (repositories configuration).</para>
@@ -104,7 +104,7 @@
     service. It's the JNDI context initializer which registers (binds) naming
     resources (DataSources) for data containers.</para>
 
-    <para>Example (standalone mode, two data containers
+    <para>For example (standalone mode, two data containers
     <parameter>jdbcjcr</parameter> - local HSQLDB,
     <parameter>jdbcjcr1</parameter> - remote MySQL):<programlisting>&lt;component&gt;
     &lt;key&gt;org.exoplatform.services.naming.InitialContextInitializer&lt;/key&gt;
@@ -219,11 +219,11 @@
         </listitem>
       </itemizedlist></para>
 
-    <para>When the data container configuration is done we can configure the
+    <para>When the data container configuration is done, we can configure the
     repository service. Each workspace will be configured for its own data
     container.</para>
 
-    <para>Example (two workspaces <parameter>ws</parameter> - jdbcjcr,
+    <para>For example (two workspaces <parameter>ws</parameter> - jdbcjcr,
     <parameter>ws1</parameter> - jdbcjcr1):<programlisting>&lt;workspaces&gt;
   &lt;workspace name="ws" auto-init-root-nodetype="nt:unstructured"&gt;
     &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
@@ -287,37 +287,37 @@
   &lt;/workspace&gt;
 &lt;/workspaces&gt;</programlisting><itemizedlist>
         <listitem>
-          <para><parameter>source-name</parameter> - a javax.sql.DataSource
+          <para><parameter>source-name</parameter>: A javax.sql.DataSource
           name configured in InitialContextInitializer component (was
           <parameter>sourceName</parameter> prior JCR 1.9);</para>
         </listitem>
 
         <listitem>
-          <para><parameter>dialect</parameter> - a database dialect, one of
+          <para><parameter>dialect</parameter>: A database dialect, one of
           "hsqldb", "mysql", "mysql-utf8", "pgsql", "oracle", "oracle-oci",
           "mssql", "sybase", "derby", "db2", "db2v8" or "auto" for dialect
           autodetection;</para>
         </listitem>
 
         <listitem>
-          <para><parameter>multi-db</parameter> - enable multi-database
+          <para><parameter>multi-db</parameter>: Enable multi-database
           container with this parameter (set value "true");</para>
         </listitem>
 
         <listitem>
-          <para><parameter>max-buffer-size</parameter> - a threshold (in
+          <para><parameter>max-buffer-size: A</parameter> a threshold (in
           bytes) after which a javax.jcr.Value content will be swapped to a
           file in a temporary storage. I.e. swap for pending changes.</para>
         </listitem>
 
         <listitem>
-          <para><parameter>swap-directory</parameter> - a path in the file
+          <para><parameter>swap-directory</parameter>: A path in the file
           system used to swap the pending changes.</para>
         </listitem>
       </itemizedlist></para>
 
-    <para>In this way we have configured two workspace which will be persisted
-    in two different databases (ws in HSQLDB, ws1 in MySQL).</para>
+    <para>In this way, we have configured two workspace which will be
+    persisted in two different databases (ws in HSQLDB, ws1 in MySQL).</para>
 
     <note>
       <para>Starting from v.1.9 <link
@@ -333,7 +333,7 @@
     <para>It's more simple to configure a single-database data container. We
     have to configure one naming resource.</para>
 
-    <para>Example (embedded mode for <parameter>jdbcjcr</parameter> data
+    <para>For example (embedded mode for <parameter>jdbcjcr</parameter> data
     container):<programlisting>&lt;external-component-plugins&gt;
     &lt;target-component&gt;org.exoplatform.services.naming.InitialContextInitializer&lt;/target-component&gt;
     &lt;component-plugin&gt;
@@ -372,7 +372,7 @@
     with this one database. Parameter "multi-db" must be switched off (set
     value "false").</para>
 
-    <para>Example (two workspaces <parameter>ws</parameter> - jdbcjcr,
+    <para>For example (two workspaces <parameter>ws</parameter> - jdbcjcr,
     <parameter>ws1</parameter> - jdbcjcr):<programlisting>&lt;workspaces&gt;
   &lt;workspace name="ws" auto-init-root-nodetype="nt:unstructured"&gt;
     &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
@@ -431,7 +431,7 @@
   &lt;/workspace&gt;
 &lt;/workspaces&gt;</programlisting></para>
 
-    <para>In this way we have configured two workspaces which will be
+    <para>In this way, we have configured two workspaces which will be
     persisted in one database (PostgreSQL).</para>
 
     <section>
@@ -563,8 +563,8 @@
     It's possible to set a big value for maxActive parameter in
     <filename>configuration.xml</filename>. That means usage of lots of TCP/IP
     ports from a client machine inside the pool (i.e. JDBC driver). As a
-    result the data container can throw exceptions like "Address already in
-    use". To solve this problem you have to configure the client's machine
+    result, the data container can throw exceptions like "Address already in
+    use". To solve this problem, you have to configure the client's machine
     networking software for the usage of shorter timeouts for opened TCP/IP
     ports.</para>
 

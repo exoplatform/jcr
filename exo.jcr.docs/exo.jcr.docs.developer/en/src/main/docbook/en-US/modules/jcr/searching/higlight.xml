@@ -2,20 +2,20 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.HiglightResultofFulltextSearch">
-  <title>Higlight Result of Fulltext Search</title>
+  <title>High-lighting Result of Fulltext Search</title>
 
-  <para>Also its called excerption (see Excerpt configuration in <link
+  <para>It's also called excerption (see Excerpt configuration in <link
   linkend="JCR.SearchConfiguration">Search Configuration</link> and in <link
   linkend="JCR.SearchingRepositoryContent.Highlighting">Searching
   Repository</link> article).</para>
 
-  <para>The goal of this query is find words "eXo" and "implementation" with
-  fulltext search and highlight this words in result value.</para>
+  <para>The goal of this query is to find words "eXo" and "implementation"
+  with fulltext search and high-light this words in result value.</para>
 
   <section>
     <title>Base info</title>
 
-    <para>Highlighting is not default feature so we must set it in
+    <para>High-lighting is not default feature so we must set it in
     jcr-config.xml, also excerpt provider must be defined:</para>
 
     <programlisting>&lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
@@ -27,14 +27,14 @@
    &lt;properties&gt;
 &lt;/query-handler&gt;</programlisting>
 
-    <para>Also remember that we can make indexing rules, as in example
+    <para>Also, remember that we can make indexing rules, as in the example
     below:</para>
 
     <para>Let's write rule for all nodes with primary node type
     'nt:unstructed' where property 'rule' equal to "excerpt" string. For those
-    nodes we will exclude property "title" from highlighting and set "text"
-    property as highlightable. indexing-configuration.xml must containt next
-    rule:</para>
+    nodes, we will exclude property "title" from high-lighting and set "text"
+    property as highlightable. Indexing-configuration.xml must containt the
+    next rule:</para>
 
     <programlisting>&lt;index-rule nodeType="nt:unstructured" condition="@rule='excerpt'"&gt;
    &lt;property useInExcerpt="false"&gt;title&lt;/property&gt;
@@ -93,9 +93,9 @@ QueryResult result = query.execute();</programlisting>
   </section>
 
   <section>
-    <title>Fetch result</title>
+    <title>Fetching result</title>
 
-    <para>Now lets see on result table:</para>
+    <para>Now let's see on the result table:</para>
 
     <programlisting>String[] columnNames = result.getColumnNames();
 RowIterator rit = result.getRows();
@@ -106,7 +106,7 @@ while (rit.hasNext())
    Value[] values = row.getValues();
 }</programlisting>
 
-    <para>Table content is </para>
+    <para>Table content is</para>
 
     <table>
       <title>Table content</title>
@@ -138,7 +138,7 @@ while (rit.hasNext())
 
     <para>As you see, words "eXo" and "implamentation" is highlighted.</para>
 
-    <para>Also we can get exactly "rep:excerpt" value:</para>
+    <para>Also, we can get exactly "rep:excerpt" value:</para>
 
     <programlisting>RowIterator rows = result.getRows();
 Value excerpt = rows.nextRow().getValue("rep:excerpt(.)");

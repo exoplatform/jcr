@@ -8,7 +8,7 @@
   'jcr:title' starts with 'P%ri'.</para>
 
   <para>As you see "P%rison break" contains the symbol '%'. This symbol is
-  reserved for LIKE comparisons. So what we can do?</para>
+  reserved for LIKE comparisons. So what can we do?</para>
 
   <para>Within the LIKE pattern, literal instances of percent ("%") or
   underscore ("_") must be escaped. The SQL ESCAPE clause allows the
@@ -76,9 +76,9 @@ QueryResult result = query.execute();</programlisting>
   </section>
 
   <section>
-    <title>Fetch result</title>
+    <title>Fetching result</title>
 
-    <para>Lets get nodes:</para>
+    <para>Let's get nodes:</para>
 
     <programlisting>NodeIterator it = result.getNodes();
 

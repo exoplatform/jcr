@@ -3,6 +3,7 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="JCR.FTP">
   <?dbhtml filename="ch-ftp.html"?>
+
   <title>FTP</title>
 
   <section>
@@ -118,8 +119,8 @@
    &lt;value&gt;application/zip&lt;/value&gt;
 &lt;/value-param&gt;</programlisting>
 
-      <para>The mime type of a created file is chosen using its file
-      extention. In case a server cannot find the corresponding mime type,
+      <para>The mime type of a created file is chosen by using its file
+      extention. In case, a server cannot find the corresponding mime type,
       this value is used.</para>
     </section>
 

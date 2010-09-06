@@ -22,18 +22,18 @@
       <para>eXo JCR also offers a proprietary <emphasis role="bold">Extension
       Action</emphasis> which dispatches and fires an event upon each
       <emphasis role="bold">transient session level change</emphasis>,
-      performed by a client. In other words the event is triggered when a
-      client's program invokes some updating method in a session or a
+      performed by a client. In other words, the event is triggered when a
+      client's program invokes some updating methods in a session or a
       workspace (such as: Session.addNode(), Session.setProperty(),
       Workspace.move() etc.</para>
 
       <para>One important recommendation should be applied for an extension
       action implementation. Each action will add its own execution time to
       standard JCR methods (Session.addNode(), Session.setProperty(),
-      Workspace.move() etc.) execution time. As a consequence it's necessary
+      Workspace.move() etc.) execution time. As a consequence, it's necessary
       to minimize Action.execute(Context) body execution time.</para>
 
-      <para>To make the rule you can use the dedicated Thread in
+      <para>To make the rule, you can use the dedicated Thread in
       Action.execute(Context) body for a custom logic. But if your application
       logic requires the action to add items to a created/updated item and you
       save these changes immediately after the JCR API method call is
@@ -59,7 +59,7 @@
       <para>Add a <emphasis role="bold">SessionActionCatalog</emphasis>
       service and an appropriate <emphasis
       role="bold">AddActionsPlugin</emphasis> (see the example below)
-      configuration to your Exo Container configuration. As usual the plugin
+      configuration to your eXo Container configuration. As usual, the plugin
       can be configured as in-component-place, which is the case for a
       Standalone Container or externally, which is a usual case for
       Root/Portal Container configuration).</para>
@@ -74,12 +74,12 @@
       command will be launched in case the current event matches the <emphasis
       role="bold">criteria</emphasis>. All other fields are criteria. The
       criteria are *AND*ed together. In other words, for a particular item to
-      be listened to it must meet ALL the criteria.</para>
+      be listened to, it must meet ALL the criteria:</para>
 
-      <para>* <emphasis role="bold">workspace</emphasis> - the comma delimited
+      <para>* <emphasis role="bold">workspace</emphasis>: the comma delimited
       (ORed) list of workspaces</para>
 
-      <para>* <emphasis role="bold">eventTypes</emphasis> - a comma delimited
+      <para>* <emphasis role="bold">eventTypes</emphasis>: a comma delimited
       (ORed) <emphasis role="bold">list of event names</emphasis> (see below)
       to be listened to. This is the only mandatory field, others are optional
       and if they are missing they are interpreted as ANY.</para>
@@ -92,13 +92,13 @@
       <para>* <emphasis role="bold">nodeTypes</emphasis> - a comma delimited
       (ORed) list of the <emphasis role="bold">current NodeType</emphasis>.
       Since version 1.6.1 JCR supports the functionalities of nodeType and
-      parentNodeType. This parameter has different semantics dependent on the
+      parentNodeType. This parameter has different semantics, depending on the
       type of the current item and the operation performed. If the <emphasis
       role="bold">current item</emphasis> is a <emphasis
       role="bold">property</emphasis> it means the <emphasis
       role="bold">parent node type</emphasis>. If the <emphasis
       role="bold">current item</emphasis> is a <emphasis
-      role="bold">node</emphasis> the semantic depends on the event type: **
+      role="bold">node,</emphasis> the semantic depends on the event type: **
       <emphasis role="bold">add node event</emphasis>: the node type of the
       newly added node. ** <emphasis role="bold">add mixin event</emphasis>:
       the newly added mixing node type of the current node. ** <emphasis

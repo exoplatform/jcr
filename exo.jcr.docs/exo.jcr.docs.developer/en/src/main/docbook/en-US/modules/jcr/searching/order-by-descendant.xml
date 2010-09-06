@@ -2,7 +2,7 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.OrderByDescendant">
-  <title>Order by Descendant Nodes Property (XPath only)</title>
+  <title>Ordering by Descendant Nodes Property (XPath only)</title>
 
   <para>Find all nodes with the primary type 'nt:unstructured' and sort them
   by the property value of descendant nodes with the relative path

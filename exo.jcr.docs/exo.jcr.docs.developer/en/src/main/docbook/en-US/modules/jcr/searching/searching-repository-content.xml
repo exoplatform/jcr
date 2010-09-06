@@ -68,7 +68,8 @@ while (iter.hasNext()) {
     url="http://lucene.apache.org/java/2_3_2/queryparsersyntax.html">Apache
     Lucene - Query Parser Syntax</ulink>.</para>
 
-    <para>To use it you have to form a query like described below:</para>
+    <para>To use it, you have to form a query like the one described
+    below:</para>
 
     <programlisting>QueryManager qman = session.getWorkspace().getQueryManager();
 Query q = qman.createQuery("select * from nt:base where contains(field, 'ccccc~')", Query.SQL);
@@ -80,14 +81,14 @@ QueryResult res = q.execute();</programlisting>
 
     <para>Searching with synonyms is integrated in the jcr:contains() function
     and uses the same syntax as synonym searches in Google. If a search term
-    is prefixed by a tilde symbol ( ~ ) also synonyms of the search term are
-    taken into consideration. Example:</para>
+    is prefixed by a tilde symbol ( ~ ), also synonyms of the search term are
+    taken into consideration. For example:</para>
 
     <programlisting>SQL: select * from nt:resource where contains(., '~parameter')
 
 XPath: //element(*, nt:resource)[jcr:contains(., '~parameter')</programlisting>
 
-    <para>This feature is disabled per default and you need to add a
+    <para>This feature is disabled by default and you need to add a
     configuration parameter to the query-handler element in your jcr
     configuration file to enable it.</para>
 
@@ -126,22 +127,22 @@ public interface SynonymProvider {
   </section>
 
   <section id="JCR.SearchingRepositoryContent.Highlighting">
-    <title>Highlighting (Since 1.9)</title>
+    <title>High-lighting (Since 1.9)</title>
 
     <para>An ExcerptProvider retrieves text excerpts for a node in the query
     result and marks up the words in the text that match the query
     terms.</para>
 
-    <para>Per default highlighting words that matched the query is disabled
-    because this feature requires that additional information is written to
-    the search index. To enable this feature you need to add a configuration
-    parameter to the query-handler element in your jcr configuration file to
-    enable it.</para>
+    <para>By default highlighting words matched the query is disabled because
+    this feature requires that additional information is written to the search
+    index. To enable this feature, you need to add a configuration parameter
+    to the query-handler element in your jcr configuration file to enable
+    it.</para>
 
     <programlisting>&lt;param name="support-highlighting" value="true"/&gt;</programlisting>
 
-    <para>Additionally there is a parameter that controls the format of the
-    excerpt created. In JCR 1.9 the default is set to
+    <para>Additionally, there is a parameter that controls the format of the
+    excerpt created. In JCR 1.9, the default is set to
     org.exoplatform.services.jcr.impl.core.query.lucene.DefaultHTMLExcerpt.
     The configuration parameter for this setting is:</para>
 
@@ -186,7 +187,7 @@ public interface SynonymProvider {
     <section>
       <title>How to use it</title>
 
-      <para>If you are using XPath you must use the rep:excerpt() function in
+      <para>If you are using XPath, you must use the rep:excerpt() function in
       the last location step, just like you would select properties:</para>
 
       <programlisting>QueryManager qm = session.getWorkspace().getQueryManager();
@@ -203,14 +204,14 @@ for (RowIterator it = result.getRows(); it.hasNext(); ) {
       for each result node.</para>
 
       <para>It is also possible to use a relative path in the call
-      Row.getValue() while the query statement still remains the same. Also
+      Row.getValue() while the query statement still remains the same. Also,
       you may use a relative path to a string property. The returned value
       will then be an excerpt based on string value of the property.</para>
 
       <para>Both available excerpt provider will create fragments of about 150
       characters and up to 3 fragments.</para>
 
-      <para>In SQL the function is called excerpt() without the rep prefix,
+      <para>In SQL, the function is called excerpt() without the rep prefix,
       but the column in the RowIterator will nonetheless be labled
       rep:excerpt(.)!</para>
 
@@ -228,14 +229,14 @@ for (RowIterator it = result.getRows(); it.hasNext(); ) {
     <title>SpellChecker</title>
 
     <para>The lucene based query handler implementation supports a pluggable
-    spell checker mechanism. Per default spell checking is not available and
+    spell checker mechanism. By default, spell checking is not available and
     you have to configure it first. See parameter spellCheckerClass on page
-    <link linkend="JCR.SearchConfiguration">Search Configuration</link> JCR
+    <link linkend="JCR.SearchConfiguration">Search Configuration.</link> JCR
     currently provides an implementation class , which uses the <ulink
     url="http://wiki.apache.org/jakarta-lucene/SpellChecker">lucene-spellchecker</ulink>
-    contrib . The dictionary is derived from the fulltext indexed content of
-    the workspace and updated periodically. You can configure the refresh
-    interval by picking one of the available inner classes of
+    to contribute . The dictionary is derived from the fulltext indexed
+    content of the workspace and updated periodically. You can configure the
+    refresh interval by picking one of the available inner classes of
     org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker:</para>
 
     <itemizedlist>
@@ -268,15 +269,16 @@ for (RowIterator it = result.getRows(); it.hasNext(); ) {
       </listitem>
     </itemizedlist>
 
-    <para>E.g. if you want a refresh interval of six hours the class name is:
+    <para>For example, if you want a refresh interval of six hours, the class
+    name is:
     org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$SixHoursRefreshInterval.
     If you use
-    org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker
+    org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker,
     the refresh interval will be one hour.</para>
 
     <para>The spell checker dictionary is stored as a lucene index under
     <emphasis role="bold">"index-dir"/spellchecker</emphasis>. If it does not
-    exist, a background thread will create it on startup. Similarly the
+    exist, a background thread will create it on startup. Similarly, the
     dictionary refresh is also done in a background thread to not block
     regular queries.</para>
 
@@ -344,10 +346,9 @@ if (v == null) {
       </listitem>
     </itemizedlist>
 
-    <para>Note: The similarity functionality requires that the
-    supportHightlighting is enabled. Please make sure that you have the
-    following parameter set for the query handler in your
-    workspace.xml.</para>
+    <para>Note: The similarity functionality requires that the support
+    Hightlighting is enabled. Please make sure that you have the following
+    parameter set for the query handler in your workspace.xml.</para>
 
     <programlisting>&lt;param name="support-highlighting" value="true"/&gt;</programlisting>
 

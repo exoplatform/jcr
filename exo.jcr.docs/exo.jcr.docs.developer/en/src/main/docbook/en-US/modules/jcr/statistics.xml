@@ -10,11 +10,11 @@
     <title>Statistics on the Database Access Layer</title>
 
     <para>In order to have a better idea of the time spent into the database
-    access layer, it cans be interesting to get some statistics on that part
-    of the code, knowing that most of the time spent into eXo JCR is mainly
-    the database access. This statistics will then allow you to identify
-    without using any profiler what is anormally slow in this layer, which
-    could help to fix the problem quickly.</para>
+    access layer, it can be interesting to get some statistics on that part of
+    the code, knowing that most of the time spent into eXo JCR is mainly the
+    database access. This statistics will then allow you to identify without
+    using any profiler what is normally slow in this layer, which could help
+    to fix the problem quickly.</para>
 
     <para>In case you use
     <envar>org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer</envar>
@@ -45,7 +45,7 @@
       </listitem>
 
       <listitem>
-        <para>The total amount of times the method has been called.</para>
+        <para>The total amount of time the method has been called.</para>
       </listitem>
     </itemizedlist>
 
@@ -57,7 +57,7 @@
     <emphasis>JDBCWorkspaceDataContainer.statistics.enabled</emphasis> to
     <emphasis>true</emphasis>. The corresponding CSV file is
     <emphasis>StatisticsJDBCStorageConnection-${creation-timestamp}.csv</emphasis>
-    for more details about how the csv files are managed please refer to the
+    for more details about how the csv files are managed, please refer to the
     section dedicated to the statistics manager.</para>
 
     <para>The format of each column header is ${method-alias}-${metric-alias}.
@@ -211,14 +211,14 @@
   <section>
     <title>Statistics on the JCR API accesses</title>
 
-    <para>In order to know exactly how your application uses eXo JCR, it cans
+    <para>In order to know exactly how your application uses eXo JCR, it can
     be interesting to register all the JCR API accesses in order to easily
     create real life test scenario based on pure JCR calls and also to tune
     your eXo JCR to better fit your requirements.</para>
 
-    <para>In order to allow you to specify into the configuration which part
-    of eXo JCR needs to be monitored whitout applying any changes in your code
-    and/or building anything, we choosed to rely on the Load-time Weaving
+    <para>In order to allow you to specify the configuration which part of eXo
+    JCR needs to be monitored whithout applying any changes in your code
+    and/or building anything, we choose to rely on the Load-time Weaving
     proposed by AspectJ.</para>
 
     <para>To enable this feature, you will have to add in your classpath the
@@ -287,7 +287,7 @@
     into the expression filter of the pointcut called
     <emphasis>JCRAPIPointcut</emphasis>. As you can see below, by default only
     JCR API calls from the exoplatform packages are took into account, don't
-    hesistate to modify also this filter to add your own package names.</para>
+    hesistate to modify this filter to add your own package names.</para>
 
     <programlisting>&lt;aspectj&gt;
   &lt;aspects&gt;
@@ -303,7 +303,7 @@
 
     <para>The corresponding CSV files are of type
     <emphasis>Statistics${interface-name}-${creation-timestamp}.csv</emphasis>
-    for more details about how the csv files are managed please refer to the
+    for more details about how the csv files are managed, please refer to the
     section dedicated to the statistics manager.</para>
 
     <para>The format of each column header is ${method-alias}-${metric-alias}.
@@ -321,8 +321,8 @@
     <title>Statistics Manager</title>
 
     <para>The statistics manager manages all the statistics provided by eXo
-    JCR, it is responsible of printing the data into the CSV files but also to
-    expose the statistics through JMX and/or Rest.</para>
+    JCR, it is responsible of printing the data into the CSV files and also
+    exposing the statistics through JMX and/or Rest.</para>
 
     <para>The statistics manager will create all the CSV files for each
     category of statistics that it manages, the format of those files is
@@ -375,7 +375,7 @@
       </table>You can disable the persistence of the statistics by setting the
     JVM parameter called
     <emphasis>JCRStatisticsManager.persistence.enabled</emphasis> to
-    <emphasis>false</emphasis>, by default it is set to
+    <emphasis>false</emphasis>, by default, it is set to
     <emphasis>true</emphasis>. You can aslo define the period of time between
     each record (i.e. line of data into the file) by setting the JVM parameter
     called <emphasis>JCRStatisticsManager.persistence.timeout</emphasis> to
@@ -393,27 +393,27 @@
             <row>
               <entry>getMin</entry>
 
-              <entry>Gives the minimum time spent into the method
-              corresponding to the given category name and statistics name.
-              The expected arguments are the name of the category of the
-              statistics (e.g. JDBCStorageConnection) and the name of the
-              expected method or global for the global value.</entry>
+              <entry>Give the minimum time spent into the method corresponding
+              to the given category name and statistics name. The expected
+              arguments are the name of the category of the statistics (e.g.
+              JDBCStorageConnection) and the name of the expected method or
+              global for the global value.</entry>
             </row>
 
             <row>
               <entry>getMax</entry>
 
-              <entry>Gives the maximum time spent into the method
-              corresponding to the given category name and statistics name.
-              The expected arguments are the name of the category of the
-              statistics (e.g. JDBCStorageConnection) and the name of the
-              expected method or global for the global value.</entry>
+              <entry>Give the maximum time spent into the method corresponding
+              to the given category name and statistics name. The expected
+              arguments are the name of the category of the statistics (e.g.
+              JDBCStorageConnection) and the name of the expected method or
+              global for the global value.</entry>
             </row>
 
             <row>
               <entry>getTotal</entry>
 
-              <entry>Gives the total amount of time spent into the method
+              <entry>Give the total amount of time spent into the method
               corresponding to the given category name and statistics name.
               The expected arguments are the name of the category of the
               statistics (e.g. JDBCStorageConnection) and the name of the
@@ -423,19 +423,19 @@
             <row>
               <entry>getAvg</entry>
 
-              <entry>Gives the average time spent into the method
-              corresponding to the given category name and statistics name.
-              The expected arguments are the name of the category of the
-              statistics (e.g. JDBCStorageConnection) and the name of the
-              expected method or global for the global value.</entry>
+              <entry>Give the average time spent into the method corresponding
+              to the given category name and statistics name. The expected
+              arguments are the name of the category of the statistics (e.g.
+              JDBCStorageConnection) and the name of the expected method or
+              global for the global value.</entry>
             </row>
 
             <row>
               <entry>getTimes</entry>
 
-              <entry>Gives the total amount of times the method has been
-              called corresponding to the given category name and statistics
-              name. The expected arguments are the name of the category of the
+              <entry>Give the total amount of times the method has been called
+              corresponding to the given ,category name and statistics name.
+              The expected arguments are the name of the category of the
               statistics (e.g. JDBCStorageConnection) and the name of the
               expected method or global for the global value.</entry>
             </row>

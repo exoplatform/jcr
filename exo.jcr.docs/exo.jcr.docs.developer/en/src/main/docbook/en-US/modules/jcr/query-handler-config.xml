@@ -9,16 +9,16 @@
   <section>
     <title>How does it work?</title>
 
-    <para>Lets talk about indexing content in cluster.</para>
+    <para>Let's talk about indexing content in cluster.</para>
 
-    <para>For couple of reasons, we can't replicate index. That's means, some
-    data added and indexed on one cluster node, will be replicated to another
+    <para>For couple of reasons, we can't replicate index. It means that some
+    data added and indexed on one cluster node will be replicated to another
     cluster node, but will not be indexed on that node.</para>
 
     <para><citetitle>So, how do the indexing works in cluster
     environment?</citetitle></para>
 
-    <para>As, we can not index same data on all nodes of cluster, we must
+    <para>As, we can not index the same data on all nodes of cluster, we must
     index it on one node. Node, that can index data and do changes on lucene
     index, is called "coordinator". Coordinator-node is choosen automaticaly,
     so we do not need special configuration for coordinator.</para>
@@ -41,11 +41,11 @@
     - asking you. Yes - lucene index is shared. So, all cluster nodes must be
     configured to use lucene index from shared directory.</para>
 
-    <para>A little bit about indexing process (no matter, cluster or not)
-    Indexer do not writes changes to FS lucene index immediately. At first,
-    Indexer writes changes to Volatile index. If Volatile index size become
-    1Mb or more it is flushed to FS. Also there is timer, that flushes
-    volatile index by timeout. Volatile index timeout configured by
+    <para>A little bit about indexing process (no matter, cluster or not):
+    Indexer does not write changes to FS lucene index immediately. At first,
+    Indexer write the changes to Volatile index. If Volatile index size become
+    1Mb or more, it is flushed to FS. Also, there is timer, that flushes
+    volatile index by timeout. Volatile index timeout is configured by
     "max-volatile-time" paremeter.</para>
 
     <para>See more about <link linkend="JCR.SearchConfiguration">Search
@@ -64,14 +64,14 @@
     <section>
       <title>Common requirements</title>
 
-      <para>Now, lets see what we need to run Search engine in cluster
+      <para>Now, let's see what we need to run Search engine in cluster
       environment.<itemizedlist>
           <listitem>
-            <para>shared directory for storing Lucene index (i.e. NFS);</para>
+            <para>Shared directory for storing Lucene index (i.e. NFS);</para>
           </listitem>
 
           <listitem>
-            <para>changes filter configured as
+            <para>Changes filter configured as
             org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter;</para>
 
             <note>

@@ -40,9 +40,9 @@
   <section id="JCR.eXoJCRconfiguration.PortalAndStandaloneConfiguration">
     <title>Portal and Standalone configuration</title>
 
-    <para>Like other eXo services eXo JCR can be configured and used in portal
-    or embedded mode (as a service embedded in eXo Portal) and in standalone
-    mode.</para>
+    <para>Like other eXo services, eXo JCR can be configured and used in the
+    portal or embedded mode (as a service embedded in eXo Portal) and in
+    standalone mode.</para>
 
     <para>In Embedded mode, JCR services are registered in the Portal
     container and the second option is to use a Standalone container. The main
@@ -53,7 +53,7 @@
     for Beginners</link> for more details).</para>
 
     <para>The following setup procedure is used to obtain a Standalone
-    configuration (find more in <link
+    configuration (see more in <link
     linkend="Kernel.ContainerConfiguration">Container
     configuration</link>):<itemizedlist>
         <listitem>
@@ -78,10 +78,10 @@
 
         <listitem>
           <para>Configuration from
-          $service_jar_file/conf/portal/configuration.xml. WARNING: do not
-          rely on some concrete jar's configuration if you have more than one
-          jar containing conf/portal/configuration.xml file. In this case
-          choosing a configuration is unpredictable.</para>
+          $service_jar_file/conf/portal/configuration.xml. WARNING: Don't rely
+          on some concrete jar's configuration if you have more than one jar
+          containing conf/portal/configuration.xml file. In this case choosing
+          a configuration is unpredictable.</para>
         </listitem>
       </itemizedlist></para>
 
@@ -115,20 +115,20 @@
 
     <para><emphasis role="bold">working-conf</emphasis> : optional; <link
     linkend="JCR.ConfigurationPersister">JCR configuration persister</link>
-    configuration. If there isn't a working-conf the persister will be
+    configuration. If there isn't a working-conf, the persister will be
     disabled.</para>
   </section>
 
   <section>
     <title>JCR Configuration</title>
 
-    <para>The Configuration is defined in an XML file (see DTD below)</para>
+    <para>The Configuration is defined in an XML file (see DTD below).</para>
 
     <para>JCR Service can use multiple <emphasis
     role="bold">Repositories</emphasis> and each repository can have multiple
     <emphasis role="bold">Workspaces</emphasis>.</para>
 
-    <para>From v.1.9 JCR repositories configuration parameters support
+    <para>From v.1.9 JCR, repositories configuration parameters support
     human-readable formats of values. They are all case-insensitive:</para>
 
     <itemizedlist>
@@ -155,77 +155,77 @@
 
     <para>Service configuration may be placed in
     jar:/conf/standalone/exo-jcr-config.xml for standalone mode. For portal
-    mode it is located in the portal web application
-    portal/WEB-INF/conf/jcr/repository-configuration.xml</para>
+    mode, it is located in the portal web application
+    portal/WEB-INF/conf/jcr/repository-configuration.xml.</para>
 
-    <para><emphasis role="bold">default-repository</emphasis> - the name of a
+    <para><emphasis role="bold">default-repository</emphasis>: The name of a
     default repository (one returned by
-    RepositoryService.getRepository())</para>
+    RepositoryService.getRepository()).</para>
 
-    <para><emphasis role="bold">repositories</emphasis> - the list of
-    repositories</para>
+    <para><emphasis role="bold">repositories</emphasis>: The list of
+    repositories.</para>
   </section>
 
   <section>
     <title>Repository configuration:</title>
 
-    <para><emphasis role="bold">name</emphasis> - the name of a
-    repository</para>
+    <para><emphasis role="bold">name</emphasis>: The name of a
+    repository.</para>
 
-    <para><emphasis role="bold">default-workspace</emphasis> - the name of a
+    <para><emphasis role="bold">default-workspace</emphasis>: The name of a
     workspace obtained using Session's login() or login(Credentials) methods
-    (ones without an explicit workspace name)</para>
+    (ones without an explicit workspace name).</para>
 
-    <para><emphasis role="bold">system-workspace</emphasis> - name of
+    <para><emphasis role="bold">system-workspace</emphasis>: The name of
     workspace where <emphasis role="bold">/jcr:system</emphasis> node is
-    placed</para>
+    placed.</para>
 
-    <para><emphasis role="bold">security-domain</emphasis> - the name of a
-    security domain for JAAS authentication</para>
+    <para><emphasis role="bold">security-domain</emphasis>: The name of a
+    security domain for JAAS authentication.</para>
 
-    <para><emphasis role="bold">access-control</emphasis> - the name of an
+    <para><emphasis role="bold">access-control</emphasis>: The name of an
     access control policy. There can be 3 types: optional - ACL is created
     on-demand(default), disable - no access control, mandatory - an ACL is
-    created for each added node(not supported yet)</para>
+    created for each added node(not supported yet).</para>
 
-    <para><emphasis role="bold">authentication-policy</emphasis> - the name of
-    an authentication policy class</para>
+    <para><emphasis role="bold">authentication-policy</emphasis>: The name of
+    an authentication policy class.</para>
 
-    <para><emphasis role="bold">workspaces</emphasis> - the list of
-    workspaces</para>
+    <para><emphasis role="bold">workspaces</emphasis>: The list of
+    workspaces.</para>
 
-    <para><emphasis role="bold">session-max-age</emphasis> - the time after
-    which an idle session will be removed (called logout). If not set, the
-    idle session will never be removed.</para>
+    <para><emphasis role="bold">session-max-age</emphasis>: The time after
+    which an idle session will be removed (called logout). If session-max-age
+    is not set up, idle session will never be removed.</para>
   </section>
 
   <section>
     <title>Workspace configuration:</title>
 
-    <para><emphasis role="bold">name</emphasis> - the name of a
+    <para><emphasis role="bold">name</emphasis>: The name of a
     workspace</para>
 
-    <para><emphasis role="bold">auto-init-root-nodetype</emphasis> -
-    DEPRECATED in JCR 1.9 (use initializer). The node type for root node
-    initialization</para>
+    <para><emphasis role="bold">auto-init-root-nodetype</emphasis>: DEPRECATED
+    in JCR 1.9 (use initializer). The node type for root node
+    initialization.</para>
 
-    <para><emphasis role="bold">container</emphasis> - workspace data
-    container (physical storage) configuration</para>
+    <para><emphasis role="bold">container</emphasis>: Workspace data container
+    (physical storage) configuration.</para>
 
-    <para><emphasis role="bold">initializer</emphasis> - workspace initializer
-    configuration</para>
+    <para><emphasis role="bold">initializer</emphasis>: Workspace initializer
+    configuration.</para>
 
-    <para><emphasis role="bold">cache</emphasis> - workspace storage cache
-    configuration</para>
+    <para><emphasis role="bold">cache</emphasis>: Workspace storage cache
+    configuration.</para>
 
-    <para><emphasis role="bold">query-handler</emphasis> - query handler
-    configuration</para>
+    <para><emphasis role="bold">query-handler</emphasis>: Query handler
+    configuration.</para>
 
-    <para><emphasis role="bold">auto-init-permissions</emphasis> - DEPRECATED
+    <para><emphasis role="bold">auto-init-permissions</emphasis>: DEPRECATED
     in JCR 1.9 (use initializer). Default permissions of the root node. It is
     defined as a set of semicolon-delimited permissions containing a group of
-    space-delimited identities (user, group etc, see Organization service
-    documentation for details) and the type of permission. For example any
+    space-delimited identities (user, group, etc, see Organization service
+    documentation for details) and the type of permission. For example, any
     read; <emphasis role="bold">:/admin read;</emphasis>:/admin add_node;
     <emphasis role="bold">:/admin set_property;</emphasis>:/admin remove means
     that users from group <emphasis role="bold">admin</emphasis> have all
@@ -235,14 +235,14 @@
   <section>
     <title>Workspace data container configuration:</title>
 
-    <para><emphasis role="bold">class</emphasis> - A workspace data container
-    class name</para>
+    <para><emphasis role="bold">class:</emphasis> A workspace data container
+    class name.</para>
 
-    <para><emphasis role="bold">properties</emphasis> - the list of properties
-    (name-value pairs) for the concrete Workspace data container</para>
+    <para><emphasis role="bold">properties</emphasis>: The list of properties
+    (name-value pairs) for the concrete Workspace data container.</para>
 
-    <para><emphasis role="bold">value-storages</emphasis> - the list of value
-    storage plugins</para>
+    <para><emphasis role="bold">value-storages</emphasis>: The list of value
+    storage plugins.</para>
   </section>
 
   <section id="JCR.ConfigurationPersister.ValueStoragePlugin">
@@ -253,32 +253,32 @@
       the values will be stored as BLOBs inside the database.</para>
     </note>
 
-    <para><emphasis role="bold">value-storage</emphasis> - Optional value
-    Storage plugin definition:</para>
+    <para><emphasis role="bold">value-storage</emphasis>: Optional value
+    Storage plugin definition.</para>
 
-    <para><emphasis role="bold">class</emphasis>- a value storage plugin class
-    name (attribute)</para>
+    <para><emphasis role="bold">class</emphasis>: A value storage plugin class
+    name (attribute).</para>
 
-    <para><emphasis role="bold">properties</emphasis> - the list of properties
-    (name-value pairs) for a concrete Value Storage plugin</para>
+    <para><emphasis role="bold">properties</emphasis>: The list of properties
+    (name-value pairs) for a concrete Value Storage plugin.</para>
 
-    <para><emphasis role="bold">filters</emphasis> - the list of filters
-    defining conditions when this plugin is applicable</para>
+    <para><emphasis role="bold">filters</emphasis>: The list of filters
+    defining conditions when this plugin is applicable.</para>
   </section>
 
   <section>
     <title>Initializer configuration (optional):</title>
 
-    <para><emphasis role="bold">class</emphasis> - initializer implementation
+    <para><emphasis role="bold">class</emphasis>: Initializer implementation
     class.</para>
 
-    <para><emphasis role="bold">properties</emphasis> - the list of properties
-    (name-value pairs). Properties are supported:</para>
+    <para><emphasis role="bold">properties</emphasis>: The list of properties
+    (name-value pairs). Properties are supported.</para>
 
-    <para><emphasis role="bold">root-nodetype</emphasis> - The node type for
-    root node initialization</para>
+    <para><emphasis role="bold">root-nodetype</emphasis>: The node type for
+    root node initialization.</para>
 
-    <para><emphasis role="bold">root-permissions</emphasis> - Default
+    <para><emphasis role="bold">root-permissions</emphasis>: Default
     permissions of the root node. It is defined as a set of
     semicolon-delimited permissions containing a group of space-delimited
     identities (user, group etc, see Organization service documentation for
@@ -297,11 +297,11 @@
   <section>
     <title>Cache configuration:</title>
 
-    <para><emphasis role="bold">enabled</emphasis> - if workspace cache is
-    enabled</para>
+    <para><emphasis role="bold">enabled</emphasis>: If workspace cache is
+    enabled or not.</para>
 
-    <para><emphasis role="bold">class</emphasis> - cache implementation class,
-    optional from 1.9. Default value is
+    <para><emphasis role="bold">class</emphasis>: Cache implementation class,
+    optional from 1.9. Default value is.
     org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl.</para>
 
     <para>Cache can be configured to use concrete implementation of
@@ -319,32 +319,33 @@
       </listitem>
     </itemizedlist>
 
-    <para><emphasis role="bold">properties</emphasis> - the list of properties
-    (name-value pairs) for Workspace cache:</para>
+    <para><emphasis role="bold">properties</emphasis>: The list of properties
+    (name-value pairs) for Workspace cache.</para>
 
-    <para><emphasis role="bold">max-size</emphasis> - cache maximum size
+    <para><emphasis role="bold">max-size</emphasis>: Cache maximum size
     (maxSize prior to v.1.9).</para>
 
-    <para><emphasis role="bold">live-time</emphasis> - cached item live time
+    <para><emphasis role="bold">live-time</emphasis>: Cached item live time
     (liveTime prior to v.1.9).</para>
 
     <para>From 1.9 LinkedWorkspaceStorageCacheImpl supports additional
     optional parameters.</para>
 
-    <para><emphasis role="bold">statistic-period</emphasis> - period (time
+    <para><emphasis role="bold">statistic-period</emphasis>: Period (time
     format) of cache statistic thread execution, 5 minutes by default.</para>
 
-    <para><emphasis role="bold">statistic-log</emphasis> - if true cache
-    statistic will be printed to default logger (log.info), false by
-    default.</para>
+    <para><emphasis role="bold">statistic-log</emphasis>: If true cache
+    statistic will be printed to default logger (log.info), false by default
+    or not.</para>
 
-    <para><emphasis role="bold">statistic-clean</emphasis> - if true cache
-    statistic will be cleaned after was gathered, false by default.</para>
+    <para><emphasis role="bold">statistic-clean</emphasis>: If true cache
+    statistic will be cleaned after was gathered, false by default or
+    not.</para>
 
-    <para><emphasis role="bold">cleaner-period</emphasis> - period of eldest
-    items remover execution, 20 minutes by default.</para>
+    <para><emphasis role="bold">cleaner-period</emphasis>: Period of the
+    eldest items remover execution, 20 minutes by default.</para>
 
-    <para><emphasis role="bold">blocking-users-count</emphasis> - number of
+    <para><emphasis role="bold">blocking-users-count</emphasis>: Number of
     concurrent users allowed to read cache storage, 0 - unlimited by
     default.</para>
   </section>
@@ -352,11 +353,11 @@
   <section>
     <title>Query Handler configuration:</title>
 
-    <para><emphasis role="bold">class</emphasis> - A Query Handler class
-    name</para>
+    <para><emphasis role="bold">class</emphasis>: A Query Handler class
+    name.</para>
 
-    <para><emphasis role="bold">properties</emphasis> - the list of properties
-    (name-value pairs) for a Query Handler (indexDir)</para>
+    <para><emphasis role="bold">properties</emphasis>: The list of properties
+    (name-value pairs) for a Query Handler (indexDir).</para>
 
     <para>Properties and advanced features described in <link
     linkend="JCR.SearchConfiguration">Search Configuration</link>.</para>
@@ -365,15 +366,15 @@
   <section>
     <title>Lock Manager configuration:</title>
 
-    <para><emphasis role="bold">time-out</emphasis> - time after which the
+    <para><emphasis role="bold">time-out</emphasis>: Time after which the
     unused global lock will be removed.</para>
 
-    <para><emphasis role="bold">persister</emphasis> - a class for storing
-    lock information for future use. For example, remove lock after jcr
+    <para><emphasis role="bold">persister</emphasis>: A class for storing lock
+    information for future use. For example, remove lock after jcr
     restart.</para>
 
-    <para><emphasis role="bold">path</emphasis> - a lock folder, each
-    workspace has its own.</para>
+    <para><emphasis role="bold">path</emphasis>: A lock folder. Each workspace
+    has its own one.</para>
 
     <programlisting>&lt;!ELEMENT repository-service (repositories)&gt;
 &lt;!ATTLIST repository-service default-repository NMTOKEN #REQUIRED&gt;

@@ -2,11 +2,11 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.NodeScopeIndex">
-  <title>Remove Nodes Property From Indexing Scope</title>
+  <title>Removing Nodes Property From Indexing Scope</title>
 
   <para>In this example, we will exclude some 'text' property of
   nt:unstructured node from indexind. And, therefore, node will not be found
-  by content of this property, even if it accept all constraints.</para>
+  by the content of this property, even if it accepts all constraints.</para>
 
   <para>First of all, add rules to indexing-configuration.xml:</para>
 
@@ -80,9 +80,9 @@ QueryResult result = query.execute();</programlisting>
   </section>
 
   <section>
-    <title>Fetch result</title>
+    <title>Fetching result</title>
 
-    <para>Lets get nodes:</para>
+    <para>Let's get nodes:</para>
 
     <programlisting>NodeIterator it = result.getNodes();
 
@@ -94,7 +94,7 @@ if(it.hasNext())
     <para>NodeIterator will return "node1" and "node3". Node2, as you see, is
     not in result set.</para>
 
-    <para>Also we can get a table:</para>
+    <para>Also, we can get a table:</para>
 
     <programlisting>String[] columnNames = result.getColumnNames();
 RowIterator rit = result.getRows();
@@ -105,7 +105,7 @@ while (rit.hasNext())
    Value[] values = row.getValues();
 }</programlisting>
 
-    <para>Table contant is</para>
+    <para>Table content is</para>
 
     <table>
       <title>Table content</title>
@@ -133,7 +133,7 @@ while (rit.hasNext())
           <row>
             <entry>nt:unstructured</entry>
 
-            <entry>/node3 </entry>
+            <entry>/node3</entry>
 
             <entry>3806</entry>
           </row>

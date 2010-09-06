@@ -71,7 +71,7 @@
     <section>
       <title>JAAS disabling</title>
 
-      <para>First we need to disable the JAAS security which is the default
+      <para>First, we need to disable the JAAS security which is the default
       authentication mechanism in exo. Edit 02portal.war web.xml file and
       comment out the JAAS configuration related lines:</para>
 
@@ -323,7 +323,7 @@ public class LoginBean {
     <section>
       <title>Customization of portal login and logout urls</title>
 
-      <para>In the portal header there is a login or logout action displayed
+      <para>In the portal header, there is a login or logout action displayed
       depending whether you are already logged in or not. We need to customize
       those actions so that when the user clicks on it she or he will be
       redirected either to our login page or to the spring security logout
@@ -408,7 +408,7 @@ eXo.core.Browser.addOnLoadCallback("validateUser", validateUser);</programlistin
 
       <para>Or we can go through a replication process between the external
       realm and the eXo platform realm. This is the strategy that we are going
-      to use to build our login portlet example. Furthermore the replication
+      to use to build our login portlet example. Furthermore, the replication
       will occur dynamically on any user authentication attempt.</para>
     </section>
   </section>
@@ -423,7 +423,7 @@ eXo.core.Browser.addOnLoadCallback("validateUser", validateUser);</programlistin
     into the Identity Registry.</para>
 
     <para>Spring framework provides a simple notification model where a bean
-    can listen to application events published by other beans. Fortunately
+    can listen to application events published by other beans. Fortunately,
     spring security uses this mechanism and publishes an
     InteractiveAuthenticationSuccessEvent in case of successful
     authentication. That will allow us to hook up custom code to that
@@ -523,12 +523,12 @@ public class SpringSecurityEventHandler implements ApplicationListener {
     between on one side the portal webapp and at the other side the portlets
     webapps. This means that the security context has to be available in the
     portlet side allowing the application logic to deal the with current user
-    principal and granted authorities. By default Spring security uses a
+    principal and granted authorities. By default, Spring security uses a
     thread local variable to partially achieve this. But a problem may arise
     due to the fact that the portal invokes the portlet through a webapp cross
     context call. This means that it can lead to a class cast exceptions (two
     different classloaders involved), or that the security context is simply
-    not propagated at all. To accommodate this we will need to set up two
+    not propagated at all. To accommodate this, we will need to set up two
     request filters, one at the portal webapp side and the other at the
     portlet webapp side and use the http request to propagate the context in
     between.</para>

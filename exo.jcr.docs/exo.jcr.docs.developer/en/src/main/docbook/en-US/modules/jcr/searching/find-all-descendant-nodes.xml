@@ -2,7 +2,7 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.FindAllDescendantNodes">
-  <title>Find All Descendant Nodes</title>
+  <title>Finding All Descendant Nodes</title>
 
   <para>Find all nodes with the primary type 'nt:folder' that are descendants
   of the node "/folder1/folder2".</para>
@@ -109,7 +109,7 @@ while (rit.hasNext())
             <row>
               <entry>jcr:path</entry>
 
-              <entry> jcr:score</entry>
+              <entry>jcr:score</entry>
             </row>
           </thead>
 

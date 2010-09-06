@@ -7,7 +7,7 @@
   <?dbhtml filename="ch-data-container-howto.html"?>
 
   <section id="ShortintrointoWorkspacedatacontainerimplementationpractices">
-    <title>Short intro into Workspace data container implementation
+    <title>Short intro about Workspace data container implementation
     practices:</title>
 
     <orderedlist>
@@ -27,13 +27,13 @@
         role="bold">org.exoplatform.services.jcr.storage.WorkspaceDataContainer</emphasis>
         and <emphasis
         role="bold">org.exoplatform.services.jcr.storage.WorkspaceStorageConnection</emphasis>
-        interfaces. This two are main part for the implemenation.</para>
+        interfaces. They are the main part for the implemenation.</para>
       </listitem>
 
       <listitem>
         <para>Look at <emphasis
         role="bold">org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager</emphasis>
-        sourcecode, check how data meneger uses container and its connections
+        sourcecode, check how data menager uses container and its connections
         (see in save() method)</para>
       </listitem>
 
@@ -41,7 +41,7 @@
         <para>Create <emphasis
         role="bold">WorkspaceStorageConnection</emphasis> dummy implementation
         class. It's freeform class, but to be close to the eXo JCR, check how
-        implemented JDBC or SimpleDB containers ( <emphasis
+        to implement JDBC or SimpleDB containers ( <emphasis
         role="bold">org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection</emphasis>
         and <emphasis
         role="bold">org.exoplatform.services.jcr.aws.storage.sdb.SDBWorkspaceStorageConnection</emphasis>).
@@ -58,32 +58,32 @@
 
       <listitem>
         <para>Implement CRUD starting from the read to write etc. Test the
-        methods using external to the implementation ways of data read/write
+        methods by using the external implementation ways of data read/write
         in your backend.</para>
       </listitem>
 
       <listitem>
         <para>When all methods of the connection done start <emphasis
-        role="bold">WorkspaceDataContainer</emphasis>. Container class very
+        role="bold">WorkspaceDataContainer</emphasis>. Container class is very
         simple, it's like a factory for the connections only.</para>
       </listitem>
 
       <listitem>
         <para>Care about container reuseConnection(WorkspaceStorageConnection)
-        method logic. For some backends it cab be same as openConnection(),
-        but for some others it's important to reuse physical backend
-        connection, e.g. to be in same transaction - see JDBC
+        method logic. For some backends, it cab be same as openConnection(),
+        but for some others, it's important to reuse physical backend
+        connection, e.g. to be in the same transaction - see JDBC
         container.</para>
       </listitem>
 
       <listitem>
-        <para>It's almost ready for use in data manager. Start another test
-        and go on.</para>
+        <para>It's almost ready to use in data manager. Start another test and
+        go on.</para>
       </listitem>
     </orderedlist>
 
-    <para>When the container will be ready for run as JCR persistence storage
-    (e.g. for this level testing) it should be configured in Repository
+    <para>When the container will be ready to run as JCR persistence storage
+    (e.g. for this level testing), it should be configured in Repository
     configuration.</para>
 
     <para>Assuming that our new implementation class name is <emphasis
@@ -109,19 +109,19 @@
 
 </programlisting>
 
-    <para>Container can be configured using set properties.</para>
+    <para>Container can be configured by using set properties.</para>
   </section>
 
   <section id="Valuestorageusagenotes">
-    <title>Value storage usage notes:</title>
+    <title>Notes on Value storage usage:</title>
 
-    <para>Value storages pluggable to the container but if it used the
-    container implementation should respect set of interfaces and external
+    <para>Value storages are pluggable to the container but if they are used,
+    the container implementation should respect set of interfaces and external
     storage usage principles.</para>
 
-    <para>If the container have <emphasis
-    role="bold">ValueStoragePluginProvider</emphasis> (e.g. via constructor)
-    it's just few methods to manipulate external Values data.</para>
+    <para>If the container has <emphasis
+    role="bold">ValueStoragePluginProvider</emphasis> (e.g. via constructor),
+    it's just a few methods to manipulate external Values data.</para>
 
     <programlisting>// get channel for ValueData write (add or update)
 ValueIOChannel channel = valueStorageProvider.getApplicableChannel(data,  i);
@@ -153,7 +153,7 @@ ValueData vdata = channel.read(propertyData.getIdentifier(),  orderNumber,  maxB
       channel, the channel should be committed (or rolled back on an error).
       See <emphasis role="bold">ValueIOChannel.commit()</emphasis> and
       <emphasis role="bold">ValueIOChannel.rollback()</emphasis> and how those
-      methods used in JDBC container.</para>
+      methods are used in JDBC container.</para>
     </important>
   </section>
 </chapter>

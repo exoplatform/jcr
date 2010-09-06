@@ -61,7 +61,7 @@
     <para><emphasis role="bold">SQL</emphasis></para>
 
     <para>In SQL you have to use the keyword <emphasis
-    role="bold">TIMESTAMP</emphasis> for date comparisons. Otherwise the date
+    role="bold">TIMESTAMP</emphasis> for date comparisons. Otherwise, the date
     would be interpreted as a string. The date has to be surrounded by single
     quotes (TIMESTAMP 'datetime') and in the ISO standard format:
     YYYY-MM-DDThh:mm:ss.sTZD ( <ulink
@@ -69,8 +69,8 @@
     and well explained in a W3C note <ulink
     url="http://www.w3.org/TR/NOTE-datetime">http://www.w3.org/TR/NOTE-datetime</ulink>).</para>
 
-    <para>You see it can be a date only (YYYY-MM-DD) but also a complete date
-    and time with a timezone designator (TZD).</para>
+    <para>You will see that it can be a date only (YYYY-MM-DD) but also a
+    complete date and time with a timezone designator (TZD).</para>
 
     <programlisting>// make SQL query
 QueryManager queryManager = workspace.getQueryManager();
@@ -91,7 +91,7 @@ QueryResult result = query.execute();</programlisting>
 
     <para><emphasis role="bold">XPath</emphasis></para>
 
-    <para>Compared to the SQL format you have to use the keyword <emphasis
+    <para>Compared to the SQL format, you have to use the keyword <emphasis
     role="bold">xs:dateTime</emphasis> and surround the datetime by extra
     brackets: xs:dateTime('datetime'). The actual format of the datetime also
     conforms with the ISO date standard.</para>

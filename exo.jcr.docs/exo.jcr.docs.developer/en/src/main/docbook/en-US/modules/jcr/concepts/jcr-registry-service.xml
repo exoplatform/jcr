@@ -10,10 +10,10 @@
     <title>Concept</title>
 
     <para>The Registry Service is one of the key parts of the infrastructure
-    built around eXo JCR. Each JCR based service, applications etc may have
-    its own configuration and settings data and other data that have to be
-    stored persistently and used by the approptiate service or application
-    (let's call it <emphasis role="bold">Consumer</emphasis>).</para>
+    built around eXo JCR. Each JCR that is based on service, applications, etc
+    may have its own configuration, settings data and other data that have to
+    be stored persistently and used by the approptiate service or application.
+    ( We call it "<emphasis role="bold">Consumer</emphasis>").</para>
 
     <para>The service acts as a centralized collector (Registry) for such
     data. Naturally, a registry storage is JCR based i.e. stored in some JCR
@@ -25,7 +25,7 @@
     data using JCR API directly for better flexibility. So the Registry
     Service acts as a mediator between a Consumer and its settings.</para>
 
-    <para>The proposed structure of the Registry Service storage.It is divided
+    <para>The proposed structure of the Registry Service storage is divided
     into 3 logical groups: services, applications and users:</para>
 
     <programlisting> exo:registry/          &lt;-- registry "root" (exo:registry)
@@ -42,9 +42,9 @@
        Consumer data    (exo:registryEntry)
      ...</programlisting>
 
-    <para>Each upper level eXo Service may store its configuration in Exo
-    Registry. First time start from xml-config (in jar etc). Each next will be
-    from Registry. In configuration file you can add force-xml-configuration
+    <para>Each upper level eXo Service may store its configuration in eXo
+    Registry. At first, start from xml-config (in jar etc) and then from
+    Registry. In configuration file, you can add force-xml-configuration
     parameter to component to ignore reading parameters initialization from
     RegistryService and to use file instead:</para>
 
@@ -58,7 +58,7 @@
     <title>The API</title>
 
     <para>The main functionality of the Registry Service is pretty simple and
-    straightforward, it is described in the Registry abstract class as
+    straightforward, it is described in the Registry abstract class as the
     following:</para>
 
     <programlisting>public abstract class Registry {
@@ -93,15 +93,15 @@
   public abstract void removeEntry(SessionProvider sessionProvider,
       String groupName, String entryName) throws RepositoryException;</programlisting>
 
-    <para>As you can see it mainly looks like a simple CRUD interface for the
+    <para>As you can see it looks like a simple CRUD interface for the
     RegistryEntry object which wraps registry data for some Consumer as a
     Registry Entry. The Registry Service itself knows nothing about the
     wrapping data, it is Consumer's responsibility to manage and use its data
     in its own way.</para>
 
-    <para>To create an Entity Consumer you should have an idea how to
-    serialize the data to some XML structure and then create a RegistryEntry
-    from these data at once or populate them in a RegistryEntry object (using
+    <para>To create an Entity Consumer you should know how to serialize the
+    data to some XML structure and then create a RegistryEntry from these data
+    at once or populate them in a RegistryEntry object (using
     RegistryEntry(String entryName) constructor and then obtain and fill a DOM
     document).</para>
 

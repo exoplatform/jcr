@@ -11,10 +11,10 @@
 
     <para>What LockManager does?</para>
 
-    <para>In common words, LockManager stores lock objects, so it can give
-    Lock object or can release it, etc.</para>
+    <para>In general, LockManager stores lock objects, so it can give Lock
+    object or can release it, etc.</para>
 
-    <para>Also LockManager is responsible for removing Locks that live too
+    <para>Also, LockManager is responsible for removing Locks that live too
     long. This parameter may be configured with "time-out" property.</para>
 
     <para>JCR provide two base implementation of LockManager:</para>
@@ -29,7 +29,7 @@
       </listitem>
     </itemizedlist>
 
-    <para>In this article we will talk mostly about
+    <para>In this article, we will talk mostly about
     CacheableLockManagerImpl.</para>
 
     <para>You can enable LockManager by adding lock-manager-configuration to
@@ -54,10 +54,10 @@
 
     <para>LockManagerImpl is simple implementation of LockManager, and also
     faster than CacheableLockManager. It stores Lock objects in HashMap and
-    may also persist Locks if LockPersister is configured. LockManagerImpl do
-    not support replication in any way.</para>
+    may also persist Locks if LockPersister is configured. LockManagerImpl
+    does not support replication in any way.</para>
 
-    <para>See more about LockManager Configuration <link
+    <para>See more about LockManager Configuration at <link
     linkend="JCR.eXoJCRconfiguration">here</link>.</para>
   </section>
 
@@ -71,8 +71,8 @@
 
     <para>Both implementation supports Expired Locks removing. There is
     LockRemover - separate thread, that periodically ask LockManager for Locks
-    that lives to much and must be removed. So, timeout for LockRemover may be
-    set as follows, default value is 30m.</para>
+    that live much and must be removed. So, timeout for LockRemover may be set
+    as follows, default value is 30m.</para>
 
     <programlisting>&lt;properties&gt;
    &lt;property name="time-out" value="10m" /&gt;
@@ -82,9 +82,9 @@
     <section>
       <title>Configuration</title>
 
-      <para>Replication requirements are same as for Cache</para>
+      <para>Replication requirements are the same for Cache</para>
 
-      <para>Full JCR configuration example you can see <link
+      <para> You can see a full JCR configuration example at <link
       linkend="JCR.ClusterConfig.JCRExternalConfig">here</link>.</para>
 
       <para>Common tips:</para>
@@ -107,8 +107,8 @@
         </listitem>
       </itemizedlist>
 
-      <para>There is few ways how to configure CacheableLockManagerImpl, and
-      all of them configures JBoss-cache and JDBCCacheLoader.</para>
+      <para>There is a few ways to configure CacheableLockManagerImpl, and all
+      of them configure JBoss-cache and JDBCCacheLoader.</para>
 
       <para>See <ulink
       url="http://community.jboss.org/wiki/JBossCacheJDBCCacheLoader">http://community.jboss.org/wiki/JBossCacheJDBCCacheLoader</ulink></para>
@@ -121,7 +121,7 @@
       CacheableLockManagerImpl</para>
 
       <para><note>
-          <para>This configuration is not so good, as you can think. Because
+          <para>This configuration is not so good as you can think. Because
           repository may contain many workspaces, and each workspace must
           contain LockManager configuration, and LockManager config may
           contain JbossCache config file. So total configuration is growing
@@ -222,7 +222,7 @@
     <section>
       <title>Template JBossCache Configuration</title>
 
-      <para>Second one is - use template JBoss-cache configuration for all
+      <para>Second one is using template JBoss-cache configuration for all
       LockManagers</para>
 
       <para><citetitle>Lock template configuration</citetitle></para>
@@ -268,8 +268,8 @@
    &lt;/loaders&gt;
 &lt;/jbosscache&gt;</programlisting>
 
-      <para>As you see, all configurable paramaters filled by templates and
-      will be replaced by LockManagers conf parameters:</para>
+      <para>As you see, all configurable paramaters are filled by templates
+      and will be replaced by LockManagers conf parameters:</para>
 
       <programlisting>&lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl"&gt;
    &lt;properties&gt;
@@ -303,10 +303,10 @@
           </listitem>
 
           <listitem>
-            <para>as you see, jgroups-configuration moved to separate config
+            <para>As you see, jgroups-configuration moved to separate config
             file - udp-mux.xml; In our case udp-mux.xml is common JGroup
             config for all components (QueryHandler, cache, LockManager). But
-            we, still, can create own config.</para>
+            we can still create own config.</para>
           </listitem>
         </itemizedlist></para>
 

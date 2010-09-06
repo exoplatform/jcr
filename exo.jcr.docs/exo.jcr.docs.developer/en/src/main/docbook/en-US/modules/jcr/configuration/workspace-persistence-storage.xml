@@ -3,6 +3,7 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="JCR.WorkspacePersistenceStorage">
   <?dbhtml filename="ch-workspace-data-container.html"?>
+
   <title>Workspace Data Container</title>
 
   <para>Each Workspace of JCR has its own persistent storage to hold
@@ -26,22 +27,22 @@
 
   <para>Properties are Container specific parameters:</para>
 
-  <para><emphasis role="bold">source-name</emphasis> - JDBC data source name,
+  <para><emphasis role="bold">source-name</emphasis>: JDBC data source name,
   registered in JDNI by InitialContextInitializer. ( <emphasis
   role="bold">sourceName</emphasis> prior v.1.9)</para>
 
-  <para><emphasis role="bold">dialect</emphasis> - database dialect, one of
+  <para><emphasis role="bold">dialect</emphasis>: Database dialect, one of
   "hsqldb", "mysql", "mysql-utf8", "pgsql", "oracle", "oracle-oci", "mssql",
   "sybase", "derby", "db2", "db2v8"</para>
 
-  <para><emphasis role="bold">multi-db</emphasis> - enable multi-database
+  <para><emphasis role="bold">multi-db</emphasis>: Enable multi-database
   container with this parameter (if "true").</para>
 
-  <para><emphasis role="bold">max-buffer-size</emphasis> - a threshold in
-  bytes, if a value size is greater then it will be spooled to a temporary
+  <para><emphasis role="bold">max-buffer-size</emphasis>: A threshold in
+  bytes, if a value size is greater, then it will be spooled to a temporary
   file.</para>
 
-  <para><emphasis role="bold">swap-directory</emphasis> - a location where the
+  <para><emphasis role="bold">swap-directory</emphasis>: A location where the
   value will be spooled if no value storage is configured but a
   max-buffer-size is exceeded.</para>
 
@@ -78,9 +79,9 @@
   name (property-name), ancestor path (ancestor-path) and/or the size of
   values stored (min-value-size, e.g. 1M, 4.2G, 100 (bytes)).</para>
 
-  <para>In a code sample we use a filter with property-type and min-value-size
-  only. That means that the storage is only for binary values whose size is
-  greater than 1Mbyte.</para>
+  <para>In a code sample, we use a filter with property-type and
+  min-value-size only. That means that the storage is only for binary values
+  whose size is greater than 1Mbyte.</para>
 
   <para>It's recommended to store properties with large values in a file value
   storage only.</para>

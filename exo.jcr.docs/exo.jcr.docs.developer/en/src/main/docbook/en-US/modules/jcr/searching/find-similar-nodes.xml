@@ -2,13 +2,13 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.FindSimilarNodes">
-  <title>Find Similar Nodes</title>
+  <title>Finding Similar Nodes</title>
 
   <para>Find similar nodes to node by path '/baseFile/jcr:content'.</para>
 
   <para>In our example, baseFile will contain text where "terms" word happens
-  many time. Thats why existanse of this word will be used as a criteria of
-  node similarity (for node baseFile).</para>
+  many times. That's a reason why the existanse of this word will be used as a
+  criteria of node similarity (for node baseFile).</para>
 
   <note>
     <para>See also about Similarity and configuration - <link
@@ -121,9 +121,9 @@ QueryResult result = query.execute();</programlisting>
   </section>
 
   <section>
-    <title>Fetch result</title>
+    <title>Fetching result</title>
 
-    <para>Lets get nodes:</para>
+    <para>Let's get nodes:</para>
 
     <programlisting>NodeIterator it = result.getNodes();
 
@@ -136,7 +136,7 @@ if(it.hasNext())
     "/baseFile/jcr:content","/target1/jcr:content" and
     "/target3/jcr:content".</para>
 
-    <para>As you see base node are also in result set.</para>
+    <para>As you see the base node are also in result set.</para>
 
     <para>We can also get a table:</para>
 
@@ -175,7 +175,7 @@ while (rit.hasNext())
           </row>
 
           <row>
-            <entry>/target1/jcr:content </entry>
+            <entry>/target1/jcr:content</entry>
 
             <entry>...</entry>
 
@@ -183,7 +183,7 @@ while (rit.hasNext())
           </row>
 
           <row>
-            <entry>/target3/jcr:content </entry>
+            <entry>/target3/jcr:content</entry>
 
             <entry>...</entry>
 

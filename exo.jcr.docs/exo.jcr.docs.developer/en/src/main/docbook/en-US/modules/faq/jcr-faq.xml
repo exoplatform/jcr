@@ -59,16 +59,16 @@
       <section>
         <title>How to use Observation properly?</title>
 
-        <para>JCR Observation it's a way to listen on persistence changes of a
+        <para>JCR Observation's a way to listen on persistence changes of a
         Repository. It provides several options to configure the listener for
-        an interesting only changes. For proper use it's important to
+        an interesting only changes. To use properly, it's important to
         understand concept of events filtering for a registered EventListener
-        (8.3.3 Observation Manager). An often confusing part it's the
+        (8.3.3 Observation Manager). An often confusing part, it's the
         <emphasis role="bold">absPath</emphasis>, it's an associated parent of
         a location you want to observe events on. I.e. it's a parent of child
         node(s) or this parent property(ies); if <emphasis
         role="bold">isDeep</emphasis> is true then you'll get events of all
-        the subtree of child nodes also. Same actual for <emphasis
+        the subtree of child nodes also. The same actual for <emphasis
         role="bold">uuid</emphasis> and <emphasis
         role="bold">nodeTypeName</emphasis> parameters of
         ObservationManager.addEventListener() method.</para>
@@ -93,18 +93,18 @@
       <section>
         <title>Is ordering by jcr:path or Item name supported?</title>
 
-        <para>No it does not supported There is two ways to ordering results,
-        when path may be used as criteria:</para>
+        <para>No, it does not supported. There is two ways to ordering
+        results, when path may be used as criteria:</para>
 
         <itemizedlist>
           <listitem>
-            <para>order by property with value type NAME or PATH (jcr supports
-            it)</para>
+            <para>Order by property with value type NAME or PATH (jcr supports
+            it).</para>
           </listitem>
 
           <listitem>
-            <para>order by jcr:path - sort by exact path of node (jcr do not
-            supports it)</para>
+            <para>Order by jcr:path - sort by exact path of node (jcr do not
+            supports it).</para>
           </listitem>
         </itemizedlist>
 
@@ -112,9 +112,9 @@
 
         <para>If no order specification is supplied in the query statement,
         implementations may support document order on the result nodes (see
-        6.6.4.2 Document Order). And its sorted by order number.</para>
+        6.6.4.2 Document Order). And it is sorted by order number.</para>
 
-        <para>By default (if query do not contains any ordering statements)
+        <para>By default, (if query do not contains any ordering statements)
         result nodes is sorted by document order.</para>
 
         <programlisting>SELECT * FROM nt:unstructured WHERE jcr:path LIKE 'testRoot/%'</programlisting>
@@ -146,28 +146,29 @@
         <para>1. Indexer uses jcr:encoding property of nt:resource node (used
         as jcr:content child node of nt:file) 2. if no jcr:encoding property
         set the Document Service will use the one configured in the service
-        (defaultEncoding) 3. if has nothing configured a JVM default encoding
-        will be used</para>
+        (defaultEncoding) 3. if nothing is configured a JVM, the default
+        encoding will be used</para>
       </section>
 
       <section>
         <title>Which database server is better for eXo JCR?</title>
 
-        <para>If question is a performance it's difficult question, as each
-        database can be configured to be more (and more) faster for each
+        <para>If the question is a performance, it's difficult question, as
+        each database can be configured to be more (and more) faster for each
         special case. MySQL with MyISAM engine will be faster. But MySQL has
         limitations for indexes for multilingual columns (Item names
         actually). So, with long Item names (larger ofOracle or PostgreSQL
-        also are good for performance. DB2 and MSSQL slower in default
+        also are good for performance. DB2 and MSSQL are slower in default
         configurations. Default configuration of Sybase leader of slowness.
-        But in this question take the database server maintenance in account.
-        MySQL and PostgreSQL are simple in installation and can works even on
-        limited hardware. Oracle, DB2, MSSQL or Sybase need more efforts. Same
-        actual for maintenance during the work. Note for Sybase:
+        But in this question, take the database server maintenance in account.
+        MySQL and PostgreSQL are simple in installation and can work even on
+        limited hardware. Oracle, DB2, MSSQL or Sybase need more efforts. The
+        same actual for maintenance during the work. Note for Sybase:
         "check-sns-new-connection" data container configuration parameter
-        should be set to "true". For testing or embedded use HSQLDB is the
-        best. Apache Derby and H2 also supported. But H2 surprisingly needs
-        "beta" feature enabled - MVCC=TRUE in JDBC url.</para>
+        should be set to "true". For testing purpose, embedded database such
+        as HSQLDB is the best choice. Apache Derby and H2 also supported. But
+        H2 surprisingly needs "beta" feature enabled - MVCC=TRUE in JDBC
+        url.</para>
       </section>
 
       <section>
@@ -186,19 +187,20 @@
       </section>
 
       <section>
-        <title>Does MySQL has limitation affecting eXo JCR features?</title>
+        <title>Does MySQL have limitation affecting on eXo JCR
+        features?</title>
 
         <para>Index's key length of JCR_SITEM (JCR_MITEM) table for mysql-utf8
         dialect is reduced to 765 bytes (or 255 chars).</para>
       </section>
 
       <section>
-        <title>Does use of Sybase database needs special options in eXo JCR
+        <title>Does use of Sybase database need special options in eXo JCR
         configuration?</title>
 
-        <para>For properly work JCR with Sybase need for each workspace data
-        container add new property "check-sns-new-connection" with false value
-        like this:</para>
+        <para>To enable JCR working properly with Sybase, a property
+        'check-sns-new-connection' with 'false' value is required for each
+        workspace data container:</para>
 
         <programlisting>&lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer"&gt;
   &lt;properties&gt;
@@ -229,10 +231,10 @@ session.logout();
       </section>
 
       <section>
-        <title>Can I use Session after logout?</title>
+        <title>Can I use Session after loging out?</title>
 
         <para>No. Any instance of Session or Node (acquired through session)
-        shouldn't be used after logout anymore. At least it is highly
+        shouldn't be used after loging out anymore. At least, it is highly
         recommended not to use.</para>
       </section>
 
@@ -240,17 +242,17 @@ session.logout();
         <title>How to configure jcr for cluster ?</title>
 
         <para>So we have configured JCR in standalone mode and want to
-        reconfigure it for clustered environment. First of all let's check
+        reconfigure it for clustered environment. First of all, let's check
         whether all requirements are satisfied:</para>
 
         <itemizedlist>
           <listitem>
-            <para>Dedicated RDBMS anyone like MySQL, Postges, Oracle and etc.
+            <para>Dedicated RDBMS anyone like MySQL, Postges, Oracle and, etc
             but just not HSSQL;</para>
           </listitem>
 
           <listitem>
-            <para>Shared storage. The simples thing is to use shared FS like
+            <para>Shared storage. The simplest thing is to use shared FS like
             NFS or SMB mounted in operation system, but they are rather slow.
             The best thing is to use SAN (Storage Area Network);</para>
           </listitem>
@@ -261,8 +263,9 @@ session.logout();
         </itemizedlist>
 
         <para>So now, need to configure Container a bit. Check
-        exo-configuration.xml to be sure You are using JBossTS Transaction
-        Service and JBossCache Transaction Manager, as shown below.</para>
+        exo-configuration.xml to be sure that you are using JBossTS
+        Transaction Service and JBossCache Transaction Manager, as shown
+        below.</para>
 
         <programlisting>&lt;component&gt;
    &lt;key&gt;org.jboss.cache.transaction.TransactionManagerLookup&lt;/key&gt;
@@ -282,16 +285,16 @@ session.logout();
 
         <para>Next stage is actually the JCR configuration. We need JBossCache
         configuration templates for : data-cache, indexer-cache and
-        lock-manager-cache. Later they will be used configuring JCR's core
+        lock-manager-cache. Later they will be used to configure JCR's core
         components. There are pre-bundled templates in EAR or JAR in
         conf/standalone/cluster. They can be used as is or re-written if
-        needed. And now time to re-configure a bit each workspace. Actually
-        need to change few parameters of &lt;cache&gt;, &lt;query-handler&gt;
+        needed. And now, re-configure a bit each workspace. Actually, a few
+        parameters need changing, e.g. &lt;cache&gt;, &lt;query-handler&gt;
         and &lt;lock-manager&gt;.</para>
 
         <itemizedlist>
           <listitem>
-            <para>&lt;cache&gt; configuration should looks like this:</para>
+            <para>&lt;cache&gt; configuration should look like this:</para>
 
             <programlisting>&lt;cache enabled="true"
      class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache"&gt;
@@ -311,7 +314,7 @@ session.logout();
 
               <listitem>
                 <para>"jgroups-configuration" is path to JGroups configuration
-                is multiplexer stack is used (default). This file is also
+                that is multiplexer stack is used (default). This file is also
                 pre-bundled with templates and is recommended for use;</para>
               </listitem>
 
@@ -322,7 +325,7 @@ session.logout();
 
               <listitem>
                 <para>"jbosscache-cluster-name" is the name of cluster group.
-                Should be different for each workspace and each workspace
+                It should be different for each workspace and each workspace
                 component. I.e.:
                 &lt;repository_name&gt;-&lt;ws_name&gt;-&lt;component(cache\|lock\|index)&gt;</para>
               </listitem>
@@ -356,9 +359,10 @@ session.logout();
         </itemizedlist>
 
         <para>Those properties have the same meaning and restrictions as in
-        previous block. Last property "max-volatile-time" is not mandatory but
-        recommended. This notifies that latest changes in index will be
-        visible for each cluster node not later than in 60s.</para>
+        the previous block. The last property "max-volatile-time" is not
+        mandatory but recommended. This notifies that the latest changes in
+        index will be visible for each cluster node not later than in
+        60s.</para>
 
         <itemizedlist>
           <listitem>
@@ -389,10 +393,10 @@ session.logout();
 
 </programlisting>
 
-            <para>First few properties are the same as in previous components,
-            but here you can see some strange "jbosscache-cl-cache.jdbc.*"
-            properties. They define access parameters for database where lock
-            are persisted.</para>
+            <para>First few properties are the same as in the previous
+            components, but here you can see some strange
+            "jbosscache-cl-cache.jdbc.*" properties. They define access
+            parameters for database where lock are persisted.</para>
 
             <itemizedlist>
               <listitem>
@@ -406,35 +410,35 @@ session.logout();
               </listitem>
 
               <listitem>
-                <para>"jbosscache-cl-cache.jdbc.table.primarykey" - name of
-                column with pk;</para>
+                <para>"jbosscache-cl-cache.jdbc.table.primarykey" - the name
+                of column with pk;</para>
               </listitem>
 
               <listitem>
-                <para>"jbosscache-cl-cache.jdbc.fqn.column" - name of one more
-                column, use as in example if not sure (if much interested,
-                please refer to JBossCache JDBCCacheLoader
-                documentation)</para>
+                <para>"jbosscache-cl-cache.jdbc.fqn.column" - the name of one
+                more column. If you are not sure how to use, follow the
+                example above (if much interested, please refer to JBossCache
+                JDBCCacheLoader documentation)</para>
               </listitem>
 
               <listitem>
-                <para>"jbosscache-cl-cache.jdbc.node.column" - name of one
-                more column, use as in example if not sure (if much
-                interested, please refer to JBossCache JDBCCacheLoader
-                documentation)</para>
+                <para>"jbosscache-cl-cache.jdbc.node.column" - the name of one
+                more column. If you are not sure how to use, follow the
+                example above (if much interested, please refer to JBossCache
+                JDBCCacheLoader documentation)</para>
               </listitem>
 
               <listitem>
                 <para>"jbosscache-cl-cache.jdbc.parent.column" - name of one
-                more column, use as in example if not sure (if much
-                interested, please refer to JBossCache JDBCCacheLoader
-                documentation)</para>
+                more column. If you are not sure how to use, follow the
+                example above if you are not sure (if much interested, please
+                refer to JBossCache JDBCCacheLoader documentation)</para>
               </listitem>
 
               <listitem>
                 <para>"jbosscache-cl-cache.jdbc.datasource" - name of
                 configured in Container datasource, where you want to store
-                locks. Bets idea is to use the same as used for
+                locks. The best idea is to use the same as for
                 workspace.</para>
               </listitem>
             </itemizedlist>
@@ -445,12 +449,12 @@ session.logout();
       </section>
 
       <section>
-        <title>Is JCR suitable for remote sites\* synchronization</title>
+        <title>Is JCR suitable for remote sites\* synchronization?</title>
 
         <itemizedlist>
           <listitem>
-            <para>understand remote site as different buildings separated by a
-            WAN network.</para>
+            <para> Remote sites can be visualized as different buildings
+            seperated by a WAN network.</para>
           </listitem>
         </itemizedlist>
       </section>
@@ -462,7 +466,7 @@ session.logout();
 
         <itemizedlist>
           <listitem>
-            <para>enable lucene spellchecker in jcr QueryHandler
+            <para>Enable lucene spellchecker in jcr QueryHandler
             configuration:</para>
 
             <programlisting>&lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
@@ -477,7 +481,7 @@ session.logout();
 
         <itemizedlist>
           <listitem>
-            <para>execute query with rep:spellcheck function and word that is
+            <para>Execute query with rep:spellcheck function and word that is
             checked:</para>
 
             <programlisting>Query query = qm.createQuery("select rep:spellcheck() from nt:base where " + "jcr:path = '/' and spellcheck('word that is checked')", Query.SQL);
@@ -487,7 +491,7 @@ RowIterator rows = query.execute().getRows();</programlisting>
 
         <itemizedlist>
           <listitem>
-            <para>fetch a result:</para>
+            <para>Fetch a result:</para>
 
             <programlisting>Row r = rows.nextRow();
 Value v = r.getValue("rep:spellcheck()");</programlisting>
@@ -495,8 +499,8 @@ Value v = r.getValue("rep:spellcheck()");</programlisting>
         </itemizedlist>
 
         <para>If there is no any results, that means there is no suggestion,
-        so word is correct or spellcheckers dictionary do not contain any word
-        looking like checked word.</para>
+        so word is correct or spellcheckers dictionary do not contain any
+        words like the checked word.</para>
       </section>
 
       <section>
@@ -507,12 +511,12 @@ Value v = r.getValue("rep:spellcheck()");</programlisting>
 
         <itemizedlist>
           <listitem>
-            <para>minimal distance between checked word and proposed
+            <para>Minimal distance between checked word and proposed
             suggestion;</para>
           </listitem>
 
           <listitem>
-            <para>search for more popular suggestions;</para>
+            <para>Search for more popular suggestions;</para>
 
             <programlisting>&lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
    &lt;properties&gt;
@@ -534,12 +538,12 @@ Value v = r.getValue("rep:spellcheck()");</programlisting>
 
         <itemizedlist>
           <listitem>
-            <para>if the proposed word exist in the directory - no suggestion
+            <para>If the proposed word exists in the directory - no suggestion
             given;</para>
           </listitem>
 
           <listitem>
-            <para>if the proposed word doesn't exist in the directory -
+            <para>If the proposed word doesn't exist in the directory -
             propose the closed word;</para>
           </listitem>
         </itemizedlist>
@@ -548,8 +552,8 @@ Value v = r.getValue("rep:spellcheck()");</programlisting>
 
         <itemizedlist>
           <listitem>
-            <para>no matter word exist or not, checker will propose the closed
-            word that is the most popular than checked word.</para>
+            <para>No matter word exists or not, checker will propose the
+            closed word that is more popular than the checked word.</para>
           </listitem>
         </itemizedlist>
       </section>
@@ -609,10 +613,10 @@ Value v = r.getValue("rep:spellcheck()");</programlisting>
         <title>I uploaded a file to WebDAV server using Mac OS Finder, but the
         file size is '0', what is wrong ?</title>
 
-        <para>This is a known finder bug started from Mac OS v.10.5.3 and not
-        yet fixed, .</para>
+        <para>This is known as a finder bug started from Mac OS v.10.5.3 and
+        not yet fixed, .</para>
 
-        <para>for more details follow:&amp;nbsp; <ulink
+        <para>For more details follow:&amp;nbsp; <ulink
         url="http://discussions.apple.com/thread.jspa?threadID=1538882&amp;start=0&amp;tstart=0">Apple
         Disscussion thread.</ulink></para>
       </section>
@@ -626,9 +630,9 @@ Value v = r.getValue("rep:spellcheck()");</programlisting>
         <para>The value of this parameter must contain colon-separated pairs
         "MediaType:cache-control value"</para>
 
-        <para>For example if you need to cache all text/xml and text/plain
+        <para>For example, if you need to cache all text/xml and text/plain
         files for 5 minutes (300 sec.) and other text/\* files for 10 minutes
-        (600 sec.) use the next configuration:</para>
+        (600 sec.), use the next configuration:</para>
 
         <programlisting>&lt;component&gt;
    &lt;type&gt;org.exoplatform.services.jcr.webdav.WebDavServiceImpl&lt;/type&gt;
@@ -677,7 +681,8 @@ Value v = r.getValue("rep:spellcheck()");</programlisting>
 
         <programlisting>curl -i -u 'user:pass'  -X 'METHOD_NAME' -H 'Headers' 'resource_url' -d 'xml_body text'</programlisting>
 
-        <para>for example to find all files containing "test" perform:</para>
+        <para>For example about finding all files containing "test"
+        perform:</para>
 
         <programlisting>curl -i -u "root:exo" -X "SEARCH" "http://192.168.0.7:8080/rest/jcr/repository/production/" -d
 "&lt;?xml version='1.0' encoding='UTF-8' ?&gt;
@@ -685,12 +690,12 @@ Value v = r.getValue("rep:spellcheck()");</programlisting>
       &lt;D:sql&gt;SELECT * FROM nt:base WHERE contains(*, 'text')&lt;/D:sql&gt;
 &lt;/D:searchrequest&gt;"</programlisting>
 
-        <para>if you need to add some headers to your request use \-H
+        <para>If you need to add some headers to your request, use \-H
         key.</para>
 
-        <para>More information about methods parameters you can find in <ulink
-        url="http://www.ietf.org/rfc/rfc2518.txt">HTTP Extensions for
-        Distributed Authoring</ulink> specification.</para>
+        <para>To have more information about methods parameters, you can find
+        in <ulink url="http://www.ietf.org/rfc/rfc2518.txt">HTTP Extensions
+        for Distributed Authoring</ulink> specification.</para>
       </section>
 
       <section>
@@ -704,7 +709,7 @@ Value v = r.getValue("rep:spellcheck()");</programlisting>
         So, if a client will set Content-Type header, e.g. JS code from a
         page, it will works for a text file as expected.</para>
 
-        <para>If WebDAV request doesn't contain a content encoding it's
+        <para>If WebDAV request doesn't contain a content encoding, it's
         possible to write a dedicated action in a customer application. The
         action will set jcr:encoding using its own logic, e.g. based on IP or
         user preferences.</para>

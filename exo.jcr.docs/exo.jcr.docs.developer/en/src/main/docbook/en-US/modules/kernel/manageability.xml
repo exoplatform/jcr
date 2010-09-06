@@ -14,12 +14,12 @@
     for defining how we can access relevant information about the system and
     how we can apply management operations. JMX is the de facto standard for
     exposing a management view in the Java Platform but we take in
-    consideration other kind of views such as REST web services. Therefore the
-    framework is not tied to JMX, yet it provides a JMX part to define more
-    precisely details related to the JMX management view. The legacy framework
-    is still in use but is deprecated in favor of the new framework as it is
-    less tested and less efficient. It will be removed by sanitization in the
-    future.</para>
+    consideration other kind of views such as REST web services. Therefore,
+    the framework is not tied to JMX, yet it provides a JMX part to define
+    more precisely details related to the JMX management view. The legacy
+    framework is still in use but is deprecated in favor of the new framework
+    as it is less tested and less efficient. It will be removed by
+    sanitization in the future.</para>
   </section>
 
   <section>
@@ -140,7 +140,7 @@
 
       <para>The cache service delegates most of the work to the
       CacheServiceManaged class by using the @ManagedBy annotation. At runtime
-      when a new cache is creates it calls the CacheServiceManaged class in
+      when a new cache is created, it calls the CacheServiceManaged class in
       order to let the CacheServiceManaged object register the cache.</para>
 
       <programlisting>@ManagedBy(CacheServiceManaged.class)
@@ -186,7 +186,7 @@ public interface ExoCache {
       <para>The CacheServiceManaged is the glue code between the CacheService
       and the management view. The main reason is that only exo services are
       registered automatically against the management view. Any other managed
-      bean must be registered manually for now. Therefore it needs to know
+      bean must be registered manually for now. Therefore, it needs to know
       about the management layer via the management context. The management
       context allows an object implementing the ManagementAware interface to
       receive a context to perform further registration of managed

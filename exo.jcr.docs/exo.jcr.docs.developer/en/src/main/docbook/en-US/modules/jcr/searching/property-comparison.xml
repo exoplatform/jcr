@@ -63,7 +63,7 @@ QueryResult result = query.execute();</programlisting>
   </section>
 
   <section>
-    <title>Fetch result</title>
+    <title>Fetching result</title>
 
     <para>Let's get nodes:</para>
 
@@ -95,7 +95,7 @@ while (rit.hasNext())
             <row>
               <entry>jcr:title</entry>
 
-              <entry>jcr:path </entry>
+              <entry>jcr:path</entry>
 
               <entry>jcr:score</entry>
             </row>
@@ -107,7 +107,7 @@ while (rit.hasNext())
 
               <entry>/document3</entry>
 
-              <entry>1725 </entry>
+              <entry>1725</entry>
             </row>
           </tbody>
         </tgroup>

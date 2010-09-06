@@ -14,33 +14,33 @@
     defines a read-only repository, level 2 defines methods for writing
     content and bidirectional interaction with the repository.</para>
 
-    <para>Exo JCR supports JSR-170 level 1 and level 2 and all optional
+    <para>eXo JCR supports JSR-170 level 1 and level 2 and all optional
     features. The recent JSR-283 is not yet supported.</para>
   </section>
 
   <section>
     <title>Level 1</title>
 
-    <para>Includes read only functionality for very simple repositories.
-    Useful to port an existing data repository and convert it to a more
-    advanced form step by step. JCR uses a well known Session abstraction to
-    access the repository data (similar to the sessions we have in OS, web
-    etc)</para>
+    <para>Level 1 includes read-only functionality for very simple
+    repositories. It is useful to port an existing data repository and convert
+    it to a more advanced form step by step. JCR uses a well-known Session
+    abstraction to access the repository data (similar to the sessions we have
+    in OS, web, etc).</para>
 
-    <para>Level 1 features:</para>
+    <para>The features of level 1:</para>
 
     <itemizedlist>
       <listitem>
         <para>Initiating a session calling login method with the name of
-        desired workspace and client credentials. Involves some security
+        desired workspace and client credentials. It involves some security
         mechanisms (JAAS) to authenticate the client and in case the client is
-        authorized to use the data from a particular workspace, he retrieves
-        the session with a workspace tied to it.</para>
+        authorized to use the data from a particular workspace, he can
+        retrieve the session with a workspace tied to it.</para>
       </listitem>
 
       <listitem>
-        <para>Using the obtained session the client can retrieve data (items)
-        using: traversing the tree, directly accessing a particular item
+        <para>Using the obtained session, the client can retrieve data (items)
+        by traversing the tree, directly accessing a particular item
         (requesting path or UUID) or traversing the query result. So an
         application developer can choose the "best" form depending on the
         content structure and desired operation.</para>
@@ -82,11 +82,12 @@
       </listitem>
 
       <listitem>
-        <para>ransient namespace remapping. Item name can have prefix
-        delimited by a single colon ":" character indicating the namespace of
-        this name. It is patterned after XML namespaces, prefix is mapped to
-        URI to minimize names collisions. In Level 1 a prefix can be temporary
-        overridden by another prefix in the scope of a session.</para>
+        <para>Transient namespace remapping. Item name can have prefix,
+        delimited by a single ':' (colon) character that indicates the
+        namespace of this name. It is patterned after XML namespaces, prefix
+        is mapped to URI to minimize names collisions. In Level 1, a prefix
+        can be temporary overridden by another prefix in the scope of a
+        session.</para>
       </listitem>
     </itemizedlist>
 
@@ -100,12 +101,12 @@
   <section>
     <title>Level 2</title>
 
-    <para>JCR level 2 includes reading/writing content functionality,
-    importing from other sources and managing content definition and
-    structuring using extensible node types.</para>
+    <para>JCR level 2 includes reading/ writing content functionality,
+    importing other sources and managing content definition and structuring
+    using extensible node types.</para>
 
-    <para>In addition to the Level 1 it must support the following major
-    features:</para>
+    <para>In addition to the features of the Level 1, it also supports the
+    following major features:</para>
 
     <itemizedlist>
       <listitem>
@@ -121,8 +122,8 @@
       </listitem>
 
       <listitem>
-        <para>Import from XML document into the repository as a tree of nodes
-        and properties. If the XML document is an export of JCR system view
+        <para>Importing XML document into the repository as a tree of nodes
+        and properties. If the XML document is an export of JCR system view,
         the content of repository can be completely restored. If this is not
         the case, the document is interpreted as a document view and the
         import procedure builds a tree of JCR nodes and properties that
@@ -136,9 +137,9 @@
       </listitem>
 
       <listitem>
-        <para>Persistent namespaces changes. Add, change and remove namespaces
-        stored in the namespace registry, excluding built-in namespaces
-        required by JCR.</para>
+        <para>Persistent namespaces changes. Adding, changing and removing
+        namespaces stored in the namespace registry, excluding built-in
+        namespaces required by JCR.</para>
       </listitem>
     </itemizedlist>
 
@@ -152,10 +153,10 @@
   <section>
     <title>Optional features</title>
 
-    <para>On top of Level 1 or Level 2 a number of optional features are
+    <para>On the top of Level 1 or Level 2, a number of optional features are
     defined for a more advanced repository functionality. This includes
-    functions like: Versioning, (JTA) Transactions, Query using SQL, Explicit
-    Locking and Content Observation. Exo JCR supports all optional
+    functions such as Versioning, (JTA) Transactions, Query using SQL,
+    Explicit Locking and Content Observation. eXo JCR supports all optional
     features.</para>
 
     <mediaobject>

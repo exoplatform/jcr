@@ -44,7 +44,7 @@
     <programlisting>
 public DBConnectionInfo createDatabase(String dbName) throws DBCreatorException;</programlisting>
 
-    <para>For MSSQL and Sybase servers uses autocommit mode set true for
+    <para>For MSSQL and Sybase servers, use autocommit mode to set true for
     connection. It's due to after execution "create database" command newly
     created database not available for "use" command and therefore you can't
     create new user inside database per one script.</para>
@@ -85,17 +85,17 @@ public DBConnectionInfo createDatabase(String dbName) throws DBCreatorException;
 
     <itemizedlist>
       <listitem>
-        <para><envar>scriptPath</envar> absolute path to DDL script
+        <para><envar>scriptPath</envar>: absolute path to DDL script
         file;</para>
       </listitem>
 
       <listitem>
-        <para><envar>username</envar> user name for substitution
+        <para><envar>username:</envar> user name for substitution
         <envar>${username}</envar> template in DDL script;</para>
       </listitem>
 
       <listitem>
-        <para><envar>password</envar> user's password for substitution
+        <para><envar>password</envar>: user's password for substitution
         <envar>${password}</envar> template in DDL script;</para>
       </listitem>
     </itemizedlist>

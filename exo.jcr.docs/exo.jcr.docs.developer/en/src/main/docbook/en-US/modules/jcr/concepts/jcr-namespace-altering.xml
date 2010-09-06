@@ -3,13 +3,14 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="JCR.Namespacealtering">
   <?dbhtml filename="ch-jcr-namespace-altering.html"?>
+
   <title>Namespace altering</title>
 
   <para>eXo JCR implementation since 1.11 version have support of altering
   namespaces.</para>
 
   <section>
-    <title>Add new namespace</title>
+    <title>Adding new namespace</title>
 
     <programlisting>ExtendedNamespaceRegistry namespaceRegistry = (ExtendedNamespaceRegistry) workspace.getNamespaceRegistry();
 namespaceRegistry.registerNamespace("newMapping", "http://dumb.uri/jcr");</programlisting>

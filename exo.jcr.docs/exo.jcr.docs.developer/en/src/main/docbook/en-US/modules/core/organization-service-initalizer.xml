@@ -3,6 +3,7 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="Core.OrganizationServiceInitializer">
   <?dbhtml filename="ch-organization-service-initalizer.html"?>
+
   <title>Organization Service Initializer</title>
 
   <para>Use the Organization Service Initializer to create users, groups and
@@ -116,15 +117,15 @@
     &lt;/component-plugin&gt;
   &lt;/external-component-plugins&gt;</programlisting>
 
-  <para>Params for membership type: </para>
+  <para>Params for membership type:</para>
 
   <itemizedlist>
     <listitem>
-      <para>type - The membership type's name</para>
+      <para>type: The membership type's name.</para>
     </listitem>
 
     <listitem>
-      <para>description - The membership type's description</para>
+      <para>description: The membership type's description.</para>
     </listitem>
   </itemizedlist>
 
@@ -132,21 +133,21 @@
 
   <itemizedlist>
     <listitem>
-      <para>name - The group's name</para>
+      <para>name: The group's name</para>
     </listitem>
 
     <listitem>
-      <para>parentId - The id of the parent group. If the parent id is null,
-      it mean that the group is at the first level. The parentId should have
-      the form: /ancestor/parent</para>
+      <para>parentId: The id of the parent group. If the parent id is null, it
+      means that the group is at the first level. The parentId should have the
+      form: /ancestor/parent</para>
     </listitem>
 
     <listitem>
-      <para>description - The group's description</para>
+      <para>description: The group's description</para>
     </listitem>
 
     <listitem>
-      <para>label - The group's label</para>
+      <para>label: The group's label</para>
     </listitem>
   </itemizedlist>
 
@@ -154,27 +155,27 @@
 
   <itemizedlist>
     <listitem>
-      <para>userName - The user's name</para>
+      <para>userName: The user's name</para>
     </listitem>
 
     <listitem>
-      <para>password - The user's password</para>
+      <para>password: The user's password</para>
     </listitem>
 
     <listitem>
-      <para>firstName - The user's first name</para>
+      <para>firstName: The user's first name</para>
     </listitem>
 
     <listitem>
-      <para>lastName - The user's last name</para>
+      <para>lastName: The user's last name</para>
     </listitem>
 
     <listitem>
-      <para>email - The user's email</para>
+      <para>email: The user's email</para>
     </listitem>
 
     <listitem>
-      <para>groups - The user's membership types and groups in which he
+      <para>groups: The user's membership types and groups in which he
       consist.</para>
     </listitem>
   </itemizedlist>

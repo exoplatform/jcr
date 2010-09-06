@@ -65,7 +65,7 @@ QueryResult result = query.execute();</programlisting>
   </section>
 
   <section>
-    <title>Fetch result</title>
+    <title>Fetching result</title>
 
     <para>Let's get nodes:</para>
 

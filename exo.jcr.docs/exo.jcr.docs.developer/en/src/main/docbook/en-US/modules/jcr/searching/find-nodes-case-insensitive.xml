@@ -2,7 +2,7 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.FindNodesCaseInsensitive">
-  <title>Find Nodes in a Case-Insensitive Way</title>
+  <title>Finding Nodes in a Case-Insensitive Way</title>
 
   <para>Find all nodes with a mixin type 'mix:title' and where the property
   'jcr:title' equals 'casesensitive' in lower or upper case.</para>
@@ -122,7 +122,7 @@ while (rit.hasNext())
         <tgroup cols="3">
           <thead>
             <row>
-              <entry> jcr:title</entry>
+              <entry>jcr:title</entry>
 
               <entry>...</entry>
 

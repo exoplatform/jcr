@@ -2,32 +2,32 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.OrderByPathOrName">
-  <title>Order by Path or Name</title>
+  <title>Ordering by Path or Name</title>
 
   <warning>
-    <para>Order by jcr:path or jcr:name does not supported.</para>
+    <para>Ordering by jcr:path or jcr:name does not supported.</para>
   </warning>
 
-  <para>There is two ways to ordering results, when path may be used as
+  <para>There is two ways to order results, when path may be used as
   criteria:</para>
 
   <itemizedlist>
     <listitem>
-      <para>order by property with value type NAME or PATH (jcr supports
+      <para>Order by property with value type NAME or PATH (jcr supports
       it)</para>
     </listitem>
 
     <listitem>
-      <para>order by jcr:path or jcr:name - sort by exact path or name of node
+      <para>Order by jcr:path or jcr:name - sort by exact path or name of node
       (jcr do not supports it)</para>
     </listitem>
   </itemizedlist>
 
   <para>If no order specification is supplied in the query statement,
   implementations may support document order on the result nodes (see jsr-170
-  / 6.6.4.2 Document Order). And its sorted by order number.</para>
+  / 6.6.4.2 Document Order). And it's sorted by order number.</para>
 
-  <para>By default (if query do not contains any ordering statements) result
+  <para>By default, (if query do not contains any ordering statements) result
   nodes is sorted by document order.</para>
 
   <programlisting>SELECT * FROM nt:unstructured WHERE jcr:path LIKE 'testRoot/%'</programlisting>

@@ -49,16 +49,16 @@
 
       <itemizedlist>
         <listitem>
-          <para>for <envar>default-properties</envar> checks if this property
+          <para>For <envar>default-properties</envar>: Check if this property
           is already set as a System property
-          (<envar>System.getProperty(name)</envar>) and sets this property if
+          (<envar>System.getProperty(name)</envar>) and set this property if
           it's not found. Using those properties is recommended with a third
-          party Naming service provider</para>
+          party Naming service provider.</para>
         </listitem>
 
         <listitem>
-          <para>for <envar>mandatory-properties</envar> it just sets the
-          property without checking</para>
+          <para>For <envar>mandatory-properties</envar>: Set the property
+          without checking.</para>
         </listitem>
       </itemizedlist>
 
@@ -83,7 +83,7 @@
       <para>Another responsibility of Context Initializer
       <envar>org.exoplatform.services.naming.InitialContextInitializer</envar>
       is binding of preconfigured references to the naming context. For this
-      purpose it uses a standard eXo component plugin mechanism and in
+      purpose, it uses a standard eXo component plugin mechanism and in
       particular the
       <envar>org.exoplatform.services.naming.BindReferencePlugin</envar>
       component plugin. The configuration of this plugin includes three
@@ -91,17 +91,17 @@
 
       <itemizedlist>
         <listitem>
-          <para><envar>bind-name</envar> - the name of binding
-          reference</para>
+          <para><envar>bind-name</envar>: the name of binding
+          reference.</para>
         </listitem>
 
         <listitem>
-          <para><envar>class-name</envar> - the type of binding
-          reference</para>
+          <para><envar>class-name</envar>: the type of binding
+          reference.</para>
         </listitem>
 
         <listitem>
-          <para><envar>factory</envar> - the object factory type</para>
+          <para><envar>factory</envar>: the object factory type.</para>
         </listitem>
       </itemizedlist>
 
@@ -192,7 +192,7 @@
     directory is used to persist references in bind-references.xml
     file.</para>
 
-    <para>Service provide methods for binding reference.</para>
+    <para>Service provides methods for binding reference.</para>
 
     <programlisting>
      public void bind(String bindName, 
@@ -204,27 +204,27 @@
 
     <itemizedlist>
       <listitem>
-        <para><envar>bindName</envar> - name of binding</para>
+        <para><envar>bindName</envar>: name of binding.</para>
       </listitem>
 
       <listitem>
-        <para><envar>className</envar> - the fully-qualified name of the class
-        of the object to which this Reference refers</para>
+        <para><envar>className</envar>: the fully-qualified name of the class
+        of the object to which this Reference refers.</para>
       </listitem>
 
       <listitem>
-        <para><envar>factory</envar> - the name of the factory class for
+        <para><envar>factory</envar>: the name of the factory class for
         creating an instance of the object to which this Reference
-        refers</para>
+        refers.</para>
       </listitem>
 
       <listitem>
-        <para><envar>factoryLocation</envar> - the location of the factory
-        class</para>
+        <para><envar>factoryLocation</envar>: the location of the factory
+        class.</para>
       </listitem>
 
       <listitem>
-        <para><envar>refAddr</envar> - object's properties map</para>
+        <para><envar>refAddr</envar>: object's properties map.</para>
       </listitem>
     </itemizedlist>
 

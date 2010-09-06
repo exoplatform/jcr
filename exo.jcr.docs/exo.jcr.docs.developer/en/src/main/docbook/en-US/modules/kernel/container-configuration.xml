@@ -29,7 +29,7 @@
   <section id="Kernel.ContainerConfiguration.ConfigurationNamespace">
     <title>Kernel configuration namespace</title>
 
-    <para>To be effective the namespace URI
+    <para>To be effective, the namespace URI
     <uri>http://www.exoplaform.org/xml/ns/kernel_1_1.xsd</uri> must be target
     namespace of the XML configuration file.</para>
 
@@ -46,25 +46,26 @@
   </section>
 
   <section>
-    <title>Understanding How configuration files are loaded</title>
+    <title>Understanding how configuration files are loaded</title>
 
     <para>eXo Portal uses PicoContainer, which implements the Inversion of
     Control (IoC) design pattern. All eXo containers inherit from a
     PicoContainer. There are mainly two eXo containers used, each of them can
     provide one or several services. Each container service is delivered in a
     JAR file. This JAR file may contain a default configuration. The use of
-    default configurations is recommended and most services provide it.</para>
+    default configurations is recommended and most of services provide
+    it.</para>
 
     <para>When a Pico Container searches for services and its configurations,
     each configurable service may be reconfigured to override default values
     or set additional parameters. If the service is configured in two or more
-    places the configuration override mechanism will be used.</para>
+    places, the configuration override mechanism will be used.</para>
 
     <section>
       <title>Configuration Retrieval</title>
 
-      <para>The container performs the following steps making eXo Container
-      configuration retrieval depending on the container type.</para>
+      <para>The container performs the following steps to make eXo Container
+      configuration retrieval, depending on the container type.</para>
 
       <section>
         <title>Configuration retrieval order for the
@@ -81,8 +82,8 @@
           </listitem>
 
           <listitem>
-            <para>External <envar>RootContainer</envar> configuration, if will
-            be found at
+            <para>External <envar>RootContainer</envar> configuration can be
+            found at
             <emphasis>$AS_HOME/exo-conf/configuration.xml</emphasis></para>
           </listitem>
 
@@ -98,8 +99,8 @@
           </listitem>
 
           <listitem>
-            <para>External configuration for services of named portal, if will
-            be found at
+            <para>External configuration for services of named portal can be
+            found at
             <emphasis>$AS_HOME/exo-conf/portal/$PORTAL_NAME/configuration.xml</emphasis></para>
           </listitem>
         </orderedlist>
@@ -120,8 +121,8 @@
           </listitem>
 
           <listitem>
-            <para>External <envar>RootContainer</envar> configuration, if will
-            be found at
+            <para>External <envar>RootContainer</envar> configuration can be
+            found at
             <emphasis>$AS_HOME/exo-conf/configuration.xml</emphasis></para>
           </listitem>
 
@@ -185,12 +186,12 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
 
         <note>
           <para>External configuration location can be overridden with System
-          property <emphasis>exo.conf.dir</emphasis>. If the property exists
+          property <emphasis>exo.conf.dir</emphasis>. If the property exists,
           its value will be used as path to eXo configuration directory, i.e.
           to <emphasis>$AS_HOME/exo-conf</emphasis> alternative. E.g. put
           property in command line java
           <emphasis>-Dexo.conf.dir=/path/to/exo/conf</emphasis>. In this
-          particular use case, you have no need to use any prefix to import
+          particular use case, you do not need to use any prefix to import
           other files. For instance, if your configuration file is
           <emphasis>$AS_HOME/exo-conf/portal/PORTAL_NAME/configuration.xml</emphasis>
           and you want to import the configuration file
@@ -238,7 +239,7 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
           <emphasis>/conf/portal/configuration.xml.</emphasis></para>
         </warning>
 
-        <para>After the processing of all configurations available in system
+        <para>After the processing of all configurations available in system,
         the container will initialize it and start each service in order of
         the dependency injection (DI).</para>
 
@@ -252,8 +253,8 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
         than one time. This depends on business logic of the service. A
         service may initialize the same resource (shared with other services)
         or may add a particular object to a set of objects (shared with other
-        services too). In the first case it's critical who will be the last,
-        i.e. whose configuration will be used. In the second case it's no
+        services too). In the first case, it's critical who will be the last,
+        i.e. whose configuration will be used. In the second case, it's no
         matter who is the first and who is the last (if the parameter objects
         are independent).</para>
       </section>
@@ -261,13 +262,13 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
       <section>
         <title>Configuration retrieval log</title>
 
-        <para>In case of problems with service configuration it's important to
-        know from which JAR/WAR it comes. For that purpose the JVM system
+        <para>In case of problems with service configuration, it's important
+        to know from which JAR/WAR it comes. For that purpose, the JVM system
         property
         <emphasis>org.exoplatform.container.configuration.debug</emphasis> can
         be used.<programlisting>java -Dorg.exoplatform.container.configuration.debug ...</programlisting></para>
 
-        <para>If the property is enabled the container configuration manager
+        <para>If the property is enabled, the container configuration manager
         will log the configuration adding process at <emphasis>INFO</emphasis>
         level.<programlisting>......
    Add configuration jar:file:/D:/Projects/eXo/dev/exo-working/exo-tomcat/lib/exo.kernel.container-trunk.jar!/conf/portal/configuration.xml
@@ -281,7 +282,7 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
       </section>
 
       <section>
-        <title>Get the effective configuration at Runtime</title>
+        <title>Getting the effective configuration at Runtime</title>
 
         <para>The effective configuration of the StandaloneContainer,
         RootContainer and/or PortalContainer can be known thanks to the method
@@ -331,7 +332,7 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
       </section>
 
       <section>
-        <title>Create your <emphasis>PortalContainers</emphasis> from a WAR
+        <title>Creating your <emphasis>PortalContainers</emphasis> from a WAR
         file</title>
 
         <para>A <envar>ServletContextListener</envar> called
@@ -349,21 +350,21 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
       </section>
 
       <section>
-        <title>Define a <emphasis>PortalContainer</emphasis> with its
+        <title>Defining a <emphasis>PortalContainer</emphasis> with its
         dependencies and its settings</title>
 
         <para>Now we can define precisely a portal container and its
         dependencies and settings thanks to the
         <envar>PortalContainerDefinition</envar> that currently contains the
         name of the portal container, the name of the rest context, the name
-        of the realm he web application dependencies ordered by loading
+        of the realm, the web application dependencies ordered by loading
         priority (i.e. the first dependency must be loaded at first and so
         on..) and the settings.</para>
 
         <para>To be able to define a <envar>PortalContainerDefinition</envar>,
         we need to ensure first of all that a
         <envar>PortalContainerConfig</envar> has been defined at the
-        <envar>RootContainer</envar> level, see below an example:</para>
+        <envar>RootContainer</envar> level, see an example below:</para>
 
         <programlisting>  &lt;component&gt;
     &lt;!-- The full qualified name of the PortalContainerConfig --&gt;
@@ -484,7 +485,7 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
 
         <para>A new <envar>PortalContainerDefinition</envar> can be defined at
         the <envar>RootContainer</envar> level thanks to an external plugin,
-        see below an example:<programlisting>  &lt;external-component-plugins&gt;
+        see an example below:<programlisting>  &lt;external-component-plugins&gt;
     &lt;!-- The full qualified name of the PortalContainerConfig --&gt;
     &lt;target-component&gt;org.exoplatform.container.definition.PortalContainerConfig&lt;/target-component&gt;
     &lt;component-plugin&gt;
@@ -597,8 +598,8 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
                 <entry>restContextName</entry>
 
                 <entry>The name of the context name of the rest web
-                application. This field is optional. The default value will
-                the value define at the <envar>PortalContainerConfig</envar>
+                application. This field is optional. The default value will be
+                defined at the <envar>PortalContainerConfig</envar>
                 level.</entry>
               </row>
 
@@ -606,7 +607,7 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
                 <entry>realmName</entry>
 
                 <entry>The name of the realm. This field is optional. The
-                default value will the value define at the
+                default value will be defined at the
                 <envar>PortalContainerConfig</envar> level.</entry>
               </row>
 
@@ -615,13 +616,12 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
 
                 <entry>All the dependencies of the portal container ordered by
                 loading priority. This field is optional. The default value
-                will the value define at the
-                <envar>PortalContainerConfig</envar> level. The dependencies
-                are in fact the list of the context names of the web
-                applications from which the portal container depends. This
-                field is optional. The dependency order is really crucial
-                since it will be interpreted the same way by several
-                components of the platform. All those components, will
+                will be defined at the <envar>PortalContainerConfig</envar>
+                level. The dependencies are in fact the list of the context
+                names of the web applications from which the portal container
+                depends. This field is optional. The dependency order is
+                really crucial since it will be interpreted the same way by
+                several components of the platform. All those components, will
                 consider the 1st element in the list less important than the
                 second element and so on. It is currently used
                 to:<itemizedlist>
@@ -657,7 +657,7 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
                             to get a resource, it will try to get the resource
                             in the <envar>ClassLoader</envar> of the most
                             important <envar>PortalContainerConfigOwner</envar>
-                            (i.e. last in the dependency list) and if it cans
+                            (i.e. last in the dependency list) and if it can
                             find it, it will try with the second most important
                             <envar>PortalContainerConfigOwner</envar> and so
                             on.</para>
@@ -767,14 +767,14 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
                     </listitem>
 
                     <listitem>
-                      <para>f this field is empty and the value of the
+                      <para>If this field is empty and the value of the
                       parameter <emphasis>default.rest.context</emphasis> is
                       not empty, then the default value will be the value of
                       the parameter.</para>
                     </listitem>
 
                     <listitem>
-                      <para>f this field and the parameter
+                      <para>If this field and the parameter
                       <emphasis>default.rest.context</emphasis> are both
                       empty, the default value will be
                       <emphasis>"rest".</emphasis></para>
@@ -793,14 +793,14 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
                     </listitem>
 
                     <listitem>
-                      <para>f this field is empty and the value of the
+                      <para>If this field is empty and the value of the
                       parameter <emphasis>default.realm.name</emphasis> is not
                       empty, then the default value will be the value of the
                       parameter.</para>
                     </listitem>
 
                     <listitem>
-                      <para>f this field and the parameter
+                      <para>If this field and the parameter
                       <emphasis>default.realm.name</emphasis> are both empty,
                       the default value will be
                       <emphasis>"exo-domain".</emphasis></para>
@@ -925,7 +925,7 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
         <para>We can inject the value of the portal container settings into
         the portal container configuration files thanks to the variables which
         name start with "<emphasis>portal.container.</emphasis>", so to get
-        the value of a setting called "<emphasis>foo</emphasis>" just use the
+        the value of a setting called "<emphasis>foo</emphasis>", just use the
         following syntax <emphasis>${portal.container.foo}</emphasis>. You can
         also use internal variables, such as:</para>
 
@@ -992,7 +992,7 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
 
         <para>In the properties file corresponding to the external settings,
         you can reuse variables previously defined (in the external settings
-        or in the internal settings) to create a new variable. In this case
+        or in the internal settings) to create a new variable. In this case,
         the prefix "<emphasis>portal.container.</emphasis>" is not needed, see
         an example below:<programlisting>my-var1=value 1
 my-var2=value 2
@@ -1006,8 +1006,8 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
 
         <programlisting>temp-dir=${java.io.tmpdir}${file.separator}my-temp</programlisting>
 
-        <para>However, for the internal settings you can use System parameters
-        only to define settings of type
+        <para>However, for the internal settings, you can use System
+        parameters only to define settings of type
         <envar>java.lang.String</envar>.</para>
 
         <para>It cans be also very usefull to define a generic variable in the
@@ -1022,7 +1022,7 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
       </section>
 
       <section>
-        <title>Add dynamically settings and/or dependencies to a
+        <title>Adding dynamically settings and/or dependencies to a
         <envar>PortalContainer</envar></title>
 
         <para>It is possible to use <envar>component-plugin</envar> elements
@@ -1590,8 +1590,8 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
 &lt;/component&gt;</programlisting>
 
       <para>In the properties file corresponding to the external properties,
-      you can reuse variables previously defined to create a new variable. In
-      this case the prefix "<emphasis>portal.container.</emphasis>" is not
+      you can reuse variables before defining to create a new variable. In
+      this case, the prefix "<emphasis>portal.container.</emphasis>" is not
       needed, see an example below:<programlisting>my-var1=value 1
 my-var2=value 2
 complex-value=${my-var1}-${my-var2}</programlisting></para>
@@ -1640,7 +1640,7 @@ sh run.sh -Dexo.profiles=foo,bar</programlisting>
         <para>Profile activation occurs at XML to configuration object
         unmarshalling time. It is based on an "profile" attribute that is
         present on some of the XML element of the configuration files. To
-        enable this the kernel configuration schema has been upgraded to
+        enable this, the kernel configuration schema has been upgraded to
         kernel_1_1.xsd. The configuration is based on the following
         rules:</para>
 
@@ -1863,8 +1863,8 @@ finally
         <para>Scheduling a container triggers the component request life cyle
         of all the components that implement the interface
         <envar>ComponentRequestLifeCycle</envar>. If one of the component has
-        already been scheduled before then that component will not be
-        scheduled again. When the local value is true then the looked
+        already been scheduled before and then that component will not be
+        scheduled again. When the local value is true, then the looked
         components will be those of the container, when it is false then the
         scheduler will also look at the components in the ancestor
         containers.<programlisting>RequestLifeCycle.begin(container, local);

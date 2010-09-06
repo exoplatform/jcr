@@ -56,12 +56,12 @@
         &lt;/init-params&gt;
       &lt;/component-plugin&gt;</programlisting>
 
-    <para>There are two types of registration. First type of registration is
-    the registration of node types in all created repositories, it is
-    configured in values-param with the name <emphasis
-    role="bold">autoCreatedInNewRepository</emphasis>. The second type of
-    registration is registration of node types in specified repository and it
-    is configured in values-param with the name of repository.</para>
+    <para>There are two types of registration. The first type is the
+    registration of node types in all created repositories, it is configured
+    in values-param with the name <emphasis
+    role="bold">autoCreatedInNewRepository</emphasis>. The second type is
+    registration of node types in specified repository and it is configured in
+    values-param with the name of repository.</para>
 
     <para>Node type definition file format:</para>
 
@@ -124,7 +124,7 @@
     time</para>
 
     <para>Your custom service can extend a set of namespaces with some
-    application specific ones declaring it in service's configuration file
+    application specific ones, declaring it in service's configuration file
     thanks to eXo component plugin mechanism, described as follows:</para>
 
     <programlisting>      &lt;component-plugin&gt; 

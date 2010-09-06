@@ -16,8 +16,8 @@
     of browsers, which prevents a page from accessing data from another
     server. This has put a serious limitation on Ajax developers: you can use
     XmlHttpRequests to make background calls to a server, but it has to be the
-    same server that served up the current page. For detail's you can visit
-    <ulink
+    same server that served up the current page. For more details, you can
+    visit <ulink
     url="http://www.mozilla.org/projects/security/components/same-origin.html">http://www.mozilla.org/projects/security/components/same-origin.html</ulink>.</para>
 
     <mediaobject>
@@ -28,14 +28,14 @@
 
     <para>But actually writing client web applications that use this object
     can be tricky given restrictions imposed by web browsers on network
-    connections across domains. So need find way how to bypass this limitation
-    of AJAX.</para>
+    connections across domains. So you need to find the way to bypass this
+    limitation of AJAX.</para>
   </section>
 
   <section>
     <title>Scheme (how it works)</title>
 
-    <para>To describe our method for cross-domain AJAX solution let us
+    <para>To describe our method for cross-domain AJAX solution, let's
     consider the following scheme contains of 3 components:</para>
 
     <para>1). User agent (a browser).</para>
@@ -65,12 +65,12 @@
     <para>2) The Start page is retrieved from the ServerA.</para>
 
     <para>3) Create in the start page IFRAME (name it - "client iframe") and
-    insert on it document from ServerA (client.</para>
+    insert it in the document from ServerA (client.</para>
 
     <para>4) In "client iframe" create ne IFRAME element ("server iframe") and
-    insert on it document from ServerB (server.html). Documents (client.html
-    and server.html) contain special script that can transfer data between
-    ifarmes.</para>
+    insert it in the document from ServerB (server.html). Documents
+    (client.html and server.html) contain special script that can transfer
+    data between ifarmes.</para>
 
     <para>5) "Client iframe" transfer information about HTTP method and URL
     that we want do cross-domain request to "server iframe".</para>
@@ -94,7 +94,7 @@
 
     <programlisting>&lt;script type="text/javascript" src="xda.js"&gt;&lt;/script&gt;</programlisting>
 
-    <para>4). Create JS function which performing cross domain call as in
+    <para>4). Create JS function which performs cross domain call as in the
     following example:</para>
 
     <programlisting>&lt;script type="text/javascript"&gt;                                                                                                                                                                                                                                                  

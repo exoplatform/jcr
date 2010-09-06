@@ -3,9 +3,10 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="Core.DBSchemacreatorserviceJDBCimplementation">
   <?dbhtml filename="ch-db-schema-creator-service.html"?>
+
   <title>DB Schema creator service (JDBC implementation)</title>
 
-  <para>DB Schema Creator is responsible for database schema creating using a
+  <para>DB Schema Creator is responsible for creating database schema, using a
   DDL script inside service configuration or in an external file,
   calling:</para>
 

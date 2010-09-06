@@ -12,19 +12,18 @@
     <section>
       <title>Obtaining a Repository object</title>
 
-      <para>A javax.jcr.Repository object can be obtained either by ...:
-      <itemizedlist>
+      <para>A javax.jcr.Repository object can be obtained by:<itemizedlist>
           <listitem>
             <para>Using the eXo Container "native" mechanism. All Repositories
             are kept with a single RepositoryService component. So it can be
-            obtained from eXo Container, described as
+            obtained from eXo Container, described as the
             following:<programlisting>  RepositoryService repositoryService = (RepositoryService) container.getComponentInstanceOfType(RepositoryService.class);
   Repository repository = repositoryService.getRepository("repositoryName"); </programlisting></para>
           </listitem>
 
           <listitem>
             <para>Using the eXo Container "native" mechanism with a thread
-            local saved "current" repository (especially if you plan using a
+            local saved "current" repository (especially if you plan to use a
             single repository which covers more than 90% of use
             cases)<programlisting>  // set current repository at initial time
   RepositoryService repositoryService = (RepositoryService) container.getComponentInstanceOfType(RepositoryService.class);
@@ -49,7 +48,7 @@
 
       <para><itemizedlist>
           <listitem>
-            <para>Remember javax.jcr.Session is not a thread safe object.
+            <para>Remember that javax.jcr.Session is not a thread safe object.
             <emphasis role="bold">Never try to share it between
             threads</emphasis>.</para>
           </listitem>
@@ -70,7 +69,7 @@
           </listitem>
 
           <listitem>
-            <para>When designing your application take care of the Session
+            <para>When designing your application, take care of the Session
             policy inside your application. Two <emphasis
             role="bold">strategies</emphasis> are possible: <emphasis
             role="bold">Stateless</emphasis> (Session per business request)
@@ -127,10 +126,10 @@
 
 }</programlisting>
 
-      <para>The SessionProvider is per-request or per-user object depending on
-      your policy. Create it with your application before performing JCR
+      <para>The SessionProvider is per-request or per-user object, depending
+      on your policy. Create it with your application before performing JCR
       operations, use it to obtain the Sessions and close at the end of an
-      application session(request). Example:</para>
+      application session(request). See the following example:</para>
 
       <programlisting>// (1) obtain current javax.jcr.Credentials, for example get it from AuthenticationService
 Credentials cred = ....

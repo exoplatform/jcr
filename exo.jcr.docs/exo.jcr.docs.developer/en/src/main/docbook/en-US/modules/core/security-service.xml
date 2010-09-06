@@ -42,12 +42,12 @@
 
       <itemizedlist>
         <listitem>
-          <para>in a static <emphasis role="bold">local thread
+          <para>In a static <emphasis role="bold">local thread
           variable</emphasis>, or</para>
         </listitem>
 
         <listitem>
-          <para>as a <emphasis role="bold">key-value pair</emphasis> in the
+          <para>As a <emphasis role="bold">key-value pair</emphasis> in the
           <emphasis role="bold">ConversationRegistry</emphasis>
           component.</para>
         </listitem>
@@ -58,10 +58,10 @@
       complementary, i.e. make sure that the conversation state is set before
       you try to use it.</para>
 
-      <para><emphasis role="bold">Local Thread Variable</emphasis> Storing the
-      ConversationState in a static local thread variable makes it possible to
-      represent it as a <emphasis role="bold">context</emphasis> (current
-      user's state).</para>
+      <para><emphasis role="bold">Local Thread Variable:</emphasis> Storing
+      the ConversationState in a static local thread variable makes it
+      possible to represent it as a <emphasis role="bold">context</emphasis>
+      (current user's state).</para>
 
       <programlisting>ConversationState.setCurrent(conversationState);
 ....
@@ -133,7 +133,7 @@ conversationRegistry.getState("key");</programlisting>
       <para>Typical functionality of the validateUser(Credential\[]
       credentials) method is the comparison of incoming credentials
       (username/password, digest etc) with those credentials that are stored
-      in an implementation specific database. Then validateUser(Credential\[]
+      in an implementation specific database. Then, validateUser(Credential\[]
       credentials) returns back the userId or throws a LoginException in a
       case of wrong credentials.</para>
 
@@ -187,7 +187,7 @@ identity = authenticator.createIdentity(userId);</programlisting>
         </listitem>
       </itemizedlist>
 
-      <para>When initializing the login module you can set the option
+      <para>When initializing the login module, you can set the option
       parameter "singleLogin". With this option you can disallow the same
       Identity to login for a second time.</para>
 
@@ -209,7 +209,7 @@ identityRegistry.register(identity);</programlisting>
       <para>After that, the web application must use SetCurrentIdentityFilter.
       This filter obtains the ConversationRegistry object and tries to get the
       ConversationState by sessionId (HttpSession). If there is no
-      ConversationState then SetCurrentIdentityFilter will create a new one,
+      ConversationState, then SetCurrentIdentityFilter will create a new one,
       register it and set it as current one using
       ConversationState.setCurrent(state).</para>
 
@@ -222,7 +222,7 @@ identityRegistry.register(identity);</programlisting>
       </itemizedlist>
 
       <para>This listener must be configured in web.xml. The method
-      sessionDestroyed(HttpSessionEvent)is called by the ServletContainer.
+      sessionDestroyed(HttpSessionEvent) is called by the ServletContainer.
       This method removes the ConversationState from the ConversationRegistry
       ConversationRegistry.unregister(sesionId) and calls the method
       LoginModule.logout().</para>
@@ -285,14 +285,14 @@ if (conversationState != null) {
       which are specific for each J2EE server, where eXo Platform is
       deployed.</para>
 
-      <para>To make it workable for the particular J2EE server it is necessary
-      to add specific Principals/Credentials to the Subject to be propagated
-      into the specific J2EE container implementation. We extended the
-      DefaultLoginModule by overloading its commit() method with a dedicated
-      logic, presently available for Tomcat, JBOSS and JONAS application
-      servers.</para>
+      <para>To make it workable for the particular J2EE server, it is
+      necessary to add specific Principals/Credentials to the Subject to be
+      propagated into the specific J2EE container implementation. We extended
+      the DefaultLoginModule by overloading its commit() method with a
+      dedicated logic, presently available for Tomcat, JBOSS and JONAS
+      application servers.</para>
 
-      <para>Furthermore you can use the optional RolesExtractor which is
+      <para>Furthermore, you can use the optional RolesExtractor which is
       responsible for mapping primary Subject's principals (userId and a set
       of groups) to J2EE Roles:</para>
 

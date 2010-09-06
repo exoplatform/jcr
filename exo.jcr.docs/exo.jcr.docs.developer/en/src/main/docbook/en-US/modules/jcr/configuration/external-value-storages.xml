@@ -35,8 +35,8 @@
     <para>This is a recommended type of external storage, it can contain large
     amount of files limited only by disk/volume free space.</para>
 
-    <para>A disadvantage it's a higher time on Value deletion due to unused
-    tree-nodes remove.</para>
+    <para>A disadvantage is that it's a higher time on Value deletion due to
+    unused tree-nodes remove.</para>
 
     <programlisting>&lt;value-storage id="Storage #1" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage"&gt;
      &lt;properties&gt;
@@ -47,12 +47,12 @@
      &lt;/filters&gt;</programlisting>
 
     <para>Where :<simplelist>
-        <member><parameter>id</parameter> - the value storage unique
+        <member><parameter>id</parameter>: The value storage unique
         identifier, used for linking with properties stored in workspace
-        container</member>
+        container.</member>
 
-        <member><parameter>path</parameter> - a location where value files
-        will be stored</member>
+        <member><parameter>path</parameter>: A location where value files will
+        be stored.</member>
       </simplelist></para>
 
     <para>Each file value storage can have the <function>filter(s)</function>
@@ -60,7 +60,7 @@
     (<property>property-type</property>), property name
     (<property>property-name</property>), ancestor path
     (<property>ancestor-path</property>) and/or size of values stored
-    (<property>min-value-size</property>, in bytes). In code sample we use a
+    (<property>min-value-size</property>, in bytes). In code sample, we use a
     filter with property-type and min-value-size only. I.e. storage for binary
     values with size greater of 1MB. It's recommended to store properties with
     large values in file value storage only.</para>
@@ -97,14 +97,14 @@
     <title>Simple File Value Storage</title>
 
     <note>
-      <para>Not recommended to use in production due to low capacity
+      <para>It's not recommended to use in production due to low capacity
       capabilities on most file systems.</para>
 
       <para>But if you're sure in your file-system or data amount is small it
       may be useful for you as haves a faster speed of Value removal.</para>
     </note>
 
-    <para>Holds Values in flat FileSystem files. <property>path</property>
+    <para>Hold Values in flat FileSystem files. <property>path</property>
     property points to root directory in order to store files</para>
 
     <programlisting>&lt;value-storage id="Storage #1" class="org.exoplatform.services.jcr.impl.storage.value.fs.SimpleFileValueStorage"&gt;
@@ -142,11 +142,11 @@
 
     <note>
       <para>For example: if you have 100 different properties containing the
-      same data (e.g. mail attachment) the storage stores only one single
+      same data (e.g. mail attachment), the storage stores only one single
       file. The file will be shared with all referencing properties.</para>
     </note>
 
-    <para>If property Value changes it is stored in an additional file.
+    <para>If property Value changes, it is stored in an additional file.
     Alternatively the file is shared with other values, pointing to the same
     content.</para>
 
@@ -167,8 +167,8 @@
     <para>CAS support can be enabled for <phrase>Tree</phrase> and
     <phrase>Simple File Value Storage</phrase> types.</para>
 
-    <para>To enable CAS support just configure it in JCR Repositories
-    configuration like we do for other Value Storages.</para>
+    <para>To enable CAS support, just configure it in JCR Repositories
+    configuration as we do for other Value Storages.</para>
 
     <programlisting>&lt;workspaces&gt;
         &lt;workspace name="ws"&gt;
@@ -198,21 +198,22 @@
             &lt;/value-storages&gt;</programlisting>
 
     <para>Properties:<simplelist>
-        <member><parameter>digest-algo</parameter> - digest hash algorithm
-        (MD5 and SHA1 were tested);</member>
+        <member><parameter>digest-algo</parameter>: Digest hash algorithm (MD5
+        and SHA1 were tested);</member>
 
-        <member><parameter>vcas-type</parameter> - Value CAS internal data
+        <member><parameter>vcas-type</parameter>: Value CAS internal data
         type, JDBC backed is currently implemented
         org.exoplatform.services.jcr.impl.storage.value.cas.JDBCValueContentAddressStorageImp;l</member>
 
-        <member><parameter>jdbc-source-name</parameter> -
+        <member><parameter>jdbc-source-name</parameter>:
         JDBCValueContentAddressStorageImpl specific parameter, database will
         be used to save CAS metadata. It's simple to use same as in workspace
         container;</member>
 
-        <member><parameter>jdbc-dialect</parameter> -
+        <member><parameter>jdbc-dialect</parameter>:
         JDBCValueContentAddressStorageImpl specific parameter, database
-        dialect. It's simple to use same as in workspace container;</member>
+        dialect. It's simple to use the same as in workspace
+        container;</member>
       </simplelist></para>
   </section>
 </chapter>

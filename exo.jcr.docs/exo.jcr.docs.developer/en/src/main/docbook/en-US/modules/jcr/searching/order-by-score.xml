@@ -2,11 +2,11 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.OrderByScore">
-  <title>Order by Score</title>
+  <title>Ordering by Score</title>
 
   <para>Select all nodes with the mixin type 'mix:title' containing any word
-  from the set {'brown','fox','jumps'}. Then sort result by the score in
-  ascending node. This way nodes that matches better the query statement are
+  from the set {'brown','fox','jumps'}. Then, sort result by the score in
+  ascending node. This way nodes that match better the query statement are
   ordered at the last positions in the result list.</para>
 
   <section>
@@ -119,7 +119,7 @@ while (rit.hasNext())
       <tgroup cols="4">
         <thead>
           <row>
-            <entry> jcr:description</entry>
+            <entry>jcr:description</entry>
 
             <entry>...</entry>
 

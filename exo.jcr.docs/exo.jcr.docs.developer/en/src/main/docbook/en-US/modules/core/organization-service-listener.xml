@@ -14,15 +14,15 @@
 
     <itemizedlist>
       <listitem>
-        <para>a User is created, deleted or modified</para>
+        <para>A User is created, deleted or modified.</para>
       </listitem>
 
       <listitem>
-        <para>a Group is created, deleted or modified</para>
+        <para>A Group is created, deleted or modified.</para>
       </listitem>
 
       <listitem>
-        <para>a Membership is created or removed</para>
+        <para>A Membership is created or removed.</para>
       </listitem>
     </itemizedlist>
 
@@ -32,16 +32,16 @@
 
     <itemizedlist>
       <listitem>
-        <para>initialize the personal portal pages</para>
+        <para>Initialize the personal portal pages.</para>
       </listitem>
 
       <listitem>
-        <para>initialize the personal calendars, address books and mail
-        accounts in CS</para>
+        <para>Initialize the personal calendars, address books and mail
+        accounts in CS.</para>
       </listitem>
 
       <listitem>
-        <para>create drives and personal areas in ECM</para>
+        <para>Create drives and personal areas in ECM.</para>
       </listitem>
     </itemizedlist>
   </section>
@@ -49,7 +49,7 @@
   <section>
     <title>Writing your own listeners</title>
 
-    <para>To implement your own listener you just need to write extend some
+    <para>To implement your own listener, you just need to write extend some
     existing listener classes. These classes define hooks that are invoked
     before or after operations are performed on organization model.</para>
 

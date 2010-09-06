@@ -59,7 +59,7 @@
     compatible with GateIn.</para>
 
     <section>
-      <title>Remove all the hard coded portal container name (i.e.
+      <title>Removing all the hard coded portal container name (i.e.
       "portal")</title>
 
       <para>Now if we need to get the portal container name (even in a
@@ -96,7 +96,8 @@
     </section>
 
     <section>
-      <title>Remove all the hard coded rest context name (i.e. "rest")</title>
+      <title>Removing all the hard coded rest context name (i.e.
+      "rest")</title>
 
       <para>Now if we need to get the rest context name (even in a standalone
       mode: in case of standalone mode the default value will be returned), we
@@ -119,7 +120,8 @@
     </section>
 
     <section>
-      <title>Remove all the hard coded realm name (i.e. "exo-domain")</title>
+      <title>Removing all the hard coded realm name (i.e.
+      "exo-domain")</title>
 
       <para>Now if we need to get the realm name (even in a standalone mode:
       in case of standalone mode the default value will be returned), we
@@ -142,7 +144,7 @@
     </section>
 
     <section>
-      <title>Make your Http Filters compatible</title>
+      <title>Making your Http Filters compatible</title>
 
       <para>Now all your Http Filters that need to get the current
       <emphasis>ExoContainer</emphasis> must extends
@@ -152,7 +154,7 @@
     </section>
 
     <section>
-      <title>Make your HttpServlets compatible</title>
+      <title>Making your HttpServlets compatible</title>
 
       <para>Now all your HttpServlets that need to get the current
       <emphasis>ExoContainer</emphasis> must extends
@@ -185,7 +187,7 @@
         This value should return true when the servlet is executed within the
         web application of a portal container. By default, it checks if the
         name of the current <emphasis>ServletContext</emphasis> is a portal
-        container name, it is sufficient in most cases but you can still
+        container name, it is sufficient in most of cases but you can still
         overload this method if you already know that the servlet will always
         been executed within the web application of portal container (i.e. the
         method always return true) or will never be executed within the web
@@ -195,7 +197,7 @@
     </section>
 
     <section>
-      <title>Make your HttpSessionListeners compatible</title>
+      <title>Making your HttpSessionListeners compatible</title>
 
       <para>Now all your HttpSessionListeners that need to get the current
       <emphasis>ExoContainer</emphasis> must extends
@@ -265,7 +267,7 @@
         </listitem>
       </itemizedlist>
 
-      <para>A init task is defined as below</para>
+      <para>A init task is defined as below:</para>
 
       <note>
         <title>PortalContainerPreInitTask</title>
@@ -310,7 +312,7 @@
    }</programlisting>
       </note>
 
-      <para>To add a task you can either call:</para>
+      <para>To add a task, you can either call:</para>
 
       <itemizedlist>
         <listitem>
@@ -398,7 +400,7 @@ public class GadgetRegister implements ServletContextListener {
     </section>
 
     <section>
-      <title>Make your LoginModules compatible</title>
+      <title>Making your LoginModules compatible</title>
 
       <para>Now all your LoginModules that need to get the current
       <emphasis>ExoContainer</emphasis> must extends
@@ -420,7 +422,7 @@ public class GadgetRegister implements ServletContextListener {
     </section>
 
     <section>
-      <title>Avoid <emphasis>static</emphasis> modifier on component
+      <title>Avoiding <emphasis>static</emphasis> modifier on component
       dependency</title>
 
       <para>A local variable that stores a component dependency must not be
@@ -455,8 +457,8 @@ public class GadgetRegister implements ServletContextListener {
       <title>What has changed since the previous versions?</title>
 
       <para>The main difference with previous versions is the way to package
-      your application, in previous versions you had to change the content of
-      the file <emphasis>portal.war</emphasis> in order to customize the
+      your application, in the previous versions you had to change the content
+      of the file <emphasis>portal.war</emphasis> in order to customize the
       portal. Now we more consider your application as an add-on that you can
       packaged in another ear/war file. You just need to follow some rules in
       order to notify the platform that it must take into account your add-on
@@ -503,9 +505,9 @@ public class GadgetRegister implements ServletContextListener {
       <para>An <emphasis>extension</emphasis> is just a set of files that we
       use to customize or add new features to a given portal. An extension
       must be the least intrusive as possible, as we could potentially have
-      several extensions for the same portal. In other words we are supposed
-      to only add what is missing in the portal and avoid to change or
-      duplicate files that are in the portal.war.</para>
+      several extensions for the same portal. In other words, we are supposed
+      to only add what is missing in the portal and avoid changing or
+      duplicated files that are in the portal.war.</para>
     </section>
 
     <section>
@@ -580,8 +582,9 @@ public class GadgetRegister implements ServletContextListener {
       plugin that has to be treated at the <emphasis>RootContainer</emphasis>
       level. In other words, your configuration file must be a file
       <emphasis>conf/configuration.xml</emphasis> packaged into a jar file or
-      $AS_HOME/exo-conf/configuration.xml (for more details please have a look
-      to the article <link linkend="Kernel.ContainerConfiguration">Container
+      $AS_HOME/exo-conf/configuration.xml (for more details, please have a
+      look to the article <link
+      linkend="Kernel.ContainerConfiguration">Container
       Configuration</link>).</para>
 
       <para><emphasis role="underline">See below an example of configuration
@@ -677,7 +680,7 @@ public class GadgetRegister implements ServletContextListener {
 
       <itemizedlist>
         <listitem>
-          <para>know loading order of all the dependencies</para>
+          <para>Know loading order of all the dependencies</para>
         </listitem>
 
         <listitem>
@@ -740,15 +743,15 @@ public class GadgetRegister implements ServletContextListener {
 
       <itemizedlist>
         <listitem>
-          <para>the portal name "portal" to "myPortal".</para>
+          <para>The portal name "portal" to "myPortal".</para>
         </listitem>
 
         <listitem>
-          <para>the rest servlet context name "rest" to "myRest".</para>
+          <para>The rest servlet context name "rest" to "myRest".</para>
         </listitem>
 
         <listitem>
-          <para>the realm name "exo-domain" to "my-exo-domain".</para>
+          <para>The realm name "exo-domain" to "my-exo-domain".</para>
         </listitem>
       </itemizedlist>
 
@@ -893,13 +896,13 @@ public class GadgetRegister implements ServletContextListener {
 
       <itemizedlist>
         <listitem>
-          <para>add the ServletContextListener
+          <para>Add the ServletContextListener
           <emphasis>org.exoplatform.container.web.PortalContainerConfigOwner</emphasis>
           in its web.xml.</para>
         </listitem>
 
         <listitem>
-          <para>add the servlet context name of this web application as a new
+          <para>Add the servlet context name of this web application as a new
           dependency in the <emphasis>PortalContainerDefinition</emphasis> of
           all the portal containers for which you want to share the
           configuration file embedded into the war file, located at
@@ -1095,9 +1098,9 @@ public class GadgetRegister implements ServletContextListener {
     <section>
       <title>How to create/define a new portal?</title>
 
-      <para>You have no need anymore, to duplicate the entire "portal.war"
-      file to create a new portal, you just to duplicate the following files
-      from the original "portal.war":</para>
+      <para>To duplicate the entire "portal.war" file to create a new portal,
+      you just need to duplicate the following files from the original
+      "portal.war":</para>
 
       <itemizedlist>
         <listitem>
@@ -1163,7 +1166,7 @@ public class GadgetRegister implements ServletContextListener {
         </listitem>
       </itemizedlist>
 
-      <para>Finally you need to register and define the corresponding
+      <para>Finally, you need to register and define the corresponding
       <emphasis>PortalContainerDefinition</emphasis>. The
       <emphasis>PortalContainerDefinition</emphasis> of your portal will be
       composed of:</para>
@@ -1395,17 +1398,17 @@ public class GadgetRegister implements ServletContextListener {
 
       <itemizedlist>
         <listitem>
-          <para>add missing Repository Definitions and/or Workspace
+          <para>Add missing Repository Definitions and/or Workspace
           Definitions.</para>
         </listitem>
 
         <listitem>
-          <para>change the properties of a Repository Definition if it has
-          already been defined</para>
+          <para>Change the properties of a Repository Definition if it has
+          already been defined.</para>
         </listitem>
 
         <listitem>
-          <para>replace the Workspace Definition if it has already been
+          <para>Replace the Workspace Definition if it has already been
           defined.</para>
         </listitem>
       </itemizedlist>
@@ -2123,7 +2126,7 @@ public class SampleContextInitializedListener extends Listener&lt;PortalContaine
     </section>
 
     <section>
-      <title>Where can I found an example of how to create a new
+      <title>Where can I find an example of how to create a new
       portal?</title>
 
       <para>We added an example of new portal (i.e. ability to create a new
@@ -2450,7 +2453,8 @@ exo-domain-sample-portal {
     </section>
 
     <section>
-      <title>Use a dedicated workspace/repository for your extension?</title>
+      <title>Using a dedicated workspace/repository for your
+      extension?</title>
 
       <para>In order to avoid conflicts with other extensions and to manage
       each extension independently, it is highly recommended to use a

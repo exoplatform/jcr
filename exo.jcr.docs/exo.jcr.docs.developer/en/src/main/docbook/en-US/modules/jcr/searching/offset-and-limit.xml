@@ -5,7 +5,7 @@
   <title>SetOffset and SetLimit</title>
 
   <para>Select all nodes with primary type 'nt:unstructured' and returns only
-  3 nodes starting with the second node in list.</para>
+  3 nodes starting with the second node in the list.</para>
 
   <section>
     <title>Common info</title>
@@ -85,9 +85,9 @@ QueryResult result = query.execute();</programlisting>
   </section>
 
   <section>
-    <title>Fetch result</title>
+    <title>Fetching result</title>
 
-    <para>Lets get nodes:</para>
+    <para>Let's get nodes:</para>
 
     <programlisting>NodeIterator it = result.getNodes();
 
@@ -96,7 +96,7 @@ if(it.hasNext())
    Node findedNode = it.nextNode();
 }</programlisting>
 
-    <para>In usual case (without using setOffset and setLimit methods) Node
+    <para>In usual case (without using setOffset and setLimit methods), Node
     iterator returns all nodes (node1...node6). But in our case NodeIterator
     will return "node2","node3" and "node4".</para>
 

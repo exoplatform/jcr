@@ -4,9 +4,9 @@
 <section id="JCR.RegexpIndexingRule">
   <title>Regular Expression as Property Name in Indexing Rules</title>
 
-  <para>In this example, we want configure indexind in next way. All
+  <para>In this example, we want to configure indexind in the next way. All
   properties of nt:unstructured nodes must be excluded from search, except
-  properties which names ends with 'Text' string. First of all, add rules to
+  properties whoes names ends with 'Text' string. First of all, add rules to
   indexing-configuration.xml:</para>
 
   <programlisting>&lt;index-rule nodeType="nt:unstructured""&gt;
@@ -18,7 +18,7 @@
     Configuration</link></para>
   </note>
 
-  <para>Now, lets check this rule with simple query - select all nodes with
+  <para>Now, let's check this rule with simple query - select all nodes with
   primary type 'nt:unstructured' and containing 'quick' string (fulltext
   search by full node).</para>
 
@@ -77,9 +77,9 @@ QueryResult result = query.execute();</programlisting>
   </section>
 
   <section>
-    <title>Fetch result</title>
+    <title>Fetching result</title>
 
-    <para>Lets get nodes:</para>
+    <para>Let's get nodes:</para>
 
     <programlisting>NodeIterator it = result.getNodes();
 
@@ -91,7 +91,7 @@ if(it.hasNext())
     <para>NodeIterator will return "node1" and "node2". "node3", as you see,
     is not in result set.</para>
 
-    <para>Also we can get a table:</para>
+    <para>Also, we can get a table:</para>
 
     <programlisting>String[] columnNames = result.getColumnNames();
 RowIterator rit = result.getRows();
@@ -102,7 +102,7 @@ while (rit.hasNext())
    Value[] values = row.getValues();
 }</programlisting>
 
-    <para>Table contant is</para>
+    <para>Table content is:</para>
 
     <table>
       <title>Table content</title>

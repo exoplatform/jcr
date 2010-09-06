@@ -2,7 +2,7 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.AggregationRule">
-  <title>Find nt:file node by content of child jcr:content node</title>
+  <title>Finding nt:file node by content of child jcr:content node</title>
 
   <para>The node type nt:file represents a file. It requires a single child
   node, called jcr:content. This node type represents images and other binary

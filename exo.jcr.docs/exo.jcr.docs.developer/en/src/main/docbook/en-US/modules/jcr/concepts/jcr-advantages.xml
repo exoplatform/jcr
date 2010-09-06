@@ -13,8 +13,8 @@
       <listitem>
         <para>Data repository and application are isolated from each other so
         an application developer should not learn the details of particular
-        data storage's interfaces and can concentrate on business logic of a
-        particular application built on top of JCR.</para>
+        data storage's interfaces, but can need to concentrate on business
+        logic of a particular application built on the top of JCR.</para>
       </listitem>
 
       <listitem>
@@ -24,12 +24,12 @@
       </listitem>
 
       <listitem>
-        <para>Data storage types/versions can be changed and moreover
-        different types of data storages can be combined in one repository
-        data model (of course the complexity and work of building interfaces
-        between the repository and its data storage don't disappear but these
-        changes are isolated in the repository and thus manageable from the
-        point of view of the customer).</para>
+        <para>Data storage types/ versions can be changed and also, different
+        types of data storages can be combined in one repository data model
+        (of course, the complexity and work of building interfaces between the
+        repository and its data storage don't disappear but these changes are
+        isolated in the repository and thus manageable from the point of view
+        of the customer).</para>
       </listitem>
     </itemizedlist>
 
@@ -46,8 +46,8 @@
     <itemizedlist>
       <listitem>
         <para>Using a standardized repository for content management reduces
-        the risk of being dependent on a particular software vendor and
-        proprietary API.</para>
+        the risk of dependence on a particular software vendor and proprietary
+        API.</para>
       </listitem>
     </itemizedlist>
 
@@ -57,15 +57,15 @@
         custom application is significantly lower than developing and
         supporting your own interfaces and maintaining your own data
         repository applications (staff can be trained once, it is possible to
-        take help from community and third party consulters).</para>
+        take help from the community and the third party consulters).</para>
       </listitem>
     </itemizedlist>
 
     <itemizedlist>
       <listitem>
-        <para>Thanks to flexible layered JCR API (see below) it is possible to
-        fit the legacy storage subsystem into new interfaces and again
-        decrease the costs and risk of losing data.</para>
+        <para>Thanks to flexible layered JCR API (see below), it is possible
+        to fit the legacy storage subsystem into new interfaces and decrease
+        the costs and the risk of losing data.</para>
       </listitem>
     </itemizedlist>
 

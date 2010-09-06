@@ -7,7 +7,7 @@
   <title>HTTPBackupAgent and backup client</title>
 
   <warning>
-    <para>For this service you should configure the <emphasis
+    <para>For this service, you should configure the <emphasis
     role="bold">org.exoplatform.services.jcr.impl.config.JDBCConfigurationPersister</emphasis>
     in order to save the changes of the repository configuration. See the
     <link
@@ -39,29 +39,28 @@
 
     <para>The HTTPBackupAgent allows :<itemizedlist>
         <listitem>
-          <para>start backup</para>
+          <para>Start backup</para>
         </listitem>
 
         <listitem>
-          <para>stop backup</para>
+          <para>Stop backup</para>
         </listitem>
 
         <listitem>
-          <para>restore from backup</para>
+          <para>Restore from backup</para>
         </listitem>
 
         <listitem>
-          <para>delete the workspace</para>
+          <para>Delete the workspace</para>
         </listitem>
 
         <listitem>
-          <para>getting information about backup service
-          (BackupManager)</para>
+          <para>Get information about backup service (BackupManager)</para>
         </listitem>
 
         <listitem>
-          <para>getting information about current backup / restores /
-          completed backups</para>
+          <para>Get information about current backup / restores / completed
+          backups</para>
         </listitem>
       </itemizedlist></para>
 
@@ -69,7 +68,7 @@
       <title>HTTPBackupAgent methods</title>
 
       <section>
-        <title>Start Backup Service</title>
+        <title>Starting Backup Service</title>
 
         <para><emphasis
         role="bold">/rest/jcr-backup/start/{repo}/{ws}</emphasis></para>
@@ -148,11 +147,11 @@ value - the value of parameter.</programlisting>
 
         <para><emphasis role="bold">Returns:</emphasis><itemizedlist>
             <listitem>
-              <para>return when successful<programlisting>status code = 200</programlisting></para>
+              <para>Return when being successful<programlisting>status code = 200</programlisting></para>
             </listitem>
 
             <listitem>
-              <para>return when failure<programlisting>status code = 404            - the not found repositry '{repo}' or workspace '{ws}'
+              <para>Return when being failure<programlisting>status code = 404            - the not found repositry '{repo}' or workspace '{ws}'
 status code = 500            - the other unknown errors
 failure message in response  - the description of failure</programlisting></para>
             </listitem>
@@ -160,7 +159,7 @@ failure message in response  - the description of failure</programlisting></para
       </section>
 
       <section>
-        <title>Stop Backup Service</title>
+        <title>Stopping Backup Service</title>
 
         <para><emphasis
         role="bold">/rest/jcr-backup/stop/{id}</emphasis></para>
@@ -182,11 +181,11 @@ failure message in response  - the description of failure</programlisting></para
 
         <para><emphasis role="bold">Returns:</emphasis><itemizedlist>
             <listitem>
-              <para>return when successful<programlisting>status code = 200</programlisting></para>
+              <para>Return when being successful<programlisting>status code = 200</programlisting></para>
             </listitem>
 
             <listitem>
-              <para>return when failure<programlisting>status code = 404            - the no active backup with identifier {id}
+              <para>Return when being failure<programlisting>status code = 404            - the no active backup with identifier {id}
 status code = 500            - the other unknown errors
 failure message in response  - the description of failure</programlisting></para>
             </listitem>
@@ -211,7 +210,7 @@ failure message in response  - the description of failure</programlisting></para
 
         <para><emphasis role="bold">Returns:</emphasis><itemizedlist>
             <listitem>
-              <para>return when successful</para>
+              <para>Return when being successful</para>
 
               <para>Return the JSON bean of
               org.exoplatform.services.jcr.ext.backup.server.bean.response.BackupServiceInfoBean
@@ -222,22 +221,21 @@ defaultIncrementalJobPeriod - the default incremental job period.</programlistin
             </listitem>
 
             <listitem>
-              <para>return when failure<programlisting>status code = 500            - the unknown error
+              <para>Return when being failure<programlisting>status code = 500            - the unknown error
 failure message in response  - the description of failure</programlisting></para>
             </listitem>
           </itemizedlist></para>
       </section>
 
       <section>
-        <title>Drop Workspace Service</title>
+        <title>Dropping Workspace Service</title>
 
         <para><emphasis
         role="bold">/rest/jcr-backup/drop-workspace/{repo}/{ws}/{force-session-close}</emphasis></para>
 
         <para>Delete the workspace from repository /{repo}/{ws}. With this
-        service you can delete any workspace, completly independant of the
-        fact if the workspace is a backup or has been copied to a
-        backup.</para>
+        service, you can delete any workspaces regardless of whether the
+        workspace is a backup or has been copied to a backup.</para>
 
         <para><emphasis role="bold">URL:</emphasis>
         <uri>http://host:port/rest/jcr-backup/drop-workspace/{repo}/{ws}/{force-session-close}</uri></para>
@@ -256,7 +254,7 @@ failure message in response  - the description of failure</programlisting></para
             </listitem>
 
             <listitem>
-              <para> {force-session-close} - the boolean value : <emphasis
+              <para>{force-session-close} - the boolean value : <emphasis
               role="bold">true</emphasis> - the open sessions on workspace
               will be closed; <emphasis role="bold">false</emphasis> - will
               not close open sessions.</para>
@@ -265,11 +263,11 @@ failure message in response  - the description of failure</programlisting></para
 
         <para><emphasis role="bold">Returns:</emphasis><itemizedlist>
             <listitem>
-              <para>return when successful<programlisting>status code = 200</programlisting></para>
+              <para>Return when being successful.<programlisting>status code = 200</programlisting></para>
             </listitem>
 
             <listitem>
-              <para>return when failure<programlisting>status code = 500            - the other unknown errors;
+              <para>Return when being failure<programlisting>status code = 500            - the other unknown errors;
                              - not found repositry '{repo}' or workspace '{ws}'
 failure message in response  - the description of failure</programlisting></para>
             </listitem>
@@ -295,7 +293,7 @@ failure message in response  - the description of failure</programlisting></para
 
         <para><emphasis role="bold">Returns:</emphasis><itemizedlist>
             <listitem>
-              <para>return when successful</para>
+              <para>Return when being successful</para>
 
               <para>The JSON bean of
               org.exoplatform.services.jcr.ext.backup.server.bean.response.ShortInfoList
@@ -339,7 +337,7 @@ The ShorInfo to current restore :
             </listitem>
 
             <listitem>
-              <para>return when failure<programlisting>status code = 500            - the unknown error
+              <para>Return when being failure<programlisting>status code = 500            - the unknown error
 failure message in response  - the description of failure</programlisting></para>
             </listitem>
           </itemizedlist></para>
@@ -363,7 +361,7 @@ failure message in response  - the description of failure</programlisting></para
 
         <para><emphasis role="bold">Returns:</emphasis><itemizedlist>
             <listitem>
-              <para>return when successful</para>
+              <para>Return when being successful</para>
 
               <para>The JSON bean of
               org.exoplatform.services.jcr.ext.backup.server.bean.response.ShortInfoList
@@ -372,7 +370,7 @@ failure message in response  - the description of failure</programlisting></para
             </listitem>
 
             <listitem>
-              <para>return when failure</para>
+              <para>Return when being failure</para>
 
               <programlisting>status code = 500            - the unknown error
 failure message in response  - the description of failure</programlisting>
@@ -398,7 +396,7 @@ failure message in response  - the description of failure</programlisting>
 
         <para><emphasis role="bold">Returns:</emphasis><itemizedlist>
             <listitem>
-              <para>return when successful</para>
+              <para>Return when being successful</para>
 
               <para>The JSON bean of
               org.exoplatform.services.jcr.ext.backup.server.bean.response.ShortInfoList
@@ -407,7 +405,7 @@ failure message in response  - the description of failure</programlisting>
             </listitem>
 
             <listitem>
-              <para>return when failure</para>
+              <para>Return when being failure</para>
 
               <programlisting>status code = 500            - the unknown error
 failure message in response  - the description of failure</programlisting>
@@ -442,7 +440,7 @@ failure message in response  - the description of failure</programlisting>
 
         <para><emphasis role="bold">Returns:</emphasis><itemizedlist>
             <listitem>
-              <para>return when successful</para>
+              <para>Return when being successful</para>
 
               <para>The JSON bean of
               org.exoplatform.services.jcr.ext.backup.server.bean.response.ShortInfoList
@@ -451,7 +449,7 @@ failure message in response  - the description of failure</programlisting>
             </listitem>
 
             <listitem>
-              <para>return when failure</para>
+              <para>Return when being failure</para>
 
               <programlisting>status code = 500            - the unknown error
 failure message in response  - the description of failure</programlisting>
@@ -482,7 +480,7 @@ failure message in response  - the description of failure</programlisting>
 
         <para><emphasis role="bold">Returns:</emphasis><itemizedlist>
             <listitem>
-              <para>return when successful</para>
+              <para>Return when being successful</para>
 
               <para>The JSON bean of
               org.exoplatform.services.jcr.ext.backup.server.bean.response.DetailedInfo
@@ -531,7 +529,7 @@ The DetailedInfo to restore :
             </listitem>
 
             <listitem>
-              <para>return when failure</para>
+              <para>Return when being failure</para>
 
               <programlisting>status code = 404            - not found the backup with {id}
 status code = 500            - the unknown error
@@ -567,7 +565,7 @@ failure message in response  - the description of failure</programlisting>
 
         <para><emphasis role="bold">Returns:</emphasis><itemizedlist>
             <listitem>
-              <para>return when successful</para>
+              <para>Return when being successful</para>
 
               <para>The JSON bean of
               org.exoplatform.services.jcr.ext.backup.server.bean.response.DetailedInfo
@@ -576,7 +574,7 @@ failure message in response  - the description of failure</programlisting>
             </listitem>
 
             <listitem>
-              <para>return when failure</para>
+              <para>Return when being failure</para>
 
               <programlisting>status code = 404            - the not found the restore for workspace /{repo}/{ws}
 status code = 500            - the unknown error
@@ -604,7 +602,7 @@ failure message in response  - the description of failure</programlisting>
 
         <para><emphasis role="bold">Returns:</emphasis><itemizedlist>
             <listitem>
-              <para>return when successful</para>
+              <para>Return when being successful</para>
 
               <para>The JSON bean of
               org.exoplatform.services.jcr.ext.backup.server.bean.response.ShortInfoList
@@ -613,7 +611,7 @@ failure message in response  - the description of failure</programlisting>
             </listitem>
 
             <listitem>
-              <para>return when failure</para>
+              <para>Return when being failure</para>
 
               <programlisting>status code = 500            - the unknown error
 failure message in response  - the description of failure</programlisting>
@@ -622,7 +620,7 @@ failure message in response  - the description of failure</programlisting>
       </section>
 
       <section>
-        <title>Restore Service</title>
+        <title>Restoring Service</title>
 
         <para><emphasis
         role="bold">/rest/jcr-backup/restore/{repo}/{id}</emphasis></para>
@@ -753,7 +751,7 @@ body:
 
         <para><emphasis role="bold">Returns:</emphasis><itemizedlist>
             <listitem>
-              <para>return when successful</para>
+              <para>Return when being successful</para>
 
               <programlisting>status code = 200</programlisting>
 
@@ -764,7 +762,7 @@ body:
             </listitem>
 
             <listitem>
-              <para>return when failure</para>
+              <para>Return when being failure</para>
 
               <programlisting>status code = 403            - the already was restore to workspace /{repo}/{ws}
 status code = 404            - the not found repositry '{repo}' or unsupported encoding to workspaceConfig
@@ -792,7 +790,7 @@ failure message in response  - the description of failure</programlisting>
 
         <para><emphasis role="bold">Returns:</emphasis><itemizedlist>
             <listitem>
-              <para>return when successful</para>
+              <para>Return when being successful</para>
 
               <para>The JSON bean to
               org.exoplatform.services.jcr.config.WorkspaceEntry
@@ -891,7 +889,7 @@ failure message in response  - the description of failure</programlisting>
             </listitem>
 
             <listitem>
-              <para>return when failure</para>
+              <para>Return when being failure</para>
 
               <programlisting>status code = 500            - the unknown error
 failure message in response  - the description of failure</programlisting>
@@ -973,11 +971,11 @@ failure message in response  - the description of failure</programlisting>
     <title>Backup Client Usage</title>
 
     <section>
-      <title>Build application</title>
+      <title>Building application</title>
 
       <itemizedlist>
         <listitem>
-          <para>go to folder of "backup client" <emphasis
+          <para>Go to folder of "backup client" <emphasis
           role="bold">../jcr/trunk/applications/java/standalone/backupconsole</emphasis>
           . - build the application :<programlisting>
    mvn clean install
@@ -986,7 +984,7 @@ failure message in response  - the description of failure</programlisting>
         </listitem>
 
         <listitem>
-          <para>go to <emphasis
+          <para>Go to <emphasis
           role="bold">../jcr/trunk/applications/java/standalone/backupconsole/target/backupconsole-binary</emphasis>
           and use it.</para>
         </listitem>
@@ -994,22 +992,22 @@ failure message in response  - the description of failure</programlisting>
     </section>
 
     <section>
-      <title>Run application</title>
+      <title>Running application</title>
 
       <itemizedlist>
         <listitem>
-          <para>run jar<programlisting>java -jar exo.jcr.applications.backupconsole-1.11.1-SNAPSHOT.jar &lt;command&gt;
+          <para>Run jar<programlisting>java -jar exo.jcr.applications.backupconsole-1.11.1-SNAPSHOT.jar &lt;command&gt;
 </programlisting>or use jcrbackup.cmd (or .sh);</para>
         </listitem>
       </itemizedlist>
     </section>
 
     <section>
-      <title>Get information about backup service</title>
+      <title>Getting information about backup service</title>
 
       <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 info</programlisting>
 
-      <para>return :</para>
+      <para>Return :</para>
 
       <programlisting>The backup service information : 
   full backup type               : org.exoplatform.services.jcr.ext.backup.impl.fs.FullBackupJob
@@ -1019,39 +1017,41 @@ failure message in response  - the description of failure</programlisting>
     </section>
 
     <section>
-      <title>Start full backup</title>
+      <title>Starting full backup</title>
 
       <para>Start full backup only on workspace "backup", the parameter
       &lt;bakcup_dir&gt; (../temp/backup) should be exists:</para>
 
       <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 start /repository/backup ../temp/backup</programlisting>
 
-      <para>return :</para>
+      <para>Return :</para>
 
       <programlisting>Successful : 
   status code = 200</programlisting>
     </section>
 
     <section>
-      <title>Start full and incremental backup on a single workspace</title>
+      <title>Starting full and incremental backup on a single
+      workspace</title>
 
       <para>Start full and incremental backup on workspace
       "production":</para>
 
       <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 start /repository/production ../temp/backup 10000</programlisting>
 
-      <para>return :</para>
+      <para>Return :</para>
 
       <programlisting>Successful : 
  tatus code = 200</programlisting>
     </section>
 
     <section>
-      <title>Get information about the current backups (in progress)</title>
+      <title>Getting information about the current backups (in
+      progress)</title>
 
       <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 list</programlisting>
 
-      <para>return :</para>
+      <para>Return :</para>
 
       <programlisting>The current backups information : 
   1) Backup with id b46370107f000101014b03ea5fbe8d54 :
@@ -1070,7 +1070,8 @@ failure message in response  - the description of failure</programlisting>
     </section>
 
     <section>
-      <title>Get information about the current backup by 'backup_id'</title>
+      <title>Getting information about the current backup by
+      'backup_id'</title>
 
       <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 status b46370107f000101014b03ea5fbe8d54</programlisting>
 
@@ -1088,23 +1089,23 @@ failure message in response  - the description of failure</programlisting>
     </section>
 
     <section>
-      <title>Stop backup by "backup_id"</title>
+      <title>Stopping backup by "backup_id"</title>
 
       <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 stop 6c302adc7f00010100df88d29535c6ee</programlisting>
 
-      <para>return:</para>
+      <para>Return:</para>
 
       <programlisting>Successful : 
   status code = 200</programlisting>
     </section>
 
     <section>
-      <title>Get information about the completed (ready to restore)
+      <title>Getting information about the completed (ready to restore)
       backups</title>
 
       <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 list completed</programlisting>
 
-      <para>return:</para>
+      <para>Return:</para>
 
       <programlisting>The completed (ready to restore) backups information : 
   1) Backup with id adf6fadc7f00010100053b2cba43513c :
@@ -1127,7 +1128,7 @@ failure message in response  - the description of failure</programlisting>
     </section>
 
     <section>
-      <title>Restore to workspace</title>
+      <title>Restoring to workspace</title>
 
       <para>Restore to workspace "backup3", for restore need the
       &lt;backup_id&gt; of completed backup and path to file with workspace
@@ -1135,21 +1136,21 @@ failure message in response  - the description of failure</programlisting>
 
       <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restore /repository/backup3 6c302adc7f00010100df88d29535c6ee /home/rainf0x/java/exo-working/JCR-839/exo-jcr-config_backup3.xml</programlisting>
 
-      <para>return:</para>
+      <para>Return:</para>
 
       <programlisting>Successful : 
   status code = 200</programlisting>
     </section>
 
     <section>
-      <title>Get information about the current restore</title>
+      <title>Getting information about the current restore</title>
 
       <para>Get information about the current restore for workspace
       /repository/backup3:</para>
 
       <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restores</programlisting>
 
-      <para>return:</para>
+      <para>Return:</para>
 
       <programlisting>The current restores information : 
 1) Restore with id 6c302adc7f00010100df88d29535c6ee:
@@ -1164,26 +1165,26 @@ failure message in response  - the description of failure</programlisting>
   </section>
 
   <section>
-    <title>Full Example for create backup and restore it for workspace
+    <title>Full example about creating backup and restoring it for workspace
     'backup'</title>
 
     <section>
-      <title>Create backup</title>
+      <title>Creating backup</title>
 
       <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 start /repository/backup ../temp/backup 10000</programlisting>
 
-      <para>return :</para>
+      <para>Return :</para>
 
       <programlisting>Successful : 
   status code = 200</programlisting>
     </section>
 
     <section>
-      <title>Get information about current backups</title>
+      <title>Getting information about current backups</title>
 
       <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 list</programlisting>
 
-      <para>return :</para>
+      <para>Return :</para>
 
       <programlisting>The current backups information : 
   1) Backup with id b469ba957f0001010178febaedf20eb7 :
@@ -1196,36 +1197,36 @@ failure message in response  - the description of failure</programlisting>
     </section>
 
     <section>
-      <title>Stop backup by id</title>
+      <title>Stopping backup by id</title>
 
       <para>Stop backup with id b469ba957f0001010178febaedf20eb7 :</para>
 
       <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 stop b469ba957f0001010178febaedf20eb7</programlisting>
 
-      <para>return :</para>
+      <para>Return :</para>
 
       <programlisting>Successful : 
   status code = 200</programlisting>
     </section>
 
     <section>
-      <title>Delete the workspace "backup" and close opened sessions on this
+      <title>Deleting the workspace "backup" and close opened sessions on this
       workspace</title>
 
       <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 drop force-close-session /repository/backup</programlisting>
 
-      <para>return :</para>
+      <para>Return :</para>
 
       <programlisting>Successful : 
   status code = 200</programlisting>
     </section>
 
     <section>
-      <title>Restore the workspace "backup"</title>
+      <title>Restoring the workspace "backup"</title>
 
       <itemizedlist>
         <listitem>
-          <para>delete/clean the database for workspace <emphasis
+          <para>Delete/clean the database for workspace <emphasis
           role="bold">"backup"</emphasis> : When we use "single-db", then we
           will run the SQL queries for clean database :<programlisting>
        delete from JCR_SREF where NODE_ID in (select ID from JCR_SITEM where CONTAINER_NAME = 'backup')
@@ -1236,11 +1237,11 @@ failure message in response  - the description of failure</programlisting>
         </listitem>
 
         <listitem>
-          <para>delete the value storage for workspace <emphasis
+          <para>Delete the value storage for workspace <emphasis
           role="bold">"backup"</emphasis>; - delete the index data for
           workspace <emphasis role="bold">"backup"</emphasis>; - restore
           :<programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restore /repository/backup b469ba957f0001010178febaedf20eb7 /home/rainf0x/java/exo-working/JCR-839/exo-jcr-config_backup.xml
-</programlisting>return :<programlisting>Successful : 
+</programlisting>Return :<programlisting>Successful : 
   status code = 200</programlisting>The
           /home/rainf0x/java/exo-working/JCR-839/exo-jcr-config_backup.xml
           content the configuration for restored workspace <emphasis
@@ -1300,12 +1301,12 @@ failure message in response  - the description of failure</programlisting>
     </section>
 
     <section>
-      <title>Get information about restore for workspace
+      <title>Getting information about restore for workspace
       /repository/backup</title>
 
       <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restores /repository/backup</programlisting>
 
-      <para>return:</para>
+      <para>Return:</para>
 
       <programlisting>The current restores information : 
   Restore with id b469ba957f0001010178febaedf20eb7:

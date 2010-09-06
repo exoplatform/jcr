@@ -3,6 +3,7 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="Kernel.Cache">
   <?dbhtml filename="ch-cache.html"?>
+
   <title>eXo Cache</title>
 
   <section>
@@ -16,7 +17,7 @@
     <envar>org.exoplatform.services.cache.impl.CacheServiceImpl</envar> which
     depends on the
     <envar>org.exoplatform.services.cache.ExoCacheConfig</envar> in order to
-    create new <envar>ExoCache</envar> instances. See below an example of
+    create new <envar>ExoCache</envar> instances. See the below example of
     <envar>org.exoplatform.services.cache.CacheService</envar>
     definition:<programlisting>  &lt;component&gt;
     &lt;key&gt;org.exoplatform.services.cache.CacheService&lt;/key&gt;
@@ -42,7 +43,7 @@
         <envar>default</envar>, will be the default configuration of all the
         <envar>ExoCache</envar> instances that don't have dedicated
         configuration.</para>
-      </note>See below an example of how to define a new
+      </note>See the below example about how to define a new
     <envar>ExoCacheConfig</envar> thanks to a
     <emphasis>external-component-plugin</emphasis>:<programlisting>  &lt;external-component-plugins&gt;
     &lt;target-component&gt;org.exoplatform.services.cache.CacheService&lt;/target-component&gt;
@@ -98,8 +99,9 @@
           <row>
             <entry>liveTime</entry>
 
-            <entry>The amount of time (in seconds) an element is not written
-            or read before it is evicted. This field is mandatory.</entry>
+            <entry>The amount of time (in seconds) that an element is not
+            written or read before it is evicted. This field is
+            mandatory.</entry>
           </row>
 
           <row>
@@ -163,9 +165,9 @@ public interface ExoCacheFactory {
   public ExoCache createCache(ExoCacheConfig config) throws ExoCacheInitException;  
 }</programlisting></para>
 
-    <para>As you can see, there is only one method to implement which cans be
+    <para>As you can see, there is only one method to implement which can be
     seen as a converter of an <envar>ExoCacheConfig</envar> to get an instance
-    of <envar>ExoCache</envar>. Once, you created your own implementation you
+    of <envar>ExoCache</envar>. Once, you created your own implementation, you
     can simply register your factory by adding a file
     <emphasis>conf/portal/configuration.xml</emphasis> with a content of the
     following type:<programlisting>&lt;configuration&gt;
@@ -181,7 +183,7 @@ public interface ExoCacheFactory {
     <title>eXo Cache based on JBoss Cache</title>
 
     <section>
-      <title>Configure the ExoCacheFactory</title>
+      <title>Configuring the ExoCacheFactory</title>
 
       <para>When you add, the eXo library in your classpath, the eXo service
       container will use the default configuration provided in the library
@@ -201,7 +203,7 @@ public interface ExoCacheFactory {
   &lt;/component&gt;   
 &lt;/configuration&gt;</programlisting></para>
 
-      <para>As you can see the factory requires one single parameter which is
+      <para>As you can see, the factory requires one single parameter which is
       <emphasis>cache.config.template</emphasis>, this parameter allows you to
       define the location of the default configuration template of your jboss
       cache. In the default configuration, we ask the eXo container to get the
@@ -219,7 +221,7 @@ public interface ExoCacheFactory {
     </section>
 
     <section>
-      <title>Add specific configuration for a cache</title>
+      <title>Adding specific configuration for a cache</title>
 
       <para>If for a given reason, you need to use a specific configuration
       for a cache, you can register one thanks to an "<emphasis>external
@@ -261,7 +263,7 @@ public interface ExoCacheFactory {
     </section>
 
     <section>
-      <title>Add a cache creator</title>
+      <title>Adding a cache creator</title>
 
       <section>
         <title>Understanding a cache creator</title>
@@ -303,32 +305,32 @@ public interface ExoCacheCreator {
 
         <itemizedlist>
           <listitem>
-            <para><emphasis>create</emphasis> - this method is used to create
-            a new <envar>ExoCache</envar> from the
-            <envar>ExoCacheConfig</envar> and a jboss cache instance.</para>
+            <para><emphasis>create</emphasis>: this method is used to create a
+            new <envar>ExoCache</envar> from the <envar>ExoCacheConfig</envar>
+            and a jboss cache instance.</para>
           </listitem>
 
           <listitem>
-            <para><emphasis>getExpectedConfigType</emphasis> - this method is
+            <para><emphasis>getExpectedConfigType</emphasis> : this method is
             used to indicate the factory the subtype of
             <envar>ExoCacheConfig</envar> supported by the creator.</para>
           </listitem>
 
           <listitem>
-            <para><emphasis>getExpectedImplementation</emphasis> - this method
-            is used to indicate the factory the value of field implementation
-            of <envar>ExoCacheConfig</envar> that is supported by the creator.
-            This is used for backward compatibility, in other words you can
-            still configure your cache with a super class
+            <para><emphasis>getExpectedImplementation</emphasis>: this method
+            is used to indicate the factory and the value of field
+            implementation of <envar>ExoCacheConfig</envar> that is supported
+            by the creator. This is used for backward compatibility, in other
+            words, you can still configure your cache with a super class
             <envar>ExoCacheConfig</envar>.</para>
           </listitem>
         </itemizedlist>
       </section>
 
       <section>
-        <title>Register a cache creator</title>
+        <title>Registering a cache creator</title>
 
-        <para>You can register any cache creator you want thanks to an
+        <para>You can register any cache creator that you want thanks to an
         <emphasis>"external plugin"</emphasis>, see an example
         below:<programlisting>  &lt;external-component-plugins&gt;
     &lt;target-component&gt;org.exoplatform.services.cache.ExoCacheFactory&lt;/target-component&gt;
@@ -394,18 +396,18 @@ public interface ExoCacheCreator {
 
                   <entry>This is the default value of the field
                   <emphasis>timeToLive</emphasis> described in the section
-                  dedicated to this cache type. This value is only use when we
-                  define a cache of this type with the old
+                  dedicated to this cache type. This value is only used when
+                  we define a cache of this type with the old
                   configuration.</entry>
                 </row>
 
                 <row>
                   <entry>defaultMaxAge</entry>
 
-                  <entry>his is the default value of the field
+                  <entry>This is the default value of the field
                   <emphasis>maxAge</emphasis> described in the section
-                  dedicated to this cache type. This value is only use when we
-                  define a cache of this type with the old
+                  dedicated to this cache type. This value is only used when
+                  we define a cache of this type with the old
                   configuration.</entry>
                 </row>
               </tbody>
@@ -460,8 +462,8 @@ public interface ExoCacheCreator {
 
                   <entry>This is the default value of the field
                   <emphasis>minNodes</emphasis> described in the section
-                  dedicated to this cache type. This value is only use when we
-                  define a cache of this type with the old
+                  dedicated to this cache type. This value is only used when
+                  we define a cache of this type with the old
                   configuration.</entry>
                 </row>
               </tbody>
@@ -492,8 +494,8 @@ public interface ExoCacheCreator {
 
                   <entry>This is the default value of the field
                   <emphasis>minNodes</emphasis> described in the section
-                  dedicated to this cache type. This value is only use when we
-                  define a cache of this type with the old
+                  dedicated to this cache type. This value is only used when
+                  we define a cache of this type with the old
                   configuration.</entry>
                 </row>
               </tbody>
@@ -504,7 +506,7 @@ public interface ExoCacheCreator {
     </section>
 
     <section>
-      <title>Define a cache</title>
+      <title>Defining a cache</title>
 
       <section>
         <title>How to define a cache?</title>
@@ -590,14 +592,14 @@ public interface ExoCacheCreator {
         <title>How to define a distributed or a local cache?</title>
 
         <para>Actually, if you use a custom configuration for your cache as
-        described in a previous section, we will use the cache mode define in
+        described in a previous section, we will use the cache mode definde in
         your configuration file.</para>
 
         <para>In case, you decide to use the default configuration template,
         we use the field <emphasis>distributed</emphasis> of your
         <envar>ExoCacheConfig</envar> to decide. In other words, if the value
         of this field is false (the default value), the cache will be a local
-        cache otherwise it will be the cache mode defined in your default
+        cache, otherwise it will be the cache mode defined in your default
         configuration template that should be distributed.</para>
       </section>
 
@@ -636,11 +638,11 @@ public interface ExoCacheCreator {
                     <row>
                       <entry>minTimeToLive</entry>
 
-                      <entry>The minimum amount of time (in milliseconds) a
-                      node must be allowed to live after being accessed before
-                      it is allowed to be considered for eviction. 0 denotes
-                      that this feature is disabled, which is the default
-                      value.</entry>
+                      <entry>The minimum amount of time (in milliseconds) that
+                      a node must be allowed to live after being accessed
+                      before it is allowed to be considered for eviction. 0
+                      denotes that this feature is disabled, which is the
+                      default value.</entry>
                     </row>
 
                     <row>
@@ -654,9 +656,9 @@ public interface ExoCacheCreator {
                     <row>
                       <entry>timeToLive</entry>
 
-                      <entry>The amount of time a node is not written to or
-                      read (in milliseconds) before the node is swept away. 0
-                      denotes immediate expiry, -1 denotes no limit.</entry>
+                      <entry>The amount of time that a node is not written to
+                      or read (in milliseconds) before the node is swept away.
+                      0 denotes immediate expiry, -1 denotes no limit.</entry>
                     </row>
                   </tbody>
                 </tgroup>
@@ -695,8 +697,8 @@ public interface ExoCacheCreator {
                   <row>
                     <entry>liveTime</entry>
 
-                    <entry>The minimum amount of time (in seconds) a node must
-                    be allowed to live after being accessed before it is
+                    <entry>The minimum amount of time (in seconds) that a node
+                    must be allowed to live after being accessed before it is
                     allowed to be considered for eviction. 0 denotes that this
                     feature is disabled, which is the default value.</entry>
                   </row>
@@ -746,10 +748,11 @@ public interface ExoCacheCreator {
                   <row>
                     <entry>minTimeToLive</entry>
 
-                    <entry>The minimum amount of time (in milliseconds) a node
-                    must be allowed to live after being accessed before it is
-                    allowed to be considered for eviction. 0 denotes that this
-                    feature is disabled, which is the default value.</entry>
+                    <entry>The minimum amount of time (in milliseconds) that a
+                    node must be allowed to live after being accessed before
+                    it is allowed to be considered for eviction. 0 denotes
+                    that this feature is disabled, which is the default
+                    value.</entry>
                   </row>
                 </tbody>
               </tgroup>
@@ -786,8 +789,8 @@ public interface ExoCacheCreator {
                   <row>
                     <entry>liveTime</entry>
 
-                    <entry>The minimum amount of time (in seconds) a node must
-                    be allowed to live after being accessed before it is
+                    <entry>The minimum amount of time (in seconds) that a node
+                    must be allowed to live after being accessed before it is
                     allowed to be considered for eviction. 0 denotes that this
                     feature is disabled, which is the default value.</entry>
                   </row>
@@ -831,10 +834,11 @@ public interface ExoCacheCreator {
                   <row>
                     <entry>minTimeToLive</entry>
 
-                    <entry>The minimum amount of time (in milliseconds) a node
-                    must be allowed to live after being accessed before it is
-                    allowed to be considered for eviction. 0 denotes that this
-                    feature is disabled, which is the default value.</entry>
+                    <entry>The minimum amount of time (in milliseconds) that a
+                    node must be allowed to live after being accessed before
+                    it is allowed to be considered for eviction. 0 denotes
+                    that this feature is disabled, which is the default
+                    value.</entry>
                   </row>
                 </tbody>
               </tgroup>
@@ -871,8 +875,8 @@ public interface ExoCacheCreator {
                   <row>
                     <entry>liveTime</entry>
 
-                    <entry>The minimum amount of time (in seconds) a node must
-                    be allowed to live after being accessed before it is
+                    <entry>The minimum amount of time (in seconds) that a node
+                    must be allowed to live after being accessed before it is
                     allowed to be considered for eviction. 0 denotes that this
                     feature is disabled, which is the default value.</entry>
                   </row>
@@ -928,10 +932,11 @@ public interface ExoCacheCreator {
                   <row>
                     <entry>minTimeToLive</entry>
 
-                    <entry>The minimum amount of time (in milliseconds) a node
-                    must be allowed to live after being accessed before it is
-                    allowed to be considered for eviction. 0 denotes that this
-                    feature is disabled, which is the default value.</entry>
+                    <entry>The minimum amount of time (in milliseconds) that a
+                    node must be allowed to live after being accessed before
+                    it is allowed to be considered for eviction. 0 denotes
+                    that this feature is disabled, which is the default
+                    value.</entry>
                   </row>
                 </tbody>
               </tgroup>
@@ -968,10 +973,11 @@ public interface ExoCacheCreator {
                   <row>
                     <entry>liveTime</entry>
 
-                    <entry>The minimum amount of time (in milliseconds) a node
-                    must be allowed to live after being accessed before it is
-                    allowed to be considered for eviction. 0 denotes that this
-                    feature is disabled, which is the default value.</entry>
+                    <entry>The minimum amount of time (in milliseconds) that a
+                    node must be allowed to live after being accessed before
+                    it is allowed to be considered for eviction. 0 denotes
+                    that this feature is disabled, which is the default
+                    value.</entry>
                   </row>
                 </tbody>
               </tgroup>
@@ -1020,10 +1026,11 @@ public interface ExoCacheCreator {
                   <row>
                     <entry>minTimeToLive</entry>
 
-                    <entry>The minimum amount of time (in milliseconds) a node
-                    must be allowed to live after being accessed before it is
-                    allowed to be considered for eviction. 0 denotes that this
-                    feature is disabled, which is the default value.</entry>
+                    <entry>The minimum amount of time (in milliseconds) that a
+                    node must be allowed to live after being accessed before
+                    it is allowed to be considered for eviction. 0 denotes
+                    that this feature is disabled, which is the default
+                    value.</entry>
                   </row>
 
                   <row>
@@ -1067,10 +1074,11 @@ public interface ExoCacheCreator {
                   <row>
                     <entry>liveTime</entry>
 
-                    <entry>The minimum amount of time (in milliseconds) a node
-                    must be allowed to live after being accessed before it is
-                    allowed to be considered for eviction. 0 denotes that this
-                    feature is disabled, which is the default value.</entry>
+                    <entry>The minimum amount of time (in milliseconds) that a
+                    node must be allowed to live after being accessed before
+                    it is allowed to be considered for eviction. 0 denotes
+                    that this feature is disabled, which is the default
+                    value.</entry>
                   </row>
                 </tbody>
               </tgroup>

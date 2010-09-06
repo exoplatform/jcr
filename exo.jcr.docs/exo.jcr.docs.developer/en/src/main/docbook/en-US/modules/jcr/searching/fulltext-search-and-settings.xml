@@ -3,6 +3,7 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="JCR.FulltextSearchAndSettings">
   <?dbhtml filename="ch-jcr-fulltext-search-and-settings.html"?>
+
   <title>Fulltext Search And Affecting Settings</title>
 
   <section>
@@ -148,8 +149,8 @@
   <section>
     <title>How are different properties indexed?</title>
 
-    <para>Different properties are indexed in different ways, this affect to
-    can it be searched like fulltext by property or not.</para>
+    <para>Different properties are indexed in different ways, this affects to
+    if it can be searched like fulltext by property or not.</para>
 
     <para>Only two property types are indexed as fulltext searcheable: STRING
     and BINARY.</para>
@@ -188,8 +189,8 @@
       </tgroup>
     </table>
 
-    <para>For example. We have property jcr:data (it' BINARY). Its stored
-    well. But you will newer find any string with query like:</para>
+    <para>For example, ưe have property jcr:data (it' BINARY). It's stored
+    well, but you will never find any string with query like:</para>
 
     <programlisting>SELECT * FROM nt:resource WHERE CONTAINS(jcr:data, 'some string')</programlisting>
 
@@ -257,7 +258,7 @@
       </listitem>
     </itemizedlist>
 
-    <para>Lets see analyzers effect closer. In first case we use base jcr
+    <para>Let's see analyzers effect closer. In first case, we use base jcr
     settings, so, as mentioned above, string "The quick brown fox jumped over
     the lazy dogs" will be transformed to set {[the] [quick] [brown] [fox]
     [jumped] [over] [the] [lazy] [dogs] }</para>
@@ -272,10 +273,10 @@ QueryResult result = query.execute();</programlisting>
 
     <para>NodeIterator will return "document1".</para>
 
-    <para>Now change default analyzer to
+    <para>Now change the default analyzer to
     org.apache.lucene.analysis.StopAnalyzer. Fill repository again (new
-    Analyzer must process nodes properties) and run same query again. It will
-    return nothing, because stop words like "the" will be excluded from parsed
-    string set.</para>
+    Analyzer must process nodes properties) and run the same query again. It
+    will return nothing, because stop words like "the" will be excluded from
+    parsed string set.</para>
   </section>
 </chapter>

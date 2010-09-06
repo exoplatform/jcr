@@ -2,21 +2,21 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.IgnoreAccentSymbols">
-  <title>Ignore Accent Symbols. New Analyzer Setting.</title>
+  <title>Ignoring Accent Symbols. New Analyzer Setting.</title>
 
-  <para>In this example we will create new Analyzer, set it in QueryHandler
-  configuration, and make query for check it.</para>
+  <para>In this example, we will create new Analyzer, set it in QueryHandler
+  configuration, and make query to check it.</para>
 
-  <para>Standard analyzer do not normalize accents like é,è,à. So word like
-  'tréma' will be stored to index as 'tréma'. But what if we want normalize
-  such symbols? Wa want store 'tréma' word as 'trema'.</para>
+  <para>Standard analyzer does not normalize accents like é,è,à. So, a word
+  like 'tréma' will be stored to index as 'tréma'. But if we want to normalize
+  such symbols or not? We want to store 'tréma' word as 'trema'.</para>
 
   <para>There is two ways of setting up new Analyzer (no matter standarts or
   our):</para>
 
   <itemizedlist>
     <listitem>
-      <para>first is creating descendant class of SearchIndex with new
+      <para>The first way: Create descendant class of SearchIndex with new
       Analyzer (see <link linkend="JCR.SearchConfiguration">Search
       Configuration</link>);</para>
     </listitem>
@@ -27,12 +27,12 @@
 
   <itemizedlist>
     <listitem>
-      <para>Second is - register new Analyzer in QueryHandler configuration
-      (this one eccepted since 1.12 version);</para>
+      <para>The second way: Register new Analyzer in QueryHandler
+      configuration (this one eccepted since 1.12 version);</para>
     </listitem>
   </itemizedlist>
 
-  <para>We will use last one:</para>
+  <para>We will use the last one:</para>
 
   <itemizedlist>
     <listitem>
@@ -60,7 +60,7 @@
 
   <itemizedlist>
     <listitem>
-      <para>then, register new MyAnalyzer in configuration</para>
+      <para>Then, register new MyAnalyzer in configuration</para>
     </listitem>
   </itemizedlist>
 
@@ -75,7 +75,7 @@
    ...
 &lt;/workspace&gt;</programlisting>
 
-  <para>Now is time to check it with query:</para>
+  <para>After that, check it with query:</para>
 
   <para>Find node with mixin type 'mix:title' where 'jcr:title' contains
   "tréma" and "naïve" strings.</para>
@@ -129,9 +129,9 @@ QueryResult result = query.execute();</programlisting>
   </section>
 
   <section>
-    <title>Fetch result</title>
+    <title>Fetching result</title>
 
-    <para>Lets get nodes:</para>
+    <para>Let's get nodes:</para>
 
     <programlisting>NodeIterator it = result.getNodes();
 
@@ -142,9 +142,9 @@ if(it.hasNext())
 
     <para>NodeIterator will return "node1" and "node2". How is it possible?
     Remember that our MyAnalyzer transforms 'tréma' word to 'trema'. So node2
-    accept our constraints to.</para>
+    accepts our constraints to.</para>
 
-    <para>Also we can get a table:</para>
+    <para>Also, we can get a table:</para>
 
     <programlisting>String[] columnNames = result.getColumnNames();
 RowIterator rit = result.getRows();
@@ -155,7 +155,7 @@ while (rit.hasNext())
    Value[] values = row.getValues();
 }</programlisting>
 
-    <para>Table contant is</para>
+    <para>Table content is</para>
 
     <table>
       <title>Table content</title>

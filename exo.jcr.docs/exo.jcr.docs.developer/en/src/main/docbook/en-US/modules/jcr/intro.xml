@@ -11,7 +11,7 @@
 
     <para>Java Content Repository API as well as other Java language related
     standards is created within the Java Community Process http://jcp.org/ as
-    a result of collaboration of an expert group and the Java community and
+    a result of collaboration of an expert group and the Java community. It is
     known as <ulink
     url="http://www.jcp.org/en/jsr/detail?id=170">JSR-170</ulink> (Java
     Specification Request).</para>
@@ -19,8 +19,8 @@
     <section>
       <title>Data model</title>
 
-      <para>As the main purpose of content repository is to maintain the data
-      - the heart of CR is the data model:</para>
+      <para>The main purpose of content repository is to maintain the data.
+      The heart of CR is the data model:</para>
 
       <para><itemizedlist>
           <listitem>
@@ -52,10 +52,10 @@
         </mediaobject>
       </figure>
 
-      <para>Node is intended to support the data hierarchy. They are typed
-      using namespaced names which allows the content to be structured
-      according to standardized constraints. A node may be versioned through
-      an associated version graph (optional feature)</para>
+      <para>Node is intended to support the data hierarchy. It is of type
+      using namespaced names which allows the content to be structured in
+      accordance with standardized constraints. A node may be versioned
+      through an associated version graph (optional feature)</para>
 
       <para>Property stored data are values of predefined types (String,
       Binary, Long, Boolean, Double, Date, Reference, Path).</para>

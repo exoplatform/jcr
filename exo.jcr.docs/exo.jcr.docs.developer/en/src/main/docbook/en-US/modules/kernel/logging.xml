@@ -11,7 +11,7 @@
 
     <para>In order to accommodate to the different target runtime where it can
     be deployed, eXo is capable of leveraging several logging systems. eXo
-    let's you choose the underlying logging engine to use and even configure
+    lets you choose the underlying logging engine to use and even configure
     that engine (as a quick alternative to doing it directly in your runtime
     environment).</para>
 
@@ -48,7 +48,7 @@
           <classname>LogConfigurator</classname> interface with one method
           configure() that accepts a list of properties (3rd init parameter)
           to configure the underlying log system using the concrete mechanism.
-          Again there are three configurators for the most known log systems
+          Again, there are three configurators for the most known log systems
           (commons, log4j, jdk).</para>
         </listitem>
 
@@ -115,20 +115,20 @@
 
         <para>For example:<itemizedlist>
             <listitem>
-              <para>we want log all debug messages for class
+              <para>We want to log all debug messages for class
               <classname>org.exoplatform.services.jcr.impl.core.SessionDataManager</classname>,
               that lies in <package>exo.jcr.component.core</package>
               component<programlisting>&lt;property name="log4j.category.exo.jcr.component.core.SessionDataManager" value="DEBUG"/&gt;</programlisting></para>
             </listitem>
 
             <listitem>
-              <para>or we want log all debug messages for all classes in in
+              <para>Or we want to log all debug messages for all classes in in
               <package>exo.jcr.component.core</package>
               component<programlisting>&lt;property name="log4j.category.exo.jcr.component.core" value="DEBUG"/&gt;</programlisting></para>
             </listitem>
 
             <listitem>
-              <para>or we want log all messages for all kernel
+              <para>Or we want to log all messages for all kernel
               components<programlisting>&lt;property name="log4j.category.exo.kernel" value="DEBUG"/&gt;</programlisting></para>
             </listitem>
           </itemizedlist></para>
@@ -141,7 +141,7 @@
       <para>JDK logging (aka JUL) is the builtin logging framework introduced
       in JDK 1.4. It is a good option for Tomcat AS.<itemizedlist>
           <listitem>
-            <para>edit the variable <varname>LOG_OPTS</varname> in your
+            <para>Edit the variable <varname>LOG_OPTS</varname> in your
             <filename>eXo.sh</filename> or <filename>eXo.bat</filename>
             :<programlisting>LOG_OPTS="-Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.Jdk14Logger"</programlisting></para>
           </listitem>
@@ -173,7 +173,7 @@
     </section>
 
     <section>
-      <title>Commons Logging SimpleLog</title>
+      <title>Commons Logging SimpleLogss</title>
 
       <para>SimpleLog is a minimal logging system distributed with Commons
       Logging. To be used when nothing else is available or when you seek
