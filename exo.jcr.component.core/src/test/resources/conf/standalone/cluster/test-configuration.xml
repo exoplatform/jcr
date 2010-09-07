@@ -118,6 +118,7 @@
             <property name="rma" value="http://www.rma.com/jcr/"/>
             <property name="metadata" value="http://www.exoplatform.com/jcr/metadata/1.1/"/>
             <property name="dc" value="http://purl.org/dc/elements/1.1/"/>
+            <property name="publication" value="http://www.exoplatform.com/jcr/publication/1.1/"/>
           </properties-param>
         </init-params>
       </component-plugin>
@@ -134,7 +135,11 @@
             <value>jar:/conf/test/nodetypes-usecase.xml</value>
             <value>jar:/conf/test/nodetypes-config.xml</value>
             <value>jar:/conf/test/nodetypes-config-extended.xml</value>            
+            <value>jar:/conf/test/wcm-nodetypes.xml</value>
+            <value>jar:/conf/test/nodetypes-publication-config.xml</value>
+            <value>jar:/conf/test/publication-plugins-nodetypes-config.xml</value>          
           </values-param>
+
           
           <values-param>
             <name>testInitNodeTypesRepository</name>
