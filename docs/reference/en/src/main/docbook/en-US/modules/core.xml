@@ -12,4 +12,7 @@
   <xi:include href="core/db-creator-service.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
+
+  <xi:include href="core/tika-document-reader-service.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
 </part>
