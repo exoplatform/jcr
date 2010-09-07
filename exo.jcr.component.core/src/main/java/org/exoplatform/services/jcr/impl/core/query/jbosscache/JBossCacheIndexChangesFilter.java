@@ -30,15 +30,19 @@ import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
 import org.exoplatform.services.jcr.impl.core.query.SearchManager;
 import org.exoplatform.services.jcr.impl.util.io.PrivilegedCacheHelper;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory;
+import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory.CacheType;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.jboss.cache.Cache;
 import org.jboss.cache.CacheException;
 import org.jboss.cache.CacheSPI;
+import org.jboss.cache.Fqn;
 import org.jboss.cache.config.CacheLoaderConfig;
 import org.jboss.cache.config.CacheLoaderConfig.IndividualCacheLoaderConfig;
 import org.jboss.cache.config.CacheLoaderConfig.IndividualCacheLoaderConfig.SingletonStoreConfig;
+import org.jboss.cache.config.Configuration.CacheMode;
+import org.jboss.cache.loader.SingletonStoreCacheLoader.PushStateException;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -61,6 +65,8 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
 
    private final Cache<Serializable, Object> cache;
 
+   private final Fqn<String> rootFqn;
+
    public static final String LISTWRAPPER = "$lists".intern();
 
    /**
@@ -77,12 +83,10 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
       super(searchManager, parentSearchManager, config, indexingTree, parentIndexingTree, handler, parentHandler, cfm);
       // create cache using custom factory
       ExoJBossCacheFactory<Serializable, Object> factory = new ExoJBossCacheFactory<Serializable, Object>(cfm);
-      this.cache = factory.createCache(config);
+      Cache<Serializable, Object> initCache = factory.createCache(config);
 
       // initialize IndexerCacheLoader 
       IndexerCacheLoader indexerCacheLoader = new IndexerCacheLoader();
-      // inject dependencies
-      indexerCacheLoader.init(searchManager, parentSearchManager, handler, parentHandler);
       // set SingltonStoreCacheLoader
       SingletonStoreConfig singletonStoreConfig = new SingletonStoreConfig();
       singletonStoreConfig.setSingletonStoreClass(IndexerSingletonStoreCacheLoader.class.getName());
@@ -114,31 +118,53 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
       cacheLoaderConfig.setPassivation(false);
       cacheLoaderConfig.addIndividualCacheLoaderConfig(individualCacheLoaderConfig);
       // insert CacheLoaderConfig
-      this.cache.getConfiguration().setCacheLoaderConfig(cacheLoaderConfig);
-
-      PrivilegedCacheHelper.create(cache);
-      PrivilegedCacheHelper.start(cache);
+      initCache.getConfiguration().setCacheLoaderConfig(cacheLoaderConfig);
+      this.rootFqn = Fqn.fromElements(searchManager.getWsId());
+      this.cache = ExoJBossCacheFactory.getUniqueInstance(CacheType.INDEX_CACHE, rootFqn, initCache);
+      this.cache.create();
+      this.cache.start();
 
       // start will invoke cache listener which will notify handler that mode is changed
       IndexerIoMode ioMode =
          ((CacheSPI)cache).getRPCManager().isCoordinator() ? IndexerIoMode.READ_WRITE : IndexerIoMode.READ_ONLY;
+
+      // Could have change of cache
+      IndexerSingletonStoreCacheLoader issCacheLoader =
+         (IndexerSingletonStoreCacheLoader)((CacheSPI)cache).getCacheLoaderManager().getCacheLoader();
+
+      // This code make it possible to use the JBossCacheIndexChangesFilter in
+      // a non-cluster environment
+      if (cache.getConfiguration().getCacheMode() == CacheMode.LOCAL)
+      {
+         // Activate the cache loader
+         try
+         {
+            issCacheLoader.activeStatusChanged(true);
+         }
+         catch (PushStateException e)
+         {
+            // ignore me;
+         }
+      }
+      indexerCacheLoader = (IndexerCacheLoader)issCacheLoader.getCacheLoader();
+
+      indexerCacheLoader.register(searchManager, parentSearchManager, handler, parentHandler);
       IndexerIoModeHandler modeHandler = indexerCacheLoader.getModeHandler();
       handler.setIndexerIoModeHandler(modeHandler);
       parentHandler.setIndexerIoModeHandler(modeHandler);
 
       if (!parentHandler.isInitialized())
       {
-         parentHandler.setIndexInfos(new JBossCacheIndexInfos(cache, true, modeHandler));
-         parentHandler.setIndexUpdateMonitor(new JBossCacheIndexUpdateMonitor(cache, true, modeHandler));
+         parentHandler.setIndexInfos(new JBossCacheIndexInfos(rootFqn, cache, true, modeHandler));
+         parentHandler.setIndexUpdateMonitor(new JBossCacheIndexUpdateMonitor(rootFqn, cache, true, modeHandler));
          parentHandler.init();
       }
       if (!handler.isInitialized())
       {
-         handler.setIndexInfos(new JBossCacheIndexInfos(cache, false, modeHandler));
-         handler.setIndexUpdateMonitor(new JBossCacheIndexUpdateMonitor(cache, false, modeHandler));
+         handler.setIndexInfos(new JBossCacheIndexInfos(rootFqn, cache, false, modeHandler));
+         handler.setIndexUpdateMonitor(new JBossCacheIndexUpdateMonitor(rootFqn, cache, false, modeHandler));
          handler.init();
       }
-
    }
 
    /**
@@ -151,8 +177,8 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
       String id = IdGenerator.generate();
       try
       {
-         PrivilegedCacheHelper.put(cache, id, LISTWRAPPER, new ChangesFilterListsWrapper(addedNodes, removedNodes,
-            parentAddedNodes, parentRemovedNodes));
+         PrivilegedCacheHelper.put(cache, Fqn.fromRelativeElements(rootFqn, id), LISTWRAPPER,
+            new ChangesFilterListsWrapper(addedNodes, removedNodes, parentAddedNodes, parentRemovedNodes));
       }
       catch (CacheException e)
       {

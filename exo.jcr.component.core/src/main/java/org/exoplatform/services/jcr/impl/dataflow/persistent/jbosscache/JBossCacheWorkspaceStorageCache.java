@@ -36,6 +36,7 @@ import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory;
+import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory.CacheType;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.transaction.TransactionService;
@@ -305,16 +306,19 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
          LOG.info("Using BufferedJBossCache compatible with Expiration algorithm.");
       }
 
+      Fqn<String> rootFqn = Fqn.fromElements(wsConfig.getUniqueName());
+      parentCache = ExoJBossCacheFactory.getUniqueInstance(CacheType.JCR_CACHE, rootFqn, parentCache);
+
       // if expiration is used, set appropriate factory with with timeout set via configuration (or default one 15minutes)
       this.cache =
-         new BufferedJBossCache(factory.createCache(wsConfig.getCache()), useExpiration, wsConfig.getCache()
+         new BufferedJBossCache(parentCache, useExpiration, wsConfig.getCache()
             .getParameterTime(JBOSSCACHE_EXPIRATION, JBOSSCACHE_EXPIRATION_DEFAULT));
 
-      this.itemsRoot = Fqn.fromElements(ITEMS);
-      this.childNodes = Fqn.fromElements(CHILD_NODES);
-      this.childProps = Fqn.fromElements(CHILD_PROPS);
-      this.childNodesList = Fqn.fromElements(CHILD_NODES_LIST);
-      this.childPropsList = Fqn.fromElements(CHILD_PROPS_LIST);
+      this.itemsRoot = Fqn.fromRelativeElements(rootFqn, ITEMS);
+      this.childNodes = Fqn.fromRelativeElements(rootFqn, CHILD_NODES);
+      this.childProps = Fqn.fromRelativeElements(rootFqn, CHILD_PROPS);
+      this.childNodesList = Fqn.fromRelativeElements(rootFqn, CHILD_NODES_LIST);
+      this.childPropsList = Fqn.fromRelativeElements(rootFqn, CHILD_PROPS_LIST);
 
       this.cache.create();
       this.cache.start();
@@ -722,7 +726,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
    public long getSize()
    {
       // Total number of JBC nodes in the cache - the total amount of resident nodes
-      return cache.getNumberOfNodes() - 5;
+      return cache.getNumberOfNodes() - 5 * cache.getRoot().getChildrenNames().size();
    }
 
    /**

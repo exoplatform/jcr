@@ -26,6 +26,7 @@ import org.exoplatform.services.document.DocumentReaderService;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.config.QueryHandlerParams;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.dataflow.ItemState;
@@ -136,6 +137,11 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    protected IndexerChangesFilter changesFilter;
 
    /**
+    * The unique name of the related workspace
+    */
+   protected final String wsId;
+   
+   /**
     * Creates a new <code>SearchManager</code>.
     * 
     * @param config
@@ -159,12 +165,12 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     * @throws RepositoryConfigurationException
     */
 
-   public SearchManager(QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
+   public SearchManager(WorkspaceEntry wsConfig, QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
       WorkspacePersistentDataManager itemMgr, SystemSearchManagerHolder parentSearchManager,
       DocumentReaderService extractor, ConfigurationManager cfm, final RepositoryIndexSearcherHolder indexSearcherHolder)
       throws RepositoryException, RepositoryConfigurationException
    {
-
+      this.wsId = wsConfig.getUniqueName();
       this.extractor = extractor;
       indexSearcherHolder.addIndexSearcher(this);
       this.config = config;
@@ -841,6 +847,11 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    public boolean isTXAware()
    {
       return false;
+   }
+
+   public String getWsId()
+   {
+      return wsId;
    }
 
 }

@@ -51,6 +51,7 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
 import org.exoplatform.services.jcr.impl.util.io.PrivilegedCacheHelper;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory;
+import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory.CacheType;
 import org.exoplatform.services.jcr.observation.ExtendedEvent;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -217,7 +218,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
       InitialContextInitializer context, TransactionManager transactionManager, ConfigurationManager cfm)
       throws RepositoryConfigurationException, RepositoryException
    {
-      lockRoot = Fqn.fromElements(LOCKS);
+      lockRoot = Fqn.fromElements(config.getUniqueName(), LOCKS);
 
       List<SimpleParameterEntry> paramenerts = config.getLockManager().getParameters();
 
@@ -258,12 +259,15 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
 
          cache = factory.createCache(config.getLockManager());
 
-         PrivilegedCacheHelper.create(cache);
-
-         // Add the cache loader needed to prevent TimeoutException
-         addCacheLoader();
-
-         PrivilegedCacheHelper.start(cache);
+         Fqn<String> rootFqn = Fqn.fromElements(config.getUniqueName());
+         cache = ExoJBossCacheFactory.getUniqueInstance(CacheType.LOCK_CACHE, rootFqn, cache);
+         cache.create();
+         if (cache.getCacheStatus().startAllowed())
+         {
+            // Add the cache loader needed to prevent TimeoutException
+            addCacheLoader();
+            cache.start();
+         }
 
          createStructuredNode(lockRoot);
 
@@ -480,7 +484,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
    {
       public Integer execute(Object arg)
       {
-         return ((CacheSPI<Serializable, Object>)cache).getNumberOfNodes() - 1;
+         return ((CacheSPI<Serializable, Object>)cache).getNode(lockRoot).getChildrenDirect().size();
       }
    };
 

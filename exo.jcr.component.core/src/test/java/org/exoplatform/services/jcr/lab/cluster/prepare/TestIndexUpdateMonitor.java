@@ -29,6 +29,7 @@ import org.exoplatform.services.log.Log;
 import org.jboss.cache.Cache;
 import org.jboss.cache.CacheFactory;
 import org.jboss.cache.DefaultCacheFactory;
+import org.jboss.cache.Fqn;
 
 import java.io.Serializable;
 
@@ -58,7 +59,7 @@ public class TestIndexUpdateMonitor extends TestCase
       super.setUp();
       cache = createCache();
       indexUpdateMonitor =
-         new JBossCacheIndexUpdateMonitor(cache, false, new IndexerIoModeHandler(IndexerIoMode.READ_WRITE));
+         new JBossCacheIndexUpdateMonitor(Fqn.fromString("root"),cache, false, new IndexerIoModeHandler(IndexerIoMode.READ_WRITE));
    }
 
    /**

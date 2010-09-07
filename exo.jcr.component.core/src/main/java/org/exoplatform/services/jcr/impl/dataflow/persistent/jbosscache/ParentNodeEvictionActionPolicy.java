@@ -63,15 +63,15 @@ public class ParentNodeEvictionActionPolicy implements EvictionActionPolicy
             log.debug("Unable to evict " + fqn, e);
          result = false;
       }
-      if (fqn.size() != 3)
+      if (fqn.size() != 4)
       {
          return result;
       }
       try
       {
          Fqn parentFqn = fqn.getParent();
-         if (parentFqn.get(0).equals(JBossCacheWorkspaceStorageCache.CHILD_NODES)
-            || parentFqn.get(0).equals(JBossCacheWorkspaceStorageCache.CHILD_PROPS))
+         if (parentFqn.get(1).equals(JBossCacheWorkspaceStorageCache.CHILD_NODES)
+            || parentFqn.get(1).equals(JBossCacheWorkspaceStorageCache.CHILD_PROPS))
          {
             // The expected data structure is of type $CHILD_NODES/${node-id}/${sub-node-name} or
             // $CHILD_PROPS/${node-id}/${sub-property-name}
@@ -83,7 +83,7 @@ public class ParentNodeEvictionActionPolicy implements EvictionActionPolicy
             if (node != null)
             {
                Set<Object> names = node.getChildrenNamesDirect();
-               if (names.isEmpty() || (names.size() == 1 && names.contains(fqn.get(2))))
+               if (names.isEmpty() || (names.size() == 1 && names.contains(fqn.get(3))))
                {
                   if (log.isTraceEnabled())
                      log.trace("Evicting Fqn " + fqn);

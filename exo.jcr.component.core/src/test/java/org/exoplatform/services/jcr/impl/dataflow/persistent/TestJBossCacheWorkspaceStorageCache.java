@@ -49,6 +49,7 @@ public class TestJBossCacheWorkspaceStorageCache extends WorkspaceStorageCacheBa
 
       CacheEntry entry = new CacheEntry(list);
       WorkspaceEntry workspaceEntry = new WorkspaceEntry();
+      workspaceEntry.setUniqueName("WS_UUID");
       workspaceEntry.setCache(entry);
       return new JBossCacheWorkspaceStorageCache(workspaceEntry,
          transactionService == null ? null : transactionService, new ConfigurationManagerImpl());

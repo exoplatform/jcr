@@ -84,16 +84,16 @@ public class JBossCacheIndexInfos extends IndexInfos implements IndexerIoModeLis
    /**
     * @param cache instance of JbossCache that is used to deliver index names
     */
-   public JBossCacheIndexInfos(Cache<Serializable, Object> cache, boolean system, IndexerIoModeHandler modeHandler)
+   public JBossCacheIndexInfos(Fqn<String> rootFqn, Cache<Serializable, Object> cache, boolean system, IndexerIoModeHandler modeHandler)
    {
-      this(DEFALUT_NAME, cache, system, modeHandler);
+      this(rootFqn, DEFALUT_NAME, cache, system, modeHandler);
    }
 
    /**
     * @param fileName where index names are stored.
     * @param cache instance of JbossCache that is used to deliver index names
     */
-   public JBossCacheIndexInfos(String fileName, Cache<Serializable, Object> cache, boolean system,
+   public JBossCacheIndexInfos(Fqn<String> rootFqn, String fileName, Cache<Serializable, Object> cache, boolean system,
       IndexerIoModeHandler modeHandler)
    {
       super(fileName);
@@ -101,7 +101,7 @@ public class JBossCacheIndexInfos extends IndexInfos implements IndexerIoModeLis
       this.modeHandler = modeHandler;
       modeHandler.addIndexerIoModeListener(this);
       // store parsed FQN to avoid it's parsing each time cache event is generated
-      namesFqn = Fqn.fromString(system ? SYSINDEX_NAMES : INDEX_NAMES);
+      namesFqn = Fqn.fromRelativeElements(rootFqn, system ? SYSINDEX_NAMES : INDEX_NAMES);
       Node<Serializable, Object> cacheRoot = cache.getRoot();
       // prepare cache structures
       if (!cacheRoot.hasChild(namesFqn))

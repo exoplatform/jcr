@@ -78,14 +78,14 @@ public class JBossCacheIndexUpdateMonitor implements IndexUpdateMonitor, Indexer
    /**
     * @param cache instance of JbossCache that is used to deliver index names
     */
-   public JBossCacheIndexUpdateMonitor(Cache<Serializable, Object> cache, boolean system,
+   public JBossCacheIndexUpdateMonitor(Fqn<String> rootFqn, Cache<Serializable, Object> cache, boolean system,
       IndexerIoModeHandler modeHandler)
    {
       this.cache = cache;
       this.modeHandler = modeHandler;
       this.listeners = new CopyOnWriteArrayList<IndexUpdateMonitorListener>();
       // store parsed FQN to avoid it's parsing each time cache event is generated
-      this.parametersFqn = Fqn.fromString(system ? INDEX_PARAMETERS : SYSINDEX_PARAMETERS);
+      this.parametersFqn = Fqn.fromRelativeElements(rootFqn, system ? INDEX_PARAMETERS : SYSINDEX_PARAMETERS);
       modeHandler.addIndexerIoModeListener(this);
       Node<Serializable, Object> cacheRoot = cache.getRoot();
 

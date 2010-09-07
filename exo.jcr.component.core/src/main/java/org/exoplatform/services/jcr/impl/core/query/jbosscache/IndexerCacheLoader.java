@@ -29,6 +29,7 @@ import org.jboss.cache.Fqn;
 import org.jboss.cache.Modification;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -42,15 +43,12 @@ import javax.jcr.RepositoryException;
  */
 public class IndexerCacheLoader extends AbstractWriteOnlyCacheLoader
 {
-   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.IndexerCacheLoader");
+   private static final Log log = ExoLogger.getLogger("exo.jcr.component.core.IndexerCacheLoader");
 
-   private SearchManager searchManager;
-
-   private SearchManager parentSearchManager;
-
-   private QueryHandler handler;
-
-   private QueryHandler parentHandler;
+   /**
+    * A map of all the indexers that has been registered
+    */
+   private final Map<Fqn<String>, Indexer> indexers = new HashMap<Fqn<String>, Indexer>();
 
    private volatile IndexerIoModeHandler modeHandler;
 
@@ -62,9 +60,9 @@ public class IndexerCacheLoader extends AbstractWriteOnlyCacheLoader
    {
       // do nothing. Everything is done on prepare phase.
    }
-
+   
    /**
-    * Inject dependencies needed for CacheLoader: SearchManagers and QueryHandlers. 
+    * This method will register a new Indexer according to the given parameters. 
     * 
     * @param searchManager
     * @param parentSearchManager
@@ -72,13 +70,11 @@ public class IndexerCacheLoader extends AbstractWriteOnlyCacheLoader
     * @param parentHandler
     * @throws RepositoryConfigurationException
     */
-   public void init(SearchManager searchManager, SearchManager parentSearchManager, QueryHandler handler,
+   public void register(SearchManager searchManager, SearchManager parentSearchManager, QueryHandler handler,
       QueryHandler parentHandler) throws RepositoryConfigurationException
    {
-      this.searchManager = searchManager;
-      this.parentSearchManager = parentSearchManager;
-      this.handler = handler;
-      this.parentHandler = parentHandler;
+      indexers.put(Fqn.fromElements(searchManager.getWsId()), new Indexer(searchManager, parentSearchManager, handler,
+         parentHandler));
    }
 
    /**
@@ -96,7 +92,8 @@ public class IndexerCacheLoader extends AbstractWriteOnlyCacheLoader
          ChangesFilterListsWrapper wrapper = (ChangesFilterListsWrapper)value;
          try
          {
-            updateIndex(wrapper.getAddedNodes(), wrapper.getRemovedNodes(), wrapper.getParentAddedNodes(), wrapper
+            Indexer indexer = indexers.get(name.getParent());
+            indexer.updateIndex(wrapper.getAddedNodes(), wrapper.getRemovedNodes(), wrapper.getParentAddedNodes(), wrapper
                .getParentRemovedNodes());
          }
          finally
@@ -172,63 +169,86 @@ public class IndexerCacheLoader extends AbstractWriteOnlyCacheLoader
    }
 
    /**
-    * Flushes lists of added/removed nodes to SearchManagers, starting indexing.
-    * 
-    * @param addedNodes
-    * @param removedNodes
-    * @param parentAddedNodes
-    * @param parentRemovedNodes
+    * This class will update the indexes of the related workspace 
     */
-   protected void updateIndex(Set<String> addedNodes, Set<String> removedNodes, Set<String> parentAddedNodes,
-      Set<String> parentRemovedNodes)
+   private static class Indexer
    {
-      // pass lists to search manager 
-      if (searchManager != null && (addedNodes.size() > 0 || removedNodes.size() > 0))
+
+      private final SearchManager searchManager;
+
+      private final SearchManager parentSearchManager;
+
+      private final QueryHandler handler;
+
+      private final QueryHandler parentHandler;
+      
+      public Indexer(SearchManager searchManager, SearchManager parentSearchManager, QueryHandler handler,
+         QueryHandler parentHandler) throws RepositoryConfigurationException
       {
-         try
+         this.searchManager = searchManager;
+         this.parentSearchManager = parentSearchManager;
+         this.handler = handler;
+         this.parentHandler = parentHandler;
+      }      
+      /**
+       * Flushes lists of added/removed nodes to SearchManagers, starting indexing.
+       * 
+       * @param addedNodes
+       * @param removedNodes
+       * @param parentAddedNodes
+       * @param parentRemovedNodes
+       */
+      protected void updateIndex(Set<String> addedNodes, Set<String> removedNodes, Set<String> parentAddedNodes,
+         Set<String> parentRemovedNodes)
+      {
+         // pass lists to search manager 
+         if (searchManager != null && (addedNodes.size() > 0 || removedNodes.size() > 0))
          {
-            searchManager.updateIndex(removedNodes, addedNodes);
-         }
-         catch (RepositoryException e)
-         {
-            log.error("Error indexing changes " + e, e);
-         }
-         catch (IOException e)
-         {
-            log.error("Error indexing changes " + e, e);
             try
             {
-               handler.logErrorChanges(removedNodes, addedNodes);
+               searchManager.updateIndex(removedNodes, addedNodes);
             }
-            catch (IOException ioe)
+            catch (RepositoryException e)
             {
-               log.warn("Exception occure when errorLog writed. Error log is not complete. " + ioe, ioe);
+               log.error("Error indexing changes " + e, e);
+            }
+            catch (IOException e)
+            {
+               log.error("Error indexing changes " + e, e);
+               try
+               {
+                  handler.logErrorChanges(removedNodes, addedNodes);
+               }
+               catch (IOException ioe)
+               {
+                  log.warn("Exception occure when errorLog writed. Error log is not complete. " + ioe, ioe);
+               }
             }
          }
-      }
-      // pass lists to parent search manager 
-      if (parentSearchManager != null && (parentAddedNodes.size() > 0 || parentRemovedNodes.size() > 0))
-      {
-         try
+         // pass lists to parent search manager 
+         if (parentSearchManager != null && (parentAddedNodes.size() > 0 || parentRemovedNodes.size() > 0))
          {
-            parentSearchManager.updateIndex(parentRemovedNodes, parentAddedNodes);
-         }
-         catch (RepositoryException e)
-         {
-            log.error("Error indexing changes " + e, e);
-         }
-         catch (IOException e)
-         {
-            log.error("Error indexing changes " + e, e);
             try
             {
-               parentHandler.logErrorChanges(removedNodes, addedNodes);
+               parentSearchManager.updateIndex(parentRemovedNodes, parentAddedNodes);
             }
-            catch (IOException ioe)
+            catch (RepositoryException e)
             {
-               log.warn("Exception occure when errorLog writed. Error log is not complete. " + ioe, ioe);
+               log.error("Error indexing changes " + e, e);
+            }
+            catch (IOException e)
+            {
+               log.error("Error indexing changes " + e, e);
+               try
+               {
+                  parentHandler.logErrorChanges(removedNodes, addedNodes);
+               }
+               catch (IOException ioe)
+               {
+                  log.warn("Exception occure when errorLog writed. Error log is not complete. " + ioe, ioe);
+               }
             }
          }
-      }
+      }      
    }
 }

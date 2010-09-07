@@ -64,32 +64,36 @@ public class IndexerSingletonStoreCacheLoader extends SingletonStoreCacheLoader
             if (debugEnabled)
                log.debug("start pushing in-memory state to cache cacheLoader collection");
 
-            final Set<String> removedNodes = new HashSet<String>();
-            final Set<String> addedNodes = new HashSet<String>();
-            final Set<String> parentRemovedNodes = new HashSet<String>();
-            final Set<String> parentAddedNodes = new HashSet<String>();
             // merging all lists stored in memory
             Collection<NodeSPI> children = cache.getRoot().getChildren();
-            for (NodeSPI aChildren : children)
+            for (NodeSPI wsChildren : children)
             {
-               Fqn<?> fqn = aChildren.getFqn();
-               Object value = cache.get(fqn, JBossCacheIndexChangesFilter.LISTWRAPPER);
-               if (value != null && value instanceof ChangesFilterListsWrapper)
+               final Set<String> removedNodes = new HashSet<String>();
+               final Set<String> addedNodes = new HashSet<String>();
+               final Set<String> parentRemovedNodes = new HashSet<String>();
+               final Set<String> parentAddedNodes = new HashSet<String>();
+               Collection<NodeSPI> changes = wsChildren.getChildren();
+               for (NodeSPI aChildren : changes)
                {
-                  // get wrapper object
-                  ChangesFilterListsWrapper listsWrapper = (ChangesFilterListsWrapper)value;
-                  // get search manager lists
-                  addedNodes.addAll(listsWrapper.getAddedNodes());
-                  removedNodes.addAll(listsWrapper.getRemovedNodes());
-                  // parent search manager lists
-                  parentAddedNodes.addAll(listsWrapper.getParentAddedNodes());
-                  parentRemovedNodes.addAll(listsWrapper.getParentAddedNodes());
-               };
+                  Fqn<?> fqn = aChildren.getFqn();
+                  Object value = cache.get(fqn, JBossCacheIndexChangesFilter.LISTWRAPPER);
+                  if (value != null && value instanceof ChangesFilterListsWrapper)
+                  {
+                     // get wrapper object
+                     ChangesFilterListsWrapper listsWrapper = (ChangesFilterListsWrapper)value;
+                     // get search manager lists
+                     addedNodes.addAll(listsWrapper.getAddedNodes());
+                     removedNodes.addAll(listsWrapper.getRemovedNodes());
+                     // parent search manager lists
+                     parentAddedNodes.addAll(listsWrapper.getParentAddedNodes());
+                     parentRemovedNodes.addAll(listsWrapper.getParentAddedNodes());
+                  }                  
+               }
+               //TODO: recover logic is here, lists are: removedNodes and addedNodes      String id = IdGenerator.generate();
+               String id = IdGenerator.generate();
+               cache.put(Fqn.fromRelativeElements(wsChildren.getFqn(), id), JBossCacheIndexChangesFilter.LISTWRAPPER, new ChangesFilterListsWrapper(addedNodes,
+                  removedNodes, parentAddedNodes, parentRemovedNodes));
             }
-            //TODO: recover logic is here, lists are: removedNodes and addedNodes      String id = IdGenerator.generate();
-            String id = IdGenerator.generate();
-            cache.put(id, JBossCacheIndexChangesFilter.LISTWRAPPER, new ChangesFilterListsWrapper(addedNodes,
-               removedNodes, parentAddedNodes, parentRemovedNodes));
             if (debugEnabled)
                log.debug("in-memory state passed to cache cacheLoader successfully");
             return null;
