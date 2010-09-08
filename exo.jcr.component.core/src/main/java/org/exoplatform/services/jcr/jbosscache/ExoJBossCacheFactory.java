@@ -38,6 +38,7 @@ import org.jgroups.JChannelFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.HashMap;
@@ -70,7 +71,8 @@ public class ExoJBossCacheFactory<K, V>
    public static final String JGROUPS_MUX_ENABLED = "jgroups-multiplexer-stack";
 
    /**
-    * Keep only one reference of the {@link JChannelFactory}
+    * Keep only one instance of the {@link JChannelFactory} to prevent creating several times the
+    * same multiplexer stack
     */
    private static final JChannelFactory CHANNEL_FACTORY = new JChannelFactory();
    
@@ -78,8 +80,8 @@ public class ExoJBossCacheFactory<K, V>
     * A Map that contains all the registered JBC instances, ordered by
     * {@link ExoContainer} instances, {@link CacheType} and JBC Configuration.
     */
-   private static Map<ExoContainer, Map<CacheType, Map<Configuration, Cache>>> CACHES =
-      new HashMap<ExoContainer, Map<CacheType, Map<Configuration, Cache>>>();
+   private static Map<ExoContainer, Map<CacheType, Map<ConfigurationKey, Cache>>> CACHES =
+      new HashMap<ExoContainer, Map<CacheType, Map<ConfigurationKey, Cache>>>();
 
    private final TemplateConfigurationHelper configurationHelper;
 
@@ -245,36 +247,38 @@ public class ExoJBossCacheFactory<K, V>
       Cache<K, V> cache) throws RepositoryConfigurationException
    {
       ExoContainer container = ExoContainerContext.getCurrentContainer();
-      Map<CacheType, Map<Configuration, Cache>> allCacheTypes = CACHES.get(container);
+      Map<CacheType, Map<ConfigurationKey, Cache>> allCacheTypes = CACHES.get(container);
       if (allCacheTypes == null)
       {
-         allCacheTypes = new HashMap<CacheType, Map<Configuration, Cache>>();
+         allCacheTypes = new HashMap<CacheType, Map<ConfigurationKey, Cache>>();
          CACHES.put(container, allCacheTypes);
       }
-      Map<Configuration, Cache> caches = allCacheTypes.get(cacheType);
+      Map<ConfigurationKey, Cache> caches = allCacheTypes.get(cacheType);
       if (caches == null)
       {
-         caches = new HashMap<Configuration, Cache>();
+         caches = new HashMap<ConfigurationKey, Cache>();
          allCacheTypes.put(cacheType, caches);
       }
-      Configuration cfg;
+      Configuration cfg = cache.getConfiguration();
+      ConfigurationKey key;
       try
       {
-         cfg = cache.getConfiguration().clone();
-         // Ignore the eviction config, since each cache will have his own region
-         cfg.setEvictionConfig(null);
+         key = new ConfigurationKey(cfg);
       }
       catch (CloneNotSupportedException e)
       {
          throw new RepositoryConfigurationException("Cannot clone the configuration.", e);
       }
-      if (caches.containsKey(cfg))
+      if (caches.containsKey(key))
       {
-         cache = caches.get(cfg);
+         cache = caches.get(key);
       }
       else
       {
-         caches.put(cfg, cache);
+         caches.put(key, cache);
+         if (log.isInfoEnabled())
+            log.info("A new JBoss Cache instance has been registered fot the region " + rootFqn + ", a cache of type " + cacheType
+               + " and the container " + container.getContext().getName());
       }
       addEvictionRegion(rootFqn, cache, cfg);
       if (log.isInfoEnabled())
@@ -289,5 +293,65 @@ public class ExoJBossCacheFactory<K, V>
    public enum CacheType 
    {
       JCR_CACHE, INDEX_CACHE, LOCK_CACHE
+   }
+   
+   /**
+    * This class is used to make {@link Configuration} being usable as a Key in an HashMap since
+    * some variables such as <code>jgroupsConfigFile</code> are not managed as expected in the
+    * methods equals and hashCode. Moreover two cache with same config except the EvictionConfig
+    * are considered as identical
+    */
+   private static class ConfigurationKey
+   {
+      private final URL jgroupsConfigFile;
+      private final Configuration conf;
+      
+      public ConfigurationKey(Configuration initialConf) throws CloneNotSupportedException
+      {
+         // Clone it first since it will be modified
+         this.conf = initialConf.clone();
+         this.jgroupsConfigFile = conf.getJGroupsConfigFile();
+         // remove the jgroupsConfigFile from the conf
+         conf.setJgroupsConfigFile(null);
+         // remove the EvictionConfig to ignore it
+         conf.setEvictionConfig(null);
+      }
+
+      @Override
+      public int hashCode()
+      {
+         final int prime = 31;
+         int result = 1;
+         result = prime * result + ((conf == null) ? 0 : conf.hashCode());
+         result = prime * result + ((jgroupsConfigFile == null) ? 0 : jgroupsConfigFile.hashCode());
+         return result;
+      }
+
+      @Override
+      public boolean equals(Object obj)
+      {
+         if (this == obj)
+            return true;
+         if (obj == null)
+            return false;
+         if (getClass() != obj.getClass())
+            return false;
+         ConfigurationKey other = (ConfigurationKey)obj;
+         if (conf == null)
+         {
+            if (other.conf != null)
+               return false;
+         }
+         else if (!conf.equals(other.conf))
+            return false;
+         if (jgroupsConfigFile == null)
+         {
+            if (other.jgroupsConfigFile != null)
+               return false;
+         }
+         else if (!jgroupsConfigFile.equals(other.jgroupsConfigFile))
+            return false;
+         return true;
+      }
    }
 }

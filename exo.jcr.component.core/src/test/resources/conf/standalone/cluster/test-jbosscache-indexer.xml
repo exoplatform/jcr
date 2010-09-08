@@ -8,7 +8,6 @@
 
    <clustering mode="replication" clusterName="${jbosscache-cluster-name}">
       <stateRetrieval timeout="20000" fetchInMemoryState="false" />
-      <jgroupsConfig multiplexerStack="jcr.stack" />
       <sync />
    </clustering>
    <!-- Eviction configuration -->
