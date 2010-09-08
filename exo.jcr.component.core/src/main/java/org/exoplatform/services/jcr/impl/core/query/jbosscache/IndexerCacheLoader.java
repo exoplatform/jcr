@@ -75,6 +75,7 @@ public class IndexerCacheLoader extends AbstractWriteOnlyCacheLoader
    {
       indexers.put(Fqn.fromElements(searchManager.getWsId()), new Indexer(searchManager, parentSearchManager, handler,
          parentHandler));
+      if (log.isDebugEnabled()) log.debug("Register " + searchManager.getWsId() + " " + this + " in " + indexers);
    }
 
    /**
@@ -93,8 +94,16 @@ public class IndexerCacheLoader extends AbstractWriteOnlyCacheLoader
          try
          {
             Indexer indexer = indexers.get(name.getParent());
-            indexer.updateIndex(wrapper.getAddedNodes(), wrapper.getRemovedNodes(), wrapper.getParentAddedNodes(), wrapper
-               .getParentRemovedNodes());
+            if (indexer == null)
+            {
+               log.warn("No indexer could be found for the fqn " + name.getParent());
+               if (log.isDebugEnabled()) log.debug("The current content of the map of indexers is " + indexers);
+            }
+            else
+            {
+               indexer.updateIndex(wrapper.getAddedNodes(), wrapper.getRemovedNodes(), wrapper.getParentAddedNodes(), wrapper
+                  .getParentRemovedNodes());               
+            }
          }
          finally
          {

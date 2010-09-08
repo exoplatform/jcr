@@ -258,7 +258,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
          configureJDBCCacheLoader(config.getLockManager());
 
          cache = factory.createCache(config.getLockManager());
-
+         
          Fqn<String> rootFqn = Fqn.fromElements(config.getUniqueName());
          cache = ExoJBossCacheFactory.getUniqueInstance(CacheType.LOCK_CACHE, rootFqn, cache);
          cache.create();
@@ -266,7 +266,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
          {
             // Add the cache loader needed to prevent TimeoutException
             addCacheLoader();
-            cache.start();
+            PrivilegedCacheHelper.start(cache);
          }
 
          createStructuredNode(lockRoot);

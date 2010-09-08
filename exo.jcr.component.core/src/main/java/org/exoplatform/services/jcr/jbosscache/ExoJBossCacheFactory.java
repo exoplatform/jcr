@@ -70,6 +70,11 @@ public class ExoJBossCacheFactory<K, V>
    public static final String JGROUPS_MUX_ENABLED = "jgroups-multiplexer-stack";
 
    /**
+    * Keep only one reference of the {@link JChannelFactory}
+    */
+   private static final JChannelFactory CHANNEL_FACTORY = new JChannelFactory();
+   
+   /**
     * A Map that contains all the registered JBC instances, ordered by
     * {@link ExoContainer} instances, {@link CacheType} and JBC Configuration.
     */
@@ -170,17 +175,14 @@ public class ExoJBossCacheFactory<K, V>
             if (jgroupsConfigurationFilePath != null)
             {
                // Create and inject multiplexer factory
-               JChannelFactory muxFactory = new JChannelFactory();
-               muxFactory.setMultiplexerConfig(configurationManager.getResource(jgroupsConfigurationFilePath));
-
-               cache.getConfiguration().getRuntimeConfig().setMuxChannelFactory(muxFactory);
+               CHANNEL_FACTORY.setMultiplexerConfig(configurationManager.getResource(jgroupsConfigurationFilePath));
+               cache.getConfiguration().getRuntimeConfig().setMuxChannelFactory(CHANNEL_FACTORY);
                log.info("Multiplexer stack successfully enabled for the cache.");
             }
          }
          catch (Exception e)
          {
             // exception occurred setting mux factory
-            e.printStackTrace();
             throw new RepositoryConfigurationException("Error setting multiplexer configuration.", e);
          }
       }
@@ -259,6 +261,8 @@ public class ExoJBossCacheFactory<K, V>
       try
       {
          cfg = cache.getConfiguration().clone();
+         // Ignore the eviction config, since each cache will have his own region
+         cfg.setEvictionConfig(null);
       }
       catch (CloneNotSupportedException e)
       {
@@ -267,22 +271,23 @@ public class ExoJBossCacheFactory<K, V>
       if (caches.containsKey(cfg))
       {
          cache = caches.get(cfg);
-         if (log.isInfoEnabled())
-            log.info("The region " + rootFqn + " has been registered for a cache of type " + cacheType
-               + " and the container " + container.getContext().getName());
       }
       else
       {
          caches.put(cfg, cache);
       }
       addEvictionRegion(rootFqn, cache, cfg);
+      if (log.isInfoEnabled())
+         log.info("The region " + rootFqn + " has been registered for a cache of type " + cacheType
+            + " and the container " + container.getContext().getName());
       return cache;
    }
 
    /**
     * All the known cache types
     */
-   public enum CacheType {
+   public enum CacheType 
+   {
       JCR_CACHE, INDEX_CACHE, LOCK_CACHE
-   };
+   }
 }

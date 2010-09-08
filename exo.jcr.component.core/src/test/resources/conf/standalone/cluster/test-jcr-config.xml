@@ -51,7 +51,7 @@
                      <property name="jbosscache-configuration" value="test-jbosscache-data.xml" />
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
-                     <property name="jbosscache-cluster-name" value="JCR-cluster-db1-ws" />
+                     <property name="jbosscache-cluster-name" value="JCR-cluster-data" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -62,7 +62,7 @@
                      <property name="jbosscache-configuration" value="test-jbosscache-indexer.xml" />
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
-                     <property name="jbosscache-cluster-name" value="JCR-cluster-indexer-db1-ws" />
+                     <property name="jbosscache-cluster-name" value="JCR-cluster-indexer" />
                      <property name="max-volatile-time" value="60" />
                   </properties>
                </query-handler>
@@ -72,11 +72,11 @@
                      <property name="jbosscache-configuration" value="test-jbosscache-lock.xml" />
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
-                     <property name="jbosscache-cluster-name" value="JCR-cluster-locks-db1-ws" />
-                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1_ws" />
+                     <property name="jbosscache-cluster-name" value="JCR-cluster-locks" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
                      <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
                      <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
-                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1_ws_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
@@ -112,7 +112,7 @@
                      <property name="jbosscache-configuration" value="test-jbosscache-data.xml" />
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
-                     <property name="jbosscache-cluster-name" value="JCR-cluster-db1-ws1" />
+                     <property name="jbosscache-cluster-name" value="JCR-cluster-data" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -123,7 +123,7 @@
                      <property name="jbosscache-configuration" value="test-jbosscache-indexer.xml" />
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
-                     <property name="jbosscache-cluster-name" value="JCR-cluster-indexer-db1-ws1" />
+                     <property name="jbosscache-cluster-name" value="JCR-cluster-indexer" />
                      <property name="max-volatile-time" value="60" />
 
                      <property name="synonymprovider-class"
@@ -143,11 +143,11 @@
                      <property name="jbosscache-configuration" value="test-jbosscache-lock.xml" />
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
-                     <property name="jbosscache-cluster-name" value="JCR-cluster-locks-db1-ws1" />
-                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1_ws1" />
+                     <property name="jbosscache-cluster-name" value="JCR-cluster-locks" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
                      <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
                      <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
-                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1_ws1_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
@@ -183,7 +183,7 @@
                      <property name="jbosscache-configuration" value="test-jbosscache-data.xml" />
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
-                     <property name="jbosscache-cluster-name" value="JCR-cluster-db1-ws2" />
+                     <property name="jbosscache-cluster-name" value="JCR-cluster-data" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -194,7 +194,7 @@
                      <property name="jbosscache-configuration" value="test-jbosscache-indexer.xml" />
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
-                     <property name="jbosscache-cluster-name" value="JCR-cluster-indexer-db1-ws2" />
+                     <property name="jbosscache-cluster-name" value="JCR-cluster-indexer" />
                      <property name="max-volatile-time" value="60" />
 
                      <property name="synonymprovider-class"
@@ -214,11 +214,11 @@
                      <property name="jbosscache-configuration" value="test-jbosscache-lock.xml" />
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
-                     <property name="jbosscache-cluster-name" value="JCR-cluster-locks-db1-ws2" />
-                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1_ws2" />
+                     <property name="jbosscache-cluster-name" value="JCR-cluster-locks" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
                      <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
                      <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
-                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1_ws2_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
@@ -268,7 +268,7 @@
                      <property name="jbosscache-configuration" value="test-jbosscache-data.xml" />
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
-                     <property name="jbosscache-cluster-name" value="JCR-cluster-db1-ws3" />
+                     <property name="jbosscache-cluster-name" value="JCR-cluster-data" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -279,7 +279,7 @@
                      <property name="jbosscache-configuration" value="test-jbosscache-indexer.xml" />
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
-                     <property name="jbosscache-cluster-name" value="JCR-cluster-indexer-db1-ws3" />
+                     <property name="jbosscache-cluster-name" value="JCR-cluster-indexer" />
                      <property name="max-volatile-time" value="60" />
 
                      <property name="synonymprovider-class"
@@ -299,11 +299,11 @@
                      <property name="jbosscache-configuration" value="test-jbosscache-lock.xml" />
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
-                     <property name="jbosscache-cluster-name" value="JCR-cluster-locks-db1-ws3" />
-                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1_ws3" />
+                     <property name="jbosscache-cluster-name" value="JCR-cluster-locks" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
                      <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
                      <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
-                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1_ws3_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
@@ -358,7 +358,7 @@
                      <property name="jbosscache-configuration" value="test-jbosscache-data.xml" />
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
-                     <property name="jbosscache-cluster-name" value="JCR-cluster-db1tck-ws" />
+                     <property name="jbosscache-cluster-name" value="JCR-cluster-data" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -369,7 +369,7 @@
                      <property name="jbosscache-configuration" value="test-jbosscache-indexer.xml" />
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
-                     <property name="jbosscache-cluster-name" value="JCR-cluster-indexer-db1tck-ws" />
+                     <property name="jbosscache-cluster-name" value="JCR-cluster-indexer" />
                      <property name="max-volatile-time" value="60" />
 
                      <property name="synonymprovider-class"
@@ -389,11 +389,11 @@
                      <property name="jbosscache-configuration" value="test-jbosscache-lock.xml" />
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
-                     <property name="jbosscache-cluster-name" value="JCR-cluster-locks-db1tck-ws" />
-                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1tck_ws" />
+                     <property name="jbosscache-cluster-name" value="JCR-cluster-locks" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
                      <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
                      <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
-                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1tck_ws_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
@@ -436,7 +436,7 @@
                      <property name="jbosscache-configuration" value="test-jbosscache-data.xml" />
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
-                     <property name="jbosscache-cluster-name" value="JCR-cluster-db1tck-ws1" />
+                     <property name="jbosscache-cluster-name" value="JCR-cluster-data" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -447,7 +447,7 @@
                      <property name="jbosscache-configuration" value="test-jbosscache-indexer.xml" />
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
-                     <property name="jbosscache-cluster-name" value="JCR-cluster-indexer-db1tck-ws1" />
+                     <property name="jbosscache-cluster-name" value="JCR-cluster-indexer" />
                      <property name="max-volatile-time" value="60" />
                      <property name="synonymprovider-class"
                         value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider" />
@@ -465,11 +465,11 @@
                      <property name="jbosscache-configuration" value="test-jbosscache-lock.xml" />
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
-                     <property name="jbosscache-cluster-name" value="JCR-cluster-locks-db1tck-ws1" />
-                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1tck_ws1" />
+                     <property name="jbosscache-cluster-name" value="JCR-cluster-locks" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
                      <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
                      <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
-                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1tck_ws1_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
@@ -512,7 +512,7 @@
                      <property name="jbosscache-configuration" value="test-jbosscache-data.xml" />
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
-                     <property name="jbosscache-cluster-name" value="JCR-cluster-db1tck-ws2" />
+                     <property name="jbosscache-cluster-name" value="JCR-cluster-data" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -523,7 +523,7 @@
                      <property name="jbosscache-configuration" value="test-jbosscache-indexer.xml" />
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
-                     <property name="jbosscache-cluster-name" value="JCR-cluster-indexer-db1tck-ws2" />
+                     <property name="jbosscache-cluster-name" value="JCR-cluster-indexer" />
                      <property name="max-volatile-time" value="60" />
                      <property name="synonymprovider-class"
                         value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider" />
@@ -544,11 +544,11 @@
                      <property name="jbosscache-configuration" value="test-jbosscache-lock.xml" />
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="jgroups-multiplexer-stack" value="true" />
-                     <property name="jbosscache-cluster-name" value="JCR-cluster-locks-db1tck-ws2" />
-                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1tck_ws2" />
+                     <property name="jbosscache-cluster-name" value="JCR-cluster-locks" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
                      <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
                      <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
-                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1tck_ws2_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
