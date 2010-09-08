@@ -19,6 +19,7 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Fieldable;
+import org.exoplatform.services.document.AdvancedDocumentReader;
 import org.exoplatform.services.document.DocumentReadException;
 import org.exoplatform.services.document.DocumentReader;
 import org.exoplatform.services.document.DocumentReaderService;
@@ -328,42 +329,53 @@ public class NodeIndexer
                   PropertyData encProp =
                      (PropertyData)stateProvider.getItemData(node, new QPathEntry(Constants.JCR_ENCODING, 0));
 
+                  String encoding = null;
                   if (encProp != null)
                   {
                      // encoding parameter used
-                     String encoding = new String(encProp.getValues().get(0).getAsByteArray());
+                     encoding = new String(encProp.getValues().get(0).getAsByteArray());
+                  }
+
+                  if (dreader instanceof AdvancedDocumentReader)
+                  {
+                     // its a tika document reader that supports getContentAsReader
                      for (ValueData pvd : data)
                      {
-                        InputStream is = null;
-                        try
-                        {
-                           is = pvd.getAsStream();
-                           Reader reader = new StringReader(dreader.getContentAsText(is, encoding));
-                           doc.add(createFulltextField(reader));
+                        // tikaDocumentReader will close inputStream, so no need to close it at finally 
+                        // statement
 
-                        }
-                        finally
+                        InputStream is = null;
+                        is = pvd.getAsStream();
+                        Reader reader;
+                        if (encoding != null)
                         {
-                           try
-                           {
-                              is.close();
-                           }
-                           catch (Throwable e)
-                           {
-                           }
+                           reader = ((AdvancedDocumentReader)dreader).getContentAsReader(is, encoding);
                         }
+                        else
+                        {
+                           reader = ((AdvancedDocumentReader)dreader).getContentAsReader(is);
+                        }
+                        doc.add(createFulltextField(reader));
                      }
                   }
                   else
                   {
-                     // no encoding parameter
+                     // old-style document reader
                      for (ValueData pvd : data)
                      {
                         InputStream is = null;
                         try
                         {
                            is = pvd.getAsStream();
-                           Reader reader = new StringReader(dreader.getContentAsText(is));
+                           Reader reader;
+                           if (encoding != null)
+                           {
+                              reader = new StringReader(dreader.getContentAsText(is, encoding));
+                           }
+                           else
+                           {
+                              reader = new StringReader(dreader.getContentAsText(is));
+                           }
                            doc.add(createFulltextField(reader));
                         }
                         finally

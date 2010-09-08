@@ -26,6 +26,7 @@ import org.apache.lucene.search.TermQuery;
 import org.exoplatform.services.document.DocumentReader;
 import org.exoplatform.services.document.DocumentReaderService;
 import org.exoplatform.services.document.impl.MSExcelDocumentReader;
+import org.exoplatform.services.document.impl.tika.TikaDocumentReader;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.query.lucene.FieldNames;
 
@@ -68,7 +69,19 @@ public class TestExcelFileSearch extends BaseQueryTest
 
       System.out.println(dreader);
 
-      assertTrue(dreader instanceof MSExcelDocumentReader);
+      if (dreader instanceof MSExcelDocumentReader)
+      {
+         // OK
+      }
+      else if (dreader instanceof TikaDocumentReader)
+      {
+         String[] mimetypes = ((TikaDocumentReader)dreader).getMimeTypes();
+         assertEquals("application/excel", mimetypes[0]);
+      }
+      else
+      {
+         fail("Wrong document reader");
+      }
 
       // String text = dreader.getContentAsText(fis);
 
