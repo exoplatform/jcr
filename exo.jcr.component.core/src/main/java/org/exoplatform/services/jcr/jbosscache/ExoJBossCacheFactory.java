@@ -234,12 +234,13 @@ public class ExoJBossCacheFactory<K, V>
     * Try to find if a Cache of the same type (i.e. their {@link Configuration} are equals)
     * has already been registered for the same current container and the same {@link CacheType}.
     * If no cache has been registered, we register the given cache otherwise we
-    * use the previously registered cache and we create a dedicated region to the shared cache
+    * use the previously registered cache and we create a dedicated region into the shared cache
     * for the given cache.
     * @param cacheType The type of the target cache
-    * @param rootFqn the rootFq 
+    * @param rootFqn the rootFqn corresponding to root of the region 
     * @param cache the cache to register
-    * @return the unique instance of the same cache registered
+    * @return the given cache if has not been registered otherwise the cache of the same
+    * type that has already been registered
     * @throws RepositoryConfigurationException
     */
    @SuppressWarnings("unchecked")
@@ -277,7 +278,7 @@ public class ExoJBossCacheFactory<K, V>
       {
          caches.put(key, cache);
          if (log.isInfoEnabled())
-            log.info("A new JBoss Cache instance has been registered fot the region " + rootFqn + ", a cache of type " + cacheType
+            log.info("A new JBoss Cache instance has been registered for the region " + rootFqn + ", a cache of type " + cacheType
                + " and the container " + container.getContext().getName());
       }
       addEvictionRegion(rootFqn, cache, cfg);
