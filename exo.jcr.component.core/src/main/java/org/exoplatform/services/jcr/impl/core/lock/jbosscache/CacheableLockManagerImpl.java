@@ -817,8 +817,8 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
       lockRemover.halt();
       lockRemover.interrupt();
       sessionLockManagers.clear();
-
-      PrivilegedCacheHelper.stop(cache);
+      // The cache cannot be stopped since it cans be shared so we evict the root node instead
+      cache.evict(lockRoot);
    }
 
    /**

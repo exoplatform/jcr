@@ -221,11 +221,10 @@ public class ExoJBossCacheFactory<K, V>
       EvictionConfig ec = cfg.getEvictionConfig();
       // Create the region and set the config
       Region region = cache.getRegion(fqn, true);
-      if (ec != null && ec.getDefaultEvictionRegionConfig() != null
-         && ec.getDefaultEvictionRegionConfig().getEvictionAlgorithmConfig() != null)
+      if (ec != null && ec.getDefaultEvictionRegionConfig() != null)
       {
-         EvictionRegionConfig erc =
-            new EvictionRegionConfig(fqn, ec.getDefaultEvictionRegionConfig().getEvictionAlgorithmConfig());
+         EvictionRegionConfig erc = new EvictionRegionConfig(fqn);
+         erc.setDefaults(ec.getDefaultEvictionRegionConfig());
          region.setEvictionRegionConfig(erc);
       }
    }

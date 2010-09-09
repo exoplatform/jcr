@@ -132,6 +132,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
 
    protected final Fqn<String> childPropsList;
 
+   protected final Fqn<String> rootFqn;
+   
    /**
     * Node order comparator for getChildNodes().
     */
@@ -306,7 +308,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
          LOG.info("Using BufferedJBossCache compatible with Expiration algorithm.");
       }
 
-      Fqn<String> rootFqn = Fqn.fromElements(wsConfig.getUniqueName());
+      this.rootFqn = Fqn.fromElements(wsConfig.getUniqueName());
       parentCache = ExoJBossCacheFactory.getUniqueInstance(CacheType.JCR_CACHE, rootFqn, parentCache);
 
       // if expiration is used, set appropriate factory with with timeout set via configuration (or default one 15minutes)
@@ -726,9 +728,25 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
    public long getSize()
    {
       // Total number of JBC nodes in the cache - the total amount of resident nodes
-      return cache.getNumberOfNodes() - 5 * cache.getRoot().getChildrenNames().size();
+      return numNodes(cache.getNode(rootFqn)) - 6;
    }
 
+   /**
+    * Evaluates the total amount of sub-nodes that the given node contains 
+    */
+   private static long numNodes(Node<Serializable, Object> n)
+   {
+      long count = 1;// for n
+      if (n != null)
+      {
+         for (Node<Serializable, Object> child : n.getChildren())
+         {
+            count += numNodes(child);
+         }
+      }
+      return count;
+   }
+   
    /**
     * {@inheritDoc}
     */

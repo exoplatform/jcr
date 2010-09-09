@@ -73,8 +73,8 @@ public class ParentNodeEvictionActionPolicy implements EvictionActionPolicy
          if (parentFqn.get(1).equals(JBossCacheWorkspaceStorageCache.CHILD_NODES)
             || parentFqn.get(1).equals(JBossCacheWorkspaceStorageCache.CHILD_PROPS))
          {
-            // The expected data structure is of type $CHILD_NODES/${node-id}/${sub-node-name} or
-            // $CHILD_PROPS/${node-id}/${sub-property-name}
+            // The expected data structure is of type ${ws-id}/$CHILD_NODES/${node-id}/${sub-node-name} or
+            // ${ws-id}/$CHILD_PROPS/${node-id}/${sub-property-name}
 
             // We use the method getChildrenNamesDirect to avoid going through 
             // the intercepter chain (EXOJCR-460)
