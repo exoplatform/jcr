@@ -316,7 +316,8 @@ public class NodeIndexer
                try
                {
                   DocumentReader dreader =
-                     extractor.getDocumentReader(new String(pmime.getValues().get(0).getAsByteArray()));
+                     extractor.getDocumentReader(new String(pmime.getValues().get(0).getAsByteArray(),
+                        Constants.DEFAULT_ENCODING));
 
                   data = propData.getValues();
 
@@ -333,7 +334,7 @@ public class NodeIndexer
                   if (encProp != null)
                   {
                      // encoding parameter used
-                     encoding = new String(encProp.getValues().get(0).getAsByteArray());
+                     encoding = new String(encProp.getValues().get(0).getAsByteArray(), Constants.DEFAULT_ENCODING);
                   }
 
                   if (dreader instanceof AdvancedDocumentReader)
