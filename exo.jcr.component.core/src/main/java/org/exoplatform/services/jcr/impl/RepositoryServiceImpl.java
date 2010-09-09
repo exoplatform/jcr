@@ -31,7 +31,6 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
 import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
-import org.exoplatform.services.jcr.impl.core.AddNamespacePluginHolder;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.log.ExoLogger;
@@ -46,10 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
 
-import javax.jcr.NamespaceException;
-import javax.jcr.NamespaceRegistry;
 import javax.jcr.RepositoryException;
 
 /**
@@ -107,33 +103,12 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
       }
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public boolean canRemoveRepository(String name) throws RepositoryException
    {
-      RepositoryImpl repo = (RepositoryImpl)getRepository(name);
-      try
-      {
-         RepositoryEntry repconfig = config.getRepositoryConfiguration(name);
-
-         for (WorkspaceEntry wsEntry : repconfig.getWorkspaceEntries())
-         {
-            // Check non system workspaces
-            if (!repo.getSystemWorkspaceName().equals(wsEntry.getName()) && !repo.canRemoveWorkspace(wsEntry.getName()))
-               return false;
-         }
-         // check system workspace
-         RepositoryContainer repositoryContainer = repositoryContainers.get(name);
-         SessionRegistry sessionRegistry =
-            (SessionRegistry)repositoryContainer.getComponentInstance(SessionRegistry.class);
-         if (sessionRegistry == null || sessionRegistry.isInUse(repo.getSystemWorkspaceName()))
-            return false;
-
-      }
-      catch (RepositoryConfigurationException e)
-      {
-         throw new RepositoryException(e);
-      }
-
-      return true;
+      return canRemoveRepository(name, false);
    }
 
    /**
@@ -222,34 +197,12 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
       return (ManageableRepository)repositoryContainer.getComponentInstanceOfType(ManageableRepository.class);
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void removeRepository(String name) throws RepositoryException
    {
-      if (!canRemoveRepository(name))
-         throw new RepositoryException("Repository " + name + " in use. If you want to "
-            + " remove repository close all open sessions");
-
-      try
-      {
-         RepositoryEntry repconfig = config.getRepositoryConfiguration(name);
-         RepositoryImpl repo = (RepositoryImpl)getRepository(name);
-         for (WorkspaceEntry wsEntry : repconfig.getWorkspaceEntries())
-         {
-            repo.internalRemoveWorkspace(wsEntry.getName());
-         }
-         repconfig.getWorkspaceEntries().clear();
-         RepositoryContainer repositoryContainer = repositoryContainers.get(name);
-         repositoryContainer.stop();
-         repositoryContainers.remove(name);
-         config.getRepositoryConfigurations().remove(repconfig);
-      }
-      catch (RepositoryConfigurationException e)
-      {
-         throw new RepositoryException(e);
-      }
-      catch (Exception e)
-      {
-         throw new RepositoryException(e);
-      }
+      removeRepository(name, false);
    }
 
    public void setCurrentRepositoryName(String repositoryName) throws RepositoryConfigurationException
@@ -303,6 +256,17 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
       managerStartChanges.cleanup();
    }
 
+   /**
+    * Remove default repository.
+    * 
+    * @throws RepositoryException
+    *          if any Exception occurred during removing
+    */
+   protected void removeDefaultRepository() throws RepositoryException
+   {
+      removeRepository(config.getDefaultRepositoryName(), true);
+   }
+
    private void init(ExoContainer container) throws RepositoryConfigurationException, RepositoryException
    {
       this.parentContainer = container;
@@ -350,7 +314,7 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
                   log.debug("Node types is registered from xml-file " + nodeTypeFilesName);
                }
             }
-            
+
             List<String> defaultNodeTypesFiles = plugin.getNodeTypesFiles(repositoryName);
             if (defaultNodeTypesFiles != null && defaultNodeTypesFiles.size() > 0)
             {
@@ -365,7 +329,7 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
                   {
                      throw new RepositoryException(e);
                   }
-                  
+
                   log.info("Trying register node types (" + repositoryName + ") from xml-file " + nodeTypeFilesName);
                   ntManager.registerNodeTypes(inXml, ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
                   log.info("Node types is registered (" + repositoryName + ") from xml-file " + nodeTypeFilesName);
@@ -373,6 +337,92 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
             }
          }
       }
+   }
+
+   /**
+    * Remove repository with specific name.
+    * 
+    * @param name
+    *          repository name
+    * @param allowRemoveDefaultRepository
+    *          allow to remove default repository
+    * @throws RepositoryException
+    *          if any Exception occurred
+    */
+   private void removeRepository(String name, boolean allowRemoveDefaultRepository) throws RepositoryException
+   {
+      if (!canRemoveRepository(name, allowRemoveDefaultRepository))
+         throw new RepositoryException("Repository " + name + " in use. If you want to "
+            + " remove repository close all open sessions");
+
+      try
+      {
+         RepositoryEntry repconfig = config.getRepositoryConfiguration(name);
+         RepositoryImpl repo = (RepositoryImpl)getRepository(name);
+         for (WorkspaceEntry wsEntry : repconfig.getWorkspaceEntries())
+         {
+            repo.internalRemoveWorkspace(wsEntry.getName());
+         }
+         repconfig.getWorkspaceEntries().clear();
+         RepositoryContainer repositoryContainer = repositoryContainers.get(name);
+         repositoryContainer.stop();
+         repositoryContainers.remove(name);
+         config.getRepositoryConfigurations().remove(repconfig);
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         throw new RepositoryException(e);
+      }
+      catch (Exception e)
+      {
+         throw new RepositoryException(e);
+      }
+   }
+
+   /**
+    * Indicates if repository with specific name can be removed.
+    * 
+    * @param name
+    *          repository name
+    * @param allowRemoveDefaultRepository
+    *          allow to remove default repository 
+    * @return
+    *          true if repository can be removed or false in other case
+    * @throws RepositoryException
+    *          if any Exception occurred
+    */
+   private boolean canRemoveRepository(String name, boolean allowRemoveDefaultRepository) throws RepositoryException
+   {
+      if (!allowRemoveDefaultRepository && name.equals(config.getDefaultRepositoryName()))
+      {
+         return false;
+      }
+
+      RepositoryImpl repo = (RepositoryImpl)getRepository(name);
+      try
+      {
+         RepositoryEntry repconfig = config.getRepositoryConfiguration(name);
+
+         for (WorkspaceEntry wsEntry : repconfig.getWorkspaceEntries())
+         {
+            // Check non system workspaces
+            if (!repo.getSystemWorkspaceName().equals(wsEntry.getName()) && !repo.canRemoveWorkspace(wsEntry.getName()))
+               return false;
+         }
+         // check system workspace
+         RepositoryContainer repositoryContainer = repositoryContainers.get(name);
+         SessionRegistry sessionRegistry =
+            (SessionRegistry)repositoryContainer.getComponentInstance(SessionRegistry.class);
+         if (sessionRegistry == null || sessionRegistry.isInUse(repo.getSystemWorkspaceName()))
+            return false;
+
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         throw new RepositoryException(e);
+      }
+
+      return true;
    }
 
    /**
@@ -478,6 +528,7 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
          /**
           * {@inheritDoc}
           */
+         @Override
          public boolean equals(Object o)
          {
             StorageKey k = (StorageKey)o;
@@ -489,6 +540,7 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
          /**
           * {@inheritDoc}
           */
+         @Override
          public int hashCode()
          {
             return repositoryName.hashCode() ^ workspaceName.hashCode() ^ listenerClassName.hashCode();
