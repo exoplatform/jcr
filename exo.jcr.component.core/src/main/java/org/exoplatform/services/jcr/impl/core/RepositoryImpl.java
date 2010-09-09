@@ -181,17 +181,7 @@ public class RepositoryImpl implements ManageableRepository
     */
    public boolean canRemoveWorkspace(String workspaceName) throws NoSuchWorkspaceException
    {
-      if (repositoryContainer.getWorkspaceEntry(workspaceName) == null)
-         throw new NoSuchWorkspaceException("No such workspace " + workspaceName);
-
-      if (workspaceName.equals(config.getSystemWorkspaceName()))
-         return false;
-
-      SessionRegistry sessionRegistry =
-         (SessionRegistry)repositoryContainer.getComponentInstance(SessionRegistry.class);
-
-      return sessionRegistry != null && !sessionRegistry.isInUse(workspaceName);
-
+      return canRemoveWorkspace(workspaceName, false);
    }
 
    /**
@@ -637,13 +627,7 @@ public class RepositoryImpl implements ManageableRepository
     */
    public void removeWorkspace(String workspaceName) throws RepositoryException
    {
-      if (!canRemoveWorkspace(workspaceName))
-
-         throw new RepositoryException("Workspace " + workspaceName + " in use. If you want to "
-            + " remove workspace close all open sessions");
-
-      internalRemoveWorkspace(workspaceName);
-      config.getWorkspaceEntries().remove(repositoryContainer.getWorkspaceEntry(workspaceName));
+      removeWorkspace(workspaceName, false);
    }
 
    /**
@@ -654,23 +638,7 @@ public class RepositoryImpl implements ManageableRepository
     */
    protected void removeSystemWorkspace() throws RepositoryException
    {
-
-      //check system workspace
-      String sysWSName = config.getSystemWorkspaceName();
-      if (repositoryContainer.getWorkspaceEntry(sysWSName) == null)
-         throw new NoSuchWorkspaceException("No system workspace " + sysWSName);
-
-      SessionRegistry sessionRegistry =
-         (SessionRegistry)repositoryContainer.getComponentInstance(SessionRegistry.class);
-
-      if (sessionRegistry != null && !sessionRegistry.isInUse(sysWSName))
-      {
-         throw new RepositoryException("Workspace " + sysWSName + " in use. If you want to "
-            + " remove workspace close all open sessions");
-      }
-
-      internalRemoveWorkspace(sysWSName);
-      config.getWorkspaceEntries().remove(repositoryContainer.getWorkspaceEntry(sysWSName));
+      removeWorkspace(config.getSystemWorkspaceName(), true);
    }
 
    /**
@@ -733,6 +701,55 @@ public class RepositoryImpl implements ManageableRepository
          PersistentDataManager dataManager = (PersistentDataManager)wsFacade.getComponent(PersistentDataManager.class);
          dataManager.setReadOnly(wsStatus);
       }
+   }
+
+   /**
+    * Remove workspace.
+    * 
+    * @param workspaceName
+    *          workspace name
+    * @param allowRemoveSystemWorkspacew
+    *          allow to remove system workspace
+    * @throws RepositoryException
+    *          if any Exception is occurred
+    */
+   private void removeWorkspace(String workspaceName, boolean allowRemoveSystemWorkspacew) throws RepositoryException
+   {
+      if (!canRemoveWorkspace(workspaceName, allowRemoveSystemWorkspacew))
+
+         throw new RepositoryException("Workspace " + workspaceName + " in use. If you want to "
+            + " remove workspace close all open sessions");
+
+      internalRemoveWorkspace(workspaceName);
+      config.getWorkspaceEntries().remove(repositoryContainer.getWorkspaceEntry(workspaceName));
+   }
+
+   /**
+    * Indicates if specific workspace can be removed.
+    * 
+    * @param workspaceName
+    *          workspace name
+    * @param allowRemoveSystemWorkspace
+    *          allow to remove system workspacw
+    * @return
+    *          true if workspace can be removed or false in ather case
+    * @throws NoSuchWorkspaceException
+    *          if any Exception is occured
+    */
+   private boolean canRemoveWorkspace(String workspaceName, boolean allowRemoveSystemWorkspace)
+      throws NoSuchWorkspaceException
+   {
+      if (repositoryContainer.getWorkspaceEntry(workspaceName) == null)
+         throw new NoSuchWorkspaceException("No such workspace " + workspaceName);
+
+      if (!allowRemoveSystemWorkspace && workspaceName.equals(config.getSystemWorkspaceName()))
+         return false;
+
+      SessionRegistry sessionRegistry =
+         (SessionRegistry)repositoryContainer.getComponentInstance(SessionRegistry.class);
+
+      return sessionRegistry != null && !sessionRegistry.isInUse(workspaceName);
+
    }
 
    @Override
