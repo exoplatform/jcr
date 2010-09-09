@@ -638,12 +638,39 @@ public class RepositoryImpl implements ManageableRepository
    public void removeWorkspace(String workspaceName) throws RepositoryException
    {
       if (!canRemoveWorkspace(workspaceName))
-         
+
          throw new RepositoryException("Workspace " + workspaceName + " in use. If you want to "
             + " remove workspace close all open sessions");
 
       internalRemoveWorkspace(workspaceName);
       config.getWorkspaceEntries().remove(repositoryContainer.getWorkspaceEntry(workspaceName));
+   }
+
+   /**
+    * Remove system workspace.
+    * Workspace become stopped, removed from container and removed from repository configuration.
+    * 
+    * @throws RepositoryException - if workspace is in use, or can't be removed for other reason
+    */
+   protected void removeSystemWorkspace() throws RepositoryException
+   {
+
+      //check system workspace
+      String sysWSName = config.getSystemWorkspaceName();
+      if (repositoryContainer.getWorkspaceEntry(sysWSName) == null)
+         throw new NoSuchWorkspaceException("No system workspace " + sysWSName);
+
+      SessionRegistry sessionRegistry =
+         (SessionRegistry)repositoryContainer.getComponentInstance(SessionRegistry.class);
+
+      if (sessionRegistry != null && !sessionRegistry.isInUse(sysWSName))
+      {
+         throw new RepositoryException("Workspace " + sysWSName + " in use. If you want to "
+            + " remove workspace close all open sessions");
+      }
+
+      internalRemoveWorkspace(sysWSName);
+      config.getWorkspaceEntries().remove(repositoryContainer.getWorkspaceEntry(sysWSName));
    }
 
    /**
