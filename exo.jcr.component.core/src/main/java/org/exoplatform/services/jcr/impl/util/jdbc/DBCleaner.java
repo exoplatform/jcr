@@ -16,13 +16,13 @@
  */
 package org.exoplatform.services.jcr.impl.util.jdbc;
 
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
 
 /**
  * The goal of this class is remove workspace data from database.
@@ -102,7 +102,7 @@ public class DBCleaner
       }
       catch (SQLException e)
       {
-         
+
          // TODO do we need rollback here?
          try
          {
@@ -133,17 +133,14 @@ public class DBCleaner
       REMOVE_ITEMS = "delete from JCR_SITEM where CONTAINER_NAME=?";
 
       REMOVE_VALUES =
-         "delete from JCR_SVALUE V where exists "
-            + "( select * from JCR_SITEM I where I.ID=V.PROPERTY_ID and I.CONTAINER_NAME=? )";
+         "delete from JCR_SVALUE where exists"
+            + "(select * from JCR_SITEM where JCR_SITEM.ID=JCR_SVALUE.PROPERTY_ID and JCR_SITEM.CONTAINER_NAME=?)";
 
-      //TODO R.PROPERTY_ID or R.NODE_ID?
       REMOVE_REFERENCES =
-         "delete from JCR_SREF R where exists "
-            + "( select * from JCR_SITEM I where I.ID=R.PROPERTY_ID and I.CONTAINER_NAME=? )";
+         "delete from JCR_SREF where exists"
+            + "(select * from JCR_SITEM where JCR_SITEM.ID=JCR_SREF.PROPERTY_ID and JCR_SITEM.CONTAINER_NAME=?)";
 
       // for multi db support
-      //TODO do we need remove indexes? 
-      //different databases may be configured to use different indexes
       DROP_JCR_MITEM_TABLE = "DROP TABLE JCR_MITEM";
       DROP_JCR_MVALUE_TABLE = "DROP TABLE JCR_MVALUE";
       DROP_MREF_TABLE = "DROP TABLE JCR_MREF";
