@@ -75,7 +75,6 @@
                   <name>autoCreatedInNewRepository</name>
                   <description>Node types configuration file for repository with name testInitNodeTypesRepositoryTest2</description>
                   <value>jar:/conf/test/webdav-nodetypes.xml</value>
-                  <value>jar:/conf/test/organization-nodetypes.xml</value>
                   <value>jar:/conf/test/ext-nodetypes-config.xml</value>
                </values-param>
             </init-params>
