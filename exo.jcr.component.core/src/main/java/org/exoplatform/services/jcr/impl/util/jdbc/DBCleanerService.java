@@ -16,10 +16,6 @@
  */
 package org.exoplatform.services.jcr.impl.util.jdbc;
 
-import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
-import org.exoplatform.services.jcr.config.RepositoryEntry;
-import org.exoplatform.services.jcr.config.WorkspaceEntry;
-
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -29,6 +25,12 @@ import javax.jcr.RepositoryException;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
+
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.config.RepositoryEntry;
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 /**
  * Created by The eXo Platform SAS.
@@ -40,6 +42,7 @@ import javax.sql.DataSource;
  */
 public class DBCleanerService
 {
+   protected final static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.DBCleanerService");
 
    public static void removeWorkspaceData(WorkspaceEntry wsConfig) throws RepositoryConfigurationException,
       NamingException, RepositoryException, IOException
@@ -54,7 +57,6 @@ public class DBCleanerService
             ds != null ? ds.getConnection() : (wsJDBCConfig.getDbUserName() != null ? DriverManager.getConnection(
                wsJDBCConfig.getDbUrl(), wsJDBCConfig.getDbUserName(), wsJDBCConfig.getDbPassword()) : DriverManager
                .getConnection(wsJDBCConfig.getDbUrl()));
-
       }
       catch (SQLException e)
       {
@@ -64,17 +66,12 @@ public class DBCleanerService
          throw new RepositoryException(err, e);
       }
 
-      DBCleaner cleaner = new DBCleaner(conn, wsJDBCConfig.getContainerName());
-      // check is multi db
-      if (wsJDBCConfig.isMultiDb())
-      {
-         //remove table
-         cleaner.removeWorkspace();
-      }
-      else
-      {
-         // clean up all record of this container
-         cleaner.cleanupWorkspace();
+      DBCleaner cleaner = new DBCleaner(conn, wsJDBCConfig.getContainerName(), wsJDBCConfig.isMultiDb());
+
+      try{
+        cleaner.cleanWorkspace();
+      }catch(DBCleanerException e){
+         throw new RepositoryException(e.getMessage(),e);
       }
    }
 

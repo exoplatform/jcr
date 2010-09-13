@@ -17,6 +17,12 @@
 package org.exoplatform.services.jcr.impl.util.jdbc;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 /**
  * The goal of this class is remove workspace data from database.
@@ -29,6 +35,8 @@ import java.sql.Connection;
  */
 public class DBCleaner
 {
+
+   protected final static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.DBCleaner");
 
    protected String REMOVE_ITEMS;
 
@@ -46,50 +54,175 @@ public class DBCleaner
 
    private final String containerName;
 
+   private final boolean isMultiDB;
+
    /**
     * Constructor.
     * 
     * @param containerName - workspace name
     * @param connection - SQL conneciton
     */
-   public DBCleaner(Connection connection, String containerName)
+   public DBCleaner(Connection connection, String containerName, boolean isMulti)
    {
       this.connection = connection;
       this.containerName = containerName;
+      this.isMultiDB = isMulti;
       prepareQueries();
+   }
+
+   /**
+    * Remove workspace data from database.
+    * <ul>
+    * <li>If workspace uses multiDB data source - tables associated with this workspace
+    * will be dropped.
+    * <li>If workspace uses singleDB data source - all records of this workspace will
+    * be removed.
+    * </ul> 
+    *  
+    * <p>Connection used by this method will be closed at final.
+    * 
+    * @throws DBCleanerException - if exception during data cleanup occures.
+    */
+   public void cleanWorkspace() throws DBCleanerException
+   {
+      try
+      {
+         // check is multi db
+         if (isMultiDB)
+         {
+            //remove table
+            dropWorkspace();
+         }
+         else
+         {
+            // clean up all record of this container
+            removeWorkspaceRecords();
+         }
+         connection.commit();
+      }
+      catch (SQLException e)
+      {
+         
+         // TODO do we need rollback here?
+         try
+         {
+            connection.rollback();
+         }
+         catch (SQLException rollbackException)
+         {
+            LOG.error("Can not rollback changes after exception " + e.getMessage(), rollbackException);
+         }
+         throw new DBCleanerException(e.getMessage(), e);
+      }
+      finally
+      {
+         try
+         {
+            connection.close();
+         }
+         catch (SQLException e)
+         {
+            LOG.error("Error of a connection closing. " + e, e);
+         }
+      }
    }
 
    protected void prepareQueries()
    {
-
-   }
-
-   public void removeWorkspace()
-   {
-
-   }
-
-   public void cleanupWorkspace()
-   {
       //for single db support
       REMOVE_ITEMS = "delete from JCR_SITEM where CONTAINER_NAME=?";
 
-      REMOVE_VALUES = "delete from JCR_SVALUE where PROPERTY_ID=?";
-      REMOVE_REFERENCES = "delete from JCR_SREF where PROPERTY_ID=?";
+      REMOVE_VALUES =
+         "delete from JCR_SVALUE V where exists "
+            + "( select * from JCR_SITEM I where I.ID=V.PROPERTY_ID and I.CONTAINER_NAME=? )";
+
+      //TODO R.PROPERTY_ID or R.NODE_ID?
+      REMOVE_REFERENCES =
+         "delete from JCR_SREF R where exists "
+            + "( select * from JCR_SITEM I where I.ID=R.PROPERTY_ID and I.CONTAINER_NAME=? )";
 
       // for multi db support
+      //TODO do we need remove indexes? 
+      //different databases may be configured to use different indexes
       DROP_JCR_MITEM_TABLE = "DROP TABLE JCR_MITEM";
       DROP_JCR_MVALUE_TABLE = "DROP TABLE JCR_MVALUE";
       DROP_MREF_TABLE = "DROP TABLE JCR_MREF";
-
-      //      DROP TABLE orders;
-      //      DROP DATABASE mydatabase;
-      //      DROP VIEW viewname;
-      //      DROP INDEX orders.indexname;
-      //
-      //      -- FOR USE WITH ALTER COMMANDS
-      //      DROP COLUMN column_name
-      //      DROP FOREIGN KEY (foreign_key_name)
    }
 
+   protected void dropWorkspace() throws SQLException
+   {
+      final Statement statement = connection.createStatement();
+      connection.setAutoCommit(false);
+
+      try
+      {
+         // order of dropped tables is important
+         statement.executeUpdate(DROP_MREF_TABLE);
+         statement.executeUpdate(DROP_JCR_MVALUE_TABLE);
+         statement.executeUpdate(DROP_JCR_MITEM_TABLE);
+      }
+      finally
+      {
+         if (statement != null)
+         {
+            try
+            {
+               statement.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the Statement: " + e);
+            }
+         }
+      }
+   }
+
+   protected void removeWorkspaceRecords() throws SQLException
+   {
+      PreparedStatement statements = null;
+      try
+      {
+         statements = connection.prepareStatement(REMOVE_REFERENCES);
+         statements.setString(1, containerName);
+         statements.executeUpdate();
+      }
+      finally
+      {
+         if (statements != null)
+         {
+            statements.close();
+            statements = null;
+         }
+      }
+
+      try
+      {
+         statements = connection.prepareStatement(REMOVE_VALUES);
+         statements.setString(1, containerName);
+         statements.executeUpdate();
+      }
+      finally
+      {
+         if (statements != null)
+         {
+            statements.close();
+            statements = null;
+         }
+      }
+
+      try
+      {
+         statements = connection.prepareStatement(REMOVE_ITEMS);
+         statements.setString(1, containerName);
+         statements.executeUpdate();
+      }
+      finally
+      {
+         if (statements != null)
+         {
+            statements.close();
+            statements = null;
+         }
+      }
+   }
 }
