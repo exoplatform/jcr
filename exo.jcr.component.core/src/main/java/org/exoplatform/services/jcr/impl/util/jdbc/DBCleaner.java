@@ -21,6 +21,7 @@ import org.exoplatform.services.log.Log;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -38,11 +39,17 @@ public class DBCleaner
 
    protected final static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.DBCleaner");
 
+   protected String REMOVE_PROPERTIES;
+
+   protected String REMOVE_ROOT;
+
    protected String REMOVE_ITEMS;
 
    protected String REMOVE_VALUES;
 
    protected String REMOVE_REFERENCES;
+
+   protected String GET_CHILD_IDS;
 
    protected String DROP_JCR_MITEM_TABLE;
 
@@ -87,6 +94,7 @@ public class DBCleaner
    {
       try
       {
+         //connection.setAutoCommit(false);
          // check is multi db
          if (isMultiDB)
          {
@@ -98,7 +106,7 @@ public class DBCleaner
             // clean up all record of this container
             removeWorkspaceRecords();
          }
-         connection.commit();
+         //connection.commit();
       }
       catch (SQLException e)
       {
@@ -130,7 +138,17 @@ public class DBCleaner
    protected void prepareQueries()
    {
       //for single db support
-      REMOVE_ITEMS = "delete from JCR_SITEM where CONTAINER_NAME=?";
+
+      REMOVE_PROPERTIES = "delete from JCR_SITEM where I_CLASS=2 and CONTAINER_NAME=?";
+
+      GET_CHILD_IDS =
+         "select ID from JCR_SITEM where CONTAINER_NAME=? and ID not in(select PARENT_ID from JCR_SITEM where CONTAINER_NAME=?)";
+
+      REMOVE_ITEMS =
+      //   "delete from JCR_SITEM where CONTAINER_NAME=?";
+         "delete from JCR_SITEM where ID in( ? )";
+
+      //REMOVE_ROOT = "delete from JCR_SITEM where CONTAINER_NAME=? and ID=?";
 
       REMOVE_VALUES =
          "delete from JCR_SVALUE where exists"
@@ -176,10 +194,18 @@ public class DBCleaner
 
    protected void removeWorkspaceRecords() throws SQLException
    {
+      executeUpdate(connection, REMOVE_REFERENCES, containerName);
+      executeUpdate(connection, REMOVE_VALUES, containerName);
+
+      clearItems(connection, containerName);
+   }
+
+   protected void executeUpdate(Connection connection, String query, String containerName) throws SQLException
+   {
       PreparedStatement statements = null;
       try
       {
-         statements = connection.prepareStatement(REMOVE_REFERENCES);
+         statements = connection.prepareStatement(query);
          statements.setString(1, containerName);
          statements.executeUpdate();
       }
@@ -191,34 +217,65 @@ public class DBCleaner
             statements = null;
          }
       }
+   }
+
+   protected void clearItems(Connection connection, String containerName) throws SQLException
+   {
+      executeUpdate(connection, REMOVE_PROPERTIES, containerName);
+
+      // Remove only child nodes in cycle, till all nodes will be removed.
+      // Such algorithm used to avoid any constraint violation exception related to foreign key.
+
+      PreparedStatement getChildItems = null;
+      PreparedStatement removeItems = null;
 
       try
       {
-         statements = connection.prepareStatement(REMOVE_VALUES);
-         statements.setString(1, containerName);
-         statements.executeUpdate();
-      }
-      finally
-      {
-         if (statements != null)
+         getChildItems = connection.prepareStatement(GET_CHILD_IDS);
+         getChildItems.setString(1, containerName);
+         getChildItems.setString(2, containerName);
+
+         // TODO constant
+         getChildItems.setMaxRows(100);
+
+         //removeItems = connection.prepareStatement(REMOVE_ITEMS);
+
+         do
          {
-            statements.close();
-            statements = null;
+            ResultSet result = getChildItems.executeQuery();
+            if (result.first())
+            {
+               StringBuilder childListBuilder = new StringBuilder("'" + result.getString(1) + "'");
+               while (result.next())
+               {
+                  childListBuilder.append(" , '" + result.getString(1) + "'");
+               }
+
+               // now remove nodes;
+               String q = REMOVE_ITEMS.replace("?", childListBuilder.toString());
+               removeItems = connection.prepareStatement(q);
+               //removeItems.se.setString(1, childListBuilder.toString());
+               int res = removeItems.executeUpdate();
+            }
+            else
+            {
+               break;
+            }
+
          }
-      }
-
-      try
-      {
-         statements = connection.prepareStatement(REMOVE_ITEMS);
-         statements.setString(1, containerName);
-         statements.executeUpdate();
+         while (true);
       }
       finally
       {
-         if (statements != null)
+         if (getChildItems != null)
          {
-            statements.close();
-            statements = null;
+            getChildItems.close();
+            getChildItems = null;
+         }
+         if (removeItems != null)
+         {
+            removeItems.close();
+            removeItems = null;
          }
       }
    }
