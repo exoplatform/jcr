@@ -39,9 +39,9 @@ public class DBCleaner
 
    protected final static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.DBCleaner");
 
-   protected String REMOVE_PROPERTIES;
+   protected final static int MAX_IDS_RETURNED = 100;
 
-   protected String REMOVE_ROOT;
+   protected String REMOVE_PROPERTIES;
 
    protected String REMOVE_ITEMS;
 
@@ -94,7 +94,7 @@ public class DBCleaner
    {
       try
       {
-         //connection.setAutoCommit(false);
+         connection.setAutoCommit(false);
          // check is multi db
          if (isMultiDB)
          {
@@ -106,12 +106,10 @@ public class DBCleaner
             // clean up all record of this container
             removeWorkspaceRecords();
          }
-         //connection.commit();
+         connection.commit();
       }
       catch (SQLException e)
       {
-
-         // TODO do we need rollback here?
          try
          {
             connection.rollback();
@@ -144,11 +142,8 @@ public class DBCleaner
       GET_CHILD_IDS =
          "select ID from JCR_SITEM where CONTAINER_NAME=? and ID not in(select PARENT_ID from JCR_SITEM where CONTAINER_NAME=?)";
 
-      REMOVE_ITEMS =
       //   "delete from JCR_SITEM where CONTAINER_NAME=?";
-         "delete from JCR_SITEM where ID in( ? )";
-
-      //REMOVE_ROOT = "delete from JCR_SITEM where CONTAINER_NAME=? and ID=?";
+      REMOVE_ITEMS = "delete from JCR_SITEM where ID in( ? )";
 
       REMOVE_VALUES =
          "delete from JCR_SVALUE where exists"
@@ -225,9 +220,8 @@ public class DBCleaner
 
       // Remove only child nodes in cycle, till all nodes will be removed.
       // Such algorithm used to avoid any constraint violation exception related to foreign key.
-
       PreparedStatement getChildItems = null;
-      PreparedStatement removeItems = null;
+      Statement removeItems = connection.createStatement();
 
       try
       {
@@ -235,33 +229,27 @@ public class DBCleaner
          getChildItems.setString(1, containerName);
          getChildItems.setString(2, containerName);
 
-         // TODO constant
-         getChildItems.setMaxRows(100);
-
-         //removeItems = connection.prepareStatement(REMOVE_ITEMS);
+         getChildItems.setMaxRows(MAX_IDS_RETURNED);
 
          do
          {
             ResultSet result = getChildItems.executeQuery();
-            if (result.first())
+            StringBuilder childListBuilder = new StringBuilder();
+            if (result.next())
             {
-               StringBuilder childListBuilder = new StringBuilder("'" + result.getString(1) + "'");
-               while (result.next())
-               {
-                  childListBuilder.append(" , '" + result.getString(1) + "'");
-               }
-
-               // now remove nodes;
-               String q = REMOVE_ITEMS.replace("?", childListBuilder.toString());
-               removeItems = connection.prepareStatement(q);
-               //removeItems.se.setString(1, childListBuilder.toString());
-               int res = removeItems.executeUpdate();
+               childListBuilder.append("'" + result.getString(1) + "'");
             }
             else
             {
                break;
             }
-
+            while (result.next())
+            {
+               childListBuilder.append(" , '" + result.getString(1) + "'");
+            }
+            // now remove nodes;
+            String q = REMOVE_ITEMS.replace("?", childListBuilder.toString());
+            removeItems.executeUpdate(q);
          }
          while (true);
       }
