@@ -31,6 +31,7 @@
    <description>eXo JCR Service core component</description>
    <properties>
       <jcr.test.configuration.file>/conf/standalone/test-configuration.xml</jcr.test.configuration.file>
+      <jbosscache.shareable>true</jbosscache.shareable>
    </properties>
    <dependencies>
       <dependency>
@@ -389,6 +390,10 @@
                      <name>emma.coverage.out.file</name>
                      <value>target/emma/coverage.ec</value>
                   </property>
+                  <property>
+                     <name>jbosscache-shareable</name>
+                     <value>${jbosscache.shareable}</value>
+                  </property>                  
             <!-- Uncomment the line below if you want to enable the statistics -->
             <!--property>
                 <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
@@ -585,6 +590,10 @@
                            <value>target/emma/coverage.ec</value>
                         </property>
                         <property>
+                           <name>jbosscache-shareable</name>
+                           <value>${jbosscache.shareable}</value>
+                        </property>                  
+                         <property>
                            <name>known.issues</name>
                            <value>org.apache.jackrabbit.test.api.SetValueConstraintViolationExceptionTest#testBooleanProperty
                               org.apache.jackrabbit.test.api.SetValueConstraintViolationExceptionTest#testMultipleBooleanProperty
@@ -657,6 +666,10 @@
                            <name>emma.coverage.out.file</name>
                            <value>target/emma/coverage.ec</value>
                         </property>
+                        <property>
+                           <name>jbosscache-shareable</name>
+                           <value>${jbosscache.shareable}</value>
+                        </property>                         
                         <property>
                            <name>known.issues</name>
                            <value>org.apache.jackrabbit.test.api.SetValueConstraintViolationExceptionTest#testBooleanProperty
@@ -752,6 +765,10 @@
                            <name>jcr.test.configuration.file</name>
                            <value>${jcr.test.configuration.file}</value>
                         </property>
+                        <property>
+                           <name>jbosscache-shareable</name>
+                           <value>${jbosscache.shareable}</value>
+                        </property>                         
                         <!-- Uncomment the line below if you want to enable the statistics -->
                         <!--property>
                         <name>JDBCWorkspaceDataContainer.statistics.enabled</name>

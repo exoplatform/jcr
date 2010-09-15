@@ -238,14 +238,23 @@ public class ExoJBossCacheFactory<K, V>
     * @param cacheType The type of the target cache
     * @param rootFqn the rootFqn corresponding to root of the region 
     * @param cache the cache to register
+    * @param shareable indicates whether the cache is shareable or not. 
     * @return the given cache if has not been registered otherwise the cache of the same
-    * type that has already been registered
+    * type that has already been registered. If the cache is not sharable, the given cache
+    * will be returned.
     * @throws RepositoryConfigurationException
     */
    @SuppressWarnings("unchecked")
    public static synchronized <K, V> Cache<K, V> getUniqueInstance(CacheType cacheType, Fqn<String> rootFqn,
-      Cache<K, V> cache) throws RepositoryConfigurationException
+      Cache<K, V> cache, boolean shareable) throws RepositoryConfigurationException
    {
+      if (!shareable)
+      {
+         // The cache is not shareable         
+         // Avoid potential naming collision by changing the cluster name
+         cache.getConfiguration().setClusterName(cache.getConfiguration().getClusterName() + rootFqn.toString().replace('/', '-'));
+         return cache;
+      }
       ExoContainer container = ExoContainerContext.getCurrentContainer();
       Map<CacheType, Map<ConfigurationKey, Cache>> allCacheTypes = CACHES.get(container);
       if (allCacheTypes == null)

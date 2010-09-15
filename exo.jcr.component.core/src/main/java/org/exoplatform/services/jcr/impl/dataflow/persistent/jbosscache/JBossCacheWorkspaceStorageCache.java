@@ -100,6 +100,13 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
 
    public static final String JBOSSCACHE_EXPIRATION = "jbosscache-expiration-time";
 
+   /**
+    * Indicate whether the JBoss Cache instance used can be shared with other caches
+    */
+   public static final String JBOSSCACHE_SHAREABLE = "jbosscache-shareable";
+
+   public static final Boolean JBOSSCACHE_SHAREABLE_DEFAULT = Boolean.TRUE;
+   
    public static final long JBOSSCACHE_EXPIRATION_DEFAULT = 900000; // 15 minutes
 
    public static final String ITEMS = "$ITEMS".intern();
@@ -309,7 +316,9 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
       }
 
       this.rootFqn = Fqn.fromElements(wsConfig.getUniqueName());
-      parentCache = ExoJBossCacheFactory.getUniqueInstance(CacheType.JCR_CACHE, rootFqn, parentCache);
+      parentCache =
+         ExoJBossCacheFactory.getUniqueInstance(CacheType.JCR_CACHE, rootFqn, parentCache, wsConfig.getCache()
+            .getParameterBoolean(JBOSSCACHE_SHAREABLE, JBOSSCACHE_SHAREABLE_DEFAULT).booleanValue());
 
       // if expiration is used, set appropriate factory with with timeout set via configuration (or default one 15minutes)
       this.cache =

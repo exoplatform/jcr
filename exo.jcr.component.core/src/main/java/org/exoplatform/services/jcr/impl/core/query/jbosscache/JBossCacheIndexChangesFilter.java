@@ -20,7 +20,6 @@ package org.exoplatform.services.jcr.impl.core.query.jbosscache;
 
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
-import org.exoplatform.services.jcr.config.QueryHandlerParams;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.core.query.IndexerChangesFilter;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoMode;
@@ -63,6 +62,19 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
     */
    private final Log log = ExoLogger.getLogger("exo.jcr.component.core.JBossCacheIndexChangesFilter");
 
+   public static final String PARAM_JBOSSCACHE_CONFIGURATION = "jbosscache-configuration";
+
+   public static final String PARAM_JBOSSCACHE_PUSHSTATE = "jbosscache-sscl-push.state.enabled";
+
+   public static final String PARAM_JBOSSCACHE_PUSHSTATE_TIMEOUT = "jbosscache-sscl-push.state.timeout";
+
+   /**
+    * Indicate whether the JBoss Cache instance used can be shared with other caches
+    */
+   public static final String PARAM_JBOSSCACHE_SHAREABLE = "jbosscache-shareable";
+
+   public static final Boolean PARAM_JBOSSCACHE_SHAREABLE_DEFAULT = Boolean.TRUE;
+
    private final Cache<Serializable, Object> cache;
 
    private final Fqn<String> rootFqn;
@@ -94,8 +106,8 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
       Properties singletonStoreProperties = new Properties();
 
       // try to get pushState parameters, since they are set programmatically only
-      Boolean pushState = config.getParameterBoolean(QueryHandlerParams.PARAM_JBOSSCACHE_PUSHSTATE, false);
-      Long pushStateTimeOut = config.getParameterTime(QueryHandlerParams.PARAM_JBOSSCACHE_PUSHSTATE_TIMEOUT, 10000L);
+      Boolean pushState = config.getParameterBoolean(PARAM_JBOSSCACHE_PUSHSTATE, false);
+      Long pushStateTimeOut = config.getParameterTime(PARAM_JBOSSCACHE_PUSHSTATE_TIMEOUT, 10000L);
 
       singletonStoreProperties.setProperty("pushStateWhenCoordinator", pushState.toString());
       singletonStoreProperties.setProperty("pushStateWhenCoordinatorTimeout", pushStateTimeOut.toString());
@@ -120,7 +132,9 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
       // insert CacheLoaderConfig
       initCache.getConfiguration().setCacheLoaderConfig(cacheLoaderConfig);
       this.rootFqn = Fqn.fromElements(searchManager.getWsId());
-      this.cache = ExoJBossCacheFactory.getUniqueInstance(CacheType.INDEX_CACHE, rootFqn, initCache);
+      this.cache =
+         ExoJBossCacheFactory.getUniqueInstance(CacheType.INDEX_CACHE, rootFqn, initCache, config.getParameterBoolean(
+            PARAM_JBOSSCACHE_SHAREABLE, PARAM_JBOSSCACHE_SHAREABLE_DEFAULT));
       this.cache.create();
       this.cache.start();
 

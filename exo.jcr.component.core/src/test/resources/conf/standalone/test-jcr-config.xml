@@ -68,6 +68,7 @@
                <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
+                     <property name="jbosscache-shareable" value="${jbosscache-shareable}" />                    
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -90,6 +91,7 @@
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
                      <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
+                     <property name="jbosscache-shareable" value="${jbosscache-shareable}" />                    
                   </properties>
                </lock-manager>               
             </workspace>
@@ -118,6 +120,7 @@
                <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
+                     <property name="jbosscache-shareable" value="${jbosscache-shareable}" />                    
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -143,6 +146,7 @@
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
                      <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr1" />
+                     <property name="jbosscache-shareable" value="${jbosscache-shareable}" />                    
                   </properties>
                </lock-manager>               
             </workspace>
@@ -171,6 +175,7 @@
                <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
+                     <property name="jbosscache-shareable" value="${jbosscache-shareable}" />                    
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -196,6 +201,7 @@
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
                      <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr2" />
+                     <property name="jbosscache-shareable" value="${jbosscache-shareable}" />                    
                   </properties>
                </lock-manager>               
             </workspace>
@@ -251,6 +257,7 @@
 					<cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                        <properties>
                           <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
+                          <property name="jbosscache-shareable" value="${jbosscache-shareable}" />                    
                        </properties>
                     </cache>
 					<query-handler
@@ -280,6 +287,7 @@
 	                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
 	                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
 	                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr3" />
+	                     <property name="jbosscache-shareable" value="${jbosscache-shareable}" />	                     
 	                  </properties>
 	               </lock-manager>               
 
@@ -325,6 +333,7 @@
                <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
+                     <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -351,6 +360,7 @@
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
                      <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcrtck" />
+                     <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </lock-manager>               
             </workspace>
@@ -385,6 +395,7 @@
                <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
+                     <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -410,6 +421,7 @@
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
                      <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr1tck" />
+                     <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </lock-manager> 
             </workspace>
@@ -444,6 +456,7 @@
                <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
+                     <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -472,6 +485,7 @@
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
                      <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr2tck" />
+                     <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </lock-manager> 
             </workspace>

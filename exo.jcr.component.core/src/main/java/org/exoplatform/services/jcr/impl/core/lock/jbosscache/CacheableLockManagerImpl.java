@@ -120,6 +120,13 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
 
    public static final String JBOSSCACHE_JDBC_CL_FQN_COLUMN = "jbosscache-cl-cache.jdbc.fqn.type";
 
+   /**
+    * Indicate whether the JBoss Cache instance used can be shared with other caches
+    */
+   public static final String JBOSSCACHE_SHAREABLE = "jbosscache-shareable";
+
+   public static final Boolean JBOSSCACHE_SHAREABLE_DEFAULT = Boolean.TRUE;
+
    public static final String JBOSSCACHE_JDBC_CL_AUTO = "auto";
 
    /**
@@ -165,6 +172,8 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
    private Cache<Serializable, Object> cache;
 
    private final Fqn<String> lockRoot;
+   
+   private final boolean shareable;
 
    /**
     * SessionLockManagers that uses this LockManager.
@@ -260,7 +269,11 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
          cache = factory.createCache(config.getLockManager());
          
          Fqn<String> rootFqn = Fqn.fromElements(config.getUniqueName());
-         cache = ExoJBossCacheFactory.getUniqueInstance(CacheType.LOCK_CACHE, rootFqn, cache);
+         
+         shareable =
+            config.getLockManager().getParameterBoolean(JBOSSCACHE_SHAREABLE, JBOSSCACHE_SHAREABLE_DEFAULT)
+               .booleanValue();
+         cache = ExoJBossCacheFactory.getUniqueInstance(CacheType.LOCK_CACHE, rootFqn, cache, shareable);
          cache.create();
          if (cache.getCacheStatus().startAllowed())
          {
@@ -817,8 +830,15 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
       lockRemover.halt();
       lockRemover.interrupt();
       sessionLockManagers.clear();
-      // The cache cannot be stopped since it cans be shared so we evict the root node instead
-      cache.evict(lockRoot);
+      if (shareable)
+      {
+         // The cache cannot be stopped since it can be shared so we evict the root node instead
+         cache.evict(lockRoot);         
+      }
+      else
+      {
+         PrivilegedCacheHelper.stop(cache);         
+      }
    }
 
    /**

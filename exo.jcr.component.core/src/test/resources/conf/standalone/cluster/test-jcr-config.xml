@@ -52,6 +52,7 @@
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="jgroups-multiplexer-stack" value="false" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-data" />
+                     <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -63,6 +64,7 @@
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="jgroups-multiplexer-stack" value="false" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-indexer" />
+                     <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                      <property name="max-volatile-time" value="60" />
                   </properties>
                </query-handler>
@@ -81,6 +83,7 @@
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
                      <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
+                     <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </lock-manager>
             </workspace>
@@ -113,6 +116,7 @@
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="jgroups-multiplexer-stack" value="false" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-data" />
+                     <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -124,6 +128,7 @@
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="jgroups-multiplexer-stack" value="false" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-indexer" />
+                     <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                      <property name="max-volatile-time" value="60" />
 
                      <property name="synonymprovider-class"
@@ -152,6 +157,7 @@
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
                      <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
+                     <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </lock-manager>
             </workspace>
@@ -184,6 +190,7 @@
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="jgroups-multiplexer-stack" value="false" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-data" />
+                     <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -195,6 +202,7 @@
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="jgroups-multiplexer-stack" value="false" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-indexer" />
+                     <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                      <property name="max-volatile-time" value="60" />
 
                      <property name="synonymprovider-class"
@@ -223,6 +231,7 @@
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
                      <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
+                     <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </lock-manager>
             </workspace>
@@ -269,6 +278,7 @@
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="jgroups-multiplexer-stack" value="false" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-data" />
+                     <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -280,8 +290,9 @@
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="jgroups-multiplexer-stack" value="false" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-indexer" />
+                     <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                      <property name="max-volatile-time" value="60" />
-
+ 
                      <property name="synonymprovider-class"
                         value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider" />
                      <property name="synonymprovider-config-path" value="../../../synonyms.properties" />
@@ -308,6 +319,7 @@
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
                      <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
+                     <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </lock-manager>
             </workspace>
@@ -359,6 +371,7 @@
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="jgroups-multiplexer-stack" value="false" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-data" />
+                     <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -370,6 +383,7 @@
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="jgroups-multiplexer-stack" value="false" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-indexer" />
+                     <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                      <property name="max-volatile-time" value="60" />
 
                      <property name="synonymprovider-class"
@@ -398,6 +412,7 @@
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
                      <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
+                     <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </lock-manager>
             </workspace>
@@ -437,6 +452,7 @@
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="jgroups-multiplexer-stack" value="false" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-data" />
+                     <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -448,6 +464,7 @@
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="jgroups-multiplexer-stack" value="false" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-indexer" />
+                     <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                      <property name="max-volatile-time" value="60" />
                      <property name="synonymprovider-class"
                         value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider" />
@@ -474,6 +491,7 @@
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
                      <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
+                     <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </lock-manager>
             </workspace>
@@ -513,6 +531,7 @@
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="jgroups-multiplexer-stack" value="false" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-data" />
+                     <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -524,6 +543,7 @@
                      <property name="jgroups-configuration" value="udp-mux.xml" />
                      <property name="jgroups-multiplexer-stack" value="false" />
                      <property name="jbosscache-cluster-name" value="JCR-cluster-indexer" />
+                     <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                      <property name="max-volatile-time" value="60" />
                      <property name="synonymprovider-class"
                         value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider" />
@@ -553,6 +573,7 @@
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
                      <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
+                     <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </lock-manager>
             </workspace>
