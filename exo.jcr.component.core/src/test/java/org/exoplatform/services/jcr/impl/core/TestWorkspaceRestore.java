@@ -23,7 +23,7 @@ import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
-import org.exoplatform.services.jcr.util.ConfigurationHelper;
+import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -52,7 +52,7 @@ public class TestWorkspaceRestore extends JcrImplBaseTest
 
    private final Log log = ExoLogger.getLogger("exo.jcr.component.core.TestWorkspaceRestore");
 
-   private final ConfigurationHelper helper = ConfigurationHelper.getInstence();
+   private final TesterConfigurationHelper helper = TesterConfigurationHelper.getInstence();
 
    private WorkspaceEntry wsEntry;
 

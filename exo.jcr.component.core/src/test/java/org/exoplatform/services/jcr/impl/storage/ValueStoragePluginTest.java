@@ -25,7 +25,7 @@ import org.exoplatform.services.jcr.config.ValueStorageFilterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
-import org.exoplatform.services.jcr.util.ConfigurationHelper;
+import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -205,7 +205,7 @@ public class ValueStoragePluginTest extends BaseStandaloneTest
 
    private String createWs() throws Exception
    {
-      ConfigurationHelper helper = ConfigurationHelper.getInstence();
+      TesterConfigurationHelper helper = TesterConfigurationHelper.getInstence();
       WorkspaceEntry wsEntry = (WorkspaceEntry)session.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
       boolean isDefaultWsMultiDb = false;
       if ("true".equals(wsEntry.getContainer().getParameterValue("multi-db")))

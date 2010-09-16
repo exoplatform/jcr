@@ -25,7 +25,7 @@ import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
-import org.exoplatform.services.jcr.util.ConfigurationHelper;
+import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
 import java.io.File;
@@ -43,14 +43,14 @@ public class TestWorkspaceManagement extends JcrImplBaseTest
 {
    private boolean isDefaultWsMultiDb = false;
 
-   private final ConfigurationHelper helper;
+   private final TesterConfigurationHelper helper;
 
    private WorkspaceEntry wsEntry;
 
    public TestWorkspaceManagement()
    {
       super();
-      this.helper = ConfigurationHelper.getInstence();
+      this.helper = TesterConfigurationHelper.getInstence();
    }
 
    @Override
@@ -290,7 +290,58 @@ public class TestWorkspaceManagement extends JcrImplBaseTest
                fail();
             }
          }
+      }
+      catch (RepositoryException e)
+      {
+         e.printStackTrace();
+         fail(e.getLocalizedMessage());
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         fail(e.getLocalizedMessage());
+      }
+      if (defRep != null)
+      {
+         try
+         {
+            Session sess = defRep.getSystemSession(workspaceEntry.getName());
+            fail();
+         }
+         catch (RepositoryException e)
+         {
+            // Ok
+         }
+      }
+   }
+   
+   public void testRemoveWorkspaceFromDB() throws Exception
+   {
 
+      WorkspaceEntry workspaceEntry =
+         helper.getNewWs("wsForRemove", isDefaultWsMultiDb, wsEntry.getContainer().getParameterValue(
+            JDBCWorkspaceDataContainer.SOURCE_NAME), "target/temp/values/" + IdGenerator.generate(), wsEntry
+            .getContainer());
+
+      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
+      RepositoryImpl defRep = (RepositoryImpl)service.getDefaultRepository();
+      try
+      {
+         helper.createWorkspace(workspaceEntry, container);
+         doTestOnWorkspace(workspaceEntry.getName());
+         assertTrue(defRep.canRemoveWorkspace(workspaceEntry.getName()));
+         String[] names = service.getDefaultRepository().getWorkspaceNames();
+         service.getDefaultRepository().removeWorkspace(workspaceEntry.getName());
+         String[] namesAfter = service.getDefaultRepository().getWorkspaceNames();
+
+         // remove one
+         assertTrue(names.length == namesAfter.length + 1);
+         for (int i = 0; i < namesAfter.length; i++)
+         {
+            if (workspaceEntry.getName().equals(namesAfter[i]))
+            {
+               fail();
+            }
+         }
       }
       catch (RepositoryException e)
       {

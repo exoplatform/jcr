@@ -24,7 +24,7 @@ import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
-import org.exoplatform.services.jcr.util.ConfigurationHelper;
+import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
 import javax.jcr.NamespaceException;
@@ -51,12 +51,12 @@ public class TestRepositoryManagement extends JcrImplBaseTest
 
    private boolean isDefaultWsMultiDb;
 
-   private final ConfigurationHelper helper;
+   private final TesterConfigurationHelper helper;
 
    public TestRepositoryManagement()
    {
       super();
-      this.helper = ConfigurationHelper.getInstence();
+      this.helper = TesterConfigurationHelper.getInstence();
    }
 
    // TODO remove this method
