@@ -135,8 +135,9 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
       this.cache =
          ExoJBossCacheFactory.getUniqueInstance(CacheType.INDEX_CACHE, rootFqn, initCache, config.getParameterBoolean(
             PARAM_JBOSSCACHE_SHAREABLE, PARAM_JBOSSCACHE_SHAREABLE_DEFAULT));
-      this.cache.create();
-      this.cache.start();
+
+      PrivilegedCacheHelper.create(cache);
+      PrivilegedCacheHelper.start(cache);
 
       // start will invoke cache listener which will notify handler that mode is changed
       IndexerIoMode ioMode =

@@ -274,7 +274,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
             config.getLockManager().getParameterBoolean(JBOSSCACHE_SHAREABLE, JBOSSCACHE_SHAREABLE_DEFAULT)
                .booleanValue();
          cache = ExoJBossCacheFactory.getUniqueInstance(CacheType.LOCK_CACHE, rootFqn, cache, shareable);
-         cache.create();
+         PrivilegedCacheHelper.create(cache);
          if (cache.getCacheStatus().startAllowed())
          {
             // Add the cache loader needed to prevent TimeoutException
