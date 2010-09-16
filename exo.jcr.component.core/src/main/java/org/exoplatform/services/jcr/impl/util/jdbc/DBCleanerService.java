@@ -16,7 +16,16 @@
  */
 package org.exoplatform.services.jcr.impl.util.jdbc;
 
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.config.RepositoryEntry;
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.io.IOException;
+import java.io.InputStream;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -25,12 +34,6 @@ import javax.jcr.RepositoryException;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
-
-import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
-import org.exoplatform.services.jcr.config.RepositoryEntry;
-import org.exoplatform.services.jcr.config.WorkspaceEntry;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
 
 /**
  * Created by The eXo Platform SAS.
@@ -66,12 +69,33 @@ public class DBCleanerService
          throw new RepositoryException(err, e);
       }
 
-      DBCleaner cleaner = new DBCleaner(conn, wsJDBCConfig.getContainerName(), wsJDBCConfig.isMultiDb());
+      final String sqlPath = "/conf/storage/cleanup/jcr-" + (wsJDBCConfig.isMultiDb() ? "m" : "s") + "jdbc.sql";
+      PrivilegedAction<InputStream> action = new PrivilegedAction<InputStream>()
+      {
+         public InputStream run()
+         {
+            return this.getClass().getResourceAsStream(sqlPath);
+         }
+      };
+      InputStream is = AccessController.doPrivileged(action);
 
-      try{
-        cleaner.cleanWorkspace();
-      }catch(DBCleanerException e){
-         throw new RepositoryException(e.getMessage(),e);
+      DBCleaner cleaner;
+      if (wsJDBCConfig.isMultiDb())
+      {
+         cleaner = new MultiDBCleaner(conn, is);
+      }
+      else
+      {
+         cleaner = new SingleDBCleaner(conn, is, wsJDBCConfig.getContainerName());
+      }
+
+      try
+      {
+         cleaner.cleanWorkspace();
+      }
+      catch (DBCleanerException e)
+      {
+         throw new RepositoryException(e.getMessage(), e);
       }
    }
 

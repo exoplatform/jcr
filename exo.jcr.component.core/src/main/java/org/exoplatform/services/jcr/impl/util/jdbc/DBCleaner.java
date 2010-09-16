@@ -16,14 +16,23 @@
  */
 package org.exoplatform.services.jcr.impl.util.jdbc;
 
+import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
+import org.exoplatform.services.jcr.impl.util.SecurityHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * The goal of this class is remove workspace data from database.
@@ -34,34 +43,16 @@ import java.sql.Statement;
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
  * @version $Id: DBCleaner.java 111 2008-11-11 11:11:11Z serg $
  */
-public class DBCleaner
+public abstract class DBCleaner
 {
 
    protected final static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.DBCleaner");
 
-   protected final static int MAX_IDS_RETURNED = 100;
+   protected final Pattern dbObjectNamePattern;
 
-   protected String REMOVE_PROPERTIES;
+   protected final Connection connection;
 
-   protected String REMOVE_ITEMS;
-
-   protected String REMOVE_VALUES;
-
-   protected String REMOVE_REFERENCES;
-
-   protected String GET_CHILD_IDS;
-
-   protected String DROP_JCR_MITEM_TABLE;
-
-   protected String DROP_JCR_MVALUE_TABLE;
-
-   protected String DROP_MREF_TABLE;
-
-   private final Connection connection;
-
-   private final String containerName;
-
-   private final boolean isMultiDB;
+   protected String[] scripts;
 
    /**
     * Constructor.
@@ -69,12 +60,12 @@ public class DBCleaner
     * @param containerName - workspace name
     * @param connection - SQL conneciton
     */
-   public DBCleaner(Connection connection, String containerName, boolean isMulti)
+   public DBCleaner(Connection connection, InputStream inputStream) throws IOException
    {
+      this.dbObjectNamePattern = Pattern.compile(DBInitializer.SQL_OBJECTNAME, Pattern.CASE_INSENSITIVE);
       this.connection = connection;
-      this.containerName = containerName;
-      this.isMultiDB = isMulti;
-      prepareQueries();
+      // parse script
+      this.scripts = readScriptResource(inputStream);
    }
 
    /**
@@ -92,20 +83,37 @@ public class DBCleaner
     */
    public void cleanWorkspace() throws DBCleanerException
    {
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+      {
+         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
+      }
+
+      String sql = null;
+      Statement st = null;
       try
       {
          connection.setAutoCommit(false);
-         // check is multi db
-         if (isMultiDB)
+         st = connection.createStatement();
+         for (String scr : scripts)
          {
-            //remove table
-            dropWorkspace();
+            String s = cleanWhitespaces(scr.trim());
+            if (s.length() > 0)
+            {
+               if (!canExecuteQuery(connection, sql = s))
+               {
+                  // table not found , so try drop other
+                  continue;
+               }
+
+               if (LOG.isDebugEnabled())
+               {
+                  LOG.debug("Execute script: \n[" + sql + "]");
+               }
+               executeQuery(st, sql);
+            }
          }
-         else
-         {
-            // clean up all record of this container
-            removeWorkspaceRecords();
-         }
+
          connection.commit();
       }
       catch (SQLException e)
@@ -122,6 +130,18 @@ public class DBCleaner
       }
       finally
       {
+         if (st != null)
+         {
+            try
+            {
+               st.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the Statement: " + e);
+            }
+         }
+
          try
          {
             connection.close();
@@ -133,138 +153,145 @@ public class DBCleaner
       }
    }
 
-   protected void prepareQueries()
+   protected boolean canExecuteQuery(Connection conn, String sql) throws SQLException
    {
-      //for single db support
-
-      REMOVE_PROPERTIES = "delete from JCR_SITEM where I_CLASS=2 and CONTAINER_NAME=?";
-
-      GET_CHILD_IDS =
-         "select ID from JCR_SITEM where CONTAINER_NAME=? and ID not in(select PARENT_ID from JCR_SITEM where CONTAINER_NAME=?)";
-
-      //   "delete from JCR_SITEM where CONTAINER_NAME=?";
-      REMOVE_ITEMS = "delete from JCR_SITEM where ID in( ? )";
-
-      REMOVE_VALUES =
-         "delete from JCR_SVALUE where exists"
-            + "(select * from JCR_SITEM where JCR_SITEM.ID=JCR_SVALUE.PROPERTY_ID and JCR_SITEM.CONTAINER_NAME=?)";
-
-      REMOVE_REFERENCES =
-         "delete from JCR_SREF where exists"
-            + "(select * from JCR_SITEM where JCR_SITEM.ID=JCR_SREF.PROPERTY_ID and JCR_SITEM.CONTAINER_NAME=?)";
-
-      // for multi db support
-      DROP_JCR_MITEM_TABLE = "DROP TABLE JCR_MITEM";
-      DROP_JCR_MVALUE_TABLE = "DROP TABLE JCR_MVALUE";
-      DROP_MREF_TABLE = "DROP TABLE JCR_MREF";
+      return isTablesFromQueryExists(conn, sql);
    }
 
-   protected void dropWorkspace() throws SQLException
+   protected String cleanWhitespaces(String string)
    {
-      final Statement statement = connection.createStatement();
-      connection.setAutoCommit(false);
+      if (string != null)
+      {
+         char[] cc = string.toCharArray();
+         for (int ci = cc.length - 1; ci > 0; ci--)
+         {
+            if (Character.isWhitespace(cc[ci]))
+            {
+               cc[ci] = ' ';
+            }
+         }
+         return new String(cc);
+      }
+      return string;
+   }
 
+   protected void executeQuery(final Statement statement, final String sql) throws SQLException
+   {
+      SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Object>()
+      {
+         public Object run() throws Exception
+         {
+            statement.executeUpdate(sql);
+            return null;
+         }
+      });
+   }
+
+   protected boolean isTableExists(Connection conn, String tableName) throws SQLException
+   {
+      ResultSet trs = conn.getMetaData().getTables(null, null, tableName, null);
       try
       {
-         // order of dropped tables is important
-         statement.executeUpdate(DROP_MREF_TABLE);
-         statement.executeUpdate(DROP_JCR_MVALUE_TABLE);
-         statement.executeUpdate(DROP_JCR_MITEM_TABLE);
+         boolean res = false;
+         while (trs.next())
+         {
+            res = true; // check for columns/table type matching etc.
+         }
+         return res;
       }
       finally
       {
-         if (statement != null)
+         try
          {
-            try
-            {
-               statement.close();
-            }
-            catch (SQLException e)
-            {
-               LOG.error("Can't close the Statement: " + e);
-            }
+            trs.close();
+         }
+         catch (SQLException e)
+         {
+            LOG.error("Can't close the ResultSet: " + e);
          }
       }
    }
 
-   protected void removeWorkspaceRecords() throws SQLException
+   protected boolean isTablesFromQueryExists(Connection conn, String sql) throws SQLException
    {
-      executeUpdate(connection, REMOVE_REFERENCES, containerName);
-      executeUpdate(connection, REMOVE_VALUES, containerName);
-
-      clearItems(connection, containerName);
+      Matcher tMatcher = dbObjectNamePattern.matcher(sql);
+      while (tMatcher.find())
+      {
+         // got table name
+         String tableName = sql.substring(tMatcher.start(), tMatcher.end());
+         if (!isTableExists(conn, tableName))
+         {
+            LOG.error("Table [" + tableName + "] from query [" + sql
+               + "] was not found. So query will not be executed , but will try execute next one.");
+            return false;
+         }
+      }
+      return true;
    }
 
-   protected void executeUpdate(Connection connection, String query, String containerName) throws SQLException
+   protected String[] readScriptResource(final InputStream is) throws IOException
    {
-      PreparedStatement statements = null;
+      //extract string
+      PrivilegedAction<InputStreamReader> actionGetReader = new PrivilegedAction<InputStreamReader>()
+      {
+         public InputStreamReader run()
+         {
+            return new InputStreamReader(is);
+         }
+      };
+      InputStreamReader isr = AccessController.doPrivileged(actionGetReader);
+
+      String script = null;
       try
       {
-         statements = connection.prepareStatement(query);
-         statements.setString(1, containerName);
-         statements.executeUpdate();
+         StringBuilder sbuff = new StringBuilder();
+         char[] buff = new char[is.available()];
+         int r = 0;
+         while ((r = isr.read(buff)) > 0)
+         {
+            sbuff.append(buff, 0, r);
+         }
+
+         script = sbuff.toString();
       }
       finally
       {
-         if (statements != null)
+         try
          {
-            statements.close();
-            statements = null;
+            is.close();
+         }
+         catch (IOException e)
+         {
          }
       }
-   }
 
-   protected void clearItems(Connection connection, String containerName) throws SQLException
-   {
-      executeUpdate(connection, REMOVE_PROPERTIES, containerName);
-
-      // Remove only child nodes in cycle, till all nodes will be removed.
-      // Such algorithm used to avoid any constraint violation exception related to foreign key.
-      PreparedStatement getChildItems = null;
-      Statement removeItems = connection.createStatement();
-
-      try
+      // parse scripts
+      String[] scripts = null;
+      if (script.startsWith(DBInitializer.SQL_DELIMITER_COMMENT_PREFIX))
       {
-         getChildItems = connection.prepareStatement(GET_CHILD_IDS);
-         getChildItems.setString(1, containerName);
-         getChildItems.setString(2, containerName);
-
-         getChildItems.setMaxRows(MAX_IDS_RETURNED);
-
-         do
+         // read custom prefix
+         try
          {
-            ResultSet result = getChildItems.executeQuery();
-            StringBuilder childListBuilder = new StringBuilder();
-            if (result.next())
-            {
-               childListBuilder.append("'" + result.getString(1) + "'");
-            }
-            else
-            {
-               break;
-            }
-            while (result.next())
-            {
-               childListBuilder.append(" , '" + result.getString(1) + "'");
-            }
-            // now remove nodes;
-            String q = REMOVE_ITEMS.replace("?", childListBuilder.toString());
-            removeItems.executeUpdate(q);
+            String s = script.substring(DBInitializer.SQL_DELIMITER_COMMENT_PREFIX.length());
+            int endOfDelimIndex = s.indexOf("*/");
+            String delim = s.substring(0, endOfDelimIndex).trim();
+            s = s.substring(endOfDelimIndex + 2).trim();
+            scripts = s.split(delim);
          }
-         while (true);
+         catch (IndexOutOfBoundsException e)
+         {
+            LOG.warn("Error of parse SQL-script file. Invalid DELIMITER configuration. Valid format is '"
+               + DBInitializer.SQL_DELIMITER_COMMENT_PREFIX
+               + "XXX*/' at begin of the SQL-script file, where XXX - DELIMITER string." + " Spaces will be trimed. ",
+               e);
+            LOG.info("Using DELIMITER:[" + DBInitializer.SQL_DELIMITER + "]");
+            scripts = script.split(DBInitializer.SQL_DELIMITER);
+         }
       }
-      finally
+      else
       {
-         if (getChildItems != null)
-         {
-            getChildItems.close();
-            getChildItems = null;
-         }
-         if (removeItems != null)
-         {
-            removeItems.close();
-            removeItems = null;
-         }
+         scripts = script.split(DBInitializer.SQL_DELIMITER);
       }
+      return scripts;
    }
 }
