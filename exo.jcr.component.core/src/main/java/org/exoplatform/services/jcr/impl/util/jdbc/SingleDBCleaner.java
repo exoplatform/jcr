@@ -16,8 +16,11 @@
  */
 package org.exoplatform.services.jcr.impl.util.jdbc;
 
+import org.exoplatform.services.jcr.impl.util.SecurityHelper;
+
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -96,7 +99,7 @@ public final class SingleDBCleaner extends DBCleaner
       // Remove only child nodes in cycle, till all nodes will be removed.
       // Such algorithm used to avoid any constraint violation exception related to foreign key.
       PreparedStatement getChildItems = null;
-      Statement removeItems = connection.createStatement();
+      final Statement removeItems = connection.createStatement();
 
       try
       {
@@ -108,7 +111,16 @@ public final class SingleDBCleaner extends DBCleaner
 
          do
          {
-            ResultSet result = getChildItems.executeQuery();
+            final PreparedStatement getChildIds = getChildItems;
+            ResultSet result =
+               (ResultSet)SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Object>()
+               {
+                  public Object run() throws Exception
+                  {
+                     return getChildIds.executeQuery();
+                  }
+               });
+
             StringBuilder childListBuilder = new StringBuilder();
             if (result.next())
             {
@@ -123,8 +135,15 @@ public final class SingleDBCleaner extends DBCleaner
                childListBuilder.append(" , '" + result.getString(1) + "'");
             }
             // now remove nodes;
-            String q = REMOVE_ITEMS.replace("?", childListBuilder.toString());
-            removeItems.executeUpdate(q);
+            final String q = REMOVE_ITEMS.replace("?", childListBuilder.toString());
+            SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Object>()
+            {
+               public Object run() throws Exception
+               {
+                  removeItems.executeUpdate(q);
+                  return null;
+               }
+            });
          }
          while (true);
       }
@@ -138,7 +157,6 @@ public final class SingleDBCleaner extends DBCleaner
          if (removeItems != null)
          {
             removeItems.close();
-            removeItems = null;
          }
       }
    }
