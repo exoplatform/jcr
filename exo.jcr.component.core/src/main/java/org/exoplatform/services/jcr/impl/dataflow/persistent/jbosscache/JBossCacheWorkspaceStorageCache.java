@@ -105,7 +105,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
     */
    public static final String JBOSSCACHE_SHAREABLE = "jbosscache-shareable";
 
-   public static final Boolean JBOSSCACHE_SHAREABLE_DEFAULT = Boolean.TRUE;
+   public static final Boolean JBOSSCACHE_SHAREABLE_DEFAULT = Boolean.FALSE;
    
    public static final long JBOSSCACHE_EXPIRATION_DEFAULT = 900000; // 15 minutes
 

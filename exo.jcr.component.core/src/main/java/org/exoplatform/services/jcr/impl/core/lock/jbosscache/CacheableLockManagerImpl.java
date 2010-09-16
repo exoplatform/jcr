@@ -125,7 +125,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
     */
    public static final String JBOSSCACHE_SHAREABLE = "jbosscache-shareable";
 
-   public static final Boolean JBOSSCACHE_SHAREABLE_DEFAULT = Boolean.TRUE;
+   public static final Boolean JBOSSCACHE_SHAREABLE_DEFAULT = Boolean.FALSE;
 
    public static final String JBOSSCACHE_JDBC_CL_AUTO = "auto";
 

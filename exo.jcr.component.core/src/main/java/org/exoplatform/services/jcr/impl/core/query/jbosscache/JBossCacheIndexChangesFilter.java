@@ -73,7 +73,7 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
     */
    public static final String PARAM_JBOSSCACHE_SHAREABLE = "jbosscache-shareable";
 
-   public static final Boolean PARAM_JBOSSCACHE_SHAREABLE_DEFAULT = Boolean.TRUE;
+   public static final Boolean PARAM_JBOSSCACHE_SHAREABLE_DEFAULT = Boolean.FALSE;
 
    private final Cache<Serializable, Object> cache;
 
