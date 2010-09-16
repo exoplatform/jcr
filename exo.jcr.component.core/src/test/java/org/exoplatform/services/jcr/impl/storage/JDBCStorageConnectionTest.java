@@ -33,6 +33,7 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.ItemImpl.ItemType;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
@@ -98,7 +99,7 @@ public class JDBCStorageConnectionTest extends JcrImplBaseTest
 
       testRoot =
          (NodeData)dataManager.getItemData(root,
-            troot.getQPath().getEntries()[troot.getQPath().getEntries().length - 1]);
+            troot.getQPath().getEntries()[troot.getQPath().getEntries().length - 1], ItemType.NODE);
 
       assertNotNull("Can't find test root node " + troot.getQPath().getAsString(), testRoot);
    }
@@ -135,7 +136,8 @@ public class JDBCStorageConnectionTest extends JcrImplBaseTest
    {
 
       NodeData troot =
-         (NodeData)dataManager.getItemData(root, new QPathEntry(InternalQName.parse("[]jdbcStorageConnectionTest"), 1));
+         (NodeData)dataManager.getItemData(root, new QPathEntry(InternalQName.parse("[]jdbcStorageConnectionTest"), 1),
+            ItemType.NODE);
 
       assertEquals("Inherited acl should be here", root.getACL().getOwner(), troot.getACL().getOwner());
    }
@@ -160,7 +162,8 @@ public class JDBCStorageConnectionTest extends JcrImplBaseTest
 
       // test
       NodeData troot =
-         (NodeData)dataManager.getItemData(root, new QPathEntry(InternalQName.parse("[]jdbcStorageConnectionTest"), 1));
+         (NodeData)dataManager.getItemData(root, new QPathEntry(InternalQName.parse("[]jdbcStorageConnectionTest"), 1),
+            ItemType.NODE);
 
       assertEquals("Owner is not valid", "exo", troot.getACL().getOwner());
    }
@@ -192,7 +195,8 @@ public class JDBCStorageConnectionTest extends JcrImplBaseTest
 
       // test
       NodeData troot =
-         (NodeData)dataManager.getItemData(root, new QPathEntry(InternalQName.parse("[]jdbcStorageConnectionTest"), 1));
+         (NodeData)dataManager.getItemData(root, new QPathEntry(InternalQName.parse("[]jdbcStorageConnectionTest"), 1),
+            ItemType.NODE);
 
       List<String> iperms = troot.getACL().getPermissions(SystemIdentity.ANY);
       assertEquals("Wrong permission for " + SystemIdentity.ANY, 1, iperms.size());
@@ -242,7 +246,8 @@ public class JDBCStorageConnectionTest extends JcrImplBaseTest
 
       // test
       NodeData troot =
-         (NodeData)dataManager.getItemData(root, new QPathEntry(InternalQName.parse("[]jdbcStorageConnectionTest"), 1));
+         (NodeData)dataManager.getItemData(root, new QPathEntry(InternalQName.parse("[]jdbcStorageConnectionTest"), 1),
+            ItemType.NODE);
 
       assertEquals("Owner is not valid", "exo", troot.getACL().getOwner());
 

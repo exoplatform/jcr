@@ -18,11 +18,11 @@
  */
 package org.exoplatform.services.jcr.dataflow;
 
-import org.exoplatform.services.jcr.datamodel.IllegalPathException;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.ItemImpl.ItemType;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -139,14 +139,15 @@ public class TransactionChangesLog implements CompositeChangesLog, Externalizabl
       return null;
    }
 
-   public ItemState getItemState(NodeData parentData, QPathEntry name)
+   public ItemState getItemState(NodeData parentData, QPathEntry name, ItemType itemType)
    {
       List<ItemState> allStates = getAllStates();
       for (int i = allStates.size() - 1; i >= 0; i--)
       {
          ItemState state = allStates.get(i);
          if (state.getData().getParentIdentifier().equals(parentData.getIdentifier())
-            && state.getData().getQPath().getEntries()[state.getData().getQPath().getEntries().length - 1].isSame(name))
+            && state.getData().getQPath().getEntries()[state.getData().getQPath().getEntries().length - 1].isSame(name)
+            && itemType.isSuitableFor(state.getData()))
             return state;
       }
       return null;

@@ -80,7 +80,8 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
    {
       checkValid();
 
-      PropertyData pdata = (PropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_CREATED, 0));
+      PropertyData pdata =
+         (PropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_CREATED, 0), ItemType.PROPERTY);
 
       if (pdata == null)
       {
@@ -99,7 +100,8 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
       checkValid();
 
       PropertyData successorsData =
-         (PropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_SUCCESSORS, 0));
+         (PropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_SUCCESSORS, 0),
+            ItemType.PROPERTY);
 
       if (successorsData == null)
       {
@@ -142,7 +144,8 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
       checkValid();
 
       PropertyData predecessorsData =
-         (PropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_PREDECESSORS, 0));
+         (PropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_PREDECESSORS, 0),
+            ItemType.PROPERTY);
 
       if (predecessorsData == null)
       {
@@ -184,7 +187,8 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
       ValueData successorRef = new TransientValueData(new Identifier(successorIdentifier));
 
       PropertyData successorsProp =
-         (PropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_SUCCESSORS, 0));
+         (PropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_SUCCESSORS, 0),
+            ItemType.PROPERTY);
 
       if (successorsProp == null)
       {
@@ -230,7 +234,8 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
       ValueData predeccessorRef = new TransientValueData(new Identifier(predeccessorIdentifier));
 
       PropertyData predeccessorsProp =
-         (PropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_PREDECESSORS, 0));
+         (PropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_PREDECESSORS, 0),
+            ItemType.PROPERTY);
 
       if (predeccessorsProp == null)
       {
@@ -271,7 +276,8 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
    void removeSuccessor(String successorIdentifier, PlainChangesLog changesLog) throws RepositoryException
    {
       PropertyData successorsProp =
-         (PropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_SUCCESSORS, 0));
+         (PropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_SUCCESSORS, 0),
+            ItemType.PROPERTY);
       if (successorsProp != null)
       {
          List<ValueData> newSuccessors = new ArrayList<ValueData>();
@@ -310,7 +316,8 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
    {
 
       PropertyData successorsProp =
-         (PropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_SUCCESSORS, 0));
+         (PropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_SUCCESSORS, 0),
+            ItemType.PROPERTY);
 
       if (successorsProp != null)
       {
@@ -350,7 +357,8 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
    void removePredecessor(String predecessorIdentifier, PlainChangesLog changesLog) throws RepositoryException
    {
       PropertyData predeccessorsProp =
-         (PropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_PREDECESSORS, 0));
+         (PropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_PREDECESSORS, 0),
+            ItemType.PROPERTY);
 
       if (predeccessorsProp != null)
       {
@@ -390,7 +398,8 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
    {
 
       PropertyData predeccessorsProp =
-         (PropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_PREDECESSORS, 0));
+         (PropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_PREDECESSORS, 0),
+            ItemType.PROPERTY);
 
       if (predeccessorsProp != null)
       {
@@ -460,7 +469,8 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
 
       DataManager dmanager = restoreSession.getTransientNodesManager().getTransactManager();
 
-      NodeData frozenData = (NodeData)dmanager.getItemData(nodeData(), new QPathEntry(Constants.JCR_FROZENNODE, 1));
+      NodeData frozenData =
+         (NodeData)dmanager.getItemData(nodeData(), new QPathEntry(Constants.JCR_FROZENNODE, 1), ItemType.NODE);
 
       ItemDataRestoreVisitor restoreVisitor =
          new ItemDataRestoreVisitor(destParent, name, historyData, restoreSession, removeExisting, delegatedLog);

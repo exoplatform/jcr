@@ -38,6 +38,7 @@ import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
+import org.exoplatform.services.jcr.impl.core.ItemImpl.ItemType;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.ItemDataRemoveVisitor;
 import org.exoplatform.services.jcr.impl.dataflow.version.VersionHistoryDataHelper;
@@ -228,7 +229,7 @@ public abstract class BaseXmlImporter implements ContentImporter
       ItemData sameNameNode = null;
       try
       {
-         sameNameNode = dataConsumer.getItemData(parentData, new QPathEntry(name, 0));
+         sameNameNode = dataConsumer.getItemData(parentData, new QPathEntry(name, 0), ItemType.NODE);
       }
       catch (PathNotFoundException e)
       {
@@ -723,7 +724,8 @@ public abstract class BaseXmlImporter implements ContentImporter
       try
       {
          PropertyData vhpd =
-            (PropertyData)dataConsumer.getItemData(mixVersionableNode, new QPathEntry(Constants.JCR_VERSIONHISTORY, 1));
+            (PropertyData)dataConsumer.getItemData(mixVersionableNode, new QPathEntry(Constants.JCR_VERSIONHISTORY, 1),
+               ItemType.PROPERTY);
          try
          {
             String vhID = new String(vhpd.getValues().get(0).getAsByteArray());

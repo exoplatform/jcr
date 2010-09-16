@@ -22,6 +22,7 @@ import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
+import org.exoplatform.services.jcr.impl.core.ItemImpl.ItemType;
 
 import java.util.List;
 
@@ -41,13 +42,17 @@ public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
    public static final String LIVE_TIME_PARAMETER_NAME = "live-time";
 
    /**
-    * Get item by parent identifier and name +index.
+    * Get item by parent identifier and name +index of define type.
     * 
     * @param parentIdentifier
-    * @param path
-    * @return itemData by parent Identifier and item name with index or null if not found
+    *          parent identifier
+    * @param name
+    *          item name
+    * @param itemType
+    *          item type
+    * @return itemData by parent Identifier and item name with index of define type or null in other case
     */
-   ItemData get(String parentIdentifier, QPathEntry name);
+   ItemData get(String parentIdentifier, QPathEntry name, ItemType itemType);
 
    /**
     * Get item by identifier.

@@ -20,6 +20,7 @@ import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
+import org.exoplatform.services.jcr.impl.core.ItemImpl.ItemType;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.statistics.JCRStatisticsManager;
 import org.exoplatform.services.jcr.statistics.Statistics;
@@ -40,7 +41,7 @@ import javax.jcr.RepositoryException;
  * Created by The eXo Platform SAS
  * Author : Nicolas Filotto 
  *          nicolas.filotto@exoplatform.com
- * 26 fŽvr. 2010  
+ * 26 fï¿½vr. 2010  
  */
 public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnection
 {
@@ -203,7 +204,6 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
          JCRStatisticsManager.registerStatistics("JDBCStorageConnection", GLOBAL_STATISTICS, ALL_STATISTICS);
       }
    }
-
 
    /**
     * The nested {@link WorkspaceStorageConnection}
@@ -384,15 +384,16 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
    }
 
    /**
-    * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#getItemData(org.exoplatform.services.jcr.datamodel.NodeData, org.exoplatform.services.jcr.datamodel.QPathEntry)
+    * {@inheritDoc}
     */
-   public ItemData getItemData(NodeData parentData, QPathEntry name) throws RepositoryException, IllegalStateException
+   public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException,
+      IllegalStateException
    {
       Statistics s = ALL_STATISTICS.get(GET_ITEM_DATA_BY_NODE_DATA_NQ_PATH_ENTRY_DESCR);
       try
       {
          s.begin();
-         return wcs.getItemData(parentData, name);
+         return wcs.getItemData(parentData, name, itemType);
       }
       finally
       {

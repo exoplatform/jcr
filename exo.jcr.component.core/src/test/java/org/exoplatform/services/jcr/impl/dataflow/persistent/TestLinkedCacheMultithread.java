@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.jcr.impl.core.ItemImpl.ItemType;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
@@ -79,6 +80,7 @@ public class TestLinkedCacheMultithread extends JcrImplBaseTest
          super.setName(name);
       }
 
+      @Override
       public void run()
       {
          // log.info("START");
@@ -99,7 +101,7 @@ public class TestLinkedCacheMultithread extends JcrImplBaseTest
                   // by parent + name
                   NodeData n =
                      (NodeData)cache.get(rndNode.getParentIdentifier(), rndNode.getQPath().getEntries()[rndNode
-                        .getQPath().getEntries().length - 1]);
+                        .getQPath().getEntries().length - 1], ItemType.NODE);
                   if (n != null)
                      assertEquals(rndNode.getIdentifier(), n.getIdentifier());
                }
@@ -142,6 +144,7 @@ public class TestLinkedCacheMultithread extends JcrImplBaseTest
          super.setName(name);
       }
 
+      @Override
       public void run()
       {
          // log.info("START");
@@ -229,6 +232,7 @@ public class TestLinkedCacheMultithread extends JcrImplBaseTest
          super.setName(name);
       }
 
+      @Override
       public void run()
       {
          // log.info("START");
@@ -280,6 +284,7 @@ public class TestLinkedCacheMultithread extends JcrImplBaseTest
          this.timeout = timeout;
       }
 
+      @Override
       public void run()
       {
          synchronized (cache)

@@ -31,6 +31,7 @@ import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.ItemImpl.ItemType;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
@@ -284,13 +285,20 @@ public class TestJCRVSReadWrite extends JcrImplBaseTest
    }
 
    // copied from SessionDataManager
-   protected ItemData getItemData(DataManager manager, NodeData parent, QPathEntry[] relPathEntries)
+   protected ItemData getItemData(DataManager manager, NodeData parent, QPathEntry[] relPathEntries, ItemType itemType)
       throws RepositoryException
    {
       ItemData item = parent;
       for (int i = 0; i < relPathEntries.length; i++)
       {
-         item = manager.getItemData(parent, relPathEntries[i]);
+         if (i == relPathEntries.length - 1)
+         {
+            item = manager.getItemData(parent, relPathEntries[i], itemType);
+         }
+         else
+         {
+            item = manager.getItemData(parent, relPathEntries[i], ItemType.UNKNOWN);
+         }
 
          if (item == null)
             break;
@@ -356,7 +364,7 @@ public class TestJCRVSReadWrite extends JcrImplBaseTest
       Set<QPathEntry[]> caseProps = new HashSet<QPathEntry[]>(props);
       for (QPathEntry[] prop : caseProps)
       {
-         PropertyData p = (PropertyData)getItemData(manager, parent, prop);
+         PropertyData p = (PropertyData)getItemData(manager, parent, prop, ItemType.PROPERTY);
          List<ValueData> vals = p.getValues();
          for (int i = 0; i < vals.size(); i++)
          {

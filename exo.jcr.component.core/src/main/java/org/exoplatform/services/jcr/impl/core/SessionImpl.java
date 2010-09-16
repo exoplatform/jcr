@@ -32,6 +32,7 @@ import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.ItemImpl.ItemType;
 import org.exoplatform.services.jcr.impl.core.lock.SessionLockManager;
 import org.exoplatform.services.jcr.impl.core.lock.WorkspaceLockManager;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeImpl;
@@ -938,7 +939,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       // Check for node with destAbsPath name in session
       NodeImpl destNode =
          (NodeImpl)dataManager.getItem((NodeData)destParentNode.getData(), new QPathEntry(destNodePath
-            .getInternalPath().getName(), 0), false);
+            .getInternalPath().getName(), 0), false, ItemType.NODE);
 
       if (destNode != null)
       {

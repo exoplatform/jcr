@@ -31,6 +31,7 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.ItemImpl.ItemType;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -127,17 +128,17 @@ public class VersionableWorkspaceDataManager extends ACLInheritanceSupportedWork
     * {@inheritDoc}
     */
    @Override
-   public ItemData getItemData(NodeData parentData, QPathEntry name) throws RepositoryException
+   public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException
    {
       if (parentData != null)
       {
          final QPath ipath = QPath.makeChildPath(parentData.getQPath(), name);
          if (isSystemDescendant(ipath) && !this.equals(versionDataManager))
          {
-            return versionDataManager.getItemData(parentData, name);
+            return versionDataManager.getItemData(parentData, name, itemType);
          }
       }
-      return super.getItemData(parentData, name);
+      return super.getItemData(parentData, name, itemType);
    }
 
    /**

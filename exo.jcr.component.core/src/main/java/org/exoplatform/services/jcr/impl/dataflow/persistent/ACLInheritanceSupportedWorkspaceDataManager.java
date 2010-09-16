@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
+import org.exoplatform.services.jcr.impl.core.ItemImpl.ItemType;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -165,9 +166,9 @@ public class ACLInheritanceSupportedWorkspaceDataManager implements SharedDataMa
    /**
     * {@inheritDoc}
     */
-   public ItemData getItemData(NodeData parent, QPathEntry name) throws RepositoryException
+   public ItemData getItemData(NodeData parent, QPathEntry name, ItemType itemType) throws RepositoryException
    {
-      final ItemData item = persistentManager.getItemData(parent, name);
+      final ItemData item = persistentManager.getItemData(parent, name, itemType);
       return item != null && item.isNode() ? initACL(parent, (NodeData)item) : item;
    }
 

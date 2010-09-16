@@ -20,9 +20,9 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.BooleanClause.Occur;
 import org.exoplatform.commons.utils.ISO8601;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
@@ -34,6 +34,7 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.ItemImpl.ItemType;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.core.query.AndQueryNode;
@@ -760,6 +761,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
       final int[] transform = new int[]{TransformConstants.TRANSFORM_NONE};
       node.acceptOperands(new DefaultQueryNodeVisitor()
       {
+         @Override
          public Object visit(PropertyFunctionQueryNode node, Object data)
          {
             if (node.getFunctionName().equals(PropertyFunctionQueryNode.LOWER_CASE))
@@ -1030,7 +1032,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
                      ItemData item = parent;
                      for (int i = 0; i < relPathEntries.length; i++)
                      {
-                        item = sharedItemMgr.getItemData(parent, relPathEntries[i]);
+                        item = sharedItemMgr.getItemData(parent, relPathEntries[i], ItemType.UNKNOWN);
 
                         if (item == null)
                            break;
@@ -1333,6 +1335,6 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
          values.add(literal);
          log.debug("Using literal " + literal + " as is.");
       }
-      return (String[])values.toArray(new String[values.size()]);
+      return values.toArray(new String[values.size()]);
    }
 }

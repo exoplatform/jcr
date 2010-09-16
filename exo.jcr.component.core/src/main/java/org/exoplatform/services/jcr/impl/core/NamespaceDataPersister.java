@@ -36,6 +36,7 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.ItemImpl.ItemType;
 import org.exoplatform.services.jcr.impl.dataflow.TransientItemData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
@@ -185,7 +186,8 @@ public class NamespaceDataPersister implements ComponentPersister
       }
 
       PlainChangesLogImpl plainChangesLogImpl = new PlainChangesLogImpl();
-      ItemData prefData = dataManager.getItemData(nsRoot, new QPathEntry(new InternalQName("", prefix), 0));
+      ItemData prefData =
+         dataManager.getItemData(nsRoot, new QPathEntry(new InternalQName("", prefix), 0), ItemType.NODE);
 
       if (prefData != null && prefData.isNode())
       {
@@ -220,12 +222,14 @@ public class NamespaceDataPersister implements ComponentPersister
             if (jcrSystem != null)
             {
                NodeData exoNamespaces =
-                  (NodeData)dataManager.getItemData(jcrSystem, new QPathEntry(Constants.EXO_NAMESPACES, 1));
+                  (NodeData)dataManager.getItemData(jcrSystem, new QPathEntry(Constants.EXO_NAMESPACES, 1),
+                     ItemType.NODE);
                if (exoNamespaces == null)
                {
                   initStorage(jcrSystem, !repConfig.getAccessControl().equals(AccessControlPolicy.DISABLE));
                   this.nsRoot =
-                     (NodeData)dataManager.getItemData(jcrSystem, new QPathEntry(Constants.EXO_NAMESPACES, 1));
+                     (NodeData)dataManager.getItemData(jcrSystem, new QPathEntry(Constants.EXO_NAMESPACES, 1),
+                        ItemType.NODE);
                }
                else
                {
@@ -264,7 +268,8 @@ public class NamespaceDataPersister implements ComponentPersister
       {
          NodeData jcrSystem = (NodeData)dataManager.getItemData(Constants.SYSTEM_UUID);
          if (jcrSystem != null)
-            this.nsRoot = (NodeData)dataManager.getItemData(jcrSystem, new QPathEntry(Constants.EXO_NAMESPACES, 1));
+            this.nsRoot =
+               (NodeData)dataManager.getItemData(jcrSystem, new QPathEntry(Constants.EXO_NAMESPACES, 1), ItemType.NODE);
          else
             throw new RepositoryException(
                "/jcr:system is not found. Possible the workspace is not initialized properly");

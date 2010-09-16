@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.core.PropertyImpl;
+import org.exoplatform.services.jcr.impl.core.ItemImpl.ItemType;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection;
@@ -71,6 +72,7 @@ public class StorageUpdateTest extends JcrImplBaseTest
 
    private boolean isDefaultWsMultiDb;
 
+   @Override
    public void setUp() throws Exception
    {
       super.setUp();
@@ -155,7 +157,8 @@ public class StorageUpdateTest extends JcrImplBaseTest
             (NodeData)session.getTransientNodesManager().getTransactManager()
                .getItemData(jcrUuid.getParentIdentifier());
          QPathEntry[] qentry = bugData.getQPath().getEntries();
-         PropertyData persistedBugData = (PropertyData)conn.getItemData(parent, qentry[qentry.length - 1]);
+         PropertyData persistedBugData =
+            (PropertyData)conn.getItemData(parent, qentry[qentry.length - 1], ItemType.PROPERTY);
          log.info("node_V node BUG uuid: " + node_V.getUUID() + ", jcr:uuid: "
             + new String(persistedBugData.getValues().get(0).getAsByteArray()));
 

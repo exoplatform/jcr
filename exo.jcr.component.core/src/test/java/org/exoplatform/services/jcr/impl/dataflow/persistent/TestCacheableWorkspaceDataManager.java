@@ -27,6 +27,7 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.core.ItemImpl.ItemType;
 import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
 import org.exoplatform.services.jcr.impl.storage.WorkspaceDataContainerBase;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
@@ -90,6 +91,7 @@ public class TestCacheableWorkspaceDataManager extends TestCase
       {
          Thread thread = new Thread()
          {
+            @Override
             public void run()
             {
                try
@@ -147,7 +149,7 @@ public class TestCacheableWorkspaceDataManager extends TestCase
       {
          public void execute() throws Exception
          {
-            ItemData item = cwdm.getItemData(nodeData, new QPathEntry("http://www.foo.com", "foo", 0));
+            ItemData item = cwdm.getItemData(nodeData, new QPathEntry("http://www.foo.com", "foo", 0), ItemType.NODE);
             assertNotNull(item);
          }
       };
@@ -306,9 +308,14 @@ public class TestCacheableWorkspaceDataManager extends TestCase
 
       private volatile ItemData itemData;
 
-      public ItemData get(String parentIdentifier, QPathEntry name)
+      public ItemData get(String parentIdentifier, QPathEntry name, ItemType itemType)
       {
-         return itemData;
+         if (itemData != null && itemType.isSuitableFor(itemData))
+         {
+            return itemData;
+         }
+
+         return null;
       }
 
       public ItemData get(String identifier)
@@ -426,17 +433,22 @@ public class TestCacheableWorkspaceDataManager extends TestCase
          getChildPropertiesDataCalls.incrementAndGet();
          return Arrays
             .asList((PropertyData)new PersistedPropertyData("getChildPropertiesData", null, null, 0,
-               PropertyType.STRING, false, Arrays
-                  .asList((ValueData)new ByteArrayPersistedValueData(1, "foo".getBytes()))));
+               PropertyType.STRING, false,
+               Arrays.asList((ValueData)new ByteArrayPersistedValueData(1, "foo".getBytes()))));
       }
 
       public AtomicInteger getItemDataByNodeDataNQPathEntryCalls = new AtomicInteger();
 
-      public ItemData getItemData(NodeData parentData, QPathEntry name) throws RepositoryException,
+      public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException,
          IllegalStateException
       {
          getItemDataByNodeDataNQPathEntryCalls.incrementAndGet();
-         return new PersistedNodeData("getItemData", null, null, 0, 1, null, null, null);
+         if (itemType != ItemType.PROPERTY)
+         {
+            return new PersistedNodeData("getItemData", null, null, 0, 1, null, null, null);
+         }
+
+         return null;
       }
 
       public AtomicInteger getItemDataByIdCalls = new AtomicInteger();
@@ -471,8 +483,8 @@ public class TestCacheableWorkspaceDataManager extends TestCase
          listChildPropertiesDataCalls.incrementAndGet();
          return Arrays
             .asList((PropertyData)new PersistedPropertyData("listChildPropertiesData", null, null, 0,
-               PropertyType.STRING, false, Arrays
-                  .asList((ValueData)new ByteArrayPersistedValueData(1, "foo".getBytes()))));
+               PropertyType.STRING, false,
+               Arrays.asList((ValueData)new ByteArrayPersistedValueData(1, "foo".getBytes()))));
       }
 
       public void rename(NodeData data) throws RepositoryException, UnsupportedOperationException,

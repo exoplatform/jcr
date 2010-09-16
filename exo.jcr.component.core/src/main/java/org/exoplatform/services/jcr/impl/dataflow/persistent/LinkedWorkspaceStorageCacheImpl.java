@@ -30,6 +30,7 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.ItemImpl.ItemType;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -41,10 +42,10 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.WeakHashMap;
-import java.util.Map.Entry;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -880,13 +881,19 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
    /**
     * {@inheritDoc}
     */
-   public ItemData get(final String parentId, final QPathEntry name)
+   public ItemData get(final String parentId, final QPathEntry name, ItemType itemType)
    {
       if (enabled && parentId != null && name != null)
       {
          try
          {
-            return getItem(parentId, name);
+            ItemData itemData = getItem(parentId, name);
+            if (itemData != null && itemType.isSuitableFor(itemData))
+            {
+               return itemData;
+            }
+
+            return null;
          }
          catch (Exception e)
          {
@@ -906,9 +913,8 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
    protected void putItem(final ItemData data)
    {
       cache.put(new CacheId(data.getIdentifier()), new CacheValue(data, System.currentTimeMillis() + liveTime));
-      cache.put(new CacheQPath(data.getParentIdentifier(), data.getQPath()), new CacheValue(data, System
-         .currentTimeMillis()
-         + liveTime));
+      cache.put(new CacheQPath(data.getParentIdentifier(), data.getQPath()),
+         new CacheValue(data, System.currentTimeMillis() + liveTime));
    }
 
    /**
@@ -1052,7 +1058,7 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
    {
       if (enabled && parentData != null && childItems != null)
       { // TODO don't check parentData !=
-         // null && childItems != null
+        // null && childItems != null
 
          String logInfo = null;
          if (LOG.isDebugEnabled())
@@ -1114,7 +1120,7 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
    {
       if (enabled && parentData != null && childItems != null)
       { // TODO don't check parentData !=
-         // null && childItems != null
+        // null && childItems != null
 
          String logInfo = null;
          if (LOG.isDebugEnabled())
@@ -1165,7 +1171,7 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
    {
       if (enabled && parentData != null && childItems != null)
       { // TODO don't check parentData !=
-         // null && childItems != null
+        // null && childItems != null
 
          String logInfo = null;
          if (LOG.isDebugEnabled())
@@ -1643,8 +1649,7 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
       {
          writeLock.unlock();
       }
-      LOG
-         .info(name + " : set liveTime=" + liveTime + "ms. New value will be applied to items cached from this moment.");
+      LOG.info(name + " : set liveTime=" + liveTime + "ms. New value will be applied to items cached from this moment.");
    }
 
    /**

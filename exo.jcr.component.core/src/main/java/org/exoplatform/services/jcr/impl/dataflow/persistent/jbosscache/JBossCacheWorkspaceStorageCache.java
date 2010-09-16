@@ -33,6 +33,7 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.ItemImpl.ItemType;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory;
@@ -140,7 +141,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
    protected final Fqn<String> childPropsList;
 
    protected final Fqn<String> rootFqn;
-   
+
    /**
     * Node order comparator for getChildNodes().
     */
@@ -322,8 +323,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
 
       // if expiration is used, set appropriate factory with with timeout set via configuration (or default one 15minutes)
       this.cache =
-         new BufferedJBossCache(parentCache, useExpiration, wsConfig.getCache()
-            .getParameterTime(JBOSSCACHE_EXPIRATION, JBOSSCACHE_EXPIRATION_DEFAULT));
+         new BufferedJBossCache(parentCache, useExpiration, wsConfig.getCache().getParameterTime(JBOSSCACHE_EXPIRATION,
+            JBOSSCACHE_EXPIRATION_DEFAULT));
 
       this.itemsRoot = Fqn.fromRelativeElements(rootFqn, ITEMS);
       this.childNodes = Fqn.fromRelativeElements(rootFqn, CHILD_NODES);
@@ -605,12 +606,16 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
    /**
     * {@inheritDoc}
     */
-   public ItemData get(String parentId, QPathEntry name)
+   public ItemData get(String parentId, QPathEntry name, ItemType itemType)
    {
+      String itemId = null;
+      if (itemType == ItemType.NODE || itemType == ItemType.UNKNOWN)
+      {
+         // try as node first
+         itemId = (String)cache.get(makeChildFqn(childNodes, parentId, name), ITEM_ID);
+      }
 
-      // get as node first
-      String itemId = (String)cache.get(makeChildFqn(childNodes, parentId, name), ITEM_ID);
-      if (itemId == null)
+      if (itemType == ItemType.PROPERTY || itemType == ItemType.UNKNOWN && itemId == null)
       {
          // try as property
          itemId = (String)cache.get(makeChildFqn(childProps, parentId, name), ITEM_ID);
@@ -755,7 +760,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
       }
       return count;
    }
-   
+
    /**
     * {@inheritDoc}
     */

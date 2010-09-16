@@ -31,6 +31,7 @@ import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
+import org.exoplatform.services.jcr.impl.core.ItemImpl.ItemType;
 import org.exoplatform.services.jcr.impl.core.value.BaseValue;
 import org.exoplatform.services.jcr.impl.dataflow.AbstractItemDataCopyVisitor;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
@@ -271,8 +272,8 @@ public class FrozenNodeInitializer extends AbstractItemDataCopyVisitor
                   false, new TransientValueData(Constants.NT_VERSIONEDCHILD));
 
             ValueData vh =
-               ((PropertyData)dataManager.getItemData(node, new QPathEntry(Constants.JCR_VERSIONHISTORY, 0)))
-                  .getValues().get(0);
+               ((PropertyData)dataManager.getItemData(node, new QPathEntry(Constants.JCR_VERSIONHISTORY, 0),
+                  ItemType.PROPERTY)).getValues().get(0);
 
             PropertyData pd =
                TransientPropertyData.createPropertyData(frozenNode, Constants.JCR_CHILDVERSIONHISTORY,

@@ -27,6 +27,7 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.ItemImpl.ItemType;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 
 import java.util.List;
@@ -217,7 +218,7 @@ public class TestFrozenNodeInitializer extends BaseVersionImplTest
 
                   PropertyData vh =
                      (PropertyData)session.getTransientNodesManager().getItemData((NodeData)state.getData(),
-                        new QPathEntry(Constants.JCR_VERSIONHISTORY, 0));
+                        new QPathEntry(Constants.JCR_VERSIONHISTORY, 0), ItemType.PROPERTY);
 
                   String vhUuid = new String(vh.getValues().get(0).getAsByteArray());
 

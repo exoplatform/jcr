@@ -41,6 +41,7 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.ItemImpl.ItemType;
 import org.exoplatform.services.jcr.impl.dataflow.ItemDataRemoveVisitor;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
@@ -139,7 +140,8 @@ public class JCRNodeTypeDataPersister implements NodeTypeDataPersister
          return false;
       }
 
-      NodeData nodeTypeData = (NodeData)dataManager.getItemData(nodeTypeStorageRoot, new QPathEntry(nodeTypeName, 1));
+      NodeData nodeTypeData =
+         (NodeData)dataManager.getItemData(nodeTypeStorageRoot, new QPathEntry(nodeTypeName, 1), ItemType.NODE);
 
       return nodeTypeData != null;
    }
@@ -274,7 +276,7 @@ public class JCRNodeTypeDataPersister implements NodeTypeDataPersister
 
       validatate();
       NodeData nodeTypeData =
-         (NodeData)dataManager.getItemData(nodeTypeStorageRoot, new QPathEntry(nodeType.getName(), 1));
+         (NodeData)dataManager.getItemData(nodeTypeStorageRoot, new QPathEntry(nodeType.getName(), 1), ItemType.NODE);
       ItemDataRemoveVisitor removeVisitor = new ItemDataRemoveVisitor(dataManager, nodeTypeStorageRoot.getQPath());
       nodeTypeData.accept(removeVisitor);
 
@@ -293,7 +295,8 @@ public class JCRNodeTypeDataPersister implements NodeTypeDataPersister
             if (jcrSystem != null)
             {
                NodeData jcrNodetypes =
-                  (NodeData)dataManager.getItemData(jcrSystem, new QPathEntry(Constants.JCR_NODETYPES, 1));
+                  (NodeData)dataManager.getItemData(jcrSystem, new QPathEntry(Constants.JCR_NODETYPES, 1),
+                     ItemType.NODE);
                if (jcrNodetypes == null)
                {
                   this.nodeTypeStorageRoot = initNodetypesRoot(jcrSystem, addACL);
@@ -331,7 +334,7 @@ public class JCRNodeTypeDataPersister implements NodeTypeDataPersister
          return null;
       }
       //Searching nodeType root
-      ItemData nodeType = dataManager.getItemData(nodeTypeStorageRoot, new QPathEntry(nodeTypeName, 1));
+      ItemData nodeType = dataManager.getItemData(nodeTypeStorageRoot, new QPathEntry(nodeTypeName, 1), ItemType.NODE);
       if (nodeType == null)
          throw new NoSuchNodeTypeException("Node type definition " + nodeTypeName.getAsString() + "not found");
       if (!nodeType.isNode())
@@ -395,7 +398,8 @@ public class JCRNodeTypeDataPersister implements NodeTypeDataPersister
          }
          // remove first
          NodeData removeNodeTypeData =
-            (NodeData)dataManager.getItemData(nodeTypeStorageRoot, new QPathEntry(nodeTypeData.getName(), 1));
+            (NodeData)dataManager.getItemData(nodeTypeStorageRoot, new QPathEntry(nodeTypeData.getName(), 1),
+               ItemType.NODE);
          if (removeNodeTypeData != null)
          {
             ItemDataRemoveVisitor removeVisitor =

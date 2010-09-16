@@ -387,7 +387,8 @@ public abstract class ItemImpl implements Item
          if (ntManager.isNodeType(Constants.MIX_VERSIONABLE, node.getPrimaryTypeName(), node.getMixinTypeNames()))
          {
 
-            ItemData vhpd = dataManager.getItemData(node, new QPathEntry(Constants.JCR_VERSIONHISTORY, 1));
+            ItemData vhpd =
+               dataManager.getItemData(node, new QPathEntry(Constants.JCR_VERSIONHISTORY, 1), ItemType.PROPERTY);
             if (vhpd != null && !vhpd.isNode())
             {
                try
@@ -435,8 +436,8 @@ public abstract class ItemImpl implements Item
       PropertyImpl prevProp;
       PropertyDefinitionDatas defs;
       ItemImpl prevItem =
-         dataManager.getItem(parentNode.nodeData(), new QPathEntry(propertyName, 0), true, dataManager.isNew(parentNode
-            .getIdentifier()));
+         dataManager.getItem(parentNode.nodeData(), new QPathEntry(propertyName, 0), true,
+            dataManager.isNew(parentNode.getIdentifier()), ItemType.PROPERTY);
 
       NodeTypeDataManager ntm = session.getWorkspace().getNodeTypesHolder();
       NodeData parentData = (NodeData)parentNode.getData();
@@ -450,8 +451,8 @@ public abstract class ItemImpl implements Item
          {
             // new property null values;
             TransientPropertyData nullData =
-               new TransientPropertyData(qpath, identifier, version, PropertyType.UNDEFINED, parentNode
-                  .getInternalIdentifier(), isMultiValue);
+               new TransientPropertyData(qpath, identifier, version, PropertyType.UNDEFINED,
+                  parentNode.getInternalIdentifier(), isMultiValue);
             PropertyImpl nullProperty = new PropertyImpl(nullData, session);
             nullProperty.invalidate();
             return nullProperty;
@@ -659,8 +660,8 @@ public abstract class ItemImpl implements Item
                NodeData refNode = (NodeData)changedItem.getData();
 
                // Check referential integrity (remove of mix:referenceable node)
-               if (ntManager.isNodeType(Constants.MIX_REFERENCEABLE, refNode.getPrimaryTypeName(), refNode
-                  .getMixinTypeNames()))
+               if (ntManager.isNodeType(Constants.MIX_REFERENCEABLE, refNode.getPrimaryTypeName(),
+                  refNode.getMixinTypeNames()))
                {
 
                   // mix:referenceable
@@ -984,8 +985,8 @@ public abstract class ItemImpl implements Item
       throws RepositoryException
    {
       ValueConstraintsMatcher constraints =
-         new ValueConstraintsMatcher(def.getValueConstraints(), session.getLocationFactory(), session
-            .getTransientNodesManager(), session.getWorkspace().getNodeTypesHolder());
+         new ValueConstraintsMatcher(def.getValueConstraints(), session.getLocationFactory(),
+            session.getTransientNodesManager(), session.getWorkspace().getNodeTypesHolder());
 
       for (ValueData value : newValues)
       {
@@ -1010,6 +1011,38 @@ public abstract class ItemImpl implements Item
             throw new ConstraintViolationException("Can not set value '" + strVal + "' to " + getPath()
                + " due to value constraints ");
          }
+      }
+   }
+
+   /**
+    * Class contains enumerated item types. Is used in methods to indicate what need exactly get: node or property.
+    */
+   public enum ItemType {
+      UNKNOWN, NODE, PROPERTY;
+
+      /**
+       * Indicate if item type suit for ItemData.  
+       * 
+       * @param itemData
+       *          ItemData
+       * @return true if item type is UNKNOWN type or the same as ItemData and false in other case 
+       */
+      public boolean isSuitableFor(ItemData itemData)
+      {
+         boolean isNode = itemData.isNode();
+         return this == UNKNOWN || this == NODE && isNode || this == PROPERTY && !isNode;
+      }
+
+      /**
+       * Return item type based on ItemData.
+       * 
+       * @param itemData
+       *          item data
+       * @return ItemType
+       */
+      public static ItemType getItemType(ItemData itemData)
+      {
+         return itemData.isNode() ? ItemType.NODE : ItemType.PROPERTY;
       }
    }
 }

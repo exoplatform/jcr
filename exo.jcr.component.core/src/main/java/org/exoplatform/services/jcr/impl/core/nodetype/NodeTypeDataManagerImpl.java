@@ -38,6 +38,7 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
+import org.exoplatform.services.jcr.impl.core.ItemImpl.ItemType;
 import org.exoplatform.services.jcr.impl.core.nodetype.registration.NodeDefinitionComparator;
 import org.exoplatform.services.jcr.impl.core.nodetype.registration.NodeTypeConverter;
 import org.exoplatform.services.jcr.impl.core.nodetype.registration.NodeTypeDataPersister;
@@ -700,7 +701,8 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       // update primary type
 
       final PropertyData item =
-         (PropertyData)this.dataManager.getItemData(nodeData, new QPathEntry(Constants.JCR_PRIMARYTYPE, 1));
+         (PropertyData)this.dataManager.getItemData(nodeData, new QPathEntry(Constants.JCR_PRIMARYTYPE, 1),
+            ItemType.PROPERTY);
 
       final TransientPropertyData primaryTypeData =
          new TransientPropertyData(item.getQPath(), item.getIdentifier(), item.getPersistedVersion(), item.getType(),

@@ -33,6 +33,7 @@ import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.ItemImpl.ItemType;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.ByteArrayPersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CleanableFilePersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
@@ -1042,16 +1043,20 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       return getItemByIdentifier(getInternalId(identifier));
    }
 
-   public ItemData getItemData(NodeData parentData, QPathEntry name) throws RepositoryException, IllegalStateException
+   /**
+    * {@inheritDoc}
+    */
+   public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException,
+      IllegalStateException
    {
 
       if (parentData != null)
       {
-         return getItemByName(parentData, getInternalId(parentData.getIdentifier()), name);
+         return getItemByName(parentData, getInternalId(parentData.getIdentifier()), name, itemType);
       }
 
       // it's a root node
-      return getItemByName(null, null, name);
+      return getItemByName(null, null, name, itemType);
    }
 
    /**
@@ -1200,30 +1205,47 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
     *          - parent container internal id (depends on Multi/Single DB)
     * @param name
     *          - item name
+    * @param itemType
+    *          - item type         
     * @return - ItemData instance
     * @throws RepositoryException
     *           Repository error
     * @throws IllegalStateException
     *           if connection is closed
     */
-   protected ItemData getItemByName(NodeData parent, String parentId, QPathEntry name) throws RepositoryException,
-      IllegalStateException
+   protected ItemData getItemByName(NodeData parent, String parentId, QPathEntry name, ItemType itemType)
+      throws RepositoryException, IllegalStateException
    {
       checkIfOpened();
       try
       {
-         ResultSet item = findItemByName(parentId, name.getAsString(), name.getIndex());
+         ResultSet item = null;
          try
          {
+            if (itemType != ItemType.PROPERTY)
+            {
+               item = findItemByName(parentId, name.getAsString(), name.getIndex());
+            }
+            else
+            {
+               item = findPropertyByName(parentId, name.getAsString());
+            }
+
             if (item.next())
+            {
                return itemData(parent.getQPath(), item, item.getInt(COLUMN_CLASS), parent.getACL());
+            }
+
             return null;
          }
          finally
          {
             try
             {
-               item.close();
+               if (item != null)
+               {
+                  item.close();
+               }
             }
             catch (SQLException e)
             {

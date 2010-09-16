@@ -30,6 +30,7 @@ import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.core.ItemImpl.ItemType;
 import org.exoplatform.services.jcr.impl.dataflow.ItemDataRemoveVisitor;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -217,7 +218,8 @@ public class VersionHistoryRemover
          if (ntManager.isNodeType(Constants.NT_VERSIONEDCHILD, vhnode.getPrimaryTypeName(), vhnode.getMixinTypeNames()))
          {
             PropertyData property =
-               (PropertyData)dataManager.getItemData(nodeData, new QPathEntry(Constants.JCR_CHILDVERSIONHISTORY, 1));
+               (PropertyData)dataManager.getItemData(nodeData, new QPathEntry(Constants.JCR_CHILDVERSIONHISTORY, 1),
+                  ItemType.PROPERTY);
 
             if (property == null)
                throw new RepositoryException("Property " + Constants.JCR_CHILDVERSIONHISTORY.getAsString()

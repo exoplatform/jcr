@@ -33,6 +33,7 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.ItemImpl.ItemType;
 import org.exoplatform.services.jcr.impl.core.value.BaseValue;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
@@ -117,13 +118,13 @@ public class ItemAutocreator
          {
             final ItemData pdata =
                avoidCheckExistedChildItems ? null : targetDataManager.getItemData(parent, new QPathEntry(
-                  ndef.getName(), 0));
+                  ndef.getName(), 0), ItemType.NODE);
             if (pdata == null && !addedNodes.contains(ndef.getName()) || pdata != null && !pdata.isNode())
             {
 
                final TransientNodeData childNodeData =
-                  TransientNodeData.createNodeData(parent, ndef.getName(), ndef.getDefaultPrimaryType(), IdGenerator
-                     .generate());
+                  TransientNodeData.createNodeData(parent, ndef.getName(), ndef.getDefaultPrimaryType(),
+                     IdGenerator.generate());
                changes.add(ItemState.createAddedState(childNodeData, false));
                changes.addAll(makeAutoCreatedItems(childNodeData, childNodeData.getPrimaryTypeName(),
                   targetDataManager, owner).getAllStates());
@@ -162,7 +163,7 @@ public class ItemAutocreator
 
             final ItemData pdata =
                avoidCheckExistedChildItems ? null : targetDataManager.getItemData(parent, new QPathEntry(
-                  pdef.getName(), 0));
+                  pdef.getName(), 0), ItemType.PROPERTY);
             if (pdata == null && !addedProperties.contains(pdef.getName()) || pdata != null && pdata.isNode())
             {
 
@@ -171,8 +172,8 @@ public class ItemAutocreator
                if (listAutoCreateValue != null)
                {
                   final TransientPropertyData propertyData =
-                     TransientPropertyData.createPropertyData(parent, pdef.getName(), pdef.getRequiredType(), pdef
-                        .isMultiple(), listAutoCreateValue);
+                     TransientPropertyData.createPropertyData(parent, pdef.getName(), pdef.getRequiredType(),
+                        pdef.isMultiple(), listAutoCreateValue);
                   changes.add(ItemState.createAddedState(propertyData));
                   addedProperties.add(pdef.getName());
                }

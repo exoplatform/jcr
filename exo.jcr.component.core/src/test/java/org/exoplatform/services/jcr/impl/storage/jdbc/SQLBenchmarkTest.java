@@ -1,14 +1,5 @@
 package org.exoplatform.services.jcr.impl.storage.jdbc;
 
-import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicReference;
-
-import javax.jcr.InvalidItemStateException;
-import javax.jcr.RepositoryException;
-
 import org.exoplatform.container.StandaloneContainer;
 import org.exoplatform.services.jcr.BaseStandaloneTest;
 import org.exoplatform.services.jcr.RepositoryService;
@@ -23,9 +14,19 @@ import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.ItemImpl.ItemType;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
+
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
+
+import javax.jcr.InvalidItemStateException;
+import javax.jcr.RepositoryException;
 
 /*
  * Copyright (C) 2003-2009 eXo Platform SAS.
@@ -55,21 +56,21 @@ import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
  */
 public class SQLBenchmarkTest
 {
-/*   
-   static
-   {
-      try
+   /*   
+      static
       {
-         Class.forName("com.jdbmonitor.MonitorDriver");
-         System.out.println("Driver Loaded");
-      }
-      catch (ClassNotFoundException e)
-      {
-         e.printStackTrace();
-      }
+         try
+         {
+            Class.forName("com.jdbmonitor.MonitorDriver");
+            System.out.println("Driver Loaded");
+         }
+         catch (ClassNotFoundException e)
+         {
+            e.printStackTrace();
+         }
 
-   }
-*/
+      }
+   */
    /**
     * @param args
     */
@@ -307,7 +308,7 @@ public class SQLBenchmarkTest
       {
          public ItemData execute(Object... args) throws Exception
          {
-            return getItemData((WorkspaceDataContainer)args[0], (NodeData)args[1], (QPathEntry)args[2]);
+            return getItemData((WorkspaceDataContainer)args[0], (NodeData)args[1], (QPathEntry)args[2], ItemType.NODE);
          }
 
       };
@@ -553,13 +554,13 @@ public class SQLBenchmarkTest
       return true;
    }
 
-   public static ItemData getItemData(WorkspaceDataContainer dataContainer, NodeData parentData, QPathEntry name)
-      throws RepositoryException, IllegalStateException
+   public static ItemData getItemData(WorkspaceDataContainer dataContainer, NodeData parentData, QPathEntry name,
+      ItemType itemType) throws RepositoryException, IllegalStateException
    {
       final WorkspaceStorageConnection con = dataContainer.openConnection();
       try
       {
-         return con.getItemData(parentData, name);
+         return con.getItemData(parentData, name, itemType);
       }
       finally
       {
@@ -675,6 +676,7 @@ public class SQLBenchmarkTest
       {
          Thread t = new Thread()
          {
+            @Override
             public void run()
             {
                try

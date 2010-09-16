@@ -41,6 +41,7 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
+import org.exoplatform.services.jcr.impl.core.ItemImpl.ItemType;
 import org.exoplatform.services.jcr.impl.core.lock.LockRemover;
 import org.exoplatform.services.jcr.impl.core.lock.SessionLockManager;
 import org.exoplatform.services.jcr.impl.dataflow.TransientItemData;
@@ -267,7 +268,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
          configureJDBCCacheLoader(config.getLockManager());
 
          cache = factory.createCache(config.getLockManager());
-         
+
          Fqn<String> rootFqn = Fqn.fromElements(config.getUniqueName());
          
          shareable =
@@ -1114,7 +1115,8 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
             new PlainChangesLogImpl(new ArrayList<ItemState>(), SystemIdentity.SYSTEM, ExtendedEvent.UNLOCK);
 
          ItemData lockOwner =
-            copyItemData((PropertyData)dataManager.getItemData(nData, new QPathEntry(Constants.JCR_LOCKOWNER, 1)));
+            copyItemData((PropertyData)dataManager.getItemData(nData, new QPathEntry(Constants.JCR_LOCKOWNER, 1),
+               ItemType.PROPERTY));
 
          //TODO EXOJCR-412, should be refactored in future.
          //Skip removing, because that lock was removed in other node of cluster.  
@@ -1126,7 +1128,8 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
          changesLog.add(ItemState.createDeletedState(lockOwner));
 
          ItemData lockIsDeep =
-            copyItemData((PropertyData)dataManager.getItemData(nData, new QPathEntry(Constants.JCR_LOCKISDEEP, 1)));
+            copyItemData((PropertyData)dataManager.getItemData(nData, new QPathEntry(Constants.JCR_LOCKISDEEP, 1),
+               ItemType.PROPERTY));
 
          //TODO EXOJCR-412, should be refactored in future.
          //Skip removing, because that lock was removed in other node of cluster.  

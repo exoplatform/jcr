@@ -27,6 +27,7 @@ import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
+import org.exoplatform.services.jcr.impl.core.ItemImpl.ItemType;
 import org.exoplatform.services.jcr.util.Text;
 import org.w3c.dom.CharacterData;
 import org.w3c.dom.Node;
@@ -408,7 +409,7 @@ class AggregateRuleImpl implements AggregateRule
          else
          {
             cne = new ArrayList<NodeData>();
-            ItemData item = ism.getItemData(nodeState, currentName);
+            ItemData item = ism.getItemData(nodeState, currentName, ItemType.NODE);
             if (item != null && item.isNode())
             {
                cne.add((NodeData)item);
@@ -501,7 +502,7 @@ class AggregateRuleImpl implements AggregateRule
          for (Iterator it = nodeStates.iterator(); it.hasNext();)
          {
             NodeData state = (NodeData)it.next();
-            ItemData prop = ism.getItemData(state, new QPathEntry(propertyName, 1));
+            ItemData prop = ism.getItemData(state, new QPathEntry(propertyName, 1), ItemType.PROPERTY);
             if (prop != null && !prop.isNode())
             {
                propStates.add(prop);

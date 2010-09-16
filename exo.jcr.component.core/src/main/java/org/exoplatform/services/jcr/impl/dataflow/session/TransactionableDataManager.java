@@ -29,6 +29,7 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.core.ItemImpl.ItemType;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.LocalWorkspaceDataManagerStub;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -212,12 +213,12 @@ public class TransactionableDataManager implements TransactionResource, DataMana
    /**
     * {@inheritDoc}
     */
-   public ItemData getItemData(NodeData parentData, QPathEntry name) throws RepositoryException
+   public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException
    {
       ItemData data = null;
       if (txStarted())
       {
-         ItemState state = transactionLog.getItemState(parentData, name);
+         ItemState state = transactionLog.getItemState(parentData, name, itemType);
          if (state != null)
          {
             data = state.getData();
@@ -229,7 +230,7 @@ public class TransactionableDataManager implements TransactionResource, DataMana
       }
       else
       {
-         return storageDataManager.getItemData(parentData, name);
+         return storageDataManager.getItemData(parentData, name, itemType);
       }
    }
 

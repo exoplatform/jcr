@@ -39,6 +39,7 @@ import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.ItemImpl.ItemType;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
@@ -577,7 +578,9 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
       NodeData parent = (NodeData)acon.getItemData(node.getParentIdentifier());
       QPathEntry myName = node.getQPath().getEntries()[node.getQPath().getEntries().length - 1];
       ItemData sibling =
-         acon.getItemData(parent, new QPathEntry(myName.getNamespace(), myName.getName(), myName.getIndex() - 1));
+         acon.getItemData(parent, new QPathEntry(myName.getNamespace(), myName.getName(), myName.getIndex() - 1),
+            ItemType.NODE);
+
       if (sibling == null || !sibling.isNode())
       {
          throw new InvalidItemStateException("Node can't be saved " + node.getQPath().getAsString()
@@ -796,12 +799,13 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
    /**
     * {@inheritDoc}
     */
-   public ItemData getItemData(final NodeData parentData, final QPathEntry name) throws RepositoryException
+   public ItemData getItemData(final NodeData parentData, final QPathEntry name, ItemType itemType)
+      throws RepositoryException
    {
       final WorkspaceStorageConnection con = dataContainer.openConnection();
       try
       {
-         return con.getItemData(parentData, name);
+         return con.getItemData(parentData, name, itemType);
       }
       finally
       {

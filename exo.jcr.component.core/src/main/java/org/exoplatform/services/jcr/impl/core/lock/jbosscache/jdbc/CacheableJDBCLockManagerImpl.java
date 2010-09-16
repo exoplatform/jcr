@@ -40,6 +40,7 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
+import org.exoplatform.services.jcr.impl.core.ItemImpl.ItemType;
 import org.exoplatform.services.jcr.impl.core.lock.LockRemover;
 import org.exoplatform.services.jcr.impl.core.lock.SessionLockManager;
 import org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManager;
@@ -895,7 +896,7 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
          List<LockData> locksData = new ArrayList<LockData>();
          for (String nodeId : nodesId)
          {
-            LockData lockData = (LockData)cache.get(makeLockFqn((String)nodeId), LOCK_DATA);
+            LockData lockData = (LockData)cache.get(makeLockFqn(nodeId), LOCK_DATA);
             if (lockData != null)
             {
                locksData.add(lockData);
@@ -949,7 +950,8 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
             new PlainChangesLogImpl(new ArrayList<ItemState>(), SystemIdentity.SYSTEM, ExtendedEvent.UNLOCK);
 
          ItemData lockOwner =
-            copyItemData((PropertyData)dataManager.getItemData(nData, new QPathEntry(Constants.JCR_LOCKOWNER, 1)));
+            copyItemData((PropertyData)dataManager.getItemData(nData, new QPathEntry(Constants.JCR_LOCKOWNER, 1),
+               ItemType.PROPERTY));
 
          //TODO EXOJCR-412, should be refactored in future.
          //Skip removing, because that lock was removed in other node of cluster.  
@@ -961,7 +963,8 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
          changesLog.add(ItemState.createDeletedState(lockOwner));
 
          ItemData lockIsDeep =
-            copyItemData((PropertyData)dataManager.getItemData(nData, new QPathEntry(Constants.JCR_LOCKISDEEP, 1)));
+            copyItemData((PropertyData)dataManager.getItemData(nData, new QPathEntry(Constants.JCR_LOCKISDEEP, 1),
+               ItemType.PROPERTY));
 
          //TODO EXOJCR-412, should be refactored in future.
          //Skip removing, because that lock was removed in other node of cluster.  

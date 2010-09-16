@@ -22,6 +22,7 @@ import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
+import org.exoplatform.services.jcr.impl.core.ItemImpl.ItemType;
 import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
 import org.exoplatform.services.jcr.impl.storage.JCRItemExistsException;
 
@@ -180,7 +181,9 @@ public class SQLExceptionHandler
                   throw ownException;
                }
 
-               me = conn.getItemData(parent, new QPathEntry(item.getQPath().getName(), item.getQPath().getIndex()));
+               me =
+                  conn.getItemData(parent, new QPathEntry(item.getQPath().getName(), item.getQPath().getIndex()),
+                     ItemType.getItemType(item));
                if (me != null)
                {
                   message += "Item already exists in storage: " + itemInfo;
@@ -261,7 +264,9 @@ public class SQLExceptionHandler
                   throw ownException;
                }
 
-               me = conn.getItemData(parent, new QPathEntry(item.getQPath().getName(), item.getQPath().getIndex()));
+               me =
+                  conn.getItemData(parent, new QPathEntry(item.getQPath().getName(), item.getQPath().getIndex()),
+                     ItemType.getItemType(item));
                if (me != null)
                {
                   message += "Item already exists in storage: " + itemInfo;

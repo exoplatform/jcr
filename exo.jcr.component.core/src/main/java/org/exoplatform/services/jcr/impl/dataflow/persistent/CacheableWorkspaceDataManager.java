@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.core.ItemImpl.ItemType;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache;
 import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection;
@@ -337,6 +338,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    /**
     * {@inheritDoc}
     */
+   @Override
    public int getChildNodesCount(NodeData parent) throws RepositoryException
    {
       if (cache.isEnabled())
@@ -354,6 +356,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    /**
     * {@inheritDoc}
     */
+   @Override
    public List<NodeData> getChildNodesData(NodeData nodeData) throws RepositoryException
    {
       return getChildNodesData(nodeData, false);
@@ -362,6 +365,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    /**
     * {@inheritDoc}
     */
+   @Override
    public List<PropertyData> getChildPropertiesData(NodeData nodeData) throws RepositoryException
    {
       List<PropertyData> childs = getChildPropertiesData(nodeData, false);
@@ -376,11 +380,12 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    /**
     * {@inheritDoc}
     */
-   public ItemData getItemData(NodeData parentData, QPathEntry name) throws RepositoryException
+   @Override
+   public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException
    {
 
       // 1. Try from cache
-      ItemData data = getCachedItemData(parentData, name);
+      ItemData data = getCachedItemData(parentData, name, itemType);
 
       // 2. Try from container
       if (data == null)
@@ -392,10 +397,10 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             request.start();
             // Try first to get the value from the cache since a
             // request could have been launched just before
-            data = getCachedItemData(parentData, name);
+            data = getCachedItemData(parentData, name, itemType);
             if (data == null)
             {
-               data = getPersistedItemData(parentData, name);
+               data = getPersistedItemData(parentData, name, itemType);
             }
             else if (!data.isNode())
             {
@@ -418,6 +423,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    /**
     * {@inheritDoc}
     */
+   @Override
    public ItemData getItemData(String identifier) throws RepositoryException
    {
       // 2. Try from cache
@@ -459,6 +465,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    /**
     * {@inheritDoc}
     */
+   @Override
    public List<PropertyData> getReferencesData(String identifier, boolean skipVersionStorage)
       throws RepositoryException
    {
@@ -468,6 +475,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    /**
     * {@inheritDoc}
     */
+   @Override
    public List<PropertyData> listChildPropertiesData(NodeData nodeData) throws RepositoryException
    {
       return listChildPropertiesData(nodeData, false);
@@ -501,13 +509,16 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     *          parent
     * @param name
     *          Item name
+    * @param itemType
+    *          item type          
     * @return ItemData
     * @throws RepositoryException
     *           error
     */
-   protected ItemData getCachedItemData(NodeData parentData, QPathEntry name) throws RepositoryException
+   protected ItemData getCachedItemData(NodeData parentData, QPathEntry name, ItemType itemType)
+      throws RepositoryException
    {
-      return cache.get(parentData.getIdentifier(), name);
+      return cache.get(parentData.getIdentifier(), name, itemType);
    }
 
    /**
@@ -647,13 +658,16 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     *          parent
     * @param name
     *          Item name
+    * @param itemType
+    *          item type         
     * @return ItemData
     * @throws RepositoryException
     *           error
     */
-   protected ItemData getPersistedItemData(NodeData parentData, QPathEntry name) throws RepositoryException
+   protected ItemData getPersistedItemData(NodeData parentData, QPathEntry name, ItemType itemType)
+      throws RepositoryException
    {
-      ItemData data = super.getItemData(parentData, name);
+      ItemData data = super.getItemData(parentData, name, itemType);
       if (data != null && cache.isEnabled())
       {
          cache.put(data);

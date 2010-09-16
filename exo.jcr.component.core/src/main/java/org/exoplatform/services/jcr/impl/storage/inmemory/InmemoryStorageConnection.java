@@ -24,6 +24,7 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.core.ItemImpl.ItemType;
 import org.exoplatform.services.jcr.impl.core.JCRPath;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.log.ExoLogger;
@@ -62,9 +63,16 @@ public class InmemoryStorageConnection implements WorkspaceStorageConnection
       identifiers = new TreeMap();
    }
 
-   public ItemData getItemData(NodeData parentData, QPathEntry name) throws RepositoryException, IllegalStateException
+   public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException,
+      IllegalStateException
    {
-      return getItemData(QPath.makeChildPath(parentData.getQPath(), name));
+      ItemData itemData = getItemData(QPath.makeChildPath(parentData.getQPath(), name));
+      if (itemData != null && itemType.isSuitableFor(itemData))
+      {
+         return itemData;
+      }
+
+      return null;
    }
 
    public ItemData getItemData(QPath qPath) throws RepositoryException, IllegalStateException
