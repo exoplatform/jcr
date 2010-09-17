@@ -180,10 +180,6 @@ public class DBCleanerService
       {
          sqlPath = sqlPath + "jdbc.mssql.sql";
       }
-      else if (dbDialect == DBConstants.DB_DIALECT_DERBY)
-      {
-         sqlPath = sqlPath + "jdbc.derby.sql";
-      }
       else if (dbDialect == DBConstants.DB_DIALECT_DB2)
       {
          sqlPath = sqlPath + "jdbc.db2.sql";
@@ -195,10 +191,6 @@ public class DBCleanerService
       else if (dbDialect == DBConstants.DB_DIALECT_SYBASE)
       {
          sqlPath = sqlPath + "jdbc.sybase.sql";
-      }
-      else if (dbDialect == DBConstants.DB_DIALECT_INGRES)
-      {
-         sqlPath = sqlPath + "jdbc.ingres.sql";
       }
       else if (dbDialect == DBConstants.DB_DIALECT_HSQLDB)
       {
