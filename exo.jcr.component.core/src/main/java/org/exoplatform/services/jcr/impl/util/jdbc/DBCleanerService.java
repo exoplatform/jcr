@@ -19,6 +19,7 @@ package org.exoplatform.services.jcr.impl.util.jdbc;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -69,7 +70,7 @@ public class DBCleanerService
          throw new RepositoryException(err, e);
       }
 
-      final String sqlPath = "/conf/storage/cleanup/jcr-" + (wsJDBCConfig.isMultiDb() ? "m" : "s") + "jdbc.sql";
+      final String sqlPath = getScriptPath(wsJDBCConfig.getDbDialect(), wsJDBCConfig.isMultiDb());
       PrivilegedAction<InputStream> action = new PrivilegedAction<InputStream>()
       {
          public InputStream run()
@@ -107,4 +108,65 @@ public class DBCleanerService
          removeWorkspaceData(wsEntry);
       }
    }
+
+   private static String getScriptPath(String dbDialect, boolean multiDb)
+   {
+      String sqlPath = "/conf/storage/cleanup/jcr-" + (multiDb ? "m" : "s");
+      if (dbDialect == DBConstants.DB_DIALECT_ORACLEOCI)
+      {
+         LOG.warn(DBConstants.DB_DIALECT_ORACLEOCI + " dialect is experimental!");
+         sqlPath = sqlPath + "jdbc.ora.sql";
+      }
+      else if (dbDialect == DBConstants.DB_DIALECT_ORACLE)
+      {
+         sqlPath = sqlPath + "jdbc.ora.sql";
+      }
+      else if (dbDialect == DBConstants.DB_DIALECT_PGSQL)
+      {
+         sqlPath = sqlPath + "jdbc.pgsql.sql";
+      }
+      else if (dbDialect == DBConstants.DB_DIALECT_MYSQL)
+      {
+         sqlPath = sqlPath + "jdbc.mysql.sql";
+      }
+      else if (dbDialect == DBConstants.DB_DIALECT_MYSQL_UTF8)
+      {
+         sqlPath = sqlPath + "jdbc.mysql-utf8.sql";
+      }
+      else if (dbDialect == DBConstants.DB_DIALECT_MSSQL)
+      {
+         sqlPath = sqlPath + "jdbc.mssql.sql";
+      }
+      else if (dbDialect == DBConstants.DB_DIALECT_DERBY)
+      {
+         sqlPath = sqlPath + "jdbc.derby.sql";
+      }
+      else if (dbDialect == DBConstants.DB_DIALECT_DB2)
+      {
+         sqlPath = sqlPath + "jdbc.db2.sql";
+      }
+      else if (dbDialect == DBConstants.DB_DIALECT_DB2V8)
+      {
+         sqlPath = sqlPath + "jdbc.db2v8.sql";
+      }
+      else if (dbDialect == DBConstants.DB_DIALECT_SYBASE)
+      {
+         sqlPath = sqlPath + "jdbc.sybase.sql";
+      }
+      else if (dbDialect == DBConstants.DB_DIALECT_INGRES)
+      {
+         sqlPath = sqlPath + "jdbc.ingres.sql";
+      }
+      else if (dbDialect == DBConstants.DB_DIALECT_HSQLDB)
+      {
+         sqlPath = sqlPath + "jdbc.sql";
+      }
+      else
+      {
+         // generic, DB_HSQLDB
+         sqlPath = sqlPath + "jdbc.sql";
+      }
+      return sqlPath;
+   }
+
 }
