@@ -239,17 +239,33 @@ public class ControllerCacheLoader implements CacheLoader
    /**
     * @see org.jboss.cache.loader.CacheLoader#put(java.util.List)
     */
-   public void put(List<Modification> modifications) throws Exception
+   public void put(final List<Modification> modifications) throws Exception
    {
-      cl.put(modifications);
+      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      {
+         public Object run() throws Exception
+         {
+            cl.put(modifications);
+            return null;
+
+         }
+      });
    }
 
    /**
     * @see org.jboss.cache.loader.CacheLoader#put(org.jboss.cache.Fqn, java.util.Map)
     */
-   public void put(Fqn name, Map<Object, Object> attributes) throws Exception
+   public void put(final Fqn name, final Map<Object, Object> attributes) throws Exception
    {
-      cl.put(name, attributes);
+      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      {
+         public Object run() throws Exception
+         {
+            cl.put(name, attributes);
+            return null;
+
+         }
+      });
    }
 
    /**
@@ -257,7 +273,6 @@ public class ControllerCacheLoader implements CacheLoader
     */
    public Object put(final Fqn name, final Object key, final Object value) throws Exception
    {
-
       return SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
          public Object run() throws Exception

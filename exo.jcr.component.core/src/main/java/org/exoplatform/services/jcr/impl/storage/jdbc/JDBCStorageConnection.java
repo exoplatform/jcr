@@ -1119,8 +1119,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             if (valueRecord.next())
             {
                String storageId = valueRecord.getString(COLUMN_VSTORAGE_DESC);
-               return valueRecord.wasNull() ? readValueData(cid, orderNumb, persistedVersion, valueRecord
-                  .getBinaryStream(COLUMN_VDATA)) : readValueData(propertyId, orderNumb, storageId);
+               return valueRecord.wasNull() ? readValueData(cid, orderNumb, persistedVersion,
+                  valueRecord.getBinaryStream(COLUMN_VDATA)) : readValueData(propertyId, orderNumb, storageId);
             }
 
             return null;
@@ -1222,18 +1222,14 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          ResultSet item = null;
          try
          {
-            if (itemType != ItemType.PROPERTY)
+            item = findItemByName(parentId, name.getAsString(), name.getIndex());
+            while (item.next())
             {
-               item = findItemByName(parentId, name.getAsString(), name.getIndex());
-            }
-            else
-            {
-               item = findPropertyByName(parentId, name.getAsString());
-            }
-
-            if (item.next())
-            {
-               return itemData(parent.getQPath(), item, item.getInt(COLUMN_CLASS), parent.getACL());
+               int columnClass = item.getInt(COLUMN_CLASS);
+               if (itemType == ItemType.UNKNOWN || columnClass == itemType.ordinal())
+               {
+                  return itemData(parent.getQPath(), item, columnClass, parent.getACL());
+               }
             }
 
             return null;
@@ -2021,8 +2017,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
                {
                   // use permissions from existed parent
                   acl =
-                     new AccessControlList(readACLOwner(cid), parentACL.hasPermissions() ? parentACL
-                        .getPermissionEntries() : null);
+                     new AccessControlList(readACLOwner(cid), parentACL.hasPermissions()
+                        ? parentACL.getPermissionEntries() : null);
                }
                else
                {
@@ -2056,8 +2052,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
                if (parentACL != null)
                   // construct ACL from existed parent ACL
                   acl =
-                     new AccessControlList(parentACL.getOwner(), parentACL.hasPermissions() ? parentACL
-                        .getPermissionEntries() : null);
+                     new AccessControlList(parentACL.getOwner(), parentACL.hasPermissions()
+                        ? parentACL.getPermissionEntries() : null);
                else
                   // have to search nearest ancestor owner and permissions in ACL manager
                   // acl = traverseACL(cpid);
@@ -2231,8 +2227,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             final int orderNum = valueRecords.getInt(COLUMN_VORDERNUM);
             final String storageId = valueRecords.getString(COLUMN_VSTORAGE_DESC);
             ValueData vdata =
-               valueRecords.wasNull() ? readValueData(cid, orderNum, cversion, valueRecords
-                  .getBinaryStream(COLUMN_VDATA)) : readValueData(identifier, orderNum, storageId);
+               valueRecords.wasNull() ? readValueData(cid, orderNum, cversion,
+                  valueRecords.getBinaryStream(COLUMN_VDATA)) : readValueData(identifier, orderNum, storageId);
             data.add(vdata);
          }
       }
