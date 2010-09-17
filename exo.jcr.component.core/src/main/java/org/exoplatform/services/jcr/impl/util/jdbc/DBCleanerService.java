@@ -37,6 +37,8 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 /**
+ * DBCleanerService deliver tools for clean workspace or repository data from database.
+ * 
  * Created by The eXo Platform SAS.
  * 
  * <br/>Date: 
@@ -48,6 +50,16 @@ public class DBCleanerService
 {
    protected final static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.DBCleanerService");
 
+   /**
+    * Remove workspace data.
+    * Tables will be removed in case of multiDB, or only record will be removed in case of singleDb.
+    * 
+    * @param wsConfig - workspace configuration.
+    * @throws RepositoryConfigurationException - exception on parsing workspace configuration
+    * @throws NamingException  - exception on parsing workspace configuration or getting DataSource
+    * @throws RepositoryException  - exception on parsing workspace configuration or data cleanup
+    * @throws IOException - exception on parsing workspace configuration
+    */
    public static void removeWorkspaceData(WorkspaceEntry wsConfig) throws RepositoryConfigurationException,
       NamingException, RepositoryException, IOException
    {
@@ -70,7 +82,8 @@ public class DBCleanerService
          throw new RepositoryException(err, e);
       }
 
-      final String sqlPath = getScriptPath(wsJDBCConfig.getDbDialect(), wsJDBCConfig.isMultiDb());
+      String dbDialect = wsJDBCConfig.getDbDialect();
+      final String sqlPath = getScriptPath(dbDialect, wsJDBCConfig.isMultiDb());
       PrivilegedAction<InputStream> action = new PrivilegedAction<InputStream>()
       {
          public InputStream run()
@@ -81,15 +94,30 @@ public class DBCleanerService
       InputStream is = AccessController.doPrivileged(action);
 
       DBCleaner cleaner;
-      if (wsJDBCConfig.isMultiDb())
+      if (dbDialect == DBConstants.DB_DIALECT_ORACLEOCI)
       {
-         cleaner = new MultiDBCleaner(conn, is);
+         LOG.warn(DBConstants.DB_DIALECT_ORACLEOCI + " dialect is experimental!");
+         cleaner = new OracleDBCleaner(wsJDBCConfig.getContainerName(), conn, is, wsJDBCConfig.isMultiDb());
+      }
+      else if (dbDialect == DBConstants.DB_DIALECT_ORACLE)
+      {
+         cleaner = new OracleDBCleaner(wsJDBCConfig.getContainerName(), conn, is, wsJDBCConfig.isMultiDb());
+      }
+      else if (dbDialect == DBConstants.DB_DIALECT_PGSQL)
+      {
+         cleaner = new PgSQLDBCleaner(wsJDBCConfig.getContainerName(), conn, is, wsJDBCConfig.isMultiDb());
+      }
+      else if (dbDialect == DBConstants.DB_DIALECT_INGRES)
+      {
+         cleaner = new IngresSQLDBCleaner(wsJDBCConfig.getContainerName(), conn, is, wsJDBCConfig.isMultiDb());
       }
       else
       {
-         cleaner = new SingleDBCleaner(conn, is, wsJDBCConfig.getContainerName());
+         //use default DBCleaner
+         cleaner = new DBCleaner(wsJDBCConfig.getContainerName(), conn, is, wsJDBCConfig.isMultiDb());
       }
 
+      // clean workspace
       try
       {
          cleaner.cleanWorkspace();
@@ -100,6 +128,15 @@ public class DBCleanerService
       }
    }
 
+   /**
+    * Cleanup repository data from database.
+    * 
+    * @param repoConfig - repository configuration
+    * @throws RepositoryConfigurationException - exception on parsing workspace configuration
+    * @throws NamingException  - exception on parsing workspace configuration or getting DataSource
+    * @throws RepositoryException  - exception on parsing workspace configuration or data cleanup
+    * @throws IOException - exception on parsing workspace configuration
+    */
    public static void removeRepositoryData(RepositoryEntry repoConfig) throws RepositoryConfigurationException,
       NamingException, RepositoryException, IOException
    {
@@ -109,6 +146,12 @@ public class DBCleanerService
       }
    }
 
+   /**
+    * Make a path to scripts file according to used database dialect.
+    * @param dbDialect - database dialect
+    * @param multiDb - is multi db
+    * @return Path to script file
+    */
    private static String getScriptPath(String dbDialect, boolean multiDb)
    {
       String sqlPath = "/conf/storage/cleanup/jcr-" + (multiDb ? "m" : "s");
@@ -168,5 +211,4 @@ public class DBCleanerService
       }
       return sqlPath;
    }
-
 }

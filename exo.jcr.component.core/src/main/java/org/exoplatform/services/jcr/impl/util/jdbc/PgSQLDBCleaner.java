@@ -19,6 +19,7 @@ package org.exoplatform.services.jcr.impl.util.jdbc;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
+import java.sql.SQLException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -26,12 +27,25 @@ import java.sql.Connection;
  * <br/>Date: 
  *
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
- * @version $Id: MultiDBCLeaner.java 111 2008-11-11 11:11:11Z serg $
+ * @version $Id: PgSQLDBCLeaner.java 111 2008-11-11 11:11:11Z serg $
  */
-public final class MultiDBCleaner extends DBCleaner
+public class PgSQLDBCleaner extends DBCleaner
 {
-   public MultiDBCleaner(Connection connection, InputStream inputStream) throws IOException
+   /**
+    * Constructor.
+    */
+   public PgSQLDBCleaner(String containerName, Connection connection, InputStream inputStream, boolean isMultiDB)
+      throws IOException
    {
-      super(connection, inputStream);
+      super(containerName, connection, inputStream, isMultiDB);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected boolean isTableExists(Connection conn, String tableName) throws SQLException
+   {
+      return super.isTableExists(conn, tableName.toUpperCase().toLowerCase());
    }
 }

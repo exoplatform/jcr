@@ -28,6 +28,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -43,10 +44,19 @@ import java.util.regex.Pattern;
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
  * @version $Id: DBCleaner.java 111 2008-11-11 11:11:11Z serg $
  */
-public abstract class DBCleaner
+public class DBCleaner
 {
+   public final String CLEAN_JCR_SITEM_AS_DEFAULT = "/*$CLEAN_JCR_SITEM_DEFAULT*/";
 
    protected final static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.DBCleaner");
+
+   protected final int MAX_IDS_RETURNED = 100;
+
+   protected String GET_CHILD_IDS;
+
+   protected String REMOVE_ITEMS;
+
+   protected final String containerName;
 
    protected final Pattern dbObjectNamePattern;
 
@@ -54,18 +64,35 @@ public abstract class DBCleaner
 
    protected String[] scripts;
 
+   protected final boolean isMultiDB;
+
    /**
     * Constructor.
     * 
-    * @param containerName - workspace name
-    * @param connection - SQL conneciton
+    * @param containerName - container name (a.k.a workspace name)
+    * @param connection - connection to database where workspace tables is placed
+    * @param inputStream - inputStream from script file
+    * @param isMultiDB - isMultiDB
+    * @throws IOException - if exception occures on parsing script file input stream
     */
-   public DBCleaner(Connection connection, InputStream inputStream) throws IOException
+   public DBCleaner(String containerName, Connection connection, InputStream inputStream, boolean isMultiDB)
+      throws IOException
    {
       this.dbObjectNamePattern = Pattern.compile(DBInitializer.SQL_OBJECTNAME, Pattern.CASE_INSENSITIVE);
       this.connection = connection;
       // parse script
       this.scripts = readScriptResource(inputStream);
+      this.containerName = containerName;
+      this.isMultiDB = isMultiDB;
+      prepareQueries();
+   }
+
+   protected void prepareQueries()
+   {
+      GET_CHILD_IDS =
+         "select ID from JCR_SITEM where CONTAINER_NAME=? and ID not in(select PARENT_ID from JCR_SITEM where CONTAINER_NAME=?)";
+
+      REMOVE_ITEMS = "delete from JCR_SITEM where ID in( ? )";
    }
 
    /**
@@ -102,7 +129,7 @@ public abstract class DBCleaner
             {
                if (!canExecuteQuery(connection, sql = s))
                {
-                  // table not found , so try drop other
+                  // table from query not found , so try drop other
                   continue;
                }
 
@@ -153,11 +180,121 @@ public abstract class DBCleaner
       }
    }
 
-   protected boolean canExecuteQuery(Connection conn, String sql) throws SQLException
+   /**
+    * The default implementation of remove rows from JCR_SITEM table.
+    * Some database do not support cascade delete, or need special sittings, so 
+    * query "delete from JCR_SITEM where CONTAINER_NAME=?" may cause constraint violation exception.
+    * This method takes a leafs (child nodes/properties) and remove them till, no one record is left.
+    * 
+    * @throws SQLException - SQL exception. 
+    */
+   protected void clearItemsByDefault(Connection connection, String containerName) throws SQLException
    {
-      return isTablesFromQueryExists(conn, sql);
+      // Remove only child nodes in cycle, till all nodes will be removed.
+      // Such algorithm used to avoid any constraint violation exception related to foreign key.
+      PreparedStatement getChildItems = null;
+      final Statement removeItems = connection.createStatement();
+
+      try
+      {
+         getChildItems = connection.prepareStatement(GET_CHILD_IDS);
+         getChildItems.setString(1, containerName);
+         getChildItems.setString(2, containerName);
+
+         getChildItems.setMaxRows(MAX_IDS_RETURNED);
+
+         do
+         {
+            final PreparedStatement getChildIds = getChildItems;
+            ResultSet result =
+               (ResultSet)SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Object>()
+               {
+                  public Object run() throws Exception
+                  {
+                     return getChildIds.executeQuery();
+                  }
+               });
+
+            StringBuilder childListBuilder = new StringBuilder();
+            if (result.next())
+            {
+               childListBuilder.append("'" + result.getString(1) + "'");
+            }
+            else
+            {
+               break;
+            }
+            while (result.next())
+            {
+               childListBuilder.append(" , '" + result.getString(1) + "'");
+            }
+            // now remove nodes;
+            final String q = REMOVE_ITEMS.replace("?", childListBuilder.toString());
+            SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Object>()
+            {
+               public Object run() throws Exception
+               {
+                  removeItems.executeUpdate(q);
+                  return null;
+               }
+            });
+         }
+         while (true);
+      }
+      finally
+      {
+         if (getChildItems != null)
+         {
+            getChildItems.close();
+            getChildItems = null;
+         }
+         if (removeItems != null)
+         {
+            removeItems.close();
+         }
+      }
    }
 
+   /**
+    * Check can we safely execute query.
+    * If tables used in query does not exists ,we can not execute query.
+    */
+   protected boolean canExecuteQuery(Connection conn, String sql) throws SQLException
+   {
+      if (!isMultiDB && sql.equalsIgnoreCase(CLEAN_JCR_SITEM_AS_DEFAULT))
+      {
+         // check queries used in clearItemsByDefault
+         if (!canExecuteQuery(conn, GET_CHILD_IDS))
+         {
+            return false;
+         }
+         if (!canExecuteQuery(conn, REMOVE_ITEMS))
+         {
+            return false;
+         }
+         return true;
+      }
+      else
+      {
+         Matcher tMatcher = dbObjectNamePattern.matcher(sql);
+         while (tMatcher.find())
+         {
+            // got table name
+            String tableName = sql.substring(tMatcher.start(), tMatcher.end());
+            if (!isTableExists(conn, tableName))
+            {
+               LOG.error("Table [" + tableName + "] from query [" + sql
+                  + "] was not found. So query will not be executed , but will try execute next one.");
+               return false;
+            }
+         }
+         return true;
+      }
+   }
+
+   /**
+    * Cleans redundant whitespaces from query.
+    */
    protected String cleanWhitespaces(String string)
    {
       if (string != null)
@@ -175,16 +312,29 @@ public abstract class DBCleaner
       return string;
    }
 
-   protected void executeQuery(final Statement statement, final String sql) throws SQLException
+   /**
+    * Execute query.
+    */
+   protected void executeQuery(final Statement statement, String sql) throws SQLException
    {
-      SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Object>()
+      if (!isMultiDB && sql.equalsIgnoreCase(CLEAN_JCR_SITEM_AS_DEFAULT))
       {
-         public Object run() throws Exception
+         clearItemsByDefault(statement.getConnection(), containerName);
+      }
+      else
+      {
+         // in case of singleDB query -  check query for "?" mask and replace it with containerName
+         final String q = (containerName != null) ? sql.replace("?", "'" + containerName + "'") : sql;
+         //super.executeQuery(statement, q);
+         SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Object>()
          {
-            statement.executeUpdate(sql);
-            return null;
-         }
-      });
+            public Object run() throws Exception
+            {
+               statement.executeUpdate(q);
+               return null;
+            }
+         });
+      }
    }
 
    protected boolean isTableExists(Connection conn, String tableName) throws SQLException
@@ -212,23 +362,9 @@ public abstract class DBCleaner
       }
    }
 
-   protected boolean isTablesFromQueryExists(Connection conn, String sql) throws SQLException
-   {
-      Matcher tMatcher = dbObjectNamePattern.matcher(sql);
-      while (tMatcher.find())
-      {
-         // got table name
-         String tableName = sql.substring(tMatcher.start(), tMatcher.end());
-         if (!isTableExists(conn, tableName))
-         {
-            LOG.error("Table [" + tableName + "] from query [" + sql
-               + "] was not found. So query will not be executed , but will try execute next one.");
-            return false;
-         }
-      }
-      return true;
-   }
-
+   /**
+    * Extracts SQL queries from script file input stream. 
+    */
    protected String[] readScriptResource(final InputStream is) throws IOException
    {
       //extract string
