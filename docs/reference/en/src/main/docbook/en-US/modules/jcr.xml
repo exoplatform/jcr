@@ -62,4 +62,9 @@
   <xi:include href="jcr/data-container-howto.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
+  <xi:include href="jcr/db-cleaner-service.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
+
+
 </part>
