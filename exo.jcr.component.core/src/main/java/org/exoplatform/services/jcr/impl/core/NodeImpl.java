@@ -36,6 +36,7 @@ import org.exoplatform.services.jcr.datamodel.Identifier;
 import org.exoplatform.services.jcr.datamodel.IllegalPathException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
@@ -1960,7 +1961,8 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
          QPath destPath = locationFactory.parseRelPath(relPath).getInternalPath();
          NodeImpl destParent =
-            (NodeImpl)dataManager.getItem(nodeData(), destPath.makeParentPath().getEntries(), false, ItemType.UNKNOWN);
+            (NodeImpl)dataManager.getItem(nodeData(), destPath.makeParentPath().getEntries(), false, ItemType.NODE);
+         
          if (destParent == null)
          {
             throw new PathNotFoundException("Parent not found for " + relPath);

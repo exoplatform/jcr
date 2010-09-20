@@ -25,12 +25,12 @@ import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.core.ItemImpl.ItemType;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -887,13 +887,18 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
       {
          try
          {
-            ItemData itemData = getItem(parentId, name);
-            if (itemData != null && itemType.isSuitableFor(itemData))
+            ItemData itemData = null;
+            if (itemType == ItemType.NODE || itemType == ItemType.UNKNOWN)
             {
-               return itemData;
+               itemData = getItem(parentId, name, ItemType.NODE);
             }
 
-            return null;
+            if (itemType == ItemType.PROPERTY || itemType == ItemType.UNKNOWN && itemData == null)
+            {
+               itemData = getItem(parentId, name, ItemType.PROPERTY);
+            }
+
+            return itemData;
          }
          catch (Exception e)
          {
@@ -913,7 +918,7 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
    protected void putItem(final ItemData data)
    {
       cache.put(new CacheId(data.getIdentifier()), new CacheValue(data, System.currentTimeMillis() + liveTime));
-      cache.put(new CacheQPath(data.getParentIdentifier(), data.getQPath()),
+      cache.put(new CacheQPath(data.getParentIdentifier(), data.getQPath(), ItemType.getItemType(data)),
          new CacheValue(data, System.currentTimeMillis() + liveTime));
    }
 
@@ -1309,7 +1314,7 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
                cache.remove(k);
 
                // remove by parentId + path
-               cache.remove(new CacheQPath(c.getParentIdentifier(), c.getQPath()));
+               cache.remove(new CacheQPath(c.getParentIdentifier(), c.getQPath(), ItemType.getItemType(c)));
 
                // remove cached child lists
                if (c.isNode())
@@ -1339,12 +1344,12 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
     * @param key
     *          a InternalQPath path of item cached
     */
-   protected ItemData getItem(final String parentUuid, final QPathEntry qname)
+   protected ItemData getItem(final String parentUuid, final QPathEntry qname, ItemType itemType)
    {
       long start = System.currentTimeMillis();
       try
       {
-         final CacheQPath k = new CacheQPath(parentUuid, qname);
+         final CacheQPath k = new CacheQPath(parentUuid, qname, itemType);
          final CacheValue v = cache.get(k);
          if (v != null)
          {
@@ -1663,7 +1668,8 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
 
       cache.remove(new CacheId(itemId));
 
-      final CacheValue v2 = cache.remove(new CacheQPath(item.getParentIdentifier(), item.getQPath()));
+      final CacheValue v2 =
+         cache.remove(new CacheQPath(item.getParentIdentifier(), item.getQPath(), ItemType.getItemType(item)));
       if (v2 != null && !v2.getItem().getIdentifier().equals(itemId))
          // same path but diff identifier node... phantom
          removeItem(v2.getItem());

@@ -19,13 +19,12 @@
 package org.exoplatform.services.jcr.impl.storage.inmemory;
 
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
-import org.exoplatform.services.jcr.impl.core.ItemImpl.ItemType;
-import org.exoplatform.services.jcr.impl.core.JCRPath;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -66,19 +65,31 @@ public class InmemoryStorageConnection implements WorkspaceStorageConnection
    public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException,
       IllegalStateException
    {
-      ItemData itemData = getItemData(QPath.makeChildPath(parentData.getQPath(), name));
-      if (itemData != null && itemType.isSuitableFor(itemData))
+      ItemData itemData = null;
+      QPath qPath = QPath.makeChildPath(parentData.getQPath(), name);
+
+      if (itemType == ItemType.NODE || itemType == ItemType.UNKNOWN)
       {
-         return itemData;
+         items.get(new MapKey(qPath, ItemType.NODE));
+      }
+      if (itemType == ItemType.PROPERTY || itemType == ItemType.UNKNOWN && itemData == null)
+      {
+         items.get(new MapKey(qPath, ItemType.PROPERTY));
       }
 
-      return null;
+      return itemData;
    }
 
    public ItemData getItemData(QPath qPath) throws RepositoryException, IllegalStateException
    {
       log.debug("InmemoryContainer finding " + qPath.getAsString());
-      Object o = items.get(qPath.getAsString());
+
+      Object o = items.get(new MapKey(qPath, ItemType.NODE));
+      if (o == null)
+      {
+         o = items.get(new MapKey(qPath, ItemType.PROPERTY));
+      }
+
       log.debug("InmemoryContainer FOUND " + qPath.getAsString() + " " + o);
       return (ItemData)o;
    }
@@ -149,11 +160,11 @@ public class InmemoryStorageConnection implements WorkspaceStorageConnection
       IllegalStateException
    {
 
-      if (items.get(item.getQPath().getAsString()) != null)
+      if (items.get(new MapKey(item.getQPath(), ItemType.getItemType(item))) != null)
          throw new ItemExistsException("WorkspaceContainerImpl.add(Item) item '" + item.getQPath().getAsString()
             + "' already exists!");
 
-      items.put(item.getQPath().getAsString(), item);
+      items.put(new MapKey(item.getQPath(), ItemType.getItemType(item)), item);
       log.debug("InmemoryContainer added node " + item.getQPath().getAsString());
       Iterator props = getChildProperties(item).iterator();
       while (props.hasNext())
@@ -170,7 +181,7 @@ public class InmemoryStorageConnection implements WorkspaceStorageConnection
    public void add(PropertyData prop) throws RepositoryException, UnsupportedOperationException,
       InvalidItemStateException, IllegalStateException
    {
-      items.put(prop.getQPath().getAsString(), prop);
+      items.put(new MapKey(prop.getQPath(), ItemType.getItemType(prop)), prop);
       log.debug("InmemoryContainer added property " + prop.getQPath().getAsString());
    }
 
@@ -189,21 +200,21 @@ public class InmemoryStorageConnection implements WorkspaceStorageConnection
    public void update(PropertyData item) throws RepositoryException, UnsupportedOperationException,
       InvalidItemStateException, IllegalStateException
    {
-      items.put(item.getQPath().getAsString(), item);
+      items.put(new MapKey(item.getQPath(), ItemType.getItemType(item)), item);
       log.debug("InmemoryContainer updated " + item);
    }
 
    public void delete(NodeData data) throws RepositoryException, UnsupportedOperationException,
       InvalidItemStateException, IllegalStateException
    {
-      items.remove(data.getQPath().getAsString());
+      items.remove(new MapKey(data.getQPath(), ItemType.getItemType(data)));
       log.debug("InmemoryContainer removed " + data.getQPath().getAsString());
    }
 
    public void delete(PropertyData data) throws RepositoryException, UnsupportedOperationException,
       InvalidItemStateException, IllegalStateException
    {
-      items.remove(data.getQPath().getAsString());
+      items.remove(new MapKey(data.getQPath(), ItemType.getItemType(data)));
       log.debug("InmemoryContainer removed " + data.getQPath().getAsString());
    }
 
@@ -240,8 +251,8 @@ public class InmemoryStorageConnection implements WorkspaceStorageConnection
       Iterator i = items.keySet().iterator();
       while (i.hasNext())
       {
-         JCRPath d = (JCRPath)i.next();
-         str += d.getInternalPath() + "\n";
+         MapKey d = (MapKey)i.next();
+         str += d.getQPath().getAsString() + '\t' + d.getItemType().toString() + "\n";
       }
       return str;
    }
@@ -251,6 +262,56 @@ public class InmemoryStorageConnection implements WorkspaceStorageConnection
    {
       throw new UnsupportedOperationException();
 
+   }
+
+   class MapKey
+   {
+
+      private final QPath path;
+
+      private final String key;
+
+      private final ItemType itemType;
+
+      MapKey(QPath path, ItemType itemType)
+      {
+         this.path = path;
+         this.itemType = itemType;
+         this.key = key(this.path, this.itemType);
+      }
+
+      protected String key(final QPath path, ItemType itemType)
+      {
+         StringBuilder sk = new StringBuilder();
+         sk.append(path.getAsString());
+         sk.append(itemType.toString());
+
+         return sk.toString();
+      }
+
+      @Override
+      public boolean equals(Object obj)
+      {
+         if (key.hashCode() == obj.hashCode() && obj instanceof MapKey)
+            return key.equals(((MapKey)obj).key);
+         return false;
+      }
+
+      @Override
+      public int hashCode()
+      {
+         return key.hashCode();
+      }
+
+      QPath getQPath()
+      {
+         return path;
+      }
+
+      ItemType getItemType()
+      {
+         return itemType;
+      }
    }
 
 }
