@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="JCR.FulltextSearchAndSettings">
+  <?dbhtml filename="ch-jcr-fulltext-search-and-settings.html"?>
+
+  <title>Fulltext Search And Affecting Settings</title>
+
+  <section>
+    <title>Property content indexing</title>
+
+    <para>Each property of a node (if it is indexable) is processed with
+    Lucene analyzer and stored in Lucene index. That's called indexing of a
+    property. After that we can perform a fulltext search among these indexed
+    properties.</para>
+  </section>
+
+  <section>
+    <title>Lucene Analyzers</title>
+
+    <para>The sense of analyzers is to transform all strings stored in the
+    index in a well-defined condition. The same analyzer(s) is/are used when
+    searching in order to adapt the query string to the index reality.</para>
+
+    <para>Therefore, performing the same query using different analyzers can
+    return different results.</para>
+
+    <para>Now, let's see how the same string is transformed by different
+    analyzers.</para>
+
+    <table>
+      <title>"The quick brown fox jumped over the lazy dogs"</title>
+
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>Analyzer</entry>
+
+            <entry>Parsed</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry>org.apache.lucene.analysis.WhitespaceAnalyzer</entry>
+
+            <entry>[The] [quick] [brown] [fox] [jumped] [over] [the] [lazy]
+            [dogs]</entry>
+          </row>
+
+          <row>
+            <entry>org.apache.lucene.analysis.SimpleAnalyzer</entry>
+
+            <entry>[the] [quick] [brown] [fox] [jumped] [over] [the] [lazy]
+            [dogs]</entry>
+          </row>
+
+          <row>
+            <entry>org.apache.lucene.analysis.StopAnalyzer</entry>
+
+            <entry>[quick] [brown] [fox] [jumped] [over] [lazy] [dogs]</entry>
+          </row>
+
+          <row>
+            <entry>org.apache.lucene.analysis.standard.StandardAnalyzer</entry>
+
+            <entry>[quick] [brown] [fox] [jumped] [over] [lazy] [dogs]</entry>
+          </row>
+
+          <row>
+            <entry>org.apache.lucene.analysis.snowball.SnowballAnalyzer</entry>
+
+            <entry>[quick] [brown] [fox] [jump] [over] [lazi] [dog]</entry>
+          </row>
+
+          <row>
+            <entry>org.apache.lucene.analysis.standard.StandardAnalyzer
+            (configured without stop word - jcr default analyzer)</entry>
+
+            <entry>[the] [quick] [brown] [fox] [jumped] [over] [the] [lazy]
+            [dogs]</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+
+    <table>
+      <title>"XY&amp;Z Corporation - xyz@example.com"</title>
+
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>Analyzer</entry>
+
+            <entry>Parsed</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry>org.apache.lucene.analysis.WhitespaceAnalyzer</entry>
+
+            <entry>[XY&amp;Z] [Corporation] [-] [xyz@example.com]</entry>
+          </row>
+
+          <row>
+            <entry>org.apache.lucene.analysis.SimpleAnalyzer</entry>
+
+            <entry>[xy] [z] [corporation] [xyz] [example] [com]</entry>
+          </row>
+
+          <row>
+            <entry>org.apache.lucene.analysis.StopAnalyzer</entry>
+
+            <entry>[xy] [z] [corporation] [xyz] [example] [com]</entry>
+          </row>
+
+          <row>
+            <entry>org.apache.lucene.analysis.standard.StandardAnalyzer</entry>
+
+            <entry>[xy&amp;z] [corporation] [xyz@example] [com]</entry>
+          </row>
+
+          <row>
+            <entry>org.apache.lucene.analysis.snowball.SnowballAnalyzer</entry>
+
+            <entry>[xy&amp;z] [corpor] [xyz@exampl] [com]</entry>
+          </row>
+
+          <row>
+            <entry>org.apache.lucene.analysis.standard.StandardAnalyzer
+            (configured without stop word - jcr default analyzer)</entry>
+
+            <entry>[xy&amp;z] [corporation] [xyz@example] [com]</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+
+    <note>
+      <para>StandardAnalyzer is the default analyzer in exo's jcr search
+      engine. But we do not use stop words.</para>
+    </note>
+
+    <para>You can assign your analyzer as described in <link
+    linkend="JCR.SearchConfiguration">Search Configuration</link></para>
+  </section>
+
+  <section>
+    <title>How are different properties indexed?</title>
+
+    <para>Different properties are indexed in different ways, this affects to
+    if it can be searched like fulltext by property or not.</para>
+
+    <para>Only two property types are indexed as fulltext searcheable: STRING
+    and BINARY.</para>
+
+    <table>
+      <title>Fulltext search by different properties</title>
+
+      <tgroup cols="3">
+        <thead>
+          <row>
+            <entry>Property Type</entry>
+
+            <entry>Fulltext search by all properties</entry>
+
+            <entry>Fulltext search by exact property</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry>STRING</entry>
+
+            <entry>YES</entry>
+
+            <entry>YES</entry>
+          </row>
+
+          <row>
+            <entry>BINARY</entry>
+
+            <entry>YES</entry>
+
+            <entry>NO</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+
+    <para>For example, ưe have property jcr:data (it' BINARY). It's stored
+    well, but you will never find any string with query like:</para>
+
+    <programlisting>SELECT * FROM nt:resource WHERE CONTAINS(jcr:data, 'some string')</programlisting>
+
+    <para>Because,  BINARY is not searchable by fulltext search on exact
+    property.</para>
+
+    <para>But, next query will return result (off course if node has searched
+    data):</para>
+
+    <programlisting>SELECT * FROM nt:resource WHERE CONTAINS( * , 'some string')</programlisting>
+  </section>
+
+  <section>
+    <title>Fulltext search query examples</title>
+
+    <itemizedlist>
+      <listitem>
+        <para><link linkend="JCR.FulltextSearchByProperty">JCR.Fulltext Search
+        by Property</link></para>
+      </listitem>
+
+      <listitem>
+        <para><link linkend="JCR.FulltextSearchByAllProperties">JCR.Fulltext
+        Search by All Properties</link></para>
+      </listitem>
+
+      <listitem>
+        <para><link linkend="JCR.AggregationRule">Find nt:file document by
+        content of its child jcr:content node</link></para>
+      </listitem>
+
+      <listitem>
+        <para><link linkend="JCR.IgnoreAccentSymbols">How to set a new
+        analyzer. Accent symbols ignoring</link></para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Different analyzers in action</title>
+
+    <para>First of all, we will fill repository by nodes with mixin type
+    'mix:title' and different values of 'jcr:description' property.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>root</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>document1 (mix:title) jcr:description = "The quick brown fox
+            jumped over the lazy dogs"</para>
+          </listitem>
+
+          <listitem>
+            <para>document2 (mix:title) jcr:description = "Brown fox live in
+            forest."</para>
+          </listitem>
+
+          <listitem>
+            <para>document3 (mix:title) jcr:description = "Fox is a nice
+            animal."</para>
+          </listitem>
+        </itemizedlist>
+      </listitem>
+    </itemizedlist>
+
+    <para>Let's see analyzers effect closer. In first case, we use base jcr
+    settings, so, as mentioned above, string "The quick brown fox jumped over
+    the lazy dogs" will be transformed to set {[the] [quick] [brown] [fox]
+    [jumped] [over] [the] [lazy] [dogs] }</para>
+
+    <programlisting>// make SQL query
+QueryManager queryManager = workspace.getQueryManager();
+String sqlStatement = "SELECT * FROM mix:title WHERE CONTAINS(jcr:description, 'the')";
+// create query
+Query query = queryManager.createQuery(sqlStatement, Query.SQL);
+// execute query and fetch result
+QueryResult result = query.execute();</programlisting>
+
+    <para>NodeIterator will return "document1".</para>
+
+    <para>Now change the default analyzer to
+    org.apache.lucene.analysis.StopAnalyzer. Fill repository again (new
+    Analyzer must process nodes properties) and run the same query again. It
+    will return nothing, because stop words like "the" will be excluded from
+    parsed string set.</para>
+  </section>
+</chapter>

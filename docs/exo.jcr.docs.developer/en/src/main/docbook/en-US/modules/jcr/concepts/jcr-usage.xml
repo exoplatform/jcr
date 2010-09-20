@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="JCR.UsingJCR">
+  <?dbhtml filename="ch-jcr-usage.html"?>
+
+  <title>Using JCR</title>
+
+  <section>
+    <title>1 Using eXo JCR in an application</title>
+
+    <section>
+      <title>Obtaining a Repository object</title>
+
+      <para>A javax.jcr.Repository object can be obtained by:<itemizedlist>
+          <listitem>
+            <para>Using the eXo Container "native" mechanism. All Repositories
+            are kept with a single RepositoryService component. So it can be
+            obtained from eXo Container, described as the
+            following:<programlisting>  RepositoryService repositoryService = (RepositoryService) container.getComponentInstanceOfType(RepositoryService.class);
+  Repository repository = repositoryService.getRepository("repositoryName"); </programlisting></para>
+          </listitem>
+
+          <listitem>
+            <para>Using the eXo Container "native" mechanism with a thread
+            local saved "current" repository (especially if you plan to use a
+            single repository which covers more than 90% of use
+            cases)<programlisting>  // set current repository at initial time
+  RepositoryService repositoryService = (RepositoryService) container.getComponentInstanceOfType(RepositoryService.class);
+  repositoryService.setCurrentRepositoryName("repositoryName");
+  ....
+  // retrieve and use this repository
+  Repository repository = repositoryService.getCurrentRepository();</programlisting></para>
+          </listitem>
+
+          <listitem>
+            <para>Using JNDI as specified in JSR-170. This way you have to
+            configure the reference (see eXo <link
+            linkend="Kernel.JNDINaming">JNDI Naming configuration</link>
+            )<programlisting>  Context ctx = new InitialContext();
+  Repository repository =(Repository) ctx.lookup("repositoryName");</programlisting></para>
+          </listitem>
+        </itemizedlist></para>
+    </section>
+
+    <section>
+      <title>JCR Session common considerations</title>
+
+      <para><itemizedlist>
+          <listitem>
+            <para>Remember that javax.jcr.Session is not a thread safe object.
+            <emphasis role="bold">Never try to share it between
+            threads</emphasis>.</para>
+          </listitem>
+
+          <listitem>
+            <para>Do not use <emphasis role="bold">System session</emphasis>
+            from the <emphasis role="bold">user</emphasis> related code
+            because a system session has <emphasis role="bold">unlimited
+            rights</emphasis>. Call ManageableRepository.getSystemSession()
+            from <emphasis role="bold">process</emphasis> related code
+            only.</para>
+          </listitem>
+
+          <listitem>
+            <para>Call Session.logout() explicitly to <emphasis
+            role="bold">release resources</emphasis> assigned to the
+            session.</para>
+          </listitem>
+
+          <listitem>
+            <para>When designing your application, take care of the Session
+            policy inside your application. Two <emphasis
+            role="bold">strategies</emphasis> are possible: <emphasis
+            role="bold">Stateless</emphasis> (Session per business request)
+            and <emphasis role="bold">Stateful</emphasis> (Session per User)
+            or some mix.</para>
+          </listitem>
+        </itemizedlist></para>
+    </section>
+  </section>
+
+  <section>
+    <title>JCR Application practices</title>
+
+    <section>
+      <title>Simplifying the management of a multi-workspace
+      application</title>
+
+      <para>(one-shot logout for all opened sessions)</para>
+
+      <para>Use org.exoplatform.services.jcr.ext.common.SessionProvider which
+      is responsible for caching/obtaining your JCR Sessions and closing all
+      opened sessions at once.</para>
+
+      <programlisting>public class SessionProvider {
+
+  /**
+   * Creates a SessionProvider for a certain identity
+   * @param cred
+   */
+  public SessionProvider(Credentials cred) 
+  
+  /**
+   * Gets the session from internal cache or creates and caches a new one 
+   */
+  public Session getSession(String workspaceName, ManageableRepository repository) 
+    throws LoginException, NoSuchWorkspaceException, RepositoryException 
+
+  /**
+   * Calls a logout() method for all cached sessions
+   */
+  public void close() 
+
+  /**
+   * a Helper for creating a System session provider
+   * @return System session
+   */
+  public static SessionProvider createSystemProvider() 
+
+  /**
+   * a Helper for creating an Anonimous session provider
+   * @return System session
+   */
+  public static SessionProvider createAnonimProvider() 
+
+}</programlisting>
+
+      <para>The SessionProvider is per-request or per-user object, depending
+      on your policy. Create it with your application before performing JCR
+      operations, use it to obtain the Sessions and close at the end of an
+      application session(request). See the following example:</para>
+
+      <programlisting>// (1) obtain current javax.jcr.Credentials, for example get it from AuthenticationService
+Credentials cred = ....
+
+// (2) create SessionProvider for current user
+SessionProvider sessionProvider = new SessionProvider(ConversationState.getCurrent());
+
+// NOTE: for creating an Anonymous or System Session use  the corresponding static SessionProvider.create...() method
+// Get appropriate Repository as described in "Obtaining Repository object" section for example
+ManageableRepository repository = (ManageableRepository) ctx.lookup("repositoryName");
+
+// get an appropriate workspace's session 
+Session session = sessionProvider.getSession("workspaceName", repository);
+
+ .........
+// your JCR code
+ .........
+
+ // Close the session provider
+ sessionProvider.close(); </programlisting>
+    </section>
+
+    <section>
+      <title>Reusing SessionProvider</title>
+
+      <para>As shown above, creating the SessionProvider involves multiple
+      steps and you may not want to repeat them each time you need to get a
+      JCR session. In order to avoid all this plumbing code, we provide the
+      SessionProviderService whose goal is to help you to get a
+      SessionProvider object.</para>
+
+      <para>The org.exoplatform.services.jcr.ext.app.SessionProviderService
+      interface is defined as follows:</para>
+
+      <programlisting>public interface SessionProviderService {
+  void setSessionProvider(Object key, SessionProvider sessionProvider);
+  SessionProvider getSessionProvider(Object key);
+  void removeSessionProvider(Object key);
+}</programlisting>
+
+      <para>Using this service is pretty straightforward, the main contract of
+      an implemented component is getting a SessionProvider by key. eXo
+      provides two implementations :</para>
+
+      <table>
+        <title>SessionProvider implementations</title>
+
+        <tgroup cols="3">
+          <thead>
+            <row>
+              <entry>Implementation</entry>
+
+              <entry>Description</entry>
+
+              <entry>Typical Use</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry>org.exoplatform.services.jcr.ext.app.MapStoredSessionProviderService</entry>
+
+              <entry>per-user style : keeps objects in a Map</entry>
+
+              <entry>per-user. The usual practice uses a user's name or
+              Credentials as a key.</entry>
+            </row>
+
+            <row>
+              <entry>org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService</entry>
+
+              <entry>per-request style : keeps a single SessionProvider in a
+              static ThreadLocal variable</entry>
+
+              <entry>Always use null for the key.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+
+      <para>For any implementation, your code should follow the following
+      sequence :</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>Call SessionProviderService.setSessionProvider(Object key,
+          SessionProvider sessionProvider) at the beginning of a business
+          request for Stateless application or application's session for
+          Statefull policy.</para>
+        </listitem>
+
+        <listitem>
+          <para>Call SessionProviderService.getSessionProvider(Object key) for
+          obtaining a SessionProvider object</para>
+        </listitem>
+
+        <listitem>
+          <para>Call SessionProviderService.removeSessionProvider(Object key)
+          at the end of a business request for Stateless application or
+          application's session for Statefull policy.</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+  </section>
+</chapter>

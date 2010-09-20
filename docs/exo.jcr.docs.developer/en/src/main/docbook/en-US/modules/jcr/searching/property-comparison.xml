@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="JCR.PropertyComparison">
+  <title>Property Comparison</title>
+
+  <para>Find all nodes with mixin type 'mix:title' where the prop_pagecount
+  property contains a value less than 90. Only select the title of each
+  node.</para>
+
+  <section>
+    <title>Repository structure:</title>
+
+    <para>Repository contains several mix:title nodes, where each
+    prop_pagecount contains a different value.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>root</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>document1 (mix:title) jcr:title="War and peace"
+            prop_pagecount=1000</para>
+          </listitem>
+
+          <listitem>
+            <para>document2 (mix:title) jcr:title="Cinderella"
+            prop_pagecount=100</para>
+          </listitem>
+
+          <listitem>
+            <para>document3 (mix:title) jcr:title="Puss in Boots"
+            prop_pagecount=60</para>
+          </listitem>
+        </itemizedlist>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Query execution</title>
+
+    <para><emphasis role="bold">SQL</emphasis></para>
+
+    <programlisting>// make SQL query
+QueryManager queryManager = workspace.getQueryManager();
+// create query
+String sqlStatement = "SELECT jcr:title FROM mix:title WHERE prop_pagecount &lt; 90";
+Query query = queryManager.createQuery(sqlStatement, Query.SQL);
+// execute query and fetch result
+QueryResult result = query.execute();</programlisting>
+
+    <para><emphasis role="bold">XPath</emphasis></para>
+
+    <programlisting>// make XPath query
+QueryManager queryManager = workspace.getQueryManager();
+// create query
+String xpathStatement = "//element(*,mix:title)[@prop_pagecount &lt; 90]/@jcr:title";
+Query query = queryManager.createQuery(xpathStatement, Query.XPATH);
+// execute query and fetch result
+QueryResult result = query.execute();</programlisting>
+  </section>
+
+  <section>
+    <title>Fetching result</title>
+
+    <para>Let's get nodes:</para>
+
+    <programlisting>NodeIterator it = result.getNodes();
+
+if(it.hasNext())
+{
+   Node findedNode = it.nextNode();
+}</programlisting>
+
+    <para>The NodeIterator will return "document3".</para>
+
+    <para>We can also get a table:</para>
+
+    <programlisting>String[] columnNames = result.getColumnNames();
+RowIterator rit = result.getRows();
+while (rit.hasNext())
+{
+   Row row = rit.nextRow();
+   // get values of the row
+   Value[] values = row.getValues();
+}</programlisting>
+
+    <para>The table content is <table>
+        <title>Table Content</title>
+
+        <tgroup cols="3">
+          <thead>
+            <row>
+              <entry>jcr:title</entry>
+
+              <entry>jcr:path</entry>
+
+              <entry>jcr:score</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry>Puss in Boots</entry>
+
+              <entry>/document3</entry>
+
+              <entry>1725</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table></para>
+  </section>
+</section>

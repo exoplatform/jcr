@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="JCRWithGateIn.HowToUseDataSourceUnderJBoss">
+  <title>How to use AS Managed DataSource under JBoss AS</title>
+
+  <?dbhtml filename="ch-how-to-use-managed-datasource-under-jboss.html"?>
+
+  <section>
+    <title>Configurations Steps</title>
+
+    <important>
+      <para>Checked under Gatein 3.1.0-GA Final</para>
+    </important>
+
+    <important>
+      <para>only no-tx-datasource is supported in JCR 1.12</para>
+    </important>
+
+    <section>
+      <title>Declaring the datasources in the AS</title>
+
+      <para>Under JBoss, just put a file XXX-ds.xml in the deploy server
+      (example: \server\default\deploy). In this file, we will configure all
+      datasources which eXo will need. (there should be 4 named:
+      jdbcjcr_portal, jdbcjcr_portal-sample, jdbcidm_portal &amp;
+      jdbcidm_sample-portal).</para>
+
+      <para>Example:<programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;datasources&gt;
+   &lt;no-tx-datasource&gt;
+      &lt;jndi-name&gt;jdbcjcr_portal&lt;/jndi-name&gt;
+      &lt;connection-url&gt;jdbc:hsqldb:${jboss.server.data.dir}/data/jdbcjcr_portal&lt;/connection-url&gt;
+      &lt;driver-class&gt;org.hsqldb.jdbcDriver&lt;/driver-class&gt;
+      &lt;user-name&gt;sa&lt;/user-name&gt;
+      &lt;password&gt;&lt;/password&gt;
+   &lt;/no-tx-datasource&gt;
+
+   &lt;no-tx-datasource&gt;
+      &lt;jndi-name&gt;jdbcjcr_sample-portal&lt;/jndi-name&gt;
+      &lt;connection-url&gt;jdbc:hsqldb:${jboss.server.data.dir}/data/jdbcjcr_sample-portal&lt;/connection-url&gt;
+      &lt;driver-class&gt;org.hsqldb.jdbcDriver&lt;/driver-class&gt;
+      &lt;user-name&gt;sa&lt;/user-name&gt;
+      &lt;password&gt;&lt;/password&gt;
+   &lt;/no-tx-datasource&gt;
+
+   &lt;no-tx-datasource&gt;
+      &lt;jndi-name&gt;jdbcidm_portal&lt;/jndi-name&gt;
+      &lt;connection-url&gt;jdbc:hsqldb:${jboss.server.data.dir}/data/jdbcidm_portal&lt;/connection-url&gt;
+      &lt;driver-class&gt;org.hsqldb.jdbcDriver&lt;/driver-class&gt;
+      &lt;user-name&gt;sa&lt;/user-name&gt;
+      &lt;password&gt;&lt;/password&gt;
+   &lt;/no-tx-datasource&gt;
+
+   &lt;no-tx-datasource&gt;
+      &lt;jndi-name&gt;jdbcidm_sample-portal&lt;/jndi-name&gt;
+      &lt;connection-url&gt;jdbc:hsqldb:${jboss.server.data.dir}/data/jdbcidm_sample-portal&lt;/connection-url&gt;
+      &lt;driver-class&gt;org.hsqldb.jdbcDriver&lt;/driver-class&gt;
+      &lt;user-name&gt;sa&lt;/user-name&gt;
+      &lt;password&gt;&lt;/password&gt;
+   &lt;/no-tx-datasource&gt;
+&lt;/datasources&gt;</programlisting></para>
+
+      <para>Which properties can be set for datasource can be found here:
+      <ulink
+      url="http://docs.jboss.org/jbossas/docs/Server_Configuration_Guide/4/html/Connectors_on_JBoss-Configuring_JDBC_DataSources.html#Configuring_JDBC_DataSources-The_non_transactional_DataSource_configuration_schema">Configuring
+      JDBC DataSources - The non transactional DataSource configuration
+      schema</ulink></para>
+    </section>
+
+    <section>
+      <title>Do not let eXo bind datasources explicitly</title>
+
+      <para>Edit server/default/conf/gatein/configuration.properties and
+      comment out next rows in JCR section:</para>
+
+      <programlisting>#gatein.jcr.datasource.driver=org.hsqldb.jdbcDriver
+#gatein.jcr.datasource.url=jdbc:hsqldb:file:${gatein.db.data.dir}/data/jdbcjcr_${name}
+#gatein.jcr.datasource.username=sa
+#gatein.jcr.datasource.password=</programlisting>
+
+      <para>and in IDM section:</para>
+
+      <programlisting>#gatein.idm.datasource.driver=org.hsqldb.jdbcDriver
+#gatein.idm.datasource.url=jdbc:hsqldb:file:${gatein.db.data.dir}/data/jdbcidm_${name}
+#gatein.idm.datasource.username=sa
+#gatein.idm.datasource.password=</programlisting>
+
+      <para>In jcr-configuration.xml and idm-configuration.xml comment out the
+      plugin InitialContextInitializer.</para>
+
+      <programlisting>&lt;!-- Commented because, Datasources are declared and bound by AS, not in eXo --&gt;
+&lt;!--
+&lt;external-component-plugins&gt;
+    [...]
+&lt;/external-component-plugins&gt;
+--&gt;</programlisting>
+
+      <para>Running eXo after these configurations goes well.</para>
+    </section>
+  </section>
+</chapter>

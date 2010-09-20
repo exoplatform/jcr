@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="JCR.WorkspacePersistenceStorage">
+  <?dbhtml filename="ch-workspace-data-container.html"?>
+
+  <title>Workspace Data Container</title>
+
+  <para>Each Workspace of JCR has its own persistent storage to hold
+  workspace's items data. eXo Content Repository can be configured so that it
+  can use one or more workspaces that are logical units of the repository
+  content. Physical data storage mechanism is configured using mandatory
+  element <emphasis role="bold">container</emphasis>. The type of container is
+  described in the attribute <emphasis role="bold">class</emphasis> = fully
+  qualified name of
+  org.exoplatform.services.jcr.storage.WorkspaceDataContainer subclass
+  like</para>
+
+  <programlisting>&lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
+  &lt;properties&gt;
+    &lt;property name="source-name" value="jdbcjcr1"/&gt;
+    &lt;property name="dialect" value="hsqldb"/&gt;
+    &lt;property name="multi-db" value="true"/&gt;
+    &lt;property name="max-buffer-size" value="200K"/&gt;
+    &lt;property name="swap-directory" value="target/temp/swap/ws"/&gt;
+  &lt;/properties&gt;</programlisting>
+
+  <para>Properties are Container specific parameters:</para>
+
+  <para><emphasis role="bold">source-name</emphasis>: JDBC data source name,
+  registered in JDNI by InitialContextInitializer. ( <emphasis
+  role="bold">sourceName</emphasis> prior v.1.9)</para>
+
+  <para><emphasis role="bold">dialect</emphasis>: Database dialect, one of
+  "hsqldb", "mysql", "mysql-utf8", "pgsql", "oracle", "oracle-oci", "mssql",
+  "sybase", "derby", "db2", "db2v8"</para>
+
+  <para><emphasis role="bold">multi-db</emphasis>: Enable multi-database
+  container with this parameter (if "true").</para>
+
+  <para><emphasis role="bold">max-buffer-size</emphasis>: A threshold in
+  bytes, if a value size is greater, then it will be spooled to a temporary
+  file.</para>
+
+  <para><emphasis role="bold">swap-directory</emphasis>: A location where the
+  value will be spooled if no value storage is configured but a
+  max-buffer-size is exceeded.</para>
+
+  <para>eXo JCR has an RDB (JDBC) based, production ready <emphasis
+  role="bold">Workspace Data Container</emphasis>.</para>
+
+  <para>Workspace Data Container MAY support external storages for
+  javax.jcr.Value (which can be the case for BLOB values for example) using
+  the optional element <emphasis role="bold">value-storages</emphasis>. Data
+  Container will try to read or write Value using underlying value storage
+  plugin if the filter criteria (see below) match the current property.</para>
+
+  <programlisting>&lt;value-storages&gt;
+  &lt;value-storage id="Storage #1" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage"&gt;
+    &lt;properties&gt;
+      &lt;property name="path" value="data/values"/&gt;
+    &lt;/properties&gt;
+    &lt;filters&gt;
+     &lt;filter property-type="Binary" min-value-size="1M"/&gt;&lt;!-- Values large of 1Mbyte --&gt;
+    &lt;/filters&gt;
+.........
+&lt;/value-storages&gt;</programlisting>
+
+  <para>Where <emphasis role="bold">value-storage</emphasis> is the subclass
+  of org.exoplatform.services.jcr.storage.value.ValueStoragePlugin and
+  <emphasis role="bold">properties</emphasis> are optional plugin specific
+  parameters.</para>
+
+  <para><emphasis role="bold">filters</emphasis> : Each file value storage can
+  have the filter(s) for incoming values. If there are several filter
+  criteria, they all have to match (AND-Condition).</para>
+
+  <para>A filter can match values by property type (property-type), property
+  name (property-name), ancestor path (ancestor-path) and/or the size of
+  values stored (min-value-size, e.g. 1M, 4.2G, 100 (bytes)).</para>
+
+  <para>In a code sample, we use a filter with property-type and
+  min-value-size only. That means that the storage is only for binary values
+  whose size is greater than 1Mbyte.</para>
+
+  <para>It's recommended to store properties with large values in a file value
+  storage only.</para>
+</chapter>

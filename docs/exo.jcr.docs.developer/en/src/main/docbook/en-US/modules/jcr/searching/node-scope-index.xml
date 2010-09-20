@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="JCR.NodeScopeIndex">
+  <title>Removing Nodes Property From Indexing Scope</title>
+
+  <para>In this example, we will exclude some 'text' property of
+  nt:unstructured node from indexind. And, therefore, node will not be found
+  by the content of this property, even if it accepts all constraints.</para>
+
+  <para>First of all, add rules to indexing-configuration.xml:</para>
+
+  <programlisting>&lt;index-rule nodeType="nt:unstructured" condition="@rule='nsiTrue'"&gt;
+    &lt;!-- default value for nodeScopeIndex is true --&gt;
+    &lt;property&gt;text&lt;/property&gt;
+&lt;/index-rule&gt;
+
+&lt;index-rule nodeType="nt:unstructured" condition="@rule='nsiFalse'"&gt;
+    &lt;!-- do not include text in node scope index --&gt;
+    &lt;property nodeScopeIndex="false"&gt;text&lt;/property&gt;
+&lt;/index-rule&gt;</programlisting>
+
+  <note>
+    <para>See <link linkend="JCR.SearchConfiguration">Search
+    Configuration</link></para>
+  </note>
+
+  <section>
+    <title>Repository structure:</title>
+
+    <para>Repository contains nt:unstructured nodes, with same 'text'property
+    and different 'rule' properties (even null)</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>root</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>node1 (nt:unstructured) rule="nsiTrue" text="The quick brown
+            fox ..."</para>
+          </listitem>
+
+          <listitem>
+            <para>node2 (nt:unstructured) rule="nsiFalse" text="The quick
+            brown fox ..."</para>
+          </listitem>
+
+          <listitem>
+            <para>node3 (nt:unstructured) text="The quick brown fox ..." // as
+            you see this node not mentioned in indexing-coniguration</para>
+          </listitem>
+        </itemizedlist>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Query execution</title>
+
+    <para><emphasis role="bold">SQL</emphasis></para>
+
+    <programlisting>// make SQL query
+QueryManager queryManager = workspace.getQueryManager();
+// create query
+String sqlStatement = "SELECT * FROM nt:unstructured WHERE CONTAINS(*,'quick')";
+Query query = queryManager.createQuery(sqlStatement, Query.SQL);
+// execute query and fetch result
+QueryResult result = query.execute();</programlisting>
+
+    <para><emphasis role="bold">XPath</emphasis></para>
+
+    <programlisting>// make XPath query
+QueryManager queryManager = workspace.getQueryManager();
+// create query
+String xpathStatement = "//element(*,nt:unstructured)[jcr:contains(., 'quick')]";
+Query query = queryManager.createQuery(xpathStatement, Query.XPATH);
+// execute query and fetch result
+QueryResult result = query.execute();</programlisting>
+  </section>
+
+  <section>
+    <title>Fetching result</title>
+
+    <para>Let's get nodes:</para>
+
+    <programlisting>NodeIterator it = result.getNodes();
+
+if(it.hasNext())
+{
+   Node findedNode = it.nextNode();
+}</programlisting>
+
+    <para>NodeIterator will return "node1" and "node3". Node2, as you see, is
+    not in result set.</para>
+
+    <para>Also, we can get a table:</para>
+
+    <programlisting>String[] columnNames = result.getColumnNames();
+RowIterator rit = result.getRows();
+while (rit.hasNext())
+{
+   Row row = rit.nextRow();
+   // get values of the row
+   Value[] values = row.getValues();
+}</programlisting>
+
+    <para>Table content is</para>
+
+    <table>
+      <title>Table content</title>
+
+      <tgroup cols="3">
+        <thead>
+          <row>
+            <entry>jcr:primarytype</entry>
+
+            <entry>jcr:path</entry>
+
+            <entry>jcr:score</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry>nt:unstructured</entry>
+
+            <entry>/node1</entry>
+
+            <entry>3806</entry>
+          </row>
+
+          <row>
+            <entry>nt:unstructured</entry>
+
+            <entry>/node3</entry>
+
+            <entry>3806</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </section>
+</section>

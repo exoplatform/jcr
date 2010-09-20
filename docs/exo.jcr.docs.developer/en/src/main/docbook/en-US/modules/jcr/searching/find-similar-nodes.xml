@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="JCR.FindSimilarNodes">
+  <title>Finding Similar Nodes</title>
+
+  <para>Find similar nodes to node by path '/baseFile/jcr:content'.</para>
+
+  <para>In our example, baseFile will contain text where "terms" word happens
+  many times. That's a reason why the existanse of this word will be used as a
+  criteria of node similarity (for node baseFile).</para>
+
+  <note>
+    <para>See also about Similarity and configuration - <link
+    linkend="JCR.SearchingRepositoryContent">Searching Repository
+    Content</link></para>
+  </note>
+
+  <para>Higlighting support must be added to configuration.
+  test-jcr-config.xml:</para>
+
+  <programlisting>&lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
+   &lt;properties&gt;
+      ...
+      &lt;property name="support-highlighting" value="true" /&gt;
+      ...
+   &lt;/properties&gt;
+&lt;/query-handler&gt;</programlisting>
+
+  <section>
+    <title>Repository structure:</title>
+
+    <para>Repository contains many nt:file nodes"</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>root</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>baseFile (nt:file)</para>
+
+            <itemizedlist>
+              <listitem>
+                <para>jcr:content (nt:resource) jcr:data="Similarity is
+                determined by looking up <emphasis
+                role="bold">terms</emphasis> that are common to nodes. There
+                are some conditions that must be met for a <emphasis
+                role="bold">term</emphasis> to be considered. This is required
+                to limit the number possibly relevant <emphasis
+                role="bold">terms</emphasis>. Only <emphasis
+                role="bold">terms</emphasis> with at least 4 characters are
+                considered. Only <emphasis role="bold">terms</emphasis> that
+                occur at least 2 times in the source node are considered. Only
+                <emphasis role="bold">terms</emphasis> that occur in at least
+                5 nodes are considered."</para>
+              </listitem>
+            </itemizedlist>
+          </listitem>
+
+          <listitem>
+            <para>target1 (nt:file)</para>
+
+            <itemizedlist>
+              <listitem>
+                <para>jcr:content (nt:resource) jcr:data="Similarity is
+                determined by looking up <emphasis
+                role="bold">terms</emphasis> that are common to nodes."</para>
+              </listitem>
+            </itemizedlist>
+          </listitem>
+
+          <listitem>
+            <para>target2 (nt:file)</para>
+
+            <itemizedlist>
+              <listitem>
+                <para>jcr:content (nt:resource) jcr:data="There is no you know
+                what"</para>
+              </listitem>
+            </itemizedlist>
+          </listitem>
+
+          <listitem>
+            <para>target3 (nt:file)</para>
+
+            <itemizedlist>
+              <listitem>
+                <para>jcr:content (nt:resource) jcr:data=" <emphasis
+                role="bold">Terms</emphasis> occures here"</para>
+              </listitem>
+            </itemizedlist>
+          </listitem>
+        </itemizedlist>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Query execution</title>
+
+    <para><emphasis role="bold">SQL</emphasis></para>
+
+    <programlisting>// make SQL query
+QueryManager queryManager = workspace.getQueryManager();
+// create query
+String sqlStatement = "SELECT * FROM nt:resource WHERE SIMILAR(.,'/baseFile/jcr:content')";
+Query query = queryManager.createQuery(sqlStatement, Query.SQL);
+// execute query and fetch result
+QueryResult result = query.execute();</programlisting>
+
+    <para><emphasis role="bold">XPath</emphasis></para>
+
+    <programlisting>// make XPath query
+QueryManager queryManager = workspace.getQueryManager();
+// create query
+String xpathStatement = "//element(*, nt:resource)[rep:similar(., '/testroot/baseFile/jcr:content')]";
+Query query = queryManager.createQuery(xpathStatement, Query.XPATH);
+// execute query and fetch result
+QueryResult result = query.execute();</programlisting>
+  </section>
+
+  <section>
+    <title>Fetching result</title>
+
+    <para>Let's get nodes:</para>
+
+    <programlisting>NodeIterator it = result.getNodes();
+
+if(it.hasNext())
+{
+   Node findedNode = it.nextNode();
+}</programlisting>
+
+    <para>NodeIterator will return
+    "/baseFile/jcr:content","/target1/jcr:content" and
+    "/target3/jcr:content".</para>
+
+    <para>As you see the base node are also in result set.</para>
+
+    <para>We can also get a table:</para>
+
+    <programlisting>String[] columnNames = result.getColumnNames();
+RowIterator rit = result.getRows();
+while (rit.hasNext())
+{
+   Row row = rit.nextRow();
+   // get values of the row
+   Value[] values = row.getValues();
+}</programlisting>
+
+    <para>The table content is</para>
+
+    <table>
+      <title>Table content</title>
+
+      <tgroup cols="3">
+        <thead>
+          <row>
+            <entry>jcr:path</entry>
+
+            <entry>...</entry>
+
+            <entry>jcr:score</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry>/baseFile/jcr:content</entry>
+
+            <entry>...</entry>
+
+            <entry>2674</entry>
+          </row>
+
+          <row>
+            <entry>/target1/jcr:content</entry>
+
+            <entry>...</entry>
+
+            <entry>2674</entry>
+          </row>
+
+          <row>
+            <entry>/target3/jcr:content</entry>
+
+            <entry>...</entry>
+
+            <entry>2674</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </section>
+</section>

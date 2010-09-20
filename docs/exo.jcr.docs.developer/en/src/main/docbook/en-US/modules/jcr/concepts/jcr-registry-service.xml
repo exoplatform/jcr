@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="JCR.RegistryService">
+  <?dbhtml filename="ch-jcr-registry-service.html"?>
+
+  <title>Registry Service</title>
+
+  <section>
+    <title>Concept</title>
+
+    <para>The Registry Service is one of the key parts of the infrastructure
+    built around eXo JCR. Each JCR that is based on service, applications, etc
+    may have its own configuration, settings data and other data that have to
+    be stored persistently and used by the approptiate service or application.
+    ( We call it "<emphasis role="bold">Consumer</emphasis>").</para>
+
+    <para>The service acts as a centralized collector (Registry) for such
+    data. Naturally, a registry storage is JCR based i.e. stored in some JCR
+    workspace (one per Repository) as an Item tree under <emphasis
+    role="bold">/exo:registry</emphasis> node.</para>
+
+    <para>Despite the fact that the structure of the tree is well defined (see
+    the scheme below), it is not recommended for other services to manipulate
+    data using JCR API directly for better flexibility. So the Registry
+    Service acts as a mediator between a Consumer and its settings.</para>
+
+    <para>The proposed structure of the Registry Service storage is divided
+    into 3 logical groups: services, applications and users:</para>
+
+    <programlisting> exo:registry/          &lt;-- registry "root" (exo:registry)
+   exo:services/        &lt;-- service data storage (exo:registryGroup)
+     service1/
+       Consumer data    (exo:registryEntry)
+     ...
+   exo:applications/    &lt;-- application data storage (exo:registryGroup)
+     app1/
+       Consumer data    (exo:registryEntry)
+     ...
+   exo:users/           &lt;-- user personal data storage (exo:registryGroup)
+     user1/
+       Consumer data    (exo:registryEntry)
+     ...</programlisting>
+
+    <para>Each upper level eXo Service may store its configuration in eXo
+    Registry. At first, start from xml-config (in jar etc) and then from
+    Registry. In configuration file, you can add force-xml-configuration
+    parameter to component to ignore reading parameters initialization from
+    RegistryService and to use file instead:</para>
+
+    <programlisting>&lt;value-param&gt;
+  &lt;name&gt;force-xml-configuration&lt;/name&gt;
+  &lt;value&gt;true&lt;/value&gt;
+&lt;/value-param&gt;</programlisting>
+  </section>
+
+  <section>
+    <title>The API</title>
+
+    <para>The main functionality of the Registry Service is pretty simple and
+    straightforward, it is described in the Registry abstract class as the
+    following:</para>
+
+    <programlisting>public abstract class Registry {
+  
+  /**
+   * Returns the Registry object which wraps the Node of the "exo:registry" type
+   */
+  public abstract RegistryNode getRegistry(SessionProvider sessionProvider) 
+      throws RepositoryConfigurationException, RepositoryException;
+  
+  /**
+   * Returns the existing RegistryEntry which wraps the Node of the "exo:registryEntry" type  
+   */
+  public abstract RegistryEntry getEntry(SessionProvider sessionProvider, String groupName,
+      String entryName) throws RepositoryException;
+
+  /**
+   * Creates a new RegistryEntry
+   */
+  public abstract void createEntry(SessionProvider sessionProvider,
+      String groupName, RegistryEntry entry) throws RepositoryException;
+
+  /**
+   * Replaces a RegistryEntry
+   */
+  public abstract void recreateEntry(SessionProvider sessionProvider,
+      String groupName, RegistryEntry entry) throws RepositoryException;
+
+  /**
+   * Removes a RegistryEntry
+   */
+  public abstract void removeEntry(SessionProvider sessionProvider,
+      String groupName, String entryName) throws RepositoryException;</programlisting>
+
+    <para>As you can see it looks like a simple CRUD interface for the
+    RegistryEntry object which wraps registry data for some Consumer as a
+    Registry Entry. The Registry Service itself knows nothing about the
+    wrapping data, it is Consumer's responsibility to manage and use its data
+    in its own way.</para>
+
+    <para>To create an Entity Consumer you should know how to serialize the
+    data to some XML structure and then create a RegistryEntry from these data
+    at once or populate them in a RegistryEntry object (using
+    RegistryEntry(String entryName) constructor and then obtain and fill a DOM
+    document).</para>
+
+    <para>Example of RegistryService using:</para>
+
+    <programlisting>    RegistryService regService = (RegistryService) container
+    .getComponentInstanceOfType(RegistryService.class);
+
+    RegistryEntry registryEntry = regService.getEntry(sessionProvider,
+            RegistryService.EXO_SERVICES, "my-service");
+
+    Document doc = registryEntry.getDocument();
+    
+    String mySetting = getElementsByTagName("tagname").item(index).getTextContent();
+     .....</programlisting>
+  </section>
+
+  <section>
+    <title>Configuration</title>
+
+    <para>RegistryService has only one optional properties parameter <emphasis
+    role="bold">locations</emphasis>. It is used to mention where exo:registry
+    is placed for each repository. The name of each property is interpreted as
+    a repository name and its value as a workspace name (a system workspace by
+    default).</para>
+
+    <programlisting>&lt;component&gt;
+   &lt;type&gt;org.exoplatform.services.jcr.ext.registry.RegistryService&lt;/type&gt;
+   &lt;init-params&gt;
+      &lt;properties-param&gt;
+      &lt;name&gt;locations&lt;/name&gt;
+      &lt;property name="db1" value="ws2"/&gt;
+      &lt;/properties-param&gt;
+   &lt;/init-params&gt;
+&lt;/component&gt;</programlisting>
+  </section>
+</chapter>

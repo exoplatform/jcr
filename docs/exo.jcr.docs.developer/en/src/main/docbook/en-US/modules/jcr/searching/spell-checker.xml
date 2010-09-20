@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="JCR.SpellChecker">
+  <title>Checking the spelling of Phrase</title>
+
+  <para>Check the correct spelling of phrase 'quik OR (-foo bar)' according to
+  data already stored in index.</para>
+
+  <note>
+    <para>See also about SpellChecker configuration - <link
+    linkend="JCR.SearchingRepositoryContent">Searching Repository
+    Content</link></para>
+  </note>
+
+  <para>SpellChecker must be settled in query-handler config.</para>
+
+  <para>test-jcr-config.xml:</para>
+
+  <programlisting>&lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
+   &lt;properties&gt;
+      ...
+   &lt;property name="spellchecker-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" /&gt;
+      ...
+   &lt;/properties&gt;
+&lt;/query-handler&gt;</programlisting>
+
+  <section>
+    <title>Repository structure:</title>
+
+    <para>Repository contains node, with string property "The quick brown fox
+    jumps over the lazy dog."</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>root</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>node1 property="The quick brown fox jumps over the lazy
+            dog."</para>
+          </listitem>
+        </itemizedlist>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Query execution</title>
+
+    <para>Query looks only for root node, because spell checker looks for
+    suggestions by full index. So complicated query is redundant.</para>
+
+    <para><emphasis role="bold">SQL</emphasis></para>
+
+    <programlisting>// make SQL query
+QueryManager queryManager = workspace.getQueryManager();
+// create query
+String sqlStatement = "SELECT rep:spellcheck() FROM nt:base WHERE jcr:path = '/' AND SPELLCHECK('quik OR (-foo bar)')";
+Query query = queryManager.createQuery(sqlStatement, Query.SQL);
+// execute query and fetch result
+QueryResult result = query.execute();</programlisting>
+
+    <para><emphasis role="bold">XPath</emphasis></para>
+
+    <programlisting>// make XPath query
+QueryManager queryManager = workspace.getQueryManager();
+// create query
+String xpathStatement = "/jcr:root[rep:spellcheck('quik OR (-foo bar)')]/(rep:spellcheck())";
+Query query = queryManager.createQuery(xpathStatement, Query.XPATH);
+// execute query and fetch result
+QueryResult result = query.execute();</programlisting>
+  </section>
+
+  <section>
+    <title>Fetching result</title>
+
+    <para>Get suggestion of coorect spelling our phrase:</para>
+
+    <programlisting>RowIterator it = result.getRows();
+Row r = rows.nextRow();
+Value v = r.getValue("rep:spellcheck()");
+String correctPhrase = v.getString();</programlisting>
+
+    <para>So, correct spelling for phrase "quik OR (-foo bar)" is "quick OR
+    (-fox bar)".</para>
+  </section>
+</section>

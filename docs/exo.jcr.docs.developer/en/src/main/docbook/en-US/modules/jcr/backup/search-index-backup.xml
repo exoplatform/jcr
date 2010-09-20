@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="JCR.SearchIndexBackup">
+  <?dbhtml filename="ch-search-index-backup.html"?>
+
+  <title>Searching index backup</title>
+
+  <section>
+    <title>Manual backup (file copy)</title>
+
+    <para>It can be useful for some reasons. The backup may be performed
+    manually or using third part software.</para>
+
+    <para>You can make a copy of the search index ($AS_HOME/temp/jcrlucenedb)
+    and use it to replace the current index by this copy in case of an index
+    damaged or lost.</para>
+
+    <para>All repository changes that are applied between the index backup and
+    the point of time when the backup index is restored, are not in the index
+    and those modifications will not be found when searching. The
+    modifications exist in the repository, but do not exist in the search
+    index. <emphasis role="bold">And those changes will not be automatically
+    reindexed.</emphasis></para>
+
+    <para>For example: You have configured the workspace index to be in the
+    "/index/workspace" directory.<itemizedlist>
+        <listitem>
+          <para>Make a backup of the search index - copy the content of the
+          "/index" directory;</para>
+        </listitem>
+
+        <listitem>
+          <para>Add the node "/anynode" to the workspace. Now this node exists
+          in the workspace database and the search index has information about
+          this node, so you can find it using query <code>select * from
+          nt:base where jcr:path="/anynode"</code>;</para>
+        </listitem>
+
+        <listitem>
+          <para>Rollback to the last backup - replace current
+          "/index/workspace" directory by the backup;</para>
+        </listitem>
+
+        <listitem>
+          <para>Node "/anynode" still exists and is accessible in the
+          workspace (Session.getItem("/anynode")), but you can't find it via
+          the search query<code> select * from nt:base where
+          jcr:path="/anynode"</code>;</para>
+        </listitem>
+      </itemizedlist></para>
+
+    <para>If you want to find changes made after updating, you have to reindex
+    the whole workspace content. The way to do this is to stop the repository
+    container and delete the "/index/workspace" folder. The workspace database
+    content will be reindexed on repository startup.</para>
+  </section>
+
+  <section>
+    <title>Consistency Requirements</title>
+
+    <para>To have the workspace content consistent with the search index, the
+    workspace database and the index directory should correspond to the same
+    state. In case of an external (manual) backup <emphasis>the database
+    backup and the index directory backup should be performed on a
+    stopped/unmodifiable repository</emphasis>.</para>
+
+    <para><emphasis role="bold">Only in that case the repository content and
+    the search index will be consistent.</emphasis></para>
+  </section>
+
+  <section>
+    <title>JCR Backup Service</title>
+
+    <para>To get a hot-backup, which is executed on the fly, it's possible to
+    use the <link linkend="JCR.BackupService">Backup service</link> which is
+    available as a JCR Extension.</para>
+
+    <note>
+      <para>Backup service supports full and incremental backup types. A
+      Scheduler is available.</para>
+    </note>
+  </section>
+</chapter>

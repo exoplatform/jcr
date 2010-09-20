@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="JCR.IgnoreAccentSymbols">
+  <title>Ignoring Accent Symbols. New Analyzer Setting.</title>
+
+  <para>In this example, we will create new Analyzer, set it in QueryHandler
+  configuration, and make query to check it.</para>
+
+  <para>Standard analyzer does not normalize accents like é,è,à. So, a word
+  like 'tréma' will be stored to index as 'tréma'. But if we want to normalize
+  such symbols or not? We want to store 'tréma' word as 'trema'.</para>
+
+  <para>There is two ways of setting up new Analyzer (no matter standarts or
+  our):</para>
+
+  <itemizedlist>
+    <listitem>
+      <para>The first way: Create descendant class of SearchIndex with new
+      Analyzer (see <link linkend="JCR.SearchConfiguration">Search
+      Configuration</link>);</para>
+    </listitem>
+  </itemizedlist>
+
+  <para>There is only one way - create new Analyzer (if there is no previously
+  created and accepted for our needs) and set it in Search index.</para>
+
+  <itemizedlist>
+    <listitem>
+      <para>The second way: Register new Analyzer in QueryHandler
+      configuration (this one eccepted since 1.12 version);</para>
+    </listitem>
+  </itemizedlist>
+
+  <para>We will use the last one:</para>
+
+  <itemizedlist>
+    <listitem>
+      <para>Create new MyAnalyzer</para>
+    </listitem>
+  </itemizedlist>
+
+  <programlisting>public class MyAnalyzer extends Analyzer
+{
+   @Override
+   public TokenStream tokenStream(String fieldName, Reader reader)
+   {
+      StandardTokenizer tokenStream = new StandardTokenizer(reader);
+      // process all text with standard filter
+      // removes 's (as 's in "Peter's") from the end of words and removes dots from acronyms.
+      TokenStream result = new StandardFilter(tokenStream);
+      // this filter normalizes token text to lower case
+      result = new LowerCaseFilter(result);
+      // this one replaces accented characters in the ISO Latin 1 character set (ISO-8859-1) by their unaccented equivalents
+      result = new ISOLatin1AccentFilter(result);
+      // and finally return token stream
+      return result;
+   }
+}</programlisting>
+
+  <itemizedlist>
+    <listitem>
+      <para>Then, register new MyAnalyzer in configuration</para>
+    </listitem>
+  </itemizedlist>
+
+  <programlisting>&lt;workspace name="ws"&gt;
+   ...
+   &lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
+      &lt;properties&gt;
+         &lt;property name="analyzer" value="org.exoplatform.services.jcr.impl.core.MyAnalyzer"/&gt;
+         ...
+      &lt;/properties&gt;
+   &lt;/query-handler&gt;
+   ...
+&lt;/workspace&gt;</programlisting>
+
+  <para>After that, check it with query:</para>
+
+  <para>Find node with mixin type 'mix:title' where 'jcr:title' contains
+  "tréma" and "naïve" strings.</para>
+
+  <section>
+    <title>Repository structure:</title>
+
+    <para>Repository filled by nodes with mixin type 'mix:title' and different
+    values of 'jcr:title' property.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>root</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>node1 (mix:title) jcr:title = "tréma blabla naïve"</para>
+          </listitem>
+
+          <listitem>
+            <para>node2 (mix:title) jcr:description = "trema come text
+            naive"</para>
+          </listitem>
+        </itemizedlist>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Query execution</title>
+
+    <para><emphasis role="bold">SQL</emphasis></para>
+
+    <programlisting>// make SQL query
+QueryManager queryManager = workspace.getQueryManager();
+// create query
+String sqlStatement = "SELECT * FROM mix:title WHERE CONTAINS(jcr:title, 'tr\u00E8ma na\u00EFve')";
+Query query = queryManager.createQuery(sqlStatement, Query.SQL);
+// execute query and fetch result
+QueryResult result = query.execute();</programlisting>
+
+    <para><emphasis role="bold">XPath</emphasis></para>
+
+    <programlisting>// make SQL query
+QueryManager queryManager = workspace.getQueryManager();
+// create query
+String xpathStatement = "//element(*,mix:title)[jcr:contains(@jcr:title, 'tr\u00E8ma na\u00EFve')]";
+Query query = queryManager.createQuery(xpathStatement, Query.XPATH);
+// execute query and fetch result
+QueryResult result = query.execute();</programlisting>
+  </section>
+
+  <section>
+    <title>Fetching result</title>
+
+    <para>Let's get nodes:</para>
+
+    <programlisting>NodeIterator it = result.getNodes();
+
+if(it.hasNext())
+{
+   Node findedNode = it.nextNode();
+}</programlisting>
+
+    <para>NodeIterator will return "node1" and "node2". How is it possible?
+    Remember that our MyAnalyzer transforms 'tréma' word to 'trema'. So node2
+    accepts our constraints to.</para>
+
+    <para>Also, we can get a table:</para>
+
+    <programlisting>String[] columnNames = result.getColumnNames();
+RowIterator rit = result.getRows();
+while (rit.hasNext())
+{
+   Row row = rit.nextRow();
+   // get values of the row
+   Value[] values = row.getValues();
+}</programlisting>
+
+    <para>Table content is</para>
+
+    <table>
+      <title>Table content</title>
+
+      <tgroup cols="3">
+        <thead>
+          <row>
+            <entry>cr:title</entry>
+
+            <entry>...</entry>
+
+            <entry>cr:path</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry>trèma blabla naïve</entry>
+
+            <entry>...</entry>
+
+            <entry>/node1</entry>
+          </row>
+
+          <row>
+            <entry>trema come text naive</entry>
+
+            <entry>...</entry>
+
+            <entry>/node2</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </section>
+</section>

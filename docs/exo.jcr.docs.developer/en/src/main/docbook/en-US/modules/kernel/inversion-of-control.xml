@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="Kernel.InversionOfControl">
+  <?dbhtml filename="ch-inversion-of-control.html"?>
+
+  <title>Inversion Of Control</title>
+
+  <section>
+    <title>Overview</title>
+
+    <para>The services are not responsible for the instantiation of the
+    components on which they depend.</para>
+
+    <para>This architecture provides a loosely coupled design where the
+    implementation of dependant services can be transparently
+    exchanged.</para>
+
+    <para>This pattern has several names :</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Hollywood principle : "don't call me, I will call you"</para>
+      </listitem>
+
+      <listitem>
+        <para>Inversion of Control</para>
+      </listitem>
+
+      <listitem>
+        <para>Dependency injection</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>How</title>
+
+    <para>Don't let the object create itself the instances of the object that
+    it references. This job is delegated to the container (assembler in the
+    picture).</para>
+
+    <mediaobject>
+      <imageobject>
+        <imagedata fileref="images/ioc.gif" />
+      </imageobject>
+    </mediaobject>
+  </section>
+
+  <section>
+    <title>Injection</title>
+
+    <para>There are two ways to inject a dependency :</para>
+
+    <para>Using a constructor:</para>
+
+    <programlisting>public ServiceA(ServiceB serviceB)</programlisting>
+
+    <para>Using setter methods:</para>
+
+    <programlisting>public void setServiceB(ServiceB serviceB)</programlisting>
+
+    <para>When a client service can not be stored in the container then the
+    service locator pattern is used:</para>
+
+    <programlisting>public ServiceA(){
+   this.serviceB =Container.getSInstance().getService(ServiceB.class);
+}</programlisting>
+  </section>
+
+  <section>
+    <title>Side effects</title>
+
+    <itemizedlist>
+      <listitem>
+        <para>Ease Unit test (use of Mock objects)</para>
+      </listitem>
+
+      <listitem>
+        <para>Ease Maintainability</para>
+      </listitem>
+
+      <listitem>
+        <para>Ease Refactoring</para>
+      </listitem>
+
+      <listitem>
+        <para>Component reuse ( POJOs != EJBs)</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+</chapter>

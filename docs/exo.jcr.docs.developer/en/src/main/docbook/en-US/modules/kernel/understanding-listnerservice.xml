@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="Kernel.UnderstandingtheListenerService">
+  <?dbhtml filename="ch-understanding-listeners-service.html"?>
+
+  <title>Understanding the ListenerService</title>
+
+  <para><emphasis role="bold">Related documents</emphasis></para>
+
+  <itemizedlist>
+    <listitem>
+      <para><link linkend="Kernel.ServiceConfigurationforBeginners">Service
+      Configuration for Beginners</link></para>
+    </listitem>
+
+    <listitem>
+      <para><link linkend="Kernel.ServiceConfigurationinDetail">Service
+      Configuration in Detail</link></para>
+    </listitem>
+
+    <listitem>
+      <para><link linkend="Kernel.ContainerConfiguration">Container
+      Configuration</link></para>
+    </listitem>
+  </itemizedlist>
+
+  <section>
+    <title>Objectives</title>
+
+    <para>This article will first describe how the ListenerService works and
+    then it will show you how to configure the ListenerService.</para>
+  </section>
+
+  <section>
+    <title>What is the ListenerService ?</title>
+
+    <para>Inside eXo, an event mechanism allows to trigger and listen to
+    events under specific conditions. This mechanism is used in several places
+    in eXo such as login/logout time.</para>
+  </section>
+
+  <section>
+    <title>How does it work?</title>
+
+    <para>Listeners must be subclasses of
+    org.exoplatform.services.listener.Listener registered by the
+    ListenerService.</para>
+
+    <section>
+      <title>Registering a listener</title>
+
+      <para>To register a listener, you need to call the addListener()
+      method.</para>
+
+      <programlisting>/**
+ * This method is used to register a listener with the service. The method
+ * should: 1. Check to see if there is a list of listener with the listener
+ * name, create one if the listener list doesn't exit 2. Add the new listener
+ * to the listener list
+ * 
+ * @param listener
+*/
+public void addListener(Listener listener) {
+   ...
+}</programlisting>
+
+      <para>By convention, we use the listener name as the name of the event
+      to listen to.</para>
+    </section>
+
+    <section>
+      <title>Triggering an event</title>
+
+      <para>To trigger an event, an application can call one of the
+      broadcast() methods of ListenerService.</para>
+
+      <programlisting>/**
+ * This method is used to broadcast an event. This method should: 1. Check if
+ * there is a list of listener that listen to the event name. 2. If there is a
+ * list of listener, create the event object with the given name , source and
+ * data 3. For each listener in the listener list, invoke the method
+ * onEvent(Event)
+ * 
+ * @param &lt;S&gt; The type of the source that broadcast the event
+ * @param &lt;D&gt; The type of the data that the source object is working on
+ * @param name The name of the event
+ * @param source The source object instance
+ * @param data The data object instance
+ * @throws Exception 
+ */
+public &lt;S, D&gt; void broadcast(String name, S source, D data) throws Exception {
+   ...
+}
+
+/**
+ * This method is used when a developer want to implement his own event object
+ * and broadcast the event. The method should: 1. Check if there is a list of
+ * listener that listen to the event name. 2. If there is a list of the
+ * listener, For each listener in the listener list, invoke the method
+ * onEvent(Event)
+ * 
+ * @param &lt;T&gt; The type of the event object, the type of the event object has
+ *          to be extended from the Event type
+ * @param event The event instance
+ * @throws Exception
+ */
+public &lt;T extends Event&gt; void broadcast(T event) throws Exception {
+   ...
+}</programlisting>
+
+      <para>The boadcast() methods retrieve the name of the event and find the
+      registered listeners with the same name and call the method onEvent() on
+      each listener found.</para>
+
+      <para>Each listener is a class that extends
+      org.exoplatform.services.listener.Listener, as you can see below:</para>
+
+      <programlisting>public abstract class Listener&lt;S, D&gt; extends BaseComponentPlugin {
+
+   /**
+    * This method should be invoked when an event with the same name is
+    * broadcasted
+    */
+   public abstract void onEvent(Event&lt;S, D&gt; event) throws Exception;
+}</programlisting>
+
+      <warning>
+        <para>As you can see we use generics to limit the source of the event
+        to the type 'S' and the data of the event to the type 'D', so we
+        expect that listeners implement the method onEvent() with the
+        corresponding types</para>
+      </warning>
+
+      <para>Each listener is also a ComponentPlugin with a name and a
+      description, in other words, the name of the listener will be the name
+      given in the configuration file, for more details see the next
+      section.</para>
+
+      <programlisting>public interface ComponentPlugin {
+   public String getName();
+
+   public void setName(String name);
+
+   public String getDescription();
+
+   public void setDescription(String description);
+}</programlisting>
+    </section>
+  </section>
+
+  <section>
+    <title>How to configure a listener?</title>
+
+    <para>All listeners are in fact a ComponentPlugin so it must be configured
+    as below:</para>
+
+    <programlisting>&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+&lt;configuration&gt;
+...
+  &lt;external-component-plugins&gt;
+    &lt;!-- The full qualified name of the ListenerService --&gt; 
+    &lt;target-component&gt;org.exoplatform.services.listener.ListenerService&lt;/target-component&gt;
+
+    &lt;component-plugin&gt;
+    &lt;!-- The name of the listener that is also the name of the target event --&gt;
+      &lt;name&gt;${name-of-the-target-event}&lt;/name&gt;
+      &lt;!-- The name of the method to call on the ListenerService in order to register the Listener --&gt;
+      &lt;set-method&gt;addListener&lt;/set-method&gt;
+      &lt;!-- The full qualified name of the Listener --&gt;
+      &lt;type&gt;${the-FQN-of-the-listener}&lt;/type&gt;
+    &lt;/component-plugin&gt;
+
+  &lt;/external-component-plugins&gt;
+&lt;/configuration&gt;</programlisting>
+  </section>
+
+  <section>
+    <title>Concrete Example</title>
+
+    <para>The org.exoplatform.services.security.ConversationRegistry uses the
+    ListenerService to notify that a user has just signed in or just left the
+    application. For example, when a new user signs in, the following code is
+    called:</para>
+
+    <programlisting>listenerService.broadcast("exo.core.security.ConversationRegistry.register", this, state);</programlisting>
+
+    <para>This code will in fact create a new Event which name is
+    "exo.core.security.ConversationRegistry.register", which source is the
+    current instance of ConversationRegistry and which data is the given
+    state. The ListenerService will call the method
+    onEvent(Event&lt;ConversationRegistry, ConversationState&gt; event) on all
+    the listeners which name is
+    "exo.core.security.ConversationRegistry.register".</para>
+
+    <para>In the example below, we define a Listener that will listen the
+    event "exo.core.security.ConversationRegistry.register".</para>
+
+    <programlisting>&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+&lt;configuration&gt;
+...
+  &lt;external-component-plugins&gt;
+    &lt;!-- The full qualified name of the ListenerService --&gt; 
+    &lt;target-component&gt;org.exoplatform.services.listener.ListenerService&lt;/target-component&gt;
+
+    &lt;component-plugin&gt;
+      &lt;!-- The name of the listener that is also the name of the target event --&gt;
+      &lt;name&gt;exo.core.security.ConversationRegistry.register&lt;/name&gt;
+      &lt;!-- The name of the method to call on the ListenerService in order to register the Listener --&gt;
+      &lt;set-method&gt;addListener&lt;/set-method&gt;
+      &lt;!-- The full qualified name of the Listener --&gt;
+      &lt;type&gt;org.exoplatform.forum.service.AuthenticationLoginListener&lt;/type&gt;
+    &lt;/component-plugin&gt;
+
+  &lt;/external-component-plugins&gt;
+&lt;/configuration&gt;
+...</programlisting>
+  </section>
+</chapter>

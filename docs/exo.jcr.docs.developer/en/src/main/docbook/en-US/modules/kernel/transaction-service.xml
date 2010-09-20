@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="Kernel.TransactionService">
+  <?dbhtml filename="ch-tranasction-service.html"?>
+
+  <title>TransactionService</title>
+
+  <section>
+    <title>Base information</title>
+
+    <para>TransactionServices provides acces to XA TransactionManager and
+    UserTransaction (See JTA specification for details).</para>
+
+    <table>
+      <title>List methods</title>
+
+      <tgroup cols="2">
+        <tbody>
+          <row>
+            <entry>getTransactionManager()</entry>
+
+            <entry>Get used TransactionManager</entry>
+          </row>
+
+          <row>
+            <entry>getUserTransaction()</entry>
+
+            <entry>Get UserTransaction on TransactionManager</entry>
+          </row>
+
+          <row>
+            <entry>getDefaultTimeout()</entry>
+
+            <entry>Return default TimeOut</entry>
+          </row>
+
+          <row>
+            <entry>setTransactionTimeout(int seconds)</entry>
+
+            <entry>Set TimeOut in second</entry>
+          </row>
+
+          <row>
+            <entry>enlistResource(ExoResource xares)</entry>
+
+            <entry>Enlist XA resource in TransactionManager</entry>
+          </row>
+
+          <row>
+            <entry>delistResource(ExoResource xares)</entry>
+
+            <entry>Delist XA resource from TransactionManager</entry>
+          </row>
+
+          <row>
+            <entry>createXid()</entry>
+
+            <entry>Creates unique XA transaction identifier.</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </section>
+</chapter>

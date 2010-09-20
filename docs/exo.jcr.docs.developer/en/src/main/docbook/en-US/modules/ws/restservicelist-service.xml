@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="WS.RestServicesList">
+  <?dbhtml filename="ch-ws-restserviceslist-service.html"?>
+
+  <title>RestServicesList Service</title>
+
+  <section>
+    <title>Overview.</title>
+
+    <para>RestServicesList service is intendet to provide information about
+    rest services deployed to the application server.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Path - path to service</para>
+      </listitem>
+
+      <listitem>
+        <para>Regex - service's URL regular expression</para>
+      </listitem>
+
+      <listitem>
+        <para>FQN - full qualified name of service's class</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>The list can be provided in two formats: HTML and JSON.</para>
+  </section>
+
+  <section>
+    <title>Usage</title>
+
+    <note>
+      <para>Class does not implement
+      org.exoplatform.services.rest.resource.ResourceContainer and must never
+      be binded to RESTful framework by using eXoContainer. This service must
+      works as per-request resource.</para>
+    </note>
+
+    <section>
+      <title>HTML format</title>
+
+      <para>To get the list of services in HTML format use listHTML()
+      method:</para>
+
+      <programlisting>@GET
+@Produces({MediaType.TEXT_HTML})
+public byte[] listHTML()
+{
+   ...
+}  </programlisting>
+
+      <para>To do this, perform a simple GET request to the RestServicesList
+      link.</para>
+
+      <para>f.e. curl -u root:exo http://localhost:8080/rest/ will return such
+      HTML code:</para>
+
+      <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+   &lt;head&gt;
+      &lt;title&gt;eXo JAXRS Implementation&lt;/title&gt;
+   &lt;/head&gt;
+   &lt;body&gt;
+      &lt;h3 style="text-align:center;"&gt;Root resources&lt;/h3&gt;
+      &lt;table   width="90%"   style="table-layout:fixed;"&gt;
+         &lt;tr&gt;
+            &lt;th&gt;Path&lt;/th&gt;
+            &lt;th&gt;Regex&lt;/th&gt;
+            &lt;th&gt;FQN&lt;/th&gt;
+         &lt;/tr&gt;
+         &lt;tr&gt;
+            &lt;td&gt;script/groovy&lt;/td&gt;
+            &lt;td&gt;/script/groovy(/.*)?&lt;/td&gt;
+            &lt;td&gt;org.exoplatform.services.jcr.ext.script.groovy.GroovyScript2RestLoader&lt;/td&gt;
+         &lt;/tr&gt;
+         &lt;tr&gt;
+            &lt;td&gt;/lnkproducer/&lt;/td&gt;
+            &lt;td&gt;/lnkproducer(/.*)?&lt;/td&gt;
+            &lt;td&gt;org.exoplatform.services.jcr.webdav.lnkproducer.LnkProducer&lt;/td&gt;
+         &lt;/tr&gt;
+         &lt;tr&gt;
+            &lt;td&gt;/registry/&lt;/td&gt;
+            &lt;td&gt;/registry(/.*)?&lt;/td&gt;
+            &lt;td&gt;org.exoplatform.services.jcr.ext.registry.RESTRegistryService&lt;/td&gt;
+         &lt;/tr&gt;
+         &lt;tr&gt;
+            &lt;td&gt;/jcr&lt;/td&gt;
+            &lt;td&gt;/jcr(/.*)?&lt;/td&gt;
+            &lt;td&gt;org.exoplatform.services.jcr.webdav.WebDavServiceImpl&lt;/td&gt;
+         &lt;/tr&gt;
+         &lt;tr&gt;
+            &lt;td&gt;/&lt;/td&gt;
+            &lt;td&gt;(/.*)?&lt;/td&gt;
+            &lt;td&gt;org.exoplatform.services.rest.ext.service.RestServicesList&lt;/td&gt;
+         &lt;/tr&gt;
+      &lt;/table&gt;
+   &lt;/body&gt;
+&lt;/html&gt;    </programlisting>
+
+      <para>If you perform the same request with your browser, you'll see the
+      table with the list of deployed services like this:</para>
+
+      <table>
+        <title>Root resources</title>
+
+        <tgroup cols="3">
+          <thead>
+            <row>
+              <entry>Path</entry>
+
+              <entry>Regex</entry>
+
+              <entry>FQN</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry>script/groovy</entry>
+
+              <entry>/script/groovy(/.*)?</entry>
+
+              <entry>org.exoplatform.services.jcr.ext.script.groovy.GroovyScript2RestLoader</entry>
+            </row>
+
+            <row>
+              <entry>/lnkproducer/</entry>
+
+              <entry>/lnkproducer(/.*)?</entry>
+
+              <entry>org.exoplatform.services.jcr.webdav.lnkproducer.LnkProducer</entry>
+            </row>
+
+            <row>
+              <entry>/registry/</entry>
+
+              <entry>/registry(/.*)?</entry>
+
+              <entry>org.exoplatform.services.jcr.ext.registry.RESTRegistryService</entry>
+            </row>
+
+            <row>
+              <entry>/jcr</entry>
+
+              <entry>/jcr(/.*)?</entry>
+
+              <entry>org.exoplatform.services.jcr.webdav.WebDavServiceImpl</entry>
+            </row>
+
+            <row>
+              <entry>/</entry>
+
+              <entry>(/.*)?</entry>
+
+              <entry>org.exoplatform.services.rest.ext.service.RestServicesList</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+
+    <section>
+      <title>JSON format</title>
+
+      <para>To get the list of services in HTML format use listJSON()
+      method:</para>
+
+      <programlisting>@GET
+@Produces({MediaType.APPLICATION_JSON})
+public RootResourcesList listJSON()
+{
+   ...
+}</programlisting>
+
+      <para>To do this, add "Accept:application/json" header to your GET
+      request</para>
+
+      <para>f.e. curl -u root:exo http://localhost:8080/rest/ -H
+      "Accept:application/json" will return such JSON:</para>
+
+      <programlisting>{"rootResources":[
+   {
+      "fqn":"org.exoplatform.services.jcr.ext.script.groovy.GroovyScript2RestLoader",
+      "regex":"/script/groovy(/.*)?",
+      "path":"script/groovy"
+   },
+   {
+      "fqn":"org.exoplatform.services.jcr.webdav.lnkproducer.LnkProducer",
+      "regex":"/lnkproducer(/.*)?",
+      "path":"/lnkproducer/"
+   },
+   {
+      "fqn":"org.exoplatform.services.jcr.ext.registry.RESTRegistryService",
+      "regex":"/registry(/.*)?",
+      "path":"/registry/"
+   },
+   {
+      "fqn":"org.exoplatform.services.jcr.webdav.WebDavServiceImpl",
+      "regex":"/jcr(/.*)?",
+      "path":"/jcr"
+   },
+   {
+      "fqn":"org.exoplatform.services.rest.ext.service.RestServicesList",
+      "regex":"(/.*)?",
+      "path":"/"
+   }
+]}</programlisting>
+
+      <para></para>
+    </section>
+  </section>
+</chapter>

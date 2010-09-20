@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="JCR.OrderByProperty">
+  <title>Sorting Nodes by Property</title>
+
+  <para>Select all nodes with the mixin type ''mix:title' and order them by
+  the 'prop_pagecount' property.</para>
+
+  <section>
+    <title>Repository Structure</title>
+
+    <para>The repository contains several mix:title nodes, where
+    prop_pagecount has different values.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>root</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>document1 (mix:title) jcr:title="War and peace"
+            jcr:description="roman" prop_pagecount=4</para>
+          </listitem>
+
+          <listitem>
+            <para>document2 (mix:title) jcr:title="Cinderella"
+            jcr:description="fairytale" prop_pagecount=7</para>
+          </listitem>
+
+          <listitem>
+            <para>document3 (mix:title) jcr:title="Puss in Boots"
+            jcr:description="fairytale" prop_pagecount=1</para>
+          </listitem>
+        </itemizedlist>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Query Execution</title>
+
+    <para><emphasis role="bold">SQL</emphasis></para>
+
+    <programlisting>// make SQL query
+QueryManager queryManager = workspace.getQueryManager();
+// create query
+String sqlStatement = "SELECT * FROM mix:title ORDER BY prop_pagecount ASC";
+Query query = queryManager.createQuery(sqlStatement, Query.SQL);
+// execute query and fetch result
+QueryResult result = query.execute();</programlisting>
+
+    <para><emphasis role="bold">XPath</emphasis></para>
+
+    <programlisting>// make XPath query
+QueryManager queryManager = workspace.getQueryManager();
+// create query
+String xpathStatement = "//element(*,mix:title) order by prop_pagecount ascending";
+Query query = queryManager.createQuery(xpathStatement, Query.XPATH);
+// execute query and fetch result
+QueryResult result = query.execute();</programlisting>
+  </section>
+
+  <section>
+    <title>Fetching the Result</title>
+
+    <para>Let's get nodes:</para>
+
+    <programlisting>NodeIterator it = result.getNodes();
+
+if(it.hasNext())
+{
+   Node findedNode = it.nextNode();
+}</programlisting>
+
+    <para>The NodeIterator will return nodes in the following order
+    "document3", "document1", "document2".</para>
+
+    <para>We can also get a table:</para>
+
+    <programlisting>String[] columnNames = result.getColumnNames();
+RowIterator rit = result.getRows();
+while (rit.hasNext())
+{
+   Row row = rit.nextRow();
+   // get values of the row
+   Value[] values = row.getValues();
+}</programlisting>
+
+    <para>Table content is:</para>
+
+    <table>
+      <title>Table content</title>
+
+      <tgroup cols="5">
+        <thead>
+          <row>
+            <entry>jcr:title</entry>
+
+            <entry>jcr:description</entry>
+
+            <entry>prop_pagecount</entry>
+
+            <entry>jcr:path</entry>
+
+            <entry>jcr:score</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry>Puss in Boots</entry>
+
+            <entry>fairytale</entry>
+
+            <entry>1</entry>
+
+            <entry>/document3</entry>
+
+            <entry>1405</entry>
+          </row>
+
+          <row>
+            <entry>War and peace</entry>
+
+            <entry>roman</entry>
+
+            <entry>4</entry>
+
+            <entry>/document1</entry>
+
+            <entry>1405</entry>
+          </row>
+
+          <row>
+            <entry>Cinderella</entry>
+
+            <entry>fairytale</entry>
+
+            <entry>7</entry>
+
+            <entry>/document2</entry>
+
+            <entry>1405</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </section>
+</section>

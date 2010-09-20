@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="JCR.OrderByScore">
+  <title>Ordering by Score</title>
+
+  <para>Select all nodes with the mixin type 'mix:title' containing any word
+  from the set {'brown','fox','jumps'}. Then, sort result by the score in
+  ascending node. This way nodes that match better the query statement are
+  ordered at the last positions in the result list.</para>
+
+  <section>
+    <title>Info</title>
+
+    <para>SQL and XPath queries support both score constructions jcr:score and
+    jcr:score()</para>
+
+    <programlisting>SELECT * FROM nt:base ORDER BY jcr:score [ASC|DESC]
+SELECT * FROM nt:base ORDER BY jcr:score()[ASC|DESC]
+
+//element(*,nt:base) order by jcr:score() [descending]
+//element(*,nt:base) order by @jcr:score [descending]</programlisting>
+
+    <para>Do not use "ascending" combined with jcr:score in XPath. The
+    following XPath statement may throw an exception:</para>
+
+    <programlisting>... order by jcr:score() ascending</programlisting>
+
+    <para>Do not set any ordering specifier - ascending is default:</para>
+
+    <programlisting>... order by jcr:score()</programlisting>
+  </section>
+
+  <section>
+    <title>Repository Structure</title>
+
+    <para>The repository contains mix:title nodes, where the jcr:description
+    has different values.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>root</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>document1 (mix:title) jcr:description="The quick brown fox
+            jumps over the lazy dog."</para>
+          </listitem>
+
+          <listitem>
+            <para>document2 (mix:title) jcr:description="The brown fox lives
+            in the forest."</para>
+          </listitem>
+
+          <listitem>
+            <para>document3 (mix:title) jcr:description="The fox is a nice
+            animal."</para>
+          </listitem>
+        </itemizedlist>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Query Execution</title>
+
+    <para><emphasis role="bold">SQL</emphasis></para>
+
+    <programlisting>// make SQL query
+QueryManager queryManager = workspace.getQueryManager();
+// create query
+String sqlStatement = "SELECT * FROM mix:title WHERE CONTAINS(*, 'brown OR fox OR jumps') ORDER BY jcr:score() ASC";
+Query query = queryManager.createQuery(sqlStatement, Query.SQL);
+// execute query and fetch result
+QueryResult result = query.execute();</programlisting>
+
+    <para><emphasis role="bold">XPath</emphasis></para>
+
+    <programlisting>// make XPath query
+QueryManager queryManager = workspace.getQueryManager();
+// create query
+String xpathStatement = "//element(*,mix:title)[jcr:contains(., 'brown OR fox OR jumps')] order by jcr:score()";
+Query query = queryManager.createQuery(xpathStatement, Query.XPATH);
+// execute query and fetch result
+QueryResult result = query.execute();</programlisting>
+  </section>
+
+  <section>
+    <title>Fetching the Result</title>
+
+    <para>Let's get nodes</para>
+
+    <programlisting>NodeIterator it = result.getNodes();
+
+if(it.hasNext())
+{
+   Node findedNode = it.nextNode();
+}</programlisting>
+
+    <para>NodeIterator will return nodes in the following order: "document3",
+    "document2", "document1".</para>
+
+    <para>We can also get a table:</para>
+
+    <programlisting>String[] columnNames = result.getColumnNames();
+RowIterator rit = result.getRows();
+while (rit.hasNext())
+{
+   Row row = rit.nextRow();
+   // get values of the row
+   Value[] values = row.getValues();
+}</programlisting>
+
+    <para>Table content is:</para>
+
+    <table>
+      <title>Table content</title>
+
+      <tgroup cols="4">
+        <thead>
+          <row>
+            <entry>jcr:description</entry>
+
+            <entry>...</entry>
+
+            <entry>jcr:path</entry>
+
+            <entry>jcr:score</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry>The fox is a nice animal.</entry>
+
+            <entry>...</entry>
+
+            <entry>/document3</entry>
+
+            <entry>2512</entry>
+          </row>
+
+          <row>
+            <entry>The brown fox lives in the forest.</entry>
+
+            <entry>...</entry>
+
+            <entry>/document2</entry>
+
+            <entry>3595</entry>
+          </row>
+
+          <row>
+            <entry>The quick brown fox jumps over the lazy dog.</entry>
+
+            <entry>...</entry>
+
+            <entry>/document1</entry>
+
+            <entry>5017</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </section>
+</section>

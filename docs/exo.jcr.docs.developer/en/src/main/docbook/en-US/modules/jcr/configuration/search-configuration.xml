@@ -1,0 +1,836 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="JCR.SearchConfiguration">
+  <?dbhtml filename="ch-search-configuration.html"?>
+
+  <title>Search Configuration</title>
+
+  <section>
+    <title>XML Configuration</title>
+
+    <para>JCR index configuration. You can find this file here:
+    <filename>.../portal/WEB-INF/conf/jcr/repository-configuration.xml</filename></para>
+
+    <programlisting>&lt;repository-service default-repository="db1"&gt;
+  &lt;repositories&gt;
+    &lt;repository name="db1" system-workspace="ws" default-workspace="ws"&gt;
+       ....
+      &lt;workspaces&gt;
+        &lt;workspace name="ws"&gt;
+       ....
+          &lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
+            &lt;properties&gt;
+              &lt;property name="index-dir" value="${java.io.tmpdir}/temp/index/db1/ws" /&gt;
+              &lt;property name="synonymprovider-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider" /&gt;
+              &lt;property name="synonymprovider-config-path" value="/synonyms.properties" /&gt;
+              &lt;property name="indexing-config-path" value="/indexing-configuration.xml" /&gt;
+              &lt;property name="query-class" value="org.exoplatform.services.jcr.impl.core.query.QueryImpl" /&gt;
+            &lt;/properties&gt;
+          &lt;/query-handler&gt;
+        ... 
+        &lt;/workspace&gt;
+     &lt;/workspaces&gt;
+    &lt;/repository&gt;        
+  &lt;/repositories&gt;
+&lt;/repository-service&gt;</programlisting>
+  </section>
+
+  <section>
+    <title>Configuration parameters</title>
+
+    <table>
+      <title></title>
+
+      <tgroup cols="4">
+        <thead>
+          <row>
+            <entry>Parameter</entry>
+
+            <entry>Default</entry>
+
+            <entry>Description</entry>
+
+            <entry>Since</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry>index-dir</entry>
+
+            <entry>none</entry>
+
+            <entry>The location of the index directory. This parameter is
+            mandatory. Up to 1.9, this parameter called "indexDir"</entry>
+
+            <entry>1.0</entry>
+          </row>
+
+          <row>
+            <entry>use-compoundfile</entry>
+
+            <entry>true</entry>
+
+            <entry>Advises lucene to use compound files for the index
+            files.</entry>
+
+            <entry>1.9</entry>
+          </row>
+
+          <row>
+            <entry>min-merge-docs</entry>
+
+            <entry>100</entry>
+
+            <entry>Minimum number of nodes in an index until segments are
+            merged.</entry>
+
+            <entry>1.9</entry>
+          </row>
+
+          <row>
+            <entry>volatile-idle-time</entry>
+
+            <entry>3</entry>
+
+            <entry>Idle time in seconds until the volatile index part is moved
+            to a persistent index even though minMergeDocs is not
+            reached.</entry>
+
+            <entry>1.9</entry>
+          </row>
+
+          <row>
+            <entry>max-merge-docs</entry>
+
+            <entry>Integer.MAX_VALUE</entry>
+
+            <entry>Maximum number of nodes in segments that will be merged.
+            The default value changed in JCR 1.9 to Integer.MAX_VALUE.</entry>
+
+            <entry>1.9</entry>
+          </row>
+
+          <row>
+            <entry>merge-factor</entry>
+
+            <entry>10</entry>
+
+            <entry>Determines how often segment indices are merged.</entry>
+
+            <entry>1.9</entry>
+          </row>
+
+          <row>
+            <entry>max-field-length</entry>
+
+            <entry>10000</entry>
+
+            <entry>The number of words that are fulltext indexed at most per
+            property.</entry>
+
+            <entry>1.9</entry>
+          </row>
+
+          <row>
+            <entry>cache-size</entry>
+
+            <entry>1000</entry>
+
+            <entry>Size of the document number cache. This cache maps uuids to
+            lucene document numbers</entry>
+
+            <entry>1.9</entry>
+          </row>
+
+          <row>
+            <entry>force-consistencycheck</entry>
+
+            <entry>false</entry>
+
+            <entry>Runs a consistency check on every startup. If false, a
+            consistency check is only performed when the search index detects
+            a prior forced shutdown.</entry>
+
+            <entry>1.9</entry>
+          </row>
+
+          <row>
+            <entry>auto-repair</entry>
+
+            <entry>true</entry>
+
+            <entry>Errors detected by a consistency check are automatically
+            repaired. If false, errors are only written to the log.</entry>
+
+            <entry>1.9</entry>
+          </row>
+
+          <row>
+            <entry>query-class</entry>
+
+            <entry>QueryImpl</entry>
+
+            <entry>Class name that implements the javax.jcr.query.Query
+            interface.This class must also extend from the class:
+            org.exoplatform.services.jcr.impl.core.query.AbstractQueryImpl.</entry>
+
+            <entry>1.9</entry>
+          </row>
+
+          <row>
+            <entry>document-order</entry>
+
+            <entry>true</entry>
+
+            <entry>If true and the query does not contain an 'order by'
+            clause, result nodes will be in document order. For better
+            performance when queries return a lot of nodes set to
+            'false'.</entry>
+
+            <entry>1.9</entry>
+          </row>
+
+          <row>
+            <entry>result-fetch-size</entry>
+
+            <entry>Integer.MAX_VALUE</entry>
+
+            <entry>The number of results when a query is executed. Default
+            value: Integer.MAX_VALUE (-&gt; all).</entry>
+
+            <entry>1.9</entry>
+          </row>
+
+          <row>
+            <entry>excerptprovider-class</entry>
+
+            <entry>DefaultXMLExcerpt</entry>
+
+            <entry>The name of the class that implements
+            org.exoplatform.services.jcr.impl.core.query.lucene.ExcerptProvider
+            and should be used for the rep:excerpt() function in a
+            query.</entry>
+
+            <entry>1.9</entry>
+          </row>
+
+          <row>
+            <entry>support-highlighting</entry>
+
+            <entry>false</entry>
+
+            <entry>If set to true additional information is stored in the
+            index to support highlighting using the rep:excerpt()
+            function.</entry>
+
+            <entry>1.9</entry>
+          </row>
+
+          <row>
+            <entry>synonymprovider-class</entry>
+
+            <entry>none</entry>
+
+            <entry>The name of a class that implements
+            org.exoplatform.services.jcr.impl.core.query.lucene.SynonymProvider.
+            The default value is null (-&gt; not set).</entry>
+
+            <entry>1.9</entry>
+          </row>
+
+          <row>
+            <entry>synonymprovider-config-path</entry>
+
+            <entry>none</entry>
+
+            <entry>The path to the synonym provider configuration file. This
+            path interpreted is relative to the path parameter. If there is a
+            path element inside the SearchIndex element, then this path is
+            interpreted and relative to the root path of the path. Whether
+            this parameter is mandatory or not, it depends on the synonym
+            provider implementation. The default value is null (-&gt; not
+            set).</entry>
+
+            <entry>1.9</entry>
+          </row>
+
+          <row>
+            <entry>indexing-configuration-path</entry>
+
+            <entry>none</entry>
+
+            <entry>The path to the indexing configuration file.</entry>
+
+            <entry>1.9</entry>
+          </row>
+
+          <row>
+            <entry>indexing-configuration-class</entry>
+
+            <entry>IndexingConfigurationImpl</entry>
+
+            <entry>The name of the class that implements
+            org.exoplatform.services.jcr.impl.core.query.lucene.IndexingConfiguration.</entry>
+
+            <entry>1.9</entry>
+          </row>
+
+          <row>
+            <entry>force-consistencycheck</entry>
+
+            <entry>false</entry>
+
+            <entry>If setting to true, a consistency check is performed,
+            depending on the parameter forceConsistencyCheck. If setting to
+            false, no consistency check is performed on startup, even if a
+            redo log had been applied.</entry>
+
+            <entry>1.9</entry>
+          </row>
+
+          <row>
+            <entry>spellchecker-class</entry>
+
+            <entry>none</entry>
+
+            <entry>The name of a class that implements
+            org.exoplatform.services.jcr.impl.core.query.lucene.SpellChecker.</entry>
+
+            <entry>1.9</entry>
+          </row>
+
+          <row>
+            <entry>spellchecker-more-popular</entry>
+
+            <entry>true</entry>
+
+            <entry>If setting true, spellchecker returns only the suggest
+            words that are as frequent or more frequent than the checked word.
+            If setting false, spellchecker returns null (if checked word exit
+            in dictionary), or spellchecker will return most close suggest
+            word.</entry>
+
+            <entry>1.10</entry>
+          </row>
+
+          <row>
+            <entry>spellchecker-min-distance</entry>
+
+            <entry>0.55f</entry>
+
+            <entry>Minimal distance between checked word and proposed suggest
+            word.</entry>
+
+            <entry>1.10</entry>
+          </row>
+
+          <row>
+            <entry>errorlog-size</entry>
+
+            <entry>50(Kb)</entry>
+
+            <entry>The default size of error log file in Kb.</entry>
+
+            <entry>1.9</entry>
+          </row>
+
+          <row>
+            <entry>upgrade-index</entry>
+
+            <entry>false</entry>
+
+            <entry>Allows JCR to convert an existing index into the new
+            format. Also, it is possible to set this property via system
+            property, for example: -Dupgrade-index=true Indexes before JCR
+            1.12 will not run with JCR 1.12. Hence you have to run an
+            automatic migration: Start JCR with -Dupgrade-index=true. The old
+            index format is then converted in the new index format. After the
+            conversion the new format is used. On the next start, you don't
+            need this option anymore. The old index is replaced and a back
+            conversion is not possible - therefore better take a backup of the
+            index before. (Only for migrations from JCR 1.9 and
+            later.)</entry>
+
+            <entry>1.12</entry>
+          </row>
+
+          <row>
+            <entry>analyzer</entry>
+
+            <entry>org.apache.lucene.analysis.standard.StandardAnalyzer</entry>
+
+            <entry>Class name of a lucene analyzer to use for fulltext
+            indexing of text.</entry>
+
+            <entry>1.12</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </section>
+
+  <section>
+    <title>Global Search Index</title>
+
+    <section>
+      <title>Global Search Index Configuration</title>
+
+      <para>The global search index is configured in the above-mentioned
+      configuration file
+      (<filename>portal/WEB-INF/conf/jcr/repository-configuration.xml</filename>)
+      in the tag "query-handler".</para>
+
+      <programlisting>&lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;</programlisting>
+
+      <para>In fact, when using Lucene, you should always use the same
+      analyzer for indexing and for querying, otherwise the results are
+      unpredictable. You don't have to worry about this, eXo JCR does this for
+      you automatically. If you don't like the StandardAnalyzer configured by
+      default, just replace it by your own.</para>
+
+      <para>If you don't have a handy QueryHandler, you should learn how
+      to create a customized Handler in 5 minutes.</para>
+    </section>
+
+    <section>
+      <title>Customized Search Indexes and Analyzers</title>
+
+      <para>By default Exo JCR uses the Lucene standard Analyzer to index
+      contents. This analyzer uses some standard filters in the method that
+      analyzes the content:<programlisting>public TokenStream tokenStream(String fieldName, Reader reader) {
+    StandardTokenizer tokenStream = new StandardTokenizer(reader, replaceInvalidAcronym);
+    tokenStream.setMaxTokenLength(maxTokenLength);
+    TokenStream result = new StandardFilter(tokenStream);
+    result = new LowerCaseFilter(result);
+    result = new StopFilter(result, stopSet);
+    return result;
+  }</programlisting><itemizedlist>
+          <listitem>
+            <para>The first one (StandardFilter) removes 's (as 's in
+            "Peter's") from the end of words and removes dots from
+            acronyms.</para>
+          </listitem>
+
+          <listitem>
+            <para>The second one (LowerCaseFilter) normalizes token text to
+            lower case.</para>
+          </listitem>
+
+          <listitem>
+            <para>The last one (StopFilter) removes stop words from a token
+            stream. The stop set is defined in the analyzer.</para>
+          </listitem>
+        </itemizedlist></para>
+
+      <para>For specific cases, you may wish to use additional filters like
+      <phrase>ISOLatin1AccentFilter</phrase>, which replaces accented
+      characters in the ISO Latin 1 character set (ISO-8859-1) by their
+      unaccented equivalents.</para>
+
+      <para>In order to use a different filter, you have to create a new
+      analyzer, and a new search index to use the analyzer. You put it in a
+      jar, which is deployed with your application.</para>
+
+      <section>
+        <title>Creating the filter</title>
+
+        <para>The ISOLatin1AccentFilter is not present in the current Lucene
+        version used by eXo. You can use the attached file. You can also
+        create your own filter, the relevant method is<programlisting>public final Token next(final Token reusableToken) throws java.io.IOException</programlisting>which
+        defines how chars are read and used by the filter.</para>
+      </section>
+
+      <section>
+        <title>Creating the analyzer</title>
+
+        <para>The analyzer has to extends
+        org.apache.lucene.analysis.standard.StandardAnalyzer, and overload the
+        method<programlisting>public TokenStream tokenStream(String fieldName, Reader reader)</programlisting>to
+        put your own filters. You can have a glance at the example analyzer
+        attached to this article.</para>
+      </section>
+
+      <section>
+        <title>Creating the search index</title>
+
+        <para>Now, we have the analyzer, we have to write the SearchIndex,
+        which will use the analyzer. Your have to extends
+        org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex. You
+        have to write the constructor, to set the right analyzer, and the
+        method<programlisting>public Analyzer getAnalyzer() {
+    return MyAnalyzer;
+  }</programlisting>to return your analyzer. You can see the attached
+        SearchIndex.</para>
+
+        <note>
+          <para>Since 1.12 version, we can set Analyzer directly in
+          configuration. So, creation new SearchIndex only for new Analyzer is
+          redundant.</para>
+        </note>
+      </section>
+
+      <section>
+        <title>Configuring your application to use your SearchIndex</title>
+
+        <para>In
+        <filename>portal/WEB-INF/conf/jcr/repository-configuration.xml</filename>,
+        you have to replace each<programlisting>&lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;</programlisting>by
+        your own class<programlisting>&lt;query-handler class="mypackage.indexation.MySearchIndex"&gt;</programlisting></para>
+      </section>
+
+      <section>
+        <title>Configure your application to use your Analyzer</title>
+
+        <para>In
+        <filename>portal/WEB-INF/conf/jcr/repository-configuration.xml</filename>,
+        you have to add parameter "analyzer" to each query-handler
+        config:<programlisting>&lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
+   &lt;properties&gt;
+      ...
+      &lt;property name="analyzer" value="org.exoplatform.services.jcr.impl.core.MyAnalyzer"/&gt;
+      ...
+   &lt;/properties&gt;
+&lt;/query-handler&gt;</programlisting></para>
+
+        <para>When you start exo, your SearchIndex will start to index
+        contents with the specified filters.</para>
+      </section>
+    </section>
+  </section>
+
+  <section>
+    <title>Indexing Adjustments</title>
+
+    <section>
+      <title>IndexingConfiguration</title>
+
+      <para>Starting with version 1.9, the default search index implementation
+      in JCR allows you to control which properties of a node are indexed. You
+      also can define different analyzers for different nodes.</para>
+
+      <para>The configuration parameter is called indexingConfiguration and
+      per default is not set. This means all properties of a node are
+      indexed.</para>
+
+      <para>If you wish to configure the indexing behavior, you need to add a
+      parameter to the query-handler element in your configuration
+      file.</para>
+
+      <programlisting>&lt;param name="indexing-configuration-path" value="/indexing_configuration.xml"/&gt;</programlisting>
+    </section>
+
+    <section>
+      <title>Indexing rules</title>
+
+      <section>
+        <title>Node Scope Limit</title>
+
+        <para>To optimize the index size, you can limit the node scope so that
+        <phrase>only certain properties</phrase> of a node type are
+        indexed.</para>
+
+        <para>With the below configuration, only properties named Text are
+        indexed for nodes of type nt:unstructured. This configuration also
+        applies to all nodes whose type extends from nt:unstructured.</para>
+
+        <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;!DOCTYPE configuration SYSTEM "http://www.exoplatform.org/dtd/indexing-configuration-1.0.dtd"&gt;
+&lt;configuration xmlns:nt="http://www.jcp.org/jcr/nt/1.0"&gt;
+  &lt;index-rule nodeType="nt:unstructured"&gt;
+    &lt;property&gt;Text&lt;/property&gt;
+  &lt;/index-rule&gt;
+&lt;/configuration&gt;</programlisting>
+
+        <para>Please note that you have to declare the <phrase>namespace
+        prefixes</phrase> in the configuration element that you are using
+        throughout the XML file!</para>
+      </section>
+
+      <section>
+        <title>Indexing Boost Value</title>
+
+        <para>It is also possible to configure a <phrase>boost value</phrase>
+        for the nodes that match the index rule. The default boost value is
+        1.0. Higher boost values (a reasonable range is 1.0 - 5.0) will yield
+        a higher score value and appear as more relevant.</para>
+
+        <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;!DOCTYPE configuration SYSTEM "http://www.exoplatform.org/dtd/indexing-configuration-1.0.dtd"&gt;
+&lt;configuration xmlns:nt="http://www.jcp.org/jcr/nt/1.0"&gt;
+  &lt;index-rule nodeType="nt:unstructured"
+              boost="2.0"&gt;
+    &lt;property&gt;Text&lt;/property&gt;
+  &lt;/index-rule&gt;
+&lt;/configuration&gt;</programlisting>
+
+        <para>If you do not wish to boost the complete node but only certain
+        properties, you can also provide a boost value for the listed
+        properties:<programlisting>&lt;?xml version="1.0"?&gt;
+&lt;!DOCTYPE configuration SYSTEM "http://www.exoplatform.org/dtd/indexing-configuration-1.0.dtd"&gt;
+&lt;configuration xmlns:nt="http://www.jcp.org/jcr/nt/1.0"&gt;
+  &lt;index-rule nodeType="nt:unstructured"&gt;
+    &lt;property boost="3.0"&gt;Title&lt;/property&gt;
+    &lt;property boost="1.5"&gt;Text&lt;/property&gt;
+  &lt;/index-rule&gt;
+&lt;/configuration&gt;</programlisting></para>
+      </section>
+
+      <section>
+        <title>Conditional Index Rules</title>
+
+        <para>You may also add a <phrase>condition</phrase> to the index rule
+        and have multiple rules with the same nodeType. The first index rule
+        that matches will apply and all remain ones are
+        ignored:<programlisting>&lt;?xml version="1.0"?&gt;
+&lt;!DOCTYPE configuration SYSTEM "http://www.exoplatform.org/dtd/indexing-configuration-1.0.dtd"&gt;
+&lt;configuration xmlns:nt="http://www.jcp.org/jcr/nt/1.0"&gt;
+  &lt;index-rule nodeType="nt:unstructured"
+              boost="2.0"
+              condition="@priority = 'high'"&gt;
+    &lt;property&gt;Text&lt;/property&gt;
+  &lt;/index-rule&gt;
+  &lt;index-rule nodeType="nt:unstructured"&gt;
+    &lt;property&gt;Text&lt;/property&gt;
+  &lt;/index-rule&gt;
+&lt;/configuration&gt;</programlisting></para>
+
+        <para>In the above example, the first rule only applies if the
+        nt:unstructured node has a priority property with a value 'high'. The
+        condition syntax supports only the equals operator and a string
+        literal.</para>
+
+        <para>You may also refer properties in the condition that are not on
+        the current node:<programlisting>&lt;?xml version="1.0"?&gt;
+&lt;!DOCTYPE configuration SYSTEM "http://www.exoplatform.org/dtd/indexing-configuration-1.0.dtd"&gt;
+&lt;configuration xmlns:nt="http://www.jcp.org/jcr/nt/1.0"&gt;
+  &lt;index-rule nodeType="nt:unstructured"
+              boost="2.0"
+              condition="ancestor::*/@priority = 'high'"&gt;
+    &lt;property&gt;Text&lt;/property&gt;
+  &lt;/index-rule&gt;
+  &lt;index-rule nodeType="nt:unstructured"
+              boost="0.5"
+              condition="parent::foo/@priority = 'low'"&gt;
+    &lt;property&gt;Text&lt;/property&gt;
+  &lt;/index-rule&gt;
+  &lt;index-rule nodeType="nt:unstructured"
+              boost="1.5"
+              condition="bar/@priority = 'medium'"&gt;
+    &lt;property&gt;Text&lt;/property&gt;
+  &lt;/index-rule&gt;
+  &lt;index-rule nodeType="nt:unstructured"&gt;
+    &lt;property&gt;Text&lt;/property&gt;
+  &lt;/index-rule&gt;
+&lt;/configuration&gt;</programlisting></para>
+
+        <para>The indexing configuration also allows you to specify the type
+        of a node in the condition. Please note however that the type match
+        must be exact. It does not consider sub types of the specified node
+        type.</para>
+
+        <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;!DOCTYPE configuration SYSTEM "http://www.exoplatform.org/dtd/indexing-configuration-1.0.dtd"&gt;
+&lt;configuration xmlns:nt="http://www.jcp.org/jcr/nt/1.0"&gt;
+  &lt;index-rule nodeType="nt:unstructured"
+              boost="2.0"
+              condition="element(*, nt:unstructured)/@priority = 'high'"&gt;
+    &lt;property&gt;Text&lt;/property&gt;
+  &lt;/index-rule&gt;
+&lt;/configuration&gt;</programlisting>
+      </section>
+
+      <section>
+        <title>Exclusion from the Node Scope Index</title>
+
+        <para>Per default all configured properties are fulltext indexed if
+        they are of type STRING and included in the node scope index. A node
+        scope search finds normally all nodes of an index. That is, the select
+        jcr:contains(., 'foo') returns all nodes that have a string property
+        containing the word 'foo'. You can exclude explicitly a property from
+        the node scope index:<programlisting>&lt;?xml version="1.0"?&gt;
+&lt;!DOCTYPE configuration SYSTEM "http://www.exoplatform.org/dtd/indexing-configuration-1.0.dtd"&gt;
+&lt;configuration xmlns:nt="http://www.jcp.org/jcr/nt/1.0"&gt;
+  &lt;index-rule nodeType="nt:unstructured"&gt;
+    &lt;property nodeScopeIndex="false"&gt;Text&lt;/property&gt;
+  &lt;/index-rule&gt;
+&lt;/configuration&gt;</programlisting></para>
+      </section>
+    </section>
+
+    <section>
+      <title>Indexing Aggregates</title>
+
+      <para>Sometimes it is useful to include the contents of descendant nodes
+      into a single node to easier search on content that is scattered across
+      multiple nodes.</para>
+
+      <para>JCR allows you to define indexed aggregates, basing on relative
+      path patterns and primary node types.</para>
+
+      <para>The following example creates an indexed aggregate on nt:file that
+      includes the content of the jcr:content node:<programlisting>&lt;?xml version="1.0"?&gt;
+&lt;!DOCTYPE configuration SYSTEM "http://www.exoplatform.org/dtd/indexing-configuration-1.0.dtd"&gt;
+&lt;configuration xmlns:jcr="http://www.jcp.org/jcr/1.0"
+               xmlns:nt="http://www.jcp.org/jcr/nt/1.0"&gt;
+  &lt;aggregate primaryType="nt:file"&gt;
+    &lt;include&gt;jcr:content&lt;/include&gt;
+  &lt;/aggregate&gt;
+&lt;/configuration&gt;</programlisting></para>
+
+      <para>You can also restrict the included nodes to a certain
+      type:<programlisting>&lt;?xml version="1.0"?&gt;
+&lt;!DOCTYPE configuration SYSTEM "http://www.exoplatform.org/dtd/indexing-configuration-1.0.dtd"&gt;
+&lt;configuration xmlns:jcr="http://www.jcp.org/jcr/1.0"
+               xmlns:nt="http://www.jcp.org/jcr/nt/1.0"&gt;
+  &lt;aggregate primaryType="nt:file"&gt;
+    &lt;include primaryType="nt:resource"&gt;jcr:content&lt;/include&gt;
+  &lt;/aggregate&gt;
+&lt;/configuration&gt;</programlisting></para>
+
+      <para>You may also use the * to match all child nodes:<programlisting>&lt;?xml version="1.0"?&gt;
+&lt;!DOCTYPE configuration SYSTEM "http://www.exoplatform.org/dtd/indexing-configuration-1.0.dtd"&gt;
+&lt;configuration xmlns:jcr="http://www.jcp.org/jcr/1.0"
+               xmlns:nt="http://www.jcp.org/jcr/nt/1.0"&gt;
+  &lt;aggregate primaryType="nt:file"&gt;http://wiki.exoplatform.com/xwiki/bin/edit/JCR/Search+Configuration
+    &lt;include primaryType="nt:resource"&gt;*&lt;/include&gt;
+  &lt;/aggregate&gt;
+&lt;/configuration&gt;</programlisting></para>
+
+      <para>If you wish to include nodes up to a certain depth below the
+      current node, you can add multiple include elements. E.g. the nt:file
+      node may contain a complete XML document under
+      jcr:content:<programlisting>&lt;?xml version="1.0"?&gt;
+&lt;!DOCTYPE configuration SYSTEM "http://www.exoplatform.org/dtd/indexing-configuration-1.0.dtd"&gt;
+&lt;configuration xmlns:jcr="http://www.jcp.org/jcr/1.0"
+               xmlns:nt="http://www.jcp.org/jcr/nt/1.0"&gt;
+  &lt;aggregate primaryType="nt:file"&gt;
+    &lt;include&gt;*&lt;/include&gt;
+    &lt;include&gt;*/*&lt;/include&gt;
+    &lt;include&gt;*/*/*&lt;/include&gt;
+  &lt;/aggregate&gt;
+&lt;/configuration&gt;</programlisting></para>
+    </section>
+
+    <section>
+      <title>Property-Level Analyzers</title>
+
+      <section>
+        <title>Example</title>
+
+        <para>In this configuration section, you define how a property has to
+        be analyzed. If there is an analyzer configuration for a property,
+        this analyzer is used for indexing and searching of this property. For
+        example:<programlisting>&lt;?xml version="1.0"?&gt;
+&lt;!DOCTYPE configuration SYSTEM "http://www.exoplatform.org/dtd/indexing-configuration-1.0.dtd"&gt;
+&lt;configuration xmlns:nt="http://www.jcp.org/jcr/nt/1.0"&gt;
+  &lt;analyzers&gt; 
+        &lt;analyzer class="org.apache.lucene.analysis.KeywordAnalyzer"&gt;
+            &lt;property&gt;mytext&lt;/property&gt;
+        &lt;/analyzer&gt;
+        &lt;analyzer class="org.apache.lucene.analysis.WhitespaceAnalyzer"&gt;
+            &lt;property&gt;mytext2&lt;/property&gt;
+        &lt;/analyzer&gt;
+  &lt;/analyzers&gt; 
+&lt;/configuration&gt;</programlisting></para>
+
+        <para>The configuration above means that the property "mytext" for the
+        entire workspace is indexed (and searched) with the Lucene
+        KeywordAnalyzer, and property "mytext2" with the WhitespaceAnalyzer.
+        Using different analyzers for different languages is particularly
+        useful.</para>
+
+        <para>The WhitespaceAnalyzer tokenizes a property, the KeywordAnalyzer
+        takes the property as a whole.</para>
+      </section>
+
+      <section>
+        <title>Characteristics of Node Scope Searches</title>
+
+        <para>When using analyzers, you may encounter an unexpected behavior
+        when searching within a property compared to searching within a node
+        scope. The reason is that the node scope always uses the global
+        analyzer.</para>
+
+        <para>Let's suppose that the property "mytext" contains the text :
+        "testing my analyzers" and that you haven't configured any analyzers
+        for the property "mytext" (and not changed the default analyzer in
+        SearchIndex).</para>
+
+        <para>If your query is for example:<programlisting>xpath = "//*[jcr:contains(mytext,'analyzer')]"</programlisting></para>
+
+        <para>This xpath does not return a hit in the node with the property
+        above and default analyzers.</para>
+
+        <para>Also a search on the node scope<programlisting>xpath = "//*[jcr:contains(.,'analyzer')]"</programlisting>won't
+        give a hit. Realize that you can only set specific analyzers on a node
+        property, and that the node scope indexing/analyzing is always done
+        with the globally defined analyzer in the SearchIndex element.</para>
+
+        <para>Now, if you change the analyzer used to index the "mytext"
+        property above to<programlisting>&lt;analyzer class="org.apache.lucene.analysis.Analyzer.GermanAnalyzer"&gt;
+     &lt;property&gt;mytext&lt;/property&gt;
+&lt;/analyzer&gt;</programlisting>and you do the same search again, then
+        for<programlisting>xpath = "//*[jcr:contains(mytext,'analyzer')]"</programlisting>you
+        would get a hit because of the word stemming (analyzers -
+        analyzer).</para>
+
+        <para>The other search,<programlisting>xpath = "//*[jcr:contains(.,'analyzer')]"</programlisting>still
+        would not give a result, since the node scope is indexed with the
+        global analyzer, which in this case does not take into account any
+        word stemming.</para>
+
+        <para>In conclusion, be aware that when using analyzers for specific
+        properties, you might find a hit in a property for some search text,
+        and you do not find a hit with the same search text in the node scope
+        of the property!</para>
+
+        <note>
+          <para>Both index rules and index aggregates influence how content is
+          indexed in JCR. If you change the configuration, the existing
+          content is not automatically re-indexed according to the new rules.
+          You, therefore, have to manually re-index the content when you
+          change the configuration!</para>
+        </note>
+      </section>
+    </section>
+
+    <section>
+      <title>Advanced features</title>
+
+      <para>eXo JCR supports some advanced features, which are not specified
+      in JSR 170:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>Get a text excerpt with <emphasis role="bold">highlighted
+          words</emphasis> that matches the query: <link
+          linkend="JCR.SearchingRepositoryContent.Highlighting">ExcerptProvider</link>.</para>
+        </listitem>
+
+        <listitem>
+          <para>Search a term and its <emphasis
+          role="bold">synonyms</emphasis>: <link
+          linkend="JCR.SearchingRepositoryContent.SynonimProvider">SynonymSearch</link></para>
+        </listitem>
+
+        <listitem>
+          <para>Search <emphasis role="bold">similar</emphasis> nodes: <link
+          linkend="JCR.SearchingRepositoryContent.Similarity">SimilaritySearch</link></para>
+        </listitem>
+
+        <listitem>
+          <para>Check <emphasis role="bold">spelling</emphasis> of a full text
+          query statement: <link
+          linkend="JCR.SearchingRepositoryContent.SpellChecker">SpellChecker</link></para>
+        </listitem>
+
+        <listitem>
+          <para>Define index <emphasis role="bold">aggregates and
+          rules</emphasis>: IndexingConfiguration.</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+  </section>
+</chapter>

@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="JCR.PerformanceTuningGuide">
+  <?dbhtml filename="ch-jcr-performance-tuning.html"?>
+
+  <title>JCR Performance Tuning Guide</title>
+
+  <section>
+    <title>Introduction</title>
+
+    <para>This guide will show you possible ways of improving JCR
+    performance.</para>
+
+    <para>It is intended to GateIn Administrators and those who wants to use
+    JCR features.</para>
+  </section>
+
+  <section>
+    <title>JCR Performance and Scalability</title>
+
+    <section>
+      <title>Cluster configuration</title>
+
+      <para><citetitle>EC2 network</citetitle>: 1Gbit</para>
+
+      <para><citetitle>Servers hardware</citetitle>:<simplelist>
+          <member>7.5 GB memory</member>
+
+          <member>4 EC2 Compute Units (2 virtual cores with 2 EC2 Compute
+          Units each)</member>
+
+          <member>850 GB instance storage (2×420 GB plus 10 GB root
+          partition)</member>
+
+          <member>64-bit platform</member>
+
+          <member>I/O Performance: High</member>
+
+          <member>API name: m1.large</member>
+        </simplelist></para>
+
+      <note>
+        <para>NFS and statistics (cacti snmp) server were located on one
+        physical server.</para>
+      </note>
+
+      <para><citetitle>JBoss AS configuration</citetitle></para>
+
+      <para><code>JAVA_OPTS: -Dprogram.name=run.sh -server -Xms4g -Xmx4g
+      -XX:MaxPermSize=512m -Dorg.jboss.resolver.warning=true
+      -Dsun.rmi.dgc.client.gcInterval=3600000
+      -Dsun.rmi.dgc.server.gcInterval=3600000 -XX:+UseParallelGC
+      -Djava.net.preferIPv4Stack=true</code></para>
+    </section>
+
+    <section>
+      <title>JCR Clustered Performance</title>
+
+      <para>Benchmark test using webdav (Complex read/write load test
+      (benchmark)) with 20K same file. To obtain per-operation results we have
+      used custom output from the testscase threads to CSV file.</para>
+
+      <para><citetitle>Read operation</citetitle>:<simplelist>
+          <member>Warm-up iterations: 100</member>
+
+          <member>Run iterations: 2000</member>
+
+          <member>Background writing threads: 25</member>
+
+          <member>Reading threads: 225</member>
+        </simplelist></para>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="images/perf_EC2_results.jpg" />
+        </imageobject>
+      </mediaobject>
+
+      <table>
+        <title></title>
+
+        <tgroup cols="4">
+          <thead>
+            <row>
+              <entry>Nodes count</entry>
+
+              <entry>tps</entry>
+
+              <entry> Responses &gt;2s</entry>
+
+              <entry>Responses &gt;4s</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry>1</entry>
+
+              <entry>523</entry>
+
+              <entry>6.87%</entry>
+
+              <entry>1.27% </entry>
+            </row>
+
+            <row>
+              <entry>2</entry>
+
+              <entry>1754</entry>
+
+              <entry>0.64% </entry>
+
+              <entry>0.08% </entry>
+            </row>
+
+            <row>
+              <entry>3</entry>
+
+              <entry>2388</entry>
+
+              <entry>0.49% </entry>
+
+              <entry>0.09% </entry>
+            </row>
+
+            <row>
+              <entry>4</entry>
+
+              <entry>2706</entry>
+
+              <entry>0.46% </entry>
+
+              <entry> 0.1% </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+
+      <para><citetitle>Read operaion with more threads</citetitle>:</para>
+
+      <simplelist>
+        <member>Warm-up iterations: 100</member>
+
+        <member>Run iterations: 2000</member>
+
+        <member>Background writing threads: 50</member>
+
+        <member>Reading threads: 450</member>
+      </simplelist>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="images/perf_EC2_results_2.jpg" />
+        </imageobject>
+      </mediaobject>
+
+      <table>
+        <title></title>
+
+        <tgroup cols="4">
+          <thead>
+            <row>
+              <entry>Nodes count</entry>
+
+              <entry>tps</entry>
+
+              <entry>Responses &gt;2s</entry>
+
+              <entry>Responses &gt;4s</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry>1</entry>
+
+              <entry>116</entry>
+
+              <entry>?</entry>
+
+              <entry>?</entry>
+            </row>
+
+            <row>
+              <entry>2</entry>
+
+              <entry>1558</entry>
+
+              <entry>6.1%</entry>
+
+              <entry>0.6%</entry>
+            </row>
+
+            <row>
+              <entry>3</entry>
+
+              <entry>2242</entry>
+
+              <entry>3.1%</entry>
+
+              <entry>0.38%</entry>
+            </row>
+
+            <row>
+              <entry>4</entry>
+
+              <entry>2756 </entry>
+
+              <entry>2.2%</entry>
+
+              <entry>0.41%</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+  </section>
+
+  <section>
+    <title>Performance Tuning Guide</title>
+
+    <section>
+      <title>JBoss AS Tuning</title>
+
+      <para>You can use <parameter>maxThreads</parameter> parameter to
+      increase maximum amount of threads that can be launched in AS instance.
+      This can improve performance if you need a high level of concurrency.
+      also you can use <code>-XX:+UseParallelGC</code> java directory to use
+      paralel garbage collector.</para>
+
+      <tip>
+        <para>Beware of setting <parameter>maxThreads</parameter> too big,
+        this can cause <exceptionname>OutOfMemoryError</exceptionname>. We've
+        got it with <code>maxThreads=1250</code> on such machine:</para>
+
+        <simplelist>
+          <member>7.5 GB memory</member>
+
+          <member>4 EC2 Compute Units (2 virtual cores with 2 EC2 Compute
+          Units each)</member>
+
+          <member>850 GB instance storage (2×420 GB plus 10 GB root
+          partition)</member>
+
+          <member>64-bit platform</member>
+
+          <member>I/O Performance: High</member>
+
+          <member>API name: m1.large</member>
+
+          <member>java -Xmx 4g</member>
+        </simplelist>
+      </tip>
+    </section>
+
+    <section>
+      <title>JCR Cache Tuning</title>
+
+      <para><citetitle>Cache size</citetitle></para>
+
+      <para>JCR-cluster implementation is built using JBoss Cache as
+      distributed, replicated cache. But there is one particularity related to
+      remove action in it. Speed of this operation depends on the actual size
+      of cache. As many nodes are currently in cache as much time is needed to
+      remove one particular node (subtree) from it.</para>
+
+      <para><citetitle>Eviction</citetitle></para>
+
+      <para>Manipulations with eviction <parameter>wakeUpInterval</parameter>
+      value doestn't affect on performance. Performance results with values
+      from 500 up to 3000 are approximately equal.</para>
+
+      <para><citetitle>Transaction Timeout</citetitle></para>
+
+      <para>Using short timeout for long transactions such as Export/Import,
+      removing huge subtree defined timeout may cause
+      <exceptionname>TransactionTimeoutException</exceptionname>. [TODO] put
+      recomended timeout value</para>
+    </section>
+
+    <section>
+      <title>Clustering</title>
+
+      <para>For performance it is better to have loadbalacer, DB server and
+      shared NFS on different computers. If in some reasons you see that one
+      node gets more load than others you can decrease this load using load
+      value in load balancer.</para>
+
+      <para><citetitle>JGroups configuration</citetitle></para>
+
+      <para>It's recommended to use "multiplexer stack" feature present in
+      JGroups. It is set by default in eXo JCR and offers higher performance
+      in cluster, using less network connections also. If there are two or
+      more clusters in your network, please check that they use different
+      ports and different cluster names.</para>
+
+      <para><citetitle>Write performance in cluster</citetitle></para>
+
+      <para>Exo JCR implementation uses Lucene indexing engine to provide
+      search capabilities. But Lucene brings some limitations for write
+      operations: it can perform indexing only in one thread. Thats why write
+      performance in cluster is not higher than in singleton environment. Data
+      is indexed on coordinator node, so increasing write-load on cluster may
+      lead to ReplicationTimeout exception. It occurs because writing threads
+      queue in the indexer and under high load timeout for replication to
+      coordinator will be exceeded.</para>
+
+      <para>Taking in consideration this fact, it is recommended to exceed
+      <parameter>replTimeout</parameter> value in cache configurations in case
+      of high write-load.</para>
+
+      <para><citetitle>Replication timeout</citetitle></para>
+
+      <para>Some operations may take too much time. So if you get
+      <exceptionname>ReplicationTimeoutException</exceptionname> try
+      increasing replication timeout:<programlisting>   &lt;clustering mode="replication" clusterName="${jbosscache-cluster-name}"&gt;
+      ...
+      &lt;sync replTimeout="60000" /&gt;
+   &lt;/clustering&gt;</programlisting>value is set in miliseconds.</para>
+    </section>
+  </section>
+</chapter>

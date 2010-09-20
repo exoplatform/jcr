@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="Core.OrganizationService">
+  <?dbhtml filename="ch-organization-service.html"?>
+
+  <title>Organization Service</title>
+
+  <section id="Overview">
+    <title>Overview</title>
+
+    <para>OrganizationService is the service that allows to access the
+    Organization model. This model is composed of :</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Users</para>
+      </listitem>
+
+      <listitem>
+        <para>Groups</para>
+      </listitem>
+
+      <listitem>
+        <para>Memberships</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>It is the basis of eXo personalization and authorizations in eXo and
+    is used to all over the platform. The model is abstract and does not rely
+    on any specific storage. Multiple implementations exist in eXo :</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Hibernate : for storage into a RDBMS</para>
+      </listitem>
+
+      <listitem>
+        <para>Jndi : for storage into a directory such as an LDAP or MS Active
+        Directory</para>
+      </listitem>
+
+      <listitem>
+        <para>Jcr : for storage inside a Java Content Repository</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Organizational Model</title>
+
+    <section>
+      <title>User</title>
+
+      <itemizedlist>
+        <listitem>
+          <para>Username used as the identified</para>
+        </listitem>
+
+        <listitem>
+          <para>Profile (identity and preferences)</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>Group</title>
+
+      <para>Gather a set of users</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>Applicative or business</para>
+        </listitem>
+
+        <listitem>
+          <para>Tree structure</para>
+        </listitem>
+
+        <listitem>
+          <para>No inheritance</para>
+        </listitem>
+
+        <listitem>
+          <para>Expressed as /group/subgroup/subsubgroup</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>Membership</title>
+
+      <itemizedlist>
+        <listitem>
+          <para>Qualifies the group belonging</para>
+        </listitem>
+
+        <listitem>
+          <para>"Member of group as XXX"</para>
+        </listitem>
+
+        <listitem>
+          <para>Expressed as : manager:/organization/hr, *:/partners</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+  </section>
+
+  <section>
+    <title>Related articles and how-tos</title>
+
+    <itemizedlist>
+      <listitem>
+        <para><ulink
+        url="http://wiki.exoplatform.org/xwiki/bin/view/JCR/Organization+Service">JCR
+        Organization Service</ulink></para>
+      </listitem>
+    </itemizedlist>
+
+    <itemizedlist>
+      <listitem>
+        <para><ulink
+        url="http://wiki.exoplatform.org/xwiki/bin/view/Core/Update+ConversationState+when+user's+Membership+changed">Update
+        ConversationState when user's Membership changed</ulink></para>
+      </listitem>
+
+      <listitem>
+        <para><ulink url="Organization Service Initializer">Organization
+        Service Initializer</ulink></para>
+      </listitem>
+
+      <listitem>
+        <para><ulink
+        url="http://wiki.exoplatform.org/xwiki/bin/view/Portal/Accessing+User+Profile">How
+        to Access User Profile in your code</ulink></para>
+      </listitem>
+
+      <listitem>
+        <para><ulink url="CoreOrganizationListener">How to create your own
+        Organization Listener</ulink></para>
+      </listitem>
+
+      <listitem>
+        <para><ulink
+        url="How to manipulate Users and Memberships Programmatically">How to
+        manipulate Users and Memberships Programmatically</ulink></para>
+      </listitem>
+    </itemizedlist>
+  </section>
+</chapter>

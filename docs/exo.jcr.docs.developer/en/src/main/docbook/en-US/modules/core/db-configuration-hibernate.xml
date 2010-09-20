@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="Core.DatabaseConfigurationforHibernate">
+  <?dbhtml filename="ch-db-configuration-hibernate.html"?>
+
+  <title>Database Configuration for Hibernate</title>
+
+  <para>As usual, it is quite simple to use our configuration XML syntax to
+  configure and parametrize different Databases for eXo tables but also for
+  your own use.</para>
+
+  <section>
+    <title>Generic configuration</title>
+
+    <para>The default DB configuration uses HSQLDB, a Java Database quite
+    useful for demonstrations.</para>
+
+    <programlisting>&lt;component&gt; 
+   &lt;key&gt;org.exoplatform.services.database.HibernateService&lt;/key&gt;
+   &lt;jmx-name&gt;exo-service:type=HibernateService&lt;/jmx-name&gt;
+   &lt;type&gt;org.exoplatform.services.database.impl.HibernateServiceImpl&lt;/type&gt;
+   &lt;init-params&gt;
+      &lt;properties-param&gt;
+         &lt;name&gt;hibernate.properties&lt;/name&gt;
+         &lt;description&gt;Default Hibernate Service&lt;/description&gt;
+         &lt;property name="hibernate.show_sql" value="false"/&gt;
+         &lt;property name="hibernate.cglib.use_reflection_optimizer" value="true"/&gt;
+         &lt;property name="hibernate.connection.url" value="jdbc:hsqldb:file:../temp/data/portal"/&gt;
+         &lt;property name="hibernate.connection.driver_class" value="org.hsqldb.jdbcDriver"/&gt;
+         &lt;property name="hibernate.connection.autocommit" value="true"/&gt;
+         &lt;property name="hibernate.connection.username" value="sa"/&gt;
+         &lt;property name="hibernate.connection.password" value=""/&gt;
+         &lt;property name="hibernate.dialect" value="org.hibernate.dialect.HSQLDialect"/&gt;
+         &lt;property name="hibernate.c3p0.min_size" value="5"/&gt;
+         &lt;property name="hibernate.c3p0.max_size" value="20"/&gt;
+         &lt;property name="hibernate.c3p0.timeout" value="1800"/&gt;
+         &lt;property name="hibernate.c3p0.max_statements" value="50"/&gt;
+      &lt;/properties-param&gt;
+   &lt;/init-params&gt;
+&lt;/component&gt;</programlisting>
+
+    <para>In the init parameter section, we define the default hibernate
+    properties including the DB URL, the driver and the credentials in
+    use.</para>
+
+    <para>For any portals that configuration can be overridden, depending on
+    the needs of your environment.</para>
+
+    <para>Several databases have been tested and can be used in
+    production....which is not the case of HSQLDB, HSQLDB can only be used for
+    development environments and for demonstrations.</para>
+  </section>
+
+  <section>
+    <title>Example DB configuration</title>
+
+    <para>For MySQL</para>
+
+    <programlisting>&lt;component&gt; 
+   &lt;key&gt;org.exoplatform.services.database.HibernateService&lt;/key&gt;
+   &lt;jmx-name&gt;database:type=HibernateService&lt;/jmx-name&gt;
+   &lt;type&gt;org.exoplatform.services.database.impl.HibernateServiceImpl&lt;/type&gt;
+   &lt;init-params&gt;
+      &lt;properties-param&gt;
+         &lt;name&gt;hibernate.properties&lt;/name&gt;
+         &lt;description&gt;Default Hibernate Service&lt;/description&gt;
+         &lt;property name="hibernate.show_sql" value="false"/&gt;
+         &lt;property name="hibernate.cglib.use_reflection_optimizer" value="true"/&gt;
+         &lt;property name="hibernate.connection.url" value="jdbc:mysql://localhost:3306/exodb?relaxAutoCommit=true&amp;amp;amp;autoReconnect=true&amp;amp;amp;useUnicode=true&amp;amp;amp;characterEncoding=utf8"/&gt;
+         &lt;property name="hibernate.connection.driver_class" value="com.mysql.jdbc.Driver"/&gt;
+         &lt;property name="hibernate.connection.autocommit" value="true"/&gt;
+         &lt;property name="hibernate.connection.username" value="exo"/&gt;
+         &lt;property name="hibernate.connection.password" value="exo"/&gt;
+         &lt;property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/&gt;
+         &lt;property name="hibernate.c3p0.min_size" value="5"/&gt;
+         &lt;property name="hibernate.c3p0.max_size" value="20"/&gt;
+         &lt;property name="hibernate.c3p0.timeout" value="1800"/&gt;
+         &lt;property name="hibernate.c3p0.max_statements" value="50"/&gt;
+       &lt;/properties-param&gt;
+   &lt;/init-params&gt;
+&lt;/component&gt;</programlisting>
+  </section>
+
+  <section>
+    <title>Registering custom Hibernate XML files into the service</title>
+
+    <para>It is possible to use the eXo hibernate service and register your
+    hibernate hbm.xml files to leverage some add-on features of the service
+    such as the table automatic creation as well as the cache of the hibernate
+    session in a ThreadLocal object during all the request lifecycle. To do
+    so, you just have to add a plugin and indicate the location of your
+    files.</para>
+
+    <programlisting>&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+&lt;configuration&gt;
+  &lt;external-component-plugins&gt;
+    &lt;target-component&gt;org.exoplatform.services.database.HibernateService&lt;/target-component&gt;
+    &lt;component-plugin&gt; 
+      &lt;name&gt;add.hibernate.mapping&lt;/name&gt;
+      &lt;set-method&gt;addPlugin&lt;/set-method&gt;
+      &lt;type&gt;org.exoplatform.services.database.impl.AddHibernateMappingPlugin&lt;/type&gt;
+      &lt;init-params&gt;
+        &lt;values-param&gt;
+          &lt;name&gt;hibernate.mapping&lt;/name&gt;
+          &lt;value&gt;org/exoplatform/services/organization/impl/UserImpl.hbm.xml&lt;/value&gt;
+          &lt;value&gt;org/exoplatform/services/organization/impl/MembershipImpl.hbm.xml&lt;/value&gt;
+          &lt;value&gt;org/exoplatform/services/organization/impl/GroupImpl.hbm.xml&lt;/value&gt;
+          &lt;value&gt;org/exoplatform/services/organization/impl/MembershipTypeImpl.hbm.xml&lt;/value&gt;
+          &lt;value&gt;org/exoplatform/services/organization/impl/UserProfileData.hbm.xml&lt;/value&gt;
+        &lt;/values-param&gt;
+      &lt;/init-params&gt;
+    &lt;/component-plugin&gt;
+  &lt;/external-component-plugins&gt;  
+&lt;/configuration&gt;</programlisting>
+  </section>
+</chapter>

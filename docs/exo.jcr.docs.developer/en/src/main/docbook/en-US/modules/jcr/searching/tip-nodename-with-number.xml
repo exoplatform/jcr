@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="JCR.TipNodeNameWithNumber">
+  <title>XPath queries containing node names starting with a number</title>
+
+  <para>If you execute an XPath request like this:</para>
+
+  <para><emphasis role="bold">XPath</emphasis></para>
+
+  <programlisting>// get QueryManager
+QueryManager queryManager = workspace.getQueryManager(); 
+// make XPath query
+Query query = queryManager.createQuery("/jcr:root/Documents/Publie/2010//element(*, exo:article)", Query.XPATH);</programlisting>
+
+  <para>You will have an error : "Invalid request". This happens because XML
+  does not allow names starting with a number - and XPath is part of XML:
+  <ulink
+  url="http://www.w3.org/TR/REC-xml/#NT-Name">http://www.w3.org/TR/REC-xml/#NT-Name</ulink></para>
+
+  <para>Therefore, you cannot do XPath requests using a node name that starts
+  with a number.</para>
+
+  <para>Easy workarounds:</para>
+
+  <itemizedlist>
+    <listitem>
+      <para>Use an SQL request.</para>
+    </listitem>
+
+    <listitem>
+      <para>Use escaping :</para>
+    </listitem>
+  </itemizedlist>
+
+  <para><emphasis role="bold">XPath</emphasis></para>
+
+  <programlisting>// get QueryManager
+QueryManager queryManager = workspace.getQueryManager(); 
+// make XPath query
+Query query = queryManager.createQuery("/jcr:root/Documents/Publie/_x0032_010//element(*, exo:article)", Query.XPATH);</programlisting>
+</section>
