@@ -70,11 +70,11 @@ public class InmemoryStorageConnection implements WorkspaceStorageConnection
 
       if (itemType == ItemType.NODE || itemType == ItemType.UNKNOWN)
       {
-         items.get(new MapKey(qPath, ItemType.NODE));
+         itemData = (ItemData)items.get(new MapKey(qPath, ItemType.NODE));
       }
       if (itemType == ItemType.PROPERTY || itemType == ItemType.UNKNOWN && itemData == null)
       {
-         items.get(new MapKey(qPath, ItemType.PROPERTY));
+         itemData = (ItemData)items.get(new MapKey(qPath, ItemType.PROPERTY));
       }
 
       return itemData;
