@@ -199,25 +199,56 @@ public interface ExoCacheFactory {
         &lt;name&gt;cache.config.template&lt;/name&gt;
         &lt;value&gt;jar:/conf/portal/cache-configuration-template.xml&lt;/value&gt;
       &lt;/value-param&gt;
+      &lt;value-param&gt;
+        &lt;name&gt;allow.shareable.cache&lt;/name&gt;
+        &lt;value&gt;true&lt;/value&gt;
+      &lt;/value-param&gt;
     &lt;/init-params&gt;
   &lt;/component&gt;   
 &lt;/configuration&gt;</programlisting></para>
 
-      <para>As you can see, the factory requires one single parameter which is
-      <emphasis>cache.config.template</emphasis>, this parameter allows you to
-      define the location of the default configuration template of your jboss
-      cache. In the default configuration, we ask the eXo container to get the
-      file shipped into the jar at
-      <emphasis>/conf/portal/cache-configuration-template.xml</emphasis>.</para>
+      <table>
+        <title>Fields description</title>
 
-      <para>The default configuration template aims to be the skeleton from
-      which we will create any type of jboss cache instance, thus it must be
-      very generic.<note>
-          <para>The default configuration template provided with the jar aims
-          to work with any application servers, but if you intend to use JBoss
-          AS, you should redefine it in your custom configuration to fit
-          better with your AS.</para>
-        </note></para>
+        <tgroup cols="2">
+          <tbody>
+            <row>
+              <entry>cache.config.template</entry>
+
+              <entry>This parameter allows you to define the location of the
+              default configuration template of JBoss Cache. In the default
+              configuration, we ask the eXo kernel to get the file shipped
+              into the jar at
+              <emphasis>/conf/portal/cache-configuration-template.xml</emphasis>.
+              The default configuration template aims to be the skeleton from
+              which we will create any type of jboss cache instance, thus it
+              must be very generic.<note>
+                  <para>The default configuration template provided with the
+                  jar aims to work with any application servers, but if you
+                  intend to use JBoss AS, you should redefine it in your
+                  custom configuration to fit better with your AS.</para>
+                </note></entry>
+            </row>
+
+            <row>
+              <entry>allow.shareable.cache</entry>
+
+              <entry>This parameter allows you to Indicate whether the JBoss
+              Cache instances used can by default be shared between several
+              eXo caches instances. indeed to consume less resources, you can
+              allow to use the same instance of JBoss Cache for several eXo
+              Cache instances, each eXo Cache Instances will have his own
+              cache region with its own eviction configuration. The default
+              value of this parameter is <emphasis>false</emphasis>.<note>
+                  <para>This value is only the default value that cans be
+                  redefined at <envar>ExoCacheConfig</envar> level thanks to
+                  the field <emphasis>allowShareableCache</emphasis> for more
+                  details see the next sections.</para>
+                </note></entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
     </section>
 
     <section>
@@ -601,6 +632,27 @@ public interface ExoCacheCreator {
         of this field is false (the default value), the cache will be a local
         cache, otherwise it will be the cache mode defined in your default
         configuration template that should be distributed.</para>
+      </section>
+
+      <section>
+        <title>How to share a JBoss Cache instance between multiple eXo Cache
+        instances</title>
+
+        <para>In order to avoid creating several JBoss Cache instances that
+        consume resources, it is possible to share the same JBoss Cache
+        instance between multiple eXo Cache instances that rely on the same
+        JBoss Cache config. Each eXo Cache instances will then have their own
+        cache region with their own eviction configuration. To allow sharing
+        JBoss Cache instances, you can set the global value at
+        <emphasis>ExoCacheFactory</emphasis> level and if needed set the local
+        value at <emphasis>ExoCacheConfig</emphasis> level knowing that local
+        value will redefine the global value. Each new
+        <emphasis>ExoCacheConfig</emphasis> described below are a sub class of
+        <emphasis>AbstractExoCacheConfig</emphasis> that gives access to the
+        parameter <emphasis>allowShareableCache</emphasis>, if this parameter
+        is set, it will be the value used otherwise it will use the global
+        value. For all the old <emphasis>ExoCacheConfig</emphasis>, only the
+        global value will be used.</para>
       </section>
 
       <section>
