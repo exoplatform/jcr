@@ -26,10 +26,12 @@ import org.exoplatform.services.jcr.ext.script.groovy.GroovyScript2RestLoader.Sc
 import org.exoplatform.services.rest.RequestHandler;
 import org.exoplatform.services.rest.ext.method.filter.MethodAccessFilter;
 import org.exoplatform.services.rest.impl.ContainerResponse;
+import org.exoplatform.services.rest.impl.EnvironmentContext;
 import org.exoplatform.services.rest.impl.MultivaluedMapImpl;
 import org.exoplatform.services.rest.impl.ProviderBinder;
 import org.exoplatform.services.rest.impl.ResourceBinder;
 import org.exoplatform.services.rest.tools.ByteArrayContainerResponseWriter;
+import org.exoplatform.services.rest.tools.DummySecurityContext;
 import org.exoplatform.services.rest.tools.ResourceLauncher;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.Identity;
@@ -38,13 +40,17 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.Principal;
 import java.util.Calendar;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.jcr.Node;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryResult;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.SecurityContext;
 
 /**
  * @author <a href="mailto:andrew00x@gmail.com">Andrey Parfonov</a>
@@ -68,6 +74,8 @@ public class GroovyScript2RestLoaderTest extends BaseStandaloneTest
    private int resourceNumber = 0;
 
    private ResourceLauncher launcher;
+
+   private SecurityContext adminSecurityContext;
 
    /**
     * {@inheritDoc}
@@ -103,6 +111,17 @@ public class GroovyScript2RestLoaderTest extends BaseStandaloneTest
       providers.addMethodInvokerFilter(new MethodAccessFilter());
 
       session.save();
+      
+      Set<String> adminRoles = new HashSet<String>();
+      adminRoles.add("administrators");
+      adminSecurityContext = new DummySecurityContext(new Principal()
+      {
+         public String getName()
+         {
+            return "root";
+         }
+      }, adminRoles);
+      
    }
 
    public void testStartQuery() throws Exception
@@ -155,13 +174,15 @@ public class GroovyScript2RestLoaderTest extends BaseStandaloneTest
 
    public void testRemoteAccessLoad() throws Exception
    {
+      EnvironmentContext ctx = new EnvironmentContext();
+      ctx.put(SecurityContext.class, adminSecurityContext);
       ContainerResponse cres =
-         launcher.service("POST", "/script/groovy/load/db1/ws/testRoot/script?state=false", "", null, null, null);
+         launcher.service("POST", "/script/groovy/load/db1/ws/testRoot/script?state=false", "", null, null, ctx);
 
       assertEquals(204, cres.getStatus());
       assertEquals(resourceNumber, binder.getSize());
 
-      launcher.service("POST", "/script/groovy/load/db1/ws/testRoot/script", "", null, null, null);
+      launcher.service("POST", "/script/groovy/load/db1/ws/testRoot/script", "", null, null, ctx);
 
       assertEquals(204, cres.getStatus());
       assertEquals(resourceNumber + 1, binder.getSize());
