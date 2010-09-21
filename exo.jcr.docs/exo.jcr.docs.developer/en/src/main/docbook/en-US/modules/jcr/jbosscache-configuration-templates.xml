@@ -70,6 +70,36 @@
   </section>
 
   <section>
+    <title>Allow to share JBoss Cache instances</title>
+
+    <para>A JBoss Cache instance is quite resource consuming and by default we
+    will have 3 JBoss Cache instances (one instance for the indexer, one for
+    the lock manager and one for the data container) for each workspace, so if
+    you intend to have a lot of workspaces it could make sense to decide to
+    share one JBoss Cache instance with several cache instances of the same
+    type (i.e. indexer, lock manager or data container). This feature is
+    disabled by default and can be enabled at component configuration level
+    (i.e. indexer configuration, lock manager configuration and/or data
+    container configuration) by setting the property "jbosscache-shareable" to
+    true as below:</para>
+
+    <programlisting>&lt;property name="jbosscache-shareable" value="true" /&gt;</programlisting>
+
+    <para>Once enabled this feature will allow the JBoss Cache instance used
+    by the component to be re-used by another components of the same type
+    (i.e. indexer, lock manager or data container) with the exact same JBoss
+    Cache configuration (except the eviction configuration that cans be
+    different), which means that all the parameters of type
+    ${jbosscache-&lt;parameter name&gt;} must be identical between the
+    components of same type of different workspaces. In other words, if we use
+    the same values for the parameters of type ${jbosscache-&lt;parameter
+    name&gt;} in each workspace, we will have only 3 JBoss Cache instances
+    (one instance for the indexer, one for the lock manager and one for the
+    data container) used whatever the total amount of workspaces
+    defined.</para>
+  </section>
+
+  <section>
     <title>Shipped JBoss Cache configuration templates</title>
 
     <para>eXo JCR implementation is shipped with ready-to-use JBoss Cache
