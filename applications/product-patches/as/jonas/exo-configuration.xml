@@ -88,7 +88,6 @@
                   <name>autoCreatedInNewRepository</name>
                   <description>Node types configuration file</description>
                   <value>jar:/conf/ext-nodetypes-config.xml</value>
-                  <value>jar:/conf/organization-nodetypes.xml</value>
                   <value>jar:/conf/webdav-nodetypes.xml</value>
                </values-param>
             </init-params>
