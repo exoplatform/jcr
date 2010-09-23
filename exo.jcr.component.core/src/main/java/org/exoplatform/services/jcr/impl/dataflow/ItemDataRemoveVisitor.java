@@ -234,8 +234,8 @@ public class ItemDataRemoveVisitor extends ItemDataTraversingVisitor
       }
       property = (PropertyData)copyItemDataDelete(property);
       ItemState state =
-         new ItemState(property, ItemState.DELETED, true, ancestorToSave != null ? ancestorToSave : removedRoot
-            .getQPath());
+         new ItemState(property, ItemState.DELETED, true, ancestorToSave != null ? ancestorToSave
+            : removedRoot.getQPath());
 
       if (!itemRemovedStates.contains(state))
       {
@@ -306,7 +306,7 @@ public class ItemDataRemoveVisitor extends ItemDataTraversingVisitor
     * @throws RepositoryException
     *           if error occurs
     */
-   private TransientItemData copyItemDataDelete(final ItemData item) throws RepositoryException
+   protected TransientItemData copyItemDataDelete(final ItemData item) throws RepositoryException
    {
 
       if (item == null)
@@ -327,8 +327,8 @@ public class ItemDataRemoveVisitor extends ItemDataTraversingVisitor
                + node.getIdentifier());
          }
 
-         return new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(), node
-            .getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(), node.getParentIdentifier(), acl);
+         return new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(),
+            node.getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(), node.getParentIdentifier(), acl);
       }
 
       // else - property
