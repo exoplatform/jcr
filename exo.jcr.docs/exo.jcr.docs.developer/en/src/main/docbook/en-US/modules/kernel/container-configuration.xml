@@ -385,6 +385,11 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
         &lt;name&gt;default.realm.name&lt;/name&gt;
         &lt;value&gt;my-exo-domain&lt;/value&gt;
       &lt;/value-param&gt;
+     &lt;!-- Indicates whether the unregistered webapps have to be ignored --&gt;
+     &lt;value-param&gt;
+        &lt;name&gt;ignore.unregistered.webapp&lt;/name&gt;
+        &lt;value&gt;true&lt;/value&gt;
+     &lt;/value-param&gt;
       &lt;!-- The default portal container definition --&gt;
       &lt;!-- It cans be used to avoid duplicating configuration --&gt;
       &lt;object-param&gt;
@@ -467,6 +472,28 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
 
                 <entry>The name of the default realm. This field is
                 optional.</entry>
+              </row>
+
+              <row>
+                <entry>ignore.unregistered.webapp</entry>
+
+                <entry>Indicates whether the unregistered webapps have to be
+                ignored. If a webapp has not been registered as a dependency
+                of any portal container, the application will use the value of
+                this parameter to know what to do:<itemizedlist>
+                    <listitem>
+                      <para>If it is set to <emphasis>false</emphasis>, this
+                      webapp will be considered by default as a dependency of
+                      all the portal containers.</para>
+                    </listitem>
+
+                    <listitem>
+                      <para>If it is set to <emphasis>true</emphasis>, this
+                      webapp won't be considered by default as a dependency of
+                      any portal container, it will be simply ignored.</para>
+                    </listitem>
+                  </itemizedlist>This field is optional and by default this
+                parameter is set to <emphasis>false</emphasis>.</entry>
               </row>
 
               <row>
