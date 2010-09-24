@@ -799,6 +799,15 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
    /**
     * {@inheritDoc}
     */
+   public ItemData getItemData(final NodeData parentData, final QPathEntry name)
+      throws RepositoryException
+   {
+      return getItemData(parentData, name, ItemType.UNKNOWN);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public ItemData getItemData(final NodeData parentData, final QPathEntry name, ItemType itemType)
       throws RepositoryException
    {

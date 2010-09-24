@@ -169,6 +169,22 @@ public class SessionDataManager implements ItemDataConsumer
     * @param parent
     * @param relPath
     *          - array of QPathEntry which represents the relation path to the searched item
+    * @return existed item data or null if not found
+    * @throws RepositoryException
+    */
+   @Deprecated
+   public ItemData getItemData(NodeData parent, QPathEntry[] relPathEntries) throws RepositoryException
+   {
+      return getItemData(parent, relPathEntries, ItemType.UNKNOWN);
+   }
+
+   /**
+    * Return item data by parent NodeDada and relPathEntries If relpath is JCRPath.THIS_RELPATH = '.'
+    * it return itself
+    * 
+    * @param parent
+    * @param relPath
+    *          - array of QPathEntry which represents the relation path to the searched item
     * @param itemType
     *          - item type         
     * @return existed item data or null if not found
@@ -204,6 +220,14 @@ public class SessionDataManager implements ItemDataConsumer
          }
       }
       return item;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public ItemData getItemData(NodeData parentData, QPathEntry name) throws RepositoryException
+   {
+      return getItemData(parentData, name, ItemType.UNKNOWN);
    }
 
    /**
@@ -287,6 +311,26 @@ public class SessionDataManager implements ItemDataConsumer
     * @return existed item or null if not found
     * @throws RepositoryException
     */
+   @Deprecated
+   public ItemImpl getItem(NodeData parent, QPathEntry name, boolean pool) throws RepositoryException
+   {
+      return getItem(parent, name, pool, ItemType.UNKNOWN);
+   }
+
+   /**
+    * Return Item by parent NodeDada and the name of searched item.
+    * 
+    * @param parent
+    *          - parent of the searched item
+    * @param name
+    *          - item name
+    * @param itemType
+    *          - item type
+    * @param pool
+    *          - indicates does the item fall in pool
+    * @return existed item or null if not found
+    * @throws RepositoryException
+    */
    public ItemImpl getItem(NodeData parent, QPathEntry name, boolean pool, ItemType itemType)
       throws RepositoryException
    {
@@ -310,6 +354,27 @@ public class SessionDataManager implements ItemDataConsumer
                + "sec");
          }
       }
+   }
+
+   /**
+    * Return Item by parent NodeDada and the name of searched item.
+    * 
+    * @param parent
+    *          - parent of the searched item
+    * @param name
+    *          - item name
+    * @param pool
+    *          - indicates does the item fall in pool
+    * @param skipCheckInPersistence
+    *          - skip getting Item from persistence if need
+    * @return existed item or null if not found
+    * @throws RepositoryException
+    */
+   @Deprecated
+   public ItemImpl getItem(NodeData parent, QPathEntry name, boolean pool, boolean skipCheckInPersistence)
+      throws RepositoryException
+   {
+      return getItem(parent, name, pool, skipCheckInPersistence, ItemType.UNKNOWN);
    }
 
    /**
@@ -351,6 +416,25 @@ public class SessionDataManager implements ItemDataConsumer
                + "sec");
          }
       }
+   }
+
+   /**
+    * Return Item by parent NodeDada and array of QPathEntry which represent a relative path to the
+    * searched item
+    * 
+    * @param parent
+    *          - parent of the searched item
+    * @param relPath
+    *          - array of QPathEntry which represents the relation path to the searched item
+    * @param pool
+    *          - indicates does the item fall in pool
+    * @return existed item or null if not found
+    * @throws RepositoryException
+    */
+   @Deprecated
+   public ItemImpl getItem(NodeData parent, QPathEntry[] relPath, boolean pool) throws RepositoryException
+   {
+      return getItem(parent, relPath, pool, ItemType.UNKNOWN);
    }
 
    /**

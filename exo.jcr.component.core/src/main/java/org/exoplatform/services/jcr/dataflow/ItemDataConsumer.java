@@ -43,6 +43,19 @@ public interface ItemDataConsumer
 {
 
    /**
+    * Find Item by parent (id) and name (with path index).
+    * 
+    * @param parent 
+    *          NodeData
+    * @param name 
+    *          item name
+    * @return ItemData, data by parent and name
+    * @throws RepositoryException
+    */
+   @Deprecated
+   ItemData getItemData(NodeData parent, QPathEntry name) throws RepositoryException;
+
+   /**
     * Find Item by parent (id) and name (with path index) of define type.
     * 
     * @param parent 

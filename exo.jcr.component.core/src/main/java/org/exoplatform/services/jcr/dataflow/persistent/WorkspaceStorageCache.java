@@ -42,6 +42,18 @@ public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
    public static final String LIVE_TIME_PARAMETER_NAME = "live-time";
 
    /**
+    * Get item by parent identifier and name +index.
+    * 
+    * @param parentIdentifier
+    *          parent identifier
+    * @param name
+    *          item name
+    * @return itemData by parent Identifier and item name with index or null in other case
+    */
+   @Deprecated
+   ItemData get(String parentIdentifier, QPathEntry name);
+
+   /**
     * Get item by parent identifier and name +index of define type.
     * 
     * @param parentIdentifier

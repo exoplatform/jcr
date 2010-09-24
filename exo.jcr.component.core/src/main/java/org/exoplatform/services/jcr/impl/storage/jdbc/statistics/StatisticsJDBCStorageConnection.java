@@ -386,6 +386,14 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
    /**
     * {@inheritDoc}
     */
+   public ItemData getItemData(NodeData parentData, QPathEntry name) throws RepositoryException, IllegalStateException
+   {
+      return getItemData(parentData, name, ItemType.UNKNOWN);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException,
       IllegalStateException
    {

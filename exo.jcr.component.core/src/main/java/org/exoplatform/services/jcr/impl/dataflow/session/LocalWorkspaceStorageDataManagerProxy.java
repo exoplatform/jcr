@@ -103,6 +103,14 @@ public class LocalWorkspaceStorageDataManagerProxy implements WorkspaceStorageDa
    /**
     * {@inheritDoc}
     */
+   public ItemData getItemData(NodeData parentData, QPathEntry name) throws RepositoryException
+   {
+      return getItemData(parentData, name, ItemType.UNKNOWN);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException
    {
       return copyItemData(storageDataManager.getItemData(parentData, name, itemType));

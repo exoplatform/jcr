@@ -881,6 +881,14 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
    /**
     * {@inheritDoc}
     */
+   public ItemData get(String parentIdentifier, QPathEntry name)
+   {
+      return get(parentIdentifier, name, ItemType.UNKNOWN);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public ItemData get(final String parentId, final QPathEntry name, ItemType itemType)
    {
       if (enabled && parentId != null && name != null)

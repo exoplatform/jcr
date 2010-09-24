@@ -606,6 +606,14 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
    /**
     * {@inheritDoc}
     */
+   public ItemData get(String parentId, QPathEntry name)
+   {
+      return get(parentId, name, ItemType.UNKNOWN);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public ItemData get(String parentId, QPathEntry name, ItemType itemType)
    {
       String itemId = null;
