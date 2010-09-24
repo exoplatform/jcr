@@ -28,6 +28,7 @@ import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
 import org.exoplatform.services.jcr.datamodel.IllegalPathException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
@@ -592,10 +593,22 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
     */
    public ItemData get(String parentId, QPathEntry name)
    {
+      return get(parentId, name, ItemType.UNKNOWN);
+   }
 
-      // get as node first
-      String itemId = (String)cache.get(makeChildFqn(childNodes, parentId, name), ITEM_ID);
-      if (itemId == null)
+   /**
+    * {@inheritDoc}
+    */
+   public ItemData get(String parentId, QPathEntry name, ItemType itemType)
+   {
+      String itemId = null;
+      if (itemType == ItemType.NODE || itemType == ItemType.UNKNOWN)
+      {
+         // try as node first
+         itemId = (String)cache.get(makeChildFqn(childNodes, parentId, name), ITEM_ID);
+      }
+
+      if (itemType == ItemType.PROPERTY || itemType == ItemType.UNKNOWN && itemId == null)
       {
          // try as property
          itemId = (String)cache.get(makeChildFqn(childProps, parentId, name), ITEM_ID);
@@ -827,15 +840,16 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
       if (node.getParentIdentifier() != null)
       {
          // add in CHILD_NODES
-         cache.put(makeChildFqn(childNodes, node.getParentIdentifier(), node.getQPath().getEntries()[node.getQPath()
-            .getEntries().length - 1]), ITEM_ID, node.getIdentifier());
+         cache.put(
+            makeChildFqn(childNodes, node.getParentIdentifier(), node.getQPath().getEntries()[node.getQPath()
+               .getEntries().length - 1]), ITEM_ID, node.getIdentifier());
          // if MODIFY and List present OR FORCE_MODIFY, then write
-         if ((modifyListsOfChild == ModifyChildOption.MODIFY && cache.getNode(makeChildListFqn(childNodesList, node
-            .getParentIdentifier())) != null)
+         if ((modifyListsOfChild == ModifyChildOption.MODIFY && cache.getNode(makeChildListFqn(childNodesList,
+            node.getParentIdentifier())) != null)
             || modifyListsOfChild == ModifyChildOption.FORCE_MODIFY)
          {
-            cache.addToList(makeChildListFqn(childNodesList, node.getParentIdentifier()), ITEM_LIST, node
-               .getIdentifier());
+            cache.addToList(makeChildListFqn(childNodesList, node.getParentIdentifier()), ITEM_LIST,
+               node.getIdentifier());
          }
 
       }
@@ -849,15 +863,16 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
       if (node.getParentIdentifier() != null)
       {
          // add in CHILD_NODES
-         cache.put(makeChildFqn(childNodes, node.getParentIdentifier(), node.getQPath().getEntries()[node.getQPath()
-            .getEntries().length - 1]), ITEM_ID, node.getIdentifier());
+         cache.put(
+            makeChildFqn(childNodes, node.getParentIdentifier(), node.getQPath().getEntries()[node.getQPath()
+               .getEntries().length - 1]), ITEM_ID, node.getIdentifier());
          // if MODIFY and List present OR FORCE_MODIFY, then write
-         if ((modifyListsOfChild == ModifyChildOption.MODIFY && cache.getNode(makeChildListFqn(childNodesList, node
-            .getParentIdentifier())) != null)
+         if ((modifyListsOfChild == ModifyChildOption.MODIFY && cache.getNode(makeChildListFqn(childNodesList,
+            node.getParentIdentifier())) != null)
             || modifyListsOfChild == ModifyChildOption.FORCE_MODIFY)
          {
-            cache.addToList(makeChildListFqn(childNodesList, node.getParentIdentifier()), ITEM_LIST, node
-               .getIdentifier());
+            cache.addToList(makeChildListFqn(childNodesList, node.getParentIdentifier()), ITEM_LIST,
+               node.getIdentifier());
          }
       }
       // add in ITEMS
@@ -873,11 +888,12 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
    protected PropertyData putProperty(PropertyData prop, ModifyChildOption modifyListsOfChild)
    {
       // add in CHILD_PROPS
-      cache.put(makeChildFqn(childProps, prop.getParentIdentifier(), prop.getQPath().getEntries()[prop.getQPath()
-         .getEntries().length - 1]), ITEM_ID, prop.getIdentifier());
+      cache.put(
+         makeChildFqn(childProps, prop.getParentIdentifier(),
+            prop.getQPath().getEntries()[prop.getQPath().getEntries().length - 1]), ITEM_ID, prop.getIdentifier());
       // if MODIFY and List present OR FORCE_MODIFY, then write
-      if ((modifyListsOfChild == ModifyChildOption.MODIFY && cache.getNode(makeChildListFqn(childPropsList, prop
-         .getParentIdentifier())) != null)
+      if ((modifyListsOfChild == ModifyChildOption.MODIFY && cache.getNode(makeChildListFqn(childPropsList,
+         prop.getParentIdentifier())) != null)
          || modifyListsOfChild == ModifyChildOption.FORCE_MODIFY)
       {
          cache.addToList(makeChildListFqn(childPropsList, prop.getParentIdentifier()), ITEM_LIST, prop.getIdentifier());
@@ -899,8 +915,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
                .getQPath().getEntries().length - 1]));
 
             // remove from CHILD_NODES_LIST of parent
-            cache.removeFromList(makeChildListFqn(childNodesList, item.getParentIdentifier()), ITEM_LIST, item
-               .getIdentifier());
+            cache.removeFromList(makeChildListFqn(childNodesList, item.getParentIdentifier()), ITEM_LIST,
+               item.getIdentifier());
 
             // remove from CHILD_NODES as parent
             cache.removeNode(makeChildListFqn(childNodes, item.getIdentifier()));
@@ -922,8 +938,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
             .getQPath().getEntries().length - 1]));
 
          // remove from CHILD_PROPS_LIST
-         cache.removeFromList(makeChildListFqn(childPropsList, item.getParentIdentifier()), ITEM_LIST, item
-            .getIdentifier());
+         cache.removeFromList(makeChildListFqn(childPropsList, item.getParentIdentifier()), ITEM_LIST,
+            item.getIdentifier());
       }
       // remove from ITEMS
       cache.removeNode(makeItemFqn(item.getIdentifier()));
@@ -1061,9 +1077,9 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
                NodeData prevNode = (NodeData)data;
 
                TransientNodeData newNode =
-                  new TransientNodeData(newPath, prevNode.getIdentifier(), prevNode.getPersistedVersion(), prevNode
-                     .getPrimaryTypeName(), prevNode.getMixinTypeNames(), prevNode.getOrderNumber(), prevNode
-                     .getParentIdentifier(), inheritACL ? acl : prevNode.getACL()); // TODO check ACL
+                  new TransientNodeData(newPath, prevNode.getIdentifier(), prevNode.getPersistedVersion(),
+                     prevNode.getPrimaryTypeName(), prevNode.getMixinTypeNames(), prevNode.getOrderNumber(),
+                     prevNode.getParentIdentifier(), inheritACL ? acl : prevNode.getACL()); // TODO check ACL
                // update this node
                cache.put(makeItemFqn(newNode.getIdentifier()), ITEM_DATA, newNode);
             }
@@ -1081,8 +1097,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
                }
 
                TransientPropertyData newProp =
-                  new TransientPropertyData(newPath, prevProp.getIdentifier(), prevProp.getPersistedVersion(), prevProp
-                     .getType(), prevProp.getParentIdentifier(), prevProp.isMultiValued(), prevProp.getValues());
+                  new TransientPropertyData(newPath, prevProp.getIdentifier(), prevProp.getPersistedVersion(),
+                     prevProp.getType(), prevProp.getParentIdentifier(), prevProp.isMultiValued(), prevProp.getValues());
                cache.put(makeItemFqn(newProp.getIdentifier()), ITEM_DATA, newProp);
             }
          }
@@ -1116,8 +1132,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
             QPath
                .makeChildPath(rootPath, prevProp.getQPath().getEntries()[prevProp.getQPath().getEntries().length - 1]);
          TransientPropertyData newProp =
-            new TransientPropertyData(newPath, prevProp.getIdentifier(), prevProp.getPersistedVersion(), prevProp
-               .getType(), prevProp.getParentIdentifier(), prevProp.isMultiValued(), prevProp.getValues());
+            new TransientPropertyData(newPath, prevProp.getIdentifier(), prevProp.getPersistedVersion(),
+               prevProp.getType(), prevProp.getParentIdentifier(), prevProp.isMultiValued(), prevProp.getValues());
          cache.put(makeItemFqn(newProp.getIdentifier()), ITEM_DATA, newProp);
       }
 
@@ -1130,9 +1146,9 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
             QPath
                .makeChildPath(rootPath, prevNode.getQPath().getEntries()[prevNode.getQPath().getEntries().length - 1]);
          TransientNodeData newNode =
-            new TransientNodeData(newPath, prevNode.getIdentifier(), prevNode.getPersistedVersion(), prevNode
-               .getPrimaryTypeName(), prevNode.getMixinTypeNames(), prevNode.getOrderNumber(), prevNode
-               .getParentIdentifier(), inheritACL ? acl : prevNode.getACL()); // TODO check ACL
+            new TransientNodeData(newPath, prevNode.getIdentifier(), prevNode.getPersistedVersion(),
+               prevNode.getPrimaryTypeName(), prevNode.getMixinTypeNames(), prevNode.getOrderNumber(),
+               prevNode.getParentIdentifier(), inheritACL ? acl : prevNode.getACL()); // TODO check ACL
          // update this node
          cache.put(makeItemFqn(newNode.getIdentifier()), ITEM_DATA, newNode);
          // update childs recursive
@@ -1162,8 +1178,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
          // recreate with new path for child Nodes only
          TransientNodeData newNode =
             new TransientNodeData(prevNode.getQPath(), prevNode.getIdentifier(), prevNode.getPersistedVersion(),
-               prevNode.getPrimaryTypeName(), prevNode.getMixinTypeNames(), prevNode.getOrderNumber(), prevNode
-                  .getParentIdentifier(), acl);
+               prevNode.getPrimaryTypeName(), prevNode.getMixinTypeNames(), prevNode.getOrderNumber(),
+               prevNode.getParentIdentifier(), acl);
          // update this node
          cache.put(makeItemFqn(newNode.getIdentifier()), ITEM_DATA, newNode);
          // update childs recursive

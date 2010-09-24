@@ -27,6 +27,7 @@ import org.exoplatform.services.jcr.datamodel.IllegalACLException;
 import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
@@ -82,6 +83,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       /**
        * {@inheritDoc}
        */
+      @Override
       public void writeStreamedValue(File file, ValueData value) throws IOException
       {
          super.writeStreamedValue(file, value);
@@ -716,7 +718,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          if (LOG.isDebugEnabled())
          {
             LOG.debug("Node deleted " + data.getQPath().getAsString() + ", " + data.getIdentifier() + ", "
-               + ((NodeData)data).getPrimaryTypeName().getAsString());
+               + (data).getPrimaryTypeName().getAsString());
          }
 
       }
@@ -758,12 +760,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
          if (LOG.isDebugEnabled())
          {
-            LOG.debug("Property deleted "
-               + data.getQPath().getAsString()
-               + ", "
-               + data.getIdentifier()
-               + (((PropertyData)data).getValues() != null ? ", values count: "
-                  + ((PropertyData)data).getValues().size() : ", NULL data"));
+            LOG.debug("Property deleted " + data.getQPath().getAsString() + ", " + data.getIdentifier()
+               + ((data).getValues() != null ? ", values count: " + (data).getValues().size() : ", NULL data"));
          }
 
       }
@@ -1045,16 +1043,27 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       return getItemByIdentifier(getInternalId(identifier));
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public ItemData getItemData(NodeData parentData, QPathEntry name) throws RepositoryException, IllegalStateException
    {
+      return getItemData(parentData, name, ItemType.UNKNOWN);
+   }
 
+   /**
+    * {@inheritDoc}
+    */
+   public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException,
+      IllegalStateException
+   {
       if (parentData != null)
       {
-         return getItemByName(parentData, getInternalId(parentData.getIdentifier()), name);
+         return getItemByName(parentData, getInternalId(parentData.getIdentifier()), name, itemType);
       }
 
       // it's a root node
-      return getItemByName(null, null, name);
+      return getItemByName(null, null, name, itemType);
    }
 
    /**
@@ -1117,8 +1126,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             if (valueRecord.next())
             {
                String storageId = valueRecord.getString(COLUMN_VSTORAGE_DESC);
-               return valueRecord.wasNull() ? readValueData(cid, orderNumb, persistedVersion, valueRecord
-                  .getBinaryStream(COLUMN_VDATA)) : readValueData(propertyId, orderNumb, storageId);
+               return valueRecord.wasNull() ? readValueData(cid, orderNumb, persistedVersion,
+                  valueRecord.getBinaryStream(COLUMN_VDATA)) : readValueData(propertyId, orderNumb, storageId);
             }
 
             return null;
@@ -1203,30 +1212,43 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
     *          - parent container internal id (depends on Multi/Single DB)
     * @param name
     *          - item name
+    * @param itemType
+    *          - item type         
     * @return - ItemData instance
     * @throws RepositoryException
     *           Repository error
     * @throws IllegalStateException
     *           if connection is closed
     */
-   protected ItemData getItemByName(NodeData parent, String parentId, QPathEntry name) throws RepositoryException,
-      IllegalStateException
+   protected ItemData getItemByName(NodeData parent, String parentId, QPathEntry name, ItemType itemType)
+      throws RepositoryException, IllegalStateException
    {
       checkIfOpened();
       try
       {
-         ResultSet item = findItemByName(parentId, name.getAsString(), name.getIndex());
+         ResultSet item = null;
          try
          {
-            if (item.next())
-               return itemData(parent.getQPath(), item, item.getInt(COLUMN_CLASS), parent.getACL());
+            item = findItemByName(parentId, name.getAsString(), name.getIndex());
+            while (item.next())
+            {
+               int columnClass = item.getInt(COLUMN_CLASS);
+               if (itemType == ItemType.UNKNOWN || columnClass == itemType.ordinal())
+               {
+                  return itemData(parent.getQPath(), item, columnClass, parent.getACL());
+               }
+            }
+
             return null;
          }
          finally
          {
             try
             {
-               item.close();
+               if (item != null)
+               {
+                  item.close();
+               }
             }
             catch (SQLException e)
             {
@@ -2002,8 +2024,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
                {
                   // use permissions from existed parent
                   acl =
-                     new AccessControlList(readACLOwner(cid), parentACL.hasPermissions() ? parentACL
-                        .getPermissionEntries() : null);
+                     new AccessControlList(readACLOwner(cid), parentACL.hasPermissions()
+                        ? parentACL.getPermissionEntries() : null);
                }
                else
                {
@@ -2037,8 +2059,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
                if (parentACL != null)
                   // construct ACL from existed parent ACL
                   acl =
-                     new AccessControlList(parentACL.getOwner(), parentACL.hasPermissions() ? parentACL
-                        .getPermissionEntries() : null);
+                     new AccessControlList(parentACL.getOwner(), parentACL.hasPermissions()
+                        ? parentACL.getPermissionEntries() : null);
                else
                   // have to search nearest ancestor owner and permissions in ACL manager
                   // acl = traverseACL(cpid);
@@ -2212,8 +2234,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             final int orderNum = valueRecords.getInt(COLUMN_VORDERNUM);
             final String storageId = valueRecords.getString(COLUMN_VSTORAGE_DESC);
             ValueData vdata =
-               valueRecords.wasNull() ? readValueData(cid, orderNum, cversion, valueRecords
-                  .getBinaryStream(COLUMN_VDATA)) : readValueData(identifier, orderNum, storageId);
+               valueRecords.wasNull() ? readValueData(cid, orderNum, cversion,
+                  valueRecords.getBinaryStream(COLUMN_VDATA)) : readValueData(identifier, orderNum, storageId);
             data.add(vdata);
          }
       }

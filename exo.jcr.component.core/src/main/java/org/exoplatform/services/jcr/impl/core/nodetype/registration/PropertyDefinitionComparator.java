@@ -27,6 +27,7 @@ import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -84,6 +85,7 @@ public class PropertyDefinitionComparator extends AbstractDefinitionComparator<P
       this.locationFactory = locationFactory;
    }
 
+   @Override
    public PlainChangesLog compare(NodeTypeData registeredNodeType, PropertyDefinitionData[] ancestorDefinition,
       PropertyDefinitionData[] recipientDefinition) throws RepositoryException
    {
@@ -158,7 +160,8 @@ public class PropertyDefinitionComparator extends AbstractDefinitionComparator<P
          else
          {
             PropertyData propertyData =
-               (PropertyData)dataConsumer.getItemData(nodeData, new QPathEntry(recipientDefinitionData.getName(), 0));
+               (PropertyData)dataConsumer.getItemData(nodeData, new QPathEntry(recipientDefinitionData.getName(), 0),
+                  ItemType.PROPERTY);
             if (propertyData.getValues().size() > 1)
             {
                throw new ConstraintViolationException("Can't change property definition "
@@ -275,7 +278,8 @@ public class PropertyDefinitionComparator extends AbstractDefinitionComparator<P
          else
          {
             PropertyData propertyData =
-               (PropertyData)dataConsumer.getItemData(nodeData, new QPathEntry(recipientDefinitionData.getName(), 0));
+               (PropertyData)dataConsumer.getItemData(nodeData, new QPathEntry(recipientDefinitionData.getName(), 0),
+                  ItemType.PROPERTY);
             if (recipientDefinitionData.getRequiredType() != PropertyType.UNDEFINED
                && propertyData.getType() != recipientDefinitionData.getRequiredType())
             {
@@ -329,7 +333,8 @@ public class PropertyDefinitionComparator extends AbstractDefinitionComparator<P
          else
          {
             PropertyData propertyData =
-               (PropertyData)dataConsumer.getItemData(nodeData, new QPathEntry(recipientDefinitionData.getName(), 0));
+               (PropertyData)dataConsumer.getItemData(nodeData, new QPathEntry(recipientDefinitionData.getName(), 0),
+                  ItemType.PROPERTY);
             checkValueConstraints(recipientDefinitionData, propertyData);
          }
       }
@@ -388,7 +393,8 @@ public class PropertyDefinitionComparator extends AbstractDefinitionComparator<P
                && newPropertyDefinitionData.isAutoCreated())
             {
                ItemData pdata =
-                  dataConsumer.getItemData(nodeData, new QPathEntry(newPropertyDefinitionData.getName(), 0));
+                  dataConsumer.getItemData(nodeData, new QPathEntry(newPropertyDefinitionData.getName(), 0),
+                     ItemType.UNKNOWN);
                if (pdata == null || (pdata != null && pdata.isNode()))
                {
                   PlainChangesLog autoCreatedChanges =
@@ -521,8 +527,8 @@ public class PropertyDefinitionComparator extends AbstractDefinitionComparator<P
             checkRequiredType(registeredNodeType, recipientDefinitionData, allRecipientDefinition, nodesData);
          }
          // ValueConstraints
-         if (!Arrays.deepEquals(ancestorDefinitionData.getValueConstraints(), recipientDefinitionData
-            .getValueConstraints()))
+         if (!Arrays.deepEquals(ancestorDefinitionData.getValueConstraints(),
+            recipientDefinitionData.getValueConstraints()))
          {
             checkValueConstraints(registeredNodeType, recipientDefinitionData, allRecipientDefinition, nodesData);
          }

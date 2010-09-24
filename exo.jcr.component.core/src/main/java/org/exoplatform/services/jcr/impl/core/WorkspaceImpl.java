@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeImpl;
@@ -190,7 +191,7 @@ public class WorkspaceImpl implements ExtendedWorkspace
 
       NodeImpl destNode =
          (NodeImpl)session.getTransientNodesManager().getItem((NodeData)destParentNode.getData(),
-            new QPathEntry(destNodePath.getInternalPath().getName(), 0), false);
+            new QPathEntry(destNodePath.getInternalPath().getName(), 0), false, ItemType.NODE);
 
       if (destNode != null)
       {
@@ -412,7 +413,7 @@ public class WorkspaceImpl implements ExtendedWorkspace
       // Check for node with destAbsPath name in session
       NodeImpl destNode =
          (NodeImpl)session.getTransientNodesManager().getItem((NodeData)destParentNode.getData(),
-            new QPathEntry(destNodePath.getInternalPath().getName(), 0), false);
+            new QPathEntry(destNodePath.getInternalPath().getName(), 0), false, ItemType.NODE);
 
       if (destNode != null)
       {
@@ -499,7 +500,7 @@ public class WorkspaceImpl implements ExtendedWorkspace
       // Check for node with destAbsPath name in session
       NodeImpl destNode =
          (NodeImpl)session.getTransientNodesManager().getItem((NodeData)destParentNode.getData(),
-            new QPathEntry(destNodePath.getInternalPath().getName(), 0), false);
+            new QPathEntry(destNodePath.getInternalPath().getName(), 0), false, ItemType.NODE);
 
       ItemState changesItemState = null;
 

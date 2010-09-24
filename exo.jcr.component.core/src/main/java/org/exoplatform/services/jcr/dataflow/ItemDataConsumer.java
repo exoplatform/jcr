@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.dataflow;
 
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -44,12 +45,29 @@ public interface ItemDataConsumer
    /**
     * Find Item by parent (id) and name (with path index).
     * 
-    * @param parent NodeData
-    * @param name QPathEntry
+    * @param parent 
+    *          NodeData
+    * @param name 
+    *          item name
     * @return ItemData, data by parent and name
     * @throws RepositoryException
     */
+   @Deprecated
    ItemData getItemData(NodeData parent, QPathEntry name) throws RepositoryException;
+
+   /**
+    * Find Item by parent (id) and name (with path index) of define type.
+    * 
+    * @param parent 
+    *          NodeData
+    * @param name 
+    *          item name
+    * @param itemType 
+    *          itemType
+    * @return ItemData, data by parent and name
+    * @throws RepositoryException
+    */
+   ItemData getItemData(NodeData parent, QPathEntry name, ItemType itemType) throws RepositoryException;
 
    /**
     * Find Item by identifier.
@@ -73,7 +91,7 @@ public interface ItemDataConsumer
     * @return int, child nodes count
     */
    int getChildNodesCount(NodeData parent) throws RepositoryException;
-   
+
    /**
     * Get child Properties of the parent node.
     * 

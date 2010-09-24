@@ -22,6 +22,7 @@ import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.dataflow.SharedDataManager;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -101,16 +102,16 @@ public class ACLInheritanceSupportedWorkspaceDataManager implements SharedDataMa
             {
                // use parent ACL
                node =
-                  new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(), node
-                     .getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(),
+                  new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(),
+                     node.getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(),
                      node.getParentIdentifier(), parent.getACL());
             }
             else
             {
                // use nearest ancestor ACL... case of get by id
                node =
-                  new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(), node
-                     .getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(),
+                  new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(),
+                     node.getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(),
                      node.getParentIdentifier(), getNearestACAncestorAcl(node));
             }
          }
@@ -120,9 +121,9 @@ public class ACLInheritanceSupportedWorkspaceDataManager implements SharedDataMa
             AccessControlList ancestorAcl = getNearestACAncestorAcl(node);
 
             node =
-               new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(), node
-                  .getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(), node.getParentIdentifier(),
-                  new AccessControlList(acl.getOwner(), ancestorAcl.getPermissionEntries()));
+               new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(),
+                  node.getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(),
+                  node.getParentIdentifier(), new AccessControlList(acl.getOwner(), ancestorAcl.getPermissionEntries()));
          }
          else if (!acl.hasOwner())
          {
@@ -130,9 +131,9 @@ public class ACLInheritanceSupportedWorkspaceDataManager implements SharedDataMa
             AccessControlList ancestorAcl = getNearestACAncestorAcl(node);
 
             node =
-               new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(), node
-                  .getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(), node.getParentIdentifier(),
-                  new AccessControlList(ancestorAcl.getOwner(), acl.getPermissionEntries()));
+               new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(),
+                  node.getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(),
+                  node.getParentIdentifier(), new AccessControlList(ancestorAcl.getOwner(), acl.getPermissionEntries()));
 
          }
       }
@@ -167,7 +168,15 @@ public class ACLInheritanceSupportedWorkspaceDataManager implements SharedDataMa
     */
    public ItemData getItemData(NodeData parent, QPathEntry name) throws RepositoryException
    {
-      final ItemData item = persistentManager.getItemData(parent, name);
+      return getItemData(parent, name, ItemType.UNKNOWN);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public ItemData getItemData(NodeData parent, QPathEntry name, ItemType itemType) throws RepositoryException
+   {
+      final ItemData item = persistentManager.getItemData(parent, name, itemType);
       return item != null && item.isNode() ? initACL(parent, (NodeData)item) : item;
    }
 

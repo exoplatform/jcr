@@ -36,6 +36,7 @@ import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
 import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -1056,7 +1057,8 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
             new PlainChangesLogImpl(new ArrayList<ItemState>(), SystemIdentity.SYSTEM, ExtendedEvent.UNLOCK);
 
          ItemData lockOwner =
-            copyItemData((PropertyData)dataManager.getItemData(nData, new QPathEntry(Constants.JCR_LOCKOWNER, 1)));
+            copyItemData((PropertyData)dataManager.getItemData(nData, new QPathEntry(Constants.JCR_LOCKOWNER, 1),
+               ItemType.PROPERTY));
 
          //TODO EXOJCR-412, should be refactored in future.
          //Skip removing, because that lock was removed in other node of cluster.  
@@ -1068,7 +1070,8 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
          changesLog.add(ItemState.createDeletedState(lockOwner));
 
          ItemData lockIsDeep =
-            copyItemData((PropertyData)dataManager.getItemData(nData, new QPathEntry(Constants.JCR_LOCKISDEEP, 1)));
+            copyItemData((PropertyData)dataManager.getItemData(nData, new QPathEntry(Constants.JCR_LOCKISDEEP, 1),
+               ItemType.PROPERTY));
 
          //TODO EXOJCR-412, should be refactored in future.
          //Skip removing, because that lock was removed in other node of cluster.  

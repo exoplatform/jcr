@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.dataflow.persistent;
 
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -44,10 +45,26 @@ public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
     * Get item by parent identifier and name +index.
     * 
     * @param parentIdentifier
-    * @param path
-    * @return itemData by parent Identifier and item name with index or null if not found
+    *          parent identifier
+    * @param name
+    *          item name
+    * @return itemData by parent Identifier and item name with index or null in other case
     */
+   @Deprecated
    ItemData get(String parentIdentifier, QPathEntry name);
+
+   /**
+    * Get item by parent identifier and name +index of define type.
+    * 
+    * @param parentIdentifier
+    *          parent identifier
+    * @param name
+    *          item name
+    * @param itemType
+    *          item type
+    * @return itemData by parent Identifier and item name with index of define type or null in other case
+    */
+   ItemData get(String parentIdentifier, QPathEntry name, ItemType itemType);
 
    /**
     * Get item by identifier.

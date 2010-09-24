@@ -33,6 +33,7 @@ import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.datamodel.Identifier;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
@@ -369,7 +370,8 @@ public abstract class ItemImpl implements Item
          if (ntManager.isNodeType(Constants.MIX_VERSIONABLE, node.getPrimaryTypeName(), node.getMixinTypeNames()))
          {
 
-            ItemData vhpd = dataManager.getItemData(node, new QPathEntry(Constants.JCR_VERSIONHISTORY, 1));
+            ItemData vhpd =
+               dataManager.getItemData(node, new QPathEntry(Constants.JCR_VERSIONHISTORY, 1), ItemType.PROPERTY);
             if (vhpd != null && !vhpd.isNode())
             {
                try
@@ -416,7 +418,8 @@ public abstract class ItemImpl implements Item
       int version;
       PropertyImpl prevProp;
       PropertyDefinitionDatas defs;
-      ItemImpl prevItem = dataManager.getItem(parentNode.nodeData(), new QPathEntry(propertyName, 0), true);
+      ItemImpl prevItem =
+         dataManager.getItem(parentNode.nodeData(), new QPathEntry(propertyName, 0), true, ItemType.PROPERTY);
 
       NodeTypeDataManager ntm = session.getWorkspace().getNodeTypesHolder();
       NodeData parentData = (NodeData)parentNode.getData();
@@ -429,8 +432,8 @@ public abstract class ItemImpl implements Item
          {
             // new property null values;
             TransientPropertyData nullData =
-               new TransientPropertyData(qpath, identifier, version, PropertyType.UNDEFINED, parentNode
-                  .getInternalIdentifier(), isMultiValue);
+               new TransientPropertyData(qpath, identifier, version, PropertyType.UNDEFINED,
+                  parentNode.getInternalIdentifier(), isMultiValue);
             PropertyImpl nullProperty = new PropertyImpl(nullData, session);
             nullProperty.invalidate();
             return nullProperty;
@@ -633,8 +636,8 @@ public abstract class ItemImpl implements Item
                NodeData refNode = (NodeData)changedItem.getData();
 
                // Check referential integrity (remove of mix:referenceable node)
-               if (ntManager.isNodeType(Constants.MIX_REFERENCEABLE, refNode.getPrimaryTypeName(), refNode
-                  .getMixinTypeNames()))
+               if (ntManager.isNodeType(Constants.MIX_REFERENCEABLE, refNode.getPrimaryTypeName(),
+                  refNode.getMixinTypeNames()))
                {
 
                   // mix:referenceable
@@ -951,8 +954,8 @@ public abstract class ItemImpl implements Item
       throws RepositoryException
    {
       ValueConstraintsMatcher constraints =
-         new ValueConstraintsMatcher(def.getValueConstraints(), session.getLocationFactory(), session
-            .getTransientNodesManager(), session.getWorkspace().getNodeTypesHolder());
+         new ValueConstraintsMatcher(def.getValueConstraints(), session.getLocationFactory(),
+            session.getTransientNodesManager(), session.getWorkspace().getNodeTypesHolder());
 
       for (ValueData value : newValues)
       {

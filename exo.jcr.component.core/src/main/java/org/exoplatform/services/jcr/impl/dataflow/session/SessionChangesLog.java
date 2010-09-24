@@ -23,6 +23,7 @@ import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
 import org.exoplatform.services.jcr.datamodel.IllegalPathException;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -299,13 +300,29 @@ public final class SessionChangesLog extends PlainChangesLogImpl
     * Get ItemState by parent and item name.
     * 
     * @param parentData
+    *          parent
     * @param name
+    *          item name
+    * @param itemType
+    *          item type
     * @return
     * @throws IllegalPathException
     */
-   public ItemState getItemState(NodeData parentData, QPathEntry name) throws IllegalPathException
+   public ItemState getItemState(NodeData parentData, QPathEntry name, ItemType itemType) throws IllegalPathException
    {
-      return index.get(new ParentIDQPathBasedKey(parentData.getIdentifier(), name));
+      if (itemType != ItemType.UNKNOWN)
+      {
+         return index.get(new ParentIDQPathBasedKey(parentData.getIdentifier(), name, itemType));
+      }
+      else
+      {
+         ItemState state = index.get(new ParentIDQPathBasedKey(parentData.getIdentifier(), name, ItemType.NODE));
+         if (state == null)
+         {
+            state = index.get(new ParentIDQPathBasedKey(parentData.getIdentifier(), name, ItemType.PROPERTY));
+         }
+         return state;
+      }
    }
 
    /**
@@ -718,6 +735,8 @@ public final class SessionChangesLog extends PlainChangesLogImpl
        */
       private final String parentIdentifier;
 
+      private final ItemType itemType;
+
       /**
        * KeyParentUUIDQPath  constructor.
        *
@@ -728,6 +747,7 @@ public final class SessionChangesLog extends PlainChangesLogImpl
       {
          this.name = item.getData().getQPath().getEntries()[item.getData().getQPath().getEntries().length - 1];
          this.parentIdentifier = item.getData().getParentIdentifier();
+         this.itemType = ItemType.getItemType(item.getData());
       }
 
       /**
@@ -738,10 +758,11 @@ public final class SessionChangesLog extends PlainChangesLogImpl
        * @param name
        *          item name
        */
-      ParentIDQPathBasedKey(String parentIdentifier, QPathEntry name)
+      ParentIDQPathBasedKey(String parentIdentifier, QPathEntry name, ItemType itemType)
       {
          this.name = name;
          this.parentIdentifier = parentIdentifier;
+         this.itemType = itemType;
       }
 
       /**
@@ -756,6 +777,7 @@ public final class SessionChangesLog extends PlainChangesLogImpl
          result = prime * result + name.getNamespace().hashCode();
          result = prime * result + name.getIndex();
          result = prime * result + (parentIdentifier == null ? 0 : parentIdentifier.hashCode());
+         result = prime * result + itemType.ordinal();
 
          return result;
       }
@@ -782,6 +804,7 @@ public final class SessionChangesLog extends PlainChangesLogImpl
          else if (!name.getName().equals(other.name.getName())
             || !name.getNamespace().equals(other.name.getNamespace()) || name.getIndex() != other.name.getIndex())
             return false;
+
          if (parentIdentifier == null)
          {
             if (other.parentIdentifier != null)
@@ -789,6 +812,15 @@ public final class SessionChangesLog extends PlainChangesLogImpl
          }
          else if (!parentIdentifier.equals(other.parentIdentifier))
             return false;
+
+         if (itemType == null)
+         {
+            if (other.itemType != null)
+               return false;
+         }
+         else if (!itemType.equals(other.itemType))
+            return false;
+
          return true;
       }
    }

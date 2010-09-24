@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.storage;
 
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -63,7 +64,28 @@ public interface WorkspaceStorageConnection
     * @throws IllegalStateException
     *           if connection is closed
     */
+   @Deprecated
    ItemData getItemData(NodeData parentData, QPathEntry name) throws RepositoryException, IllegalStateException;
+
+   /**
+    * Reads <code>ItemData</code> from the storage using item's parent and name relative the parent
+    * location of define type.
+    * 
+    * @param parentData
+    *          - the item's parent NodeData
+    * @param name
+    *          - item's path entry (QName + index)
+    * @param itemType
+    *             item type         
+    * @return - stored ItemData wich has exact the same path Entry (name+index) inside the parent; or
+    *         null if not such an item data found
+    * @throws RepositoryException
+    *           if some exception occured
+    * @throws IllegalStateException
+    *           if connection is closed
+    */
+   ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException,
+      IllegalStateException;
 
    /**
     * Reads <code>ItemData</code> from the storage by item identifier.
@@ -93,7 +115,7 @@ public interface WorkspaceStorageConnection
     *           if connection is closed
     */
    List<NodeData> getChildNodesData(NodeData parent) throws RepositoryException, IllegalStateException;
-   
+
    /**
     * Reads count of <code>parent<code/> child nodes.
     *

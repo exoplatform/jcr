@@ -33,6 +33,7 @@ import org.exoplatform.services.jcr.dataflow.persistent.PersistedItemData;
 import org.exoplatform.services.jcr.dataflow.persistent.PersistedNodeData;
 import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
@@ -229,7 +230,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
             // if it's different container instances
                ? systemDataContainer.equals(dataContainer) && thisConnection != null
                // but container confugrations are same and non-system connnection open
-                  // reuse this connection as system
+               // reuse this connection as system
                   ? systemDataContainer.reuseConnection(thisConnection)
                   // or open one new system
                   : systemDataContainer.openConnection()
@@ -251,7 +252,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
             // if it's different container instances
                ? dataContainer.equals(systemDataContainer) && systemConnection != null
                // but container confugrations are same and system connnection open
-                  // reuse system connection as this
+               // reuse system connection as this
                   ? dataContainer.reuseConnection(systemConnection)
                   // or open one new
                   : dataContainer.openConnection()
@@ -290,9 +291,9 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
                {
                   NodeData prevData = (NodeData)prevState.getData();
                   newData =
-                     new PersistedNodeData(prevData.getIdentifier(), prevData.getQPath(), prevData
-                        .getParentIdentifier(), prevData.getPersistedVersion() + 1, prevData.getOrderNumber(), prevData
-                        .getPrimaryTypeName(), prevData.getMixinTypeNames(), prevData.getACL());
+                     new PersistedNodeData(prevData.getIdentifier(), prevData.getQPath(),
+                        prevData.getParentIdentifier(), prevData.getPersistedVersion() + 1, prevData.getOrderNumber(),
+                        prevData.getPrimaryTypeName(), prevData.getMixinTypeNames(), prevData.getACL());
                }
                else
                {
@@ -344,16 +345,16 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
                      }
 
                      newData =
-                        new PersistedPropertyData(prevData.getIdentifier(), prevData.getQPath(), prevData
-                           .getParentIdentifier(), prevData.getPersistedVersion() + 1, prevData.getType(), prevData
-                           .isMultiValued(), values);
+                        new PersistedPropertyData(prevData.getIdentifier(), prevData.getQPath(),
+                           prevData.getParentIdentifier(), prevData.getPersistedVersion() + 1, prevData.getType(),
+                           prevData.isMultiValued(), values);
                   }
                   else
                   {
                      newData =
-                        new PersistedPropertyData(prevData.getIdentifier(), prevData.getQPath(), prevData
-                           .getParentIdentifier(), prevData.getPersistedVersion() + 1, prevData.getType(), prevData
-                           .isMultiValued(), null);
+                        new PersistedPropertyData(prevData.getIdentifier(), prevData.getQPath(),
+                           prevData.getParentIdentifier(), prevData.getPersistedVersion() + 1, prevData.getType(),
+                           prevData.isMultiValued(), null);
                   }
                }
             }
@@ -577,7 +578,9 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
       NodeData parent = (NodeData)acon.getItemData(node.getParentIdentifier());
       QPathEntry myName = node.getQPath().getEntries()[node.getQPath().getEntries().length - 1];
       ItemData sibling =
-         acon.getItemData(parent, new QPathEntry(myName.getNamespace(), myName.getName(), myName.getIndex() - 1));
+         acon.getItemData(parent, new QPathEntry(myName.getNamespace(), myName.getName(), myName.getIndex() - 1),
+            ItemType.NODE);
+
       if (sibling == null || !sibling.isNode())
       {
          throw new InvalidItemStateException("Node can't be saved " + node.getQPath().getAsString()
@@ -798,10 +801,19 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
     */
    public ItemData getItemData(final NodeData parentData, final QPathEntry name) throws RepositoryException
    {
+      return getItemData(parentData, name, ItemType.UNKNOWN);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public ItemData getItemData(final NodeData parentData, final QPathEntry name, ItemType itemType)
+      throws RepositoryException
+   {
       final WorkspaceStorageConnection con = dataContainer.openConnection();
       try
       {
-         return con.getItemData(parentData, name);
+         return con.getItemData(parentData, name, itemType);
       }
       finally
       {

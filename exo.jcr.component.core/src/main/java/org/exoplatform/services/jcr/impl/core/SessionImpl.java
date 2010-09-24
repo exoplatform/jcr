@@ -28,11 +28,12 @@ import org.exoplatform.services.jcr.core.NamespaceAccessor;
 import org.exoplatform.services.jcr.core.SessionLifecycleListener;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.core.lock.WorkspaceLockManager;
 import org.exoplatform.services.jcr.impl.core.lock.SessionLockManager;
+import org.exoplatform.services.jcr.impl.core.lock.WorkspaceLockManager;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeImpl;
 import org.exoplatform.services.jcr.impl.core.observation.ObservationManagerImpl;
 import org.exoplatform.services.jcr.impl.core.observation.ObservationManagerRegistry;
@@ -745,7 +746,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       ConversationState newState =
          new ConversationState(new Identity(name, userState.getIdentity().getMemberships(), userState.getIdentity()
             .getRoles()));
-      return (Session)sessionFactory.createSession(newState);
+      return sessionFactory.createSession(newState);
 
    }
 
@@ -871,13 +872,13 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
             + destAbsPath);
       }
 
-      destParentNode.validateChildNode(destNodePath.getName().getInternalName(), ((NodeTypeImpl)srcNode
-         .getPrimaryNodeType()).getQName());
+      destParentNode.validateChildNode(destNodePath.getName().getInternalName(),
+         ((NodeTypeImpl)srcNode.getPrimaryNodeType()).getQName());
 
       // Check for node with destAbsPath name in session
       NodeImpl destNode =
          (NodeImpl)dataManager.getItem((NodeData)destParentNode.getData(), new QPathEntry(destNodePath
-            .getInternalPath().getName(), 0), false);
+            .getInternalPath().getName(), 0), false, ItemType.NODE);
 
       if (destNode != null)
       {

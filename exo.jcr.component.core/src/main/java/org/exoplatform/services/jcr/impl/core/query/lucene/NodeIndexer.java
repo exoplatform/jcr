@@ -27,6 +27,7 @@ import org.exoplatform.services.jcr.core.ExtendedPropertyType;
 import org.exoplatform.services.jcr.core.value.ExtendedValue;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -292,7 +293,8 @@ public class NodeIndexer
 
             // seems nt:file found, try for nt:resource props
             PropertyData pmime =
-               (PropertyData)stateProvider.getItemData(node, new QPathEntry(Constants.JCR_MIMETYPE, 0));
+               (PropertyData)stateProvider.getItemData(node, new QPathEntry(Constants.JCR_MIMETYPE, 0),
+                  ItemType.PROPERTY);
             if (pmime != null)
             {
                // ok, have a reader
@@ -300,7 +302,7 @@ public class NodeIndexer
                // otherwise read prop with values from DM
                PropertyData propData =
                   prop.getValues().size() > 0 ? prop : ((PropertyData)stateProvider.getItemData(node, new QPathEntry(
-                     Constants.JCR_DATA, 0)));
+                     Constants.JCR_DATA, 0), ItemType.PROPERTY));
 
                // index if have jcr:mimeType sibling for this binary property only
                try
@@ -315,7 +317,8 @@ public class NodeIndexer
 
                   // check the jcr:encoding property
                   PropertyData encProp =
-                     (PropertyData)stateProvider.getItemData(node, new QPathEntry(Constants.JCR_ENCODING, 0));
+                     (PropertyData)stateProvider.getItemData(node, new QPathEntry(Constants.JCR_ENCODING, 0),
+                        ItemType.PROPERTY);
 
                   if (encProp != null)
                   {

@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.dataflow.SharedDataManager;
 import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -214,10 +215,18 @@ public class TransactionableDataManager implements TransactionResource, DataMana
     */
    public ItemData getItemData(NodeData parentData, QPathEntry name) throws RepositoryException
    {
+      return getItemData(parentData, name, ItemType.UNKNOWN);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException
+   {
       ItemData data = null;
       if (txStarted())
       {
-         ItemState state = transactionLog.getItemState(parentData, name);
+         ItemState state = transactionLog.getItemState(parentData, name, itemType);
          if (state != null)
          {
             data = state.getData();
@@ -229,7 +238,7 @@ public class TransactionableDataManager implements TransactionResource, DataMana
       }
       else
       {
-         return storageDataManager.getItemData(parentData, name);
+         return storageDataManager.getItemData(parentData, name, itemType);
       }
    }
 

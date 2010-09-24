@@ -23,6 +23,7 @@ import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -108,7 +109,8 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
       checkValid();
 
       PropertyData versionableUuid =
-         (PropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_VERSIONABLEUUID, 0));
+         (PropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_VERSIONABLEUUID, 0),
+            ItemType.PROPERTY);
 
       if (versionableUuid != null)
          try
@@ -136,7 +138,8 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
       checkValid();
 
       VersionImpl version =
-         (VersionImpl)dataManager.getItem(nodeData(), new QPathEntry(Constants.JCR_ROOTVERSION, 0), true);
+         (VersionImpl)dataManager
+            .getItem(nodeData(), new QPathEntry(Constants.JCR_ROOTVERSION, 0), true, ItemType.NODE);
       if (version == null)
          throw new VersionException("There are no root version in the version history " + getPath());
 
@@ -182,7 +185,8 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
 
       JCRName jcrVersionName = locationFactory.parseJCRName(versionName);
       VersionImpl version =
-         (VersionImpl)dataManager.getItem(nodeData(), new QPathEntry(jcrVersionName.getInternalName(), 1), pool);
+         (VersionImpl)dataManager.getItem(nodeData(), new QPathEntry(jcrVersionName.getInternalName(), 1), pool,
+            ItemType.NODE);
       if (version == null)
          throw new VersionException("There are no version with name '" + versionName + "' in the version history "
             + getPath());
@@ -340,13 +344,13 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
       // and point successor to predecessor directly
 
       PropertyData successorsData =
-         (PropertyData)dataManager
-            .getItemData((NodeData)version.getData(), new QPathEntry(Constants.JCR_SUCCESSORS, 0));
+         (PropertyData)dataManager.getItemData((NodeData)version.getData(),
+            new QPathEntry(Constants.JCR_SUCCESSORS, 0), ItemType.PROPERTY);
 
       // jcr:predecessors
       PropertyData predecessorsData =
          (PropertyData)dataManager.getItemData((NodeData)version.getData(), new QPathEntry(Constants.JCR_PREDECESSORS,
-            0));
+            0), ItemType.PROPERTY);
 
       try
       {
@@ -516,7 +520,8 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
       InternalQName labelQName = jcrLabelName.getInternalName();
 
       PropertyData vldata =
-         (PropertyData)dataManager.getItemData(getData().getVersionLabelsData(), new QPathEntry(labelQName, 0));
+         (PropertyData)dataManager.getItemData(getData().getVersionLabelsData(), new QPathEntry(labelQName, 0),
+            ItemType.PROPERTY);
 
       if (vldata != null)
       {
@@ -567,8 +572,8 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
       // A reference to V is added to the jcr:successors property of
       // each of the versions identified in Vs jcr:predecessors property.
       List<ValueData> predecessors =
-         ((PropertyData)dataManager.getItemData(versionableNodeData, new QPathEntry(Constants.JCR_PREDECESSORS, 0)))
-            .getValues();
+         ((PropertyData)dataManager.getItemData(versionableNodeData, new QPathEntry(Constants.JCR_PREDECESSORS, 0),
+            ItemType.PROPERTY)).getValues();
       List<ValueData> predecessorsNew = new ArrayList<ValueData>();
       for (ValueData predecessorValue : predecessors)
       {

@@ -26,6 +26,7 @@ import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
 import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
@@ -182,7 +183,8 @@ public class FileSystemLockPersister implements LockPersister
             if (lockedNodeData != null)
             {
                PropertyData dataLockIsDeep =
-                  (PropertyData)dataManager.getItemData(lockedNodeData, new QPathEntry(Constants.JCR_LOCKISDEEP, 0));
+                  (PropertyData)dataManager.getItemData(lockedNodeData, new QPathEntry(Constants.JCR_LOCKISDEEP, 0),
+                     ItemType.PROPERTY);
 
                if (dataLockIsDeep != null)
                {
@@ -192,7 +194,8 @@ public class FileSystemLockPersister implements LockPersister
                }
 
                PropertyData dataLockOwner =
-                  (PropertyData)dataManager.getItemData(lockedNodeData, new QPathEntry(Constants.JCR_LOCKOWNER, 0));
+                  (PropertyData)dataManager.getItemData(lockedNodeData, new QPathEntry(Constants.JCR_LOCKOWNER, 0),
+                     ItemType.PROPERTY);
                if (dataLockOwner != null)
                   plainChangesLog.add(ItemState.createDeletedState(new TransientPropertyData(QPath.makeChildPath(
                      lockedNodeData.getQPath(), Constants.JCR_LOCKOWNER), dataLockOwner.getIdentifier(), 0,

@@ -31,6 +31,7 @@ import org.exoplatform.services.jcr.datamodel.IllegalACLException;
 import org.exoplatform.services.jcr.datamodel.IllegalPathException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
@@ -228,7 +229,7 @@ public abstract class BaseXmlImporter implements ContentImporter
       ItemData sameNameNode = null;
       try
       {
-         sameNameNode = dataConsumer.getItemData(parentData, new QPathEntry(name, 0));
+         sameNameNode = dataConsumer.getItemData(parentData, new QPathEntry(name, 0), ItemType.NODE);
       }
       catch (PathNotFoundException e)
       {
@@ -723,7 +724,8 @@ public abstract class BaseXmlImporter implements ContentImporter
       try
       {
          PropertyData vhpd =
-            (PropertyData)dataConsumer.getItemData(mixVersionableNode, new QPathEntry(Constants.JCR_VERSIONHISTORY, 1));
+            (PropertyData)dataConsumer.getItemData(mixVersionableNode, new QPathEntry(Constants.JCR_VERSIONHISTORY, 1),
+               ItemType.PROPERTY);
          try
          {
             String vhID = new String(vhpd.getValues().get(0).getAsByteArray());

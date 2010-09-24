@@ -23,6 +23,7 @@ import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
@@ -127,6 +128,7 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
             userSession.getUserState());
       }
 
+      @Override
       protected void validateReferential(NodeData node) throws RepositoryException
       {
          // no REFERENCE validation here
@@ -221,7 +223,7 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
          log.debug("Restore: " + nodePath.getAsString() + ", removeExisting=" + removeExisting);
 
       PropertyData frozenIdentifier =
-         (PropertyData)dataManager.getItemData(frozen, new QPathEntry(Constants.JCR_FROZENUUID, 1));
+         (PropertyData)dataManager.getItemData(frozen, new QPathEntry(Constants.JCR_FROZENUUID, 1), ItemType.PROPERTY);
 
       String fidentifier = null;
       NodeData existing = null;
@@ -275,6 +277,7 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
                               .getAccessManager(), userSession.getUserState());
                         }
 
+                        @Override
                         protected boolean isRemoveDescendant(ItemData item) throws RepositoryException
                         {
                            return item.getQPath().isDescendantOf(removedRoot.getQPath())
@@ -310,10 +313,12 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
       }
 
       PropertyData frozenPrimaryType =
-         (PropertyData)dataManager.getItemData(frozen, new QPathEntry(Constants.JCR_FROZENPRIMARYTYPE, 0));
+         (PropertyData)dataManager.getItemData(frozen, new QPathEntry(Constants.JCR_FROZENPRIMARYTYPE, 0),
+            ItemType.PROPERTY);
 
       PropertyData frozenMixinTypes =
-         (PropertyData)dataManager.getItemData(frozen, new QPathEntry(Constants.JCR_FROZENMIXINTYPES, 0));
+         (PropertyData)dataManager.getItemData(frozen, new QPathEntry(Constants.JCR_FROZENMIXINTYPES, 0),
+            ItemType.PROPERTY);
 
       InternalQName[] mixins = null;
       if (frozenMixinTypes != null)
@@ -422,7 +427,7 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
 
             String vhIdentifier =
                new String(((PropertyData)dataManager.getItemData(frozen, new QPathEntry(
-                  Constants.JCR_CHILDVERSIONHISTORY, 0))).getValues().get(0).getAsByteArray());
+                  Constants.JCR_CHILDVERSIONHISTORY, 0), ItemType.PROPERTY)).getValues().get(0).getAsByteArray());
 
             NodeData cHistory = null;
             if ((cHistory = (NodeData)dataManager.getItemData(vhIdentifier)) == null)
@@ -446,7 +451,7 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
          {
             versionableIdentifier =
                new String(((PropertyData)dataManager.getItemData(childHistory, new QPathEntry(
-                  Constants.JCR_VERSIONABLEUUID, 0))).getValues().get(0).getAsByteArray());
+                  Constants.JCR_VERSIONABLEUUID, 0), ItemType.PROPERTY)).getValues().get(0).getAsByteArray());
 
          }
          catch (IOException e)
@@ -477,7 +482,8 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
             // not found, gets last version (by time of creation) and restore it
             NodeData lastVersionData = childHistory.getLastVersionData();
             NodeData cvFrozen =
-               (NodeData)dataManager.getItemData(lastVersionData, new QPathEntry(Constants.JCR_FROZENNODE, 1));
+               (NodeData)dataManager.getItemData(lastVersionData, new QPathEntry(Constants.JCR_FROZENNODE, 1),
+                  ItemType.NODE);
 
             ItemDataRestoreVisitor restoreVisitor =
                new ItemDataRestoreVisitor(currentNode(), qname, childHistory, userSession, removeExisting, changes);
@@ -524,8 +530,8 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
                try
                {
                   jcrUuid =
-                     new String(((PropertyData)dataManager.getItemData(frozen, new QPathEntry(Constants.JCR_UUID, 0)))
-                        .getValues().get(0).getAsByteArray());
+                     new String(((PropertyData)dataManager.getItemData(frozen, new QPathEntry(Constants.JCR_UUID, 0),
+                        ItemType.PROPERTY)).getValues().get(0).getAsByteArray());
 
                }
                catch (IOException e)
@@ -540,7 +546,7 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
                // try to use existing node uuid, otherwise to generate one new
                existing =
                   (NodeData)dataManager.getItemData(currentNode(), new QPathEntry(frozen.getQPath().getName(), frozen
-                     .getQPath().getIndex()));
+                     .getQPath().getIndex()), ItemType.NODE);
                if (existing != null)
                {
                   jcrUuid = existing.getIdentifier();
@@ -595,7 +601,8 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
          {
             // current C in the workspace will be left unchanged,
             NodeData existed =
-               (NodeData)dataManager.getItemData(currentNode(), new QPathEntry(frozen.getQPath().getName(), 0));
+               (NodeData)dataManager.getItemData(currentNode(), new QPathEntry(frozen.getQPath().getName(), 0),
+                  ItemType.NODE);
 
             if (existed != null)
             {

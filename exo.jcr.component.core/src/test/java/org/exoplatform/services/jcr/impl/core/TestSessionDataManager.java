@@ -22,6 +22,7 @@ import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -34,8 +35,6 @@ import org.exoplatform.services.jcr.impl.dataflow.session.SessionChangesLog;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.jcr.ItemNotFoundException;
-import javax.jcr.Node;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 
@@ -314,7 +313,7 @@ public class TestSessionDataManager extends JcrImplBaseTest
    {
       // get non-existent data by getItemData(NodeData parent, QPathEntry name)
       assertNull(modificationManager.getItemData((NodeData)((NodeImpl)root).getData(), new QPathEntry("",
-         "testgetitemNode", 0)));
+         "testgetitemNode", 0), ItemType.NODE));
       // get non-existent data by ItemData getItemData(QPath path)
       assertNull(modificationManager.getItemData(QPath.makeChildPath(((NodeImpl)root).getData().getQPath(),
          new InternalQName("", "testgetitemNode"))));
@@ -323,7 +322,7 @@ public class TestSessionDataManager extends JcrImplBaseTest
 
       // get data by getItemData(NodeData parent, QPathEntry name)
       assertNotNull(modificationManager.getItemData((NodeData)((NodeImpl)root).getData(), new QPathEntry("",
-         "testgetitemNode", 0)));
+         "testgetitemNode", 0), ItemType.NODE));
       // get data by ItemData getItemData(QPath path)
       assertNotNull(modificationManager.getItemData(QPath.makeChildPath(((NodeImpl)root).getData().getQPath(),
          new InternalQName("", "testgetitemNode"))));

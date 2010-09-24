@@ -27,6 +27,7 @@ import org.exoplatform.services.jcr.dataflow.persistent.PersistedNodeData;
 import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
@@ -141,6 +142,7 @@ public abstract class WorkspaceStorageCacheBaseCase extends JcrImplBaseTest
 
    private WorkspaceStorageCache cache;
 
+   @Override
    public void setUp() throws Exception
    {
       super.setUp();
@@ -251,15 +253,15 @@ public abstract class WorkspaceStorageCacheBaseCase extends JcrImplBaseTest
          throw e;
       }
       assertEquals("Cached node " + nodeData1.getQPath().getAsString() + " is not equals", cache.get(rootUuid,
-         nodePath1.getEntries()[nodePath1.getEntries().length - 1]), nodeData1);
+         nodePath1.getEntries()[nodePath1.getEntries().length - 1], ItemType.NODE), nodeData1);
       assertEquals("Cached node " + nodeData2.getQPath().getAsString() + " is not equals", cache.get(rootUuid,
-         nodePath2.getEntries()[nodePath2.getEntries().length - 1]), nodeData2);
+         nodePath2.getEntries()[nodePath2.getEntries().length - 1], ItemType.NODE), nodeData2);
 
       assertEquals("Cached node " + nodeData1.getIdentifier() + " is not equals", cache.get(nodeUuid1), nodeData1);
       assertEquals("Cached node " + nodeData2.getIdentifier() + " is not equals", cache.get(nodeUuid2), nodeData2);
 
       assertEquals("Cached property " + propertyPath12.getAsString() + " is not equals", cache.get(nodeUuid1,
-         propertyPath12.getEntries()[propertyPath12.getEntries().length - 1]), propertyData12);
+         propertyPath12.getEntries()[propertyPath12.getEntries().length - 1], ItemType.PROPERTY), propertyData12);
       assertEquals("Cached property " + propertyData12.getIdentifier() + " is not equals", cache.get(propertyUuid12),
          propertyData12);
    }
@@ -300,21 +302,21 @@ public abstract class WorkspaceStorageCacheBaseCase extends JcrImplBaseTest
       }
       // prev stuff
       assertEquals("Cached " + nodeData1.getQPath().getAsString() + " is not equals", cache.get(rootUuid, nodePath1
-         .getEntries()[nodePath1.getEntries().length - 1]), nodeData1);
+         .getEntries()[nodePath1.getEntries().length - 1], ItemType.NODE), nodeData1);
       assertEquals("Cached " + nodeData2.getQPath().getAsString() + " is not equals", cache.get(rootUuid, nodePath2
-         .getEntries()[nodePath2.getEntries().length - 1]), nodeData2);
+         .getEntries()[nodePath2.getEntries().length - 1], ItemType.NODE), nodeData2);
       assertEquals("Cached " + propertyData12.getQPath().getAsString() + " is not equals", cache.get(nodeUuid1,
-         propertyPath12.getEntries()[propertyPath12.getEntries().length - 1]), propertyData12);
+         propertyPath12.getEntries()[propertyPath12.getEntries().length - 1], ItemType.PROPERTY), propertyData12);
 
       // childs...
       // nodes
       assertEquals("Cached child node " + nodeData31.getQPath().getAsString() + " is not equals", cache.get(nodeUuid3,
-         nodePath31.getEntries()[nodePath31.getEntries().length - 1]), nodeData31);
+         nodePath31.getEntries()[nodePath31.getEntries().length - 1], ItemType.NODE), nodeData31);
       assertEquals("Cached child node " + nodeData31.getIdentifier() + " is not equals", cache.get(nodeUuid31),
          nodeData31);
 
       assertEquals("Cached child node " + nodeData32.getQPath().getAsString() + " is not equals", cache.get(nodeUuid3,
-         nodePath32.getEntries()[nodePath32.getEntries().length - 1]), nodeData32);
+         nodePath32.getEntries()[nodePath32.getEntries().length - 1], ItemType.NODE), nodeData32);
       assertEquals("Cached child node " + nodeData32.getIdentifier() + " is not equals", cache.get(nodeUuid32),
          nodeData32);
 
@@ -327,20 +329,24 @@ public abstract class WorkspaceStorageCacheBaseCase extends JcrImplBaseTest
 
       // props
       assertEquals("Cached child property " + propertyData11.getQPath().getAsString() + " is not equals", cache.get(
-         nodeUuid1, propertyPath11.getEntries()[propertyPath11.getEntries().length - 1]), propertyData11);
+         nodeUuid1, propertyPath11.getEntries()[propertyPath11.getEntries().length - 1], ItemType.PROPERTY),
+         propertyData11);
       assertEquals("Cached child property " + propertyData11.getIdentifier() + " is not equals", cache
          .get(propertyUuid11), propertyData11);
       assertEquals("Cached child property " + propertyData12.getQPath().getAsString() + " is not equals", cache.get(
-         nodeUuid1, propertyPath12.getEntries()[propertyPath12.getEntries().length - 1]), propertyData12);
+         nodeUuid1, propertyPath12.getEntries()[propertyPath12.getEntries().length - 1], ItemType.PROPERTY),
+         propertyData12);
       assertEquals("Cached child property " + propertyData12.getIdentifier() + " is not equals", cache
          .get(propertyUuid12), propertyData12);
 
       assertEquals("Cached child property " + propertyData21.getQPath().getAsString() + " is not equals", cache.get(
-         nodeUuid2, propertyPath21.getEntries()[propertyPath21.getEntries().length - 1]), propertyData21);
+         nodeUuid2, propertyPath21.getEntries()[propertyPath21.getEntries().length - 1], ItemType.PROPERTY),
+         propertyData21);
       assertEquals("Cached child property " + propertyData21.getIdentifier() + " is not equals", cache
          .get(propertyUuid21), propertyData21);
       assertEquals("Cached child property " + propertyData22.getQPath().getAsString() + " is not equals", cache.get(
-         nodeUuid2, propertyPath22.getEntries()[propertyPath22.getEntries().length - 1]), propertyData22);
+         nodeUuid2, propertyPath22.getEntries()[propertyPath22.getEntries().length - 1], ItemType.PROPERTY),
+         propertyData22);
       assertEquals("Cached child property " + propertyData22.getIdentifier() + " is not equals", cache
          .get(propertyUuid22), propertyData22);
 
@@ -393,20 +399,24 @@ public abstract class WorkspaceStorageCacheBaseCase extends JcrImplBaseTest
       }
       // props, prev stuff
       assertEquals("Cached child property " + propertyData11.getQPath().getAsString() + " is not equals", cache.get(
-         nodeUuid1, propertyPath11.getEntries()[propertyPath11.getEntries().length - 1]), propertyData11);
+         nodeUuid1, propertyPath11.getEntries()[propertyPath11.getEntries().length - 1], ItemType.PROPERTY),
+         propertyData11);
       assertEquals("Cached child property " + propertyData11.getIdentifier() + " is not equals", cache
          .get(propertyUuid11), propertyData11);
       assertEquals("Cached child property " + propertyData12.getQPath().getAsString() + " is not equals", cache.get(
-         nodeUuid1, propertyPath12.getEntries()[propertyPath12.getEntries().length - 1]), propertyData12);
+         nodeUuid1, propertyPath12.getEntries()[propertyPath12.getEntries().length - 1], ItemType.PROPERTY),
+         propertyData12);
       assertEquals("Cached child property " + propertyData12.getIdentifier() + " is not equals", cache
          .get(propertyUuid12), propertyData12);
 
       assertEquals("Cached child property " + propertyData21.getQPath().getAsString() + " is not equals", cache.get(
-         nodeUuid2, propertyPath21.getEntries()[propertyPath21.getEntries().length - 1]), propertyData21);
+         nodeUuid2, propertyPath21.getEntries()[propertyPath21.getEntries().length - 1], ItemType.PROPERTY),
+         propertyData21);
       assertEquals("Cached child property " + propertyData21.getIdentifier() + " is not equals", cache
          .get(propertyUuid21), propertyData21);
       assertEquals("Cached child property " + propertyData22.getQPath().getAsString() + " is not equals", cache.get(
-         nodeUuid2, propertyPath22.getEntries()[propertyPath22.getEntries().length - 1]), propertyData22);
+         nodeUuid2, propertyPath22.getEntries()[propertyPath22.getEntries().length - 1], ItemType.PROPERTY),
+         propertyData22);
       assertEquals("Cached child property " + propertyData22.getIdentifier() + " is not equals", cache
          .get(propertyUuid22), propertyData22);
 
@@ -429,22 +439,25 @@ public abstract class WorkspaceStorageCacheBaseCase extends JcrImplBaseTest
 
       // check
       assertEquals("Cached child property " + propertyData11.getQPath().getAsString() + " is not equals", cache.get(
-         nodeUuid1, propertyPath11.getEntries()[propertyPath11.getEntries().length - 1]), propertyData11);
+         nodeUuid1, propertyPath11.getEntries()[propertyPath11.getEntries().length - 1], ItemType.PROPERTY),
+         propertyData11);
       assertEquals("Cached child property " + propertyData11.getIdentifier() + " is not equals", cache
          .get(propertyUuid11), propertyData11);
 
       // here
       assertNull("Child property " + propertyData12.getQPath().getAsString() + " is not in the cache", cache.get(
-         nodeUuid1, propertyPath12.getEntries()[propertyPath12.getEntries().length - 1]));
+         nodeUuid1, propertyPath12.getEntries()[propertyPath12.getEntries().length - 1], ItemType.PROPERTY));
       assertNull("Child property " + propertyData12.getQPath().getAsString() + " is not in the cache", cache
          .get(propertyUuid12));
 
       assertEquals("Cached child property " + propertyData21.getQPath().getAsString() + " is not equals", cache.get(
-         nodeUuid2, propertyPath21.getEntries()[propertyPath21.getEntries().length - 1]), propertyData21);
+         nodeUuid2, propertyPath21.getEntries()[propertyPath21.getEntries().length - 1], ItemType.PROPERTY),
+         propertyData21);
       assertEquals("Cached child property " + propertyData21.getIdentifier() + " is not equals", cache
          .get(propertyUuid21), propertyData21);
       assertEquals("Cached child property " + propertyData22.getQPath().getAsString() + " is not equals", cache.get(
-         nodeUuid2, propertyPath22.getEntries()[propertyPath22.getEntries().length - 1]), propertyData22);
+         nodeUuid2, propertyPath22.getEntries()[propertyPath22.getEntries().length - 1], ItemType.PROPERTY),
+         propertyData22);
       assertEquals("Cached child property " + propertyData22.getIdentifier() + " is not equals", cache
          .get(propertyUuid22), propertyData22);
 

@@ -27,6 +27,7 @@ import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
 import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -104,7 +105,15 @@ public class LocalWorkspaceStorageDataManagerProxy implements WorkspaceStorageDa
     */
    public ItemData getItemData(NodeData parentData, QPathEntry name) throws RepositoryException
    {
-      return copyItemData(storageDataManager.getItemData(parentData, name));
+      return getItemData(parentData, name, ItemType.UNKNOWN);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException
+   {
+      return copyItemData(storageDataManager.getItemData(parentData, name, itemType));
    }
 
    /**
@@ -186,8 +195,8 @@ public class LocalWorkspaceStorageDataManagerProxy implements WorkspaceStorageDa
                + node.getIdentifier());
          }
 
-         return new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(), node
-            .getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(), node.getParentIdentifier(), acl);
+         return new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(),
+            node.getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(), node.getParentIdentifier(), acl);
       }
 
       // else - property
