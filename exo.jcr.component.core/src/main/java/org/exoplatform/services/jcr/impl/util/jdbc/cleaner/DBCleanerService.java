@@ -46,8 +46,8 @@ public class DBCleanerService
    protected final static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.DBCleanerService");
 
    /**
-    * Remove workspace data. 
-    * Tables will be removed in case of multiDB, or only record will be removed in case of singleDb.
+    * Clean workspace data from database. 
+    * Tables will be removed in case of multiDB, and only records will be removed in case of singleDB.
     * 
     * @param wsEntry 
     *          workspace configuration

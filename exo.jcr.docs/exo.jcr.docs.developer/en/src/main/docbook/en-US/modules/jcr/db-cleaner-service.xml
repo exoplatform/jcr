@@ -9,7 +9,14 @@
   <section>
     <title>API</title>
 
-    <para>There is two methods of DBCleanerService:</para>
+    <para>It is special service for removing data from database.</para>
+
+    <note>
+      <para>Code that invokes methods of DBCleanerService must have
+      JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION permission;</para>
+    </note>
+
+    <para>There are two methods of DBCleanerService:</para>
 
     <table>
       <title>API</title>
@@ -17,19 +24,19 @@
       <tgroup cols="2">
         <tbody>
           <row>
-            <entry>public static void removeWorkspaceData(WorkspaceEntry
-            wsConfig) </entry>
+            <entry>public void cleanWorkspaceData(WorkspaceEntry
+            wsEntry)</entry>
 
-            <entry>If workspace is multiDB - drops JCR_SITEM,JCR_SVALUE,
-            JCR_SREF tables, otherwise, it removes all rows of this
-            workspace.</entry>
+            <entry>Clean workspace data from database. Tables will be removed
+            in case of multiDB, and only records will be removed in case of
+            singleDB.</entry>
           </row>
 
           <row>
-            <entry>public static void removeRepositoryData(RepositoryEntry
-            repoConfig)</entry>
+            <entry>public void cleanRepositoryData(RepositoryEntry
+            repoEntry)</entry>
 
-            <entry>Removes data of all worksapces of this repository.</entry>
+            <entry>Cleanup repository data from database.</entry>
           </row>
         </tbody>
       </tgroup>
@@ -39,24 +46,19 @@
   <section>
     <title>How it works</title>
 
-    <para>removeWorkspaceData takes workspaces configs from RepositoryEntry
-    and clean each workspace using removeRepositoryData.</para>
+    <para>cleanRepositoryData takes workspaces configs from RepositoryEntry
+    and clean each workspace using cleanWorkspaceData method.</para>
 
-    <para>Lets see removeWorkspaceData in detail:<itemizedlist>
+    <para>Lets see cleanWorkspaceData in detail:<itemizedlist>
         <listitem>
-          <para>at first, it ejects workspace name (aka container name), data
-          source of databse, and and deside is workspase multiDB or
-          singleDB;</para>
+          <para>at first, it resolves container name (workspace name),
+          database dialect, data source and isMultiDB parameter;</para>
         </listitem>
 
         <listitem>
-          <para>than it deside which script must be used to remove (databse
-          dialect and isMultiDb used);</para>
-        </listitem>
-
-        <listitem>
-          <para>than this script is parsed to list of queries, and executed in
-          order of occurance;</para>
+          <para>then based on database dialect creates instanse of database
+          cleaner (implements DBCleaner interface) and invokes clean()
+          method;</para>
         </listitem>
       </itemizedlist></para>
   </section>
@@ -66,15 +68,13 @@
 
     <para>Single and Multi DB scripts examples</para>
 
-    <para>In case of: dbDialect = "MySQL" and isMultiDB="true", will use
-    "conf/storage/cleanup/jcr-mjdbc.mysql.sql"</para>
+    <para>In case of isMultiDB="true", will use:</para>
 
     <programlisting>DROP TABLE JCR_MREF;
 DROP TABLE JCR_MVALUE;
 DROP TABLE JCR_MITEM;</programlisting>
 
-    <para>In case of: dbDialect = "PgSQL" and isMultiDB="false", will use
-    "conf/storage/cleanup/jcr-sjdbc.pgsql.sql"</para>
+    <para>In case of isMultiDB="false", will use:</para>
 
     <programlisting>delete from JCR_SVALUE where exists(select * from JCR_SITEM where JCR_SITEM.ID=JCR_SVALUE.PROPERTY_ID and JCR_SITEM.CONTAINER_NAME=?);
 delete from JCR_SREF where exists(select * from JCR_SITEM where JCR_SITEM.ID=JCR_SREF.PROPERTY_ID and JCR_SITEM.CONTAINER_NAME=?);
@@ -84,45 +84,10 @@ delete from JCR_SITEM where CONTAINER_NAME=?;</programlisting>
       <para>"?" will be replased with container name on execution.</para>
     </note>
 
-    <para>But what is the strage coment is in
-    "conf/storage/cleanup/jcr-sjdbc.sql" ?</para>
-
-    <programlisting>delete from JCR_SVALUE where exists(select * from JCR_SITEM where JCR_SITEM.ID=JCR_SVALUE.PROPERTY_ID and JCR_SITEM.CONTAINER_NAME=?);
-delete from JCR_SREF where exists(select * from JCR_SITEM where JCR_SITEM.ID=JCR_SREF.PROPERTY_ID and JCR_SITEM.CONTAINER_NAME=?);
-delete from JCR_SITEM where I_CLASS=2 and CONTAINER_NAME=?;
-/*$CLEAN_JCR_SITEM_DEFAULT*/;</programlisting>
-
-    <para><emphasis role="bold">/*$CLEAN_JCR_SITEM_DEFAULT*/</emphasis> - some
-    database may throw constraint violaion exception according to
-    JCR_FK_SITEM_PARENT FOREIGN KEY in case of ordinary "" delete from
-    JCR_SITEM where CONTAINER_NAME=? query. So there is special method, that
-    will be executed on /*$CLEAN_JCR_SITEM_DEFAULT*/. It a bit slowly, but
-    safe.</para>
-
-    <note>
-      <para>"conf/storage/cleanup/jcr-sjdbc.sql" or
-      "conf/storage/cleanup/jcr-mjdbc.sql" are used if dialect is not
-      recognized.</para>
-    </note>
-  </section>
-
-  <section>
-    <title>Few words in addition</title>
-
-    <itemizedlist>
-      <listitem>
-        <para>DBCleanerService is static, so all you need is config to
-        execute;</para>
-      </listitem>
-
-      <listitem>
-        <para>code that executes DBCleanerService must have
-        JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION;</para>
-      </listitem>
-
-      <listitem>
-        <para>you can update scripts for your needs.</para>
-      </listitem>
-    </itemizedlist>
+    <para>But some database do not support cascade delete or need special
+    sittings, so query "delete from JCR_SITEM where CONTAINER_NAME=?" may
+    causes constraint violation exception. In such case will be used deleting
+    like visitor does. First traverse to the bottom of the tree and then go up
+    to the root and perform deleting children. </para>
   </section>
 </chapter>
