@@ -98,6 +98,20 @@
                   <copy todir="${exo.projects.directory.working}/exo-tomcat" verbose="false" overwrite="true">
                      <fileset dir="${exo.projects.directory.dependencies}/${exo.projects.app.tomcat.version}" />
                   </copy>
+                  <!-- Removing timestamps from SNAPSHOT jars-->
+                  <move todir="${basedir}/target/lib-binary.dir/">
+                    <fileset dir="${basedir}/target/lib-binary.dir/">
+                      <include name="**/*.jar"/>
+                    </fileset>
+                    <mapper>
+                      <firstmatchmapper>
+                        <!-- If a timestamped SNAPSHOT is used -->
+                        <regexpmapper from="(.*)-([0-9]+(.[0-9]+)*-(.*))-([0-9]{8}.[0-9]{6})-([0-9]+).jar" to="\1-${project.version}.jar" casesensitive="no"/>
+                        <!-- By default keep the name -->
+                        <flattenmapper/>
+                      </firstmatchmapper>
+                    </mapper>
+                  </move>
                   <copy todir="${exo.projects.directory.working}/exo-tomcat/lib/" verbose="true" overwrite="true">
                      <fileset dir="${basedir}/target/lib-binary.dir/" excludes="**/*.war" />
                   </copy>
