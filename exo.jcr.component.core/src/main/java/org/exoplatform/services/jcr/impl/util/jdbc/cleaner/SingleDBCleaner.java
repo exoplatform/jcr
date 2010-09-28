@@ -22,7 +22,7 @@ import java.sql.Statement;
 
 /**
  * @author <a href="mailto:anatoliy.bazko@gmail.com">Anatoliy Bazko</a>
- * @version $Id: SingleDBCleaner.java 34360 2009-07-22 23:58:59Z tolusha $
+ * @version $Id$
  */
 public class SingleDBCleaner extends WorkspaceDBCleaner
 {

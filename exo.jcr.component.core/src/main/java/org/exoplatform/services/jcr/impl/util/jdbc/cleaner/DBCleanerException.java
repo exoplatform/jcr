@@ -18,7 +18,7 @@ package org.exoplatform.services.jcr.impl.util.jdbc.cleaner;
 
 /**
  * @author <a href="mailto:anatoliy.bazko@gmail.com">Anatoliy Bazko</a>
- * @version $Id: DBCleanerException.java 34360 2009-07-22 23:58:59Z tolusha $
+ * @version $Id$
  */
 public class DBCleanerException extends Exception
 {

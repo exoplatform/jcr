@@ -25,7 +25,7 @@ import java.sql.SQLException;
  * <br/>Date: 
  *
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
- * @version $Id: IngresSQLDBCleaner.java 111 2008-11-11 11:11:11Z serg $
+ * @version $Id$
  */
 public class IngresSQLSingleDBCleaner extends SingleDBCleaner
 {

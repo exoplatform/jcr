@@ -39,7 +39,7 @@ import javax.sql.DataSource;
  * <br/>Date: 
  *
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
- * @version $Id: JDBCConfiguration.java 111 2008-11-11 11:11:11Z serg $
+ * @version $Id$
  */
 public class JDBCConfiguration
 {

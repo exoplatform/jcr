@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
  * The goal of this class is removing workspace data from database.
  *
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
- * @version $Id: DBCleaner.java 111 2008-11-11 11:11:11Z serg $
+ * @version $Id$
  */
 public abstract class WorkspaceDBCleaner implements DBCleaner
 {

@@ -20,7 +20,7 @@ import java.sql.Connection;
 
 /**
  * @author <a href="mailto:anatoliy.bazko@gmail.com">Anatoliy Bazko</a>
- * @version $Id: HSQLSingleDBCleaner.java 34360 2009-07-22 23:58:59Z tolusha $
+ * @version $Id$
  */
 public class HSQLSingleDBCleaner extends SingleDBCleaner
 {

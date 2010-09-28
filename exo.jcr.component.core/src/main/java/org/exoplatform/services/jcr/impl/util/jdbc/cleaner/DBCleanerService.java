@@ -36,7 +36,7 @@ import javax.sql.DataSource;
  * DBCleanerService deliver tools for clean workspace or repository data from database.
  * 
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
- * @version $Id: DBCleanerService.java 111 2008-11-11 11:11:11Z serg $
+ * @version $Id$
  */
 public class DBCleanerService
 {
