@@ -33,6 +33,7 @@
    </files>
    <dependencySets>
       <dependencySet>
+         <outputFileNameMapping>${artifact.artifactId}-${artifact.baseVersion}.${artifact.extension}</outputFileNameMapping>
          <outputDirectory>lib</outputDirectory>
          <unpack>false</unpack>
          <scope>compile</scope>
