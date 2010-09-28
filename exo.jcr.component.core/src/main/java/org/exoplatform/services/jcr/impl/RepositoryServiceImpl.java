@@ -262,7 +262,7 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
     * @throws RepositoryException
     *          if any Exception occurred during removing
     */
-   protected void removeDefaultRepository() throws RepositoryException
+   public void removeDefaultRepository() throws RepositoryException
    {
       removeRepository(config.getDefaultRepositoryName(), true);
    }
