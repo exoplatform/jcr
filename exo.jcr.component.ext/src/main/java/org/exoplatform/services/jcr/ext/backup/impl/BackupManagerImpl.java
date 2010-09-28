@@ -66,10 +66,12 @@ import org.exoplatform.services.jcr.ext.backup.BackupJob;
 import org.exoplatform.services.jcr.ext.backup.BackupJobListener;
 import org.exoplatform.services.jcr.ext.backup.BackupManager;
 import org.exoplatform.services.jcr.ext.backup.BackupOperationException;
+import org.exoplatform.services.jcr.ext.backup.ExtendedBackupManager;
 import org.exoplatform.services.jcr.ext.backup.JobEntryInfo;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChain;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChainLog;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupConfig;
+import org.exoplatform.services.jcr.ext.backup.WorkspaceRestoreException;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
 import org.exoplatform.services.jcr.ext.registry.RegistryEntry;
 import org.exoplatform.services.jcr.ext.registry.RegistryService;
@@ -98,7 +100,7 @@ import org.xml.sax.SAXException;
  * @version $Id: $
  */
 
-public class BackupManagerImpl implements BackupManager, Startable
+public class BackupManagerImpl implements ExtendedBackupManager, Startable
 {
 
    protected static Log log = ExoLogger.getLogger("exo.jcr.component.ext.BackupManagerImpl");
@@ -1555,4 +1557,169 @@ public class BackupManagerImpl implements BackupManager, Startable
       }
       return null;
    }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void restoreExistedRepository(RepositoryBackupChainLog rblog, RepositoryEntry repositoryEntry,
+            boolean asynchronous) throws BackupOperationException, BackupConfigurationException
+   {
+      try
+      {
+         //repository should be existed
+         repoService.getRepository(repositoryEntry.getName());
+      } 
+      catch (RepositoryException e)
+      {
+         throw new WorkspaceRestoreException("Repository \"" + repositoryEntry.getName() + "\" should be existed", e);
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         throw new WorkspaceRestoreException("Repository \"" + repositoryEntry.getName() + "\" should be existed", e);
+      }
+      
+      Map<String, BackupChainLog> workspacesMapping = new HashedMap();
+
+      Map<String, BackupChainLog> backups = new HashedMap();
+
+      for (String path : rblog.getWorkspaceBackupsInfo())
+      {
+         BackupChainLog bLog = new BackupChainLog(new File(path));
+         backups.put(bLog.getBackupConfig().getWorkspace(), bLog);
+      }
+
+      if (!rblog.getSystemWorkspace().equals(repositoryEntry.getSystemWorkspaceName()))
+      {
+         throw new BackupConfigurationException(
+                  "The backup to system workspace is not system workspace in repository entry: "
+                           + rblog.getSystemWorkspace() + " is not equal " + repositoryEntry.getSystemWorkspaceName());
+      }
+
+      if (backups.size() != repositoryEntry.getWorkspaceEntries().size())
+      {
+         throw new BackupConfigurationException(
+                  "The repository entry is contains more or less workspace entry than backups of workspace in "
+                           + rblog.getLogFilePath());
+      }
+
+      for (WorkspaceEntry wsEntry : repositoryEntry.getWorkspaceEntries())
+      {
+         if (!backups.containsKey(wsEntry.getName()))
+         {
+            throw new BackupConfigurationException("The workspace '" + wsEntry.getName() + "' is not found in backup "
+                     + rblog.getLogFilePath());
+         }
+         else
+         {
+            workspacesMapping.put(wsEntry.getName(), backups.get(wsEntry.getName()));
+         }
+      }
+      
+      JobExistedRepositoryRestore jobExistedRepositoryRestore =
+         new JobExistedRepositoryRestore(repoService, this, repositoryEntry, workspacesMapping, rblog);
+
+      restoreRepositoryJobs.add(jobExistedRepositoryRestore);
+      if (asynchronous)
+      {
+         jobExistedRepositoryRestore.start();
+      }
+      else
+      {
+         jobExistedRepositoryRestore.restore();
+      }
+      
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void restoreExistedRepository(String repositoryBackupIdentifier, RepositoryEntry repositoryEntry,
+            boolean asynchronous) throws BackupOperationException, BackupConfigurationException
+   {
+      RepositoryBackupChainLog backupChainLog = null;
+      
+      for(RepositoryBackupChainLog chainLog : getRepositoryBackupsLogs())
+      {
+         if (chainLog.getBackupId().equals(repositoryBackupIdentifier))
+         {
+            backupChainLog = chainLog;
+            break;
+         }
+      }
+      
+      if (backupChainLog == null)
+      {
+         throw new BackupConfigurationException("Can not founf backup of repository with id \"" + repositoryBackupIdentifier + "\"");
+      }
+      
+      this.restoreExistedRepository(backupChainLog, repositoryEntry, asynchronous);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void restoreExistedWorkspace(BackupChainLog log, String repositoryName, WorkspaceEntry workspaceEntry,
+            boolean asynchronous) throws BackupOperationException, BackupConfigurationException
+   {
+      try 
+      {
+         //repository should be existed
+         repoService.getRepository(repositoryName);
+         
+         //workspace should be existed
+         if (!workspaceAlreadyExist(repositoryName, workspaceEntry.getName()))
+         {
+            throw new WorkspaceRestoreException("Workspace \"" + workspaceEntry.getName() + "\" should be existed in repository \"" + repositoryName + "\".");
+         }
+      } 
+      catch (RepositoryException e)
+      {
+         throw new WorkspaceRestoreException("Repository \"" + repositoryName + "\" should be existed", e);
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         throw new WorkspaceRestoreException("Repository \"" + repositoryName + "\" should be existed", e);
+      }
+      
+      JobExistedWorkspaceRestore jobRestore =
+         new JobExistedWorkspaceRestore(repoService, this, repositoryName, log, workspaceEntry);
+      restoreJobs.add(jobRestore);
+      
+      if (asynchronous)
+      {
+         jobRestore.start();
+      }
+      else
+      {
+         jobRestore.restore();
+      }
+      
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void restoreExistedWorkspace(String workspaceBackupIdentifier, String repositoryName,
+            WorkspaceEntry workspaceEntry, boolean asynchronous) throws BackupOperationException,
+            BackupConfigurationException
+   {
+      BackupChainLog backupChainLog = null;
+      
+      for(BackupChainLog chainLog : getBackupsLogs())
+      {
+         if (chainLog.getBackupId().equals(workspaceBackupIdentifier))
+         {
+            backupChainLog = chainLog;
+            break;
+         }
+      }
+      
+      if (backupChainLog == null)
+      {
+         throw new BackupConfigurationException("Can not founf backup of workspace with id \"" + workspaceBackupIdentifier + "\"");
+      }
+      
+      this.restoreExistedWorkspace(backupChainLog, repositoryName, workspaceEntry, asynchronous);
+   }
+   
 }

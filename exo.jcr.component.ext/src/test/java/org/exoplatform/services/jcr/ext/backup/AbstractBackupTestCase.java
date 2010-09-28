@@ -37,6 +37,7 @@ import javax.jcr.version.VersionException;
 
 import org.exoplatform.services.jcr.config.ContainerEntry;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
+import org.exoplatform.services.jcr.config.QueryHandlerParams;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.SimpleParameterEntry;
@@ -61,7 +62,7 @@ public class AbstractBackupTestCase extends BaseStandaloneTest
 
    protected SessionImpl ws2Session;
 
-   protected BackupManager backup;
+   protected ExtendedBackupManager backup;
 
    class LogFilter implements FileFilter
    {
@@ -79,7 +80,7 @@ public class AbstractBackupTestCase extends BaseStandaloneTest
 
       // RepositoryContainer rcontainer = (RepositoryContainer)
       // container.getComponentInstanceOfType(RepositoryContainer.class);
-      backup = (BackupManager)container.getComponentInstanceOfType(BackupManager.class);
+      backup = (ExtendedBackupManager)container.getComponentInstanceOfType(BackupManager.class);
 
       if (backup == null)
          throw new Exception("There are no BackupManagerImpl in configuration");
@@ -129,7 +130,6 @@ public class AbstractBackupTestCase extends BaseStandaloneTest
          }
       }
 
-      super.tearDown();
    }
 
    protected WorkspaceEntry makeWorkspaceEntry(String name, String sourceName)
@@ -224,12 +224,19 @@ public class AbstractBackupTestCase extends BaseStandaloneTest
       ws1back.setInitializer(baseWorkspaceEntry.getInitializer());
 
       // Indexer
-      ArrayList qParams = new ArrayList();
-      qParams.add(new SimpleParameterEntry("indexDir", "target" + File.separator + repoName + "_" + wsName));
-      QueryHandlerEntry qEntry =
-         new QueryHandlerEntry("org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex", qParams);
-
-      ws1back.setQueryHandler(qEntry); 
+      if (sourceName != null)
+      {
+         ArrayList qParams = new ArrayList();
+         qParams.add(new SimpleParameterEntry(QueryHandlerParams.PARAM_INDEX_DIR, "target" + File.separator + repoName + "_" + wsName));
+         QueryHandlerEntry qEntry =
+            new QueryHandlerEntry("org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex", qParams);
+   
+         ws1back.setQueryHandler(qEntry); 
+      } 
+      else
+      {
+         ws1back.setQueryHandler(baseWorkspaceEntry.getQueryHandler());
+      }
       
       ArrayList params = new ArrayList();
       for (Iterator i = ws1back.getContainer().getParameters().iterator(); i.hasNext();)
@@ -238,7 +245,12 @@ public class AbstractBackupTestCase extends BaseStandaloneTest
          SimpleParameterEntry newp = new SimpleParameterEntry(p.getName(), p.getValue());
 
          if (newp.getName().equals("source-name"))
-            newp.setValue(sourceName);
+         {
+            if (sourceName != null)
+            {
+               newp.setValue(sourceName);
+            }
+         }
          else if (newp.getName().equals("swap-directory"))
             newp.setValue("target/temp/swap/"  + repoName + "_" + wsName);
          else if (newp.getName().equals("multi-db"))
@@ -321,8 +333,4 @@ public class AbstractBackupTestCase extends BaseStandaloneTest
       Thread.sleep(250);
    }
 
-   public void testname() throws Exception
-   {
-      assertEquals(true, true);
-   }
 }

@@ -80,17 +80,17 @@ public class JobWorkspaceRestore extends Thread
    /**
     * The destination repository.
     */
-   private final String repositoryName;
+   protected final String repositoryName;
 
    /**
     * The WorkspaceEntry to restored workspace.
     */
-   private final WorkspaceEntry wEntry;
+   protected final WorkspaceEntry wEntry;
 
    /**
     * The repository service.
     */
-   private final RepositoryService repositoryService;
+   protected final RepositoryService repositoryService;
 
    /**
     * The backup manager.
@@ -172,7 +172,7 @@ public class JobWorkspaceRestore extends Thread
     * @throws Throwable
     *           will be generated the Throwable
     */
-   private void restore() throws Throwable
+   protected void restore() throws Throwable
    {
       boolean restored = true;
       RepositoryImpl repository = (RepositoryImpl)repositoryService.getRepository(repositoryName);

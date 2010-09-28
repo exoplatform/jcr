@@ -97,11 +97,11 @@ public class JobRepositoryRestore extends Thread
     */
    private Throwable restoreException = null;
 
-   private RepositoryService repositoryService;
+   protected RepositoryService repositoryService;
 
    private BackupManagerImpl backupManager;
 
-   private RepositoryEntry repositoryEntry;
+   protected RepositoryEntry repositoryEntry;
 
    private Map<String, BackupChainLog> workspacesMapping;
 
