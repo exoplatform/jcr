@@ -134,7 +134,7 @@ public class TesterConfigurationHelper
 
       List params = new ArrayList();
 
-      params.add(new SimpleParameterEntry("sourceName", dsName));
+      params.add(new SimpleParameterEntry("source-name", dsName));
       params.add(new SimpleParameterEntry("db-type", "generic"));
       params.add(new SimpleParameterEntry("multi-db", isMultiDb ? "true" : "false"));
       params.add(new SimpleParameterEntry("update-storage", "true"));

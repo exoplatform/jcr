@@ -23,6 +23,7 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.util.jdbc.cleaner.DBCleanerService;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 
@@ -69,6 +70,7 @@ public class TestDBCleanerService extends JcrImplBaseTest
       wsEntry = (WorkspaceEntry)session.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
    }
 
+   @Override
    public void tearDown() throws Exception
    {
       // drop any table  
@@ -170,7 +172,7 @@ public class TestDBCleanerService extends JcrImplBaseTest
       assertTrue(res.next());
 
       // remove repository;
-      DBCleanerService.removeRepositoryData(repositoryEntry);
+      new DBCleanerService().cleanRepositoryData(repositoryEntry);
 
       // check - does JCR_SITEM become empty
       try
@@ -213,7 +215,7 @@ public class TestDBCleanerService extends JcrImplBaseTest
       assertTrue(res.next());
 
       // remove repository content
-      DBCleanerService.removeRepositoryData(repositoryEntry);
+      new DBCleanerService().cleanRepositoryData(repositoryEntry);
 
       // check - does JCR_SITEM become empty
       res = statement.executeQuery("select * from JCR_SITEM where ID='" + wsName + id + "'");
@@ -249,7 +251,7 @@ public class TestDBCleanerService extends JcrImplBaseTest
       assertTrue(res.next());
 
       // remove workspace data from database
-      DBCleanerService.removeWorkspaceData(repositoryEntry.getWorkspaceEntries().get(0));
+      new DBCleanerService().cleanWorkspaceData(repositoryEntry.getWorkspaceEntries().get(0));
 
       // check - does JCR_SITEM become empty
       try
@@ -306,7 +308,7 @@ public class TestDBCleanerService extends JcrImplBaseTest
       assertTrue(res.next());
 
       // remove workspace data from database
-      DBCleanerService.removeWorkspaceData(workspaceEntry);
+      new DBCleanerService().cleanWorkspaceData(workspaceEntry);
 
       // check - does JCR_SITEM become empty
       res = statement.executeQuery("select * from JCR_SITEM where ID='" + workspaceEntry.getName() + id + "'");
@@ -328,8 +330,8 @@ public class TestDBCleanerService extends JcrImplBaseTest
       repositoryEntry.setDefaultWorkspaceName(repositoryName + "ws");
 
       WorkspaceEntry workspaceEntry =
-         helper.getNewWs(repositoryName + "ws", true, DS_NAME, "target/temp/values/" + IdGenerator.generate(), wsEntry
-            .getContainer(), false);
+         helper.getNewWs(repositoryName + "ws", true, DS_NAME, "target/temp/values/" + IdGenerator.generate(),
+            wsEntry.getContainer(), false);
 
       repositoryEntry.addWorkspace(workspaceEntry);
 
@@ -351,8 +353,8 @@ public class TestDBCleanerService extends JcrImplBaseTest
       repositoryEntry.setDefaultWorkspaceName(repositoryName + "ws");
 
       WorkspaceEntry workspaceEntry =
-         helper.getNewWs(repositoryName + "ws", false, DS_NAME, "target/temp/values/" + IdGenerator.generate(), wsEntry
-            .getContainer(), false);
+         helper.getNewWs(repositoryName + "ws", false, DS_NAME, "target/temp/values/" + IdGenerator.generate(),
+            wsEntry.getContainer(), false);
 
       repositoryEntry.addWorkspace(workspaceEntry);
 

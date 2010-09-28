@@ -14,10 +14,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see<http://www.gnu.org/licenses/>.
  */
-package org.exoplatform.services.jcr.impl.util.jdbc;
+package org.exoplatform.services.jcr.impl.util.jdbc.cleaner;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -29,15 +27,14 @@ import java.sql.SQLException;
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
  * @version $Id: PgSQLDBCLeaner.java 111 2008-11-11 11:11:11Z serg $
  */
-public class PgSQLDBCleaner extends DBCleaner
+public class PgSQLSingleDBCleaner extends SingleDBCleaner
 {
    /**
-    * Constructor.
+    * PgSQLSingleDBCleaner constructor.
     */
-   public PgSQLDBCleaner(String containerName, Connection connection, InputStream inputStream, boolean isMultiDB)
-      throws IOException
+   public PgSQLSingleDBCleaner(String containerName, Connection connection)
    {
-      super(containerName, connection, inputStream, isMultiDB);
+      super(containerName, connection);
    }
 
    /**
@@ -46,6 +43,6 @@ public class PgSQLDBCleaner extends DBCleaner
    @Override
    protected boolean isTableExists(Connection conn, String tableName) throws SQLException
    {
-      return super.isTableExists(conn, tableName.toUpperCase().toLowerCase());
+      return super.isTableExists(conn, tableName.toLowerCase());
    }
 }
