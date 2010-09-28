@@ -16,9 +16,6 @@
  */
 package org.exoplatform.services.jcr.ext.backup.impl;
 
-import javax.jcr.RepositoryException;
-
-import org.exoplatform.container.ExoContainer;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
@@ -30,9 +27,11 @@ import org.exoplatform.services.jcr.ext.backup.WorkspaceRestoreException;
 import org.exoplatform.services.jcr.impl.RepositoryContainer;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
-import org.exoplatform.services.jcr.impl.util.jdbc.DBCleanerService;
+import org.exoplatform.services.jcr.impl.util.jdbc.cleaner.DBCleanerService;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -42,47 +41,57 @@ import org.exoplatform.services.log.Log;
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a> 
  * @version $Id$
  */
-public class JobExistedWorkspaceRestore
-   extends JobWorkspaceRestore
+public class JobExistedWorkspaceRestore extends JobWorkspaceRestore
 {
-   
+
    class RepositoryImplHelper extends RepositoryImpl
    {
 
       public RepositoryImplHelper(RepositoryContainer container) throws RepositoryException,
-               RepositoryConfigurationException
+         RepositoryConfigurationException
       {
          super(container);
       }
 
+      @Override
       public void removeSystemWorkspace() throws RepositoryException
       {
          super.removeSystemWorkspace();
       }
    }
-   
+
    /**
     * The apache logger.
     */
    private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.JobExistedWorkspaceRestore");
 
+   /**
+    * Database cleaner.
+    */
+   private final DBCleanerService dbCleanerService;
+
    public JobExistedWorkspaceRestore(RepositoryService repositoryService, BackupManager backupManager,
-            String repositoryName, BackupChainLog log, WorkspaceEntry wEntry)
+      String repositoryName, BackupChainLog log, WorkspaceEntry wEntry)
    {
       super(repositoryService, backupManager, repositoryName, log, wEntry);
+      this.dbCleanerService = new DBCleanerService();
    }
-   
+
    /**
     * {@inheritDoc}
     */
+   @Override
    protected void restore() throws WorkspaceRestoreException
    {
-      try {
-         boolean isSystem = repositoryService.getRepository(repositoryName).getConfiguration().getSystemWorkspaceName().equals(wEntry.getName());
-         
+      try
+      {
+         boolean isSystem =
+            repositoryService.getRepository(repositoryName).getConfiguration().getSystemWorkspaceName()
+               .equals(wEntry.getName());
+
          //close all session
          forceCloseSession(repositoryName, wEntry.getName());
-         
+
          //remove workspace
          if (isSystem)
          {
@@ -93,24 +102,24 @@ public class JobExistedWorkspaceRestore
          {
             repositoryService.getRepository(repositoryName).removeWorkspace(wEntry.getName());
          }
-         
+
          //clean database
-         DBCleanerService.removeWorkspaceData(wEntry);
-         
+         dbCleanerService.cleanWorkspaceData(wEntry);
+
          //clean index
          IndexCleanerService.removeWorkspaceIndex(wEntry, isSystem);
-         
+
          //clean value storage
          ValueStorageCleanerService.removeWorkspaceValueStorage(wEntry);
-         
+
          super.restore();
-      } 
+      }
       catch (Throwable t)
       {
          throw new WorkspaceRestoreException("Workspace " + wEntry.getName() + " was not restored", t);
       }
    }
-   
+
    /**
     * forceCloseSession. Close sessions on specific workspace.
     * 
@@ -140,15 +149,14 @@ class ExtendedRepository extends RepositoryImpl
 {
 
    public ExtendedRepository(RepositoryContainer container) throws RepositoryException,
-            RepositoryConfigurationException
+      RepositoryConfigurationException
    {
       super(container);
    }
 
+   @Override
    public void removeSystemWorkspace() throws RepositoryException
    {
       super.removeSystemWorkspace();
    }
 }
-
-   
