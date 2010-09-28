@@ -636,7 +636,7 @@ public class RepositoryImpl implements ManageableRepository
     * 
     * @throws RepositoryException - if workspace is in use, or can't be removed for other reason
     */
-   protected void removeSystemWorkspace() throws RepositoryException
+   public void removeSystemWorkspace() throws RepositoryException
    {
       removeWorkspace(config.getSystemWorkspaceName(), true);
    }
