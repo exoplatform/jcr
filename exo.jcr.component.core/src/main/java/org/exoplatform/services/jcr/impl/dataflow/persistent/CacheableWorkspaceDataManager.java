@@ -23,6 +23,7 @@ import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.NullNodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
@@ -426,7 +427,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          fixPropertyValues((PropertyData)data);
       }
 
-      return data;
+      return data instanceof NullNodeData ? null : data;
    }
 
    /**
@@ -435,10 +436,10 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    @Override
    public ItemData getItemData(String identifier) throws RepositoryException
    {
-      // 2. Try from cache
+      // 1. Try from cache
       ItemData data = getCachedItemData(identifier);
 
-      // 3. Try from container
+      // 2 Try from container
       if (data == null)
       {
          final DataRequest request = new DataRequest(identifier);
@@ -468,7 +469,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          fixPropertyValues((PropertyData)data);
       }
 
-      return data;
+      return data instanceof NullNodeData ? null : data;
    }
 
    /**
@@ -677,9 +678,9 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       throws RepositoryException
    {
       ItemData data = super.getItemData(parentData, name, itemType);
-      if (data != null && cache.isEnabled())
+      if (cache.isEnabled())
       {
-         cache.put(data);
+         cache.put(data == null ? new NullNodeData(parentData, name) : data);
       }
       return data;
    }
@@ -694,9 +695,16 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    protected ItemData getPersistedItemData(String identifier) throws RepositoryException
    {
       ItemData data = super.getItemData(identifier);
-      if (data != null && cache.isEnabled())
+      if (cache.isEnabled())
       {
-         cache.put(data);
+         if (data != null)
+         {
+            cache.put(data);
+         }
+         else if (identifier != null)
+         {
+            cache.put(new NullNodeData(identifier));
+         }
       }
       return data;
    }

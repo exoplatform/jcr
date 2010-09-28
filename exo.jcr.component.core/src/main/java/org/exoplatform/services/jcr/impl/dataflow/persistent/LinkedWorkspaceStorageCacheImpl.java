@@ -27,6 +27,7 @@ import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.NullNodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -257,7 +258,9 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
             return true;
          }
          else
+         {
             return false;
+         }
       }
    }
 
@@ -455,7 +458,9 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
                   {
                      ItemData item = ce.getValue().getItem();
                      if (item != null)
+                     {
                         removeExpiredChilds(item);
+                     }
 
                      citer.remove();
                      expiredCount++;
@@ -463,8 +468,10 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
                }
 
                if (log.isDebugEnabled())
+               {
                   log.debug("Cleaner task done in " + (System.currentTimeMillis() - start) + "ms. Size " + sizeBefore
                      + " -> " + cache.size() + ", " + expiredCount + " processed.");
+               }
             }
             catch (ConcurrentModificationException e)
             {
@@ -483,9 +490,13 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
             catch (Throwable e)
             {
                if (log.isDebugEnabled())
+               {
                   log.error("Cleaner task error " + e, e);
+               }
                else
+               {
                   log.error("Cleaner task error " + e + ". Will try next time.");
+               }
             }
             finally
             {
@@ -494,8 +505,10 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
          }
          else // skip if lock is used by another process
          if (log.isDebugEnabled())
+         {
             log.debug("Cleaner task skipped. Ceche in use by another process ["
                + String.valueOf(writeLock.getLockOwner()) + "]. Will try next time.");
+         }
       }
 
       /**
@@ -511,7 +524,9 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
             if (propertiesCache.remove(item.getIdentifier()) != null)
             {
                if (log.isDebugEnabled())
+               {
                   log.debug(name + ", removeExpiredChilds() propertiesCache.remove " + item.getIdentifier());
+               }
             }
          }
          else
@@ -520,7 +535,9 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
             if (propertiesCache.remove(item.getParentIdentifier()) != null)
             {
                if (log.isDebugEnabled())
+               {
                   log.debug(name + ", removeExpiredChilds() propertiesCache.remove " + item.getParentIdentifier());
+               }
             }
          }
       }
@@ -575,7 +592,9 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
          }
          else // skip if previous in progress
          if (log.isDebugEnabled())
+         {
             log.debug("Cleaner task skipped. Previous one still runs. Will try next time.");
+         }
       }
    }
 
@@ -595,7 +614,9 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
          }
          else // skip if previous in progress
          if (log.isDebugEnabled())
+         {
             log.debug("Statistic task skipped. Previous one still runs. Will try next time.");
+         }
       }
    }
 
@@ -807,6 +828,7 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
             totalGetTime);
 
       if (showStatistic)
+      {
          try
          {
             double rel =
@@ -829,6 +851,7 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
          {
             LOG.warn("Show statistic log.info error " + e);
          }
+      }
 
       this.statistic = st;
 
@@ -938,12 +961,20 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
       if (enabled && item != null)
       {
 
+         if (item instanceof NullNodeData)
+         {
+            // skip null values
+            return;
+         }
+
          writeLock.lock();
          try
          {
             if (LOG.isDebugEnabled())
+            {
                LOG.debug(name + ", put()    " + item.getQPath().getAsString() + "    " + item.getIdentifier()
                   + "  --  " + item);
+            }
 
             putItem(item);
 
@@ -971,17 +1002,23 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
                            for (int ci = 0; ci < cachedParentChilds.size(); ci++)
                            {
                               if (index == ci)
+                              {
                                  newChilds.add(nodeData); // place in new position
+                              }
                               else
+                              {
                                  newChilds.add(cachedParentChilds.get(ci)); // copy
+                              }
                            }
 
                            nodesCache.put(item.getParentIdentifier(), newChilds); // cache
                            // new
                            // list
                            if (LOG.isDebugEnabled())
+                           {
                               LOG.debug(name + ", put()    update child node  " + nodeData.getIdentifier()
                                  + "  order #" + orderNumber);
+                           }
                         }
                         else
                         {
@@ -989,8 +1026,10 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
                            cachedParentChilds.set(index, nodeData); // replace at
                            // current position
                            if (LOG.isDebugEnabled())
+                           {
                               LOG.debug(name + ", put()    update child node  " + nodeData.getIdentifier()
                                  + "  at index #" + index);
+                           }
                         }
 
                      }
@@ -1000,13 +1039,17 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
                         // add new to the end
                         List<NodeData> newChilds = new ArrayList<NodeData>(cachedParentChilds.size() + 1);
                         for (int ci = 0; ci < cachedParentChilds.size(); ci++)
+                        {
                            newChilds.add(cachedParentChilds.get(ci));
+                        }
 
                         newChilds.add(nodeData); // add
 
                         nodesCache.put(item.getParentIdentifier(), newChilds); // cache new list
                         if (LOG.isDebugEnabled())
+                        {
                            LOG.debug(name + ", put()    add child node  " + nodeData.getIdentifier());
+                        }
                      }
                   }
                }
@@ -1028,8 +1071,10 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
                            // update already cached in list
                            cachedParentChilds.set(index, (PropertyData)item); // replace at current position
                            if (LOG.isDebugEnabled())
+                           {
                               LOG.debug(name + ", put()    update child property  " + item.getIdentifier()
                                  + "  at index #" + index);
+                           }
 
                         }
                         else if (index == -1)
@@ -1037,18 +1082,24 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
                            // add new
                            List<PropertyData> newChilds = new ArrayList<PropertyData>(cachedParentChilds.size() + 1);
                            for (int ci = 0; ci < cachedParentChilds.size(); ci++)
+                           {
                               newChilds.add(cachedParentChilds.get(ci));
+                           }
 
                            newChilds.add((PropertyData)item);
                            propertiesCache.put(item.getParentIdentifier(), newChilds); // cache new list
                            if (LOG.isDebugEnabled())
+                           {
                               LOG.debug(name + ", put()    add child property  " + item.getIdentifier());
+                           }
                         }
                      }
                   }
                   else
+                  {
                      // if it's a props list with empty values, remove cached list
                      propertiesCache.remove(item.getParentIdentifier());
+                  }
                }
             }
          }
@@ -1071,7 +1122,7 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
    {
       if (enabled && parentData != null && childItems != null)
       { // TODO don't check parentData !=
-        // null && childItems != null
+         // null && childItems != null
 
          String logInfo = null;
          if (LOG.isDebugEnabled())
@@ -1104,8 +1155,10 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
                for (ItemData p : childItems)
                {
                   if (LOG.isDebugEnabled())
+                  {
                      LOG.debug(name + ", addChildProperties()    " + p.getQPath().getAsString() + "    "
                         + p.getIdentifier() + "  --  " + p);
+                  }
 
                   putItem(p);
                }
@@ -1122,7 +1175,9 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
          }
 
          if (LOG.isDebugEnabled())
+         {
             LOG.debug(name + ", addChildProperties() <<< " + logInfo);
+         }
       }
    }
 
@@ -1133,7 +1188,7 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
    {
       if (enabled && parentData != null && childItems != null)
       { // TODO don't check parentData !=
-        // null && childItems != null
+         // null && childItems != null
 
          String logInfo = null;
          if (LOG.isDebugEnabled())
@@ -1173,7 +1228,9 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
          }
 
          if (LOG.isDebugEnabled())
+         {
             LOG.debug(name + ", addChildPropertiesList() <<< " + logInfo);
+         }
       }
    }
 
@@ -1184,7 +1241,7 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
    {
       if (enabled && parentData != null && childItems != null)
       { // TODO don't check parentData !=
-        // null && childItems != null
+         // null && childItems != null
 
          String logInfo = null;
          if (LOG.isDebugEnabled())
@@ -1218,8 +1275,10 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
                for (ItemData n : childItems)
                {
                   if (LOG.isDebugEnabled())
+                  {
                      LOG.debug(name + ", addChildNodes()    " + n.getQPath().getAsString() + "    " + n.getIdentifier()
                         + "  --  " + n);
+                  }
 
                   putItem(n);
                }
@@ -1236,7 +1295,9 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
          }
 
          if (LOG.isDebugEnabled())
+         {
             LOG.debug(name + ", addChildNodes() <<< " + logInfo);
+         }
       }
    }
 
@@ -1255,7 +1316,9 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
       if (enabled && item != null)
       {
          if (LOG.isDebugEnabled())
+         {
             LOG.debug(name + ", remove() " + item.getQPath().getAsString() + " " + item.getIdentifier());
+         }
 
          writeLock.lock();
          try
@@ -1274,7 +1337,9 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
                removeChildNode(item.getParentIdentifier(), itemId);
             }
             else
+            {
                removeChildProperty(item.getParentIdentifier(), itemId);
+            }
          }
          catch (Exception e)
          {
@@ -1308,8 +1373,10 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
             {
                // check if wasn't removed
                if (LOG.isDebugEnabled())
+               {
                   LOG.debug(name + ", getItem() " + identifier + " --> "
                      + (c != null ? c.getQPath().getAsString() + " parent:" + c.getParentIdentifier() : "[null]"));
+               }
 
                hits++;
                return c;
@@ -1366,8 +1433,10 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
             if (v.getExpiredTime() > System.currentTimeMillis())
             {
                if (LOG.isDebugEnabled())
+               {
                   LOG.debug(name + ", getItem() " + (c != null ? c.getQPath().getAsString() : "[null]") + " --> "
                      + (c != null ? c.getIdentifier() + " parent:" + c.getParentIdentifier() : "[null]"));
+               }
 
                hits++;
                return c;
@@ -1438,9 +1507,13 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
             }
 
             if (cn != null)
+            {
                hits++;
+            }
             else
+            {
                miss++;
+            }
             return cn;
          }
          catch (Exception e)
@@ -1491,9 +1564,13 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
             }
 
             if (cn != null)
+            {
                hits++;
+            }
             else
+            {
                miss++;
+            }
             return cn != null ? cn.size() : -1;
          }
          catch (Exception e)
@@ -1550,7 +1627,9 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
                return cp;
             }
             else
+            {
                miss++;
+            }
          }
          catch (Exception e)
          {
@@ -1599,9 +1678,13 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
             }
 
             if (cp != null)
+            {
                hits++;
+            }
             else
+            {
                miss++;
+            }
             return cp;
          }
          catch (Exception e)
@@ -1662,7 +1745,8 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
       {
          writeLock.unlock();
       }
-      LOG.info(name + " : set liveTime=" + liveTime + "ms. New value will be applied to items cached from this moment.");
+      LOG
+         .info(name + " : set liveTime=" + liveTime + "ms. New value will be applied to items cached from this moment.");
    }
 
    /**
@@ -1679,8 +1763,10 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
       final CacheValue v2 =
          cache.remove(new CacheQPath(item.getParentIdentifier(), item.getQPath(), ItemType.getItemType(item)));
       if (v2 != null && !v2.getItem().getIdentifier().equals(itemId))
+      {
          // same path but diff identifier node... phantom
          removeItem(v2.getItem());
+      }
    }
 
    /**
@@ -1691,7 +1777,9 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
    protected void removeSiblings(final NodeData node)
    {
       if (node.getIdentifier().equals(Constants.ROOT_UUID))
+      {
          return;
+      }
 
       // remove child nodes of the item parent recursive
       writeLock.lock();
@@ -1724,11 +1812,15 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
                }
             }
             else
+            {
                citer.remove(); // remove empty C record
+            }
          }
 
          for (CacheId id : toRemove)
+         {
             cache.remove(id);
+         }
 
          toRemove.clear();
 
@@ -1748,7 +1840,9 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
    {
 
       if (!enabled)
+      {
          return;
+      }
 
       ItemState prevState = null;
       for (Iterator<ItemState> iter = changesLog.getAllStates().iterator(); iter.hasNext();)
@@ -1756,8 +1850,10 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
          ItemState state = iter.next();
          ItemData item = state.getData();
          if (LOG.isDebugEnabled())
+         {
             LOG.debug(name + ", onSaveItems() " + ItemState.nameFromValue(state.getState()) + " "
                + item.getQPath().getAsString() + " " + item.getIdentifier() + " parent:" + item.getParentIdentifier());
+         }
 
          try
          {
@@ -1789,7 +1885,9 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
                      // back from the persistence
                      if (prevState.isDeleted()
                         && prevState.getData().getParentIdentifier().equals(item.getParentIdentifier()))
+                     {
                         removeSiblings((NodeData)item);
+                     }
                   }
                }
                else if (item.getQPath().getName().equals(Constants.EXO_PERMISSIONS))
@@ -1885,7 +1983,9 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
                {
                   i.remove();
                   if (childProperties.size() <= 0)
+                  {
                      propertiesCache.remove(parentIdentifier);
+                  }
                   return cn;
                }
             }
