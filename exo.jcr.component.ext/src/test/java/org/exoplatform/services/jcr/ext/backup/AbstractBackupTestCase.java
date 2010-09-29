@@ -152,7 +152,7 @@ public class AbstractBackupTestCase extends BaseStandaloneTest
       ArrayList qParams = new ArrayList();
       // qParams.add(new SimpleParameterEntry("indexDir", "target" + File.separator+ "temp" +
       // File.separator +"index" + name));
-      qParams.add(new SimpleParameterEntry("indexDir", "target" + File.separator + name + System.currentTimeMillis()));
+      qParams.add(new SimpleParameterEntry(QueryHandlerParams.PARAM_INDEX_DIR, "target" + File.separator + name + System.currentTimeMillis()));
       QueryHandlerEntry qEntry =
          new QueryHandlerEntry("org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex", qParams);
 

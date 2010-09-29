@@ -24,7 +24,6 @@ import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.ext.backup.BackupChainLog;
 import org.exoplatform.services.jcr.ext.backup.BackupManager;
 import org.exoplatform.services.jcr.ext.backup.WorkspaceRestoreException;
-import org.exoplatform.services.jcr.impl.RepositoryContainer;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.jcr.impl.util.jdbc.cleaner.DBCleanerService;
@@ -43,23 +42,6 @@ import javax.jcr.RepositoryException;
  */
 public class JobExistedWorkspaceRestore extends JobWorkspaceRestore
 {
-
-   class RepositoryImplHelper extends RepositoryImpl
-   {
-
-      public RepositoryImplHelper(RepositoryContainer container) throws RepositoryException,
-         RepositoryConfigurationException
-      {
-         super(container);
-      }
-
-      @Override
-      public void removeSystemWorkspace() throws RepositoryException
-      {
-         super.removeSystemWorkspace();
-      }
-   }
-
    /**
     * The apache logger.
     */
@@ -142,21 +124,5 @@ public class JobExistedWorkspaceRestore extends JobWorkspaceRestore
       SessionRegistry sessionRegistry = (SessionRegistry)wc.getComponent(SessionRegistry.class);
 
       return sessionRegistry.closeSessions(workspaceName);
-   }
-}
-
-class ExtendedRepository extends RepositoryImpl
-{
-
-   public ExtendedRepository(RepositoryContainer container) throws RepositoryException,
-      RepositoryConfigurationException
-   {
-      super(container);
-   }
-
-   @Override
-   public void removeSystemWorkspace() throws RepositoryException
-   {
-      super.removeSystemWorkspace();
    }
 }

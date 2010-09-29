@@ -1587,8 +1587,6 @@ public class TestBackupManager extends AbstractBackupTestCase
          
          JobRepositoryRestore job = backup.getLastRepositoryRestore(re.getName());
          
-         Thread.sleep(30*1000);
-         
          while (job.getStateRestore() != JobRepositoryRestore.REPOSITORY_RESTORE_SUCCESSFUL
                   && job.getStateRestore() != JobRepositoryRestore.REPOSITORY_RESTORE_FAIL)
          {

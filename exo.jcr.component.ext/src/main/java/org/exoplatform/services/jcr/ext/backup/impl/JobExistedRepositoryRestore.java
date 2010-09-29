@@ -58,7 +58,10 @@ public class JobExistedRepositoryRestore extends JobRepositoryRestore
    }
 
    @Override
-   protected void restore() throws RepositoryRestoreExeption
+   /**
+    * {@inheritDoc}
+    */
+   protected void restoreRepository() throws RepositoryRestoreExeption
    {
       try
       {
@@ -97,7 +100,7 @@ public class JobExistedRepositoryRestore extends JobRepositoryRestore
             ValueStorageCleanerService.removeWorkspaceValueStorage(wEntry);
          }
 
-         super.restore();
+         super.restoreRepository();
       }
       catch (Throwable t)
       {
