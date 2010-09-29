@@ -65,6 +65,15 @@ public class JobExistedRepositoryRestore extends JobRepositoryRestore
    {
       try
       {
+         RepositoryEntry repositoryEntry =
+            repositoryService.getConfig().getRepositoryConfiguration(this.repositoryEntry.getName());
+
+         if (repositoryEntry == null)
+         {
+            throw new RepositoryRestoreExeption("Repository " + this.repositoryEntry.getName()
+               + " did not found configuration");
+         }
+
          boolean isDefault =
             repositoryService.getDefaultRepository().getConfiguration().getName().equals(repositoryEntry.getName());
 

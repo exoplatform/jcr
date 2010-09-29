@@ -67,6 +67,23 @@ public class JobExistedWorkspaceRestore extends JobWorkspaceRestore
    {
       try
       {
+         WorkspaceEntry wEntry = null;;
+         for (WorkspaceEntry entry : repositoryService.getRepository(repositoryName).getConfiguration()
+            .getWorkspaceEntries())
+         {
+            if (entry.getName().equals(this.wEntry.getName()))
+            {
+               wEntry = entry;
+               break;
+            }
+         }
+
+         if (wEntry == null)
+         {
+            throw new WorkspaceRestoreException("Workspace " + this.wEntry.getName() + " did not found in repository "
+               + repositoryName + " configuration");
+         }
+
          boolean isSystem =
             repositoryService.getRepository(repositoryName).getConfiguration().getSystemWorkspaceName()
                .equals(wEntry.getName());
