@@ -24,7 +24,6 @@ import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.ext.backup.BackupChainLog;
 import org.exoplatform.services.jcr.ext.backup.BackupManager;
 import org.exoplatform.services.jcr.ext.backup.WorkspaceRestoreException;
-import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.jcr.impl.util.jdbc.cleaner.DBCleanerService;
 import org.exoplatform.services.log.ExoLogger;
@@ -91,16 +90,7 @@ public class JobExistedWorkspaceRestore extends JobWorkspaceRestore
          //close all session
          forceCloseSession(repositoryName, wEntry.getName());
 
-         //remove workspace
-         if (isSystem)
-         {
-            RepositoryImpl repositoryImpl = (RepositoryImpl)repositoryService.getRepository(repositoryName);
-            repositoryImpl.removeSystemWorkspace();
-         }
-         else
-         {
-            repositoryService.getRepository(repositoryName).removeWorkspace(wEntry.getName());
-         }
+         repositoryService.getRepository(repositoryName).removeWorkspace(wEntry.getName());
 
          //clean database
          dbCleanerService.cleanWorkspaceData(wEntry);
