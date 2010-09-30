@@ -483,13 +483,13 @@ repo.removeWorkspace(workspace);</programlisting></para>
       restore of system workspace, than we need restore all repository.</para>
     </highlights>
 
-    <para>The resore of existed workspace or repositry is avaleble. </para>
+    <para>The resore of existed workspace or repositry is avaleble.</para>
 
     <para>For restore will be used spacial methods:</para>
 
     <programlisting> /**
     * Restore existed workspace. Previous data will be deleted.
-    * For getting status of workspace restore use can use 
+    * For getting status of workspace restore can use 
     * BackupManager.getLastRestore(String repositoryName, String workspaceName) method 
     * 
     * @param workspaceBackupIdentifier
@@ -526,7 +526,7 @@ repo.removeWorkspace(workspace);</programlisting></para>
 
    /**
     * Restore existed repository. Previous data will be deleted.
-    * For getting status of repository restore use can use 
+    * For getting status of repository restore can use 
     * BackupManager.getLastRestore(String repositoryName) method 
     * 
     * @param repositoryBackupIdentifier
@@ -544,7 +544,7 @@ repo.removeWorkspace(workspace);</programlisting></para>
 
    /**
     * Restore existed repository. Previous data will be deleted.
-    * For getting status of repository restore use can use 
+    * For getting status of repository restore can use 
     * BackupManager.getLastRestore(String repositoryName) method 
     * 
     * @param log
@@ -584,87 +584,5 @@ repo.removeWorkspace(workspace);</programlisting></para>
         <para>restore from backup.</para>
       </listitem>
     </itemizedlist>
-
-    <example>
-      <title>Make backup of workspace and restore it.</title>
-
-      <para><programlisting>      // backup
-      File backDir = new File("target/backup/ws1");
-      backDir.mkdirs();
-
-      BackupConfig config = new BackupConfig();
-      config.setRepository(repository.getName());
-      config.setWorkspace("ws1");
-      config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
-      config.setBackupDir(backDir);
-
-      backup.startBackup(config);
-
-      BackupChain bch = backup.findBackup(repository.getName(), "ws1");
-
-      // wait till full backup will be stopped
-      while (bch.getFullBackupState() != BackupJob.FINISHED)
-      {
-         Thread.yield();
-         Thread.sleep(50);
-      }
-
-      // stop fullBackup
-      backup.stopBackup(bch);
-
-      // restore
-      RepositoryEntry re = (RepositoryEntry)ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
-      WorkspaceEntry ws1 = null;
-      for (WorkspaceEntry we : re.getWorkspaceEntries())
-      {
-         if (ws1Session.getWorkspace().getName().equals(we.getName()))
-         {
-            ws1 = we;
-            break;
-         }
-      }
-
-      File backLog = new File(bch.getLogFilePath());
-      BackupChainLog bchLog = new BackupChainLog(backLog);
-
-      backup.restoreExistedWorkspace(bchLog, re.getName(), ws1, false);</programlisting></para>
-    </example>
-
-    <example>
-      <title>Make backup of repository and restore it.</title>
-
-      <para><programlisting>      // backup
-      File backDir = new File("target/backup");
-      backDir.mkdirs();
-
-      RepositoryBackupConfig config = new RepositoryBackupConfig();
-      config.setRepository(repository.getName());
-      config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
-      config.setBackupDir(backDir);
-
-      backup.startBackup(config);
-
-      RepositoryBackupChain bch = backup.findRepositoryBackup(repository.getName());
-
-      // wait till full backup will be stopped
-      while (bch.getState() != RepositoryBackupChain.FINISHED)
-      {
-         Thread.yield();
-         Thread.sleep(50);
-      }
-
-      // stop fullBackup
-      backup.stopBackup(bch);
-
-      // restore             
-      RepositoryEntry baseRE =
-         (RepositoryEntry)ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
-      RepositoryEntry re = makeRepositoryEntry(baseRE.getName(), baseRE, null, null);
-
-      File backLog = new File(bch.getLogFilePath());
-      RepositoryBackupChainLog bchLog = new RepositoryBackupChainLog(backLog);
-
-      backup.restoreExistedRepository(bchLog, re, false);</programlisting></para>
-    </example>
   </section>
 </chapter>
