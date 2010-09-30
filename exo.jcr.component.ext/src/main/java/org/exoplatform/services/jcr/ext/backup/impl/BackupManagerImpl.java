@@ -106,34 +106,76 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
 
    protected static Log log = ExoLogger.getLogger("exo.jcr.component.ext.BackupManagerImpl");
 
+   /**
+    *  Name of default incremental job period parameter in configuration. 
+    */
    private final static String DEFAULT_INCREMENTAL_JOB_PERIOD = "default-incremental-job-period";
 
+   /**
+    *  Name of backup properties parameter in configuration. 
+    */
    private final static String BACKUP_PROPERTIES = "backup-properties";
 
+   /**
+    *  Name of full backup type parameter in configuration. 
+    */
    private final static String FULL_BACKUP_TYPE = "full-backup-type";
 
+   /**
+    *  Name of incremental backup type parameter in configuration. 
+    */
    private final static String INCREMENTAL_BACKUP_TYPE = "incremental-backup-type";
 
+   /**
+    *  Name of backup dir parameter in configuration. 
+    */
    private final static String BACKUP_DIR = "backup-dir";
 
+   /**
+    *  Backup messages log max. size.
+    */
    private static final int MESSAGES_MAXSIZE = 5;
 
    private static final String SERVICE_NAME = "BackupManager";
 
+   /**
+    * The timeout to checking finish of backup.
+    */
    private static final long AUTO_STOPPER_TIMEOUT = 5000;
 
+   /**
+    * Value of default incremental job period.
+    */
    private long defaultIncrementalJobPeriod;
 
+   /**
+    *  Value of default incremental period.
+    */
    private String defIncrPeriod;
 
+   /**
+    *  Path to backup folder.
+    */
    private String backupDir;
 
+   /**
+    * Value of full backup type.
+    */
    private String fullBackupType;
 
+   /**
+    * Value of incremental backup type.
+    */
    private String incrementalBackupType;
 
+   /**
+    * Set of current workspace backups.
+    */
    private final Set<BackupChain> currentBackups;
 
+   /**
+    * Set of current repository backups.
+    */
    private final Set<RepositoryBackupChain> currentRepositoryBackups;
 
    /**
@@ -146,8 +188,14 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
     */
    private List<JobRepositoryRestore> restoreRepositoryJobs;
 
+   /**
+    * Initialization parameters of service.
+    */
    private InitParams initParams;
 
+   /**
+    * Directory to log.
+    */
    private File logsDirectory;
 
    private final RepositoryService repoService;
