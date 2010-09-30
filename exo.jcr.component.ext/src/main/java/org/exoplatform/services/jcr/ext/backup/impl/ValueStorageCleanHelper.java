@@ -16,53 +16,53 @@
  */
 package org.exoplatform.services.jcr.ext.backup.impl;
 
+import org.exoplatform.services.jcr.config.ContainerEntry;
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.config.ValueStorageEntry;
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.impl.storage.value.fs.FileValueStorage;
+
 import java.io.File;
-import java.io.IOError;
 import java.io.IOException;
 
-import javax.jcr.RepositoryException;
-import javax.naming.NamingException;
-
-import org.exoplatform.services.jcr.config.QueryHandlerParams;
-import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
-import org.exoplatform.services.jcr.config.WorkspaceEntry;
-
 /**
- * IndexCleanerService deliver tools for clean index data of workspace or repository.
- * 
  * Created by The eXo Platform SAS.
  * 
  * <br/>Date: 2010
  *
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a> 
- * @version $Id$
+ * @version $Id: ValueStorageCleanerService.java 3219 2010-09-30 07:40:51Z areshetnyak $
  */
-public class IndexCleanerService
+public class ValueStorageCleanHelper
 {
+
    /**
-    * Remove all file of workspace index. 
+    * Clear workspace value storage.
     * 
-    * @param wsConfig - workspace configuration.
-    * @param isSystem - 'true' to clean system workspace. 
-    * @throws RepositoryConfigurationException - exception on parsing workspace configuration
-    * @throws IOException - exception on remove index folder
+    * @param wEntry
+    *          workspace configuration
+    * @throws RepositoryConfigurationException
+    * @throws IOException
     */
-   public static void removeWorkspaceIndex(WorkspaceEntry wsConfig, boolean isSystem) throws RepositoryConfigurationException, IOException
+   public void removeWorkspaceValueStorage(WorkspaceEntry wEntry) throws RepositoryConfigurationException, IOException
    {
-      String indexDir = wsConfig.getQueryHandler().getParameterValue(QueryHandlerParams.PARAM_INDEX_DIR);
-      
-      removeFolder(new File(indexDir));
-      
-      if (isSystem)
+       ContainerEntry containerEntry  = wEntry.getContainer();
+       
+      if (containerEntry.getValueStorages() != null)
       {
-         removeFolder(new File(indexDir + "_system"));
+         for (ValueStorageEntry valueStorageEntry : containerEntry.getValueStorages())
+         {
+            String path = valueStorageEntry.getParameterValue(FileValueStorage.PATH);
+            
+            removeFolder(new File(path));
+         }
       }
    }
    
    /**
     * Remove folder
     */
-   private static void removeFolder(File dir) throws IOException 
+   private void removeFolder(File dir) throws IOException
    {
       if (dir.isDirectory())
       {  
@@ -73,15 +73,16 @@ public class IndexCleanerService
          
          if (!dir.delete())
          {
-            throw new IOException("Index folder was not deleted : " + dir.getCanonicalPath());
+            throw new IOException("Value storage folder was not deleted : " + dir.getCanonicalPath());
          }
       }
       else
       {
          if (!dir.delete())
          {
-            throw new IOException("Index file was not deleted : " + dir.getCanonicalPath());
+            throw new IOException("Value storage file was not deleted : " + dir.getCanonicalPath());
          }
       }
    }
+
 }
