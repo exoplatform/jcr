@@ -16,8 +16,14 @@
  */
 package org.exoplatform.services.jcr.ext.backup.impl;
 
+import java.io.File;
+import java.io.IOException;
+
+import org.exoplatform.services.jcr.config.ContainerEntry;
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.ValueStorageEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.impl.storage.value.fs.FileValueStorage;
 
 /**
  * Created by The eXo Platform SAS.
@@ -30,12 +36,45 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 public class ValueStorageCleanerService
 {
 
-   public static void removeWorkspaceValueStorage(WorkspaceEntry wEntry)
+   public static void removeWorkspaceValueStorage(WorkspaceEntry wEntry) throws RepositoryConfigurationException, IOException 
    {
-     /*for( ValueStorageEntry valueStorageEntry : wEntry.getContainer().getValueStorages())
-     {
-        
-     }*/
+       ContainerEntry containerEntry  = wEntry.getContainer();
+       
+      if (containerEntry.getValueStorages() != null)
+      {
+         for (ValueStorageEntry valueStorageEntry : containerEntry.getValueStorages())
+         {
+            String path = valueStorageEntry.getParameterValue(FileValueStorage.PATH);
+            
+            removeFolder(new File(path));
+         }
+      }
+   }
+   
+   /**
+    * Remove folder
+    */
+   private static void removeFolder(File dir) throws IOException 
+   {
+      if (dir.isDirectory())
+      {  
+         for (File subFile : dir.listFiles())
+         {
+            removeFolder(subFile);
+         }
+         
+         if (!dir.delete())
+         {
+            throw new IOException("Value storage folder was not deleted : " + dir.getCanonicalPath());
+         }
+      }
+      else
+      {
+         if (!dir.delete())
+         {
+            throw new IOException("Value storage file was not deleted : " + dir.getCanonicalPath());
+         }
+      }
    }
 
 }
