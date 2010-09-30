@@ -31,7 +31,7 @@ public interface ExtendedBackupManager extends BackupManager
 {
    /**
     * Restore existed workspace. Previous data will be deleted.
-    * For getting status of workspace restore use can use 
+    * For getting status of workspace restore can use 
     * BackupManager.getLastRestore(String repositoryName, String workspaceName) method 
     * 
     * @param workspaceBackupIdentifier
@@ -50,7 +50,7 @@ public interface ExtendedBackupManager extends BackupManager
 
    /**
     * Restore existed workspace. Previous data will be deleted.
-    * For getting status of workspace restore use can use 
+    * For getting status of workspace restore can use 
     * BackupManager.getLastRestore(String repositoryName, String workspaceName) method 
     * 
     * @param log
@@ -68,7 +68,7 @@ public interface ExtendedBackupManager extends BackupManager
 
    /**
     * Restore existed repository. Previous data will be deleted.
-    * For getting status of repository restore use can use 
+    * For getting status of repository restore can use 
     * BackupManager.getLastRestore(String repositoryName) method 
     * 
     * @param repositoryBackupIdentifier
@@ -86,7 +86,7 @@ public interface ExtendedBackupManager extends BackupManager
 
    /**
     * Restore existed repository. Previous data will be deleted.
-    * For getting status of repository restore use can use 
+    * For getting status of repository restore can use 
     * BackupManager.getLastRestore(String repositoryName) method 
     * 
     * @param log
