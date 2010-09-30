@@ -49,12 +49,28 @@ public class JobExistedRepositoryRestore extends JobRepositoryRestore
     */
    private final DBCleanerService dbCleanerService;
 
+   /**
+    * Value storage cleaner.
+    */
+   private final ValueStorageCleanHelper valueStorageCleanHelper;
+
+   /**
+    * Index storage cleaner.
+    */
+   private final IndexCleanHelper indexCleanHelper;
+
+   /**
+    * JobExistedRepositoryRestore constructor.
+    */
    public JobExistedRepositoryRestore(RepositoryService repoService, BackupManagerImpl backupManagerImpl,
       RepositoryEntry repositoryEntry, Map<String, BackupChainLog> workspacesMapping,
       RepositoryBackupChainLog backupChainLog)
    {
       super(repoService, backupManagerImpl, repositoryEntry, workspacesMapping, backupChainLog);
+
       this.dbCleanerService = new DBCleanerService();
+      this.valueStorageCleanHelper = new ValueStorageCleanHelper();
+      this.indexCleanHelper = new IndexCleanHelper();
    }
 
    @Override
@@ -65,13 +81,14 @@ public class JobExistedRepositoryRestore extends JobRepositoryRestore
    {
       try
       {
+         // get current repository configuration
          RepositoryEntry repositoryEntry =
             repositoryService.getConfig().getRepositoryConfiguration(this.repositoryEntry.getName());
 
          if (repositoryEntry == null)
          {
-            throw new RepositoryRestoreExeption("Repository " + this.repositoryEntry.getName()
-               + " did not found configuration");
+            throw new RepositoryRestoreExeption("Current repository configuration " + this.repositoryEntry.getName()
+               + " did not found");
          }
 
          boolean isDefault =
@@ -99,14 +116,14 @@ public class JobExistedRepositoryRestore extends JobRepositoryRestore
          //clean index
          for (WorkspaceEntry wEntry : repositoryEntry.getWorkspaceEntries())
          {
-            IndexCleanerService.removeWorkspaceIndex(wEntry,
+            indexCleanHelper.removeWorkspaceIndex(wEntry,
                repositoryEntry.getSystemWorkspaceName().equals(wEntry.getName()));
          }
 
          //clean value storage
          for (WorkspaceEntry wEntry : repositoryEntry.getWorkspaceEntries())
          {
-            ValueStorageCleanerService.removeWorkspaceValueStorage(wEntry);
+            valueStorageCleanHelper.removeWorkspaceValueStorage(wEntry);
          }
 
          super.restoreRepository();

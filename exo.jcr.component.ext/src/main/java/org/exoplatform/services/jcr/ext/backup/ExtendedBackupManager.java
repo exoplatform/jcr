@@ -30,78 +30,77 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 public interface ExtendedBackupManager extends BackupManager
 {
    /**
-    * Restoration over an existing repository.
-    * Will be deleted old data.
-    * Get status of repository restore was necessary use JobRepositoryRestore BackupManager.getLastRestore(String repositoryName). 
-    * 
-    * @param log
-    *          RepositoryBackupChainLog, the repository backup log
-    * @param repositoryEntry
-    *          RepositoryEntry, the repository entry
-    * @param asynchronous
-    *          boolean, in 'true' then asynchronous restore.   
-    * @throws BackupOperationException
-    *           will be generate the exception BackupOperationException 
-    * @throws BackupConfigurationException
-    *           will be generate the exception BackupConfigurationException
-    */
-   void restoreExistedRepository(RepositoryBackupChainLog log, RepositoryEntry repositoryEntry, boolean asynchronous)  throws BackupOperationException, BackupConfigurationException;
-   
-   /**
-    * Restoration over an existing workspace.
-    * Will be deleted old data.
-    * Get status of workspace restore was necessary use JobWorkspaceRestore BackupManager.getLastRestore(String repositoryName, String workspaceName).
-    * 
-    * @param log
-    *          BackupChainLog, the backup log
-    * @param repositoryName
-    *          String, repository name
-    * @param workspaceEntry
-    *          WorkspaceEntry, the workspace entry
-    * @param asynchronous
-    *          boolean, in 'true' then asynchronous restore.   
-    * @throws BackupOperationException
-    *           will be generate the exception BackupOperationException 
-    * @throws BackupConfigurationException
-    *           will be generate the exception BackupConfigurationException
-    */
-   void restoreExistedWorkspace(BackupChainLog log, String repositoryName, WorkspaceEntry workspaceEntry, boolean asynchronous)  throws BackupOperationException, BackupConfigurationException;
-   
-   /**
-    * Restoration over an existing repository.
-    * Will be deleted old data.
-    * Get status of repository restore was necessary use JobRepositoryRestore BackupManager.getLastRestore(String repositoryName). 
-    * 
-    * @param repositoryBackupIdentifier
-    *          String, identifier of repository backup
-    * @param repositoryEntry
-    *          RepositoryEntry, the repository entry
-    * @param asynchronous
-    *          boolean, in 'true' then asynchronous restore.   
-    * @throws BackupOperationException
-    *           will be generate the exception BackupOperationException 
-    * @throws BackupConfigurationException
-    *           will be generate the exception BackupConfigurationException
-    */
-   void restoreExistedRepository(String  repositoryBackupIdentifier, RepositoryEntry repositoryEntry, boolean asynchronous)  throws BackupOperationException, BackupConfigurationException;
-   
-   /**
-    * Restoration over an existing workspace.
-    * Will be deleted old data.
-    * Get status of workspace restore was necessary use JobWorkspaceRestore BackupManager.getLastRestore(String repositoryName, String workspaceName).
+    * Restore existed workspace. Previous data will be deleted.
+    * For getting status of workspace restore use can use 
+    * BackupManager.getLastRestore(String repositoryName, String workspaceName) method 
     * 
     * @param workspaceBackupIdentifier
-    *          String, identifier of workspace backup
-    * @param repositoryName
-    *          String, repository name
+    *          backup identifier
     * @param workspaceEntry
-    *          WorkspaceEntry, the workspace entry
+    *          new workspace configuration
     * @param asynchronous
-    *          boolean, in 'true' then asynchronous restore.   
+    *          if 'true' restore will be in asynchronous mode (i.e. in separated thread)
     * @throws BackupOperationException
-    *           will be generate the exception BackupOperationException 
+    *           if backup operation exception occurred 
     * @throws BackupConfigurationException
-    *           will be generate the exception BackupConfigurationException
+    *           if configuration exception occurred
     */
-   void restoreExistedWorkspace(String workspaceBackupIdentifier, String repositoryName, WorkspaceEntry workspaceEntry, boolean asynchronous)  throws BackupOperationException, BackupConfigurationException;
+   void restoreExistedWorkspace(String workspaceBackupIdentifier, String repositoryName, WorkspaceEntry workspaceEntry,
+      boolean asynchronous) throws BackupOperationException, BackupConfigurationException;
+
+   /**
+    * Restore existed workspace. Previous data will be deleted.
+    * For getting status of workspace restore use can use 
+    * BackupManager.getLastRestore(String repositoryName, String workspaceName) method 
+    * 
+    * @param log
+    *          workspace backup log
+    * @param workspaceEntry
+    *          new workspace configuration
+    * @param asynchronous
+    *          if 'true' restore will be in asynchronous mode (i.e. in separated thread)
+    * @throws BackupOperationException
+    *           if backup operation exception occurred 
+    * @throws BackupConfigurationException
+    *           if configuration exception occurred
+    */
+   void restoreExistedWorkspace(BackupChainLog log, String repositoryName, WorkspaceEntry workspaceEntry, boolean asynchronous)  throws BackupOperationException, BackupConfigurationException;
+
+   /**
+    * Restore existed repository. Previous data will be deleted.
+    * For getting status of repository restore use can use 
+    * BackupManager.getLastRestore(String repositoryName) method 
+    * 
+    * @param repositoryBackupIdentifier
+    *          backup identifier
+    * @param repositoryEntry
+    *          new repository configuration
+    * @param asynchronous
+    *          if 'true' restore will be in asynchronous mode (i.e. in separated thread)
+    * @throws BackupOperationException
+    *           if backup operation exception occurred 
+    * @throws BackupConfigurationException
+    *           if configuration exception occurred
+    */
+   void restoreExistedRepository(String  repositoryBackupIdentifier, RepositoryEntry repositoryEntry, boolean asynchronous)  throws BackupOperationException, BackupConfigurationException;
+
+   /**
+    * Restore existed repository. Previous data will be deleted.
+    * For getting status of repository restore use can use 
+    * BackupManager.getLastRestore(String repositoryName) method 
+    * 
+    * @param log
+    *          repository backup log
+    * @param repositoryEntry
+    *          new repository configuration
+    * @param asynchronous
+    *          if 'true' restore will be in asynchronous mode (i.e. in separated thread)
+    * @throws BackupOperationException
+    *           if backup operation exception occurred 
+    * @throws BackupConfigurationException
+    *           if configuration exception occurred
+    */
+   void restoreExistedRepository(RepositoryBackupChainLog log, RepositoryEntry repositoryEntry, boolean asynchronous)
+      throws BackupOperationException, BackupConfigurationException;
+
 }

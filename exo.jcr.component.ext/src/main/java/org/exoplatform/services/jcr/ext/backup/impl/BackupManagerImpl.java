@@ -18,29 +18,6 @@
  */
 package org.exoplatform.services.jcr.ext.backup.impl;
 
-import java.io.ByteArrayOutputStream;
-import java.io.EOFException;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.jcr.PathNotFoundException;
-import javax.jcr.RepositoryException;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.apache.commons.collections.map.HashedMap;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
@@ -71,6 +48,7 @@ import org.exoplatform.services.jcr.ext.backup.JobEntryInfo;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChain;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChainLog;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupConfig;
+import org.exoplatform.services.jcr.ext.backup.RepositoryRestoreExeption;
 import org.exoplatform.services.jcr.ext.backup.WorkspaceRestoreException;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
 import org.exoplatform.services.jcr.ext.registry.RegistryEntry;
@@ -92,6 +70,29 @@ import org.picocontainer.Startable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
+
+import java.io.ByteArrayOutputStream;
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.jcr.PathNotFoundException;
+import javax.jcr.RepositoryException;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * Created by The eXo Platform SAS .<br/>
@@ -1566,16 +1567,16 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
    {
       try
       {
-         //repository should be existed
+         // repository should be existed
          repoService.getRepository(repositoryEntry.getName());
       } 
       catch (RepositoryException e)
       {
-         throw new WorkspaceRestoreException("Repository \"" + repositoryEntry.getName() + "\" should be existed", e);
+         throw new RepositoryRestoreExeption("Repository \"" + repositoryEntry.getName() + "\" should be existed", e); 
       }
       catch (RepositoryConfigurationException e)
       {
-         throw new WorkspaceRestoreException("Repository \"" + repositoryEntry.getName() + "\" should be existed", e);
+         throw new RepositoryRestoreExeption("Repository \"" + repositoryEntry.getName() + "\" should be existed", e);
       }
       
       Map<String, BackupChainLog> workspacesMapping = new HashedMap();
@@ -1663,10 +1664,10 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
    {
       try 
       {
-         //repository should be existed
+         // repository should be existed
          repoService.getRepository(repositoryName);
          
-         //workspace should be existed
+         // workspace should be existed
          if (!workspaceAlreadyExist(repositoryName, workspaceEntry.getName()))
          {
             throw new WorkspaceRestoreException("Workspace \"" + workspaceEntry.getName() + "\" should be existed in repository \"" + repositoryName + "\".");

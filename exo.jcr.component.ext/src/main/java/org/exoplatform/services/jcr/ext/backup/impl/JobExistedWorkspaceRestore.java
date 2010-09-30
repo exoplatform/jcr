@@ -42,7 +42,7 @@ import javax.jcr.RepositoryException;
 public class JobExistedWorkspaceRestore extends JobWorkspaceRestore
 {
    /**
-    * The apache logger.
+    * The logger.
     */
    private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.JobExistedWorkspaceRestore");
 
@@ -51,11 +51,27 @@ public class JobExistedWorkspaceRestore extends JobWorkspaceRestore
     */
    private final DBCleanerService dbCleanerService;
 
+   /**
+    * Value storage cleaner.
+    */
+   private final ValueStorageCleanHelper valueStorageCleaner;
+
+   /**
+    * Index cleaner.
+    */
+   private final IndexCleanHelper indexCleanHelper;
+
+   /**
+    * JobExistedWorkspaceRestore constructor.
+    */
    public JobExistedWorkspaceRestore(RepositoryService repositoryService, BackupManager backupManager,
       String repositoryName, BackupChainLog log, WorkspaceEntry wEntry)
    {
       super(repositoryService, backupManager, repositoryName, log, wEntry);
+
       this.dbCleanerService = new DBCleanerService();
+      this.valueStorageCleaner = new ValueStorageCleanHelper();
+      this.indexCleanHelper = new IndexCleanHelper();
    }
 
    /**
@@ -66,6 +82,7 @@ public class JobExistedWorkspaceRestore extends JobWorkspaceRestore
    {
       try
       {
+         // get current workspace configuration
          WorkspaceEntry wEntry = null;;
          for (WorkspaceEntry entry : repositoryService.getRepository(repositoryName).getConfiguration()
             .getWorkspaceEntries())
@@ -79,8 +96,8 @@ public class JobExistedWorkspaceRestore extends JobWorkspaceRestore
 
          if (wEntry == null)
          {
-            throw new WorkspaceRestoreException("Workspace " + this.wEntry.getName() + " did not found in repository "
-               + repositoryName + " configuration");
+            throw new WorkspaceRestoreException("Workspace " + this.wEntry.getName()
+               + " did not found in current repository " + repositoryName + " configuration");
          }
 
          boolean isSystem =
@@ -96,10 +113,10 @@ public class JobExistedWorkspaceRestore extends JobWorkspaceRestore
          dbCleanerService.cleanWorkspaceData(wEntry);
 
          //clean index
-         IndexCleanerService.removeWorkspaceIndex(wEntry, isSystem);
+         indexCleanHelper.removeWorkspaceIndex(wEntry, isSystem);
 
          //clean value storage
-         ValueStorageCleanerService.removeWorkspaceValueStorage(wEntry);
+         valueStorageCleaner.removeWorkspaceValueStorage(wEntry);
 
          super.restore();
       }
