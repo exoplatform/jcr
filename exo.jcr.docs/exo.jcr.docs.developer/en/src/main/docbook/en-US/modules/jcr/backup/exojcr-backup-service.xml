@@ -6,6 +6,11 @@
 
   <title>eXo JCR Backup Service</title>
 
+  <note>
+    <para>Restore of system workspace is not supported only as part of
+    restoring of whole repository.</para>
+  </note>
+
   <section>
     <title>Concept</title>
 
@@ -479,15 +484,9 @@ repo.removeWorkspace(workspace);</programlisting></para>
     <title>Restore existing workspace or repository</title>
 
     <important>
-      <para>Restore of existing workspace or repository will be available from
-      JCR 1.14.0-CR1.</para>
+      <para>Restoring of existing workspace or repository available from JCR
+      1.14.0-CR1.</para>
     </important>
-
-    <highlights>
-      <para>Restore of existed system workspace was not supported. When need
-      restore of system workspace, than we need restore full
-      repository.</para>
-    </highlights>
 
     <para>The resore of existed workspace or repositry is avaleble.</para>
 
