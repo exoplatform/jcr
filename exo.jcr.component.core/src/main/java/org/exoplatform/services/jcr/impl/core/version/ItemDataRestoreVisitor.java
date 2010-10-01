@@ -199,11 +199,7 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
                nodeTypeDataManager.getChildNodeDefinition(node.getQPath().getName(), parent.getPrimaryTypeName(),
                   parent.getMixinTypeNames()).getOnParentVersion();
 
-            // ItemDataCopyIgnoredVisitory
-            if (onParentVersion != OnParentVersionAction.COPY
-               && onParentVersion != OnParentVersionAction.VERSION
-               && onParentVersion != OnParentVersionAction.IGNORE
-               || onParentVersion == OnParentVersionAction.VERSION
+            if (onParentVersion == OnParentVersionAction.VERSION
                && nodeTypeDataManager.isNodeType(Constants.MIX_VERSIONABLE, node.getPrimaryTypeName(),
                   node.getMixinTypeNames()))
             {
