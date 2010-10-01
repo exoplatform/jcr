@@ -19,17 +19,27 @@
 package org.exoplatform.services.jcr.webdav.command;
 
 import org.exoplatform.common.http.HTTPStatus;
+import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
+import org.exoplatform.services.jcr.impl.core.version.VersionImpl;
 import org.exoplatform.services.jcr.webdav.BaseStandaloneTest;
 import org.exoplatform.services.jcr.webdav.WebDavConstants.WebDAVMethods;
 import org.exoplatform.services.jcr.webdav.utils.TestUtils;
+import org.exoplatform.services.rest.ext.provider.XSLTStreamingOutput;
 import org.exoplatform.services.rest.impl.ContainerResponse;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
+import java.util.Calendar;
+
+import javax.jcr.Node;
 
 /**
  * Created by The eXo Platform SAS Author : Dmytro Katayev
@@ -59,15 +69,59 @@ public class TestGet extends BaseStandaloneTest
       StringWriter sw = new StringWriter();
       char[] buffer = new char[1024];
       for (int n; (n = r.read(buffer)) != -1;)
+      {
          sw.write(buffer, 0, n);
+      }
       String str = sw.toString();
       assertEquals(fileContent, str);
    }
-   
+
    public void testNotFoundGet() throws Exception
    {
       ContainerResponse response = service(WebDAVMethods.GET, getPathWS() + "/not-found" + path, "", null, null);
       assertEquals(HTTPStatus.NOT_FOUND, response.getStatus());
+   }
+
+   /**
+    * Details can be found here: https://jira.jboss.org/browse/EXOJCR-956
+    * @throws Exception
+    */
+   public void testMissingJcrLastModifiedProperty() throws Exception
+   {
+      File file = new File("src/test/resources/rh_nodetype.xml");
+      assertTrue("src/test/resources/rh_nodetype.xml not found", file.exists());
+      FileInputStream fis = new FileInputStream(file);
+
+      session.getWorkspace().getNamespaceRegistry().registerNamespace("rh", "www.vn.vnn");
+      session.getWorkspace().getNodeTypesHolder().registerNodeTypes(fis, ExtendedNodeTypeManager.IGNORE_IF_EXISTS,
+         NodeTypeDataManager.TEXT_XML);
+
+      Node podcast = session.getRootNode().addNode("podcast", "rh:podcast");
+
+      Node nodeToAdd = podcast.addNode("rh:podcastFile", "nt:file");
+      Node contentNodeOfNodeToAdd = nodeToAdd.addNode("jcr:content", "nt:resource");
+      contentNodeOfNodeToAdd.setProperty("jcr:data", new FileInputStream("src/test/resources/test.txt"));
+      contentNodeOfNodeToAdd.setProperty("jcr:mimeType", "text/plain");
+      contentNodeOfNodeToAdd.setProperty("jcr:lastModified", Calendar.getInstance());
+      session.save();
+
+      podcast.addMixin("mix:versionable");
+      session.save();
+
+      VersionImpl v = (VersionImpl)podcast.checkin();
+      session.save();
+
+      podcast.checkout();
+      session.save();
+
+      String path =
+         getPathWS() + "/jcr:system/jcr:versionStorage/" + v.getContainingHistory().getIdentifier()
+            + "/1/jcr:frozenNode/rh:podcastFile";
+
+      ContainerResponse response = service(WebDAVMethods.GET, path, "", null, null);
+      assertEquals("Successful result expected (200), but actual is: " + response.getStatus(), 200, response
+         .getStatus());
+
    }
 
    @Override
