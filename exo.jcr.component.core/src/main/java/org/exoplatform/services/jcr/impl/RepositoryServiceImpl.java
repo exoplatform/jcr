@@ -30,6 +30,7 @@ import org.exoplatform.services.jcr.config.RepositoryServiceConfiguration;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
+import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
 import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
@@ -43,8 +44,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 import java.util.Map.Entry;
+import java.util.StringTokenizer;
 
 import javax.jcr.RepositoryException;
 
@@ -120,6 +121,13 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
    public synchronized void createRepository(RepositoryEntry rEntry) throws RepositoryConfigurationException,
       RepositoryException
    {
+      // Need privileges to manage repository.
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+      {
+         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
+      }
+
       if (repositoryContainers.containsKey(rEntry.getName()))
       {
          throw new RepositoryConfigurationException("Repository container " + rEntry.getName() + " already started");
@@ -161,6 +169,13 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
 
    public RepositoryServiceConfiguration getConfig()
    {
+      // Need privileges to manage repository.
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+      {
+         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
+      }
+
       return config;
    }
 
@@ -207,6 +222,13 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
 
    public void setCurrentRepositoryName(String repositoryName) throws RepositoryConfigurationException
    {
+      // Need privileges to manage repository.
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+      {
+         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
+      }
+
       if (!repositoryContainers.containsKey(repositoryName))
          throw new RepositoryConfigurationException("Repository is not configured. Name " + repositoryName);
       currentRepositoryName.set(repositoryName);
@@ -214,6 +236,13 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
 
    public void start()
    {
+      // Need privileges to manage repository.
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+      {
+         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
+      }
+
       try
       {
          ExoContainer container = null;
@@ -246,6 +275,13 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
 
    public void stop()
    {
+      // Need privileges to manage repository.
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+      {
+         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
+      }
+
       for (Entry<String, RepositoryContainer> entry : repositoryContainers.entrySet())
       {
          entry.getValue().stop();
@@ -351,6 +387,13 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
     */
    private void removeRepository(String name, boolean allowRemoveDefaultRepository) throws RepositoryException
    {
+      // Need privileges to manage repository.
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+      {
+         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
+      }
+
       if (!canRemoveRepository(name, allowRemoveDefaultRepository))
          throw new RepositoryException("Repository " + name + " in use. If you want to "
             + " remove repository close all open sessions");
