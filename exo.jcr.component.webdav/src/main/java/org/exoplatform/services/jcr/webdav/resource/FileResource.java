@@ -222,7 +222,15 @@ public class FileResource extends GenericResource
       }
       else if (name.equals(GETLASTMODIFIED))
       {
-         Calendar modified = contentNode().getProperty("jcr:lastModified").getDate();
+         Calendar modified;
+         try
+         {
+            modified = contentNode().getProperty("jcr:lastModified").getDate();
+         }
+         catch (PathNotFoundException e)
+         {
+            modified = node.getProperty("jcr:created").getDate();
+         }
          HierarchicalProperty lastModified = new HierarchicalProperty(name, modified, MODIFICATION_PATTERN);
          lastModified.setAttribute("b:dt", "dateTime.rfc1123");
          return lastModified;
@@ -268,7 +276,9 @@ public class FileResource extends GenericResource
             return lockDiscovery(token, owner, "86400");
          }
          else
+         {
             throw new PathNotFoundException();
+         }
       }
       else if (name.equals(ISVERSIONED))
       {
