@@ -121,6 +121,13 @@
     </dependency>
   </dependencies>
   <build>
+    <resources>
+      <resource>
+        <directory>src/main/rar</directory>
+        <targetPath>${project.build.directory}</targetPath>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -146,6 +153,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-rar-plugin</artifactId>
         <configuration>
+          <raXmlFile>${project.build.directory}/META-INF/ra.xml</raXmlFile>
           <archive>
             <manifest>
               <addClasspath>true</addClasspath>
