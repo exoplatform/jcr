@@ -976,16 +976,16 @@ failure message in response  - the description of failure</programlisting>
       <itemizedlist>
         <listitem>
           <para>Go to folder of "backup client" <emphasis
-          role="bold">../jcr/trunk/applications/exo.jcr.applications.backupconsole</emphasis>
+          role="bold">../jcr/trunk/applications/java/standalone/backupconsole</emphasis>
           . - build the application :<programlisting>
-   mvn clean install -P deploy
+   mvn clean install
    
 </programlisting></para>
         </listitem>
 
         <listitem>
           <para>Go to <emphasis
-          role="bold">../jcr/trunk/applications/exo.jcr.applications.backupconsole/target/backupconsole-binary</emphasis>
+          role="bold">../jcr/trunk/applications/java/standalone/backupconsole/target/backupconsole-binary</emphasis>
           and use it.</para>
         </listitem>
       </itemizedlist>
@@ -996,7 +996,7 @@ failure message in response  - the description of failure</programlisting>
 
       <itemizedlist>
         <listitem>
-          <para>Run jar<programlisting>java -jar exo.jcr.applications.backupconsole-binary.jar &lt;command&gt;
+          <para>Run jar<programlisting>java -jar exo.jcr.applications.backupconsole-1.11.1-SNAPSHOT.jar &lt;command&gt;
 </programlisting>or use jcrbackup.cmd (or .sh);</para>
         </listitem>
       </itemizedlist>
