@@ -976,7 +976,7 @@ failure message in response  - the description of failure</programlisting>
       <itemizedlist>
         <listitem>
           <para>Go to folder of "backup client" <emphasis
-          role="bold">../jcr/trunk/applications/exo.jcr.applications.backupconsole</emphasis>
+          role="bold">${JCR-SRC-HOME}/applications/exo.jcr.applications.backupconsole</emphasis>
           . - build the application :<programlisting>
    mvn clean install -P deploy
    
@@ -985,10 +985,14 @@ failure message in response  - the description of failure</programlisting>
 
         <listitem>
           <para>Go to <emphasis
-          role="bold">../jcr/trunk/applications/exo.jcr.applications.backupconsole/target/backupconsole-binary</emphasis>
+          role="bold">${JCR-SRC-HOME}/applications/exo.jcr.applications.backupconsole/target/backupconsole-binary</emphasis>
           and use it.</para>
         </listitem>
       </itemizedlist>
+
+      <note>
+        <para><emphasis role="bold">${JCR-SRC-HOME}</emphasis> the path where eXo JCR sources located</para>
+      </note>
     </section>
 
     <section>
