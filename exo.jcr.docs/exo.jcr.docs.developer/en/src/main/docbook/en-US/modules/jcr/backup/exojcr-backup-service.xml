@@ -483,17 +483,12 @@ repo.removeWorkspace(workspace);</programlisting></para>
   <section>
     <title>Restore existing workspace or repository</title>
 
-    <important>
-      <para>Restoring of existing workspace or repository available from JCR
-      1.14.0-CR1.</para>
-    </important>
-
-    <para>The resore of existed workspace or repositry is avaleble.</para>
+    <para>The resore of existing workspace or repositry is avaleble.</para>
 
     <para>For restore will be used spacial methods:</para>
 
     <programlisting> /**
-    * Restore existed workspace. Previous data will be deleted.
+    * Restore existing workspace. Previous data will be deleted.
     * For getting status of workspace restore can use 
     * BackupManager.getLastRestore(String repositoryName, String workspaceName) method 
     * 
@@ -508,11 +503,11 @@ repo.removeWorkspace(workspace);</programlisting></para>
     * @throws BackupConfigurationException
     *           if configuration exception occurred
     */
-   void restoreExistedWorkspace(String workspaceBackupIdentifier, String repositoryName, WorkspaceEntry workspaceEntry,
+   void restoreExistingWorkspace(String workspaceBackupIdentifier, String repositoryName, WorkspaceEntry workspaceEntry,
       boolean asynchronous) throws BackupOperationException, BackupConfigurationException;
 
    /**
-    * Restore existed workspace. Previous data will be deleted.
+    * Restore existing workspace. Previous data will be deleted.
     * For getting status of workspace restore use can use 
     * BackupManager.getLastRestore(String repositoryName, String workspaceName) method 
     * 
@@ -527,10 +522,10 @@ repo.removeWorkspace(workspace);</programlisting></para>
     * @throws BackupConfigurationException
     *           if configuration exception occurred
     */
-   void restoreExistedWorkspace(BackupChainLog log, String repositoryName, WorkspaceEntry workspaceEntry, boolean asynchronous)  throws BackupOperationException, BackupConfigurationException;
+   void restoreExistingWorkspace(BackupChainLog log, String repositoryName, WorkspaceEntry workspaceEntry, boolean asynchronous)  throws BackupOperationException, BackupConfigurationException;
 
    /**
-    * Restore existed repository. Previous data will be deleted.
+    * Restore existing repository. Previous data will be deleted.
     * For getting status of repository restore can use 
     * BackupManager.getLastRestore(String repositoryName) method 
     * 
@@ -545,10 +540,10 @@ repo.removeWorkspace(workspace);</programlisting></para>
     * @throws BackupConfigurationException
     *           if configuration exception occurred
     */
-   void restoreExistedRepository(String  repositoryBackupIdentifier, RepositoryEntry repositoryEntry, boolean asynchronous)  throws BackupOperationException, BackupConfigurationException;
+   void restoreExistingRepository(String  repositoryBackupIdentifier, RepositoryEntry repositoryEntry, boolean asynchronous)  throws BackupOperationException, BackupConfigurationException;
 
    /**
-    * Restore existed repository. Previous data will be deleted.
+    * Restore existing repository. Previous data will be deleted.
     * For getting status of repository restore can use 
     * BackupManager.getLastRestore(String repositoryName) method 
     * 
@@ -563,7 +558,7 @@ repo.removeWorkspace(workspace);</programlisting></para>
     * @throws BackupConfigurationException
     *           if configuration exception occurred
     */
-   void restoreExistedRepository(RepositoryBackupChainLog log, RepositoryEntry repositoryEntry, boolean asynchronous)
+   void restoreExistingRepository(RepositoryBackupChainLog log, RepositoryEntry repositoryEntry, boolean asynchronous)
       throws BackupOperationException, BackupConfigurationException;</programlisting>
 
     <para>These methods for restore will do:</para>
