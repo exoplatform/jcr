@@ -1279,7 +1279,7 @@ public class TestBackupManager extends AbstractBackupTestCase
          assertNotNull(bchLog.getStartedTime());
          assertNotNull(bchLog.getFinishedTime());
 
-         backup.restoreExistedWorkspace(bchLog, re.getName(), ws1, false);
+         backup.restoreExistingWorkspace(bchLog, re.getName(), ws1, false);
 
          // check
          SessionImpl back1 = null;
@@ -1356,7 +1356,7 @@ public class TestBackupManager extends AbstractBackupTestCase
          assertNotNull(bchLog.getStartedTime());
          assertNotNull(bchLog.getFinishedTime());
 
-         backup.restoreExistedWorkspace(bchLog, re.getName(), ws1, true);
+         backup.restoreExistingWorkspace(bchLog, re.getName(), ws1, true);
 
          while (backup.getLastRestore(repository.getName(), ws1.getName()).getStateRestore() != JobWorkspaceRestore.RESTORE_SUCCESSFUL
             && backup.getLastRestore(repository.getName(), ws1.getName()).getStateRestore() != JobWorkspaceRestore.RESTORE_FAIL)
@@ -1439,7 +1439,7 @@ public class TestBackupManager extends AbstractBackupTestCase
          assertNotNull(bchLog.getStartedTime());
          assertNotNull(bchLog.getFinishedTime());
 
-         backup.restoreExistedWorkspace(bchLog.getBackupId(), re.getName(), ws1, true);
+         backup.restoreExistingWorkspace(bchLog.getBackupId(), re.getName(), ws1, true);
 
          while (backup.getLastRestore(repository.getName(), ws1.getName()).getStateRestore() != JobWorkspaceRestore.RESTORE_SUCCESSFUL
             && backup.getLastRestore(repository.getName(), ws1.getName()).getStateRestore() != JobWorkspaceRestore.RESTORE_FAIL)
@@ -1511,7 +1511,7 @@ public class TestBackupManager extends AbstractBackupTestCase
          assertNotNull(bchLog.getStartedTime());
          assertNotNull(bchLog.getFinishedTime());
 
-         backup.restoreExistedRepository(bchLog, re, false);
+         backup.restoreExistingRepository(bchLog, re, false);
 
          assertEquals(JobWorkspaceRestore.RESTORE_SUCCESSFUL, backup.getLastRepositoryRestore(re.getName())
             .getStateRestore());
@@ -1599,7 +1599,7 @@ public class TestBackupManager extends AbstractBackupTestCase
          assertNotNull(bchLog.getStartedTime());
          assertNotNull(bchLog.getFinishedTime());
 
-         backup.restoreExistedRepository(bchLog, re, false);
+         backup.restoreExistingRepository(bchLog, re, false);
 
          assertEquals(JobWorkspaceRestore.RESTORE_SUCCESSFUL, backup.getLastRepositoryRestore(re.getName())
             .getStateRestore());
@@ -1673,7 +1673,7 @@ public class TestBackupManager extends AbstractBackupTestCase
          assertNotNull(bchLog.getStartedTime());
          assertNotNull(bchLog.getFinishedTime());
 
-         backup.restoreExistedRepository(bchLog, re, true);
+         backup.restoreExistingRepository(bchLog, re, true);
 
          JobRepositoryRestore job = backup.getLastRepositoryRestore(re.getName());
 
@@ -1755,7 +1755,7 @@ public class TestBackupManager extends AbstractBackupTestCase
          assertNotNull(bchLog.getStartedTime());
          assertNotNull(bchLog.getFinishedTime());
 
-         backup.restoreExistedRepository(bchLog.getBackupId(), re, true);
+         backup.restoreExistingRepository(bchLog.getBackupId(), re, true);
 
          JobRepositoryRestore job = backup.getLastRepositoryRestore(re.getName());
 
@@ -1857,7 +1857,7 @@ public class TestBackupManager extends AbstractBackupTestCase
          assertNotNull(bchLog.getStartedTime());
          assertNotNull(bchLog.getFinishedTime());
 
-         backup.restoreExistedWorkspace(bchLog, re.getName(), ws1, false);
+         backup.restoreExistingWorkspace(bchLog, re.getName(), ws1, false);
 
          // check
          SessionImpl back1 = null;

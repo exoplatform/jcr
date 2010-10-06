@@ -30,7 +30,7 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 public interface ExtendedBackupManager extends BackupManager
 {
    /**
-    * Restore existed workspace. Previous data will be deleted.
+    * Restore existing workspace. Previous data will be deleted.
     * For getting status of workspace restore can use 
     * BackupManager.getLastRestore(String repositoryName, String workspaceName) method 
     * 
@@ -45,11 +45,11 @@ public interface ExtendedBackupManager extends BackupManager
     * @throws BackupConfigurationException
     *           if configuration exception occurred
     */
-   void restoreExistedWorkspace(String workspaceBackupIdentifier, String repositoryName, WorkspaceEntry workspaceEntry,
+   void restoreExistingWorkspace(String workspaceBackupIdentifier, String repositoryName, WorkspaceEntry workspaceEntry,
       boolean asynchronous) throws BackupOperationException, BackupConfigurationException;
 
    /**
-    * Restore existed workspace. Previous data will be deleted.
+    * Restore existing workspace. Previous data will be deleted.
     * For getting status of workspace restore can use 
     * BackupManager.getLastRestore(String repositoryName, String workspaceName) method 
     * 
@@ -64,10 +64,10 @@ public interface ExtendedBackupManager extends BackupManager
     * @throws BackupConfigurationException
     *           if configuration exception occurred
     */
-   void restoreExistedWorkspace(BackupChainLog log, String repositoryName, WorkspaceEntry workspaceEntry, boolean asynchronous)  throws BackupOperationException, BackupConfigurationException;
+   void restoreExistingWorkspace(BackupChainLog log, String repositoryName, WorkspaceEntry workspaceEntry, boolean asynchronous)  throws BackupOperationException, BackupConfigurationException;
 
    /**
-    * Restore existed repository. Previous data will be deleted.
+    * Restore existing repository. Previous data will be deleted.
     * For getting status of repository restore can use 
     * BackupManager.getLastRestore(String repositoryName) method 
     * 
@@ -82,10 +82,10 @@ public interface ExtendedBackupManager extends BackupManager
     * @throws BackupConfigurationException
     *           if configuration exception occurred
     */
-   void restoreExistedRepository(String  repositoryBackupIdentifier, RepositoryEntry repositoryEntry, boolean asynchronous)  throws BackupOperationException, BackupConfigurationException;
+   void restoreExistingRepository(String  repositoryBackupIdentifier, RepositoryEntry repositoryEntry, boolean asynchronous)  throws BackupOperationException, BackupConfigurationException;
 
    /**
-    * Restore existed repository. Previous data will be deleted.
+    * Restore existing repository. Previous data will be deleted.
     * For getting status of repository restore can use 
     * BackupManager.getLastRestore(String repositoryName) method 
     * 
@@ -100,7 +100,7 @@ public interface ExtendedBackupManager extends BackupManager
     * @throws BackupConfigurationException
     *           if configuration exception occurred
     */
-   void restoreExistedRepository(RepositoryBackupChainLog log, RepositoryEntry repositoryEntry, boolean asynchronous)
+   void restoreExistingRepository(RepositoryBackupChainLog log, RepositoryEntry repositoryEntry, boolean asynchronous)
       throws BackupOperationException, BackupConfigurationException;
 
 }

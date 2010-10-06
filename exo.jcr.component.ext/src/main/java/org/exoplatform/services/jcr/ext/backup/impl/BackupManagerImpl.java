@@ -1610,7 +1610,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
    /**
     * {@inheritDoc}
     */
-   public void restoreExistedRepository(RepositoryBackupChainLog rblog, RepositoryEntry repositoryEntry,
+   public void restoreExistingRepository(RepositoryBackupChainLog rblog, RepositoryEntry repositoryEntry,
             boolean asynchronous) throws BackupOperationException, BackupConfigurationException
    {
       try
@@ -1682,7 +1682,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
    /**
     * {@inheritDoc}
     */
-   public void restoreExistedRepository(String repositoryBackupIdentifier, RepositoryEntry repositoryEntry,
+   public void restoreExistingRepository(String repositoryBackupIdentifier, RepositoryEntry repositoryEntry,
             boolean asynchronous) throws BackupOperationException, BackupConfigurationException
    {
       RepositoryBackupChainLog backupChainLog = null;
@@ -1701,13 +1701,13 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
          throw new BackupConfigurationException("Can not founf backup of repository with id \"" + repositoryBackupIdentifier + "\"");
       }
       
-      this.restoreExistedRepository(backupChainLog, repositoryEntry, asynchronous);
+      this.restoreExistingRepository(backupChainLog, repositoryEntry, asynchronous);
    }
 
    /**
     * {@inheritDoc}
     */
-   public void restoreExistedWorkspace(BackupChainLog log, String repositoryName, WorkspaceEntry workspaceEntry,
+   public void restoreExistingWorkspace(BackupChainLog log, String repositoryName, WorkspaceEntry workspaceEntry,
             boolean asynchronous) throws BackupOperationException, BackupConfigurationException
    {
       try 
@@ -1748,7 +1748,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
    /**
     * {@inheritDoc}
     */
-   public void restoreExistedWorkspace(String workspaceBackupIdentifier, String repositoryName,
+   public void restoreExistingWorkspace(String workspaceBackupIdentifier, String repositoryName,
             WorkspaceEntry workspaceEntry, boolean asynchronous) throws BackupOperationException,
             BackupConfigurationException
    {
@@ -1768,7 +1768,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
          throw new BackupConfigurationException("Can not founf backup of workspace with id \"" + workspaceBackupIdentifier + "\"");
       }
       
-      this.restoreExistedWorkspace(backupChainLog, repositoryName, workspaceEntry, asynchronous);
+      this.restoreExistingWorkspace(backupChainLog, repositoryName, workspaceEntry, asynchronous);
    }
    
 }
