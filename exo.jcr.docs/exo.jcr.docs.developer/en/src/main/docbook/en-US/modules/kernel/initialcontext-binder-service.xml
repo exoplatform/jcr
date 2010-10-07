@@ -3,16 +3,15 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <chapter id="Kernel.InitialContextBinderservice">
   <?dbhtml filename="ch-initialcontext-binder-service.html"?>
-  <title>Initial Context Binder service</title>
+
+  <title>Initial Context Binder</title>
 
   <para>Initial Context Binder is responsible for binding references at
-  runtime, persisting in file and automatically rebinding after restart. Java
-  temp directory is used to persist references in bind-references.xml
-  file.</para>
-
-  <note>
-    <para>Available since Kernel 2.2.1-GA</para>
-  </note>
+  runtime, persisting in file and automatically rebinding. Java temp directory
+  is used to persist references in bind-references.xml file by default. In
+  case when need to definde special file it can be done by add parameter to
+  <link linkend="Kernel.JNDINaming">InitialContextInitializer</link>
+  configuration.</para>
 
   <section>
     <title>API</title>
@@ -44,16 +43,5 @@
         <para>refAddr - object's properties map</para>
       </listitem>
     </itemizedlist>
-  </section>
-
-  <section>
-    <title>Configuration</title>
-
-    <para>A configuration example</para>
-
-    <programlisting>&lt;component&gt; 
-   &lt;key&gt;org.exoplatform.services.naming.InitialContextBinder&lt;/key&gt; 
-   &lt;type&gt;org.exoplatform.services.naming.InitialContextBinder&lt;/type&gt; 
-&lt;/component&gt;</programlisting>
   </section>
 </chapter>

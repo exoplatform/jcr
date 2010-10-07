@@ -131,8 +131,17 @@
         &lt;description&gt;Mandatory initial context properties&lt;/description&gt;
         &lt;property name="java.naming.provider.url" value="rmi://localhost:9999"/&gt;
       &lt;/properties-param&gt;
+      &lt;value-param&gt;.
+        &lt;name&gt;bindings-store-path&lt;/name&gt;.
+        &lt;value&gt;bind-references.xml&lt;/value&gt;.
+      &lt;/value-param&gt;.
     &lt;/init-params&gt;
   &lt;/component&gt;</programlisting></para>
+
+    <para>where</para>
+
+    <para><emphasis role="bold">binding-store-path</emphasis> is file path
+    which stores binded datasources in runtime</para>
 
     <para>The <envar>BindReferencePlugin</envar> component plugin
     configuration example (for JDBC datasource):</para>
@@ -188,9 +197,7 @@
 
     <para><envar>InitialContextInitalizer</envar> also provides feature of
     references binding in runtime. References have bind in runtime will be
-    persisted and automatically rebinded on a next system start. Java temp
-    directory is used to persist references in bind-references.xml
-    file.</para>
+    persisted and automatically rebinded on a next system start.</para>
 
     <para>Service provides methods for binding reference.</para>
 
