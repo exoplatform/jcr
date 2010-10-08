@@ -18,6 +18,21 @@
  */
 package org.exoplatform.services.jcr.impl.xml.importing;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.jcr.NamespaceRegistry;
+import javax.jcr.PathNotFoundException;
+import javax.jcr.PropertyType;
+import javax.jcr.RepositoryException;
+import javax.jcr.ValueFormatException;
+import javax.jcr.nodetype.ConstraintViolationException;
+import javax.jcr.nodetype.NoSuchNodeTypeException;
+
 import org.exoplatform.services.jcr.access.AccessManager;
 import org.exoplatform.services.jcr.core.ExtendedPropertyType;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
@@ -46,21 +61,6 @@ import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.ConversationState;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.jcr.NamespaceRegistry;
-import javax.jcr.PathNotFoundException;
-import javax.jcr.PropertyType;
-import javax.jcr.RepositoryException;
-import javax.jcr.ValueFormatException;
-import javax.jcr.nodetype.ConstraintViolationException;
-import javax.jcr.nodetype.NoSuchNodeTypeException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -159,7 +159,7 @@ public class SystemViewImporter extends BaseXmlImporter
             
             ImportNodeData currentNodeInfo = (ImportNodeData)getParent();
             
-            NodePropertiesInfo currentNodePropertiesInfo = mapNodePropertiesInfo.get(currentNodeInfo.getQPath().getAsString());
+            NodePropertiesInfo currentNodePropertiesInfo = mapNodePropertiesInfo.get(currentNodeInfo.getIdentifier());
             
             currentNodePropertiesInfo.addProperty(propertyData);
          }
@@ -219,7 +219,7 @@ public class SystemViewImporter extends BaseXmlImporter
          
          changesLog.add(new ItemState(newNodeData, ItemState.ADDED, true, getAncestorToSave()));
          
-         mapNodePropertiesInfo.put(newNodeData.getQPath().getAsString(), new NodePropertiesInfo(newNodeData));  
+         mapNodePropertiesInfo.put(newNodeData.getIdentifier(), new NodePropertiesInfo(newNodeData));
 
          tree.push(newNodeData);
 
@@ -307,7 +307,7 @@ public class SystemViewImporter extends BaseXmlImporter
    {
       ImportNodeData currentNodeInfo = (ImportNodeData)tree.pop();
       
-      NodePropertiesInfo currentNodePropertiesInfo = mapNodePropertiesInfo.get(currentNodeInfo.getQPath().getAsString()); 
+      NodePropertiesInfo currentNodePropertiesInfo = mapNodePropertiesInfo.get(currentNodeInfo.getIdentifier());
       
       if (currentNodePropertiesInfo != null)
       {
@@ -571,7 +571,7 @@ public class SystemViewImporter extends BaseXmlImporter
 
       tree.push(currentNodeInfo);
       
-      mapNodePropertiesInfo.put(currentNodeInfo.getQPath().getAsString(), new NodePropertiesInfo(currentNodeInfo));
+      mapNodePropertiesInfo.put(currentNodeInfo.getIdentifier(), new NodePropertiesInfo(currentNodeInfo));
       
       return propertyData;
    }
