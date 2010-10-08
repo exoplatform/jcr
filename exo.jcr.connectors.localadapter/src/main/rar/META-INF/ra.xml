@@ -25,7 +25,7 @@
    <display-name>JCR repository</display-name>
    <vendor-name>exoplatform</vendor-name>
    <eis-type />
-   <resourceadapter-version>${project.version}</resourceadapter-version>
+   <resourceadapter-version>1.12.6-GA-SNAPSHOT</resourceadapter-version>
    <license>
       <license-required>false</license-required>
    </license>
