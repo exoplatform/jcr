@@ -314,7 +314,7 @@ public class SystemViewImporter extends BaseXmlImporter
          checkProperties(currentNodePropertiesInfo);
       }
       
-      mapNodePropertiesInfo.remove(currentNodeInfo.getQPath().getAsString());
+      mapNodePropertiesInfo.remove(currentNodeInfo.getIdentifier());
 
       currentNodeInfo.setMixinTypeNames(currentNodeInfo.getMixinTypeNames());
 
