@@ -65,19 +65,8 @@ public class LocationFactory
     */
    public JCRPath createJCRPath(JCRPath parentLoc, String relPath) throws RepositoryException
    {
-
-      JCRPath path = new JCRPath();
-      for (int i = 0; i < parentLoc.getEntries().length; i++)
-      {
-         path.addEntry(parentLoc.getEntries()[i]);
-      }
-
       JCRPath addPath = parseNames(relPath, false);
-      for (int i = 0; i < addPath.getEntries().length; i++)
-      {
-         path.addEntry(addPath.getEntries()[i]);
-      }
-      return path;
+      return parentLoc.add(addPath);
    }
 
    /**
@@ -125,30 +114,21 @@ public class LocationFactory
     */
    public JCRPath createJCRPath(QPath qPath) throws RepositoryException
    {
-
-      JCRPath path = new JCRPath();
-      for (int i = 0; i < qPath.getEntries().length; i++)
-      {
-         QPathEntry entry = qPath.getEntries()[i];
-         String prefix = namespaces.getNamespacePrefixByURI(entry.getNamespace());
-         path.addEntry(entry.getNamespace(), entry.getName(), prefix, entry.getIndex());
-      }
-
-      return path;
+      return JCRPath.createJCRPath(namespaces, qPath);
    }
 
    public JCRName createJCRName(InternalQName qname) throws RepositoryException
    {
       String prefix = namespaces.getNamespacePrefixByURI(qname.getNamespace());
-      return new JCRName(qname.getNamespace(), qname.getName(), prefix);
+      return new JCRName(qname, prefix);
    }
 
    public String formatPathElement(QPathEntry qe) throws RepositoryException
    {
       String prefix = namespaces.getNamespacePrefixByURI(qe.getNamespace());
-      JCRPath p = new JCRPath();
-      p.addEntry(qe.getNamespace(), qe.getName(), prefix, qe.getIndex());
-      return p.getEntries()[0].getAsString(false);
+      JCRPath p = JCRPath.createJCRPath();
+      p = p.addEntry(qe.getNamespace(), qe.getName(), prefix, qe.getIndex());
+      return p.getEntry(0).getAsString(false);
    }
 
    /**
@@ -160,25 +140,17 @@ public class LocationFactory
     */
    public JCRName parseJCRName(String name) throws RepositoryException
    {
-      JCRPath.PathElement entry = parsePathEntry(new JCRPath(), name);
-
-      return new JCRName(entry.getNamespace(), entry.getName(), entry.getPrefix());
+      JCRPath path = parsePathEntry(JCRPath.createJCRPath(), name);
+      JCRPath.PathElement entry = path.getName();
+      return new JCRName(entry);
    }
 
    public JCRPath.PathElement[] createRelPath(QPathEntry[] relPath) throws RepositoryException
    {
-      JCRPath path = new JCRPath();
-      // JCRPath.PathElement[] entries = new JCRPath.PathElement[relPath.length];
-      for (QPathEntry element : relPath)
-      {
-         String uri = namespaces.getNamespaceURIByPrefix(element.getNamespace());
-         String prefix = namespaces.getNamespacePrefixByURI(uri);
-         path.addEntry(uri, element.getName(), prefix, element.getIndex());
-      }
-      return path.getEntries();
+      return JCRPath.createJCRPath(namespaces, relPath).getEntries();
    }
 
-   private JCRPath.PathElement parsePathEntry(JCRPath path, String name) throws RepositoryException
+   private JCRPath parsePathEntry(JCRPath path, String name) throws RepositoryException
    {
 
       // should be reset here (if there is explicit index) or
@@ -232,8 +204,8 @@ public class LocationFactory
             throw new RepositoryException("Illegal path entry: \"" + name + "\"");
          }
 
-         path.addEntry(namespaces.getNamespaceURIByPrefix(prefix), someName, prefix, index);
-         return (JCRPath.PathElement)path.getName();
+         path = path.addEntry(namespaces.getNamespaceURIByPrefix(prefix), someName, prefix, index);
+         return path;
 
       }
       catch (Exception e)
@@ -250,7 +222,7 @@ public class LocationFactory
          throw new RepositoryException("Illegal relPath: \"" + path + "\"");
       }
 
-      JCRPath jcrPath = new JCRPath();
+      JCRPath jcrPath = JCRPath.createJCRPath();
       int start = 0;
       if (!absolute)
       {
@@ -262,7 +234,7 @@ public class LocationFactory
          {
             throw new RepositoryException("Illegal relPath: \"" + path + "\"");
          }
-         jcrPath.addEntry(namespaces.getNamespaceURIByPrefix(""), "", "", -1);
+         jcrPath = jcrPath.addEntry(namespaces.getNamespaceURIByPrefix(""), "", "", -1);
       }
       else
       {
@@ -280,7 +252,7 @@ public class LocationFactory
 
          if (start + 1 != path.length())
          {
-            parsePathEntry(jcrPath, qname);
+            jcrPath = parsePathEntry(jcrPath, qname);
          }
          else
          {

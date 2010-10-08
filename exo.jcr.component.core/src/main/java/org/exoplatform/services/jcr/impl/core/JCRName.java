@@ -40,17 +40,43 @@ public class JCRName
 
    protected final int hashCode;
 
+   protected JCRName(InternalQName qname, String prefix)
+   {
+      this(qname.getNamespace(), qname.getName(), prefix);
+   }
+
+   JCRName(JCRPath.PathElement that)
+   {
+      this.prefix = that.prefix;
+      this.name = that.name;
+      this.namespace = that.namespace;
+      this.stringName = that.stringName;
+      this.hashCode = that.hashCode;
+   }
+
    JCRName(String namespace, String name, String prefix)
    {
-      this.name = name.intern();
-      this.namespace = namespace.intern();
-      this.prefix = prefix.intern();
+      int hk = 31 + namespace.hashCode();
+      hk = hk * 31 + name.hashCode();
+      int hashCode = hk * 31 + prefix.hashCode();
 
-      this.stringName = ((this.prefix.length() == 0 ? "" : this.prefix + ":") + this.name);
+      //
+      String stringName;
+      if (prefix.length() == 0)
+      {
+         stringName = name;
+      }
+      else
+      {
+         stringName = prefix + ":" + name;
+      }
 
-      int hk = 31 + this.namespace.hashCode();
-      hk = hk * 31 + this.name.hashCode();
-      this.hashCode = hk * 31 + this.prefix.hashCode();
+      //
+      this.name = name;
+      this.namespace = namespace;
+      this.prefix = prefix;
+      this.stringName = stringName;
+      this.hashCode = hashCode;
    }
 
    /**
