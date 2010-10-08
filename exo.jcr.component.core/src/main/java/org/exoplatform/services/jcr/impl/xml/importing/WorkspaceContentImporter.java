@@ -18,6 +18,11 @@
  */
 package org.exoplatform.services.jcr.impl.xml.importing;
 
+import java.util.Map;
+
+import javax.jcr.NamespaceRegistry;
+import javax.jcr.RepositoryException;
+
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.access.AccessManager;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
@@ -34,11 +39,6 @@ import org.exoplatform.services.jcr.impl.xml.importing.dataflow.ImportNodeData;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.ConversationState;
-
-import java.util.Map;
-
-import javax.jcr.NamespaceRegistry;
-import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -136,6 +136,8 @@ public class WorkspaceContentImporter extends SystemViewImporter
             changesLog.add(new ItemState(newNodeData, ItemState.ADDED, true, parentData.getQPath()));
          }
          tree.push(newNodeData);
+
+         mapNodePropertiesInfo.put(newNodeData.getIdentifier(), new NodePropertiesInfo(newNodeData));
       }
       else
       {
