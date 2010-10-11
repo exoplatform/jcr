@@ -18,12 +18,31 @@
     something happened or to collect some information from the other
     nodes.</para>
 
-    <para>The <emphasis>RPCService</emphasis> relies on 2 main interfaces
-    which are the <emphasis>org.exoplatform.services.rpc.RPCService</emphasis>
-    that defines the service itslef and the
-    <emphasis>org.exoplatform.services.rpc.RemoteCommand</emphasis> that
-    defines the command that we can execute on other nodes. The arguments that
-    will be given to the <emphasis>RemoteCommand</emphasis> must be
+    <para>The <emphasis>RPCService</emphasis> relies on 3 main interfaces
+    which are:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>The <emphasis>org.exoplatform.services.rpc.RPCService</emphasis>
+        that defines the service itslef</para>
+      </listitem>
+
+      <listitem>
+        <para>The
+        <emphasis>org.exoplatform.services.rpc.RemoteCommand</emphasis> that
+        defines the command that we can execute on other nodes.</para>
+      </listitem>
+
+      <listitem>
+        <para>The
+        <emphasis>org.exoplatform.services.rpc.TopologyChangeListener</emphasis>
+        that defines the listeners that will be notified anytime the topology
+        of the cluster changes.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>The arguments that will be given to the
+    <emphasis>RemoteCommand</emphasis> must be
     <emphasis>Serializable</emphasis> and its return type also in order to
     prevent any issue due to the serialization. To prevent to execute any
     <emphasis>RemoteCommand</emphasis> that could be malicious and to allow to
