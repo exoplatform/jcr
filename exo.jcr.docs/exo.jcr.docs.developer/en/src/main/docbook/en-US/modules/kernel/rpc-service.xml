@@ -199,9 +199,10 @@
     proposed by default. This command will dynamically execute a method on a
     given object.</para>
 
-    <programlisting>// Register the command first
+    <programlisting>// Register the command first (to be done before that the RPCService has been started)
 RemoteCommand commandGetName = rpcService.registerCommand(new SingleMethodCallCommand(myService, "getName"));
-// Execute the command on the coordinator
+...
+// Execute the command on the coordinator (can be done only after having started the RPCService)
 String name = rpcService.executeCommandOnCoordinator(commandGetName, true);
 // Print the name
 System.out.println("Name : " + name);</programlisting>
@@ -212,8 +213,8 @@ System.out.println("Name : " + name);</programlisting>
       <listitem>
         <para>Register a <emphasis>SingleMethodCallCommand</emphasis> that
         will call <emphasis>getName()</emphasis> on the Object
-        <emphasis>myService</emphasis> anytime the command will be
-        executed.</para>
+        <emphasis>myService</emphasis> anytime the command will be executed.
+        </para>
       </listitem>
 
       <listitem>
@@ -226,5 +227,24 @@ System.out.println("Name : " + name);</programlisting>
         <para>Print the name got from the coordinator</para>
       </listitem>
     </orderedlist>
+
+    <note>
+      <para>As any <emphasis>RemoteCommand</emphasis>, it has to be registered
+      before being executed and before the <emphasis>RPCService</emphasis> is
+      launched.</para>
+    </note>
+
+    <note>
+      <para>As any <emphasis>RemoteCommand</emphasis>, the command can be
+      executed only once the <emphasis>RPCService</emphasis> is
+      launched.</para>
+    </note>
+
+    <note>
+      <para>The <emphasis>SingleMethodCallCommand</emphasis> only allow public
+      methods, if you try to register a non public method an
+      <emphasis>RPCException</emphasis> will be thrown at creation
+      level.</para>
+    </note>
   </section>
 </chapter>
