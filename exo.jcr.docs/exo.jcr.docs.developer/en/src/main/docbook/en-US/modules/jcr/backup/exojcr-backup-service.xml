@@ -483,7 +483,7 @@ repo.removeWorkspace(workspace);</programlisting></para>
   <section>
     <title>Restore existing workspace or repository</title>
 
-    <para>The resore of existing workspace or repositry is avaleble.</para>
+    <para>The resore of existing workspace or repositry is available.</para>
 
     <para>For restore will be used spacial methods:</para>
 
