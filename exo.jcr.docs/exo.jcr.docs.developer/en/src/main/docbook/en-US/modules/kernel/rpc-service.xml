@@ -149,6 +149,14 @@
         &lt;name&gt;jgroups-default-timeout&lt;/name&gt;
         &lt;value&gt;0&lt;/value&gt;
       &lt;/value-param&gt;
+      &lt;value-param&gt;
+        &lt;name&gt;allow-failover&lt;/name&gt;
+        &lt;value&gt;true&lt;/value&gt;
+      &lt;/value-param&gt;
+      &lt;value-param&gt;
+        &lt;name&gt;retry-timeout&lt;/name&gt;
+        &lt;value&gt;20000&lt;/value&gt;
+      &lt;/value-param&gt;
     &lt;/init-params&gt;
   &lt;/component&gt;   
 ...
@@ -182,7 +190,30 @@
             <entry>This is the default timeout to use if the timeout is not
             given, if no response could be get after this timeout an exception
             will be thrown. This parameter is optional and its default value
-            is 0 which means that we don't use any timeout by default.</entry>
+            is 0 which means that we don't use any timeout by default. This
+            parameter is expressed in milliseconds.</entry>
+          </row>
+
+          <row>
+            <entry><emphasis>allow-failover</emphasis></entry>
+
+            <entry>This is parameter indicates whether a command on the
+            coordinator needs to be relaunched or not if the coordintator
+            seems to have left the cluster. This parameter only affects the
+            behavior of the methods
+            <emphasis>executeCommandOnCoordinator</emphasis>. This parameter
+            is optional and its default value is true.</entry>
+          </row>
+
+          <row>
+            <entry><emphasis>retry-timeout</emphasis></entry>
+
+            <entry>This parameter is the maximum amount of time to wait until
+            the new coordinator is elected. This parameter is linked to the
+            parameter <emphasis>allow-failover</emphasis>, and thus used in
+            the exact same conditions. This parameter is optional and its
+            default value is 20000. This parameter is expressed in
+            milliseconds.</entry>
           </row>
         </tbody>
       </tgroup>
@@ -213,8 +244,8 @@ System.out.println("Name : " + name);</programlisting>
       <listitem>
         <para>Register a <emphasis>SingleMethodCallCommand</emphasis> that
         will call <emphasis>getName()</emphasis> on the Object
-        <emphasis>myService</emphasis> anytime the command will be executed.
-        </para>
+        <emphasis>myService</emphasis> anytime the command will be
+        executed.</para>
       </listitem>
 
       <listitem>
