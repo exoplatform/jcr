@@ -906,7 +906,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
 
       // remove possible NullNodeData from cache
       boolean local = cache.isLocal();
-      cache.setLocal(false);
+      cache.setLocal(true);
 
       removeNullNode(node);
 
@@ -999,7 +999,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
 
       // remove possible NullNodeData from cache
       boolean local = cache.isLocal();
-      cache.setLocal(false);
+      cache.setLocal(true);
 
       removeNullNode(prop);
 
@@ -1016,8 +1016,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
          cache.addToList(makeChildListFqn(childPropsList, prop.getParentIdentifier()), ITEM_LIST, prop.getIdentifier());
       }
 
-      ItemData result =
-         get(prop.getParentIdentifier(), prop.getQPath().getEntries()[prop.getQPath().getEntries().length - 1]);
+      get(prop.getParentIdentifier(), prop.getQPath().getEntries()[prop.getQPath().getEntries().length - 1]);
 
       // add in ITEMS
       return (PropertyData)cache.put(makeItemFqn(prop.getIdentifier()), ITEM_DATA, prop);
