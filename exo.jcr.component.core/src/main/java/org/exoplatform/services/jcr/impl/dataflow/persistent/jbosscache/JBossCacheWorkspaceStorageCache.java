@@ -332,7 +332,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
             JBOSSCACHE_EXPIRATION_DEFAULT));
 
       this.itemsRoot = Fqn.fromRelativeElements(rootFqn, ITEMS);
-      this.nullItemsRoot = Fqn.fromElements(NULL_ITEMS);
+      this.nullItemsRoot = Fqn.fromRelativeElements(rootFqn, NULL_ITEMS);
       this.childNodes = Fqn.fromRelativeElements(rootFqn, CHILD_NODES);
       this.childProps = Fqn.fromRelativeElements(rootFqn, CHILD_PROPS);
       this.childNodesList = Fqn.fromRelativeElements(rootFqn, CHILD_NODES_LIST);
