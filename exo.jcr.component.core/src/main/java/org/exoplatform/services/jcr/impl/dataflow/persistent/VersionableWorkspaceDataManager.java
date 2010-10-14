@@ -28,6 +28,7 @@ import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.NullNodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -158,30 +159,43 @@ public class VersionableWorkspaceDataManager extends ACLInheritanceSupportedWork
    {
       // from cache at first
       ItemData cdata = persistentManager.getCachedItemData(identifier);
-      if (cdata != null)
+      if (cdata != null && !(cdata instanceof NullNodeData))
+      {
          return super.getItemData(identifier);
+      }
 
       if (!this.equals(versionDataManager) && !identifier.equals(Constants.ROOT_UUID))
       {
          // search in System cache for /jcr:system nodes only
          cdata = versionDataManager.persistentManager.getCachedItemData(identifier);
-         if (cdata != null)
+         if (cdata != null && !(cdata instanceof NullNodeData))
+         {
             if (isSystemDescendant(cdata.getQPath()))
+            {
                return versionDataManager.getItemData(identifier);
+            }
             else
+            {
                return null;
+            }
+         }
       }
 
       // then from persistence
       ItemData data = super.getItemData(identifier);
       if (data != null)
+      {
          return data;
+      }
+      
       else if (!this.equals(versionDataManager))
       {
          // try from version storage if not the same
          data = versionDataManager.getItemData(identifier);
          if (data != null && isSystemDescendant(data.getQPath()))
+         {
             return data;
+         }
       }
       return null;
    }
