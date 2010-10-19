@@ -42,6 +42,7 @@ public class TestLock extends JcrAPIBaseTest
 
    private Node lockedNode = null;
 
+   @Override
    public void setUp() throws Exception
    {
 
@@ -428,4 +429,26 @@ public class TestLock extends JcrAPIBaseTest
       assertFalse(childLockNode.isLocked());
 
    }
+
+   /**
+    * Test indicate if locked node after restarting still locked. 
+    */
+   public void testLockWithoutDBClean() throws Exception
+   {
+      String locNodeName = "TestLockNode";
+      if (session.getRootNode().hasNode(locNodeName))
+      {
+         Node node = session.getRootNode().getNode(locNodeName);
+         assertTrue(node.isLocked());
+      }
+      else
+      {
+         Node node = session.getRootNode().addNode(locNodeName);
+         node.addMixin("mix:lockable");
+         session.save();
+
+         node.lock(false, true);
+      }
+   }
+
 }
