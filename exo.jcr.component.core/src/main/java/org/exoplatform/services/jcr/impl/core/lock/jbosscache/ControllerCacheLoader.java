@@ -140,14 +140,7 @@ public class ControllerCacheLoader implements CacheLoader
     */
    public Set<?> getChildrenNames(Fqn fqn) throws Exception
    {
-      if (cache.getCacheStatus() == CacheStatus.STARTING)
-      {
-         // Try to get the list of children name from the nested cache loader
-         return cl.getChildrenNames(fqn);         
-      }
-      // All the data is loaded at startup, so no need to call the nested cache loader for another
-      // cache status other than CacheStatus.STARTING
-     return null;
+      return cl.getChildrenNames(fqn);
    }
 
    /**
