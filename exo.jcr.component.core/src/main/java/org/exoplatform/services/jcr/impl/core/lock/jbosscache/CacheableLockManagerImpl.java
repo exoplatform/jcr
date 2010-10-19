@@ -1065,7 +1065,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
       {
          public List<LockData> execute(Object arg) throws LockException
          {
-            Set<Object> nodesId = ((CacheSPI<Serializable, Object>)cache).getNode(lockRoot).getChildrenNamesDirect();
+            Set<Object> nodesId = cache.getChildrenNames(lockRoot);
 
             List<LockData> locksData = new ArrayList<LockData>();
             for (Object nodeId : nodesId)
