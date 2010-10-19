@@ -18,10 +18,6 @@
  */
 package org.exoplatform.services.jcr.webdav.resource;
 
-import org.exoplatform.common.util.HierarchicalProperty;
-import org.exoplatform.services.jcr.webdav.util.DeltaVConstants;
-import org.exoplatform.services.jcr.webdav.xml.WebDavNamespaceContext;
-
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Calendar;
@@ -33,6 +29,10 @@ import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.version.Version;
 import javax.xml.namespace.QName;
+
+import org.exoplatform.common.util.HierarchicalProperty;
+import org.exoplatform.services.jcr.webdav.util.DeltaVConstants;
+import org.exoplatform.services.jcr.webdav.xml.WebDavNamespaceContext;
 
 /**
  * Created by The eXo Platform SARL .<br/>
@@ -171,6 +171,14 @@ public class VersionResource extends GenericResource
          Calendar created = version.getNode("jcr:frozenNode").getProperty("jcr:created").getDate();
          HierarchicalProperty creationDate = new HierarchicalProperty(name, created, CREATION_PATTERN);
          creationDate.setAttribute("b:dt", "dateTime.tz");
+         return creationDate;
+
+      }
+      else if (DeltaVConstants.GETLASTMODIFIED.equals(name))
+      {
+         Calendar created = version.getNode("jcr:frozenNode").getProperty("jcr:created").getDate();
+         HierarchicalProperty creationDate = new HierarchicalProperty(name, created, MODIFICATION_PATTERN);
+         creationDate.setAttribute("b:dt", "dateTime.rfc1123");
          return creationDate;
 
       }

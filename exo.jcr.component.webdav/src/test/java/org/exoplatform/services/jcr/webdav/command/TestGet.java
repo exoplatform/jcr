@@ -18,28 +18,31 @@
  */
 package org.exoplatform.services.jcr.webdav.command;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringWriter;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
+
+import javax.jcr.Node;
+import javax.ws.rs.core.MultivaluedMap;
+
 import org.exoplatform.common.http.HTTPStatus;
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.impl.core.version.VersionImpl;
 import org.exoplatform.services.jcr.webdav.BaseStandaloneTest;
+import org.exoplatform.services.jcr.webdav.WebDavConst;
 import org.exoplatform.services.jcr.webdav.WebDavConstants.WebDAVMethods;
 import org.exoplatform.services.jcr.webdav.utils.TestUtils;
-import org.exoplatform.services.rest.ext.provider.XSLTStreamingOutput;
+import org.exoplatform.services.rest.ExtHttpHeaders;
 import org.exoplatform.services.rest.impl.ContainerResponse;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.util.Calendar;
-
-import javax.jcr.Node;
+import org.exoplatform.services.rest.impl.MultivaluedMapImpl;
 
 /**
  * Created by The eXo Platform SAS Author : Dmytro Katayev
@@ -122,6 +125,52 @@ public class TestGet extends BaseStandaloneTest
       assertEquals("Successful result expected (200), but actual is: " + response.getStatus(), 200, response
          .getStatus());
 
+   }
+
+
+   /**
+    * Tests if date passed through header If-modified-since of GET method parsed correctly.
+    * Details can be found here: http://jira.exoplatform.org/browse/JCR-1470
+    * @throws Exception
+    */
+   public void testIfModifiedSinceDateParsing() throws Exception
+   {
+      Node fileNode = session.getRootNode().addNode("node", "nt:file");
+      fileNode.addMixin("mix:versionable");
+
+      Node contentNode = fileNode.addNode("jcr:content", "nt:resource");
+      contentNode.setProperty("jcr:mimeType", "text/plain");
+
+      Calendar creationDate = Calendar.getInstance();
+      Calendar IfModifiedSince = Calendar.getInstance();
+      IfModifiedSince.add(Calendar.HOUR, -2);
+      creationDate.add(Calendar.HOUR, -1);
+      contentNode.setProperty("jcr:data", creationDate);
+      contentNode.setProperty("jcr:lastModified", creationDate);
+
+      session.save();
+
+      fileNode.checkin();
+      fileNode.checkout();
+
+      String path =
+         getPathWS() + "/" + fileNode.getName() + "?time=" + IfModifiedSince.getTimeInMillis() + "&version=1";
+
+      SimpleDateFormat dateFormat = new SimpleDateFormat(WebDavConst.DateFormat.IF_MODIFIED_SINCE_PATTERN, Locale.US);
+      String ifModifiedSinceDate = dateFormat.format(IfModifiedSince.getTime());
+
+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+      headers.add(ExtHttpHeaders.IF_MODIFIED_SINCE, ifModifiedSinceDate);
+      ContainerResponse response = service(WebDAVMethods.GET, path, "", headers, null);
+      assertEquals(HTTPStatus.OK, response.getStatus());
+
+      headers.clear();
+
+      IfModifiedSince.add(Calendar.HOUR, +4);
+      ifModifiedSinceDate = dateFormat.format(IfModifiedSince.getTime());
+      headers.add(ExtHttpHeaders.IF_MODIFIED_SINCE, ifModifiedSinceDate);
+      response = service(WebDAVMethods.GET, path, "", headers, null);
+      assertEquals(HTTPStatus.NOT_MODIFIED, response.getStatus());
    }
 
    @Override
