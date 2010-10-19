@@ -18,6 +18,26 @@
  */
 package org.exoplatform.services.jcr.webdav.command;
 
+import java.io.InputStream;
+import java.net.URI;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+
+import javax.jcr.Node;
+import javax.jcr.PathNotFoundException;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.xml.transform.stream.StreamSource;
+
 import org.exoplatform.common.http.HTTPStatus;
 import org.exoplatform.common.util.HierarchicalProperty;
 import org.exoplatform.services.jcr.webdav.Range;
@@ -38,26 +58,6 @@ import org.exoplatform.services.log.Log;
 import org.exoplatform.services.rest.ExtHttpHeaders;
 import org.exoplatform.services.rest.ext.provider.XSLTStreamingOutput;
 import org.exoplatform.services.rest.impl.header.MediaTypeHelper;
-
-import java.io.InputStream;
-import java.net.URI;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-
-import javax.jcr.Node;
-import javax.jcr.PathNotFoundException;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.xml.transform.stream.StreamSource;
 
 /**
  * Created by The eXo Platform SAS Author : <a
@@ -118,7 +118,7 @@ public class GetCommand
                VersionedResource versionedFile = new VersionedFileResource(uri, node, nsContext);
                resource = versionedFile.getVersionHistory().getVersion(version);
                
-               lastModifiedProperty = resource.getProperty(FileResource.CREATIONDATE);
+               lastModifiedProperty = resource.getProperty(FileResource.GETLASTMODIFIED);
                istream = ((VersionResource)resource).getContentAsStream();
             }
             else
@@ -133,10 +133,10 @@ public class GetCommand
             
             if (ifModifiedSince != null) 
             {
-               DateFormat dateFormat = new SimpleDateFormat(WebDavConst.DateFormat.IF_MODIFIED_SINCE_PATTERN, Locale.US);
+               DateFormat dateFormat = new SimpleDateFormat(WebDavConst.DateFormat.MODIFICATION, Locale.US);
                Date lastModifiedDate = dateFormat.parse(lastModifiedProperty.getValue());
                
-               dateFormat = new SimpleDateFormat(WebDavConst.DateFormat.MODIFICATION, Locale.US);
+               dateFormat = new SimpleDateFormat(WebDavConst.DateFormat.IF_MODIFIED_SINCE_PATTERN, Locale.US);
                Date ifModifiedSinceDate = dateFormat.parse(ifModifiedSince);
                
                if(ifModifiedSinceDate.getTime() >= lastModifiedDate.getTime()){

@@ -18,9 +18,9 @@
  */
 package org.exoplatform.services.jcr.webdav;
 
-import org.exoplatform.common.http.HTTPStatus;
-
 import java.util.Hashtable;
+
+import org.exoplatform.common.http.HTTPStatus;
 
 /**
  * Constants used for webdav service implemetation.
@@ -468,7 +468,7 @@ public final class WebDavConst
       /**
        * If-Modified-Since date psttern.
        */
-      public static final String IF_MODIFIED_SINCE_PATTERN = "EEE, d MMM yyyy HH:mm:ss z";
+      public static final String IF_MODIFIED_SINCE_PATTERN = "EEE, dd MMM yyyy HH:mm:ss z";
    }
 
    /**
