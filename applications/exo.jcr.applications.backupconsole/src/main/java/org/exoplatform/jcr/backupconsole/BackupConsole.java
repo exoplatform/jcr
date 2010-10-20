@@ -58,25 +58,33 @@ public class BackupConsole
     */
    private static final String HELP_INFO =
       "Help info:\n" + " <url> <cmd> \n" + " <url>  :   http(s)//login:password@host:port/<context> \n"
-         + " <cmd>  :   start <repo/ws> <backup_dir> [<incr>] \n" + "            stop <backup_id> \n"
-         + "            status <backup_id> \n" + "            restores <repo/ws> \n"
-         + "            restore <repo/ws> <backup_id> <pathToConfigFile> \n" + "            list [completed] \n"
-         + "            info \n" + "            drop [force-close-session] <repo/ws>  \n" + "            help  \n\n"
+         + " <cmd>  :   start <repo[/ws]> <backup_dir> [<incr>] \n" 
+         + "            stop <backup_id> \n"
+         + "            status <backup_id> \n" 
+         + "            restores <repo[/ws]> \n"
+         + "            restore <repo[/ws]> <backup_id> <pathToConfigFile> \n" 
+         + "            list [completed] \n"
+         + "            info \n" 
+         + "            drop [force-close-session] <repo[/ws]>  \n" 
+         + "            help  \n\n"
 
-         + " start          - start backup \n" + " stop           - stop backup \n"
+         + " start          - start backup of repositpry or workspace \n" 
+         + " stop           - stop backup \n"
          + " status         - information about the current or completed backup by 'backup_id' \n"
-         + " restores       - information about the last restore on specific workspace \n"
-         + " restore        - restore the workspace from specific backup \n"
+         + " restores       - information about the last restore on specific repository or workspace \n"
+         + " restore        - restore the repository or workspace from specific backup \n"
          + " list           - information about the current backups (in progress) \n"
          + " list completed - information about the completed (ready to restore) backups \n"
-         + " info           - information about the service backup \n" + " drop           - delete the workspace \n"
+         + " info           - information about the service backup \n" 
+         + " drop           - delete the repository or workspace \n"
          + " help           - print help information about backup console \n\n"
 
-         + " <repo/ws>           - /<reponsitory-name>/<workspace-name>  the workspace \n"
+         + " <repo[/ws]>           - /<reponsitory-name>[/<workspace-name>]  the repository or workspace \n"
          + " <backup_dir>        - path to folder for backup on remote server \n"
-         + " <backup_id>         - the identifier for backup \n" + " <incr>              - incemental job period \n"
-         + " <pathToConfigFile>  - path (local) to workspace configuration \n"
-         + " force-close-session - close opened sessions on workspace. \n\n";
+         + " <backup_id>         - the identifier for backup \n" 
+         + " <incr>              - incemental job period \n"
+         + " <pathToConfigFile>  - path (local) to  repository or workspace configuration \n"
+         + " force-close-session - close opened sessions on repositpry or workspace. \n\n";
 
    /**
     * Main.
@@ -157,7 +165,7 @@ public class BackupConsole
                return;
 
             String repositoryName = getRepositoryName(pathToWS);
-            String workspaceName = getWorkspaceName(pathToWS);
+            String workspaceName = (pathToWS.split("/").length == 3 ? getWorkspaceName(pathToWS) : null);
 
             if (curArg == args.length)
             {
@@ -233,7 +241,7 @@ public class BackupConsole
                return;
 
             String repositoryName = getRepositoryName(pathToWS);
-            String workspaceName = getWorkspaceName(pathToWS);
+            String workspaceName = (pathToWS.split("/").length == 3 ? getWorkspaceName(pathToWS) : null);
 
             if (curArg < args.length)
             {
@@ -276,7 +284,7 @@ public class BackupConsole
                return;
 
             String repositoryName = getRepositoryName(pathToWS);
-            String workspaceName = getWorkspaceName(pathToWS);
+            String workspaceName = (pathToWS.split("/").length == 3 ? getWorkspaceName(pathToWS) : null);;
 
             if (curArg < args.length)
             {
@@ -321,7 +329,7 @@ public class BackupConsole
                return;
 
             String repositoryName = getRepositoryName(pathToWS);
-            String workspaceName = getWorkspaceName(pathToWS);
+            String workspaceName = (pathToWS.split("/").length == 3 ? getWorkspaceName(pathToWS) : null);
 
             // backup id
             if (curArg == args.length)
@@ -415,7 +423,7 @@ public class BackupConsole
       String repWS = args[curArg];
       repWS = repWS.replaceAll("\\\\", "/");
 
-      if (!repWS.matches("[/][^/]+[/][^/]+"))
+      if ( !repWS.matches("[/][^/]+") && !repWS.matches("[/][^/]+[/][^/]+"))
       {
          System.out.println(INCORRECT_PARAM + "There is incorrect path to workspace parameter: " + repWS);
          return null;

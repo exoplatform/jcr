@@ -57,6 +57,16 @@ public class ClientTransportImpl implements ClientTransport
     * Flag is SSL.
     */
    private final String protocol;
+   
+   /**
+    * Is realm get.
+    */
+   private boolean isRealmGet = false;
+   
+   /**
+    * Realm to connection
+    */
+   private String realm;
 
    /**
     * Constructor.
@@ -124,7 +134,13 @@ public class ClientTransportImpl implements ClientTransport
          HTTPConnection connection = new HTTPConnection(url);
          connection.removeModule(CookieModule.class);
 
-         connection.addBasicAuthorization(getRealm(complURL), login, password);
+         if (!isRealmGet)
+         {
+            realm = getRealm(complURL);
+            isRealmGet = true;
+         }
+         
+         connection.addBasicAuthorization(realm, login, password);
 
          HTTPResponse resp;
          if (postData == null)
@@ -164,7 +180,13 @@ public class ClientTransportImpl implements ClientTransport
          HTTPConnection connection = new HTTPConnection(url);
          connection.removeModule(CookieModule.class);
 
-         connection.addBasicAuthorization(getRealm(complURL), login, password);
+         if (!isRealmGet)
+         {
+            realm = getRealm(complURL);
+            isRealmGet = true;
+         }
+         
+         connection.addBasicAuthorization(realm, login, password);
 
          HTTPResponse resp = connection.Get(url.getFile());
 

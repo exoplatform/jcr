@@ -18,20 +18,6 @@
  */
 package org.exoplatform.services.jcr.ext.repository;
 
-import org.exoplatform.common.http.HTTPStatus;
-import org.exoplatform.services.jcr.RepositoryService;
-import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
-import org.exoplatform.services.jcr.config.RepositoryEntry;
-import org.exoplatform.services.jcr.config.RepositoryServiceConfiguration;
-import org.exoplatform.services.jcr.config.WorkspaceEntry;
-import org.exoplatform.services.jcr.core.ManageableRepository;
-import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
-import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
-import org.exoplatform.services.jcr.impl.core.SessionRegistry;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
-import org.exoplatform.services.rest.resource.ResourceContainer;
-
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +36,20 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Response.Status;
+
+import org.exoplatform.services.jcr.RepositoryService;
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.config.RepositoryEntry;
+import org.exoplatform.services.jcr.config.RepositoryServiceConfiguration;
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
+import org.exoplatform.services.jcr.impl.RepositoryServiceImpl;
+import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
+import org.exoplatform.services.jcr.impl.core.SessionRegistry;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+import org.exoplatform.services.rest.resource.ResourceContainer;
 
 /**
  * Created by The eXo Platform SAS.
@@ -370,7 +370,7 @@ public class RestRepositoryService implements ResourceContainer
     * @return Response
     *           return the Response
     */
-   @POST
+   @GET
    @RolesAllowed("administrators")
    @Path("/remove-repository/{repositoryName}/{forseSessionClose}")
    public Response removeRepository(@Context UriInfo uriInfo, @PathParam("repositoryName") String repositoryName,
@@ -390,14 +390,16 @@ public class RestRepositoryService implements ResourceContainer
             }
          }
 
-         if (repositoryService.canRemoveRepository(repositoryName))
+         if (repositoryService.getDefaultRepository().getConfiguration().getName().equals(repositoryName))
+         {
+            ((RepositoryServiceImpl) repositoryService).removeDefaultRepository();
+         }
+         else
          {
             repositoryService.removeRepository(repositoryName);
-            repositoryService.getConfig().retain(); // save configuration to persistence (file or persister)
-            return Response.noContent().build();
          }
-         return Response.status(HTTPStatus.CONFLICT).entity("Can't remove repository " + repositoryName).cacheControl(
-            NO_CACHE).build();
+         repositoryService.getConfig().retain(); // save configuration to persistence (file or persister) 
+         return Response.ok().build();
       }
       catch (RepositoryException e)
       {
