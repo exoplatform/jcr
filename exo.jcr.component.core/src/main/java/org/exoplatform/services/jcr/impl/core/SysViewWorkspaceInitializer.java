@@ -405,7 +405,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
       this.namespaceRegistry = namespaceRegistry;
       this.locationFactory = locationFactory;
 
-      this.fileCleaner = new FileCleaner(false); // cleaner should be started!
+      this.fileCleaner = valueFactory.getFileCleaner();
       this.maxBufferSize =
          config.getContainer().getParameterInteger(WorkspaceDataContainer.MAXBUFFERSIZE_PROP,
             WorkspaceDataContainer.DEF_MAXBUFFERSIZE);
@@ -457,7 +457,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
       this.namespaceRegistry = namespaceRegistry;
       this.locationFactory = locationFactory;
 
-      this.fileCleaner = new FileCleaner(false); // cleaner should be started!
+      this.fileCleaner = valueFactory.getFileCleaner();
       this.maxBufferSize =
          config.getContainer().getParameterInteger(WorkspaceDataContainer.MAXBUFFERSIZE_PROP,
             WorkspaceDataContainer.DEF_MAXBUFFERSIZE);
@@ -819,7 +819,6 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
 
    public void start()
    {
-      fileCleaner.start();
    }
 
    public void stop()

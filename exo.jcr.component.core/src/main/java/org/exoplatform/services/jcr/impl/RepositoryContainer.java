@@ -253,8 +253,8 @@ public class RepositoryContainer extends ExoContainer
             workspaceContainer.registerComponentImplementation(containerType);
             if (isSystem)
             {
-               registerComponentInstance(new SystemDataContainerHolder(
-                  (WorkspaceDataContainer)workspaceContainer.getComponentInstanceOfType(WorkspaceDataContainer.class)));
+               registerComponentInstance(new SystemDataContainerHolder((WorkspaceDataContainer)workspaceContainer
+                  .getComponentInstanceOfType(WorkspaceDataContainer.class)));
             }
          }
          catch (ClassNotFoundException e)
@@ -369,7 +369,6 @@ public class RepositoryContainer extends ExoContainer
          }
          workspaceContainer.registerComponentImplementation(initilizerType);
          workspaceContainer.registerComponentImplementation(SessionFactory.class);
-         workspaceContainer.registerComponentImplementation(WorkspaceFileCleanerHolder.class);
 
          LocalWorkspaceDataManagerStub wsDataManager =
             (LocalWorkspaceDataManagerStub)workspaceContainer

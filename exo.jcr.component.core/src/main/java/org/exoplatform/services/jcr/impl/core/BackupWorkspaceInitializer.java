@@ -90,7 +90,7 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
       super(config, repConfig, dataManager, namespaceRegistry, locationFactory, nodeTypeManager, valueFactory,
          accessManager);
 
-      this.fileCleaner = new FileCleaner();
+      this.fileCleaner = valueFactory.getFileCleaner();
 
       restoreDir = restorePath;
 
@@ -365,8 +365,6 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
             new RestoreChangesLog(transactionChangesLog, listFixupStreams, listFiles, fileCleaner);
 
          restoreChangesLog.restore();
-
-         TransactionChangesLog log = restoreChangesLog.getItemDataChangesLog();
 
       }
       else if (changesLogType == RestoreChangesLog.Type.ItemDataChangesLog_without_Streams)
