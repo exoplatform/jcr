@@ -18,6 +18,14 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CountDownLatch;
+
+import javax.jcr.RepositoryException;
+import javax.transaction.TransactionManager;
+
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
 import org.exoplatform.services.jcr.datamodel.ItemData;
@@ -32,14 +40,6 @@ import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.transaction.TransactionService;
-
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CountDownLatch;
-
-import javax.jcr.RepositoryException;
-import javax.transaction.TransactionManager;
 
 /**
  * Created by The eXo Platform SAS. 
@@ -393,42 +393,49 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    @Override
    public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException
    {
-
-      // 1. Try from cache
-      ItemData data = getCachedItemData(parentData, name, itemType);
-
-      // 2. Try from container
-      if (data == null)
+      if (cache.isEnabled())
       {
-         final DataRequest request = new DataRequest(parentData.getIdentifier(), name);
+         // 1. Try from cache
+         ItemData data = getCachedItemData(parentData, name, itemType);
 
-         try
+         // 2. Try from container
+         if (data == null)
          {
-            request.start();
-            // Try first to get the value from the cache since a
-            // request could have been launched just before
-            data = getCachedItemData(parentData, name, itemType);
-            if (data == null)
+            final DataRequest request = new DataRequest(parentData.getIdentifier(), name);
+
+            try
             {
-               data = getPersistedItemData(parentData, name, itemType);
+               request.start();
+               // Try first to get the value from the cache since a
+               // request could have been launched just before
+               data = getCachedItemData(parentData, name, itemType);
+               if (data == null)
+               {
+                  data = getPersistedItemData(parentData, name, itemType);
+               }
+               else if (!data.isNode())
+               {
+                  fixPropertyValues((PropertyData)data);
+               }
             }
-            else if (!data.isNode())
+            finally
             {
-               fixPropertyValues((PropertyData)data);
+               request.done();
             }
          }
-         finally
+         else if (!data.isNode())
          {
-            request.done();
+            fixPropertyValues((PropertyData)data);
          }
-      }
-      else if (!data.isNode())
-      {
-         fixPropertyValues((PropertyData)data);
-      }
 
-      return data instanceof NullNodeData ? null : data;
+         return data instanceof NullNodeData ? null : data;
+      }
+      else
+      {
+         return super.getItemData(parentData, name, itemType);
+      }
    }
+
 
    /**
     * {@inheritDoc}
@@ -436,40 +443,47 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    @Override
    public ItemData getItemData(String identifier) throws RepositoryException
    {
-      // 1. Try from cache
-      ItemData data = getCachedItemData(identifier);
-
-      // 2 Try from container
-      if (data == null)
+      if (cache.isEnabled())
       {
-         final DataRequest request = new DataRequest(identifier);
+         // 1. Try from cache
+         ItemData data = getCachedItemData(identifier);
 
-         try
+         // 2 Try from container
+         if (data == null)
          {
-            request.start();
-            // Try first to get the value from the cache since a
-            // request could have been launched just before
-            data = getCachedItemData(identifier);
-            if (data == null)
+            final DataRequest request = new DataRequest(identifier);
+
+            try
             {
-               data = getPersistedItemData(identifier);
+               request.start();
+               // Try first to get the value from the cache since a
+               // request could have been launched just before
+               data = getCachedItemData(identifier);
+               if (data == null)
+               {
+                  data = getPersistedItemData(identifier);
+               }
+               else if (!data.isNode())
+               {
+                  fixPropertyValues((PropertyData)data);
+               }
             }
-            else if (!data.isNode())
+            finally
             {
-               fixPropertyValues((PropertyData)data);
+               request.done();
             }
          }
-         finally
+         else if (!data.isNode())
          {
-            request.done();
+            fixPropertyValues((PropertyData)data);
          }
-      }
-      else if (!data.isNode())
-      {
-         fixPropertyValues((PropertyData)data);
-      }
 
-      return data instanceof NullNodeData ? null : data;
+         return data instanceof NullNodeData ? null : data;
+      }
+      else
+      {
+         return super.getItemData(identifier);
+      }
    }
 
    /**

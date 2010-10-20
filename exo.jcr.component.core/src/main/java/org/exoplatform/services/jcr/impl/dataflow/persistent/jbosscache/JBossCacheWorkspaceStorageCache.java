@@ -18,6 +18,19 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Set;
+
+import javax.jcr.RepositoryException;
+import javax.transaction.TransactionManager;
+
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
@@ -47,19 +60,6 @@ import org.jboss.cache.Fqn;
 import org.jboss.cache.Node;
 import org.jboss.cache.config.EvictionRegionConfig;
 import org.jboss.cache.eviction.ExpirationAlgorithmConfig;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Set;
-
-import javax.jcr.RepositoryException;
-import javax.transaction.TransactionManager;
 
 /**
  * Created by The eXo Platform SAS.<p/>
@@ -97,6 +97,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
 {
 
    private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.JBossCacheWorkspaceStorageCache");
+
+   private final boolean enabled;
 
    public static final String JBOSSCACHE_CONFIG = "jbosscache-configuration";
 
@@ -282,6 +284,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
       {
          throw new RepositoryConfigurationException("Cache configuration not found");
       }
+
+      enabled = wsConfig.getCache().isEnabled();
 
       // create cache using custom factory
       ExoJBossCacheFactory<Serializable, Object> factory;
@@ -791,7 +795,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
     */
    public boolean isEnabled()
    {
-      return true;
+      return enabled;
    }
 
    // non-public members
