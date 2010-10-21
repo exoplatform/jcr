@@ -27,6 +27,7 @@ import javax.jcr.RepositoryException;
 import javax.transaction.TransactionManager;
 
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
+import org.exoplatform.services.jcr.dataflow.persistent.MandatoryItemsPersistenceListener;
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.ItemType;
@@ -275,6 +276,32 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    }
 
    /**
+   * This class is a decorator on the top of the {@link WorkspaceStorageCache} to manage the case
+   * where the cache is disabled at the beginning then potentially enabled later
+   */
+   private class CacheItemsPersistenceListener implements MandatoryItemsPersistenceListener
+   {
+      /**
+       * {@inheritDoc}
+      */
+      public boolean isTXAware()
+      {
+         return cache.isTXAware();
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public void onSaveItems(ItemStateChangesLog itemStates)
+      {
+         if (cache.isEnabled())
+         {
+            cache.onSaveItems(itemStates);
+         }
+      }
+   }
+
+   /**
     * CacheableWorkspaceDataManager constructor.
     * 
     * @param dataContainer
@@ -292,7 +319,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       this.cache = cache;
 
       this.requestCache = new ConcurrentHashMap<Integer, DataRequest>();
-      addItemPersistenceListener(cache);
+      addItemPersistenceListener(new CacheItemsPersistenceListener());
 
       transactionManager = transactionService.getTransactionManager();
    }
@@ -314,7 +341,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       this.cache = cache;
 
       this.requestCache = new ConcurrentHashMap<Integer, DataRequest>();
-      addItemPersistenceListener(cache);
+      addItemPersistenceListener(new CacheItemsPersistenceListener());
 
       if (cache instanceof JBossCacheWorkspaceStorageCache)
       {
@@ -542,7 +569,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    protected ItemData getCachedItemData(NodeData parentData, QPathEntry name, ItemType itemType)
       throws RepositoryException
    {
-      return cache.get(parentData.getIdentifier(), name, itemType);
+      return cache.isEnabled() ? cache.get(parentData.getIdentifier(), name, itemType) : null;
    }
 
    /**
@@ -556,7 +583,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     */
    protected ItemData getCachedItemData(String identifier) throws RepositoryException
    {
-      return cache.get(identifier);
+      return cache.isEnabled() ? cache.get(identifier) : null;
    }
 
    /**
