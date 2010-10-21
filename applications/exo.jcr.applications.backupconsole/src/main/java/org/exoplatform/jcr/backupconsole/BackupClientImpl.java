@@ -81,14 +81,25 @@ public class BackupClientImpl
    private final String path;
 
    /**
-    * User login.
+    * Form authentication parameters.
     */
-   private final String userName;
+   private FormAuthentication formAuthentication;;
 
    /**
-    * User password.
+    * Constructor.
+    * 
+    * @param transport ClientTransport implementation.
+    * @param urlPath url path.
     */
-   private final String pass;
+   public BackupClientImpl(ClientTransport transport, String urlPath)
+   {
+      this.transport = transport;
+
+      if (urlPath == null)
+         path = "/rest";
+      else
+         path = urlPath;
+   }
 
    /**
     * Constructor.
@@ -96,17 +107,29 @@ public class BackupClientImpl
     * @param transport ClientTransport implementation.
     * @param login user login.
     * @param pass user password.
+    * @param urlPath url path.
     */
    public BackupClientImpl(ClientTransport transport, String login, String pass, String urlPath)
    {
       this.transport = transport;
-      this.userName = login;
-      this.pass = pass;
 
       if (urlPath == null)
          path = "/rest";
       else
          path = urlPath;
+   }
+
+   /**
+    * Constructor.
+    * 
+    * @param transport ClientTransport implementation.
+    * @param formAuthentication form authentication.
+    * @param urlPath url path.
+    */
+   public BackupClientImpl(ClientTransport transport, FormAuthentication formAuthentication, String urlPath)
+   {
+      this(transport, urlPath);
+      this.formAuthentication = formAuthentication;
    }
 
    /**
@@ -327,8 +350,9 @@ public class BackupClientImpl
                                        + info.getWorkspaceName() + "\n")
                               + "\t\tbackup type              : "
                               + (configBean.getBackupType() == BackupManager.FULL_AND_INCREMENTAL ? "full + incremetal"
-                                       : "full only") + "\n" + "\t\tfull backup state        : " + getState(info
-                              .getState()))
+                                       : "full only") + "\n" + "\t\tfull backup state        : " + (info
+                              .getWorkspaceName().equals("") ? getRepositoryBackupToFullState(info.getState())
+                                                         : getState(info.getState())))
                               + "\n"
                               + (info.getBackupType() == BackupManager.FULL_BACKUP_ONLY ? ""
                                        : "\t\tincremental backup state : " + "working" + "\n")

@@ -16,6 +16,17 @@
     configuration'</link> .</para>
   </warning>
 
+  <highlights>
+    <para>For GateIn should use context "/portal/rest". So to all url will be
+    changed from "http://host:port/rest/..." to
+    "http://host:port/portal/rest/..."</para>
+
+    <para>GetIn is use form authentication, so you first need login over "form
+    authentication" ( url to form authentication is
+    http://host:port/portal/login). And secont make request to
+    HTTPBackupAgent.</para>
+  </highlights>
+
   <section>
     <title>Introduction</title>
 
@@ -911,6 +922,10 @@ failure message in response  - the description of failure</programlisting>
 &lt;/component&gt;
 
 &lt;component&gt;
+  &lt;type&gt;org.exoplatform.services.jcr.ext.repository.RestRepositoryService&lt;/type&gt;
+&lt;/component&gt;
+
+&lt;component&gt;
   &lt;key&gt;org.exoplatform.services.jcr.ext.backup.BackupManager&lt;/key&gt;
   &lt;type&gt;org.exoplatform.services.jcr.ext.backup.impl.BackupManagerImpl&lt;/type&gt;
   &lt;init-params&gt;
@@ -923,11 +938,55 @@ failure message in response  - the description of failure</programlisting>
     &lt;/properties-param&gt;
   &lt;/init-params&gt;
 &lt;/component&gt;</programlisting>
+
+      <para>In case, if you will restore backup in same workspace (so you will
+      drop previous workspace), you need configure
+      RepositoryServiceConfiguration in order to save the changes of the
+      repository configuration. For example</para>
+
+      <programlisting>&lt;component&gt;
+  &lt;key&gt;org.exoplatform.services.jcr.config.RepositoryServiceConfiguration&lt;/key&gt;
+  &lt;type&gt;org.exoplatform.services.jcr.impl.config.RepositoryServiceConfigurationImpl&lt;/type&gt;
+  &lt;init-params&gt;
+    &lt;value-param&gt;
+      &lt;name&gt;conf-path&lt;/name&gt;
+      &lt;description&gt;JCR repositories configuration file&lt;/description&gt;
+      &lt;value&gt;jar:/conf/portal/exo-jcr-config.xml&lt;/value&gt;
+    &lt;/value-param&gt;
+    &lt;properties-param&gt;
+      &lt;name&gt;working-conf&lt;/name&gt;
+      &lt;description&gt;working-conf&lt;/description&gt;
+      &lt;property name="source-name" value="jdbcjcr" /&gt;
+      &lt;property name="dialect" value="hsqldb" /&gt;
+      &lt;property name="persister-class-name" value="org.exoplatform.services.jcr.impl.config.JDBCConfigurationPersister" /&gt;
+    &lt;/properties-param&gt;
+  &lt;/init-params&gt;
+&lt;/component&gt;</programlisting>
+
+      <para>See the <link
+      linkend="JCR.eXoJCRconfiguration.PortalAndStandaloneConfiguration">eXo
+      JCR Configuration article at chapter '2 Portal and Standalone
+      configuration'</link> for details.</para>
     </section>
   </section>
 
   <section>
     <title>Backup Client</title>
+
+    <highlights>
+      <para>For GateIn should use context "/portal/rest". GetIn is use form
+      authentication, so you first need login over "form authentication" ( url
+      to form authentication is http://host:port/portal/login). And secont
+      make request to HTTPBackupAgent.</para>
+
+      <para></para>
+
+      <para>Backup client is support form authenication. For example call
+      command "info" wirh form authentication to GateIn :</para>
+
+      <para>./jcrbackup.sh http://127.0.0.1:8080/portal/rest form POST
+      "/portal/login?username=root&amp;password=gtn" info</para>
+    </highlights>
 
     <para>Backup client is console application.</para>
 
@@ -936,19 +995,26 @@ failure message in response  - the description of failure</programlisting>
     <para>Command signature:</para>
 
     <programlisting>Help info:
- &lt;url&gt; &lt;cmd&gt; 
- &lt;url&gt;  :   http(s)//login:password@host:port/&lt;context&gt; 
+ &lt;url_basic_authentication&gt;|&lt;url form authentication&gt;  &lt;cmd&gt; 
+ &lt;url_basic_authentication&gt;  :   http(s)//login:password@host:port/&lt;context&gt; 
+
+ &lt;url form authentication&gt;   :   http(s)//host:port/&lt;context&gt; "&lt;form auth parm&gt;" 
+     &lt;form auth parm&gt;        :   form &lt;method&gt; &lt;form path&gt;
+     &lt;method&gt;                :   POST or GET
+     &lt;form path&gt;             :   /path/path?&lt;paramName1&gt;=&lt;paramValue1&gt;&amp;&lt;paramName2&gt;=&lt;paramValue2&gt;...
+     Example to &lt;url form authentication&gt; : http://127.0.0.1:8080/portal/rest form POST /portal/login?username=root&amp;password=gtn
+
  &lt;cmd&gt;  :   start &lt;repo[/ws]&gt; &lt;backup_dir&gt; [&lt;incr&gt;] 
             stop &lt;backup_id&gt; 
             status &lt;backup_id&gt; 
             restores &lt;repo[/ws]&gt; 
-            restore &lt;repo[/ws]&gt; &lt;backup_id&gt; &lt;pathToConfigFile&gt;
+            restore &lt;repo[/ws]&gt; &lt;backup_id&gt; &lt;pathToConfigFile&gt; 
             list [completed] 
             info 
-            drop [force-close-session] &lt;repo[/ws]&gt; 
+            drop [force-close-session] &lt;repo[/ws]&gt;  
             help  
 
- start          - start backup of repository or workspace
+ start          - start backup of repositpry or workspace 
  stop           - stop backup 
  status         - information about the current or completed backup by 'backup_id' 
  restores       - information about the last restore on specific repository or workspace 
@@ -959,12 +1025,12 @@ failure message in response  - the description of failure</programlisting>
  drop           - delete the repository or workspace 
  help           - print help information about backup console 
 
- &lt;repo[/ws]&gt;         - /&lt;reponsitory-name&gt;[/&lt;workspace-name&gt;] the repository or workspace
+ &lt;repo[/ws]&gt;         - /&lt;reponsitory-name&gt;[/&lt;workspace-name&gt;]  the repository or workspace 
  &lt;backup_dir&gt;        - path to folder for backup on remote server 
  &lt;backup_id&gt;         - the identifier for backup 
  &lt;incr&gt;              - incemental job period 
  &lt;pathToConfigFile&gt;  - path (local) to  repository or workspace configuration 
- force-close-session - close opened sessions on repositpry or workspace</programlisting>
+ force-close-session - close opened sessions on repositpry or workspace.</programlisting>
   </section>
 
   <section>
@@ -977,10 +1043,7 @@ failure message in response  - the description of failure</programlisting>
         <listitem>
           <para>Go to folder of "backup client" <emphasis
           role="bold">${JCR-SRC-HOME}/applications/exo.jcr.applications.backupconsole</emphasis>
-          . - build the application :<programlisting>
-   mvn clean install -P deploy
-   
-</programlisting></para>
+          . - build the application :<programlisting>mvn clean install -P deploy</programlisting></para>
         </listitem>
 
         <listitem>
@@ -1001,8 +1064,8 @@ failure message in response  - the description of failure</programlisting>
 
       <itemizedlist>
         <listitem>
-          <para>Run jar<programlisting>java -jar exo.jcr.applications.backupconsole-binary.jar &lt;command&gt;
-</programlisting>or use jcrbackup.cmd (or .sh);</para>
+          <para>Run jar<programlisting>java -jar exo.jcr.applications.backupconsole-binary.jar &lt;command&gt;</programlisting>or
+          use jcrbackup.cmd (or .sh);</para>
         </listitem>
       </itemizedlist>
     </section>
@@ -1233,12 +1296,9 @@ failure message in response  - the description of failure</programlisting>
         <listitem>
           <para>Delete/clean the database for workspace <emphasis
           role="bold">"backup"</emphasis> : When we use "single-db", then we
-          will run the SQL queries for clean database :<programlisting>
-       delete from JCR_SREF where NODE_ID in (select ID from JCR_SITEM where CONTAINER_NAME = 'backup')
-       delete from JCR_SVALUE where PROPERTY_ID in (select ID from JCR_SITEM where CONTAINER_NAME = 'backup')
-       delete from JCR_SITEM where CONTAINER_NAME='backup' 
-       
-</programlisting></para>
+          will run the SQL queries for clean database :<programlisting>delete from JCR_SREF where NODE_ID in (select ID from JCR_SITEM where CONTAINER_NAME = 'backup')
+delete from JCR_SVALUE where PROPERTY_ID in (select ID from JCR_SITEM where CONTAINER_NAME = 'backup')
+delete from JCR_SITEM where CONTAINER_NAME='backup'</programlisting></para>
         </listitem>
 
         <listitem>
@@ -1250,8 +1310,7 @@ failure message in response  - the description of failure</programlisting>
   status code = 200</programlisting>The
           /home/rainf0x/java/exo-working/JCR-839/exo-jcr-config_backup.xml
           content the configuration for restored workspace <emphasis
-          role="bold">"backup"</emphasis> :<programlisting>
-&lt;repository-service default-repository="repository"&gt;
+          role="bold">"backup"</emphasis> :<programlisting>&lt;repository-service default-repository="repository"&gt;
   &lt;repositories&gt;
     &lt;repository name="repository" system-workspace="production" default-workspace="production"&gt;
       &lt;security-domain&gt;exo-domain&lt;/security-domain&gt;
@@ -1329,6 +1388,16 @@ failure message in response  - the description of failure</programlisting>
     <title>Full example about creating backup and restoring it for repository
     'repository'</title>
 
+    <note>
+      <para>If delete default repository that should be restored repository
+      with name as default repository.</para>
+    </note>
+
+    <para>This usecase needs RestRepositoryService enabled. (Deleting the
+    repository needs it)<programlisting>&lt;component&gt;
+   &lt;type&gt;org.exoplatform.services.jcr.ext.repository.RestRepositoryService&lt;/type&gt;
+&lt;/component&gt;</programlisting></para>
+
     <section>
       <title>Creating backup</title>
 
@@ -1382,7 +1451,7 @@ failure message in response  - the description of failure</programlisting>
     </section>
 
     <section>
-      <title>Restoring the workspace "backup"</title>
+      <title>Restoring the repository "repository"</title>
 
       <itemizedlist>
         <listitem>
@@ -1404,7 +1473,7 @@ failure message in response  - the description of failure</programlisting>
         </listitem>
 
         <listitem>
-          <para>Restore:<programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restore /repository/backup 9a6dba327f000001325dfb228a181b07 /home/rainf0x/exo-jcr-config_backup.xml</programlisting>Return
+          <para>Restore:<programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restore /repository 9a6dba327f000001325dfb228a181b07 /home/rainf0x/exo-jcr-config_backup.xml</programlisting>Return
           :<programlisting>Successful : 
   status code = 200</programlisting>The
           /home/rainf0x/exo-jcr-config_backup.xml content the configuration

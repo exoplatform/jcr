@@ -46,7 +46,6 @@
             <exclude>javax.portlet:portlet-api</exclude>
             <exclude>javax.faces:jsf-api</exclude>
             <exclude>javax.servlet:servlet-api</exclude>
-            <exclude>picocontainer:picocontainer</exclude>
             <exclude>jmock:jmock</exclude>
             <exclude>xstream:xstream</exclude>
             <exclude>commons-beanutils:commons-beanutils</exclude>
