@@ -43,7 +43,7 @@ import org.exoplatform.services.jcr.impl.dataflow.ItemDataMoveVisitor;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.LocalWorkspaceDataManagerStub;
 import org.exoplatform.services.jcr.impl.ext.action.SessionActionCatalog;
 import org.exoplatform.services.jcr.impl.ext.action.SessionActionInterceptor;
-import org.exoplatform.services.jcr.impl.util.io.WorkspaceFileCleanerHolder;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.impl.xml.ExportImportFactory;
 import org.exoplatform.services.jcr.impl.xml.ItemDataKeeperAdapter;
 import org.exoplatform.services.jcr.impl.xml.XmlMapping;
@@ -170,8 +170,8 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       this.lazyReadThreshold =
          wsConfig.getLazyReadThreshold() > 0 ? wsConfig.getLazyReadThreshold() : DEFAULT_LAZY_READ_THRESHOLD;
 
-      WorkspaceFileCleanerHolder cleanerHolder =
-         (WorkspaceFileCleanerHolder)container.getComponentInstanceOfType(WorkspaceFileCleanerHolder.class);
+      FileCleanerHolder cleanerHolder =
+         (FileCleanerHolder)container.getComponentInstanceOfType(FileCleanerHolder.class);
 
       this.locationFactory = new LocationFactory(this);
       this.valueFactory = new ValueFactoryImpl(locationFactory, wsConfig, cleanerHolder);
@@ -253,8 +253,8 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
 
       WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
 
-      WorkspaceFileCleanerHolder cleanerHolder =
-         (WorkspaceFileCleanerHolder)container.getComponentInstanceOfType(WorkspaceFileCleanerHolder.class);
+      FileCleanerHolder cleanerHolder =
+         (FileCleanerHolder)container.getComponentInstanceOfType(FileCleanerHolder.class);
 
       ValueFactoryImpl valueFactoryImpl = new ValueFactoryImpl(factory, wsConfig, cleanerHolder);
 
@@ -294,8 +294,8 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
 
       WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
 
-      WorkspaceFileCleanerHolder cleanerHolder =
-         (WorkspaceFileCleanerHolder)container.getComponentInstanceOfType(WorkspaceFileCleanerHolder.class);
+      FileCleanerHolder cleanerHolder =
+         (FileCleanerHolder)container.getComponentInstanceOfType(FileCleanerHolder.class);
 
       ValueFactoryImpl valueFactoryImpl = new ValueFactoryImpl(factory, wsConfig, cleanerHolder);
 
@@ -338,8 +338,8 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
 
       WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
 
-      WorkspaceFileCleanerHolder cleanerHolder =
-         (WorkspaceFileCleanerHolder)container.getComponentInstanceOfType(WorkspaceFileCleanerHolder.class);
+      FileCleanerHolder cleanerHolder =
+         (FileCleanerHolder)container.getComponentInstanceOfType(FileCleanerHolder.class);
 
       ValueFactoryImpl valueFactoryImpl = new ValueFactoryImpl(factory, wsConfig, cleanerHolder);
 
@@ -380,8 +380,8 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
 
       WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
 
-      WorkspaceFileCleanerHolder cleanerHolder =
-         (WorkspaceFileCleanerHolder)container.getComponentInstanceOfType(WorkspaceFileCleanerHolder.class);
+      FileCleanerHolder cleanerHolder =
+         (FileCleanerHolder)container.getComponentInstanceOfType(FileCleanerHolder.class);
 
       ValueFactoryImpl valueFactoryImpl = new ValueFactoryImpl(factory, wsConfig, cleanerHolder);
       try
@@ -418,8 +418,8 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
 
       WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
 
-      WorkspaceFileCleanerHolder cleanerHolder =
-         (WorkspaceFileCleanerHolder)container.getComponentInstanceOfType(WorkspaceFileCleanerHolder.class);
+      FileCleanerHolder cleanerHolder =
+         (FileCleanerHolder)container.getComponentInstanceOfType(FileCleanerHolder.class);
 
       ValueFactoryImpl valueFactoryImpl = new ValueFactoryImpl(factory, wsConfig, cleanerHolder);
       try

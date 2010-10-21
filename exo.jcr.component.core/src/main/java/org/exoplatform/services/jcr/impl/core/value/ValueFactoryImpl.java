@@ -31,7 +31,7 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.PrivilegedSystemHelper;
-import org.exoplatform.services.jcr.impl.util.io.WorkspaceFileCleanerHolder;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -72,7 +72,7 @@ public class ValueFactoryImpl implements ValueFactory
    private int maxBufferSize;
 
    public ValueFactoryImpl(LocationFactory locationFactory, WorkspaceEntry workspaceConfig,
-      WorkspaceFileCleanerHolder cleanerHolder)
+      FileCleanerHolder cleanerHolder)
    {
 
       this.locationFactory = locationFactory;

@@ -25,12 +25,12 @@ package org.exoplatform.services.jcr.impl.util.io;
  * @version $Id: WorkspaceFileCleanerHolder.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class WorkspaceFileCleanerHolder
+public class FileCleanerHolder
 {
 
    private final FileCleaner fileCleaner;
 
-   public WorkspaceFileCleanerHolder()
+   public FileCleanerHolder()
    {
       this.fileCleaner = new FileCleaner();
    }

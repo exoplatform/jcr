@@ -58,7 +58,7 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStor
 import org.exoplatform.services.jcr.impl.dataflow.persistent.LocalWorkspaceDataManagerStub;
 import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
 import org.exoplatform.services.jcr.impl.storage.value.StandaloneStoragePluginProvider;
-import org.exoplatform.services.jcr.impl.util.io.WorkspaceFileCleanerHolder;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
@@ -515,7 +515,7 @@ public class RepositoryContainer extends ExoContainer
       registerComponentInstance(config);
       // WorkspaceFileCleanerHolder - is a common holder for all workspaces. 
       // It is used to initialize FileValueStorage
-      registerComponentImplementation(WorkspaceFileCleanerHolder.class);
+      registerComponentImplementation(FileCleanerHolder.class);
       registerWorkspacesComponents();
       registerRepositoryComponents();
    }

@@ -25,7 +25,7 @@ import org.exoplatform.services.jcr.config.ValueStorageFilterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.jcr.impl.util.io.WorkspaceFileCleanerHolder;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
 import org.exoplatform.services.jcr.storage.value.ValuePluginFilter;
@@ -62,7 +62,7 @@ public class StandaloneStoragePluginProvider extends ArrayList<ValueStoragePlugi
     */
    private final ValueDataResourceHolder resorcesHolder;
 
-   public StandaloneStoragePluginProvider(WorkspaceEntry wsConfig, WorkspaceFileCleanerHolder holder)
+   public StandaloneStoragePluginProvider(WorkspaceEntry wsConfig, FileCleanerHolder holder)
       throws RepositoryConfigurationException, IOException
    {
 
