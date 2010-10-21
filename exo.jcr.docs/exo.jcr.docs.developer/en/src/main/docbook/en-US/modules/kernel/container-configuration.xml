@@ -454,28 +454,28 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
           <tgroup cols="2">
             <tbody>
               <row>
-                <entry>default.portal.container</entry>
+                <entry>default.portal.container (*)</entry>
 
                 <entry>The name of the default portal container. This field is
                 optional.</entry>
               </row>
 
               <row>
-                <entry>default.rest.context</entry>
+                <entry>default.rest.context (*)</entry>
 
                 <entry>The name of the default rest
                 <envar>ServletContext</envar>. This field is optional.</entry>
               </row>
 
               <row>
-                <entry>default.realm.name</entry>
+                <entry>default.realm.name (*)</entry>
 
                 <entry>The name of the default realm. This field is
                 optional.</entry>
               </row>
 
               <row>
-                <entry>ignore.unregistered.webapp</entry>
+                <entry>ignore.unregistered.webapp (*)</entry>
 
                 <entry>Indicates whether the unregistered webapps have to be
                 ignored. If a webapp has not been registered as a dependency
@@ -509,6 +509,15 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
             </tbody>
           </tgroup>
         </table>
+
+        <note>
+          <para>All the value of the parameters marked with a (*) can be
+          defined thanks to System properties like any values in configuration
+          files but also thanks to variables loaded by the
+          <emphasis>PropertyConfigurator</emphasis>. For example in GateIn by
+          default, it would be all the variables defined in the file
+          <emphasis>configuration.properties</emphasis>.</para>
+        </note>
 
         <para>A new <envar>PortalContainerDefinition</envar> can be defined at
         the <envar>RootContainer</envar> level thanks to an external plugin,
@@ -615,14 +624,14 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
           <tgroup cols="2">
             <tbody>
               <row>
-                <entry>name</entry>
+                <entry>name (*)</entry>
 
                 <entry>The name of the portal container. This field is
                 mandatory .</entry>
               </row>
 
               <row>
-                <entry>restContextName</entry>
+                <entry>restContextName (*)</entry>
 
                 <entry>The name of the context name of the rest web
                 application. This field is optional. The default value will be
@@ -631,7 +640,7 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
               </row>
 
               <row>
-                <entry>realmName</entry>
+                <entry>realmName (*)</entry>
 
                 <entry>The name of the realm. This field is optional. The
                 default value will be defined at the
@@ -757,7 +766,7 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
           <tgroup cols="2">
             <tbody>
               <row>
-                <entry>name</entry>
+                <entry>name (*)</entry>
 
                 <entry>The name of the portal container. This field is
                 optional. The default portal name will be:<orderedlist>
@@ -783,7 +792,7 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
               </row>
 
               <row>
-                <entry>restContextName</entry>
+                <entry>restContextName (*)</entry>
 
                 <entry>The name of the context name of the rest web
                 application. This field is optional. The default value wil
@@ -810,7 +819,7 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
               </row>
 
               <row>
-                <entry>realmName</entry>
+                <entry>realmName (*)</entry>
 
                 <entry>The name of the realm. This field is optional. The
                 default value wil be:<orderedlist>
@@ -890,6 +899,15 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting></para>
             </tbody>
           </tgroup>
         </table>
+
+        <note>
+          <para>All the value of the parameters marked with a (*) can be
+          defined thanks to System properties like any values in configuration
+          files but also thanks to variables loaded by the
+          <emphasis>PropertyConfigurator</emphasis>. For example in GateIn by
+          default, it would be all the variables defined in the file
+          <emphasis>configuration.properties</emphasis>.</para>
+        </note>
 
         <para>Internal and external settings are both optional, but if we give
         a non empty value for both the application will merge the settings. If
@@ -1102,7 +1120,7 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
           <tgroup cols="2">
             <tbody>
               <row>
-                <entry>apply.all</entry>
+                <entry>apply.all (*)</entry>
 
                 <entry>Indicates whether the changes have to be applied to all
                 the portal containers or not. The default value of this field
@@ -1111,7 +1129,7 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
               </row>
 
               <row>
-                <entry>apply.default</entry>
+                <entry>apply.default (*)</entry>
 
                 <entry>Indicates whether the changes have to be applied to the
                 default portal container or not. The default value of this
@@ -1120,7 +1138,7 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
               </row>
 
               <row>
-                <entry>apply.specific</entry>
+                <entry>apply.specific (*)</entry>
 
                 <entry>A set of specific portal container names to which we
                 want to apply the changes. This field is a
@@ -1142,6 +1160,15 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
             </tbody>
           </tgroup>
         </table>
+
+        <note>
+          <para>All the value of the parameters marked with a (*) can be
+          defined thanks to System properties like any values in configuration
+          files but also thanks to variables loaded by the
+          <emphasis>PropertyConfigurator</emphasis>. For example in GateIn by
+          default, it would be all the variables defined in the file
+          <emphasis>configuration.properties</emphasis>.</para>
+        </note>
 
         <para>To identify the portal containers to which the changes have to
         be applied, we use the follwing algorithm:</para>
@@ -1534,7 +1561,7 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
           <tgroup cols="2">
             <tbody>
               <row>
-                <entry>names</entry>
+                <entry>names (*)</entry>
 
                 <entry>The list of the name of the portal containers to
                 disable.</entry>
@@ -1542,6 +1569,15 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
             </tbody>
           </tgroup>
         </table>
+
+        <note>
+          <para>All the value of the parameters marked with a (*) can be
+          defined thanks to System properties like any values in configuration
+          files but also thanks to variables loaded by the
+          <emphasis>PropertyConfigurator</emphasis>. For example in GateIn by
+          default, it would be all the variables defined in the file
+          <emphasis>configuration.properties</emphasis>.</para>
+        </note>
 
         <para>To prevent any accesses to a web application corresponding to
         <envar>PortalContainer</envar> that has been disabled, you need to
