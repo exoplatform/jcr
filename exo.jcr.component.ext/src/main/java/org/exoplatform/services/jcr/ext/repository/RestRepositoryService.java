@@ -390,14 +390,7 @@ public class RestRepositoryService implements ResourceContainer
             }
          }
 
-         if (repositoryService.getDefaultRepository().getConfiguration().getName().equals(repositoryName))
-         {
-            ((RepositoryServiceImpl) repositoryService).removeDefaultRepository();
-         }
-         else
-         {
-            repositoryService.removeRepository(repositoryName);
-         }
+         repositoryService.removeRepository(repositoryName);
          repositoryService.getConfig().retain(); // save configuration to persistence (file or persister) 
          return Response.ok().build();
       }
