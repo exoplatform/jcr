@@ -43,8 +43,9 @@ public class TreeFileValueStorage extends FileValueStorage
       }
    }
 
-   public TreeFileValueStorage()
+   public TreeFileValueStorage(FileCleaner cleaner)
    {
+      super(cleaner);
       this.cleaner = new TreeFileCleaner(); // TODO use container cleaner
    }
 

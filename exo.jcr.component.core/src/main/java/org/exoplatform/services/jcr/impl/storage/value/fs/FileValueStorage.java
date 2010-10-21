@@ -46,7 +46,7 @@ public abstract class FileValueStorage extends ValueStoragePlugin
    public final static String PATH = "path";
 
    /**
-    * Temporarory directopry name under stoprage root dir.
+    * Temporary directory name under storage root dir.
     */
    public static final String TEMP_DIR_NAME = "temp";
 
@@ -58,11 +58,10 @@ public abstract class FileValueStorage extends ValueStoragePlugin
 
    /**
     * FileValueStorage constructor.
-    * 
     */
-   public FileValueStorage()
+   public FileValueStorage(FileCleaner cleaner)
    {
-      this.cleaner = new FileCleaner(); // TODO use container cleaner
+      this.cleaner = cleaner;
    }
 
    /**

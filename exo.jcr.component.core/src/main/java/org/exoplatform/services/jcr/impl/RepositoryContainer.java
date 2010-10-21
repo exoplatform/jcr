@@ -513,7 +513,9 @@ public class RepositoryContainer extends ExoContainer
    {
 
       registerComponentInstance(config);
-
+      // WorkspaceFileCleanerHolder - is a common holder for all workspaces. 
+      // It is used to initialize FileValueStorage
+      registerComponentImplementation(WorkspaceFileCleanerHolder.class);
       registerWorkspacesComponents();
       registerRepositoryComponents();
    }
@@ -524,7 +526,6 @@ public class RepositoryContainer extends ExoContainer
 
       registerComponentImplementation(RepositoryIndexSearcherHolder.class);
 
-      registerComponentImplementation(WorkspaceFileCleanerHolder.class);
       registerComponentImplementation(LocationFactory.class);
       registerComponentImplementation(ValueFactoryImpl.class);
 

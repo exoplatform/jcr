@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.impl.storage.value.fs;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.storage.value.cas.ValueContentAddressStorage;
+import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -37,6 +38,11 @@ public class CASableTreeFileValueStorage extends TreeFileValueStorage
    private ValueContentAddressStorage vcas;
 
    private String digestAlgo;
+
+   public CASableTreeFileValueStorage(FileCleaner cleaner)
+   {
+      super(cleaner);
+   }
 
    /**
     * {@inheritDoc}
