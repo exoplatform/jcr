@@ -81,27 +81,34 @@ public class TestPersistedValueData extends TestCase
 
    public void testIfFinalizeRemovesTempFileStreamValueData() throws Exception
    {
+      FileCleaner testFileCleaner = new FileCleaner(1000, true);
+      try
+      {
+         byte[] buf = "0123456789".getBytes();
+         SwapFile file = SwapFile.get(new File("target"), "testIfFinalizeRemovesTempFileStreamValueData");
+         //File file = new File("target/testIfFinalizeRemovesTempFileStreamValueData");
+         //if (file.exists())
+         //  file.delete();
+         FileOutputStream out = new FileOutputStream(file);
+         out.write(buf);
+         out.close();
 
-      byte[] buf = "0123456789".getBytes();
-      SwapFile file = SwapFile.get(new File("target"), "testIfFinalizeRemovesTempFileStreamValueData");
-      //File file = new File("target/testIfFinalizeRemovesTempFileStreamValueData");
-      //if (file.exists())
-      //  file.delete();
-      FileOutputStream out = new FileOutputStream(file);
-      out.write(buf);
-      out.close();
+         CleanableFilePersistedValueData vd = new CleanableFilePersistedValueData(0, file, testFileCleaner);
+         assertTrue(file.exists());
 
-      CleanableFilePersistedValueData vd = new CleanableFilePersistedValueData(0, file, new FileCleaner(1000, true));
-      assertTrue(file.exists());
+         vd = null;
+         System.gc();
 
-      vd = null;
-      System.gc();
+         // allows GC to call finalize on vd
+         Thread.sleep(2500);
+         System.gc();
 
-      // allows GC to call finalize on vd
-      Thread.sleep(2500);
-      System.gc();
-
-      assertFalse(file.exists());
+         assertFalse(file.exists());
+      }
+      finally
+      {
+         testFileCleaner.halt();
+      }
    }
 
    public void testConcurrentFileStreamValueDataReading() throws Exception

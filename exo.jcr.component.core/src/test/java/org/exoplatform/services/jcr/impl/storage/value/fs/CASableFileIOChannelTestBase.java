@@ -24,7 +24,6 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValu
 import org.exoplatform.services.jcr.impl.storage.value.cas.RecordAlreadyExistsException;
 import org.exoplatform.services.jcr.impl.storage.value.cas.RecordNotFoundException;
 import org.exoplatform.services.jcr.impl.storage.value.cas.ValueContentAddressStorage;
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -48,8 +47,6 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
 
    protected ValueContentAddressStorage vcas;
 
-   protected FileCleaner fileCleaner;
-
    protected File rootDir;
 
    protected String storageId;
@@ -60,9 +57,6 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
    public void setUp() throws Exception
    {
       super.setUp();
-
-      if (fileCleaner == null)
-         fileCleaner = new FileCleaner();
 
       if (vcas == null)
          initVCAS();

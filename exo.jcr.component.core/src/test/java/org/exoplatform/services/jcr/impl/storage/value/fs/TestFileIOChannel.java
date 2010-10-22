@@ -43,7 +43,7 @@ public class TestFileIOChannel extends TestCase
 
    private File rootDir;
 
-   private FileCleaner cleaner = new FileCleaner(2000);
+   private FileCleaner cleaner;
 
    private ValueDataResourceHolder resources = new ValueDataResourceHolder();
 
@@ -57,6 +57,8 @@ public class TestFileIOChannel extends TestCase
    {
       super.setUp();
 
+      cleaner = new FileCleaner(2000);
+
       rootDir = new File(new File("target"), "vs1");
       rootDir.mkdirs();
 
@@ -65,6 +67,15 @@ public class TestFileIOChannel extends TestCase
       if (!rootDir.exists())
          throw new Exception("Folder does not exist " + rootDir.getAbsolutePath());
 
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected void tearDown() throws Exception
+   {
+      cleaner.halt();
    }
 
    public void testRead() throws Exception

@@ -50,43 +50,51 @@ public class TestValueImpl extends TestCase
 
    public void testNewBinaryValue() throws Exception
    {
+      FileCleaner testFileCleaner = new FileCleaner();
 
-      byte[] buf = "012345678901234567890123456789".getBytes();
-      File file = new File("target/testNewBinaryValue");
-      if (file.exists())
-         file.delete();
-      FileOutputStream out = new FileOutputStream(file);
-      out.write(buf);
-      out.close();
-
-      FileInputStream fs1 = new FileInputStream(file);
-      BinaryValue val = new BinaryValue(fs1, new FileCleaner(), tempDirectory, maxFufferSize);
-      InputStream str1 = val.getStream();
-      assertNotNull(str1);
-
-      // obj returned by getStream() is not the same as incoming stream
-      assertNotSame(str1, fs1);
-
-      // streams returned by subsequent call of val.getStream() are equals
-      assertEquals(str1, val.getStream());
-
-      // another one value using the same string
-      BinaryValue val2 = new BinaryValue(fs1, new FileCleaner(), tempDirectory, maxFufferSize);
-      InputStream str2 = val2.getStream();
-
-      // are not the same although created from same Stream
-      assertNotSame(str1, str2);
-
-      // stream already consumed
       try
       {
-         val.getString();
-         fail("IllegalStateException should have been thrown");
+         byte[] buf = "012345678901234567890123456789".getBytes();
+         File file = new File("target/testNewBinaryValue");
+         if (file.exists())
+            file.delete();
+         FileOutputStream out = new FileOutputStream(file);
+         out.write(buf);
+         out.close();
+
+         FileInputStream fs1 = new FileInputStream(file);
+         BinaryValue val = new BinaryValue(fs1, testFileCleaner, tempDirectory, maxFufferSize);
+         InputStream str1 = val.getStream();
+         assertNotNull(str1);
+
+         // obj returned by getStream() is not the same as incoming stream
+         assertNotSame(str1, fs1);
+
+         // streams returned by subsequent call of val.getStream() are equals
+         assertEquals(str1, val.getStream());
+
+         // another one value using the same string
+         BinaryValue val2 = new BinaryValue(fs1, testFileCleaner, tempDirectory, maxFufferSize);
+         InputStream str2 = val2.getStream();
+
+         // are not the same although created from same Stream
+         assertNotSame(str1, str2);
+
+         // stream already consumed
+         try
+         {
+            val.getString();
+            fail("IllegalStateException should have been thrown");
+         }
+         catch (IllegalStateException e)
+         {
+         }
+         // System.out.println(" >>>>>>>>STRING >>> "+);
       }
-      catch (IllegalStateException e)
+      finally
       {
+         testFileCleaner.halt();
       }
-      // System.out.println(" >>>>>>>>STRING >>> "+);
    }
 
    public void testNewBinaryValueFromString() throws Exception
