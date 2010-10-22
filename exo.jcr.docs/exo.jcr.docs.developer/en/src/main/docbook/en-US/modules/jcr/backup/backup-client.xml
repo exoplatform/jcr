@@ -17,14 +17,12 @@
   </warning>
 
   <highlights>
-    <para>For GateIn should use context "/portal/rest". So to all url will be
-    changed from "http://host:port/rest/..." to
-    "http://host:port/portal/rest/..."</para>
+    <para>GateIn uses context /portal/rest, therefore you need to use
+    http://host:port/portal/rest/ instread of http://host:port/rest/</para>
 
-    <para>GetIn is use form authentication, so you first need login over "form
-    authentication" ( url to form authentication is
-    http://host:port/portal/login). And secont make request to
-    HTTPBackupAgent.</para>
+    <para>GateIn uses form authentication, so first you need to login (url to
+    form authentication is http://host:port/portal/login) and then perform
+    requests.</para>
   </highlights>
 
   <section>
@@ -974,15 +972,14 @@ failure message in response  - the description of failure</programlisting>
     <title>Backup Client</title>
 
     <highlights>
-      <para>For GateIn should use context "/portal/rest". GetIn is use form
-      authentication, so you first need login over "form authentication" ( url
-      to form authentication is http://host:port/portal/login). And secont
-      make request to HTTPBackupAgent.</para>
+      <para>For GateIn should use context "/portal/rest". GateIn uses form
+      authentication, so first you need to login (url to form authentication
+      is http://host:port/portal/login) and then perform requests.</para>
 
       <para></para>
 
-      <para>Backup client is support form authenication. For example call
-      command "info" wirh form authentication to GateIn :</para>
+      <para>Backup client is support form authentication. For example call
+      command "info" with form authentication to GateIn :</para>
 
       <para>./jcrbackup.sh http://127.0.0.1:8080/portal/rest form POST
       "/portal/login?username=root&amp;password=gtn" info</para>
