@@ -1,0 +1,2451 @@
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/config/RepositoryInfo.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/config/RepositoryInfo.java	(revision 3339)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/config/RepositoryInfo.java	(working copy)
+@@ -46,6 +46,8 @@
+ 
+    protected long sessionTimeOut;
+ 
++   protected int lockRemoverMaxThreadCount;
++
+    public RepositoryInfo()
+    {
+ 
+@@ -190,17 +192,43 @@
+    }
+ 
+    /**
++    * Returns LockRemovers per-repository max threads count.
++    * @return LockRemovers per-repository max threads count
++    */
++   public int getLockRemoverThreadsCount()
++   {
++      return lockRemoverMaxThreadCount;
++   }
++
++   /**
++    * Sets LockRemovers per-repository max threads count.
++    * @param lockRemoverMaxThreadCount
++    */
++   public void setLockRemoverThreadsCount(int lockRemoverMaxThreadCount)
++   {
++      this.lockRemoverMaxThreadCount = lockRemoverMaxThreadCount;
++   }
++
++   /**
+     * Merges the current {@link RepositoryInfo} with the given one. The current {@link RepositoryInfo}
+     * has the highest priority thus only absent data will be overrode
+     * @param entry the entry to merge with the current {@link RepositoryInfo}
+     */
+    void merge(RepositoryInfo entry)
+    {
+-      if (systemWorkspaceName == null) setSystemWorkspaceName(entry.systemWorkspaceName);
+-      if (defaultWorkspaceName == null) setDefaultWorkspaceName(entry.defaultWorkspaceName);
+-      if (accessControl == null) setAccessControl(entry.accessControl);
+-      if (securityDomain == null) setSecurityDomain(entry.securityDomain);
+-      if (authenticationPolicy == null) setAuthenticationPolicy(entry.authenticationPolicy);
+-      if (sessionTimeOut == 0) setSessionTimeOut(entry.sessionTimeOut);
+-   }   
++      if (systemWorkspaceName == null)
++         setSystemWorkspaceName(entry.systemWorkspaceName);
++      if (defaultWorkspaceName == null)
++         setDefaultWorkspaceName(entry.defaultWorkspaceName);
++      if (accessControl == null)
++         setAccessControl(entry.accessControl);
++      if (securityDomain == null)
++         setSecurityDomain(entry.securityDomain);
++      if (authenticationPolicy == null)
++         setAuthenticationPolicy(entry.authenticationPolicy);
++      if (sessionTimeOut == 0)
++         setSessionTimeOut(entry.sessionTimeOut);
++      if (lockRemoverMaxThreadCount == 0)
++         setLockRemoverThreadsCount(entry.lockRemoverMaxThreadCount);
++   }
+ }
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/BackupWorkspaceInitializer.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/BackupWorkspaceInitializer.java	(revision 3339)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/BackupWorkspaceInitializer.java	(working copy)
+@@ -91,7 +91,7 @@
+       super(config, repConfig, dataManager, namespaceRegistry, locationFactory, nodeTypeManager, valueFactory,
+          accessManager);
+ 
+-      this.fileCleaner = new FileCleaner();
++      this.fileCleaner = valueFactory.getFileCleaner();
+ 
+       restoreDir = restorePath;
+ 
+@@ -366,8 +366,6 @@
+ 
+          restoreChangesLog.restore();
+ 
+-         TransactionChangesLog log = restoreChangesLog.getItemDataChangesLog();
+-
+       }
+       else if (changesLogType == RestoreChangesLog.Type.ItemDataChangesLog_without_Streams)
+       {
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/jbosscache/CacheableLockManagerImpl.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/jbosscache/CacheableLockManagerImpl.java	(revision 3339)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/jbosscache/CacheableLockManagerImpl.java	(working copy)
+@@ -43,6 +43,7 @@
+ import org.exoplatform.services.jcr.impl.Constants;
+ import org.exoplatform.services.jcr.impl.core.SessionDataManager;
+ import org.exoplatform.services.jcr.impl.core.lock.LockRemover;
++import org.exoplatform.services.jcr.impl.core.lock.LockRemoverHolder;
+ import org.exoplatform.services.jcr.impl.core.lock.SessionLockManager;
+ import org.exoplatform.services.jcr.impl.dataflow.TransientItemData;
+ import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
+@@ -178,10 +179,10 @@
+     * @throws RepositoryConfigurationException
+     */
+    public CacheableLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
+-      InitialContextInitializer context, TransactionService transactionService, ConfigurationManager cfm)
+-      throws RepositoryConfigurationException, RepositoryException
++      InitialContextInitializer context, TransactionService transactionService, ConfigurationManager cfm,
++      LockRemoverHolder lockRemoverHolder) throws RepositoryConfigurationException, RepositoryException
+    {
+-      this(dataManager, config, context, transactionService.getTransactionManager(), cfm);
++      this(dataManager, config, context, transactionService.getTransactionManager(), cfm, lockRemoverHolder);
+    }
+ 
+    /**
+@@ -193,10 +194,10 @@
+     * @throws RepositoryConfigurationException
+     */
+    public CacheableLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
+-      InitialContextInitializer context, ConfigurationManager cfm) throws RepositoryConfigurationException,
+-      RepositoryException
++      InitialContextInitializer context, ConfigurationManager cfm, LockRemoverHolder lockRemoverHolder)
++      throws RepositoryConfigurationException, RepositoryException
+    {
+-      this(dataManager, config, context, (TransactionManager)null, cfm);
++      this(dataManager, config, context, (TransactionManager)null, cfm, lockRemoverHolder);
+ 
+    }
+ 
+@@ -211,8 +212,8 @@
+     * @throws RepositoryConfigurationException
+     */
+    public CacheableLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
+-      InitialContextInitializer context, TransactionManager transactionManager, ConfigurationManager cfm)
+-      throws RepositoryConfigurationException, RepositoryException
++      InitialContextInitializer context, TransactionManager transactionManager, ConfigurationManager cfm,
++      LockRemoverHolder lockRemoverHolder) throws RepositoryConfigurationException, RepositoryException
+    {
+       lockRoot = Fqn.fromElements(LOCKS);
+ 
+@@ -269,6 +270,9 @@
+       {
+          throw new RepositoryConfigurationException("Cache configuration not found");
+       }
++
++      lockRemover = lockRemoverHolder.getLockRemover(this);
++
+    }
+ 
+    /**
+@@ -490,7 +494,7 @@
+       }
+       return true;
+    }
+-   
++
+    /**
+     * Return new instance of session lock manager.
+     */
+@@ -769,7 +773,7 @@
+     */
+    public void start()
+    {
+-      lockRemover = new LockRemover(this);
++      lockRemover.start();
+    }
+ 
+    /*
+@@ -778,8 +782,8 @@
+     */
+    public void stop()
+    {
+-      lockRemover.halt();
+-      lockRemover.interrupt();
++      lockRemover.stop();
++
+       sessionLockManagers.clear();
+       cache.stop();
+    }
+@@ -913,7 +917,7 @@
+    {
+       return getExactNodeOrCloseParentLock(node, true);
+    }
+-   
++
+    private LockData getExactNodeOrCloseParentLock(NodeData node, boolean checkHasLocks) throws RepositoryException
+    {
+ 
+@@ -954,7 +958,7 @@
+    {
+       return getClosedChild(node, true);
+    }
+-   
++
+    private LockData getClosedChild(NodeData node, boolean checkHasLocks) throws RepositoryException
+    {
+ 
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/jbosscache/jdbc/CacheableJDBCLockManagerImpl.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/jbosscache/jdbc/CacheableJDBCLockManagerImpl.java	(revision 3339)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/jbosscache/jdbc/CacheableJDBCLockManagerImpl.java	(working copy)
+@@ -42,6 +42,7 @@
+ import org.exoplatform.services.jcr.impl.Constants;
+ import org.exoplatform.services.jcr.impl.core.SessionDataManager;
+ import org.exoplatform.services.jcr.impl.core.lock.LockRemover;
++import org.exoplatform.services.jcr.impl.core.lock.LockRemoverHolder;
+ import org.exoplatform.services.jcr.impl.core.lock.SessionLockManager;
+ import org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManager;
+ import org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableSessionLockManager;
+@@ -161,10 +162,10 @@
+     * @throws RepositoryConfigurationException
+     */
+    public CacheableJDBCLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
+-      InitialContextInitializer context, TransactionService transactionService, ConfigurationManager cfm)
+-      throws RepositoryConfigurationException, RepositoryException
++      InitialContextInitializer context, TransactionService transactionService, ConfigurationManager cfm,
++      LockRemoverHolder lockRemoverHolder) throws RepositoryConfigurationException, RepositoryException
+    {
+-      this(dataManager, config, context, transactionService.getTransactionManager(), cfm);
++      this(dataManager, config, context, transactionService.getTransactionManager(), cfm, lockRemoverHolder);
+    }
+ 
+    /**
+@@ -176,10 +177,10 @@
+     * @throws RepositoryConfigurationException
+     */
+    public CacheableJDBCLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
+-      InitialContextInitializer context, ConfigurationManager cfm) throws RepositoryConfigurationException,
+-      RepositoryException
++      InitialContextInitializer context, ConfigurationManager cfm, LockRemoverHolder lockRemoverHolder)
++      throws RepositoryConfigurationException, RepositoryException
+    {
+-      this(dataManager, config, context, (TransactionManager)null, cfm);
++      this(dataManager, config, context, (TransactionManager)null, cfm, lockRemoverHolder);
+    }
+ 
+    /**
+@@ -194,8 +195,8 @@
+     * @throws RepositoryException 
+     */
+    public CacheableJDBCLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
+-      InitialContextInitializer context, TransactionManager transactionManager, ConfigurationManager cfm)
+-      throws RepositoryConfigurationException, RepositoryException
++      InitialContextInitializer context, TransactionManager transactionManager, ConfigurationManager cfm,
++      LockRemoverHolder lockRemoverHolder) throws RepositoryConfigurationException, RepositoryException
+    {
+       lockRoot = Fqn.fromElements(LOCKS);
+ 
+@@ -250,6 +251,8 @@
+       {
+          throw new RepositoryConfigurationException("Cache configuration not found");
+       }
++
++      lockRemover = lockRemoverHolder.getLockRemover(this);
+    }
+ 
+    @Managed
+@@ -598,7 +601,7 @@
+     */
+    public void start()
+    {
+-      lockRemover = new LockRemover(this);
++      lockRemover.start();
+    }
+ 
+    /**
+@@ -606,8 +609,8 @@
+     */
+    public void stop()
+    {
+-      lockRemover.halt();
+-      lockRemover.interrupt();
++      lockRemover.stop();
++
+       sessionLockManagers.clear();
+       cache.stop();
+    }
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/LockManagerImpl.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/LockManagerImpl.java	(revision 3339)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/LockManagerImpl.java	(working copy)
+@@ -146,12 +146,14 @@
+     * @param dataManager
+     * @param config
+     */
+-   public LockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config)
++   public LockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
++      LockRemoverHolder lockRemoverHolder)
+    {
+-      this(dataManager, config, null);
++      this(dataManager, config, null, lockRemoverHolder);
+    }
+ 
+-   public LockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config, LockPersister persister)
++   public LockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config, LockPersister persister,
++      LockRemoverHolder lockRemoverHolder)
+    {
+ 
+       this.dataManager = dataManager;
+@@ -169,6 +171,7 @@
+       tokensMap = new HashMap<String, LockData>();
+ 
+       dataManager.addItemPersistenceListener(this);
++      lockRemover = lockRemoverHolder.getLockRemover(this);
+    }
+ 
+    public synchronized void addLockToken(String sessionId, String lt)
+@@ -468,7 +471,7 @@
+     */
+    public void start()
+    {
+-      lockRemover = new LockRemover(this);
++      lockRemover.start();
+    }
+ 
+    // Quick method. We need to reconstruct
+@@ -503,8 +506,8 @@
+     */
+    public void stop()
+    {
+-      lockRemover.halt();
+-      lockRemover.interrupt();
++      lockRemover.stop();
++
+       locks.clear();
+       pendingLocks.clear();
+       tokensMap.clear();
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/LockRemover.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/LockRemover.java	(revision 3339)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/LockRemover.java	(working copy)
+@@ -18,47 +18,68 @@
+  */
+ package org.exoplatform.services.jcr.impl.core.lock;
+ 
+-import org.exoplatform.services.jcr.impl.proccess.WorkerThread;
+-import org.exoplatform.services.log.ExoLogger;
+-import org.exoplatform.services.log.Log;
++import org.exoplatform.services.jcr.impl.proccess.WorkerService;
+ 
++import java.util.concurrent.ScheduledFuture;
++
+ /**
+  * Created by The eXo Platform SAS.
+  * 
+  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
+  * @version $Id: LockRemover.java 11987 2008-03-17 09:06:06Z ksm $
+  */
+-public class LockRemover extends WorkerThread
++public class LockRemover
+ {
++   public static final long DEFAULT_THREAD_TIMEOUT = 30000; // 30 sec
+ 
+-   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.LockRemover");
++   private final WorkerService workerService;
+ 
+-   public static final long DEFAULT_THREAD_TIMEOUT = 30000; // 30
++   private final WorkspaceLockManager lockManager;
+ 
+-   // sec
++   private final long timeout;
+ 
+-   private final WorkspaceLockManager lockManagerImpl;
++   private ScheduledFuture lockRemoverTask = null;
+ 
+-   public LockRemover(WorkspaceLockManager lockManagerImpl)
++   class LockRemoverTask implements Runnable
+    {
+-      this(lockManagerImpl, DEFAULT_THREAD_TIMEOUT);
++      private final WorkspaceLockManager lockManager;
++
++      LockRemoverTask(WorkspaceLockManager lockManager)
++      {
++         this.lockManager = lockManager;
++      }
++
++      public void run()
++      {
++         lockManager.removeExpired();
++      }
+    }
+ 
+-   private LockRemover(WorkspaceLockManager lockManagerImpl, long timeout)
++   protected LockRemover(WorkerService workerService, WorkspaceLockManager lockManager)
+    {
+-      super(timeout);
+-      this.lockManagerImpl = lockManagerImpl;
+-      setName("LockRemover " + getId());
+-      setPriority(Thread.MIN_PRIORITY);
+-      setDaemon(true);
+-      start();
+-      if (log.isDebugEnabled())
+-         log.debug("LockRemover instantiated name= " + getName() + " timeout= " + timeout);
++      this(workerService, lockManager, DEFAULT_THREAD_TIMEOUT);
+    }
+ 
+-   @Override
+-   protected void callPeriodically() throws Exception
++   protected LockRemover(WorkerService workerService, WorkspaceLockManager lockManager, long timeout)
+    {
+-      lockManagerImpl.removeExpired();
++      this.workerService = workerService;
++      this.lockManager = lockManager;
++      this.timeout = timeout;
+    }
++
++   public void start()
++   {
++      if (lockRemoverTask != null)
++      {
++         stop();
++      }
++      lockRemoverTask = workerService.executePeriodically(new LockRemoverTask(lockManager), timeout);
++   }
++
++   public void stop()
++   {
++      lockRemoverTask.cancel(false);
++      lockRemoverTask = null;
++   }
++
+ }
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/LockRemoverHolder.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/LockRemoverHolder.java	(revision 0)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/LockRemoverHolder.java	(revision 0)
+@@ -0,0 +1,65 @@
++package org.exoplatform.services.jcr.impl.core.lock;
++
++import org.exoplatform.services.jcr.config.RepositoryEntry;
++import org.exoplatform.services.jcr.impl.proccess.WorkerService;
++
++/**
++ * LockRemoverHolder holds is a single per-repository LockRemover container.
++ * @author <a href="mailto:foo@bar.org">Foo Bar</a>
++ * @version $Id: exo-jboss-codetemplates.xml 34360 2009-07-22 23:58:59Z aheritier $
++ *
++ */
++public class LockRemoverHolder
++{
++
++   /**
++    * Default amount of thread that may be used by WorkerService to serve LockRemovers.
++    */
++   public final int DEFAULT_THREAD_COUNT = 1;
++
++   /**
++    * WorkerService that executed LockRemover.
++    */
++   private final WorkerService workerService;
++
++   /**
++    * Constructor.
++    * @param entry - RepositoryEntry that may contain lock-remover-max-threads parameter.
++    */
++   public LockRemoverHolder(RepositoryEntry entry)
++   {
++      int threadCount = DEFAULT_THREAD_COUNT;
++      if (entry != null)
++      {
++         if (entry.getLockRemoverThreadsCount() > 0)
++         {
++            threadCount = entry.getLockRemoverThreadsCount();
++         }
++      }
++      workerService = new WorkerService(threadCount, "lock-remover");
++   }
++
++   /**
++    * Returns LockRemover object that removes expired locks from LockManager. Default timeout used.
++    * 
++    * @param lockManager - LockManager that going to be cleaned with returned LockRemover.
++    * @return LockRemover
++    */
++   public LockRemover getLockRemover(WorkspaceLockManager lockManager)
++   {
++      return new LockRemover(workerService, lockManager);
++   }
++
++   /**
++    * Returns LockRemover object that removes expired locks from LockManager.
++    * 
++    * @param lockManager - LockManager that going to be cleaned with returned LockRemover.
++    * @param timeout - LockRemover will check LockManager with delay setted in timeout parameter
++    * @return LockRemover
++    */
++   public LockRemover getLockRemover(WorkspaceLockManager lockManager, long timeout)
++   {
++      return new LockRemover(workerService, lockManager, timeout);
++   }
++
++}
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/SessionImpl.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/SessionImpl.java	(revision 3339)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/SessionImpl.java	(working copy)
+@@ -42,7 +42,7 @@
+ import org.exoplatform.services.jcr.impl.dataflow.persistent.LocalWorkspaceDataManagerStub;
+ import org.exoplatform.services.jcr.impl.ext.action.SessionActionCatalog;
+ import org.exoplatform.services.jcr.impl.ext.action.SessionActionInterceptor;
+-import org.exoplatform.services.jcr.impl.util.io.WorkspaceFileCleanerHolder;
++import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
+ import org.exoplatform.services.jcr.impl.xml.ExportImportFactory;
+ import org.exoplatform.services.jcr.impl.xml.ItemDataKeeperAdapter;
+ import org.exoplatform.services.jcr.impl.xml.XmlMapping;
+@@ -162,8 +162,8 @@
+       this.lazyReadThreshold =
+          wsConfig.getLazyReadThreshold() > 0 ? wsConfig.getLazyReadThreshold() : DEFAULT_LAZY_READ_THRESHOLD;
+ 
+-      WorkspaceFileCleanerHolder cleanerHolder =
+-         (WorkspaceFileCleanerHolder)container.getComponentInstanceOfType(WorkspaceFileCleanerHolder.class);
++      FileCleanerHolder cleanerHolder =
++         (FileCleanerHolder)container.getComponentInstanceOfType(FileCleanerHolder.class);
+ 
+       this.locationFactory = new LocationFactory(this);
+       this.valueFactory = new ValueFactoryImpl(locationFactory, wsConfig, cleanerHolder);
+@@ -242,8 +242,8 @@
+ 
+       WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
+ 
+-      WorkspaceFileCleanerHolder cleanerHolder =
+-         (WorkspaceFileCleanerHolder)container.getComponentInstanceOfType(WorkspaceFileCleanerHolder.class);
++      FileCleanerHolder cleanerHolder =
++         (FileCleanerHolder)container.getComponentInstanceOfType(FileCleanerHolder.class);
+ 
+       ValueFactoryImpl valueFactoryImpl = new ValueFactoryImpl(factory, wsConfig, cleanerHolder);
+ 
+@@ -281,8 +281,8 @@
+ 
+       WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
+ 
+-      WorkspaceFileCleanerHolder cleanerHolder =
+-         (WorkspaceFileCleanerHolder)container.getComponentInstanceOfType(WorkspaceFileCleanerHolder.class);
++      FileCleanerHolder cleanerHolder =
++         (FileCleanerHolder)container.getComponentInstanceOfType(FileCleanerHolder.class);
+ 
+       ValueFactoryImpl valueFactoryImpl = new ValueFactoryImpl(factory, wsConfig, cleanerHolder);
+ 
+@@ -322,8 +322,8 @@
+ 
+       WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
+ 
+-      WorkspaceFileCleanerHolder cleanerHolder =
+-         (WorkspaceFileCleanerHolder)container.getComponentInstanceOfType(WorkspaceFileCleanerHolder.class);
++      FileCleanerHolder cleanerHolder =
++         (FileCleanerHolder)container.getComponentInstanceOfType(FileCleanerHolder.class);
+ 
+       ValueFactoryImpl valueFactoryImpl = new ValueFactoryImpl(factory, wsConfig, cleanerHolder);
+ 
+@@ -361,8 +361,8 @@
+ 
+       WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
+ 
+-      WorkspaceFileCleanerHolder cleanerHolder =
+-         (WorkspaceFileCleanerHolder)container.getComponentInstanceOfType(WorkspaceFileCleanerHolder.class);
++      FileCleanerHolder cleanerHolder =
++         (FileCleanerHolder)container.getComponentInstanceOfType(FileCleanerHolder.class);
+ 
+       ValueFactoryImpl valueFactoryImpl = new ValueFactoryImpl(factory, wsConfig, cleanerHolder);
+       try
+@@ -397,8 +397,8 @@
+ 
+       WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
+ 
+-      WorkspaceFileCleanerHolder cleanerHolder =
+-         (WorkspaceFileCleanerHolder)container.getComponentInstanceOfType(WorkspaceFileCleanerHolder.class);
++      FileCleanerHolder cleanerHolder =
++         (FileCleanerHolder)container.getComponentInstanceOfType(FileCleanerHolder.class);
+ 
+       ValueFactoryImpl valueFactoryImpl = new ValueFactoryImpl(factory, wsConfig, cleanerHolder);
+       try
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/SysViewWorkspaceInitializer.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/SysViewWorkspaceInitializer.java	(revision 3339)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/SysViewWorkspaceInitializer.java	(working copy)
+@@ -265,7 +265,8 @@
+          else if (tmpFile == null && (((TempOutputStream)buff).getSize() + buffer.length) > maxBufferSize)
+          {
+             // spool to file
+-            FileOutputStream fout = new FileOutputStream(tmpFile = SpoolFile.createTempFile("jcrrestorewi", ".tmp", tempDir));
++            FileOutputStream fout =
++               new FileOutputStream(tmpFile = SpoolFile.createTempFile("jcrrestorewi", ".tmp", tempDir));
+             fout.write(((TempOutputStream)buff).getBuffer());
+             buff.close();
+             buff = fout; // use file
+@@ -398,7 +399,7 @@
+       this.namespaceRegistry = namespaceRegistry;
+       this.locationFactory = locationFactory;
+ 
+-      this.fileCleaner = new FileCleaner(false); // cleaner should be started!
++      this.fileCleaner = valueFactory.getFileCleaner();
+       this.maxBufferSize =
+          config.getContainer().getParameterInteger(WorkspaceDataContainer.MAXBUFFERSIZE_PROP,
+             WorkspaceDataContainer.DEF_MAXBUFFERSIZE);
+@@ -409,7 +410,7 @@
+          throw new RepositoryConfigurationException("Workspace (" + workspaceName
+             + ") RestoreIntializer should have mandatory parameter "
+             + SysViewWorkspaceInitializer.RESTORE_PATH_PARAMETER);
+-      
++
+       this.tempDir = new File(System.getProperty("java.io.tmpdir"));
+    }
+ 
+@@ -450,12 +451,12 @@
+       this.namespaceRegistry = namespaceRegistry;
+       this.locationFactory = locationFactory;
+ 
+-      this.fileCleaner = new FileCleaner(false); // cleaner should be started!
++      this.fileCleaner = valueFactory.getFileCleaner();
+       this.maxBufferSize =
+          config.getContainer().getParameterInteger(WorkspaceDataContainer.MAXBUFFERSIZE_PROP,
+             WorkspaceDataContainer.DEF_MAXBUFFERSIZE);
+       this.restorePath = restorePath;
+-      
++
+       this.tempDir = new File(System.getProperty("java.io.tmpdir"));
+    }
+ 
+@@ -771,7 +772,7 @@
+                            }
+                            else
+                            {
+-                              
++
+                               File pfile = propertyValue.getFile();
+                               if (pfile != null)
+                               {
+@@ -811,7 +812,6 @@
+ 
+    public void start()
+    {
+-      fileCleaner.start();
+    }
+ 
+    public void stop()
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/value/ValueFactoryImpl.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/value/ValueFactoryImpl.java	(revision 3339)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/value/ValueFactoryImpl.java	(working copy)
+@@ -30,7 +30,7 @@
+ import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+ import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
+ import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+-import org.exoplatform.services.jcr.impl.util.io.WorkspaceFileCleanerHolder;
++import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
+ import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
+ import org.exoplatform.services.log.ExoLogger;
+ import org.exoplatform.services.log.Log;
+@@ -71,7 +71,7 @@
+    private int maxBufferSize;
+ 
+    public ValueFactoryImpl(LocationFactory locationFactory, WorkspaceEntry workspaceConfig,
+-      WorkspaceFileCleanerHolder cleanerHolder)
++      FileCleanerHolder cleanerHolder)
+    {
+ 
+       this.locationFactory = locationFactory;
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/proccess/WorkerService.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/proccess/WorkerService.java	(revision 0)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/proccess/WorkerService.java	(revision 0)
+@@ -0,0 +1,84 @@
++package org.exoplatform.services.jcr.impl.proccess;
++
++import java.util.concurrent.ScheduledFuture;
++import java.util.concurrent.ScheduledThreadPoolExecutor;
++import java.util.concurrent.ThreadFactory;
++import java.util.concurrent.TimeUnit;
++import java.util.concurrent.atomic.AtomicInteger;
++
++public class WorkerService
++{
++   /**
++    * Executor that process assigned command periodically.
++    */
++   private final ScheduledThreadPoolExecutor executor;
++
++   class WorkerThreadFactory implements ThreadFactory
++   {
++      final AtomicInteger poolNumber = new AtomicInteger(1);
++
++      final ThreadGroup group;
++
++      final AtomicInteger threadNumber = new AtomicInteger(1);
++
++      final String namePrefix;
++
++      WorkerThreadFactory(String namePrefix)
++      {
++         SecurityManager s = System.getSecurityManager();
++         group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
++         this.namePrefix = namePrefix + poolNumber.getAndIncrement() + "-thread-";
++      }
++
++      public Thread newThread(Runnable r)
++      {
++         Thread t = new Thread(group, r, namePrefix + threadNumber.getAndIncrement(), 0);
++         if (t.isDaemon())
++            t.setDaemon(false);
++         if (t.getPriority() != Thread.NORM_PRIORITY)
++            t.setPriority(Thread.NORM_PRIORITY);
++         return t;
++      }
++   }
++
++   /**
++    * Constructor.
++    * 
++    * @param threadCount - max thread count that executor may use
++    */
++   public WorkerService(int threadCount)
++   {
++      executor = new ScheduledThreadPoolExecutor(threadCount);
++   }
++
++   /**
++    * Constructor.
++    * 
++    * @param threadCount - max thread count that executor may use
++    * @param threadNamePrefix - thread name prefix
++    */
++   public WorkerService(int threadCount, String threadNamePrefix)
++   {
++      executor = new ScheduledThreadPoolExecutor(threadCount, new WorkerThreadFactory(threadNamePrefix));
++   }
++
++   /**
++    * Execute specified <code>command</code> periodically with <code>delay</code>.
++    * 
++    * @param command - command that must be executed
++    * @param delay - delay between each command execution 
++    * @return
++    */
++   public ScheduledFuture executePeriodically(Runnable command, long delay)
++   {
++      return executor.scheduleWithFixedDelay(command, 0, delay, TimeUnit.MILLISECONDS);
++   }
++
++   /**
++    * Initiates an orderly shutdown in which previously submitted tasks are executed, but no new tasks will be accepted. 
++    */
++   public void stop()
++   {
++      executor.shutdown();
++   }
++}
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/RepositoryContainer.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/RepositoryContainer.java	(revision 3339)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/RepositoryContainer.java	(working copy)
+@@ -41,6 +41,7 @@
+ import org.exoplatform.services.jcr.impl.core.WorkspaceInitializer;
+ import org.exoplatform.services.jcr.impl.core.access.DefaultAccessManagerImpl;
+ import org.exoplatform.services.jcr.impl.core.lock.LockManagerImpl;
++import org.exoplatform.services.jcr.impl.core.lock.LockRemoverHolder;
+ import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeDataManagerImpl;
+ import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
+ import org.exoplatform.services.jcr.impl.core.nodetype.registration.JCRNodeTypeDataPersister;
+@@ -56,15 +57,12 @@
+ import org.exoplatform.services.jcr.impl.dataflow.persistent.LocalWorkspaceDataManagerStub;
+ import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
+ import org.exoplatform.services.jcr.impl.storage.value.StandaloneStoragePluginProvider;
+-import org.exoplatform.services.jcr.impl.util.io.WorkspaceFileCleanerHolder;
++import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
+ import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
+ import org.exoplatform.services.jcr.util.IdGenerator;
+ import org.exoplatform.services.log.ExoLogger;
+ import org.exoplatform.services.log.Log;
+ 
+-import java.util.ArrayList;
+-import java.util.Collections;
+-import java.util.Comparator;
+ import java.util.List;
+ 
+ import javax.jcr.NamespaceRegistry;
+@@ -335,7 +333,6 @@
+          }
+          workspaceContainer.registerComponentImplementation(initilizerType);
+          workspaceContainer.registerComponentImplementation(SessionFactory.class);
+-         workspaceContainer.registerComponentImplementation(WorkspaceFileCleanerHolder.class);
+ 
+          LocalWorkspaceDataManagerStub wsDataManager =
+             (LocalWorkspaceDataManagerStub)workspaceContainer
+@@ -480,7 +477,10 @@
+    {
+ 
+       registerComponentInstance(config);
+-
++      // WorkspaceFileCleanerHolder - is a common holder for all workspaces. 
++      // It is used to initialize FileValueStorage
++      registerComponentImplementation(FileCleanerHolder.class);
++      registerComponentImplementation(LockRemoverHolder.class);
+       registerWorkspacesComponents();
+       registerRepositoryComponents();
+    }
+@@ -492,7 +492,6 @@
+ 
+       registerComponentImplementation(RepositoryIndexSearcherHolder.class);
+ 
+-      registerComponentImplementation(WorkspaceFileCleanerHolder.class);
+       registerComponentImplementation(LocationFactory.class);
+       registerComponentImplementation(ValueFactoryImpl.class);
+ 
+@@ -583,5 +582,5 @@
+       ntManager.start();
+ 
+    }
+-   
++
+ }
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/JDBCWorkspaceDataContainer.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/JDBCWorkspaceDataContainer.java	(revision 3339)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/JDBCWorkspaceDataContainer.java	(working copy)
+@@ -34,6 +34,7 @@
+ import org.exoplatform.services.jcr.impl.storage.jdbc.statistics.StatisticsJDBCStorageConnection;
+ import org.exoplatform.services.jcr.impl.storage.jdbc.update.StorageUpdateManager;
+ import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
++import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
+ import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerException;
+ import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
+ import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
+@@ -202,8 +203,9 @@
+     *           if JNDI exception (on DataSource lookup)
+     */
+    public JDBCWorkspaceDataContainer(WorkspaceEntry wsConfig, RepositoryEntry repConfig,
+-      InitialContextInitializer contextInit, ValueStoragePluginProvider valueStorageProvider)
+-      throws RepositoryConfigurationException, NamingException, RepositoryException, IOException
++      InitialContextInitializer contextInit, ValueStoragePluginProvider valueStorageProvider,
++      FileCleanerHolder fileCleanerHolder) throws RepositoryConfigurationException, NamingException,
++      RepositoryException, IOException
+    {
+ 
+       // This recall is workaround for tenants creation. There is a trouble in visibility datasource
+@@ -393,7 +395,7 @@
+       if (!swapDirectory.exists())
+          swapDirectory.mkdirs();
+ 
+-      this.swapCleaner = new FileCleaner(false);
++      this.swapCleaner = fileCleanerHolder.getFileCleaner();
+ 
+       initDatabase();
+ 
+@@ -834,7 +836,6 @@
+     */
+    public void start()
+    {
+-      this.swapCleaner.start();
+    }
+ 
+    /**
+@@ -842,8 +843,6 @@
+     */
+    public void stop()
+    {
+-      this.swapCleaner.halt();
+-      this.swapCleaner.interrupt();
+ 
+       // TODO HSQLDB Stop (debug)
+       // if (dbDialect.equals(DB_DIALECT_GENERIC) ||
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/optimisation/CQJDBCWorkspaceDataContainer.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/optimisation/CQJDBCWorkspaceDataContainer.java	(revision 3339)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/optimisation/CQJDBCWorkspaceDataContainer.java	(working copy)
+@@ -33,6 +33,7 @@
+ import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.HSQLDBConnectionFactory;
+ import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.MySQLConnectionFactory;
+ import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.OracleConnectionFactory;
++import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
+ import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerException;
+ import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
+ import org.exoplatform.services.naming.InitialContextInitializer;
+@@ -67,10 +68,11 @@
+     *           if JNDI exception (on DataSource lookup)
+     */
+    public CQJDBCWorkspaceDataContainer(WorkspaceEntry wsConfig, RepositoryEntry repConfig,
+-      InitialContextInitializer contextInit, ValueStoragePluginProvider valueStorageProvider)
+-      throws RepositoryConfigurationException, NamingException, RepositoryException, IOException
++      InitialContextInitializer contextInit, ValueStoragePluginProvider valueStorageProvider,
++      FileCleanerHolder fileCleanerHolder) throws RepositoryConfigurationException, NamingException,
++      RepositoryException, IOException
+    {
+-      super(wsConfig, repConfig, contextInit, valueStorageProvider);
++      super(wsConfig, repConfig, contextInit, valueStorageProvider, fileCleanerHolder);
+    }
+ 
+    /**
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/CASableSimpleFileValueStorage.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/CASableSimpleFileValueStorage.java	(revision 3339)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/CASableSimpleFileValueStorage.java	(working copy)
+@@ -21,6 +21,7 @@
+ import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+ import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
+ import org.exoplatform.services.jcr.impl.storage.value.cas.ValueContentAddressStorage;
++import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+ import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
+ 
+ import java.io.IOException;
+@@ -40,6 +41,11 @@
+ 
+    private String digestAlgo;
+ 
++   public CASableSimpleFileValueStorage(FileCleaner cleaner)
++   {
++      super(cleaner);
++   }
++
+    @Override
+    public void init(Properties props, ValueDataResourceHolder resources) throws IOException,
+       RepositoryConfigurationException
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/CASableTreeFileValueStorage.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/CASableTreeFileValueStorage.java	(revision 3339)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/CASableTreeFileValueStorage.java	(working copy)
+@@ -21,6 +21,7 @@
+ import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+ import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
+ import org.exoplatform.services.jcr.impl.storage.value.cas.ValueContentAddressStorage;
++import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+ 
+ import java.io.IOException;
+ import java.util.Properties;
+@@ -38,6 +39,11 @@
+ 
+    private String digestAlgo;
+ 
++   public CASableTreeFileValueStorage(FileCleaner cleaner)
++   {
++      super(cleaner);
++   }
++
+    /**
+     * {@inheritDoc}
+     */
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/FileValueStorage.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/FileValueStorage.java	(revision 3339)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/FileValueStorage.java	(working copy)
+@@ -59,9 +59,9 @@
+     * FileValueStorage constructor.
+     * 
+     */
+-   public FileValueStorage()
++   public FileValueStorage(FileCleaner cleaner)
+    {
+-      this.cleaner = new FileCleaner(); // TODO use container cleaner
++      this.cleaner = cleaner;
+    }
+ 
+    /**
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/SimpleFileValueStorage.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/SimpleFileValueStorage.java	(revision 3339)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/SimpleFileValueStorage.java	(working copy)
+@@ -18,6 +18,7 @@
+  */
+ package org.exoplatform.services.jcr.impl.storage.value.fs;
+ 
++import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+ import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
+ 
+ import java.io.IOException;
+@@ -32,6 +33,11 @@
+ public class SimpleFileValueStorage extends FileValueStorage
+ {
+ 
++   public SimpleFileValueStorage(FileCleaner cleaner)
++   {
++      super(cleaner);
++   }
++
+    /**
+     * @see org.exoplatform.services.jcr.storage.value.ValueStoragePlugin#openIOChannel()
+     */
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/TreeFileValueStorage.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/TreeFileValueStorage.java	(revision 3339)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/TreeFileValueStorage.java	(working copy)
+@@ -21,7 +21,6 @@
+ import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+ import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
+ 
+-import java.io.File;
+ import java.io.IOException;
+ 
+ /**
+@@ -33,20 +32,11 @@
+ public class TreeFileValueStorage extends FileValueStorage
+ {
+ 
+-   protected class TreeFileCleaner extends FileCleaner
++   public TreeFileValueStorage(FileCleaner cleaner)
+    {
+-      @Override
+-      public synchronized void addFile(File file)
+-      {
+-         super.addFile(new TreeFile(file.getAbsolutePath(), cleaner, rootDir));
+-      }
++      super(cleaner);
+    }
+ 
+-   public TreeFileValueStorage()
+-   {
+-      this.cleaner = new TreeFileCleaner(); // TODO use container cleaner
+-   }
+-
+    @Override
+    public ValueIOChannel openIOChannel() throws IOException
+    {
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/StandaloneStoragePluginProvider.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/StandaloneStoragePluginProvider.java	(revision 3339)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/StandaloneStoragePluginProvider.java	(working copy)
+@@ -24,6 +24,8 @@
+ import org.exoplatform.services.jcr.config.ValueStorageFilterEntry;
+ import org.exoplatform.services.jcr.config.WorkspaceEntry;
+ import org.exoplatform.services.jcr.datamodel.PropertyData;
++import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
++import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
+ import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
+ import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
+ import org.exoplatform.services.jcr.storage.value.ValuePluginFilter;
+@@ -60,7 +62,8 @@
+     */
+    private final ValueDataResourceHolder resorcesHolder;
+ 
+-   public StandaloneStoragePluginProvider(WorkspaceEntry wsConfig) throws RepositoryConfigurationException, IOException
++   public StandaloneStoragePluginProvider(WorkspaceEntry wsConfig, FileCleanerHolder holder)
++      throws RepositoryConfigurationException, IOException
+    {
+ 
+       this.resorcesHolder = new ValueDataResourceHolder();
+@@ -82,7 +85,10 @@
+             Object o = null;
+             try
+             {
+-               o = Class.forName(storageEntry.getType()).newInstance();
++               o =
++                  Class.forName(storageEntry.getType()).getConstructor(FileCleaner.class).newInstance(
++                     holder.getFileCleaner());
++
+             }
+             catch (Exception e)
+             {
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/util/io/FileCleanerHolder.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/util/io/FileCleanerHolder.java	(revision 0)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/util/io/FileCleanerHolder.java	(revision 0)
+@@ -0,0 +1,43 @@
++/*
++ * Copyright (C) 2009 eXo Platform SAS.
++ *
++ * This is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU Lesser General Public License as
++ * published by the Free Software Foundation; either version 2.1 of
++ * the License, or (at your option) any later version.
++ *
++ * This software is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this software; if not, write to the Free
++ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
++ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
++ */
++package org.exoplatform.services.jcr.impl.util.io;
++
++/**
++ * Created by The eXo Platform SAS. <br/> per workspace container file cleaner holder object
++ * 
++ * @author Gennady Azarenkov
++ * @version $Id: WorkspaceFileCleanerHolder.java 11907 2008-03-13 15:36:21Z ksm $
++ */
++
++public class FileCleanerHolder
++{
++
++   private final FileCleaner fileCleaner;
++
++   public FileCleanerHolder()
++   {
++      this.fileCleaner = new FileCleaner();
++   }
++
++   public FileCleaner getFileCleaner()
++   {
++      return fileCleaner;
++   }
++
++}
+Index: exo.jcr.component.core/src/main/resources/binding.xml
+===================================================================
+--- exo.jcr.component.core/src/main/resources/binding.xml	(revision 3339)
++++ exo.jcr.component.core/src/main/resources/binding.xml	(working copy)
+@@ -17,6 +17,8 @@
+     <value name="access-control" field="accessControl" usage="optional" />
+     <value name="session-max-age" field="sessionTimeOut" 
+ 		  deserializer="org.exoplatform.services.jcr.util.ConfigurationFormat.parseTime" usage="optional" />
++    <value name="lock-remover-max-threads" field="lockRemoverMaxThreadCount" 
++		  deserializer="org.exoplatform.services.jcr.util.ConfigurationFormat.parseInt" usage="optional" />
+     <value name="authentication-policy" field="authenticationPolicy" />
+     <collection name="workspaces" field="workspaces" item-type="org.exoplatform.services.jcr.config.WorkspaceEntry" />
+   </mapping>
+Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/BaseStandaloneTest.java
+===================================================================
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/BaseStandaloneTest.java	(revision 3339)
++++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/BaseStandaloneTest.java	(working copy)
+@@ -30,7 +30,7 @@
+ import org.exoplatform.services.jcr.impl.core.SessionImpl;
+ import org.exoplatform.services.jcr.impl.dataflow.serialization.ReaderSpoolFileHolder;
+ import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+-import org.exoplatform.services.jcr.impl.util.io.WorkspaceFileCleanerHolder;
++import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
+ import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
+ import org.exoplatform.services.log.ExoLogger;
+ import org.exoplatform.services.log.Log;
+@@ -153,8 +153,7 @@
+          wconf.getContainer().getParameterInteger(WorkspaceDataContainer.MAXBUFFERSIZE_PROP,
+             WorkspaceDataContainer.DEF_MAXBUFFERSIZE);
+ 
+-      WorkspaceFileCleanerHolder wfcleaner =
+-         (WorkspaceFileCleanerHolder)wsc.getComponent(WorkspaceFileCleanerHolder.class);
++      FileCleanerHolder wfcleaner = (FileCleanerHolder)wsc.getComponent(FileCleanerHolder.class);
+       fileCleaner = wfcleaner.getFileCleaner();
+       holder = new ReaderSpoolFileHolder();
+    }
+Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/storage/JDBCWDCTest.java
+===================================================================
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/storage/JDBCWDCTest.java	(revision 3339)
++++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/storage/JDBCWDCTest.java	(working copy)
+@@ -35,6 +35,7 @@
+ import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+ import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
+ import org.exoplatform.services.jcr.impl.storage.value.StandaloneStoragePluginProvider;
++import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
+ import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
+ import org.exoplatform.services.log.ExoLogger;
+ import org.exoplatform.services.log.Log;
+@@ -103,9 +104,11 @@
+       // ref.add(new StringRefAddr("database", "jdbc:hsqldb:file:data/test"));
+ 
+       // SimpleJNDIContextInitializer.initialize(sourceName, ref);
++      FileCleanerHolder holder = new FileCleanerHolder();
+ 
+       container =
+-         new JDBCWorkspaceDataContainer(config, repositoryEntry, null, new StandaloneStoragePluginProvider(config));
++         new JDBCWorkspaceDataContainer(config, repositoryEntry, null, new StandaloneStoragePluginProvider(config,
++            holder), holder);
+ 
+       Properties logProps = new Properties();
+       logProps.put("org.apache.commons.logging.simplelog.defaultlog", "debug");
+Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/storage/value/fs/CASableFileIOChannelTestBase.java
+===================================================================
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/storage/value/fs/CASableFileIOChannelTestBase.java	(revision 3339)
++++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/storage/value/fs/CASableFileIOChannelTestBase.java	(working copy)
+@@ -24,7 +24,6 @@
+ import org.exoplatform.services.jcr.impl.storage.value.cas.RecordAlreadyExistsException;
+ import org.exoplatform.services.jcr.impl.storage.value.cas.RecordNotFoundException;
+ import org.exoplatform.services.jcr.impl.storage.value.cas.ValueContentAddressStorage;
+-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+ import org.exoplatform.services.jcr.util.IdGenerator;
+ import org.exoplatform.services.log.ExoLogger;
+ import org.exoplatform.services.log.Log;
+@@ -48,8 +47,6 @@
+ 
+    protected ValueContentAddressStorage vcas;
+ 
+-   protected FileCleaner fileCleaner;
+-
+    protected File rootDir;
+ 
+    protected String storageId;
+@@ -61,9 +58,6 @@
+    {
+       super.setUp();
+ 
+-      if (fileCleaner == null)
+-         fileCleaner = new FileCleaner();
+-
+       if (vcas == null)
+          initVCAS();
+ 
+Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/storage/value/fs/TestFileIOChannel.java
+===================================================================
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/storage/value/fs/TestFileIOChannel.java	(revision 3339)
++++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/storage/value/fs/TestFileIOChannel.java	(working copy)
+@@ -43,7 +43,7 @@
+ 
+    private File rootDir;
+ 
+-   private FileCleaner cleaner = new FileCleaner(2000);
++   private FileCleaner cleaner;
+ 
+    private ValueDataResourceHolder resources = new ValueDataResourceHolder();
+ 
+@@ -57,6 +57,8 @@
+    {
+       super.setUp();
+ 
++      cleaner = new FileCleaner(2000);
++
+       rootDir = new File(new File("target"), "vs1");
+       rootDir.mkdirs();
+ 
+@@ -67,6 +69,15 @@
+ 
+    }
+ 
++   /**
++    * {@inheritDoc}
++    */
++   @Override
++   protected void tearDown() throws Exception
++   {
++      cleaner.halt();
++   }
++
+    public void testRead() throws Exception
+    {
+ 
+Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/value/TestPersistedValueData.java
+===================================================================
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/value/TestPersistedValueData.java	(revision 3339)
++++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/value/TestPersistedValueData.java	(working copy)
+@@ -81,27 +81,34 @@
+ 
+    public void testIfFinalizeRemovesTempFileStreamValueData() throws Exception
+    {
++      FileCleaner testFileCleaner = new FileCleaner(1000, true);
++      try
++      {
++         byte[] buf = "0123456789".getBytes();
++         SwapFile file = SwapFile.get(new File("target"), "testIfFinalizeRemovesTempFileStreamValueData");
++         //File file = new File("target/testIfFinalizeRemovesTempFileStreamValueData");
++         //if (file.exists())
++         //  file.delete();
++         FileOutputStream out = new FileOutputStream(file);
++         out.write(buf);
++         out.close();
+ 
+-      byte[] buf = "0123456789".getBytes();
+-      SwapFile file = SwapFile.get(new File("target"), "testIfFinalizeRemovesTempFileStreamValueData");
+-      //File file = new File("target/testIfFinalizeRemovesTempFileStreamValueData");
+-      //if (file.exists())
+-      //  file.delete();
+-      FileOutputStream out = new FileOutputStream(file);
+-      out.write(buf);
+-      out.close();
++         CleanableFilePersistedValueData vd = new CleanableFilePersistedValueData(0, file, testFileCleaner);
++         assertTrue(file.exists());
+ 
+-      CleanableFilePersistedValueData vd = new CleanableFilePersistedValueData(0, file, new FileCleaner(1000, true));
+-      assertTrue(file.exists());
++         vd = null;
++         System.gc();
+ 
+-      vd = null;
+-      System.gc();
++         // allows GC to call finalize on vd
++         Thread.sleep(2500);
++         System.gc();
+ 
+-      // allows GC to call finalize on vd
+-      Thread.sleep(2500);
+-      System.gc();
+-
+-      assertFalse(file.exists());
++         assertFalse(file.exists());
++      }
++      finally
++      {
++         testFileCleaner.halt();
++      }
+    }
+ 
+    public void testConcurrentFileStreamValueDataReading() throws Exception
+Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/value/TestTransientValueData.java
+===================================================================
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/value/TestTransientValueData.java	(revision 3339)
++++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/value/TestTransientValueData.java	(working copy)
+@@ -66,37 +66,46 @@
+ 
+    public void testCreateFileStreamTransientValueData() throws Exception
+    {
++      FileCleaner testFileCleaner = new FileCleaner();
++      try
++      {
++         byte[] buf = "0123456789".getBytes();
++         File file = new File("target/testCreateFileStreamTransientValueData");
++         if (file.exists())
++            file.delete();
++         FileOutputStream out = new FileOutputStream(file);
++         out.write(buf);
++         out.close();
+ 
+-      byte[] buf = "0123456789".getBytes();
+-      File file = new File("target/testCreateFileStreamTransientValueData");
+-      if (file.exists())
+-         file.delete();
+-      FileOutputStream out = new FileOutputStream(file);
+-      out.write(buf);
+-      out.close();
++         FileInputStream fs1 = new FileInputStream(file);
++         TransientValueData vd =
++            new TransientValueData(0, null, fs1, null, testFileCleaner, 5, new File("target"), true);
+ 
+-      FileInputStream fs1 = new FileInputStream(file);
+-      TransientValueData vd = new TransientValueData(0, null, fs1, null, new FileCleaner(), 5, new File("target"), true);
++         // spool to file
++         InputStream fs2 = vd.getAsStream();
++         assertEquals(10, vd.getLength());
++         assertTrue(fs2 instanceof FileInputStream);
+ 
+-      // spool to file
+-      InputStream fs2 = vd.getAsStream();
+-      assertEquals(10, vd.getLength());
+-      assertTrue(fs2 instanceof FileInputStream);
++         // not the same object as new is is from spool file
++         assertNotSame(fs1, fs2);
++         // spooled to file so not a byte array
++         assertFalse(vd.isByteArray());
+ 
+-      // not the same object as new is is from spool file
+-      assertNotSame(fs1, fs2);
+-      // spooled to file so not a byte array
+-      assertFalse(vd.isByteArray());
++         // next call return not the same object as well
++         // (new stream every time)
++         assertNotSame(vd.getAsStream(), fs2);
++         assertEquals(10, vd.getLength());
+ 
+-      // next call return not the same object as well
+-      // (new stream every time)
+-      assertNotSame(vd.getAsStream(), fs2);
+-      assertEquals(10, vd.getLength());
++         // gets as byte array
++         assertEquals(10, vd.getAsByteArray().length);
++         // but still spooled to file
++         assertFalse(vd.isByteArray());
+ 
+-      // gets as byte array
+-      assertEquals(10, vd.getAsByteArray().length);
+-      // but still spooled to file
+-      assertFalse(vd.isByteArray());
++      }
++      finally
++      {
++         testFileCleaner.halt();
++      }
+ 
+    }
+ 
+@@ -118,7 +127,7 @@
+       // TODO not influenced here as will be spooled to byte array anyway
+       //vd.setMaxBufferSize(5);
+       //vd.setFileCleaner(new FileCleaner());
+-      
++
+       //
+       InputStream fs2 = vd.getAsStream();
+       assertEquals(10, vd.getLength());
+Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/value/TestValueImpl.java
+===================================================================
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/value/TestValueImpl.java	(revision 3339)
++++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/value/TestValueImpl.java	(working copy)
+@@ -50,43 +50,51 @@
+ 
+    public void testNewBinaryValue() throws Exception
+    {
++      FileCleaner testFileCleaner = new FileCleaner();
+ 
+-      byte[] buf = "012345678901234567890123456789".getBytes();
+-      File file = new File("target/testNewBinaryValue");
+-      if (file.exists())
+-         file.delete();
+-      FileOutputStream out = new FileOutputStream(file);
+-      out.write(buf);
+-      out.close();
++      try
++      {
++         byte[] buf = "012345678901234567890123456789".getBytes();
++         File file = new File("target/testNewBinaryValue");
++         if (file.exists())
++            file.delete();
++         FileOutputStream out = new FileOutputStream(file);
++         out.write(buf);
++         out.close();
+ 
+-      FileInputStream fs1 = new FileInputStream(file);
+-      BinaryValue val = new BinaryValue(fs1, new FileCleaner(), tempDirectory, maxFufferSize);
+-      InputStream str1 = val.getStream();
+-      assertNotNull(str1);
++         FileInputStream fs1 = new FileInputStream(file);
++         BinaryValue val = new BinaryValue(fs1, testFileCleaner, tempDirectory, maxFufferSize);
++         InputStream str1 = val.getStream();
++         assertNotNull(str1);
+ 
+-      // obj returned by getStream() is not the same as incoming stream
+-      assertNotSame(str1, fs1);
++         // obj returned by getStream() is not the same as incoming stream
++         assertNotSame(str1, fs1);
+ 
+-      // streams returned by subsequent call of val.getStream() are equals
+-      assertEquals(str1, val.getStream());
++         // streams returned by subsequent call of val.getStream() are equals
++         assertEquals(str1, val.getStream());
+ 
+-      // another one value using the same string
+-      BinaryValue val2 = new BinaryValue(fs1, new FileCleaner(), tempDirectory, maxFufferSize);
+-      InputStream str2 = val2.getStream();
++         // another one value using the same string
++         BinaryValue val2 = new BinaryValue(fs1, testFileCleaner, tempDirectory, maxFufferSize);
++         InputStream str2 = val2.getStream();
+ 
+-      // are not the same although created from same Stream
+-      assertNotSame(str1, str2);
++         // are not the same although created from same Stream
++         assertNotSame(str1, str2);
+ 
+-      // stream already consumed
+-      try
+-      {
+-         val.getString();
+-         fail("IllegalStateException should have been thrown");
++         // stream already consumed
++         try
++         {
++            val.getString();
++            fail("IllegalStateException should have been thrown");
++         }
++         catch (IllegalStateException e)
++         {
++         }
++         // System.out.println(" >>>>>>>>STRING >>> "+);
+       }
+-      catch (IllegalStateException e)
++      finally
+       {
++         testFileCleaner.halt();
+       }
+-      // System.out.println(" >>>>>>>>STRING >>> "+);
+    }
+ 
+    public void testNewBinaryValueFromString() throws Exception
+Index: exo.jcr.component.ext/src/main/java/org/exoplatform/services/jcr/ext/replication/ReplicationService.java
+===================================================================
+--- exo.jcr.component.ext/src/main/java/org/exoplatform/services/jcr/ext/replication/ReplicationService.java	(revision 3339)
++++ exo.jcr.component.ext/src/main/java/org/exoplatform/services/jcr/ext/replication/ReplicationService.java	(working copy)
+@@ -43,7 +43,7 @@
+ import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
+ import org.exoplatform.services.jcr.impl.dataflow.serialization.ReaderSpoolFileHolder;
+ import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+-import org.exoplatform.services.jcr.impl.util.io.WorkspaceFileCleanerHolder;
++import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
+ import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
+ import org.exoplatform.services.jcr.util.IdGenerator;
+ import org.exoplatform.services.log.ExoLogger;
+@@ -398,8 +398,8 @@
+                         wconf.getContainer().getParameterInteger(WorkspaceDataContainer.MAXBUFFERSIZE_PROP,
+                            WorkspaceDataContainer.DEF_MAXBUFFERSIZE);
+ 
+-                     WorkspaceFileCleanerHolder wfcleaner =
+-                        (WorkspaceFileCleanerHolder)wsFacade.getComponent(WorkspaceFileCleanerHolder.class);
++                     FileCleanerHolder wfcleaner =
++                        (FileCleanerHolder)wsFacade.getComponent(FileCleanerHolder.class);
+                      FileCleaner fileCleaner = wfcleaner.getFileCleaner();
+ 
+                      // create the RecoveryManager
+Index: exo.jcr.component.ext/src/test/java/org/exoplatform/services/jcr/ext/BaseStandaloneTest.java
+===================================================================
+--- exo.jcr.component.ext/src/test/java/org/exoplatform/services/jcr/ext/BaseStandaloneTest.java	(revision 3339)
++++ exo.jcr.component.ext/src/test/java/org/exoplatform/services/jcr/ext/BaseStandaloneTest.java	(working copy)
+@@ -1,489 +1,489 @@
+-/*
+- * Copyright (C) 2009 eXo Platform SAS.
+- *
+- * This is free software; you can redistribute it and/or modify it
+- * under the terms of the GNU Lesser General Public License as
+- * published by the Free Software Foundation; either version 2.1 of
+- * the License, or (at your option) any later version.
+- *
+- * This software is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+- * Lesser General Public License for more details.
+- *
+- * You should have received a copy of the GNU Lesser General Public
+- * License along with this software; if not, write to the Free
+- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+- */
+-package org.exoplatform.services.jcr.ext;
+-
+-import junit.framework.TestCase;
+-
+-import org.exoplatform.container.StandaloneContainer;
+-import org.exoplatform.services.jcr.RepositoryService;
+-import org.exoplatform.services.jcr.config.WorkspaceEntry;
+-import org.exoplatform.services.jcr.core.CredentialsImpl;
+-import org.exoplatform.services.jcr.core.ManageableRepository;
+-import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
+-import org.exoplatform.services.jcr.dataflow.ItemState;
+-import org.exoplatform.services.jcr.dataflow.PersistentDataManager;
+-import org.exoplatform.services.jcr.datamodel.ItemData;
+-import org.exoplatform.services.jcr.datamodel.PropertyData;
+-import org.exoplatform.services.jcr.datamodel.ValueData;
+-import org.exoplatform.services.jcr.impl.core.NodeImpl;
+-import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
+-import org.exoplatform.services.jcr.impl.core.SessionImpl;
+-import org.exoplatform.services.jcr.impl.dataflow.serialization.ReaderSpoolFileHolder;
+-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+-import org.exoplatform.services.jcr.impl.util.io.WorkspaceFileCleanerHolder;
+-import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
+-import org.exoplatform.services.log.ExoLogger;
+-import org.exoplatform.services.log.Log;
+-
+-import java.io.File;
+-import java.io.FileOutputStream;
+-import java.io.IOException;
+-import java.io.InputStream;
+-import java.util.Iterator;
+-import java.util.List;
+-import java.util.Random;
+-
+-import javax.jcr.Node;
+-import javax.jcr.NodeIterator;
+-import javax.jcr.PathNotFoundException;
+-import javax.jcr.RepositoryException;
+-import javax.jcr.ValueFactory;
+-import javax.jcr.Workspace;
+-
+-/**
+- * Created by The eXo Platform SAS .
+- * 
+- * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov </a>
+- * @version $Id: BaseStandaloneTest.java 12004 2007-01-17 12:03:57Z geaz $
+- */
+-public abstract class BaseStandaloneTest extends TestCase
+-{
+-
+-   private static final Log log = ExoLogger.getLogger("exo.jcr.component.ext.BaseStandaloneTest");
+-
+-   public static final String WS_NAME = "ws";
+-
+-   protected SessionImpl session;
+-
+-   protected RepositoryImpl repository;
+-
+-   protected CredentialsImpl credentials;
+-
+-   protected Workspace workspace;
+-
+-   protected RepositoryService repositoryService;
+-
+-   protected Node root;
+-
+-   protected PersistentDataManager dataManager;
+-
+-   protected ValueFactory valueFactory;
+-
+-   protected StandaloneContainer container;
+-
+-   public int maxBufferSize = 200 * 1024;
+-
+-   public FileCleaner fileCleaner;
+-
+-   public ReaderSpoolFileHolder holder;
+-
+-   protected class CompareStreamException extends Exception
+-   {
+-
+-      CompareStreamException(String message)
+-      {
+-         super(message);
+-      }
+-
+-      CompareStreamException(String message, Throwable e)
+-      {
+-         super(message, e);
+-      }
+-   }
+-
+-   public void setUp() throws Exception
+-   {
+-      String containerConf = BaseStandaloneTest.class.getResource("/conf/standalone/test-configuration.xml").toString();
+-
+-      StandaloneContainer.addConfigurationURL(containerConf);
+-
+-      container = StandaloneContainer.getInstance();
+-
+-      if (System.getProperty("java.security.auth.login.config") == null)
+-         System.setProperty("java.security.auth.login.config", Thread.currentThread().getContextClassLoader()
+-            .getResource("login.conf").toString());
+-
+-      credentials = new CredentialsImpl("root", "exo".toCharArray());
+-
+-      repositoryService = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
+-
+-      repository = (RepositoryImpl)repositoryService.getDefaultRepository();
+-
+-      session = (SessionImpl)repository.login(credentials, WS_NAME);
+-      workspace = session.getWorkspace();
+-      root = session.getRootNode();
+-      valueFactory = session.getValueFactory();
+-
+-      ManageableRepository repository = repositoryService.getDefaultRepository();
+-      WorkspaceContainerFacade wsc = repository.getWorkspaceContainer(WS_NAME);
+-
+-      WorkspaceEntry wconf = (WorkspaceEntry)wsc.getComponent(WorkspaceEntry.class);
+-
+-      maxBufferSize =
+-         wconf.getContainer().getParameterInteger(WorkspaceDataContainer.MAXBUFFERSIZE_PROP,
+-            WorkspaceDataContainer.DEF_MAXBUFFERSIZE);
+-
+-      WorkspaceFileCleanerHolder wfcleaner =
+-         (WorkspaceFileCleanerHolder)wsc.getComponent(WorkspaceFileCleanerHolder.class);
+-      fileCleaner = wfcleaner.getFileCleaner();
+-      holder = new ReaderSpoolFileHolder();
+-
+-      wsc = repository.getWorkspaceContainer("ws4");
+-      dataManager = (PersistentDataManager)wsc.getComponent(PersistentDataManager.class);
+-   }
+-
+-   protected void tearDown() throws Exception
+-   {
+-
+-      log.info("tearDown() BEGIN " + getClass().getName() + "." + getName());
+-      if (session != null)
+-      {
+-         try
+-         {
+-            session.refresh(false);
+-            Node rootNode = session.getRootNode();
+-            if (rootNode.hasNodes())
+-            {
+-               // clean test root
+-               for (NodeIterator children = rootNode.getNodes(); children.hasNext();)
+-               {
+-                  Node node = children.nextNode();
+-                  if (!node.getPath().startsWith("/jcr:system") && !node.getPath().startsWith("/exo:audit")
+-                     && !node.getPath().startsWith("/exo:organization"))
+-                  {
+-                     // log.info("DELETing ------------- "+node.getPath());
+-                     node.remove();
+-                  }
+-               }
+-               session.save();
+-            }
+-         }
+-         catch (Exception e)
+-         {
+-            e.printStackTrace();
+-            log.error("===== Exception in tearDown() " + e.toString());
+-         }
+-         finally
+-         {
+-            session.logout();
+-         }
+-      }
+-
+-      super.tearDown();
+-      // log.info("tearDown() END " + getClass().getName() + "." + getName());
+-   }
+-
+-   // protected abstract String getConfPath();
+-   //
+-   // public void initRepository() throws RepositoryException {
+-   // }
+-
+-   // ====== utils =======
+-
+-   protected void checkItemsExisted(String[] exists, String[] notExists) throws RepositoryException
+-   {
+-      String path = null;
+-      if (exists != null)
+-      {
+-         try
+-         {
+-            for (String nodePath : exists)
+-            {
+-               path = nodePath;
+-               session.getItem(path);
+-            }
+-         }
+-         catch (PathNotFoundException e)
+-         {
+-            fail("Item must exists " + path + ". " + e.getMessage());
+-         }
+-      }
+-      if (notExists != null)
+-      {
+-         try
+-         {
+-            for (String nodePath : notExists)
+-            {
+-               session.getItem(nodePath);
+-               fail("Item must not exists " + nodePath);
+-            }
+-         }
+-         catch (PathNotFoundException e)
+-         {
+-            // ok
+-         }
+-      }
+-   }
+-
+-   protected void checkNodesExistedByUUID(String[] exists, String[] notExists) throws RepositoryException
+-   {
+-      String uuid = null;
+-      if (exists != null)
+-      {
+-         try
+-         {
+-            for (String nodePath : exists)
+-            {
+-               uuid = nodePath;
+-               session.getNodeByUUID(uuid);
+-            }
+-         }
+-         catch (PathNotFoundException e)
+-         {
+-            fail("Node must exists, UUID " + uuid + ". " + e.getMessage());
+-         }
+-      }
+-      if (notExists != null)
+-      {
+-         try
+-         {
+-            for (String nodeUUID : notExists)
+-            {
+-               session.getNodeByUUID(nodeUUID);
+-               fail("Node must not exists, UUID " + nodeUUID);
+-            }
+-         }
+-         catch (PathNotFoundException e)
+-         {
+-            // ok
+-         }
+-      }
+-   }
+-
+-   protected void compareStream(InputStream etalon, InputStream data) throws IOException
+-   {
+-      try
+-      {
+-         compareStream(etalon, data, 0, 0, -1);
+-      }
+-      catch (CompareStreamException e)
+-      {
+-         fail(e.getMessage());
+-      }
+-   }
+-
+-   /**
+-    * Compare etalon stream with data stream begining from the offset in etalon and position in data.
+-    * Length bytes will be readed and compared. if length is lower 0 then compare streams till one of
+-    * them will be read.
+-    * 
+-    * @param etalon
+-    * @param data
+-    * @param etalonPos
+-    * @param length
+-    * @param dataPos
+-    * @throws IOException
+-    */
+-   protected void compareStream(InputStream etalon, InputStream data, long etalonPos, long dataPos, long length)
+-      throws IOException, CompareStreamException
+-   {
+-
+-      int dindex = 0;
+-
+-      skipStream(etalon, etalonPos);
+-      skipStream(data, dataPos);
+-
+-      byte[] ebuff = new byte[1024];
+-      int eread = 0;
+-
+-      while ((eread = etalon.read(ebuff)) > 0)
+-      {
+-
+-         byte[] dbuff = new byte[eread];
+-         int erindex = 0;
+-         while (erindex < eread)
+-         {
+-            int dread = -1;
+-            try
+-            {
+-               dread = data.read(dbuff);
+-            }
+-            catch (IOException e)
+-            {
+-               throw new CompareStreamException("Streams is not equals by length or data stream is unreadable. Cause: "
+-                  + e.getMessage());
+-            }
+-
+-            if (dread == -1)
+-               throw new CompareStreamException(
+-                  "Streams is not equals by length. Data end-of-stream reached at position " + dindex);
+-
+-            for (int i = 0; i < dread; i++)
+-            {
+-               byte eb = ebuff[i];
+-               byte db = dbuff[i];
+-               if (eb != db)
+-                  throw new CompareStreamException("Streams is not equals. Wrong byte stored at position " + dindex
+-                     + " of data stream. Expected 0x" + Integer.toHexString(eb) + " '" + new String(new byte[]{eb})
+-                     + "' but found 0x" + Integer.toHexString(db) + " '" + new String(new byte[]{db}) + "'");
+-
+-               erindex++;
+-               dindex++;
+-               if (length > 0 && dindex >= length)
+-                  return; // tested length reached
+-            }
+-
+-            if (dread < eread)
+-               dbuff = new byte[eread - dread];
+-         }
+-      }
+-
+-      if (data.available() > 0)
+-         throw new CompareStreamException("Streams is not equals by length. Data stream contains more data. Were read "
+-            + dindex);
+-   }
+-
+-   protected void skipStream(InputStream stream, long pos) throws IOException
+-   {
+-      long curPos = pos;
+-      long sk = 0;
+-      while ((sk = stream.skip(curPos)) > 0)
+-      {
+-         curPos -= sk;
+-      };
+-      if (sk < 0)
+-         fail("Can not read the stream (skip bytes)");
+-      if (curPos != 0)
+-         fail("Can not skip bytes from the stream (" + pos + " bytes)");
+-   }
+-
+-   protected File createBLOBTempFile(int sizeInKb) throws IOException
+-   {
+-      return createBLOBTempFile("exo_jcr_test_temp_file_", sizeInKb);
+-   }
+-
+-   protected File createBLOBTempFile(String prefix, int sizeInKb) throws IOException
+-   {
+-      // create test file
+-      byte[] data = new byte[1024]; // 1Kb
+-
+-      File testFile = File.createTempFile(prefix, ".tmp");
+-      FileOutputStream tempOut = new FileOutputStream(testFile);
+-      Random random = new Random();
+-
+-      for (int i = 0; i < sizeInKb; i++)
+-      {
+-         random.nextBytes(data);
+-         tempOut.write(data);
+-      }
+-      tempOut.close();
+-      testFile.deleteOnExit(); // delete on test exit
+-      log.info("Temp file created: " + testFile.getAbsolutePath() + " size: " + testFile.length());
+-      return testFile;
+-   }
+-
+-   protected void checkMixins(String[] mixins, NodeImpl node) throws RepositoryException
+-   {
+-      try
+-      {
+-         String[] nodeMixins = node.getMixinTypeNames();
+-         assertEquals("Mixins count is different", mixins.length, nodeMixins.length);
+-
+-         compareMixins(mixins, nodeMixins);
+-      }
+-      catch (RepositoryException e)
+-      {
+-         fail("Mixins isn't accessible on the node " + node.getPath());
+-      }
+-   }
+-
+-   protected void compareMixins(String[] mixins, String[] nodeMixins)
+-   {
+-      nextMixin : for (String mixin : mixins)
+-      {
+-         for (String nodeMixin : nodeMixins)
+-         {
+-            if (mixin.equals(nodeMixin))
+-               continue nextMixin;
+-         }
+-
+-         fail("Mixin '" + mixin + "' isn't accessible");
+-      }
+-   }
+-
+-   protected String memoryInfo()
+-   {
+-      String info = "";
+-      info =
+-         "free: " + mb(Runtime.getRuntime().freeMemory()) + "M of " + mb(Runtime.getRuntime().totalMemory())
+-            + "M (max: " + mb(Runtime.getRuntime().maxMemory()) + "M)";
+-      return info;
+-   }
+-
+-   // bytes to Mbytes
+-   protected String mb(long mem)
+-   {
+-      return String.valueOf(Math.round(mem * 100d / (1024d * 1024d)) / 100d);
+-   }
+-
+-   protected String execTime(long from)
+-   {
+-      return Math.round(((System.currentTimeMillis() - from) * 100.00d / 60000.00d)) / 100.00d + "min";
+-   }
+-
+-   public void checkItemStatesIterator(Iterator<ItemState> expected, Iterator<ItemState> changes, boolean checklast,
+-      boolean isRepValDat) throws Exception
+-   {
+-
+-      while (expected.hasNext())
+-      {
+-
+-         assertTrue(changes.hasNext());
+-         ItemState expect = expected.next();
+-         ItemState elem = changes.next();
+-
+-         assertEquals(expect.getState(), elem.getState());
+-         // assertEquals(expect.getAncestorToSave(), elem.getAncestorToSave());
+-         ItemData expData = expect.getData();
+-         ItemData elemData = elem.getData();
+-         assertEquals(expData.getQPath(), elemData.getQPath());
+-         assertEquals(expData.isNode(), elemData.isNode());
+-         assertEquals(expData.getIdentifier(), elemData.getIdentifier());
+-         assertEquals(expData.getParentIdentifier(), elemData.getParentIdentifier());
+-
+-         if (!expData.isNode())
+-         {
+-            PropertyData expProp = (PropertyData)expData;
+-            PropertyData elemProp = (PropertyData)elemData;
+-            assertEquals(expProp.getType(), elemProp.getType());
+-            assertEquals(expProp.isMultiValued(), elemProp.isMultiValued());
+-
+-            List<ValueData> expValDat = expProp.getValues();
+-            List<ValueData> elemValDat = elemProp.getValues();
+-            assertEquals(expValDat.size(), elemValDat.size());
+-            for (int j = 0; j < expValDat.size(); j++)
+-            {
+-               assertTrue(java.util.Arrays
+-                  .equals(expValDat.get(j).getAsByteArray(), elemValDat.get(j).getAsByteArray()));
+-
+-               /*if (isRepValDat) {
+-                 // check is received property values ReplicableValueData
+-                 assertTrue(elemValDat.get(j) instanceof ReplicableValueData);
+-               }*/
+-            }
+-         }
+-      }
+-
+-      if (checklast)
+-      {
+-         assertFalse(changes.hasNext());
+-      }
+-
+-   }
+-}
++/*
++ * Copyright (C) 2009 eXo Platform SAS.
++ *
++ * This is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU Lesser General Public License as
++ * published by the Free Software Foundation; either version 2.1 of
++ * the License, or (at your option) any later version.
++ *
++ * This software is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this software; if not, write to the Free
++ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
++ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
++ */
++package org.exoplatform.services.jcr.ext;
++
++import junit.framework.TestCase;
++
++import org.exoplatform.container.StandaloneContainer;
++import org.exoplatform.services.jcr.RepositoryService;
++import org.exoplatform.services.jcr.config.WorkspaceEntry;
++import org.exoplatform.services.jcr.core.CredentialsImpl;
++import org.exoplatform.services.jcr.core.ManageableRepository;
++import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
++import org.exoplatform.services.jcr.dataflow.ItemState;
++import org.exoplatform.services.jcr.dataflow.PersistentDataManager;
++import org.exoplatform.services.jcr.datamodel.ItemData;
++import org.exoplatform.services.jcr.datamodel.PropertyData;
++import org.exoplatform.services.jcr.datamodel.ValueData;
++import org.exoplatform.services.jcr.impl.core.NodeImpl;
++import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
++import org.exoplatform.services.jcr.impl.core.SessionImpl;
++import org.exoplatform.services.jcr.impl.dataflow.serialization.ReaderSpoolFileHolder;
++import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
++import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
++import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
++import org.exoplatform.services.log.ExoLogger;
++import org.exoplatform.services.log.Log;
++
++import java.io.File;
++import java.io.FileOutputStream;
++import java.io.IOException;
++import java.io.InputStream;
++import java.util.Iterator;
++import java.util.List;
++import java.util.Random;
++
++import javax.jcr.Node;
++import javax.jcr.NodeIterator;
++import javax.jcr.PathNotFoundException;
++import javax.jcr.RepositoryException;
++import javax.jcr.ValueFactory;
++import javax.jcr.Workspace;
++
++/**
++ * Created by The eXo Platform SAS .
++ * 
++ * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov </a>
++ * @version $Id: BaseStandaloneTest.java 12004 2007-01-17 12:03:57Z geaz $
++ */
++public abstract class BaseStandaloneTest extends TestCase
++{
++
++   private static final Log log = ExoLogger.getLogger("exo.jcr.component.ext.BaseStandaloneTest");
++
++   public static final String WS_NAME = "ws";
++
++   protected SessionImpl session;
++
++   protected RepositoryImpl repository;
++
++   protected CredentialsImpl credentials;
++
++   protected Workspace workspace;
++
++   protected RepositoryService repositoryService;
++
++   protected Node root;
++
++   protected PersistentDataManager dataManager;
++
++   protected ValueFactory valueFactory;
++
++   protected StandaloneContainer container;
++
++   public int maxBufferSize = 200 * 1024;
++
++   public FileCleaner fileCleaner;
++
++   public ReaderSpoolFileHolder holder;
++
++   protected class CompareStreamException extends Exception
++   {
++
++      CompareStreamException(String message)
++      {
++         super(message);
++      }
++
++      CompareStreamException(String message, Throwable e)
++      {
++         super(message, e);
++      }
++   }
++
++   public void setUp() throws Exception
++   {
++      String containerConf = BaseStandaloneTest.class.getResource("/conf/standalone/test-configuration.xml").toString();
++
++      StandaloneContainer.addConfigurationURL(containerConf);
++
++      container = StandaloneContainer.getInstance();
++
++      if (System.getProperty("java.security.auth.login.config") == null)
++         System.setProperty("java.security.auth.login.config", Thread.currentThread().getContextClassLoader()
++            .getResource("login.conf").toString());
++
++      credentials = new CredentialsImpl("root", "exo".toCharArray());
++
++      repositoryService = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
++
++      repository = (RepositoryImpl)repositoryService.getDefaultRepository();
++
++      session = (SessionImpl)repository.login(credentials, WS_NAME);
++      workspace = session.getWorkspace();
++      root = session.getRootNode();
++      valueFactory = session.getValueFactory();
++
++      ManageableRepository repository = repositoryService.getDefaultRepository();
++      WorkspaceContainerFacade wsc = repository.getWorkspaceContainer(WS_NAME);
++
++      WorkspaceEntry wconf = (WorkspaceEntry)wsc.getComponent(WorkspaceEntry.class);
++
++      maxBufferSize =
++         wconf.getContainer().getParameterInteger(WorkspaceDataContainer.MAXBUFFERSIZE_PROP,
++            WorkspaceDataContainer.DEF_MAXBUFFERSIZE);
++
++      FileCleanerHolder wfcleaner =
++         (FileCleanerHolder)wsc.getComponent(FileCleanerHolder.class);
++      fileCleaner = wfcleaner.getFileCleaner();
++      holder = new ReaderSpoolFileHolder();
++
++      wsc = repository.getWorkspaceContainer("ws4");
++      dataManager = (PersistentDataManager)wsc.getComponent(PersistentDataManager.class);
++   }
++
++   protected void tearDown() throws Exception
++   {
++
++      log.info("tearDown() BEGIN " + getClass().getName() + "." + getName());
++      if (session != null)
++      {
++         try
++         {
++            session.refresh(false);
++            Node rootNode = session.getRootNode();
++            if (rootNode.hasNodes())
++            {
++               // clean test root
++               for (NodeIterator children = rootNode.getNodes(); children.hasNext();)
++               {
++                  Node node = children.nextNode();
++                  if (!node.getPath().startsWith("/jcr:system") && !node.getPath().startsWith("/exo:audit")
++                     && !node.getPath().startsWith("/exo:organization"))
++                  {
++                     // log.info("DELETing ------------- "+node.getPath());
++                     node.remove();
++                  }
++               }
++               session.save();
++            }
++         }
++         catch (Exception e)
++         {
++            e.printStackTrace();
++            log.error("===== Exception in tearDown() " + e.toString());
++         }
++         finally
++         {
++            session.logout();
++         }
++      }
++
++      super.tearDown();
++      // log.info("tearDown() END " + getClass().getName() + "." + getName());
++   }
++
++   // protected abstract String getConfPath();
++   //
++   // public void initRepository() throws RepositoryException {
++   // }
++
++   // ====== utils =======
++
++   protected void checkItemsExisted(String[] exists, String[] notExists) throws RepositoryException
++   {
++      String path = null;
++      if (exists != null)
++      {
++         try
++         {
++            for (String nodePath : exists)
++            {
++               path = nodePath;
++               session.getItem(path);
++            }
++         }
++         catch (PathNotFoundException e)
++         {
++            fail("Item must exists " + path + ". " + e.getMessage());
++         }
++      }
++      if (notExists != null)
++      {
++         try
++         {
++            for (String nodePath : notExists)
++            {
++               session.getItem(nodePath);
++               fail("Item must not exists " + nodePath);
++            }
++         }
++         catch (PathNotFoundException e)
++         {
++            // ok
++         }
++      }
++   }
++
++   protected void checkNodesExistedByUUID(String[] exists, String[] notExists) throws RepositoryException
++   {
++      String uuid = null;
++      if (exists != null)
++      {
++         try
++         {
++            for (String nodePath : exists)
++            {
++               uuid = nodePath;
++               session.getNodeByUUID(uuid);
++            }
++         }
++         catch (PathNotFoundException e)
++         {
++            fail("Node must exists, UUID " + uuid + ". " + e.getMessage());
++         }
++      }
++      if (notExists != null)
++      {
++         try
++         {
++            for (String nodeUUID : notExists)
++            {
++               session.getNodeByUUID(nodeUUID);
++               fail("Node must not exists, UUID " + nodeUUID);
++            }
++         }
++         catch (PathNotFoundException e)
++         {
++            // ok
++         }
++      }
++   }
++
++   protected void compareStream(InputStream etalon, InputStream data) throws IOException
++   {
++      try
++      {
++         compareStream(etalon, data, 0, 0, -1);
++      }
++      catch (CompareStreamException e)
++      {
++         fail(e.getMessage());
++      }
++   }
++
++   /**
++    * Compare etalon stream with data stream begining from the offset in etalon and position in data.
++    * Length bytes will be readed and compared. if length is lower 0 then compare streams till one of
++    * them will be read.
++    * 
++    * @param etalon
++    * @param data
++    * @param etalonPos
++    * @param length
++    * @param dataPos
++    * @throws IOException
++    */
++   protected void compareStream(InputStream etalon, InputStream data, long etalonPos, long dataPos, long length)
++      throws IOException, CompareStreamException
++   {
++
++      int dindex = 0;
++
++      skipStream(etalon, etalonPos);
++      skipStream(data, dataPos);
++
++      byte[] ebuff = new byte[1024];
++      int eread = 0;
++
++      while ((eread = etalon.read(ebuff)) > 0)
++      {
++
++         byte[] dbuff = new byte[eread];
++         int erindex = 0;
++         while (erindex < eread)
++         {
++            int dread = -1;
++            try
++            {
++               dread = data.read(dbuff);
++            }
++            catch (IOException e)
++            {
++               throw new CompareStreamException("Streams is not equals by length or data stream is unreadable. Cause: "
++                  + e.getMessage());
++            }
++
++            if (dread == -1)
++               throw new CompareStreamException(
++                  "Streams is not equals by length. Data end-of-stream reached at position " + dindex);
++
++            for (int i = 0; i < dread; i++)
++            {
++               byte eb = ebuff[i];
++               byte db = dbuff[i];
++               if (eb != db)
++                  throw new CompareStreamException("Streams is not equals. Wrong byte stored at position " + dindex
++                     + " of data stream. Expected 0x" + Integer.toHexString(eb) + " '" + new String(new byte[]{eb})
++                     + "' but found 0x" + Integer.toHexString(db) + " '" + new String(new byte[]{db}) + "'");
++
++               erindex++;
++               dindex++;
++               if (length > 0 && dindex >= length)
++                  return; // tested length reached
++            }
++
++            if (dread < eread)
++               dbuff = new byte[eread - dread];
++         }
++      }
++
++      if (data.available() > 0)
++         throw new CompareStreamException("Streams is not equals by length. Data stream contains more data. Were read "
++            + dindex);
++   }
++
++   protected void skipStream(InputStream stream, long pos) throws IOException
++   {
++      long curPos = pos;
++      long sk = 0;
++      while ((sk = stream.skip(curPos)) > 0)
++      {
++         curPos -= sk;
++      };
++      if (sk < 0)
++         fail("Can not read the stream (skip bytes)");
++      if (curPos != 0)
++         fail("Can not skip bytes from the stream (" + pos + " bytes)");
++   }
++
++   protected File createBLOBTempFile(int sizeInKb) throws IOException
++   {
++      return createBLOBTempFile("exo_jcr_test_temp_file_", sizeInKb);
++   }
++
++   protected File createBLOBTempFile(String prefix, int sizeInKb) throws IOException
++   {
++      // create test file
++      byte[] data = new byte[1024]; // 1Kb
++
++      File testFile = File.createTempFile(prefix, ".tmp");
++      FileOutputStream tempOut = new FileOutputStream(testFile);
++      Random random = new Random();
++
++      for (int i = 0; i < sizeInKb; i++)
++      {
++         random.nextBytes(data);
++         tempOut.write(data);
++      }
++      tempOut.close();
++      testFile.deleteOnExit(); // delete on test exit
++      log.info("Temp file created: " + testFile.getAbsolutePath() + " size: " + testFile.length());
++      return testFile;
++   }
++
++   protected void checkMixins(String[] mixins, NodeImpl node) throws RepositoryException
++   {
++      try
++      {
++         String[] nodeMixins = node.getMixinTypeNames();
++         assertEquals("Mixins count is different", mixins.length, nodeMixins.length);
++
++         compareMixins(mixins, nodeMixins);
++      }
++      catch (RepositoryException e)
++      {
++         fail("Mixins isn't accessible on the node " + node.getPath());
++      }
++   }
++
++   protected void compareMixins(String[] mixins, String[] nodeMixins)
++   {
++      nextMixin : for (String mixin : mixins)
++      {
++         for (String nodeMixin : nodeMixins)
++         {
++            if (mixin.equals(nodeMixin))
++               continue nextMixin;
++         }
++
++         fail("Mixin '" + mixin + "' isn't accessible");
++      }
++   }
++
++   protected String memoryInfo()
++   {
++      String info = "";
++      info =
++         "free: " + mb(Runtime.getRuntime().freeMemory()) + "M of " + mb(Runtime.getRuntime().totalMemory())
++            + "M (max: " + mb(Runtime.getRuntime().maxMemory()) + "M)";
++      return info;
++   }
++
++   // bytes to Mbytes
++   protected String mb(long mem)
++   {
++      return String.valueOf(Math.round(mem * 100d / (1024d * 1024d)) / 100d);
++   }
++
++   protected String execTime(long from)
++   {
++      return Math.round(((System.currentTimeMillis() - from) * 100.00d / 60000.00d)) / 100.00d + "min";
++   }
++
++   public void checkItemStatesIterator(Iterator<ItemState> expected, Iterator<ItemState> changes, boolean checklast,
++      boolean isRepValDat) throws Exception
++   {
++
++      while (expected.hasNext())
++      {
++
++         assertTrue(changes.hasNext());
++         ItemState expect = expected.next();
++         ItemState elem = changes.next();
++
++         assertEquals(expect.getState(), elem.getState());
++         // assertEquals(expect.getAncestorToSave(), elem.getAncestorToSave());
++         ItemData expData = expect.getData();
++         ItemData elemData = elem.getData();
++         assertEquals(expData.getQPath(), elemData.getQPath());
++         assertEquals(expData.isNode(), elemData.isNode());
++         assertEquals(expData.getIdentifier(), elemData.getIdentifier());
++         assertEquals(expData.getParentIdentifier(), elemData.getParentIdentifier());
++
++         if (!expData.isNode())
++         {
++            PropertyData expProp = (PropertyData)expData;
++            PropertyData elemProp = (PropertyData)elemData;
++            assertEquals(expProp.getType(), elemProp.getType());
++            assertEquals(expProp.isMultiValued(), elemProp.isMultiValued());
++
++            List<ValueData> expValDat = expProp.getValues();
++            List<ValueData> elemValDat = elemProp.getValues();
++            assertEquals(expValDat.size(), elemValDat.size());
++            for (int j = 0; j < expValDat.size(); j++)
++            {
++               assertTrue(java.util.Arrays
++                  .equals(expValDat.get(j).getAsByteArray(), elemValDat.get(j).getAsByteArray()));
++
++               /*if (isRepValDat) {
++                 // check is received property values ReplicableValueData
++                 assertTrue(elemValDat.get(j) instanceof ReplicableValueData);
++               }*/
++            }
++         }
++      }
++
++      if (checklast)
++      {
++         assertFalse(changes.hasNext());
++      }
++
++   }
++}
