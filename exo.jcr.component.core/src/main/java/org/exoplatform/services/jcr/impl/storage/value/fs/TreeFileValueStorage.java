@@ -19,10 +19,8 @@
 package org.exoplatform.services.jcr.impl.storage.value.fs;
 
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
 
-import java.io.File;
 import java.io.IOException;
 
 /**
@@ -34,19 +32,9 @@ import java.io.IOException;
 public class TreeFileValueStorage extends FileValueStorage
 {
 
-   protected class TreeFileCleaner extends FileCleaner
-   {
-      @Override
-      public synchronized void addFile(File file)
-      {
-         super.addFile(new TreeFile(PrivilegedFileHelper.getAbsolutePath(file), cleaner, rootDir));
-      }
-   }
-
    public TreeFileValueStorage(FileCleaner cleaner)
    {
       super(cleaner);
-      this.cleaner = new TreeFileCleaner(); // TODO use container cleaner
    }
 
    @Override
