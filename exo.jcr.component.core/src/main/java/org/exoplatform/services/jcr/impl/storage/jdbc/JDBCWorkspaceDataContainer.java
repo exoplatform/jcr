@@ -34,6 +34,7 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.init.StorageDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.statistics.StatisticsJDBCStorageConnection;
 import org.exoplatform.services.jcr.impl.storage.jdbc.update.StorageUpdateManager;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.impl.util.io.PrivilegedSystemHelper;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerException;
@@ -205,8 +206,9 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     *           if JNDI exception (on DataSource lookup)
     */
    public JDBCWorkspaceDataContainer(WorkspaceEntry wsConfig, RepositoryEntry repConfig,
-      InitialContextInitializer contextInit, ValueStoragePluginProvider valueStorageProvider)
-      throws RepositoryConfigurationException, NamingException, RepositoryException, IOException
+      InitialContextInitializer contextInit, ValueStoragePluginProvider valueStorageProvider,
+      FileCleanerHolder fileCleanerHolder) throws RepositoryConfigurationException, NamingException,
+      RepositoryException, IOException
    {
 
       // This recall is workaround for tenants creation. There is a trouble in visibility datasource
@@ -397,7 +399,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          PrivilegedFileHelper.mkdirs(swapDirectory);
       }
 
-      this.swapCleaner = new FileCleaner(false);
+      this.swapCleaner = fileCleanerHolder.getFileCleaner();
 
       initDatabase();
 
@@ -866,7 +868,6 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     */
    public void start()
    {
-      this.swapCleaner.start();
    }
 
    /**
@@ -874,8 +875,6 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     */
    public void stop()
    {
-      this.swapCleaner.halt();
-      this.swapCleaner.interrupt();
 
       // TODO HSQLDB Stop (debug)
       // if (dbDialect.equals(DB_DIALECT_GENERIC) ||

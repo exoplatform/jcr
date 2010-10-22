@@ -18,17 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.storage;
 
-import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
-import javax.jcr.PropertyType;
-import javax.naming.InitialContext;
-import javax.naming.Reference;
-import javax.naming.StringRefAddr;
-import javax.sql.DataSource;
-
 import junit.framework.TestCase;
 
 import org.exoplatform.services.jcr.access.AccessControlList;
@@ -51,6 +40,17 @@ import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.log.LogConfigurationInitializer;
+
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+import javax.jcr.PropertyType;
+import javax.naming.InitialContext;
+import javax.naming.Reference;
+import javax.naming.StringRefAddr;
+import javax.sql.DataSource;
 
 /**
  * Created by The eXo Platform SAS.
@@ -104,9 +104,11 @@ public class JDBCWDCTest extends TestCase
       // ref.add(new StringRefAddr("database", "jdbc:hsqldb:file:data/test"));
 
       // SimpleJNDIContextInitializer.initialize(sourceName, ref);
+      FileCleanerHolder holder = new FileCleanerHolder();
 
       container =
-         new JDBCWorkspaceDataContainer(config, repositoryEntry, null, new StandaloneStoragePluginProvider(config, new FileCleanerHolder()));
+         new JDBCWorkspaceDataContainer(config, repositoryEntry, null, new StandaloneStoragePluginProvider(config,
+            holder), holder);
 
       Properties logProps = new Properties();
       logProps.put("org.apache.commons.logging.simplelog.defaultlog", "debug");
