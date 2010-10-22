@@ -30,8 +30,6 @@ import org.exoplatform.services.rest.impl.MultivaluedMapImpl;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
 
 import javax.jcr.Node;
 import javax.ws.rs.core.HttpHeaders;
@@ -158,7 +156,36 @@ public class TestPropFind extends BaseStandaloneTest
    }
  
    
+   public void testPropfindWrongDataFormat() throws Exception
+   {
+
+      String path = testPropFind.getPath() + "/testPropfindComplexContent";
    
+         // prepare data
+      Node node =
+         TestUtils.addContent(session, path, new ByteArrayInputStream("file content".getBytes()), "nt:file",
+            "exo:testResource", "text/plain");
+
+      node.addMixin("mix:lockable");
+      node.save();
+      node.lock(false, false);
+      node.getNode("jcr:content").addMixin("mix:lockable");
+      node.save();
+      node.getNode("jcr:content").lock(true, false);
+      node.getNode("jcr:content").addNode("node", "nt:unstructured").setProperty("node-prop", "prop");
+      node.getNode("jcr:content").setProperty("exo:prop", "prop");
+      node.save();
+
+      // test
+      HierarchicalProperty body = new HierarchicalProperty("D:propfind", null, "DAV:");
+      body.addChild(new HierarchicalProperty("D:allprop", null, "DAV:"));
+      Response resp = new PropFindCommand().propfind(session, path, body, Depth.INFINITY_VALUE, "http://localhost");
+      ByteArrayOutputStream bas = new ByteArrayOutputStream();
+      ((PropFindResponseEntity)resp.getEntity()).write(bas);
+      String find = new String(bas.toByteArray());
+      assertTrue(!find.contains("jcr:lockOnwer"));
+      assertTrue(!find.contains("D:lockdiscovery"));
+   }
    
    
    public void testPropWithPercent() throws Exception

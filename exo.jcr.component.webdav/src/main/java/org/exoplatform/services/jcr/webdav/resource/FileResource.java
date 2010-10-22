@@ -64,6 +64,8 @@ public class FileResource extends GenericResource
       // FILE_SKIP.add("jcr:primaryType");
       FILE_SKIP.add("jcr:mixinTypes");
       FILE_SKIP.add("jcr:created");
+      FILE_SKIP.add("jcr:lockOwner");
+      FILE_SKIP.add("jcr:lockIsDeep");
    };
 
    /**
@@ -76,6 +78,8 @@ public class FileResource extends GenericResource
       CONTENT_SKIP.add("jcr:lastModified");
       CONTENT_SKIP.add("jcr:mimeType");
       CONTENT_SKIP.add("jcr:uuid");
+      CONTENT_SKIP.add("jcr:lockOwner");
+      CONTENT_SKIP.add("jcr:lockIsDeep");
 
       CONTENT_SKIP.add("dc:date");
       CONTENT_SKIP.add("exo:internalUse");
