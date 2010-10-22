@@ -21,7 +21,6 @@ import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
 import org.exoplatform.management.jmx.annotations.Property;
-import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.config.MappedParametrizedObjectEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.SimpleParameterEntry;
@@ -43,6 +42,7 @@ import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.lock.LockRemover;
+import org.exoplatform.services.jcr.impl.core.lock.LockRemoverHolder;
 import org.exoplatform.services.jcr.impl.core.lock.SessionLockManager;
 import org.exoplatform.services.jcr.impl.dataflow.TransientItemData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
@@ -57,6 +57,7 @@ import org.exoplatform.services.jcr.observation.ExtendedEvent;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.naming.InitialContextInitializer;
+import org.exoplatform.services.security.IdentityConstants;
 import org.exoplatform.services.transaction.TransactionService;
 import org.jboss.cache.Cache;
 import org.jboss.cache.CacheSPI;
@@ -173,7 +174,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
    private Cache<Serializable, Object> cache;
 
    private final Fqn<String> lockRoot;
-   
+
    private final boolean shareable;
 
    /**
@@ -192,10 +193,10 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
     * @throws RepositoryConfigurationException
     */
    public CacheableLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
-      InitialContextInitializer context, TransactionService transactionService, ConfigurationManager cfm)
-      throws RepositoryConfigurationException, RepositoryException
+      InitialContextInitializer context, TransactionService transactionService, ConfigurationManager cfm,
+      LockRemoverHolder lockRemoverHolder) throws RepositoryConfigurationException, RepositoryException
    {
-      this(dataManager, config, context, transactionService.getTransactionManager(), cfm);
+      this(dataManager, config, context, transactionService.getTransactionManager(), cfm, lockRemoverHolder);
    }
 
    /**
@@ -207,10 +208,10 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
     * @throws RepositoryConfigurationException
     */
    public CacheableLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
-      InitialContextInitializer context, ConfigurationManager cfm) throws RepositoryConfigurationException,
-      RepositoryException
+      InitialContextInitializer context, ConfigurationManager cfm, LockRemoverHolder lockRemoverHolder)
+      throws RepositoryConfigurationException, RepositoryException
    {
-      this(dataManager, config, context, (TransactionManager)null, cfm);
+      this(dataManager, config, context, (TransactionManager)null, cfm, lockRemoverHolder);
 
    }
 
@@ -225,8 +226,8 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
     * @throws RepositoryConfigurationException
     */
    public CacheableLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
-      InitialContextInitializer context, TransactionManager transactionManager, ConfigurationManager cfm)
-      throws RepositoryConfigurationException, RepositoryException
+      InitialContextInitializer context, TransactionManager transactionManager, ConfigurationManager cfm,
+      LockRemoverHolder lockRemoverHolder) throws RepositoryConfigurationException, RepositoryException
    {
       lockRoot = Fqn.fromElements(config.getUniqueName(), LOCKS);
 
@@ -270,7 +271,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
          cache = factory.createCache(config.getLockManager());
 
          Fqn<String> rootFqn = Fqn.fromElements(config.getUniqueName());
-         
+
          shareable =
             config.getLockManager().getParameterBoolean(JBOSSCACHE_SHAREABLE, JBOSSCACHE_SHAREABLE_DEFAULT)
                .booleanValue();
@@ -292,6 +293,8 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
       {
          throw new RepositoryConfigurationException("Cache configuration not found");
       }
+
+      lockRemover = lockRemoverHolder.getLockRemover(this);
    }
 
    /**
@@ -819,7 +822,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
     */
    public void start()
    {
-      lockRemover = new LockRemover(this);
+      lockRemover.start();
    }
 
    /*
@@ -828,17 +831,17 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
     */
    public void stop()
    {
-      lockRemover.halt();
-      lockRemover.interrupt();
+      lockRemover.stop();
+
       sessionLockManagers.clear();
       if (shareable)
       {
          // The cache cannot be stopped since it can be shared so we evict the root node instead
-         cache.evict(lockRoot);         
+         cache.evict(lockRoot);
       }
       else
       {
-         PrivilegedCacheHelper.stop(cache);         
+         PrivilegedCacheHelper.stop(cache);
       }
    }
 
@@ -1112,7 +1115,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
          }
 
          PlainChangesLog changesLog =
-            new PlainChangesLogImpl(new ArrayList<ItemState>(), SystemIdentity.SYSTEM, ExtendedEvent.UNLOCK);
+            new PlainChangesLogImpl(new ArrayList<ItemState>(), IdentityConstants.SYSTEM, ExtendedEvent.UNLOCK);
 
          ItemData lockOwner =
             copyItemData((PropertyData)dataManager.getItemData(nData, new QPathEntry(Constants.JCR_LOCKOWNER, 1),

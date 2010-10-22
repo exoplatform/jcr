@@ -18,9 +18,9 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock;
 
-import org.exoplatform.services.jcr.impl.proccess.WorkerThread;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
+import org.exoplatform.services.jcr.impl.proccess.WorkerService;
+
+import java.util.concurrent.ScheduledFuture;
 
 /**
  * Created by The eXo Platform SAS.
@@ -28,37 +28,58 @@ import org.exoplatform.services.log.Log;
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: LockRemover.java 11987 2008-03-17 09:06:06Z ksm $
  */
-public class LockRemover extends WorkerThread
+public class LockRemover
 {
+   public static final long DEFAULT_THREAD_TIMEOUT = 30000; // 30 sec
 
-   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.LockRemover");
+   private final WorkerService workerService;
 
-   public static final long DEFAULT_THREAD_TIMEOUT = 30000; // 30
+   private final WorkspaceLockManager lockManager;
 
-   // sec
+   private final long timeout;
 
-   private final WorkspaceLockManager lockManagerImpl;
+   private ScheduledFuture lockRemoverTask = null;
 
-   public LockRemover(WorkspaceLockManager lockManagerImpl)
+   class LockRemoverTask implements Runnable
    {
-      this(lockManagerImpl, DEFAULT_THREAD_TIMEOUT);
+      private final WorkspaceLockManager lockManager;
+
+      LockRemoverTask(WorkspaceLockManager lockManager)
+      {
+         this.lockManager = lockManager;
+      }
+
+      public void run()
+      {
+         lockManager.removeExpired();
+      }
    }
 
-   private LockRemover(WorkspaceLockManager lockManagerImpl, long timeout)
+   protected LockRemover(WorkerService workerService, WorkspaceLockManager lockManager)
    {
-      super(timeout);
-      this.lockManagerImpl = lockManagerImpl;
-      setName("LockRemover " + getId());
-      setPriority(Thread.MIN_PRIORITY);
-      setDaemon(true);
-      start();
-      if (log.isDebugEnabled())
-         log.debug("LockRemover instantiated name= " + getName() + " timeout= " + timeout);
+      this(workerService, lockManager, DEFAULT_THREAD_TIMEOUT);
    }
 
-   @Override
-   protected void callPeriodically() throws Exception
+   protected LockRemover(WorkerService workerService, WorkspaceLockManager lockManager, long timeout)
    {
-      lockManagerImpl.removeExpired();
+      this.workerService = workerService;
+      this.lockManager = lockManager;
+      this.timeout = timeout;
    }
+
+   public void start()
+   {
+      if (lockRemoverTask != null)
+      {
+         stop();
+      }
+      lockRemoverTask = workerService.executePeriodically(new LockRemoverTask(lockManager), timeout);
+   }
+
+   public void stop()
+   {
+      lockRemoverTask.cancel(false);
+      lockRemoverTask = null;
+   }
+
 }

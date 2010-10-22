@@ -22,7 +22,6 @@ import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
 import org.exoplatform.management.jmx.annotations.Property;
-import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ExtendedSession;
 import org.exoplatform.services.jcr.dataflow.ChangesLogIterator;
@@ -52,6 +51,7 @@ import org.exoplatform.services.jcr.observation.ExtendedEvent;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.services.security.IdentityConstants;
 import org.picocontainer.Startable;
 
 import java.io.IOException;
@@ -146,12 +146,14 @@ public class LockManagerImpl implements WorkspaceLockManager, ItemsPersistenceLi
     * @param dataManager
     * @param config
     */
-   public LockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config)
+   public LockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
+      LockRemoverHolder lockRemoverHolder)
    {
-      this(dataManager, config, null);
+      this(dataManager, config, null, lockRemoverHolder);
    }
 
-   public LockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config, LockPersister persister)
+   public LockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config, LockPersister persister,
+      LockRemoverHolder lockRemoverHolder)
    {
 
       this.dataManager = dataManager;
@@ -169,6 +171,7 @@ public class LockManagerImpl implements WorkspaceLockManager, ItemsPersistenceLi
       tokensMap = new HashMap<String, LockData>();
 
       dataManager.addItemPersistenceListener(this);
+      lockRemover = lockRemoverHolder.getLockRemover(this);
    }
 
    public synchronized void addLockToken(String sessionId, String lt)
@@ -468,7 +471,7 @@ public class LockManagerImpl implements WorkspaceLockManager, ItemsPersistenceLi
     */
    public void start()
    {
-      lockRemover = new LockRemover(this);
+      lockRemover.start();
    }
 
    // Quick method. We need to reconstruct
@@ -503,8 +506,8 @@ public class LockManagerImpl implements WorkspaceLockManager, ItemsPersistenceLi
     */
    public void stop()
    {
-      lockRemover.halt();
-      lockRemover.interrupt();
+      lockRemover.stop();
+
       locks.clear();
       pendingLocks.clear();
       tokensMap.clear();
@@ -701,7 +704,7 @@ public class LockManagerImpl implements WorkspaceLockManager, ItemsPersistenceLi
       {
          NodeData nData = (NodeData)dataManager.getItemData(nodeIdentifier);
          PlainChangesLog changesLog =
-            new PlainChangesLogImpl(new ArrayList<ItemState>(), SystemIdentity.SYSTEM, ExtendedEvent.UNLOCK);
+            new PlainChangesLogImpl(new ArrayList<ItemState>(), IdentityConstants.SYSTEM, ExtendedEvent.UNLOCK);
 
          ItemData lockOwner =
             copyItemData((PropertyData)dataManager.getItemData(nData, new QPathEntry(Constants.JCR_LOCKOWNER, 1),
