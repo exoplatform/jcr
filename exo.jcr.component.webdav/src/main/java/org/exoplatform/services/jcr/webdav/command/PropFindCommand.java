@@ -28,6 +28,7 @@ import org.exoplatform.services.jcr.webdav.resource.Resource;
 import org.exoplatform.services.jcr.webdav.resource.ResourceUtil;
 import org.exoplatform.services.jcr.webdav.resource.VersionedCollectionResource;
 import org.exoplatform.services.jcr.webdav.resource.VersionedFileResource;
+import org.exoplatform.services.jcr.webdav.util.PropertyConstants;
 import org.exoplatform.services.jcr.webdav.util.TextUtil;
 import org.exoplatform.services.jcr.webdav.xml.WebDavNamespaceContext;
 import org.exoplatform.services.log.ExoLogger;
@@ -144,6 +145,10 @@ public class PropFindCommand
       {
          response = new PropFindResponseEntity(depth, resource, null, false);
       }
+      else if (request.getType().equalsIgnoreCase("include"))
+      {
+         response = new PropFindResponseEntity(depth, resource, propertyNames(body), false);
+      }
       else if (request.getType().equalsIgnoreCase("propname"))
       {
          response = new PropFindResponseEntity(depth, resource, null, true);
@@ -171,7 +176,16 @@ public class PropFindCommand
    {
       HashSet<QName> names = new HashSet<QName>();
 
-      HierarchicalProperty propBody = body.getChild(0);
+      HierarchicalProperty propBody = body.getChild(PropertyConstants.DAV_ALLPROP_INCLUDE);
+
+      if (propBody != null)
+      {
+         names.add(PropertyConstants.DAV_ALLPROP_INCLUDE);
+      }
+      else
+      {
+         propBody = body.getChild(0);
+      }
 
       List<HierarchicalProperty> properties = propBody.getChildren();
       Iterator<HierarchicalProperty> propIter = properties.iterator();

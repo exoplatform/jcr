@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.webdav.command.propfind;
 
 import org.exoplatform.common.util.HierarchicalProperty;
+import org.exoplatform.services.jcr.webdav.util.PropertyConstants;
 
 import javax.xml.namespace.QName;
 
@@ -58,6 +59,11 @@ public class PropFindRequestEntity
       if (input == null)
       {
          return "allprop";
+      }
+
+      if (input.getChild(PropertyConstants.DAV_ALLPROP_INCLUDE) != null)
+      {
+         return "include";
       }
 
       QName name = input.getChild(0).getName();

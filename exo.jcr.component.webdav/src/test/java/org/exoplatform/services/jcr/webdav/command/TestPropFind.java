@@ -62,6 +62,9 @@ public class TestPropFind extends BaseStandaloneTest
    private String allPropsXML =
       "<?xml version=\"1.0\" encoding=\"utf-8\" ?><D:propfind xmlns:D=\"DAV:\"><D:allprop/></D:propfind>";
 
+   private String allPropsWithInclusionXML = "<?xml version=\"1.0\" encoding=\"utf-8\" ?><D:propfind xmlns:D=\"DAV:\">"
+      + "<D:allprop/><D:include><D:lockdiscovery/><D:supported-method-set/></D:include></D:propfind>";
+
    public void setUp() throws Exception
    {
       super.setUp();
@@ -155,6 +158,34 @@ public class TestPropFind extends BaseStandaloneTest
       assertTrue(find.contains(author));
    }
  
+   public void testAllPropsWithInclusion() throws Exception
+   {
+
+      String content = TestUtils.getFileContent();
+      String file = TestUtils.getFileName();
+      Node node =
+         TestUtils.addContent(session, file, new ByteArrayInputStream(content.getBytes()), nt_webdave_file, "");
+
+      node.addMixin("mix:lockable");
+      node.save();
+      node.lock(true, false);
+      node.getPath();
+      node.getName();
+
+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+      headers.add(HttpHeaders.CONTENT_TYPE, "text/xml");
+      ContainerResponse responseFind =
+         service(WebDAVMethods.PROPFIND, getPathWS() + file, "", null, allPropsWithInclusionXML.getBytes());
+      assertEquals(HTTPStatus.MULTISTATUS, responseFind.getStatus());
+      ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+      PropFindResponseEntity entity = (PropFindResponseEntity)responseFind.getEntity();
+      entity.write(outputStream);
+      String find = outputStream.toString();
+      System.out.println("\n" + find);
+      assertTrue(find.contains("D:lockdiscovery"));
+      assertTrue(find.contains("D:supported-method-set"));
+
+   }
    
    public void testPropfindWrongDataFormat() throws Exception
    {

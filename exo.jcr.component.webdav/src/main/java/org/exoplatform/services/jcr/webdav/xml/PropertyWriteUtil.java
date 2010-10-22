@@ -41,6 +41,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 public class PropertyWriteUtil
 {
+   private final static Pattern ESCAPE_PATTERN = Pattern.compile("%[0-9a-fA-F]{2}");
 
    /**
     * Writes the statuses of properties into XML.
@@ -180,8 +181,7 @@ public class PropertyWriteUtil
     * @return <code>true</code> if string contains encoded characters, otherwise returns <code>false</code> 
     */
    private static boolean containsEncodedChar(String str){
-      Pattern p = Pattern.compile("%[0-9a-fA-F]{2}");
-      Matcher matcher = p.matcher(str);
+      Matcher matcher = ESCAPE_PATTERN.matcher(str);
       return matcher.find();
       
    }

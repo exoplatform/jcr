@@ -131,7 +131,11 @@ public class PropstatGroupedRepresentation
       }
       else
       {
-
+         if (propNames.contains(PropertyConstants.DAV_ALLPROP_INCLUDE))
+         {
+            propStats.put(statname, resource.getProperties(namesOnly));
+            propNames.remove(PropertyConstants.DAV_ALLPROP_INCLUDE);
+         }
          for (QName propName : propNames)
          {
             HierarchicalProperty prop = new HierarchicalProperty(propName);
