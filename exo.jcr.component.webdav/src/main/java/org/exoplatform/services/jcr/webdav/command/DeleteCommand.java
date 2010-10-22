@@ -25,12 +25,13 @@ import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 /**
  * Created by The eXo Platform SAS Author : <a
  * href="gavrikvetal@gmail.com">Vitaly Guly</a>.
- * 
+ *
  * @version $Id: $
  */
 
@@ -39,7 +40,7 @@ public class DeleteCommand
 
    /**
     * Webdav Delete method implementation.
-    * 
+    *
     * @param session current session
     * @param path file path
     * @param lockTokenHeader lock tokens
@@ -65,7 +66,8 @@ public class DeleteCommand
 
                if ((nodeLockToken == null) || (!nodeLockToken.equals(lockTokenHeader)))
                {
-                  return Response.status(HTTPStatus.LOCKED).build();
+                  return Response.status(HTTPStatus.LOCKED).entity("The " + path + " item is locked. ").type(
+                     MediaType.TEXT_PLAIN).build();
                }
             }
          }
