@@ -138,6 +138,8 @@ public class TestPropFind extends BaseStandaloneTest
       String find = outputStream.toString();
       assertTrue(find.contains(authorProp));
       assertTrue(find.contains("D:getlastmodified"));
+      assertFalse(find.contains("jcr:lockOwner"));
+      assertFalse(find.contains("D:lockdiscovery"));
    }
 
    public void testAllProps() throws Exception
@@ -214,10 +216,9 @@ public class TestPropFind extends BaseStandaloneTest
       ByteArrayOutputStream bas = new ByteArrayOutputStream();
       ((PropFindResponseEntity)resp.getEntity()).write(bas);
       String find = new String(bas.toByteArray());
-      assertTrue(!find.contains("jcr:lockOnwer"));
-      assertTrue(!find.contains("D:lockdiscovery"));
+      assertFalse(find.contains("jcr:lockOnwer"));
+      assertFalse(find.contains("D:lockdiscovery"));
    }
-   
    
    public void testPropWithPercent() throws Exception
    {
