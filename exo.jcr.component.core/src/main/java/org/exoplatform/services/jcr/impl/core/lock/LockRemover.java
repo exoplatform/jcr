@@ -38,7 +38,7 @@ public class LockRemover
 
    private final long timeout;
 
-   private ScheduledFuture lockRemoverTask = null;
+   private ScheduledFuture<?> lockRemoverTask = null;
 
    class LockRemoverTask implements Runnable
    {
@@ -69,11 +69,10 @@ public class LockRemover
 
    public void start()
    {
-      if (lockRemoverTask != null)
+      if (lockRemoverTask == null)
       {
-         stop();
+         lockRemoverTask = workerService.executePeriodically(new LockRemoverTask(lockManager), timeout);
       }
-      lockRemoverTask = workerService.executePeriodically(new LockRemoverTask(lockManager), timeout);
    }
 
    public void stop()
@@ -81,5 +80,4 @@ public class LockRemover
       lockRemoverTask.cancel(false);
       lockRemoverTask = null;
    }
-
 }
