@@ -95,10 +95,22 @@ public class WorkerService
    }
 
    /**
-    * Initiates an orderly shutdown in which previously submitted tasks are executed, but no new tasks will be accepted. 
+    * Initiates an orderly shutdown in which previously submitted tasks are executed, but no new tasks 
+    * will be accepted. 
     */
    public void stop()
    {
       executor.shutdown();
+   }
+
+   /**
+    * Creates and executes a one-shot action that becomes enabled after the given delay.
+    * 
+    * @param command
+    * @param delay
+    */
+   public void executeDelay(Runnable command, long delay)
+   {
+      executor.schedule(command, delay, TimeUnit.MILLISECONDS);
    }
 }

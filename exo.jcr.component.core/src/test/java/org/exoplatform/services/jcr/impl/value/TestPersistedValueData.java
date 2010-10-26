@@ -23,6 +23,7 @@ import junit.framework.TestCase;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.ByteArrayPersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CleanableFilePersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.FilePersistedValueData;
+import org.exoplatform.services.jcr.impl.proccess.WorkerService;
 import org.exoplatform.services.jcr.impl.storage.value.fs.Probe;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.SwapFile;
@@ -81,7 +82,8 @@ public class TestPersistedValueData extends TestCase
 
    public void testIfFinalizeRemovesTempFileStreamValueData() throws Exception
    {
-      FileCleaner testFileCleaner = new FileCleaner(1000, true);
+      WorkerService workerService = new WorkerService(1, "TestPersistedValueData-file-cleaner");
+      FileCleaner testFileCleaner = new FileCleaner(workerService, 1000);
       try
       {
          byte[] buf = "0123456789".getBytes();
@@ -107,7 +109,7 @@ public class TestPersistedValueData extends TestCase
       }
       finally
       {
-         testFileCleaner.halt();
+         testFileCleaner = null;
       }
    }
 

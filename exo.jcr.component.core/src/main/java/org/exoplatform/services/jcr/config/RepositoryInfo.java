@@ -48,6 +48,8 @@ public class RepositoryInfo
 
    protected int lockRemoverMaxThreadCount;
 
+   protected int fileCleanerMaxThreadsCount;
+
    public RepositoryInfo()
    {
 
@@ -201,12 +203,30 @@ public class RepositoryInfo
    }
 
    /**
+    * Returns FileCleaner per-repository max threads count.
+    * @return LockRemovers per-repository max threads count
+    */
+   public int getFileCleanerThreadsCount()
+   {
+      return fileCleanerMaxThreadsCount;
+   }
+
+   /**
     * Sets LockRemovers per-repository max threads count.
     * @param lockRemoverMaxThreadCount
     */
    public void setLockRemoverThreadsCount(int lockRemoverMaxThreadCount)
    {
       this.lockRemoverMaxThreadCount = lockRemoverMaxThreadCount;
+   }
+
+   /**
+    * Sets FileCleaner per-repository max threads count.
+    * @param fileCleanerMaxThreadsCount
+    */
+   public void setFileCleanerThreadsCount(int fileCleanerMaxThreadsCount)
+   {
+      this.fileCleanerMaxThreadsCount = fileCleanerMaxThreadsCount;
    }
 
    /**
@@ -230,5 +250,7 @@ public class RepositoryInfo
          setSessionTimeOut(entry.sessionTimeOut);
       if (lockRemoverMaxThreadCount == 0)
          setLockRemoverThreadsCount(entry.lockRemoverMaxThreadCount);
+      if (fileCleanerMaxThreadsCount == 0)
+         setFileCleanerThreadsCount(entry.fileCleanerMaxThreadsCount);
    }
 }
