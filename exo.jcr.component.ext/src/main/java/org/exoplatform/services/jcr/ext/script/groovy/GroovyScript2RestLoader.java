@@ -32,10 +32,8 @@ import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
 import org.exoplatform.services.jcr.ext.registry.RegistryEntry;
 import org.exoplatform.services.jcr.ext.registry.RegistryService;
-import org.exoplatform.services.jcr.ext.resource.JcrURLConnection;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-import org.exoplatform.services.rest.ext.groovy.DefaultGroovyResourceLoader;
 import org.exoplatform.services.rest.ext.groovy.GroovyJaxrsPublisher;
 import org.exoplatform.services.rest.ext.groovy.ResourceId;
 import org.exoplatform.services.rest.impl.ResourceBinder;
@@ -53,7 +51,6 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -98,7 +95,7 @@ public class GroovyScript2RestLoader implements Startable
 {
 
    /** Logger. */
-   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.GroovyScript2RestLoader");
+   static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.GroovyScript2RestLoader");
 
    /** Default node types for Groovy scripts. */
    private static final String DEFAULT_NODETYPE = "exo:groovyResourceContainer";
@@ -1275,7 +1272,6 @@ public class GroovyScript2RestLoader implements Startable
    public Response list(@PathParam("repository") String repository, @PathParam("workspace") String workspace,
       @QueryParam("name") String name)
    {
-
       Session ses = null;
       try
       {
@@ -1335,7 +1331,6 @@ public class GroovyScript2RestLoader implements Startable
          Collections.sort(scriptList);
          return Response.status(Response.Status.OK).entity(new ScriptList(scriptList)).type(MediaType.APPLICATION_JSON)
             .build();
-
       }
       catch (Exception e)
       {
@@ -1377,131 +1372,21 @@ public class GroovyScript2RestLoader implements Startable
    }
 
    /**
-    * JCR groovy resource resolver.
-    */
-   protected class JcrGroovyResourceLoader extends DefaultGroovyResourceLoader
-   {
-
-      public JcrGroovyResourceLoader(URL[] roots) throws MalformedURLException
-      {
-         super(normalizeJcrURL(roots));
-      }
-
-      @Override
-      protected URL getResource(String filename) throws MalformedURLException
-      {
-         filename = filename.intern();
-         URL resource = null;
-         synchronized (filename)
-         {
-            resource = resources.get(filename);
-            boolean inCache = resource != null;
-            for (URL root : roots)
-            {
-               if (resource == null)
-               {
-                  if ("jcr".equals(root.getProtocol()))
-                  {
-                     // In JCR URL path represented by fragment
-                     // jcr://repository/workspace#/path
-                     String ref = root.getRef();
-                     resource = new URL(root, "#" + ref + filename);
-                  }
-                  else
-                  {
-                     resource = new URL(root, filename);
-                  }
-               }
-               URLConnection connection = null;
-               try
-               {
-                  if (LOG.isDebugEnabled())
-                     LOG.debug("Try to load resource from URL : " + resource);
-
-                  connection = resource.openConnection();
-                  connection.getInputStream().close();
-
-                  break;
-               }
-               catch (IOException e)
-               {
-                  if (LOG.isDebugEnabled())
-                     LOG.debug("Can't open URL : " + resource);
-
-                  resource = null;
-               }
-               finally
-               {
-                  if (connection != null && resource != null && "jcr".equals(resource.getProtocol()))
-                  {
-                     ((JcrURLConnection)connection).disconnect();
-                  }
-               }
-            }
-            if (resource != null)
-            {
-               resources.put(filename, resource);
-            }
-            else if (inCache)
-            {
-               // Remove from map if resource is unreachable
-               resources.remove(filename);
-            }
-         }
-         return resource;
-      }
-   }
-
-   private static URL[] normalizeJcrURL(URL[] src) throws MalformedURLException
-   {
-      URL[] res = new URL[src.length];
-      for (int i = 0; i < src.length; i++)
-      {
-         if ("jcr".equals(src[i].getProtocol()))
-         {
-            String ref = src[i].getRef();
-            if (ref == null)
-            {
-               ref = "/";
-            }
-            else if (ref.charAt(ref.length() - 1) != '/')
-            {
-               ref = ref + "/";
-            }
-            res[i] = new URL(src[i], "#" + ref);
-         }
-         else
-         {
-            res[i] = src[i];
-         }
-      }
-      return res;
-   }
-
-   /**
     * Script meta-data, used for pass script meta-data as JSON.
     */
    public static class ScriptMetadata
    {
 
-      /**
-       * Is script autoload.
-       */
+      /** Is script autoload. */
       private final boolean autoload;
 
-      /**
-       * Is script loaded.
-       */
+      /** Is script loaded. */
       private final boolean load;
 
-      /**
-       * Script media type (script/groovy).
-       */
+      /** Script media type (script/groovy). */
       private final String mediaType;
 
-      /**
-       * Last modified date.
-       */
+      /** Last modified date. */
       private final long lastModified;
 
       public ScriptMetadata(boolean autoload, boolean load, String mediaType, long lastModified)
@@ -1551,9 +1436,7 @@ public class GroovyScript2RestLoader implements Startable
    public static class ScriptList
    {
 
-      /**
-       * The list of scripts.
-       */
+      /** The list of scripts. */
       private List<String> list;
 
       /**
