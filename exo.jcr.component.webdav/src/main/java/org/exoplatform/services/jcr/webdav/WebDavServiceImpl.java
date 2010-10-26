@@ -75,6 +75,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.jcr.NoSuchWorkspaceException;
 import javax.jcr.PathNotFoundException;
@@ -285,6 +286,94 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
 
    }
 
+   /**
+    * Constructor.
+    * 
+    * @param params Initialization params
+    * @param repositoryService repository service
+    * @param sessionProviderService session provider service
+    */
+   protected WebDavServiceImpl(Map<String, String> params, RepositoryService repositoryService,
+      ThreadLocalSessionProviderService sessionProviderService) throws Exception
+   {
+      this.sessionProviderService = sessionProviderService;
+      this.repositoryService = repositoryService;
+      this.nullResourceLocks = new NullResourceLocksHolder();
+
+      String paramValue = params.get(INIT_PARAM_DEF_FOLDER_NODE_TYPE);
+      if (paramValue != null)
+      {
+         defaultFolderNodeType = paramValue;
+         log.info(INIT_PARAM_DEF_FOLDER_NODE_TYPE + " = " + defaultFolderNodeType);
+      }
+
+      paramValue = params.get(INIT_PARAM_DEF_FILE_NODE_TYPE);
+      if (paramValue != null)
+      {
+         defaultFileNodeType = paramValue;
+         log.info(INIT_PARAM_DEF_FILE_NODE_TYPE + " = " + defaultFileNodeType);
+      }
+
+      paramValue = params.get(INIT_PARAM_DEF_FILE_MIME_TYPE);
+      if (paramValue != null)
+      {
+         defaultFileMimeType = paramValue;
+         log.info(INIT_PARAM_DEF_FILE_MIME_TYPE + " = " + defaultFileMimeType);
+      }
+
+      paramValue = params.get(INIT_PARAM_UPDATE_POLICY);
+      if (paramValue != null)
+      {
+         updatePolicyType = paramValue;
+         log.info(INIT_PARAM_UPDATE_POLICY + " = " + updatePolicyType);
+      }
+
+      paramValue = params.get(INIT_PARAM_AUTO_VERSION);
+      if (paramValue != null)
+      {
+         autoVersionType = paramValue;
+         log.info(INIT_PARAM_AUTO_VERSION + " = " + autoVersionType);
+      }
+
+      paramValue = params.get(INIT_PARAM_CACHE_CONTROL);
+      if (paramValue != null)
+      {
+         try
+         {
+            String[] elements = paramValue.split(";");
+            for (String element : elements)
+            {
+               String cacheValue = element.split(":")[1];
+               String keys = element.split(":")[0];
+               for (String key : keys.split(","))
+               {
+                  MediaType mediaType = new MediaType(key.split("/")[0], key.split("/")[1]);
+                  cacheControlMap.put(mediaType, cacheValue);
+               }
+            }
+         }
+         catch (Exception e)
+         {
+            log.warn("Invalid " + INIT_PARAM_CACHE_CONTROL + " parameter");
+         }
+
+      }
+   }
+
+   /**
+    * Constructor.
+    * 
+    * @param repositoryService repository service
+    * @param sessionProviderService session provider service
+    */
+   protected WebDavServiceImpl(RepositoryService repositoryService,
+      ThreadLocalSessionProviderService sessionProviderService)
+   {
+      this.sessionProviderService = sessionProviderService;
+      this.repositoryService = repositoryService;
+      this.nullResourceLocks = new NullResourceLocksHolder();
+   }
+   
    /**
     * {@inheritDoc}
     */
