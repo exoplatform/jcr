@@ -111,7 +111,7 @@ public class FileCleaner
    {
       if (PrivilegedFileHelper.exists(file))
       {
-         workerService.executePeriodically(new FileCleanerTask(workerService, file), timeout);
+         workerService.executeDelay(new FileCleanerTask(workerService, file), timeout);
       }
    }
 
