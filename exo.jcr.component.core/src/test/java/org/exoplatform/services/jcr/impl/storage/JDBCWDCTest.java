@@ -104,7 +104,7 @@ public class JDBCWDCTest extends TestCase
       // ref.add(new StringRefAddr("database", "jdbc:hsqldb:file:data/test"));
 
       // SimpleJNDIContextInitializer.initialize(sourceName, ref);
-      FileCleanerHolder holder = new FileCleanerHolder(1);
+      FileCleanerHolder holder = new FileCleanerHolder();
 
       container =
          new JDBCWorkspaceDataContainer(config, repositoryEntry, null, new StandaloneStoragePluginProvider(config,

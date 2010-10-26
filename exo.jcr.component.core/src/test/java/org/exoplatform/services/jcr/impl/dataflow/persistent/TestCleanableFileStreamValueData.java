@@ -20,7 +20,6 @@ package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
-import org.exoplatform.services.jcr.impl.proccess.WorkerService;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.SwapFile;
 
@@ -50,7 +49,6 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
 
    private File testFile = new File(parentDir, FILE_NAME);
 
-   private WorkerService workerService;
    private FileCleaner testCleaner;
 
    private CleanableFilePersistedValueData cleanableValueData;
@@ -84,8 +82,8 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
    public void setUp() throws Exception
    {
       super.setUp();
-      WorkerService workerService = new WorkerService(1);
-      testCleaner = new FileCleaner(workerService, CLEANER_TIMEOUT);
+
+      testCleaner = new FileCleaner(CLEANER_TIMEOUT);
 
       SwapFile sf = SwapFile.get(parentDir, FILE_NAME);
       FileOutputStream fout = new FileOutputStream(sf);
@@ -101,9 +99,9 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
    {
       cleanableValueData = null;
 
+      testCleaner.halt();
       testCleaner = null;
-      workerService.stop();
-      
+
       if (testFile.exists())
       {
          testFile.delete();

@@ -22,7 +22,6 @@ import junit.framework.TestCase;
 
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TesterTransientValueData;
-import org.exoplatform.services.jcr.impl.proccess.WorkerService;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 
@@ -44,8 +43,6 @@ public class TestFileIOChannel extends TestCase
 
    private File rootDir;
 
-   WorkerService workerService;
-
    private FileCleaner cleaner;
 
    private ValueDataResourceHolder resources = new ValueDataResourceHolder();
@@ -59,8 +56,8 @@ public class TestFileIOChannel extends TestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-      workerService = new WorkerService(1, "TestFileIOChannel-file-cleaner");
-      cleaner = new FileCleaner(workerService, 2000);
+
+      cleaner = new FileCleaner(2000);
 
       rootDir = new File(new File("target"), "vs1");
       rootDir.mkdirs();
@@ -78,7 +75,7 @@ public class TestFileIOChannel extends TestCase
    @Override
    protected void tearDown() throws Exception
    {
-      cleaner = null;
+      cleaner.halt();
    }
 
    public void testRead() throws Exception

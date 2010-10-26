@@ -27,7 +27,6 @@ import org.exoplatform.services.jcr.impl.core.value.DoubleValue;
 import org.exoplatform.services.jcr.impl.core.value.LongValue;
 import org.exoplatform.services.jcr.impl.core.value.StringValue;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
-import org.exoplatform.services.jcr.impl.proccess.WorkerService;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 
 import java.io.File;
@@ -51,8 +50,7 @@ public class TestValueImpl extends TestCase
 
    public void testNewBinaryValue() throws Exception
    {
-      WorkerService workerService = new WorkerService(1, "TestValueImpl-file-cleaner");
-      FileCleaner testFileCleaner = new FileCleaner(workerService);
+      FileCleaner testFileCleaner = new FileCleaner();
 
       try
       {
@@ -95,7 +93,7 @@ public class TestValueImpl extends TestCase
       }
       finally
       {
-         testFileCleaner = null;
+         testFileCleaner.halt();
       }
    }
 

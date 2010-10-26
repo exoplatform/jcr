@@ -18,9 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.util.io;
 
-import org.exoplatform.services.jcr.config.RepositoryEntry;
-import org.exoplatform.services.jcr.impl.proccess.WorkerService;
-
 /**
  * Created by The eXo Platform SAS. <br/> per workspace container file cleaner holder object
  * 
@@ -29,56 +26,17 @@ import org.exoplatform.services.jcr.impl.proccess.WorkerService;
  */
 public class FileCleanerHolder
 {
-   /**
-    * Default amount of thread that may be used by WorkerService to serve LockRemovers.
-    */
-   public final int DEFAULT_THREAD_COUNT = 1;
 
-   /**
-    * WorkerService that executed LockRemover.
-    */
-   private final WorkerService workerService;
+   private final FileCleaner fileCleaner;
 
-   /**
-    * Constructor. Used in tests.
-    * 
-    * @param threadCount - how mane threads can serve FileCleaner tasks
-    */
-   public FileCleanerHolder(int threadCount)
+   public FileCleanerHolder()
    {
-      workerService = new WorkerService(threadCount, "file-cleaner-");
-   }
-
-   /**
-    * Constructor.
-    * @param entry - RepositoryEntry that may contain lock-remover-max-threads parameter.
-    */
-   public FileCleanerHolder(RepositoryEntry entry)
-   {
-      int threadCount = DEFAULT_THREAD_COUNT;
-      if (entry != null)
-      {
-         if (entry.getLockRemoverThreadsCount() > 0)
-         {
-            threadCount = entry.getLockRemoverThreadsCount();
-         }
-      }
-      workerService = new WorkerService(threadCount, "file-cleaner-" + entry.getName());
+      this.fileCleaner = new FileCleaner();
    }
 
    public FileCleaner getFileCleaner()
    {
-      return new FileCleaner(workerService);
-   }
-
-   public FileCleaner getFileCleaner(long timeout)
-   {
-      return new FileCleaner(workerService, timeout);
-   }
-
-   public void stop()
-   {
-      this.workerService.stop();
+      return fileCleaner;
    }
 
 }

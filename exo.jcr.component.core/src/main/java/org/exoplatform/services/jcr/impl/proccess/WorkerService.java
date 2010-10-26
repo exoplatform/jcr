@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2009 eXo Platform SAS.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.exoplatform.services.jcr.impl.proccess;
 
 import java.util.concurrent.ScheduledFuture;
@@ -6,6 +24,12 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * WorkerService.
+ * 
+ * @author <a href="mailto:karpenko.sergiy@gmail.com">Karpenko Sergiy</a>
+ * @version $Id: WorkerService.java 34361 2010-08-24 23:58:59Z aheritier $
+ */
 public class WorkerService
 {
    /**
@@ -95,22 +119,10 @@ public class WorkerService
    }
 
    /**
-    * Initiates an orderly shutdown in which previously submitted tasks are executed, but no new tasks 
-    * will be accepted. 
+    * Initiates an orderly shutdown in which previously submitted tasks are executed, but no new tasks will be accepted. 
     */
    public void stop()
    {
       executor.shutdown();
-   }
-
-   /**
-    * Creates and executes a one-shot action that becomes enabled after the given delay.
-    * 
-    * @param command
-    * @param delay
-    */
-   public void executeDelay(Runnable command, long delay)
-   {
-      executor.schedule(command, delay, TimeUnit.MILLISECONDS);
    }
 }

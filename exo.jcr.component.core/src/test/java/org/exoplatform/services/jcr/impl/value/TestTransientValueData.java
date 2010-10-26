@@ -24,7 +24,6 @@ import org.exoplatform.services.jcr.datamodel.Identifier;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
-import org.exoplatform.services.jcr.impl.proccess.WorkerService;
 import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 
@@ -67,8 +66,7 @@ public class TestTransientValueData extends TestCase
 
    public void testCreateFileStreamTransientValueData() throws Exception
    {
-      WorkerService workerService = new WorkerService(1, "TestTransientValueData-file-cleaner");
-      FileCleaner testFileCleaner = new FileCleaner(workerService);
+      FileCleaner testFileCleaner = new FileCleaner();
       try
       {
          byte[] buf = "0123456789".getBytes();
@@ -106,7 +104,7 @@ public class TestTransientValueData extends TestCase
       }
       finally
       {
-         testFileCleaner = null;
+         testFileCleaner.halt();
       }
 
    }
