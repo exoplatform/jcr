@@ -1,6 +1,6 @@
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/config/RepositoryInfo.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/config/RepositoryInfo.java	(revision 3339)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/config/RepositoryInfo.java	(revision 3354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/config/RepositoryInfo.java	(working copy)
 @@ -46,6 +46,8 @@
  
@@ -64,7 +64,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/config/
  }
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/BackupWorkspaceInitializer.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/BackupWorkspaceInitializer.java	(revision 3339)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/BackupWorkspaceInitializer.java	(revision 3354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/BackupWorkspaceInitializer.java	(working copy)
 @@ -91,7 +91,7 @@
        super(config, repConfig, dataManager, namespaceRegistry, locationFactory, nodeTypeManager, valueFactory,
@@ -86,7 +86,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
        {
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/jbosscache/CacheableLockManagerImpl.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/jbosscache/CacheableLockManagerImpl.java	(revision 3339)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/jbosscache/CacheableLockManagerImpl.java	(revision 3354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/jbosscache/CacheableLockManagerImpl.java	(working copy)
 @@ -43,6 +43,7 @@
  import org.exoplatform.services.jcr.impl.Constants;
@@ -194,7 +194,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
  
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/jbosscache/jdbc/CacheableJDBCLockManagerImpl.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/jbosscache/jdbc/CacheableJDBCLockManagerImpl.java	(revision 3339)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/jbosscache/jdbc/CacheableJDBCLockManagerImpl.java	(revision 3354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/jbosscache/jdbc/CacheableJDBCLockManagerImpl.java	(working copy)
 @@ -42,6 +42,7 @@
  import org.exoplatform.services.jcr.impl.Constants;
@@ -274,7 +274,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
     }
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/LockManagerImpl.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/LockManagerImpl.java	(revision 3339)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/LockManagerImpl.java	(revision 3354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/LockManagerImpl.java	(working copy)
 @@ -146,12 +146,14 @@
      * @param dataManager
@@ -324,9 +324,9 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
        tokensMap.clear();
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/LockRemover.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/LockRemover.java	(revision 3339)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/LockRemover.java	(revision 3354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/LockRemover.java	(working copy)
-@@ -18,47 +18,68 @@
+@@ -18,47 +18,66 @@
   */
  package org.exoplatform.services.jcr.impl.core.lock;
  
@@ -358,7 +358,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
 +   private final long timeout;
  
 -   private final WorkspaceLockManager lockManagerImpl;
-+   private ScheduledFuture lockRemoverTask = null;
++   private ScheduledFuture<?> lockRemoverTask = null;
  
 -   public LockRemover(WorkspaceLockManager lockManagerImpl)
 +   class LockRemoverTask implements Runnable
@@ -403,11 +403,10 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
 +
 +   public void start()
 +   {
-+      if (lockRemoverTask != null)
++      if (lockRemoverTask == null)
 +      {
-+         stop();
++         lockRemoverTask = workerService.executePeriodically(new LockRemoverTask(lockManager), timeout);
 +      }
-+      lockRemoverTask = workerService.executePeriodically(new LockRemoverTask(lockManager), timeout);
 +   }
 +
 +   public void stop()
@@ -415,13 +414,30 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
 +      lockRemoverTask.cancel(false);
 +      lockRemoverTask = null;
 +   }
-+
  }
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/LockRemoverHolder.java
 ===================================================================
 --- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/LockRemoverHolder.java	(revision 0)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/LockRemoverHolder.java	(revision 0)
-@@ -0,0 +1,65 @@
+@@ -0,0 +1,83 @@
++/*
++ * Copyright (C) 2009 eXo Platform SAS.
++ *
++ * This is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU Lesser General Public License as
++ * published by the Free Software Foundation; either version 2.1 of
++ * the License, or (at your option) any later version.
++ *
++ * This software is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this software; if not, write to the Free
++ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
++ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
++ */
 +package org.exoplatform.services.jcr.impl.core.lock;
 +
 +import org.exoplatform.services.jcr.config.RepositoryEntry;
@@ -429,9 +445,9 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
 +
 +/**
 + * LockRemoverHolder holds is a single per-repository LockRemover container.
-+ * @author <a href="mailto:foo@bar.org">Foo Bar</a>
++ * 
++ * @author <a href="mailto:karpenko.sergiy@gmail.com">Karpenko Sergiy</a>
 + * @version $Id: exo-jboss-codetemplates.xml 34360 2009-07-22 23:58:59Z aheritier $
-+ *
 + */
 +public class LockRemoverHolder
 +{
@@ -489,7 +505,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
 +}
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/SessionImpl.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/SessionImpl.java	(revision 3339)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/SessionImpl.java	(revision 3354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/SessionImpl.java	(working copy)
 @@ -42,7 +42,7 @@
  import org.exoplatform.services.jcr.impl.dataflow.persistent.LocalWorkspaceDataManagerStub;
@@ -568,7 +584,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
        try
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/SysViewWorkspaceInitializer.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/SysViewWorkspaceInitializer.java	(revision 3339)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/SysViewWorkspaceInitializer.java	(revision 3354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/SysViewWorkspaceInitializer.java	(working copy)
 @@ -265,7 +265,8 @@
           else if (tmpFile == null && (((TempOutputStream)buff).getSize() + buffer.length) > maxBufferSize)
@@ -632,7 +648,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
     public void stop()
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/value/ValueFactoryImpl.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/value/ValueFactoryImpl.java	(revision 3339)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/value/ValueFactoryImpl.java	(revision 3354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/value/ValueFactoryImpl.java	(working copy)
 @@ -30,7 +30,7 @@
  import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
@@ -656,7 +672,25 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/pr
 ===================================================================
 --- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/proccess/WorkerService.java	(revision 0)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/proccess/WorkerService.java	(revision 0)
-@@ -0,0 +1,84 @@
+@@ -0,0 +1,128 @@
++/*
++ * Copyright (C) 2009 eXo Platform SAS.
++ *
++ * This is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU Lesser General Public License as
++ * published by the Free Software Foundation; either version 2.1 of
++ * the License, or (at your option) any later version.
++ *
++ * This software is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this software; if not, write to the Free
++ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
++ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
++ */
 +package org.exoplatform.services.jcr.impl.proccess;
 +
 +import java.util.concurrent.ScheduledFuture;
@@ -665,6 +699,12 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/pr
 +import java.util.concurrent.TimeUnit;
 +import java.util.concurrent.atomic.AtomicInteger;
 +
++/**
++ * WorkerService.
++ * 
++ * @author <a href="mailto:karpenko.sergiy@gmail.com">Karpenko Sergiy</a>
++ * @version $Id: WorkerService.java 34361 2010-08-24 23:58:59Z aheritier $
++ */
 +public class WorkerService
 +{
 +   /**
@@ -672,9 +712,9 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/pr
 +    */
 +   private final ScheduledThreadPoolExecutor executor;
 +
-+   class WorkerThreadFactory implements ThreadFactory
++   static class WorkerThreadFactory implements ThreadFactory
 +   {
-+      final AtomicInteger poolNumber = new AtomicInteger(1);
++      static final AtomicInteger poolNumber = new AtomicInteger(1);
 +
 +      final ThreadGroup group;
 +
@@ -682,18 +722,25 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/pr
 +
 +      final String namePrefix;
 +
++      final boolean isDaemon;
++
 +      WorkerThreadFactory(String namePrefix)
 +      {
++         this(namePrefix, false);
++      }
++
++      WorkerThreadFactory(String namePrefix, boolean isDaemon)
++      {
++         this.isDaemon = isDaemon;
 +         SecurityManager s = System.getSecurityManager();
 +         group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
-+         this.namePrefix = namePrefix + poolNumber.getAndIncrement() + "-thread-";
++         this.namePrefix = namePrefix + "-" + poolNumber.getAndIncrement() + "-thread-";
 +      }
 +
 +      public Thread newThread(Runnable r)
 +      {
 +         Thread t = new Thread(group, r, namePrefix + threadNumber.getAndIncrement(), 0);
-+         if (t.isDaemon())
-+            t.setDaemon(false);
++         t.setDaemon(isDaemon);
 +         if (t.getPriority() != Thread.NORM_PRIORITY)
 +            t.setPriority(Thread.NORM_PRIORITY);
 +         return t;
@@ -722,13 +769,26 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/pr
 +   }
 +
 +   /**
++    * Constructor.
++    * 
++    * @param threadCount - max thread count that executor may use
++    * @param threadNamePrefix - thread name prefix
++    * @param makeThreadsDaemon - does thread created by Service must be daemon
++    */
++   public WorkerService(int threadCount, String threadNamePrefix, boolean makeThreadsDaemon)
++   {
++      executor =
++         new ScheduledThreadPoolExecutor(threadCount, new WorkerThreadFactory(threadNamePrefix, makeThreadsDaemon));
++   }
++
++   /**
 +    * Execute specified <code>command</code> periodically with <code>delay</code>.
 +    * 
 +    * @param command - command that must be executed
 +    * @param delay - delay between each command execution 
 +    * @return
 +    */
-+   public ScheduledFuture executePeriodically(Runnable command, long delay)
++   public ScheduledFuture<?> executePeriodically(Runnable command, long delay)
 +   {
 +      return executor.scheduleWithFixedDelay(command, 0, delay, TimeUnit.MILLISECONDS);
 +   }
@@ -743,7 +803,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/pr
 +}
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/RepositoryContainer.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/RepositoryContainer.java	(revision 3339)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/RepositoryContainer.java	(revision 3354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/RepositoryContainer.java	(working copy)
 @@ -41,6 +41,7 @@
  import org.exoplatform.services.jcr.impl.core.WorkspaceInitializer;
@@ -807,7 +867,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/Re
  }
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/JDBCWorkspaceDataContainer.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/JDBCWorkspaceDataContainer.java	(revision 3339)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/JDBCWorkspaceDataContainer.java	(revision 3354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/JDBCWorkspaceDataContainer.java	(working copy)
 @@ -34,6 +34,7 @@
  import org.exoplatform.services.jcr.impl.storage.jdbc.statistics.StatisticsJDBCStorageConnection;
@@ -857,7 +917,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/st
        // if (dbDialect.equals(DB_DIALECT_GENERIC) ||
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/optimisation/CQJDBCWorkspaceDataContainer.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/optimisation/CQJDBCWorkspaceDataContainer.java	(revision 3339)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/optimisation/CQJDBCWorkspaceDataContainer.java	(revision 3354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/optimisation/CQJDBCWorkspaceDataContainer.java	(working copy)
 @@ -33,6 +33,7 @@
  import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.HSQLDBConnectionFactory;
@@ -884,7 +944,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/st
     /**
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/CASableSimpleFileValueStorage.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/CASableSimpleFileValueStorage.java	(revision 3339)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/CASableSimpleFileValueStorage.java	(revision 3354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/CASableSimpleFileValueStorage.java	(working copy)
 @@ -21,6 +21,7 @@
  import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
@@ -908,7 +968,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/st
        RepositoryConfigurationException
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/CASableTreeFileValueStorage.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/CASableTreeFileValueStorage.java	(revision 3339)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/CASableTreeFileValueStorage.java	(revision 3354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/CASableTreeFileValueStorage.java	(working copy)
 @@ -21,6 +21,7 @@
  import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
@@ -932,7 +992,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/st
      */
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/FileValueStorage.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/FileValueStorage.java	(revision 3339)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/FileValueStorage.java	(revision 3354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/FileValueStorage.java	(working copy)
 @@ -59,9 +59,9 @@
      * FileValueStorage constructor.
@@ -948,7 +1008,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/st
     /**
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/SimpleFileValueStorage.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/SimpleFileValueStorage.java	(revision 3339)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/SimpleFileValueStorage.java	(revision 3354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/SimpleFileValueStorage.java	(working copy)
 @@ -18,6 +18,7 @@
   */
@@ -972,7 +1032,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/st
      */
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/TreeFileValueStorage.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/TreeFileValueStorage.java	(revision 3339)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/TreeFileValueStorage.java	(revision 3354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/fs/TreeFileValueStorage.java	(working copy)
 @@ -21,7 +21,6 @@
  import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
@@ -1007,7 +1067,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/st
     {
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/StandaloneStoragePluginProvider.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/StandaloneStoragePluginProvider.java	(revision 3339)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/StandaloneStoragePluginProvider.java	(revision 3354)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/value/StandaloneStoragePluginProvider.java	(working copy)
 @@ -24,6 +24,8 @@
  import org.exoplatform.services.jcr.config.ValueStorageFilterEntry;
@@ -1090,7 +1150,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/ut
 +}
 Index: exo.jcr.component.core/src/main/resources/binding.xml
 ===================================================================
---- exo.jcr.component.core/src/main/resources/binding.xml	(revision 3339)
+--- exo.jcr.component.core/src/main/resources/binding.xml	(revision 3354)
 +++ exo.jcr.component.core/src/main/resources/binding.xml	(working copy)
 @@ -17,6 +17,8 @@
      <value name="access-control" field="accessControl" usage="optional" />
@@ -1103,7 +1163,7 @@ Index: exo.jcr.component.core/src/main/resources/binding.xml
    </mapping>
 Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/BaseStandaloneTest.java
 ===================================================================
---- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/BaseStandaloneTest.java	(revision 3339)
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/BaseStandaloneTest.java	(revision 3354)
 +++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/BaseStandaloneTest.java	(working copy)
 @@ -30,7 +30,7 @@
  import org.exoplatform.services.jcr.impl.core.SessionImpl;
@@ -1126,7 +1186,7 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/BaseSta
     }
 Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/storage/JDBCWDCTest.java
 ===================================================================
---- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/storage/JDBCWDCTest.java	(revision 3339)
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/storage/JDBCWDCTest.java	(revision 3354)
 +++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/storage/JDBCWDCTest.java	(working copy)
 @@ -35,6 +35,7 @@
  import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
@@ -1151,7 +1211,7 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/st
        logProps.put("org.apache.commons.logging.simplelog.defaultlog", "debug");
 Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/storage/value/fs/CASableFileIOChannelTestBase.java
 ===================================================================
---- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/storage/value/fs/CASableFileIOChannelTestBase.java	(revision 3339)
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/storage/value/fs/CASableFileIOChannelTestBase.java	(revision 3354)
 +++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/storage/value/fs/CASableFileIOChannelTestBase.java	(working copy)
 @@ -24,7 +24,6 @@
  import org.exoplatform.services.jcr.impl.storage.value.cas.RecordAlreadyExistsException;
@@ -1182,7 +1242,7 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/st
  
 Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/storage/value/fs/TestFileIOChannel.java
 ===================================================================
---- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/storage/value/fs/TestFileIOChannel.java	(revision 3339)
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/storage/value/fs/TestFileIOChannel.java	(revision 3354)
 +++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/storage/value/fs/TestFileIOChannel.java	(working copy)
 @@ -43,7 +43,7 @@
  
@@ -1220,7 +1280,7 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/st
  
 Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/value/TestPersistedValueData.java
 ===================================================================
---- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/value/TestPersistedValueData.java	(revision 3339)
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/value/TestPersistedValueData.java	(revision 3354)
 +++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/value/TestPersistedValueData.java	(working copy)
 @@ -81,27 +81,34 @@
  
@@ -1276,7 +1336,7 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/va
     public void testConcurrentFileStreamValueDataReading() throws Exception
 Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/value/TestTransientValueData.java
 ===================================================================
---- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/value/TestTransientValueData.java	(revision 3339)
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/value/TestTransientValueData.java	(revision 3354)
 +++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/value/TestTransientValueData.java	(working copy)
 @@ -66,37 +66,46 @@
  
@@ -1361,7 +1421,7 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/va
        assertEquals(10, vd.getLength());
 Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/value/TestValueImpl.java
 ===================================================================
---- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/value/TestValueImpl.java	(revision 3339)
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/value/TestValueImpl.java	(revision 3354)
 +++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/value/TestValueImpl.java	(working copy)
 @@ -50,43 +50,51 @@
  
@@ -1444,7 +1504,7 @@ Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/va
     public void testNewBinaryValueFromString() throws Exception
 Index: exo.jcr.component.ext/src/main/java/org/exoplatform/services/jcr/ext/replication/ReplicationService.java
 ===================================================================
---- exo.jcr.component.ext/src/main/java/org/exoplatform/services/jcr/ext/replication/ReplicationService.java	(revision 3339)
+--- exo.jcr.component.ext/src/main/java/org/exoplatform/services/jcr/ext/replication/ReplicationService.java	(revision 3354)
 +++ exo.jcr.component.ext/src/main/java/org/exoplatform/services/jcr/ext/replication/ReplicationService.java	(working copy)
 @@ -43,7 +43,7 @@
  import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
@@ -1468,984 +1528,60 @@ Index: exo.jcr.component.ext/src/main/java/org/exoplatform/services/jcr/ext/repl
                       // create the RecoveryManager
 Index: exo.jcr.component.ext/src/test/java/org/exoplatform/services/jcr/ext/BaseStandaloneTest.java
 ===================================================================
---- exo.jcr.component.ext/src/test/java/org/exoplatform/services/jcr/ext/BaseStandaloneTest.java	(revision 3339)
+--- exo.jcr.component.ext/src/test/java/org/exoplatform/services/jcr/ext/BaseStandaloneTest.java	(revision 3354)
 +++ exo.jcr.component.ext/src/test/java/org/exoplatform/services/jcr/ext/BaseStandaloneTest.java	(working copy)
-@@ -1,489 +1,489 @@
--/*
-- * Copyright (C) 2009 eXo Platform SAS.
-- *
-- * This is free software; you can redistribute it and/or modify it
-- * under the terms of the GNU Lesser General Public License as
-- * published by the Free Software Foundation; either version 2.1 of
-- * the License, or (at your option) any later version.
-- *
-- * This software is distributed in the hope that it will be useful,
-- * but WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-- * Lesser General Public License for more details.
-- *
-- * You should have received a copy of the GNU Lesser General Public
-- * License along with this software; if not, write to the Free
-- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
-- */
--package org.exoplatform.services.jcr.ext;
--
--import junit.framework.TestCase;
--
--import org.exoplatform.container.StandaloneContainer;
--import org.exoplatform.services.jcr.RepositoryService;
--import org.exoplatform.services.jcr.config.WorkspaceEntry;
--import org.exoplatform.services.jcr.core.CredentialsImpl;
--import org.exoplatform.services.jcr.core.ManageableRepository;
--import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
--import org.exoplatform.services.jcr.dataflow.ItemState;
--import org.exoplatform.services.jcr.dataflow.PersistentDataManager;
--import org.exoplatform.services.jcr.datamodel.ItemData;
--import org.exoplatform.services.jcr.datamodel.PropertyData;
--import org.exoplatform.services.jcr.datamodel.ValueData;
--import org.exoplatform.services.jcr.impl.core.NodeImpl;
--import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
--import org.exoplatform.services.jcr.impl.core.SessionImpl;
--import org.exoplatform.services.jcr.impl.dataflow.serialization.ReaderSpoolFileHolder;
--import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+@@ -36,7 +36,7 @@
+ import org.exoplatform.services.jcr.impl.core.SessionImpl;
+ import org.exoplatform.services.jcr.impl.dataflow.serialization.ReaderSpoolFileHolder;
+ import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 -import org.exoplatform.services.jcr.impl.util.io.WorkspaceFileCleanerHolder;
--import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
--import org.exoplatform.services.log.ExoLogger;
--import org.exoplatform.services.log.Log;
--
--import java.io.File;
--import java.io.FileOutputStream;
--import java.io.IOException;
--import java.io.InputStream;
--import java.util.Iterator;
--import java.util.List;
--import java.util.Random;
--
--import javax.jcr.Node;
--import javax.jcr.NodeIterator;
--import javax.jcr.PathNotFoundException;
--import javax.jcr.RepositoryException;
--import javax.jcr.ValueFactory;
--import javax.jcr.Workspace;
--
--/**
-- * Created by The eXo Platform SAS .
-- * 
-- * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov </a>
-- * @version $Id: BaseStandaloneTest.java 12004 2007-01-17 12:03:57Z geaz $
-- */
--public abstract class BaseStandaloneTest extends TestCase
--{
--
--   private static final Log log = ExoLogger.getLogger("exo.jcr.component.ext.BaseStandaloneTest");
--
--   public static final String WS_NAME = "ws";
--
--   protected SessionImpl session;
--
--   protected RepositoryImpl repository;
--
--   protected CredentialsImpl credentials;
--
--   protected Workspace workspace;
--
--   protected RepositoryService repositoryService;
--
--   protected Node root;
--
--   protected PersistentDataManager dataManager;
--
--   protected ValueFactory valueFactory;
--
--   protected StandaloneContainer container;
--
--   public int maxBufferSize = 200 * 1024;
--
--   public FileCleaner fileCleaner;
--
--   public ReaderSpoolFileHolder holder;
--
--   protected class CompareStreamException extends Exception
--   {
--
--      CompareStreamException(String message)
--      {
--         super(message);
--      }
--
--      CompareStreamException(String message, Throwable e)
--      {
--         super(message, e);
--      }
--   }
--
--   public void setUp() throws Exception
--   {
--      String containerConf = BaseStandaloneTest.class.getResource("/conf/standalone/test-configuration.xml").toString();
--
--      StandaloneContainer.addConfigurationURL(containerConf);
--
--      container = StandaloneContainer.getInstance();
--
--      if (System.getProperty("java.security.auth.login.config") == null)
--         System.setProperty("java.security.auth.login.config", Thread.currentThread().getContextClassLoader()
--            .getResource("login.conf").toString());
--
--      credentials = new CredentialsImpl("root", "exo".toCharArray());
--
--      repositoryService = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
--
--      repository = (RepositoryImpl)repositoryService.getDefaultRepository();
--
--      session = (SessionImpl)repository.login(credentials, WS_NAME);
--      workspace = session.getWorkspace();
--      root = session.getRootNode();
--      valueFactory = session.getValueFactory();
--
--      ManageableRepository repository = repositoryService.getDefaultRepository();
--      WorkspaceContainerFacade wsc = repository.getWorkspaceContainer(WS_NAME);
--
--      WorkspaceEntry wconf = (WorkspaceEntry)wsc.getComponent(WorkspaceEntry.class);
--
--      maxBufferSize =
--         wconf.getContainer().getParameterInteger(WorkspaceDataContainer.MAXBUFFERSIZE_PROP,
--            WorkspaceDataContainer.DEF_MAXBUFFERSIZE);
--
++import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
+ import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
+ import org.exoplatform.services.log.ExoLogger;
+ import org.exoplatform.services.log.Log;
+@@ -139,8 +139,8 @@
+          wconf.getContainer().getParameterInteger(WorkspaceDataContainer.MAXBUFFERSIZE_PROP,
+             WorkspaceDataContainer.DEF_MAXBUFFERSIZE);
+ 
 -      WorkspaceFileCleanerHolder wfcleaner =
 -         (WorkspaceFileCleanerHolder)wsc.getComponent(WorkspaceFileCleanerHolder.class);
--      fileCleaner = wfcleaner.getFileCleaner();
--      holder = new ReaderSpoolFileHolder();
--
--      wsc = repository.getWorkspaceContainer("ws4");
--      dataManager = (PersistentDataManager)wsc.getComponent(PersistentDataManager.class);
--   }
--
--   protected void tearDown() throws Exception
--   {
--
--      log.info("tearDown() BEGIN " + getClass().getName() + "." + getName());
--      if (session != null)
--      {
--         try
--         {
--            session.refresh(false);
--            Node rootNode = session.getRootNode();
--            if (rootNode.hasNodes())
--            {
--               // clean test root
--               for (NodeIterator children = rootNode.getNodes(); children.hasNext();)
--               {
--                  Node node = children.nextNode();
--                  if (!node.getPath().startsWith("/jcr:system") && !node.getPath().startsWith("/exo:audit")
--                     && !node.getPath().startsWith("/exo:organization"))
--                  {
--                     // log.info("DELETing ------------- "+node.getPath());
--                     node.remove();
--                  }
--               }
--               session.save();
--            }
--         }
--         catch (Exception e)
--         {
--            e.printStackTrace();
--            log.error("===== Exception in tearDown() " + e.toString());
--         }
--         finally
--         {
--            session.logout();
--         }
--      }
--
--      super.tearDown();
--      // log.info("tearDown() END " + getClass().getName() + "." + getName());
--   }
--
--   // protected abstract String getConfPath();
--   //
--   // public void initRepository() throws RepositoryException {
--   // }
--
--   // ====== utils =======
--
--   protected void checkItemsExisted(String[] exists, String[] notExists) throws RepositoryException
--   {
--      String path = null;
--      if (exists != null)
--      {
--         try
--         {
--            for (String nodePath : exists)
--            {
--               path = nodePath;
--               session.getItem(path);
--            }
--         }
--         catch (PathNotFoundException e)
--         {
--            fail("Item must exists " + path + ". " + e.getMessage());
--         }
--      }
--      if (notExists != null)
--      {
--         try
--         {
--            for (String nodePath : notExists)
--            {
--               session.getItem(nodePath);
--               fail("Item must not exists " + nodePath);
--            }
--         }
--         catch (PathNotFoundException e)
--         {
--            // ok
--         }
--      }
--   }
--
--   protected void checkNodesExistedByUUID(String[] exists, String[] notExists) throws RepositoryException
--   {
--      String uuid = null;
--      if (exists != null)
--      {
--         try
--         {
--            for (String nodePath : exists)
--            {
--               uuid = nodePath;
--               session.getNodeByUUID(uuid);
--            }
--         }
--         catch (PathNotFoundException e)
--         {
--            fail("Node must exists, UUID " + uuid + ". " + e.getMessage());
--         }
--      }
--      if (notExists != null)
--      {
--         try
--         {
--            for (String nodeUUID : notExists)
--            {
--               session.getNodeByUUID(nodeUUID);
--               fail("Node must not exists, UUID " + nodeUUID);
--            }
--         }
--         catch (PathNotFoundException e)
--         {
--            // ok
--         }
--      }
--   }
--
--   protected void compareStream(InputStream etalon, InputStream data) throws IOException
--   {
--      try
--      {
--         compareStream(etalon, data, 0, 0, -1);
--      }
--      catch (CompareStreamException e)
--      {
--         fail(e.getMessage());
--      }
--   }
--
--   /**
--    * Compare etalon stream with data stream begining from the offset in etalon and position in data.
--    * Length bytes will be readed and compared. if length is lower 0 then compare streams till one of
--    * them will be read.
--    * 
--    * @param etalon
--    * @param data
--    * @param etalonPos
--    * @param length
--    * @param dataPos
--    * @throws IOException
--    */
--   protected void compareStream(InputStream etalon, InputStream data, long etalonPos, long dataPos, long length)
--      throws IOException, CompareStreamException
--   {
--
--      int dindex = 0;
--
--      skipStream(etalon, etalonPos);
--      skipStream(data, dataPos);
--
--      byte[] ebuff = new byte[1024];
--      int eread = 0;
--
--      while ((eread = etalon.read(ebuff)) > 0)
--      {
--
--         byte[] dbuff = new byte[eread];
--         int erindex = 0;
--         while (erindex < eread)
--         {
--            int dread = -1;
--            try
--            {
--               dread = data.read(dbuff);
--            }
--            catch (IOException e)
--            {
--               throw new CompareStreamException("Streams is not equals by length or data stream is unreadable. Cause: "
--                  + e.getMessage());
--            }
--
--            if (dread == -1)
--               throw new CompareStreamException(
--                  "Streams is not equals by length. Data end-of-stream reached at position " + dindex);
--
--            for (int i = 0; i < dread; i++)
--            {
--               byte eb = ebuff[i];
--               byte db = dbuff[i];
--               if (eb != db)
--                  throw new CompareStreamException("Streams is not equals. Wrong byte stored at position " + dindex
--                     + " of data stream. Expected 0x" + Integer.toHexString(eb) + " '" + new String(new byte[]{eb})
--                     + "' but found 0x" + Integer.toHexString(db) + " '" + new String(new byte[]{db}) + "'");
--
--               erindex++;
--               dindex++;
--               if (length > 0 && dindex >= length)
--                  return; // tested length reached
--            }
--
--            if (dread < eread)
--               dbuff = new byte[eread - dread];
--         }
--      }
--
--      if (data.available() > 0)
--         throw new CompareStreamException("Streams is not equals by length. Data stream contains more data. Were read "
--            + dindex);
--   }
--
--   protected void skipStream(InputStream stream, long pos) throws IOException
--   {
--      long curPos = pos;
--      long sk = 0;
--      while ((sk = stream.skip(curPos)) > 0)
--      {
--         curPos -= sk;
--      };
--      if (sk < 0)
--         fail("Can not read the stream (skip bytes)");
--      if (curPos != 0)
--         fail("Can not skip bytes from the stream (" + pos + " bytes)");
--   }
--
--   protected File createBLOBTempFile(int sizeInKb) throws IOException
--   {
--      return createBLOBTempFile("exo_jcr_test_temp_file_", sizeInKb);
--   }
--
--   protected File createBLOBTempFile(String prefix, int sizeInKb) throws IOException
--   {
--      // create test file
--      byte[] data = new byte[1024]; // 1Kb
--
--      File testFile = File.createTempFile(prefix, ".tmp");
--      FileOutputStream tempOut = new FileOutputStream(testFile);
--      Random random = new Random();
--
--      for (int i = 0; i < sizeInKb; i++)
--      {
--         random.nextBytes(data);
--         tempOut.write(data);
--      }
--      tempOut.close();
--      testFile.deleteOnExit(); // delete on test exit
--      log.info("Temp file created: " + testFile.getAbsolutePath() + " size: " + testFile.length());
--      return testFile;
--   }
--
--   protected void checkMixins(String[] mixins, NodeImpl node) throws RepositoryException
--   {
--      try
--      {
--         String[] nodeMixins = node.getMixinTypeNames();
--         assertEquals("Mixins count is different", mixins.length, nodeMixins.length);
--
--         compareMixins(mixins, nodeMixins);
--      }
--      catch (RepositoryException e)
--      {
--         fail("Mixins isn't accessible on the node " + node.getPath());
--      }
--   }
--
--   protected void compareMixins(String[] mixins, String[] nodeMixins)
--   {
--      nextMixin : for (String mixin : mixins)
--      {
--         for (String nodeMixin : nodeMixins)
--         {
--            if (mixin.equals(nodeMixin))
--               continue nextMixin;
--         }
--
--         fail("Mixin '" + mixin + "' isn't accessible");
--      }
--   }
--
--   protected String memoryInfo()
--   {
--      String info = "";
--      info =
--         "free: " + mb(Runtime.getRuntime().freeMemory()) + "M of " + mb(Runtime.getRuntime().totalMemory())
--            + "M (max: " + mb(Runtime.getRuntime().maxMemory()) + "M)";
--      return info;
--   }
--
--   // bytes to Mbytes
--   protected String mb(long mem)
--   {
--      return String.valueOf(Math.round(mem * 100d / (1024d * 1024d)) / 100d);
--   }
--
--   protected String execTime(long from)
--   {
--      return Math.round(((System.currentTimeMillis() - from) * 100.00d / 60000.00d)) / 100.00d + "min";
--   }
--
--   public void checkItemStatesIterator(Iterator<ItemState> expected, Iterator<ItemState> changes, boolean checklast,
--      boolean isRepValDat) throws Exception
--   {
--
--      while (expected.hasNext())
--      {
--
--         assertTrue(changes.hasNext());
--         ItemState expect = expected.next();
--         ItemState elem = changes.next();
--
--         assertEquals(expect.getState(), elem.getState());
--         // assertEquals(expect.getAncestorToSave(), elem.getAncestorToSave());
--         ItemData expData = expect.getData();
--         ItemData elemData = elem.getData();
--         assertEquals(expData.getQPath(), elemData.getQPath());
--         assertEquals(expData.isNode(), elemData.isNode());
--         assertEquals(expData.getIdentifier(), elemData.getIdentifier());
--         assertEquals(expData.getParentIdentifier(), elemData.getParentIdentifier());
--
--         if (!expData.isNode())
--         {
--            PropertyData expProp = (PropertyData)expData;
--            PropertyData elemProp = (PropertyData)elemData;
--            assertEquals(expProp.getType(), elemProp.getType());
--            assertEquals(expProp.isMultiValued(), elemProp.isMultiValued());
--
--            List<ValueData> expValDat = expProp.getValues();
--            List<ValueData> elemValDat = elemProp.getValues();
--            assertEquals(expValDat.size(), elemValDat.size());
--            for (int j = 0; j < expValDat.size(); j++)
--            {
--               assertTrue(java.util.Arrays
--                  .equals(expValDat.get(j).getAsByteArray(), elemValDat.get(j).getAsByteArray()));
--
--               /*if (isRepValDat) {
--                 // check is received property values ReplicableValueData
--                 assertTrue(elemValDat.get(j) instanceof ReplicableValueData);
--               }*/
--            }
--         }
--      }
--
--      if (checklast)
--      {
--         assertFalse(changes.hasNext());
--      }
--
--   }
--}
-+/*
-+ * Copyright (C) 2009 eXo Platform SAS.
-+ *
-+ * This is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU Lesser General Public License as
-+ * published by the Free Software Foundation; either version 2.1 of
-+ * the License, or (at your option) any later version.
-+ *
-+ * This software is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-+ * Lesser General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU Lesser General Public
-+ * License along with this software; if not, write to the Free
-+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
-+ */
-+package org.exoplatform.services.jcr.ext;
-+
-+import junit.framework.TestCase;
-+
-+import org.exoplatform.container.StandaloneContainer;
-+import org.exoplatform.services.jcr.RepositoryService;
-+import org.exoplatform.services.jcr.config.WorkspaceEntry;
-+import org.exoplatform.services.jcr.core.CredentialsImpl;
-+import org.exoplatform.services.jcr.core.ManageableRepository;
-+import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
-+import org.exoplatform.services.jcr.dataflow.ItemState;
-+import org.exoplatform.services.jcr.dataflow.PersistentDataManager;
-+import org.exoplatform.services.jcr.datamodel.ItemData;
-+import org.exoplatform.services.jcr.datamodel.PropertyData;
-+import org.exoplatform.services.jcr.datamodel.ValueData;
-+import org.exoplatform.services.jcr.impl.core.NodeImpl;
-+import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
-+import org.exoplatform.services.jcr.impl.core.SessionImpl;
-+import org.exoplatform.services.jcr.impl.dataflow.serialization.ReaderSpoolFileHolder;
-+import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
-+import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
-+import org.exoplatform.services.log.ExoLogger;
-+import org.exoplatform.services.log.Log;
-+
-+import java.io.File;
-+import java.io.FileOutputStream;
-+import java.io.IOException;
-+import java.io.InputStream;
-+import java.util.Iterator;
-+import java.util.List;
-+import java.util.Random;
-+
-+import javax.jcr.Node;
-+import javax.jcr.NodeIterator;
-+import javax.jcr.PathNotFoundException;
-+import javax.jcr.RepositoryException;
-+import javax.jcr.ValueFactory;
-+import javax.jcr.Workspace;
-+
-+/**
-+ * Created by The eXo Platform SAS .
-+ * 
-+ * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov </a>
-+ * @version $Id: BaseStandaloneTest.java 12004 2007-01-17 12:03:57Z geaz $
-+ */
-+public abstract class BaseStandaloneTest extends TestCase
-+{
-+
-+   private static final Log log = ExoLogger.getLogger("exo.jcr.component.ext.BaseStandaloneTest");
-+
-+   public static final String WS_NAME = "ws";
-+
-+   protected SessionImpl session;
-+
-+   protected RepositoryImpl repository;
-+
-+   protected CredentialsImpl credentials;
-+
-+   protected Workspace workspace;
-+
-+   protected RepositoryService repositoryService;
-+
-+   protected Node root;
-+
-+   protected PersistentDataManager dataManager;
-+
-+   protected ValueFactory valueFactory;
-+
-+   protected StandaloneContainer container;
-+
-+   public int maxBufferSize = 200 * 1024;
-+
-+   public FileCleaner fileCleaner;
-+
-+   public ReaderSpoolFileHolder holder;
-+
-+   protected class CompareStreamException extends Exception
-+   {
-+
-+      CompareStreamException(String message)
-+      {
-+         super(message);
-+      }
-+
-+      CompareStreamException(String message, Throwable e)
-+      {
-+         super(message, e);
-+      }
-+   }
-+
-+   public void setUp() throws Exception
-+   {
-+      String containerConf = BaseStandaloneTest.class.getResource("/conf/standalone/test-configuration.xml").toString();
-+
-+      StandaloneContainer.addConfigurationURL(containerConf);
-+
-+      container = StandaloneContainer.getInstance();
-+
-+      if (System.getProperty("java.security.auth.login.config") == null)
-+         System.setProperty("java.security.auth.login.config", Thread.currentThread().getContextClassLoader()
-+            .getResource("login.conf").toString());
-+
-+      credentials = new CredentialsImpl("root", "exo".toCharArray());
-+
-+      repositoryService = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
-+
-+      repository = (RepositoryImpl)repositoryService.getDefaultRepository();
-+
-+      session = (SessionImpl)repository.login(credentials, WS_NAME);
-+      workspace = session.getWorkspace();
-+      root = session.getRootNode();
-+      valueFactory = session.getValueFactory();
-+
-+      ManageableRepository repository = repositoryService.getDefaultRepository();
-+      WorkspaceContainerFacade wsc = repository.getWorkspaceContainer(WS_NAME);
-+
-+      WorkspaceEntry wconf = (WorkspaceEntry)wsc.getComponent(WorkspaceEntry.class);
-+
-+      maxBufferSize =
-+         wconf.getContainer().getParameterInteger(WorkspaceDataContainer.MAXBUFFERSIZE_PROP,
-+            WorkspaceDataContainer.DEF_MAXBUFFERSIZE);
-+
 +      FileCleanerHolder wfcleaner =
 +         (FileCleanerHolder)wsc.getComponent(FileCleanerHolder.class);
-+      fileCleaner = wfcleaner.getFileCleaner();
-+      holder = new ReaderSpoolFileHolder();
+       fileCleaner = wfcleaner.getFileCleaner();
+       holder = new ReaderSpoolFileHolder();
+ 
+Index: exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/configuration/exo-jcr-configuration.xml
+===================================================================
+--- exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/configuration/exo-jcr-configuration.xml	(revision 3354)
++++ exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/configuration/exo-jcr-configuration.xml	(working copy)
+@@ -197,6 +197,16 @@
+     <para><emphasis role="bold">session-max-age</emphasis>: The time after
+     which an idle session will be removed (called logout). If session-max-age
+     is not set up, idle session will never be removed.</para>
 +
-+      wsc = repository.getWorkspaceContainer("ws4");
-+      dataManager = (PersistentDataManager)wsc.getComponent(PersistentDataManager.class);
-+   }
++    <para id="JCR.eXoJCRconfiguration.LockRemoverMaxThreads"><emphasis
++    role="bold">lock-remover-max-threads</emphasis>: Number of threads that
++    can serve LockRemover tasks. Default value is 1. Repository may have many
++    workspaces, each workspace have own LockManager. JCR supports Locks with
++    defined lifetime. Such a lock must be removed is it become expired. That
++    is what LockRemovers does. But LockRemovers is not an independent
++    timer-threads, its a task that executed each 30 seconds. Such a task is
++    served by ThreadPoolExecutor which may use different number of
++    threads.</para>
+   </section>
+ 
+   <section>
+@@ -376,6 +386,13 @@
+     <para><emphasis role="bold">path</emphasis>: A lock folder. Each workspace
+     has its own one.</para>
+ 
++    <note>
++      <para>Also see <link
++      linkend="JCR.eXoJCRconfiguration.LockRemoverMaxThreads"><emphasis
++      role="bold">lock-remover-max-threads</emphasis></link> repository
++      configuration parameter.</para>
++    </note>
 +
-+   protected void tearDown() throws Exception
-+   {
-+
-+      log.info("tearDown() BEGIN " + getClass().getName() + "." + getName());
-+      if (session != null)
-+      {
-+         try
-+         {
-+            session.refresh(false);
-+            Node rootNode = session.getRootNode();
-+            if (rootNode.hasNodes())
-+            {
-+               // clean test root
-+               for (NodeIterator children = rootNode.getNodes(); children.hasNext();)
-+               {
-+                  Node node = children.nextNode();
-+                  if (!node.getPath().startsWith("/jcr:system") && !node.getPath().startsWith("/exo:audit")
-+                     && !node.getPath().startsWith("/exo:organization"))
-+                  {
-+                     // log.info("DELETing ------------- "+node.getPath());
-+                     node.remove();
-+                  }
-+               }
-+               session.save();
-+            }
-+         }
-+         catch (Exception e)
-+         {
-+            e.printStackTrace();
-+            log.error("===== Exception in tearDown() " + e.toString());
-+         }
-+         finally
-+         {
-+            session.logout();
-+         }
-+      }
-+
-+      super.tearDown();
-+      // log.info("tearDown() END " + getClass().getName() + "." + getName());
-+   }
-+
-+   // protected abstract String getConfPath();
-+   //
-+   // public void initRepository() throws RepositoryException {
-+   // }
-+
-+   // ====== utils =======
-+
-+   protected void checkItemsExisted(String[] exists, String[] notExists) throws RepositoryException
-+   {
-+      String path = null;
-+      if (exists != null)
-+      {
-+         try
-+         {
-+            for (String nodePath : exists)
-+            {
-+               path = nodePath;
-+               session.getItem(path);
-+            }
-+         }
-+         catch (PathNotFoundException e)
-+         {
-+            fail("Item must exists " + path + ". " + e.getMessage());
-+         }
-+      }
-+      if (notExists != null)
-+      {
-+         try
-+         {
-+            for (String nodePath : notExists)
-+            {
-+               session.getItem(nodePath);
-+               fail("Item must not exists " + nodePath);
-+            }
-+         }
-+         catch (PathNotFoundException e)
-+         {
-+            // ok
-+         }
-+      }
-+   }
-+
-+   protected void checkNodesExistedByUUID(String[] exists, String[] notExists) throws RepositoryException
-+   {
-+      String uuid = null;
-+      if (exists != null)
-+      {
-+         try
-+         {
-+            for (String nodePath : exists)
-+            {
-+               uuid = nodePath;
-+               session.getNodeByUUID(uuid);
-+            }
-+         }
-+         catch (PathNotFoundException e)
-+         {
-+            fail("Node must exists, UUID " + uuid + ". " + e.getMessage());
-+         }
-+      }
-+      if (notExists != null)
-+      {
-+         try
-+         {
-+            for (String nodeUUID : notExists)
-+            {
-+               session.getNodeByUUID(nodeUUID);
-+               fail("Node must not exists, UUID " + nodeUUID);
-+            }
-+         }
-+         catch (PathNotFoundException e)
-+         {
-+            // ok
-+         }
-+      }
-+   }
-+
-+   protected void compareStream(InputStream etalon, InputStream data) throws IOException
-+   {
-+      try
-+      {
-+         compareStream(etalon, data, 0, 0, -1);
-+      }
-+      catch (CompareStreamException e)
-+      {
-+         fail(e.getMessage());
-+      }
-+   }
-+
-+   /**
-+    * Compare etalon stream with data stream begining from the offset in etalon and position in data.
-+    * Length bytes will be readed and compared. if length is lower 0 then compare streams till one of
-+    * them will be read.
-+    * 
-+    * @param etalon
-+    * @param data
-+    * @param etalonPos
-+    * @param length
-+    * @param dataPos
-+    * @throws IOException
-+    */
-+   protected void compareStream(InputStream etalon, InputStream data, long etalonPos, long dataPos, long length)
-+      throws IOException, CompareStreamException
-+   {
-+
-+      int dindex = 0;
-+
-+      skipStream(etalon, etalonPos);
-+      skipStream(data, dataPos);
-+
-+      byte[] ebuff = new byte[1024];
-+      int eread = 0;
-+
-+      while ((eread = etalon.read(ebuff)) > 0)
-+      {
-+
-+         byte[] dbuff = new byte[eread];
-+         int erindex = 0;
-+         while (erindex < eread)
-+         {
-+            int dread = -1;
-+            try
-+            {
-+               dread = data.read(dbuff);
-+            }
-+            catch (IOException e)
-+            {
-+               throw new CompareStreamException("Streams is not equals by length or data stream is unreadable. Cause: "
-+                  + e.getMessage());
-+            }
-+
-+            if (dread == -1)
-+               throw new CompareStreamException(
-+                  "Streams is not equals by length. Data end-of-stream reached at position " + dindex);
-+
-+            for (int i = 0; i < dread; i++)
-+            {
-+               byte eb = ebuff[i];
-+               byte db = dbuff[i];
-+               if (eb != db)
-+                  throw new CompareStreamException("Streams is not equals. Wrong byte stored at position " + dindex
-+                     + " of data stream. Expected 0x" + Integer.toHexString(eb) + " '" + new String(new byte[]{eb})
-+                     + "' but found 0x" + Integer.toHexString(db) + " '" + new String(new byte[]{db}) + "'");
-+
-+               erindex++;
-+               dindex++;
-+               if (length > 0 && dindex >= length)
-+                  return; // tested length reached
-+            }
-+
-+            if (dread < eread)
-+               dbuff = new byte[eread - dread];
-+         }
-+      }
-+
-+      if (data.available() > 0)
-+         throw new CompareStreamException("Streams is not equals by length. Data stream contains more data. Were read "
-+            + dindex);
-+   }
-+
-+   protected void skipStream(InputStream stream, long pos) throws IOException
-+   {
-+      long curPos = pos;
-+      long sk = 0;
-+      while ((sk = stream.skip(curPos)) > 0)
-+      {
-+         curPos -= sk;
-+      };
-+      if (sk < 0)
-+         fail("Can not read the stream (skip bytes)");
-+      if (curPos != 0)
-+         fail("Can not skip bytes from the stream (" + pos + " bytes)");
-+   }
-+
-+   protected File createBLOBTempFile(int sizeInKb) throws IOException
-+   {
-+      return createBLOBTempFile("exo_jcr_test_temp_file_", sizeInKb);
-+   }
-+
-+   protected File createBLOBTempFile(String prefix, int sizeInKb) throws IOException
-+   {
-+      // create test file
-+      byte[] data = new byte[1024]; // 1Kb
-+
-+      File testFile = File.createTempFile(prefix, ".tmp");
-+      FileOutputStream tempOut = new FileOutputStream(testFile);
-+      Random random = new Random();
-+
-+      for (int i = 0; i < sizeInKb; i++)
-+      {
-+         random.nextBytes(data);
-+         tempOut.write(data);
-+      }
-+      tempOut.close();
-+      testFile.deleteOnExit(); // delete on test exit
-+      log.info("Temp file created: " + testFile.getAbsolutePath() + " size: " + testFile.length());
-+      return testFile;
-+   }
-+
-+   protected void checkMixins(String[] mixins, NodeImpl node) throws RepositoryException
-+   {
-+      try
-+      {
-+         String[] nodeMixins = node.getMixinTypeNames();
-+         assertEquals("Mixins count is different", mixins.length, nodeMixins.length);
-+
-+         compareMixins(mixins, nodeMixins);
-+      }
-+      catch (RepositoryException e)
-+      {
-+         fail("Mixins isn't accessible on the node " + node.getPath());
-+      }
-+   }
-+
-+   protected void compareMixins(String[] mixins, String[] nodeMixins)
-+   {
-+      nextMixin : for (String mixin : mixins)
-+      {
-+         for (String nodeMixin : nodeMixins)
-+         {
-+            if (mixin.equals(nodeMixin))
-+               continue nextMixin;
-+         }
-+
-+         fail("Mixin '" + mixin + "' isn't accessible");
-+      }
-+   }
-+
-+   protected String memoryInfo()
-+   {
-+      String info = "";
-+      info =
-+         "free: " + mb(Runtime.getRuntime().freeMemory()) + "M of " + mb(Runtime.getRuntime().totalMemory())
-+            + "M (max: " + mb(Runtime.getRuntime().maxMemory()) + "M)";
-+      return info;
-+   }
-+
-+   // bytes to Mbytes
-+   protected String mb(long mem)
-+   {
-+      return String.valueOf(Math.round(mem * 100d / (1024d * 1024d)) / 100d);
-+   }
-+
-+   protected String execTime(long from)
-+   {
-+      return Math.round(((System.currentTimeMillis() - from) * 100.00d / 60000.00d)) / 100.00d + "min";
-+   }
-+
-+   public void checkItemStatesIterator(Iterator<ItemState> expected, Iterator<ItemState> changes, boolean checklast,
-+      boolean isRepValDat) throws Exception
-+   {
-+
-+      while (expected.hasNext())
-+      {
-+
-+         assertTrue(changes.hasNext());
-+         ItemState expect = expected.next();
-+         ItemState elem = changes.next();
-+
-+         assertEquals(expect.getState(), elem.getState());
-+         // assertEquals(expect.getAncestorToSave(), elem.getAncestorToSave());
-+         ItemData expData = expect.getData();
-+         ItemData elemData = elem.getData();
-+         assertEquals(expData.getQPath(), elemData.getQPath());
-+         assertEquals(expData.isNode(), elemData.isNode());
-+         assertEquals(expData.getIdentifier(), elemData.getIdentifier());
-+         assertEquals(expData.getParentIdentifier(), elemData.getParentIdentifier());
-+
-+         if (!expData.isNode())
-+         {
-+            PropertyData expProp = (PropertyData)expData;
-+            PropertyData elemProp = (PropertyData)elemData;
-+            assertEquals(expProp.getType(), elemProp.getType());
-+            assertEquals(expProp.isMultiValued(), elemProp.isMultiValued());
-+
-+            List<ValueData> expValDat = expProp.getValues();
-+            List<ValueData> elemValDat = elemProp.getValues();
-+            assertEquals(expValDat.size(), elemValDat.size());
-+            for (int j = 0; j < expValDat.size(); j++)
-+            {
-+               assertTrue(java.util.Arrays
-+                  .equals(expValDat.get(j).getAsByteArray(), elemValDat.get(j).getAsByteArray()));
-+
-+               /*if (isRepValDat) {
-+                 // check is received property values ReplicableValueData
-+                 assertTrue(elemValDat.get(j) instanceof ReplicableValueData);
-+               }*/
-+            }
-+         }
-+      }
-+
-+      if (checklast)
-+      {
-+         assertFalse(changes.hasNext());
-+      }
-+
-+   }
-+}
+     <programlisting>&lt;!ELEMENT repository-service (repositories)&gt;
+ &lt;!ATTLIST repository-service default-repository NMTOKEN #REQUIRED&gt;
+ &lt;!ELEMENT repositories (repository)&gt;
