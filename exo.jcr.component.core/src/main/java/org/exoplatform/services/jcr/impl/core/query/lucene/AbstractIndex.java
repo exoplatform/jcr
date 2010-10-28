@@ -25,7 +25,7 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Similarity;
 import org.apache.lucene.store.Directory;
-import org.exoplatform.services.jcr.impl.util.SecurityHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

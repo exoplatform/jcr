@@ -19,8 +19,8 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 import EDU.oswego.cs.dl.util.concurrent.Callable;
 import EDU.oswego.cs.dl.util.concurrent.FutureResult;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.document.DocumentReader;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

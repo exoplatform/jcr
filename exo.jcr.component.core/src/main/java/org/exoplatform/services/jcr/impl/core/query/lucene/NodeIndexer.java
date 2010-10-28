@@ -36,7 +36,6 @@ import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
-import org.exoplatform.services.jcr.impl.util.SecurityHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +43,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -228,15 +229,33 @@ public class NodeIndexer
             addPropertyName(doc, prop.getQPath().getName());
          }
 
-         SecurityHelper.doPriviledgedRepositoryExceptionAction(new PrivilegedExceptionAction<Object>()
+         try
          {
-            public Object run() throws Exception
+            AccessController.doPrivileged((new PrivilegedExceptionAction<Object>()
             {
-               addValues(doc, prop);
-               return null;
+               public Object run() throws Exception
+               {
+                  addValues(doc, prop);
+                  return null;
+               }
+            }));
+         }
+         catch (PrivilegedActionException pae)
+         {
+            Throwable cause = pae.getCause();
+            if (cause instanceof RepositoryException)
+            {
+               throw (RepositoryException)cause;
             }
-         });
-
+            else if (cause instanceof RuntimeException)
+            {
+               throw (RuntimeException)cause;
+            }
+            else
+            {
+               throw new RuntimeException(cause);
+            }
+         }
       }
 
       // now add fields that are not used in excerpt (must go at the end)

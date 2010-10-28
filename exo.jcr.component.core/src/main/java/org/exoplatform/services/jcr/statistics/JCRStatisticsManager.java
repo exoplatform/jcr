@@ -16,6 +16,8 @@
  */
 package org.exoplatform.services.jcr.statistics;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.management.ManagementContext;
@@ -25,8 +27,6 @@ import org.exoplatform.management.annotations.ManagedName;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
 import org.exoplatform.management.jmx.annotations.Property;
 import org.exoplatform.management.rest.annotations.RESTEndpoint;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedSystemHelper;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;

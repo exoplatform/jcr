@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.util.io;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.impl.proccess.WorkerThread;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;

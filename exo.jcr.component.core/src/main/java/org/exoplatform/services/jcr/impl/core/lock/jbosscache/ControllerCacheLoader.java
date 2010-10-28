@@ -16,7 +16,7 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock.jbosscache;
 
-import org.exoplatform.services.jcr.impl.util.SecurityHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.jboss.cache.CacheSPI;
 import org.jboss.cache.CacheStatus;
 import org.jboss.cache.Fqn;

@@ -19,7 +19,7 @@
 package org.exoplatform.services.jcr.impl.xml;
 
 import org.apache.ws.commons.util.Base64;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;

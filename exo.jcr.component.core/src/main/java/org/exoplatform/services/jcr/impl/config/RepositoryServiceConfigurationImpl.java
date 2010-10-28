@@ -18,13 +18,13 @@
  */
 package org.exoplatform.services.jcr.impl.config;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ValueParam;
 import org.exoplatform.services.jcr.config.ConfigurationPersister;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryServiceConfiguration;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.naming.InitialContextInitializer;
 import org.jibx.runtime.BindingDirectory;
 import org.jibx.runtime.IBindingFactory;

@@ -35,6 +35,9 @@ import org.apache.lucene.search.Similarity;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortComparatorSource;
 import org.apache.lucene.search.SortField;
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.commons.utils.PrivilegedSystemHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.document.DocumentReaderService;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
@@ -59,9 +62,6 @@ import org.exoplatform.services.jcr.impl.core.query.QueryHandlerContext;
 import org.exoplatform.services.jcr.impl.core.query.SearchIndexConfigurationHelper;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.DirectoryManager;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.FSDirectoryManager;
-import org.exoplatform.services.jcr.impl.util.SecurityHelper;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedSystemHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
@@ -71,7 +71,9 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -502,20 +504,40 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       if (path != null)
       {
          indexDirectory = new File(path);
-         SecurityHelper.doPriviledgedRepositoryExceptionAction(new PrivilegedExceptionAction<Object>()
+
+         try
          {
-            public Object run() throws Exception
+            AccessController.doPrivileged((new PrivilegedExceptionAction<Object>()
             {
-               if (!indexDirectory.exists())
+               public Object run() throws Exception
                {
-                  if (!indexDirectory.mkdirs())
+                  if (!indexDirectory.exists())
                   {
-                     throw new RepositoryException("fail to create index dir " + path);
+                     if (!indexDirectory.mkdirs())
+                     {
+                        throw new RepositoryException("fail to create index dir " + path);
+                     }
                   }
+                  return null;
                }
-               return null;
+            }));
+         }
+         catch (PrivilegedActionException pae)
+         {
+            Throwable cause = pae.getCause();
+            if (cause instanceof RepositoryException)
+            {
+               throw (RepositoryException)cause;
             }
-         });
+            else if (cause instanceof RuntimeException)
+            {
+               throw (RuntimeException)cause;
+            }
+            else
+            {
+               throw new RuntimeException(cause);
+            }
+         }
       }
       else
       {

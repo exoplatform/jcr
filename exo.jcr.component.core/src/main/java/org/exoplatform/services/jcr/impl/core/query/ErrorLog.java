@@ -17,8 +17,8 @@
 
 package org.exoplatform.services.jcr.impl.core.query;
 
-import org.exoplatform.services.jcr.impl.util.SecurityHelper;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 

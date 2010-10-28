@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.util.io;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
+
 import java.io.File;
 import java.io.IOException;
 import java.security.AccessController;

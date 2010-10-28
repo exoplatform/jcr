@@ -19,7 +19,7 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
-import org.exoplatform.services.jcr.impl.util.SecurityHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

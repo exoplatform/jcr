@@ -81,6 +81,11 @@
         <version>${org.exoplatform.kernel.version}</version>
       </dependency>
       <dependency>
+         <groupId>org.exoplatform.kernel</groupId>
+         <artifactId>exo.kernel.component.ext.cache.impl.jboss.v3</artifactId>
+        <version>${org.exoplatform.kernel.version}</version>
+      </dependency>
+      <dependency>
         <groupId>org.exoplatform.core</groupId>
         <artifactId>exo.core.component.document</artifactId>
         <version>${org.exoplatform.core.version}</version>

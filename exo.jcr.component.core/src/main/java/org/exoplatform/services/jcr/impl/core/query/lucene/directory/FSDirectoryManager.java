@@ -19,9 +19,9 @@ package org.exoplatform.services.jcr.impl.core.query.lucene.directory;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.NativeFSLockFactory;
+import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex;
-import org.exoplatform.services.jcr.impl.util.SecurityHelper;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.File;
 import java.io.FileFilter;

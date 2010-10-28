@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
@@ -35,8 +37,6 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.statistics.StatisticsJDBCS
 import org.exoplatform.services.jcr.impl.storage.jdbc.update.StorageUpdateManager;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedSystemHelper;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerException;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;

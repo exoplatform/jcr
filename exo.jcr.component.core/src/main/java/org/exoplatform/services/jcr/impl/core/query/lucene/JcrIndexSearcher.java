@@ -20,11 +20,11 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.core.query.lucene.constraint.EvaluationContext;
-import org.exoplatform.services.jcr.impl.util.SecurityHelper;
 
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;

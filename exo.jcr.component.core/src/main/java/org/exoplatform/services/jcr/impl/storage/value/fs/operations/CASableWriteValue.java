@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs.operations;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
@@ -27,7 +28,6 @@ import org.exoplatform.services.jcr.impl.storage.value.cas.ValueContentAddressSt
 import org.exoplatform.services.jcr.impl.storage.value.fs.CASableIOSupport;
 import org.exoplatform.services.jcr.impl.storage.value.fs.FileDigestOutputStream;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
 import java.io.File;

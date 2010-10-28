@@ -18,7 +18,7 @@
  */
 package org.exoplatform.services.jcr.storage;
 
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedSystemHelper;
+import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 
 import java.util.Calendar;
 

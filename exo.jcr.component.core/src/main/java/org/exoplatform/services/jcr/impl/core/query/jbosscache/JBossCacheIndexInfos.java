@@ -18,12 +18,12 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.jbosscache;
 
+import org.exoplatform.services.cache.impl.jboss.util.PrivilegedCacheHelper;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoMode;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeListener;
 import org.exoplatform.services.jcr.impl.core.query.lucene.IndexInfos;
 import org.exoplatform.services.jcr.impl.core.query.lucene.MultiIndex;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedCacheHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.jboss.cache.Cache;

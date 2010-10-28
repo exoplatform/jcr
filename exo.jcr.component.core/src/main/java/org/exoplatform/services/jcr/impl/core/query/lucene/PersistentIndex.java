@@ -23,8 +23,8 @@ import org.apache.lucene.search.Similarity;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.DirectoryManager;
-import org.exoplatform.services.jcr.impl.util.SecurityHelper;
 
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;

@@ -17,9 +17,9 @@
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import org.apache.lucene.document.Document;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.impl.util.SecurityHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

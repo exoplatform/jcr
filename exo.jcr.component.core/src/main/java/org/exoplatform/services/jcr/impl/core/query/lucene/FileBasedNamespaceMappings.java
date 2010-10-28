@@ -16,8 +16,8 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import org.exoplatform.services.jcr.impl.util.SecurityHelper;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

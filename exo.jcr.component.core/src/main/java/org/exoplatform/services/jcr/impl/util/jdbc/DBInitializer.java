@@ -18,7 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.util.jdbc;
 
-import org.exoplatform.services.jcr.impl.util.SecurityHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 

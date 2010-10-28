@@ -17,9 +17,9 @@
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import org.apache.lucene.store.Directory;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.IndexInputStream;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.IndexOutputStream;
-import org.exoplatform.services.jcr.impl.util.SecurityHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

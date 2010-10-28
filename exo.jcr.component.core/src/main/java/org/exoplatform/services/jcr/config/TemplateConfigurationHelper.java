@@ -18,8 +18,8 @@
  */
 package org.exoplatform.services.jcr.config;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.container.configuration.ConfigurationManager;
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;

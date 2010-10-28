@@ -18,7 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs;
 
-import org.exoplatform.services.jcr.impl.util.io.PrivilegedFileHelper;
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 
 import java.io.File;
 import java.io.IOException;
