@@ -23,6 +23,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
 
 /**
  * Created by The eXo Platform SAS. <br/>Date:
@@ -57,7 +58,15 @@ public class BackupConsole
     * Help string.
     */
    private static final String HELP_INFO =
-      "Help info:\n" + " <url> <cmd> \n" + " <url>  :   http(s)//login:password@host:port/<context> \n"
+            "Help info:\n"
+                     + " <url_basic_authentication>|<url form authentication>  <cmd> \n"
+                     + " <url_basic_authentication>  :   http(s)//login:password@host:port/<context> \n\n"
+                     + " <url form authentication>   :   http(s)//host:port/<context> \"<form auth parm>\" \n"
+                     + "     <form auth parm>        :   form <method> <form path>\n"
+                     + "     <method>                :   POST or GET\n"
+                     + "     <form path>             :   /path/path?<paramName1>=<paramValue1>&<paramName2>=<paramValue2>...\n"
+                     + "     Example to <url form authentication> : http://127.0.0.1:8080/portal/rest form POST /portal/login?username=root&password=gtn\n\n"
+
          + " <cmd>  :   start <repo[/ws]> <backup_dir> [<incr>] \n" 
          + "            stop <backup_id> \n"
          + "            status <backup_id> \n" 
@@ -65,7 +74,7 @@ public class BackupConsole
          + "            restore <repo[/ws]> <backup_id> <pathToConfigFile> \n" 
          + "            list [completed] \n"
          + "            info \n" 
-         + "            drop [force-close-session] <repo[/ws]>  \n" 
+                     + "            drop [force-close-session] <repo[/ws]>  \n"
          + "            help  \n\n"
 
          + " start          - start backup of repositpry or workspace \n" 
@@ -79,7 +88,7 @@ public class BackupConsole
          + " drop           - delete the repository or workspace \n"
          + " help           - print help information about backup console \n\n"
 
-         + " <repo[/ws]>           - /<reponsitory-name>[/<workspace-name>]  the repository or workspace \n"
+         + " <repo[/ws]>         - /<reponsitory-name>[/<workspace-name>]  the repository or workspace \n"
          + " <backup_dir>        - path to folder for backup on remote server \n"
          + " <backup_id>         - the identifier for backup \n" 
          + " <incr>              - incemental job period \n"
@@ -128,25 +137,116 @@ public class BackupConsole
       if (!("".equals(url.getPath())))
          urlPath = url.getPath();
 
+      // try form
+      String form = null;
+      if (curArg < args.length)
+      {
+         if (args[curArg].equals("form"))
+         {
+            form = args[curArg++];
+
+            if (url.getUserInfo() != null)
+            {  
+               System.out.println(INCORRECT_PARAM + "Parameters Login:Password should not be specified in url parameter to form authentication - " + sUrl);
+               return;
+            }
+         }
+      }
+
       // login:password
       String login = url.getUserInfo();
-      if (login == null)
+      
+      FormAuthentication formAuthentication = null;
+      if (form != null && form.equals("form"))
       {
-         System.out.println(INCORRECT_PARAM + "There is no specific Login:Password in url parameter - " + sUrl);
-         return;
+         //check POST or GET
+         if (curArg == args.length)
+         {
+            System.out.println(INCORRECT_PARAM + "No specified  POST or GET parameter to form parameter.");
+            return;
+         }
+         String method = args[curArg++];
+
+         if (!method.equalsIgnoreCase("GET") && !method.equalsIgnoreCase("POST"))
+         {
+            System.out.println(INCORRECT_PARAM + "Method to form authentication shulde be GET or POST to form parameter - " + method);
+            return;
+         }
+         
+         //url to form authentication
+         if (curArg == args.length)
+         {
+            System.out.println(INCORRECT_PARAM + "No specified  url and form properties to form parameter.");
+            return;
+         }
+         String[] params = args[curArg++].split("[?]");
+         
+         if (params.length != 2)
+         {
+            System.out.println(INCORRECT_PARAM + "From parameters is not spacified to form parameter - " + args[curArg]);
+            return;
+         }
+         String formUrl = params[0];
+
+         // parameters to form
+         String[] formParams = params[1].split("&");
+
+         if (formParams.length < 2)
+         {
+            System.out.println(INCORRECT_PARAM
+                     + "From parameters shoulde be conatains at least two (for login and for pasword) parameters - "
+                     + params[1]);
+            return;
+         }
+         
+         HashMap<String, String> mapFormParams = new HashMap<String, String>();
+
+         for (String fParam : formParams)
+         {
+            String[] para = fParam.split("=");
+            
+            if (para.length != 2)
+            {
+               System.out.println(INCORRECT_PARAM + "From parameters is incorect, shoulde be as \"name=value\"  - " + fParam);
+               return;
+            }
+            
+            mapFormParams.put(para[0], para[1]);
+         }
+         
+         formAuthentication = new FormAuthentication(method, formUrl, mapFormParams);
       }
-      else if (!login.matches("[^:]+:[^:]+"))
+      else
       {
-         System.out.println(INCORRECT_PARAM + "There is incorrect Login:Password parameter - " + login);
-         return;
+         if (login == null)
+         {
+            System.out.println(INCORRECT_PARAM + "There is no specific Login:Password in url parameter - " + sUrl);
+            return;
+         }
+         else if (!login.matches("[^:]+:[^:]+"))
+         {
+            System.out.println(INCORRECT_PARAM + "There is incorrect Login:Password parameter - " + login);
+            return;
+         }
       }
 
       String host = url.getHost() + ":" + url.getPort();
 
       // initialize transport and backup client
-      String[] lp = login.split(LOGIN_PASS_SPLITTER);
-      ClientTransport transport = new ClientTransportImpl(lp[0], lp[1], host, url.getProtocol());
-      BackupClient client = new BackupClientImpl(transport, lp[0], lp[1], urlPath);
+      ClientTransport transport;
+      BackupClient client;
+      
+      if (formAuthentication != null)
+      {
+         transport = new ClientTransportImpl(formAuthentication, host, url.getProtocol());
+         client = new BackupClientImpl(transport, formAuthentication, urlPath);
+      }
+      else
+      {
+         String[] lp = login.split(LOGIN_PASS_SPLITTER);
+         transport = new ClientTransportImpl(lp[0], lp[1], host, url.getProtocol());
+         client = new BackupClientImpl(transport, urlPath);
+      }
 
       // commands
       if (curArg == args.length)
@@ -155,7 +255,6 @@ public class BackupConsole
          return;
       }
       String command = args[curArg++];
-
       try
       {
          if (command.equalsIgnoreCase("start"))
@@ -376,6 +475,8 @@ public class BackupConsole
          System.out.println("ERROR: " + e.getMessage());
          e.printStackTrace();
       }
+
+      System.exit(0);
    }
 
    /**
