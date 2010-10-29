@@ -6,14 +6,14 @@
 
    <clustering mode="replication" clusterName="${jbosscache-cluster-name}">
       <stateRetrieval timeout="20000" fetchInMemoryState="false" />
-      <jgroupsConfig multiplexerStack="jcr.stack" />
       <sync />
    </clustering>
 
    <loaders passivation="false" shared="true">
-      <preload>
-         <node fqn="/" />
-      </preload>
+      <!-- All the data of the JCR locks needs to be loaded at startup -->
+ 	  <preload>
+	     <node fqn="/" />
+	  </preload>  
       <!--
 			For another cache-loader class you should use another template with
 			cache-loader specific parameters
@@ -33,7 +33,5 @@
             cache.jdbc.datasource=${jbosscache-cl-cache.jdbc.datasource}
 			</properties>
       </loader>
-
    </loaders>
-
 </jbosscache>

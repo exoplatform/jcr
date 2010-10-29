@@ -3,10 +3,11 @@
 
    <locking useLockStriping="false" concurrencyLevel="500" lockParentForChildInsertRemove="false"
       lockAcquisitionTimeout="20000" />
+   <!-- Configure the TransactionManager -->
+   <transaction transactionManagerLookupClass="org.jboss.cache.transaction.JBossStandaloneJTAManagerLookup" />
 
    <clustering mode="replication" clusterName="${jbosscache-cluster-name}">
       <stateRetrieval timeout="20000" fetchInMemoryState="false" />
-      <jgroupsConfig multiplexerStack="jcr.stack" />
       <sync />
    </clustering>
    <!-- Eviction configuration -->
