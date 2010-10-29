@@ -335,19 +335,19 @@ public class VersionHistoryDataHelper extends TransientNodeData
 
       // update all
       QPath vpath = versionable.getQPath();
-      changes.add(new ItemState(versionHistory, ItemState.ADDED, true, vpath));
-      changes.add(new ItemState(vhPrimaryType, ItemState.ADDED, true, vpath));
-      changes.add(new ItemState(vhUuid, ItemState.ADDED, true, vpath));
-      changes.add(new ItemState(vhVersionableUuid, ItemState.ADDED, true, vpath));
+      changes.add(new ItemState(versionHistory, ItemState.ADDED, true, vpath, true));
+      changes.add(new ItemState(vhPrimaryType, ItemState.ADDED, true, vpath, true));
+      changes.add(new ItemState(vhUuid, ItemState.ADDED, true, vpath, true));
+      changes.add(new ItemState(vhVersionableUuid, ItemState.ADDED, true, vpath, true));
 
-      changes.add(new ItemState(vhVersionLabels, ItemState.ADDED, true, vpath));
-      changes.add(new ItemState(vlPrimaryType, ItemState.ADDED, true, vpath));
+      changes.add(new ItemState(vhVersionLabels, ItemState.ADDED, true, vpath, true));
+      changes.add(new ItemState(vlPrimaryType, ItemState.ADDED, true, vpath, true));
 
-      changes.add(new ItemState(rootVersionData, ItemState.ADDED, true, vpath));
-      changes.add(new ItemState(rvPrimaryType, ItemState.ADDED, true, vpath));
-      changes.add(new ItemState(rvMixinTypes, ItemState.ADDED, true, vpath));
-      changes.add(new ItemState(rvUuid, ItemState.ADDED, true, vpath));
-      changes.add(new ItemState(rvCreated, ItemState.ADDED, true, vpath));
+      changes.add(new ItemState(rootVersionData, ItemState.ADDED, true, vpath, true));
+      changes.add(new ItemState(rvPrimaryType, ItemState.ADDED, true, vpath, true));
+      changes.add(new ItemState(rvMixinTypes, ItemState.ADDED, true, vpath, true));
+      changes.add(new ItemState(rvUuid, ItemState.ADDED, true, vpath, true));
+      changes.add(new ItemState(rvCreated, ItemState.ADDED, true, vpath, true));
 
       changes.add(ItemState.createAddedState(vh));
       changes.add(ItemState.createAddedState(bv));

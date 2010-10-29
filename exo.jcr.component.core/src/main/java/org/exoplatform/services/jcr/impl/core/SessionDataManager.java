@@ -22,6 +22,7 @@ import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.access.AccessManager;
 import org.exoplatform.services.jcr.access.PermissionType;
 import org.exoplatform.services.jcr.core.nodetype.ItemDefinitionData;
+import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
 import org.exoplatform.services.jcr.dataflow.DataManager;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.dataflow.ItemState;
@@ -334,6 +335,35 @@ public class SessionDataManager implements ItemDataConsumer
    public ItemImpl getItem(NodeData parent, QPathEntry name, boolean pool, ItemType itemType)
       throws RepositoryException
    {
+      return getItem(parent, name, pool, itemType, true);
+   }
+
+   /**
+    * For internal use, required privileges. Return Item by parent NodeDada and the name of searched item.
+    * 
+    * @param parent
+    *          - parent of the searched item
+    * @param name
+    *          - item name
+    * @param itemType
+    *          - item type
+    * @param pool
+    *          - indicates does the item fall in pool
+    * @param apiRead 
+    *          - if true will call postRead Action and check permissions              
+    * @return existed item or null if not found
+    * @throws RepositoryException
+    */
+   public ItemImpl getItem(NodeData parent, QPathEntry name, boolean pool, ItemType itemType, boolean apiRead)
+      throws RepositoryException
+   {
+      // Need privileges
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+      {
+         security.checkPermission(JCRRuntimePermissions.INVOKE_INTERNAL_API_PERMISSION);
+      }
+
       long start = System.currentTimeMillis();
       if (log.isDebugEnabled())
       {
@@ -343,7 +373,7 @@ public class SessionDataManager implements ItemDataConsumer
       ItemImpl item = null;
       try
       {
-         return item = readItem(getItemData(parent, name, itemType), pool);
+         return item = readItem(getItemData(parent, name, itemType), parent, pool, apiRead);
       }
       finally
       {
@@ -542,7 +572,7 @@ public class SessionDataManager implements ItemDataConsumer
     * @param pool boolean, if true will reload pooled ItemImpl
     * @param apiRead boolean, if true will call postRead Action and check permissions 
     * @return ItemImpl
-    * @throws RepositoryException if errro occurs
+    * @throws RepositoryException if error occurs
     */
    protected ItemImpl readItem(ItemData itemData, NodeData parent, boolean pool, boolean apiRead)
       throws RepositoryException
@@ -592,6 +622,30 @@ public class SessionDataManager implements ItemDataConsumer
     */
    public ItemImpl getItemByIdentifier(String identifier, boolean pool) throws RepositoryException
    {
+      return getItemByIdentifier(identifier, pool, true);
+   }
+
+   /**
+    * For internal use, required privileges. Return item by identifier in this transient storage then in workspace container.
+    * 
+    * @param identifier
+    *          - identifier of searched item
+    * @param pool
+    *          - indicates does the item fall in pool
+    * @param apiRead 
+    *          - if true will call postRead Action and check permissions          
+    * @return existed item data or null if not found
+    * @throws RepositoryException
+    */
+   public ItemImpl getItemByIdentifier(String identifier, boolean pool, boolean apiRead) throws RepositoryException
+   {
+      // Need privileges
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+      {
+         security.checkPermission(JCRRuntimePermissions.INVOKE_INTERNAL_API_PERMISSION);
+      }
+
       long start = System.currentTimeMillis();
       if (log.isDebugEnabled())
       {
@@ -601,7 +655,7 @@ public class SessionDataManager implements ItemDataConsumer
       ItemImpl item = null;
       try
       {
-         return item = readItem(getItemData(identifier), pool);
+         return item = readItem(getItemData(identifier), null, pool, apiRead);
       }
       finally
       {
@@ -765,7 +819,7 @@ public class SessionDataManager implements ItemDataConsumer
             if (accessManager.hasPermission(parent.getACL(), new String[]{PermissionType.READ}, session.getUserState()
                .getIdentity()))
             {
-               PropertyImpl item = (PropertyImpl)readItem(data, null, true, false);
+               PropertyImpl item = (PropertyImpl)readItem(data, parent, true, false);
 
                refs.add(item);
                session.getActionHandler().postRead(item);
@@ -1139,10 +1193,15 @@ public class SessionDataManager implements ItemDataConsumer
     */
    public void delete(ItemData itemData) throws RepositoryException
    {
-      delete(itemData, itemData.getQPath());
+      delete(itemData, itemData.getQPath(), false);
    }
 
    public void delete(ItemData itemData, QPath ancestorToSave) throws RepositoryException
+   {
+      delete(itemData, ancestorToSave, false);
+   }
+
+   protected void delete(ItemData itemData, QPath ancestorToSave, boolean isInternall) throws RepositoryException
    {
 
       List<? extends ItemData> list = mergeList(itemData, transactionableManager, true, MERGE_ITEMS);
@@ -1169,7 +1228,8 @@ public class SessionDataManager implements ItemDataConsumer
          {
             rootAdded = true;
          }
-         deletes.add(new ItemState(data, ItemState.DELETED, fireEvent, ancestorToSave, false));
+
+         deletes.add(new ItemState(data, ItemState.DELETED, fireEvent, ancestorToSave, isInternall));
          // if subnode contains JCR_VERSIONHISTORY property
          // we should remove version storage manually
          if (checkRemoveChildVersionStorages && !data.isNode()
@@ -1202,7 +1262,7 @@ public class SessionDataManager implements ItemDataConsumer
       // 4 add item itself if not added
       if (!rootAdded)
       {
-         deletes.add(new ItemState(itemData, ItemState.DELETED, fireEvent, ancestorToSave, false));
+         deletes.add(new ItemState(itemData, ItemState.DELETED, fireEvent, ancestorToSave, isInternall));
 
          ItemImpl pooled = itemsPool.remove(itemData.getIdentifier());
          if (pooled != null)
@@ -1322,7 +1382,7 @@ public class SessionDataManager implements ItemDataConsumer
       vhnode.accept(cvremover);
 
       // remove VH
-      delete(vhnode, ancestorToSave);
+      delete(vhnode, ancestorToSave, true);
    }
 
    /**
@@ -1636,6 +1696,17 @@ public class SessionDataManager implements ItemDataConsumer
                      + parent.getACL().getOwner());
                }
             }
+            else if (changedItem.isMixinChanged())
+            {
+               if (!accessManager.hasPermission(parent.getACL(), new String[]{PermissionType.ADD_NODE,
+                  PermissionType.SET_PROPERTY}, session.getUserState().getIdentity()))
+               {
+                  throw new AccessDeniedException("Access denied: ADD_NODE or SET_PROPERTY"
+                     + changedItem.getData().getQPath().getAsString() + " for: " + session.getUserID() + " item owner "
+                     + parent.getACL().getOwner());
+               }
+            }
+
          }
          else if (changedItem.isAdded() || changedItem.isUpdated())
          {
