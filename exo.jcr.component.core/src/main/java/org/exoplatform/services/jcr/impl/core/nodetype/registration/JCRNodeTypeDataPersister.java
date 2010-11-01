@@ -155,12 +155,13 @@ public class JCRNodeTypeDataPersister implements NodeTypeDataPersister
 
       if (addACL)
       {
-         AccessControlList acl = new AccessControlList();
          InternalQName[] mixins = new InternalQName[]{Constants.EXO_OWNEABLE, Constants.EXO_PRIVILEGEABLE};
 
          jcrNodetypes =
             TransientNodeData.createNodeData(nsSystem, Constants.JCR_NODETYPES, Constants.NT_UNSTRUCTURED, mixins,
                Constants.NODETYPESROOT_UUID);
+
+         AccessControlList acl = jcrNodetypes.getACL();
 
          TransientPropertyData primaryType =
             TransientPropertyData.createPropertyData(jcrNodetypes, Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false,

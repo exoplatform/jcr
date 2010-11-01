@@ -186,7 +186,7 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
       JCRName jcrVersionName = locationFactory.parseJCRName(versionName);
       VersionImpl version =
          (VersionImpl)dataManager.getItem(nodeData(), new QPathEntry(jcrVersionName.getInternalName(), 1), pool,
-            ItemType.NODE);
+            ItemType.NODE, false);
       if (version == null)
          throw new VersionException("There are no version with name '" + versionName + "' in the version history "
             + getPath());
@@ -205,7 +205,7 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
       if (versionData == null)
          throw new RepositoryException("There are no label '" + label + "' in the version history " + getPath());
 
-      VersionImpl version = (VersionImpl)dataManager.getItemByIdentifier(versionData.getIdentifier(), true);
+      VersionImpl version = (VersionImpl)dataManager.getItemByIdentifier(versionData.getIdentifier(), true, false);
 
       if (version == null)
          throw new VersionException("There are no version with label '" + label + "' in the version history "
@@ -357,7 +357,7 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
          for (ValueData pvalue : predecessorsData.getValues())
          {
             String pidentifier = new String(pvalue.getAsByteArray());
-            VersionImpl predecessor = (VersionImpl)dataManager.getItemByIdentifier(pidentifier, false);
+            VersionImpl predecessor = (VersionImpl)dataManager.getItemByIdentifier(pidentifier, false, false);
             // actually predecessor is V2's successor
             if (predecessor != null)
             {// V2's successor
@@ -395,7 +395,7 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
             for (ValueData svalue : successorsData.getValues())
             {
                String sidentifier = new String(svalue.getAsByteArray());
-               VersionImpl successor = (VersionImpl)dataManager.getItemByIdentifier(sidentifier, false);
+               VersionImpl successor = (VersionImpl)dataManager.getItemByIdentifier(sidentifier, false, false);
                if (successor != null)
                {
                   // case of VH graph merge
@@ -586,7 +586,7 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
          {
             throw new RepositoryException(e);
          }
-         VersionImpl predecessor = (VersionImpl)dataManager.getItemByIdentifier(new String(pib), false);
+         VersionImpl predecessor = (VersionImpl)dataManager.getItemByIdentifier(new String(pib), false, false);
          predecessor.addSuccessor(versionData.getIdentifier(), changesLog);
          
          predecessorsNew.add(new TransientValueData(pib));

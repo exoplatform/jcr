@@ -157,7 +157,7 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
          for (int i = 0; i < predecessorsValues.size(); i++)
          {
             String videntifier = new String(predecessorsValues.get(i).getAsByteArray());
-            VersionImpl version = (VersionImpl)dataManager.getItemByIdentifier(videntifier, false);
+            VersionImpl version = (VersionImpl)dataManager.getItemByIdentifier(videntifier, false, false);
             if (version != null)
             {
                predecessors[i] = version;
@@ -438,7 +438,7 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
       checkValid();
 
       VersionHistoryImpl vhistory =
-         (VersionHistoryImpl)dataManager.getItemByIdentifier(nodeData().getParentIdentifier(), true);
+         (VersionHistoryImpl)dataManager.getItemByIdentifier(nodeData().getParentIdentifier(), true, false);
 
       if (vhistory == null)
       {

@@ -352,11 +352,12 @@ public class NamespaceDataPersister implements ComponentPersister
 
       if (addACL)
       {
-         AccessControlList acl = new AccessControlList();
          InternalQName[] mixins = new InternalQName[]{Constants.EXO_OWNEABLE, Constants.EXO_PRIVILEGEABLE};
 
          exoNamespaces =
             TransientNodeData.createNodeData(nsSystem, Constants.EXO_NAMESPACES, Constants.NT_UNSTRUCTURED, mixins);
+
+         AccessControlList acl = exoNamespaces.getACL();
 
          TransientPropertyData primaryType =
             TransientPropertyData.createPropertyData(exoNamespaces, Constants.JCR_PRIMARYTYPE, PropertyType.NAME,

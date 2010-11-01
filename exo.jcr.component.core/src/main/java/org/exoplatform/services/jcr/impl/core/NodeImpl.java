@@ -354,6 +354,13 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       UnsupportedRepositoryOperationException, RepositoryException
    {
 
+      if (!session.getAccessManager().hasPermission(getACL(),
+         new String[]{PermissionType.ADD_NODE, PermissionType.SET_PROPERTY}, session.getUserState().getIdentity()))
+      {
+         throw new AccessDeniedException("Access denied: cancel merge operation " + getPath() + " for: "
+            + session.getUserID() + " item owner " + getACL().getOwner());
+      }
+
       checkValid();
 
       PlainChangesLog changesLog = new PlainChangesLogImpl(session.getId());
@@ -404,6 +411,13 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       checkValid();
 
+      if (!session.getAccessManager().hasPermission(getACL(),
+         new String[]{PermissionType.ADD_NODE, PermissionType.SET_PROPERTY}, session.getUserState().getIdentity()))
+      {
+         throw new AccessDeniedException("Access denied: checkin operation " + getPath() + " for: "
+            + session.getUserID() + " item owner " + getACL().getOwner());
+      }
+
       if (!this.isNodeType(Constants.MIX_VERSIONABLE))
          throw new UnsupportedRepositoryOperationException(
             "Node.checkin() is not supported for not mix:versionable node ");
@@ -441,7 +455,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       dataManager.getTransactManager().save(changesLog);
 
-      VersionImpl version = (VersionImpl)dataManager.getItemByIdentifier(verIdentifier, true);
+      VersionImpl version = (VersionImpl)dataManager.getItemByIdentifier(verIdentifier, true, false);
 
       session.getActionHandler().postCheckin(this);
       return version;
@@ -454,6 +468,13 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    {
 
       checkValid();
+
+      if (!session.getAccessManager().hasPermission(getACL(), new String[]{PermissionType.SET_PROPERTY},
+         session.getUserState().getIdentity()))
+      {
+         throw new AccessDeniedException("Access denied: checkout operation " + getPath() + " for: "
+            + session.getUserID() + " item owner " + getACL().getOwner());
+      }
 
       if (!this.isNodeType(Constants.MIX_VERSIONABLE))
          throw new UnsupportedRepositoryOperationException(
@@ -612,6 +633,12 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public void doneMerge(Version version) throws VersionException, InvalidItemStateException,
       UnsupportedRepositoryOperationException, RepositoryException
    {
+      if (!session.getAccessManager().hasPermission(getACL(),
+         new String[]{PermissionType.ADD_NODE, PermissionType.SET_PROPERTY}, session.getUserState().getIdentity()))
+      {
+         throw new AccessDeniedException("Access denied: done merge operation " + getPath() + " for: "
+            + session.getUserID() + " item owner " + getACL().getOwner());
+      }
 
       PlainChangesLog changesLog = new PlainChangesLogImpl(session.getId());
 
@@ -686,7 +713,8 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
             ItemType.PROPERTY);
       try
       {
-         return (Version)session.getNodeByUUID(ValueDataConvertor.readString(bvProp.getValues().get(0)));
+         return (Version)dataManager.getItemByIdentifier(ValueDataConvertor.readString(bvProp.getValues().get(0)),
+            true, false);
       }
       catch (IOException e)
       {
@@ -1415,6 +1443,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    /**
     * {@inheritDoc}
     */
+   @Override
    public void loadData(ItemData data, NodeData parent) throws RepositoryException, InvalidItemStateException,
       ConstraintViolationException
    {
@@ -1492,6 +1521,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    /**
     * {@inheritDoc}
     */
+   @Override
    public ItemDefinitionData getItemDefinitionData()
    {
       return definition;
@@ -1579,8 +1609,17 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       checkValid();
 
+      if (!session.getAccessManager().hasPermission(getACL(),
+         new String[]{PermissionType.ADD_NODE, PermissionType.SET_PROPERTY}, session.getUserState().getIdentity()))
+      {
+         throw new AccessDeniedException("Access denied: merge operation " + getPath() + " for: "
+            + session.getUserID() + " item owner " + getACL().getOwner());
+      }
+
       if (session.hasPendingChanges())
+      {
          throw new InvalidItemStateException("Session has pending changes ");
+      }
 
       Map<String, String> failed = new HashMap<String, String>();
 
@@ -1799,6 +1838,13 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       checkValid();
 
+      if (!session.getAccessManager().hasPermission(getACL(),
+         new String[]{PermissionType.ADD_NODE, PermissionType.SET_PROPERTY}, session.getUserState().getIdentity()))
+      {
+         throw new AccessDeniedException("Access denied: restore operation " + getPath() + " for: "
+            + session.getUserID() + " item owner " + getACL().getOwner());
+      }
+
       if (!this.isNodeType(Constants.MIX_VERSIONABLE))
          throw new UnsupportedRepositoryOperationException("Node is not versionable " + getPath());
 
@@ -1838,6 +1884,13 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
          // restore at relPath
          checkValid();
+
+         if (!session.getAccessManager().hasPermission(getACL(),
+            new String[]{PermissionType.ADD_NODE, PermissionType.SET_PROPERTY}, session.getUserState().getIdentity()))
+         {
+            throw new AccessDeniedException("Access denied: restore operation " + getPath() + " for: "
+               + session.getUserID() + " item owner " + getACL().getOwner());
+         }
 
          if (session.hasPendingChanges())
             throw new InvalidItemStateException("Session has pending changes ");
@@ -2337,7 +2390,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       try
       {
          return (VersionHistoryImpl)dataManager.getItemByIdentifier(new String(vhProp.getValues().get(0)
-            .getAsByteArray()), pool);
+            .getAsByteArray()), pool, false);
       }
       catch (IOException e)
       {
@@ -3033,7 +3086,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
             // check read conditions 
             if (canRead(item))
             {
-               next = (ItemImpl)session.getTransientNodesManager().readItem(item, nodeData(), true, false);
+               next = session.getTransientNodesManager().readItem(item, nodeData(), true, false);
             }
             else
             {

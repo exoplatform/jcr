@@ -118,12 +118,8 @@ public class ConfigurationHelper
       params.add(new SimpleParameterEntry("multi-db", isMultiDb ? "true" : "false"));
       params.add(new SimpleParameterEntry("update-storage", "true"));
       params.add(new SimpleParameterEntry("max-buffer-size", "204800"));
-
-      if (entry.getParameterValue(JDBCWorkspaceDataContainer.DB_DIALECT) != null)
-      {
-         params.add(new SimpleParameterEntry(JDBCWorkspaceDataContainer.DB_DIALECT, entry
-            .getParameterValue(JDBCWorkspaceDataContainer.DB_DIALECT)));
-      }
+      params.add(new SimpleParameterEntry(JDBCWorkspaceDataContainer.DB_DIALECT, entry.getParameterValue(
+         JDBCWorkspaceDataContainer.DB_DIALECT, "auto")));
 
       String oldSwap = entry.getParameterValue("swap-directory");
       String newSwap = oldSwap.substring(0, oldSwap.lastIndexOf('/')) + '/' + wsName;
