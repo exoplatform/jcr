@@ -357,13 +357,6 @@ public class SessionDataManager implements ItemDataConsumer
    public ItemImpl getItem(NodeData parent, QPathEntry name, boolean pool, ItemType itemType, boolean apiRead)
       throws RepositoryException
    {
-      // Need privileges
-      SecurityManager security = System.getSecurityManager();
-      if (security != null)
-      {
-         security.checkPermission(JCRRuntimePermissions.INVOKE_INTERNAL_API_PERMISSION);
-      }
-
       long start = System.currentTimeMillis();
       if (log.isDebugEnabled())
       {
@@ -577,6 +570,16 @@ public class SessionDataManager implements ItemDataConsumer
    protected ItemImpl readItem(ItemData itemData, NodeData parent, boolean pool, boolean apiRead)
       throws RepositoryException
    {
+      if (!apiRead)
+      {
+         // Need privileges
+         SecurityManager security = System.getSecurityManager();
+         if (security != null)
+         {
+            security.checkPermission(JCRRuntimePermissions.INVOKE_INTERNAL_API_PERMISSION);
+         }
+      }
+
       if (itemData != null)
       {
          ItemImpl item;
@@ -639,13 +642,6 @@ public class SessionDataManager implements ItemDataConsumer
     */
    public ItemImpl getItemByIdentifier(String identifier, boolean pool, boolean apiRead) throws RepositoryException
    {
-      // Need privileges
-      SecurityManager security = System.getSecurityManager();
-      if (security != null)
-      {
-         security.checkPermission(JCRRuntimePermissions.INVOKE_INTERNAL_API_PERMISSION);
-      }
-
       long start = System.currentTimeMillis();
       if (log.isDebugEnabled())
       {

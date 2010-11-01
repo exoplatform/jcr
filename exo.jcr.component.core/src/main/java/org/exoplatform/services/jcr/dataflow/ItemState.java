@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.dataflow;
 
+import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.log.ExoLogger;
@@ -102,7 +103,7 @@ public class ItemState implements Externalizable
     * @param ancestorToSave
     *          - path of item which should be called in save (usually for session.move())
     * @param isInternalCreated
-    *          - indicates that item is created internaly by system
+    *          - indicates that item is created internally by system
     */
    public ItemState(ItemData data, int state, boolean eventFire, QPath ancestorToSave, boolean isInternalCreated)
    {
@@ -112,6 +113,16 @@ public class ItemState implements Externalizable
    public ItemState(ItemData data, int state, boolean eventFire, QPath ancestorToSave, boolean isInternalCreated,
       boolean isPersisted)
    {
+      if (isInternalCreated)
+      {
+         // Need privileges
+         SecurityManager security = System.getSecurityManager();
+         if (security != null)
+         {
+            security.checkPermission(JCRRuntimePermissions.INVOKE_INTERNAL_API_PERMISSION);
+         }
+      }
+
       this.data = data;
       this.state = state;
       this.eventFire = eventFire;
@@ -208,6 +219,7 @@ public class ItemState implements Externalizable
       return ancestorToSave;
    }
 
+   @Override
    public boolean equals(Object obj)
    {
       if (this == obj)
