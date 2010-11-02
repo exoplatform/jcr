@@ -45,6 +45,10 @@ public interface FtpServer
 
    int getClientsCount();
 
+   /**
+    * 
+    * @return {@link ManageableRepository} or <code>null</code> if repository can not be retrieved
+    */
    ManageableRepository getRepository();
 
    FtpCommand getCommand(String commandName);

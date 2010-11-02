@@ -61,7 +61,7 @@ public class FtpServiceImpl implements FtpService, Startable
       log.info("Start service.");
       try
       {
-         ftpServer = new FtpServerImpl(config, commandService, repositoryService.getRepository());
+         ftpServer = new FtpServerImpl(config, commandService, repositoryService);
          ftpServer.start();
       }
       catch (Exception e)

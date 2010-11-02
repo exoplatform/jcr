@@ -26,6 +26,8 @@ import org.exoplatform.services.ftp.command.FtpCommand;
 import org.exoplatform.services.ftp.config.FtpConfig;
 import org.exoplatform.services.ftp.data.FtpDataChannelManager;
 import org.exoplatform.services.ftp.data.FtpDataChannelManagerImpl;
+import org.exoplatform.services.jcr.RepositoryService;
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -36,6 +38,8 @@ import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS Author : Vitaly Guly <gavrik-vetal@ukr.net/mail.ru>
@@ -52,7 +56,7 @@ public class FtpServerImpl implements FtpServer
 
    private Catalog commandCatalog;
 
-   private ManageableRepository repository;
+   private RepositoryService repositoryService;
 
    private FtpConfig configuration;
 
@@ -62,11 +66,11 @@ public class FtpServerImpl implements FtpServer
 
    private ArrayList<FtpClientSession> clients = new ArrayList<FtpClientSession>();
 
-   public FtpServerImpl(FtpConfig configuration, CommandService commandService, ManageableRepository repository)
+   public FtpServerImpl(FtpConfig configuration, CommandService commandService, RepositoryService repositoryService)
       throws Exception
    {
       this.configuration = configuration;
-      this.repository = repository;
+      this.repositoryService = repositoryService;
 
       InputStream commandStream = getClass().getResourceAsStream(COMMAND_PATH);
 
@@ -153,7 +157,21 @@ public class FtpServerImpl implements FtpServer
 
    public ManageableRepository getRepository()
    {
-      return repository;
+
+      try
+      {
+         return repositoryService.getDefaultRepository();
+      }
+      catch (RepositoryException e)
+      {
+         log.info("Repository exception. " + e.getMessage(), e);
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         log.info("Repository configuration exception. " + e.getMessage(), e);
+      }
+
+      return null;
    }
 
    public FtpCommand getCommand(String commandName)
