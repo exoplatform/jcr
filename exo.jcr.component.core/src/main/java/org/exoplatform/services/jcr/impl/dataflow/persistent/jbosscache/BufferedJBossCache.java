@@ -684,11 +684,11 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
     * @param key
     * @param value
     */
-   public void addToList(Fqn fqn, String key, Object value)
+   public void addToList(Fqn fqn, String key, Object value, boolean forceModify)
    {
       CompressedChangesBuffer changesContainer = getChangesBufferSafe();
-      changesContainer.add(new AddToListContainer(fqn, key, value, parentCache, changesContainer.getHistoryIndex(),
-         local.get(), useExpiration, expirationTimeOut));
+      changesContainer.add(new AddToListContainer(fqn, key, value, parentCache, forceModify, changesContainer
+         .getHistoryIndex(), local.get(), useExpiration, expirationTimeOut));
    }
 
    /**
@@ -861,13 +861,16 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       private final Serializable key;
 
       private final Object value;
+      
+      private final boolean forceModify;
 
       public AddToListContainer(Fqn fqn, Serializable key, Object value, Cache<Serializable, Object> cache,
-         int historicalIndex, boolean local, boolean useExpiration, long timeOut)
+         boolean forceModify, int historicalIndex, boolean local, boolean useExpiration, long timeOut)
       {
          super(fqn, ChangesType.PUT_KEY, cache, historicalIndex, local, useExpiration, timeOut);
          this.key = key;
          this.value = value;
+         this.forceModify = forceModify;
       }
 
       @Override
@@ -879,7 +882,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
          Object existingObject = cache.get(getFqn(), key);
          Set<Object> newSet = new HashSet<Object>();
          // if set found of null, perform add
-         if (existingObject instanceof Set || existingObject == null)
+         if (existingObject instanceof Set || (existingObject == null && forceModify))
          {
             // set found
             if (existingObject instanceof Set)
@@ -896,7 +899,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
             setCacheLocalMode();
             cache.put(fqn, key, newSet);
          }
-         else
+         else if (existingObject != null)
          {
             LOG.error("Unexpected object found by FQN:" + getFqn() + " and key:" + key + ". Expected Set, but found:"
                + existingObject.getClass().getName());
