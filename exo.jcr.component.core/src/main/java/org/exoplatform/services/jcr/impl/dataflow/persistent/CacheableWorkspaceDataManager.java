@@ -35,6 +35,7 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.transaction.TransactionService;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -469,7 +470,6 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       }
    }
 
-
    /**
     * {@inheritDoc}
     */
@@ -530,14 +530,19 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
       if (skipVersionStorage)
       {
+         List<PropertyData> result = new ArrayList<PropertyData>();
+
          Iterator<PropertyData> iterator = props.iterator();
          while (iterator.hasNext())
          {
-            if (iterator.next().getQPath().isDescendantOf(Constants.JCR_VERSION_STORAGE_PATH))
+            PropertyData prop = iterator.next();
+            if (!prop.getQPath().isDescendantOf(Constants.JCR_VERSION_STORAGE_PATH))
             {
-               iterator.remove();
+               result.add(prop);
             }
          }
+
+         return result;
       }
 
       return props;
@@ -672,11 +677,10 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     * @throws RepositoryException
     *           Repository error
     */
-   protected List<PropertyData> getReferencedPropertiesData(String identifier)
-      throws RepositoryException
+   protected List<PropertyData> getReferencedPropertiesData(String identifier) throws RepositoryException
    {
       List<PropertyData> refProps = null;
-      if (!cache.isEnabled())
+      if (cache.isEnabled())
       {
          refProps = cache.getReferencedProperties(identifier);
          if (refProps != null)

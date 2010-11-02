@@ -761,7 +761,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
             {
                try
                {
-                  if (new String(vdata.getAsByteArray()).equals(identifier))
+                  if (new String(vdata.getAsByteArray(), Constants.DEFAULT_ENCODING).equals(identifier))
                   {
                      props.add(prop);
                   }
@@ -1133,7 +1133,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
             String nodeIdentifier = null;
             try
             {
-               nodeIdentifier = new String(vdata.getAsByteArray());
+               nodeIdentifier = new String(vdata.getAsByteArray(), Constants.DEFAULT_ENCODING);
             }
             catch (IllegalStateException e)
             {
@@ -1149,7 +1149,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
             if (set != null)
             {
                set.add(prop.getIdentifier());
-               cache.put(refFqn, ITEM_LIST, set);
+               cache.addToList(refFqn, ITEM_LIST, prop.getIdentifier());
             }
          }
       }
@@ -1210,8 +1210,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
                Set<String> set = (Set<String>)cache.get(refFqn, ITEM_LIST);
                if (set != null && set.contains(prop.getIdentifier()))
                {
-                  set.remove(prop.getIdentifier());
-                  cache.put(refFqn, ITEM_LIST, set);
+                  cache.removeFromList(refFqn, ITEM_LIST, prop.getIdentifier());
                }
             }
          }
