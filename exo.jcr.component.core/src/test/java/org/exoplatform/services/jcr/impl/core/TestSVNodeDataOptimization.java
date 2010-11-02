@@ -16,6 +16,17 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
+import org.exoplatform.services.jcr.JcrImplBaseTest;
+import org.exoplatform.services.jcr.config.CacheEntry;
+import org.exoplatform.services.jcr.config.ContainerEntry;
+import org.exoplatform.services.jcr.config.LockManagerEntry;
+import org.exoplatform.services.jcr.config.LockPersisterEntry;
+import org.exoplatform.services.jcr.config.QueryHandlerEntry;
+import org.exoplatform.services.jcr.config.SimpleParameterEntry;
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.config.WorkspaceInitializerEntry;
+import org.exoplatform.services.jcr.datamodel.NodeData;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
@@ -24,14 +35,6 @@ import java.util.List;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
-
-import org.exoplatform.services.jcr.JcrImplBaseTest;
-import org.exoplatform.services.jcr.config.ContainerEntry;
-import org.exoplatform.services.jcr.config.QueryHandlerEntry;
-import org.exoplatform.services.jcr.config.SimpleParameterEntry;
-import org.exoplatform.services.jcr.config.WorkspaceEntry;
-import org.exoplatform.services.jcr.config.WorkspaceInitializerEntry;
-import org.exoplatform.services.jcr.datamodel.NodeData;
 
 /**
  * Created by The eXo Platform SAS.
@@ -196,9 +199,34 @@ public class TestSVNodeDataOptimization
       ws1back.setAccessManager(ws1e.getAccessManager());
       ws1back.setAutoInitializedRootNt(ws1e.getAutoInitializedRootNt());
       ws1back.setAutoInitPermissions(ws1e.getAutoInitPermissions());
-      ws1back.setCache(ws1e.getCache());
+      
+      CacheEntry cacheConfig = new CacheEntry(new ArrayList(ws1e.getCache().getParameters()));
+      if (cacheConfig.getParameterValue("jbosscache-cluster-name", null) != null)
+      {
+         // Ensure that the cluster name is unique
+         cacheConfig.putParameterValue("jbosscache-cluster-name", "JCR-cluster-" + ws1back.getUniqueName());
+      }
+      cacheConfig.setEnabled(ws1e.getCache().getEnabled());
+      cacheConfig.setType(ws1e.getCache().getType());
+      ws1back.setCache(cacheConfig);
       ws1back.setContainer(ws1e.getContainer());
-      ws1back.setLockManager(ws1e.getLockManager());
+      LockManagerEntry lockManagerConfig = new LockManagerEntry();
+      lockManagerConfig.setParameters(new ArrayList(ws1e.getLockManager().getParameters()));
+      if (lockManagerConfig.getParameterValue("jbosscache-cluster-name", null) != null)
+      {
+         // Ensure that the cluster name is unique
+         lockManagerConfig.putParameterValue("jbosscache-cluster-name", "JCR-cluster-locks-" + ws1back.getUniqueName());
+      }
+      lockManagerConfig.setType(ws1e.getLockManager().getType());
+      lockManagerConfig.setTimeout(ws1e.getLockManager().getTimeout());
+      if (ws1e.getLockManager().getPersister() != null)
+      {
+         LockPersisterEntry LockPersisterConfig = new LockPersisterEntry();
+         LockPersisterConfig.setParameters(new ArrayList(ws1e.getLockManager().getPersister().getParameters()));
+         LockPersisterConfig.setType(ws1e.getLockManager().getPersister().getType());
+         lockManagerConfig.setPersister(LockPersisterConfig);         
+      }
+      ws1back.setLockManager(lockManagerConfig);
 
       // Initializer
       WorkspaceInitializerEntry wiEntry = new WorkspaceInitializerEntry();

@@ -58,13 +58,19 @@ public class ExoJBossCacheFactory<K, V>
 
    public static final String JGROUPS_MUX_ENABLED = "jgroups-multiplexer-stack";
 
+   /**
+    * Keep only one instance of the {@link JChannelFactory} to prevent creating several times the
+    * same multiplexer stack
+    */
+   private static final JChannelFactory CHANNEL_FACTORY = new JChannelFactory();
+
    private final TemplateConfigurationHelper configurationHelper;
 
    private final TransactionManager transactionManager;
 
    private ConfigurationManager configurationManager;
 
-   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.ExoJBossCacheFactory");
+   private static final Log log = ExoLogger.getLogger("exo.jcr.component.core.ExoJBossCacheFactory");
 
    /**
     * Creates ExoJbossCacheFactory with provided configuration transaction managers.
@@ -143,16 +149,14 @@ public class ExoJBossCacheFactory<K, V>
             if (jgroupsConfigurationFilePath != null)
             {
                // Create and inject multiplexer factory
-               JChannelFactory muxFactory = new JChannelFactory();
-               muxFactory.setMultiplexerConfig(configurationManager.getResource(jgroupsConfigurationFilePath));
-               cache.getConfiguration().getRuntimeConfig().setMuxChannelFactory(muxFactory);
+               CHANNEL_FACTORY.setMultiplexerConfig(configurationManager.getResource(jgroupsConfigurationFilePath));
+               cache.getConfiguration().getRuntimeConfig().setMuxChannelFactory(CHANNEL_FACTORY);
                log.info("Multiplexer stack successfully enabled for the cache.");
             }
          }
          catch (Exception e)
          {
             // exception occurred setting mux factory
-            e.printStackTrace();
             throw new RepositoryConfigurationException("Error setting multiplexer configuration.", e);
          }
       }
