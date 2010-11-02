@@ -18,14 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CountDownLatch;
-
-import javax.jcr.RepositoryException;
-import javax.transaction.TransactionManager;
-
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.dataflow.persistent.MandatoryItemsPersistenceListener;
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
@@ -36,11 +28,21 @@ import org.exoplatform.services.jcr.datamodel.NullNodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache;
 import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.transaction.TransactionService;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CountDownLatch;
+
+import javax.jcr.RepositoryException;
+import javax.transaction.TransactionManager;
 
 /**
  * Created by The eXo Platform SAS. 
@@ -73,7 +75,6 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    protected class DataRequest
    {
       /**
-      /**
        * GET_NODES type.
        */
       static public final int GET_NODES = 1;
@@ -97,6 +98,11 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
        * GET_LIST_PROPERTIES type.
        */
       static private final int GET_LIST_PROPERTIES = 5;
+
+      /**
+       * GET_REFERENCES type.
+       */
+      static public final int GET_REFERENCES = 6;
 
       /**
        * Request type.
@@ -520,7 +526,21 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    public List<PropertyData> getReferencesData(String identifier, boolean skipVersionStorage)
       throws RepositoryException
    {
-      return super.getReferencesData(identifier, skipVersionStorage);
+      List<PropertyData> props = getReferencedPropertiesData(identifier);
+
+      if (skipVersionStorage)
+      {
+         Iterator<PropertyData> iterator = props.iterator();
+         while (iterator.hasNext())
+         {
+            if (iterator.next().getQPath().isDescendantOf(Constants.JCR_VERSION_STORAGE_PATH))
+            {
+               iterator.remove();
+            }
+         }
+      }
+
+      return props;
    }
 
    /**
@@ -636,6 +656,55 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             }
          }
          return childNodes;
+      }
+      finally
+      {
+         request.done();
+      }
+   }
+
+   /**
+    * Get referenced properties data.
+    * 
+    * @param identifier
+    *          referenceable identifier
+    * @return List<PropertyData>
+    * @throws RepositoryException
+    *           Repository error
+    */
+   protected List<PropertyData> getReferencedPropertiesData(String identifier)
+      throws RepositoryException
+   {
+      List<PropertyData> refProps = null;
+      if (!cache.isEnabled())
+      {
+         refProps = cache.getReferencedProperties(identifier);
+         if (refProps != null)
+         {
+            return refProps;
+         }
+      }
+      final DataRequest request = new DataRequest(identifier, DataRequest.GET_REFERENCES);
+
+      try
+      {
+         request.start();
+         if (cache.isEnabled())
+         {
+            // Try first to get the value from the cache since a
+            // request could have been launched just before
+            refProps = cache.getReferencedProperties(identifier);
+            if (refProps != null)
+            {
+               return refProps;
+            }
+         }
+         refProps = super.getReferencesData(identifier, false);
+         if (cache.isEnabled())
+         {
+            cache.addReferencedProperties(identifier, refProps);
+         }
+         return refProps;
       }
       finally
       {

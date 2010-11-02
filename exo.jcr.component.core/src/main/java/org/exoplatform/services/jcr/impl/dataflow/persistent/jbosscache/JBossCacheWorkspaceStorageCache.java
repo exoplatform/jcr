@@ -18,19 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Set;
-
-import javax.jcr.RepositoryException;
-import javax.transaction.TransactionManager;
-
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
@@ -47,6 +34,7 @@ import org.exoplatform.services.jcr.datamodel.NullNodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
+import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
@@ -60,6 +48,21 @@ import org.jboss.cache.Fqn;
 import org.jboss.cache.Node;
 import org.jboss.cache.config.EvictionRegionConfig;
 import org.jboss.cache.eviction.ExpirationAlgorithmConfig;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Set;
+
+import javax.jcr.PropertyType;
+import javax.jcr.RepositoryException;
+import javax.transaction.TransactionManager;
 
 /**
  * Created by The eXo Platform SAS.<p/>
@@ -127,6 +130,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
 
    public static final String LOCKS = "$LOCKS".intern();
 
+   public static final String REFERENCE = "$REFERENCE".intern();
+
    public static final String ITEM_DATA = "$data".intern();
 
    public static final String ITEM_ID = "$id".intern();
@@ -136,6 +141,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
    protected final BufferedJBossCache cache;
 
    protected final Fqn<String> itemsRoot;
+
+   protected final Fqn<String> refRoot;
 
    protected final Fqn<String> nullItemsRoot;
 
@@ -336,6 +343,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
             JBOSSCACHE_EXPIRATION_DEFAULT));
 
       this.itemsRoot = Fqn.fromRelativeElements(rootFqn, ITEMS);
+      this.refRoot = Fqn.fromRelativeElements(rootFqn, REFERENCE);
       this.nullItemsRoot = Fqn.fromRelativeElements(rootFqn, NULL_ITEMS);
       this.childNodes = Fqn.fromRelativeElements(rootFqn, CHILD_NODES);
       this.childProps = Fqn.fromRelativeElements(rootFqn, CHILD_PROPS);
@@ -346,6 +354,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
       this.cache.start();
 
       createResidentNode(childNodes);
+      createResidentNode(refRoot);
       createResidentNode(childNodesList);
       createResidentNode(childProps);
       createResidentNode(childPropsList);
@@ -729,6 +738,89 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
    }
 
    /**
+    * {@inheritDoc}
+    */
+   public List<PropertyData> getReferencedProperties(String identifier)
+   {
+      // get set of property uuids
+      final Set<String> set = (Set<String>)cache.get(makeRefFqn(identifier), ITEM_LIST);
+      if (set != null)
+      {
+         final List<PropertyData> props = new ArrayList<PropertyData>();
+
+         for (String propId : set)
+         {
+            PropertyData prop = (PropertyData)cache.get(makeItemFqn(propId), ITEM_DATA);
+            if (prop == null)
+            {
+               return null;
+            }
+
+            // add property as many times as has referenced values
+            for (ValueData vdata : prop.getValues())
+            {
+               try
+               {
+                  if (new String(vdata.getAsByteArray()).equals(identifier))
+                  {
+                     props.add(prop);
+                  }
+               }
+               catch (IllegalStateException e)
+               {
+                  // Do not nothing.
+               }
+               catch (IOException e)
+               {
+                  // Do not nothing.
+               }
+            }
+         }
+         return props;
+      }
+      else
+      {
+         return null;
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void addReferencedProperties(String identifier, List<PropertyData> refProperties)
+   {
+      boolean inTransaction = cache.isTransactionActive();
+      try
+      {
+         if (!inTransaction)
+         {
+            cache.beginTransaction();
+         }
+
+         cache.setLocal(true);
+
+         // remove previous all
+         cache.removeNode(makeRefFqn(identifier));
+
+         Set<Object> set = new HashSet<Object>();
+         for (PropertyData prop : refProperties)
+         {
+            putProperty(prop, ModifyChildOption.NOT_MODIFY);
+            set.add(prop.getIdentifier());
+         }
+         cache.put(makeRefFqn(identifier), ITEM_LIST, set);
+      }
+      finally
+      {
+         cache.setLocal(false);
+         if (!inTransaction)
+         {
+            cache.commitTransaction();
+         }
+      }
+   }
+
+   /**
     * Internal get child properties.
     *
     * @param parentId String
@@ -771,7 +863,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
    public long getSize()
    {
       // Total number of JBC nodes in the cache - the total amount of resident nodes
-      return numNodes(cache.getNode(rootFqn)) - 6;
+      return numNodes(cache.getNode(rootFqn)) - 7;
    }
 
    /**
@@ -809,6 +901,17 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
    protected Fqn<String> makeItemFqn(String itemId)
    {
       return Fqn.fromRelativeElements(itemsRoot, itemId);
+   }
+
+   /**
+    * Make Item absolute Fqn, i.e. /$REF/itemID.
+    *
+    * @param itemId String
+    * @return Fqn
+    */
+   protected Fqn<String> makeRefFqn(String itemId)
+   {
+      return Fqn.fromRelativeElements(refRoot, itemId);
    }
 
    /**
@@ -1022,6 +1125,35 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
 
       get(prop.getParentIdentifier(), prop.getQPath().getEntries()[prop.getQPath().getEntries().length - 1]);
 
+      // add referenced property
+      if (prop.getType() == PropertyType.REFERENCE)
+      {
+         for (ValueData vdata : prop.getValues())
+         {
+            String nodeIdentifier = null;
+            try
+            {
+               nodeIdentifier = new String(vdata.getAsByteArray());
+            }
+            catch (IllegalStateException e)
+            {
+               // Do nothing. Never happens.
+            }
+            catch (IOException e)
+            {
+               // Do nothing. Never happens.
+            }
+
+            Fqn refFqn = makeRefFqn(nodeIdentifier);
+            Set<String> set = (Set<String>)cache.get(refFqn, ITEM_LIST);
+            if (set != null)
+            {
+               set.add(prop.getIdentifier());
+               cache.put(refFqn, ITEM_LIST, set);
+            }
+         }
+      }
+
       // add in ITEMS
       return (PropertyData)cache.put(makeItemFqn(prop.getIdentifier()), ITEM_DATA, prop);
    }
@@ -1054,6 +1186,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
             // remove from CHILD_PROPS_LIST as parent
             cache.removeNode(makeChildListFqn(childPropsList, item.getIdentifier()));
          }
+
+         cache.removeNode(makeRefFqn(item.getIdentifier()));
       }
       else
       {
@@ -1064,6 +1198,23 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
          // remove from CHILD_PROPS_LIST
          cache.removeFromList(makeChildListFqn(childPropsList, item.getParentIdentifier()), ITEM_LIST, item
             .getIdentifier());
+
+         // remove referenced property
+         PropertyData prop = (PropertyData)item;
+         if (prop.getType() == PropertyType.REFERENCE)
+         {
+            // value data is empty on delete, so will try to remove from all lists
+            for (Object child : cache.getChildrenNames(refRoot))
+            {
+               Fqn refFqn = makeRefFqn((String)child);
+               Set<String> set = (Set<String>)cache.get(refFqn, ITEM_LIST);
+               if (set != null && set.contains(prop.getIdentifier()))
+               {
+                  set.remove(prop.getIdentifier());
+                  cache.put(refFqn, ITEM_LIST, set);
+               }
+            }
+         }
       }
       // remove from ITEMS
       cache.removeNode(makeItemFqn(item.getIdentifier()));

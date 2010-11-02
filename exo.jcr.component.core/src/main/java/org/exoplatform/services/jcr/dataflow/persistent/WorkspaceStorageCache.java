@@ -108,6 +108,26 @@ public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
    List<PropertyData> listChildProperties(final NodeData parentData);
 
    /**
+    * Get referenced properties.
+    * 
+    * @param identifier
+    *          referenceable id
+    * @return
+    *          list of REFERENCE properties 
+    */
+   List<PropertyData> getReferencedProperties(String identifier);
+
+   /**
+    * Add referenced properties.
+    * 
+    * @param identifier
+    *          referenceable id
+    * @param refProperties
+    *          list of properties
+    */
+   void addReferencedProperties(String identifier, List<PropertyData> refProperties);
+
+   /**
     * Adds (or updates if found) ItemData.
     * 
     * @param item

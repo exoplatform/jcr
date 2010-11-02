@@ -25,7 +25,6 @@ import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.datamodel.NullNodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -385,6 +384,15 @@ public class TestCacheableWorkspaceDataManager extends TestCase
       public int getChildNodesCount(NodeData parent)
       {
          return childNodes != null ? childNodes.size() : -1;
+      }
+
+      public List<PropertyData> getReferencedProperties(String identifier)
+      {
+         return null;
+      }
+
+      public void addReferencedProperties(String identifier, List<PropertyData> refProperties)
+      {
       }
 
    }
