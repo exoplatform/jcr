@@ -18,8 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock;
 
-import org.exoplatform.services.jcr.access.SystemIdentity;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -198,7 +196,7 @@ public class LockData
     */
    public boolean isLockHolder(String sessionId)
    {
-      return lockHolders.contains(sessionId) || SystemIdentity.SYSTEM.equals(sessionId);
+      return lockHolders.contains(sessionId);
    }
 
    /**
