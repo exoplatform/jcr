@@ -19,9 +19,6 @@
 package org.exoplatform.services.jcr.datamodel;
 
 import org.exoplatform.services.jcr.access.AccessControlList;
-import org.exoplatform.services.jcr.dataflow.ItemDataVisitor;
-
-import javax.jcr.RepositoryException;
 
 /**
  * This class is used to represent <code>null</code> value, it is designed to be used  
@@ -30,33 +27,40 @@ import javax.jcr.RepositoryException;
  * @author <a href="anatoliy.bazko@exoplatform.org">Anatoliy Bazko</a>
  * @version $Id: NullNodeData.java 111 2010-11-11 11:11:11Z tolusha $
  */
-public class NullNodeData implements NodeData
+public class NullNodeData extends NullItemData implements NodeData
 {
-
-   private final String id;
-
-   private final String parentId;
-
-   private final QPath path;
-
    public NullNodeData(NodeData parentData, QPathEntry name)
    {
-      this.parentId = parentData.getIdentifier();
-      this.path = QPath.makeChildPath(parentData.getQPath(), name);
-      this.id = parentId + "$" + name.asString();
+      super(parentData, name);
+   }
+
+   /** 
+    * This constructor must never be used for null nodes placed in cache. Only for returned values.
+    * 
+    * @param parentId
+    * @param name
+    */
+   public NullNodeData(String parentId, QPathEntry name)
+   {
+      super(parentId, name);
    }
 
    public NullNodeData(String id)
    {
-      this.parentId = null;
-      this.path = new QPath(new QPathEntry[]{new QPathEntry(null, null, 0)});
-      this.id = id;
+      super(id);
    }
 
    /**
     * {@inheritDoc}
     */
-   @Override
+   public boolean isNode()
+   {
+      return true;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public AccessControlList getACL()
    {
       return null;
@@ -65,7 +69,6 @@ public class NullNodeData implements NodeData
    /**
     * {@inheritDoc}
     */
-   @Override
    public InternalQName[] getMixinTypeNames()
    {
       return null;
@@ -74,7 +77,6 @@ public class NullNodeData implements NodeData
    /**
     * {@inheritDoc}
     */
-   @Override
    public int getOrderNumber()
    {
       return 0;
@@ -83,63 +85,9 @@ public class NullNodeData implements NodeData
    /**
     * {@inheritDoc}
     */
-   @Override
    public InternalQName getPrimaryTypeName()
    {
       return null;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public void accept(ItemDataVisitor visitor) throws RepositoryException
-   {
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public String getIdentifier()
-   {
-      return id;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public String getParentIdentifier()
-   {
-      return parentId;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public int getPersistedVersion()
-   {
-      return 0;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public QPath getQPath()
-   {
-      return path;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public boolean isNode()
-   {
-      return true;
    }
 
 }

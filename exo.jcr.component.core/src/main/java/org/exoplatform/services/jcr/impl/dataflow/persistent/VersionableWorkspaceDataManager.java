@@ -28,7 +28,7 @@ import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.datamodel.NullNodeData;
+import org.exoplatform.services.jcr.datamodel.NullItemData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -159,7 +159,7 @@ public class VersionableWorkspaceDataManager extends ACLInheritanceSupportedWork
    {
       // from cache at first
       ItemData cdata = persistentManager.getCachedItemData(identifier);
-      if (cdata != null && !(cdata instanceof NullNodeData))
+      if (cdata != null && !(cdata instanceof NullItemData))
       {
          return super.getItemData(identifier);
       }
@@ -168,7 +168,7 @@ public class VersionableWorkspaceDataManager extends ACLInheritanceSupportedWork
       {
          // search in System cache for /jcr:system nodes only
          cdata = versionDataManager.persistentManager.getCachedItemData(identifier);
-         if (cdata != null && !(cdata instanceof NullNodeData))
+         if (cdata != null && !(cdata instanceof NullItemData))
          {
             if (isSystemDescendant(cdata.getQPath()))
             {
@@ -187,7 +187,7 @@ public class VersionableWorkspaceDataManager extends ACLInheritanceSupportedWork
       {
          return data;
       }
-      
+
       else if (!this.equals(versionDataManager))
       {
          // try from version storage if not the same

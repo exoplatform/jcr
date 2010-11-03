@@ -30,6 +30,7 @@ import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.NullItemData;
 import org.exoplatform.services.jcr.datamodel.NullNodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
@@ -62,6 +63,7 @@ import java.util.Set;
 
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
+import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
 /**
@@ -144,8 +146,6 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
 
    protected final Fqn<String> refRoot;
 
-   protected final Fqn<String> nullItemsRoot;
-
    protected final Fqn<String> childNodes;
 
    protected final Fqn<String> childProps;
@@ -210,7 +210,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
             do
             {
                String itemId = (String)cache.get(makeChildFqn(root, parentId, (String)childs.next()), ITEM_ID);
-               if (itemId != null)
+               if (itemId != null && !itemId.equals(NullItemData.NULL_ID))
                {
                   n = (T)cache.get(makeItemFqn(itemId), ITEM_DATA);
                }
@@ -344,7 +344,6 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
 
       this.itemsRoot = Fqn.fromRelativeElements(rootFqn, ITEMS);
       this.refRoot = Fqn.fromRelativeElements(rootFqn, REFERENCE);
-      this.nullItemsRoot = Fqn.fromRelativeElements(rootFqn, NULL_ITEMS);
       this.childNodes = Fqn.fromRelativeElements(rootFqn, CHILD_NODES);
       this.childProps = Fqn.fromRelativeElements(rootFqn, CHILD_PROPS);
       this.childNodesList = Fqn.fromRelativeElements(rootFqn, CHILD_NODES_LIST);
@@ -359,7 +358,6 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
       createResidentNode(childProps);
       createResidentNode(childPropsList);
       createResidentNode(itemsRoot);
-      createResidentNode(nullItemsRoot);
    }
 
    /**
@@ -421,6 +419,13 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
     */
    public void put(ItemData item)
    {
+      // There is different commit processing for NullNodeData and ordinary ItemData
+      if (item instanceof NullItemData)
+      {
+         putNullItem((NullItemData)item);
+         return;
+      }
+
       boolean inTransaction = cache.isTransactionActive();
       try
       {
@@ -430,20 +435,13 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
          }
          cache.setLocal(true);
 
-         if (item instanceof NullNodeData)
+         if (item.isNode())
          {
-            putNullNode((NullNodeData)item);
+            putNode((NodeData)item, ModifyChildOption.NOT_MODIFY);
          }
          else
          {
-            if (item.isNode())
-            {
-               putNode((NodeData)item, ModifyChildOption.NOT_MODIFY);
-            }
-            else
-            {
-               putProperty((PropertyData)item, ModifyChildOption.NOT_MODIFY);
-            }
+            putProperty((PropertyData)item, ModifyChildOption.NOT_MODIFY);
          }
       }
       finally
@@ -490,6 +488,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
                   // There was a problem with removing a list of samename siblings in on transaction,
                   // so putItemInBufferedCache(..) and updateInBufferedCache(..) used instead put(..) and update (..) methods.
                   ItemData prevItem = putItemInBufferedCache(state.getData());
+
                   if (prevItem != null && state.isNode())
                   {
                      // nodes reordered, if previous is null it's InvalidItemState case
@@ -542,6 +541,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
 
          cache.setLocal(true);
          // remove previous all (to be sure about consistency)
+         //TODO do we need remove node, while we can replace node?
          cache.removeNode(makeChildListFqn(childNodesList, parent.getIdentifier()));
 
          if (childs.size() > 0)
@@ -584,6 +584,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
          }
          cache.setLocal(true);
          // remove previous all (to be sure about consistency)
+         //TODO do we need remove node, while we can replace node?
          cache.removeNode(makeChildListFqn(childPropsList, parent.getIdentifier()));
          if (childs.size() > 0)
          {
@@ -618,17 +619,6 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
    public void addChildPropertiesList(NodeData parent, List<PropertyData> childProperties)
    {
       // TODO not implemented, will force read from DB
-      //      try
-      //      {
-      //         cache.beginTransaction();
-      //         cache.setLocal(true);
-      //
-      //      }
-      //      finally
-      //      {
-      //         cache.setLocal(false);
-      //         cache.commitTransaction();
-      //      }
    }
 
    /**
@@ -645,24 +635,45 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
    public ItemData get(String parentId, QPathEntry name, ItemType itemType)
    {
       String itemId = null;
-      if (itemType == ItemType.NODE || itemType == ItemType.UNKNOWN)
+
+      if (itemType == ItemType.UNKNOWN)
       {
-         // try as node first
+         // Try as node first.
+         itemId = (String)cache.get(makeChildFqn(childNodes, parentId, name), ITEM_ID);
+
+         if (itemId == null || itemId.equals(NullItemData.NULL_ID))
+         {
+            // node with such a name is not found or marked as not-exist, so check the properties
+            String propId = (String)cache.get(makeChildFqn(childProps, parentId, name), ITEM_ID);
+            if (propId != null)
+            {
+               itemId = propId;
+            }
+         }
+      }
+      else if (itemType == ItemType.NODE)
+      {
          itemId = (String)cache.get(makeChildFqn(childNodes, parentId, name), ITEM_ID);
       }
-
-      if (itemType == ItemType.PROPERTY || itemType == ItemType.UNKNOWN && itemId == null)
+      else
       {
-         // try as property
          itemId = (String)cache.get(makeChildFqn(childProps, parentId, name), ITEM_ID);
       }
 
       if (itemId != null)
       {
-         return getFromCacheById(itemId);
+         if (itemId.equals(NullItemData.NULL_ID))
+         {
+            // this NullNodeData object will not be placed at cache, so we can use unsafe constructor 
+            return new NullNodeData(parentId, name);
+         }
+         else
+         {
+            return get(itemId);
+         }
       }
 
-      return (ItemData)cache.get(makeNullItemFqn(parentId + "$" + name.getAsString(true)), ITEM_DATA);
+      return null;
    }
 
    /**
@@ -670,9 +681,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
     */
    public ItemData get(String id)
    {
-      ItemData data = getFromCacheById(id);
-
-      return data != null ? data : (ItemData)cache.get(makeNullItemFqn(id), ITEM_DATA);
+      return getFromCacheById(id);
    }
 
    /**
@@ -680,6 +689,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
     */
    public List<NodeData> getChildNodes(final NodeData parent)
    {
+      // empty Set<Object> marks that there is no child nodes
       // get list of children uuids
       final Set<Object> set =
          (Set<Object>)cache.get(makeChildListFqn(childNodesList, parent.getIdentifier()), ITEM_LIST);
@@ -690,7 +700,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
          for (Object child : set)
          {
             NodeData node = (NodeData)cache.get(makeItemFqn((String)child), ITEM_DATA);
-            if (node == null)
+
+            if (node == null || node instanceof NullItemData)
             {
                return null;
             }
@@ -915,17 +926,6 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
    }
 
    /**
-   * Make Item absolute Fqn, i.e. /$NULL_ITEMS/itemID.
-   *
-   * @param itemId String
-   * @return Fqn
-   */
-   protected Fqn<String> makeNullItemFqn(String itemId)
-   {
-      return Fqn.fromRelativeElements(nullItemsRoot, itemId);
-   }
-
-   /**
     * Make child Item absolute Fqn, i.e. /root/parentId/childName.
     *
     * @param root Fqn
@@ -968,6 +968,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
     */
    protected ItemData getFromCacheById(String id)
    {
+      // NullNodeData with id may be stored as ordinary NodeData or PropertyData
       return (ItemData)cache.get(makeItemFqn(id), ITEM_DATA);
    }
 
@@ -1010,15 +1011,6 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
     */
    protected ItemData putNode(NodeData node, ModifyChildOption modifyListsOfChild)
    {
-
-      // remove possible NullNodeData from cache
-      boolean local = cache.isLocal();
-      cache.setLocal(true);
-
-      removeNullNode(node);
-
-      cache.setLocal(local);
-
       // if not a root node
       if (node.getParentIdentifier() != null)
       {
@@ -1028,11 +1020,11 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
 
          if (modifyListsOfChild != ModifyChildOption.NOT_MODIFY)
          {
-            cache.addToList(makeChildListFqn(childNodesList, node.getParentIdentifier()), ITEM_LIST,
-               node.getIdentifier(), modifyListsOfChild == ModifyChildOption.FORCE_MODIFY);
+            cache.addToList(makeChildListFqn(childNodesList, node.getParentIdentifier()), ITEM_LIST, node
+               .getIdentifier(), modifyListsOfChild == ModifyChildOption.FORCE_MODIFY);
          }
-
       }
+
       // add in ITEMS
       return (ItemData)cache.put(makeItemFqn(node.getIdentifier()), ITEM_DATA, node);
    }
@@ -1041,35 +1033,48 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
     * Internal put NullNode.
     *
     * @param node, NodeData, new data to put in the cache
-    * @return ItemData, previous data or null
     */
-   protected ItemData putNullNode(NullNodeData node)
+   protected void putNullItem(NullItemData node)
    {
-      return (ItemData)cache.put(makeNullItemFqn(node.getIdentifier()), ITEM_DATA, node);
-   }
-
-   /**
-    * Removes NullNode from cache.
-    *
-    * @param item
-    *         that possible has corresponding NullNode in cache 
-    *          
-    */
-   protected void removeNullNode(ItemData item)
-   {
-      Fqn<String> fqn = makeNullItemFqn(item.getIdentifier());
-      if ((NullNodeData)cache.get(fqn, ITEM_DATA) != null)
+      boolean inTransaction = cache.isTransactionActive();
+      try
       {
-         cache.removeNode(fqn);
+         if (!inTransaction)
+         {
+            cache.beginTransaction();
+         }
+         cache.setLocal(true);
+
+         if (node.getQPath() == null)
+         {
+            //put in $ITEMS
+            cache.put(makeItemFqn(node.getIdentifier()), ITEM_DATA, node);
+         }
+         else
+         {
+            if (node.isNode())
+            {
+               // put in $CHILD_NODES
+               cache.put(makeChildFqn(childNodes, node.getParentIdentifier(), node.getQPath().getEntries()[node
+                  .getQPath().getEntries().length - 1]), ITEM_ID, node.getIdentifier());
+            }
+            else
+            {
+               // put in $CHILD_PROPERTIES
+               cache.put(makeChildFqn(childProps, node.getParentIdentifier(), node.getQPath().getEntries()[node
+                  .getQPath().getEntries().length - 1]), ITEM_ID, node.getIdentifier());
+            }
+         }
+      }
+      finally
+      {
+         cache.setLocal(false);
+         if (!inTransaction)
+         {
+            dedicatedTxCommit();
+         }
       }
 
-      fqn =
-         makeNullItemFqn(item.getParentIdentifier() + "$"
-            + item.getQPath().getEntries()[item.getQPath().getEntries().length - 1].getAsString(true));
-      if (cache.get(fqn, ITEM_DATA) != null)
-      {
-         cache.removeNode(fqn);
-      }
    }
 
    protected ItemData putNodeInBufferedCache(NodeData node, ModifyChildOption modifyListsOfChild)
@@ -1083,12 +1088,14 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
 
          if (modifyListsOfChild != ModifyChildOption.NOT_MODIFY)
          {
-            cache.addToList(makeChildListFqn(childNodesList, node.getParentIdentifier()), ITEM_LIST,
-               node.getIdentifier(), modifyListsOfChild == ModifyChildOption.FORCE_MODIFY);
+            cache.addToList(makeChildListFqn(childNodesList, node.getParentIdentifier()), ITEM_LIST, node
+               .getIdentifier(), modifyListsOfChild == ModifyChildOption.FORCE_MODIFY);
          }
       }
       // add in ITEMS
-      return (ItemData)cache.putInBuffer(makeItemFqn(node.getIdentifier()), ITEM_DATA, node);
+      // NullNodeData must never be returned inside internal cache operations. 
+      ItemData returnedData = (ItemData)cache.putInBuffer(makeItemFqn(node.getIdentifier()), ITEM_DATA, node);
+      return (returnedData instanceof NullItemData) ? null : returnedData;
    }
 
    /**
@@ -1099,15 +1106,6 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
     */
    protected PropertyData putProperty(PropertyData prop, ModifyChildOption modifyListsOfChild)
    {
-
-      // remove possible NullNodeData from cache
-      boolean local = cache.isLocal();
-      cache.setLocal(true);
-
-      removeNullNode(prop);
-
-      cache.setLocal(local);
-
       // add in CHILD_PROPS
       cache.put(makeChildFqn(childProps, prop.getParentIdentifier(), prop.getQPath().getEntries()[prop.getQPath()
          .getEntries().length - 1]), ITEM_ID, prop.getIdentifier());
@@ -1117,8 +1115,6 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
          cache.addToList(makeChildListFqn(childPropsList, prop.getParentIdentifier()), ITEM_LIST, prop.getIdentifier(),
             modifyListsOfChild == ModifyChildOption.FORCE_MODIFY);
       }
-
-      get(prop.getParentIdentifier(), prop.getQPath().getEntries()[prop.getQPath().getEntries().length - 1]);
 
       // add referenced property
       if (modifyListsOfChild != ModifyChildOption.NOT_MODIFY && prop.getType() == PropertyType.REFERENCE)
@@ -1145,7 +1141,9 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
       }
 
       // add in ITEMS
-      return (PropertyData)cache.put(makeItemFqn(prop.getIdentifier()), ITEM_DATA, prop);
+      // NullItemData must never be returned inside internal cache operations. 
+      ItemData returnedData = (ItemData)cache.put(makeItemFqn(prop.getIdentifier()), ITEM_DATA, prop);
+      return (returnedData instanceof NullItemData) ? null : (PropertyData)returnedData;
    }
 
    protected void removeItem(ItemData item)
@@ -1201,7 +1199,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
    protected void updateMixin(NodeData node)
    {
       NodeData prevData = (NodeData)cache.put(makeItemFqn(node.getIdentifier()), ITEM_DATA, node);
-      if (prevData != null)
+      // prevent update NullNodeData
+      if (prevData != null && !(prevData instanceof NullItemData))
       {
          // do update ACL if needed
          if (prevData.getACL() == null || !prevData.getACL().equals(node.getACL()))
@@ -1255,10 +1254,12 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
     */
    protected void updateInBuffer(final NodeData node, final NodeData prevNode)
    {
+      // I expect that NullNodeData will never update existing NodeData.
       // get previously cached NodeData and using its name remove child on the parent
       Fqn<String> prevFqn =
          makeChildFqn(childNodes, node.getParentIdentifier(), prevNode.getQPath().getEntries()[prevNode.getQPath()
             .getEntries().length - 1]);
+
       if (node.getIdentifier().equals(cache.getFromBuffer(prevFqn, ITEM_ID)))
       {
          // it's same-name siblings re-ordering, delete previous child
@@ -1268,6 +1269,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
          }
       }
 
+      // node and prevNode are not NullNodeDatas
       // update childs paths if index changed
       int nodeIndex = node.getQPath().getEntries()[node.getQPath().getEntries().length - 1].getIndex();
       int prevNodeIndex = prevNode.getQPath().getEntries()[prevNode.getQPath().getEntries().length - 1].getIndex();
@@ -1301,9 +1303,9 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
 
          // check is this descendant of prevRootPath
          QPath nodeQPath = data.getQPath();
-         if (nodeQPath.isDescendantOf(prevRootPath))
+         // NullNodeData's qPath==null;
+         if (nodeQPath != null && nodeQPath.isDescendantOf(prevRootPath))
          {
-
             //make relative path
             QPathEntry[] relativePath = null;
             try
@@ -1467,4 +1469,44 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
       NOT_MODIFY, MODIFY, FORCE_MODIFY
    }
 
+   /**
+          * Allows to commit the cache changes in a dedicated XA Tx in order to avoid potential
+          * deadlocks
+          */
+   private void dedicatedTxCommit()
+   {
+      // Ensure that the commit is done in a dedicated tx to avoid deadlock due
+      // to global XA Tx
+      TransactionManager tm = getTransactionManager();
+      Transaction tx = null;
+      try
+      {
+         if (tm != null)
+         {
+            try
+            {
+               tx = tm.suspend();
+            }
+            catch (Exception e)
+            {
+               LOG.warn("Cannot suspend the current transaction", e);
+            }
+         }
+         cache.commitTransaction();
+      }
+      finally
+      {
+         if (tx != null)
+         {
+            try
+            {
+               tm.resume(tx);
+            }
+            catch (Exception e)
+            {
+               LOG.warn("Cannot resume the current transaction", e);
+            }
+         }
+      }
+   }
 }
