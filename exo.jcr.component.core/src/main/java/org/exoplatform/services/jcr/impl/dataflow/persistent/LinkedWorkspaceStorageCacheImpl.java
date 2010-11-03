@@ -1064,6 +1064,21 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
       }
    }
 
+   /** 
+    * {@inheritDoc} 
+    */
+   public List<PropertyData> getReferencedProperties(String identifier)
+   {
+      return null;
+   }
+
+   /** 
+    * {@inheritDoc} 
+    */
+   public void addReferencedProperties(String identifier, List<PropertyData> refProperties)
+   {
+   }
+
    /**
     * {@inheritDoc}
     */

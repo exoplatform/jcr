@@ -338,6 +338,15 @@ public class TestCacheableWorkspaceDataManager extends TestCase
          return childProperties;
       }
 
+      public List<PropertyData> getReferencedProperties(String identifier)
+      {
+         return null;
+      }
+
+      public void addReferencedProperties(String identifier, List<PropertyData> refProperties)
+      {
+      }
+
       public long getSize()
       {
          return 0;

@@ -33,6 +33,7 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
+import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
@@ -46,6 +47,7 @@ import org.jboss.cache.Node;
 import org.jboss.cache.config.EvictionRegionConfig;
 import org.jboss.cache.eviction.ExpirationAlgorithmConfig;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,6 +58,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.transaction.TransactionManager;
 
@@ -114,6 +117,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
 
    public static final String LOCKS = "$LOCKS".intern();
 
+   public static final String REFERENCE = "$REFERENCE".intern();
+
    public static final String ITEM_DATA = "$data".intern();
 
    public static final String ITEM_ID = "$id".intern();
@@ -123,6 +128,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
    protected final BufferedJBossCache cache;
 
    protected final Fqn<String> itemsRoot;
+
+   protected final Fqn<String> refRoot;
 
    protected final Fqn<String> childNodes;
 
@@ -312,6 +319,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
             .getParameterTime(JBOSSCACHE_EXPIRATION, JBOSSCACHE_EXPIRATION_DEFAULT));
 
       this.itemsRoot = Fqn.fromElements(ITEMS);
+      this.refRoot = Fqn.fromElements(REFERENCE);
       this.childNodes = Fqn.fromElements(CHILD_NODES);
       this.childProps = Fqn.fromElements(CHILD_PROPS);
       this.childNodesList = Fqn.fromElements(CHILD_NODES_LIST);
@@ -325,6 +333,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
       createResidentNode(childProps);
       createResidentNode(childPropsList);
       createResidentNode(itemsRoot);
+      createResidentNode(refRoot);
    }
 
    /**
@@ -479,6 +488,89 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
          if (rollback)
          {
             cache.rollbackTransaction();
+         }
+      }
+   }
+
+   /** 
+    * {@inheritDoc} 
+    */
+   public List<PropertyData> getReferencedProperties(String identifier)
+   {
+      // get set of property uuids 
+      final Set<String> set = (Set<String>)cache.get(makeRefFqn(identifier), ITEM_LIST);
+      if (set != null)
+      {
+         final List<PropertyData> props = new ArrayList<PropertyData>();
+
+         for (String propId : set)
+         {
+            PropertyData prop = (PropertyData)cache.get(makeItemFqn(propId), ITEM_DATA);
+            if (prop == null)
+            {
+               return null;
+            }
+
+            // add property as many times as has referenced values 
+            for (ValueData vdata : prop.getValues())
+            {
+               try
+               {
+                  if (new String(vdata.getAsByteArray(), Constants.DEFAULT_ENCODING).equals(identifier))
+                  {
+                     props.add(prop);
+                  }
+               }
+               catch (IllegalStateException e)
+               {
+                  // Do not nothing. 
+               }
+               catch (IOException e)
+               {
+                  // Do not nothing. 
+               }
+            }
+         }
+         return props;
+      }
+      else
+      {
+         return null;
+      }
+   }
+
+   /** 
+    * {@inheritDoc} 
+    */
+   public void addReferencedProperties(String identifier, List<PropertyData> refProperties)
+   {
+      boolean inTransaction = cache.isTransactionActive();
+      try
+      {
+         if (!inTransaction)
+         {
+            cache.beginTransaction();
+         }
+
+         cache.setLocal(true);
+
+         // remove previous all 
+         cache.removeNode(makeRefFqn(identifier));
+
+         Set<Object> set = new HashSet<Object>();
+         for (PropertyData prop : refProperties)
+         {
+            putProperty(prop, ModifyChildOption.NOT_MODIFY);
+            set.add(prop.getIdentifier());
+         }
+         cache.put(makeRefFqn(identifier), ITEM_LIST, set);
+      }
+      finally
+      {
+         cache.setLocal(false);
+         if (!inTransaction)
+         {
+            cache.commitTransaction();
          }
       }
    }
@@ -735,7 +827,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
    public long getSize()
    {
       // Total number of JBC nodes in the cache - the total amount of resident nodes
-      return cache.getNumberOfNodes() - 5;
+      return cache.getNumberOfNodes() - 6;
    }
 
    /**
@@ -757,6 +849,17 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
    protected Fqn<String> makeItemFqn(String itemId)
    {
       return Fqn.fromRelativeElements(itemsRoot, itemId);
+   }
+
+   /** 
+    * Make Item absolute Fqn, i.e. /$REF/itemID. 
+    * 
+    * @param itemId String 
+    * @return Fqn 
+    */
+   protected Fqn<String> makeRefFqn(String itemId)
+   {
+      return Fqn.fromRelativeElements(refRoot, itemId);
    }
 
    /**
@@ -843,15 +946,12 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
          cache.put(
             makeChildFqn(childNodes, node.getParentIdentifier(), node.getQPath().getEntries()[node.getQPath()
                .getEntries().length - 1]), ITEM_ID, node.getIdentifier());
-         // if MODIFY and List present OR FORCE_MODIFY, then write
-         if ((modifyListsOfChild == ModifyChildOption.MODIFY && cache.getNode(makeChildListFqn(childNodesList,
-            node.getParentIdentifier())) != null)
-            || modifyListsOfChild == ModifyChildOption.FORCE_MODIFY)
+
+         if (modifyListsOfChild != ModifyChildOption.NOT_MODIFY)
          {
             cache.addToList(makeChildListFqn(childNodesList, node.getParentIdentifier()), ITEM_LIST,
-               node.getIdentifier());
+               node.getIdentifier(), modifyListsOfChild == ModifyChildOption.FORCE_MODIFY);
          }
-
       }
       // add in ITEMS
       return (ItemData)cache.put(makeItemFqn(node.getIdentifier()), ITEM_DATA, node);
@@ -866,13 +966,11 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
          cache.put(
             makeChildFqn(childNodes, node.getParentIdentifier(), node.getQPath().getEntries()[node.getQPath()
                .getEntries().length - 1]), ITEM_ID, node.getIdentifier());
-         // if MODIFY and List present OR FORCE_MODIFY, then write
-         if ((modifyListsOfChild == ModifyChildOption.MODIFY && cache.getNode(makeChildListFqn(childNodesList,
-            node.getParentIdentifier())) != null)
-            || modifyListsOfChild == ModifyChildOption.FORCE_MODIFY)
+
+         if (modifyListsOfChild != ModifyChildOption.NOT_MODIFY)
          {
             cache.addToList(makeChildListFqn(childNodesList, node.getParentIdentifier()), ITEM_LIST,
-               node.getIdentifier());
+               node.getIdentifier(), modifyListsOfChild == ModifyChildOption.FORCE_MODIFY);
          }
       }
       // add in ITEMS
@@ -891,13 +989,37 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
       cache.put(
          makeChildFqn(childProps, prop.getParentIdentifier(),
             prop.getQPath().getEntries()[prop.getQPath().getEntries().length - 1]), ITEM_ID, prop.getIdentifier());
-      // if MODIFY and List present OR FORCE_MODIFY, then write
-      if ((modifyListsOfChild == ModifyChildOption.MODIFY && cache.getNode(makeChildListFqn(childPropsList,
-         prop.getParentIdentifier())) != null)
-         || modifyListsOfChild == ModifyChildOption.FORCE_MODIFY)
+
+      if (modifyListsOfChild != ModifyChildOption.NOT_MODIFY)
       {
-         cache.addToList(makeChildListFqn(childPropsList, prop.getParentIdentifier()), ITEM_LIST, prop.getIdentifier());
+         cache.addToList(makeChildListFqn(childPropsList, prop.getParentIdentifier()), ITEM_LIST, prop.getIdentifier(),
+            modifyListsOfChild == ModifyChildOption.FORCE_MODIFY);
       }
+
+      // add referenced property 
+      if (modifyListsOfChild != ModifyChildOption.NOT_MODIFY && prop.getType() == PropertyType.REFERENCE)
+      {
+         for (ValueData vdata : prop.getValues())
+         {
+            String nodeIdentifier = null;
+            try
+            {
+               nodeIdentifier = new String(vdata.getAsByteArray(), Constants.DEFAULT_ENCODING);
+            }
+            catch (IllegalStateException e)
+            {
+               // Do nothing. Never happens. 
+            }
+            catch (IOException e)
+            {
+               // Do nothing. Never happens. 
+            }
+
+            cache.addToList(makeRefFqn(nodeIdentifier), ITEM_LIST, prop.getIdentifier(),
+               modifyListsOfChild == ModifyChildOption.FORCE_MODIFY);
+         }
+      }
+
       // add in ITEMS
       return (PropertyData)cache.put(makeItemFqn(prop.getIdentifier()), ITEM_DATA, prop);
    }
@@ -930,6 +1052,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
             // remove from CHILD_PROPS_LIST as parent
             cache.removeNode(makeChildListFqn(childPropsList, item.getIdentifier()));
          }
+
+         cache.removeNode(makeRefFqn(item.getIdentifier()));
       }
       else
       {

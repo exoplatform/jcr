@@ -18,14 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache;
 
-import java.io.Serializable;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.transaction.TransactionManager;
-
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.jboss.cache.Cache;
@@ -41,6 +33,14 @@ import org.jboss.cache.config.Configuration;
 import org.jboss.cache.eviction.ExpirationAlgorithmConfig;
 import org.jboss.cache.interceptors.base.CommandInterceptor;
 import org.jgroups.Address;
+
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.transaction.TransactionManager;
 
 /**
  * Decorator over the JBossCache that stores changes in buffer, then sorts and applies to JBossCache.
@@ -650,11 +650,11 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
     * @param key
     * @param value
     */
-   public void addToList(Fqn fqn, String key, Object value)
+   public void addToList(Fqn fqn, String key, Object value, boolean forceModify)
    {
       CompressedChangesBuffer changesContainer = getChangesBufferSafe();
-      changesContainer.add(new AddToListContainer(fqn, key, value, parentCache, changesContainer.getHistoryIndex(),
-         local.get(), useExpiration, expirationTimeOut));
+      changesContainer.add(new AddToListContainer(fqn, key, value, parentCache, forceModify, changesContainer
+         .getHistoryIndex(), local.get(), useExpiration, expirationTimeOut));
    }
 
    /**
@@ -828,12 +828,15 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
 
       private final Object value;
 
+      private final boolean forceModify;
+
       public AddToListContainer(Fqn fqn, Serializable key, Object value, Cache<Serializable, Object> cache,
-         int historicalIndex, boolean local, boolean useExpiration, long timeOut)
+         boolean forceModify, int historicalIndex, boolean local, boolean useExpiration, long timeOut)
       {
          super(fqn, ChangesType.PUT_KEY, cache, historicalIndex, local, useExpiration, timeOut);
          this.key = key;
          this.value = value;
+         this.forceModify = forceModify;
       }
 
       @Override
@@ -844,8 +847,8 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
          // object found by FQN and key;
          Object existingObject = cache.get(getFqn(), key);
          Set<Object> newSet = new HashSet<Object>();
-         // if set found of null, perform add
-         if (existingObject instanceof Set || existingObject == null)
+         // if set found or null, perform add
+         if (existingObject instanceof Set || (existingObject == null && forceModify))
          {
             // set found
             if (existingObject instanceof Set)
@@ -862,7 +865,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
             setCacheLocalMode();
             cache.put(fqn, key, newSet);
          }
-         else
+         else if (existingObject != null)
          {
             LOG.error("Unexpected object found by FQN:" + getFqn() + " and key:" + key + ". Expected Set, but found:"
                + existingObject.getClass().getName());
