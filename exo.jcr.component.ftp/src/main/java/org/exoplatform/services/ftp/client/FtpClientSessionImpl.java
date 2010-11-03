@@ -329,6 +329,10 @@ public class FtpClientSessionImpl implements FtpClientSession
 
    public Session getSession(String workspaceName) throws Exception
    {
+      if (ftpServer.getRepository() == null)
+      {
+         throw new RepositoryException("Repository can not be retrieved.");
+      }
       Session curSession = sessionFactory.getSession(workspaceName, ftpServer.getRepository());
       curSession.refresh(false);
       return curSession;

@@ -111,6 +111,10 @@ public abstract class FtpCommandImpl implements FtpCommand
       {
          if (newPath.size() == 0)
          {
+            if (clientSession().getFtpServer().getRepository() == null)
+            {
+               throw new RepositoryException("Repository can not be retrieved.");
+            }
             String[] workspaces = clientSession().getFtpServer().getRepository().getWorkspaceNames();
             for (int i = 0; i < workspaces.length; i++)
             {
