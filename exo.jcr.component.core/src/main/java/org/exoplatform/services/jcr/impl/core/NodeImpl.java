@@ -2401,7 +2401,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          throw new LockException("The node not locked " + getPath());
       }
 
-      if (!session.getLockManager().isLockHolder(this.nodeData()))
+      if (!session.getLockManager().isLockHolder(this))
       {
          throw new LockException("There are no permission to unlock the node " + getPath());
       }
