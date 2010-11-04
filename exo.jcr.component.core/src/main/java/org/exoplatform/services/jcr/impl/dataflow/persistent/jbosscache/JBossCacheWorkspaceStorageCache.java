@@ -762,7 +762,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
          for (String propId : set)
          {
             PropertyData prop = (PropertyData)cache.get(makeItemFqn(propId), ITEM_DATA);
-            if (prop == null)
+            if (prop == null || prop instanceof NullItemData)
             {
                return null;
             }
@@ -849,7 +849,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
          for (Object child : set)
          {
             PropertyData prop = (PropertyData)cache.get(makeItemFqn((String)child), ITEM_DATA);
-            if (prop == null)
+            if (prop == null || prop instanceof NullItemData)
             {
                return null;
             }

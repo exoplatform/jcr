@@ -27,7 +27,7 @@ import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.datamodel.NullNodeData;
+import org.exoplatform.services.jcr.datamodel.NullItemData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -43,10 +43,10 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.WeakHashMap;
+import java.util.Map.Entry;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -961,7 +961,7 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache
       if (enabled && item != null)
       {
 
-         if (item instanceof NullNodeData)
+         if (item instanceof NullItemData)
          {
             // skip null values
             return;
