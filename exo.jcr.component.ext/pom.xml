@@ -141,7 +141,6 @@
       <testResource>
         <directory>src/test/resources</directory>
         <includes>
-          <include>**/*.pdf</include>
           <include>**/*.xml</include>
           <include>**/*.xls</include>
           <include>**/*.groovy</include>

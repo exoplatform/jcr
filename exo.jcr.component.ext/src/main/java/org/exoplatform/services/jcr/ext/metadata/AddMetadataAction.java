@@ -18,18 +18,6 @@
  */
 package org.exoplatform.services.jcr.ext.metadata;
 
-import java.io.InputStream;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.Map.Entry;
-
-import javax.jcr.PathNotFoundException;
-import javax.jcr.Value;
-import javax.jcr.ValueFactory;
-import javax.jcr.ValueFormatException;
-
 import org.apache.commons.chain.Context;
 import org.exoplatform.commons.utils.QName;
 import org.exoplatform.container.ExoContainer;
@@ -46,6 +34,18 @@ import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.PropertyImpl;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+
+import java.io.InputStream;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.Map.Entry;
+
+import javax.jcr.PathNotFoundException;
+import javax.jcr.Value;
+import javax.jcr.ValueFactory;
+import javax.jcr.ValueFormatException;
 
 /**
  * Created by The eXo Platform SAS .
@@ -102,12 +102,6 @@ public class AddMetadataAction implements Action
          else
          {
             return false;
-         }
-
-         // remove old "dc:elementSet" properties
-         if (parent.isNodeType("dc:elementSet"))
-         {
-            parent.removeMixin("dc:elementSet");
          }
 
          if (!parent.isNodeType("dc:elementSet"))
