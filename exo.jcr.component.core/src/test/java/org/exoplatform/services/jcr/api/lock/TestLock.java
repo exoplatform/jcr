@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.api.lock;
 
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
 
 import java.io.ByteArrayInputStream;
@@ -448,6 +449,57 @@ public class TestLock extends JcrAPIBaseTest
          session.save();
 
          node.lock(false, true);
+      }
+   }
+
+   public void testUnlockWithSystemSession() throws Exception
+   {
+      Node lockedNode = root.addNode("locked node 2");
+      Session session2 = null, session3 = null;
+      try
+      {
+         Node node = (Node)session.getItem(lockedNode.getPath());
+
+         if (!node.isNodeType("mix:lockable"))
+         {
+            if (node.canAddMixin("mix:lockable"))
+            {
+               node.addMixin("mix:lockable");
+               session.save();
+            }
+         }
+         node.lock(true, false);
+
+         session2 = repository.login(credentials, "ws");
+         node = (Node)session2.getItem(lockedNode.getPath());
+         assertTrue(node.isLocked());
+         try
+         {
+            node.unlock();
+            fail("a LockException is expected");
+         }
+         catch (LockException e)
+         {
+            // a LockException is expected
+         }
+         // The system session
+         session3 = repository.login(new CredentialsImpl(SystemIdentity.SYSTEM, "".toCharArray()), "ws");
+         node = (Node)session3.getItem(lockedNode.getPath());
+         assertTrue(node.isLocked());
+         node.unlock();
+      }
+      finally
+      {
+         lockedNode.remove();
+         session.save();
+         if (session2 != null)
+         {
+            session2.logout();
+         }
+         if (session3 != null)
+         {
+            session3.logout();
+         }
       }
    }
 
