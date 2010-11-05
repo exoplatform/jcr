@@ -18,12 +18,12 @@
  */
 package org.exoplatform.services.jcr.ext.metadata;
 
-import org.exoplatform.services.jcr.ext.BaseStandaloneTest;
-
 import java.io.InputStream;
 import java.util.Calendar;
 
 import javax.jcr.Node;
+
+import org.exoplatform.services.jcr.ext.BaseStandaloneTest;
 
 public class MetaDataActionTest extends BaseStandaloneTest
 {
@@ -121,5 +121,44 @@ public class MetaDataActionTest extends BaseStandaloneTest
       assertFalse(contentNode.hasProperty("dc:creator"));
       assertFalse(contentNode.hasProperty("dc:date"));
       assertFalse(contentNode.hasProperty("dc:creator"));
+   }
+
+   public void testUpdatePDF() throws Exception
+   {
+      InputStream is = MetaDataActionTest.class.getResourceAsStream("/test_1.pdf");
+
+      Node rootNode = session.getRootNode().addNode("MetaDataActionTest");
+      Node contentNode = rootNode.addNode("testAddContent", "nt:resource");
+      contentNode.setProperty("jcr:data", is);
+      contentNode.setProperty("jcr:encoding", "UTF-8");
+      contentNode.setProperty("jcr:mimeType", "application/pdf");
+      contentNode.setProperty("jcr:lastModified", Calendar.getInstance());
+      session.save();
+
+      Node testNode = repository.getSystemSession().getRootNode().getNode("MetaDataActionTest/testAddContent");
+      assertTrue(testNode.hasProperty("dc:title"));
+      assertTrue(testNode.hasProperty("dc:creator"));
+      assertEquals("Title_1", testNode.getProperty("dc:title").getValues()[0].getString());
+      assertEquals("Author_1", testNode.getProperty("dc:creator").getValues()[0].getString());
+
+      // update #1 
+      is = MetaDataActionTest.class.getResourceAsStream("/test_2.pdf");
+      contentNode.setProperty("jcr:data", is);
+      session.save();
+
+      testNode = repository.getSystemSession().getRootNode().getNode("MetaDataActionTest/testAddContent");
+      assertTrue(testNode.hasProperty("dc:title"));
+      assertTrue(testNode.hasProperty("dc:creator"));
+      assertEquals("Title_2", testNode.getProperty("dc:title").getValues()[0].getString());
+      assertEquals("Author_2", testNode.getProperty("dc:creator").getValues()[0].getString());
+
+      // update #2 
+      is = MetaDataActionTest.class.getResourceAsStream("/test_3.pdf");
+      contentNode.setProperty("jcr:data", is);
+      session.save();
+
+      testNode = repository.getSystemSession().getRootNode().getNode("MetaDataActionTest/testAddContent");
+      assertFalse(testNode.hasProperty("dc:title"));
+      assertFalse(testNode.hasProperty("dc:creator"));
    }
 }
