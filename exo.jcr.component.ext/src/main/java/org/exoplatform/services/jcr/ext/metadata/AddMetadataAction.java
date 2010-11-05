@@ -110,10 +110,7 @@ public class AddMetadataAction implements Action
             parent.removeMixin("dc:elementSet");
          }
 
-         if (!parent.isNodeType("dc:elementSet"))
-         {
-            parent.addMixin("dc:elementSet");
-         }
+         parent.addMixin("dc:elementSet");
 
          DocumentReaderService readerService =
             (DocumentReaderService)((ExoContainer)ctx.get("exocontainer"))
