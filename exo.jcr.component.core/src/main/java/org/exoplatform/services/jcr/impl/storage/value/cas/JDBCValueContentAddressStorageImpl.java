@@ -97,7 +97,7 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
     * %s must be replaced with original table name before compile Pattern.
     */
    private static final String DB2_PK_CONSTRAINT_DETECT_PATTERN =
-      "(.*DB2 SQL error+.*SQLCODE: -803+.*SQLSTATE: 23505+.*%s.*)+?";
+      "(.*DB2 SQL [Ee]rror+.*SQLCODE[:=].?-803+.*SQLSTATE[:=].?23505+.*%s.*)+?";
 
    /**
     * DB2_PK_CONSTRAINT_DETECT.
