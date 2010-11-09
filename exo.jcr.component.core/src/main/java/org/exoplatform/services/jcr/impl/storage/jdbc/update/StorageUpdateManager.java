@@ -18,11 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.update;
 
-import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.util.IdGenerator;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,6 +29,11 @@ import java.sql.Statement;
 
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
+
+import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.util.IdGenerator;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 /**
  * Created by The eXo Platform SAS.
@@ -265,17 +265,14 @@ public class StorageUpdateManager
     * @throws RepositoryException
     */
    public static synchronized String checkVersion(String sourceName, Connection connection, boolean multiDB,
-      boolean updateNow) throws RepositoryException
+            boolean updateNow) throws RepositoryException
    {
-      int transactIsolation = Connection.TRANSACTION_READ_COMMITTED;
       try
       {
          connection.setAutoCommit(false);
-         transactIsolation = connection.getTransactionIsolation();
-         connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
 
          StorageUpdateManager manager = new StorageUpdateManager(sourceName, connection, multiDB);
-         String version = manager.applyUpdate(updateNow);
+         String version = manager.currentVersion();
          connection.commit();
          return version;
       }
@@ -289,13 +286,12 @@ public class StorageUpdateManager
          {
             log.warn("Error of connection rollback (close) " + er, er);
          }
-         throw new RepositoryException(e);
+         return Constants.UNKNOWN;
       }
       finally
       {
          try
          {
-            connection.setTransactionIsolation(transactIsolation);
             connection.close();
          }
          catch (SQLException e)
@@ -303,64 +299,6 @@ public class StorageUpdateManager
             log.warn("Error of connection finalyzation (close) " + e, e);
          }
       }
-   }
-
-   /**
-    * (1) return current storage version if no updates required (2) return current storage version
-    * and print warning if updateNow==FALSE and NON CRITICAL updates required (3) throws Exception if
-    * updateNow==FALSE and CRITICAL updates required (4) apply updates, update and return updated
-    * version updateNow==TRUE and updates required
-    * 
-    * NOTE: after the update the JDBC connection will be closed
-    * 
-    * @param updateNow
-    * @return
-    * @throws Exception
-    */
-   private String applyUpdate(boolean updateNow) throws Exception
-   {
-
-      String curVersion = currentVersion();
-
-      Updater updater = null;
-
-      if (curVersion.startsWith(STORAGE_VERSION_1_7_0))
-      {
-         // ok
-      }
-      else
-      {
-         // warn
-         log.warn("UPDATE IS NOT AVAILABLE from " + curVersion + " to " + STORAGE_VERSION_1_7_0
-            + " using auto-update option. Use XML export/import to migrate to the next version of JCR. "
-            + "See for details: http://wiki.exoplatform.org/xwiki/bin/view/JCR/How+to+JCR+import+export. "
-            + "All data which were created prior (with " + curVersion
-            + " and older) and stored in external value storage(s) will be unavailable with storage "
-            + STORAGE_VERSION_1_7_0 + ". " + "No auto-update changes was made to database.");
-      }
-
-      // was before 1.7
-      // if(STORAGE_VERSION_1_0_0.equals(curVersion)) {
-      // updater = new Updater100();
-      // } else if(STORAGE_VERSION_1_0_1.equals(curVersion)) {
-      // updater = new Updater101();
-      // }
-
-      if (updater != null)
-         if (!updateNow)
-         {
-            log.warn("STORAGE VERSION OF " + sourceName + " IS " + curVersion
-               + " IT IS HIGHLY RECOMMENDED TO UPDATE IT TO " + REQUIRED_STORAGE_VERSION
-               + " ENABLE UPDATING in the CONFIGURATION:\n <container class='...'>\n"
-               + "  <properties> \n   <property name='update-storage' value='true'/> \n ...\n");
-         }
-         else
-         {
-            updater.update();
-            curVersion = REQUIRED_STORAGE_VERSION;
-         }
-
-      return curVersion;
    }
 
    /**
