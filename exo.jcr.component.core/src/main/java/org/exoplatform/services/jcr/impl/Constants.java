@@ -674,6 +674,11 @@ public class Constants
    public static final String JCR_CORE_RESTORE_WORKSPACE_INITIALIZER_SYSTEM_ID =
       "JCR_CORE_RESOTRE_WORKSPACE_INITIALIZER_SYSTEM_ID";
 
+   /**
+    * "unknown" constant.
+    */
+   public static final String UNKNOWN = "unknown";
+
    static
    {
 
