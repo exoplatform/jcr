@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.impl.storage.jdbc;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
@@ -48,6 +49,7 @@ import org.picocontainer.Startable;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -323,13 +325,20 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          if (pDbDialect == DBConstants.DB_DIALECT_GENERIC)
          {
             // try to detect via JDBC metadata
-            DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
+            final DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
             if (ds != null)
             {
                Connection jdbcConn = null;
                try
                {
-                  jdbcConn = ds.getConnection();
+                  jdbcConn = SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
+                  {
+                     public Connection run() throws Exception
+                     {
+                        return ds.getConnection();
+                     }
+                  });
+
                   this.dbDialect = DialectDetecter.detect(jdbcConn.getMetaData());
                }
                catch (SQLException e)

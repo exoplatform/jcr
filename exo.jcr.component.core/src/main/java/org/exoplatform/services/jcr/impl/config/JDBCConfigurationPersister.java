@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.config;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.services.jcr.config.ConfigurationPersister;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
@@ -30,6 +31,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -201,8 +203,14 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
 
    protected Connection openConnection() throws NamingException, SQLException
    {
-      DataSource ds = (DataSource)new InitialContext().lookup(sourceName);
-      return ds.getConnection();
+      final DataSource ds = (DataSource)new InitialContext().lookup(sourceName);
+      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
+      {
+         public Connection run() throws Exception
+         {
+            return ds.getConnection();
+         }
+      });
    }
 
    /**
@@ -210,11 +218,18 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
     * 
     * @param con
     */
-   protected boolean isDbInitialized(Connection con)
+   protected boolean isDbInitialized(final Connection con)
    {
       try
       {
-         ResultSet trs = con.getMetaData().getTables(null, null, configTableName, null);
+         ResultSet trs = SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<ResultSet>()
+         {
+            public ResultSet run() throws Exception
+            {
+               return con.getMetaData().getTables(null, null, configTableName, null);
+            }
+         });
+
          try
          {
             return trs.next();

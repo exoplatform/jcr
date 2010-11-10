@@ -117,10 +117,10 @@ public abstract class FileValueStorage extends ValueStoragePlugin
             File tempDir = new File(rootDir, TEMP_DIR_NAME);
             PrivilegedFileHelper.mkdirs(tempDir);
 
-            if (PrivilegedFileHelper.exists(tempDir) && tempDir.isDirectory())
+            if (PrivilegedFileHelper.exists(tempDir) && PrivilegedFileHelper.isDirectory(tempDir))
             {
                // care about storage temp dir cleanup
-               for (File tmpf : tempDir.listFiles())
+               for (File tmpf : PrivilegedFileHelper.listFiles(tempDir))
                   if (!PrivilegedFileHelper.delete(tmpf))
                      log.warn("Storage temporary directory contains un-deletable file "
                         + PrivilegedFileHelper.getAbsolutePath(tmpf)
@@ -137,7 +137,7 @@ public abstract class FileValueStorage extends ValueStoragePlugin
       }
       else
       {
-         if (!rootDir.isDirectory())
+         if (!PrivilegedFileHelper.isDirectory(rootDir))
          {
             throw new RepositoryConfigurationException("File exists but is not a directory " + rootDirPath);
          }

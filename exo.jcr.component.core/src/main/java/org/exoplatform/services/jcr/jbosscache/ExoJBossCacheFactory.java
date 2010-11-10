@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.jbosscache;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationManager;
@@ -74,8 +75,15 @@ public class ExoJBossCacheFactory<K, V>
     * Keep only one instance of the {@link JChannelFactory} to prevent creating several times the
     * same multiplexer stack
     */
-   private static final JChannelFactory CHANNEL_FACTORY = new JChannelFactory();
-   
+   private static final JChannelFactory CHANNEL_FACTORY = SecurityHelper
+      .doPriviledgedAction(new PrivilegedAction<JChannelFactory>()
+      {
+         public JChannelFactory run()
+         {
+            return new JChannelFactory();
+         }
+      });
+
    /**
     * A Map that contains all the registered JBC instances, ordered by
     * {@link ExoContainer} instances, {@link CacheType} and JBC Configuration.

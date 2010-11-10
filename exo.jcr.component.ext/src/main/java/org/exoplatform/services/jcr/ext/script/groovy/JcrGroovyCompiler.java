@@ -22,12 +22,17 @@ package org.exoplatform.services.jcr.ext.script.groovy;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyCodeSource;
 
+import org.codehaus.groovy.control.CompilationFailedException;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.ext.resource.JcrURLConnection;
 import org.exoplatform.services.jcr.ext.resource.UnifiedNodeReference;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 
 /**
  * JcrGroovyCompiler can load source code of groovy script from JCR and parse it
@@ -42,8 +47,13 @@ public class JcrGroovyCompiler
 
    public JcrGroovyCompiler()
    {
-      ClassLoader cl = getClass().getClassLoader();
-      this.gcl = new GroovyClassLoader(cl);
+      this.gcl = SecurityHelper.doPriviledgedAction(new PrivilegedAction<GroovyClassLoader>()
+      {
+         public GroovyClassLoader run()
+         {
+            return new GroovyClassLoader(getClass().getClassLoader());
+         }
+      });
    }
 
    /**
@@ -69,16 +79,48 @@ public class JcrGroovyCompiler
 
    public Class<?>[] compile(UnifiedNodeReference... sourceReferences) throws IOException
    {
-      GroovyClassLoader cl = gcl;
+      final GroovyClassLoader cl = gcl;
       Class<?>[] classes = new Class<?>[sourceReferences.length];
       for (int i = 0; i < sourceReferences.length; i++)
       {
          JcrURLConnection conn = null;
          try
          {
-            URL url = sourceReferences[i].getURL();
+            final URL url = sourceReferences[i].getURL();
             conn = (JcrURLConnection)url.openConnection();
-            Class<?> clazz = cl.parseClass(createCodeSource(conn.getInputStream(), url.toString()));
+
+            final JcrURLConnection fConn = conn;
+            Class<?> clazz;
+            try
+            {
+               clazz = SecurityHelper.doPriviledgedExceptionAction(new PrivilegedExceptionAction<Class<?>>()
+               {
+                  public Class<?> run() throws Exception
+                  {
+                     return cl.parseClass(createCodeSource(fConn.getInputStream(), url.toString()));
+                  }
+               });
+            }
+            catch (PrivilegedActionException pae)
+            {
+               Throwable cause = pae.getCause();
+               if (cause instanceof CompilationFailedException)
+               {
+                  throw (CompilationFailedException)cause;
+               }
+               else if (cause instanceof IOException)
+               {
+                  throw (IOException)cause;
+               }
+               else if (cause instanceof RuntimeException)
+               {
+                  throw (RuntimeException)cause;
+               }
+               else
+               {
+                  throw new RuntimeException(cause);
+               }
+            }
             classes[i] = clazz;
          }
          finally
@@ -102,9 +144,16 @@ public class JcrGroovyCompiler
     * @return GroovyCodeSource
     */
    // Override this method if need other behavior.
-   protected GroovyCodeSource createCodeSource(InputStream in, String name)
+   protected GroovyCodeSource createCodeSource(final InputStream in, final String name)
    {
-      GroovyCodeSource gcs = new GroovyCodeSource(in, name, "/groovy/script");
+      GroovyCodeSource gcs = SecurityHelper.doPriviledgedAction(new PrivilegedAction<GroovyCodeSource>()
+      {
+         public GroovyCodeSource run()
+         {
+            return new GroovyCodeSource(in, name, "/groovy/script");
+         }
+      });
+
       gcs.setCachable(false);
       return gcs;
    }

@@ -18,6 +18,9 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc;
 
+import org.exoplatform.commons.utils.SecurityHelper;
+
+import java.security.PrivilegedExceptionAction;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
@@ -41,7 +44,14 @@ public class DialectDetecter
     */
    public static String detect(final DatabaseMetaData metaData) throws SQLException
    {
-      final String databaseName = metaData.getDatabaseProductName();
+      final String databaseName =
+         SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<String>()
+         {
+            public String run() throws Exception
+            {
+               return metaData.getDatabaseProductName();
+            }
+         });
 
       if ("HSQL Database Engine".equals(databaseName))
       {

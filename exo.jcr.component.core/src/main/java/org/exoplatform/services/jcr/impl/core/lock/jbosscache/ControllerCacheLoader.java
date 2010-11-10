@@ -232,17 +232,31 @@ public class ControllerCacheLoader implements CacheLoader
    /**
     * @see org.jboss.cache.loader.CacheLoader#put(java.util.List)
     */
-   public void put(List<Modification> modifications) throws Exception
+   public void put(final List<Modification> modifications) throws Exception
    {
-      cl.put(modifications);
+      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Void>()
+      {
+         public Void run() throws Exception
+         {
+            cl.put(modifications);
+            return null;
+         }
+      });
    }
 
    /**
     * @see org.jboss.cache.loader.CacheLoader#put(org.jboss.cache.Fqn, java.util.Map)
     */
-   public void put(Fqn name, Map<Object, Object> attributes) throws Exception
+   public void put(final Fqn name, final Map<Object, Object> attributes) throws Exception
    {
-      cl.put(name, attributes);
+      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Void>()
+      {
+         public Void run() throws Exception
+         {
+            cl.put(name, attributes);
+            return null;
+         }
+      });
    }
 
    /**
@@ -262,25 +276,45 @@ public class ControllerCacheLoader implements CacheLoader
    /**
     * @see org.jboss.cache.loader.CacheLoader#remove(org.jboss.cache.Fqn)
     */
-   public void remove(Fqn fqn) throws Exception
+   public void remove(final Fqn fqn) throws Exception
    {
-      cl.remove(fqn);
+      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Void>()
+      {
+         public Void run() throws Exception
+         {
+            cl.remove(fqn);
+            return null;
+         }
+      });
    }
 
    /**
     * @see org.jboss.cache.loader.CacheLoader#remove(org.jboss.cache.Fqn, java.lang.Object)
     */
-   public Object remove(Fqn fqn, Object key) throws Exception
+   public Object remove(final Fqn fqn, final Object key) throws Exception
    {
-      return cl.remove(fqn, key);
+      return SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      {
+         public Object run() throws Exception
+         {
+            return cl.remove(fqn, key);
+         }
+      });
    }
 
    /**
     * @see org.jboss.cache.loader.CacheLoader#removeData(org.jboss.cache.Fqn)
     */
-   public void removeData(Fqn fqn) throws Exception
+   public void removeData(final Fqn fqn) throws Exception
    {
-      cl.removeData(fqn);
+      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Void>()
+      {
+         public Void run() throws Exception
+         {
+            cl.removeData(fqn);
+            return null;
+         }
+      });
    }
 
    /**

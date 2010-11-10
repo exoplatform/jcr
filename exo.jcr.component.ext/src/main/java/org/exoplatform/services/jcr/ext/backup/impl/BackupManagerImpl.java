@@ -19,6 +19,9 @@
 package org.exoplatform.services.jcr.ext.backup.impl;
 
 import org.apache.commons.collections.map.HashedMap;
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.commons.utils.PrivilegedSystemHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.services.jcr.RepositoryService;
@@ -81,6 +84,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.PrintWriter;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -450,7 +454,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       this.repoService = repoService;
       this.registryService = registryService;
       this.initParams = initParams;
-      this.tempDir = new File(System.getProperty("java.io.tmpdir"));
+      this.tempDir = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
 
       currentBackups = Collections.synchronizedSet(new HashSet<BackupChain>());
 
@@ -813,7 +817,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       }
 
       // scan for task files
-      File[] tasks = this.logsDirectory.listFiles(new TaskFilter());
+      File[] tasks = PrivilegedFileHelper.listFiles(this.logsDirectory, new TaskFilter());
       for (File task : tasks)
       {
          try
@@ -1119,7 +1123,14 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
    private void writeParamsToRegistryService(SessionProvider sessionProvider) throws IOException, SAXException,
       ParserConfigurationException, RepositoryException
    {
-      Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+      Document doc = SecurityHelper.doPriviledgedParserConfigurationAction(new PrivilegedExceptionAction<Document>()
+      {
+         public Document run() throws Exception
+         {
+            return DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+         }
+      });
+
       Element root = doc.createElement(SERVICE_NAME);
       doc.appendChild(root);
 
@@ -1230,8 +1241,8 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
          throw new RuntimeException(BACKUP_DIR + " not specified");
 
       logsDirectory = new File(backupDir);
-      if (!logsDirectory.exists())
-         logsDirectory.mkdirs();
+      if (!PrivilegedFileHelper.exists(logsDirectory))
+         PrivilegedFileHelper.mkdirs(logsDirectory);
 
       if (defIncrPeriod == null)
          throw new RuntimeException(DEFAULT_INCREMENTAL_JOB_PERIOD + " not specified");

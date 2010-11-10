@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.core.nodetype;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
 import org.exoplatform.services.jcr.core.nodetype.ItemDefinitionData;
@@ -55,6 +56,7 @@ import org.exoplatform.services.log.Log;
 import org.picocontainer.Startable;
 
 import java.io.InputStream;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -745,7 +747,13 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
             // check if default node type saved
             if (!nodeTypeRepository.isStorageFilled())
             {
-               final InputStream xml = NodeTypeManagerImpl.class.getResourceAsStream(NODETYPES_FILE);
+               final InputStream xml = SecurityHelper.doPriviledgedAction(new PrivilegedAction<InputStream>()
+               {
+                  public InputStream run()
+                  {
+                     return NodeTypeManagerImpl.class.getResourceAsStream(NODETYPES_FILE);
+                  }
+               });
 
                if (xml != null)
                {

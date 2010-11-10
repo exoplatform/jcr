@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.ext.script.groovy;
 import groovy.lang.GroovyClassLoader;
 
 import org.apache.commons.fileupload.FileItem;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.xml.InitParams;
@@ -51,6 +52,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -635,7 +637,14 @@ public class GroovyScript2RestLoader implements Startable
          LOG.debug(">>> Save init parametrs in registry service.");
       }
 
-      Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+      Document doc = SecurityHelper.doPriviledgedParserConfigurationAction(new PrivilegedExceptionAction<Document>()
+      {
+         public Document run() throws Exception
+         {
+            return DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+         }
+      });
+
       Element root = doc.createElement(SERVICE_NAME);
       doc.appendChild(root);
 
@@ -780,10 +789,10 @@ public class GroovyScript2RestLoader implements Startable
    @POST
    @Consumes({"script/groovy"})
    @Path("validate{name:.*}")
-   public Response validateScript(@PathParam("name") String name, InputStream script)
+   public Response validateScript(@PathParam("name") String name, final InputStream script)
    {
 
-      GroovyClassLoader groovyClassLoader = groovyPublisher.getGroovyClassLoader();
+      final GroovyClassLoader groovyClassLoader = groovyPublisher.getGroovyClassLoader();
       if (name == null || name.length() == 0)
       {
          name = groovyClassLoader.generateScriptName();
@@ -795,7 +804,16 @@ public class GroovyScript2RestLoader implements Startable
 
       try
       {
-         groovyClassLoader.parseClass(script, name);
+         final String fName = name;
+         SecurityHelper.doPriviledgedExceptionAction(new PrivilegedExceptionAction<Void>()
+         {
+            public Void run() throws Exception
+            {
+               groovyClassLoader.parseClass(script, fName);
+               return null;
+            }
+         });
+
          return Response.status(Response.Status.OK).build();
       }
       catch (Exception e)

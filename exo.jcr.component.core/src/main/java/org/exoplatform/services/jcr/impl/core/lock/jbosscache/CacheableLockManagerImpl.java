@@ -16,12 +16,12 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock.jbosscache;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
 import org.exoplatform.management.jmx.annotations.Property;
-import org.exoplatform.services.cache.impl.jboss.util.PrivilegedCacheHelper;
 import org.exoplatform.services.jcr.config.MappedParametrizedObjectEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.SimpleParameterEntry;
@@ -51,6 +51,7 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistent
 import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
+import org.exoplatform.services.jcr.impl.util.PrivilegedCacheHelper;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory.CacheType;
 import org.exoplatform.services.jcr.observation.ExtendedEvent;
@@ -75,6 +76,7 @@ import java.math.BigInteger;
 import java.security.AccessController;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
@@ -1189,13 +1191,19 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
    /**
     *  Will be created structured node in cache, like /$LOCKS
     */
-   private void createStructuredNode(Fqn<String> fqn)
+   private void createStructuredNode(final Fqn<String> fqn)
    {
       Node<Serializable, Object> node = cache.getRoot().getChild(fqn);
       if (node == null)
       {
          cache.getInvocationContext().getOptionOverrides().setCacheModeLocal(true);
-         node = cache.getRoot().addChild(fqn);
+         node = SecurityHelper.doPriviledgedAction(new PrivilegedAction<Node<Serializable, Object>>()
+         {
+            public Node<Serializable, Object> run()
+            {
+               return cache.getRoot().addChild(fqn);
+            }
+         }); 
       }
       node.setResident(true);
    }

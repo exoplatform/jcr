@@ -19,6 +19,7 @@
 
 package org.exoplatform.services.jcr.ext.script.groovy;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.component.BaseComponentPlugin;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
@@ -28,6 +29,7 @@ import org.exoplatform.services.log.Log;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.PrivilegedExceptionAction;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -57,17 +59,24 @@ public class GroovyScriptAddRepoPlugin extends BaseComponentPlugin
       if (params == null)
          return Collections.emptyList();
 
-      Set<URL> repos = new HashSet<URL>();
+      final Set<URL> repos = new HashSet<URL>();
       Iterator<PropertiesParam> iterator = params.getPropertiesParamIterator();
       while (iterator.hasNext())
       {
          PropertiesParam p = iterator.next();
-         String repository = p.getProperty("repository");
-         String workspace = p.getProperty("workspace");
-         String path = p.getProperty("path");
+         final String repository = p.getProperty("repository");
+         final String workspace = p.getProperty("workspace");
+         final String path = p.getProperty("path");
          try
          {
-            repos.add(new UnifiedNodeReference(repository, workspace, path).getURL());
+            SecurityHelper.doPriviledgedMalformedURLExceptionAction(new PrivilegedExceptionAction<Void>()
+            {
+               public Void run() throws Exception
+               {
+                  repos.add(new UnifiedNodeReference(repository, workspace, path).getURL());
+                  return null;
+               }
+            });
          }
          catch (MalformedURLException e)
          {

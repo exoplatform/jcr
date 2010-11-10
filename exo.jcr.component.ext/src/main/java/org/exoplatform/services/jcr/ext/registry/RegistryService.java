@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.ext.registry;
 
 import static javax.jcr.ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
@@ -41,6 +42,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -133,6 +137,7 @@ public class RegistryService extends Registry implements Startable
    /**
     * {@inheritDoc}
     */
+   @Override
    public RegistryEntry getEntry(final SessionProvider sessionProvider, final String entryPath)
       throws PathNotFoundException, RepositoryException
    {
@@ -162,6 +167,7 @@ public class RegistryService extends Registry implements Startable
    /**
     * {@inheritDoc}
     */
+   @Override
    public void createEntry(final SessionProvider sessionProvider, final String groupPath, final RegistryEntry entry)
       throws RepositoryException
    {
@@ -190,6 +196,7 @@ public class RegistryService extends Registry implements Startable
    /**
     * {@inheritDoc}
     */
+   @Override
    public void removeEntry(final SessionProvider sessionProvider, final String entryPath) throws RepositoryException
    {
 
@@ -203,6 +210,7 @@ public class RegistryService extends Registry implements Startable
    /**
     * {@inheritDoc}
     */
+   @Override
    public void recreateEntry(final SessionProvider sessionProvider, final String groupPath, final RegistryEntry entry)
       throws RepositoryException
    {
@@ -287,6 +295,7 @@ public class RegistryService extends Registry implements Startable
    /**
     * {@inheritDoc}
     */
+   @Override
    public RegistryNode getRegistry(final SessionProvider sessionProvider) throws RepositoryException
    {
 
@@ -335,7 +344,14 @@ public class RegistryService extends Registry implements Startable
                   wsName = repConfiguration.getDefaultWorkspaceName();
                }
                addRegistryLocation(repName, wsName);
-               InputStream xml = getClass().getResourceAsStream(NT_FILE);
+               InputStream xml = SecurityHelper.doPriviledgedAction(new PrivilegedAction<InputStream>()
+               {
+                  public InputStream run()
+                  {
+                     return getClass().getResourceAsStream(NT_FILE);
+                  }
+               });
+
                try
                {
                   repositoryService.getRepository(repName).getNodeTypeManager().registerNodeTypes(xml,
@@ -389,7 +405,7 @@ public class RegistryService extends Registry implements Startable
       {
          String repName = repConfiguration.getName();
          ManageableRepository rep = repositoryService.getRepository(repName);
-         Session sysSession = rep.getSystemSession(regWorkspaces.get(repName));
+         final Session sysSession = rep.getSystemSession(regWorkspaces.get(repName));
 
          if (sysSession.getRootNode().hasNode(EXO_REGISTRY) && replace)
             sysSession.getRootNode().getNode(EXO_REGISTRY).remove();
@@ -406,32 +422,50 @@ public class RegistryService extends Registry implements Startable
             final String fullPath = "/" + EXO_REGISTRY + "/" + entryLocation;
             for (String appName : appNames)
             {
-               String xml = appConfigurations.get(appName);
+               final String xml = appConfigurations.get(appName);
                try
                {
-                  DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-                  ByteArrayInputStream stream = new ByteArrayInputStream(xml.getBytes());
-                  Document document = builder.parse(stream);
-                  RegistryEntry entry = new RegistryEntry(document);
-                  sysSession.importXML(fullPath, entry.getAsInputStream(), IMPORT_UUID_CREATE_NEW);
+                  SecurityHelper.doPriviledgedExceptionAction(new PrivilegedExceptionAction<Void>()
+                  {
+                     public Void run() throws Exception
+                     {
+                        DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+                        ByteArrayInputStream stream = new ByteArrayInputStream(xml.getBytes());
+                        Document document = builder.parse(stream);
+                        RegistryEntry entry = new RegistryEntry(document);
+                        sysSession.importXML(fullPath, entry.getAsInputStream(), IMPORT_UUID_CREATE_NEW);
+                        return null;
+                     }
+                  });
                }
-               catch (ParserConfigurationException e)
+               catch (PrivilegedActionException pae)
                {
-                  e.printStackTrace();
+                  Throwable cause = pae.getCause();
+                  if (cause instanceof ParserConfigurationException)
+                  {
+                     cause.printStackTrace();
+                  }
+                  else if (cause instanceof IOException)
+                  {
+                     cause.printStackTrace();
+                  }
+                  else if (cause instanceof SAXException)
+                  {
+                     cause.printStackTrace();
+                  }
+                  else if (cause instanceof TransformerException)
+                  {
+                     cause.printStackTrace();
+                  }
+                  else if (cause instanceof RuntimeException)
+                  {
+                     throw (RuntimeException)cause;
+                  }
+                  else
+                  {
+                     throw new RuntimeException(cause);
+                  }
                }
-               catch (IOException e)
-               {
-                  e.printStackTrace();
-               }
-               catch (SAXException e)
-               {
-                  e.printStackTrace();
-               }
-               catch (TransformerException e)
-               {
-                  e.printStackTrace();
-               }
-
             }
             sysSession.save();
          }
@@ -513,7 +547,7 @@ public class RegistryService extends Registry implements Startable
     */
    private List<RepositoryEntry> repConfigurations()
    {
-      return (List<RepositoryEntry>)repositoryService.getConfig().getRepositoryConfigurations();
+      return repositoryService.getConfig().getRepositoryConfigurations();
    }
 
    /**

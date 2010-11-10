@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.ext.resource;
 
+import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.services.jcr.datamodel.Identifier;
 
 import java.net.MalformedURLException;
@@ -252,7 +253,7 @@ public class UnifiedNodeReference
       // Usually this job must be done by java.net.URL, but it does
       // not work in web container. Under tomcat class of handler can't be found in
       // $CATALINA_HOME/lib/*.jar. Probably the same problem can be under AS.
-      String packagePrefixList = System.getProperty("java.protocol.handler.pkgs");
+      String packagePrefixList = PrivilegedSystemHelper.getProperty("java.protocol.handler.pkgs");
 
       if (packagePrefixList == null)
          return null;

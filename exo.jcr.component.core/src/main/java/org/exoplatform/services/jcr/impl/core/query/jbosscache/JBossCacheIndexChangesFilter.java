@@ -19,7 +19,6 @@
 package org.exoplatform.services.jcr.impl.core.query.jbosscache;
 
 import org.exoplatform.container.configuration.ConfigurationManager;
-import org.exoplatform.services.cache.impl.jboss.util.PrivilegedCacheHelper;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.core.query.IndexerChangesFilter;
@@ -28,6 +27,7 @@ import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
 import org.exoplatform.services.jcr.impl.core.query.IndexingTree;
 import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
 import org.exoplatform.services.jcr.impl.core.query.SearchManager;
+import org.exoplatform.services.jcr.impl.util.PrivilegedCacheHelper;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory.CacheType;
 import org.exoplatform.services.jcr.util.IdGenerator;

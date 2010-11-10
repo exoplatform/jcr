@@ -45,7 +45,6 @@ import org.picocontainer.ComponentAdapter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
@@ -214,38 +213,7 @@ public class RepositoryImpl implements ManageableRepository
 
       try
       {
-         PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
-         {
-            public Object run() throws Exception
-            {
-               repositoryContainer.registerWorkspace(wsConfig);
-               return null;
-            }
-         };
-         try
-         {
-            AccessController.doPrivileged(action);
-         }
-         catch (PrivilegedActionException pae)
-         {
-            Throwable cause = pae.getCause();
-            if (cause instanceof RepositoryException)
-            {
-               throw (RepositoryException)cause;
-            }
-            else if (cause instanceof RepositoryConfigurationException)
-            {
-               throw (RepositoryConfigurationException)cause;
-            }
-            else if (cause instanceof RuntimeException)
-            {
-               throw (RuntimeException)cause;
-            }
-            else
-            {
-               throw new RuntimeException(cause);
-            }
-         }
+         repositoryContainer.registerWorkspace(wsConfig);
       }
       catch (RepositoryConfigurationException e)
       {
@@ -302,16 +270,7 @@ public class RepositoryImpl implements ManageableRepository
 
       repositoryContainer.getWorkspaceContainer(workspaceName).getWorkspaceInitializer().initWorkspace();
 
-      PrivilegedAction<Object> action = new PrivilegedAction<Object>()
-      {
-         public Object run()
-         {
-            wsContainer.start();
-            return null;
-         }
-      };
-
-      AccessController.doPrivileged(action);
+      wsContainer.start();
 
       LOG.info("Workspace " + workspaceName + "@" + this.name + " is initialized");
    }

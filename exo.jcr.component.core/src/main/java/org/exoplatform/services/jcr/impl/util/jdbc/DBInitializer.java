@@ -172,9 +172,16 @@ public class DBInitializer
       return string;
    }
 
-   protected boolean isTableExists(Connection conn, String tableName) throws SQLException
+   protected boolean isTableExists(final Connection conn, final String tableName) throws SQLException
    {
-      ResultSet trs = conn.getMetaData().getTables(null, null, tableName, null);
+      ResultSet trs = SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<ResultSet>()
+      {
+         public ResultSet run() throws Exception
+         {
+            return conn.getMetaData().getTables(null, null, tableName, null);
+         }
+      });
+
       try
       {
          boolean res = false;

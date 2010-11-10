@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl.core.lock;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.config.LockPersisterEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
@@ -42,6 +43,7 @@ import org.exoplatform.services.log.Log;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 
 import javax.jcr.RepositoryException;
@@ -119,7 +121,7 @@ public class FileSystemLockPersister implements LockPersister
    public void add(LockData lock) throws LockException
    {
       log.debug("add event fire");
-      File lockFile = new File(rootDir, lock.getNodeIdentifier());
+      final File lockFile = new File(rootDir, lock.getNodeIdentifier());
 
       if (PrivilegedFileHelper.exists(lockFile))
       {
@@ -128,7 +130,14 @@ public class FileSystemLockPersister implements LockPersister
 
       try
       {
-         lockFile.createNewFile();
+         SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Void>()
+         {
+            public Void run() throws Exception
+            {
+               lockFile.createNewFile();
+               return null;
+            }
+         });
       }
       catch (IOException e)
       {
@@ -294,7 +303,7 @@ public class FileSystemLockPersister implements LockPersister
       rootDir = new File(root);
       if (PrivilegedFileHelper.exists(rootDir))
       {
-         if (!rootDir.isDirectory())
+         if (!PrivilegedFileHelper.isDirectory(rootDir))
          {
             throw new RepositoryConfigurationException("'" + root + "' is not a directory");
          }

@@ -18,8 +18,20 @@
  */
 package org.exoplatform.services.jcr.ext.registry;
 
+import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
+import org.exoplatform.services.jcr.ext.common.SessionProvider;
+import org.exoplatform.services.jcr.ext.registry.Registry.RegistryNode;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+import org.exoplatform.services.rest.ext.util.XlinkHref;
+import org.exoplatform.services.rest.resource.ResourceContainer;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 import java.io.InputStream;
 import java.net.URI;
+import java.security.PrivilegedExceptionAction;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
@@ -40,16 +52,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.dom.DOMSource;
-
-import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
-import org.exoplatform.services.jcr.ext.common.SessionProvider;
-import org.exoplatform.services.jcr.ext.registry.Registry.RegistryNode;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
-import org.exoplatform.services.rest.ext.util.XlinkHref;
-import org.exoplatform.services.rest.resource.ResourceContainer;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 /**
  * @author <a href="mailto:andrew00x@gmail.com">Andrey Parfonov</a>
@@ -192,7 +194,14 @@ public class RESTRegistryService implements ResourceContainer
          {
             Node registryNode = registryEntry.getNode();
             NodeIterator registryIterator = registryNode.getNodes();
-            Document entry = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+            Document entry = SecurityHelper.doPriviledgedExceptionAction(new PrivilegedExceptionAction<Document>()
+            {
+               public Document run() throws Exception
+               {
+                  return DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+               }
+            });
+
             String fullURI = uriInfo.getRequestUri().toString();
             XlinkHref xlinkHref = new XlinkHref(fullURI);
             Element root = entry.createElement(REGISTRY);

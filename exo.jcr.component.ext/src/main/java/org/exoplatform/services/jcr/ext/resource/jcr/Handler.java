@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.ext.resource.jcr;
 
+import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
@@ -150,11 +151,12 @@ public class Handler extends URLStreamHandler implements Startable
     */
    public void start()
    {
-      String existingProtocolPathPkgs = System.getProperty("java.protocol.handler.pkgs");
+      String existingProtocolPathPkgs = PrivilegedSystemHelper.getProperty("java.protocol.handler.pkgs");
       if (existingProtocolPathPkgs == null)
-         System.setProperty("java.protocol.handler.pkgs", protocolPathPkg);
+         PrivilegedSystemHelper.setProperty("java.protocol.handler.pkgs", protocolPathPkg);
       else if (existingProtocolPathPkgs.indexOf(protocolPathPkg) == -1)
-         System.setProperty("java.protocol.handler.pkgs", existingProtocolPathPkgs + "|" + protocolPathPkg);
+         PrivilegedSystemHelper.setProperty("java.protocol.handler.pkgs", existingProtocolPathPkgs + "|"
+            + protocolPathPkg);
    }
 
    /**

@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.db;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
@@ -25,6 +26,7 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.File;
+import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -227,9 +229,14 @@ public class GenericConnectionFactory implements WorkspaceStorageConnectionFacto
       try
       {
          final Connection conn =
-            dbDataSource != null ? dbDataSource.getConnection() : (dbUserName != null ? DriverManager.getConnection(
-               dbUrl, dbUserName, dbPassword) : DriverManager.getConnection(dbUrl));
-
+            SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
+            {
+               public Connection run() throws Exception
+               {
+                  return dbDataSource != null ? dbDataSource.getConnection() : (dbUserName != null ? DriverManager
+                     .getConnection(dbUrl, dbUserName, dbPassword) : DriverManager.getConnection(dbUrl));
+               }
+            });
          if (readOnly)
          {
             // set this feature only if it asked

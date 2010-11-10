@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.transaction.jbosscache;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -25,8 +26,6 @@ import org.exoplatform.services.transaction.ExoResource;
 import org.exoplatform.services.transaction.TransactionService;
 import org.jboss.cache.transaction.TransactionManagerLookup;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
@@ -240,7 +239,13 @@ public class GenericTransactionService implements TransactionService
                TransactionManager tm;
                try
                {
-                  tm = tmLookup.getTransactionManager();
+                  tm = SecurityHelper.doPriviledgedExceptionAction(new PrivilegedExceptionAction<TransactionManager>()
+                  {
+                     public TransactionManager run() throws Exception
+                     {
+                        return tmLookup.getTransactionManager();
+                     }
+                  });
                }
                catch (Exception e)
                {
@@ -453,7 +458,32 @@ public class GenericTransactionService implements TransactionService
        */
       public Transaction getTransaction() throws SystemException
       {
-         return tm.getTransaction();
+         try
+         {
+            return SecurityHelper.doPriviledgedExceptionAction(new PrivilegedExceptionAction<Transaction>()
+            {
+               public Transaction run() throws Exception
+               {
+                  return tm.getTransaction();
+               }
+            });
+         }
+         catch (PrivilegedActionException pae)
+         {
+            Throwable cause = pae.getCause();
+            if (cause instanceof SystemException)
+            {
+               throw (SystemException)cause;
+            }
+            else if (cause instanceof RuntimeException)
+            {
+               throw (RuntimeException)cause;
+            }
+            else
+            {
+               throw new RuntimeException(cause);
+            }
+         }
       }
 
       /**

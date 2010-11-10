@@ -19,6 +19,8 @@
 package org.exoplatform.services.ftp;
 
 import org.apache.commons.chain.Catalog;
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.command.impl.CommandService;
 import org.exoplatform.services.ftp.client.FtpClientSession;
 import org.exoplatform.services.ftp.client.FtpClientSessionImpl;
@@ -37,6 +39,8 @@ import java.io.InputStream;
 import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.security.PrivilegedAction;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 
 import javax.jcr.RepositoryException;
@@ -72,7 +76,13 @@ public class FtpServerImpl implements FtpServer
       this.configuration = configuration;
       this.repositoryService = repositoryService;
 
-      InputStream commandStream = getClass().getResourceAsStream(COMMAND_PATH);
+      InputStream commandStream = SecurityHelper.doPriviledgedAction(new PrivilegedAction<InputStream>()
+      {
+         public InputStream run()
+         {
+            return getClass().getResourceAsStream(COMMAND_PATH);
+         }
+      });
 
       commandService.putCatalog(commandStream);
       commandCatalog = commandService.getCatalog(FtpConst.FTP_COMMAND_CATALOG);
@@ -84,13 +94,13 @@ public class FtpServerImpl implements FtpServer
 
       File cacheFolder = new File(cacheFolderName);
 
-      if (!cacheFolder.exists())
+      if (!PrivilegedFileHelper.exists(cacheFolder))
       {
          log.info("Cache folder not exist. Try to create it...");
-         cacheFolder.mkdir();
+         PrivilegedFileHelper.mkdirs(cacheFolder);
       }
 
-      String[] cacheFiles = cacheFolder.list();
+      String[] cacheFiles = PrivilegedFileHelper.list(cacheFolder);
       if (cacheFiles == null)
       {
          log.info("No cache file in cache folder!");
@@ -102,7 +112,7 @@ public class FtpServerImpl implements FtpServer
          if (cacheFile.endsWith(FtpConst.FTP_CACHEFILEEXTENTION))
          {
             File file = new File(cacheFolderName + "/" + cacheFile);
-            file.delete();
+            PrivilegedFileHelper.delete(file);
          }
       }
 
@@ -216,6 +226,7 @@ public class FtpServerImpl implements FtpServer
          enable = false;
       }
 
+      @Override
       public void run()
       {
          while (enable)
@@ -223,7 +234,14 @@ public class FtpServerImpl implements FtpServer
             Socket incoming = null;
             try
             {
-               incoming = serverSocket.accept();
+               incoming = SecurityHelper.doPriviledgedExceptionAction(new PrivilegedExceptionAction<Socket>()
+               {
+                  public Socket run() throws Exception
+                  {
+                     return serverSocket.accept();
+                  }
+               });
+
                FtpClientSession clientSession = new FtpClientSessionImpl(ftpServer, incoming);
                clients.add(clientSession);
 

@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl.config;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ValueParam;
@@ -40,6 +41,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -179,7 +182,34 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
             saveStream = PrivilegedFileHelper.fileOutputStream(sourceConfig);
          }
 
-         IBindingFactory bfact = BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
+         IBindingFactory bfact;
+         try
+         {
+            bfact = SecurityHelper.doPriviledgedExceptionAction(new PrivilegedExceptionAction<IBindingFactory>()
+            {
+               public IBindingFactory run() throws Exception
+               {
+                  return BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
+               }
+            });
+         }
+         catch (PrivilegedActionException pae)
+         {
+            Throwable cause = pae.getCause();
+            if (cause instanceof JiBXException)
+            {
+               throw (JiBXException)cause;
+            }
+            else if (cause instanceof RuntimeException)
+            {
+               throw (RuntimeException)cause;
+            }
+            else
+            {
+               throw new RuntimeException(cause);
+            }
+         }
+         
          IMarshallingContext mctx = bfact.createMarshallingContext();
 
          mctx.marshalDocument(this, "ISO-8859-1", null, saveStream);

@@ -18,12 +18,15 @@
  */
 package org.exoplatform.services.jcr.config;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.jibx.runtime.BindingDirectory;
 import org.jibx.runtime.IBindingFactory;
 import org.jibx.runtime.IUnmarshallingContext;
 import org.jibx.runtime.JiBXException;
 
 import java.io.InputStream;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +47,7 @@ public class RepositoryServiceConfiguration extends AbstractRepositoryServiceCon
    {
       for (int i = 0; i < getRepositoryConfigurations().size(); i++)
       {
-         RepositoryEntry conf = (RepositoryEntry)getRepositoryConfigurations().get(i);
+         RepositoryEntry conf = getRepositoryConfigurations().get(i);
          if (conf.getName().equals(name))
             return conf;
       }
@@ -77,7 +80,34 @@ public class RepositoryServiceConfiguration extends AbstractRepositoryServiceCon
    {
       try
       {
-         IBindingFactory factory = BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
+         IBindingFactory factory;
+         try
+         {
+            factory = SecurityHelper.doPriviledgedExceptionAction(new PrivilegedExceptionAction<IBindingFactory>()
+            {
+               public IBindingFactory run() throws Exception
+               {
+                  return BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
+               }
+            });
+         }
+         catch (PrivilegedActionException pae)
+         {
+            Throwable cause = pae.getCause();
+            if (cause instanceof JiBXException)
+            {
+               throw (JiBXException)cause;
+            }
+            else if (cause instanceof RuntimeException)
+            {
+               throw (RuntimeException)cause;
+            }
+            else
+            {
+               throw new RuntimeException(cause);
+            }
+         }
+
          IUnmarshallingContext uctx = factory.createUnmarshallingContext();
          RepositoryServiceConfiguration conf = (RepositoryServiceConfiguration)uctx.unmarshalDocument(is, null);
 
@@ -127,6 +157,7 @@ public class RepositoryServiceConfiguration extends AbstractRepositoryServiceCon
     * 
     * @return
     */
+   @Override
    public boolean isRetainable()
    {
       return false;
