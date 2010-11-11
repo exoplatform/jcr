@@ -24,7 +24,7 @@
   <parent>
     <groupId>org.exoplatform.jcr</groupId>
     <artifactId>jcr-parent</artifactId>
-    <version>1.12.6-CR01</version>
+    <version>1.12.6-CR02-SNAPSHOT</version>
   </parent>
   <artifactId>exo.jcr.component.ftp</artifactId>
   <name>eXo JCR :: Component :: FTP Service</name>
