@@ -33,19 +33,33 @@
    <url>http://www.exoplatform.org</url>
    <description>eXo JCR Tomcat Applications Server</description>
 
+
+
+   <dependencyManagement>
+      <dependencies>
+         <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.5.8</version>
+            <type>jar</type>
+            <scope>runtime</scope>
+         </dependency>
+      </dependencies>
+    </dependencyManagement>
+
    <dependencies>
+      <dependency>
+         <groupId>org.slf4j</groupId>
+         <artifactId>slf4j-log4j12</artifactId>
+      </dependency>
+
       <dependency>
          <groupId>hsqldb</groupId>
          <artifactId>hsqldb</artifactId>
          <scope>runtime</scope>
       </dependency>
-     <dependency>
-         <groupId>org.slf4j</groupId>
-         <artifactId>slf4j-log4j12</artifactId>
-         <scope>runtime</scope>
-      </dependency>  
    </dependencies>
-   
+
    <properties>
      <enforcer.skip>true</enforcer.skip>
    </properties>
