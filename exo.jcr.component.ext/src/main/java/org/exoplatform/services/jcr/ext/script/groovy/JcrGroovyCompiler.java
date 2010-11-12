@@ -24,15 +24,24 @@ import groovy.lang.GroovyCodeSource;
 
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.services.jcr.ext.resource.JcrURLConnection;
 import org.exoplatform.services.jcr.ext.resource.UnifiedNodeReference;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+import org.picocontainer.Startable;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * JcrGroovyCompiler can load source code of groovy script from JCR and parse it
@@ -41,9 +50,14 @@ import java.security.PrivilegedExceptionAction;
  * @author <a href="mailto:andrew00x@gmail.com">Andrey Parfonov</a>
  * @version $Id$
  */
-public class JcrGroovyCompiler
+public class JcrGroovyCompiler implements Startable
 {
+   /** Logger. */
+   private static final Log LOG = ExoLogger.getLogger(JcrGroovyCompiler.class);
+
    protected GroovyClassLoader gcl;
+
+   protected List<GroovyScriptAddRepoPlugin> addRepoPlugins;
 
    public JcrGroovyCompiler()
    {
@@ -56,30 +70,21 @@ public class JcrGroovyCompiler
       });
    }
 
-   /**
-    * @return get underling groovy class loader
-    */
-   public GroovyClassLoader getGroovyClassLoader()
+   public void addPlugin(ComponentPlugin cp)
    {
-      return gcl;
-   }
-
-   /**
-    * Set groovy class loader.
-    *
-    * @param gcl groovy class loader
-    * @throws NullPointerException if <code>gcl == null</code>
-    */
-   public void setGroovyClassLoader(GroovyClassLoader gcl)
-   {
-      if (gcl == null)
-         throw new NullPointerException("GroovyClassLoader may not be null.");
-      this.gcl = gcl;
+      if (cp instanceof GroovyScriptAddRepoPlugin)
+      {
+         if (addRepoPlugins == null)
+         {
+            addRepoPlugins = new ArrayList<GroovyScriptAddRepoPlugin>();
+         }
+         addRepoPlugins.add((GroovyScriptAddRepoPlugin)cp);
+      }
    }
 
    public Class<?>[] compile(UnifiedNodeReference... sourceReferences) throws IOException
    {
-      final GroovyClassLoader cl = gcl;
+      final GroovyClassLoader cl = getGroovyClassLoader();
       Class<?>[] classes = new Class<?>[sourceReferences.length];
       for (int i = 0; i < sourceReferences.length; i++)
       {
@@ -132,6 +137,51 @@ public class JcrGroovyCompiler
          }
       }
       return classes;
+   }
+
+   /**
+    * @return get underling groovy class loader
+    */
+   public GroovyClassLoader getGroovyClassLoader()
+   {
+      return gcl;
+   }
+
+   /**
+    * Set groovy class loader.
+    *
+    * @param gcl groovy class loader
+    * @throws NullPointerException if <code>gcl == null</code>
+    */
+   public void setGroovyClassLoader(GroovyClassLoader gcl)
+   {
+      if (gcl == null)
+         throw new NullPointerException("GroovyClassLoader may not be null.");
+      this.gcl = gcl;
+   }
+
+   public void start()
+   {
+      if (addRepoPlugins != null && addRepoPlugins.size() > 0)
+      {
+         try
+         {
+            Set<URL> repos = new HashSet<URL>();
+            for (GroovyScriptAddRepoPlugin pl : addRepoPlugins)
+            {
+               repos.addAll(pl.getRepositories());
+            }
+            getGroovyClassLoader().setResourceLoader(new JcrGroovyResourceLoader(repos.toArray(new URL[repos.size()])));
+         }
+         catch (MalformedURLException e)
+         {
+            LOG.error("Unable add groovy script repository. ", e);
+         }
+      }
+   }
+
+   public void stop()
+   {
    }
 
    /**
