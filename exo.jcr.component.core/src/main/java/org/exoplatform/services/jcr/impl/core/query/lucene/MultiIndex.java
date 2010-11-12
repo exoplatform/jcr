@@ -1143,6 +1143,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          if (dirNames[i].startsWith("_") && !indexNames.contains(dirNames[i]))
          {
             deletable.add(dirNames[i]);
+            System.out.println("!!!!!!!!!!!!!!!!!!!! " + dirNames[i]);
          }
       }
    }
