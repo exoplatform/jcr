@@ -55,7 +55,7 @@ QueryResult result = query.execute();</programlisting>
     <programlisting>// make XPath query
 QueryManager queryManager = workspace.getQueryManager();
 // create query
-String xpathStatement = "//element(*,mix:title) order by prop_pagecount ascending";
+String xpathStatement = "//element(*,mix:title) order by @prop_pagecount ascending";
 Query query = queryManager.createQuery(xpathStatement, Query.XPATH);
 // execute query and fetch result
 QueryResult result = query.execute();</programlisting>
