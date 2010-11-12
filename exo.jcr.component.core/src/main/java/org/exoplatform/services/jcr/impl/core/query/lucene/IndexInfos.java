@@ -116,10 +116,7 @@ public class IndexInfos
       indexes.clear();
       if (dir.fileExists(name))
       {
-         System.out.println("------------------------ READ --------------------");
          // clear current lists
-         dir.list();
-         System.out.println("REFRESH");
          InputStream in = new IndexInputStream(dir.openInput(name));
          try
          {
@@ -130,7 +127,6 @@ public class IndexInfos
                String indexName = di.readUTF();
                indexes.add(indexName);
                names.add(indexName);
-               System.out.println("index " + indexName);
             }
          }
          finally
@@ -154,7 +150,6 @@ public class IndexInfos
          return;
       }
 
-      System.out.println("------------------------ WRITE --------------------");
       OutputStream out = new IndexOutputStream(dir.createOutput(name + ".new"));
       try
       {
@@ -164,7 +159,6 @@ public class IndexInfos
          for (int i = 0; i < indexes.size(); i++)
          {
             dataOut.writeUTF(getName(i));
-            System.out.println("index: " + getName(i));
          }
       }
       finally
