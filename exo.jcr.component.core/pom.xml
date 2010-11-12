@@ -408,12 +408,9 @@
                   <exclude>org/exoplatform/services/jcr/**/TestQueryUsecases.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/api/TestAll.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/api/**/TestVersionRestore.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/api/**/TestSameNameItems.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/api/**/TestVersionRestore.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/TestWorkspaceManagement.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/TestRepositoryManagement.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/TestDBCleanerService.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/impl/**/TestSaveConfiguration.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/TestSessionCleaner.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/Base*.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/TestJCRSerializationStream.java</exclude>
@@ -421,12 +418,9 @@
                   <exclude>org/exoplatform/services/jcr/**/usecases/**/RemoveSameNameSiblingTest.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/usecases/**/TestQueryWithNumberAndSpace.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/usecases/BaseUsecasesTest.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/usecases/**/ExportWorkspaceSystemViewTest.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/TestSessionDataManager.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/impl/**/TestLinkedWorkspaceStorageCacheMetrics.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/SQLBenchmarkTest.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/TestLockPerstistentDataManager.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/impl/**/TestCleanableFileStreamValueData.java</exclude>       
                </excludes>
             </configuration>
          </plugin>
