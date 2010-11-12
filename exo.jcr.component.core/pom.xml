@@ -406,10 +406,7 @@
                </includes>
                <excludes>
                   <exclude>org/exoplatform/services/jcr/**/TestQueryUsecases.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/TestRollbackBigFiles.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/TestErrorMultithreading.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/api/TestAll.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/api/**/TestSameNameItems.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/api/**/TestVersionRestore.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/api/**/TestSameNameItems.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/api/**/TestVersionRestore.java</exclude>
@@ -417,7 +414,6 @@
                   <exclude>org/exoplatform/services/jcr/**/impl/**/TestRepositoryManagement.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/TestDBCleanerService.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/TestSaveConfiguration.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/impl/**/ValueStoragePluginTest.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/TestSessionCleaner.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/Base*.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/TestJCRSerializationStream.java</exclude>
@@ -430,7 +426,7 @@
                   <exclude>org/exoplatform/services/jcr/**/impl/**/TestLinkedWorkspaceStorageCacheMetrics.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/SQLBenchmarkTest.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/TestLockPerstistentDataManager.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/impl/**/TestCleanableFileStreamValueData.java</exclude>      
+                  <exclude>org/exoplatform/services/jcr/**/impl/**/TestCleanableFileStreamValueData.java</exclude>       
                </excludes>
             </configuration>
          </plugin>
