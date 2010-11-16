@@ -137,6 +137,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
 
    private HashMap<MediaType, String> cacheControlMap = new HashMap<MediaType, String>();
 
+   public static final String FOLDER_ICON_PATH = "folder-icon-path";
+
    /**
     * Logger.
     */
@@ -183,6 +185,11 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    private String autoVersionType = "checkout-checkin";
 
    /**
+    * XSLT parameters.
+    */
+   private Map<String, String> xsltParams = new HashMap<String, String>();
+
+   /**
     * The list of allowed methods.
     */
    private static final String ALLOW;
@@ -222,6 +229,13 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       this.sessionProviderService = sessionProviderService;
       this.repositoryService = repositoryService;
       this.nullResourceLocks = new NullResourceLocksHolder();
+
+      ValueParam pXSLTParam = params.getValueParam(FOLDER_ICON_PATH);
+      if (pXSLTParam != null)
+      {
+         xsltParams.put(FOLDER_ICON_PATH, pXSLTParam.getValue());
+         log.info(FOLDER_ICON_PATH + " = " + pXSLTParam.getValue());
+      }
 
       ValueParam pDefFolderNodeType = params.getValueParam(INIT_PARAM_DEF_FOLDER_NODE_TYPE);
       if (pDefFolderNodeType != null)
@@ -300,7 +314,14 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       this.repositoryService = repositoryService;
       this.nullResourceLocks = new NullResourceLocksHolder();
 
-      String paramValue = params.get(INIT_PARAM_DEF_FOLDER_NODE_TYPE);
+      String paramValue = params.get(FOLDER_ICON_PATH);
+      if (paramValue != null)
+      {
+         xsltParams.put(FOLDER_ICON_PATH, paramValue);
+         log.info(FOLDER_ICON_PATH + " = " + paramValue);
+      }
+
+      paramValue = params.get(INIT_PARAM_DEF_FOLDER_NODE_TYPE);
       if (paramValue != null)
       {
          defaultFolderNodeType = paramValue;
@@ -634,7 +655,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          String uri =
             uriInfo.getBaseUriBuilder().path(getClass()).path(repoName).path(workspaceName(repoPath)).build()
                .toString();
-         return new GetCommand().get(session, path(repoPath), version, uri, ranges, ifModifiedSince, cacheControlMap);
+         return new GetCommand(xsltParams).get(session, path(repoPath), version, uri, ranges, ifModifiedSince,
+            cacheControlMap);
 
       }
       catch (PathNotFoundException exc)

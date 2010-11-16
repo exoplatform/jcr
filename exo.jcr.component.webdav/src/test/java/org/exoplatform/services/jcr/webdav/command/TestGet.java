@@ -18,7 +18,21 @@
  */
 package org.exoplatform.services.jcr.webdav.command;
 
+import org.exoplatform.common.http.HTTPStatus;
+import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
+import org.exoplatform.services.jcr.impl.core.version.VersionImpl;
+import org.exoplatform.services.jcr.webdav.BaseStandaloneTest;
+import org.exoplatform.services.jcr.webdav.WebDavConst;
+import org.exoplatform.services.jcr.webdav.WebDavConstants.WebDAVMethods;
+import org.exoplatform.services.jcr.webdav.utils.TestUtils;
+import org.exoplatform.services.rest.ExtHttpHeaders;
+import org.exoplatform.services.rest.ext.provider.XSLTStreamingOutput;
+import org.exoplatform.services.rest.impl.ContainerResponse;
+import org.exoplatform.services.rest.impl.MultivaluedMapImpl;
+
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -31,18 +45,6 @@ import java.util.Locale;
 
 import javax.jcr.Node;
 import javax.ws.rs.core.MultivaluedMap;
-
-import org.exoplatform.common.http.HTTPStatus;
-import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
-import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
-import org.exoplatform.services.jcr.impl.core.version.VersionImpl;
-import org.exoplatform.services.jcr.webdav.BaseStandaloneTest;
-import org.exoplatform.services.jcr.webdav.WebDavConst;
-import org.exoplatform.services.jcr.webdav.WebDavConstants.WebDAVMethods;
-import org.exoplatform.services.jcr.webdav.utils.TestUtils;
-import org.exoplatform.services.rest.ExtHttpHeaders;
-import org.exoplatform.services.rest.impl.ContainerResponse;
-import org.exoplatform.services.rest.impl.MultivaluedMapImpl;
 
 /**
  * Created by The eXo Platform SAS Author : Dmytro Katayev
@@ -170,6 +172,25 @@ public class TestGet extends BaseStandaloneTest
       headers.add(ExtHttpHeaders.IF_MODIFIED_SINCE, ifModifiedSinceDate);
       response = service(WebDAVMethods.GET, path, "", headers, null);
       assertEquals(HTTPStatus.NOT_MODIFIED, response.getStatus());
+   }
+
+   public void testXSLTParamsPassing() throws Exception
+   {
+      String strToTest = "/absolute/path/to/file";
+      String folderName = TestUtils.getFolderName();
+      TestUtils.addFolder(session, folderName, defaultFolderNodeType, "");
+      ContainerResponse response = service(WebDAVMethods.GET, getPathWS() + folderName, "", null, null);
+
+      assertEquals(HTTPStatus.OK, response.getStatus());
+
+      XSLTStreamingOutput XSLTout = (XSLTStreamingOutput)response.getEntity();
+      ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+      XSLTout.write(byteOut);
+
+      System.out.println("\n" + byteOut.toString() + "\n");
+
+      assertTrue(byteOut.toString().contains(strToTest));
+
    }
 
    @Override
