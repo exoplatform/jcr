@@ -143,6 +143,15 @@
       &lt;value&gt;text/xml,text/html:max-age=3600;image/png,image/jpg:max-age=1800;*/*:no-cache;&lt;/value&gt;
     &lt;/value-param&gt;
 
+    &lt;!--
+        This parameter determines the absolute path to the folder icon file, which is shown
+        during WebDAV view of the contents
+    --&gt;
+    &lt;value-param&gt;
+      &lt;name&gt;folder-icon-path&lt;/name&gt;
+      &lt;value&gt;/absolute/path/to/file&lt;/value&gt;
+    &lt;/value-param&gt;
+
   &lt;/init-params
 &lt;/component&gt;</programlisting>
   </section>
