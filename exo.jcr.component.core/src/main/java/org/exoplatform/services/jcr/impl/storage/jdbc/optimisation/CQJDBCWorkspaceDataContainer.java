@@ -33,6 +33,7 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.GenericCQC
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.HSQLDBConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.MySQLConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.OracleConnectionFactory;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerException;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 import org.exoplatform.services.naming.InitialContextInitializer;
@@ -67,10 +68,11 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
     *           if JNDI exception (on DataSource lookup)
     */
    public CQJDBCWorkspaceDataContainer(WorkspaceEntry wsConfig, RepositoryEntry repConfig,
-      InitialContextInitializer contextInit, ValueStoragePluginProvider valueStorageProvider)
-      throws RepositoryConfigurationException, NamingException, RepositoryException, IOException
+      InitialContextInitializer contextInit, ValueStoragePluginProvider valueStorageProvider,
+      FileCleanerHolder fileCleanerHolder) throws RepositoryConfigurationException, NamingException,
+      RepositoryException, IOException
    {
-      super(wsConfig, repConfig, contextInit, valueStorageProvider);
+      super(wsConfig, repConfig, contextInit, valueStorageProvider, fileCleanerHolder);
    }
 
    /**

@@ -43,7 +43,7 @@ import org.exoplatform.services.jcr.impl.WorkspaceContainer;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ReaderSpoolFileHolder;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.jcr.impl.util.io.WorkspaceFileCleanerHolder;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
@@ -398,8 +398,7 @@ public class ReplicationService implements Startable, ManagementAware
                         wconf.getContainer().getParameterInteger(WorkspaceDataContainer.MAXBUFFERSIZE_PROP,
                            WorkspaceDataContainer.DEF_MAXBUFFERSIZE);
 
-                     WorkspaceFileCleanerHolder wfcleaner =
-                        (WorkspaceFileCleanerHolder)wsFacade.getComponent(WorkspaceFileCleanerHolder.class);
+                     FileCleanerHolder wfcleaner = (FileCleanerHolder)wsFacade.getComponent(FileCleanerHolder.class);
                      FileCleaner fileCleaner = wfcleaner.getFileCleaner();
 
                      // create the RecoveryManager

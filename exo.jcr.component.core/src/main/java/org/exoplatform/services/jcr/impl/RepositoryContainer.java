@@ -41,6 +41,7 @@ import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.jcr.impl.core.WorkspaceInitializer;
 import org.exoplatform.services.jcr.impl.core.access.DefaultAccessManagerImpl;
 import org.exoplatform.services.jcr.impl.core.lock.LockManagerImpl;
+import org.exoplatform.services.jcr.impl.core.lock.LockRemoverHolder;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeDataManagerImpl;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
 import org.exoplatform.services.jcr.impl.core.nodetype.registration.JCRNodeTypeDataPersister;
@@ -56,15 +57,12 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStor
 import org.exoplatform.services.jcr.impl.dataflow.persistent.LocalWorkspaceDataManagerStub;
 import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
 import org.exoplatform.services.jcr.impl.storage.value.StandaloneStoragePluginProvider;
-import org.exoplatform.services.jcr.impl.util.io.WorkspaceFileCleanerHolder;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import javax.jcr.NamespaceRegistry;
@@ -335,7 +333,6 @@ public class RepositoryContainer extends ExoContainer
          }
          workspaceContainer.registerComponentImplementation(initilizerType);
          workspaceContainer.registerComponentImplementation(SessionFactory.class);
-         workspaceContainer.registerComponentImplementation(WorkspaceFileCleanerHolder.class);
 
          LocalWorkspaceDataManagerStub wsDataManager =
             (LocalWorkspaceDataManagerStub)workspaceContainer
@@ -480,7 +477,10 @@ public class RepositoryContainer extends ExoContainer
    {
 
       registerComponentInstance(config);
-
+      // WorkspaceFileCleanerHolder - is a common holder for all workspaces. 
+      // It is used to initialize FileValueStorage
+      registerComponentImplementation(FileCleanerHolder.class);
+      registerComponentImplementation(LockRemoverHolder.class);
       registerWorkspacesComponents();
       registerRepositoryComponents();
    }
@@ -492,7 +492,6 @@ public class RepositoryContainer extends ExoContainer
 
       registerComponentImplementation(RepositoryIndexSearcherHolder.class);
 
-      registerComponentImplementation(WorkspaceFileCleanerHolder.class);
       registerComponentImplementation(LocationFactory.class);
       registerComponentImplementation(ValueFactoryImpl.class);
 
@@ -583,5 +582,5 @@ public class RepositoryContainer extends ExoContainer
       ntManager.start();
 
    }
-   
+
 }

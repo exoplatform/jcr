@@ -42,6 +42,7 @@ import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.lock.LockRemover;
+import org.exoplatform.services.jcr.impl.core.lock.LockRemoverHolder;
 import org.exoplatform.services.jcr.impl.core.lock.SessionLockManager;
 import org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManager;
 import org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableSessionLockManager;
@@ -161,10 +162,10 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
     * @throws RepositoryConfigurationException
     */
    public CacheableJDBCLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
-      InitialContextInitializer context, TransactionService transactionService, ConfigurationManager cfm)
-      throws RepositoryConfigurationException, RepositoryException
+      InitialContextInitializer context, TransactionService transactionService, ConfigurationManager cfm,
+      LockRemoverHolder lockRemoverHolder) throws RepositoryConfigurationException, RepositoryException
    {
-      this(dataManager, config, context, transactionService.getTransactionManager(), cfm);
+      this(dataManager, config, context, transactionService.getTransactionManager(), cfm, lockRemoverHolder);
    }
 
    /**
@@ -176,10 +177,10 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
     * @throws RepositoryConfigurationException
     */
    public CacheableJDBCLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
-      InitialContextInitializer context, ConfigurationManager cfm) throws RepositoryConfigurationException,
-      RepositoryException
+      InitialContextInitializer context, ConfigurationManager cfm, LockRemoverHolder lockRemoverHolder)
+      throws RepositoryConfigurationException, RepositoryException
    {
-      this(dataManager, config, context, (TransactionManager)null, cfm);
+      this(dataManager, config, context, (TransactionManager)null, cfm, lockRemoverHolder);
    }
 
    /**
@@ -194,8 +195,8 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
     * @throws RepositoryException 
     */
    public CacheableJDBCLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
-      InitialContextInitializer context, TransactionManager transactionManager, ConfigurationManager cfm)
-      throws RepositoryConfigurationException, RepositoryException
+      InitialContextInitializer context, TransactionManager transactionManager, ConfigurationManager cfm,
+      LockRemoverHolder lockRemoverHolder) throws RepositoryConfigurationException, RepositoryException
    {
       lockRoot = Fqn.fromElements(LOCKS);
 
@@ -250,6 +251,8 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
       {
          throw new RepositoryConfigurationException("Cache configuration not found");
       }
+
+      lockRemover = lockRemoverHolder.getLockRemover(this);
    }
 
    @Managed
@@ -598,7 +601,7 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
     */
    public void start()
    {
-      lockRemover = new LockRemover(this);
+      lockRemover.start();
    }
 
    /**
@@ -606,8 +609,8 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
     */
    public void stop()
    {
-      lockRemover.halt();
-      lockRemover.interrupt();
+      lockRemover.stop();
+
       sessionLockManagers.clear();
       cache.stop();
    }

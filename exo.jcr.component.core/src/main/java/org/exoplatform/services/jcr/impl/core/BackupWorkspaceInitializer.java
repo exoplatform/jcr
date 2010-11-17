@@ -35,8 +35,6 @@ import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
-import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
-import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
@@ -91,7 +89,7 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
       super(config, repConfig, dataManager, namespaceRegistry, locationFactory, nodeTypeManager, valueFactory,
          accessManager);
 
-      this.fileCleaner = new FileCleaner();
+      this.fileCleaner = valueFactory.getFileCleaner();
 
       restoreDir = restorePath;
 
@@ -105,6 +103,7 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
       this.tempDir = new File(System.getProperty("java.io.tmpdir"));
    }
 
+   @Override
    public NodeData initWorkspace() throws RepositoryException
    {
 
@@ -366,8 +365,6 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
 
          restoreChangesLog.restore();
 
-         TransactionChangesLog log = restoreChangesLog.getItemDataChangesLog();
-
       }
       else if (changesLogType == RestoreChangesLog.Type.ItemDataChangesLog_without_Streams)
       {
@@ -449,7 +446,7 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
 
             PersistedPropertyData propertyData = (PersistedPropertyData)itemData;
             ValueData tvd =
-               (ValueData)(propertyData.getValues().get(listFixupStream.get(i).getValueDataId()));
+               (propertyData.getValues().get(listFixupStream.get(i).getValueDataId()));
 
             // re-init the value
             propertyData.getValues().set(listFixupStream.get(i).getValueDataId(), 

@@ -265,7 +265,8 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
          else if (tmpFile == null && (((TempOutputStream)buff).getSize() + buffer.length) > maxBufferSize)
          {
             // spool to file
-            FileOutputStream fout = new FileOutputStream(tmpFile = SpoolFile.createTempFile("jcrrestorewi", ".tmp", tempDir));
+            FileOutputStream fout =
+               new FileOutputStream(tmpFile = SpoolFile.createTempFile("jcrrestorewi", ".tmp", tempDir));
             fout.write(((TempOutputStream)buff).getBuffer());
             buff.close();
             buff = fout; // use file
@@ -398,7 +399,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
       this.namespaceRegistry = namespaceRegistry;
       this.locationFactory = locationFactory;
 
-      this.fileCleaner = new FileCleaner(false); // cleaner should be started!
+      this.fileCleaner = valueFactory.getFileCleaner();
       this.maxBufferSize =
          config.getContainer().getParameterInteger(WorkspaceDataContainer.MAXBUFFERSIZE_PROP,
             WorkspaceDataContainer.DEF_MAXBUFFERSIZE);
@@ -409,7 +410,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
          throw new RepositoryConfigurationException("Workspace (" + workspaceName
             + ") RestoreIntializer should have mandatory parameter "
             + SysViewWorkspaceInitializer.RESTORE_PATH_PARAMETER);
-      
+
       this.tempDir = new File(System.getProperty("java.io.tmpdir"));
    }
 
@@ -450,12 +451,12 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
       this.namespaceRegistry = namespaceRegistry;
       this.locationFactory = locationFactory;
 
-      this.fileCleaner = new FileCleaner(false); // cleaner should be started!
+      this.fileCleaner = valueFactory.getFileCleaner();
       this.maxBufferSize =
          config.getContainer().getParameterInteger(WorkspaceDataContainer.MAXBUFFERSIZE_PROP,
             WorkspaceDataContainer.DEF_MAXBUFFERSIZE);
       this.restorePath = restorePath;
-      
+
       this.tempDir = new File(System.getProperty("java.io.tmpdir"));
    }
 
@@ -771,7 +772,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
                            }
                            else
                            {
-                              
+
                               File pfile = propertyValue.getFile();
                               if (pfile != null)
                               {
@@ -811,7 +812,6 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
 
    public void start()
    {
-      fileCleaner.start();
    }
 
    public void stop()

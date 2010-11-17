@@ -146,12 +146,14 @@ public class LockManagerImpl implements WorkspaceLockManager, ItemsPersistenceLi
     * @param dataManager
     * @param config
     */
-   public LockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config)
+   public LockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
+      LockRemoverHolder lockRemoverHolder)
    {
-      this(dataManager, config, null);
+      this(dataManager, config, null, lockRemoverHolder);
    }
 
-   public LockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config, LockPersister persister)
+   public LockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config, LockPersister persister,
+      LockRemoverHolder lockRemoverHolder)
    {
 
       this.dataManager = dataManager;
@@ -169,6 +171,7 @@ public class LockManagerImpl implements WorkspaceLockManager, ItemsPersistenceLi
       tokensMap = new HashMap<String, LockData>();
 
       dataManager.addItemPersistenceListener(this);
+      lockRemover = lockRemoverHolder.getLockRemover(this);
    }
 
    public synchronized void addLockToken(String sessionId, String lt)
@@ -468,7 +471,7 @@ public class LockManagerImpl implements WorkspaceLockManager, ItemsPersistenceLi
     */
    public void start()
    {
-      lockRemover = new LockRemover(this);
+      lockRemover.start();
    }
 
    // Quick method. We need to reconstruct
@@ -503,8 +506,8 @@ public class LockManagerImpl implements WorkspaceLockManager, ItemsPersistenceLi
     */
    public void stop()
    {
-      lockRemover.halt();
-      lockRemover.interrupt();
+      lockRemover.stop();
+
       locks.clear();
       pendingLocks.clear();
       tokensMap.clear();

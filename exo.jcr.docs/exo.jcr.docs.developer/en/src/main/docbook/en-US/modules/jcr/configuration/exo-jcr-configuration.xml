@@ -197,6 +197,16 @@
     <para><emphasis role="bold">session-max-age</emphasis>: The time after
     which an idle session will be removed (called logout). If session-max-age
     is not set up, idle session will never be removed.</para>
+
+    <para id="JCR.eXoJCRconfiguration.LockRemoverMaxThreads"><emphasis
+    role="bold">lock-remover-max-threads</emphasis>: Number of threads that
+    can serve LockRemover tasks. Default value is 1. Repository may have many
+    workspaces, each workspace have own LockManager. JCR supports Locks with
+    defined lifetime. Such a lock must be removed is it become expired. That
+    is what LockRemovers does. But LockRemovers is not an independent
+    timer-threads, its a task that executed each 30 seconds. Such a task is
+    served by ThreadPoolExecutor which may use different number of
+    threads.</para>
   </section>
 
   <section>
@@ -375,6 +385,13 @@
 
     <para><emphasis role="bold">path</emphasis>: A lock folder. Each workspace
     has its own one.</para>
+
+    <note>
+      <para>Also see <link
+      linkend="JCR.eXoJCRconfiguration.LockRemoverMaxThreads"><emphasis
+      role="bold">lock-remover-max-threads</emphasis></link> repository
+      configuration parameter.</para>
+    </note>
 
     <programlisting>&lt;!ELEMENT repository-service (repositories)&gt;
 &lt;!ATTLIST repository-service default-repository NMTOKEN #REQUIRED&gt;

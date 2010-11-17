@@ -43,6 +43,7 @@ import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.lock.LockRemover;
+import org.exoplatform.services.jcr.impl.core.lock.LockRemoverHolder;
 import org.exoplatform.services.jcr.impl.core.lock.SessionLockManager;
 import org.exoplatform.services.jcr.impl.dataflow.TransientItemData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
@@ -178,10 +179,10 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
     * @throws RepositoryConfigurationException
     */
    public CacheableLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
-      InitialContextInitializer context, TransactionService transactionService, ConfigurationManager cfm)
-      throws RepositoryConfigurationException, RepositoryException
+      InitialContextInitializer context, TransactionService transactionService, ConfigurationManager cfm,
+      LockRemoverHolder lockRemoverHolder) throws RepositoryConfigurationException, RepositoryException
    {
-      this(dataManager, config, context, transactionService.getTransactionManager(), cfm);
+      this(dataManager, config, context, transactionService.getTransactionManager(), cfm, lockRemoverHolder);
    }
 
    /**
@@ -193,10 +194,10 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
     * @throws RepositoryConfigurationException
     */
    public CacheableLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
-      InitialContextInitializer context, ConfigurationManager cfm) throws RepositoryConfigurationException,
-      RepositoryException
+      InitialContextInitializer context, ConfigurationManager cfm, LockRemoverHolder lockRemoverHolder)
+      throws RepositoryConfigurationException, RepositoryException
    {
-      this(dataManager, config, context, (TransactionManager)null, cfm);
+      this(dataManager, config, context, (TransactionManager)null, cfm, lockRemoverHolder);
 
    }
 
@@ -211,8 +212,8 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
     * @throws RepositoryConfigurationException
     */
    public CacheableLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
-      InitialContextInitializer context, TransactionManager transactionManager, ConfigurationManager cfm)
-      throws RepositoryConfigurationException, RepositoryException
+      InitialContextInitializer context, TransactionManager transactionManager, ConfigurationManager cfm,
+      LockRemoverHolder lockRemoverHolder) throws RepositoryConfigurationException, RepositoryException
    {
       lockRoot = Fqn.fromElements(LOCKS);
 
@@ -269,6 +270,9 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
       {
          throw new RepositoryConfigurationException("Cache configuration not found");
       }
+
+      lockRemover = lockRemoverHolder.getLockRemover(this);
+
    }
 
    /**
@@ -490,7 +494,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
       }
       return true;
    }
-   
+
    /**
     * Return new instance of session lock manager.
     */
@@ -769,7 +773,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
     */
    public void start()
    {
-      lockRemover = new LockRemover(this);
+      lockRemover.start();
    }
 
    /*
@@ -778,8 +782,8 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
     */
    public void stop()
    {
-      lockRemover.halt();
-      lockRemover.interrupt();
+      lockRemover.stop();
+
       sessionLockManagers.clear();
       cache.stop();
    }
@@ -913,7 +917,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
    {
       return getExactNodeOrCloseParentLock(node, true);
    }
-   
+
    private LockData getExactNodeOrCloseParentLock(NodeData node, boolean checkHasLocks) throws RepositoryException
    {
 
@@ -954,7 +958,7 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
    {
       return getClosedChild(node, true);
    }
-   
+
    private LockData getClosedChild(NodeData node, boolean checkHasLocks) throws RepositoryException
    {
 

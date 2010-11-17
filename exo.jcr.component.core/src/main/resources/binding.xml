@@ -17,6 +17,8 @@
     <value name="access-control" field="accessControl" usage="optional" />
     <value name="session-max-age" field="sessionTimeOut" 
 		  deserializer="org.exoplatform.services.jcr.util.ConfigurationFormat.parseTime" usage="optional" />
+    <value name="lock-remover-max-threads" field="lockRemoverMaxThreadCount" 
+ 		  deserializer="org.exoplatform.services.jcr.util.ConfigurationFormat.parseInt" usage="optional" />
     <value name="authentication-policy" field="authenticationPolicy" />
     <collection name="workspaces" field="workspaces" item-type="org.exoplatform.services.jcr.config.WorkspaceEntry" />
   </mapping>

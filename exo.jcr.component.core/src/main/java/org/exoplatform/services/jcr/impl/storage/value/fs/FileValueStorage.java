@@ -59,9 +59,9 @@ public abstract class FileValueStorage extends ValueStoragePlugin
     * FileValueStorage constructor.
     * 
     */
-   public FileValueStorage()
+   public FileValueStorage(FileCleaner cleaner)
    {
-      this.cleaner = new FileCleaner(); // TODO use container cleaner
+      this.cleaner = cleaner;
    }
 
    /**

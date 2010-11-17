@@ -66,37 +66,46 @@ public class TestTransientValueData extends TestCase
 
    public void testCreateFileStreamTransientValueData() throws Exception
    {
+      FileCleaner testFileCleaner = new FileCleaner();
+      try
+      {
+         byte[] buf = "0123456789".getBytes();
+         File file = new File("target/testCreateFileStreamTransientValueData");
+         if (file.exists())
+            file.delete();
+         FileOutputStream out = new FileOutputStream(file);
+         out.write(buf);
+         out.close();
 
-      byte[] buf = "0123456789".getBytes();
-      File file = new File("target/testCreateFileStreamTransientValueData");
-      if (file.exists())
-         file.delete();
-      FileOutputStream out = new FileOutputStream(file);
-      out.write(buf);
-      out.close();
+         FileInputStream fs1 = new FileInputStream(file);
+         TransientValueData vd =
+            new TransientValueData(0, null, fs1, null, testFileCleaner, 5, new File("target"), true);
 
-      FileInputStream fs1 = new FileInputStream(file);
-      TransientValueData vd = new TransientValueData(0, null, fs1, null, new FileCleaner(), 5, new File("target"), true);
+         // spool to file
+         InputStream fs2 = vd.getAsStream();
+         assertEquals(10, vd.getLength());
+         assertTrue(fs2 instanceof FileInputStream);
 
-      // spool to file
-      InputStream fs2 = vd.getAsStream();
-      assertEquals(10, vd.getLength());
-      assertTrue(fs2 instanceof FileInputStream);
+         // not the same object as new is is from spool file
+         assertNotSame(fs1, fs2);
+         // spooled to file so not a byte array
+         assertFalse(vd.isByteArray());
 
-      // not the same object as new is is from spool file
-      assertNotSame(fs1, fs2);
-      // spooled to file so not a byte array
-      assertFalse(vd.isByteArray());
+         // next call return not the same object as well
+         // (new stream every time)
+         assertNotSame(vd.getAsStream(), fs2);
+         assertEquals(10, vd.getLength());
 
-      // next call return not the same object as well
-      // (new stream every time)
-      assertNotSame(vd.getAsStream(), fs2);
-      assertEquals(10, vd.getLength());
+         // gets as byte array
+         assertEquals(10, vd.getAsByteArray().length);
+         // but still spooled to file
+         assertFalse(vd.isByteArray());
 
-      // gets as byte array
-      assertEquals(10, vd.getAsByteArray().length);
-      // but still spooled to file
-      assertFalse(vd.isByteArray());
+      }
+      finally
+      {
+         testFileCleaner.halt();
+      }
 
    }
 
@@ -118,7 +127,7 @@ public class TestTransientValueData extends TestCase
       // TODO not influenced here as will be spooled to byte array anyway
       //vd.setMaxBufferSize(5);
       //vd.setFileCleaner(new FileCleaner());
-      
+
       //
       InputStream fs2 = vd.getAsStream();
       assertEquals(10, vd.getLength());

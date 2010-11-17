@@ -16,34 +16,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.services.jcr.impl.storage.value.fs;
-
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
-
-import java.io.IOException;
+package org.exoplatform.services.jcr.impl.util.io;
 
 /**
- * Created by The eXo Platform SAS.
+ * Created by The eXo Platform SAS. <br/> per workspace container file cleaner holder object
  * 
- * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov</a>
- * @version $Id: SimpleFileValueStorage.java 34801 2009-07-31 15:44:50Z dkatayev $
+ * @author Gennady Azarenkov
+ * @version $Id: WorkspaceFileCleanerHolder.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class SimpleFileValueStorage extends FileValueStorage
+public class FileCleanerHolder
 {
 
-   public SimpleFileValueStorage(FileCleaner cleaner)
+   private final FileCleaner fileCleaner;
+
+   public FileCleanerHolder()
    {
-      super(cleaner);
+      this.fileCleaner = new FileCleaner();
    }
 
-   /**
-    * @see org.exoplatform.services.jcr.storage.value.ValueStoragePlugin#openIOChannel()
-    */
-   public ValueIOChannel openIOChannel() throws IOException
+   public FileCleaner getFileCleaner()
    {
-      return new SimpleFileIOChannel(rootDir, cleaner, getId(), resources);
+      return fileCleaner;
    }
 
 }
