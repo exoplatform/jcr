@@ -24,8 +24,8 @@ import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
-import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 import org.exoplatform.services.jcr.util.IdGenerator;
+import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 
 import javax.jcr.NamespaceException;
 import javax.jcr.Node;
@@ -80,8 +80,8 @@ public class TestRepositoryManagement extends JcrImplBaseTest
 
       WorkspaceEntry secondWs =
          helper.getNewWs(defaultWs + IdGenerator.generate(), isDefaultWsMultiDb, isDefaultWsMultiDb ? null
-            : workspaceEntry.getContainer().getParameterValue("sourceName"), "target/temp/values/"
-            + IdGenerator.generate(), wsEntry.getContainer());
+            : workspaceEntry.getContainer().getParameterValue("source-name"),
+            "target/temp/values/" + IdGenerator.generate(), wsEntry.getContainer());
 
       repositoryEntry.addWorkspace(secondWs);
 
