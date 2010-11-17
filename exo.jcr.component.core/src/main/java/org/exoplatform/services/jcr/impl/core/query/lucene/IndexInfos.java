@@ -112,6 +112,9 @@ public class IndexInfos
     */
    public void read() throws IOException
    {
+      // Knows issue for NFS based on ext3. Need to refresh directory to read actual data.
+      dir.list();
+
       names.clear();
       indexes.clear();
       if (dir.fileExists(name))
