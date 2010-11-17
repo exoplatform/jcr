@@ -75,6 +75,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.jcr.NoSuchWorkspaceException;
 import javax.jcr.PathNotFoundException;
@@ -136,6 +137,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
 
    private HashMap<MediaType, String> cacheControlMap = new HashMap<MediaType, String>();
 
+   public static final String FOLDER_ICON_PATH = "folder-icon-path";
+
    /**
     * Logger.
     */
@@ -182,6 +185,11 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    private String autoVersionType = "checkout-checkin";
 
    /**
+    * XSLT parameters.
+    */
+   private Map<String, String> xsltParams = new HashMap<String, String>();
+
+   /**
     * The list of allowed methods.
     */
    private static final String ALLOW;
@@ -221,6 +229,13 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       this.sessionProviderService = sessionProviderService;
       this.repositoryService = repositoryService;
       this.nullResourceLocks = new NullResourceLocksHolder();
+
+      ValueParam pXSLTParam = params.getValueParam(FOLDER_ICON_PATH);
+      if (pXSLTParam != null)
+      {
+         xsltParams.put(FOLDER_ICON_PATH, pXSLTParam.getValue());
+         log.info(FOLDER_ICON_PATH + " = " + pXSLTParam.getValue());
+      }
 
       ValueParam pDefFolderNodeType = params.getValueParam(INIT_PARAM_DEF_FOLDER_NODE_TYPE);
       if (pDefFolderNodeType != null)
@@ -545,7 +560,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          String uri =
             uriInfo.getBaseUriBuilder().path(getClass()).path(repoName).path(workspaceName(repoPath)).build()
                .toString();
-         return new GetCommand().get(session, path(repoPath), version, uri, ranges, ifModifiedSince, cacheControlMap);
+         return new GetCommand(xsltParams).get(session, path(repoPath), version, uri, ranges, ifModifiedSince,
+            cacheControlMap);
 
       }
       catch (PathNotFoundException exc)

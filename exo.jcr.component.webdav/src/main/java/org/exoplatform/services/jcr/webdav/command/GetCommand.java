@@ -18,26 +18,6 @@
  */
 package org.exoplatform.services.jcr.webdav.command;
 
-import java.io.InputStream;
-import java.net.URI;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-
-import javax.jcr.Node;
-import javax.jcr.PathNotFoundException;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.xml.transform.stream.StreamSource;
-
 import org.exoplatform.common.http.HTTPStatus;
 import org.exoplatform.common.util.HierarchicalProperty;
 import org.exoplatform.services.jcr.webdav.Range;
@@ -59,6 +39,27 @@ import org.exoplatform.services.rest.ExtHttpHeaders;
 import org.exoplatform.services.rest.ext.provider.XSLTStreamingOutput;
 import org.exoplatform.services.rest.impl.header.MediaTypeHelper;
 
+import java.io.InputStream;
+import java.net.URI;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
+import javax.jcr.Node;
+import javax.jcr.PathNotFoundException;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.xml.transform.stream.StreamSource;
+
 /**
  * Created by The eXo Platform SAS Author : <a
  * href="gavrikvetal@gmail.com">Vitaly Guly</a>.
@@ -73,6 +74,17 @@ public class GetCommand
     * Logger.
     */
    private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.GetCommand");
+
+   private Map<String, String> xsltParams;
+
+   public GetCommand()
+   {
+   }
+
+   public GetCommand(Map<String, String> xsltParams)
+   {
+      this.xsltParams = xsltParams;
+   }
 
    /**
     * GET content of the resource. Can be return content of the file. The content
@@ -206,8 +218,8 @@ public class GetCommand
             resource = new CollectionResource(uri, node, nsContext);
             istream = ((CollectionResource)resource).getContentAsStream(baseURI);
 
-            XSLTStreamingOutput entity = new XSLTStreamingOutput("get.method.template", new StreamSource(istream));
-
+            XSLTStreamingOutput entity =
+               new XSLTStreamingOutput("get.method.template", new StreamSource(istream), xsltParams);
             return Response.ok(entity, MediaType.TEXT_HTML).build();
 
          }

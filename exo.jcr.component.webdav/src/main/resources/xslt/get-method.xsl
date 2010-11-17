@@ -2,6 +2,7 @@
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:sv="http://www.jcp.org/jcr/sv/1.0" xmlns:xlink="http://www.w3.org/1999/xlink"
   exclude-result-prefixes="xlink">
   <xsl:output method="html" encoding="UTF-8" />
+  <xsl:param name="folder-icon-path"></xsl:param>
   <xsl:template match="/sv:node">
     <html>
       <head>
@@ -27,7 +28,9 @@
               <xsl:attribute name="href">
                 <xsl:value-of select="substring(./@xlink:href, 1, string-length(./@xlink:href) - string-length(./@sv:name))" />
               </xsl:attribute>
-              <img src="/ecm/skin/icons/16x16/NodeTypes/DefaultSkin/nt-folder.gif" alt="" />
+              <xsl:if test="$folder-icon-path!=''">
+                <img src="{$folder-icon-path}" alt="" />
+              </xsl:if>
               <xsl:text> ..</xsl:text>
             </a>
             <br />
@@ -50,9 +53,11 @@
   <xsl:template match="sv:node">
     <a>
       <xsl:attribute name="href">
-		    <xsl:value-of select="./@xlink:href" />
-		  </xsl:attribute>
-      <img src="/ecm/skin/icons/16x16/NodeTypes/DefaultSkin/nt-folder.gif" alt="" />
+        <xsl:value-of select="./@xlink:href" />
+      </xsl:attribute>
+      <xsl:if test="$folder-icon-path!=''">
+        <img src="{$folder-icon-path}" alt="" />
+      </xsl:if>
       <xsl:text> </xsl:text>
       <xsl:value-of select="./@sv:name" />
     </a>
