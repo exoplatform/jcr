@@ -17,8 +17,8 @@
 
 package org.exoplatform.services.jcr.impl.core.query;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -309,6 +310,31 @@ public class ErrorLog
       {
          flush();
       }
+   }
+
+   /**
+    * Closes ErrorLog and frees resources associated with it.
+    */
+   public void close()
+   {
+      SecurityHelper.doPriviledgedAction(new PrivilegedAction<Object>()
+      {
+         public Object run()
+         {
+            if (out != null)
+            {
+               try
+               {
+                  out.close();
+               }
+               catch (IOException e)
+               {
+                  out = null;
+               }
+            }
+            return null;
+         }
+      });
    }
 
 }

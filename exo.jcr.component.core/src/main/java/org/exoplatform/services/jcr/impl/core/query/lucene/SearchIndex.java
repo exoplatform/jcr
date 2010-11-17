@@ -875,6 +875,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       {
          spellChecker.close();
       }
+      errorLog.close();
       index.close();
       getContext().destroy();
       closed = true;
