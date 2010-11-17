@@ -267,4 +267,22 @@ public class ErrorLog
       }
    }
 
+   /**
+    * Closes ErrorLog and frees resources associated with it.
+    */
+   public void close()
+   {
+      if (out != null)
+      {
+         try
+         {
+            out.close();
+         }
+         catch (IOException e)
+         {
+            out = null;
+         }
+      }
+   }
+
 }
