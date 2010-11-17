@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.impl.core;
 import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.access.AccessControlPolicy;
+import org.exoplatform.services.jcr.access.PermissionType;
 import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
@@ -326,15 +327,48 @@ public class ScratchWorkspaceInitializer implements WorkspaceInitializer
       }
 
       // init version storage
+      AccessControlList acl = new AccessControlList();
+      acl.removePermissions(SystemIdentity.ANY);
+      acl.addPermissions(SystemIdentity.ANY, new String[]{PermissionType.READ});
+
+      for (AccessControlEntry entry : jcrSystem.getACL().getPermissionEntries())
+      {
+         String identity = entry.getIdentity();
+         String permission = entry.getPermission();
+
+         if (!identity.equals(SystemIdentity.ANY) || !permission.equals(PermissionType.READ))
+         {
+            acl.addPermissions(identity, new String[]{permission});
+         }
+      }
+
       TransientNodeData versionStorageNodeData =
          TransientNodeData.createNodeData(jcrSystem, Constants.JCR_VERSIONSTORAGE, Constants.EXO_VERSIONSTORAGE,
-            Constants.VERSIONSTORAGE_UUID);
+            Constants.VERSIONSTORAGE_UUID, acl);
 
       TransientPropertyData vsPrimaryType =
          TransientPropertyData.createPropertyData(versionStorageNodeData, Constants.JCR_PRIMARYTYPE, PropertyType.NAME,
             false, new TransientValueData(versionStorageNodeData.getPrimaryTypeName()));
 
-      changesLog.add(ItemState.createAddedState(versionStorageNodeData)).add(ItemState.createAddedState(vsPrimaryType));
+      TransientPropertyData exoMixinTypes =
+         TransientPropertyData.createPropertyData(versionStorageNodeData, Constants.JCR_MIXINTYPES, PropertyType.NAME,
+            true, new TransientValueData(Constants.EXO_PRIVILEGEABLE));
+
+      List<ValueData> permsValues = new ArrayList<ValueData>();
+      for (int i = 0; i < acl.getPermissionEntries().size(); i++)
+      {
+         AccessControlEntry entry = acl.getPermissionEntries().get(i);
+         permsValues.add(new TransientValueData(entry));
+      }
+      TransientPropertyData exoPerms =
+         TransientPropertyData.createPropertyData(versionStorageNodeData, Constants.EXO_PERMISSIONS,
+            ExtendedPropertyType.PERMISSION, true, permsValues);
+
+      changesLog.add(ItemState.createAddedState(versionStorageNodeData));
+      changesLog.add(ItemState.createAddedState(vsPrimaryType));
+      changesLog.add(ItemState.createAddedState(exoMixinTypes));
+      changesLog.add(ItemState.createAddedState(exoPerms));
+      changesLog.add(new ItemState(versionStorageNodeData, ItemState.MIXIN_CHANGED, false, null));
 
       dataManager.save(new TransactionChangesLog(changesLog));
 
