@@ -90,6 +90,17 @@ public class TestPermissions extends BaseStandaloneTest
    @Override
    public void tearDown() throws Exception
    {
+      if (sessionWS1.getRootNode().hasNode("MARY-ReadOnly"))
+      {
+         sessionWS1.getRootNode().getNode("MARY-ReadOnly").remove();
+      }
+
+      if (sessionWS1.getRootNode().hasNode("MARY-ReadWrite"))
+      {
+         sessionWS1.getRootNode().getNode("MARY-ReadWrite").remove();
+      }
+      sessionWS1.save();
+
       sessionMaryWS.logout();
       sessionMaryWS1.logout();
       sessionWS.logout();
@@ -245,6 +256,44 @@ public class TestPermissions extends BaseStandaloneTest
       }
       catch (AccessDeniedException e)
       {
+      }
+   }
+
+   public void testAccessPermission() throws Exception
+   {
+      // At creation time
+      NodeImpl node = (NodeImpl)sessionWS1.getRootNode().addNode("testAccessPermission");
+      node.addMixin("mix:versionable");
+      sessionWS1.save();
+      node.addMixin("exo:privilegeable");
+      node.getSession().save();
+      node.setPermission("admin", new String[]{"read", "add_node", "set_property", "remove"});
+      node.removePermission(SystemIdentity.ANY);
+      NodeImpl subNode = (NodeImpl)node.addNode("subNode");
+      node.getSession().save();
+      node.checkin();
+      node.setPermission(SystemIdentity.ANY, new String[]{"read"});
+      node.getSession().save();
+      SessionImpl sessionJohnWS1 = null;
+
+      try
+      {
+         Credentials credentials = new CredentialsImpl("john", "exo".toCharArray());
+         sessionJohnWS1 = (SessionImpl)repositoryService.getRepository("db2").login(credentials, "ws1");
+         Node vNode = sessionJohnWS1.getRootNode().getNode("testAccessPermission");
+         assertNotNull(vNode);
+         vNode = vNode.getVersionHistory().getVersion("1");
+         assertNotNull(vNode);
+         vNode = vNode.getNode("jcr:frozenNode");
+         assertNotNull(vNode);
+         assertNotNull(vNode.getNode("subNode"));
+      }
+      finally
+      {
+         if (sessionJohnWS1 != null)
+         {
+            sessionJohnWS1.logout();
+         }
       }
    }
 }

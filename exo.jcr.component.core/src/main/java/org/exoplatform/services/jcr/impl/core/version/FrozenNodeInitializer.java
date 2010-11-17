@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.core.version;
 
+import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.core.nodetype.NodeDefinitionData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionData;
@@ -249,12 +250,15 @@ public class FrozenNodeInitializer extends AbstractItemDataCopyVisitor
       }
       else if (action == OnParentVersionAction.COPY)
       {
+         AccessControlList acl =
+            ntManager.isNodeType(Constants.EXO_PRIVILEGEABLE, node.getPrimaryTypeName(), node.getMixinTypeNames())
+               ? node.getACL() : currentNode().getACL();
 
          QPath frozenPath = QPath.makeChildPath(currentNode().getQPath(), qname, node.getQPath().getIndex());
          frozenNode =
             new TransientNodeData(frozenPath, IdGenerator.generate(), node.getPersistedVersion(), node
                .getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(), currentNode().getIdentifier(), // parent
-               node.getACL());
+               acl);
 
          contextNodes.push(frozenNode);
          changesLog.add(ItemState.createAddedState(frozenNode));
@@ -286,12 +290,16 @@ public class FrozenNodeInitializer extends AbstractItemDataCopyVisitor
          }
          else
          { // behaviour of COPY
+            AccessControlList acl =
+               ntManager.isNodeType(Constants.EXO_PRIVILEGEABLE, node.getPrimaryTypeName(), node.getMixinTypeNames())
+                  ? node.getACL() : currentNode().getACL();
+
             QPath frozenPath = QPath.makeChildPath(currentNode().getQPath(), qname, node.getQPath().getIndex());
             frozenNode =
                new TransientNodeData(frozenPath, IdGenerator.generate(), node.getPersistedVersion(), node
                   .getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(),
                   currentNode().getIdentifier(), // parent
-                  node.getACL());
+                  acl);
 
             contextNodes.push(frozenNode);
             changesLog.add(ItemState.createAddedState(frozenNode));
