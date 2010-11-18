@@ -505,6 +505,11 @@ public class RepositoryContainer extends ExoContainer
       // Init Root and jcr:system if workspace is system workspace
       WorkspaceInitializer wsInitializer =
          (WorkspaceInitializer)workspaceContainer.getComponentInstanceOfType(WorkspaceInitializer.class);
+      RepositoryCreationSynchronizer synchronizer =
+         (RepositoryCreationSynchronizer)getComponentInstanceOfType(RepositoryCreationSynchronizer.class);
+      // The synchronizer will be used to synchronize all the cluster
+      // nodes to prevent any concurrent jcr initialization i.e. EXOJCR-887
+      synchronizer.waitForApproval(wsInitializer.isWorkspaceInitialized());
       wsInitializer.initWorkspace();
    }
 

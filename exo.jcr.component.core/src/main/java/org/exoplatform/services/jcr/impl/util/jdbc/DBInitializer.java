@@ -416,7 +416,8 @@ public class DBInitializer
                }
                final Statement finalSt = st;
                final String finalSql = sql;
-               SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Object>(){
+               SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Object>()
+               {
                   public Object run() throws Exception
                   {
                      finalSt.executeUpdate(finalSql);
@@ -442,19 +443,38 @@ public class DBInitializer
             LOG.error("Rollback error " + e, e);
          }
 
-         SQLException next = e.getNextException();
-         String errorTrace = "";
-         while (next != null)
+         boolean isAlreadyCreated = false;
+         try
          {
-            errorTrace += next.getMessage() + "; ";
-            next = next.getNextException();
+            isAlreadyCreated = isObjectExists(connection, sql);
          }
-         Throwable cause = e.getCause();
-         String msg =
-            "Could not create db schema of DataSource: '" + containerName + "'. Reason: " + e.getMessage() + "; "
-               + errorTrace + (cause != null ? " (Cause: " + cause.getMessage() + ")" : "") + ". Last command: " + sql;
+         catch (SQLException ce)
+         {
+            LOG.warn("Can not check does the objects from " + sql + " exists");
+         }
 
-         throw new DBInitializerException(msg, e);
+         if (isAlreadyCreated)
+         {
+            LOG.warn("Could not create db schema of DataSource: '" + containerName + "'. Reason: Objects form " + sql
+               + " already exists");
+         }
+         else
+         {
+            SQLException next = e.getNextException();
+            String errorTrace = "";
+            while (next != null)
+            {
+               errorTrace += next.getMessage() + "; ";
+               next = next.getNextException();
+            }
+            Throwable cause = e.getCause();
+            String msg =
+               "Could not create db schema of DataSource: '" + containerName + "'. Reason: " + e.getMessage() + "; "
+                  + errorTrace + (cause != null ? " (Cause: " + cause.getMessage() + ")" : "") + ". Last command: "
+                  + sql;
+
+            throw new DBInitializerException(msg, e);
+         }
       }
       finally
       {

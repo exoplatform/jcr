@@ -9,6 +9,7 @@ grant codeBase "@MAIN_CLASSES@-"{
 grant codeBase "@TEST_CLASSES@-"{
    permission java.lang.RuntimePermission "createSystemSession";
    permission java.lang.RuntimePermission "manageRepository";
+   permission java.lang.RuntimePermission "accessRPCService";
    permission java.lang.RuntimePermission "invokeInternalAPI";
 };
 

@@ -48,7 +48,9 @@ import org.jboss.cache.Cache;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.Node;
 import org.jboss.cache.config.EvictionRegionConfig;
+import org.jboss.cache.config.Configuration.CacheMode;
 import org.jboss.cache.eviction.ExpirationAlgorithmConfig;
+import org.picocontainer.Startable;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -98,7 +100,7 @@ import javax.transaction.TransactionManager;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com">Peter Nedonosko</a>
  * @version $Id: JBossCacheWorkspaceStorageCache.java 13869 2008-05-05 08:40:10Z pnedonosko $
  */
-public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
+public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, Startable
 {
 
    private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.JBossCacheWorkspaceStorageCache");
@@ -155,6 +157,11 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
    protected final Fqn<String> childPropsList;
 
    protected final Fqn<String> rootFqn;
+
+   /**
+    * Indicates whether the cache has already been initialized or not
+    */
+   protected volatile boolean initialized;
 
    /**
     * Node order comparator for getChildNodes().
@@ -349,15 +356,12 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
       this.childNodesList = Fqn.fromRelativeElements(rootFqn, CHILD_NODES_LIST);
       this.childPropsList = Fqn.fromRelativeElements(rootFqn, CHILD_PROPS_LIST);
 
-      this.cache.create();
-      this.cache.start();
-
-      createResidentNode(childNodes);
-      createResidentNode(refRoot);
-      createResidentNode(childNodesList);
-      createResidentNode(childProps);
-      createResidentNode(childPropsList);
-      createResidentNode(itemsRoot);
+      if (cache.getConfiguration().getCacheMode() == CacheMode.LOCAL)
+      {
+         // The cache is local so we have no risk to get replication exception
+         // during the initialization phase
+         init();
+      }
    }
 
    /**
@@ -371,6 +375,46 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
       throws RepositoryException, RepositoryConfigurationException
    {
       this(wsConfig, null, cfm);
+   }
+
+   /**
+    * Creates, starts and initialize the cache
+    */
+   private void init()
+   {
+      if (initialized)
+      {
+         // The cache has already been initialized
+         return;
+      }
+      this.cache.create();
+      this.cache.start();
+
+      createResidentNode(childNodes);
+      createResidentNode(refRoot);
+      createResidentNode(childNodesList);
+      createResidentNode(childProps);
+      createResidentNode(childPropsList);
+      createResidentNode(itemsRoot);
+
+      this.initialized = true;
+   }
+
+   /**
+    * {@inheritDoc} 
+    */
+   public void start()
+   {
+      // To prevent any timeout replication during the initialization of a JCR in a
+      // cluster environment we create and start the cache only during the starting phase
+      init();
+   }
+
+   /**
+    * {@inheritDoc} 
+    */
+   public void stop()
+   {
    }
 
    /**
@@ -898,7 +942,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache
     */
    public boolean isEnabled()
    {
-      return enabled;
+      return enabled && initialized;
    }
 
    // non-public members
