@@ -672,8 +672,9 @@ public class SessionDataManager implements ItemDataConsumer
    {
       List<PropertyData> refDatas = transactionableManager.getReferencesData(identifier, true);
       List<PropertyImpl> refs = new ArrayList<PropertyImpl>(refDatas.size());
-      for (PropertyData data : refDatas)
+      for (int i = 0, length = refDatas.size(); i < length; i++)
       {
+         PropertyData data = refDatas.get(i);
          ItemState state = changesLog.getItemState(data.getIdentifier());
          if (state != null)
          {
@@ -1959,8 +1960,9 @@ public class SessionDataManager implements ItemDataConsumer
          if (action != MERGE_PROPS)
          {
             List<NodeData> childNodes = dataManager.getChildNodesData((NodeData)parent);
-            for (NodeData childNode : childNodes)
+            for (int i = 0, length = childNodes.size(); i < length; i++)
             {
+               NodeData childNode = childNodes.get(i);
                ret.put(childNode.getIdentifier(), childNode);
             }
          }
@@ -1969,8 +1971,9 @@ public class SessionDataManager implements ItemDataConsumer
             List<PropertyData> childProps =
                listOnly ? dataManager.listChildPropertiesData((NodeData)parent) : dataManager
                   .getChildPropertiesData((NodeData)parent);
-            outer : for (PropertyData childProp : childProps)
+            outer : for (int i = 0, length = childProps.size(); i < length; i++) 
             {
+               PropertyData childProp = childProps.get(i);
                for (ItemState transientState : transientDescendants)
                {
                   if (!transientState.isNode() && !transientState.isDeleted()
