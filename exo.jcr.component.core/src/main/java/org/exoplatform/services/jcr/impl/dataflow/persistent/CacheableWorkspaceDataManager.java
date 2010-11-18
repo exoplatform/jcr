@@ -38,7 +38,6 @@ import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.transaction.TransactionService;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -537,11 +536,9 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       if (skipVersionStorage)
       {
          List<PropertyData> result = new ArrayList<PropertyData>();
-
-         Iterator<PropertyData> iterator = props.iterator();
-         while (iterator.hasNext())
+         for (int i = 0, length = props.size(); i < length; i++)
          {
-            PropertyData prop = iterator.next();
+            PropertyData prop = props.get(i);
             if (!prop.getQPath().isDescendantOf(Constants.JCR_VERSION_STORAGE_PATH))
             {
                result.add(prop);

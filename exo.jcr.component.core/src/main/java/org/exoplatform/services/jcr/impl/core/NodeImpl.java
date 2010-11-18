@@ -1046,8 +1046,9 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          {
             // full iterator 
             List<NodeImpl> nodes = new ArrayList<NodeImpl>();
-            for (NodeData child : childs)
+            for (int i = 0, length = childs.size(); i < length; i++)
             {
+               NodeData child = childs.get(i);
                if (session.getAccessManager().hasPermission(child.getACL(), new String[]{PermissionType.READ},
                   session.getUserState().getIdentity()))
                {
@@ -1097,8 +1098,9 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          {
             // full iterator 
             List<NodeImpl> nodes = new ArrayList<NodeImpl>();
-            for (NodeData child : childs)
+            for (int i = 0, length = childs.size(); i < length; i++)
             {
+               NodeData child = childs.get(i);
                if (filter.accept(child)
                   && session.getAccessManager().hasPermission(child.getACL(), new String[]{PermissionType.READ},
                      session.getUserState().getIdentity()))
@@ -1198,8 +1200,9 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
             {
                // full iterator 
                List<PropertyImpl> props = new ArrayList<PropertyImpl>();
-               for (PropertyData child : childs)
+               for (int i = 0, length = childs.size(); i < length; i++)
                {
+                  PropertyData child = childs.get(i);
                   PropertyImpl item = (PropertyImpl)dataManager.readItem(child, nodeData(), true, false);
                   session.getActionHandler().postRead(item);
                   props.add(item);
@@ -1254,8 +1257,9 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
             {
                // full iterator 
                List<PropertyImpl> props = new ArrayList<PropertyImpl>();
-               for (PropertyData child : childs)
+               for (int i = 0, length = childs.size(); i < length; i++)
                {
+                  PropertyData child = childs.get(i);
                   if (filter.accept(child))
                   {
                      PropertyImpl item = (PropertyImpl)dataManager.readItem(child, nodeData(), true, false);

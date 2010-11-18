@@ -159,8 +159,9 @@ public class AccessControlList implements Externalizable
    public List<AccessControlEntry> getPermissionEntries()
    {
       List<AccessControlEntry> list = new ArrayList<AccessControlEntry>();
-      for (AccessControlEntry entry : accessList)
+      for (int i = 0, length = accessList.size(); i < length; i++)
       {
+         AccessControlEntry entry = accessList.get(i);
          list.add(new AccessControlEntry(entry.getIdentity(), entry.getPermission()));
       }
       return list;
@@ -169,8 +170,9 @@ public class AccessControlList implements Externalizable
    public List<String> getPermissions(String identity)
    {
       List<String> permissions = new ArrayList<String>();
-      for (AccessControlEntry entry : accessList)
+      for (int i = 0, length = accessList.size(); i < length; i++)
       {
+         AccessControlEntry entry = accessList.get(i);
          if (entry.getIdentity().equals(identity))
             permissions.add(entry.getPermission());
       }
