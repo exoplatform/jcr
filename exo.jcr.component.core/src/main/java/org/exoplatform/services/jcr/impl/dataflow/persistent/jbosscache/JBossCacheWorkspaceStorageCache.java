@@ -812,8 +812,10 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
             }
 
             // add property as many times as has referenced values
-            for (ValueData vdata : prop.getValues())
+            List<ValueData> lData = prop.getValues();
+            for (int i = 0, length = lData.size(); i < length; i++)
             {
+               ValueData vdata = lData.get(i);
                try
                {
                   if (new String(vdata.getAsByteArray(), Constants.DEFAULT_ENCODING).equals(identifier))
@@ -1163,8 +1165,10 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
       // add referenced property
       if (modifyListsOfChild != ModifyChildOption.NOT_MODIFY && prop.getType() == PropertyType.REFERENCE)
       {
-         for (ValueData vdata : prop.getValues())
+         List<ValueData> lData = prop.getValues();
+         for (int i = 0, length = lData.size(); i < length; i++)
          {
+            ValueData vdata = lData.get(i);
             String nodeIdentifier = null;
             try
             {
