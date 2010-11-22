@@ -48,6 +48,10 @@
     </dependency>
     <dependency>
       <groupId>org.exoplatform.core</groupId>
+      <artifactId>exo.core.component.database</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.core</groupId>
       <artifactId>exo.core.component.document</artifactId>
     </dependency>
     <dependency>
