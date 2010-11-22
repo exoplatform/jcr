@@ -91,6 +91,11 @@ public class RepositoryContainer extends ExoContainer
    private final RepositoryEntry config;
 
    /**
+    * Repository name.
+    */
+   private final String name;
+
+   /**
     * System workspace DataManager.
     */
    private LocalWorkspaceDataManagerStub systemDataManager = null;
@@ -131,7 +136,9 @@ public class RepositoryContainer extends ExoContainer
 
       this.config = config;
       this.addNamespacePlugins = addNamespacePlugins;
+      this.name = parent.getContext().getName() + "-" + config.getName();
 
+      parent.registerComponentInstance(name, this);
       registerComponents();
    }
 
@@ -158,7 +165,9 @@ public class RepositoryContainer extends ExoContainer
          config.setAccessControl(AccessControlPolicy.OPTIONAL);
 
       this.config = config;
+      this.name = parent.getContext().getName() + "-" + config.getName();
 
+      parent.registerComponentInstance(name, this);
       registerComponents();
    }
 
@@ -174,7 +183,7 @@ public class RepositoryContainer extends ExoContainer
    @ManagedDescription("The repository container name")
    public String getName()
    {
-      return config.getName();
+      return name;
    }
 
    public NamespaceRegistry getNamespaceRegistry()
