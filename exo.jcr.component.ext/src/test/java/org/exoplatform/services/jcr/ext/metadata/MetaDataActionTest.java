@@ -18,12 +18,12 @@
  */
 package org.exoplatform.services.jcr.ext.metadata;
 
+import org.exoplatform.services.jcr.ext.BaseStandaloneTest;
+
 import java.io.InputStream;
 import java.util.Calendar;
 
 import javax.jcr.Node;
-
-import org.exoplatform.services.jcr.ext.BaseStandaloneTest;
 
 public class MetaDataActionTest extends BaseStandaloneTest
 {
@@ -123,7 +123,7 @@ public class MetaDataActionTest extends BaseStandaloneTest
       assertFalse(contentNode.hasProperty("dc:creator"));
    }
 
-   public void testUpdatePDF() throws Exception
+   public void _testUpdatePDF() throws Exception
    {
       InputStream is = MetaDataActionTest.class.getResourceAsStream("/test_1.pdf");
 
