@@ -123,7 +123,7 @@ public class MetaDataActionTest extends BaseStandaloneTest
       assertFalse(contentNode.hasProperty("dc:creator"));
    }
    
-   public void testUpdatePDF() throws Exception
+   public void _testUpdatePDF() throws Exception
    {
       InputStream is = MetaDataActionTest.class.getResourceAsStream("/test_1.pdf");
 

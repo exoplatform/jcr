@@ -18,18 +18,6 @@
  */
 package org.exoplatform.services.jcr.ext.metadata;
 
-import java.io.InputStream;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.Map.Entry;
-
-import javax.jcr.PathNotFoundException;
-import javax.jcr.Value;
-import javax.jcr.ValueFactory;
-import javax.jcr.ValueFormatException;
-
 import org.apache.commons.chain.Context;
 import org.exoplatform.commons.utils.QName;
 import org.exoplatform.container.ExoContainer;
@@ -47,6 +35,18 @@ import org.exoplatform.services.jcr.impl.core.PropertyImpl;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.io.InputStream;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.Map.Entry;
+import java.util.Properties;
+
+import javax.jcr.PathNotFoundException;
+import javax.jcr.Value;
+import javax.jcr.ValueFactory;
+import javax.jcr.ValueFormatException;
+
 /**
  * Created by The eXo Platform SAS .
  * 
@@ -63,7 +63,7 @@ public class AddMetadataAction implements Action
    {
 
       PropertyImpl property = (PropertyImpl)ctx.get("currentItem");
-      NodeImpl parent = (NodeImpl)property.getParent();
+      NodeImpl parent = property.getParent();
       if (!parent.isNodeType("nt:resource"))
       {
          throw new Exception("incoming node is not nt:resource type");
@@ -104,13 +104,10 @@ public class AddMetadataAction implements Action
             return false;
          }
 
-         // remove old "dc:elementSet" properties
-         if (parent.isNodeType("dc:elementSet"))
+         if (!parent.isNodeType("dc:elementSet"))
          {
-            parent.removeMixin("dc:elementSet");
+            parent.addMixin("dc:elementSet");
          }
-
-         parent.addMixin("dc:elementSet");
 
          DocumentReaderService readerService =
             (DocumentReaderService)((ExoContainer)ctx.get("exocontainer"))
