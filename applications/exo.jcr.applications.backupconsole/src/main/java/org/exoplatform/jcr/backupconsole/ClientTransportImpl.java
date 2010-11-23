@@ -18,11 +18,6 @@
  */
 package org.exoplatform.jcr.backupconsole;
 
-import java.io.IOException;
-import java.net.URL;
-
-import javax.ws.rs.core.Response;
-
 import org.exoplatform.common.http.client.AuthorizationHandler;
 import org.exoplatform.common.http.client.AuthorizationInfo;
 import org.exoplatform.common.http.client.CookieModule;
@@ -30,6 +25,11 @@ import org.exoplatform.common.http.client.HTTPConnection;
 import org.exoplatform.common.http.client.HTTPResponse;
 import org.exoplatform.common.http.client.ModuleException;
 import org.exoplatform.common.http.client.NVPair;
+
+import java.io.IOException;
+import java.net.URL;
+
+import javax.ws.rs.core.Response;
 
 /**
  * Created by The eXo Platform SAS. <br/>Date:
@@ -61,14 +61,9 @@ public class ClientTransportImpl implements ClientTransport
    private final String protocol;
    
    /**
-    * Is realm get.
-    */
-   private boolean isRealmGet = false;
-   
-   /**
     * Realm to connection
     */
-   private String realm;
+   private String realm = null;
    
    /**
     * Form authentication parameters.
@@ -108,7 +103,7 @@ public class ClientTransportImpl implements ClientTransport
     * Get realm by URL.
     * 
     * @param sUrl URL string.
-    * @return realm name string.
+    * @return realm name or null.
     * @throws IOException transport exception.
     * @throws ModuleException ModuleException.
     */
@@ -127,6 +122,10 @@ public class ClientTransportImpl implements ClientTransport
          HTTPResponse resp = connection.Get(url.getFile());
 
          String authHeader = resp.getHeader("WWW-Authenticate");
+         if (authHeader == null)
+         {
+            return null;
+         }
 
          String realm = authHeader.split("=")[1];
          realm = realm.substring(1, realm.length() - 1);
@@ -190,10 +189,14 @@ public class ClientTransportImpl implements ClientTransport
          else
          {
             // basic authorization
-            if (!isRealmGet)
+            if (realm == null)
             {
                realm = getRealm(complURL);
-               isRealmGet = true;
+               if (realm == null)
+               {
+                  throw new BackupExecuteException(
+                     "Can not connect to server using basic authentication. Try to use form authentication.");
+               }
             }
 
             connection.addBasicAuthorization(realm, login, password);
@@ -220,7 +223,6 @@ public class ClientTransportImpl implements ClientTransport
       {
          throw new BackupExecuteException(e.getMessage(), e);
       }
-
    }
 
    /**
@@ -273,10 +275,14 @@ public class ClientTransportImpl implements ClientTransport
          else
          {
             // basic authorization
-            if (!isRealmGet)
+            if (realm == null)
             {
                realm = getRealm(complURL);
-               isRealmGet = true;
+               if (realm == null)
+               {
+                  throw new BackupExecuteException(
+                     "Can not connect to server using basic authentication. Try to use form authentication.");
+               }
             }
 
             connection.addBasicAuthorization(realm, login, password);
