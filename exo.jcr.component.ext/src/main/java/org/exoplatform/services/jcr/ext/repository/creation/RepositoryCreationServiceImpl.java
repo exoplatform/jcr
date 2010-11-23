@@ -32,6 +32,7 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.naming.InitialContextInitializer;
 import org.exoplatform.services.rpc.RPCService;
+import org.jboss.cache.util.concurrent.ConcurrentHashSet;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -73,7 +74,9 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService
 
    private final InitialContextInitializer initialContextInitializer;
 
-   private final Set<String> pendingRepositories = new HashSet<String>();
+   private final Set<String> pendingRepositories = new ConcurrentHashSet<String>();
+
+   private final Set<String> namesUnderNegotiation = new ConcurrentHashSet<String>();
 
    public RepositoryCreationServiceImpl(RepositoryService repositoryService, BackupManager backupManager,
       DBCreator dbCreator, InitialContextInitializer initialContextInitializer, final RPCService rpcService)
@@ -91,7 +94,17 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService
    public void createRepository(String backupId, RepositoryEntry rEntry) throws RepositoryConfigurationException,
       RepositoryCreationException
    {
-      // TODO Auto-generated method stub
+      reserveRepositoryName(rEntry.getName());
+      //      1. check possibility to create repository locally
+      //          - check existing, pending repository and datasources with same names
+
+      //      2. reserve name and put additional information (ex. ip and port of current machine)
+      //      3. check possibility to create repository on others nodes 
+      //         - sending to all cluster nodes information about new repository and waiting for answers
+      //         - all cluster nodes receive information and check possibility to create repository locally
+      //         - send response 
+      //      4. reserve name on all nodes of cluster
+
    }
 
    /**
@@ -228,8 +241,56 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService
     */
    public String reserveRepositoryName(String repositoryName) throws RepositoryCreationException
    {
+      //      1. check possibility to create repository locally
+      //         - check existing, pending repository and datasources with same names
+
+      for (int i = 0; i < repositoryService.getConfig().getRepositoryConfigurations().size(); i++)
+      {
+         RepositoryEntry conf = repositoryService.getConfig().getRepositoryConfigurations().get(i);
+         if (conf.getName().equals(repositoryName))
+         {
+            throw new RepositoryCreationException("Repository " + repositoryName + " already exists.");
+         }
+
+      }
+
+      //      try
+      //      {
+      //         ManageableRepository repo = repositoryService.getRepository(repositoryName);
+      //         if (repo != null)
+      //         {
+      //            throw new RepositoryCreationException("Repository " + repositoryName + " already exists.");
+      //         }
+      //      }
+      //      catch (RepositoryException e)
+      //      {
+      //         throw new RepositoryCreationException(e.getMessage(), e);
+      //      }
+      //      catch (RepositoryConfigurationException e)
+      //      {
+      //         throw new RepositoryCreationException(e.getMessage(), e);
+      //      }
+
+      if (namesUnderNegotiation.contains(repositoryName) || pendingRepositories.contains(repositoryName))
+      {
+         throw new RepositoryCreationException("Repository name " + repositoryName + " already reserved.");
+      }
+
+      //      2. reserve name and put additional information (ex. ip and port of current machine)
+      namesUnderNegotiation.add(repositoryName);
+
+      // TODO ask other nodes does thay have pending repositories
+
       pendingRepositories.add(repositoryName);
-      //TODO notify all cluster-nodes that repositoryName is reserved
+      namesUnderNegotiation.remove(repositoryName);
+      // TODO register repositoryName on other nodes
+
+      //     3. check possibility to create repository on others nodes 
+      //         - sending to all cluster nodes information about new repository and waiting for answers
+      //         - all cluster nodes receive information and check possibility to create repository locally
+      //         - send response 
+      //      4. reserve name on all nodes of cluster
+
       return repositoryName;
    }
 
