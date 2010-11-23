@@ -18,14 +18,6 @@
  */
 package org.exoplatform.jcr.backupconsole;
 
-import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-
-import javax.ws.rs.core.Response;
-
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.RepositoryServiceConfiguration;
@@ -54,6 +46,14 @@ import org.jibx.runtime.BindingDirectory;
 import org.jibx.runtime.IBindingFactory;
 import org.jibx.runtime.IUnmarshallingContext;
 import org.jibx.runtime.JiBXException;
+
+import java.io.ByteArrayInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+
+import javax.ws.rs.core.Response;
 
 /**
  * Created by The eXo Platform SAS. <br/>Date:
@@ -323,7 +323,7 @@ public class BackupClientImpl
                               + (info.getWorkspaceName().equals("") ? "" : "\t\tworkspace name          : "
                                        + info.getWorkspaceName() + "\n")
                               + "\t\tbackup type             : "
-                              + (configBean.getBackupType() == BackupManager.FULL_AND_INCREMENTAL ? "full + incremetal"
+                  + (configBean.getBackupType() == BackupManager.FULL_AND_INCREMENTAL ? "full + incremental"
                                        : "full only") + "\n" + "\t\tstarted time            : " + info.getStartedTime()
                               + "\n" + (info.getFinishedTime().equals("") ? "\n" : "\t\tfinished time           : "
                               + info.getFinishedTime() + "\n\n"));
@@ -349,7 +349,7 @@ public class BackupClientImpl
                               + (info.getWorkspaceName().equals("") ? "" : "\t\tworkspace name           : "
                                        + info.getWorkspaceName() + "\n")
                               + "\t\tbackup type              : "
-                              + (configBean.getBackupType() == BackupManager.FULL_AND_INCREMENTAL ? "full + incremetal"
+                  + (configBean.getBackupType() == BackupManager.FULL_AND_INCREMENTAL ? "full + incremental"
                                        : "full only") + "\n" + "\t\tfull backup state        : " + (info
                               .getWorkspaceName().equals("") ? getRepositoryBackupToFullState(info.getState())
                                                          : getState(info.getState())))
@@ -613,7 +613,8 @@ public class BackupClientImpl
 
          String result =
                   "\nThe backup service information : \n" + "\tfull backup type               : "
-                           + info.getFullBackupType() + "\n" + "\tincremetal backup type         : "
+ + info.getFullBackupType()
+               + "\n" + "\tincremental backup type         : "
                            + info.getIncrementalBackupType() + "\n" + "\tbackup log folder              : "
                            + info.getBackupLogDir() + "\n" + "\tdefault incremental job period : "
                            + info.getDefaultIncrementalJobPeriod() + "\n\n";
@@ -680,7 +681,7 @@ public class BackupClientImpl
                               + shortInfo.getRepositoryName()
                               + "\n"
                               + "\t\tbackup type                : "
-                              + (shortInfo.getBackupType() == BackupManager.FULL_AND_INCREMENTAL ? "full + incremetal"
+                  + (shortInfo.getBackupType() == BackupManager.FULL_AND_INCREMENTAL ? "full + incremental"
                                        : "full only") + "\n" + "\t\tfull backups state         : " + getRepositoryBackupToFullState(shortInfo
                               .getState()))
                               + "\n"
@@ -706,7 +707,7 @@ public class BackupClientImpl
                               + shortInfo.getWorkspaceName()
                               + "\n"
                               + "\t\tbackup type                : "
-                              + (shortInfo.getBackupType() == BackupManager.FULL_AND_INCREMENTAL ? "full + incremetal"
+                  + (shortInfo.getBackupType() == BackupManager.FULL_AND_INCREMENTAL ? "full + incremental"
                                        : "full only") + "\n" + "\t\tfull backup state          : " + getState(shortInfo
                               .getState()))
                               + "\n"
@@ -782,7 +783,7 @@ public class BackupClientImpl
                               + shortInfo.getRepositoryName()
                               + "\n"
                               + "\t\tbackup type               : "
-                              + (shortInfo.getBackupType() == BackupManager.FULL_AND_INCREMENTAL ? "full + incremetal"
+                  + (shortInfo.getBackupType() == BackupManager.FULL_AND_INCREMENTAL ? "full + incremental"
                                        : "full only") + "\n" + "\t\tstarted time              : "
                               + shortInfo.getStartedTime() + "\n" + (shortInfo.getFinishedTime().equals("") ? "\n"
                               : "\t\tfinished time             : " + shortInfo.getFinishedTime() + "\n"));
@@ -801,7 +802,7 @@ public class BackupClientImpl
                               + shortInfo.getWorkspaceName()
                               + "\n"
                               + "\t\tbackup type               : "
-                              + (shortInfo.getBackupType() == BackupManager.FULL_AND_INCREMENTAL ? "full + incremetal"
+                  + (shortInfo.getBackupType() == BackupManager.FULL_AND_INCREMENTAL ? "full + incremental"
                                        : "full only") + "\n" + "\t\tstarted time              : "
                               + shortInfo.getStartedTime() + "\n" + (shortInfo.getFinishedTime().equals("") ? "\n"
                               : "\t\tfinished time             : " + shortInfo.getFinishedTime() + "\n"));
@@ -858,7 +859,7 @@ public class BackupClientImpl
                               + info.getWorkspaceName()
                               + "\n"
                               + "\t\tbackup type             : "
-                              + (configBean.getBackupType() == BackupManager.FULL_AND_INCREMENTAL ? "full + incremetal"
+                  + (configBean.getBackupType() == BackupManager.FULL_AND_INCREMENTAL ? "full + incremental"
                                        : "full only") + "\n" + "\t\trestore state           : "
                               + getRestoreState(info.getState()) + "\n" + "\t\tstarted time            : "
                               + info.getStartedTime() + "\n" + (info.getFinishedTime().equals("") ? "\n"
@@ -906,7 +907,7 @@ public class BackupClientImpl
                               + info.getRepositoryName()
                               + "\n"
                               + "\t\tbackup type             : "
-                              + (configBean.getBackupType() == BackupManager.FULL_AND_INCREMENTAL ? "full + incremetal"
+                  + (configBean.getBackupType() == BackupManager.FULL_AND_INCREMENTAL ? "full + incremental"
                                        : "full only") + "\n" + "\t\trestore state           : "
                               + getRepositoryRestoreState(info.getState()) + "\n" + "\t\tstarted time            : "
                               + info.getStartedTime() + "\n" + (info.getFinishedTime().equals("") ? "\n"

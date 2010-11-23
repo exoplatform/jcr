@@ -65,7 +65,7 @@ public class BackupConsole
                      + "     <form auth parm>        :   form <method> <form path>\n"
                      + "     <method>                :   POST or GET\n"
                      + "     <form path>             :   /path/path?<paramName1>=<paramValue1>&<paramName2>=<paramValue2>...\n"
-                     + "     Example to <url form authentication> : http://127.0.0.1:8080/portal/rest form POST /portal/login?username=root&password=gtn\n\n"
+         + "     Example to <url form authentication> : http://127.0.0.1:8080/portal/rest form POST \"/portal/login?username=root&password=gtn\"\n\n"
 
          + " <cmd>  :   start <repo[/ws]> <backup_dir> [<incr>] \n" 
          + "            stop <backup_id> \n"
