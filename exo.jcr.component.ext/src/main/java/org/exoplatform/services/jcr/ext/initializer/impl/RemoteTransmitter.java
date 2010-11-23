@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.ext.initializer.impl;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.ext.replication.transport.AbstractPacket;
 import org.exoplatform.services.jcr.ext.replication.transport.ChannelManager;
 import org.exoplatform.services.jcr.ext.replication.transport.MemberAddress;
@@ -25,7 +26,6 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -77,10 +77,10 @@ public class RemoteTransmitter
    protected void sendChangesLogFile(MemberAddress destinationAddress, File file, byte[] checkSum) throws IOException
    {
       if (log.isDebugEnabled())
-         log.debug("Begin send : " + file.length());
+         log.debug("Begin send : " + PrivilegedFileHelper.length(file));
 
-      InputStream in = new FileInputStream(file);
-      long totalPacketCount = getPacketCount(file.length(), AbstractPacket.MAX_PACKET_SIZE);
+      InputStream in = PrivilegedFileHelper.fileInputStream(file);
+      long totalPacketCount = getPacketCount(PrivilegedFileHelper.length(file), AbstractPacket.MAX_PACKET_SIZE);
 
       try
       {

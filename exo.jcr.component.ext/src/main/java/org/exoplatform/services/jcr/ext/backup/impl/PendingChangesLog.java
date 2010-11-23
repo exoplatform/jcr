@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.ext.backup.impl;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
@@ -470,7 +471,7 @@ public class PendingChangesLog
       File f = SpoolFile.createTempFile("tempFile" + IdGenerator.generate(), ".tmp", tempDir);
 
       this.getListFile().add(f);
-      this.getListRandomAccessFiles().add(new RandomAccessFile(f, "rw"));
+      this.getListRandomAccessFiles().add(PrivilegedFileHelper.randomAccessFile(f, "rw"));
 
    }
 
@@ -494,8 +495,10 @@ public class PendingChangesLog
          ValueData vd = (propertyData.getValues().get(listFixupStream.get(i).getValueDataId()));
 
          // re-init the value
-         propertyData.getValues().set(listFixupStream.get(i).getValueDataId(),
-            new StreamPersistedValueData(vd.getOrderNumber(), new SpoolFile(listFile.get(i).getAbsolutePath())));
+         propertyData.getValues().set(
+            listFixupStream.get(i).getValueDataId(),
+            new StreamPersistedValueData(vd.getOrderNumber(), new SpoolFile(PrivilegedFileHelper
+               .getAbsolutePath(listFile.get(i)))));
       }
 
       if (listRandomAccessFile != null)

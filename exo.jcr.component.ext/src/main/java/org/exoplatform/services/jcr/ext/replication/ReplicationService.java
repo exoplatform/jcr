@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.ext.replication;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.container.xml.ValuesParam;
@@ -372,9 +373,9 @@ public class ReplicationService implements Startable, ManagementAware
                   {
                      // create the recovery for workspace
                      File dir =
-                        new File(recoveryDir.getAbsolutePath() + File.separator + repoNamesList.get(rIndex) + "_"
-                           + workspaces[wIndex]);
-                     dir.mkdirs();
+                        new File(PrivilegedFileHelper.getAbsolutePath(recoveryDir) + File.separator
+                           + repoNamesList.get(rIndex) + "_" + workspaces[wIndex]);
+                     PrivilegedFileHelper.mkdirs(dir);
 
                      String systemId = IdGenerator.generate();
                      String props = channelConfig.replaceAll(IP_ADRESS_TEMPLATE, bindIPAddress);
@@ -759,8 +760,10 @@ public class ReplicationService implements Startable, ManagementAware
          throw new RuntimeException("Recovery dir not specified");
 
       recoveryDir = new File(recDir);
-      if (!recoveryDir.exists())
-         recoveryDir.mkdirs();
+      if (!PrivilegedFileHelper.exists(recoveryDir))
+      {
+         PrivilegedFileHelper.mkdirs(recoveryDir);
+      }
 
       if (mode.equals(PERSISTENT_MODE))
       {
@@ -834,8 +837,10 @@ public class ReplicationService implements Startable, ManagementAware
          else if (backupEnabled)
          {
             backupDir = new File(sBackupDir);
-            if (!backupDir.exists())
-               backupDir.mkdirs();
+            if (!PrivilegedFileHelper.exists(backupDir))
+            {
+               PrivilegedFileHelper.mkdirs(backupDir);
+            }
          }
 
          if (sDelayTime == null && backupEnabled)

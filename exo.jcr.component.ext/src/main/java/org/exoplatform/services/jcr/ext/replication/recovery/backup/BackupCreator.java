@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.ext.replication.recovery.backup;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.ext.replication.recovery.FileNameFactory;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
@@ -25,7 +26,6 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Calendar;
 
@@ -122,18 +122,18 @@ public class BackupCreator implements Runnable
             manageableRepository.getConfiguration().getName() + "_" + workspaceName + "_"
                + fileNameFactory.getStrDate(backupTime) + "_" + fileNameFactory.getStrTime(backupTime) + ".xml";
 
-         File backupFile = new File(backupDir.getCanonicalPath() + File.separator + fileName);
+         File backupFile = new File(PrivilegedFileHelper.getCanonicalPath(backupDir) + File.separator + fileName);
 
-         if (backupFile.createNewFile())
+         if (PrivilegedFileHelper.createNewFile(backupFile))
          {
 
-            session.exportWorkspaceSystemView(new FileOutputStream(backupFile), false, false);
+            session.exportWorkspaceSystemView(PrivilegedFileHelper.fileOutputStream(backupFile), false, false);
 
             log.info("The backup has been finished : " + manageableRepository.getConfiguration().getName() + "@"
                + workspaceName);
          }
          else
-            throw new IOException("Can't create file : " + backupFile.getCanonicalPath());
+            throw new IOException("Can't create file : " + PrivilegedFileHelper.getCanonicalPath(backupFile));
 
       }
       catch (InterruptedException ie)

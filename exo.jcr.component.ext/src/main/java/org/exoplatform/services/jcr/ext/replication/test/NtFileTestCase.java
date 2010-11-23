@@ -18,12 +18,12 @@
  */
 package org.exoplatform.services.jcr.ext.replication.test;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.Calendar;
@@ -90,8 +90,8 @@ public class NtFileTestCase extends BaseReplicationTestCase
       File tempFile = null;
       try
       {
-         tempFile = File.createTempFile("tempF", "_");
-         FileOutputStream fos = new FileOutputStream(tempFile);
+         tempFile = PrivilegedFileHelper.createTempFile("tempF", "_");
+         FileOutputStream fos = PrivilegedFileHelper.fileOutputStream(tempFile);
 
          for (int i = 0; i < buf.length; i++)
             buf[i] = (byte)(i % DIVIDER);
@@ -106,7 +106,7 @@ public class NtFileTestCase extends BaseReplicationTestCase
          Node cool = addNodePath(repoPath).addNode(fileName, "nt:file");
          Node contentNode = cool.addNode("jcr:content", "nt:resource");
          contentNode.setProperty("jcr:encoding", "UTF-8");
-         contentNode.setProperty("jcr:data", new FileInputStream(tempFile));
+         contentNode.setProperty("jcr:data", PrivilegedFileHelper.fileInputStream(tempFile));
          contentNode.setProperty("jcr:mimeType", "application/octet-stream");
          contentNode.setProperty("jcr:lastModified", session.getValueFactory().createValue(Calendar.getInstance()));
 
@@ -124,7 +124,7 @@ public class NtFileTestCase extends BaseReplicationTestCase
       }
       finally
       {
-         tempFile.delete();
+         PrivilegedFileHelper.delete(tempFile);
       }
 
       return sb;

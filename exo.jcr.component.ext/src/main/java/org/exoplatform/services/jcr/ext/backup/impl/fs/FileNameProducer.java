@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.ext.backup.impl.fs;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Calendar;
@@ -67,13 +69,15 @@ public class FileNameProducer
 
          backupSetDir = new File(serviceDir + File.separator + backupSetName + sTime);
 
-         if (!backupSetDir.exists())
-            backupSetDir.mkdirs();
+         if (!PrivilegedFileHelper.exists(backupSetDir))
+         {
+            PrivilegedFileHelper.mkdirs(backupSetDir);
+         }
 
          String sNextName = generateName();
 
          nextFile = new File(backupSetDir.getAbsoluteFile() + File.separator + sNextName);
-         nextFile.createNewFile();
+         PrivilegedFileHelper.createNewFile(nextFile);
       }
       catch (IOException e)
       {
@@ -104,7 +108,7 @@ public class FileNameProducer
    private String getNextSufix()
    {
 
-      String[] fileList = backupSetDir.list();
+      String[] fileList = PrivilegedFileHelper.list(backupSetDir);
 
       int sufix = 0;
 

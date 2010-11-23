@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.ext.replication;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -115,7 +117,7 @@ public class ChangesFile implements Comparable<ChangesFile>
    {
       if (randomAccessFile == null)
       {
-         randomAccessFile = new RandomAccessFile(file, "rw");
+         randomAccessFile = PrivilegedFileHelper.randomAccessFile(file, "rw");
       }
 
       randomAccessFile.seek(offset);

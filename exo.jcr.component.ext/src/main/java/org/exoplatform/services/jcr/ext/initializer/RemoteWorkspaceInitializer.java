@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.ext.initializer;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.services.jcr.access.AccessManager;
@@ -73,7 +74,7 @@ public class RemoteWorkspaceInitializer extends SysViewWorkspaceInitializer
             throw new RepositoryException("Can not get remote workspace data :" + e.getMessage(), e);
          }
 
-         this.restorePath = f.getAbsolutePath();
+         this.restorePath = PrivilegedFileHelper.getAbsolutePath(f);
       }
    }
 

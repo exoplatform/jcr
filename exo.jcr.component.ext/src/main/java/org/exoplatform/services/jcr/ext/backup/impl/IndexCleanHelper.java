@@ -16,6 +16,7 @@
  */
 package org.exoplatform.services.jcr.ext.backup.impl;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.config.QueryHandlerParams;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
@@ -60,23 +61,23 @@ public class IndexCleanHelper
     */
    private void removeFolder(File dir) throws IOException 
    {
-      if (dir.isDirectory())
+      if (PrivilegedFileHelper.isDirectory(dir))
       {  
-         for (File subFile : dir.listFiles())
+         for (File subFile : PrivilegedFileHelper.listFiles(dir))
          {
             removeFolder(subFile);
          }
          
-         if (!dir.delete())
+         if (!PrivilegedFileHelper.delete(dir))
          {
-            throw new IOException("Index folder was not deleted : " + dir.getCanonicalPath());
+            throw new IOException("Index folder was not deleted : " + PrivilegedFileHelper.getCanonicalPath(dir));
          }
       }
       else
       {
-         if (!dir.delete())
+         if (!PrivilegedFileHelper.delete(dir))
          {
-            throw new IOException("Index file was not deleted : " + dir.getCanonicalPath());
+            throw new IOException("Index file was not deleted : " + PrivilegedFileHelper.getCanonicalPath(dir));
          }
       }
    }

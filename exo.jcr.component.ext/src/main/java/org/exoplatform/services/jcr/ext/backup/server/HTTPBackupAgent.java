@@ -18,26 +18,7 @@
  */
 package org.exoplatform.services.jcr.ext.backup.server;
 
-import java.io.File;
-import java.io.FilenameFilter;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.security.RolesAllowed;
-import javax.jcr.LoginException;
-import javax.jcr.NoSuchWorkspaceException;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.CacheControl;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
@@ -67,6 +48,26 @@ import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.rest.resource.ResourceContainer;
+
+import java.io.File;
+import java.io.FilenameFilter;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.security.RolesAllowed;
+import javax.jcr.LoginException;
+import javax.jcr.NoSuchWorkspaceException;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.CacheControl;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 /**
  * Created by The eXo Platform SAS.
@@ -312,8 +313,9 @@ public class HTTPBackupAgent implements ResourceContainer
       try
       {
          File backupDir = new File(bConfigBeen.getBackupDir());
-         if (!backupDir.exists())
-            throw new BackupDirNotFoundException("The backup folder not exists :  " + backupDir.getAbsolutePath());
+         if (!PrivilegedFileHelper.exists(backupDir))
+            throw new BackupDirNotFoundException("The backup folder not exists :  "
+               + PrivilegedFileHelper.getAbsolutePath(backupDir));
 
          BackupConfig config = new BackupConfig();
          config.setBackupType(bConfigBeen.getBackupType());
@@ -411,9 +413,10 @@ public class HTTPBackupAgent implements ResourceContainer
       try
       {
          File backupDir = new File(bConfigBeen.getBackupDir());
-         if (!backupDir.exists())
+         if (!PrivilegedFileHelper.exists(backupDir))
          {
-            throw new BackupDirNotFoundException("The backup folder not exists :  " + backupDir.getAbsolutePath());
+            throw new BackupDirNotFoundException("The backup folder not exists :  "
+               + PrivilegedFileHelper.getAbsolutePath(backupDir));
          }
 
          RepositoryBackupConfig config = new RepositoryBackupConfig();
@@ -876,7 +879,8 @@ public class HTTPBackupAgent implements ResourceContainer
       {
          BackupServiceInfoBean infoBeen =
             new BackupServiceInfoBean(backupManager.getFullBackupType(), backupManager.getIncrementalBackupType(),
-               backupManager.getBackupDirectory().getAbsolutePath(), backupManager.getDefaultIncrementalJobPeriod());
+               PrivilegedFileHelper.getAbsolutePath(backupManager.getBackupDirectory()),
+               backupManager.getDefaultIncrementalJobPeriod());
 
          return Response.ok(infoBeen).cacheControl(noCache).build();
       }
@@ -1747,7 +1751,7 @@ public class HTTPBackupAgent implements ResourceContainer
          }
       };
 
-      File[] files = backupManager.getBackupDirectory().listFiles(backupLogsFilter);
+      File[] files = PrivilegedFileHelper.listFiles(backupManager.getBackupDirectory(), backupLogsFilter);
 
       if (files.length != 0)
          for (File f : files)
@@ -1775,7 +1779,7 @@ public class HTTPBackupAgent implements ResourceContainer
          }
       };
 
-      File[] files = backupManager.getBackupDirectory().listFiles(backupLogsFilter);
+      File[] files = PrivilegedFileHelper.listFiles(backupManager.getBackupDirectory(), backupLogsFilter);
 
       if (files.length != 0)
          for (File f : files)

@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.ext.replication.recovery;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 import org.exoplatform.services.jcr.dataflow.serialization.UnknownClassIdException;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectReaderImpl;
@@ -29,7 +30,6 @@ import org.exoplatform.services.log.Log;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.DateFormat;
@@ -107,7 +107,7 @@ public class RecoveryReader extends AbstractFSAccess
    public TransactionChangesLog getChangesLog(String filePath) throws IOException, ClassNotFoundException
    {
 
-      ObjectReaderImpl in = new ObjectReaderImpl(new FileInputStream(filePath));
+      ObjectReaderImpl in = new ObjectReaderImpl(PrivilegedFileHelper.fileInputStream(filePath));
       TransactionChangesLogReader rdr = new TransactionChangesLogReader(fileCleaner, maxBufferSize, holder);
 
       TransactionChangesLog tcl;
@@ -136,11 +136,11 @@ public class RecoveryReader extends AbstractFSAccess
     */
    public List<String> getFilePathList(Calendar timeStamp, String ownName) throws IOException
    {
-      File dataInfo = new File(recoveryDir.getAbsolutePath() + File.separator + ownName);
+      File dataInfo = new File(PrivilegedFileHelper.getAbsolutePath(recoveryDir) + File.separator + ownName);
 
       List<String> list = new ArrayList<String>();
 
-      if (dataInfo.exists())
+      if (PrivilegedFileHelper.exists(dataInfo))
       {
          BufferedReader br = new BufferedReader(new FileReader(dataInfo));
 

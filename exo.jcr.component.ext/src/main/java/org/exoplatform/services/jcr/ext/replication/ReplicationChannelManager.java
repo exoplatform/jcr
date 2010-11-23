@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.ext.replication;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.ext.replication.transport.AbstractPacket;
 import org.exoplatform.services.jcr.ext.replication.transport.ChannelManager;
 import org.exoplatform.services.jcr.ext.replication.transport.MemberAddress;
@@ -72,6 +73,7 @@ public class ReplicationChannelManager extends ChannelManager
    /**
     * {@inheritDoc}
     */
+   @Override
    public Object handle(final Message message)
    {
       if (isConnected())
@@ -178,9 +180,9 @@ public class ReplicationChannelManager extends ChannelManager
          LOG.debug("Begin send : " + filePath);
 
       File f = new File(filePath);
-      long packetCount = getPacketCount(f.length(), Packet.MAX_PACKET_SIZE);
+      long packetCount = getPacketCount(PrivilegedFileHelper.length(f), Packet.MAX_PACKET_SIZE);
 
-      FileInputStream in = new FileInputStream(f);
+      FileInputStream in = PrivilegedFileHelper.fileInputStream(f);
       byte[] buf = new byte[Packet.MAX_PACKET_SIZE];
       int len;
       long offset = 0;
@@ -273,6 +275,7 @@ public class ReplicationChannelManager extends ChannelManager
    /**
     * {@inheritDoc}
     */
+   @Override
    public void connect() throws ReplicationException
    {
 

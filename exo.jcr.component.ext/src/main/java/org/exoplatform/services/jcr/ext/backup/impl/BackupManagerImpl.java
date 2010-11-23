@@ -78,7 +78,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -497,7 +496,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
     */
    public BackupChainLog[] getBackupsLogs()
    {
-      File[] cfs = logsDirectory.listFiles(new BackupLogsFilter());
+      File[] cfs = PrivilegedFileHelper.listFiles(logsDirectory, new BackupLogsFilter());
       List<BackupChainLog> logs = new ArrayList<BackupChainLog>();
       for (int i = 0; i < cfs.length; i++)
       {
@@ -510,7 +509,8 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
          }
          catch (BackupOperationException e)
          {
-            log.warn("Log file " + cf.getAbsolutePath() + " is bussy or corrupted. Skipped. " + e, e);
+            log.warn("Log file " + PrivilegedFileHelper.getAbsolutePath(cf) + " is bussy or corrupted. Skipped. " + e,
+               e);
          }
       }
       BackupChainLog[] ls = new BackupChainLog[logs.size()];
@@ -523,7 +523,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
     */
    public RepositoryBackupChainLog[] getRepositoryBackupsLogs()
    {
-      File[] cfs = logsDirectory.listFiles(new RepositoryBackupLogsFilter());
+      File[] cfs = PrivilegedFileHelper.listFiles(logsDirectory, new RepositoryBackupLogsFilter());
       List<RepositoryBackupChainLog> logs = new ArrayList<RepositoryBackupChainLog>();
       for (int i = 0; i < cfs.length; i++)
       {
@@ -536,7 +536,8 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
          }
          catch (BackupOperationException e)
          {
-            log.warn("Log file " + cf.getAbsolutePath() + " is bussy or corrupted. Skipped. " + e, e);
+            log.warn("Log file " + PrivilegedFileHelper.getAbsolutePath(cf) + " is bussy or corrupted. Skipped. " + e,
+               e);
          }
       }
       RepositoryBackupChainLog[] ls = new RepositoryBackupChainLog[logs.size()];
@@ -826,23 +827,23 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
          }
          catch (BackupSchedulerException e)
          {
-            log.error("Can't restore backup scheduler task from file " + task.getAbsolutePath(), e);
+            log.error("Can't restore backup scheduler task from file " + PrivilegedFileHelper.getAbsolutePath(task), e);
          }
          catch (BackupOperationException e)
          {
-            log.error("Can't restore backup scheduler task from file " + task.getAbsolutePath(), e);
+            log.error("Can't restore backup scheduler task from file " + PrivilegedFileHelper.getAbsolutePath(task), e);
          }
          catch (BackupConfigurationException e)
          {
-            log.error("Can't restore backup scheduler task from file " + task.getAbsolutePath(), e);
+            log.error("Can't restore backup scheduler task from file " + PrivilegedFileHelper.getAbsolutePath(task), e);
          }
          catch (RepositoryException e)
          {
-            log.error("Can't restore backup scheduler task from file " + task.getAbsolutePath(), e);
+            log.error("Can't restore backup scheduler task from file " + PrivilegedFileHelper.getAbsolutePath(task), e);
          }
          catch (RepositoryConfigurationException e)
          {
-            log.error("Can't restore backup scheduler task from file " + task.getAbsolutePath(), e);
+            log.error("Can't restore backup scheduler task from file " + PrivilegedFileHelper.getAbsolutePath(task), e);
          }
       }
    }
@@ -870,7 +871,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
 
       RepositoryImpl defRep = (RepositoryImpl)repoService.getRepository(repositoryName);
 
-      defRep.importWorkspace(workspaceEntry.getName(), new FileInputStream(pathBackupFile));
+      defRep.importWorkspace(workspaceEntry.getName(), PrivilegedFileHelper.fileInputStream(pathBackupFile));
    }
 
    private void fullRestoreOverInitializer(String pathBackupFile, String repositoryName, WorkspaceEntry workspaceEntry)
@@ -915,7 +916,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       try
       {
          backupFile = new File(pathBackupFile);
-         ois = new ObjectInputStream(new FileInputStream(backupFile));
+         ois = new ObjectInputStream(PrivilegedFileHelper.fileInputStream(backupFile));
 
          while (true)
          {
@@ -1085,7 +1086,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       byte[] buf = new byte[bufferSize];
 
       File tempFile = SpoolFile.createTempFile("" + System.currentTimeMillis(), ".stmp", tempDir);
-      FileOutputStream fos = new FileOutputStream(tempFile);
+      FileOutputStream fos = PrivilegedFileHelper.fileOutputStream(tempFile);
       long readBytes = fileSize;
 
       while (readBytes > 0)
@@ -1557,7 +1558,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       File dir =
          new File(config.getBackupDir() + File.separator + "repository_" + config.getRepository() + "_backup_"
             + System.currentTimeMillis());
-      dir.mkdir();
+      PrivilegedFileHelper.mkdirs(dir);
       config.setBackupDir(dir);
 
       RepositoryBackupChain repositoryBackupChain =

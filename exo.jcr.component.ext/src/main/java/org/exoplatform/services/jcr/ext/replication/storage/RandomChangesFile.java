@@ -18,11 +18,11 @@
  */
 package org.exoplatform.services.jcr.ext.replication.storage;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
@@ -117,7 +117,7 @@ public class RandomChangesFile implements ChangesFile
    {
       finishWrite();
 
-      InputStream in = new FileInputStream(file);
+      InputStream in = PrivilegedFileHelper.fileInputStream(file);
       resHolder.add(in);
       return in;
    }
@@ -174,14 +174,14 @@ public class RandomChangesFile implements ChangesFile
    {
       if (fileAccessor == null)
       {
-         fileAccessor = new RandomAccessFile(file, "rwd");
+         fileAccessor = PrivilegedFileHelper.randomAccessFile(file, "rwd");
 
          resHolder.add(fileAccessor);
 
          // if (file.length() > 0) {
          // doTruncate = true;
          // }
-         fileAccessor.seek(file.length());
+         fileAccessor.seek(PrivilegedFileHelper.length(file));
 
          // LOG.info("checkFileAccessor - seek on " + file.length());
       }
@@ -198,7 +198,7 @@ public class RandomChangesFile implements ChangesFile
    public boolean delete() throws IOException
    {
       finishWrite();
-      return file.delete();
+      return PrivilegedFileHelper.delete(file);
    }
 
    /**
@@ -212,9 +212,10 @@ public class RandomChangesFile implements ChangesFile
    /**
     * {@inheritDoc}
     */
+   @Override
    public String toString()
    {
-      return file.getAbsolutePath();
+      return PrivilegedFileHelper.getAbsolutePath(file);
    }
 
    /**
@@ -222,7 +223,7 @@ public class RandomChangesFile implements ChangesFile
     */
    public long getLength()
    {
-      return file.length();
+      return PrivilegedFileHelper.length(file);
    }
 
    /**

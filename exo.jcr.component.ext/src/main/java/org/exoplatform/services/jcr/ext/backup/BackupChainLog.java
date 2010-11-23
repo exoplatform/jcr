@@ -18,17 +18,20 @@
  */
 package org.exoplatform.services.jcr.ext.backup;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -101,8 +104,9 @@ public class BackupChainLog
       try
       {
          this.finalized = false;
-         this.log = new File(logDir.getCanonicalPath() + File.separator + (PREFIX + backupId + SUFFIX));
-         this.log.createNewFile();
+         this.log =
+            new File(PrivilegedFileHelper.getCanonicalPath(logDir) + File.separator + (PREFIX + backupId + SUFFIX));
+         PrivilegedFileHelper.createNewFile(this.log);
          this.backupId = backupId;
          this.config = config;
          this.jobEntries = new ArrayList<JobEntryInfo>();
@@ -284,7 +288,7 @@ public class BackupChainLog
     */
    public String getLogFilePath()
    {
-      return log.getAbsolutePath();
+      return PrivilegedFileHelper.getAbsolutePath(log);
    }
 
    /**
@@ -328,7 +332,8 @@ public class BackupChainLog
          this.logFile = logFile;
          jobEntries = new ArrayList<JobEntryInfo>();
 
-         reader = XMLInputFactory.newInstance().createXMLStreamReader(new FileInputStream(this.logFile));
+         reader =
+            XMLInputFactory.newInstance().createXMLStreamReader(PrivilegedFileHelper.fileInputStream(this.logFile));
       }
 
       public BackupConfig getBackupConfig()
@@ -542,11 +547,44 @@ public class BackupChainLog
 
       XMLStreamWriter writer;
 
-      public LogWriter(File logFile) throws FileNotFoundException, XMLStreamException, FactoryConfigurationError
+      public LogWriter(File file) throws FileNotFoundException, XMLStreamException, FactoryConfigurationError
       {
-         this.logFile = logFile;
+         this.logFile = file;
 
-         writer = XMLOutputFactory.newInstance().createXMLStreamWriter(new FileOutputStream(this.logFile));
+         try
+         {
+            writer = SecurityHelper.doPriviledgedExceptionAction(new PrivilegedExceptionAction<XMLStreamWriter>()
+            {
+               public XMLStreamWriter run() throws Exception
+               {
+                  return XMLOutputFactory.newInstance().createXMLStreamWriter(new FileOutputStream(logFile));
+               }
+            });
+         }
+         catch (PrivilegedActionException pae)
+         {
+            Throwable cause = pae.getCause();
+            if (cause instanceof FileNotFoundException)
+            {
+               throw (FileNotFoundException)cause;
+            }
+            else if (cause instanceof XMLStreamException)
+            {
+               throw (XMLStreamException)cause;
+            }
+            else if (cause instanceof FactoryConfigurationError)
+            {
+               throw (FactoryConfigurationError)cause;
+            }
+            else if (cause instanceof RuntimeException)
+            {
+               throw (RuntimeException)cause;
+            }
+            else
+            {
+               throw new RuntimeException(cause);
+            }
+         };
 
          writer.writeStartDocument();
          writer.writeStartElement("backup-cain-log");
@@ -569,7 +607,7 @@ public class BackupChainLog
          if (config.getBackupDir() != null)
          {
             writer.writeStartElement("backup-dir");
-            writer.writeCharacters(config.getBackupDir().getAbsolutePath());
+            writer.writeCharacters(PrivilegedFileHelper.getAbsolutePath(config.getBackupDir()));
             writer.writeEndElement();
          }
 

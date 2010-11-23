@@ -18,13 +18,13 @@
  */
 package org.exoplatform.services.jcr.ext.replication.test.bandwidth;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.ext.replication.test.BaseReplicationTestCase;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 
 import javax.jcr.Node;
@@ -209,8 +209,8 @@ public class BandwidthAllocationTestCase extends BaseReplicationTestCase
       File tempFile = null;
       try
       {
-         tempFile = File.createTempFile("tempF", "_");
-         FileOutputStream fos = new FileOutputStream(tempFile);
+         tempFile = PrivilegedFileHelper.createTempFile("tempF", "_");
+         FileOutputStream fos = PrivilegedFileHelper.fileOutputStream(tempFile);
 
          for (int i = 0; i < buf.length; i++)
             buf[i] = (byte)(i % BaseReplicationTestCase.DIVIDER);
@@ -225,15 +225,15 @@ public class BandwidthAllocationTestCase extends BaseReplicationTestCase
          {
             String normalizePath = getNormalizePath(repoPath);
             Node baseNode = ((Node)session.getItem(normalizePath)).getNode(nodeName);
-            baseNode.setProperty("d", new FileInputStream(tempFile));
+            baseNode.setProperty("d", PrivilegedFileHelper.fileInputStream(tempFile));
 
             session.save();
          }
 
          end = System.currentTimeMillis();
 
-         log.info("The time of the adding of nt:file + " + iterations + "( " + tempFile.length() + " B ) : "
-            + ((end - start) / BaseReplicationTestCase.ONE_SECONDS) + " sec");
+         log.info("The time of the adding of nt:file + " + iterations + "( " + PrivilegedFileHelper.length(tempFile)
+            + " B ) : " + ((end - start) / BaseReplicationTestCase.ONE_SECONDS) + " sec");
 
          sb.append("ok");
       }
@@ -244,7 +244,7 @@ public class BandwidthAllocationTestCase extends BaseReplicationTestCase
       }
       finally
       {
-         tempFile.delete();
+         PrivilegedFileHelper.delete(tempFile);
       }
 
       return sb;

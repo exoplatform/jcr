@@ -16,13 +16,20 @@
  */
 package org.exoplatform.services.jcr.ext.backup;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -35,10 +42,6 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.events.StartElement;
-
-import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
 
 /**
  * Created by The eXo Platform SAS.
@@ -59,11 +62,44 @@ public class RepositoryBackupChainLog
 
       XMLStreamWriter writer;
 
-      public LogWriter(File logFile) throws FileNotFoundException, XMLStreamException, FactoryConfigurationError
+      public LogWriter(File file) throws FileNotFoundException, XMLStreamException, FactoryConfigurationError
       {
-         this.logFile = logFile;
+         this.logFile = file;
 
-         writer = XMLOutputFactory.newInstance().createXMLStreamWriter(new FileOutputStream(this.logFile));
+         try
+         {
+            writer = SecurityHelper.doPriviledgedExceptionAction(new PrivilegedExceptionAction<XMLStreamWriter>()
+            {
+               public XMLStreamWriter run() throws Exception
+               {
+                  return XMLOutputFactory.newInstance().createXMLStreamWriter(new FileOutputStream(logFile));
+               }
+            });
+         }
+         catch (PrivilegedActionException pae)
+         {
+            Throwable cause = pae.getCause();
+            if (cause instanceof FileNotFoundException)
+            {
+               throw (FileNotFoundException)cause;
+            }
+            else if (cause instanceof XMLStreamException)
+            {
+               throw (XMLStreamException)cause;
+            }
+            else if (cause instanceof FactoryConfigurationError)
+            {
+               throw (FactoryConfigurationError)cause;
+            }
+            else if (cause instanceof RuntimeException)
+            {
+               throw (RuntimeException)cause;
+            }
+            else
+            {
+               throw new RuntimeException(cause);
+            }
+         };
 
          writer.writeStartDocument();
          writer.writeStartElement("repository-backup-chain-log");
@@ -118,7 +154,7 @@ public class RepositoryBackupChainLog
          if (config.getBackupDir() != null)
          {
             writer.writeStartElement("backup-dir");
-            writer.writeCharacters(config.getBackupDir().getAbsolutePath());
+            writer.writeCharacters(PrivilegedFileHelper.getAbsolutePath(config.getBackupDir()));
             writer.writeEndElement();
          }
 
@@ -172,7 +208,7 @@ public class RepositoryBackupChainLog
       public LogReader(File logFile) throws FileNotFoundException, XMLStreamException, FactoryConfigurationError
       {
          this.logFile = logFile;
-         reader = XMLInputFactory.newInstance().createXMLStreamReader(new FileInputStream(logFile));
+         reader = XMLInputFactory.newInstance().createXMLStreamReader(PrivilegedFileHelper.fileInputStream(logFile));
       }
 
       public void readLogFile() throws XMLStreamException, MalformedURLException, ValueFormatException
@@ -432,8 +468,10 @@ public class RepositoryBackupChainLog
       try
       {
          this.finalized = false;
-         this.log = new File(logDirectory.getCanonicalPath() + File.separator + (PREFIX + backupId + SUFFIX));
-         this.log.createNewFile();
+         this.log =
+            new File(PrivilegedFileHelper.getCanonicalPath(logDirectory) + File.separator
+               + (PREFIX + backupId + SUFFIX));
+         PrivilegedFileHelper.createNewFile(this.log);
          this.backupId = backupId;
          this.config = config;
          this.startedTime = Calendar.getInstance();
@@ -479,27 +517,32 @@ public class RepositoryBackupChainLog
       catch (FileNotFoundException e)
       {
          throw new BackupOperationException(
-            "Can not read RepositoryBackupChainLog from file :" + log.getAbsolutePath(), e);
+"Can not read RepositoryBackupChainLog from file :"
+            + PrivilegedFileHelper.getAbsolutePath(log), e);
       }
       catch (XMLStreamException e)
       {
          throw new BackupOperationException(
-            "Can not read RepositoryBackupChainLog from file :" + log.getAbsolutePath(), e);
+"Can not read RepositoryBackupChainLog from file :"
+            + PrivilegedFileHelper.getAbsolutePath(log), e);
       }
       catch (FactoryConfigurationError e)
       {
          throw new BackupOperationException(
-            "Can not read RepositoryBackupChainLog from file :" + log.getAbsolutePath(), e);
+"Can not read RepositoryBackupChainLog from file :"
+            + PrivilegedFileHelper.getAbsolutePath(log), e);
       }
       catch (MalformedURLException e)
       {
          throw new BackupOperationException(
-            "Can not read RepositoryBackupChainLog from file :" + log.getAbsolutePath(), e);
+"Can not read RepositoryBackupChainLog from file :"
+            + PrivilegedFileHelper.getAbsolutePath(log), e);
       }
       catch (ValueFormatException e)
       {
          throw new BackupOperationException(
-            "Can not read RepositoryBackupChainLog from file :" + log.getAbsolutePath(), e);
+"Can not read RepositoryBackupChainLog from file :"
+            + PrivilegedFileHelper.getAbsolutePath(log), e);
       }
    }
 
@@ -511,7 +554,7 @@ public class RepositoryBackupChainLog
     */
    public String getLogFilePath()
    {
-      return log.getAbsolutePath();
+      return PrivilegedFileHelper.getAbsolutePath(log);
    }
 
    /**

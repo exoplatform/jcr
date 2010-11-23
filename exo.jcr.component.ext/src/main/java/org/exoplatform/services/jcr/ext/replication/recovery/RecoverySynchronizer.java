@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.ext.replication.recovery;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.dataflow.ChangesLogIterator;
 import org.exoplatform.services.jcr.dataflow.ItemDataKeeper;
 import org.exoplatform.services.jcr.dataflow.ItemState;
@@ -288,7 +289,7 @@ public class RecoverySynchronizer
                         try
                         {
                            TransactionChangesLog transactionChangesLog =
-                              recoveryReader.getChangesLog(fileDescriptor.getFile().getAbsolutePath());
+                              recoveryReader.getChangesLog(PrivilegedFileHelper.getAbsolutePath(fileDescriptor.getFile()));
 
                            transactionChangesLog.setSystemId(fileDescriptor.getSystemId());
 
@@ -296,7 +297,8 @@ public class RecoverySynchronizer
 
                            if (log.isDebugEnabled())
                            {
-                              log.debug("Save to JCR : " + fileDescriptor.getFile().getAbsolutePath());
+                              log.debug("Save to JCR : "
+                                 + PrivilegedFileHelper.getAbsolutePath(fileDescriptor.getFile()));
                               log.debug("SystemID : " + transactionChangesLog.getSystemId());
                               log.debug("list size : " + fileDescriptorList.size());
                            }
