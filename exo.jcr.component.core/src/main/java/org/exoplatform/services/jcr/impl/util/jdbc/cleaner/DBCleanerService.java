@@ -16,6 +16,7 @@
  */
 package org.exoplatform.services.jcr.impl.util.jdbc.cleaner;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
@@ -25,6 +26,7 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -101,7 +103,14 @@ public class DBCleanerService
       Connection conn = null;
       try
       {
-         conn = ds.getConnection();
+         final DataSource fds = ds;
+         conn = SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
+         {
+            public Connection run() throws Exception
+            {
+               return fds.getConnection();
+            }
+         });
       }
       catch (SQLException e)
       {

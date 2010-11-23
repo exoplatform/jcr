@@ -290,9 +290,13 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
       File rDir = new File(restoreDir);
       Pattern fullBackupPattern = Pattern.compile(".+\\.0");
 
-      for (File f : rDir.listFiles(new BackupFilesFilter()))
+      for (File f : PrivilegedFileHelper.listFiles(rDir, new BackupFilesFilter()))
+      {
          if (fullBackupPattern.matcher(f.getName()).matches() == false)
+         {
             list.add(f);
+         }
+      }
 
       return list;
    }
@@ -312,11 +316,13 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
       File rDir = new File(restoreDir);
       Pattern p = Pattern.compile(".+\\.0");
 
-      for (File f : rDir.listFiles(new BackupFilesFilter()))
+      for (File f : PrivilegedFileHelper.listFiles(rDir, new BackupFilesFilter()))
       {
          Matcher m = p.matcher(f.getName());
          if (m.matches())
+         {
             return PrivilegedFileHelper.getAbsolutePath(f);
+         }
       }
 
       return null;

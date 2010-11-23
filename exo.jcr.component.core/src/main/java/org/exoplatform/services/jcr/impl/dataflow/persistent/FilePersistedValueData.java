@@ -264,7 +264,7 @@ public class FilePersistedValueData extends AbstractPersistedValueData implement
       if (file != null)
       {
          // TODO for tests byte[] buf = file.getPath().getBytes("UTF-8");
-         byte[] buf = file.getCanonicalPath().getBytes("UTF-8");
+         byte[] buf = PrivilegedFileHelper.getCanonicalPath(file).getBytes("UTF-8");
          out.writeInt(buf.length);
          out.write(buf);
       }
