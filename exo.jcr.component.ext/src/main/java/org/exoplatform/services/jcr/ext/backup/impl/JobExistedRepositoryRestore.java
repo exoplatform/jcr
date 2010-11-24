@@ -16,6 +16,11 @@
  */
 package org.exoplatform.services.jcr.ext.backup.impl;
 
+import java.util.ArrayList;
+import java.util.Map;
+
+import javax.jcr.RepositoryException;
+
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
@@ -28,10 +33,6 @@ import org.exoplatform.services.jcr.ext.backup.RepositoryRestoreExeption;
 import org.exoplatform.services.jcr.impl.RepositoryServiceImpl;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.jcr.impl.util.jdbc.cleaner.DBCleanerService;
-
-import java.util.Map;
-
-import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -94,8 +95,12 @@ public class JobExistedRepositoryRestore extends JobRepositoryRestore
          boolean isDefault =
             repositoryService.getDefaultRepository().getConfiguration().getName().equals(repositoryEntry.getName());
 
+         //Create local copy of WorkspaceEntry for all workspaces
+         ArrayList<WorkspaceEntry> workspaceList = new ArrayList<WorkspaceEntry>();
+         workspaceList.addAll(repositoryEntry.getWorkspaceEntries());
+
          //close all session
-         for (WorkspaceEntry wEntry : repositoryEntry.getWorkspaceEntries())
+         for (WorkspaceEntry wEntry : workspaceList)
          {
             forceCloseSession(repositoryEntry.getName(), wEntry.getName());
          }
@@ -111,17 +116,19 @@ public class JobExistedRepositoryRestore extends JobRepositoryRestore
          }
 
          //clean database
-         dbCleanerService.cleanRepositoryData(repositoryEntry);
+         RepositoryEntry re = new RepositoryEntry();
+         re.setWorkspaceEntries(workspaceList);
+         dbCleanerService.cleanRepositoryData(re);
 
          //clean index
-         for (WorkspaceEntry wEntry : repositoryEntry.getWorkspaceEntries())
+         for (WorkspaceEntry wEntry : workspaceList)
          {
             indexCleanHelper.removeWorkspaceIndex(wEntry,
                repositoryEntry.getSystemWorkspaceName().equals(wEntry.getName()));
          }
 
          //clean value storage
-         for (WorkspaceEntry wEntry : repositoryEntry.getWorkspaceEntries())
+         for (WorkspaceEntry wEntry : workspaceList)
          {
             valueStorageCleanHelper.removeWorkspaceValueStorage(wEntry);
          }

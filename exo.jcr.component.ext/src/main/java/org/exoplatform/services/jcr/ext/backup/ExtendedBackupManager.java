@@ -103,4 +103,71 @@ public interface ExtendedBackupManager extends BackupManager
    void restoreExistingRepository(RepositoryBackupChainLog log, RepositoryEntry repositoryEntry, boolean asynchronous)
       throws BackupOperationException, BackupConfigurationException;
 
+   /**
+    * Restore existing workspace. Previous data will be deleted.
+    * For getting status of workspace restore can use 
+    * BackupManager.getLastRestore(String repositoryName, String workspaceName) method
+    * WorkspaceEntry for restore should be contains in BackupChainLog. 
+    * 
+    * @param workspaceBackupIdentifier
+    *          identifier to workspace backup. 
+    * @param asynchronous
+    *          if 'true' restore will be in asynchronous mode (i.e. in separated thread) 
+    * @throws BackupOperationException
+    *           if backup operation exception occurred 
+    * @throws BackupConfigurationException
+    *           if configuration exception occurred 
+    */
+   void restoreExistingWorkspace(String workspaceBackupIdentifier, boolean asynchronous)
+            throws BackupOperationException,
+            BackupConfigurationException;
+
+   /**
+    * Restore existing repository. Previous data will be deleted.
+    * For getting status of repository restore can use 
+    * BackupManager.getLastRestore(String repositoryName) method.
+    * ReprositoryEntry for restore should be contains in BackupChainLog. 
+    * 
+    * @param repositoryBackupIdentifier
+    *          identifier to repository backup.   
+    * @param asynchronous
+    *          if 'true' restore will be in asynchronous mode (i.e. in separated thread)
+    * @throws BackupOperationException
+    *           if backup operation exception occurred 
+    * @throws BackupConfigurationException
+    *           if configuration exception occurred
+    */
+   void restoreExistingRepository(String repositoryBackupIdentifier, boolean asynchronous)
+            throws BackupOperationException,
+            BackupConfigurationException;
+
+   /**
+    * WorkspaceEntry for restore should be contains in BackupChainLog. 
+    * 
+    * @param workspaceBackupIdentifier
+    *          identifier to workspace backup. 
+    * @param asynchronous
+    *          if 'true' restore will be in asynchronous mode (i.e. in separated thread) 
+    * @throws BackupOperationException
+    *           if backup operation exception occurred 
+    * @throws BackupConfigurationException
+    *           if configuration exception occurred 
+    */
+   void restoreWorkspace(String workspaceBackupIdentifier, boolean asynchronous) throws BackupOperationException,
+            BackupConfigurationException;
+
+   /**
+    * ReprositoryEntry for restore should be contains in BackupChainLog. 
+    * 
+    * @param repositoryBackupIdentifier
+    *          identifier to repository backup.   
+    * @param asynchronous
+    *          if 'true' restore will be in asynchronous mode (i.e. in separated thread)
+    * @throws BackupOperationException
+    *           if backup operation exception occurred 
+    * @throws BackupConfigurationException
+    *           if configuration exception occurred
+    */
+   void restoreRepository(String repositoryBackupIdentifier, boolean asynchronous) throws BackupOperationException,
+            BackupConfigurationException;
 }

@@ -18,6 +18,29 @@
  */
 package org.exoplatform.services.jcr.ext.backup.impl;
 
+import java.io.ByteArrayOutputStream;
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.PrintWriter;
+import java.security.PrivilegedExceptionAction;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.jcr.PathNotFoundException;
+import javax.jcr.RepositoryException;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.apache.commons.collections.map.HashedMap;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
@@ -73,29 +96,6 @@ import org.picocontainer.Startable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
-
-import java.io.ByteArrayOutputStream;
-import java.io.EOFException;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.PrintWriter;
-import java.security.PrivilegedExceptionAction;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.jcr.PathNotFoundException;
-import javax.jcr.RepositoryException;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * Created by The eXo Platform SAS .<br/>
@@ -650,7 +650,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       String reposytoryName = (repositoryName == null ? config.getRepository() : repositoryName);
       String workspaceName = workspaceEntry.getName();
 
-      // ws should be registered not created
+      // ws should not exists.
       if (!workspaceAlreadyExist(reposytoryName, workspaceName))
       {
 
@@ -697,7 +697,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
          }
       }
       else
-         throw new BackupConfigurationException("Workspace should exists " + workspaceName);
+         throw new BackupConfigurationException("Workspace \"" + workspaceName + "\" should not exists.");
    }
 
    private boolean workspaceAlreadyExist(String repository, String workspace) throws RepositoryException,
@@ -738,8 +738,8 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       validateBackupConfig(config);
 
       BackupChain bchain =
-         new BackupChainImpl(config, logsDirectory, repoService.getRepository(config.getRepository()), fullBackupType,
-            incrementalBackupType, IdGenerator.generate());
+               new BackupChainImpl(config, logsDirectory, repoService.getRepository(config.getRepository()),
+                        fullBackupType, incrementalBackupType, IdGenerator.generate(), logsDirectory);
 
       bchain.addListener(messagesListener);
       bchain.addListener(jobListener);
@@ -1563,7 +1563,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
 
       RepositoryBackupChain repositoryBackupChain =
          new RepositoryBackupChainImpl(config, logsDirectory, repository, fullBackupType, incrementalBackupType,
-            IdGenerator.generate());
+                        IdGenerator.generate());
 
       repositoryBackupChain.startBackup();
 
@@ -1781,6 +1781,142 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       }
       
       this.restoreExistingWorkspace(backupChainLog, repositoryName, workspaceEntry, asynchronous);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void restoreExistingRepository(String repositoryBackupIdentifier, boolean asynchronous)
+            throws BackupOperationException, BackupConfigurationException
+   {
+      RepositoryBackupChainLog backupChainLog = null;
+
+      for (RepositoryBackupChainLog chainLog : getRepositoryBackupsLogs())
+      {
+         if (chainLog.getBackupId().equals(repositoryBackupIdentifier))
+         {
+            backupChainLog = chainLog;
+            break;
+         }
+      }
+
+      if (backupChainLog == null)
+      {
+         throw new BackupConfigurationException("Can not founf backup of repository with id \""
+                  + repositoryBackupIdentifier + "\"");
+      }
+
+      this.restoreExistingRepository(backupChainLog, backupChainLog.getOriginalRepositoryEntry(), asynchronous);
+
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void restoreExistingWorkspace(String workspaceBackupIdentifier, boolean asynchronous)
+            throws BackupOperationException, BackupConfigurationException
+   {
+      BackupChainLog backupChainLog = null;
+
+      for (BackupChainLog chainLog : getBackupsLogs())
+      {
+         if (chainLog.getBackupId().equals(workspaceBackupIdentifier))
+         {
+            backupChainLog = chainLog;
+            break;
+         }
+      }
+
+      if (backupChainLog == null)
+      {
+         throw new BackupConfigurationException("Can not founf backup of workspace with id \""
+                  + workspaceBackupIdentifier + "\"");
+      }
+
+      this.restoreExistingWorkspace(backupChainLog, backupChainLog.getBackupConfig().getRepository(), backupChainLog
+               .getOriginalWorkspaceEntry(), asynchronous);
+
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void restoreRepository(String repositoryBackupIdentifier, boolean asynchronous)
+            throws BackupOperationException, BackupConfigurationException
+   {
+      RepositoryBackupChainLog backupChainLog = null;
+
+      for (RepositoryBackupChainLog chainLog : getRepositoryBackupsLogs())
+      {
+         if (chainLog.getBackupId().equals(repositoryBackupIdentifier))
+         {
+            backupChainLog = chainLog;
+            break;
+         }
+      }
+
+      if (backupChainLog == null)
+      {
+         throw new BackupConfigurationException("Can not founf backup of repository with id \""
+                  + repositoryBackupIdentifier + "\"");
+      }
+
+      try
+      {
+         this.restore(backupChainLog, backupChainLog.getOriginalRepositoryEntry(), asynchronous);
+      }
+      catch (RepositoryException e)
+      {
+         throw new RepositoryRestoreExeption("Repository \"" + backupChainLog.getOriginalRepositoryEntry().getName()
+                  + "\" was not restored", e);
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         throw new RepositoryRestoreExeption("Repository \"" + backupChainLog.getOriginalRepositoryEntry().getName()
+                  + "\" was not restored", e);
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void restoreWorkspace(String workspaceBackupIdentifier, boolean asynchronous)
+            throws BackupOperationException, BackupConfigurationException
+   {
+      BackupChainLog backupChainLog = null;
+
+      for (BackupChainLog chainLog : getBackupsLogs())
+      {
+         if (chainLog.getBackupId().equals(workspaceBackupIdentifier))
+         {
+            backupChainLog = chainLog;
+            break;
+         }
+      }
+
+      if (backupChainLog == null)
+      {
+         throw new BackupConfigurationException("Can not founf backup of workspace with id \""
+                  + workspaceBackupIdentifier + "\"");
+      }
+
+      try
+      {
+         this.restore(backupChainLog, backupChainLog.getBackupConfig().getRepository(), backupChainLog
+                  .getOriginalWorkspaceEntry(), asynchronous);
+      }
+      catch (RepositoryException e)
+      {
+         throw new WorkspaceRestoreException("Workapce \"" + backupChainLog.getOriginalWorkspaceEntry().getName()
+                  + "\" was not restored in repository \"" + backupChainLog.getBackupConfig().getRepository() + "\"", e);
+      }
+      catch (RepositoryConfigurationException e)
+      {
+
+         throw new WorkspaceRestoreException("Workapce \"" + backupChainLog.getOriginalWorkspaceEntry().getName()
+                  + "\" was not restored in repository \"" + backupChainLog.getBackupConfig().getRepository() + "\"", e);
+      }
+
    }
    
 }
