@@ -25,6 +25,7 @@ import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.jcr.config.MappedParametrizedObjectEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.TemplateConfigurationHelper;
+import org.exoplatform.services.jcr.impl.util.PrivilegedCacheHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.jboss.cache.Cache;
@@ -75,8 +76,8 @@ public class ExoJBossCacheFactory<K, V>
     * Keep only one instance of the {@link JChannelFactory} to prevent creating several times the
     * same multiplexer stack
     */
-   private static final JChannelFactory CHANNEL_FACTORY = SecurityHelper
-      .doPriviledgedAction(new PrivilegedAction<JChannelFactory>()
+   private static final JChannelFactory CHANNEL_FACTORY =
+      SecurityHelper.doPriviledgedAction(new PrivilegedAction<JChannelFactory>()
       {
          public JChannelFactory run()
          {
@@ -157,7 +158,14 @@ public class ExoJBossCacheFactory<K, V>
       }
 
       // create cache
-      final CacheFactory<K, V> factory = new DefaultCacheFactory<K, V>();
+      final CacheFactory<K, V> factory = SecurityHelper.doPriviledgedAction(new PrivilegedAction<CacheFactory<K, V>>()
+      {
+         public CacheFactory<K, V> run()
+         {
+            return new DefaultCacheFactory<K, V>();
+         }
+      });
+
       final InputStream stream = configStream;
 
       PrivilegedAction<Cache<K, V>> action = new PrivilegedAction<Cache<K, V>>()
@@ -260,7 +268,8 @@ public class ExoJBossCacheFactory<K, V>
       {
          // The cache is not shareable         
          // Avoid potential naming collision by changing the cluster name
-         cache.getConfiguration().setClusterName(cache.getConfiguration().getClusterName() + rootFqn.toString().replace('/', '-'));
+         cache.getConfiguration().setClusterName(
+            cache.getConfiguration().getClusterName() + rootFqn.toString().replace('/', '-'));
          return cache;
       }
       ExoContainer container = ExoContainerContext.getCurrentContainer();
@@ -294,24 +303,27 @@ public class ExoJBossCacheFactory<K, V>
       {
          caches.put(key, cache);
          if (log.isInfoEnabled())
-            log.info("A new JBoss Cache instance has been registered for the region " + rootFqn + ", a cache of type " + cacheType
-               + " and the container " + container.getContext().getName());
+         {
+            log.info("A new JBoss Cache instance has been registered for the region " + rootFqn + ", a cache of type "
+               + cacheType + " and the container " + container.getContext().getName());
+         }
       }
       addEvictionRegion(rootFqn, cache, cfg);
       if (log.isInfoEnabled())
+      {
          log.info("The region " + rootFqn + " has been registered for a cache of type " + cacheType
             + " and the container " + container.getContext().getName());
+      }
       return cache;
    }
 
    /**
     * All the known cache types
     */
-   public enum CacheType 
-   {
+   public enum CacheType {
       JCR_CACHE, INDEX_CACHE, LOCK_CACHE
    }
-   
+
    /**
     * This class is used to make {@link Configuration} being usable as a Key in an HashMap since
     * some variables such as <code>jgroupsConfigFile</code> are not managed as expected in the
@@ -321,8 +333,9 @@ public class ExoJBossCacheFactory<K, V>
    private static class ConfigurationKey
    {
       private final URL jgroupsConfigFile;
+
       private final Configuration conf;
-      
+
       public ConfigurationKey(Configuration initialConf) throws CloneNotSupportedException
       {
          // Clone it first since it will be modified
@@ -348,26 +361,40 @@ public class ExoJBossCacheFactory<K, V>
       public boolean equals(Object obj)
       {
          if (this == obj)
+         {
             return true;
+         }
          if (obj == null)
+         {
             return false;
+         }
          if (getClass() != obj.getClass())
+         {
             return false;
+         }
          ConfigurationKey other = (ConfigurationKey)obj;
          if (conf == null)
          {
             if (other.conf != null)
+            {
                return false;
+            }
          }
          else if (!conf.equals(other.conf))
+         {
             return false;
+         }
          if (jgroupsConfigFile == null)
          {
             if (other.jgroupsConfigFile != null)
+            {
                return false;
+            }
          }
          else if (!jgroupsConfigFile.equals(other.jgroupsConfigFile))
+         {
             return false;
+         }
          return true;
       }
    }
