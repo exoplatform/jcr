@@ -654,8 +654,9 @@ public abstract class ItemImpl implements Item
 
          List<NodeData> refNodes = new ArrayList<NodeData>();
 
-         for (ItemState changedItem : changes)
+         for (int i = 0, length = changes.size(); i < length; i++)
          {
+            ItemState changedItem = changes.get(i);
             if (changedItem.isNode())
             {
                NodeData refNode = (NodeData)changedItem.getData();
@@ -680,11 +681,13 @@ public abstract class ItemImpl implements Item
          }
 
          // check ref changes
-         for (NodeData refNode : refNodes)
+         for (int i = 0, length = refNodes.size(); i < length; i++)
          {
+            NodeData refNode = refNodes.get(i);
             List<PropertyData> nodeRefs = dataManager.getReferencesData(refNode.getIdentifier(), true);
-            for (PropertyData refProp : nodeRefs)
+            for (int j = 0, length2 = nodeRefs.size(); j < length2; j++)
             {
+               PropertyData refProp = nodeRefs.get(j);
                // if ref property is deleted in this session
                ItemState refState = dataManager.getChangesLog().getItemState(refProp.getIdentifier());
                if (refState != null && refState.isDeleted())

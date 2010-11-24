@@ -85,9 +85,11 @@ public final class SessionChangesLog extends PlainChangesLogImpl
    public SessionChangesLog(List<ItemState> items, String sessionId)
    {
       super(items, sessionId);
-
-      for (ItemState change : items)
+      for (int i = 0, length = items.size(); i < length; i++)
+      {
+         ItemState change = items.get(i);
          addItem(change);
+      }     
    }
 
    /**
@@ -109,9 +111,11 @@ public final class SessionChangesLog extends PlainChangesLogImpl
    public PlainChangesLog addAll(List<ItemState> changes)
    {
       super.addAll(changes);
-      for (ItemState change : changes)
+      for (int i = 0, length = changes.size(); i < length; i++)
+      {
+         ItemState change = changes.get(i);
          addItem(change);
-
+      }
       return this;
    }
 
@@ -200,8 +204,9 @@ public final class SessionChangesLog extends PlainChangesLogImpl
 
    private void traverseChangesByIdentifier(String identifier, List<ItemState> changesList)
    {
-      for (ItemState item : items)
+      for (int i = 0, length = items.size(); i < length; i++)
       {
+         ItemState item = items.get(i);
          if (item.getData().getIdentifier().equals(identifier))
          {
             changesList.add(item);
@@ -221,8 +226,9 @@ public final class SessionChangesLog extends PlainChangesLogImpl
     */
    public void eraseEventFire(String identifier)
    {
-      for (ItemState item : items)
+      for (int i = 0, length = items.size(); i < length; i++)
       {
+         ItemState item = items.get(i);
          if (item.getData().getIdentifier().equals(identifier))
          {
             // erase flag
@@ -242,11 +248,12 @@ public final class SessionChangesLog extends PlainChangesLogImpl
    public List<ItemState> getDescendantsChanges(QPath rootPath)
    {
       List<ItemState> list = new ArrayList<ItemState>();
-      for (int i = 0; i < items.size(); i++)
+      for (int i = 0, length = items.size(); i < length; i++)
       {
-         if (items.get(i).isDescendantOf(rootPath))
+         ItemState item = items.get(i);
+         if (item.isDescendantOf(rootPath))
          {
-            list.add(items.get(i));
+            list.add(item);
          }
       }
       return list;
@@ -261,8 +268,10 @@ public final class SessionChangesLog extends PlainChangesLogImpl
    public List<ItemState> getItemStates(String itemIdentifier)
    {
       List<ItemState> states = new ArrayList<ItemState>();
-      for (ItemState state : getAllStates())
+      List<ItemState> currentStates = getAllStates();
+      for (int i = 0, length = currentStates.size(); i < length; i++)
       {
+         ItemState state = currentStates.get(i);
          if (state.getData().getIdentifier().equals(itemIdentifier))
          {
             states.add(state);
