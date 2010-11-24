@@ -1473,19 +1473,33 @@ public class TestBackupManager extends AbstractBackupTestCase
 
    public void testExistedRepositoryRestore() throws Exception
    {
+      RepositoryImpl repositoryDB8 = (RepositoryImpl)repositoryService.getRepository("db8");
+
+      for (String wsName : repositoryDB8.getWorkspaceNames())
+      {
+         SessionImpl sessionWS = (SessionImpl)repositoryDB8.login(credentials, wsName);
+
+         Node wsTestRoot = sessionWS.getRootNode().addNode("backupTest");
+         sessionWS.getRootNode().save();
+         addContent(wsTestRoot, 1, 10, 1);
+         sessionWS.getRootNode().save();
+      }
+
+      SessionImpl sessionWS = (SessionImpl)repositoryDB8.login(credentials, WS_NAME);
+
       // backup
       File backDir = new File("target/backup");
       backDir.mkdirs();
 
       RepositoryBackupConfig config = new RepositoryBackupConfig();
-      config.setRepository(repository.getName());
+      config.setRepository(repositoryDB8.getName());
       config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
 
       config.setBackupDir(backDir);
 
       backup.startBackup(config);
 
-      RepositoryBackupChain bch = backup.findRepositoryBackup(repository.getName());
+      RepositoryBackupChain bch = backup.findRepositoryBackup(repositoryDB8.getName());
 
       // wait till full backup will be stopped
       while (bch.getState() != RepositoryBackupChain.FINISHED)
@@ -1500,7 +1514,7 @@ public class TestBackupManager extends AbstractBackupTestCase
 
       // restore             
       RepositoryEntry baseRE =
-         (RepositoryEntry)ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
+         (RepositoryEntry)sessionWS.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
       RepositoryEntry re = makeRepositoryEntry(baseRE.getName(), baseRE, null, null);
 
       File backLog = new File(bch.getLogFilePath());
@@ -1635,19 +1649,33 @@ public class TestBackupManager extends AbstractBackupTestCase
 
    public void testExistedRepositoryRestoreAsync() throws Exception
    {
+      RepositoryImpl repositoryDB8 = (RepositoryImpl)repositoryService.getRepository("db8");
+
+      for (String wsName : repositoryDB8.getWorkspaceNames())
+      {
+         SessionImpl sessionWS = (SessionImpl)repositoryDB8.login(credentials, wsName);
+
+         Node wsTestRoot = sessionWS.getRootNode().addNode("backupTest");
+         sessionWS.getRootNode().save();
+         addContent(wsTestRoot, 1, 10, 1);
+         sessionWS.getRootNode().save();
+      }
+
+      SessionImpl sessionWS = (SessionImpl)repositoryDB8.login(credentials, "ws1");
+
       // backup
       File backDir = new File("target/backup");
       backDir.mkdirs();
 
       RepositoryBackupConfig config = new RepositoryBackupConfig();
-      config.setRepository(repository.getName());
+      config.setRepository(repositoryDB8.getName());
       config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
 
       config.setBackupDir(backDir);
 
       backup.startBackup(config);
 
-      RepositoryBackupChain bch = backup.findRepositoryBackup(repository.getName());
+      RepositoryBackupChain bch = backup.findRepositoryBackup(repositoryDB8.getName());
 
       // wait till full backup will be stopped
       while (bch.getState() != RepositoryBackupChain.FINISHED)
@@ -1662,7 +1690,7 @@ public class TestBackupManager extends AbstractBackupTestCase
 
       // restore
       RepositoryEntry baseRE =
-         (RepositoryEntry)ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
+         (RepositoryEntry)sessionWS.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
       RepositoryEntry re = makeRepositoryEntry(baseRE.getName(), baseRE, null, null);
 
       File backLog = new File(bch.getLogFilePath());
@@ -1717,19 +1745,34 @@ public class TestBackupManager extends AbstractBackupTestCase
 
    public void testExistedRepositoryRestoreAsync2() throws Exception
    {
+      RepositoryImpl repositoryDB8 = (RepositoryImpl)repositoryService.getRepository("db8");
+
+      for (String wsName : repositoryDB8.getWorkspaceNames())
+      {
+         SessionImpl sessionWS = (SessionImpl)repositoryDB8.login(credentials, wsName);
+
+         Node wsTestRoot = sessionWS.getRootNode().addNode("backupTest");
+         sessionWS.getRootNode().save();
+         addContent(wsTestRoot, 1, 10, 1);
+         sessionWS.getRootNode().save();
+      }
+
+      SessionImpl sessionWS = (SessionImpl)repositoryDB8.login(credentials, "ws1");
+
+
       // backup
       File backDir = new File("target/backup");
       backDir.mkdirs();
 
       RepositoryBackupConfig config = new RepositoryBackupConfig();
-      config.setRepository(repository.getName());
+      config.setRepository(repositoryDB8.getName());
       config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
 
       config.setBackupDir(backDir);
 
       backup.startBackup(config);
 
-      RepositoryBackupChain bch = backup.findRepositoryBackup(repository.getName());
+      RepositoryBackupChain bch = backup.findRepositoryBackup(repositoryDB8.getName());
 
       // wait till full backup will be stopped
       while (bch.getState() != RepositoryBackupChain.FINISHED)
@@ -1744,7 +1787,7 @@ public class TestBackupManager extends AbstractBackupTestCase
 
       // restore
       RepositoryEntry baseRE =
-         (RepositoryEntry)ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
+         (RepositoryEntry)sessionWS.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
       RepositoryEntry re = makeRepositoryEntry(baseRE.getName(), baseRE, null, null);
 
       File backLog = new File(bch.getLogFilePath());
