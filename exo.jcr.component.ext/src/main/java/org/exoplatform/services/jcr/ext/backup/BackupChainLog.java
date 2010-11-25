@@ -18,15 +18,14 @@
  */
 package org.exoplatform.services.jcr.ext.backup;
 
-import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
-
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -44,6 +43,20 @@ import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.events.StartElement;
 
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+import org.exoplatform.ws.frameworks.json.JsonHandler;
+import org.exoplatform.ws.frameworks.json.JsonParser;
+import org.exoplatform.ws.frameworks.json.impl.BeanBuilder;
+import org.exoplatform.ws.frameworks.json.impl.JsonDefaultHandler;
+import org.exoplatform.ws.frameworks.json.impl.JsonException;
+import org.exoplatform.ws.frameworks.json.impl.JsonGeneratorImpl;
+import org.exoplatform.ws.frameworks.json.impl.JsonParserImpl;
+import org.exoplatform.ws.frameworks.json.value.JsonValue;
+
 /**
  * Created by The eXo Platform SARL .<br/>
  * 
@@ -52,6 +65,11 @@ import javax.xml.stream.events.StartElement;
  */
 public class BackupChainLog
 {
+
+   /**
+    * Start for 1.1 version log will be stored relative paths. 
+    */
+   protected static String VERSION_LOG_1_1 = "1.1";
 
    protected static Log logger = ExoLogger.getLogger("exo.jcr.component.ext.BackupChainLog");
 
@@ -79,6 +97,12 @@ public class BackupChainLog
 
    private boolean finalized;
 
+   private WorkspaceEntry originalWorkspaceEntry;
+
+   private final String versionLog;
+
+   private File rootDir;
+
    /**
     * BackupChainLog  constructor.
     *
@@ -92,24 +116,30 @@ public class BackupChainLog
     *          Sting, FQN for incremental backup
     * @param backupId
     *          String, the identifier of backup
+    * @param wEntry
+    *           original workspace config
     * @throws BackupOperationException
     *           will be generate the exception BackupOperationException 
     */
    public BackupChainLog(File logDir, BackupConfig config, String fullBackupType, String incrementalBackupType,
-      String backupId) throws BackupOperationException
+            String backupId, WorkspaceEntry wEntry, File rootDir) throws BackupOperationException
    {
       try
       {
          this.finalized = false;
+         this.versionLog = VERSION_LOG_1_1;
          this.log = new File(logDir.getCanonicalPath() + File.separator + (PREFIX + backupId + SUFFIX));
+         this.rootDir = rootDir;
          this.log.createNewFile();
          this.backupId = backupId;
          this.config = config;
          this.jobEntries = new ArrayList<JobEntryInfo>();
+         this.originalWorkspaceEntry = wEntry;
 
          // write config info here
          logWriter = new LogWriter(log);
          logWriter.write(config, fullBackupType, incrementalBackupType);
+         logWriter.writeWorkspaceEntry(originalWorkspaceEntry);
       }
       catch (IOException e)
       {
@@ -120,6 +150,10 @@ public class BackupChainLog
          throw new BackupOperationException(e);
       }
       catch (FactoryConfigurationError e)
+      {
+         throw new BackupOperationException(e);
+      }
+      catch (JsonException e)
       {
          throw new BackupOperationException(e);
       }
@@ -144,10 +178,12 @@ public class BackupChainLog
          logReader.readLogFile();
          logReader.jobEntrysNormalize();
 
+         this.versionLog = logReader.getVersionLog();
          this.config = logReader.getBackupConfig();
          this.startedTime = logReader.getBeginTime();
          this.finishedTime = logReader.getEndTime();
          this.jobEntries = logReader.getJobEntryInfoNormalizeList();
+         this.originalWorkspaceEntry = logReader.getOriginalWorkspaceEntry();
 
          for (JobEntryInfo info : jobEntries)
          {
@@ -178,6 +214,10 @@ public class BackupChainLog
       {
          throw new BackupOperationException(e);
       }
+      catch (Exception e)
+      {
+         throw new BackupOperationException(e);
+      }
    }
 
    /**
@@ -197,7 +237,7 @@ public class BackupChainLog
          info.setState(job.getState());
          info.setURL(job.getStorageURL());
 
-         logWriter.write(info);
+         logWriter.write(info, config);
       }
       catch (Exception e)
       {
@@ -246,6 +286,33 @@ public class BackupChainLog
    {
       finalized = true;
       logWriter.writeEndLog();
+
+      //copy backup chain log file in into Backupset files itself for portability (e.g. on another server)
+      try
+      {
+         InputStream in = new FileInputStream(log);
+
+         File dest = new File(config.getBackupDir() + File.separator + log.getName());
+         if (!dest.exists())
+         {
+            OutputStream out = new FileOutputStream(dest);
+
+            byte[] buf = new byte[(int) (log.length())];
+            in.read(buf);
+
+            String sConfig = new String(buf, Constants.DEFAULT_ENCODING);
+            sConfig = sConfig.replaceAll("<backup-dir>.+</backup-dir>", "<backup-dir>.</backup-dir>");
+
+            out.write(sConfig.getBytes(Constants.DEFAULT_ENCODING));
+            in.close();
+            out.close();
+         }
+      }
+      catch (Exception e)
+      {
+         logger.error("Can't write log", e);
+      }
+
    }
 
    /**
@@ -309,6 +376,17 @@ public class BackupChainLog
       return finishedTime;
    }
 
+   /**
+    * Getting original workspace configuration
+    * 
+    * @return WorkspaceEntry
+    *           return the original workspace configuration
+    */
+   public WorkspaceEntry getOriginalWorkspaceEntry()
+   {
+      return originalWorkspaceEntry;
+   }
+
    private class LogReader
    {
       protected Log logger = ExoLogger.getLogger("exo.jcr.component.ext.LogReader");
@@ -322,13 +400,29 @@ public class BackupChainLog
       private List<JobEntryInfo> jobEntries;
 
       private List<JobEntryInfo> jobEntriesNormalize;
+      
+      private WorkspaceEntry originalWorkspaceEntry;
+      
+      private String version;
 
       public LogReader(File logFile) throws FileNotFoundException, XMLStreamException, FactoryConfigurationError
       {
          this.logFile = logFile;
          jobEntries = new ArrayList<JobEntryInfo>();
 
-         reader = XMLInputFactory.newInstance().createXMLStreamReader(new FileInputStream(this.logFile));
+         reader =
+                  XMLInputFactory.newInstance().createXMLStreamReader(new FileInputStream(this.logFile),
+                           Constants.DEFAULT_ENCODING);
+      }
+
+      public String getVersionLog()
+      {
+         return version;
+      }
+
+      public WorkspaceEntry getOriginalWorkspaceEntry()
+      {
+         return originalWorkspaceEntry;
       }
 
       public BackupConfig getBackupConfig()
@@ -356,7 +450,7 @@ public class BackupChainLog
          return jobEntries.get(jobEntries.size() - 1).getDate();
       }
 
-      public void readLogFile() throws XMLStreamException, MalformedURLException, ValueFormatException
+      public void readLogFile() throws Exception
       {
          boolean endDocument = false;
 
@@ -375,6 +469,14 @@ public class BackupChainLog
                   if (name.equals("job-entry-info"))
                      jobEntries.add(readJobEntryInfo());
 
+                  if (name.equals("original-workspace-config"))
+                     this.originalWorkspaceEntry = readWorkspaceEntry();
+
+                  if (name.equals("version-log"))
+                  {
+                     this.version = readContent();
+                  }
+
                   break;
 
                case StartElement.END_DOCUMENT :
@@ -384,7 +486,37 @@ public class BackupChainLog
          }
       }
 
-      private JobEntryInfo readJobEntryInfo() throws XMLStreamException, MalformedURLException, ValueFormatException
+      private WorkspaceEntry readWorkspaceEntry() throws Exception
+      {
+         String jsonRepositoryEntry = reader.getElementText();
+
+         return (WorkspaceEntry) (getObject(WorkspaceEntry.class, jsonRepositoryEntry
+                  .getBytes(Constants.DEFAULT_ENCODING)));
+      }
+
+      /**
+       * Will be created the Object from JSON binary data.
+       * 
+       * @param cl
+       *          Class
+       * @param data
+       *          binary data (JSON)
+       * @return Object
+       * @throws Exception
+       *           will be generated Exception
+       */
+      private Object getObject(Class cl, byte[] data) throws Exception
+      {
+         JsonHandler jsonHandler = new JsonDefaultHandler();
+         JsonParser jsonParser = new JsonParserImpl();
+         InputStream inputStream = new ByteArrayInputStream(data);
+         jsonParser.parse(inputStream, jsonHandler);
+         JsonValue jsonValue = jsonHandler.getJsonObject();
+
+         return new BeanBuilder().createObject(cl, jsonValue);
+      }
+
+      private JobEntryInfo readJobEntryInfo() throws XMLStreamException, ValueFormatException, IOException
       {
          JobEntryInfo info = new JobEntryInfo();
 
@@ -406,7 +538,21 @@ public class BackupChainLog
                      info.setState(getState(readContent()));
 
                   if (name.equals("url"))
-                     info.setURL(new URL(readContent()));
+                  {
+                     if (version != null && version.equals(VERSION_LOG_1_1))
+                     {
+                        String path =
+                                 readContent().replace("file:",
+                                          "file:" + config.getBackupDir().getCanonicalPath()
+                                                   + File.separator);
+
+                        info.setURL(new URL(path));
+                     }
+                     else
+                     {
+                        info.setURL(new URL(readContent()));
+                     }
+                  }
 
                   if (name.equals("date"))
                      info.setDate(JCRDateFormat.parse(readContent()));
@@ -457,7 +603,7 @@ public class BackupChainLog
          return type;
       }
 
-      private BackupConfig readBackupConfig() throws XMLStreamException
+      private BackupConfig readBackupConfig() throws XMLStreamException, IOException
       {
          BackupConfig conf = new BackupConfig();
 
@@ -473,7 +619,26 @@ public class BackupChainLog
                   String name = reader.getLocalName();
 
                   if (name.equals("backup-dir"))
-                     conf.setBackupDir(new File(readContent()));
+                  {
+                     if (version != null && version.equals(VERSION_LOG_1_1))
+                     {
+                        String dir = readContent();
+                        if (dir.equals("."))
+                        {
+                           String path = logFile.getParentFile().getCanonicalPath();
+
+                           conf.setBackupDir(new File(path));
+                        }
+                        else
+                        {
+                           conf.setBackupDir(new File(dir));
+                        }
+                     }
+                     else
+                     {
+                        conf.setBackupDir(new File(readContent()));
+                     }
+                  }
 
                   if (name.equals("repository"))
                      conf.setRepository(readContent());
@@ -546,15 +711,32 @@ public class BackupChainLog
       {
          this.logFile = logFile;
 
-         writer = XMLOutputFactory.newInstance().createXMLStreamWriter(new FileOutputStream(this.logFile));
+         writer =
+                  XMLOutputFactory.newInstance().createXMLStreamWriter(new FileOutputStream(this.logFile),
+                           Constants.DEFAULT_ENCODING);
 
          writer.writeStartDocument();
-         writer.writeStartElement("backup-cain-log");
+         writer.writeStartElement("backup-chain-log");
+         
+         writer.writeStartElement("version-log");
+         writer.writeCharacters(versionLog);
+         writer.writeEndElement();
+         
          writer.flush();
       }
 
+      public void writeWorkspaceEntry(WorkspaceEntry originalWorkspaceEntry) throws JsonException, XMLStreamException
+      {
+         JsonGeneratorImpl generatorImpl = new JsonGeneratorImpl();
+         JsonValue json = generatorImpl.createJsonObject(originalWorkspaceEntry);
+
+         writer.writeStartElement("original-workspace-config");
+         writer.writeCData(json.toString());
+         writer.writeEndElement();
+      }
+
       public synchronized void write(BackupConfig config, String fullBackupType, String incrementalBackupType)
-         throws XMLStreamException
+               throws XMLStreamException, IOException
       {
          writer.writeStartElement("backup-config");
 
@@ -569,7 +751,14 @@ public class BackupChainLog
          if (config.getBackupDir() != null)
          {
             writer.writeStartElement("backup-dir");
-            writer.writeCharacters(config.getBackupDir().getAbsolutePath());
+
+            String path =
+                     (isRootBackupManagerDir(logFile) ? config.getBackupDir().getCanonicalPath() : config
+                              .getBackupDir().getCanonicalPath()
+                              .replace(logFile.getParentFile().getCanonicalPath(), ""));
+
+            
+            writer.writeCharacters(path.equals("") ? "." : path);
             writer.writeEndElement();
          }
 
@@ -600,7 +789,7 @@ public class BackupChainLog
          writer.flush();
       }
 
-      public synchronized void write(JobEntryInfo info) throws XMLStreamException
+      public synchronized void write(JobEntryInfo info, BackupConfig config) throws XMLStreamException, IOException
       {
          writer.writeStartElement("job-entry-info");
 
@@ -613,7 +802,7 @@ public class BackupChainLog
          writer.writeEndElement();
 
          writer.writeStartElement("url");
-         writer.writeCharacters(info.getURL().toString());
+         writer.writeCharacters(getRelativeUrl(info.getURL(), config.getBackupDir()));
          writer.writeEndElement();
 
          writer.writeStartElement("date");
@@ -623,6 +812,18 @@ public class BackupChainLog
          writer.writeEndElement();
 
          writer.flush();
+      }
+
+      private String getRelativeUrl(URL url, File backupDir) throws IOException
+      {
+         String str = new File(url.getFile()).getCanonicalPath();
+
+         return url.getProtocol() + ":" + str.replace(config.getBackupDir().getCanonicalPath() + File.separator, "");
+      }
+
+      private boolean isRootBackupManagerDir(File log) throws IOException
+      {
+         return (log.getCanonicalFile().getParentFile().getCanonicalPath().equals(rootDir.getCanonicalPath()));
       }
 
       public synchronized void writeEndLog()

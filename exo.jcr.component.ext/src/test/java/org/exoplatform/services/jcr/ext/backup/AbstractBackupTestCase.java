@@ -52,7 +52,8 @@ import org.exoplatform.services.jcr.impl.core.SessionImpl;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: AbstractBackupTestCase.java 760 2008-02-07 15:08:07Z pnedonosko $
  */
-public class AbstractBackupTestCase extends BaseStandaloneTest
+public class AbstractBackupTestCase
+   extends BaseStandaloneTest
 {
 
    protected SessionImpl ws1Session;
@@ -63,7 +64,24 @@ public class AbstractBackupTestCase extends BaseStandaloneTest
 
    protected BackupManager backup;
 
-   class LogFilter implements FileFilter
+   //   TODO Will be uncommented after fix issue JCR-1054 
+   //   /**
+   //    * Database cleaner.
+   //    */
+   //   private DBCleanerService dbCleanerService = new DBCleanerService();
+   //
+   //   /**
+   //    * Value storage cleaner.
+   //    */
+   //   private ValueStorageCleanHelper valueStorageCleanHelper = new ValueStorageCleanHelper();
+   //
+   //   /**
+   //    * Index storage cleaner.
+   //    */
+   //   private IndexCleanHelper indexCleanHelper = new IndexCleanHelper();
+
+   class LogFilter
+      implements FileFilter
    {
 
       public boolean accept(File pathname)
@@ -94,7 +112,7 @@ public class AbstractBackupTestCase extends BaseStandaloneTest
             ws1TestRoot = ws1Session.getRootNode().addNode("backupTest");
             ws1Session.save();
             addContent(ws1TestRoot, 1, 10, 1);
-            
+
          }
          else
          {
@@ -106,7 +124,7 @@ public class AbstractBackupTestCase extends BaseStandaloneTest
       }
 
       // ws2
-      ws2Session = (SessionImpl)repository.login(credentials, "ws2");
+      ws2Session = (SessionImpl) repository.login(credentials, "ws2");
    }
 
    @Override
@@ -115,17 +133,24 @@ public class AbstractBackupTestCase extends BaseStandaloneTest
 
       for (String wsName : repository.getWorkspaceNames())
       {
-         if ("ws1".equals(wsName))
+         try
          {
-            ws1Session = (SessionImpl) repository.login(credentials, "ws1");
-            ws1Session.getRootNode().getNode("backupTest").remove();
-            ws1Session.save();
+            if ("ws1".equals(wsName))
+            {
+               ws1Session = (SessionImpl) repository.login(credentials, "ws1");
+               ws1Session.getRootNode().getNode("backupTest").remove();
+               ws1Session.save();
+            }
+            else
+            {
+               SessionImpl ws = (SessionImpl) repository.login(credentials, wsName);
+               ws.getRootNode().getNode("backupTest").remove();
+               ws.save();
+            }
          }
-         else
+         catch (PathNotFoundException e)
          {
-            SessionImpl ws = (SessionImpl)repository.login(credentials, wsName);
-            ws.getRootNode().getNode("backupTest").remove();
-            ws.save();
+            //skip
          }
       }
 
@@ -134,13 +159,13 @@ public class AbstractBackupTestCase extends BaseStandaloneTest
 
    protected WorkspaceEntry makeWorkspaceEntry(String name, String sourceName)
    {
-      WorkspaceEntry ws1e = (WorkspaceEntry)ws1Session.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
+      WorkspaceEntry ws1e = (WorkspaceEntry) ws1Session.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
 
       WorkspaceEntry ws1back = new WorkspaceEntry();
       ws1back.setName(name);
       // RepositoryContainer rcontainer = (RepositoryContainer)
       // container.getComponentInstanceOfType(RepositoryContainer.class);
-      ws1back.setUniqueName(((RepositoryImpl)ws1Session.getRepository()).getName() + "_" + ws1back.getName()); // EXOMAN
+      ws1back.setUniqueName(((RepositoryImpl) ws1Session.getRepository()).getName() + "_" + ws1back.getName()); // EXOMAN
 
       ws1back.setAccessManager(ws1e.getAccessManager());
       ws1back.setCache(ws1e.getCache());
@@ -173,45 +198,49 @@ public class AbstractBackupTestCase extends BaseStandaloneTest
       }
 
       ContainerEntry ce =
-         new ContainerEntry("org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer", params);
+               new ContainerEntry("org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer", params);
       ws1back.setContainer(ce);
 
       return ws1back;
    }
-   
-   protected RepositoryEntry makeRepositoryEntry(String repoName, RepositoryEntry baseRepoEntry, String sourceName, Map<String, String> workspaceMapping)
+
+   protected RepositoryEntry makeRepositoryEntry(String repoName, RepositoryEntry baseRepoEntry, String sourceName,
+            Map<String, String> workspaceMapping)
    {
       ArrayList<WorkspaceEntry> wsEntries = new ArrayList<WorkspaceEntry>();
-      
+
       for (WorkspaceEntry wsEntry : baseRepoEntry.getWorkspaceEntries())
       {
-         String newWorkspaceName = wsEntry.getName(); 
+         String newWorkspaceName = wsEntry.getName();
          if (workspaceMapping != null)
          {
             newWorkspaceName = workspaceMapping.get(wsEntry.getName());
          }
-         
+
          WorkspaceEntry newWSEntry = makeWorkspaceEntry(wsEntry, newWorkspaceName, repoName, sourceName);
-         
+
          wsEntries.add(newWSEntry);
       }
-      
+
       RepositoryEntry newRepositoryEntry = new RepositoryEntry();
-      
-      newRepositoryEntry.setSystemWorkspaceName(workspaceMapping == null ? baseRepoEntry.getSystemWorkspaceName() : workspaceMapping.get(baseRepoEntry.getSystemWorkspaceName()));
+
+      newRepositoryEntry.setSystemWorkspaceName(workspaceMapping == null ? baseRepoEntry.getSystemWorkspaceName()
+               : workspaceMapping.get(baseRepoEntry.getSystemWorkspaceName()));
       newRepositoryEntry.setAccessControl(baseRepoEntry.getAccessControl());
       newRepositoryEntry.setAuthenticationPolicy(baseRepoEntry.getAuthenticationPolicy());
-      newRepositoryEntry.setDefaultWorkspaceName(workspaceMapping == null ? baseRepoEntry.getDefaultWorkspaceName() : workspaceMapping.get(baseRepoEntry.getDefaultWorkspaceName()));
+      newRepositoryEntry.setDefaultWorkspaceName(workspaceMapping == null ? baseRepoEntry.getDefaultWorkspaceName()
+               : workspaceMapping.get(baseRepoEntry.getDefaultWorkspaceName()));
       newRepositoryEntry.setName(repoName);
       newRepositoryEntry.setSecurityDomain(baseRepoEntry.getSecurityDomain());
       newRepositoryEntry.setSessionTimeOut(baseRepoEntry.getSessionTimeOut());
-      
+
       newRepositoryEntry.setWorkspaceEntries(wsEntries);
-      
+
       return newRepositoryEntry;
    }
-   
-   protected WorkspaceEntry makeWorkspaceEntry(WorkspaceEntry baseWorkspaceEntry, String wsName, String repoName, String sourceName)
+
+   protected WorkspaceEntry makeWorkspaceEntry(WorkspaceEntry baseWorkspaceEntry, String wsName, String repoName,
+            String sourceName)
    {
       WorkspaceEntry ws1back = new WorkspaceEntry();
       ws1back.setName(wsName);
@@ -240,7 +269,7 @@ public class AbstractBackupTestCase extends BaseStandaloneTest
          if (newp.getName().equals("source-name"))
             newp.setValue(sourceName);
          else if (newp.getName().equals("swap-directory"))
-            newp.setValue("target/temp/swap/"  + repoName + "_" + wsName);
+            newp.setValue("target/temp/swap/" + repoName + "_" + wsName);
          else if (newp.getName().equals("multi-db"))
             newp.setValue("false");
 
@@ -248,18 +277,19 @@ public class AbstractBackupTestCase extends BaseStandaloneTest
       }
 
       ContainerEntry ce =
-         new ContainerEntry("org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer", params);
+               new ContainerEntry("org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer", params);
       ws1back.setContainer(ce);
 
       return ws1back;
    }
 
    protected void restoreAndCheck(String workspaceName, String datasourceName, String backupLogFilePath, File backDir,
-      int startIndex, int stopIndex) throws RepositoryConfigurationException, RepositoryException,
-      BackupOperationException, BackupConfigurationException
+            int startIndex, int stopIndex) throws RepositoryConfigurationException, RepositoryException,
+            BackupOperationException, BackupConfigurationException
    {
       // restore
-      RepositoryEntry re = (RepositoryEntry)ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
+      RepositoryEntry re =
+               (RepositoryEntry) ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
       WorkspaceEntry ws1back = makeWorkspaceEntry(workspaceName, datasourceName);
 
       repository.configWorkspace(ws1back);
@@ -274,12 +304,12 @@ public class AbstractBackupTestCase extends BaseStandaloneTest
          SessionImpl back1 = null;
          try
          {
-            back1 = (SessionImpl)repository.login(credentials, ws1back.getName());
+            back1 = (SessionImpl) repository.login(credentials, ws1back.getName());
             Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
             for (int i = startIndex; i < stopIndex; i++)
             {
                assertEquals("Restored content should be same", "property-" + i, ws1backTestRoot.getNode("node_" + i)
-                  .getProperty("exo:data").getString());
+                        .getProperty("exo:data").getString());
             }
          }
          catch (Exception e)
@@ -298,8 +328,8 @@ public class AbstractBackupTestCase extends BaseStandaloneTest
    }
 
    protected void addContent(Node node, int startIndex, int stopIndex, long sleepTime) throws ValueFormatException,
-      VersionException, LockException, ConstraintViolationException, ItemExistsException, PathNotFoundException,
-      RepositoryException, InterruptedException
+            VersionException, LockException, ConstraintViolationException, ItemExistsException, PathNotFoundException,
+            RepositoryException, InterruptedException
    {
       for (int i = startIndex; i <= stopIndex; i++)
       {
