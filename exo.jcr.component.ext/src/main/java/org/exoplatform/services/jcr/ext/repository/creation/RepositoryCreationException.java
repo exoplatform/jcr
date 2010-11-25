@@ -16,7 +16,6 @@
  */
 package org.exoplatform.services.jcr.ext.repository.creation;
 
-import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -26,7 +25,7 @@ import javax.jcr.RepositoryException;
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
  * @version $Id: RepositoryCreationException.java 111 2008-11-11 11:11:11Z serg $
  */
-public class RepositoryCreationException extends RepositoryException
+public class RepositoryCreationException extends Exception
 {
    /**
     * {@inheritDoc}
