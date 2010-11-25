@@ -115,6 +115,22 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService
     * Constructor RepositoryCreationServiceImpl.
     */
    public RepositoryCreationServiceImpl(RepositoryService repositoryService, BackupManager backupManager,
+      DBCreator dbCreator, InitialContextInitializer initialContextInitializer)
+   {
+      this.repositoryService = repositoryService;
+      this.backupManager = backupManager;
+      this.rpcService = null;
+      this.dbCreator = dbCreator;
+      this.initialContextInitializer = initialContextInitializer;
+
+      LOG.warn("RepositoryCreationService initialized without RPCService, so other cluser nodes will"
+         + " not be notified about new repositories.");
+   }
+
+   /**
+    * Constructor RepositoryCreationServiceImpl.
+    */
+   public RepositoryCreationServiceImpl(RepositoryService repositoryService, BackupManager backupManager,
       DBCreator dbCreator, InitialContextInitializer initialContextInitializer, final RPCService rpcService)
    {
       this.repositoryService = repositoryService;
@@ -123,85 +139,78 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService
       this.dbCreator = dbCreator;
       this.initialContextInitializer = initialContextInitializer;
 
-      if (rpcService == null)
+      // register commands
+      reserveRepositoryName = rpcService.registerCommand(new RemoteCommand()
       {
-         LOG.warn("RepositoryCreationService initialized with null RPCService, so other cluser nodes will"
-            + " not be notified about new repositories.");
-      }
-      else
+
+         public String getId()
+         {
+            return "org.exoplatform.services.jcr.ext.repository.creation.RepositoryCreationServiceImpl-reserveRepositoryName";
+         }
+
+         public Serializable execute(Serializable[] args) throws Throwable
+         {
+            String repositoryName = (String)args[0];
+            return reserveRepoName(repositoryName);
+         }
+      });
+
+      createRepository = rpcService.registerCommand(new RemoteCommand()
       {
-         // register commands
-         reserveRepositoryName = rpcService.registerCommand(new RemoteCommand()
+
+         public String getId()
          {
+            return "org.exoplatform.services.jcr.ext.repository.creation.RepositoryCreationServiceImpl-createRepository";
+         }
 
-            public String getId()
-            {
-               return "org.exoplatform.services.jcr.ext.repository.creation.RepositoryCreationServiceImpl-reserveRepositoryName";
-            }
-
-            public Serializable execute(Serializable[] args) throws Throwable
-            {
-               String repositoryName = (String)args[0];
-               return reserveRepoName(repositoryName);
-            }
-         });
-
-         createRepository = rpcService.registerCommand(new RemoteCommand()
+         public Serializable execute(Serializable[] args) throws Throwable
          {
+            //String backupId, RepositoryEntry rEntry, String rToken
+            String backupId = (String)args[0];
+            String stringRepositoryEntry = (String)args[1];
+            String rToken = (String)args[2];
 
-            public String getId()
+            try
             {
-               return "org.exoplatform.services.jcr.ext.repository.creation.RepositoryCreationServiceImpl-createRepository";
-            }
+               RepositoryEntry rEntry =
+                  (RepositoryEntry)(getObject(RepositoryEntry.class, stringRepositoryEntry
+                     .getBytes(Constants.DEFAULT_ENCODING)));
 
-            public Serializable execute(Serializable[] args) throws Throwable
-            {
-               //String backupId, RepositoryEntry rEntry, String rToken
-               String backupId = (String)args[0];
-               String stringRepositoryEntry = (String)args[1];
-               String rToken = (String)args[2];
-
-               try
-               {
-                  RepositoryEntry rEntry =
-                     (RepositoryEntry)(getObject(RepositoryEntry.class, stringRepositoryEntry
-                        .getBytes(Constants.DEFAULT_ENCODING)));
-
-                  createRepo(backupId, rEntry, rToken);
-                  return null;
-               }
-               finally
-               {
-                  // release tokens
-                  pendingRepositories.remove(rToken);
-               }
-            }
-         });
-
-         startRepository = rpcService.registerCommand(new RemoteCommand()
-         {
-            public String getId()
-            {
-               return "org.exoplatform.services.jcr.ext.repository.creation.RepositoryCreationServiceImpl-startRepository";
-            }
-
-            public Serializable execute(Serializable[] args) throws Throwable
-            {
-               // must not be executed on coordinator node, since coordinator node already created the repository
-               if (!rpcService.isCoordinator())
-               {
-                  //RepositoryEntry (as String) rEntry
-                  String stringRepositoryEntry = (String)args[0];
-                  RepositoryEntry rEntry =
-                     (RepositoryEntry)(getObject(RepositoryEntry.class, stringRepositoryEntry
-                        .getBytes(Constants.DEFAULT_ENCODING)));
-
-                  startRepository(rEntry);
-               }
+               createRepo(backupId, rEntry, rToken);
                return null;
             }
-         });
-      }
+            finally
+            {
+               // release tokens
+               pendingRepositories.remove(rToken);
+            }
+         }
+      });
+
+      startRepository = rpcService.registerCommand(new RemoteCommand()
+      {
+         public String getId()
+         {
+            return "org.exoplatform.services.jcr.ext.repository.creation.RepositoryCreationServiceImpl-startRepository";
+         }
+
+         public Serializable execute(Serializable[] args) throws Throwable
+         {
+            // must not be executed on coordinator node, since coordinator node already created the repository
+            if (!rpcService.isCoordinator())
+            {
+               //RepositoryEntry (as String) rEntry
+               String stringRepositoryEntry = (String)args[0];
+               RepositoryEntry rEntry =
+                  (RepositoryEntry)(getObject(RepositoryEntry.class, stringRepositoryEntry
+                     .getBytes(Constants.DEFAULT_ENCODING)));
+
+               startRepository(rEntry);
+            }
+            return null;
+         }
+      });
+
    }
 
    /**
