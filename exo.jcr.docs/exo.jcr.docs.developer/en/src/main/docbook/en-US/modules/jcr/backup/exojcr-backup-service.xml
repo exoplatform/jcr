@@ -473,5 +473,55 @@ repo.removeWorkspace(workspace);</programlisting></para>
     reinitialization, the task will have new time values for the backup
     operation cycle as the chainPeriod and incrementalPeriod will be applied
     again. That behaviour may be changed in the future.</para>
+
+    <para></para>
+
+    <section>
+      <title>Restore a workspace or a repository using original
+      configuration</title>
+
+      <para>The Backup manager allows you to restore a repository or a
+      workspace using the original configuration stored into the backup
+      log:</para>
+
+      <programlisting>   /**
+    * WorkspaceEntry for restore should be contains in BackupChainLog. 
+    * 
+    * @param workspaceBackupIdentifier
+    *          identifier to workspace backup. 
+    * @param asynchronous
+    *          if 'true' restore will be in asynchronous mode (i.e. in separated thread) 
+    * @throws BackupOperationException
+    *           if backup operation exception occurred 
+    * @throws BackupConfigurationException
+    *           if configuration exception occurred 
+    */
+   void restoreWorkspace(String workspaceBackupIdentifier, boolean asynchronous) throws BackupOperationException,
+            BackupConfigurationException;
+
+   /**
+    * ReprositoryEntry for restore should be contains in BackupChainLog. 
+    * 
+    * @param repositoryBackupIdentifier
+    *          identifier to repository backup.   
+    * @param asynchronous
+    *          if 'true' restore will be in asynchronous mode (i.e. in separated thread)
+    * @throws BackupOperationException
+    *           if backup operation exception occurred 
+    * @throws BackupConfigurationException
+    *           if configuration exception occurred
+    */
+   void restoreRepository(String repositoryBackupIdentifier, boolean asynchronous) throws BackupOperationException,
+            BackupConfigurationException;</programlisting>
+    </section>
+
+    <section>
+      <title>Backup set portability</title>
+
+      <para>The Backup log is stored during the Backup operation into two
+      different locations: backup-dir directory of BackupService to support
+      interactive operations via Backup API (e.g. console) and backup set
+      files for portability (e.g. on another server).</para>
+    </section>
   </section>
 </chapter>
