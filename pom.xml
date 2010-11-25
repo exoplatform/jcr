@@ -34,9 +34,9 @@
   <name>eXo JCR</name>
 
   <scm>
-    <connection>scm:svn:http://anonsvn.jboss.org/repos/exo-jcr/jcr/branches/1.14-CNK</connection>
-    <developerConnection>scm:svn:https://svn.jboss.org/repos/exo-jcr/jcr/branches/1.14-CNK</developerConnection>
-    <url>http://fisheye.jboss.org/browse/exo-jcr/jcr/branches/1.14-CNK</url>
+    <connection>scm:svn:http://anonsvn.jboss.org/repos/exo-jcr/jcr/branches/1.14-IMPR</connection>
+    <developerConnection>scm:svn:https://svn.jboss.org/repos/exo-jcr/jcr/branches/1.14-IMPR</developerConnection>
+    <url>http://fisheye.jboss.org/browse/exo-jcr/jcr/branches/1.14-IMPR</url>
   </scm>
 
   <properties>
