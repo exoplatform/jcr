@@ -16,6 +16,9 @@
  */
 package org.exoplatform.services.jcr.ext.repository.creation;
 
+import org.exoplatform.services.database.creator.DBConnectionInfo;
+import org.exoplatform.services.database.creator.DBCreator;
+import org.exoplatform.services.database.creator.DBCreatorException;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
