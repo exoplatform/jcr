@@ -41,13 +41,19 @@
     new database's connection) or throws <envar>DBCreatorException</envar>
     exception if any errors occurs in other case.</para>
 
-    <programlisting>
-public DBConnectionInfo createDatabase(String dbName) throws DBCreatorException;</programlisting>
+    <programlisting>public DBConnectionInfo createDatabase(String dbName) throws DBCreatorException;
+</programlisting>
 
     <para>For MSSQL and Sybase servers, use autocommit mode to set true for
     connection. It's due to after execution "create database" command newly
     created database not available for "use" command and therefore you can't
     create new user inside database per one script.</para>
+
+    <programlisting>public DBConnectionInfo getDBConnectionInfo(String dbName) throws DBCreatorException;
+</programlisting>
+
+    <para>Return database connection information without database
+    creation.</para>
   </section>
 
   <section>
