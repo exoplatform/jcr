@@ -59,6 +59,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.jcr.RepositoryException;
+import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 import javax.xml.stream.XMLStreamException;
@@ -101,7 +102,7 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService
    private final InitialContextInitializer initialContextInitializer;
 
    /**
-    * Store of reserved repository names. <tokenname, repositoryname>
+    * Store of reserved repository names. {tokenname, repositoryname}
     */
    private final Map<String, String> pendingRepositories = new ConcurrentHashMap<String, String>();
 
@@ -151,7 +152,7 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService
          public Serializable execute(Serializable[] args) throws Throwable
          {
             String repositoryName = (String)args[0];
-            return reserveRepoName(repositoryName);
+            return reserveRepositoryNameLocally(repositoryName);
          }
       });
 
@@ -176,7 +177,7 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService
                   (RepositoryEntry)(getObject(RepositoryEntry.class, stringRepositoryEntry
                      .getBytes(Constants.DEFAULT_ENCODING)));
 
-               createRepo(backupId, rEntry, rToken);
+               createRepositoryLocally(backupId, rEntry, rToken);
                return null;
             }
             finally
@@ -306,7 +307,7 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService
       {
          try
          {
-            createRepo(backupId, rEntry, rToken);
+            createRepositoryLocally(backupId, rEntry, rToken);
          }
          finally
          {
@@ -370,11 +371,11 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService
       }
       else
       {
-         return reserveRepoName(repositoryName);
+         return reserveRepositoryNameLocally(repositoryName);
       }
    }
 
-   protected String reserveRepoName(String repositoryName) throws RepositoryCreationException
+   protected String reserveRepositoryNameLocally(String repositoryName) throws RepositoryCreationException
    {
       // check does repository already created
       try
@@ -407,7 +408,7 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService
       }
    }
 
-   protected void createRepo(String backupId, RepositoryEntry rEntry, String rToken)
+   protected void createRepositoryLocally(String backupId, RepositoryEntry rEntry, String rToken)
       throws RepositoryConfigurationException, RepositoryCreationException
    {
       // check does token registered
@@ -586,6 +587,10 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService
                   throw new RepositoryConfigurationException("RepositoryEntry for new " + repositoryEntry.getName()
                      + " repository contains already binded datasource " + dbSourceName + ".");
                }
+            }
+            catch (NameNotFoundException e)
+            {
+               // skip this exception
             }
             catch (NamingException e)
             {
