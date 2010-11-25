@@ -834,8 +834,7 @@ public class BackupChainLog
          writer.writeEndElement();
 
          writer.writeStartElement("url");
-         writer.writeCharacters(info.getURL().toString().replace(
-                  PrivilegedFileHelper.getCanonicalPath(config.getBackupDir()) + File.separator, ""));
+         writer.writeCharacters(getRelativeUrl(info.getURL(), config.getBackupDir()));
          writer.writeEndElement();
 
          writer.writeStartElement("date");
@@ -845,6 +844,14 @@ public class BackupChainLog
          writer.writeEndElement();
 
          writer.flush();
+      }
+
+      private String getRelativeUrl(URL url, File backupDir) throws IOException
+      {
+         String str = PrivilegedFileHelper.getCanonicalPath(new File(url.getFile()));
+
+         return url.getProtocol() + ":"
+                  + str.replace(PrivilegedFileHelper.getCanonicalPath(config.getBackupDir()) + File.separator, "");
       }
 
       private boolean isRootBackupManagerDir(File log) throws IOException
