@@ -31,6 +31,7 @@ public interface RepositoryCreationService
 {
    /**
     * Reserves, validates and creates repository in a simplified form. 
+    * 
     * @param rEntry - repository Entry - note that datasource must not exist.
     * @param backupId - backup id
     * @throws RepositoryConfigurationException
@@ -44,6 +45,7 @@ public interface RepositoryCreationService
    /**
     * Reserve repository name to prevent repository creation with same name from other place in same time
     * via this service.
+    * 
     * @param repositoryName - repositoryName
     * @return repository token. Anyone obtaining a token can later create a repository of reserved name.
     * @throws RepositoryCreationServiceException if can't reserve name
@@ -53,7 +55,8 @@ public interface RepositoryCreationService
    /**
     * Creates  repository, using token of already reserved repository name. Good for cases, when repository creation should be delayed or 
     * made asynchronously in dedicated thread. 
-    * @param rEntry - repository entry - note, taht datasource must not exist
+    * 
+    * @param rEntry - repository entry - note, that datasource must not exist
     * @param backupId - backup id
     * @param rToken - token
     * @throws RepositoryConfigurationException

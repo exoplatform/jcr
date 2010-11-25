@@ -16,9 +16,7 @@
  */
 package org.exoplatform.services.jcr.ext.repository.creation;
 
-import org.exoplatform.services.database.creator.DBConnectionInfo;
-import org.exoplatform.services.database.creator.DBCreator;
-import org.exoplatform.services.database.creator.DBCreatorException;
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
@@ -110,6 +108,9 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService
 
    private RemoteCommand startRepository;
 
+   /**
+    * Constructor RepositoryCreationServiceImpl.
+    */
    public RepositoryCreationServiceImpl(RepositoryService repositoryService, BackupManager backupManager,
       DBCreator dbCreator, InitialContextInitializer initialContextInitializer, final RPCService rpcService)
    {
@@ -243,7 +244,7 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService
          }
          catch (RPCException e)
          {
-            Throwable cause = ((RPCException)e).getCause();
+            Throwable cause = (e).getCause();
             if (cause instanceof RepositoryCreationException)
             {
                throw (RepositoryCreationException)cause;
@@ -335,7 +336,7 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService
          }
          catch (RPCException e)
          {
-            Throwable cause = ((RPCException)e).getCause();
+            Throwable cause = (e).getCause();
             if (cause instanceof RepositoryCreationException)
             {
                throw (RepositoryCreationException)cause;
@@ -446,7 +447,7 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService
       }
 
       File backLog = new File(backupChain.getLogFilePath());
-      if (backLog != null && backLog.exists())
+      if (backLog != null && PrivilegedFileHelper.exists(backLog))
       {
          try
          {
@@ -468,7 +469,8 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService
       else
       {
          throw new RepositoryCreationException("Backup log file by id " + backupId
-            + (backLog != null ? (" and file path=" + backLog.getAbsolutePath()) : "") + " do not exists.");
+            + (backLog != null ? (" and file path=" + PrivilegedFileHelper.getAbsolutePath(backLog)) : "")
+            + " do not exists.");
       }
    }
 

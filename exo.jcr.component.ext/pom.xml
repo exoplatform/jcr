@@ -175,7 +175,7 @@
           <configuration>
             <argLine>${env.MAVEN_OPTS} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
             <includes>
-              <include>**/actions/*Test.java</include>
+              <!--include>**/actions/*Test.java</include>
               <include>**/metadata/*Test.java</include>
               <include>**/owner/*Test.java</include>
               <include>**/registry/*Test.java</include>
@@ -185,7 +185,8 @@
               <include>**/replication/*.java</include>
               <include>**/replication/external/*.java</include>
               <include>**/replication/async/**/*.java</include>
-              <include>**/**/TestBackupManager.java</include>
+              <include>**/**/TestBackupManager.java</include-->
+<include>**/**/TestRepositoryCreationService.java</include>
             </includes>
             <excludes>
               <exclude>**/BaseStandaloneTest.java</exclude>
