@@ -587,11 +587,11 @@ repo.removeWorkspace(workspace);</programlisting></para>
   </section>
 
   <section>
-    <title>Backup log contains the original configurations such as the
-    RepositoryEntry or the WorkspaceEntry.</title>
+    <title>Restore a workspace or a repository using original
+    configuration</title>
 
-    <para>Backup manager have special methods to restore with original
-    configuration:</para>
+    <para>The Backup manager allows you to restore a repository or a workspace
+    using the original configuration stored into the backup log:</para>
 
     <programlisting>/**
     * Restore existing workspace. Previous data will be deleted.
@@ -663,11 +663,11 @@ repo.removeWorkspace(workspace);</programlisting></para>
   </section>
 
   <section>
-    <title>Backupset portability</title>
+    <title>Backup set portability</title>
 
-    <para>Backup configuration was stored during Backup operation into two
-    locations: backup-dir directory of BackupService to support interactive
-    operations via Backup API (e.g. console); into Backupset files itself for
-    portability (e.g. on another server).</para>
+    <para>The Backup log is stored during the Backup operation into two
+    different locations: backup-dir directory of BackupService to support
+    interactive operations via Backup API (e.g. console) and backup set files
+    for portability (e.g. on another server).</para>
   </section>
 </chapter>
