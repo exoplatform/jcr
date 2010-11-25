@@ -16,10 +16,10 @@
  */
 package org.exoplatform.services.jcr.ext.repository.creation;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.database.creator.DBConnectionInfo;
 import org.exoplatform.services.database.creator.DBCreator;
 import org.exoplatform.services.database.creator.DBCreatorException;
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
@@ -314,13 +314,21 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService
       if (rpcService != null)
       {
          // check does repository already created
-         for (int i = 0; i < repositoryService.getConfig().getRepositoryConfigurations().size(); i++)
+         try
          {
-            RepositoryEntry conf = repositoryService.getConfig().getRepositoryConfigurations().get(i);
-            if (conf.getName().equals(repositoryName))
+            if (repositoryService.getRepository(repositoryName) != null)
             {
                throw new RepositoryCreationException("Repository " + repositoryName + " already exists.");
             }
+         }
+         catch (RepositoryConfigurationException e)
+         {
+            throw new RepositoryCreationException("Can not check does repository " + repositoryName + " exists: "
+               + e.getMessage(), e);
+         }
+         catch (RepositoryException e)
+         {
+            //ok - repository does not exists
          }
 
          // reserve RepositoryName at coordinator-node
@@ -360,13 +368,21 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService
    protected String reserveRepoName(String repositoryName) throws RepositoryCreationException
    {
       // check does repository already created
-      for (int i = 0; i < repositoryService.getConfig().getRepositoryConfigurations().size(); i++)
+      try
       {
-         RepositoryEntry conf = repositoryService.getConfig().getRepositoryConfigurations().get(i);
-         if (conf.getName().equals(repositoryName))
+         if (repositoryService.getRepository(repositoryName) != null)
          {
             throw new RepositoryCreationException("Repository " + repositoryName + " already exists.");
          }
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         throw new RepositoryCreationException("Can not check does repository " + repositoryName + " exists: "
+            + e.getMessage(), e);
+      }
+      catch (RepositoryException e)
+      {
+         //ok - repository does not exists
       }
 
       // check does this repository name already reserved, otherwise generate and return token
