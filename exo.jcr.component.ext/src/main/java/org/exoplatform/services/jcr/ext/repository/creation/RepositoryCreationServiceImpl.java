@@ -29,6 +29,7 @@ import org.exoplatform.services.jcr.ext.backup.BackupOperationException;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChainLog;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
+import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.naming.InitialContextInitializer;
@@ -43,7 +44,6 @@ import org.exoplatform.ws.frameworks.json.impl.JsonException;
 import org.exoplatform.ws.frameworks.json.impl.JsonGeneratorImpl;
 import org.exoplatform.ws.frameworks.json.impl.JsonParserImpl;
 import org.exoplatform.ws.frameworks.json.value.JsonValue;
-import org.jboss.cache.util.concurrent.ConcurrentHashSet;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -52,8 +52,10 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.jcr.RepositoryException;
 import javax.naming.NamingException;
@@ -98,9 +100,9 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService
    private final InitialContextInitializer initialContextInitializer;
 
    /**
-    * Store of reserved repository names.
+    * Store of reserved repository names. <tokenname, repositoryname>
     */
-   private final Set<String> pendingRepositories = new ConcurrentHashSet<String>();
+   private final Map<String, String> pendingRepositories = new ConcurrentHashMap<String, String>();
 
    private RemoteCommand reserveRepositoryName;
 
@@ -135,20 +137,11 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService
 
             public Serializable execute(Serializable[] args) throws Throwable
             {
-               System.out.println("EXECUTED reserveRepositoryName");
-
                String repositoryName = (String)args[0];
-               if (!pendingRepositories.contains(repositoryName))
-               {
-                  pendingRepositories.add(repositoryName);
-               }
-               else
-               {
-                  throw new RepositoryCreationException("Repository name " + repositoryName + " already reserved.");
-               }
-               return repositoryName;
+               return reserveRepoName(repositoryName);
             }
          });
+
          createRepository = rpcService.registerCommand(new RemoteCommand()
          {
 
@@ -159,7 +152,6 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService
 
             public Serializable execute(Serializable[] args) throws Throwable
             {
-               System.out.println("EXECUTED createRepository");
                //String backupId, RepositoryEntry rEntry, String rToken
                String backupId = (String)args[0];
                String stringRepositoryEntry = (String)args[1];
@@ -172,28 +164,6 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService
                         .getBytes(Constants.DEFAULT_ENCODING)));
 
                   createRepo(backupId, rEntry, rToken);
-
-                  // execute startRepository at all cluster nodes (coordinator will ignore this command)
-                  try
-                  {
-                     rpcService.executeCommandOnAllNodes(startRepository, false, stringRepositoryEntry);
-                  }
-                  catch (RPCException e)
-                  {
-                     Throwable cause = e.getCause();
-                     if (cause instanceof RepositoryCreationException)
-                     {
-                        throw new RepositoryCreationException(
-                           "Repository " + rEntry.getName()
-                              + " created on coordinator, can not be started at other cluster node: "
-                              + cause.getMessage(), cause);
-                     }
-                     else
-                     {
-                        throw new RepositoryCreationException("Repository " + rEntry.getName()
-                           + " created on coordinator, can not be started at other cluster node: " + e.getMessage(), e);
-                     }
-                  }
                   return null;
                }
                finally
@@ -206,7 +176,6 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService
 
          startRepository = rpcService.registerCommand(new RemoteCommand()
          {
-
             public String getId()
             {
                return "org.exoplatform.services.jcr.ext.repository.creation.RepositoryCreationServiceImpl-startRepository";
@@ -214,7 +183,6 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService
 
             public Serializable execute(Serializable[] args) throws Throwable
             {
-               System.out.println("EXECUTED startRepository");
                // must not be executed on coordinator node, since coordinator node already created the repository
                if (!rpcService.isCoordinator())
                {
@@ -230,7 +198,6 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService
             }
          });
       }
-
    }
 
    /**
@@ -249,10 +216,8 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService
    public void createRepository(String backupId, RepositoryEntry rEntry, String rToken)
       throws RepositoryConfigurationException, RepositoryCreationException
    {
-
       if (rpcService != null)
       {
-         //TODO is is correct to use Json code here
          String stringRepositoryEntry = null;
          try
          {
@@ -265,6 +230,7 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService
             throw new RepositoryCreationException("Can not serialize repository entry: " + e.getMessage(), e);
          }
 
+         // notify coordinator node to create repository
          try
          {
             Object result =
@@ -272,7 +238,7 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService
 
             if (result != null)
             {
-               throw new RepositoryCreationException("ReserveRepositoryName command returns unknown command.");
+               throw new RepositoryCreationException("CreateRepository command must not return any results.");
             }
          }
          catch (RPCException e)
@@ -291,6 +257,37 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService
                throw new RepositoryCreationException(e.getMessage(), e);
             }
          }
+
+         // execute startRepository at all cluster nodes (coordinator will ignore this command)
+         try
+         {
+            List<Object> results = rpcService.executeCommandOnAllNodes(startRepository, true, stringRepositoryEntry);
+
+            for (Object result : results)
+            {
+               if (result instanceof RPCException)
+               {
+                  Throwable cause = ((RPCException)result).getCause();
+                  if (cause instanceof RepositoryCreationException)
+                  {
+                     throw new RepositoryCreationException("Repository " + rEntry.getName()
+                        + " created on coordinator, but can not be started at other cluster nodes: "
+                        + cause.getMessage(), cause);
+                  }
+               }
+               if (result instanceof Throwable)
+               {
+                  throw new RepositoryCreationException("Repository " + rEntry.getName()
+                     + " created on coordinator, but can not be started at other cluster nodes: "
+                     + ((Throwable)result).getMessage(), ((Throwable)result));
+               }
+            }
+         }
+         catch (RPCException e)
+         {
+            throw new RepositoryCreationException("Repository " + rEntry.getName()
+               + " created on coordinator, can not be started at other cluster node: " + e.getMessage(), e);
+         }
       }
       else
       {
@@ -300,7 +297,7 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService
          }
          finally
          {
-            pendingRepositories.remove(rEntry);
+            pendingRepositories.remove(rToken);
          }
       }
    }
@@ -310,21 +307,19 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService
     */
    public String reserveRepositoryName(String repositoryName) throws RepositoryCreationException
    {
-
-      // check possibility to create repository locally
-      //check does repository already created
-      for (int i = 0; i < repositoryService.getConfig().getRepositoryConfigurations().size(); i++)
-      {
-         RepositoryEntry conf = repositoryService.getConfig().getRepositoryConfigurations().get(i);
-         if (conf.getName().equals(repositoryName))
-         {
-            throw new RepositoryCreationException("Repository " + repositoryName + " already exists.");
-         }
-      }
-
       if (rpcService != null)
       {
-         //ask other nodes does they have pending repositories
+         // check does repository already created
+         for (int i = 0; i < repositoryService.getConfig().getRepositoryConfigurations().size(); i++)
+         {
+            RepositoryEntry conf = repositoryService.getConfig().getRepositoryConfigurations().get(i);
+            if (conf.getName().equals(repositoryName))
+            {
+               throw new RepositoryCreationException("Repository " + repositoryName + " already exists.");
+            }
+         }
+
+         // reserve RepositoryName at coordinator-node
          try
          {
             Object result = rpcService.executeCommandOnCoordinator(reserveRepositoryName, true, repositoryName);
@@ -347,14 +342,39 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService
             }
             else
             {
-               throw new RepositoryCreationException(e.getMessage(), e);
+               throw new RepositoryCreationException("Can not reserve repository name " + repositoryName + " since: "
+                  + e.getMessage(), e);
             }
          }
       }
       else
       {
-         pendingRepositories.add(repositoryName);
-         return repositoryName;
+         return reserveRepoName(repositoryName);
+      }
+   }
+
+   protected String reserveRepoName(String repositoryName) throws RepositoryCreationException
+   {
+      // check does repository already created
+      for (int i = 0; i < repositoryService.getConfig().getRepositoryConfigurations().size(); i++)
+      {
+         RepositoryEntry conf = repositoryService.getConfig().getRepositoryConfigurations().get(i);
+         if (conf.getName().equals(repositoryName))
+         {
+            throw new RepositoryCreationException("Repository " + repositoryName + " already exists.");
+         }
+      }
+
+      // check does this repository name already reserved, otherwise generate and return token
+      if (!pendingRepositories.containsValue(repositoryName))
+      {
+         String rToken = repositoryName + IdGenerator.generate();
+         pendingRepositories.put(rToken, repositoryName);
+         return rToken;
+      }
+      else
+      {
+         throw new RepositoryCreationException("Repository name " + repositoryName + " already reserved.");
       }
    }
 
@@ -362,52 +382,22 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService
       throws RepositoryConfigurationException, RepositoryCreationException
    {
       // check does token registered
-      if (!this.pendingRepositories.contains(rToken))
+      if (!this.pendingRepositories.containsKey(rToken))
       {
          throw new RepositoryCreationException("Token " + rToken + " does not registered.");
       }
 
-      // Prepare list of datasource names that must be binded to newly created databases.
-      Set<String> dataSourceNames = new HashSet<String>();
-      for (WorkspaceEntry wsEntry : rEntry.getWorkspaceEntries())
-      {
+      // Prepare list of data-source names that must be binded to newly created databases.
+      Set<String> dataSourceNames = extractDataSourceNames(rEntry, true);
 
-         boolean isMultiDB =
-            Boolean.parseBoolean(wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.MULTIDB));
-         String dbSourceName = wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME);
-
-         if (isMultiDB && dataSourceNames.contains(dbSourceName))
-         {
-            throw new RepositoryCreationException("RepositoryEntry for new " + rToken
-               + " repository contains workspaces that marked as multiDB but have same datasource " + dbSourceName
-               + ".");
-         }
-
-         try
-         {
-            DataSource ds = (DataSource)initialContextInitializer.getInitialContext().lookup(dbSourceName);
-            if (ds != null)
-            {
-               throw new RepositoryConfigurationException("RepositoryEntry for new " + rToken
-                  + " repository contains already bibded datasource " + dbSourceName + ".");
-            }
-         }
-         catch (NamingException e)
-         {
-            throw new RepositoryConfigurationException(e.getMessage(), e);
-         }
-
-         dataSourceNames.add(dbSourceName);
-      }
-
-      // create and bind related database to each datasource name
+      // create and bind related database to each data-source name
       for (String dataSource : dataSourceNames)
       {
-         // 1) create related DB
+         // create related DB
          Map<String, String> refAddr = new HashMap<String, String>();
          try
          {
-            DBConnectionInfo dbConnectionInfo = dbCreator.createDatabase(rToken + "_" + dataSource);
+            DBConnectionInfo dbConnectionInfo = dbCreator.createDatabase(rEntry.getName() + "_" + dataSource);
             refAddr.put("driverClassName", dbConnectionInfo.getDriver());
             refAddr.put("url", dbConnectionInfo.getUrl());
             refAddr.put("username", dbConnectionInfo.getUsername());
@@ -415,13 +405,13 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService
          }
          catch (DBCreatorException e)
          {
-            throw new RepositoryCreationException("Can not create new database for " + rToken + " repository.", e);
+            throw new RepositoryCreationException("Can not create new database for " + rEntry.getName()
+               + " repository.", e);
          }
 
-         // 2) bind data-source
+         // bind data-source
          try
          {
-            //bind new data-source
             initialContextInitializer.bind(dataSource, "javax.sql.DataSource",
                "org.apache.commons.dbcp.BasicDataSourceFactory", null, refAddr);
          }
@@ -439,7 +429,7 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService
          }
       }
 
-      //3) restore repository from backup
+      // restore repository from backup
       RepositoryBackupChainLog backupChain = null;
       for (RepositoryBackupChainLog chainLog : backupManager.getRepositoryBackupsLogs())
       {
@@ -484,26 +474,101 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService
 
    protected void startRepository(RepositoryEntry repositoryEntry) throws RepositoryCreationException
    {
-      //TODO do we need bind datasource here?
-
       try
       {
+         // Prepare list of data-source names that must be binded
+         Set<String> dataSourceNames = extractDataSourceNames(repositoryEntry, false);
+
+         for (String dataSource : dataSourceNames)
+         {
+            // get data base info 
+            Map<String, String> refAddr = new HashMap<String, String>();
+            try
+            {
+               DBConnectionInfo dbConnectionInfo =
+                  dbCreator.getDBConnectionInfo(repositoryEntry.getName() + "_" + dataSource);
+               refAddr.put("driverClassName", dbConnectionInfo.getDriver());
+               refAddr.put("url", dbConnectionInfo.getUrl());
+               refAddr.put("username", dbConnectionInfo.getUsername());
+               refAddr.put("password", dbConnectionInfo.getPassword());
+            }
+            catch (DBCreatorException e)
+            {
+               throw new RepositoryCreationException("Can not fetch database information associated with "
+                  + repositoryEntry.getName() + " repository and " + dataSource + " datasource.", e);
+            }
+            // bind data-source
+            try
+            {
+               initialContextInitializer.bind(dataSource, "javax.sql.DataSource",
+                  "org.apache.commons.dbcp.BasicDataSourceFactory", null, refAddr);
+            }
+            catch (NamingException e)
+            {
+               throw new RepositoryCreationException(e.getMessage(), e);
+            }
+            catch (FileNotFoundException e)
+            {
+               throw new RepositoryCreationException(e.getMessage(), e);
+            }
+            catch (XMLStreamException e)
+            {
+               throw new RepositoryCreationException(e.getMessage(), e);
+            }
+         }
+
          repositoryService.createRepository(repositoryEntry);
       }
       catch (RepositoryConfigurationException e)
       {
-         throw new RepositoryCreationException("Repository created but can not be started on this node: "
-            + e.getLocalizedMessage(), e);
+         throw new RepositoryCreationException(e.getMessage(), e);
       }
       catch (RepositoryException e)
       {
-         throw new RepositoryCreationException("Repository created but can not be started on this node: "
-            + e.getLocalizedMessage(), e);
+         throw new RepositoryCreationException(e.getMessage(), e);
       }
    }
 
+   private Set<String> extractDataSourceNames(RepositoryEntry repositoryEntry, boolean checkDataSourceExistance)
+      throws RepositoryConfigurationException, RepositoryCreationException
+   {
+      Set<String> dataSourceNames = new HashSet<String>();
+      for (WorkspaceEntry wsEntry : repositoryEntry.getWorkspaceEntries())
+      {
+         boolean isMultiDB =
+            Boolean.parseBoolean(wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.MULTIDB));
+         String dbSourceName = wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME);
+
+         if (isMultiDB && dataSourceNames.contains(dbSourceName))
+         {
+            throw new RepositoryCreationException("RepositoryEntry for new " + repositoryEntry.getName()
+               + " repository contains workspaces that marked as multiDB but have same datasource " + dbSourceName
+               + ".");
+         }
+
+         if (checkDataSourceExistance)
+         {
+            try
+            {
+               DataSource ds = (DataSource)initialContextInitializer.getInitialContext().lookup(dbSourceName);
+               if (ds != null)
+               {
+                  throw new RepositoryConfigurationException("RepositoryEntry for new " + repositoryEntry.getName()
+                     + " repository contains already binded datasource " + dbSourceName + ".");
+               }
+            }
+            catch (NamingException e)
+            {
+               throw new RepositoryConfigurationException(e.getMessage(), e);
+            }
+         }
+
+         dataSourceNames.add(dbSourceName);
+      }
+      return dataSourceNames;
+   }
+
    /**
-    * TODO make another serialization scheme or move it to dedicated object
     * Will be created the Object from JSON binary data.
     * 
     * @param cl

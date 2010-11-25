@@ -31,29 +31,10 @@ public interface RepositoryCreationService
 {
    /**
     * Reserves, validates and creates repository in a simplified form. 
-    * 
-    * 1. check possibility to create repository locally
-    *    - check existing, pending repository and datasources with same names
-    * 2. reserve name and put additional information (ex. ip and port of current machine)
-    * 3. check possibility to create repository on others nodes 
-    *    - sending to all cluster nodes information about new repository and waiting for answers
-    *    - all cluster nodes receive information and check possibility to create repository locally
-    *    - send response 
-    * 4. reserve name on all nodes of cluster
-    * 6. Check that name is reserved
-    * 7. Create repository locally from backup
-    *    - create related DB
-    *    - bind datasources
-    *    - restore repository from backup (in synchronous mode)
-    * 8. If need to do the same in cluster then send requests to others cluster nodes to create repository and waits for responses
-    * 9. On each others cluster nodes:
-    *   - bind datasources
-    *   - start repository   
-    *   - send response
-    * 10. Release lock (unreserve name)
-
-    * @param rEntry
-    * @param backupId
+    * @param rEntry - repository Entry - note that datasource must not exist.
+    * @param backupId - backup id
+    * @throws RepositoryConfigurationException
+    *          if some exception occurred during repository creation or repository name is absent in reserved list
     * @throws RepositoryCreationServiceException
     *          if some exception occurred during repository creation or repository name is absent in reserved list
     */
@@ -63,42 +44,20 @@ public interface RepositoryCreationService
    /**
     * Reserve repository name to prevent repository creation with same name from other place in same time
     * via this service.
-    * 
-    * 1. check possibility to create repository locally
-    *    - check existing, pending repository and datasources with same names
-    * 2. reserve name and put additional information (repository name token)
-    * 3. check possibility to create repository on others nodes 
-    *    - sending to all cluster nodes information about new repository and waiting for answers
-    *    - all cluster nodes receive information and check possibility to create repository locally
-    *    - send response 
-    * 4. reserve name on all nodes of cluster
-    *
-    * @param repositoryName
+    * @param repositoryName - repositoryName
     * @return repository token. Anyone obtaining a token can later create a repository of reserved name.
-    * @throws RepositoryCreationServiceException
-    *          if can't reserve name
+    * @throws RepositoryCreationServiceException if can't reserve name
     */
    String reserveRepositoryName(String repositoryName) throws RepositoryCreationException;
 
    /**
     * Creates  repository, using token of already reserved repository name. Good for cases, when repository creation should be delayed or 
     * made asynchronously in dedicated thread. 
-    *
-    * 1. Check that name is reserved
-    * 2. Create repository locally from backup
-    *    - create related DB
-    *    - bind datasources
-    *    - restore repository from backup (in synchronous mode)
-    * 3. If need to do the same in cluster then send requests to others cluster nodes to create repository and waits for responses
-    * 4. On each others cluster nodes:
-    *   - bind datasources
-    *   - start repository   
-    *   - send response
-    * 5. Release lock (unreserve name)
-    * 
-    * @param rEntry
-    * @param backupId
-    * @param rToken
+    * @param rEntry - repository entry - note, taht datasource must not exist
+    * @param backupId - backup id
+    * @param rToken - token
+    * @throws RepositoryConfigurationException
+    *          if some exception occurred during repository creation or repository name is absent in reserved list
     * @throws RepositoryCreationServiceException
     *          if some exception occurred during repository creation or repository name is absent in reserved list
     */

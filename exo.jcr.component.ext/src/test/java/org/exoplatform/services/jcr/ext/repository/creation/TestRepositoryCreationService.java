@@ -17,6 +17,7 @@
 package org.exoplatform.services.jcr.ext.repository.creation;
 
 import org.exoplatform.services.jcr.RepositoryService;
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.ext.backup.AbstractBackupTestCase;
@@ -116,5 +117,92 @@ public class TestRepositoryCreationService extends AbstractBackupTestCase
       //check repositoryConfiguration
       RepositoryService repoService = (RepositoryService)this.container.getComponentInstance(RepositoryService.class);
       assertNotNull(repoService.getConfig().getRepositoryConfiguration(tenantName));
+   }
+
+   public void testReserveRepositoryNameException() throws Exception
+   {
+      RepositoryCreationService creatorService =
+         (RepositoryCreationService)container.getComponentInstanceOfType(RepositoryCreationService.class);
+
+      // 1) check unexist repository same name
+      String tenantName = "new_repository_2";
+
+      String repoToken = creatorService.reserveRepositoryName(tenantName);
+      assertNotNull(repoToken);
+
+      try
+      {
+         creatorService.reserveRepositoryName(tenantName);
+         fail("There must be RepositoryCreationException.");
+      }
+      catch (RepositoryCreationException e)
+      {
+         //ok
+      }
+
+      // 2)try to reserve already existing repository
+      try
+      {
+         creatorService.reserveRepositoryName(this.repository.getName());
+         fail("There must be RepositoryCreationException.");
+      }
+      catch (RepositoryCreationException e)
+      {
+         //ok
+      }
+   }
+
+   public void testCreateRepositoryException() throws Exception
+   {
+      String tenantName = "new_repository_3";
+      RepositoryEntry baseRE =
+         (RepositoryEntry)ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
+
+      RepositoryEntry rEntry = makeRepositoryEntry(tenantName, baseRE, "source2", null);
+
+      RepositoryCreationService creatorService =
+         (RepositoryCreationService)container.getComponentInstanceOfType(RepositoryCreationService.class);
+
+      // 1) try to create with unregistered token
+      try
+      {
+         creatorService.createRepository("nomatter", rEntry, "any_name");
+         fail("There must be RepositoryCreationException.");
+      }
+      catch (RepositoryCreationException e)
+      {
+         //ok
+      }
+
+      String repoToken = creatorService.reserveRepositoryName(tenantName);
+      // 2) test with malformed repository entry
+
+      RepositoryEntry brokenRepositoryEntry = rEntry;
+
+      brokenRepositoryEntry.getWorkspaceEntries().get(0).getContainer().getParameters().remove(0);
+      brokenRepositoryEntry.getWorkspaceEntries().get(0).getContainer().getParameters().remove(0);
+
+      try
+      {
+         creatorService.createRepository("nomatter", brokenRepositoryEntry, repoToken);
+         fail("There must be RepositoryConfigurationException.");
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         //ok
+      }
+
+      repoToken = creatorService.reserveRepositoryName(tenantName);
+      // 3) test configuration with existing datasource
+      RepositoryEntry rEntryWithRealDataSource = makeRepositoryEntry(tenantName, baseRE, null, null);
+      try
+      {
+         creatorService.createRepository("nomatter", rEntryWithRealDataSource, repoToken);
+         fail("There must be RepositoryConfigurationException.");
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         //ok
+      }
    }
 }
