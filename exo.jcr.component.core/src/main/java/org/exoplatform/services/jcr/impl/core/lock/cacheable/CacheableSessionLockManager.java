@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see<http://www.gnu.org/licenses/>.
  */
-package org.exoplatform.services.jcr.impl.core.lock.jbosscache;
+package org.exoplatform.services.jcr.impl.core.lock.cacheable;
 
 import org.exoplatform.services.jcr.core.ExtendedSession;
 import org.exoplatform.services.jcr.datamodel.NodeData;
@@ -44,7 +44,7 @@ import javax.jcr.lock.LockException;
  * <br/>Date: 
  *
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
- * @version $Id$
+ * @version $Id: CacheableSessionLockManager.java 2137 2010-03-25 15:31:56Z sergiykarpenko $
  */
 public class CacheableSessionLockManager extends AbstractSessionLockManager
 {

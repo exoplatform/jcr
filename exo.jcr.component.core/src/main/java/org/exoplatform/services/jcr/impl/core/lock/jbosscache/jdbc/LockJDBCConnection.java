@@ -16,7 +16,7 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock.jbosscache.jdbc;
 
-import org.exoplatform.services.jcr.impl.core.lock.jbosscache.LockData;
+import org.exoplatform.services.jcr.impl.core.lock.cacheable.LockData;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 

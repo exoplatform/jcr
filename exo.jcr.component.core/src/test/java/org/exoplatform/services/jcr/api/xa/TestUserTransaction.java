@@ -115,7 +115,7 @@ public class TestUserTransaction extends JcrAPIBaseTest
       ut.begin();
       log.info("after begin");
       // we need to create the session within the transaction to ensure that it will be enlisted
-      Session session = (SessionImpl)repository.login(credentials, "ws");
+      Session session = repository.login(credentials, "ws");
       session.getRootNode().addNode("txcommit");
       session.save();
       assertNotNull(session.getItem("/txcommit"));
@@ -143,7 +143,7 @@ public class TestUserTransaction extends JcrAPIBaseTest
 
       ut.begin();
       // we need to create the session within the transaction to ensure that it will be enlisted
-      Session session = (SessionImpl)repository.login(credentials, "ws");
+      Session session = repository.login(credentials, "ws");
       session.getRootNode().addNode("txrollback");
       session.save();
       assertNotNull(session.getItem("/txrollback"));
@@ -254,6 +254,9 @@ public class TestUserTransaction extends JcrAPIBaseTest
          assertNotNull(((XASession) s1).getCommitException());
       }
 
+      s1.logout();
+      s2.logout();      
+      
       try {
          session.getItem("/pretx/tx1");
          fail("PathNotFoundException should be thrown");

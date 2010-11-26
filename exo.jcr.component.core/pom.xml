@@ -164,7 +164,7 @@
         <artifactId>commons-beanutils</artifactId>
       </dependency>
       <dependency>
-        <groupId>jgroups</groupId>
+        <groupId>org.jgroups</groupId>
         <artifactId>jgroups</artifactId>
       </dependency>
       <dependency>
@@ -205,6 +205,14 @@
       <dependency>
          <groupId>org.jboss.cache</groupId>
          <artifactId>jbosscache-core</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>org.infinispan</groupId>
+        <artifactId>infinispan-core</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>org.infinispan</groupId>
+        <artifactId>infinispan-cachestore-jdbc</artifactId>
       </dependency>
       <dependency>
          <groupId>org.apache.jackrabbit</groupId>

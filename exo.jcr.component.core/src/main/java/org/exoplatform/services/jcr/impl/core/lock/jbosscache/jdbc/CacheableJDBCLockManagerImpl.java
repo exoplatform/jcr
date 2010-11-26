@@ -43,9 +43,9 @@ import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.lock.LockRemover;
 import org.exoplatform.services.jcr.impl.core.lock.LockRemoverHolder;
 import org.exoplatform.services.jcr.impl.core.lock.SessionLockManager;
-import org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManager;
-import org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableSessionLockManager;
-import org.exoplatform.services.jcr.impl.core.lock.jbosscache.LockData;
+import org.exoplatform.services.jcr.impl.core.lock.cacheable.CacheableLockManager;
+import org.exoplatform.services.jcr.impl.core.lock.cacheable.CacheableSessionLockManager;
+import org.exoplatform.services.jcr.impl.core.lock.cacheable.LockData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientItemData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
@@ -814,7 +814,9 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
    public LockData getExactNodeOrCloseParentLock(NodeData node) throws RepositoryException
    {
       if (node == null)
+      {
          return null;
+      }
       LockData retval = null;
       retval = getLockDataById(node.getIdentifier());
       if (retval == null)
@@ -840,14 +842,18 @@ public class CacheableJDBCLockManagerImpl implements CacheableLockManager, Items
       {
          retval = getLockDataById(nodeData.getIdentifier());
          if (retval != null)
+         {
             return retval;
+         }
       }
       // child not found try to find dipper
       for (NodeData nodeData : childData)
       {
          retval = getClosedChild(nodeData);
          if (retval != null)
+         {
             return retval;
+         }
       }
       return retval;
    }

@@ -19,7 +19,7 @@
 package org.exoplatform.services.jcr.impl.core.lock;
 
 import org.exoplatform.services.jcr.JcrImplBaseTest;
-import org.exoplatform.services.jcr.impl.core.lock.jbosscache.LockData;
+import org.exoplatform.services.jcr.impl.core.lock.cacheable.LockData;
 import org.exoplatform.services.jcr.impl.core.lock.jbosscache.jdbc.LockJDBCConnection;
 import org.exoplatform.services.jcr.impl.core.lock.jbosscache.jdbc.LockJDBCContainer;
 

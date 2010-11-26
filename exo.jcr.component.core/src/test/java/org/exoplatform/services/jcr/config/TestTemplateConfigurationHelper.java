@@ -18,9 +18,10 @@
  */
 package org.exoplatform.services.jcr.config;
 
-import org.exoplatform.container.configuration.ConfigurationManagerImpl;
-
 import junit.framework.TestCase;
+
+import org.exoplatform.container.configuration.ConfigurationManagerImpl;
+import org.exoplatform.services.jcr.jbosscache.JBossCacheHelper;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -40,7 +41,7 @@ public class TestTemplateConfigurationHelper extends TestCase
    {
       // create helper with predefined include and exclude patterns
       TemplateConfigurationHelper helper =
-         TemplateConfigurationHelper.createJBossCacheHelper(new ConfigurationManagerImpl());
+         new JBossCacheHelper(new ConfigurationManagerImpl());
       Map<String, String> parameters = new HashMap<String, String>();
       parameters.put("jbosscache-configuration", "");
       parameters.put("jbosscache-cache.loader", "");
@@ -58,7 +59,7 @@ public class TestTemplateConfigurationHelper extends TestCase
    public void testFilters2()
    {
       // create helper with predefined include and exclude patterns
-      TemplateConfigurationHelper helper = TemplateConfigurationHelper.createJBossCacheHelper(new ConfigurationManagerImpl());
+      TemplateConfigurationHelper helper =  new JBossCacheHelper(new ConfigurationManagerImpl());
       Map<String, String> parameters = new HashMap<String, String>();
       parameters.put("jgroups-configuration", "");
       parameters.put("jbosscache-cache.loader", "");
@@ -74,7 +75,7 @@ public class TestTemplateConfigurationHelper extends TestCase
 
    public void testTemplating() throws IOException
    {
-      TemplateConfigurationHelper helper = TemplateConfigurationHelper.createJBossCacheHelper(new ConfigurationManagerImpl());
+      TemplateConfigurationHelper helper =  new JBossCacheHelper(new ConfigurationManagerImpl());
       String template = "configuration in any format, containing ${jbosscache-template-variable} and many others";
       String expectedConfig = "configuration in any format, containing pretty good parameter and many others";
 

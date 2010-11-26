@@ -25,7 +25,6 @@ import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.jcr.config.MappedParametrizedObjectEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.TemplateConfigurationHelper;
-import org.exoplatform.services.jcr.impl.util.PrivilegedCacheHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.jboss.cache.Cache;
@@ -110,7 +109,7 @@ public class ExoJBossCacheFactory<K, V>
    public ExoJBossCacheFactory(ConfigurationManager configurationManager, TransactionManager transactionManager)
    {
       this.configurationManager = configurationManager;
-      this.configurationHelper = TemplateConfigurationHelper.createJBossCacheHelper(configurationManager);
+      this.configurationHelper = new JBossCacheHelper(configurationManager);
       this.transactionManager = transactionManager;
    }
 

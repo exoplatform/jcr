@@ -23,7 +23,7 @@ import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeListener;
 import org.exoplatform.services.jcr.impl.core.query.lucene.IndexInfos;
 import org.exoplatform.services.jcr.impl.core.query.lucene.MultiIndex;
-import org.exoplatform.services.jcr.impl.util.PrivilegedCacheHelper;
+import org.exoplatform.services.jcr.jbosscache.PrivilegedJBossCacheHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.jboss.cache.Cache;
@@ -84,7 +84,8 @@ public class JBossCacheIndexInfos extends IndexInfos implements IndexerIoModeLis
    /**
     * @param cache instance of JbossCache that is used to deliver index names
     */
-   public JBossCacheIndexInfos(Fqn<String> rootFqn, Cache<Serializable, Object> cache, boolean system, IndexerIoModeHandler modeHandler)
+   public JBossCacheIndexInfos(Fqn<String> rootFqn, Cache<Serializable, Object> cache, boolean system,
+      IndexerIoModeHandler modeHandler)
    {
       this(rootFqn, DEFALUT_NAME, cache, system, modeHandler);
    }
@@ -159,7 +160,7 @@ public class JBossCacheIndexInfos extends IndexInfos implements IndexerIoModeLis
          // write to FS
          super.write();
          // write to cache
-         PrivilegedCacheHelper.put(cache, namesFqn, LIST_KEY, getNames());
+         PrivilegedJBossCacheHelper.put(cache, namesFqn, LIST_KEY, getNames());
       }
    }
 

@@ -16,7 +16,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.services.jcr.impl.core.lock.jbosscache;
+package org.exoplatform.services.jcr.impl.core.lock.cacheable;
 
 import org.exoplatform.services.jcr.impl.Constants;
 

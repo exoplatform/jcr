@@ -27,8 +27,8 @@ import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
 import org.exoplatform.services.jcr.impl.core.query.IndexingTree;
 import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
 import org.exoplatform.services.jcr.impl.core.query.SearchManager;
-import org.exoplatform.services.jcr.impl.util.PrivilegedCacheHelper;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory;
+import org.exoplatform.services.jcr.jbosscache.PrivilegedJBossCacheHelper;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory.CacheType;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
@@ -136,8 +136,8 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
          ExoJBossCacheFactory.getUniqueInstance(CacheType.INDEX_CACHE, rootFqn, initCache, config.getParameterBoolean(
             PARAM_JBOSSCACHE_SHAREABLE, PARAM_JBOSSCACHE_SHAREABLE_DEFAULT));
 
-      PrivilegedCacheHelper.create(cache);
-      PrivilegedCacheHelper.start(cache);
+      PrivilegedJBossCacheHelper.create(cache);
+      PrivilegedJBossCacheHelper.start(cache);
 
       // start will invoke cache listener which will notify handler that mode is changed
       IndexerIoMode ioMode =
@@ -192,7 +192,7 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
       String id = IdGenerator.generate();
       try
       {
-         PrivilegedCacheHelper.put(cache, Fqn.fromRelativeElements(rootFqn, id), LISTWRAPPER,
+         PrivilegedJBossCacheHelper.put(cache, Fqn.fromRelativeElements(rootFqn, id), LISTWRAPPER,
             new ChangesFilterListsWrapper(addedNodes, removedNodes, parentAddedNodes, parentRemovedNodes));
       }
       catch (CacheException e)

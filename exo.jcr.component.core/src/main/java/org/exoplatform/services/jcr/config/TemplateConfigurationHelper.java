@@ -18,11 +18,10 @@
  */
 package org.exoplatform.services.jcr.config;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.container.configuration.ConfigurationManager;
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 
 import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -78,19 +77,6 @@ public class TemplateConfigurationHelper
       {
          this.excludes.add(Pattern.compile(regex));
       }
-   }
-
-   /**
-    * Creates instance of TemplateConfigurationHelper pre-configured for JBossCache parameters,<br>
-    * including: "jbosscache-*" and "jgroups-configuration", and excluding "jbosscache-configuration"
-    * 
-    * @param ConfigurationManager instance for looking up resources
-    * @return
-    */
-   public static TemplateConfigurationHelper createJBossCacheHelper(ConfigurationManager cfm)
-   {
-      return new TemplateConfigurationHelper(new String[]{"^jbosscache-.*", "^jgroups-configuration"},
-         new String[]{"^jbosscache-configuration"}, cfm);
    }
 
    /**
