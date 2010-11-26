@@ -491,7 +491,7 @@ public class TestBackupManager
 
       final BackupChain bch = backup.startBackup(config);
 
-      Thread.sleep(30000);
+      Thread.sleep(40000);
 
       assertTrue(bch.isFinished());
 
