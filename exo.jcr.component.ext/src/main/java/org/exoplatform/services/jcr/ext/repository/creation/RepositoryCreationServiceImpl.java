@@ -45,6 +45,7 @@ import org.exoplatform.ws.frameworks.json.impl.JsonException;
 import org.exoplatform.ws.frameworks.json.impl.JsonGeneratorImpl;
 import org.exoplatform.ws.frameworks.json.impl.JsonParserImpl;
 import org.exoplatform.ws.frameworks.json.value.JsonValue;
+import org.picocontainer.Startable;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -72,7 +73,7 @@ import javax.xml.stream.XMLStreamException;
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
  * @version $Id: RepositoryCreationServiceImpl.java 111 2008-11-11 11:11:11Z serg $
  */
-public class RepositoryCreationServiceImpl implements RepositoryCreationService
+public class RepositoryCreationServiceImpl implements RepositoryCreationService, Startable
 {
    /**
     * The logger.
@@ -623,5 +624,23 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService
       JsonValue jsonValue = jsonHandler.getJsonObject();
 
       return new BeanBuilder().createObject(cl, jsonValue);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void start()
+   {
+      // do nothing
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void stop()
+   {
+      this.rpcService.unregisterCommand(reserveRepositoryName);
+      this.rpcService.unregisterCommand(createRepository);
+      this.rpcService.unregisterCommand(startRepository);
    }
 }
