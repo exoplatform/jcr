@@ -109,7 +109,7 @@
       <artifactId>commons-chain</artifactId>
     </dependency>
     <dependency>
-      <groupId>jgroups</groupId>
+      <groupId>org.jgroups</groupId>
       <artifactId>jgroups</artifactId>
     </dependency>
     <dependency>
