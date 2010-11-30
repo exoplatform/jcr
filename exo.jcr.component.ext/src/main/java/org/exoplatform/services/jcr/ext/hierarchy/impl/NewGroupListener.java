@@ -63,14 +63,24 @@ public class NewGroupListener extends GroupEventListener
       groupsPath_ = nodeHierarchyCreatorService.getJcrPath(GROUPS_PATH);
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void preSave(Group group, boolean isNew) throws Exception
    {
       String groupId = null;
-      String parentId = group.getParentId();
-      if (parentId == null || parentId.length() == 0)
-         groupId = "/" + group.getGroupName();
+      if (group.getId() != null)
+      {
+         groupId = group.getId();
+      }
       else
-         groupId = parentId + "/" + group.getGroupName();
+      {
+         String parentId = group.getParentId();
+         if (parentId == null || parentId.length() == 0)
+            groupId = "/" + group.getGroupName();
+         else
+            groupId = parentId + "/" + group.getGroupName();
+      }
       List<RepositoryEntry> repositories = jcrService_.getConfig().getRepositoryConfigurations();
       if (isNew)
       {
@@ -81,14 +91,24 @@ public class NewGroupListener extends GroupEventListener
       }
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void preDelete(Group group) throws Exception
    {
       String groupId = null;
-      String parentId = group.getParentId();
-      if (parentId == null || parentId.length() == 0)
-         groupId = "/" + group.getGroupName();
+      if (group.getId() != null)
+      {
+         groupId = group.getId();
+      }
       else
-         groupId = parentId + "/" + group.getGroupName();
+      {
+         String parentId = group.getParentId();
+         if (parentId == null || parentId.length() == 0)
+            groupId = "/" + group.getGroupName();
+         else
+            groupId = parentId + "/" + group.getGroupName();
+      }
       List<RepositoryEntry> repositories = jcrService_.getConfig().getRepositoryConfigurations();
       for (RepositoryEntry repo : repositories)
       {
