@@ -480,6 +480,10 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          if (lockTokenHeader != null)
          {
             lockTokenHeader = lockTokenHeader.substring(1, lockTokenHeader.length() - 1);
+            if (lockTokenHeader.contains(WebDavConst.Lock.OPAQUE_LOCK_TOKEN))
+            {
+               lockTokenHeader = lockTokenHeader.split(":")[1];
+            }
          }
          return new DeleteCommand().delete(session, path(repoPath), lockTokenHeader);
       }
@@ -1279,7 +1283,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       {
          lockTokenHeader = lockTokenHeader.substring(1, lockTokenHeader.length() - 1);
 
-         if (lockTokenHeader.contains("opaquelocktoken"))
+         if (lockTokenHeader.contains(WebDavConst.Lock.OPAQUE_LOCK_TOKEN))
          {
             lockTokenHeader = lockTokenHeader.split(":")[1];
          }
@@ -1291,6 +1295,10 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       {
          String headerLockToken = ifHeader.substring(ifHeader.indexOf("("));
          headerLockToken = headerLockToken.substring(2, headerLockToken.length() - 2);
+         if (headerLockToken.contains(WebDavConst.Lock.OPAQUE_LOCK_TOKEN))
+         {
+            headerLockToken = headerLockToken.split(":")[1];
+         }
          lockTokens.add(headerLockToken);
       }
 
