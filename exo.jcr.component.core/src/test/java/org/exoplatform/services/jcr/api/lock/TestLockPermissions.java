@@ -62,14 +62,6 @@ public class TestLockPermissions extends JcrAPIBaseTest
          }
    }
 
-   @Override
-   public void tearDown() throws Exception
-   {
-      lockedNode.remove();
-      session.save();
-      super.tearDown();
-   }
-
    public void testLockAccessDeniedException() throws RepositoryException
    {
       Session session1 = repository.login(new CredentialsImpl("root", "exo".toCharArray()), "ws");
