@@ -68,8 +68,7 @@ public class RepositoryBackupChainImpl
    private int state;
 
    public RepositoryBackupChainImpl(RepositoryBackupConfig config,  File logDirectory, ManageableRepository repository,
-            String fullBackupType, String incrementalBackupType, String repositoryBackupId)
-            throws BackupOperationException,
+            String fullBackupType, String incrementalBackupType, String repositoryBackupId) throws BackupOperationException,
             BackupConfigurationException
    {
       this.config = config;
@@ -90,8 +89,8 @@ public class RepositoryBackupChainImpl
          wsBackupConfig.setIncrementalJobPeriod(config.getIncrementalJobPeriod());
 
          BackupChain bchain =
-                  new BackupChainImpl(wsBackupConfig, config.getBackupDir(), repository, fullBackupType,
-                           incrementalBackupType, IdGenerator.generate(), logDirectory);
+            new BackupChainImpl(wsBackupConfig, config.getBackupDir(), repository,
+                     fullBackupType, incrementalBackupType, IdGenerator.generate());
          
          wsLogFilePathList.add(bchain.getLogFilePath());
          workspaceBackups.add(bchain);
@@ -104,8 +103,7 @@ public class RepositoryBackupChainImpl
                                                              repository.getConfiguration().getSystemWorkspaceName(), 
                                                              wsLogFilePathList, 
                                                              this.repositoryBackupId, 
-                                                             startTime,
-                                                             repository.getConfiguration());
+                                                             startTime);
       
       state = INITIALIZED;
    }

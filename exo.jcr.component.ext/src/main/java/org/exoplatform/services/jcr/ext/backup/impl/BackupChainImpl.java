@@ -18,18 +18,6 @@
  */
 package org.exoplatform.services.jcr.ext.backup.impl;
 
-import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
-
-import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.ext.backup.BackupChain;
 import org.exoplatform.services.jcr.ext.backup.BackupChainLog;
@@ -41,6 +29,17 @@ import org.exoplatform.services.jcr.ext.backup.BackupManager;
 import org.exoplatform.services.jcr.ext.backup.BackupOperationException;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by The eXo Platform SARL .<br/>
@@ -75,16 +74,12 @@ public class BackupChainImpl implements BackupChain
    private Set<BackupJobListener> listeners = new LinkedHashSet<BackupJobListener>();
 
    public BackupChainImpl(BackupConfig config, File logDirectory, ManageableRepository repository,
-            String fullBackupType, String incrementalBackupType, String backupId, File rootDir)
-            throws BackupOperationException,
+      String fullBackupType, String incrementalBackupType, String backupId) throws BackupOperationException,
       BackupConfigurationException
    {
       this.config = config;
       this.jobs = new ArrayList<BackupJob>();
-
-      this.chainLog =
-               new BackupChainLog(logDirectory, config, fullBackupType, incrementalBackupType, backupId,
-                        getWorkspaceEntry(config.getWorkspace(), repository), rootDir);
+      this.chainLog = new BackupChainLog(logDirectory, config, fullBackupType, incrementalBackupType, backupId);
       this.timeStamp = Calendar.getInstance();
       this.backupId = backupId;
 
@@ -116,29 +111,6 @@ public class BackupChainImpl implements BackupChain
       this.timer =
          new Timer("BackupChain_" + getBackupConfig().getRepository() + "@" + getBackupConfig().getWorkspace()
             + "_PeriodTimer_" + new SimpleDateFormat("yyyyMMdd.HHmmss.SSS").format(new Date()), true);
-   }
-
-   private WorkspaceEntry getWorkspaceEntry(String workspace, ManageableRepository repository)
-            throws BackupOperationException
-   {
-      WorkspaceEntry wEntry = null;
-
-      for (WorkspaceEntry entry : repository.getConfiguration().getWorkspaceEntries())
-      {
-         if (entry.getName().equals(workspace))
-         {
-            wEntry = entry;
-            break;
-         }
-      }
-
-      if (wEntry == null)
-      {
-         throw new BackupOperationException("Worksapce \"" + workspace + "\" was not exsisted in repository \""
-                  + repository.getConfiguration().getName() + "\".");
-      }
-
-      return wEntry;
    }
 
    /**
