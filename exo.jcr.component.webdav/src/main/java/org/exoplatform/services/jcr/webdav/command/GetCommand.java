@@ -18,27 +18,6 @@
  */
 package org.exoplatform.services.jcr.webdav.command;
 
-import org.exoplatform.common.http.HTTPStatus;
-import org.exoplatform.common.util.HierarchicalProperty;
-import org.exoplatform.services.jcr.webdav.Range;
-import org.exoplatform.services.jcr.webdav.WebDavConst;
-import org.exoplatform.services.jcr.webdav.resource.CollectionResource;
-import org.exoplatform.services.jcr.webdav.resource.FileResource;
-import org.exoplatform.services.jcr.webdav.resource.Resource;
-import org.exoplatform.services.jcr.webdav.resource.ResourceUtil;
-import org.exoplatform.services.jcr.webdav.resource.VersionResource;
-import org.exoplatform.services.jcr.webdav.resource.VersionedFileResource;
-import org.exoplatform.services.jcr.webdav.resource.VersionedResource;
-import org.exoplatform.services.jcr.webdav.util.MultipartByterangesEntity;
-import org.exoplatform.services.jcr.webdav.util.RangedInputStream;
-import org.exoplatform.services.jcr.webdav.util.TextUtil;
-import org.exoplatform.services.jcr.webdav.xml.WebDavNamespaceContext;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
-import org.exoplatform.services.rest.ExtHttpHeaders;
-import org.exoplatform.services.rest.ext.provider.XSLTStreamingOutput;
-import org.exoplatform.services.rest.impl.header.MediaTypeHelper;
-
 import java.io.InputStream;
 import java.net.URI;
 import java.text.DateFormat;
@@ -59,6 +38,27 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.xml.transform.stream.StreamSource;
+
+import org.exoplatform.common.http.HTTPStatus;
+import org.exoplatform.common.util.HierarchicalProperty;
+import org.exoplatform.services.jcr.webdav.Range;
+import org.exoplatform.services.jcr.webdav.WebDavConst;
+import org.exoplatform.services.jcr.webdav.resource.CollectionResource;
+import org.exoplatform.services.jcr.webdav.resource.FileResource;
+import org.exoplatform.services.jcr.webdav.resource.Resource;
+import org.exoplatform.services.jcr.webdav.resource.ResourceUtil;
+import org.exoplatform.services.jcr.webdav.resource.VersionResource;
+import org.exoplatform.services.jcr.webdav.resource.VersionedFileResource;
+import org.exoplatform.services.jcr.webdav.resource.VersionedResource;
+import org.exoplatform.services.jcr.webdav.util.MultipartByterangesEntity;
+import org.exoplatform.services.jcr.webdav.util.RangedInputStream;
+import org.exoplatform.services.jcr.webdav.util.TextUtil;
+import org.exoplatform.services.jcr.webdav.xml.WebDavNamespaceContext;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+import org.exoplatform.services.rest.ExtHttpHeaders;
+import org.exoplatform.services.rest.ext.provider.XSLTStreamingOutput;
+import org.exoplatform.services.rest.impl.header.MediaTypeHelper;
 
 /**
  * Created by The eXo Platform SAS Author : <a
@@ -193,7 +193,7 @@ public class GetCommand
                return Response.status(HTTPStatus.PARTIAL).header(HttpHeaders.CONTENT_LENGTH,
                   Long.toString(returnedContentLength)).header(ExtHttpHeaders.ACCEPT_RANGES, "bytes").header(
                   ExtHttpHeaders.CONTENTRANGE, "bytes " + start + "-" + end + "/" + contentLength).entity(
-                  rangedInputStream).build();
+                        rangedInputStream).type(contentType).build();
             }
 
             // multipart byte ranges as byte:0-100,80-150,210-300
@@ -210,7 +210,7 @@ public class GetCommand
                new MultipartByterangesEntity(resource, ranges, contentType, contentLength);
 
             return Response.status(HTTPStatus.PARTIAL).header(ExtHttpHeaders.ACCEPT_RANGES, "bytes").entity(
-               mByterangesEntity).build();
+                     mByterangesEntity).type(ExtHttpHeaders.MULTIPART_BYTERANGES + WebDavConst.BOUNDARY).build();
          }
          else
          {
