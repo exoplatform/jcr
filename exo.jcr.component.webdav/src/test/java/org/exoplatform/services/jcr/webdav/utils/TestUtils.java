@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.webdav.utils;
 
 import org.exoplatform.common.http.client.HTTPConnection;
+import org.exoplatform.services.jcr.webdav.WebDavConst;
 import org.exoplatform.services.jcr.webdav.WebDavConstants.WebDav;
 import org.exoplatform.services.jcr.webdav.util.TextUtil;
 import org.w3c.dom.Document;
@@ -192,7 +193,7 @@ public class TestUtils
       session.save();
       String tok = lock.getLockToken();
       // System.out.println("TestUtils.lockNode()" + tok);
-      return "<" + tok + ">";
+      return "<" + WebDavConst.Lock.OPAQUE_LOCK_TOKEN + ":" + tok + ">";
    }
 
    public static void find(Session session, String queryString) throws InvalidQueryException, RepositoryException
