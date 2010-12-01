@@ -54,9 +54,13 @@ public class TestUserAccess extends JcrImplBaseTest
    @Override
    protected void tearDown() throws Exception
    {
-      root.refresh(false);
-      testRoot.remove();
-      root.save();
+      Session sysSession = repository.getSystemSession(session.getWorkspace().getName());
+      if (sysSession.getRootNode().hasNode("testUserAccess"))
+      {
+         Node testRoot = sysSession.getRootNode().getNode("testUserAccess");
+         testRoot.remove();
+         sysSession.save();
+      }
       super.tearDown();
    }
 

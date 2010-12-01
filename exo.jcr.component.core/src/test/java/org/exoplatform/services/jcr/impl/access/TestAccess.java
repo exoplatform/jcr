@@ -741,17 +741,10 @@ public class TestAccess extends BaseStandaloneTest
       {
          fail("AccessControlException should not have been thrown ");
       }
-      try
-      {
-         testByOwnerNode.remove();
-         session1.save();
-         fail();
-      }
-      catch (AccessDeniedException e)
-      {
-         // fail("AccessControlException should not have been thrown ");
-      }
 
+      //john is node owner so he can remove no matter what permission are assigned to node
+      testByOwnerNode.remove();
+      session1.save();
    }
 
    public void testRemoveExoOwnable() throws Exception
