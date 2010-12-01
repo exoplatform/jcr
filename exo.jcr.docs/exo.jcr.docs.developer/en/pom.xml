@@ -122,6 +122,25 @@
             </configuration>
          </plugin>
       </plugins>
+      <resources>
+        <resource>
+          <directory>src/main/</directory>
+            <includes>
+              <include>resources/**/*.gif</include>
+              <include>resources/**/*.jpg</include>
+              <include>resources/**/*.JPG</include>
+              <include>resources/**/*.png</include>
+              <include>resources/**/*.svg</include>
+            </includes>
+        </resource>
+        <resource>
+          <directory>src/main/</directory>
+            <includes>
+              <include>docbook/en-US/**/*.xml</include>
+              <include>docbook/en-US/**/*.ent</include>
+            </includes>
+        </resource>
+      </resources>
    </build>
 
 </project>
