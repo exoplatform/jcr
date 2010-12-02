@@ -639,8 +639,11 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
     */
    public void stop()
    {
-      this.rpcService.unregisterCommand(reserveRepositoryName);
-      this.rpcService.unregisterCommand(createRepository);
-      this.rpcService.unregisterCommand(startRepository);
+      if (this.rpcService != null)
+      {
+         this.rpcService.unregisterCommand(reserveRepositoryName);
+         this.rpcService.unregisterCommand(createRepository);
+         this.rpcService.unregisterCommand(startRepository);
+      }
    }
 }
