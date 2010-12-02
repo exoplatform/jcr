@@ -39,7 +39,7 @@
                   <value-storages>
                      <value-storage id="draft" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
                         <properties>
-                           <property name="path" value="../temp/values/backup" />
+                           <property name="path" value="target/temp/values/backup" />
                         </properties>
                         <filters>
                            <filter property-type="Binary" />
@@ -367,7 +367,7 @@
                   <value-storages>
                      <value-storage id="draft" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
                         <properties>
-                           <property name="path" value="../temp/values/db7_ws" />
+                           <property name="path" value="target/temp/values/db7_ws" />
                         </properties>
                         <filters>
                            <filter property-type="Binary" />
@@ -400,7 +400,7 @@
                   <value-storages>
                      <value-storage id="draft" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
                         <properties>
-                           <property name="path" value="../temp/values/db7_ws1" />
+                           <property name="path" value="target/temp/values/db7_ws1" />
                         </properties>
                         <filters>
                            <filter property-type="Binary" />
@@ -441,7 +441,7 @@
                   <value-storages>
                      <value-storage id="draft" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
                         <properties>
-                           <property name="path" value="../temp/values/db8_ws" />
+                           <property name="path" value="target/temp/values/db8_ws" />
                         </properties>
                         <filters>
                            <filter property-type="Binary" />
@@ -474,7 +474,7 @@
                   <value-storages>
                      <value-storage id="draft" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
                         <properties>
-                           <property name="path" value="../temp/values/db8_ws1" />
+                           <property name="path" value="target/temp/values/db8_ws1" />
                         </properties>
                         <filters>
                            <filter property-type="Binary" />

@@ -20,6 +20,7 @@ import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.config.QueryHandlerParams;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.impl.core.query.SystemSearchManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -52,7 +53,7 @@ public class IndexCleanHelper
       
       if (isSystem)
       {
-         removeFolder(new File(indexDir + "_system"));
+         removeFolder(new File(indexDir + "_" + SystemSearchManager.INDEX_DIR_SUFFIX));
       }
    }
    

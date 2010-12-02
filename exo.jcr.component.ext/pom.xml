@@ -187,6 +187,7 @@
               <include>**/replication/async/**/*.java</include>
               <include>**/backup/TestBackupManager.java</include>
               <include>**/backup/TestFileNameProduser.java</include>
+              <include>**/**/TestFullBackupJob.java</include>
             </includes>
             <excludes>
               <exclude>**/BaseStandaloneTest.java</exclude>
