@@ -1091,7 +1091,7 @@ public class TestBackupManager
 
       final RepositoryBackupChain bch = backup.startBackup(config);
 
-      Thread.sleep(30000);
+      Thread.sleep(40000);
 
       assertTrue(bch.isFinished());
 
