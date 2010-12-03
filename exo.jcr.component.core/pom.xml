@@ -419,7 +419,6 @@
                   <exclude>org/exoplatform/services/jcr/**/impl/**/TestWorkspaceManagement.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/TestWorkspaceRestore.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/TestRepositoryManagement.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/**/impl/**/TestDBCleanerService.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/TestSessionCleaner.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/Base*.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/TestJCRSerializationStream.java</exclude>
@@ -718,7 +717,6 @@
                         <exclude>org/exoplatform/services/jcr/**/impl/**/TestWorkspaceManagement.java</exclude>
                         <exclude>org/exoplatform/services/jcr/**/impl/**/TestWorkspaceRestore.java</exclude>   
                         <exclude>org/exoplatform/services/jcr/**/impl/**/TestRepositoryManagement.java</exclude>
-                        <exclude>org/exoplatform/services/jcr/**/impl/**/TestDBCleanerService.java</exclude>
                         <exclude>org/exoplatform/services/jcr/**/impl/**/TestSaveConfiguration.java</exclude>
                         <exclude>org/exoplatform/services/jcr/**/impl/**/ValueStoragePluginTest.java</exclude>
                         <exclude>org/exoplatform/services/jcr/**/impl/**/TestSessionCleaner.java</exclude>
