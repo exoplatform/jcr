@@ -27,10 +27,14 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectWriter;
 import org.exoplatform.services.jcr.ext.backup.BackupConfig;
+import org.exoplatform.services.jcr.ext.backup.BackupOperationException;
 import org.exoplatform.services.jcr.ext.backup.impl.AbstractFullBackupJob;
 import org.exoplatform.services.jcr.ext.backup.impl.FileNameProducer;
+import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.query.SystemSearchManager;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectWriterImpl;
+import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
+import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.storage.value.fs.FileValueStorage;
 import org.exoplatform.services.log.ExoLogger;
@@ -42,6 +46,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
@@ -83,9 +88,45 @@ public class FullBackupJob extends AbstractFullBackupJob
     */
    public static final String VALUE_STORAGE_DIR = "values";
 
-   public static final String CONTENT_FILE_SUFFIX = "dump";
+   /**
+    * Suffix for content file.
+    */
+   public static final String CONTENT_FILE_SUFFIX = ".dump";
 
-   public static final String CONTENT_LEN_FILE_SUFFIX = "len";
+   /**
+    * Suffix for content length file.
+    */
+   public static final String CONTENT_LEN_FILE_SUFFIX = ".len";
+
+   /**
+    * Content is absent.
+    */
+   public static final byte NULL_LEN = 0;
+
+   /**
+    * Content length value has byte type.
+    */
+   public static final byte BYTE_LEN = 1;
+
+   /**
+    * Content length value has integer type.
+    */
+   public static final byte INT_LEN = 2;
+
+   /**
+    * Content length value has long type.
+    */
+   public static final byte LONG_LEN = 3;
+
+   /**
+    * Indicates the way to get value thru getBinaryStream() method.
+    */
+   public static final int GET_BINARY_STREAM_METHOD = 0;
+
+   /**
+    * Indicates the way to get value thru getString() method.
+    */
+   public static final int GET_STRING_METHOD = 1;
 
    /**
     * {@inheritDoc}
@@ -134,6 +175,7 @@ public class FullBackupJob extends AbstractFullBackupJob
       notifyListeners();
 
       Connection jdbcConn = null;
+      Integer transactionIsolation = null;
       try
       {
          WorkspaceEntry workspaceEntry = null;
@@ -154,14 +196,14 @@ public class FullBackupJob extends AbstractFullBackupJob
          String dsName = workspaceEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME);
          if (dsName == null)
          {
-            throw new RepositoryConfigurationException("Source name not found in workspace configuration "
+            throw new RepositoryConfigurationException("Data source name not found in workspace configuration "
                + workspaceName);
          }
 
          final DataSource ds = (DataSource)new InitialContext().lookup(dsName);
          if (ds == null)
          {
-            throw new NameNotFoundException("Data source name " + dsName + " not found");
+            throw new NameNotFoundException("Data source " + dsName + " not found");
          }
 
          jdbcConn =
@@ -174,15 +216,24 @@ public class FullBackupJob extends AbstractFullBackupJob
                }
             });
             
-         
-         // dump JCR data
-         Boolean multiDb = Boolean.parseBoolean(workspaceEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.MULTIDB));
+         transactionIsolation = jdbcConn.getTransactionIsolation();
+         jdbcConn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
 
+         String multiDb = workspaceEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.MULTIDB);
+         if (multiDb == null)
+         {
+            throw new RepositoryConfigurationException(JDBCWorkspaceDataContainer.MULTIDB
+               + " parameter not found in workspace " + workspaceName + " configuration");
+         }
+
+         // dump JCR data
          String[][] scripts;
-         if (multiDb)
+         if (Boolean.parseBoolean(multiDb))
          {
             scripts =
-               new String[][]{{"JCR_MVALUE", "select * from JCR_MVALUE"}, {"JCR_MREF", "select * from JCR_MREF"},
+               new String[][]{
+                  {"JCR_MVALUE", "select * from JCR_MVALUE"},
+                  {"JCR_MREF", "select * from JCR_MREF"},
                   {"JCR_MITEM", "select * from JCR_MITEM"}};
          }
          else
@@ -192,12 +243,12 @@ public class FullBackupJob extends AbstractFullBackupJob
                   {
                      "JCR_SVALUE",
                      "select from JCR_SVALUE where exists(select * from JCR_SITEM where JCR_SITEM.ID=JCR_SVALUE.PROPERTY_ID and JCR_SITEM.CONTAINER_NAME="
-                        + workspaceEntry.getName() + ")"},
+                        + workspaceName + ")"},
                   {
                      "JCR_SREF",
                      "select from JCR_SREF where exists(select * from JCR_SITEM where JCR_SITEM.ID=JCR_SREF.PROPERTY_ID and JCR_SITEM.CONTAINER_NAME="
-                        + workspaceEntry.getName() + ")"},
-                  {"JCR_SITEM", "select from JCR_SITEM where CONTAINER_NAME=" + workspaceEntry.getName()}};
+                        + workspaceName + ")"},
+                  {"JCR_SITEM", "select from JCR_SITEM where CONTAINER_NAME=" + workspaceName}};
          }
 
          for (String script[] : scripts)
@@ -205,42 +256,75 @@ public class FullBackupJob extends AbstractFullBackupJob
             dumpTable(jdbcConn, script[0], script[1]);
          }
 
-         // copy value storage directory
-         for (ValueStorageEntry valueStorage : workspaceEntry.getContainer().getValueStorages())
+         // dump LOCK data
+         scripts =
+            new String[][]{
+               {"JCR_LOCK_" + workspaceName.toUpperCase(), "select * from JCR_LOCK_" + workspaceName.toUpperCase()},
+               {"JCR_LOCK_" + workspaceName.toUpperCase() + "_D",
+                  "select * from JCR_LOCK_" + workspaceName.toUpperCase() + "_D"}};
+
+         for (String script[] : scripts)
          {
-            File srcDir = new File(valueStorage.getParameterValue(FileValueStorage.PATH));
-            if (!PrivilegedFileHelper.exists(srcDir))
+            if (jdbcConn.getMetaData().getTables(null, null, script[0], new String[]{"TABLE"}).next())
             {
-               throw new FileNotFoundException("File or directory " + srcDir.getName() + " doesn't exists");
+               dumpTable(jdbcConn, script[0], script[1]);
             }
+            else
+            {
+               log.warn("Table " + script[0] + " doesn't exist");
+            }
+         }
 
-            File destValuesDir = new File(getStorageURL().getFile(), VALUE_STORAGE_DIR);
-            File destDir = new File(destValuesDir, valueStorage.getId());
+         // copy value storage directory
+         if (workspaceEntry.getContainer().getValueStorages() != null)
+         {
+            for (ValueStorageEntry valueStorage : workspaceEntry.getContainer().getValueStorages())
+            {
+               File srcDir = new File(valueStorage.getParameterValue(FileValueStorage.PATH));
+               if (!PrivilegedFileHelper.exists(srcDir))
+               {
+                  log.warn("Can't not backup value storage. Directory " + srcDir.getName() + " doesn't exists");
+               }
+               else
+               {
+                  File destValuesDir = new File(getStorageURL().getFile(), VALUE_STORAGE_DIR);
+                  File destDir = new File(destValuesDir, valueStorage.getId());
 
-            copyDirectory(srcDir, destDir);
+                  copyDirectory(srcDir, destDir);
+               }
+            }
          }
 
          // copy index directory 
-         File srcDir = new File(workspaceEntry.getQueryHandler().getParameterValue(QueryHandlerParams.PARAM_INDEX_DIR));
-         if (!PrivilegedFileHelper.exists(srcDir))
+         if (workspaceEntry.getQueryHandler() != null)
          {
-            throw new FileNotFoundException("File or directory " + srcDir.getName() + " doesn't exists");
-         }
-
-         File destDir = new File(getStorageURL().getFile(), INDEX_DIR);
-         copyDirectory(srcDir, destDir);
-
-         if (repository.getConfiguration().getSystemWorkspaceName().equals(workspaceName))
-         {
-            srcDir = new File(PrivilegedFileHelper.getCanonicalPath(srcDir) + "_" + SystemSearchManager.INDEX_DIR_SUFFIX);
+            File srcDir =
+               new File(workspaceEntry.getQueryHandler().getParameterValue(QueryHandlerParams.PARAM_INDEX_DIR));
             if (!PrivilegedFileHelper.exists(srcDir))
             {
-               throw new FileNotFoundException("File or directory " + srcDir.getName() + " doesn't exists");
+               log.warn("Can't not backup index. Directory " + srcDir.getName() + " doesn't exists");
+            }
+            else
+            {
+               File destDir = new File(getStorageURL().getFile(), INDEX_DIR);
+               copyDirectory(srcDir, destDir);
             }
 
-            destDir = new File(getStorageURL().getFile(), SYSTEM_INDEX_DIR);
+            if (repository.getConfiguration().getSystemWorkspaceName().equals(workspaceName))
+            {
+               srcDir =
+                  new File(PrivilegedFileHelper.getCanonicalPath(srcDir) + "_" + SystemSearchManager.INDEX_DIR_SUFFIX);
+               if (!PrivilegedFileHelper.exists(srcDir))
+               {
+                  log.warn("Can't not backup system index. Directory " + srcDir.getName() + " doesn't exists");
+               }
+               else
+               {
+                  File destDir = new File(getStorageURL().getFile(), SYSTEM_INDEX_DIR);
+                  copyDirectory(srcDir, destDir);
+               }
+            }
          }
-         copyDirectory(srcDir, destDir);
       }
       catch (RepositoryConfigurationException e)
       {
@@ -267,12 +351,22 @@ public class FullBackupJob extends AbstractFullBackupJob
          log.error("Full backup failed " + getStorageURL().getPath(), e);
          notifyError("Full backup failed", e);
       }
+      catch (BackupOperationException e)
+      {
+         log.error("Full backup failed " + getStorageURL().getPath(), e);
+         notifyError("Full backup failed", e);
+      }
       finally
       {
          if (jdbcConn != null)
          {
             try
             {
+               if (transactionIsolation != null)
+               {
+                  jdbcConn.setTransactionIsolation(transactionIsolation);
+               }
+
                jdbcConn.close();
             }
             catch (SQLException e)
@@ -290,21 +384,31 @@ public class FullBackupJob extends AbstractFullBackupJob
    /**
     * Dump table.
     */
-   private void dumpTable(Connection jdbcConn, String tableName, String script) throws SQLException, IOException
+   private void dumpTable(Connection jdbcConn, String tableName, String script) throws SQLException, IOException,
+      BackupOperationException
    {
+      int getValueMethod = GET_BINARY_STREAM_METHOD;
+
+      String dbDialect = DialectDetecter.detect(jdbcConn.getMetaData());
+      if (dbDialect.equals(DBConstants.DB_DIALECT_HSQLDB))
+      {
+         getValueMethod = GET_STRING_METHOD;
+      }
+
       ObjectWriter contentWriter = null;
       ObjectWriter contentLenWriter = null;
       PreparedStatement stmt = null;
+      ResultSet rs = null;
       try
       {
-         File contentFile = new File(getStorageURL().getFile(), tableName + "." + CONTENT_FILE_SUFFIX);
+         File contentFile = new File(getStorageURL().getFile(), tableName + CONTENT_FILE_SUFFIX);
          contentWriter = new ObjectWriterImpl(PrivilegedFileHelper.fileOutputStream(contentFile));
 
-         File contentLenFile = new File(getStorageURL().getFile(), tableName + "." + CONTENT_LEN_FILE_SUFFIX);
+         File contentLenFile = new File(getStorageURL().getFile(), tableName + CONTENT_LEN_FILE_SUFFIX);
          contentLenWriter = new ObjectWriterImpl(PrivilegedFileHelper.fileOutputStream(contentLenFile));
 
          stmt = jdbcConn.prepareStatement(script);
-         ResultSet rs = stmt.executeQuery();
+         rs = stmt.executeQuery();
          ResultSetMetaData metaData = rs.getMetaData();
 
          int columnCount = metaData.getColumnCount();
@@ -320,11 +424,10 @@ public class FullBackupJob extends AbstractFullBackupJob
          {
             for (int i = 0; i < columnCount; i++)
             {
-               String str = rs.getString(i + 1);
-               InputStream value = str == null ? null : new ByteArrayInputStream(str.getBytes());
+               InputStream value = getInputStream(rs, i + 1, getValueMethod);
                if (value == null)
                {
-                  contentLenWriter.writeByte((byte)0);
+                  contentLenWriter.writeByte(NULL_LEN);
                }
                else
                {
@@ -341,7 +444,6 @@ public class FullBackupJob extends AbstractFullBackupJob
                }
             }
          }
-         rs.close();
       }
       finally
       {
@@ -355,6 +457,11 @@ public class FullBackupJob extends AbstractFullBackupJob
             contentLenWriter.close();
          }
 
+         if (rs != null)
+         {
+            rs.close();
+         }
+
          if (stmt != null)
          {
             stmt.close();
@@ -363,23 +470,42 @@ public class FullBackupJob extends AbstractFullBackupJob
    }
 
    /**
-    * @throws IOException 
+    * Get input stream from value.
+    */
+   private InputStream getInputStream(ResultSet rs, int columnIndex, int getValueMethod) throws SQLException,
+      UnsupportedEncodingException, BackupOperationException
+   {
+      if (getValueMethod == GET_STRING_METHOD)
+      {
+         String str = rs.getString(columnIndex);
+         return str == null ? null : new ByteArrayInputStream(str.getBytes(Constants.DEFAULT_ENCODING));
+      }
+      else if (getValueMethod == GET_BINARY_STREAM_METHOD)
+      {
+         return rs.getBinaryStream(columnIndex);
+      }
+
+      throw new BackupOperationException("There is no way get input stream from value");
+   }
+
+   /**
+    * Write content length in output. 
     */
    private void writeCompressedContentLen(ObjectWriter out, long len) throws IOException
    {
       if (len < Byte.MAX_VALUE)
       {
-         out.writeByte((byte)1);
+         out.writeByte(BYTE_LEN);
          out.writeByte((byte)len);
       }
       else if (len < Integer.MAX_VALUE)
       {
-         out.writeByte((byte)2);
+         out.writeByte(INT_LEN);
          out.writeInt((int)len);
       }
       else
       {
-         out.writeByte((byte)3);
+         out.writeByte(LONG_LEN);
          out.writeLong(len);
       }
    }

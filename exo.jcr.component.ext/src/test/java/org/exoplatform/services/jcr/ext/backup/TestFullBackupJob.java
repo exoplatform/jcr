@@ -31,14 +31,14 @@ import java.util.Calendar;
 public class TestFullBackupJob extends AbstractBackupTestCase
 {
 
-   public void testRDBMSFullBackupJob() throws Exception
+   public void testRDBMSFullBackupJobSystemWorkspace() throws Exception
    {
       FullBackupJob job = new FullBackupJob();
       BackupConfig config = new BackupConfig();
       config.setRepository("db1");
       config.setWorkspace("ws");
       config.setBackupDir(new File("target/backup/testJob"));
-      
+
       Calendar calendar = Calendar.getInstance();
 
       job.init(repositoryService.getRepository("db1"), "ws", config, calendar);
@@ -53,19 +53,57 @@ public class TestFullBackupJob extends AbstractBackupTestCase
 
       assertEquals(values.length, 1);
       assertTrue(new File(valuesDir, values[0]).isDirectory());
-      
+
       File indexesDir = new File(url.getFile(), FullBackupJob.INDEX_DIR);
       assertTrue(indexesDir.exists());
 
       indexesDir = new File(url.getFile(), FullBackupJob.SYSTEM_INDEX_DIR);
       assertTrue(indexesDir.exists());
 
-      assertTrue(new File(url.getFile(), "JCR_MITEM.dump").exists());
-      assertTrue(new File(url.getFile(), "JCR_MITEM.len").exists());
-      assertTrue(new File(url.getFile(), "JCR_MVALUE.dump").exists());
-      assertTrue(new File(url.getFile(), "JCR_MVALUE.len").exists());
-      assertTrue(new File(url.getFile(), "JCR_MREF.dump").exists());
-      assertTrue(new File(url.getFile(), "JCR_MREF.len").exists());
+      assertTrue(new File(url.getFile(), "JCR_MITEM" + FullBackupJob.CONTENT_FILE_SUFFIX).exists());
+      assertTrue(new File(url.getFile(), "JCR_MITEM" + FullBackupJob.CONTENT_LEN_FILE_SUFFIX).exists());
+
+      assertTrue(new File(url.getFile(), "JCR_MVALUE" + FullBackupJob.CONTENT_FILE_SUFFIX).exists());
+      assertTrue(new File(url.getFile(), "JCR_MVALUE" + FullBackupJob.CONTENT_LEN_FILE_SUFFIX).exists());
+
+      assertTrue(new File(url.getFile(), "JCR_MREF" + FullBackupJob.CONTENT_FILE_SUFFIX).exists());
+      assertTrue(new File(url.getFile(), "JCR_MREF" + FullBackupJob.CONTENT_LEN_FILE_SUFFIX).exists());
+
+   }
+
+   public void testRDBMSFullBackupJob() throws Exception
+   {
+      FullBackupJob job = new FullBackupJob();
+      BackupConfig config = new BackupConfig();
+      config.setRepository("db1");
+      config.setWorkspace("ws1");
+      config.setBackupDir(new File("target/backup/testJob"));
+      
+      Calendar calendar = Calendar.getInstance();
+
+      job.init(repositoryService.getRepository("db1"), "ws1", config, calendar);
+      job.run();
+
+      URL url = job.getStorageURL();
+      assertNotNull(url);
+
+      File valuesDir = new File(url.getFile(), FullBackupJob.VALUE_STORAGE_DIR);
+      assertFalse(valuesDir.exists());
+
+      File indexesDir = new File(url.getFile(), FullBackupJob.INDEX_DIR);
+      assertTrue(indexesDir.exists());
+
+      indexesDir = new File(url.getFile(), FullBackupJob.SYSTEM_INDEX_DIR);
+      assertFalse(indexesDir.exists());
+
+      assertTrue(new File(url.getFile(), "JCR_MITEM" + FullBackupJob.CONTENT_FILE_SUFFIX).exists());
+      assertTrue(new File(url.getFile(), "JCR_MITEM" + FullBackupJob.CONTENT_LEN_FILE_SUFFIX).exists());
+
+      assertTrue(new File(url.getFile(), "JCR_MVALUE" + FullBackupJob.CONTENT_FILE_SUFFIX).exists());
+      assertTrue(new File(url.getFile(), "JCR_MVALUE" + FullBackupJob.CONTENT_LEN_FILE_SUFFIX).exists());
+
+      assertTrue(new File(url.getFile(), "JCR_MREF" + FullBackupJob.CONTENT_FILE_SUFFIX).exists());
+      assertTrue(new File(url.getFile(), "JCR_MREF" + FullBackupJob.CONTENT_LEN_FILE_SUFFIX).exists());
 
    }
 }
