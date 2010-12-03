@@ -17,6 +17,8 @@
 package org.exoplatform.services.jcr.impl.util.jdbc.cleaner;
 
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author <a href="mailto:anatoliy.bazko@gmail.com">Anatoliy Bazko</a>
@@ -26,12 +28,30 @@ public class MultiDBCleaner extends WorkspaceDBCleaner
 {
 
    /**
+    * Common clean scripts for multi database.
+    */
+   protected final List<String> commonMutliDBCleanScripts = new ArrayList<String>();
+
+   /**
     * MultiDBCleaner constructor.
     */
    public MultiDBCleaner(String containerName, Connection connection)
    {
       super(containerName, connection);
 
-      this.scripts = new String[]{"DROP TABLE JCR_MREF", "DROP TABLE JCR_MVALUE", "DROP TABLE JCR_MITEM"};
+      commonMutliDBCleanScripts.add("drop table JCR_MREF");
+      commonMutliDBCleanScripts.add("drop table JCR_MVALUE");
+      commonMutliDBCleanScripts.add("drop table JCR_MITEM");
+      commonMutliDBCleanScripts.add("drop table JCR_LOCK_" + containerName.toUpperCase());
+      commonMutliDBCleanScripts.add("drop table JCR_LOCK_" + containerName.toUpperCase() + "_D");
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected List<String> getDBCleanScripts()
+   {
+      return commonMutliDBCleanScripts;
    }
 }

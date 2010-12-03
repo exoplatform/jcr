@@ -27,6 +27,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -52,11 +53,6 @@ public abstract class WorkspaceDBCleaner implements DBCleaner
     * Connection to database.
     */
    protected final Connection connection;
-
-   /**
-    * SQL scripts for data cleaning.
-    */
-   protected String[] scripts;
 
    /**
     * Pattern for JCR tables.
@@ -99,14 +95,14 @@ public abstract class WorkspaceDBCleaner implements DBCleaner
       {
          connection.setAutoCommit(false);
          st = connection.createStatement();
-         for (String scr : scripts)
+         for (String scr : getDBCleanScripts())
          {
             String s = cleanWhitespaces(scr.trim());
             if (s.length() > 0)
             {
                if (!canExecuteQuery(sql = s))
                {
-                  // table from query not found , so try drop other
+                  // table from query not found, so try drop other
                   continue;
                }
 
@@ -180,8 +176,7 @@ public abstract class WorkspaceDBCleaner implements DBCleaner
          String tableName = sql.substring(tMatcher.start(), tMatcher.end());
          if (!isTableExists(connection, tableName))
          {
-            LOG.error("Table [" + tableName + "] from query [" + sql
-               + "] was not found. So query will not be executed.");
+            LOG.warn("Table [" + tableName + "] from query [" + sql + "] was not found. So query will not be executed.");
             return false;
          }
       }
@@ -250,5 +245,13 @@ public abstract class WorkspaceDBCleaner implements DBCleaner
       }
       return string;
    }
+
+   /**
+    * Get SQL scripts for data cleaning.
+    * 
+    * @return
+    *          List of sql scripts
+    */
+   abstract List<String> getDBCleanScripts();
 
 }

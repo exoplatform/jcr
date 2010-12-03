@@ -17,8 +17,8 @@
 package org.exoplatform.services.jcr.impl.util.jdbc.cleaner;
 
 import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author <a href="mailto:anatoliy.bazko@gmail.com">Anatoliy Bazko</a>
@@ -26,6 +26,11 @@ import java.sql.Statement;
  */
 public class SingleDBCleaner extends WorkspaceDBCleaner
 {
+
+   /**
+    * Common clean scripts for single database.
+    */
+   protected final List<String> commonSingleDBCleanScripts = new ArrayList<String>();
 
    /**
     * Indicates if need to use clean helper.
@@ -54,11 +59,15 @@ public class SingleDBCleaner extends WorkspaceDBCleaner
 
       this.postHelpClean = postHelpClean;
       this.dbCleanHelper = new DBCleanHelper(containerName, connection);
-      this.scripts =
-         new String[]{
-            "delete from JCR_SVALUE where exists(select * from JCR_SITEM where JCR_SITEM.ID=JCR_SVALUE.PROPERTY_ID and JCR_SITEM.CONTAINER_NAME=?)",
-            "delete from JCR_SREF where exists(select * from JCR_SITEM where JCR_SITEM.ID=JCR_SREF.PROPERTY_ID and JCR_SITEM.CONTAINER_NAME=?)",
-            "delete from JCR_SITEM where CONTAINER_NAME=?"};
+
+      commonSingleDBCleanScripts
+         .add("delete from JCR_SVALUE where exists(select * from JCR_SITEM where JCR_SITEM.ID=JCR_SVALUE.PROPERTY_ID and JCR_SITEM.CONTAINER_NAME='"
+            + containerName + "')");
+      commonSingleDBCleanScripts
+         .add("delete from JCR_SVALUE where exists(select * from JCR_SITEM where JCR_SITEM.ID=JCR_SVALUE.PROPERTY_ID and JCR_SITEM.CONTAINER_NAME='"
+            + containerName + "')");
+      commonSingleDBCleanScripts.add("drop table JCR_LOCK_" + containerName.toUpperCase());
+      commonSingleDBCleanScripts.add("drop table JCR_LOCK_" + containerName.toUpperCase() + "_D");
    }
 
    /**
@@ -94,9 +103,11 @@ public class SingleDBCleaner extends WorkspaceDBCleaner
     * {@inheritDoc}
     */
    @Override
-   protected void executeQuery(Statement statement, String sql) throws SQLException
+   protected List<String> getDBCleanScripts()
    {
-      final String q = (containerName != null) ? sql.replace("?", "'" + containerName + "'") : sql;
-      super.executeQuery(statement, q);
+      List<String> scripts = new ArrayList<String>(commonSingleDBCleanScripts);
+      scripts.add("delete from JCR_SITEM where CONTAINER_NAME='" + containerName + "'");
+
+      return scripts;
    }
 }
