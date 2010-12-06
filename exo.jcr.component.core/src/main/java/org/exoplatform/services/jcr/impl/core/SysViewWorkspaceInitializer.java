@@ -89,6 +89,16 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
 
    protected final String workspaceName;
 
+   /**
+    * Workspace entry.
+    */
+   protected final WorkspaceEntry workspaceEntry;
+
+   /**
+    * Repository Entry.
+    */
+   protected final RepositoryEntry repositoryEntry;
+
    protected final DataManager dataManager;
 
    private final NamespaceRegistryImpl namespaceRegistry;
@@ -397,27 +407,8 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
       LocationFactory locationFactory, NodeTypeManagerImpl nodeTypeManager, ValueFactoryImpl valueFactory,
       AccessManager accessManager) throws RepositoryConfigurationException, PathNotFoundException, RepositoryException
    {
-
-      this.workspaceName = config.getName();
-
-      this.dataManager = dataManager;
-
-      this.namespaceRegistry = namespaceRegistry;
-      this.locationFactory = locationFactory;
-
-      this.fileCleaner = valueFactory.getFileCleaner();
-      this.maxBufferSize =
-         config.getContainer().getParameterInteger(WorkspaceDataContainer.MAXBUFFERSIZE_PROP,
-            WorkspaceDataContainer.DEF_MAXBUFFERSIZE);
-
-      this.restorePath =
-         config.getInitializer().getParameterValue(SysViewWorkspaceInitializer.RESTORE_PATH_PARAMETER, null);
-      if (this.restorePath == null)
-         throw new RepositoryConfigurationException("Workspace (" + workspaceName
-            + ") RestoreIntializer should have mandatory parameter "
-            + SysViewWorkspaceInitializer.RESTORE_PATH_PARAMETER);
-
-      this.tempDir = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
+      this(config, repConfig, dataManager, namespaceRegistry, locationFactory, nodeTypeManager, valueFactory,
+         accessManager, config.getInitializer().getParameterValue(RESTORE_PATH_PARAMETER, null));
    }
 
    /**
@@ -449,8 +440,10 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
       LocationFactory locationFactory, NodeTypeManagerImpl nodeTypeManager, ValueFactoryImpl valueFactory,
       AccessManager accessManager, String restorePath) throws RepositoryException
    {
-
+      this.workspaceEntry = config;
       this.workspaceName = config.getName();
+      
+      this.repositoryEntry = repConfig;
 
       this.dataManager = dataManager;
 
@@ -464,6 +457,12 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
       this.restorePath = restorePath;
 
       this.tempDir = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
+
+      if (this.restorePath == null)
+      {
+         throw new RepositoryException(RESTORE_PATH_PARAMETER + " is absent in workpsace [" + workspaceName
+            + "] configuration ");
+      }
    }
 
    /**

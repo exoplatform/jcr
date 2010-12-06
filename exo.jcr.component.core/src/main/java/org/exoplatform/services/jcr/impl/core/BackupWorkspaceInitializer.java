@@ -73,7 +73,7 @@ import javax.xml.stream.XMLStreamException;
  */
 public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
 {
-   private final String restoreDir;
+   protected final String restoreDir;
 
    private FileCleaner fileCleaner;
 
@@ -97,9 +97,13 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
       String fullBackupPath = getFullBackupPath();
 
       if (fullBackupPath == null)
-         throw new RepositoryException("Can't find full backup file");
+      {
+         throw new RepositoryException("Can't find full backup storage");
+      }
       else
+      {
          restorePath = fullBackupPath;
+      }
 
       this.tempDir = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
    }
@@ -153,12 +157,14 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
       }
    }
 
-   private void incrementalRead() throws RepositoryException
+   protected void incrementalRead() throws RepositoryException
    {
       try
       {
          for (File incrBackupFile : getIncrementalFiles())
+         {
             incrementalRestore(incrBackupFile);
+         }
       }
       catch (FileNotFoundException e)
       {
