@@ -39,7 +39,7 @@
                   <value-storages>
                      <value-storage id="draft" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
                         <properties>
-                           <property name="path" value="target/temp/values/backup" />
+                           <property name="path" value="target/temp/values/db1_ws" />
                         </properties>
                         <filters>
                            <filter property-type="Binary" />

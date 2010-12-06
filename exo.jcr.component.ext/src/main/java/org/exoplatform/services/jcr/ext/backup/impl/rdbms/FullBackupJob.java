@@ -31,6 +31,7 @@ import org.exoplatform.services.jcr.ext.backup.BackupOperationException;
 import org.exoplatform.services.jcr.ext.backup.impl.AbstractFullBackupJob;
 import org.exoplatform.services.jcr.ext.backup.impl.FileNameProducer;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.RdbmsWorkspaceInitializer;
 import org.exoplatform.services.jcr.impl.core.query.SystemSearchManager;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectWriterImpl;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
@@ -72,31 +73,6 @@ public class FullBackupJob extends AbstractFullBackupJob
     * Logger.
     */
    protected static Log log = ExoLogger.getLogger("exo.jcr.component.ext.FullBackupJob");
-
-   /**
-    * Index directory in full backup storage.
-    */
-   public static final String INDEX_DIR = "index";
-
-   /**
-    * System index directory in full backup storage.
-    */
-   public static final String SYSTEM_INDEX_DIR = INDEX_DIR + "_" + SystemSearchManager.INDEX_DIR_SUFFIX;
-
-   /**
-    * Value storage directory in full backup storage.
-    */
-   public static final String VALUE_STORAGE_DIR = "values";
-
-   /**
-    * Suffix for content file.
-    */
-   public static final String CONTENT_FILE_SUFFIX = ".dump";
-
-   /**
-    * Suffix for content length file.
-    */
-   public static final String CONTENT_LEN_FILE_SUFFIX = ".len";
 
    /**
     * Content is absent.
@@ -200,25 +176,6 @@ public class FullBackupJob extends AbstractFullBackupJob
                + workspaceName);
          }
 
-         final DataSource ds = (DataSource)new InitialContext().lookup(dsName);
-         if (ds == null)
-         {
-            throw new NameNotFoundException("Data source " + dsName + " not found");
-         }
-
-         jdbcConn =
-            SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
-            {
-               public Connection run() throws Exception
-               {
-                  return ds.getConnection();
-
-               }
-            });
-            
-         transactionIsolation = jdbcConn.getTransactionIsolation();
-         jdbcConn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-
          String multiDb = workspaceEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.MULTIDB);
          if (multiDb == null)
          {
@@ -226,14 +183,30 @@ public class FullBackupJob extends AbstractFullBackupJob
                + " parameter not found in workspace " + workspaceName + " configuration");
          }
 
+         final DataSource ds = (DataSource)new InitialContext().lookup(dsName);
+         if (ds == null)
+         {
+            throw new NameNotFoundException("Data source " + dsName + " not found");
+         }
+
+         jdbcConn = SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
+         {
+            public Connection run() throws Exception
+            {
+               return ds.getConnection();
+
+            }
+         });
+
+         transactionIsolation = jdbcConn.getTransactionIsolation();
+         jdbcConn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+
          // dump JCR data
          String[][] scripts;
          if (Boolean.parseBoolean(multiDb))
          {
             scripts =
-               new String[][]{
-                  {"JCR_MVALUE", "select * from JCR_MVALUE"},
-                  {"JCR_MREF", "select * from JCR_MREF"},
+               new String[][]{{"JCR_MVALUE", "select * from JCR_MVALUE"}, {"JCR_MREF", "select * from JCR_MREF"},
                   {"JCR_MITEM", "select * from JCR_MITEM"}};
          }
          else
@@ -269,62 +242,10 @@ public class FullBackupJob extends AbstractFullBackupJob
             {
                dumpTable(jdbcConn, script[0], script[1]);
             }
-            else
-            {
-               log.warn("Table " + script[0] + " doesn't exist");
-            }
          }
 
-         // copy value storage directory
-         if (workspaceEntry.getContainer().getValueStorages() != null)
-         {
-            for (ValueStorageEntry valueStorage : workspaceEntry.getContainer().getValueStorages())
-            {
-               File srcDir = new File(valueStorage.getParameterValue(FileValueStorage.PATH));
-               if (!PrivilegedFileHelper.exists(srcDir))
-               {
-                  log.warn("Can't not backup value storage. Directory " + srcDir.getName() + " doesn't exists");
-               }
-               else
-               {
-                  File destValuesDir = new File(getStorageURL().getFile(), VALUE_STORAGE_DIR);
-                  File destDir = new File(destValuesDir, valueStorage.getId());
-
-                  copyDirectory(srcDir, destDir);
-               }
-            }
-         }
-
-         // copy index directory 
-         if (workspaceEntry.getQueryHandler() != null)
-         {
-            File srcDir =
-               new File(workspaceEntry.getQueryHandler().getParameterValue(QueryHandlerParams.PARAM_INDEX_DIR));
-            if (!PrivilegedFileHelper.exists(srcDir))
-            {
-               log.warn("Can't not backup index. Directory " + srcDir.getName() + " doesn't exists");
-            }
-            else
-            {
-               File destDir = new File(getStorageURL().getFile(), INDEX_DIR);
-               copyDirectory(srcDir, destDir);
-            }
-
-            if (repository.getConfiguration().getSystemWorkspaceName().equals(workspaceName))
-            {
-               srcDir =
-                  new File(PrivilegedFileHelper.getCanonicalPath(srcDir) + "_" + SystemSearchManager.INDEX_DIR_SUFFIX);
-               if (!PrivilegedFileHelper.exists(srcDir))
-               {
-                  log.warn("Can't not backup system index. Directory " + srcDir.getName() + " doesn't exists");
-               }
-               else
-               {
-                  File destDir = new File(getStorageURL().getFile(), SYSTEM_INDEX_DIR);
-                  copyDirectory(srcDir, destDir);
-               }
-            }
-         }
+         backupValueStorage(workspaceEntry);
+         backupIndex(workspaceEntry);
       }
       catch (RepositoryConfigurationException e)
       {
@@ -382,9 +303,83 @@ public class FullBackupJob extends AbstractFullBackupJob
    }
 
    /**
+    * Backup index files.
+    * 
+    * @param workspaceEntry
+    * @throws RepositoryConfigurationException
+    * @throws BackupOperationException
+    * @throws IOException
+    */
+   protected void backupIndex(WorkspaceEntry workspaceEntry) throws RepositoryConfigurationException,
+      BackupOperationException, IOException
+   {
+      if (workspaceEntry.getQueryHandler() != null)
+      {
+         File srcDir = new File(workspaceEntry.getQueryHandler().getParameterValue(QueryHandlerParams.PARAM_INDEX_DIR));
+         if (!PrivilegedFileHelper.exists(srcDir))
+         {
+            throw new BackupOperationException("Can't backup index. Directory " + srcDir.getName() + " doesn't exists");
+         }
+         else
+         {
+            File destDir = new File(getStorageURL().getFile(), RdbmsWorkspaceInitializer.INDEX_DIR);
+            copyDirectory(srcDir, destDir);
+         }
+
+         if (repository.getConfiguration().getSystemWorkspaceName().equals(workspaceName))
+         {
+            srcDir =
+               new File(PrivilegedFileHelper.getCanonicalPath(srcDir) + "_" + SystemSearchManager.INDEX_DIR_SUFFIX);
+            if (!PrivilegedFileHelper.exists(srcDir))
+            {
+               throw new BackupOperationException("Can't backup system index. Directory " + srcDir.getName()
+                  + " doesn't exists");
+            }
+            else
+            {
+               File destDir = new File(getStorageURL().getFile(), RdbmsWorkspaceInitializer.SYSTEM_INDEX_DIR);
+               copyDirectory(srcDir, destDir);
+            }
+         }
+      }
+   }
+
+   /**
+    * Backup value storage files.
+    * 
+    * @param workspaceEntry
+    * @throws RepositoryConfigurationException
+    * @throws BackupOperationException
+    * @throws IOException
+    */
+   protected void backupValueStorage(WorkspaceEntry workspaceEntry) throws RepositoryConfigurationException,
+      BackupOperationException, IOException
+   {
+      if (workspaceEntry.getContainer().getValueStorages() != null)
+      {
+         for (ValueStorageEntry valueStorage : workspaceEntry.getContainer().getValueStorages())
+         {
+            File srcDir = new File(valueStorage.getParameterValue(FileValueStorage.PATH));
+            if (!PrivilegedFileHelper.exists(srcDir))
+            {
+               throw new BackupOperationException("Can't backup value storage. Directory " + srcDir.getName()
+                  + " doesn't exists");
+            }
+            else
+            {
+               File destValuesDir = new File(getStorageURL().getFile(), RdbmsWorkspaceInitializer.VALUE_STORAGE_DIR);
+               File destDir = new File(destValuesDir, valueStorage.getId());
+
+               copyDirectory(srcDir, destDir);
+            }
+         }
+      }
+   }
+
+   /**
     * Dump table.
     */
-   private void dumpTable(Connection jdbcConn, String tableName, String script) throws SQLException, IOException,
+   protected void dumpTable(Connection jdbcConn, String tableName, String script) throws SQLException, IOException,
       BackupOperationException
    {
       int getValueMethod = GET_BINARY_STREAM_METHOD;
@@ -401,10 +396,12 @@ public class FullBackupJob extends AbstractFullBackupJob
       ResultSet rs = null;
       try
       {
-         File contentFile = new File(getStorageURL().getFile(), tableName + CONTENT_FILE_SUFFIX);
+         File contentFile =
+            new File(getStorageURL().getFile(), tableName + RdbmsWorkspaceInitializer.CONTENT_FILE_SUFFIX);
          contentWriter = new ObjectWriterImpl(PrivilegedFileHelper.fileOutputStream(contentFile));
 
-         File contentLenFile = new File(getStorageURL().getFile(), tableName + CONTENT_LEN_FILE_SUFFIX);
+         File contentLenFile =
+            new File(getStorageURL().getFile(), tableName + RdbmsWorkspaceInitializer.CONTENT_LEN_FILE_SUFFIX);
          contentLenWriter = new ObjectWriterImpl(PrivilegedFileHelper.fileOutputStream(contentLenFile));
 
          stmt = jdbcConn.prepareStatement(script);

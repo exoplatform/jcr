@@ -34,6 +34,7 @@ import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ReaderSpoolFileHolder;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
@@ -83,6 +84,8 @@ public abstract class BaseStandaloneTest extends TestCase
 
    protected PersistentDataManager dataManager;
 
+   protected CacheableWorkspaceDataManager cacheableDataManager;
+
    protected ValueFactory valueFactory;
 
    protected StandaloneContainer container;
@@ -107,6 +110,7 @@ public abstract class BaseStandaloneTest extends TestCase
       }
    }
 
+   @Override
    public void setUp() throws Exception
    {
       String containerConf = BaseStandaloneTest.class.getResource("/conf/standalone/test-configuration.xml").toString();
@@ -146,8 +150,10 @@ public abstract class BaseStandaloneTest extends TestCase
 
       wsc = repository.getWorkspaceContainer("ws4");
       dataManager = (PersistentDataManager)wsc.getComponent(PersistentDataManager.class);
+      cacheableDataManager = (CacheableWorkspaceDataManager)wsc.getComponent(PersistentDataManager.class);
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
 
