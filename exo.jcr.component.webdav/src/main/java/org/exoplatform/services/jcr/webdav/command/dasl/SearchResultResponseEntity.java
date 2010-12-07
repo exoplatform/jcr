@@ -118,7 +118,6 @@ public class SearchResultResponseEntity implements StreamingOutput
             XMLOutputFactory.newInstance().createXMLStreamWriter(outStream, Constants.DEFAULT_ENCODING);
 
          xmlStreamWriter.setNamespaceContext(nsContext);
-         xmlStreamWriter.setDefaultNamespace("DAV:");
 
          xmlStreamWriter.writeStartDocument();
          xmlStreamWriter.writeStartElement("D", "multistatus", "DAV:");
