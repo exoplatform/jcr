@@ -27,6 +27,8 @@ import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
@@ -62,4 +64,11 @@ public class RdbmsWorkspaceInitializerWrapper extends RdbmsWorkspaceInitializer
    {
       super.restoreIndex();
    }
+
+   public void restoreTables(Connection jdbcConn, String tableName) throws RepositoryConfigurationException,
+      IOException, SQLException
+   {
+      super.restoreTable(jdbcConn, tableName);
+   }
+
 }

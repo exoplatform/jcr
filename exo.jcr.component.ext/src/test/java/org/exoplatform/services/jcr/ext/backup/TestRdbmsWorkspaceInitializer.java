@@ -32,9 +32,14 @@ import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 
 import java.io.File;
 import java.net.URL;
+import java.sql.Connection;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
 
 /**
  * @author <a href="mailto:anatoliy.bazko@gmail.com">Anatoliy Bazko</a>
@@ -149,6 +154,63 @@ public class TestRdbmsWorkspaceInitializer extends AbstractBackupTestCase
             initializer.restoreIndexFiles();
             assertTrue(new File(newIndexPath).list().length > 0);
             assertFalse(new File(newIndexPath + "_" + SystemSearchManager.INDEX_DIR_SUFFIX).exists());
+         }
+      }
+   }
+
+   public void testRDBMSInitializerRestoreTables() throws Exception
+   {
+      FullBackupJob job = new FullBackupJob();
+      BackupConfig config = new BackupConfig();
+      config.setRepository("db1");
+      config.setWorkspace("ws1");
+      config.setBackupDir(new File("target/backup/testJob"));
+
+      Calendar calendar = Calendar.getInstance();
+
+      job.init(repositoryService.getRepository("db1"), "ws1", config, calendar);
+      job.run();
+
+      URL url = job.getStorageURL();
+
+      for (WorkspaceEntry workspaceEntry : repositoryService.getRepository("db1").getConfiguration()
+         .getWorkspaceEntries())
+      {
+         if (workspaceEntry.getName().equals("ws1"))
+         {
+            String newValueStoragePath = "target/temp/values/" + IdGenerator.generate();
+            String newIndexPath = "target/temp/index/" + IdGenerator.generate();
+
+            String dsName = helper.getNewDataSource("");
+            DataSource ds = (DataSource)new InitialContext().lookup(dsName);
+
+            Connection conn = ds.getConnection();
+            Statement st = conn.createStatement();
+            st.execute("CREATE TABLE JCR_MITEM(ID VARCHAR(96) NOT NULL,PARENT_ID VARCHAR(96) NOT NULL,NAME VARCHAR(512) NOT NULL,VERSION INTEGER NOT NULL,I_CLASS INTEGER NOT NULL,I_INDEX INTEGER NOT NULL,N_ORDER_NUM INTEGER,P_TYPE INTEGER,P_MULTIVALUED INTEGER,CONSTRAINT JCR_PK_MITEM PRIMARY KEY(ID))");
+            conn.commit();
+
+            // set the initializer
+            WorkspaceEntry newEntry =
+               helper.getNewWs("ws1", true, dsName, newValueStoragePath, newIndexPath, workspaceEntry.getContainer(),
+                  workspaceEntry.getContainer().getValueStorages());
+
+            WorkspaceInitializerEntry wiEntry = new WorkspaceInitializerEntry();
+            wiEntry.setType(RdbmsWorkspaceInitializer.class.getCanonicalName());
+
+            List<SimpleParameterEntry> wieParams = new ArrayList<SimpleParameterEntry>();
+            wieParams.add(new SimpleParameterEntry(SysViewWorkspaceInitializer.RESTORE_PATH_PARAMETER, new File(url
+               .getFile()).getParent()));
+
+            wiEntry.setParameters(wieParams);
+
+            newEntry.setInitializer(wiEntry);
+
+            RdbmsWorkspaceInitializerWrapper initializer =
+               new RdbmsWorkspaceInitializerWrapper(newEntry,
+                  repositoryService.getRepository("db1").getConfiguration(), cacheableDataManager, null, null, null,
+                  (ValueFactoryImpl)valueFactory, null);
+
+            initializer.restoreTables(conn, "JCR_MITEM");
          }
       }
    }
