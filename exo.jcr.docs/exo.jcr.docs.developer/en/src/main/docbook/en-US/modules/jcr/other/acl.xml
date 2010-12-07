@@ -399,20 +399,20 @@ exo:text="" exo:title="Dogs_x0020_are_x0020_friends" /&gt;
         <itemizedlist>
           <listitem>
             <para><emphasis role="bold">read node</emphasis>: check read
-            permission on target node. </para>
+            permission on target node.</para>
 
             <para>For example. Read /node1/<emphasis
             role="bold">subnode</emphasis> node - jcr will check "read"
-            permission exactly on subnode.</para>
+            permission exactly on "subnode".</para>
           </listitem>
 
           <listitem>
             <para><emphasis role="bold">read property</emphasis> : check read
-            permission on parent node. </para>
+            permission on parent node.</para>
 
             <para>For example. Read /<emphasis
             role="bold">node1</emphasis>/myprop - jcr will check "read"
-            permission on node1-node.</para>
+            permission on "node1".</para>
           </listitem>
 
           <listitem>
@@ -421,7 +421,7 @@ exo:text="" exo:title="Dogs_x0020_are_x0020_friends" /&gt;
 
             <para>For example. Try to add /<emphasis
             role="bold">node1</emphasis>/sybnode node - jcr will check
-            "add_node" permission on node1-node.</para>
+            "add_node" permission on "node1".</para>
           </listitem>
 
           <listitem>
@@ -430,7 +430,7 @@ exo:text="" exo:title="Dogs_x0020_are_x0020_friends" /&gt;
 
             <para>For example. Try to set /<emphasis
             role="bold">node1</emphasis>/myprop property - jcr will check
-            "set_property" permission on node1-node.</para>
+            "set_property" permission on "node1".</para>
           </listitem>
 
           <listitem>
@@ -439,7 +439,7 @@ exo:text="" exo:title="Dogs_x0020_are_x0020_friends" /&gt;
 
             <para>For example. Try to remove /node1/<emphasis
             role="bold">subnode</emphasis> node - jcr will check "remove"
-            permission on subnode-node.</para>
+            permission on "subnode".</para>
           </listitem>
 
           <listitem>
@@ -448,9 +448,23 @@ exo:text="" exo:title="Dogs_x0020_are_x0020_friends" /&gt;
 
             <para>For example. Try to remove /<emphasis
             role="bold">node1</emphasis>/myprop property - jcr will check
-            "remove" permission on node1-node.</para>
+            "remove" permission on "node1".</para>
           </listitem>
         </itemizedlist>
+
+        <para>Behavior of the permission "remove" has changed since JCR
+        1.12.6-GA. The old behavior is:</para>
+
+        <para><itemizedlist>
+            <listitem>
+              <para><emphasis role="bold">remove node</emphasis>: check remove
+              permission on parent node</para>
+
+              <para>For example. Try to remove /<emphasis
+              role="bold">node1</emphasis>/subnode node - jcr will check
+              "remove" permission on "node1".</para>
+            </listitem>
+          </itemizedlist></para>
       </section>
     </section>
 
