@@ -57,16 +57,25 @@
 
     <para>For example :</para>
 
-    <para>session.checkPermission("/Groups/organization",
-    "add_node,set_property") will check if the session is allowed to add a
-    child node to "organization" and to modify its properties. If one of the
-    two permissions is denied, an AccessDeniedException is thrown.</para>
-
     <itemizedlist>
+      <listitem>
+        <para>session.checkPermission("/Groups/organization",
+        "add_node,set_property") will check if the session is allowed to add a
+        child node to "organization" and to modify its properties. If one of
+        the two permissions is denied, an AccessDeniedException is
+        thrown.</para>
+      </listitem>
+
       <listitem>
         <para>session.checkPermission("/Groups/organization/exo:name",
         "read,set_property") will check if the session is allowed to read and
         change the "exo:name" property of the "organization" node.</para>
+      </listitem>
+
+      <listitem>
+        <para>session.checkPermission("/Groups/organization/exo:name",
+        "remove") will check if the session allowed to remove "exo:name"
+        property or node.</para>
       </listitem>
     </itemizedlist>
   </section>
@@ -99,7 +108,7 @@
       <itemizedlist>
         <listitem>
           <para><emphasis role="bold">any</emphasis> : represents any
-          authenticated session. </para>
+          authenticated session.</para>
         </listitem>
 
         <listitem>
@@ -379,6 +388,69 @@ exo:text="" exo:title="Dogs_x0020_are_x0020_friends" /&gt;
             <imagedata fileref="images/other/acl.gif" />
           </imageobject>
         </mediaobject>
+      </section>
+
+      <section>
+        <title>Permission validation</title>
+
+        <para>There is a description how permission is validated for different
+        jcr actions</para>
+
+        <itemizedlist>
+          <listitem>
+            <para><emphasis role="bold">read node</emphasis>: check read
+            permission on target node. </para>
+
+            <para>For example. Read /node1/<emphasis
+            role="bold">subnode</emphasis> node - jcr will check "read"
+            permission exactly on subnode.</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis role="bold">read property</emphasis> : check read
+            permission on parent node. </para>
+
+            <para>For example. Read /<emphasis
+            role="bold">node1</emphasis>/myprop - jcr will check "read"
+            permission on node1-node.</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis role="bold">add node</emphasis>: check add_node on
+            parent node</para>
+
+            <para>For example. Try to add /<emphasis
+            role="bold">node1</emphasis>/sybnode node - jcr will check
+            "add_node" permission on node1-node.</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis role="bold">set property</emphasis>: set_property
+            on parent node</para>
+
+            <para>For example. Try to set /<emphasis
+            role="bold">node1</emphasis>/myprop property - jcr will check
+            "set_property" permission on node1-node.</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis role="bold">remove node</emphasis>: check remove
+            permission on target node.</para>
+
+            <para>For example. Try to remove /node1/<emphasis
+            role="bold">subnode</emphasis> node - jcr will check "remove"
+            permission on subnode-node.</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis role="bold">remove property</emphasis>: check
+            remove permission on parent node</para>
+
+            <para>For example. Try to remove /<emphasis
+            role="bold">node1</emphasis>/myprop property - jcr will check
+            "remove" permission on node1-node.</para>
+          </listitem>
+        </itemizedlist>
       </section>
     </section>
 
