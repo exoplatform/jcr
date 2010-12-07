@@ -75,26 +75,6 @@ public class FullBackupJob extends AbstractFullBackupJob
    protected static Log log = ExoLogger.getLogger("exo.jcr.component.ext.FullBackupJob");
 
    /**
-    * Content is absent.
-    */
-   public static final byte NULL_LEN = 0;
-
-   /**
-    * Content length value has byte type.
-    */
-   public static final byte BYTE_LEN = 1;
-
-   /**
-    * Content length value has integer type.
-    */
-   public static final byte INT_LEN = 2;
-
-   /**
-    * Content length value has long type.
-    */
-   public static final byte LONG_LEN = 3;
-
-   /**
     * Indicates the way to get value thru getBinaryStream() method.
     */
    public static final int GET_BINARY_STREAM_METHOD = 0;
@@ -424,7 +404,7 @@ public class FullBackupJob extends AbstractFullBackupJob
                InputStream value = getInputStream(rs, i + 1, getValueMethod);
                if (value == null)
                {
-                  contentLenWriter.writeByte(NULL_LEN);
+                  contentLenWriter.writeByte(RdbmsWorkspaceInitializer.NULL_LEN);
                }
                else
                {
@@ -492,17 +472,17 @@ public class FullBackupJob extends AbstractFullBackupJob
    {
       if (len < Byte.MAX_VALUE)
       {
-         out.writeByte(BYTE_LEN);
+         out.writeByte(RdbmsWorkspaceInitializer.BYTE_LEN);
          out.writeByte((byte)len);
       }
       else if (len < Integer.MAX_VALUE)
       {
-         out.writeByte(INT_LEN);
+         out.writeByte(RdbmsWorkspaceInitializer.INT_LEN);
          out.writeInt((int)len);
       }
       else
       {
-         out.writeByte(LONG_LEN);
+         out.writeByte(RdbmsWorkspaceInitializer.LONG_LEN);
          out.writeLong(len);
       }
    }
