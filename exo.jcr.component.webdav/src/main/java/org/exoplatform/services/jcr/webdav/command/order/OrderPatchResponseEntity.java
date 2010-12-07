@@ -96,7 +96,6 @@ public class OrderPatchResponseEntity implements StreamingOutput
          XMLStreamWriter xmlStreamWriter =
             XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream, Constants.DEFAULT_ENCODING);
          xmlStreamWriter.setNamespaceContext(nsContext);
-         xmlStreamWriter.setDefaultNamespace("DAV:");
 
          xmlStreamWriter.writeStartDocument();
          xmlStreamWriter.writeStartElement("D", "multistatus", "DAV:");

@@ -101,7 +101,6 @@ public class VersionTreeResponseEntity implements StreamingOutput
          this.xmlStreamWriter =
             XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream, Constants.DEFAULT_ENCODING);
          xmlStreamWriter.setNamespaceContext(namespaceContext);
-         xmlStreamWriter.setDefaultNamespace("DAV:");
 
          xmlStreamWriter.writeStartDocument();
          xmlStreamWriter.writeStartElement("D", "multistatus", "DAV:");

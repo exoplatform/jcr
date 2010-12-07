@@ -209,7 +209,6 @@ public class LockCommand
             XMLStreamWriter xmlStreamWriter =
                XMLOutputFactory.newInstance().createXMLStreamWriter(stream, Constants.DEFAULT_ENCODING);
             xmlStreamWriter.setNamespaceContext(nsContext);
-            xmlStreamWriter.setDefaultNamespace("DAV:");
 
             xmlStreamWriter.writeStartDocument();
 
