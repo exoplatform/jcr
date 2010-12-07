@@ -19,7 +19,6 @@
 package org.exoplatform.services.jcr.impl.core;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
-import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.services.jcr.access.AccessManager;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
@@ -75,13 +74,6 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
 {
    protected final String restoreDir;
 
-   private FileCleaner fileCleaner;
-
-   /**
-    * Temporary directory;
-    */
-   private final File tempDir;
-
    public BackupWorkspaceInitializer(WorkspaceEntry config, RepositoryEntry repConfig,
       CacheableWorkspaceDataManager dataManager, NamespaceRegistryImpl namespaceRegistry,
       LocationFactory locationFactory, NodeTypeManagerImpl nodeTypeManager, ValueFactoryImpl valueFactory,
@@ -89,8 +81,6 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
    {
       super(config, repConfig, dataManager, namespaceRegistry, locationFactory, nodeTypeManager, valueFactory,
          accessManager);
-
-      this.fileCleaner = valueFactory.getFileCleaner();
 
       restoreDir = restorePath;
 
@@ -104,8 +94,6 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
       {
          restorePath = fullBackupPath;
       }
-
-      this.tempDir = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
    }
 
    @Override

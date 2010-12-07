@@ -45,7 +45,6 @@ import java.io.ByteArrayInputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -53,9 +52,10 @@ import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
@@ -101,6 +101,28 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
    public static final String CONTENT_LEN_FILE_SUFFIX = ".len";
 
    /**
+    * Content is absent.
+    */
+   public static final byte NULL_LEN = 0;
+
+   /**
+    * Content length value has byte type.
+    */
+   public static final byte BYTE_LEN = 1;
+
+   /**
+    * Content length value has integer type.
+    */
+   public static final byte INT_LEN = 2;
+
+   /**
+    * Content length value has long type.
+    */
+   public static final byte LONG_LEN = 3;
+
+   protected List<File> spoolFileList = new ArrayList<File>();
+
+   /**
     * Constructor RdbmsWorkspaceInitializer.
     */
    public RdbmsWorkspaceInitializer(WorkspaceEntry config, RepositoryEntry repConfig,
@@ -125,6 +147,7 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
 
       Connection jdbcConn = null;
       Integer transactionIsolation = null;
+      Statement st = null;
       try
       {
          long start = System.currentTimeMillis();
@@ -163,6 +186,19 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
          transactionIsolation = jdbcConn.getTransactionIsolation();
          jdbcConn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
 
+         jdbcConn.setAutoCommit(false);
+
+         // restore JCR data
+         String[] tables;
+         if (Boolean.parseBoolean(multiDb))
+         {
+            tables = new String[]{"JCR_MITEM", "JCR_MVALUE", "JCR_MREF"};
+         }
+         else
+         {
+            tables = new String[]{"JCR_SITEM", "JCR_SVALUE", "JCR_SREF"};
+         }
+
          // resolve constraint name depends on database
          String constraintName;
          if (dbDialect.equals(DBConstants.DB_DIALECT_DB2) || dbDialect.equals(DBConstants.DB_DIALECT_DB2V8))
@@ -173,9 +209,40 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
          {
             constraintName = "JCR_FK_" + (Boolean.parseBoolean(multiDb) ? "M" : "S") + "ITEM_PARENT";
          }
+         String constraint =
+            "CONSTRAINT " + constraintName + " FOREIGN KEY(PARENT_ID) REFERENCES " + tables[0] + "(ID)";
 
-         // restore from full backup
-         // TODO
+         for (String table : tables)
+         {
+            if (table.equals("JCR_MITEM") || table.equals("JCR_SITEM"))
+            {
+               st = jdbcConn.createStatement();
+               st.execute("ALTER TABLE " + table + " DROP CONSTRAINT " + constraintName);
+               jdbcConn.commit();
+
+               restoreTable(jdbcConn, table);
+
+               st = jdbcConn.createStatement();
+               st.execute("ALTER TABLE " + table + " ADD CONSTRAINT " + constraint);
+               jdbcConn.commit();
+            }
+            else
+            {
+               restoreTable(jdbcConn, table);
+            }
+         }
+
+         // restore LOCK data
+         tables =
+            new String[]{"JCR_LOCK_" + workspaceName.toUpperCase(), "JCR_LOCK_" + workspaceName.toUpperCase() + "_D"};
+
+         for (String table : tables)
+         {
+            if (PrivilegedFileHelper.exists(new File(restorePath, table + CONTENT_FILE_SUFFIX)))
+            {
+               restoreTable(jdbcConn, table);
+            }
+         }
 
          restoreValueStorage();
          restoreIndex();
@@ -205,10 +272,45 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
       }
       catch (SQLException e)
       {
-         throw new RepositoryException(e);
+         if (jdbcConn != null)
+         {
+            try
+            {
+               jdbcConn.rollback();
+            }
+            catch (SQLException e1)
+            {
+               log.error("Rollback error", e1);
+            }
+         }
+
+         SQLException next = e.getNextException();
+         String errorTrace = "";
+         while (next != null)
+         {
+            errorTrace += next.getMessage() + "; ";
+            next = next.getNextException();
+         }
+
+         Throwable cause = e.getCause();
+         String msg = "SQL Exception: " + errorTrace + (cause != null ? " (Cause: " + cause.getMessage() + ")" : "");
+
+         throw new RepositoryException(msg, e);
       }
       finally
       {
+         if (st != null)
+         {
+            try
+            {
+               st.close();
+            }
+            catch (SQLException e)
+            {
+               throw new RepositoryException(e);
+            }
+         }
+
          if (jdbcConn != null)
          {
             try
@@ -326,39 +428,6 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
       }
    }
 
-   public static void restore(Properties props)
-   {
-//         File targetDir = new File(props.getProperty("targetdir"));
-      //
-      //         File sitem = new File(targetDir, "jcr_sitem.dump");
-      //         sitem.exists();
-      //
-      //         Statement st = dbConn.createStatement();
-      //         st.execute("ALTER TABLE JCR_SITEM DROP CONSTRAINT JCR_FK_SITEM_PARENT");
-      //         dbConn.commit();
-      //
-      //         restoreTable(dbConn, sitem);
-      //
-      //         st = dbConn.createStatement();
-      //         st.execute("ALTER TABLE JCR_SITEM ADD CONSTRAINT JCR_FK_SITEM_PARENT FOREIGN KEY(PARENT_ID) REFERENCES JCR_SITEM(ID)");
-      //         dbConn.commit();
-      //
-      //         for (File dumpFile : targetDir.listFiles())
-      //         {
-      //            if (dumpFile.getName().contains(".dump") && !dumpFile.getName().contains("jcr_sitem"))
-      //            {
-      //               restoreTable(dbConn, dumpFile);
-      //            }
-      //         }
-      //
-      //         dbConn.close();
-      //
-      //                  copyDirectory(new File(targetDir, "values"), new File(props.getProperty("valuestoragedir")));
-      //                  copyDirectory(new File(targetDir, "index"), new File(props.getProperty("indexdir")));
-      //         return;
-
-   }
-
    /**
     * Copy directory.
     * 
@@ -419,134 +488,191 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
       }
    }
 
-   private static void restoreTable(Connection dbConn, File dumpFile)
+   /**
+    * Restore table.
+    */
+   protected void restoreTable(Connection jdbcConn, String tableName) throws IOException, SQLException
    {
-      String INSERT_NODE = null;
+      String insertNodeQuery = null;
 
-      ObjectReader dump = null;
-      ObjectReader leng = null;
+      ObjectReader contentReader = null;
+      ObjectReader contentLenReader = null;
+
+      PreparedStatement insertNode = null;
+
       try
       {
-         dbConn.setAutoCommit(false);
+         contentReader =
+            new ObjectReaderImpl(new FileInputStream(new File(restorePath, tableName + CONTENT_FILE_SUFFIX)));
 
-         dump = new ObjectReaderImpl(new FileInputStream(dumpFile));
-         String tableName = dump.readString();
-         int columnCount = dump.readInt();
+         contentLenReader =
+            new ObjectReaderImpl(new FileInputStream(new File(restorePath, tableName + CONTENT_LEN_FILE_SUFFIX)));
 
+         int columnCount = contentReader.readInt();
          int[] columnType = new int[columnCount];
+
          for (int i = 0; i < columnCount; i++)
          {
-            columnType[i] = dump.readInt();
+            columnType[i] = contentReader.readInt();
          }
-
-         leng = new ObjectReaderImpl(new FileInputStream(new File(dumpFile.getParentFile(), tableName + ".leng")));
 
          for (int i = 0; i < columnCount; i++)
          {
             if (i == 0)
             {
-               INSERT_NODE = "INSERT INTO " + tableName + " VALUES(?";
+               insertNodeQuery = "INSERT INTO " + tableName + " VALUES(?";
             }
             else
             {
-               INSERT_NODE += ",?";
+               insertNodeQuery += ",?";
             }
+
             if (i == columnCount - 1)
             {
-               INSERT_NODE += ")";
+               insertNodeQuery += ")";
             }
          }
 
-         PreparedStatement insertNode = dbConn.prepareStatement(INSERT_NODE);
-         while (true)
+         insertNode = jdbcConn.prepareStatement(insertNodeQuery);
+         outer : while (true)
          {
-            try
+            for (int i = 0; i < columnCount; i++)
             {
-               for (int i = 0; i < columnCount; i++)
+               long len;
+               try
                {
-                  long len = leng.readLong();
-                  if (len >= 0)
+                  len = readCompressedContentLen(contentLenReader);
+               }
+               catch (EOFException e)
+               {
+                  if (i == 0)
                   {
-                     InputStream stream = spoolInputStream(dump, len);
-                     if (columnType[i] == Types.INTEGER || columnType[i] == Types.BIGINT)
+                     // content length file is empty check content file
+                     try
                      {
-                        ByteArrayInputStream ba = (ByteArrayInputStream)stream;
-                        byte[] readBuffer = new byte[ba.available()];
-                        ba.read(readBuffer);
-
-                        String p = new String(readBuffer);
-                        int l = Integer.parseInt(p);
-
-                        insertNode.setLong(i + 1, l);
+                        contentReader.readByte();
                      }
-                     else if (columnType[i] == Types.BOOLEAN || columnType[i] == Types.BIT)
+                     catch (EOFException e1)
                      {
-                        ByteArrayInputStream ba = (ByteArrayInputStream)stream;
-                        byte[] readBuffer = new byte[ba.available()];
-                        ba.read(readBuffer);
+                        break outer;
+                     }
+                  }
 
-                        String p = new String(readBuffer);
-                        insertNode.setBoolean(i + 1, p.equals("t"));
-                     }
-                     else
-                     {
-                        // for Postgres
-                        insertNode.setBinaryStream(i + 1, stream, (int)len);
-                     }
+                  throw new IOException("Content length file is empty but content still present", e);
+               }
+
+               if (len != NULL_LEN)
+               {
+                  InputStream stream = spoolInputStream(contentReader, len);
+
+                  if (columnType[i] == Types.INTEGER || columnType[i] == Types.BIGINT
+                     || columnType[i] == Types.SMALLINT || columnType[i] == Types.TINYINT)
+                  {
+                     ByteArrayInputStream ba = (ByteArrayInputStream)stream;
+                     byte[] readBuffer = new byte[ba.available()];
+                     ba.read(readBuffer);
+
+                     String value = new String(readBuffer, Constants.DEFAULT_ENCODING);
+                     insertNode.setLong(i + 1, Integer.parseInt(value));
+                  }
+                  else if (columnType[i] == Types.BOOLEAN || columnType[i] == Types.BIT)
+                  {
+                     ByteArrayInputStream ba = (ByteArrayInputStream)stream;
+                     byte[] readBuffer = new byte[ba.available()];
+                     ba.read(readBuffer);
+
+                     String value = new String(readBuffer);
+                     insertNode.setBoolean(i + 1, value.equals("t"));
                   }
                   else
                   {
-                     insertNode.setNull(i + 1, columnType[i]);
+                     // for Postgres
+                     insertNode.setBinaryStream(i + 1, stream, (int)len);
                   }
                }
-               //               insertNode.executeUpdate();
-               insertNode.addBatch();
+               else
+               {
+                  insertNode.setNull(i + 1, columnType[i]);
+               }
             }
-            catch (EOFException e)
-            {
-               break;
-            }
+            insertNode.addBatch();
          }
+
          insertNode.executeBatch();
-
-         insertNode.close();
-
-         dump.close();
-         leng.close();
-
-         dbConn.commit();
+         jdbcConn.commit();
       }
-      catch (Exception e)
+      finally
       {
-         e.printStackTrace();
-         try
+         if (contentReader != null)
          {
-            dbConn.rollback();
+            contentReader.close();
          }
-         catch (SQLException e1)
+
+         if (contentLenReader != null)
          {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
+            contentLenReader.close();
+         }
+
+         if (insertNode != null)
+         {
+            insertNode.close();
+         }
+
+         // delete all temporary files
+         for (File file : spoolFileList)
+         {
+            if (!PrivilegedFileHelper.delete(file))
+            {
+               fileCleaner.addFile(file);
+            }
          }
       }
    }
 
-   static public InputStream spoolInputStream(ObjectReader in, long maxLen) throws IOException
+   /**
+    * Write content length in output. 
+    */
+   private long readCompressedContentLen(ObjectReader in) throws IOException
+   {
+      byte lenType = in.readByte();
+
+      if (lenType == NULL_LEN)
+      {
+         return lenType;
+      }
+      else if (lenType == BYTE_LEN)
+      {
+         return in.readByte();
+      }
+      else if (lenType == INT_LEN)
+      {
+         return in.readInt();
+      }
+      else
+      {
+         return in.readLong();
+      }
+   }
+
+   /**
+    * Spool input stream.
+    */
+   private InputStream spoolInputStream(ObjectReader in, long contentLen) throws IOException
    {
       byte[] buffer = new byte[0];
       byte[] tmpBuff;
-      long len = 0;
-      File spoolFile = null;
+      long readLen = 0;
+      File sf = null;
       OutputStream sfout = null;
 
       try
       {
          while (true)
          {
-            int needToRead = maxLen - len > 2048 ? 2048 : (int)(maxLen - len);
+            int needToRead = contentLen - readLen > 2048 ? 2048 : (int)(contentLen - readLen);
             tmpBuff = new byte[needToRead];
 
-            if (needToRead <= 0)
+            if (needToRead == 0)
             {
                break;
             }
@@ -557,10 +683,10 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
             {
                sfout.write(tmpBuff);
             }
-            else if (len + needToRead > 200 * 1024)
+            else if (readLen + needToRead > maxBufferSize)
             {
-               spoolFile = File.createTempFile("swapFile", ".tmp");
-               sfout = new FileOutputStream(spoolFile);
+               sf = PrivilegedFileHelper.createTempFile("jcrvd", null, tempDir);
+               sfout = PrivilegedFileHelper.fileOutputStream(sf);
 
                sfout.write(buffer);
                sfout.write(tmpBuff);
@@ -569,13 +695,13 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
             else
             {
                // reallocate new buffer and spool old buffer contents
-               byte[] newBuffer = new byte[(int)(len + needToRead)];
-               System.arraycopy(buffer, 0, newBuffer, 0, (int)len);
-               System.arraycopy(tmpBuff, 0, newBuffer, (int)len, needToRead);
+               byte[] newBuffer = new byte[(int)(readLen + needToRead)];
+               System.arraycopy(buffer, 0, newBuffer, 0, (int)readLen);
+               System.arraycopy(tmpBuff, 0, newBuffer, (int)readLen, needToRead);
                buffer = newBuffer;
             }
 
-            len += needToRead;
+            readLen += needToRead;
          }
 
          if (buffer != null)
@@ -584,13 +710,20 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
          }
          else
          {
-            return new FileInputStream(spoolFile);
+            return PrivilegedFileHelper.fileInputStream(sf);
          }
       }
       finally
       {
          if (sfout != null)
+         {
             sfout.close();
+         }
+
+         if (sf != null)
+         {
+            spoolFileList.add(sf);
+         }
       }
    }
 

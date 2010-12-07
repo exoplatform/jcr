@@ -105,16 +105,16 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
 
    private final LocationFactory locationFactory;
 
-   private final int maxBufferSize;
+   protected final int maxBufferSize;
 
    /**
     * Cleaner should be started! .
     */
-   private final FileCleaner fileCleaner;
+   protected final FileCleaner fileCleaner;
 
    protected String restorePath;
 
-   private final File tempDir;
+   protected final File tempDir;
 
    protected class TempOutputStream extends ByteArrayOutputStream
    {
