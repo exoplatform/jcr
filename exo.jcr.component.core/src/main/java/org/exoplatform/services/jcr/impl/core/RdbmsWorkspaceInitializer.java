@@ -44,7 +44,6 @@ import org.exoplatform.services.log.Log;
 import java.io.ByteArrayInputStream;
 import java.io.EOFException;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -120,6 +119,9 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
     */
    public static final byte LONG_LEN = 3;
 
+   /**
+    * List of temporary files.
+    */
    protected List<File> spoolFileList = new ArrayList<File>();
 
    /**
@@ -503,10 +505,12 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
       try
       {
          contentReader =
-            new ObjectReaderImpl(new FileInputStream(new File(restorePath, tableName + CONTENT_FILE_SUFFIX)));
+            new ObjectReaderImpl(PrivilegedFileHelper.fileInputStream(new File(restorePath, tableName
+               + CONTENT_FILE_SUFFIX)));
 
          contentLenReader =
-            new ObjectReaderImpl(new FileInputStream(new File(restorePath, tableName + CONTENT_LEN_FILE_SUFFIX)));
+            new ObjectReaderImpl(PrivilegedFileHelper.fileInputStream(new File(restorePath, tableName
+               + CONTENT_LEN_FILE_SUFFIX)));
 
          int columnCount = contentReader.readInt();
          int[] columnType = new int[columnCount];
@@ -586,7 +590,6 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
                   }
                   else
                   {
-                     // for Postgres
                      insertNode.setBinaryStream(i + 1, stream, (int)len);
                   }
                }
