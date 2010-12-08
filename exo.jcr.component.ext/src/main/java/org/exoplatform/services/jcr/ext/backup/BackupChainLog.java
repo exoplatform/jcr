@@ -106,6 +106,10 @@ public class BackupChainLog
 
    private File rootDir;
 
+   private String fullBackupType;
+
+   private String incrementalBackupType;
+
    /**
     * BackupChainLog  constructor.
     *
@@ -135,6 +139,8 @@ public class BackupChainLog
          PrivilegedFileHelper.createNewFile(this.log);
          this.rootDir = rootDir;
          this.backupId = backupId;
+         this.fullBackupType = fullBackupType;
+         this.incrementalBackupType = incrementalBackupType;
          this.config = config;
          this.jobEntries = new ArrayList<JobEntryInfo>();
          this.originalWorkspaceEntry = wEntry;
@@ -187,6 +193,8 @@ public class BackupChainLog
          this.finishedTime = logReader.getEndTime();
          this.jobEntries = logReader.getJobEntryInfoNormalizeList();
          this.originalWorkspaceEntry = logReader.getOriginalWorkspaceEntry();
+         this.fullBackupType = logReader.getFullBackupType();
+         this.incrementalBackupType = logReader.getIncrementalBackupType();
 
          for (JobEntryInfo info : jobEntries)
          {
@@ -408,6 +416,10 @@ public class BackupChainLog
       
       private String version;
 
+      private String iBackupType;
+
+      private String fBackupType;
+
       public LogReader(File logFile) throws FileNotFoundException, XMLStreamException, FactoryConfigurationError
       {
          this.logFile = logFile;
@@ -415,6 +427,16 @@ public class BackupChainLog
 
          reader = XMLInputFactory.newInstance().createXMLStreamReader(
                            PrivilegedFileHelper.fileInputStream(this.logFile), Constants.DEFAULT_ENCODING);
+      }
+
+      public String getIncrementalBackupType()
+      {
+         return iBackupType;
+      }
+
+      public String getFullBackupType()
+      {
+         return fBackupType;
       }
 
       public String getVersionLog()
@@ -653,6 +675,12 @@ public class BackupChainLog
 
                   if (name.equals("incremental-job-number"))
                      conf.setIncrementalJobNumber(Integer.valueOf(readContent()).intValue());
+
+                  if (name.equals("full-backup-type"))
+                     this.fBackupType = readContent();
+
+                  if (name.equals("incremental-backup-type"))
+                     this.iBackupType = readContent();
 
                   break;
 
@@ -900,5 +928,15 @@ public class BackupChainLog
    public boolean isFinilized()
    {
       return finalized;
+   }
+
+   public String getFullBackupType()
+   {
+      return fullBackupType;
+   }
+
+   public String getIncrementalBackupType()
+   {
+      return incrementalBackupType;
    }
 }

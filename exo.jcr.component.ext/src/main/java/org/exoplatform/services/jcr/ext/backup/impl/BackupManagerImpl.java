@@ -76,10 +76,12 @@ import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChainLog;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupConfig;
 import org.exoplatform.services.jcr.ext.backup.RepositoryRestoreExeption;
 import org.exoplatform.services.jcr.ext.backup.WorkspaceRestoreException;
+import org.exoplatform.services.jcr.ext.backup.impl.fs.FullBackupJob;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
 import org.exoplatform.services.jcr.ext.registry.RegistryEntry;
 import org.exoplatform.services.jcr.ext.registry.RegistryService;
 import org.exoplatform.services.jcr.ext.replication.FixupStream;
+import org.exoplatform.services.jcr.impl.core.RdbmsWorkspaceInitializer;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.core.SysViewWorkspaceInitializer;
@@ -112,27 +114,27 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
    /**
     *  Name of default incremental job period parameter in configuration. 
     */
-   private final static String DEFAULT_INCREMENTAL_JOB_PERIOD = "default-incremental-job-period";
+   public final static String DEFAULT_INCREMENTAL_JOB_PERIOD = "default-incremental-job-period";
 
    /**
     *  Name of backup properties parameter in configuration. 
     */
-   private final static String BACKUP_PROPERTIES = "backup-properties";
+   public final static String BACKUP_PROPERTIES = "backup-properties";
 
    /**
     *  Name of full backup type parameter in configuration. 
     */
-   private final static String FULL_BACKUP_TYPE = "full-backup-type";
+   public final static String FULL_BACKUP_TYPE = "full-backup-type";
 
    /**
     *  Name of incremental backup type parameter in configuration. 
     */
-   private final static String INCREMENTAL_BACKUP_TYPE = "incremental-backup-type";
+   public final static String INCREMENTAL_BACKUP_TYPE = "incremental-backup-type";
 
    /**
     *  Name of backup dir parameter in configuration. 
     */
-   private final static String BACKUP_DIR = "backup-dir";
+   public final static String BACKUP_DIR = "backup-dir";
 
    /**
     *  Backup messages log max. size.
@@ -650,6 +652,29 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       String reposytoryName = (repositoryName == null ? config.getRepository() : repositoryName);
       String workspaceName = workspaceEntry.getName();
 
+      String fullbackupType = null;
+      
+      try
+      {
+         if ((Class.forName(log.getFullBackupType()).equals(FullBackupJob.class)))
+         {
+            fullbackupType = log.getFullBackupType();
+         }
+         else if ((Class.forName(log.getFullBackupType())
+                  .equals(org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob.class)))
+         {
+            fullbackupType = log.getFullBackupType();
+         } 
+         else 
+         {
+            throw new BackupOperationException("Class  \"" + log.getFullBackupType() + "\" is not support as full backup.");
+         }  
+      }
+      catch (ClassNotFoundException e)
+      {
+         throw new BackupOperationException("Class \"" + log.getFullBackupType() + "\" is not found." , e);
+      }
+
       // ws should not exists.
       if (!workspaceAlreadyExist(reposytoryName, workspaceName))
       {
@@ -660,7 +685,8 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
             {
                try
                {
-                  fullRestoreOverInitializer(list.get(i).getURL().getPath(), reposytoryName, workspaceEntry);
+                  fullRestoreOverInitializer(list.get(i).getURL().getPath(), reposytoryName, workspaceEntry,
+                           fullbackupType);
                }
                catch (FileNotFoundException e)
                {
@@ -669,6 +695,10 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
                catch (IOException e)
                {
                   throw new BackupOperationException("Restore of full backup file I/O error " + e, e);
+               }
+               catch (ClassNotFoundException e)
+               {
+                  throw new BackupOperationException("Restore of full backup class load error " + e, e);
                }
 
                repoService.getConfig().retain(); // save configuration to persistence (file or persister)
@@ -874,21 +904,39 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       defRep.importWorkspace(workspaceEntry.getName(), PrivilegedFileHelper.fileInputStream(pathBackupFile));
    }
 
-   private void fullRestoreOverInitializer(String pathBackupFile, String repositoryName, WorkspaceEntry workspaceEntry)
-      throws FileNotFoundException, IOException, RepositoryException, RepositoryConfigurationException
+   private void fullRestoreOverInitializer(String pathBackupFile, String repositoryName, WorkspaceEntry workspaceEntry,
+            String fBackupType)
+ throws FileNotFoundException, IOException, RepositoryException,
+            RepositoryConfigurationException, ClassNotFoundException
    {
       WorkspaceInitializerEntry wieOriginal = workspaceEntry.getInitializer();
 
       RepositoryImpl defRep = (RepositoryImpl)repoService.getRepository(repositoryName);
 
-      // set the initializer SysViewWorkspaceInitializer
       WorkspaceInitializerEntry wiEntry = new WorkspaceInitializerEntry();
-      wiEntry.setType(SysViewWorkspaceInitializer.class.getCanonicalName());
 
-      List<SimpleParameterEntry> wieParams = new ArrayList<SimpleParameterEntry>();
-      wieParams.add(new SimpleParameterEntry(SysViewWorkspaceInitializer.RESTORE_PATH_PARAMETER, pathBackupFile));
+      if ((Class.forName(fBackupType).equals(FullBackupJob.class)))
+      {
+         // set the initializer SysViewWorkspaceInitializer
+         wiEntry.setType(SysViewWorkspaceInitializer.class.getCanonicalName());
 
-      wiEntry.setParameters(wieParams);
+         List<SimpleParameterEntry> wieParams = new ArrayList<SimpleParameterEntry>();
+         wieParams.add(new SimpleParameterEntry(SysViewWorkspaceInitializer.RESTORE_PATH_PARAMETER, pathBackupFile));
+
+         wiEntry.setParameters(wieParams);
+      }
+      else if ((Class.forName(fBackupType)
+               .equals(org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob.class)))
+      {
+         // set the initializer RdbmsWorkspaceInitializer
+         wiEntry.setType(RdbmsWorkspaceInitializer.class.getCanonicalName());
+
+         List<SimpleParameterEntry> wieParams = new ArrayList<SimpleParameterEntry>();
+         wieParams.add(new SimpleParameterEntry(SysViewWorkspaceInitializer.RESTORE_PATH_PARAMETER, new File(
+                  pathBackupFile).getParent()));
+
+         wiEntry.setParameters(wieParams);
+      }
 
       workspaceEntry.setInitializer(wiEntry);
 

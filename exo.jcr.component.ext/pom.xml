@@ -185,11 +185,15 @@
               <include>**/replication/*.java</include>
               <include>**/replication/external/*.java</include>
               <include>**/replication/async/**/*.java</include>
+              <include>**/backup/TestFileNameProduser.java</include>
+              <include>**/**/TestFullBackupJob.java</include>
               <include>**/backup/*.java</include>
             </includes>
             <excludes>
+              <exclude>**/backup/TestRDBMSBackupManager.java</exclude>
               <exclude>**/BaseStandaloneTest.java</exclude>
               <exclude>**/backup/AbstractBackupTestCase.java</exclude>
+              <exclude>**/backup/BaseRDBMSBackupTest.java</exclude>
               <exclude>**/backup/TestBackupScheduler.java</exclude>
               <exclude>**/backup/TestBackupRestart.java</exclude>
               <exclude>**/replication/*.java</exclude>

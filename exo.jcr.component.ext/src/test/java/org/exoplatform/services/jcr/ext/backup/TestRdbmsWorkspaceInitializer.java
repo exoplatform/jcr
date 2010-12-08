@@ -18,6 +18,17 @@
  */
 package org.exoplatform.services.jcr.ext.backup;
 
+import java.io.File;
+import java.net.URL;
+import java.sql.Connection;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
+
 import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.config.WorkspaceInitializerEntry;
@@ -30,22 +41,12 @@ import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 
-import java.io.File;
-import java.net.URL;
-import java.sql.Connection;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-
-import javax.naming.InitialContext;
-import javax.sql.DataSource;
-
 /**
  * @author <a href="mailto:anatoliy.bazko@gmail.com">Anatoliy Bazko</a>
  * @version $Id: TestFullBackupJob.java 34360 2009-07-22 23:58:59Z tolusha $
  */
-public class TestRdbmsWorkspaceInitializer extends AbstractBackupTestCase
+public class TestRdbmsWorkspaceInitializer
+   extends BaseRDBMSBackupTest
 {
    TesterConfigurationHelper helper = TesterConfigurationHelper.getInstence();
 

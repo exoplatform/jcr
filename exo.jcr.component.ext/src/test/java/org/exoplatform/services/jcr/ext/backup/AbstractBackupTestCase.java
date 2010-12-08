@@ -60,7 +60,7 @@ import org.exoplatform.services.jcr.impl.util.jdbc.cleaner.DBCleanerService;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: AbstractBackupTestCase.java 760 2008-02-07 15:08:07Z pnedonosko $
  */
-public class AbstractBackupTestCase
+public abstract class AbstractBackupTestCase
    extends BaseStandaloneTest
 {
 
@@ -102,9 +102,7 @@ public class AbstractBackupTestCase
    {
       super.setUp();// this
 
-      // RepositoryContainer rcontainer = (RepositoryContainer)
-      // container.getComponentInstanceOfType(RepositoryContainer.class);
-      backup = (ExtendedBackupManager) container.getComponentInstanceOfType(BackupManager.class);
+      backup = getBackupManager();
 
       if (backup == null)
          throw new Exception("There are no BackupManagerImpl in configuration");
@@ -133,6 +131,9 @@ public class AbstractBackupTestCase
       // ws2
       ws2Session = (SessionImpl) repository.login(credentials, "ws2");
    }
+
+   protected abstract ExtendedBackupManager getBackupManager();
+   
 
    @Override
    protected void tearDown() throws Exception

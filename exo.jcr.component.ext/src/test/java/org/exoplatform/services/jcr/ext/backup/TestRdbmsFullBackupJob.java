@@ -18,18 +18,19 @@
  */
 package org.exoplatform.services.jcr.ext.backup;
 
-import org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob;
-import org.exoplatform.services.jcr.impl.core.RdbmsWorkspaceInitializer;
-
 import java.io.File;
 import java.net.URL;
 import java.util.Calendar;
+
+import org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob;
+import org.exoplatform.services.jcr.impl.core.RdbmsWorkspaceInitializer;
 
 /**
  * @author <a href="mailto:anatoliy.bazko@gmail.com">Anatoliy Bazko</a>
  * @version $Id: TestFullBackupJob.java 34360 2009-07-22 23:58:59Z tolusha $
  */
-public class TestRdbmsFullBackupJob extends AbstractBackupTestCase
+public class TestRdbmsFullBackupJob
+   extends BaseRDBMSBackupTest
 {
 
    public void testRDBMSFullBackupJobSystemWorkspace() throws Exception
