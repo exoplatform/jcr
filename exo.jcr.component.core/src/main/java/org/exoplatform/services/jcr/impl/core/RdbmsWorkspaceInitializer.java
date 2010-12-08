@@ -237,7 +237,7 @@ public class RdbmsWorkspaceInitializer
                restoreTable(jdbcConn, table);
 
                st = jdbcConn.createStatement();
-               st.execute("ALTER TABLE " + table + " ADD CONSTRAINT " + constraint);
+               st.execute("ALTER TABLE " + table + " ADD " + constraint);
                jdbcConn.commit();
             }
             else
