@@ -121,6 +121,16 @@ public class RdbmsWorkspaceInitializer
    public static final byte LONG_LEN = 3;
 
    /**
+    * Indicates the way to set value thru setBinaryStream() method.
+    */
+   public static final int SET_BINARY_STREAM_METHOD = 0;
+
+   /**
+    * Indicates the way to set value thru setString() method.
+    */
+   public static final int SET_STRING_METHOD = 1;
+
+   /**
     * List of temporary files.
     */
    protected List<File> spoolFileList = new ArrayList<File>();
@@ -503,6 +513,14 @@ public class RdbmsWorkspaceInitializer
 
       PreparedStatement insertNode = null;
 
+      int setValueMethod = SET_BINARY_STREAM_METHOD;
+
+      String dbDialect = DialectDetecter.detect(jdbcConn.getMetaData());
+      if (dbDialect.equals(DBConstants.DB_DIALECT_HSQLDB))
+      {
+         setValueMethod = SET_STRING_METHOD;
+      }
+
       try
       {
          contentReader =
@@ -591,7 +609,16 @@ public class RdbmsWorkspaceInitializer
                   }
                   else
                   {
-                     insertNode.setBinaryStream(i + 1, stream, (int)len);
+                     if (setValueMethod == SET_STRING_METHOD)
+                     {
+                        byte[] buf = new byte[(int) len];
+                        stream.read(buf);
+                        insertNode.setString(i + 1, new String(buf, Constants.DEFAULT_ENCODING));
+                     }
+                     else
+                     {
+                        insertNode.setBinaryStream(i + 1, stream, (int) len);
+                     }
                   }
                }
                else
