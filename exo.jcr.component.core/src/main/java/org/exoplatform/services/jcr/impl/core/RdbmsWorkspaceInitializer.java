@@ -18,28 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
-import java.io.ByteArrayInputStream;
-import java.io.EOFException;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.security.PrivilegedExceptionAction;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Types;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.jcr.PathNotFoundException;
-import javax.jcr.RepositoryException;
-import javax.naming.InitialContext;
-import javax.naming.NameNotFoundException;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
-
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.access.AccessManager;
@@ -62,6 +40,28 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer
 import org.exoplatform.services.jcr.impl.storage.value.fs.FileValueStorage;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+
+import java.io.ByteArrayInputStream;
+import java.io.EOFException;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.security.PrivilegedExceptionAction;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.jcr.PathNotFoundException;
+import javax.jcr.RepositoryException;
+import javax.naming.InitialContext;
+import javax.naming.NameNotFoundException;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
 
 /**
  * @author <a href="mailto:anatoliy.bazko@gmail.com">Anatoliy Bazko</a>
@@ -150,6 +150,7 @@ public class RdbmsWorkspaceInitializer
    /**
     * {@inheritDoc}
     */
+   @Override
    public NodeData initWorkspace() throws RepositoryException
    {
       if (isWorkspaceInitialized())
@@ -159,17 +160,20 @@ public class RdbmsWorkspaceInitializer
 
       long start = System.currentTimeMillis();
 
-      rdbmsRestore();
+      fullRdbmsRestore();
 
-      final NodeData root = (NodeData) dataManager.getItemData(Constants.ROOT_UUID);
+      final NodeData root = (NodeData)dataManager.getItemData(Constants.ROOT_UUID);
 
       log.info("Workspace [" + workspaceName + "] restored from storage " + restorePath + " in "
-               + (System.currentTimeMillis() - start) * 1d / 1000 + "sec");
+         + (System.currentTimeMillis() - start) * 1d / 1000 + "sec");
 
       return root;
    }
 
-   protected void rdbmsRestore() throws RepositoryException
+   /**
+    * Restore from full backup.
+    */
+   protected void fullRdbmsRestore() throws RepositoryException
    {
       Connection jdbcConn = null;
       Integer transactionIsolation = null;

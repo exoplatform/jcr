@@ -16,9 +16,6 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
-import javax.jcr.PathNotFoundException;
-import javax.jcr.RepositoryException;
-
 import org.exoplatform.services.jcr.access.AccessManager;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
@@ -31,6 +28,9 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceD
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import javax.jcr.PathNotFoundException;
+import javax.jcr.RepositoryException;
+
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -39,8 +39,7 @@ import org.exoplatform.services.log.Log;
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a> 
  * @version $Id$
  */
-public class RdbmsBackupWorkspaceInitializer
-   extends RdbmsWorkspaceInitializer
+public class RdbmsBackupWorkspaceInitializer extends RdbmsWorkspaceInitializer
 {
    /**
     * Logger.
@@ -51,37 +50,37 @@ public class RdbmsBackupWorkspaceInitializer
     * Constructor RdbmsBackupWorkspaceInitializer.
     */
    public RdbmsBackupWorkspaceInitializer(WorkspaceEntry config, RepositoryEntry repConfig,
-            CacheableWorkspaceDataManager dataManager, NamespaceRegistryImpl namespaceRegistry,
-            LocationFactory locationFactory, NodeTypeManagerImpl nodeTypeManager, ValueFactoryImpl valueFactory,
-            AccessManager accessManager) throws RepositoryConfigurationException, PathNotFoundException,
-            RepositoryException
+      CacheableWorkspaceDataManager dataManager, NamespaceRegistryImpl namespaceRegistry,
+      LocationFactory locationFactory, NodeTypeManagerImpl nodeTypeManager, ValueFactoryImpl valueFactory,
+      AccessManager accessManager) throws RepositoryConfigurationException, PathNotFoundException, RepositoryException
    {
       super(config, repConfig, dataManager, namespaceRegistry, locationFactory, nodeTypeManager, valueFactory,
-               accessManager);
+         accessManager);
    }
-
 
    /**
     * {@inheritDoc}
     */
+   @Override
    public NodeData initWorkspace() throws RepositoryException
    {
       if (isWorkspaceInitialized())
       {
-         return (NodeData) dataManager.getItemData(Constants.ROOT_UUID);
+         return (NodeData)dataManager.getItemData(Constants.ROOT_UUID);
       }
 
       long start = System.currentTimeMillis();
 
-      rdbmsRestore();
+      // restore from full rdbms backup
+      fullRdbmsRestore();
 
       // restore from incremental backup
       incrementalRead();
 
-      final NodeData root = (NodeData) dataManager.getItemData(Constants.ROOT_UUID);
+      final NodeData root = (NodeData)dataManager.getItemData(Constants.ROOT_UUID);
 
       log.info("Workspace [" + workspaceName + "] restored from storage " + restorePath + " in "
-               + (System.currentTimeMillis() - start) * 1d / 1000 + "sec");
+         + (System.currentTimeMillis() - start) * 1d / 1000 + "sec");
 
       return root;
    }
