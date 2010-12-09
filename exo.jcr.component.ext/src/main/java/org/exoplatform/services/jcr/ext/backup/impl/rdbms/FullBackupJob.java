@@ -187,7 +187,7 @@ public class FullBackupJob extends AbstractFullBackupJob
          {
             scripts =
                new String[][]{{"JCR_MVALUE", "select * from JCR_MVALUE"}, {"JCR_MREF", "select * from JCR_MREF"},
-                  {"JCR_MITEM", "select * from JCR_MITEM"}};
+            {"JCR_MITEM", "select * from JCR_MITEM where JCR_MITEM.name <> '__root_parent'"}};
          }
          else
          {
