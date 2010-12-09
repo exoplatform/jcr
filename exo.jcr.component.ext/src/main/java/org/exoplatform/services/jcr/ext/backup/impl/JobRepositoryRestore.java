@@ -16,6 +16,25 @@
  */
 package org.exoplatform.services.jcr.ext.backup.impl;
 
+import org.exoplatform.services.jcr.RepositoryService;
+import org.exoplatform.services.jcr.config.RepositoryEntry;
+import org.exoplatform.services.jcr.config.SimpleParameterEntry;
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.config.WorkspaceInitializerEntry;
+import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
+import org.exoplatform.services.jcr.ext.backup.BackupChainLog;
+import org.exoplatform.services.jcr.ext.backup.BackupOperationException;
+import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChainLog;
+import org.exoplatform.services.jcr.ext.backup.RepositoryRestoreExeption;
+import org.exoplatform.services.jcr.ext.backup.impl.fs.FullBackupJob;
+import org.exoplatform.services.jcr.impl.core.RdbmsWorkspaceInitializer;
+import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
+import org.exoplatform.services.jcr.impl.core.SessionRegistry;
+import org.exoplatform.services.jcr.impl.core.SysViewWorkspaceInitializer;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -25,22 +44,6 @@ import java.util.Map;
 import javax.jcr.InvalidItemStateException;
 import javax.jcr.NoSuchWorkspaceException;
 import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.jcr.RepositoryService;
-import org.exoplatform.services.jcr.config.RepositoryEntry;
-import org.exoplatform.services.jcr.config.SimpleParameterEntry;
-import org.exoplatform.services.jcr.config.WorkspaceEntry;
-import org.exoplatform.services.jcr.config.WorkspaceInitializerEntry;
-import org.exoplatform.services.jcr.core.ManageableRepository;
-import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
-import org.exoplatform.services.jcr.ext.backup.BackupChainLog;
-import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChainLog;
-import org.exoplatform.services.jcr.ext.backup.RepositoryRestoreExeption;
-import org.exoplatform.services.jcr.impl.core.BackupWorkspaceInitializer;
-import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
-import org.exoplatform.services.jcr.impl.core.SessionRegistry;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
 
 /**
  * Created by The eXo Platform SAS.
@@ -148,11 +151,14 @@ public class JobRepositoryRestore extends Thread
    /**
     * Will be restored the workspace.
     * @throws RepositoryRestoreExeption 
+    * @throws ClassNotFoundException 
+    * @throws BackupOperationException 
     * 
     * @throws Throwable
     *           will be generated the Throwable
     */
-   protected void restoreRepository() throws RepositoryRestoreExeption
+   protected void restoreRepository() throws RepositoryRestoreExeption, BackupOperationException,
+            ClassNotFoundException
    {
       List<WorkspaceEntry> originalWorkspaceEntrys = repositoryEntry.getWorkspaceEntries();
 
@@ -172,17 +178,8 @@ public class JobRepositoryRestore extends Thread
 
       //getting backup chail log to system workspace.
       BackupChainLog systemBackupChainLog = workspacesMapping.get(systemWorkspaceEntry.getName());
-      File fullBackupFile = new File(systemBackupChainLog.getJobEntryInfos().get(0).getURL().getPath());
-
-      // set the initializer SysViewWorkspaceInitializer
-      WorkspaceInitializerEntry wiEntry = new WorkspaceInitializerEntry();
-      wiEntry.setType(BackupWorkspaceInitializer.class.getCanonicalName());
-
-      List<SimpleParameterEntry> wieParams = new ArrayList<SimpleParameterEntry>();
-      wieParams.add(new SimpleParameterEntry(BackupWorkspaceInitializer.RESTORE_PATH_PARAMETER, fullBackupFile
-         .getParent()));
-
-      wiEntry.setParameters(wieParams);
+      
+      WorkspaceInitializerEntry wiEntry = getWorkspaceInitializerEntry(systemBackupChainLog);
 
       // set initializer
       systemWorkspaceEntry.setInitializer(wiEntry);
@@ -271,6 +268,62 @@ public class JobRepositoryRestore extends Thread
             }
          }
       }
+   }
+
+   private WorkspaceInitializerEntry getWorkspaceInitializerEntry(BackupChainLog systemBackupChainLog)
+            throws BackupOperationException, ClassNotFoundException
+   {
+      String fullBackupPath = systemBackupChainLog.getJobEntryInfos().get(0).getURL().getPath();
+
+      String fullbackupType = null;
+      try
+      {
+         if ((Class.forName(systemBackupChainLog.getFullBackupType()).equals(FullBackupJob.class)))
+         {
+            fullbackupType = systemBackupChainLog.getFullBackupType();
+         }
+         else if ((Class.forName(systemBackupChainLog.getFullBackupType())
+                  .equals(org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob.class)))
+         {
+            fullbackupType = systemBackupChainLog.getFullBackupType();
+         }
+         else
+         {
+            throw new BackupOperationException("Class  \"" + systemBackupChainLog.getFullBackupType()
+                     + "\" is not support as full backup.");
+         }
+      }
+      catch (ClassNotFoundException e)
+      {
+         throw new BackupOperationException("Class \"" + systemBackupChainLog.getFullBackupType() + "\" is not found.",
+                  e);
+      }
+
+      WorkspaceInitializerEntry wiEntry = new WorkspaceInitializerEntry();
+      if ((Class.forName(fullbackupType).equals(FullBackupJob.class)))
+      {
+         // set the initializer SysViewWorkspaceInitializer
+         wiEntry.setType(SysViewWorkspaceInitializer.class.getCanonicalName());
+
+         List<SimpleParameterEntry> wieParams = new ArrayList<SimpleParameterEntry>();
+         wieParams.add(new SimpleParameterEntry(SysViewWorkspaceInitializer.RESTORE_PATH_PARAMETER, fullBackupPath));
+
+         wiEntry.setParameters(wieParams);
+      }
+      else if ((Class.forName(fullbackupType)
+               .equals(org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob.class)))
+      {
+         // set the initializer RdbmsWorkspaceInitializer
+         wiEntry.setType(RdbmsWorkspaceInitializer.class.getCanonicalName());
+
+         List<SimpleParameterEntry> wieParams = new ArrayList<SimpleParameterEntry>();
+         wieParams.add(new SimpleParameterEntry(RdbmsWorkspaceInitializer.RESTORE_PATH_PARAMETER, (new File(
+                  fullBackupPath).getParent())));
+
+         wiEntry.setParameters(wieParams);
+      }
+
+      return wiEntry;
    }
 
    /**
