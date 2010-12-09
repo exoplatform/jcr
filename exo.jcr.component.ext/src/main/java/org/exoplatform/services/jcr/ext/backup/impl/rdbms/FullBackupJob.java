@@ -47,7 +47,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
@@ -55,6 +54,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.Calendar;
 
 import javax.naming.InitialContext;
@@ -75,14 +75,14 @@ public class FullBackupJob extends AbstractFullBackupJob
    protected static Log log = ExoLogger.getLogger("exo.jcr.component.ext.FullBackupJob");
 
    /**
-    * Indicates the way to get value thru getBinaryStream() method.
+    * Generic dialect.
     */
-   public static final int GET_BINARY_STREAM_METHOD = 0;
+   public static final int DB_DIALECT_GENERIC = DBConstants.DB_DIALECT_GENERIC.hashCode();
 
    /**
-    * Indicates the way to get value thru getString() method.
+    * HSQLDB dialect.
     */
-   public static final int GET_STRING_METHOD = 1;
+   public static final int DB_DIALECT_HSQLDB = DBConstants.DB_DIALECT_HSQLDB.hashCode();
 
    /**
     * {@inheritDoc}
@@ -362,13 +362,7 @@ public class FullBackupJob extends AbstractFullBackupJob
    protected void dumpTable(Connection jdbcConn, String tableName, String script) throws SQLException, IOException,
       BackupOperationException
    {
-      int getValueMethod = GET_BINARY_STREAM_METHOD;
-
-      String dbDialect = DialectDetecter.detect(jdbcConn.getMetaData());
-      if (dbDialect.equals(DBConstants.DB_DIALECT_HSQLDB))
-      {
-         getValueMethod = GET_STRING_METHOD;
-      }
+      int dialect = DialectDetecter.detect(jdbcConn.getMetaData()).hashCode();
 
       ObjectWriter contentWriter = null;
       ObjectWriter contentLenWriter = null;
@@ -389,11 +383,13 @@ public class FullBackupJob extends AbstractFullBackupJob
          ResultSetMetaData metaData = rs.getMetaData();
 
          int columnCount = metaData.getColumnCount();
+         int[] columnType = new int[columnCount];
 
          contentWriter.writeInt(columnCount);
          for (int i = 0; i < columnCount; i++)
          {
-            contentWriter.writeInt(metaData.getColumnType(i + 1));
+            columnType[i] = metaData.getColumnType(i + 1);
+            contentWriter.writeInt(columnType[i]);
          }
 
          // Now we can output the actual data
@@ -401,7 +397,24 @@ public class FullBackupJob extends AbstractFullBackupJob
          {
             for (int i = 0; i < columnCount; i++)
             {
-               InputStream value = getInputStream(rs, i + 1, getValueMethod);
+               InputStream value;
+               if (dialect == DB_DIALECT_HSQLDB)
+               {
+                  if (columnType[i] == Types.VARBINARY)
+                  {
+                     value = rs.getBinaryStream(i+1);
+                  }
+                  else
+                  {
+                     String str = rs.getString(i+1);
+                     value = str == null ? null : new ByteArrayInputStream(str.getBytes(Constants.DEFAULT_ENCODING));
+                  }
+               }
+               else
+               {
+                  value = rs.getBinaryStream(i+1);
+               }
+               
                if (value == null)
                {
                   contentLenWriter.writeByte(RdbmsWorkspaceInitializer.NULL_LEN);
@@ -444,25 +457,6 @@ public class FullBackupJob extends AbstractFullBackupJob
             stmt.close();
          }
       }
-   }
-
-   /**
-    * Get input stream from value.
-    */
-   private InputStream getInputStream(ResultSet rs, int columnIndex, int getValueMethod) throws SQLException,
-      UnsupportedEncodingException, BackupOperationException
-   {
-      if (getValueMethod == GET_STRING_METHOD)
-      {
-         String str = rs.getString(columnIndex);
-         return str == null ? null : new ByteArrayInputStream(str.getBytes(Constants.DEFAULT_ENCODING));
-      }
-      else if (getValueMethod == GET_BINARY_STREAM_METHOD)
-      {
-         return rs.getBinaryStream(columnIndex);
-      }
-
-      throw new BackupOperationException("There is no way get input stream from value");
    }
 
    /**

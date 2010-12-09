@@ -185,8 +185,6 @@
               <include>**/replication/*.java</include>
               <include>**/replication/external/*.java</include>
               <include>**/replication/async/**/*.java</include>
-              <include>**/backup/TestFileNameProduser.java</include>
-              <include>**/**/TestFullBackupJob.java</include>
               <include>**/backup/*.java</include>
             </includes>
             <excludes>
