@@ -595,14 +595,23 @@ public class RdbmsWorkspaceInitializer
                      String value = new String(readBuffer, Constants.DEFAULT_ENCODING);
                      insertNode.setLong(i + 1, Integer.parseInt(value));
                   }
-                  else if (columnType[i] == Types.BOOLEAN || columnType[i] == Types.BIT)
+                  else if (columnType[i] == Types.BIT)
+                  {
+                     ByteArrayInputStream ba = (ByteArrayInputStream) stream;
+                     byte[] readBuffer = new byte[ba.available()];
+                     ba.read(readBuffer);
+
+                     String value = new String(readBuffer);
+                     insertNode.setBoolean(i + 1, value.equals("t"));
+                  }
+                  else if (columnType[i] == Types.BOOLEAN)
                   {
                      ByteArrayInputStream ba = (ByteArrayInputStream)stream;
                      byte[] readBuffer = new byte[ba.available()];
                      ba.read(readBuffer);
 
                      String value = new String(readBuffer);
-                     insertNode.setBoolean(i + 1, value.equals("t"));
+                     insertNode.setBoolean(i + 1, value.equals("true"));
                   }
                   else 
                   {
