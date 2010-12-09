@@ -121,15 +121,14 @@ public class RdbmsWorkspaceInitializer
    public static final byte LONG_LEN = 3;
 
    /**
-    * Indicates the way to set value thru setBinaryStream() method.
+    * Generic dialect.
     */
-   public static final int SET_BINARY_STREAM_METHOD = 0;
+   public static final int DB_DIALECT_GENERIC = DBConstants.DB_DIALECT_GENERIC.hashCode();
 
    /**
-    * Indicates the way to set value thru setString() method.
+    * HSQLDB dialect.
     */
-   public static final int SET_STRING_METHOD = 1;
-
+   public static final int DB_DIALECT_HSQLDB = DBConstants.DB_DIALECT_HSQLDB.hashCode();
    /**
     * List of temporary files.
     */
@@ -517,13 +516,7 @@ public class RdbmsWorkspaceInitializer
 
       PreparedStatement insertNode = null;
 
-      int setValueMethod = SET_BINARY_STREAM_METHOD;
-
-      String dbDialect = DialectDetecter.detect(jdbcConn.getMetaData());
-      if (dbDialect.equals(DBConstants.DB_DIALECT_HSQLDB))
-      {
-         setValueMethod = SET_STRING_METHOD;
-      }
+      int dialect = DialectDetecter.detect(jdbcConn.getMetaData()).hashCode();
 
       try
       {
@@ -611,17 +604,25 @@ public class RdbmsWorkspaceInitializer
                      String value = new String(readBuffer);
                      insertNode.setBoolean(i + 1, value.equals("t"));
                   }
-                  else
+                  else 
                   {
-                     if (setValueMethod == SET_STRING_METHOD)
+                     if (dialect == DB_DIALECT_HSQLDB)
                      {
-                        byte[] buf = new byte[(int) len];
-                        stream.read(buf);
-                        insertNode.setString(i + 1, new String(buf, Constants.DEFAULT_ENCODING));
+                        if (columnType[i] == Types.VARBINARY)
+                        {
+                           insertNode.setBinaryStream(i + 1, stream, (int)len);
+                        }
+                        else
+                        {
+                           byte[] readBuffer = new byte[(int)len];
+                           stream.read(readBuffer);
+
+                           insertNode.setString(i + 1, new String(readBuffer, Constants.DEFAULT_ENCODING));
+                        }
                      }
                      else
                      {
-                        insertNode.setBinaryStream(i + 1, stream, (int) len);
+                        insertNode.setBinaryStream(i + 1, stream, (int)len);
                      }
                   }
                }
