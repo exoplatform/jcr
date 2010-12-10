@@ -32,6 +32,7 @@ import org.exoplatform.services.jcr.ext.backup.impl.AbstractFullBackupJob;
 import org.exoplatform.services.jcr.ext.backup.impl.FileNameProducer;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.RdbmsWorkspaceInitializer;
+import org.exoplatform.services.jcr.impl.core.lock.cacheable.AbstractCacheableLockManager;
 import org.exoplatform.services.jcr.impl.core.query.SystemSearchManager;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectWriterImpl;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
@@ -210,15 +211,14 @@ public class FullBackupJob extends AbstractFullBackupJob
          }
 
          // dump LOCK data
-         scripts =
-            new String[][]{
-               {"JCR_LOCK_" + workspaceName.toUpperCase(), "select * from JCR_LOCK_" + workspaceName.toUpperCase()},
-               {"JCR_LOCK_" + workspaceName.toUpperCase() + "_D",
-                  "select * from JCR_LOCK_" + workspaceName.toUpperCase() + "_D"}};
-
-         for (String script[] : scripts)
+         String lockTableName = AbstractCacheableLockManager.getLockTableName(workspaceEntry.getLockManager());
+         if (lockTableName != null)
          {
-            if (jdbcConn.getMetaData().getTables(null, null, script[0], new String[]{"TABLE"}).next())
+            scripts =
+               new String[][]{{lockTableName, "select * from " + lockTableName},
+                  {lockTableName + "_D", "select * from " + lockTableName + "_D"}};
+
+            for (String script[] : scripts)
             {
                dumpTable(jdbcConn, script[0], script[1]);
             }
@@ -390,6 +390,7 @@ public class FullBackupJob extends AbstractFullBackupJob
          {
             columnType[i] = metaData.getColumnType(i + 1);
             contentWriter.writeInt(columnType[i]);
+            contentWriter.writeString(metaData.getColumnName(i + 1));
          }
 
          // Now we can output the actual data
