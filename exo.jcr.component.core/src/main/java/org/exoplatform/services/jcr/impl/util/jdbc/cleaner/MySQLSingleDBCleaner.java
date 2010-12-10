@@ -16,6 +16,8 @@
  */
 package org.exoplatform.services.jcr.impl.util.jdbc.cleaner;
 
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
+
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,9 +32,9 @@ public class MySQLSingleDBCleaner extends SingleDBCleaner
    /**
     * MySQLSingleDBCleaner constructor.
     */
-   public MySQLSingleDBCleaner(String containerName, Connection connection)
+   public MySQLSingleDBCleaner(WorkspaceEntry wsEntry, Connection connection)
    {
-      super(containerName, connection, true);
+      super(wsEntry, connection, true);
    }
 
    /**

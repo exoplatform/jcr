@@ -132,46 +132,46 @@ public class DBCleanerService
       {
          if (dbDialect == DBConstants.DB_DIALECT_ORACLEOCI || dbDialect == DBConstants.DB_DIALECT_ORACLE)
          {
-            dbCleaner = new OracleMultiDBCleaner(wsEntry.getName(), conn);
+            dbCleaner = new OracleMultiDBCleaner(wsEntry, conn);
          }
          else if (dbDialect == DBConstants.DB_DIALECT_PGSQL)
          {
-            dbCleaner = new PgSQLMultiDBCleaner(wsEntry.getName(), conn);
+            dbCleaner = new PgSQLMultiDBCleaner(wsEntry, conn);
          }
          else if (dbDialect == DBConstants.DB_DIALECT_INGRES)
          {
-            dbCleaner = new IngresSQLMultiDBCleaner(wsEntry.getName(), conn);
+            dbCleaner = new IngresSQLMultiDBCleaner(wsEntry, conn);
          }
          else
          {
-            dbCleaner = new MultiDBCleaner(wsEntry.getName(), conn);
+            dbCleaner = new MultiDBCleaner(wsEntry, conn);
          }
       }
       else
       {
          if (dbDialect == DBConstants.DB_DIALECT_ORACLEOCI || dbDialect == DBConstants.DB_DIALECT_ORACLE)
          {
-            dbCleaner = new OracleSingleDBCleaner(wsEntry.getName(), conn);
+            dbCleaner = new OracleSingleDBCleaner(wsEntry, conn);
          }
          else if (dbDialect == DBConstants.DB_DIALECT_PGSQL)
          {
-            dbCleaner = new PgSQLSingleDBCleaner(wsEntry.getName(), conn);
+            dbCleaner = new PgSQLSingleDBCleaner(wsEntry, conn);
          }
          else if (dbDialect == DBConstants.DB_DIALECT_INGRES)
          {
-            dbCleaner = new IngresSQLSingleDBCleaner(wsEntry.getName(), conn);
+            dbCleaner = new IngresSQLSingleDBCleaner(wsEntry, conn);
          }
          else if (dbDialect == DBConstants.DB_DIALECT_HSQLDB)
          {
-            dbCleaner = new HSQLSingleDBCleaner(wsEntry.getName(), conn);
+            dbCleaner = new HSQLSingleDBCleaner(wsEntry, conn);
          }
          else if (dbDialect == DBConstants.DB_DIALECT_MYSQL || dbDialect == DBConstants.DB_DIALECT_MYSQL_UTF8)
          {
-            dbCleaner = new MySQLSingleDBCleaner(wsEntry.getName(), conn);
+            dbCleaner = new MySQLSingleDBCleaner(wsEntry, conn);
          }
          else
          {
-            dbCleaner = new SingleDBCleaner(wsEntry.getName(), conn);
+            dbCleaner = new SingleDBCleaner(wsEntry, conn);
          }
       }
 

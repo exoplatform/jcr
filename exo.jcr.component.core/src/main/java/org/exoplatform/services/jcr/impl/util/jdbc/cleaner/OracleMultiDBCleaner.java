@@ -16,6 +16,8 @@
  */
 package org.exoplatform.services.jcr.impl.util.jdbc.cleaner;
 
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -30,9 +32,9 @@ public class OracleMultiDBCleaner extends MultiDBCleaner
    /**
     * Constructor OracleMultiDBCleaner.
     */
-   public OracleMultiDBCleaner(String containerName, Connection connection)
+   public OracleMultiDBCleaner(WorkspaceEntry wsEntry, Connection connection)
    {
-      super(containerName, connection);
+      super(wsEntry, connection);
    }
 
    /**

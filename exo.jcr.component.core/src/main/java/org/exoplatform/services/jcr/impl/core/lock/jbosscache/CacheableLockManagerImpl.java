@@ -31,8 +31,8 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistent
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory;
-import org.exoplatform.services.jcr.jbosscache.PrivilegedJBossCacheHelper;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory.CacheType;
+import org.exoplatform.services.jcr.jbosscache.PrivilegedJBossCacheHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.naming.InitialContextInitializer;
@@ -81,6 +81,8 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
    public static final String JBOSSCACHE_JDBC_CL_NODE_COLUMN = "jbosscache-cl-cache.jdbc.node.type";
 
    public static final String JBOSSCACHE_JDBC_CL_FQN_COLUMN = "jbosscache-cl-cache.jdbc.fqn.type";
+
+   public static final String JBOSSCACHE_JDBC_TABLE_NAME = "jbosscache-cl-cache." + JDBC_TABLE_NAME_SUFFIX;
 
    /**
     * Indicate whether the JBoss Cache instance used can be shared with other caches
@@ -559,4 +561,5 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
       }
       node.setResident(true);
    }
+
 }

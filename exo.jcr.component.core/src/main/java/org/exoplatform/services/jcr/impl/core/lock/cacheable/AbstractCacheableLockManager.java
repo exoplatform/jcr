@@ -19,6 +19,7 @@ package org.exoplatform.services.jcr.impl.core.lock.cacheable;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.dataflow.ChangesLogIterator;
 import org.exoplatform.services.jcr.dataflow.CompositeChangesLog;
@@ -127,6 +128,8 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
    protected LockActionNonTxAware<LockData, String> getLockDataById;
 
    protected LockActionNonTxAware<List<LockData>, Object> getLockList;
+
+   public static final String JDBC_TABLE_NAME_SUFFIX = "jdbc.table.name";
 
    /**
     * Constructor.
@@ -778,5 +781,21 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
    protected static interface LockActionNonTxAware<R, A>
    {
       R execute(A arg) throws LockException;
+   }
+
+   /**
+    * Return table name for lock data.
+    */
+   public static String getLockTableName(WorkspaceEntry wsEntry)
+   {
+      for (SimpleParameterEntry entry : wsEntry.getLockManager().getParameters())
+      {
+         if (entry.getName().contains(AbstractCacheableLockManager.JDBC_TABLE_NAME_SUFFIX))
+         {
+            return entry.getValue();
+         }
+      }
+
+      return null;
    }
 }

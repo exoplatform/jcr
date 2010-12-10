@@ -16,6 +16,8 @@
  */
 package org.exoplatform.services.jcr.impl.util.jdbc.cleaner;
 
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -32,9 +34,9 @@ public class IngresSQLSingleDBCleaner extends SingleDBCleaner
    /**
     * IngresSQLSingleDBCleaner constructor.
     */
-   public IngresSQLSingleDBCleaner(String containerName, Connection connection)
+   public IngresSQLSingleDBCleaner(WorkspaceEntry wsEntry, Connection connection)
    {
-      super(containerName, connection);
+      super(wsEntry, connection);
    }
 
    /**

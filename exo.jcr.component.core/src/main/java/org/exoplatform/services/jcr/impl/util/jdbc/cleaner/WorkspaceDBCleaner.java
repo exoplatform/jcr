@@ -17,7 +17,9 @@
 package org.exoplatform.services.jcr.impl.util.jdbc.cleaner;
 
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
+import org.exoplatform.services.jcr.impl.core.lock.cacheable.AbstractCacheableLockManager;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializer;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -27,6 +29,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -60,6 +63,11 @@ public abstract class WorkspaceDBCleaner implements DBCleaner
    protected final Pattern dbObjectNamePattern;
 
    /**
+    * Common clean scripts for database.
+    */
+   protected final List<String> commonDBCleanScripts = new ArrayList<String>();
+
+   /**
     * WorkspaceDBCleaner constructor.
     * 
     * @param containerName 
@@ -67,11 +75,18 @@ public abstract class WorkspaceDBCleaner implements DBCleaner
     * @param connection 
     *          connection to database where workspace tables is placed
     */
-   public WorkspaceDBCleaner(String containerName, Connection connection)
+   public WorkspaceDBCleaner(WorkspaceEntry wsEntry, Connection connection)
    {
       this.dbObjectNamePattern = Pattern.compile(DBInitializer.SQL_OBJECTNAME, Pattern.CASE_INSENSITIVE);
       this.connection = connection;
-      this.containerName = containerName;
+      this.containerName = wsEntry.getName();
+
+      String lockTableName = AbstractCacheableLockManager.getLockTableName(wsEntry);
+      if (lockTableName != null)
+      {
+         commonDBCleanScripts.add(lockTableName);
+         commonDBCleanScripts.add(lockTableName + "_D");
+      }
    }
 
    /**

@@ -16,6 +16,8 @@
  */
 package org.exoplatform.services.jcr.impl.util.jdbc.cleaner;
 
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -29,9 +31,9 @@ public class IngresSQLMultiDBCleaner extends MultiDBCleaner
    /**
     * IngresSQLMultiDBCleaner constructor.
     */
-   public IngresSQLMultiDBCleaner(String containerName, Connection connection)
+   public IngresSQLMultiDBCleaner(WorkspaceEntry wsEntry, Connection connection)
    {
-      super(containerName, connection);
+      super(wsEntry, connection);
    }
 
    /**

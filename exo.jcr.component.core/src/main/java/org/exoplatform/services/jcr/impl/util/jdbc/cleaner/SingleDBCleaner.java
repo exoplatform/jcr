@@ -16,6 +16,8 @@
  */
 package org.exoplatform.services.jcr.impl.util.jdbc.cleaner;
 
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
+
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,17 +47,17 @@ public class SingleDBCleaner extends WorkspaceDBCleaner
    /**
     * SingleDBCleaner constructor.
     */
-   public SingleDBCleaner(String containerName, Connection connection)
+   public SingleDBCleaner(WorkspaceEntry wsEntry, Connection connection)
    {
-      this(containerName, connection, false);
+      this(wsEntry, connection, false);
    }
 
    /**
     * SingleDBCleaner constructor.
     */
-   public SingleDBCleaner(String containerName, Connection connection, boolean postHelpClean)
+   public SingleDBCleaner(WorkspaceEntry wsEntry, Connection connection, boolean postHelpClean)
    {
-      super(containerName, connection);
+      super(wsEntry, connection);
 
       this.postHelpClean = postHelpClean;
       this.dbCleanHelper = new DBCleanHelper(containerName, connection);
@@ -66,8 +68,7 @@ public class SingleDBCleaner extends WorkspaceDBCleaner
       commonSingleDBCleanScripts
          .add("delete from JCR_SVALUE where exists(select * from JCR_SITEM where JCR_SITEM.ID=JCR_SVALUE.PROPERTY_ID and JCR_SITEM.CONTAINER_NAME='"
             + containerName + "')");
-      commonSingleDBCleanScripts.add("drop table JCR_LOCK_" + containerName.toUpperCase());
-      commonSingleDBCleanScripts.add("drop table JCR_LOCK_" + containerName.toUpperCase() + "_D");
+      commonSingleDBCleanScripts.addAll(commonDBCleanScripts);
    }
 
    /**

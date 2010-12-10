@@ -16,6 +16,8 @@
  */
 package org.exoplatform.services.jcr.impl.util.jdbc.cleaner;
 
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -32,9 +34,9 @@ public class PgSQLSingleDBCleaner extends SingleDBCleaner
    /**
     * PgSQLSingleDBCleaner constructor.
     */
-   public PgSQLSingleDBCleaner(String containerName, Connection connection)
+   public PgSQLSingleDBCleaner(WorkspaceEntry wsEntry, Connection connection)
    {
-      super(containerName, connection);
+      super(wsEntry, connection);
    }
 
    /**

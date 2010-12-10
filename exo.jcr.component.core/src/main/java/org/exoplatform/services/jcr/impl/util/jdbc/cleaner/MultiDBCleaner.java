@@ -16,6 +16,8 @@
  */
 package org.exoplatform.services.jcr.impl.util.jdbc.cleaner;
 
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
+
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,15 +37,14 @@ public class MultiDBCleaner extends WorkspaceDBCleaner
    /**
     * MultiDBCleaner constructor.
     */
-   public MultiDBCleaner(String containerName, Connection connection)
+   public MultiDBCleaner(WorkspaceEntry wsEntry, Connection connection)
    {
-      super(containerName, connection);
+      super(wsEntry, connection);
 
       commonMutliDBCleanScripts.add("drop table JCR_MREF");
       commonMutliDBCleanScripts.add("drop table JCR_MVALUE");
       commonMutliDBCleanScripts.add("drop table JCR_MITEM");
-      commonMutliDBCleanScripts.add("drop table JCR_LOCK_" + containerName.toUpperCase());
-      commonMutliDBCleanScripts.add("drop table JCR_LOCK_" + containerName.toUpperCase() + "_D");
+      commonMutliDBCleanScripts.addAll(commonDBCleanScripts);
    }
 
    /**
