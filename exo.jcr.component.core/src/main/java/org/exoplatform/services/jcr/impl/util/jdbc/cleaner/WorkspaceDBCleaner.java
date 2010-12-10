@@ -81,7 +81,7 @@ public abstract class WorkspaceDBCleaner implements DBCleaner
       this.connection = connection;
       this.containerName = wsEntry.getName();
 
-      String lockTableName = AbstractCacheableLockManager.getLockTableName(wsEntry);
+      String lockTableName = AbstractCacheableLockManager.getLockTableName(wsEntry.getLockManager());
       if (lockTableName != null)
       {
          commonDBCleanScripts.add(lockTableName);
