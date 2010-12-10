@@ -18,16 +18,16 @@
  */
 package org.exoplatform.services.jcr.ext.backup;
 
+import org.exoplatform.services.jcr.ext.backup.impl.BackupMessagesLog;
+import org.exoplatform.services.jcr.ext.backup.impl.BackupScheduler;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.io.File;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
-import org.exoplatform.services.jcr.ext.backup.impl.BackupMessagesLog;
-import org.exoplatform.services.jcr.ext.backup.impl.BackupScheduler;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
 
 /**
  * Created by The eXo Platform SAS

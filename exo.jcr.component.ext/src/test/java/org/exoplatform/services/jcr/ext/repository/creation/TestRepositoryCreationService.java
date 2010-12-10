@@ -16,10 +16,6 @@
  */
 package org.exoplatform.services.jcr.ext.repository.creation;
 
-import java.io.File;
-
-import javax.jcr.Node;
-
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
@@ -30,6 +26,10 @@ import org.exoplatform.services.jcr.ext.backup.ExtendedBackupManager;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChain;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupConfig;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
+
+import java.io.File;
+
+import javax.jcr.Node;
 
 /**
  * Created by The eXo Platform SAS.

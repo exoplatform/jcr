@@ -431,9 +431,9 @@
                <!-- for system storage -->
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
-                     <property name="source-name" value="jdbcjcr28" />
+                     <property name="source-name" value="jdbcjcr_backup_only_use_1" />
                      <property name="dialect" value="hsqldb" />
-                     <property name="multi-db" value="false" />
+                     <property name="multi-db" value="true" />
                      <property name="update-storage" value="true" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/db8_ws" />
@@ -464,9 +464,9 @@
             <workspace name="ws1">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
-                     <property name="source-name" value="jdbcjcr28" />
+                     <property name="source-name" value="jdbcjcr_backup_only_use_2" />
                      <property name="dialect" value="hsqldb" />
-                     <property name="multi-db" value="false" />
+                     <property name="multi-db" value="true" />
                      <property name="update-storage" value="true" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/db8_ws1" />

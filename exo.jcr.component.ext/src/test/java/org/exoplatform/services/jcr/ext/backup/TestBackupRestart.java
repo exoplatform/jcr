@@ -18,11 +18,11 @@
  */
 package org.exoplatform.services.jcr.ext.backup;
 
+import org.exoplatform.services.jcr.ext.backup.impl.BackupScheduler;
+
 import java.io.File;
 import java.util.Calendar;
 import java.util.Date;
-
-import org.exoplatform.services.jcr.ext.backup.impl.BackupScheduler;
 
 /**
  * Created by The eXo Platform SAS
