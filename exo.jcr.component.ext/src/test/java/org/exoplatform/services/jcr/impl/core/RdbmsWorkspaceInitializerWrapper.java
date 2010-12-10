@@ -68,7 +68,7 @@ public class RdbmsWorkspaceInitializerWrapper extends RdbmsWorkspaceInitializer
    public void restoreTables(Connection jdbcConn, String tableName) throws RepositoryConfigurationException,
       IOException, SQLException
    {
-      super.restoreTable(jdbcConn, tableName);
+      //      super.restoreTable(jdbcConn, new RestoreTableHelper(RestoreTableHelper, arg1));
    }
 
 }
