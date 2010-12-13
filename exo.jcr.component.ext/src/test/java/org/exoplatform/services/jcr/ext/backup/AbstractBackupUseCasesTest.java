@@ -16,17 +16,23 @@
  */
 package org.exoplatform.services.jcr.ext.backup;
 
+import org.apache.commons.collections.map.HashedMap;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.ext.backup.impl.JobRepositoryRestore;
 import org.exoplatform.services.jcr.ext.backup.impl.JobWorkspaceRestore;
+import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.Map;
 
 import javax.jcr.Node;
+import javax.jcr.RepositoryException;
 import javax.jcr.lock.Lock;
 
 /**
@@ -744,21 +750,21 @@ public abstract class AbstractBackupUseCasesTest
          fail("There are no backup files in " + backDir.getAbsolutePath());
    }
 
-   /*public void testRepositoryFullBackupRestore() throws Exception
+   public void testRepositoryFullBackupRestore() throws Exception
    {
       // backup
-      File backDir = new File("target/backup");
+      File backDir = new File("target/backup/" + getUUIndex());
       backDir.mkdirs();
 
       RepositoryBackupConfig config = new RepositoryBackupConfig();
-      config.setRepository(repository.getName());
+      config.setRepository(repositoryNameToBackup);
       config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
 
       config.setBackupDir(backDir);
 
       backup.startBackup(config);
 
-      RepositoryBackupChain bch = backup.findRepositoryBackup(repository.getName());
+      RepositoryBackupChain bch = backup.findRepositoryBackup(repositoryNameToBackup);
 
       // wait till full backup will be stopped
       while (bch.getState() != RepositoryBackupChain.FINISHED)
@@ -772,12 +778,9 @@ public abstract class AbstractBackupUseCasesTest
       backup.stopBackup(bch);
 
       // restore
-      RepositoryEntry re =
-               (RepositoryEntry) ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
-
-      String newRepositoryName = "repo_restored_1";
       RepositoryEntry newRepositoryEntry =
-               makeRepositoryEntry(newRepositoryName, re, "jdbcjcr_to_repository_restore_1", null);
+               makeRepositoryEntry(repositoryNameToRestore, getReposityToBackup().getConfiguration(),
+                        dataSourceToRepositoryRestore, null);
 
       File backLog = new File(bch.getLogFilePath());
       if (backLog.exists())
@@ -792,7 +795,7 @@ public abstract class AbstractBackupUseCasesTest
                   newRepositoryEntry.getName()).getStateRestore());
 
          // check
-         ManageableRepository restoredRepository = repositoryService.getRepository(newRepositoryName);
+         ManageableRepository restoredRepository = repositoryService.getRepository(repositoryNameToRestore);
 
          for (String wsName : restoredRepository.getWorkspaceNames())
          {
@@ -823,11 +826,11 @@ public abstract class AbstractBackupUseCasesTest
    public void testRepositoryFullAndIncrementalBackupRestore() throws Exception
    {
       // backup
-      File backDir = new File("target/backup");
+      File backDir = new File("target/backup/" + getUUIndex());
       backDir.mkdirs();
 
       RepositoryBackupConfig config = new RepositoryBackupConfig();
-      config.setRepository(repository.getName());
+      config.setRepository(repositoryNameToBackup);
       config.setBackupType(BackupManager.FULL_AND_INCREMENTAL);
       config.setIncrementalJobPeriod(1000);
 
@@ -835,7 +838,7 @@ public abstract class AbstractBackupUseCasesTest
 
       backup.startBackup(config);
 
-      RepositoryBackupChain bch = backup.findRepositoryBackup(repository.getName());
+      RepositoryBackupChain bch = backup.findRepositoryBackup(repositoryNameToBackup);
 
       // wait till full backup will be stopped
       while (bch.getState() != RepositoryBackupChain.FULL_BACKUP_FINISHED_INCREMENTAL_BACKUP_WORKING)
@@ -849,12 +852,9 @@ public abstract class AbstractBackupUseCasesTest
       backup.stopBackup(bch);
 
       // restore
-      RepositoryEntry re =
-               (RepositoryEntry) ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
-
-      String newRepositoryName = "repo_restored_4";
       RepositoryEntry newRepositoryEntry =
-               makeRepositoryEntry(newRepositoryName, re, "jdbcjcr_to_repository_restore_4", null);
+               makeRepositoryEntry(repositoryNameToRestore, getReposityToBackup().getConfiguration(),
+                        dataSourceToRepositoryRestore, null);
 
       File backLog = new File(bch.getLogFilePath());
       if (backLog.exists())
@@ -867,14 +867,14 @@ public abstract class AbstractBackupUseCasesTest
          backup.restore(bchLog, newRepositoryEntry, false);
 
          // check
-         ManageableRepository restoredRepository = repositoryService.getRepository(newRepositoryName);
+         ManageableRepository restoredRepository = repositoryService.getRepository(repositoryNameToRestore);
 
          for (String wsName : restoredRepository.getWorkspaceNames())
          {
             SessionImpl back1 = null;
             try
             {
-               back1 = (SessionImpl) repository.login(credentials, wsName);
+               back1 = (SessionImpl) restoredRepository.login(credentials, wsName);
                Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
                assertEquals("Restored content should be same", "property-5", ws1backTestRoot.getNode("node_5")
                         .getProperty("exo:data").getString());
@@ -898,18 +898,18 @@ public abstract class AbstractBackupUseCasesTest
    public void testRepositoryFullBackupAsynchronusRestore() throws Exception
    {
       // backup
-      File backDir = new File("target/backup");
+      File backDir = new File("target/backup/" + getUUIndex());
       backDir.mkdirs();
 
       RepositoryBackupConfig config = new RepositoryBackupConfig();
-      config.setRepository(repository.getName());
+      config.setRepository(repositoryNameToBackup);
       config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
 
       config.setBackupDir(backDir);
 
       backup.startBackup(config);
 
-      RepositoryBackupChain bch = backup.findRepositoryBackup(repository.getName());
+      RepositoryBackupChain bch = backup.findRepositoryBackup(repositoryNameToBackup);
 
       // wait till full backup will be stopped
       while (bch.getState() != RepositoryBackupChain.FINISHED)
@@ -923,12 +923,9 @@ public abstract class AbstractBackupUseCasesTest
       backup.stopBackup(bch);
 
       // restore
-      RepositoryEntry re =
-               (RepositoryEntry) ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
-
-      String newRepositoryName = "repo_restored_2";
       RepositoryEntry newRepositoryEntry =
-               makeRepositoryEntry(newRepositoryName, re, "jdbcjcr_to_repository_restore_2", null);
+               makeRepositoryEntry(repositoryNameToRestore, getReposityToBackup().getConfiguration(),
+                        dataSourceToRepositoryRestore, null);
 
       File backLog = new File(bch.getLogFilePath());
       if (backLog.exists())
@@ -940,7 +937,7 @@ public abstract class AbstractBackupUseCasesTest
 
          backup.restore(bchLog, newRepositoryEntry, true);
 
-         JobRepositoryRestore job = backup.getLastRepositoryRestore(newRepositoryName);
+         JobRepositoryRestore job = backup.getLastRepositoryRestore(repositoryNameToRestore);
 
          while (job.getStateRestore() != JobRepositoryRestore.REPOSITORY_RESTORE_SUCCESSFUL
                   || job.getStateRestore() == JobRepositoryRestore.REPOSITORY_RESTORE_FAIL)
@@ -950,7 +947,7 @@ public abstract class AbstractBackupUseCasesTest
          }
 
          // check
-         ManageableRepository restoredRepository = repositoryService.getRepository(newRepositoryName);
+         ManageableRepository restoredRepository = repositoryService.getRepository(repositoryNameToRestore);
 
          for (String wsName : restoredRepository.getWorkspaceNames())
          {
@@ -981,18 +978,18 @@ public abstract class AbstractBackupUseCasesTest
    public void testRepositoryFullBackupAsynchronusRestoreWorkspaceMapping() throws Exception
    {
       // backup
-      File backDir = new File("target/backup");
+      File backDir = new File("target/backup/" + getUUIndex());
       backDir.mkdirs();
 
       RepositoryBackupConfig config = new RepositoryBackupConfig();
-      config.setRepository(repository.getName());
+      config.setRepository(repositoryNameToBackup);
       config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
 
       config.setBackupDir(backDir);
 
       backup.startBackup(config);
 
-      RepositoryBackupChain bch = backup.findRepositoryBackup(repository.getName());
+      RepositoryBackupChain bch = backup.findRepositoryBackup(repositoryNameToBackup);
 
       // wait till full backup will be stopped
       while (bch.getState() != RepositoryBackupChain.FINISHED)
@@ -1006,12 +1003,9 @@ public abstract class AbstractBackupUseCasesTest
       backup.stopBackup(bch);
 
       // restore
-      RepositoryEntry re =
-               (RepositoryEntry) ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
-
-      String newRepositoryName = "repo_restored_3";
       RepositoryEntry newRepositoryEntry =
-               makeRepositoryEntry(newRepositoryName, re, "jdbcjcr_to_repository_restore_3", null);
+               makeRepositoryEntry(repositoryNameToRestore, getReposityToBackup().getConfiguration(),
+                        dataSourceToRepositoryRestore, null);
 
       // create workspace mappingS
       Map<String, String> workspaceMapping = new HashedMap();
@@ -1043,7 +1037,7 @@ public abstract class AbstractBackupUseCasesTest
 
          backup.restore(bchLog, newRepositoryEntry, workspaceMapping, true);
 
-         JobRepositoryRestore job = backup.getLastRepositoryRestore(newRepositoryName);
+         JobRepositoryRestore job = backup.getLastRepositoryRestore(repositoryNameToRestore);
 
          while (job.getStateRestore() != JobRepositoryRestore.REPOSITORY_RESTORE_SUCCESSFUL
                   || job.getStateRestore() == JobRepositoryRestore.REPOSITORY_RESTORE_FAIL)
@@ -1053,7 +1047,7 @@ public abstract class AbstractBackupUseCasesTest
          }
 
          // check
-         ManageableRepository restoredRepository = repositoryService.getRepository(newRepositoryName);
+         ManageableRepository restoredRepository = repositoryService.getRepository(repositoryNameToRestore);
 
          for (String wsName : restoredRepository.getWorkspaceNames())
          {
@@ -1084,11 +1078,11 @@ public abstract class AbstractBackupUseCasesTest
    public void testAutoStopRepositoryBackupIncrRepetion() throws Exception
    {
       // backup
-      File backDir = new File("target/backup/" + repository.getName() + "_" + System.currentTimeMillis());
+      File backDir = new File("target/backup/" + getUUIndex());
       backDir.mkdirs();
 
       RepositoryBackupConfig config = new RepositoryBackupConfig();
-      config.setRepository(repository.getName());
+      config.setRepository(repositoryNameToBackup);
       config.setBackupType(BackupManager.FULL_AND_INCREMENTAL);
       config.setBackupDir(backDir);
       config.setIncrementalJobPeriod(4);
@@ -1108,12 +1102,9 @@ public abstract class AbstractBackupUseCasesTest
    public void testRepositoryRestoreFail() throws Exception
    {
       // restore
-      RepositoryEntry re =
-               (RepositoryEntry) ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
-
-      String newRepositoryName = "repo_restored_5";
       RepositoryEntry newRepositoryEntry =
-               makeRepositoryEntry(newRepositoryName, re, "jdbcjcr_to_repository_restore_5", null);
+               makeRepositoryEntry(repositoryNameToRestore, getReposityToBackup().getConfiguration(),
+                        dataSourceToRepositoryRestore, null);
 
       //create broken system workspaceEntry
       newRepositoryEntry.getWorkspaceEntries().get(0).getQueryHandler().setType("gg");
@@ -1136,8 +1127,8 @@ public abstract class AbstractBackupUseCasesTest
 
       try
       {
-         ManageableRepository restoredRepository = repositoryService.getRepository(newRepositoryName);
-         fail("The repository " + newRepositoryName + "shoulde not exists.");
+         ManageableRepository restoredRepository = repositoryService.getRepository(repositoryNameToRestore);
+         fail("The repository " + repositoryNameToRestore + "shoulde not exists.");
       }
       catch (RepositoryException e)
       {
@@ -1153,19 +1144,19 @@ public abstract class AbstractBackupUseCasesTest
       File tempf = createBLOBTempFile("testIncrementalBackupRestore737-", 5 * 1024); // 5M
       tempf.deleteOnExit();
 
-      File backDir = new File("target/backup/ws1.incr737");
+      File backDir = new File("target/backup/" + getUUIndex());
       backDir.mkdirs();
 
       BackupConfig config = new BackupConfig();
-      config.setRepository(repository.getName());
-      config.setWorkspace("ws1");
+      config.setRepository(repositoryNameToBackup);
+      config.setWorkspace(workspaceNameToBackup);
       config.setBackupType(BackupManager.FULL_AND_INCREMENTAL);
 
       config.setBackupDir(backDir);
 
       backup.startBackup(config);
 
-      BackupChain bch = backup.findBackup(repository.getName(), "ws1");
+      BackupChain bch = backup.findBackup(repositoryNameToBackup, workspaceNameToBackup);
 
       // wait till full backup will be stopped
       while (bch.getFullBackupState() != BackupJob.FINISHED)
@@ -1191,9 +1182,7 @@ public abstract class AbstractBackupUseCasesTest
       ws1Session.getRootNode().save();
 
       // restore
-      RepositoryEntry re =
-               (RepositoryEntry) ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
-      WorkspaceEntry ws1back = makeWorkspaceEntry("ws1back.incr737", "jdbcjcr25");
+      WorkspaceEntry ws1back = makeWorkspaceEntry(workspaceNameToRestore, dataSourceToWorkspaceRestore);
 
       File backLog = new File(bch.getLogFilePath());
       if (backLog.exists())
@@ -1203,13 +1192,13 @@ public abstract class AbstractBackupUseCasesTest
          assertNotNull(bchLog.getStartedTime());
          assertNotNull(bchLog.getFinishedTime());
 
-         backup.restore(bchLog, re.getName(), ws1back, false);
+         backup.restore(bchLog, repositoryNameToBackup, ws1back, false);
 
          // check
          SessionImpl back1 = null;
          try
          {
-            back1 = (SessionImpl) repository.login(credentials, ws1back.getName());
+            back1 = (SessionImpl) getReposityToBackup().login(credentials, workspaceNameToRestore);
 
             Node node_101 = back1.getRootNode().getNode("node_101");
             assertNotNull(node_101);
@@ -1240,19 +1229,19 @@ public abstract class AbstractBackupUseCasesTest
    public void testExistedWorkspaceRestore() throws Exception
    {
       // backup
-      File backDir = new File("target/backup/ws1");
+      File backDir = new File("target/backup/" + getUUIndex());
       backDir.mkdirs();
 
       BackupConfig config = new BackupConfig();
-      config.setRepository(repository.getName());
-      config.setWorkspace("ws1");
+      config.setRepository(repositoryNameToBackup);
+      config.setWorkspace(workspaceNameToBackup);
       config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
 
       config.setBackupDir(backDir);
 
       backup.startBackup(config);
 
-      BackupChain bch = backup.findBackup(repository.getName(), "ws1");
+      BackupChain bch = backup.findBackup(repositoryNameToBackup, workspaceNameToBackup);
 
       // wait till full backup will be stopped
       while (bch.getFullBackupState() != BackupJob.FINISHED)
@@ -1289,13 +1278,13 @@ public abstract class AbstractBackupUseCasesTest
          assertNotNull(bchLog.getStartedTime());
          assertNotNull(bchLog.getFinishedTime());
 
-         backup.restoreExistingWorkspace(bchLog, re.getName(), ws1, false);
+         backup.restoreExistingWorkspace(bchLog, repositoryNameToBackup, ws1, false);
 
          // check
          SessionImpl back1 = null;
          try
          {
-            back1 = (SessionImpl) repository.login(credentials, "ws1");
+            back1 = (SessionImpl) getReposityToBackup().login(credentials, "ws1");
             Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
             assertEquals("Restored content should be same", "property-5", ws1backTestRoot.getNode("node_5")
                      .getProperty("exo:data").getString());
@@ -1318,19 +1307,19 @@ public abstract class AbstractBackupUseCasesTest
    public void testExistedWorkspaceRestoreAsync() throws Exception
    {
       // backup
-      File backDir = new File("target/backup/ws1");
+      File backDir = new File("target/backup/" + getUUIndex());
       backDir.mkdirs();
 
       BackupConfig config = new BackupConfig();
-      config.setRepository(repository.getName());
-      config.setWorkspace("ws1");
+      config.setRepository(repositoryNameToBackup);
+      config.setWorkspace(workspaceNameToBackup);
       config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
 
       config.setBackupDir(backDir);
 
       backup.startBackup(config);
 
-      BackupChain bch = backup.findBackup(repository.getName(), "ws1");
+      BackupChain bch = backup.findBackup(repositoryNameToBackup, workspaceNameToBackup);
 
       // wait till full backup will be stopped
       while (bch.getFullBackupState() != BackupJob.FINISHED)
@@ -1367,10 +1356,10 @@ public abstract class AbstractBackupUseCasesTest
          assertNotNull(bchLog.getStartedTime());
          assertNotNull(bchLog.getFinishedTime());
 
-         backup.restoreExistingWorkspace(bchLog, re.getName(), ws1, true);
+         backup.restoreExistingWorkspace(bchLog, repositoryNameToBackup, ws1, true);
 
-         while (backup.getLastRestore(repository.getName(), ws1.getName()).getStateRestore() != JobWorkspaceRestore.RESTORE_SUCCESSFUL
-                  && backup.getLastRestore(repository.getName(), ws1.getName()).getStateRestore() != JobWorkspaceRestore.RESTORE_FAIL)
+         while (backup.getLastRestore(repositoryNameToBackup, ws1.getName()).getStateRestore() != JobWorkspaceRestore.RESTORE_SUCCESSFUL
+                  && backup.getLastRestore(repositoryNameToBackup, ws1.getName()).getStateRestore() != JobWorkspaceRestore.RESTORE_FAIL)
          {
             Thread.sleep(50);
          }
@@ -1379,7 +1368,7 @@ public abstract class AbstractBackupUseCasesTest
          SessionImpl back1 = null;
          try
          {
-            back1 = (SessionImpl) repository.login(credentials, "ws1");
+            back1 = (SessionImpl) getReposityToBackup().login(credentials, workspaceNameToBackup);
             Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
             assertEquals("Restored content should be same", "property-5", ws1backTestRoot.getNode("node_5")
                      .getProperty("exo:data").getString());
@@ -1402,19 +1391,19 @@ public abstract class AbstractBackupUseCasesTest
    public void testExistedWorkspaceRestoreAsync2() throws Exception
    {
       // backup
-      File backDir = new File("target/backup/ws1");
+      File backDir = new File("target/backup/" + getUUIndex());
       backDir.mkdirs();
 
       BackupConfig config = new BackupConfig();
-      config.setRepository(repository.getName());
-      config.setWorkspace("ws1");
+      config.setRepository(repositoryNameToBackup);
+      config.setWorkspace(workspaceNameToBackup);
       config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
 
       config.setBackupDir(backDir);
 
       backup.startBackup(config);
 
-      BackupChain bch = backup.findBackup(repository.getName(), "ws1");
+      BackupChain bch = backup.findBackup(repositoryNameToBackup, workspaceNameToBackup);
 
       // wait till full backup will be stopped
       while (bch.getFullBackupState() != BackupJob.FINISHED)
@@ -1451,10 +1440,10 @@ public abstract class AbstractBackupUseCasesTest
          assertNotNull(bchLog.getStartedTime());
          assertNotNull(bchLog.getFinishedTime());
 
-         backup.restoreExistingWorkspace(bchLog.getBackupId(), re.getName(), ws1, true);
+         backup.restoreExistingWorkspace(bchLog.getBackupId(), repositoryNameToBackup, ws1, true);
 
-         while (backup.getLastRestore(repository.getName(), ws1.getName()).getStateRestore() != JobWorkspaceRestore.RESTORE_SUCCESSFUL
-                  && backup.getLastRestore(repository.getName(), ws1.getName()).getStateRestore() != JobWorkspaceRestore.RESTORE_FAIL)
+         while (backup.getLastRestore(repositoryNameToBackup, ws1.getName()).getStateRestore() != JobWorkspaceRestore.RESTORE_SUCCESSFUL
+                  && backup.getLastRestore(repositoryNameToBackup, ws1.getName()).getStateRestore() != JobWorkspaceRestore.RESTORE_FAIL)
          {
             Thread.sleep(50);
          }
@@ -1463,7 +1452,7 @@ public abstract class AbstractBackupUseCasesTest
          SessionImpl back1 = null;
          try
          {
-            back1 = (SessionImpl) repository.login(credentials, "ws1");
+            back1 = (SessionImpl) getReposityToBackup().login(credentials, workspaceNameToBackup);
             Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
             assertEquals("Restored content should be same", "property-5", ws1backTestRoot.getNode("node_5")
                      .getProperty("exo:data").getString());
@@ -1485,33 +1474,19 @@ public abstract class AbstractBackupUseCasesTest
 
    public void testExistedRepositoryRestore() throws Exception
    {
-      RepositoryImpl repositoryDB8 = (RepositoryImpl) repositoryService.getRepository("db8");
-
-      for (String wsName : repositoryDB8.getWorkspaceNames())
-      {
-         SessionImpl sessionWS = (SessionImpl) repositoryDB8.login(credentials, wsName);
-
-         Node wsTestRoot = sessionWS.getRootNode().addNode("backupTest");
-         sessionWS.getRootNode().save();
-         addContent(wsTestRoot, 1, 10, 1);
-         sessionWS.getRootNode().save();
-      }
-
-      SessionImpl sessionWS = (SessionImpl) repositoryDB8.login(credentials, WS_NAME);
-
       // backup
-      File backDir = new File("target/backup");
+      File backDir = new File("target/backup/" + getUUIndex());
       backDir.mkdirs();
 
       RepositoryBackupConfig config = new RepositoryBackupConfig();
-      config.setRepository(repositoryDB8.getName());
+      config.setRepository(repositoryNameToBackup);
       config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
 
       config.setBackupDir(backDir);
 
       backup.startBackup(config);
 
-      RepositoryBackupChain bch = backup.findRepositoryBackup(repositoryDB8.getName());
+      RepositoryBackupChain bch = backup.findRepositoryBackup(repositoryNameToBackup);
 
       // wait till full backup will be stopped
       while (bch.getState() != RepositoryBackupChain.FINISHED)
@@ -1525,9 +1500,8 @@ public abstract class AbstractBackupUseCasesTest
       backup.stopBackup(bch);
 
       // restore             
-      RepositoryEntry baseRE =
-               (RepositoryEntry) sessionWS.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
-      RepositoryEntry re = makeRepositoryEntry(baseRE.getName(), baseRE, null, null);
+      RepositoryEntry re =
+               makeRepositoryEntry(repositoryNameToBackup, getReposityToBackup().getConfiguration(), null, null);
 
       File backLog = new File(bch.getLogFilePath());
       if (backLog.exists())
@@ -1539,11 +1513,11 @@ public abstract class AbstractBackupUseCasesTest
 
          backup.restoreExistingRepository(bchLog, re, false);
 
-         assertEquals(JobWorkspaceRestore.RESTORE_SUCCESSFUL, backup.getLastRepositoryRestore(re.getName())
+         assertEquals(JobWorkspaceRestore.RESTORE_SUCCESSFUL, backup.getLastRepositoryRestore(repositoryNameToBackup)
                   .getStateRestore());
 
          // check
-         ManageableRepository restoredRepository = repositoryService.getRepository(re.getName());
+         ManageableRepository restoredRepository = repositoryService.getRepository(repositoryNameToBackup);
 
          for (String wsName : restoredRepository.getWorkspaceNames())
          {
@@ -1571,35 +1545,24 @@ public abstract class AbstractBackupUseCasesTest
          fail("There are no backup files in " + backDir.getAbsolutePath());
    }
 
-   public void testExistedRepositoryRestoreMultiDB() throws Exception
+   public void testExistedRepositoryRestoreSingelDB() throws Exception
    {
-      RepositoryImpl repositoryDB7 = (RepositoryImpl) repositoryService.getRepository("db7");
-
-      for (String wsName : repositoryDB7.getWorkspaceNames())
-      {
-         SessionImpl sessionWS = (SessionImpl) repositoryDB7.login(credentials, wsName);
-
-         Node wsTestRoot = sessionWS.getRootNode().addNode("backupTest");
-         sessionWS.getRootNode().save();
-         addContent(wsTestRoot, 1, 10, 1);
-         sessionWS.getRootNode().save();
-      }
-
-      SessionImpl sessionWS = (SessionImpl) repositoryDB7.login(credentials, WS_NAME);
+      RepositoryImpl repositoryDB7 = (RepositoryImpl) repositoryService.getRepository(repositoryNameToBackupSingleDB);
+      SessionImpl sessionWS = (SessionImpl) repositoryDB7.login(credentials, workspaceNameToBackup);
 
       // backup
-      File backDir = new File("target/backup");
+      File backDir = new File("target/backup/" + getUUIndex());
       backDir.mkdirs();
 
       RepositoryBackupConfig config = new RepositoryBackupConfig();
-      config.setRepository(repositoryDB7.getName());
+      config.setRepository(repositoryNameToBackupSingleDB);
       config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
 
       config.setBackupDir(backDir);
 
       backup.startBackup(config);
 
-      RepositoryBackupChain bch = backup.findRepositoryBackup(repositoryDB7.getName());
+      RepositoryBackupChain bch = backup.findRepositoryBackup(repositoryNameToBackupSingleDB);
 
       // wait till full backup will be stopped
       while (bch.getState() != RepositoryBackupChain.FINISHED)
@@ -1631,7 +1594,7 @@ public abstract class AbstractBackupUseCasesTest
                   .getStateRestore());
 
          // check
-         ManageableRepository restoredRepository = repositoryService.getRepository(re.getName());
+         ManageableRepository restoredRepository = repositoryService.getRepository(repositoryNameToBackupSingleDB);
 
          for (String wsName : restoredRepository.getWorkspaceNames())
          {
@@ -1661,33 +1624,19 @@ public abstract class AbstractBackupUseCasesTest
 
    public void testExistedRepositoryRestoreAsync() throws Exception
    {
-      RepositoryImpl repositoryDB8 = (RepositoryImpl) repositoryService.getRepository("db8");
-
-      for (String wsName : repositoryDB8.getWorkspaceNames())
-      {
-         SessionImpl sessionWS = (SessionImpl) repositoryDB8.login(credentials, wsName);
-
-         Node wsTestRoot = sessionWS.getRootNode().addNode("backupTest");
-         sessionWS.getRootNode().save();
-         addContent(wsTestRoot, 1, 10, 1);
-         sessionWS.getRootNode().save();
-      }
-
-      SessionImpl sessionWS = (SessionImpl) repositoryDB8.login(credentials, WS_NAME);
-
       // backup
-      File backDir = new File("target/backup");
+      File backDir = new File("target/backup/" + getUUIndex());
       backDir.mkdirs();
 
       RepositoryBackupConfig config = new RepositoryBackupConfig();
-      config.setRepository(repositoryDB8.getName());
+      config.setRepository(repositoryNameToBackup);
       config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
 
       config.setBackupDir(backDir);
 
       backup.startBackup(config);
 
-      RepositoryBackupChain bch = backup.findRepositoryBackup(repositoryDB8.getName());
+      RepositoryBackupChain bch = backup.findRepositoryBackup(repositoryNameToBackup);
 
       // wait till full backup will be stopped
       while (bch.getState() != RepositoryBackupChain.FINISHED)
@@ -1701,9 +1650,8 @@ public abstract class AbstractBackupUseCasesTest
       backup.stopBackup(bch);
 
       // restore
-      RepositoryEntry baseRE =
-               (RepositoryEntry) sessionWS.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
-      RepositoryEntry re = makeRepositoryEntry(baseRE.getName(), baseRE, null, null);
+      RepositoryEntry re =
+               makeRepositoryEntry(repositoryNameToBackup, getReposityToBackup().getConfiguration(), null, null);
 
       File backLog = new File(bch.getLogFilePath());
       if (backLog.exists())
@@ -1715,7 +1663,7 @@ public abstract class AbstractBackupUseCasesTest
 
          backup.restoreExistingRepository(bchLog, re, true);
 
-         JobRepositoryRestore job = backup.getLastRepositoryRestore(re.getName());
+         JobRepositoryRestore job = backup.getLastRepositoryRestore(repositoryNameToBackup);
 
          while (job.getStateRestore() != JobRepositoryRestore.REPOSITORY_RESTORE_SUCCESSFUL
                   && job.getStateRestore() != JobRepositoryRestore.REPOSITORY_RESTORE_FAIL)
@@ -1723,11 +1671,12 @@ public abstract class AbstractBackupUseCasesTest
             Thread.sleep(50);
          }
 
-         assertEquals(JobRepositoryRestore.REPOSITORY_RESTORE_SUCCESSFUL, backup.getLastRepositoryRestore(re.getName())
+         assertEquals(JobRepositoryRestore.REPOSITORY_RESTORE_SUCCESSFUL, backup.getLastRepositoryRestore(
+                  repositoryNameToBackup)
                   .getStateRestore());
 
          // check
-         ManageableRepository restoredRepository = repositoryService.getRepository(re.getName());
+         ManageableRepository restoredRepository = repositoryService.getRepository(repositoryNameToBackup);
 
          for (String wsName : restoredRepository.getWorkspaceNames())
          {
@@ -1757,33 +1706,19 @@ public abstract class AbstractBackupUseCasesTest
 
    public void testExistedRepositoryRestoreAsync2() throws Exception
    {
-      RepositoryImpl repositoryDB8 = (RepositoryImpl) repositoryService.getRepository("db8");
-
-      for (String wsName : repositoryDB8.getWorkspaceNames())
-      {
-         SessionImpl sessionWS = (SessionImpl) repositoryDB8.login(credentials, wsName);
-
-         Node wsTestRoot = sessionWS.getRootNode().addNode("backupTest");
-         sessionWS.getRootNode().save();
-         addContent(wsTestRoot, 1, 10, 1);
-         sessionWS.getRootNode().save();
-      }
-
-      SessionImpl sessionWS = (SessionImpl) repositoryDB8.login(credentials, WS_NAME);
-
       // backup
       File backDir = new File("target/backup");
       backDir.mkdirs();
 
       RepositoryBackupConfig config = new RepositoryBackupConfig();
-      config.setRepository(repositoryDB8.getName());
+      config.setRepository(repositoryNameToBackup);
       config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
 
       config.setBackupDir(backDir);
 
       backup.startBackup(config);
 
-      RepositoryBackupChain bch = backup.findRepositoryBackup(repositoryDB8.getName());
+      RepositoryBackupChain bch = backup.findRepositoryBackup(repositoryNameToBackup);
 
       // wait till full backup will be stopped
       while (bch.getState() != RepositoryBackupChain.FINISHED)
@@ -1797,9 +1732,8 @@ public abstract class AbstractBackupUseCasesTest
       backup.stopBackup(bch);
 
       // restore
-      RepositoryEntry baseRE =
-               (RepositoryEntry) sessionWS.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
-      RepositoryEntry re = makeRepositoryEntry(baseRE.getName(), baseRE, null, null);
+      RepositoryEntry re =
+               makeRepositoryEntry(repositoryNameToBackup, getReposityToBackup().getConfiguration(), null, null);
 
       File backLog = new File(bch.getLogFilePath());
       if (backLog.exists())
@@ -1811,7 +1745,7 @@ public abstract class AbstractBackupUseCasesTest
 
          backup.restoreExistingRepository(bchLog.getBackupId(), re, true);
 
-         JobRepositoryRestore job = backup.getLastRepositoryRestore(re.getName());
+         JobRepositoryRestore job = backup.getLastRepositoryRestore(repositoryNameToBackup);
 
          while (job.getStateRestore() != JobRepositoryRestore.REPOSITORY_RESTORE_SUCCESSFUL
                   && job.getStateRestore() != JobRepositoryRestore.REPOSITORY_RESTORE_FAIL)
@@ -1819,11 +1753,11 @@ public abstract class AbstractBackupUseCasesTest
             Thread.sleep(50);
          }
 
-         assertEquals(JobWorkspaceRestore.RESTORE_SUCCESSFUL, backup.getLastRepositoryRestore(re.getName())
+         assertEquals(JobWorkspaceRestore.RESTORE_SUCCESSFUL, backup.getLastRepositoryRestore(repositoryNameToBackup)
                   .getStateRestore());
 
          // check
-         ManageableRepository restoredRepository = repositoryService.getRepository(re.getName());
+         ManageableRepository restoredRepository = repositoryService.getRepository(repositoryNameToBackup);
 
          for (String wsName : restoredRepository.getWorkspaceNames())
          {
@@ -1851,31 +1785,25 @@ public abstract class AbstractBackupUseCasesTest
          fail("There are no backup files in " + backDir.getAbsolutePath());
    }
 
-   public void testExistedWorkspaceRestoreMultiDB() throws Exception
+   public void testExistedWorkspaceRestoreSingelDB() throws Exception
    {
-      RepositoryImpl repositoryDB7 = (RepositoryImpl) repositoryService.getRepository("db7");
-
-      SessionImpl sessionWS = (SessionImpl) repositoryDB7.login(credentials, "ws1");
-
-      Node wsTestRoot = sessionWS.getRootNode().addNode("backupTest");
-      sessionWS.getRootNode().save();
-      addContent(wsTestRoot, 1, 10, 1);
-      sessionWS.getRootNode().save();
+      RepositoryImpl repositoryDB7 = (RepositoryImpl) repositoryService.getRepository(repositoryNameToBackupSingleDB);
+      SessionImpl sessionWS = (SessionImpl) repositoryDB7.login(credentials, workspaceNameToBackup);
 
       // backup
-      File backDir = new File("target/backup/ws1");
+      File backDir = new File("target/backup/" + getUUIndex());
       backDir.mkdirs();
 
       BackupConfig config = new BackupConfig();
-      config.setRepository(repositoryDB7.getName());
-      config.setWorkspace("ws1");
+      config.setRepository(repositoryNameToBackupSingleDB);
+      config.setWorkspace(workspaceNameToBackup);
       config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
 
       config.setBackupDir(backDir);
 
       backup.startBackup(config);
 
-      BackupChain bch = backup.findBackup(repositoryDB7.getName(), "ws1");
+      BackupChain bch = backup.findBackup(repositoryNameToBackupSingleDB, workspaceNameToBackup);
 
       // wait till full backup will be stopped
       while (bch.getFullBackupState() != BackupJob.FINISHED)
@@ -1911,13 +1839,14 @@ public abstract class AbstractBackupUseCasesTest
          assertNotNull(bchLog.getStartedTime());
          assertNotNull(bchLog.getFinishedTime());
 
-         backup.restoreExistingWorkspace(bchLog, re.getName(), ws1, false);
+         backup.restoreExistingWorkspace(bchLog, repositoryNameToBackupSingleDB, ws1, false);
 
          // check
          SessionImpl back1 = null;
          try
          {
-            back1 = (SessionImpl) repositoryDB7.login(credentials, "ws1");
+            repositoryDB7 = (RepositoryImpl) repositoryService.getRepository(repositoryNameToBackupSingleDB);
+            back1 = (SessionImpl) repositoryDB7.login(credentials, workspaceNameToBackup);
             Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
             assertEquals("Restored content should be same", "property-5", ws1backTestRoot.getNode("node_5")
                      .getProperty("exo:data").getString());
@@ -1940,19 +1869,19 @@ public abstract class AbstractBackupUseCasesTest
    public void testExistedWorkspaceRestoreWithConfig() throws Exception
    {
       // backup
-      File backDir = new File("target/backup/ws1");
+      File backDir = new File("target/backup/" + getUUIndex());
       backDir.mkdirs();
 
       BackupConfig config = new BackupConfig();
-      config.setRepository(repository.getName());
-      config.setWorkspace("ws1");
+      config.setRepository(repositoryNameToBackup);
+      config.setWorkspace(workspaceNameToBackup);
       config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
 
       config.setBackupDir(backDir);
 
       backup.startBackup(config);
 
-      BackupChain bch = backup.findBackup(repository.getName(), "ws1");
+      BackupChain bch = backup.findBackup(repositoryNameToBackup, workspaceNameToBackup);
 
       // wait till full backup will be stopped
       while (bch.getFullBackupState() != BackupJob.FINISHED)
@@ -1983,7 +1912,7 @@ public abstract class AbstractBackupUseCasesTest
          SessionImpl back1 = null;
          try
          {
-            back1 = (SessionImpl) repository.login(credentials, "ws1");
+            back1 = (SessionImpl) getReposityToBackup().login(credentials, workspaceNameToBackup);
             Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
             assertEquals("Restored content should be same", "property-5", ws1backTestRoot.getNode("node_5")
                      .getProperty("exo:data").getString());
@@ -2005,34 +1934,19 @@ public abstract class AbstractBackupUseCasesTest
 
    public void testExistedRepositoryRestoreWithConfig() throws Exception
    {
-      RepositoryImpl repositoryDB8 = (RepositoryImpl) repositoryService.getRepository("db8");
-
-      for (String wsName : repositoryDB8.getWorkspaceNames())
-      {
-         SessionImpl sessionWS = (SessionImpl) repositoryDB8.login(credentials, wsName);
-
-         Node wsTestRoot = sessionWS.getRootNode().addNode("backupTest");
-         sessionWS.getRootNode().save();
-         addContent(wsTestRoot, 1, 10, 1);
-         sessionWS.getRootNode().save();
-      }
-
-      SessionImpl sessionWS = (SessionImpl) repositoryDB8.login(credentials, WS_NAME);
-
       // backup
-      File backDir = new File("target/backup/db1");
+      File backDir = new File("target/backup/" + getUUIndex());
       backDir.mkdirs();
 
       RepositoryBackupConfig config = new RepositoryBackupConfig();
-      String repoName = repositoryDB8.getName();
-      config.setRepository(repoName);
+      config.setRepository(repositoryNameToBackup);
       config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
 
       config.setBackupDir(backDir);
 
       backup.startBackup(config);
 
-      RepositoryBackupChain bch = backup.findRepositoryBackup(repositoryDB8.getName());
+      RepositoryBackupChain bch = backup.findRepositoryBackup(repositoryNameToBackup);
 
       // wait till full backup will be stopped
       while (bch.getState() != RepositoryBackupChain.FINISHED)
@@ -2058,11 +1972,11 @@ public abstract class AbstractBackupUseCasesTest
 
          backup.restoreExistingRepository(bchLog.getBackupId(), false);
 
-         assertEquals(JobWorkspaceRestore.RESTORE_SUCCESSFUL, backup.getLastRepositoryRestore(repoName)
+         assertEquals(JobWorkspaceRestore.RESTORE_SUCCESSFUL, backup.getLastRepositoryRestore(repositoryNameToBackup)
                   .getStateRestore());
 
          // check
-         ManageableRepository restoredRepository = repositoryService.getRepository(repoName);
+         ManageableRepository restoredRepository = repositoryService.getRepository(repositoryNameToBackup);
 
          for (String wsName : restoredRepository.getWorkspaceNames())
          {
@@ -2093,19 +2007,19 @@ public abstract class AbstractBackupUseCasesTest
    public void testWorkspaceRestoreWithConfig() throws Exception
    {
       // backup
-      File backDir = new File("target/backup/ws1");
+      File backDir = new File("target/backup/" + getUUIndex());
       backDir.mkdirs();
 
       BackupConfig config = new BackupConfig();
-      config.setRepository(repository.getName());
-      config.setWorkspace("ws1");
+      config.setRepository(repositoryNameToBackup);
+      config.setWorkspace(workspaceNameToBackup);
       config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
 
       config.setBackupDir(backDir);
 
       backup.startBackup(config);
 
-      BackupChain bch = backup.findBackup(repository.getName(), "ws1");
+      BackupChain bch = backup.findBackup(repositoryNameToBackup, workspaceNameToBackup);
 
       // wait till full backup will be stopped
       while (bch.getFullBackupState() != BackupJob.FINISHED)
@@ -2123,7 +2037,7 @@ public abstract class AbstractBackupUseCasesTest
 
       //TODO
       super.tearDown();
-      removeWorkspaceFully(repository.getName(), "ws1");
+      removeWorkspaceFully(repositoryNameToBackup, workspaceNameToBackup);
 
       File backLog = new File(bch.getLogFilePath());
       if (backLog.exists())
@@ -2139,7 +2053,7 @@ public abstract class AbstractBackupUseCasesTest
          SessionImpl back1 = null;
          try
          {
-            back1 = (SessionImpl) repository.login(credentials, "ws1");
+            back1 = (SessionImpl) getReposityToBackup().login(credentials, "ws1");
             Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
             assertEquals("Restored content should be same", "property-5", ws1backTestRoot.getNode("node_5")
                      .getProperty("exo:data").getString());
@@ -2161,34 +2075,19 @@ public abstract class AbstractBackupUseCasesTest
 
    public void testRepositoryRestoreWithConfig() throws Exception
    {
-      RepositoryImpl repositoryDB8 = (RepositoryImpl) repositoryService.getRepository("db8");
-
-      for (String wsName : repositoryDB8.getWorkspaceNames())
-      {
-         SessionImpl sessionWS = (SessionImpl) repositoryDB8.login(credentials, wsName);
-
-         Node wsTestRoot = sessionWS.getRootNode().addNode("backupTest");
-         sessionWS.getRootNode().save();
-         addContent(wsTestRoot, 1, 10, 1);
-         sessionWS.getRootNode().save();
-      }
-
-      SessionImpl sessionWS = (SessionImpl) repositoryDB8.login(credentials, WS_NAME);
-
       // backup
-      File backDir = new File("target/backup");
+      File backDir = new File("target/backup/" + getUUIndex());
       backDir.mkdirs();
 
       RepositoryBackupConfig config = new RepositoryBackupConfig();
-      String repoName = repositoryDB8.getName();
-      config.setRepository(repoName);
+      config.setRepository(repositoryNameToBackup);
       config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
 
       config.setBackupDir(backDir);
 
       backup.startBackup(config);
 
-      RepositoryBackupChain bch = backup.findRepositoryBackup(repositoryDB8.getName());
+      RepositoryBackupChain bch = backup.findRepositoryBackup(repositoryNameToBackup);
 
       // wait till full backup will be stopped
       while (bch.getState() != RepositoryBackupChain.FINISHED)
@@ -2203,7 +2102,7 @@ public abstract class AbstractBackupUseCasesTest
 
       //TODO
       super.tearDown();
-      removeRepositoryFully(repositoryDB8.getName());
+      removeRepositoryFully(repositoryNameToBackup);
 
       // restore             
       File backLog = new File(bch.getLogFilePath());
@@ -2216,11 +2115,11 @@ public abstract class AbstractBackupUseCasesTest
 
          backup.restoreRepository(bchLog.getBackupId(), false);
 
-         assertEquals(JobWorkspaceRestore.RESTORE_SUCCESSFUL, backup.getLastRepositoryRestore(repoName)
+         assertEquals(JobWorkspaceRestore.RESTORE_SUCCESSFUL, backup.getLastRepositoryRestore(repositoryNameToBackup)
                   .getStateRestore());
 
          // check
-         ManageableRepository restoredRepository = repositoryService.getRepository(repoName);
+         ManageableRepository restoredRepository = repositoryService.getRepository(repositoryNameToBackup);
 
          for (String wsName : restoredRepository.getWorkspaceNames())
          {
@@ -2246,5 +2145,5 @@ public abstract class AbstractBackupUseCasesTest
       }
       else
          fail("There are no backup files in " + backDir.getAbsolutePath());
-   }*/
+   }
 }

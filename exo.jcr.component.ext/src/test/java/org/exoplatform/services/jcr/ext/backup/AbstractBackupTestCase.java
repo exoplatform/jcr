@@ -78,7 +78,13 @@ public abstract class AbstractBackupTestCase
 
    protected String dataSourceToWorkspaceRestore = "jdbcjcr_workspace_restore";
 
-   protected String repositoryNameToRestpre = "db8backup";
+   protected String dataSourceToRepositoryRestore = "jdbcjcr_to_repository_restore";
+   
+   protected String dataSourceToRepositoryRestoreSingleDB = "jdbcjcr_to_repository_restore_singel_db";
+   
+   protected String repositoryNameToBackupSingleDB = "db7";
+
+   protected String repositoryNameToRestore = "db8backup";
 
    protected String workspaceNameToRestore = "ws1backup";
 
@@ -131,6 +137,18 @@ public abstract class AbstractBackupTestCase
          }
       }
 
+      RepositoryImpl repositoryDB7 = (RepositoryImpl) repositoryService.getRepository(repositoryNameToBackupSingleDB);
+
+      for (String wsName : repositoryDB7.getWorkspaceNames())
+      {
+         SessionImpl sessionWS = (SessionImpl) repositoryDB7.login(credentials, wsName);
+
+         Node wsTestRoot = sessionWS.getRootNode().addNode("backupTest");
+         sessionWS.getRootNode().save();
+         addContent(wsTestRoot, 1, 10, 1);
+         sessionWS.getRootNode().save();
+      }
+
    }
 
    protected abstract ExtendedBackupManager getBackupManager();
@@ -158,12 +176,38 @@ public abstract class AbstractBackupTestCase
          }
       }
 
+      RepositoryImpl repositoryDB7 = (RepositoryImpl) repositoryService.getRepository(repositoryNameToBackupSingleDB);
+
+      for (String wsName : repositoryDB7.getWorkspaceNames())
+      {
+         try
+         {
+            SessionImpl ws = (SessionImpl) repositoryDB7.login(credentials, wsName);
+            ws.getRootNode().getNode("backupTest").remove();
+            ws.save();
+         }
+         catch (PathNotFoundException e)
+         {
+            //skip
+         }
+      }
+
       for (String wsName : getReposityToBackup().getWorkspaceNames())
       {
          if (wsName.equals(workspaceNameToRestore))
          {
             removeWorkspaceFully(getReposityToBackup().getName(), workspaceNameToRestore);
          }
+      }
+
+      try 
+      {
+         repositoryService.getConfig().getRepositoryConfiguration(repositoryNameToRestore);
+         removeRepositoryFully(repositoryNameToRestore);
+      } 
+      catch (RepositoryConfigurationException e)
+      {
+         //skip
       }
 
    }
