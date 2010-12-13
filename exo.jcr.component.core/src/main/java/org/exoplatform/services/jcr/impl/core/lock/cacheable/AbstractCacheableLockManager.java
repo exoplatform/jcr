@@ -789,11 +789,14 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
     */
    public static String getLockTableName(LockManagerEntry lockManagerEntry)
    {
-      for (SimpleParameterEntry entry : lockManagerEntry.getParameters())
+      if (lockManagerEntry != null)
       {
-         if (entry.getName().contains(AbstractCacheableLockManager.JDBC_TABLE_NAME_SUFFIX))
+         for (SimpleParameterEntry entry : lockManagerEntry.getParameters())
          {
-            return entry.getValue();
+            if (entry.getName().contains(AbstractCacheableLockManager.JDBC_TABLE_NAME_SUFFIX))
+            {
+               return entry.getValue();
+            }
          }
       }
 
