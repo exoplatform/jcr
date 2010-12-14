@@ -185,12 +185,9 @@
               <include>**/replication/*.java</include>
               <include>**/replication/external/*.java</include>
               <include>**/replication/async/**/*.java</include>
-              <include>**/backup/*.java</include>
             </includes>
             <excludes>
-              <exclude>**/backup/TestRDBMSBackupManager.java</exclude>
-              <exclude>**/backup/TestBackupManager.java</exclude>
-              <exclude>**/backup/TestRdbmsWorkspaceInitializer.java</exclude>
+              <exclude>**/backup/*.java</exclude>
               <exclude>**/BaseStandaloneTest.java</exclude>
               <exclude>**/backup/AbstractBackupTestCase.java</exclude>
               <exclude>**/backup/BaseRDBMSBackupTest.java</exclude>
