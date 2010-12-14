@@ -17,6 +17,7 @@
 package org.exoplatform.services.jcr.impl.util.jdbc.cleaner;
 
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.services.jcr.config.LockManagerEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
 import org.exoplatform.services.jcr.impl.core.lock.cacheable.AbstractCacheableLockManager;
@@ -81,11 +82,13 @@ public abstract class WorkspaceDBCleaner implements DBCleaner
       this.connection = connection;
       this.containerName = wsEntry.getName();
 
-      String lockTableName = AbstractCacheableLockManager.getLockTableName(wsEntry.getLockManager());
-      if (lockTableName != null)
+      LockManagerEntry lockEntry = wsEntry.getLockManager();
+      if (lockEntry != null)
       {
-         commonDBCleanScripts.add(lockTableName);
-         commonDBCleanScripts.add(lockTableName + "_D");
+         for (String tableName : AbstractCacheableLockManager.getLockTableNames(lockEntry))
+         {
+            commonDBCleanScripts.add("drop table " + tableName);
+         }
       }
    }
 

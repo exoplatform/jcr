@@ -82,7 +82,7 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
 
    public static final String JBOSSCACHE_JDBC_CL_FQN_COLUMN = "jbosscache-cl-cache.jdbc.fqn.type";
 
-   public static final String JBOSSCACHE_JDBC_TABLE_NAME = "jbosscache-cl-cache." + JDBC_TABLE_NAME_SUFFIX;
+   public static final String JBOSSCACHE_JDBC_TABLE_NAME = "jbosscache-cl-cache.jdbc.table.name";
 
    /**
     * Indicate whether the JBoss Cache instance used can be shared with other caches

@@ -75,7 +75,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
 
    public static final String INFINISPAN_JDBC_CL_ID_COLUMN = "infinispan-cl-cache.jdbc.id.type";
 
-   public static final String INFINISPAN_JDBC_TABLE_NAME = "infinispan-cl-cache." + JDBC_TABLE_NAME_SUFFIX;
+   public static final String INFINISPAN_JDBC_TABLE_NAME = "infinispan-cl-cache.jdbc.table.name";
 
    public static final String INFINISPAN_JDBC_CL_AUTO = "auto";
 

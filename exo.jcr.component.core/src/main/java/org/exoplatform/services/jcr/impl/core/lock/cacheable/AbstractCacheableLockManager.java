@@ -41,6 +41,8 @@ import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.lock.LockRemover;
 import org.exoplatform.services.jcr.impl.core.lock.LockRemoverHolder;
 import org.exoplatform.services.jcr.impl.core.lock.SessionLockManager;
+import org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl;
+import org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl;
 import org.exoplatform.services.jcr.impl.dataflow.TransientItemData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
@@ -129,8 +131,6 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
    protected LockActionNonTxAware<LockData, String> getLockDataById;
 
    protected LockActionNonTxAware<List<LockData>, Object> getLockList;
-
-   public static final String JDBC_TABLE_NAME_SUFFIX = "jdbc.table.name";
 
    /**
     * Constructor.
@@ -787,19 +787,36 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
    /**
     * Return table name for lock data.
     */
-   public static String getLockTableName(LockManagerEntry lockManagerEntry)
+   public static List<String> getLockTableNames(LockManagerEntry lockManagerEntry)
    {
+      List<String> tableNames = new ArrayList<String>();
+
       if (lockManagerEntry != null)
       {
          for (SimpleParameterEntry entry : lockManagerEntry.getParameters())
          {
-            if (entry.getName().contains(AbstractCacheableLockManager.JDBC_TABLE_NAME_SUFFIX))
+            if (entry.getName().equals(CacheableLockManagerImpl.JBOSSCACHE_JDBC_TABLE_NAME))
             {
-               return entry.getValue();
+               tableNames.add(entry.getValue());
+               tableNames.add(entry.getValue() + "_D");
+
+               return tableNames;
+            }
+            else if (entry.getName().equals(ISPNCacheableLockManagerImpl.INFINISPAN_JDBC_TABLE_NAME))
+            {
+               throw new RuntimeException("Not supported");
             }
          }
       }
 
-      return null;
+      return tableNames;
+   }
+
+   /**
+    * Return select data script.
+    */
+   public static String getSelectScript(String tableName)
+   {
+      return "select * from " + tableName;
    }
 }
