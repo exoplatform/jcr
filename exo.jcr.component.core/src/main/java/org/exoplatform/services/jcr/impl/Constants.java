@@ -491,9 +491,19 @@ public class Constants
    public static final String ROOT_URI = "[]:1";
 
    /**
-    * Workspace root node vurtual parent node UUID.
+    * Workspace root node virtual parent node UUID.
     */
    public static final String ROOT_PARENT_UUID = " ".intern(); // empty
+
+   /**
+    * Workspace root node virtual parent node name.
+    */
+   public static final String ROOT_PARENT_NAME = "__root_parent";
+
+   /**
+    * Workspace root node virtual container name.
+    */
+   public static final String ROOT_PARENT_CONAINER_NAME = "__root_parent_container";
 
    /**
     * Workspace root node UUID.

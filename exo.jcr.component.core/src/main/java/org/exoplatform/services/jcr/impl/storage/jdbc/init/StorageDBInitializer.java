@@ -37,7 +37,7 @@ public class StorageDBInitializer extends DBInitializer
 {
 
    protected final boolean multiDb;
-   
+
    public StorageDBInitializer(String containerName, Connection connection, String scriptPath, boolean multiDb)
       throws IOException
    {
@@ -48,6 +48,7 @@ public class StorageDBInitializer extends DBInitializer
    /**
     * Init root node parent record.
     */
+   @Override
    protected void postInit(Connection connection) throws SQLException
    {
       final String MDB = (multiDb ? "M" : "S");
@@ -60,8 +61,8 @@ public class StorageDBInitializer extends DBInitializer
          String insert =
             "insert into JCR_" + MDB + "ITEM(ID, PARENT_ID, NAME, " + (multiDb ? "" : "CONTAINER_NAME, ")
                + "VERSION, I_CLASS, I_INDEX, N_ORDER_NUM)" + " VALUES('" + Constants.ROOT_PARENT_UUID + "', '"
-               + Constants.ROOT_PARENT_UUID + "', '__root_parent', " + (multiDb ? "" : "'__root_parent_container', ")
-               + "0, 0, 0, 0)";
+               + Constants.ROOT_PARENT_UUID + "', '" + Constants.ROOT_PARENT_NAME + "', "
+               + (multiDb ? "" : "'" + Constants.ROOT_PARENT_CONAINER_NAME + "', ") + "0, 0, 0, 0)";
 
          connection.createStatement().executeUpdate(insert);
       }
