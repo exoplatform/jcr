@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.ext.backup.impl.rdbms;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.services.jcr.config.LockManagerEntry;
 import org.exoplatform.services.jcr.config.QueryHandlerParams;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.ValueStorageEntry;
@@ -31,7 +32,6 @@ import org.exoplatform.services.jcr.ext.backup.BackupOperationException;
 import org.exoplatform.services.jcr.ext.backup.impl.AbstractFullBackupJob;
 import org.exoplatform.services.jcr.ext.backup.impl.FileNameProducer;
 import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.core.RdbmsWorkspaceInitializer;
 import org.exoplatform.services.jcr.impl.core.lock.cacheable.AbstractCacheableLockManager;
 import org.exoplatform.services.jcr.impl.core.query.SystemSearchManager;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectWriterImpl;
@@ -57,6 +57,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Calendar;
+import java.util.List;
 
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
@@ -69,6 +70,50 @@ import javax.sql.DataSource;
  */
 public class FullBackupJob extends AbstractFullBackupJob
 {
+   /**
+    * Index directory in full backup storage.
+    */
+  public static final String INDEX_DIR = "index";
+
+  /**
+   * System index directory in full backup storage.
+   */
+  public static final String SYSTEM_INDEX_DIR = INDEX_DIR + "_" + SystemSearchManager.INDEX_DIR_SUFFIX;
+
+  /**
+   * Value storage directory in full backup storage.
+   */
+  public static final String VALUE_STORAGE_DIR = "values";
+
+  /**
+   * Suffix for content file.
+   */
+  public static final String CONTENT_FILE_SUFFIX = ".dump";
+
+  /**
+   * Suffix for content length file.
+   */
+  public static final String CONTENT_LEN_FILE_SUFFIX = ".len";
+
+  /**
+   * Content is absent.
+   */
+  public static final byte NULL_LEN = 0;
+
+  /**
+   * Content length value has byte type.
+   */
+  public static final byte BYTE_LEN = 1;
+
+  /**
+   * Content length value has integer type.
+   */
+  public static final byte INT_LEN = 2;
+
+  /**
+   * Content length value has long type.
+   */
+  public static final byte LONG_LEN = 3;
 
    /**
     * Logger.
@@ -163,6 +208,7 @@ public class FullBackupJob extends AbstractFullBackupJob
             throw new RepositoryConfigurationException(JDBCWorkspaceDataContainer.MULTIDB
                + " parameter not found in workspace " + workspaceName + " configuration");
          }
+         boolean isMultiDb = Boolean.parseBoolean(multiDb);
 
          final DataSource ds = (DataSource)new InitialContext().lookup(dsName);
          if (ds == null)
@@ -182,28 +228,39 @@ public class FullBackupJob extends AbstractFullBackupJob
          transactionIsolation = jdbcConn.getTransactionIsolation();
          jdbcConn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
 
+         RDBMSBackupInfoWriter backupInfoWriter = new RDBMSBackupInfoWriter(getStorageURL().getFile());
+
+         backupInfoWriter.setRepositoryName(repository.getConfiguration().getName());
+         backupInfoWriter.setWorkspaceName(workspaceName);
+         backupInfoWriter.setMultiDb(isMultiDb);
+
          // dump JCR data
          String[][] scripts;
-         if (Boolean.parseBoolean(multiDb))
+         if (isMultiDb)
          {
             scripts =
-               new String[][]{{"JCR_MVALUE", "select * from JCR_MVALUE"}, {"JCR_MREF", "select * from JCR_MREF"},
-            {"JCR_MITEM", "select * from JCR_MITEM where JCR_MITEM.name <> '__root_parent'"}};
+               new String[][]{
+                  {"JCR_MITEM", "select * from JCR_MITEM where JCR_MITEM.name <> '" + Constants.ROOT_PARENT_NAME + "'"},
+                  {"JCR_MVALUE", "select * from JCR_MVALUE"}, {"JCR_MREF", "select * from JCR_MREF"}};
          }
          else
          {
             scripts =
                new String[][]{
+                  {"JCR_SITEM", "select * from JCR_SITEM where CONTAINER_NAME='" + workspaceName + "'"},
                   {
                      "JCR_SVALUE",
-                     "select from JCR_SVALUE where exists(select * from JCR_SITEM where JCR_SITEM.ID=JCR_SVALUE.PROPERTY_ID and JCR_SITEM.CONTAINER_NAME="
-                        + workspaceName + ")"},
+                     "select * from JCR_SVALUE where exists(select * from JCR_SITEM where JCR_SITEM.ID=JCR_SVALUE.PROPERTY_ID and JCR_SITEM.CONTAINER_NAME='"
+                        + workspaceName + "')"},
                   {
                      "JCR_SREF",
-                     "select from JCR_SREF where exists(select * from JCR_SITEM where JCR_SITEM.ID=JCR_SREF.PROPERTY_ID and JCR_SITEM.CONTAINER_NAME="
-                        + workspaceName + ")"},
-                  {"JCR_SITEM", "select from JCR_SITEM where CONTAINER_NAME=" + workspaceName}};
+                     "select * from JCR_SREF where exists(select * from JCR_SITEM where JCR_SITEM.ID=JCR_SREF.PROPERTY_ID and JCR_SITEM.CONTAINER_NAME='"
+                        + workspaceName + "')"}};
          }
+
+         backupInfoWriter.setItemTableName(scripts[0][0]);
+         backupInfoWriter.setValueTableName(scripts[1][0]);
+         backupInfoWriter.setRefTableName(scripts[2][0]);
 
          for (String script[] : scripts)
          {
@@ -211,21 +268,23 @@ public class FullBackupJob extends AbstractFullBackupJob
          }
 
          // dump LOCK data
-         String lockTableName = AbstractCacheableLockManager.getLockTableName(workspaceEntry.getLockManager());
-         if (lockTableName != null)
+         LockManagerEntry lockEntry = workspaceEntry.getLockManager();
+         if (lockEntry != null)
          {
-            scripts =
-               new String[][]{{lockTableName, "select * from " + lockTableName},
-                  {lockTableName + "_D", "select * from " + lockTableName + "_D"}};
+            List<String> lockTableNames = AbstractCacheableLockManager.getLockTableNames(lockEntry);
+            backupInfoWriter.setLockTableNames(lockTableNames);
 
-            for (String script[] : scripts)
+            for (String tableName : lockTableNames)
             {
-               dumpTable(jdbcConn, script[0], script[1]);
+               dumpTable(jdbcConn, tableName, AbstractCacheableLockManager.getSelectScript(tableName));
             }
          }
 
          backupValueStorage(workspaceEntry);
          backupIndex(workspaceEntry);
+
+         // write backup information
+         backupInfoWriter.write();
       }
       catch (RepositoryConfigurationException e)
       {
@@ -302,7 +361,7 @@ public class FullBackupJob extends AbstractFullBackupJob
          }
          else
          {
-            File destDir = new File(getStorageURL().getFile(), RdbmsWorkspaceInitializer.INDEX_DIR);
+            File destDir = new File(getStorageURL().getFile(), INDEX_DIR);
             copyDirectory(srcDir, destDir);
          }
 
@@ -317,7 +376,7 @@ public class FullBackupJob extends AbstractFullBackupJob
             }
             else
             {
-               File destDir = new File(getStorageURL().getFile(), RdbmsWorkspaceInitializer.SYSTEM_INDEX_DIR);
+               File destDir = new File(getStorageURL().getFile(), SYSTEM_INDEX_DIR);
                copyDirectory(srcDir, destDir);
             }
          }
@@ -347,7 +406,7 @@ public class FullBackupJob extends AbstractFullBackupJob
             }
             else
             {
-               File destValuesDir = new File(getStorageURL().getFile(), RdbmsWorkspaceInitializer.VALUE_STORAGE_DIR);
+               File destValuesDir = new File(getStorageURL().getFile(), VALUE_STORAGE_DIR);
                File destDir = new File(destValuesDir, valueStorage.getId());
 
                copyDirectory(srcDir, destDir);
@@ -370,12 +429,10 @@ public class FullBackupJob extends AbstractFullBackupJob
       ResultSet rs = null;
       try
       {
-         File contentFile =
-            new File(getStorageURL().getFile(), tableName + RdbmsWorkspaceInitializer.CONTENT_FILE_SUFFIX);
+         File contentFile = new File(getStorageURL().getFile(), tableName + CONTENT_FILE_SUFFIX);
          contentWriter = new ObjectWriterImpl(PrivilegedFileHelper.fileOutputStream(contentFile));
 
-         File contentLenFile =
-            new File(getStorageURL().getFile(), tableName + RdbmsWorkspaceInitializer.CONTENT_LEN_FILE_SUFFIX);
+         File contentLenFile = new File(getStorageURL().getFile(), tableName + CONTENT_LEN_FILE_SUFFIX);
          contentLenWriter = new ObjectWriterImpl(PrivilegedFileHelper.fileOutputStream(contentLenFile));
 
          stmt = jdbcConn.prepareStatement(script);
@@ -418,7 +475,7 @@ public class FullBackupJob extends AbstractFullBackupJob
                
                if (value == null)
                {
-                  contentLenWriter.writeByte(RdbmsWorkspaceInitializer.NULL_LEN);
+                  contentLenWriter.writeByte(NULL_LEN);
                }
                else
                {
@@ -467,17 +524,17 @@ public class FullBackupJob extends AbstractFullBackupJob
    {
       if (len < Byte.MAX_VALUE)
       {
-         out.writeByte(RdbmsWorkspaceInitializer.BYTE_LEN);
+         out.writeByte(BYTE_LEN);
          out.writeByte((byte)len);
       }
       else if (len < Integer.MAX_VALUE)
       {
-         out.writeByte(RdbmsWorkspaceInitializer.INT_LEN);
+         out.writeByte(INT_LEN);
          out.writeInt((int)len);
       }
       else
       {
-         out.writeByte(RdbmsWorkspaceInitializer.LONG_LEN);
+         out.writeByte(LONG_LEN);
          out.writeLong(len);
       }
    }

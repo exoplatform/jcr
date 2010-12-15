@@ -28,7 +28,7 @@ import org.exoplatform.services.jcr.ext.backup.BackupOperationException;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChainLog;
 import org.exoplatform.services.jcr.ext.backup.RepositoryRestoreExeption;
 import org.exoplatform.services.jcr.ext.backup.impl.fs.FullBackupJob;
-import org.exoplatform.services.jcr.impl.core.RdbmsWorkspaceInitializer;
+import org.exoplatform.services.jcr.ext.backup.impl.rdbms.RdbmsWorkspaceInitializer;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.jcr.impl.core.SysViewWorkspaceInitializer;

@@ -19,9 +19,12 @@
 package org.exoplatform.services.jcr.impl.core;
 
 import org.exoplatform.services.jcr.access.AccessManager;
+import org.exoplatform.services.jcr.config.LockManagerEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.ext.backup.impl.rdbms.RDBMSBackupInfoReader;
+import org.exoplatform.services.jcr.ext.backup.impl.rdbms.RdbmsWorkspaceInitializer;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
@@ -43,10 +46,10 @@ import javax.jcr.RepositoryException;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: SessionDataManagerTestWrapper.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class RdbmsWorkspaceInitializerWrapper extends RdbmsWorkspaceInitializer
+public class TesterRdbmsWorkspaceInitializer extends RdbmsWorkspaceInitializer
 {
 
-   public RdbmsWorkspaceInitializerWrapper(WorkspaceEntry config, RepositoryEntry repConfig,
+   public TesterRdbmsWorkspaceInitializer(WorkspaceEntry config, RepositoryEntry repConfig,
       CacheableWorkspaceDataManager dataManager, NamespaceRegistryImpl namespaceRegistry,
       LocationFactory locationFactory, NodeTypeManagerImpl nodeTypeManager, ValueFactoryImpl valueFactory,
       AccessManager accessManager) throws RepositoryConfigurationException, PathNotFoundException, RepositoryException
@@ -65,10 +68,13 @@ public class RdbmsWorkspaceInitializerWrapper extends RdbmsWorkspaceInitializer
       super.restoreIndex();
    }
 
-   public void restoreTables(Connection jdbcConn, String tableName) throws RepositoryConfigurationException,
-      IOException, SQLException
+   public void restoreTables(Connection jdbcConn, int tableType, boolean isMultiDB, LockManagerEntry lockManagerEntry,
+      String storageDir) throws RepositoryConfigurationException, IOException, SQLException
    {
-      //      super.restoreTable(jdbcConn, new RestoreTableHelper(RestoreTableHelper, arg1));
+      RDBMSBackupInfoReader backupInfo = new RDBMSBackupInfoReader(storageDir);
+      RestoreTableHelper helper = new RestoreTableHelper(tableType, isMultiDB, backupInfo);
+
+      super.restoreTable(jdbcConn, helper);
    }
 
 }

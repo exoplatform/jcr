@@ -18,12 +18,11 @@
  */
 package org.exoplatform.services.jcr.ext.backup;
 
+import org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob;
+
 import java.io.File;
 import java.net.URL;
 import java.util.Calendar;
-
-import org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob;
-import org.exoplatform.services.jcr.impl.core.RdbmsWorkspaceInitializer;
 
 /**
  * @author <a href="mailto:anatoliy.bazko@gmail.com">Anatoliy Bazko</a>
@@ -49,27 +48,27 @@ public class TestRdbmsFullBackupJob
       URL url = job.getStorageURL();
       assertNotNull(url);
 
-      File valuesDir = new File(url.getFile(), RdbmsWorkspaceInitializer.VALUE_STORAGE_DIR);
+      File valuesDir = new File(url.getFile(), FullBackupJob.VALUE_STORAGE_DIR);
       assertTrue(valuesDir.exists());
       String values[] = valuesDir.list();
 
       assertEquals(values.length, 1);
       assertTrue(new File(valuesDir, values[0]).isDirectory());
 
-      File indexesDir = new File(url.getFile(), RdbmsWorkspaceInitializer.INDEX_DIR);
+      File indexesDir = new File(url.getFile(), FullBackupJob.INDEX_DIR);
       assertTrue(indexesDir.exists());
 
-      indexesDir = new File(url.getFile(), RdbmsWorkspaceInitializer.SYSTEM_INDEX_DIR);
+      indexesDir = new File(url.getFile(), FullBackupJob.SYSTEM_INDEX_DIR);
       assertTrue(indexesDir.exists());
 
-      assertTrue(new File(url.getFile(), "JCR_MITEM" + RdbmsWorkspaceInitializer.CONTENT_FILE_SUFFIX).exists());
-      assertTrue(new File(url.getFile(), "JCR_MITEM" + RdbmsWorkspaceInitializer.CONTENT_LEN_FILE_SUFFIX).exists());
+      assertTrue(new File(url.getFile(), "JCR_MITEM" + FullBackupJob.CONTENT_FILE_SUFFIX).exists());
+      assertTrue(new File(url.getFile(), "JCR_MITEM" + FullBackupJob.CONTENT_LEN_FILE_SUFFIX).exists());
 
-      assertTrue(new File(url.getFile(), "JCR_MVALUE" + RdbmsWorkspaceInitializer.CONTENT_FILE_SUFFIX).exists());
-      assertTrue(new File(url.getFile(), "JCR_MVALUE" + RdbmsWorkspaceInitializer.CONTENT_LEN_FILE_SUFFIX).exists());
+      assertTrue(new File(url.getFile(), "JCR_MVALUE" + FullBackupJob.CONTENT_FILE_SUFFIX).exists());
+      assertTrue(new File(url.getFile(), "JCR_MVALUE" + FullBackupJob.CONTENT_LEN_FILE_SUFFIX).exists());
 
-      assertTrue(new File(url.getFile(), "JCR_MREF" + RdbmsWorkspaceInitializer.CONTENT_FILE_SUFFIX).exists());
-      assertTrue(new File(url.getFile(), "JCR_MREF" + RdbmsWorkspaceInitializer.CONTENT_LEN_FILE_SUFFIX).exists());
+      assertTrue(new File(url.getFile(), "JCR_MREF" + FullBackupJob.CONTENT_FILE_SUFFIX).exists());
+      assertTrue(new File(url.getFile(), "JCR_MREF" + FullBackupJob.CONTENT_LEN_FILE_SUFFIX).exists());
 
    }
 
@@ -89,23 +88,23 @@ public class TestRdbmsFullBackupJob
       URL url = job.getStorageURL();
       assertNotNull(url);
 
-      File valuesDir = new File(url.getFile(), RdbmsWorkspaceInitializer.VALUE_STORAGE_DIR);
+      File valuesDir = new File(url.getFile(), FullBackupJob.VALUE_STORAGE_DIR);
       assertFalse(valuesDir.exists());
 
-      File indexesDir = new File(url.getFile(), RdbmsWorkspaceInitializer.INDEX_DIR);
+      File indexesDir = new File(url.getFile(), FullBackupJob.INDEX_DIR);
       assertTrue(indexesDir.exists());
 
-      indexesDir = new File(url.getFile(), RdbmsWorkspaceInitializer.SYSTEM_INDEX_DIR);
+      indexesDir = new File(url.getFile(), FullBackupJob.SYSTEM_INDEX_DIR);
       assertFalse(indexesDir.exists());
 
-      assertTrue(new File(url.getFile(), "JCR_MITEM" + RdbmsWorkspaceInitializer.CONTENT_FILE_SUFFIX).exists());
-      assertTrue(new File(url.getFile(), "JCR_MITEM" + RdbmsWorkspaceInitializer.CONTENT_LEN_FILE_SUFFIX).exists());
+      assertTrue(new File(url.getFile(), "JCR_MITEM" + FullBackupJob.CONTENT_FILE_SUFFIX).exists());
+      assertTrue(new File(url.getFile(), "JCR_MITEM" + FullBackupJob.CONTENT_LEN_FILE_SUFFIX).exists());
 
-      assertTrue(new File(url.getFile(), "JCR_MVALUE" +RdbmsWorkspaceInitializer.CONTENT_FILE_SUFFIX).exists());
-      assertTrue(new File(url.getFile(), "JCR_MVALUE" + RdbmsWorkspaceInitializer.CONTENT_LEN_FILE_SUFFIX).exists());
+      assertTrue(new File(url.getFile(), "JCR_MVALUE" + FullBackupJob.CONTENT_FILE_SUFFIX).exists());
+      assertTrue(new File(url.getFile(), "JCR_MVALUE" + FullBackupJob.CONTENT_LEN_FILE_SUFFIX).exists());
 
-      assertTrue(new File(url.getFile(), "JCR_MREF" + RdbmsWorkspaceInitializer.CONTENT_FILE_SUFFIX).exists());
-      assertTrue(new File(url.getFile(), "JCR_MREF" + RdbmsWorkspaceInitializer.CONTENT_LEN_FILE_SUFFIX).exists());
+      assertTrue(new File(url.getFile(), "JCR_MREF" + FullBackupJob.CONTENT_FILE_SUFFIX).exists());
+      assertTrue(new File(url.getFile(), "JCR_MREF" + FullBackupJob.CONTENT_LEN_FILE_SUFFIX).exists());
 
    }
 }
