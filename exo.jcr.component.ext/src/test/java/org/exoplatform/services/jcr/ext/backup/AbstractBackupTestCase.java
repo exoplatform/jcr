@@ -224,7 +224,7 @@ public abstract class AbstractBackupTestCase
 
       ws1back.setAccessManager(ws1e.getAccessManager());
       ws1back.setCache(ws1e.getCache());
-      ws1back.setContainer(ws1e.getContainer());
+      //      ws1back.setContainer(ws1e.getContainer());
       ws1back.setLockManager(ws1e.getLockManager());
       ws1back.setInitializer(ws1e.getInitializer());
 
@@ -233,14 +233,14 @@ public abstract class AbstractBackupTestCase
       // qParams.add(new SimpleParameterEntry("indexDir", "target" + File.separator+ "temp" +
       // File.separator +"index" + name));
       qParams.add(new SimpleParameterEntry(QueryHandlerParams.PARAM_INDEX_DIR, "target" + File.separator + name
-               + System.currentTimeMillis()));
+         + System.currentTimeMillis()));
       QueryHandlerEntry qEntry =
                new QueryHandlerEntry("org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex", qParams);
 
       ws1back.setQueryHandler(qEntry); // EXOMAN
 
       ArrayList params = new ArrayList();
-      for (Iterator i = ws1back.getContainer().getParameters().iterator(); i.hasNext();)
+      for (Iterator i = ws1e.getContainer().getParameters().iterator(); i.hasNext();)
       {
          SimpleParameterEntry p = (SimpleParameterEntry) i.next();
          SimpleParameterEntry newp = new SimpleParameterEntry(p.getName(), p.getValue());
@@ -253,31 +253,29 @@ public abstract class AbstractBackupTestCase
          params.add(newp);
       }
 
-      //Value storage
-      ArrayList<ValueStorageEntry> valueStorages = new ArrayList<ValueStorageEntry>();
-
-      ValueStorageFilterEntry filterEntry = new ValueStorageFilterEntry();
-      filterEntry.setPropertyType("Binary");
-
-      ArrayList<ValueStorageFilterEntry> filterEntries = new ArrayList<ValueStorageFilterEntry>();
-      filterEntries.add(filterEntry);
-      
-
-      ValueStorageEntry valueStorageEntry = new ValueStorageEntry();
-      valueStorageEntry.setType("org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage");
-      valueStorageEntry.setId("draft");
-      valueStorageEntry.setFilters(filterEntries);
-      
-      ArrayList<SimpleParameterEntry> parameterEntries = new ArrayList<SimpleParameterEntry>();
-      parameterEntries.add(new SimpleParameterEntry("path", "target/temp/values/" + ws1back.getName()));
-      
-      valueStorageEntry.setParameters(parameterEntries);
-
-      valueStorages.add(valueStorageEntry);
-
       ContainerEntry ce =
                new ContainerEntry("org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer", params);
-      ce.setValueStorages(valueStorages);
+      
+      ArrayList<ValueStorageEntry> list = new ArrayList<ValueStorageEntry>();
+
+      // value storage
+      ArrayList<ValueStorageFilterEntry> vsparams = new ArrayList<ValueStorageFilterEntry>();
+      ValueStorageFilterEntry filterEntry = new ValueStorageFilterEntry();
+      filterEntry.setPropertyType("Binary");
+      vsparams.add(filterEntry);
+
+      ValueStorageEntry valueStorageEntry =
+         new ValueStorageEntry("org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage", vsparams);
+      ArrayList<SimpleParameterEntry> spe = new ArrayList<SimpleParameterEntry>();
+      spe.add(new SimpleParameterEntry("path", "target/temp/swap/" + name + "_" + System.currentTimeMillis()));
+      valueStorageEntry.setId("draft");
+      valueStorageEntry.setParameters(spe);
+      valueStorageEntry.setFilters(vsparams);
+
+      // containerEntry.setValueStorages();
+      list.add(valueStorageEntry);
+      ce.setValueStorages(list);
+
 
       ws1back.setContainer(ce);
 
@@ -328,7 +326,6 @@ public abstract class AbstractBackupTestCase
 
       ws1back.setAccessManager(baseWorkspaceEntry.getAccessManager());
       ws1back.setCache(baseWorkspaceEntry.getCache());
-      ws1back.setContainer(baseWorkspaceEntry.getContainer());
       ws1back.setLockManager(baseWorkspaceEntry.getLockManager());
       ws1back.setInitializer(baseWorkspaceEntry.getInitializer());
 
@@ -349,7 +346,7 @@ public abstract class AbstractBackupTestCase
       }
 
       ArrayList params = new ArrayList();
-      for (Iterator i = ws1back.getContainer().getParameters().iterator(); i.hasNext();)
+      for (Iterator i = baseWorkspaceEntry.getContainer().getParameters().iterator(); i.hasNext();)
       {
          SimpleParameterEntry p = (SimpleParameterEntry) i.next();
          SimpleParameterEntry newp = new SimpleParameterEntry(p.getName(), p.getValue());
@@ -371,6 +368,28 @@ public abstract class AbstractBackupTestCase
 
       ContainerEntry ce =
                new ContainerEntry("org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer", params);
+      
+      ArrayList list = new ArrayList();
+      
+      // value storage
+      ArrayList<ValueStorageFilterEntry> vsparams = new ArrayList<ValueStorageFilterEntry>();
+      ValueStorageFilterEntry filterEntry = new ValueStorageFilterEntry();
+      filterEntry.setPropertyType("Binary");
+      vsparams.add(filterEntry);
+
+      ValueStorageEntry valueStorageEntry =
+         new ValueStorageEntry("org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage", vsparams);
+      ArrayList<SimpleParameterEntry> spe = new ArrayList<SimpleParameterEntry>();
+      spe.add(new SimpleParameterEntry("path", "target/temp/swap/" + repoName + "_" + wsName + "_"
+         + System.currentTimeMillis()));
+      valueStorageEntry.setId("draft");
+      valueStorageEntry.setParameters(spe);
+      valueStorageEntry.setFilters(vsparams);
+
+      // containerEntry.setValueStorages();
+      list.add(valueStorageEntry);
+      ce.setValueStorages(list);
+
       ws1back.setContainer(ce);
 
       return ws1back;

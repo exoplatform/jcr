@@ -547,7 +547,7 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
 
          // construct query
          int targetColumnCount = sourceColumnCount;
-         if (helper.getSkipColumnIndex() != null)
+         if (helper.getDeleteColumnIndex() != null)
          {
             targetColumnCount--;
          }
@@ -613,14 +613,19 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
                   }
                   stream = spoolInputStream(contentReader, len);
                }
-               
+
                if (helper.getSkipColumnIndex() != null && helper.getSkipColumnIndex() == i)
+               {
+                  continue;
+               }
+               else if (helper.getDeleteColumnIndex() != null && helper.getDeleteColumnIndex() == i)
                {
                   targetIndex--;
                   continue;
                }
                else if (helper.getConvertColumnIndexes().contains(i))
                {
+                  // convert column value
                   ByteArrayInputStream ba = (ByteArrayInputStream)stream;
                   byte[] readBuffer = new byte[ba.available()];
                   ba.read(readBuffer);
@@ -632,19 +637,34 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
                   }
                   else
                   {
-                     if (!helper.isMultiDb && helper.isBackupMutliDb())
+                     if (helper.isMultiDb)
                      {
-                        StringBuilder builder = new StringBuilder();
-                        builder.append(workspaceName);
-                        builder.append(currentValue);
-
-                        stream = new ByteArrayInputStream(builder.toString().getBytes());
+                        if (!helper.isBackupMutliDb())
+                        {
+                           stream =
+                              new ByteArrayInputStream(new String(readBuffer, Constants.DEFAULT_ENCODING).substring(
+                                 helper.getBackupWorkspaceName().length()).getBytes());
+                        }
                      }
                      else
                      {
-                        stream =
-                           new ByteArrayInputStream(new String(readBuffer, Constants.DEFAULT_ENCODING).substring(
-                              helper.getBackupWorkspaceName().length()).getBytes());
+                        if (helper.isBackupMutliDb())
+                        {
+                           StringBuilder builder = new StringBuilder();
+                           builder.append(workspaceName);
+                           builder.append(currentValue);
+
+                           stream = new ByteArrayInputStream(builder.toString().getBytes());
+                        }
+                        else
+                        {
+                           StringBuilder builder = new StringBuilder();
+                           builder.append(workspaceName);
+                           builder.append(new String(readBuffer, Constants.DEFAULT_ENCODING).substring(helper
+                              .getBackupWorkspaceName().length()));
+
+                           stream = new ByteArrayInputStream(builder.toString().getBytes());
+                        }
                      }
                   }
 
@@ -865,6 +885,8 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
 
       private File contentLenFile;
 
+      private Integer deleteColumnIndex = null;
+
       private Integer skipColumnIndex = null;
 
       private Integer newColumnIndex = null;
@@ -895,7 +917,7 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
                if (!backupInfo.isMultiDb())
                {
                   // CONTAINER_NAME column index
-                  skipColumnIndex = 4;
+                  deleteColumnIndex = 4;
 
                   // ID and PARENT_ID column indexes
                   convertColumnIndex.add(0);
@@ -914,8 +936,14 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
                   convertColumnIndex.add(0);
                   convertColumnIndex.add(1);
                }
+               else
+               {
+                  // ID and PARENT_ID and CONTAINER_NAME column indexes
+                  convertColumnIndex.add(0);
+                  convertColumnIndex.add(1);
+                  convertColumnIndex.add(4);
+               }
             }
-
          }
          else if (tableType == VALUE_TABLE)
          {
@@ -925,7 +953,10 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
 
             tableName = "JCR_" + (isMultiDb ? "M" : "S") + "VALUE";
 
-            if (isMultiDb != backupInfo.isMultiDb())
+            // auto increment ID column
+            skipColumnIndex = 0;
+
+            if (!isMultiDb || !backupInfo.isMultiDb())
             {
                // PROPERTY_ID column index
                convertColumnIndex.add(3);
@@ -939,7 +970,7 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
 
             tableName = "JCR_" + (isMultiDb ? "M" : "S") + "REF";
 
-            if (isMultiDb != backupInfo.isMultiDb())
+            if (!isMultiDb || !backupInfo.isMultiDb())
             {
                // NODE_ID and PROPERTY_ID column indexes
                convertColumnIndex.add(0);
@@ -1011,6 +1042,17 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
       {
          return skipColumnIndex;
       }
+
+      /**
+       * Returns index of column which should be skipped during restore.
+       * 
+       * @return Integer
+       */
+      public Integer getDeleteColumnIndex()
+      {
+         return deleteColumnIndex;
+      }
+
 
       /**
        * Returns index of column which should be added during restore.

@@ -188,7 +188,6 @@
               <include>**/backup/*.java</include>
             </includes>
             <excludes>
-              <exclude>**/backup/TestRDBMSBackupManager.java</exclude>
               <exclude>**/BaseStandaloneTest.java</exclude>
               <exclude>**/backup/AbstractBackupTestCase.java</exclude>
               <exclude>**/backup/BaseRDBMSBackupTest.java</exclude>
