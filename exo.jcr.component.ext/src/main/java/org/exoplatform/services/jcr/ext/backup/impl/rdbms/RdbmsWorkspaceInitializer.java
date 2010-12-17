@@ -38,7 +38,7 @@ import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
 import org.exoplatform.services.jcr.impl.core.query.SystemSearchManager;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
-import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectReaderImpl;
+import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectZipReaderImpl;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
@@ -63,6 +63,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.zip.ZipInputStream;
 
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
@@ -468,12 +469,13 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
       }
       else
       {
-         InputStream in = null;
+         ZipInputStream in = null;
          OutputStream out = null;
 
          try
          {
-            in = PrivilegedFileHelper.fileInputStream(srcPath);
+            in = PrivilegedFileHelper.zipInputStream(srcPath);
+            in.getNextEntry();
             out = PrivilegedFileHelper.fileOutputStream(dstPath);
 
             // Transfer bytes from in to out
@@ -509,8 +511,8 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
    {
       String insertNodeQuery = null;
 
-      ObjectReader contentReader = null;
-      ObjectReader contentLenReader = null;
+      ObjectZipReaderImpl contentReader = null;
+      ObjectZipReaderImpl contentLenReader = null;
 
       PreparedStatement insertNode = null;
       ResultSet tableMetaData = null;
@@ -519,8 +521,11 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
 
       try
       {
-         contentReader = new ObjectReaderImpl(PrivilegedFileHelper.fileInputStream(helper.contentFile));
-         contentLenReader = new ObjectReaderImpl(PrivilegedFileHelper.fileInputStream(helper.contentLenFile));
+         contentReader = new ObjectZipReaderImpl(PrivilegedFileHelper.zipInputStream(helper.getContentFile()));
+         contentReader.getNextEntry();
+
+         contentLenReader = new ObjectZipReaderImpl(PrivilegedFileHelper.zipInputStream(helper.getContentLenFile()));
+         contentLenReader.getNextEntry();
 
          // get information about backup table
          int sourceColumnCount = contentReader.readInt();
@@ -592,7 +597,7 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
                {
                   try
                   {
-                     len = readCompressedContentLen(contentLenReader);
+                     len = contentLenReader.readLong();
                   }
                   catch (EOFException e)
                   {
@@ -611,7 +616,7 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
 
                      throw new IOException("Content length file is empty but content still present", e);
                   }
-                  stream = spoolInputStream(contentReader, len);
+                  stream = len == -1 ? null : spoolInputStream(contentReader, len);
                }
 
                if (helper.getSkipColumnIndex() != null && helper.getSkipColumnIndex() == i)
@@ -623,57 +628,58 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
                   targetIndex--;
                   continue;
                }
-               else if (helper.getConvertColumnIndexes().contains(i))
-               {
-                  // convert column value
-                  ByteArrayInputStream ba = (ByteArrayInputStream)stream;
-                  byte[] readBuffer = new byte[ba.available()];
-                  ba.read(readBuffer);
 
-                  String currentValue = new String(readBuffer, Constants.DEFAULT_ENCODING);
-                  if (currentValue.equals(Constants.ROOT_PARENT_UUID))
+               // set 
+               if (stream != null)
+               {
+                  if (helper.getConvertColumnIndexes().contains(i))
                   {
-                     stream = new ByteArrayInputStream(Constants.ROOT_PARENT_UUID.getBytes());
-                  }
-                  else
-                  {
-                     if (helper.isMultiDb)
+                     // convert column value
+                     ByteArrayInputStream ba = (ByteArrayInputStream)stream;
+                     byte[] readBuffer = new byte[ba.available()];
+                     ba.read(readBuffer);
+
+                     String currentValue = new String(readBuffer, Constants.DEFAULT_ENCODING);
+                     if (currentValue.equals(Constants.ROOT_PARENT_UUID))
                      {
-                        if (!helper.isBackupMutliDb())
-                        {
-                           stream =
-                              new ByteArrayInputStream(new String(readBuffer, Constants.DEFAULT_ENCODING).substring(
-                                 helper.getBackupWorkspaceName().length()).getBytes());
-                        }
+                        stream = new ByteArrayInputStream(Constants.ROOT_PARENT_UUID.getBytes());
                      }
                      else
                      {
-                        if (helper.isBackupMutliDb())
+                        if (helper.isMultiDb)
                         {
-                           StringBuilder builder = new StringBuilder();
-                           builder.append(workspaceName);
-                           builder.append(currentValue);
-
-                           stream = new ByteArrayInputStream(builder.toString().getBytes());
+                           if (!helper.isBackupMutliDb())
+                           {
+                              stream =
+                                 new ByteArrayInputStream(new String(readBuffer, Constants.DEFAULT_ENCODING).substring(
+                                    helper.getBackupWorkspaceName().length()).getBytes());
+                           }
                         }
                         else
                         {
-                           StringBuilder builder = new StringBuilder();
-                           builder.append(workspaceName);
-                           builder.append(new String(readBuffer, Constants.DEFAULT_ENCODING).substring(helper
-                              .getBackupWorkspaceName().length()));
+                           if (helper.isBackupMutliDb())
+                           {
+                              StringBuilder builder = new StringBuilder();
+                              builder.append(workspaceName);
+                              builder.append(currentValue);
 
-                           stream = new ByteArrayInputStream(builder.toString().getBytes());
+                              stream = new ByteArrayInputStream(builder.toString().getBytes());
+                           }
+                           else
+                           {
+                              StringBuilder builder = new StringBuilder();
+                              builder.append(workspaceName);
+                              builder.append(new String(readBuffer, Constants.DEFAULT_ENCODING).substring(helper
+                                 .getBackupWorkspaceName().length()));
+
+                              stream = new ByteArrayInputStream(builder.toString().getBytes());
+                           }
                         }
                      }
+
+                     len = ((ByteArrayInputStream)stream).available();
                   }
 
-                  len = ((ByteArrayInputStream)stream).available();
-               }
-               
-               // set 
-               if (len != FullBackupJob.NULL_LEN)
-               {
                   if (columnType.get(i) == Types.INTEGER || columnType.get(i) == Types.BIGINT
                      || columnType.get(i) == Types.SMALLINT || columnType.get(i) == Types.TINYINT)
                   {
@@ -765,31 +771,6 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
          {
             tableMetaData.close();
          }
-      }
-   }
-
-   /**
-    * Write content length in output. 
-    */
-   private long readCompressedContentLen(ObjectReader in) throws IOException
-   {
-      byte lenType = in.readByte();
-
-      if (lenType == FullBackupJob.NULL_LEN)
-      {
-         return lenType;
-      }
-      else if (lenType == FullBackupJob.BYTE_LEN)
-      {
-         return in.readByte();
-      }
-      else if (lenType == FullBackupJob.INT_LEN)
-      {
-         return in.readInt();
-      }
-      else
-      {
-         throw new RuntimeException("Does not support to restore value more than 2G.");
       }
    }
 

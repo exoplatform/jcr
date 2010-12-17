@@ -26,7 +26,6 @@ import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.ValueStorageEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
-import org.exoplatform.services.jcr.dataflow.serialization.ObjectWriter;
 import org.exoplatform.services.jcr.ext.backup.BackupConfig;
 import org.exoplatform.services.jcr.ext.backup.BackupOperationException;
 import org.exoplatform.services.jcr.ext.backup.impl.AbstractFullBackupJob;
@@ -34,7 +33,7 @@ import org.exoplatform.services.jcr.ext.backup.impl.FileNameProducer;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.lock.cacheable.AbstractCacheableLockManager;
 import org.exoplatform.services.jcr.impl.core.query.SystemSearchManager;
-import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectWriterImpl;
+import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectZipWriterImpl;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
@@ -47,7 +46,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
@@ -58,6 +56,8 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Calendar;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
@@ -73,47 +73,27 @@ public class FullBackupJob extends AbstractFullBackupJob
    /**
     * Index directory in full backup storage.
     */
-  public static final String INDEX_DIR = "index";
+   public static final String INDEX_DIR = "index";
 
-  /**
-   * System index directory in full backup storage.
-   */
-  public static final String SYSTEM_INDEX_DIR = INDEX_DIR + "_" + SystemSearchManager.INDEX_DIR_SUFFIX;
+   /**
+    * System index directory in full backup storage.
+    */
+   public static final String SYSTEM_INDEX_DIR = INDEX_DIR + "_" + SystemSearchManager.INDEX_DIR_SUFFIX;
 
-  /**
-   * Value storage directory in full backup storage.
-   */
-  public static final String VALUE_STORAGE_DIR = "values";
+   /**
+    * Value storage directory in full backup storage.
+    */
+   public static final String VALUE_STORAGE_DIR = "values";
 
-  /**
-   * Suffix for content file.
-   */
-  public static final String CONTENT_FILE_SUFFIX = ".dump";
+   /**
+    * Suffix for content file.
+    */
+   public static final String CONTENT_FILE_SUFFIX = ".dump";
 
-  /**
-   * Suffix for content length file.
-   */
-  public static final String CONTENT_LEN_FILE_SUFFIX = ".len";
-
-  /**
-   * Content is absent.
-   */
-  public static final byte NULL_LEN = 0;
-
-  /**
-   * Content length value has byte type.
-   */
-  public static final byte BYTE_LEN = 1;
-
-  /**
-   * Content length value has integer type.
-   */
-  public static final byte INT_LEN = 2;
-
-  /**
-   * Content length value has long type.
-   */
-  public static final byte LONG_LEN = 3;
+   /**
+    * Suffix for content length file.
+    */
+   public static final String CONTENT_LEN_FILE_SUFFIX = ".len";
 
    /**
     * Logger.
@@ -423,17 +403,19 @@ public class FullBackupJob extends AbstractFullBackupJob
    {
       int dialect = DialectDetecter.detect(jdbcConn.getMetaData()).hashCode();
 
-      ObjectWriter contentWriter = null;
-      ObjectWriter contentLenWriter = null;
+      ObjectZipWriterImpl contentWriter = null;
+      ObjectZipWriterImpl contentLenWriter = null;
       PreparedStatement stmt = null;
       ResultSet rs = null;
       try
       {
          File contentFile = new File(getStorageURL().getFile(), tableName + CONTENT_FILE_SUFFIX);
-         contentWriter = new ObjectWriterImpl(PrivilegedFileHelper.fileOutputStream(contentFile));
+         contentWriter = new ObjectZipWriterImpl(PrivilegedFileHelper.zipOutputStream(contentFile));
+         contentWriter.putNextEntry(new ZipEntry(tableName));
 
          File contentLenFile = new File(getStorageURL().getFile(), tableName + CONTENT_LEN_FILE_SUFFIX);
-         contentLenWriter = new ObjectWriterImpl(PrivilegedFileHelper.fileOutputStream(contentLenFile));
+         contentLenWriter = new ObjectZipWriterImpl(PrivilegedFileHelper.zipOutputStream(contentLenFile));
+         contentLenWriter.putNextEntry(new ZipEntry(tableName));
 
          stmt = jdbcConn.prepareStatement(script);
          rs = stmt.executeQuery();
@@ -475,7 +457,7 @@ public class FullBackupJob extends AbstractFullBackupJob
                
                if (value == null)
                {
-                  contentLenWriter.writeByte(NULL_LEN);
+                  contentLenWriter.writeLong(-1);
                }
                else
                {
@@ -488,7 +470,7 @@ public class FullBackupJob extends AbstractFullBackupJob
                      contentWriter.write(tmpBuff, 0, read);
                      len += read;
                   }
-                  writeCompressedContentLen(contentLenWriter, len);
+                  contentLenWriter.writeLong(len);
                }
             }
          }
@@ -497,11 +479,13 @@ public class FullBackupJob extends AbstractFullBackupJob
       {
          if (contentWriter != null)
          {
+            contentWriter.closeEntry();
             contentWriter.close();
          }
 
          if (contentLenWriter != null)
          {
+            contentLenWriter.closeEntry();
             contentLenWriter.close();
          }
 
@@ -514,28 +498,6 @@ public class FullBackupJob extends AbstractFullBackupJob
          {
             stmt.close();
          }
-      }
-   }
-
-   /**
-    * Write content length in output. 
-    */
-   private void writeCompressedContentLen(ObjectWriter out, long len) throws IOException
-   {
-      if (len < Byte.MAX_VALUE)
-      {
-         out.writeByte(BYTE_LEN);
-         out.writeByte((byte)len);
-      }
-      else if (len < Integer.MAX_VALUE)
-      {
-         out.writeByte(INT_LEN);
-         out.writeInt((int)len);
-      }
-      else
-      {
-         out.writeByte(LONG_LEN);
-         out.writeLong(len);
       }
    }
 
@@ -575,12 +537,13 @@ public class FullBackupJob extends AbstractFullBackupJob
       else
       {
          InputStream in = null;
-         OutputStream out = null;
+         ZipOutputStream out = null;
 
          try
          {
             in = PrivilegedFileHelper.fileInputStream(srcPath);
-            out = PrivilegedFileHelper.fileOutputStream(dstPath);
+            out = PrivilegedFileHelper.zipOutputStream(dstPath);
+            out.putNextEntry(new ZipEntry(srcPath.getName()));
 
             // Transfer bytes from in to out
             byte[] buf = new byte[2048];
@@ -601,6 +564,7 @@ public class FullBackupJob extends AbstractFullBackupJob
 
             if (out != null)
             {
+               out.closeEntry();
                out.close();
             }
          }
