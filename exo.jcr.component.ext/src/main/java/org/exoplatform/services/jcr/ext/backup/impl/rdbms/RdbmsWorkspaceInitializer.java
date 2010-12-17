@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.ext.backup.impl.rdbms;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.access.AccessManager;
 import org.exoplatform.services.jcr.config.LockManagerEntry;
 import org.exoplatform.services.jcr.config.QueryHandlerParams;
@@ -27,12 +28,17 @@ import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.ValueStorageEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
 import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.ext.backup.impl.IndexCleanHelper;
+import org.exoplatform.services.jcr.ext.backup.impl.ValueStorageCleanHelper;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.BackupWorkspaceInitializer;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
+import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.jcr.impl.core.lock.cacheable.AbstractCacheableLockManager;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
 import org.exoplatform.services.jcr.impl.core.query.SystemSearchManager;
@@ -43,6 +49,8 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.storage.value.fs.FileValueStorage;
+import org.exoplatform.services.jcr.impl.util.jdbc.cleaner.DBCleanerException;
+import org.exoplatform.services.jcr.impl.util.jdbc.cleaner.DBCleanerService;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -83,6 +91,10 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
     */
    protected static final Log log = ExoLogger.getLogger("exo.jcr.component.core.RdbmsWorkspaceInitializer");
 
+   /**
+    * The repository service.
+    */
+   protected final RepositoryService repositoryService;
 
    /**
     * List of temporary files.
@@ -95,10 +107,13 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
    public RdbmsWorkspaceInitializer(WorkspaceEntry config, RepositoryEntry repConfig,
       CacheableWorkspaceDataManager dataManager, NamespaceRegistryImpl namespaceRegistry,
       LocationFactory locationFactory, NodeTypeManagerImpl nodeTypeManager, ValueFactoryImpl valueFactory,
-      AccessManager accessManager) throws RepositoryConfigurationException, PathNotFoundException, RepositoryException
+      AccessManager accessManager, RepositoryService repositoryService) throws RepositoryConfigurationException,
+      PathNotFoundException, RepositoryException
    {
       super(config, repConfig, dataManager, namespaceRegistry, locationFactory, nodeTypeManager, valueFactory,
          accessManager);
+
+      this.repositoryService = repositoryService;
    }
 
    /**
@@ -114,7 +129,30 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
 
       long start = System.currentTimeMillis();
 
-      fullRdbmsRestore();
+      try
+      {
+         fullRdbmsRestore();
+      }
+      catch (Throwable e)
+      {
+         try
+         {
+            rollback();
+         }
+         catch (RepositoryConfigurationException e1)
+         {
+            throw new RepositoryException("Can't rollback changes", e);
+         }
+         catch (DBCleanerException e1)
+         {
+            throw new RepositoryException("Can't rollback changes", e);
+         }
+         catch (IOException e1)
+         {
+            throw new RepositoryException("Can't rollback changes", e);
+         }
+         throw new RepositoryException(e);
+      }
 
       final NodeData root = (NodeData)dataManager.getItemData(Constants.ROOT_UUID);
 
@@ -278,18 +316,6 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
       }
       catch (SQLException e)
       {
-         if (jdbcConn != null)
-         {
-            try
-            {
-               jdbcConn.rollback();
-            }
-            catch (SQLException e1)
-            {
-               log.error("Rollback error", e1);
-            }
-         }
-
          SQLException next = e.getNextException();
          String errorTrace = "";
          while (next != null)
@@ -392,10 +418,54 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
 
    /**
     * Rollback changes due to errors.
+    * 
+    * @throws RepositoryConfigurationException 
+    * @throws RepositoryException 
+    * @throws DBCleanerException 
+    * @throws IOException 
     */
-   protected void rollback(Connection jdbcConn)
+   protected void rollback() throws RepositoryException, RepositoryConfigurationException, DBCleanerException,
+      IOException
    {
-      //  TODO
+      boolean isSystem =
+         repositoryService.getRepository(repositoryEntry.getName()).getConfiguration().getSystemWorkspaceName()
+            .equals(workspaceEntry.getName());
+
+      //close all session
+      forceCloseSession(repositoryEntry.getName(), workspaceEntry.getName());
+
+      //clean database
+      new DBCleanerService().cleanWorkspaceData(workspaceEntry);
+
+      //clean index
+      new IndexCleanHelper().removeWorkspaceIndex(workspaceEntry, isSystem);
+
+      //clean value storage
+      new ValueStorageCleanHelper().removeWorkspaceValueStorage(workspaceEntry);
+   }
+
+   /**
+    * Close sessions on specific workspace.
+    * 
+    * @param repositoryName
+    *          repository name
+    * @param workspaceName
+    *          workspace name
+    * @return int return the how many sessions was closed
+    * @throws RepositoryConfigurationException
+    *           will be generate RepositoryConfigurationException
+    * @throws RepositoryException
+    *           will be generate RepositoryException
+    */
+   private int forceCloseSession(String repositoryName, String workspaceName) throws RepositoryException,
+      RepositoryConfigurationException
+   {
+      ManageableRepository mr = repositoryService.getRepository(repositoryName);
+      WorkspaceContainerFacade wc = mr.getWorkspaceContainer(workspaceName);
+
+      SessionRegistry sessionRegistry = (SessionRegistry)wc.getComponent(SessionRegistry.class);
+
+      return sessionRegistry.closeSessions(workspaceName);
    }
 
    /**

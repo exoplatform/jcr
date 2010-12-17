@@ -16,6 +16,7 @@
  */
 package org.exoplatform.services.jcr.ext.backup.impl.rdbms;
 
+import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.access.AccessManager;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
@@ -27,8 +28,11 @@ import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
+import org.exoplatform.services.jcr.impl.util.jdbc.cleaner.DBCleanerException;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+
+import java.io.IOException;
 
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
@@ -54,10 +58,11 @@ public class RdbmsBackupWorkspaceInitializer extends RdbmsWorkspaceInitializer
    public RdbmsBackupWorkspaceInitializer(WorkspaceEntry config, RepositoryEntry repConfig,
       CacheableWorkspaceDataManager dataManager, NamespaceRegistryImpl namespaceRegistry,
       LocationFactory locationFactory, NodeTypeManagerImpl nodeTypeManager, ValueFactoryImpl valueFactory,
-      AccessManager accessManager) throws RepositoryConfigurationException, PathNotFoundException, RepositoryException
+      AccessManager accessManager, RepositoryService repositoryService) throws RepositoryConfigurationException,
+      PathNotFoundException, RepositoryException
    {
       super(config, repConfig, dataManager, namespaceRegistry, locationFactory, nodeTypeManager, valueFactory,
-         accessManager);
+         accessManager, repositoryService);
    }
 
    /**
@@ -73,11 +78,34 @@ public class RdbmsBackupWorkspaceInitializer extends RdbmsWorkspaceInitializer
 
       long start = System.currentTimeMillis();
 
-      // restore from full rdbms backup
-      fullRdbmsRestore();
+      try
+      {
+         // restore from full rdbms backup
+         fullRdbmsRestore();
 
-      // restore from incremental backup
-      incrementalRead();
+         // restore from incremental backup
+         incrementalRead();
+      }
+      catch (Throwable e)
+      {
+         try
+         {
+            rollback();
+         }
+         catch (RepositoryConfigurationException e1)
+         {
+            throw new RepositoryException("Can't rollback changes", e);
+         }
+         catch (DBCleanerException e1)
+         {
+            throw new RepositoryException("Can't rollback changes", e);
+         }
+         catch (IOException e1)
+         {
+            throw new RepositoryException("Can't rollback changes", e);
+         }
+         throw new RepositoryException(e);
+      }
 
       final NodeData root = (NodeData)dataManager.getItemData(Constants.ROOT_UUID);
 
