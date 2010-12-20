@@ -1546,6 +1546,10 @@ public class SessionDataManager implements ItemDataConsumer
       {
          validateRemoveAccessPermission(changedItem);
       }
+      else if (changedItem.isMixinChanged())
+      {
+         validateMixinChangedPermission(changedItem);
+      }
       else
       {
          NodeData parent = (NodeData)getItemData(changedItem.getData().getParentIdentifier());
@@ -1564,17 +1568,6 @@ public class SessionDataManager implements ItemDataConsumer
                         + " item owner " + parent.getACL().getOwner());
                   }
                }
-               else if (changedItem.isMixinChanged())
-               {
-                  if (!accessManager.hasPermission(parent.getACL(), new String[]{PermissionType.ADD_NODE,
-                     PermissionType.SET_PROPERTY}, session.getUserState().getIdentity()))
-                  {
-                     throw new AccessDeniedException("Access denied: ADD_NODE or SET_PROPERTY"
-                        + changedItem.getData().getQPath().getAsString() + " for: " + session.getUserID()
-                        + " item owner " + parent.getACL().getOwner());
-                  }
-               }
-
             }
             else if (changedItem.isAdded() || changedItem.isUpdated())
             {
@@ -1613,6 +1606,17 @@ public class SessionDataManager implements ItemDataConsumer
       {
          throw new AccessDeniedException("Access denied: REMOVE " + changedItem.getData().getQPath().getAsString()
             + " for: " + session.getUserID() + " item owner " + nodeData.getACL().getOwner());
+      }
+   }
+
+   private void validateMixinChangedPermission(ItemState changedItem) throws AccessDeniedException
+   {
+      if (!accessManager.hasPermission(((NodeData)changedItem.getData()).getACL(), new String[]{
+         PermissionType.ADD_NODE, PermissionType.SET_PROPERTY}, session.getUserState().getIdentity()))
+      {
+         throw new AccessDeniedException("Access denied: ADD_NODE or SET_PROPERTY"
+            + changedItem.getData().getQPath().getAsString() + " for: " + session.getUserID() + " item owner "
+            + ((NodeData)changedItem.getData()).getACL().getOwner());
       }
    }
 
