@@ -984,7 +984,7 @@ public class SessionDataManager implements ItemDataConsumer
 
       try
       {
-         return (List<PropertyData>)mergeProps(parent, transactionableManager);
+         return (List<PropertyData>)mergeProps(parent, false, transactionableManager);
       }
       finally
       {
@@ -1010,7 +1010,7 @@ public class SessionDataManager implements ItemDataConsumer
 
       try
       {
-         return (List<PropertyData>)mergeProps(parent, transactionableManager);
+         return (List<PropertyData>)mergeProps(parent, true, transactionableManager);
       }
       finally
       {
@@ -1982,9 +1982,11 @@ public class SessionDataManager implements ItemDataConsumer
     * from outgoing list WARN. THIS METHOD HAS SIBLING - mergeList, see below.
     * 
     * @param rootData
+    * @param listOnly 
     * @return
     */
-   protected List<? extends ItemData> mergeProps(ItemData rootData, DataManager dataManager) throws RepositoryException
+   protected List<? extends ItemData> mergeProps(ItemData rootData, boolean listOnly, DataManager dataManager)
+      throws RepositoryException
    {
       // 1 get all transient descendants
       Collection<ItemState> transientDescendants = changesLog.getLastChildrenStates(rootData, false);
@@ -1993,7 +1995,7 @@ public class SessionDataManager implements ItemDataConsumer
       {
          // 2 get ALL persisted descendants
          Map<String, ItemData> descendants = new LinkedHashMap<String, ItemData>();
-         traverseStoredDescendants(rootData, dataManager, MERGE_PROPS, descendants, false, transientDescendants);
+         traverseStoredDescendants(rootData, dataManager, MERGE_PROPS, descendants, listOnly, transientDescendants);
 
          // merge data
          for (ItemState state : transientDescendants)
