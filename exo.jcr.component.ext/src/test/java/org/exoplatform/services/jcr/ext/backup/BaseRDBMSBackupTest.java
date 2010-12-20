@@ -31,6 +31,7 @@ import org.exoplatform.services.jcr.ext.backup.impl.BackupManagerImpl;
 public class BaseRDBMSBackupTest
    extends AbstractBackupTestCase
 {
+   @Override
    protected ExtendedBackupManager getBackupManager()
    {
       InitParams initParams = new InitParams();

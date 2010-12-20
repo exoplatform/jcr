@@ -20,6 +20,7 @@ import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.services.jcr.ext.backup.impl.BackupManagerImpl;
 
+import java.io.File;
 
 /**
  * Created by The eXo Platform SAS.
@@ -33,6 +34,7 @@ public class TestRDBMSBackupManager
    extends AbstractBackupUseCasesTest
 {
 
+   @Override
    protected ExtendedBackupManager getBackupManager()
    {
       InitParams initParams = new InitParams();
@@ -50,5 +52,31 @@ public class TestRDBMSBackupManager
       backupManagerImpl.start();
 
       return backupManagerImpl;
+   }
+
+   @Override
+   public void testExistedWorkspaceRestoreMultiDB() throws Exception
+   {
+      String repositoryNameToBackup = "db8";
+
+      // backup
+      File backDir = new File("target/backup/" + System.currentTimeMillis());
+      backDir.mkdirs();
+
+      BackupConfig config = new BackupConfig();
+      config.setRepository(repositoryNameToBackup);
+      config.setWorkspace(workspaceNameToBackup);
+      config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
+
+      config.setBackupDir(backDir);
+
+      try
+      {
+         backup.startBackup(config);
+         fail("Exception should be thrown");
+      }
+      catch (BackupOperationException e)
+      {
+      }
    }
 }

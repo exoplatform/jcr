@@ -1265,8 +1265,10 @@ public abstract class AbstractBackupUseCasesTest
          fail("There are no backup files in " + backDir.getAbsolutePath());
       }
 
-   public void _testExistedWorkspaceRestoreMultiDB() throws Exception
+   public void testExistedWorkspaceRestoreMultiDB() throws Exception
    {
+      String repositoryNameToBackup = "db8";
+
       // backup
       File backDir = new File("target/backup/" + getUUIndex());
       backDir.mkdirs();
@@ -1330,7 +1332,7 @@ public abstract class AbstractBackupUseCasesTest
          fail("There are no backup files in " + backDir.getAbsolutePath());
    }
 
-   public void testExistedWorkspaceRestoreSingleDB() throws Exception
+   public void testExistedWorkspaceRestore() throws Exception
    {
       SessionImpl ws1Session = (SessionImpl)repositoryService.getRepository("db7").login(credentials, "ws1");
 
@@ -1411,9 +1413,6 @@ public abstract class AbstractBackupUseCasesTest
 
    public void testExistedWorkspaceRestoreAsync() throws Exception
    {
-      SessionImpl ws1Session = (SessionImpl)repositoryService.getRepository("db7").login(credentials, "ws1");
-      String repositoryNameToBackup = "db7";
-
       // backup
       File backDir = new File("target/backup/" + getUUIndex());
       backDir.mkdirs();
@@ -1499,8 +1498,6 @@ public abstract class AbstractBackupUseCasesTest
 
    public void testExistedWorkspaceRestoreAsync2() throws Exception
    {
-      SessionImpl ws1Session = (SessionImpl)repositoryService.getRepository("db7").login(credentials, "ws1");
-      String repositoryNameToBackup = "db7";
 
       // backup
       File backDir = new File("target/backup/" + getUUIndex());
@@ -1980,10 +1977,6 @@ public abstract class AbstractBackupUseCasesTest
 
    public void testExistedWorkspaceRestoreWithConfig() throws Exception
    {
-      RepositoryImpl repositoryDB7 = (RepositoryImpl)repositoryService.getRepository(repositoryNameToBackupSingleDB);
-      String repositoryNameToBackup = "db7";
-      SessionImpl sessionWS = (SessionImpl)repositoryDB7.login(credentials, workspaceNameToBackup);
-
       // backup
       File backDir = new File("target/backup/" + getUUIndex());
       backDir.mkdirs();
@@ -2124,9 +2117,6 @@ public abstract class AbstractBackupUseCasesTest
 
    public void testWorkspaceRestoreWithConfig() throws Exception
    {
-      RepositoryImpl repositoryDB7 = (RepositoryImpl)repositoryService.getRepository(repositoryNameToBackupSingleDB);
-      String repositoryNameToBackup = "db7";
-
       // backup
       File backDir = new File("target/backup/" + getUUIndex());
       backDir.mkdirs();

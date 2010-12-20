@@ -65,6 +65,7 @@ import org.exoplatform.services.jcr.impl.core.SysViewWorkspaceInitializer;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
 import org.exoplatform.services.jcr.impl.storage.JCRItemExistsException;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 import org.exoplatform.services.jcr.observation.ExtendedEvent;
@@ -767,6 +768,41 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
    {
       validateBackupConfig(config);
 
+      try
+      {
+         // check if it is RDBMS backup of single workspace in case of multi-db configuration
+         if ((Class.forName(fullBackupType)
+            .equals(org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob.class)))
+         {
+            WorkspaceEntry wEntry = null;
+            for (WorkspaceEntry entry : repoService.getRepository(config.getRepository()).getConfiguration()
+               .getWorkspaceEntries())
+            {
+               if (entry.getName().equals(config.getWorkspace()))
+               {
+                  wEntry = entry;
+                  break;
+               }
+            }
+
+            if (wEntry == null)
+            {
+               throw new WorkspaceRestoreException("Workspace " + config.getWorkspace()
+                  + " did not found in current repository " + config.getRepository() + " configuration");
+            }
+
+            if (Boolean.parseBoolean(wEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.MULTIDB)))
+            {
+               throw new BackupOperationException(
+                  "Backup of single workspace in case of multi-db configuration is not supported");
+            }
+         }
+      }
+      catch (ClassNotFoundException e)
+      {
+         throw new BackupOperationException("Class " + fullBackupType + " is not found.", e);
+      }
+
       BackupChain bchain =
                new BackupChainImpl(config, logsDirectory, repoService.getRepository(config.getRepository()),
                         fullBackupType, incrementalBackupType, IdGenerator.generate(), logsDirectory);
@@ -905,9 +941,8 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
    }
 
    private void fullRestoreOverInitializer(String pathBackupFile, String repositoryName, WorkspaceEntry workspaceEntry,
-            String fBackupType)
- throws FileNotFoundException, IOException, RepositoryException,
-            RepositoryConfigurationException, ClassNotFoundException
+      String fBackupType) throws FileNotFoundException, IOException, RepositoryException,
+      RepositoryConfigurationException, ClassNotFoundException
    {
       WorkspaceInitializerEntry wieOriginal = workspaceEntry.getInitializer();
 
@@ -1966,5 +2001,5 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       }
 
    }
-   
+
 }

@@ -77,7 +77,7 @@ public abstract class AbstractBackupTestCase
 
    protected ExtendedBackupManager backup;
 
-   protected String repositoryNameToBackup = "db8";
+   protected String repositoryNameToBackup = "db7";
 
    protected String workspaceNameToBackup = "ws1";
 
