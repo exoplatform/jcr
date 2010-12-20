@@ -20,6 +20,7 @@ import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
@@ -57,6 +58,69 @@ public class DBCleanerService
     *          if any exception is occurred
     */
    public void cleanWorkspaceData(WorkspaceEntry wsEntry) throws DBCleanerException
+   {
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+      {
+         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
+      }
+
+      boolean isMultiDb;
+      try
+      {
+         String multiDb = wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.MULTIDB);
+         if (multiDb == null)
+         {
+            throw new RepositoryConfigurationException("Parameter " + JDBCWorkspaceDataContainer.MULTIDB
+               + " not found in workspace configuration " + wsEntry.getName());
+         }
+
+         isMultiDb = Boolean.parseBoolean(multiDb);
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         throw new DBCleanerException("Can't define " + JDBCWorkspaceDataContainer.MULTIDB + " parameter", e);
+      }
+
+      if (isMultiDb)
+      {
+         throw new DBCleanerException("Clean of single workspace for multi-db is not supported");
+      }
+
+      getDBCleaner(wsEntry).clean();
+   }
+
+   /**
+    * Cleanup repository data from database.
+    * 
+    * @param repoEntry 
+    *          repository configuration
+    * @throws DBCleanerException 
+    *          if any exception is occurred
+    */
+   public void cleanRepositoryData(RepositoryEntry repoEntry) throws DBCleanerException
+   {
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+      {
+         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
+      }
+
+      for (WorkspaceEntry wsEntry : repoEntry.getWorkspaceEntries())
+      {
+         getDBCleaner(wsEntry).clean();
+      }
+   }
+
+   /**
+    * Returns DBCleaner for defined workspace.
+    * 
+    * @param wsEntry 
+    *          workspace configuration
+    * @throws DBCleanerException 
+    *          if any exception is occurred
+    */
+   private DBCleaner getDBCleaner(WorkspaceEntry wsEntry) throws DBCleanerException
    {
       String sourceName;
       try
@@ -175,23 +239,6 @@ public class DBCleanerService
          }
       }
 
-      // clean data
-      dbCleaner.clean();
-   }
-
-   /**
-    * Cleanup repository data from database.
-    * 
-    * @param repoEntry 
-    *          repository configuration
-    * @throws DBCleanerException 
-    *          if any exception is occurred
-    */
-   public void cleanRepositoryData(RepositoryEntry repoEntry) throws DBCleanerException
-   {
-      for (WorkspaceEntry wsEntry : repoEntry.getWorkspaceEntries())
-      {
-         cleanWorkspaceData(wsEntry);
-      }
+      return dbCleaner;
    }
 }

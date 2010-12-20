@@ -35,4 +35,15 @@ public class DBCleanerException extends Exception
    {
       super(message, e);
    }
+
+   /**
+    * Constructor DBCleanerException.
+    * 
+    * @param message
+    *          error message
+    */
+   public DBCleanerException(String message)
+   {
+      super(message);
+   }
 }
