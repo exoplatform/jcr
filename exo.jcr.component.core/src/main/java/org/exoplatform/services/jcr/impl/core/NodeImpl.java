@@ -1543,6 +1543,15 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       if (!isNodeType(Constants.MIX_LOCKABLE))
          throw new LockException("Node is not lockable " + getPath());
 
+      // session.checkPermission(getPath(), PermissionType.SET_PROPERTY) is not used because RepositoryException
+      // is wrapped into AccessControlException
+      if (!session.getAccessManager().hasPermission(getACL(), new String[]{PermissionType.SET_PROPERTY},
+         session.getUserState().getIdentity()))
+      {
+         throw new AccessDeniedException("Access denied: unlock operation " + getPath() + " for: "
+            + session.getUserID() + " item owner " + getACL().getOwner());
+      }
+
       if (dataManager.hasPendingChanges(getInternalPath()))
          throw new InvalidItemStateException("Node has pending unsaved changes " + getPath());
 
@@ -1578,6 +1587,15 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       if (!isNodeType(Constants.MIX_LOCKABLE))
          throw new LockException("Node is not lockable " + getPath());
+
+      // session.checkPermission(getPath(), PermissionType.SET_PROPERTY) is not used because RepositoryException
+      // is wrapped into AccessControlException
+      if (!session.getAccessManager().hasPermission(getACL(), new String[]{PermissionType.SET_PROPERTY},
+         session.getUserState().getIdentity()))
+      {
+         throw new AccessDeniedException("Access denied: unlock operation " + getPath() + " for: "
+            + session.getUserID() + " item owner " + getACL().getOwner());
+      }
 
       if (dataManager.hasPendingChanges(getInternalPath()))
          throw new InvalidItemStateException("Node has pending unsaved changes " + getPath());
@@ -2262,6 +2280,15 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       if (dataManager.hasPendingChanges(getInternalPath()))
          throw new InvalidItemStateException("Node has pending unsaved changes " + getPath());
+
+      // session.checkPermission(getPath(), PermissionType.SET_PROPERTY) is not used because RepositoryException
+      // is wrapped into AccessControlException
+      if (!session.getAccessManager().hasPermission(getACL(), new String[]{PermissionType.SET_PROPERTY},
+         session.getUserState().getIdentity()))
+      {
+         throw new AccessDeniedException("Access denied: unlock operation " + getPath() + " for: "
+            + session.getUserID() + " item owner " + getACL().getOwner());
+      }
 
       doUnlock();
 
