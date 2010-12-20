@@ -36,10 +36,13 @@ import org.exoplatform.services.jcr.impl.RepositoryServiceImpl;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.util.jdbc.cleaner.DBCleanerService;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.sql.Connection;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -54,6 +57,8 @@ import javax.jcr.ValueFormatException;
 import javax.jcr.lock.LockException;
 import javax.jcr.nodetype.ConstraintViolationException;
 import javax.jcr.version.VersionException;
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
 
 /**
  * Created by The eXo Platform SAS Author : Peter Nedonosko peter.nedonosko@exoplatform.com.ua
@@ -295,7 +300,8 @@ public abstract class AbstractBackupTestCase
             newWorkspaceName = workspaceMapping.get(wsEntry.getName());
          }
 
-         WorkspaceEntry newWSEntry = makeWorkspaceEntry(wsEntry, newWorkspaceName, repoName, sourceName);
+         WorkspaceEntry newWSEntry =
+            makeWorkspaceEntry(wsEntry, newWorkspaceName, repoName, sourceName);
 
          wsEntries.add(newWSEntry);
       }
@@ -468,7 +474,7 @@ public abstract class AbstractBackupTestCase
       // get current workspace configuration
       WorkspaceEntry wEntry = null;;
       for (WorkspaceEntry entry : repositoryService.getRepository(repositoryName).getConfiguration()
-               .getWorkspaceEntries())
+         .getWorkspaceEntries())
       {
          if (entry.getName().equals(workspaceName))
          {
@@ -480,12 +486,76 @@ public abstract class AbstractBackupTestCase
       if (wEntry == null)
       {
          throw new WorkspaceRestoreException("Workspace " + workspaceName + " did not found in current repository "
-                  + repositoryName + " configuration");
+            + repositoryName + " configuration");
       }
 
       boolean isSystem =
-               repositoryService.getRepository(repositoryName).getConfiguration().getSystemWorkspaceName().equals(
-                        wEntry.getName());
+         repositoryService.getRepository(repositoryName).getConfiguration().getSystemWorkspaceName()
+            .equals(wEntry.getName());
+
+      //close all session
+      forceCloseSession(repositoryName, wEntry.getName());
+
+      repositoryService.getRepository(repositoryName).removeWorkspace(wEntry.getName());
+
+      //clean database
+      //      dbCleanerService.cleanWorkspaceData(wEntry);
+      DataSource ds =
+         (DataSource)new InitialContext().lookup(wEntry.getContainer().getParameterValue(
+            JDBCWorkspaceDataContainer.SOURCE_NAME));
+      Connection conn = ds.getConnection();
+
+      if (conn.getMetaData().getTables(null, null, "JCR_MITEM", new String[]{"TABLE"}).next())
+      {
+         Statement st = conn.createStatement();
+         st.execute("DROP TABLE JCR_MVALUE");
+         st.execute("DROP TABLE JCR_MREF");
+         st.execute("DROP TABLE JCR_MITEM");
+         conn.commit();
+         st.close();
+         conn.close();
+      }
+      else if (conn.getMetaData().getTables(null, null, "JCR_SITEM", new String[]{"TABLE"}).next())
+      {
+         Statement st = conn.createStatement();
+         st.execute("DROP TABLE JCR_SVALUE");
+         st.execute("DROP TABLE JCR_SREF");
+         st.execute("DROP TABLE JCR_SITEM");
+         conn.commit();
+         st.close();
+         conn.close();
+      }
+
+      //clean index
+      indexCleanHelper.removeWorkspaceIndex(wEntry, isSystem);
+
+      //clean value storage
+      valueStorageCleanHelper.removeWorkspaceValueStorage(wEntry);
+   }
+
+   protected void removeWorkspaceFullySingleDB(String repositoryName, String workspaceName) throws Exception
+   {
+      // get current workspace configuration
+      WorkspaceEntry wEntry = null;;
+      for (WorkspaceEntry entry : repositoryService.getRepository(repositoryName).getConfiguration()
+         .getWorkspaceEntries())
+      {
+         if (entry.getName().equals(workspaceName))
+         {
+            wEntry = entry;
+            break;
+         }
+      }
+
+      if (wEntry == null)
+      {
+         throw new WorkspaceRestoreException("Workspace " + workspaceName + " did not found in current repository "
+            + repositoryName + " configuration");
+      }
+
+      boolean isSystem =
+         repositoryService.getRepository(repositoryName).getConfiguration().getSystemWorkspaceName()
+            .equals(wEntry.getName());
 
       //close all session
       forceCloseSession(repositoryName, wEntry.getName());

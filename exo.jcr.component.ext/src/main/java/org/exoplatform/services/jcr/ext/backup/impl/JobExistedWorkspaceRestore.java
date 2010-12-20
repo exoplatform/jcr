@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.ext.backup.BackupChainLog;
 import org.exoplatform.services.jcr.ext.backup.BackupManager;
 import org.exoplatform.services.jcr.ext.backup.WorkspaceRestoreException;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.util.jdbc.cleaner.DBCleanerService;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -98,6 +99,29 @@ public class JobExistedWorkspaceRestore extends JobWorkspaceRestore
          {
             throw new WorkspaceRestoreException("Workspace " + this.wEntry.getName()
                + " did not found in current repository " + repositoryName + " configuration");
+         }
+
+         boolean isMultiDb;
+         try
+         {
+            String multiDb = wEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.MULTIDB);
+            if (multiDb == null)
+            {
+               throw new RepositoryConfigurationException("Parameter " + JDBCWorkspaceDataContainer.MULTIDB
+                  + " not found in workspace configuration " + wEntry.getName());
+            }
+
+            isMultiDb = Boolean.parseBoolean(multiDb);
+         }
+         catch (RepositoryConfigurationException e)
+         {
+            throw new WorkspaceRestoreException("Can't define " + JDBCWorkspaceDataContainer.MULTIDB + " parameter", e);
+         }
+
+         if (isMultiDb)
+         {
+            throw new WorkspaceRestoreException(
+               "Restore of single workspace into existed one for multi-db is not supported");
          }
 
          boolean isSystem =
