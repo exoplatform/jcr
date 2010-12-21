@@ -55,7 +55,7 @@ public class TestRdbmsWorkspaceInitializer extends BaseRDBMSBackupTest
       BackupConfig config = new BackupConfig();
       config.setRepository("db1");
       config.setWorkspace("ws");
-      config.setBackupDir(new File("target/backup/testJob"));
+      config.setBackupDir(new File("target/backup/testJob/testRDBMSInitializerSystemWorkspace"));
 
       Calendar calendar = Calendar.getInstance();
 
@@ -109,7 +109,7 @@ public class TestRdbmsWorkspaceInitializer extends BaseRDBMSBackupTest
       BackupConfig config = new BackupConfig();
       config.setRepository("db1");
       config.setWorkspace("ws1");
-      config.setBackupDir(new File("target/backup/testJob"));
+      config.setBackupDir(new File("target/backup/testJob/testRDBMSInitializer"));
 
       Calendar calendar = Calendar.getInstance();
 
@@ -143,9 +143,8 @@ public class TestRdbmsWorkspaceInitializer extends BaseRDBMSBackupTest
             newEntry.setInitializer(wiEntry);
 
             TesterRdbmsWorkspaceInitializer initializer =
-               new TesterRdbmsWorkspaceInitializer(newEntry,
-                  repositoryService.getRepository("db1").getConfiguration(), cacheableDataManager, null, null, null,
- (ValueFactoryImpl)valueFactory, null, repositoryService);
+               new TesterRdbmsWorkspaceInitializer(newEntry, repositoryService.getRepository("db1").getConfiguration(),
+                  cacheableDataManager, null, null, null, (ValueFactoryImpl)valueFactory, null, repositoryService);
 
             initializer.restoreValueFiles();
             assertFalse(new File(newValueStoragePath).exists());
@@ -163,7 +162,7 @@ public class TestRdbmsWorkspaceInitializer extends BaseRDBMSBackupTest
       BackupConfig config = new BackupConfig();
       config.setRepository("db1");
       config.setWorkspace("ws1");
-      config.setBackupDir(new File("target/backup/testJob"));
+      config.setBackupDir(new File("target/backup/testJob/testRDBMSInitializerRestoreTablesMultiDB"));
 
       Calendar calendar = Calendar.getInstance();
 
@@ -280,7 +279,7 @@ public class TestRdbmsWorkspaceInitializer extends BaseRDBMSBackupTest
       BackupConfig config = new BackupConfig();
       config.setRepository("db3");
       config.setWorkspace("ws");
-      config.setBackupDir(new File("target/backup/testJob"));
+      config.setBackupDir(new File("target/backup/testJob/testRDBMSInitializerRestoreTablesSingleDB"));
 
       Calendar calendar = Calendar.getInstance();
 
@@ -386,7 +385,6 @@ public class TestRdbmsWorkspaceInitializer extends BaseRDBMSBackupTest
 
             st.execute("ALTER TABLE JCR_SITEM ADD CONSTRAINT JCR_FK_SITEM_PARENT FOREIGN KEY(PARENT_ID) REFERENCES JCR_SITEM(ID)");
             conn.commit();
-
          }
       }
    }
