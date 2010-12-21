@@ -450,21 +450,41 @@ exo:text="" exo:title="Dogs_x0020_are_x0020_friends" /&gt;
             role="bold">node1</emphasis>/myprop property - jcr will check
             "remove" permission on "node1".</para>
           </listitem>
+
+          <listitem>
+            <para><emphasis role="bold">add mixin</emphasis>: check "add_node"
+            and "set_property" permission on target node</para>
+
+            <para>For example. Try add mixin to /node1/<emphasis
+            role="bold">subnode</emphasis> node - jcr will check "add_node"
+            and "set_property" permission on "subnode".</para>
+          </listitem>
         </itemizedlist>
 
-        <para>Behavior of the permission "remove" has changed since JCR
-        1.12.6-GA. The old behavior is:</para>
+        <note>
+          <para>Behavior of the permission "remove" and "add mixin" validation
+          has changed since JCR 1.12.6-GA. The old behavior is:</para>
 
-        <para><itemizedlist>
-            <listitem>
-              <para><emphasis role="bold">remove node</emphasis>: check remove
-              permission on parent node</para>
+          <para><itemizedlist>
+              <listitem>
+                <para><emphasis role="bold">remove node</emphasis>: check
+                remove permission on parent node</para>
 
-              <para>For example. Try to remove /<emphasis
-              role="bold">node1</emphasis>/subnode node - jcr will check
-              "remove" permission on "node1".</para>
-            </listitem>
-          </itemizedlist></para>
+                <para>For example. Try to remove /<emphasis
+                role="bold">node1</emphasis>/subnode node - jcr will check
+                "remove" permission on "node1".</para>
+              </listitem>
+
+              <listitem>
+                <para><emphasis role="bold">add mixin</emphasis>: check
+                "add_node" and "set_property" permission on parent node</para>
+
+                <para>For example. Try add mixin to /<emphasis
+                role="bold">node1</emphasis>/subnode node - jcr will check
+                "add_node" and "set_property" permission on "node1".</para>
+              </listitem>
+            </itemizedlist></para>
+        </note>
       </section>
     </section>
 
