@@ -50,7 +50,7 @@ public class IndexCleanHelper
       String indexDirName = wsConfig.getQueryHandler().getParameterValue(QueryHandlerParams.PARAM_INDEX_DIR);
       
       File indexDir = new File(indexDirName);
-      if (indexDir.exists())
+      if (PrivilegedFileHelper.exists(indexDir))
       {
          removeFolder(indexDir);
       }
@@ -58,7 +58,7 @@ public class IndexCleanHelper
       if (isSystem)
       {
          File systemIndexDir = new File(indexDirName + "_" + SystemSearchManager.INDEX_DIR_SUFFIX);
-         if (systemIndexDir.exists())
+         if (PrivilegedFileHelper.exists(systemIndexDir))
          {
             removeFolder(systemIndexDir);
          }

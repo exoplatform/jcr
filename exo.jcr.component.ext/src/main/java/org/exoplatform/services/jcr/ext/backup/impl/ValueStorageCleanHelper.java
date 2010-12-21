@@ -56,7 +56,7 @@ public class ValueStorageCleanHelper
             String valueStorageDirName = valueStorageEntry.getParameterValue(FileValueStorage.PATH);
             
             File valueStorageDir = new File(valueStorageDirName);
-            if (valueStorageDir.exists())
+            if (PrivilegedFileHelper.exists(valueStorageDir))
             {
                removeFolder(valueStorageDir);
             }
