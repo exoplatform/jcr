@@ -89,9 +89,8 @@ public class TestRdbmsWorkspaceInitializer extends BaseRDBMSBackupTest
             newEntry.setInitializer(wiEntry);
 
             TesterRdbmsWorkspaceInitializer initializer =
-               new TesterRdbmsWorkspaceInitializer(newEntry,
-                  repositoryService.getRepository("db1").getConfiguration(), cacheableDataManager, null, null, null,
- (ValueFactoryImpl)valueFactory, null, repositoryService);
+               new TesterRdbmsWorkspaceInitializer(newEntry, repositoryService.getRepository("db1").getConfiguration(),
+                  cacheableDataManager, null, null, null, (ValueFactoryImpl)valueFactory, null, repositoryService);
 
             initializer.restoreValueFiles();
             assertTrue(new File(newValueStoragePath).list().length > 0);
@@ -215,9 +214,8 @@ public class TestRdbmsWorkspaceInitializer extends BaseRDBMSBackupTest
             newEntry.setInitializer(wiEntry);
 
             TesterRdbmsWorkspaceInitializer initializer =
-               new TesterRdbmsWorkspaceInitializer(newEntry,
-                  repositoryService.getRepository("db1").getConfiguration(), cacheableDataManager, null, null, null,
- (ValueFactoryImpl)valueFactory, null, repositoryService);
+               new TesterRdbmsWorkspaceInitializer(newEntry, repositoryService.getRepository("db1").getConfiguration(),
+                  cacheableDataManager, null, null, null, (ValueFactoryImpl)valueFactory, null, repositoryService);
 
             // restore multi -> multi
             initializer.restoreTables(conn, 0, true, workspaceEntry.getLockManager(), url.getFile());
