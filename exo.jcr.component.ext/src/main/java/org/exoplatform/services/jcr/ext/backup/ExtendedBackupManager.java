@@ -19,6 +19,8 @@ package org.exoplatform.services.jcr.ext.backup;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 
+import java.io.File;
+
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -169,5 +171,71 @@ public interface ExtendedBackupManager extends BackupManager
     *           if configuration exception occurred
     */
    void restoreRepository(String repositoryBackupIdentifier, boolean asynchronous) throws BackupOperationException,
+            BackupConfigurationException;
+
+   /**
+    * Restore existing workspace. Previous data will be deleted.
+    * For getting status of workspace restore can use 
+    * BackupManager.getLastRestore(String repositoryName, String workspaceName) method
+    * WorkspaceEntry for restore should be contains in BackupChainLog. 
+    * 
+    * @param workspaceBackupSetDir
+    *          the directory with backup set  
+    * @param asynchronous
+    *          if 'true' restore will be in asynchronous mode (i.e. in separated thread) 
+    * @throws BackupOperationException
+    *           if backup operation exception occurred 
+    * @throws BackupConfigurationException
+    *           if configuration exception occurred 
+    */
+   void restoreExistingWorkspace(File workspaceBackupSetDir, boolean asynchronous)
+            throws BackupOperationException, BackupConfigurationException;
+
+   /**
+    * Restore existing repository. Previous data will be deleted.
+    * For getting status of repository restore can use 
+    * BackupManager.getLastRestore(String repositoryName) method.
+    * ReprositoryEntry for restore should be contains in BackupChainLog. 
+    * 
+    * @param repositoryBackupSetDir
+    *          the directory with backup set     
+    * @param asynchronous
+    *          if 'true' restore will be in asynchronous mode (i.e. in separated thread)
+    * @throws BackupOperationException
+    *           if backup operation exception occurred 
+    * @throws BackupConfigurationException
+    *           if configuration exception occurred
+    */
+   void restoreExistingRepository(File repositoryBackupSetDir, boolean asynchronous)
+            throws BackupOperationException, BackupConfigurationException;
+
+   /**
+    * WorkspaceEntry for restore should be contains in BackupChainLog. 
+    * 
+    * @param workspaceBackupSetDir
+    *          the directory with backup set 
+    * @param asynchronous
+    *          if 'true' restore will be in asynchronous mode (i.e. in separated thread) 
+    * @throws BackupOperationException
+    *           if backup operation exception occurred 
+    * @throws BackupConfigurationException
+    *           if configuration exception occurred 
+    */
+   void restoreWorkspace(File workspaceBackupSetDir, boolean asynchronous) throws BackupOperationException,
+            BackupConfigurationException;
+
+   /**
+    * ReprositoryEntry for restore should be contains in BackupChainLog. 
+    * 
+    * @param repositoryBackupSetDir
+    *          the directory with backup set   
+    * @param asynchronous
+    *          if 'true' restore will be in asynchronous mode (i.e. in separated thread)
+    * @throws BackupOperationException
+    *           if backup operation exception occurred 
+    * @throws BackupConfigurationException
+    *           if configuration exception occurred
+    */
+   void restoreRepository(File repositoryBackupSetDir, boolean asynchronous) throws BackupOperationException,
             BackupConfigurationException;
 }

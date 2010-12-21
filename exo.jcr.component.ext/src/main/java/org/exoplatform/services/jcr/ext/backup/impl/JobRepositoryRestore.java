@@ -16,6 +16,8 @@
  */
 package org.exoplatform.services.jcr.ext.backup.impl;
 
+
+
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.SimpleParameterEntry;
@@ -28,10 +30,10 @@ import org.exoplatform.services.jcr.ext.backup.BackupOperationException;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChainLog;
 import org.exoplatform.services.jcr.ext.backup.RepositoryRestoreExeption;
 import org.exoplatform.services.jcr.ext.backup.impl.fs.FullBackupJob;
-import org.exoplatform.services.jcr.ext.backup.impl.rdbms.RdbmsWorkspaceInitializer;
+import org.exoplatform.services.jcr.ext.backup.impl.rdbms.RdbmsBackupWorkspaceInitializer;
+import org.exoplatform.services.jcr.impl.core.BackupWorkspaceInitializer;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
-import org.exoplatform.services.jcr.impl.core.SysViewWorkspaceInitializer;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -302,22 +304,23 @@ public class JobRepositoryRestore extends Thread
       WorkspaceInitializerEntry wiEntry = new WorkspaceInitializerEntry();
       if ((Class.forName(fullbackupType).equals(FullBackupJob.class)))
       {
-         // set the initializer SysViewWorkspaceInitializer
-         wiEntry.setType(SysViewWorkspaceInitializer.class.getCanonicalName());
+         // set the initializer BackupWorkspaceInitializer
+         wiEntry.setType(BackupWorkspaceInitializer.class.getCanonicalName());
 
          List<SimpleParameterEntry> wieParams = new ArrayList<SimpleParameterEntry>();
-         wieParams.add(new SimpleParameterEntry(SysViewWorkspaceInitializer.RESTORE_PATH_PARAMETER, fullBackupPath));
+         wieParams.add(new SimpleParameterEntry(BackupWorkspaceInitializer.RESTORE_PATH_PARAMETER, (new File(
+                  fullBackupPath).getParent())));
 
          wiEntry.setParameters(wieParams);
       }
       else if ((Class.forName(fullbackupType)
                .equals(org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob.class)))
       {
-         // set the initializer RdbmsWorkspaceInitializer
-         wiEntry.setType(RdbmsWorkspaceInitializer.class.getCanonicalName());
+         // set the initializer RdbmsBackupWorkspaceInitializer
+         wiEntry.setType(RdbmsBackupWorkspaceInitializer.class.getCanonicalName());
 
          List<SimpleParameterEntry> wieParams = new ArrayList<SimpleParameterEntry>();
-         wieParams.add(new SimpleParameterEntry(RdbmsWorkspaceInitializer.RESTORE_PATH_PARAMETER, (new File(
+         wieParams.add(new SimpleParameterEntry(RdbmsBackupWorkspaceInitializer.RESTORE_PATH_PARAMETER, (new File(
                   fullBackupPath).getParent())));
 
          wiEntry.setParameters(wieParams);

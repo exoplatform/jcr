@@ -71,10 +71,10 @@ public class BackupConsole
          + "            stop <backup_id> \n"
          + "            status <backup_id> \n" 
          + "            restores <repo[/ws]> \n"
-         + "            restore <repo[/ws]> <backup_id> <pathToConfigFile> \n" 
+         + "            restore [remove-exists] [<repo[/ws]>] {<backup_id>|<backup_set_path>} [<pathToConfigFile>] \n"
          + "            list [completed] \n"
          + "            info \n" 
-                     + "            drop [force-close-session] <repo[/ws]>  \n"
+         + "            drop [force-close-session] <repo[/ws]>  \n"
          + "            help  \n\n"
 
          + " start          - start backup of repositpry or workspace \n" 
@@ -90,9 +90,11 @@ public class BackupConsole
 
          + " <repo[/ws]>         - /<reponsitory-name>[/<workspace-name>]  the repository or workspace \n"
          + " <backup_dir>        - path to folder for backup on remote server \n"
-         + " <backup_id>         - the identifier for backup \n" 
+         + " <backup_id>         - the identifier for backup \n"
+         + " <backup_set_dir>    - path to folder with backup set on remote server\n"
          + " <incr>              - incemental job period \n"
          + " <pathToConfigFile>  - path (local) to  repository or workspace configuration \n"
+                     + " remove-exists       - remove fully (db, value storage, index) exists repository/workspace \n"
          + " force-close-session - close opened sessions on repositpry or workspace. \n\n";
 
    /**
@@ -423,20 +425,110 @@ public class BackupConsole
          else if (command.equalsIgnoreCase("restore"))
          {
 
-            String pathToWS = getRepoWS(args, curArg++);
-            if (pathToWS == null)
-               return;
+            /*
+            All valid combination of paramter.  
+            1. restore remove-exists <repo/ws> <backup_id>       <pathToConfigFile>
+            2. restore remove-exists <repo>    <backup_id>       <pathToConfigFile>
+            3. restore remove-exists <repo/ws> <backup_set_path> <pathToConfigFile>
+            4. restore remove-exists <repo>    <backup_set_path> <pathToConfigFile>
+            5. restore remove-exists <backup_id>       
+            6. restore remove-exists <backup_set_path> 
+            7. restore <repo/ws> <backup_id>       <pathToConfigFile>
+            8. restore <repo>    <backup_id>       <pathToConfigFile>
+            9. restore <repo/ws> <backup_set_path> <pathToConfigFile>
+            10. restore <repo>    <backup_set_path> <pathToConfigFile>
+            11. restore <backup_id>       
+            12. restore <backup_set_path> 
+            */
+            
+            boolean removeExists = false;
+            String backupSetPath = null;
+            String backupId = null;
+            String pathToWS = null;
+            String repositoryName = null;
+            String workspaceName = null;
 
-            String repositoryName = getRepositoryName(pathToWS);
-            String workspaceName = (pathToWS.split("/").length == 3 ? getWorkspaceName(pathToWS) : null);
+            String parameter = args[curArg++];
 
-            // backup id
-            if (curArg == args.length)
+            //check remove-exists
+            if (parameter.equals("remove-exists"))
             {
-               System.out.println(INCORRECT_PARAM + "There is no backup identifier parameter.");
+               removeExists = true;
+
+               if (curArg == args.length)
+               {
+                  System.out.println(INCORRECT_PARAM + "Should be more parameters.");
+                  return;
+               }
+            }
+
+            if (removeExists)
+            {
+               parameter = args[curArg++];
+            }
+
+            //check backup_id
+            if (isBackupId(parameter))
+            {
+               backupId = parameter;
+               curArg++;
+
+               if (curArg < args.length)
+               {
+                  System.out.println(TOO_MANY_PARAMS);
+                  return;
+               }
+
+               //5. restore remove-exists <backup_id>
+               //11. restore <backup_id>
+               System.out.println(client.restore(repositoryName, workspaceName, backupId, null,
+                        backupSetPath, removeExists));
                return;
             }
-            String backupId = args[curArg++];
+            //check /repo/ws or /repo
+            else if (isRepoWS(parameter))
+            {
+               pathToWS = getRepoWS(args, curArg - 1);
+               if (pathToWS == null)
+                  return;
+
+               repositoryName = getRepositoryName(pathToWS);
+               workspaceName = (pathToWS.split("/").length == 3 ? getWorkspaceName(pathToWS) : null);
+            }
+            // this is backup_set_path
+            else
+            {
+               backupSetPath = parameter;
+
+               if (curArg < args.length)
+               {
+                  System.out.println(INCORRECT_PARAM + "Should be less parameters : " + parameter);
+                  return;
+               }
+
+               //6. restore remove-exists <backup_set_path>
+               //12. restore <backup_set_path>
+               System.out.println(client.restore(repositoryName, workspaceName, backupId, null, backupSetPath,
+                        removeExists));
+               return;
+            }
+
+            // check backup_id or backup_set_path
+            if (curArg == args.length)
+            {
+               System.out.println(INCORRECT_PARAM + "There is no backup identifier or backup set path parameter.");
+               return;
+            }
+            parameter = args[curArg++];
+
+            if (isBackupId(parameter))
+            {
+               backupId = parameter;
+            }
+            else
+            {
+               backupSetPath = parameter;
+            }
 
             if (curArg == args.length)
             {
@@ -457,7 +549,19 @@ public class BackupConsole
                System.out.println(TOO_MANY_PARAMS);
                return;
             }
-            System.out.println(client.restore(repositoryName, workspaceName, backupId, new FileInputStream(conf)));
+
+            /*
+            1. restore remove-exists <repo/ws> <backup_id>       <pathToConfigFile>
+            2. restore remove-exists <repo>    <backup_id>       <pathToConfigFile>
+            3. restore remove-exists <repo/ws> <backup_set_path> <pathToConfigFile>
+            4. restore remove-exists <repo>    <backup_set_path> <pathToConfigFile>
+            7. restore <repo/ws> <backup_id>       <pathToConfigFile>
+            8. restore <repo>    <backup_id>       <pathToConfigFile>
+            9. restore <repo/ws> <backup_set_path> <pathToConfigFile>
+            10. restore <repo>    <backup_set_path> <pathToConfigFile>
+            */
+            System.out.println(client.restore(repositoryName, workspaceName, backupId, new FileInputStream(conf),
+                     backupSetPath, removeExists));
          }
          else
          {
@@ -477,6 +581,42 @@ public class BackupConsole
       }
 
       System.exit(0);
+   }
+
+   /**
+    * Check is "/repo" or "/repo/ws" parameter.
+    * 
+    * @param parameter
+    *          String, parameter.
+    * @return Boolean
+    *           return "true" if it "/repo" or "/repo/ws" parameter
+    */
+   private static boolean isRepoWS(String parameter)
+   {
+      String repWS = parameter;
+      repWS = repWS.replaceAll("\\\\", "/");
+
+      if ( !repWS.matches("[/][^/]+") && !repWS.matches("[/][^/]+[/][^/]+"))
+      {
+         return false;
+      }
+      else
+      {
+         return true;
+      }
+   }
+
+   /**
+    * Check is backip_id parameter.
+    * 
+    * @param firstParameter
+    *          String, parameter.
+    * @return Boolean
+    *           return "true" if it backup identifier parameter
+    */
+   private static boolean isBackupId(String parameter)
+   {
+      return parameter.matches("[0-9abcdef]+") && parameter.length() == 32;
    }
 
    /**

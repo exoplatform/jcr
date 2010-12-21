@@ -71,7 +71,6 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
    public RepositoryServiceConfigurationImpl(InitParams params, ConfigurationManager configurationService,
       InitialContextInitializer initialContextInitializer) throws RepositoryConfigurationException
    {
-
       param = params.getValueParam("conf-path");
 
       if (params.getPropertiesParam("working-conf") != null)

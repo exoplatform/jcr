@@ -41,15 +41,15 @@ public class TestFileNameProduser extends TestCase
    public void setUp() throws Exception
    {
       super.setUp();
-
-      tempDir = new File("target" + File.separator + "temp" + File.separator + "fileProduser");
-      tempDir.mkdirs();
       backupsetName = String.valueOf(System.currentTimeMillis());
       calendar = Calendar.getInstance();
    }
 
    public void testGetNextNameJCRBackup() throws Exception
    {
+      tempDir = new File("target" + File.separator + "temp" + File.separator + "fileProduser1");
+      tempDir.mkdirs();
+
       FileNameProducer nameProducer =
          new FileNameProducer(backupsetName, tempDir.getAbsolutePath(), calendar, true, false);
       File file = nameProducer.getNextFile();
@@ -68,6 +68,9 @@ public class TestFileNameProduser extends TestCase
 
    public void testGetNextNameRDBMSBackup() throws Exception
    {
+      tempDir = new File("target" + File.separator + "temp" + File.separator + "fileProduser2");
+      tempDir.mkdirs();
+
       FileNameProducer nameProducer =
          new FileNameProducer(backupsetName, tempDir.getAbsolutePath(), calendar, true, true);
       File file = nameProducer.getNextFile();

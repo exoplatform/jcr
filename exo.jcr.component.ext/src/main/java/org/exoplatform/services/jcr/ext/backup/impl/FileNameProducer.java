@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.ext.backup.impl;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Calendar;
 
@@ -30,15 +31,25 @@ import java.util.Calendar;
  */
 public class FileNameProducer
 {
+   class SkipBackupLogFilter
+      implements FilenameFilter
+   {
+
+      public boolean accept(File dir, String name)
+      {
+         return !name.endsWith(".xml");
+      }
+   }
+
    /**
     * Backup set name.
     */
-   private final String backupSetName;
+   private String backupSetName;
 
    /**
     * Backup set directory.
     */
-   private final File backupSetDir;
+   private File backupSetDir;
 
    /**
     * Indicates is full backup or not.
@@ -48,7 +59,7 @@ public class FileNameProducer
    /**
     * Indicates that need to create a directory for full backup otherwise is will be the single file.
     */
-   private final boolean isDirectoryForFullBackup;
+   private boolean isDirectoryForFullBackup;
 
    /**
     * Constructor FileNameProducer.
@@ -65,19 +76,33 @@ public class FileNameProducer
     *          indicates that need to create a directory for full backup otherwise is will be the single file
     */
    public FileNameProducer(String backupSetName, String backupDir, Calendar timeStamp, boolean isFullBackup,
-      boolean isDirectory)
+            boolean isDirectory)
    {
       this.backupSetName = backupSetName;
       this.isFullBackup = isFullBackup;
       this.isDirectoryForFullBackup = isDirectory;
 
-      String sTime = "-" + getStrDate(timeStamp) + "_" + getStrTime(timeStamp);
-      this.backupSetDir = new File(backupDir + File.separator + backupSetName + sTime);
+      this.backupSetDir = new File(backupDir);
 
       if (!PrivilegedFileHelper.exists(backupSetDir))
       {
          PrivilegedFileHelper.mkdirs(backupSetDir);
       }
+   }
+
+   public static File generateBackupSetDir(String repositoryName, String workspaceName, String backupDir,
+            Calendar timeStamp)
+   {
+      FileNameProducer fileNameProducer = new FileNameProducer();
+      String sTime = "-" + fileNameProducer.getStrDate(timeStamp) + "_" + fileNameProducer.getStrTime(timeStamp);
+      File fBackupSetDir = new File(backupDir + File.separator + repositoryName + "_" + workspaceName + sTime);
+
+      if (!PrivilegedFileHelper.exists(fBackupSetDir))
+      {
+         PrivilegedFileHelper.mkdirs(fBackupSetDir);
+      }
+
+      return fBackupSetDir;
    }
 
    /**
@@ -97,7 +122,7 @@ public class FileNameProducer
     *          indicates that need to create a directory for full backup otherwise is will be the single file
     */
    public FileNameProducer(String repositoryName, String workspaceName, String backupDir, Calendar timeStamp,
-      boolean isFullBackup, boolean isDirectory)
+            boolean isFullBackup, boolean isDirectory)
    {
       this(repositoryName + "_" + workspaceName, backupDir, timeStamp, isFullBackup, isDirectory);
    }
@@ -117,9 +142,16 @@ public class FileNameProducer
     *          indicates is full backup or not 
     */
    public FileNameProducer(String repositoryName, String workspaceName, String backupDir, Calendar timeStamp,
-      boolean isFullBackup)
+            boolean isFullBackup)
    {
       this(repositoryName + "_" + workspaceName, backupDir, timeStamp, isFullBackup, false);
+   }
+
+   /**
+    * Empty constructor.
+    */
+   public FileNameProducer()
+   {
    }
 
    /**
@@ -185,14 +217,14 @@ public class FileNameProducer
    private String getNextSufix()
    {
 
-      String[] fileList = PrivilegedFileHelper.list(backupSetDir);
+      String[] fileList = PrivilegedFileHelper.list(backupSetDir, new SkipBackupLogFilter());
 
       int sufix = 0;
 
       for (int i = 0; i < fileList.length; i++)
       {
          String[] stringArray = fileList[i].split("[.]");
-         
+
          int currentSufix = Integer.valueOf(stringArray[stringArray.length - 1]).intValue();
 
          if (currentSufix > sufix)
@@ -223,6 +255,17 @@ public class FileNameProducer
       int m = c.get(Calendar.MINUTE);
       int s = c.get(Calendar.SECOND);
       return "" + (h < 10 ? "0" + h : h) + (m < 10 ? "0" + m : m) + (s < 10 ? "0" + s : s);
+   }
+
+   /**
+    * Get Backup set directory.
+    * 
+    * @return File
+    *           The backup set directory
+    */
+   public File getBackupSetDir()
+   {
+      return backupSetDir;
    }
 
 }

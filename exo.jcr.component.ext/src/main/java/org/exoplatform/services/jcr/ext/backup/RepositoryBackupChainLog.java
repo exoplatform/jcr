@@ -16,6 +16,27 @@
  */
 package org.exoplatform.services.jcr.ext.backup;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.services.jcr.config.RepositoryEntry;
+import org.exoplatform.services.jcr.config.RepositoryServiceConfiguration;
+import org.exoplatform.services.jcr.ext.backup.server.RepositoryRestoreExeption;
+import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+import org.exoplatform.ws.frameworks.json.JsonHandler;
+import org.exoplatform.ws.frameworks.json.JsonParser;
+import org.exoplatform.ws.frameworks.json.impl.BeanBuilder;
+import org.exoplatform.ws.frameworks.json.impl.JsonDefaultHandler;
+import org.exoplatform.ws.frameworks.json.impl.JsonParserImpl;
+import org.exoplatform.ws.frameworks.json.value.JsonValue;
+import org.jibx.runtime.BindingDirectory;
+import org.jibx.runtime.IBindingFactory;
+import org.jibx.runtime.IMarshallingContext;
+import org.jibx.runtime.IUnmarshallingContext;
+import org.jibx.runtime.JiBXException;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -37,22 +58,6 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.events.StartElement;
-
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
-import org.exoplatform.commons.utils.SecurityHelper;
-import org.exoplatform.services.jcr.config.RepositoryEntry;
-import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
-import org.exoplatform.ws.frameworks.json.JsonHandler;
-import org.exoplatform.ws.frameworks.json.JsonParser;
-import org.exoplatform.ws.frameworks.json.impl.BeanBuilder;
-import org.exoplatform.ws.frameworks.json.impl.JsonDefaultHandler;
-import org.exoplatform.ws.frameworks.json.impl.JsonException;
-import org.exoplatform.ws.frameworks.json.impl.JsonGeneratorImpl;
-import org.exoplatform.ws.frameworks.json.impl.JsonParserImpl;
-import org.exoplatform.ws.frameworks.json.value.JsonValue;
 
 /**
  * Created by The eXo Platform SAS.
@@ -216,14 +221,56 @@ public class RepositoryBackupChainLog
          }
       }
 
-      public synchronized void writeRepositoryEntry(RepositoryEntry rEntry) throws JsonException, XMLStreamException
+      public synchronized void writeRepositoryEntry(RepositoryEntry rEntry,
+               RepositoryServiceConfiguration serviceConfiguration) throws XMLStreamException, IOException,
+               JiBXException
       {
-
-         JsonGeneratorImpl generatorImpl = new JsonGeneratorImpl();
-         JsonValue json = generatorImpl.createJsonObject(rEntry);
-
+         File config =
+                  new File(PrivilegedFileHelper.getCanonicalPath(RepositoryBackupChainLog.this.config.getBackupDir())
+                     + File.separator + "original-repository-config.xml");
+         PrivilegedFileHelper.createNewFile(config);
+         OutputStream saveStream = PrivilegedFileHelper.fileOutputStream(config);
+      
+         ArrayList<RepositoryEntry> repositoryEntries = new ArrayList<RepositoryEntry>();
+         repositoryEntries.add(rEntry);
+      
+         RepositoryServiceConfiguration newRepositoryServiceConfiguration =
+                  new RepositoryServiceConfiguration(serviceConfiguration.getDefaultRepositoryName(), repositoryEntries);
+      
+         IBindingFactory bfact;
+         try
+         {
+            bfact = SecurityHelper.doPriviledgedExceptionAction(new PrivilegedExceptionAction<IBindingFactory>()
+            {
+               public IBindingFactory run() throws Exception
+               {
+                  return BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
+               }
+            });
+         }
+         catch (PrivilegedActionException pae)
+         {
+            Throwable cause = pae.getCause();
+            if (cause instanceof JiBXException)
+            {
+               throw (JiBXException) cause;
+            }
+            else if (cause instanceof RuntimeException)
+            {
+               throw (RuntimeException) cause;
+            }
+            else
+            {
+               throw new RuntimeException(cause);
+            }
+         }
+         IMarshallingContext mctx = bfact.createMarshallingContext();
+      
+         mctx.marshalDocument(newRepositoryServiceConfiguration, "ISO-8859-1", null, saveStream);
+         saveStream.close();
+      
          writer.writeStartElement("original-repository-config");
-         writer.writeCData(json.toString());
+         writer.writeCharacters(config.getName());
          writer.writeEndElement();
       }
    }
@@ -295,10 +342,42 @@ public class RepositoryBackupChainLog
 
       private RepositoryEntry readRepositoryEntry() throws UnsupportedEncodingException, Exception
       {
-         String jsonRepositoryEntry = reader.getElementText();
+         String configName = readContent();
 
-         return (RepositoryEntry) (getObject(RepositoryEntry.class, jsonRepositoryEntry
-                  .getBytes(Constants.DEFAULT_ENCODING)));
+         File configFile =
+                  new File(PrivilegedFileHelper.getCanonicalPath(getBackupConfig().getBackupDir()) + File.separator
+                           + configName);
+
+         if (!PrivilegedFileHelper.exists(configFile))
+         {
+            throw new RepositoryRestoreExeption("The backup set is not contains original repositpry configuration : "
+                     + PrivilegedFileHelper.getCanonicalPath(getBackupConfig().getBackupDir()));
+         }
+
+         IBindingFactory factory = BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
+         IUnmarshallingContext uctx = factory.createUnmarshallingContext();
+         RepositoryServiceConfiguration conf =
+                  (RepositoryServiceConfiguration) uctx.unmarshalDocument(PrivilegedFileHelper
+                           .fileInputStream(configFile), null);
+
+         if (conf.getRepositoryConfigurations().size() != 1)
+         {
+            throw new RepositoryRestoreExeption(
+                     "The oririginal configuration should be contains only one repository entry :"
+                     + PrivilegedFileHelper.getCanonicalPath(configFile));
+         }
+
+         if (!conf.getRepositoryConfiguration(getBackupConfig().getRepository()).getName().equals(getBackupConfig().getRepository()))
+         {
+            throw new RepositoryRestoreExeption(
+                     "The oririginal configuration should be contains only one repository entry with name \""
+                              + getBackupConfig().getRepository() + "\" :"
+                              + PrivilegedFileHelper.getCanonicalPath(configFile));
+         }
+         
+         
+
+         return conf.getRepositoryConfiguration(getBackupConfig().getRepository());
       }
 
       /**
@@ -508,7 +587,7 @@ public class RepositoryBackupChainLog
     */
    public RepositoryBackupChainLog(File logDirectory, RepositoryBackupConfig config, String fullBackupType,
       String incrementalBackupType, String systemWorkspace, List<String> wsLogFilePathList, String backupId,
-            Calendar startTime, RepositoryEntry rEntry) throws BackupOperationException
+            Calendar startTime, RepositoryEntry rEntry, RepositoryServiceConfiguration repositoryServiceConfiguration) throws BackupOperationException
    {
       try
       {
@@ -529,7 +608,7 @@ public class RepositoryBackupChainLog
          logWriter.write(config, fullBackupType, incrementalBackupType);
          logWriter.writeSystemWorkspaceName(systemWorkspace);
          logWriter.writeBackupsPath(wsLogFilePathList, config);
-         logWriter.writeRepositoryEntry(rEntry);
+         logWriter.writeRepositoryEntry(rEntry, repositoryServiceConfiguration);
 
          this.workspaceBackupsInfo = wsLogFilePathList;
          this.workspaceSystem = systemWorkspace;
@@ -546,7 +625,7 @@ public class RepositoryBackupChainLog
       {
          throw new BackupOperationException("Can not create backup log ...", e);
       }
-      catch (JsonException e)
+      catch (JiBXException e)
       {
          throw new BackupOperationException("Can not create backup log ...", e);
       }

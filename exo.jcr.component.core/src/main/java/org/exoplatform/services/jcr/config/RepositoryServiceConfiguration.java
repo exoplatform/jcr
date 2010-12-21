@@ -43,6 +43,16 @@ import javax.jcr.RepositoryException;
 public class RepositoryServiceConfiguration extends AbstractRepositoryServiceConfiguration
 {
 
+   public RepositoryServiceConfiguration()
+   {
+   }
+
+   public RepositoryServiceConfiguration(String defaultRepositoryName, List<RepositoryEntry> repositoryEntries)
+   {
+      this.defaultRepositoryName = defaultRepositoryName;
+      this.repositoryConfigurations = repositoryEntries;
+   }
+   
    public final RepositoryEntry getRepositoryConfiguration(String name) throws RepositoryConfigurationException
    {
       for (int i = 0; i < getRepositoryConfigurations().size(); i++)

@@ -1005,7 +1005,7 @@ failure message in response  - the description of failure</programlisting>
             stop &lt;backup_id&gt; 
             status &lt;backup_id&gt; 
             restores &lt;repo[/ws]&gt; 
-            restore &lt;repo[/ws]&gt; &lt;backup_id&gt; &lt;pathToConfigFile&gt; 
+            restore [remove-exists] [&lt;repo[/ws]&gt;] {&lt;backup_id&gt;|&lt;backup_set_path&gt;} [&lt;pathToConfigFile&gt;] 
             list [completed] 
             info 
             drop [force-close-session] &lt;repo[/ws]&gt;  
@@ -1025,8 +1025,10 @@ failure message in response  - the description of failure</programlisting>
  &lt;repo[/ws]&gt;         - /&lt;reponsitory-name&gt;[/&lt;workspace-name&gt;]  the repository or workspace 
  &lt;backup_dir&gt;        - path to folder for backup on remote server 
  &lt;backup_id&gt;         - the identifier for backup 
+ &lt;backup_set_dir&gt;    - path to folder with backup set on remote server
  &lt;incr&gt;              - incemental job period 
  &lt;pathToConfigFile&gt;  - path (local) to  repository or workspace configuration 
+ remove-exists       - removed fully (db, value storage, index) existed repository/workspace 
  force-close-session - close opened sessions on repositpry or workspace.</programlisting>
   </section>
 
@@ -1226,6 +1228,259 @@ failure message in response  - the description of failure</programlisting>
     backup type             : full only
     path to backup folder   : /home/rainf0x/java/exo-working/JCR-839/exo-tomcat/bin/../temp/backup
     restore state           : successful</programlisting>
+    </section>
+
+    <section>
+      <title>Restoring workspace and remove exists workspace</title>
+
+      <para>Restore to workspace "backup" and remove fully (will be removed
+      content from db, value storage, index) exists workspace, for restore
+      need the &lt;backup_id&gt; of completed backup and path to file with
+      workspace configuration:</para>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restore remove-exists /repository/backup 6c302adc7f00010100df88d29535c6ee /home/rainf0x/java/exo-working/JCR-839/exo-jcr-config_backup.xml</programlisting>
+
+      <para>Return:</para>
+
+      <programlisting>Successful : 
+  status code = 200</programlisting>
+    </section>
+
+    <section>
+      <title>Restoring workspace from backup set</title>
+
+      <para>Restore to workspace "backup", for restore need the
+      &lt;backup_set_path&gt; (&lt;backup_set_path&gt; is path to backup set
+      folder on server side) of completed backup and path to file with
+      workspace configuration:</para>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restore /repository/backup /tmp/123/repository_backup-20101220_114156 /home/rainf0x/java/exo-working/JCR-839/exo-jcr-config_backup.xml</programlisting>
+
+      <para>Return:</para>
+
+      <programlisting>Successful : 
+  status code = 200</programlisting>
+    </section>
+
+    <section>
+      <title>Restoring workspace from backup set and remove exists
+      workspace</title>
+
+      <para>Restore to workspace "backup" and remove fully (will be removed
+      content from db, value storage, index) exists workspace, for restore
+      need the &lt;backup_set_path&gt; (&lt;backup_set_path&gt; is path to
+      backup set folder on server side) of completed backup and path to file
+      with workspace configuration:</para>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restore remove-exists /repository/backup /repository/backup /tmp/123/repository_backup-20101220_114156 /home/rainf0x/java/exo-working/JCR-839/exo-jcr-config_backup.xml</programlisting>
+
+      <para>Return:</para>
+
+      <programlisting>Successful : 
+  status code = 200</programlisting>
+    </section>
+
+    <section>
+      <title>Restoring workspace with original configuation </title>
+
+      <para>Restore to workspace "backup" with original configuration of
+      workspace (the original configuration was stored in backup set), for
+      restore need the &lt;backup_id&gt; of completed backup:</para>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restore  6c302adc7f00010100df88d29535c6ee</programlisting>
+
+      <para>Return:</para>
+
+      <programlisting>Successful : 
+  status code = 200</programlisting>
+    </section>
+
+    <section>
+      <title>Restoring workspace with original configuation and remove exists
+      workspace</title>
+
+      <para>Restore to workspace "backup" with original configuration of
+      workspace (the original configuration was stored in backup set) and
+      remove fully (will be removed content from db, value storage, index)
+      exists workspace, for restore need the &lt;backup_id&gt; of completed
+      backup:</para>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restore remove-exists 6c302adc7f00010100df88d29535c6ee</programlisting>
+
+      <para>Return:</para>
+
+      <programlisting>Successful : 
+  status code = 200</programlisting>
+    </section>
+
+    <section>
+      <title>Restoring workspace from backup set with original
+      configuation</title>
+
+      <para>Restore to workspace "backup" with original configuration of
+      workspace (the original configuration was stored in backup set), for
+      restore need the &lt;backup_set_path&gt; (&lt;backup_set_path&gt; is
+      path to backup set folder on server side) of completed backup:</para>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restore /tmp/123/repository_backup-20101220_114156</programlisting>
+
+      <para>Return:</para>
+
+      <programlisting>Successful : 
+  status code = 200</programlisting>
+    </section>
+
+    <section>
+      <title>Restoring workspace from backup set with original configuation
+      and remove exists workspace</title>
+
+      <para>Restore to workspace "backup" and remove fully (will be removed
+      content from db, value storage, index) exists workspace with original
+      configuration of workspace (the original configuration was stored in
+      backup set), for restore need the &lt;backup_set_path&gt;
+      (&lt;backup_set_path&gt; is path to backup set folder on server side) of
+      completed backup:</para>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restore remove-exists /tmp/123/repository_backup-20101220_114156</programlisting>
+
+      <para>Return:</para>
+
+      <programlisting>Successful : 
+  status code = 200</programlisting>
+    </section>
+
+    <section>
+      <title>Restoring repository</title>
+
+      <para>Restore to repository "repository" , for restore need the
+      &lt;backup_id&gt; of completed backup and path to file with repository
+      configuration:</para>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restore remove-exists /repository 6c302adc7f00010100df88d29535c6ee /home/rainf0x/java/exo-working/JCR-839/exo-jcr-config.xml</programlisting>
+
+      <para>Return:</para>
+
+      <programlisting>Successful : 
+  status code = 200</programlisting>
+    </section>
+
+    <section>
+      <title>Restoring repository and remove exists repository</title>
+
+      <para>Restore to repositoy "repository" and remove fully (will be
+      removed content from db, value storage, index) exists repository, for
+      restore need the &lt;backup_id&gt; of completed backup and path to file
+      with repository configuration:</para>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restore remove-exists /repository 6c302adc7f00010100df88d29535c6ee /home/rainf0x/java/exo-working/JCR-839/exo-jcr-config.xml</programlisting>
+
+      <para>Return:</para>
+
+      <programlisting>Successful : 
+  status code = 200</programlisting>
+    </section>
+
+    <section>
+      <title>Restoring repository from backup set</title>
+
+      <para>Restore to repository "repository", for restore need the
+      &lt;backup_set_path&gt; (&lt;backup_set_path&gt; is path to backup set
+      folder on server side) of completed backup and path to file with
+      repository configuration:</para>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restore /repository /tmp/123/repository_repository_backup_1292833493681 /home/rainf0x/java/exo-working/JCR-839/exo-jcr-config.xml</programlisting>
+
+      <para>Return:</para>
+
+      <programlisting>Successful : 
+  status code = 200</programlisting>
+    </section>
+
+    <section>
+      <title>Restoring repository from backup set and remove exists
+      repository</title>
+
+      <para>Restore to repository "repository" and remove fully (will be
+      removed content from db, value storage, index) exists repository, for
+      restore need the &lt;backup_set_path&gt; (&lt;backup_set_path&gt; is
+      path to backup set folder on server side) of completed backup and path
+      to file with repository configuration:</para>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restore remove-exists /repository /repository/backup /tmp/123/repository_repository_backup_1292833493681 /home/rainf0x/java/exo-working/JCR-839/exo-jcr-config.xml</programlisting>
+
+      <para>Return:</para>
+
+      <programlisting>Successful : 
+  status code = 200</programlisting>
+    </section>
+
+    <section>
+      <title>Restoring repository with original configuation</title>
+
+      <para>Restore to repository "repository" with original configuration of
+      repository (the original configuration was stored in backup set), for
+      restore need the &lt;backup_id&gt; of completed backup:</para>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restore  6c302adc7f00010100df88d29535c6ee</programlisting>
+
+      <para>Return:</para>
+
+      <programlisting>Successful : 
+  status code = 200</programlisting>
+    </section>
+
+    <section>
+      <title>Restoring repository with original configuation and remove exists
+      repository</title>
+
+      <para>Restore to repository "repository" with original configuration of
+      repository (the original configuration was stored in backup set) and
+      remove fully (will be removed content from db, value storage, index)
+      exists repository, for restore need the &lt;backup_id&gt; of completed
+      backup:</para>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restore remove-exists 6c302adc7f00010100df88d29535c6ee</programlisting>
+
+      <para>Return:</para>
+
+      <programlisting>Successful : 
+  status code = 200</programlisting>
+    </section>
+
+    <section>
+      <title>Restoring repository from backup set with original
+      configuation</title>
+
+      <para>Restore to repository "repository" with original configuration of
+      repository (the original configuration was stored in backup set), for
+      restore need the &lt;backup_set_path&gt; (&lt;backup_set_path&gt; is
+      path to backup set folder on server side) of completed backup:</para>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restore /tmp/123/repository_repository_backup_1292833493681</programlisting>
+
+      <para>Return:</para>
+
+      <programlisting>Successful : 
+  status code = 200</programlisting>
+    </section>
+
+    <section>
+      <title>Restoring repository from backup set with original configuation
+      and remove exists repository</title>
+
+      <para>Restore to repository "repository" and remove fully (will be
+      removed content from db, value storage, index) exists repository with
+      original configuration of repository (the original configuration was
+      stored in backup set), for restore need the &lt;backup_set_path&gt;
+      (&lt;backup_set_path&gt; is path to backup set folder on server side) of
+      completed backup:</para>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restore remove-exists /tmp/123/repository_repository_backup_1292833493681</programlisting>
+
+      <para>Return:</para>
+
+      <programlisting>Successful : 
+  status code = 200</programlisting>
     </section>
   </section>
 
