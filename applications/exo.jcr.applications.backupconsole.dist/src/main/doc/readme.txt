@@ -15,7 +15,7 @@ jcrbackup.cmd and jcrbackup.sh - suitable for Standalone and flexible for variou
                                         stop <backup_id>
                                         status <backup_id>
                                         restores <repo[/ws]>
-                                        restore <repo[/ws]> <backup_id> <pathToConfigFile>
+                                        restore [remove-exists] [<repo[/ws]>] {<backup_id>|<backup_set_path>} [<pathToConfigFile>]
                                         list [completed]
                                         info
                                         drop [force-close-session] <repo[/ws]>
@@ -37,6 +37,7 @@ jcrbackup.cmd and jcrbackup.sh - suitable for Standalone and flexible for variou
            <backup_id>               :  the identifier for backup
            <incr>                    :  incremental job period
            <pathToConfigFile>        :  path (local) to  repository or workspace configuration
+           remove-exists             :  remove fully (db, value storage, index) exists repository/workspace
            force-close-session       :  close opened sessions on repository or workspace
 
 
@@ -51,7 +52,7 @@ exobackup.sh and exobackup.cmd - suitable for use with GateIn based products lik
                                         stop <backup_id>
                                         status <backup_id>
                                         restores <repo[/ws]>
-                                        restore <repo[/ws]> <backup_id> <pathToConfigFile>
+                                        restore [remove-exists] [<repo[/ws]>] {<backup_id>|<backup_set_path>} [<pathToConfigFile>]
                                         list [completed]
                                         info
                                         drop [force-close-session] <repo[/ws]>
@@ -73,4 +74,5 @@ exobackup.sh and exobackup.cmd - suitable for use with GateIn based products lik
            <backup_id>               :  the identifier for backup
            <incr>                    :  incremental job period
            <pathToConfigFile>        :  path (local) to  repository or workspace configuration
+           remove-exists             :  remove fully (db, value storage, index) exists repository/workspace
            force-close-session       :  close opened sessions on repository or workspace

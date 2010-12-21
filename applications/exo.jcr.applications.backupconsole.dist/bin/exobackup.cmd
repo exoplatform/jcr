@@ -27,7 +27,7 @@ echo "           <command>                 :  start <repo[/ws]> <backup_dir> [<i
 echo "                                        stop <backup_id> "
 echo "                                        status <backup_id> "
 echo "                                        restores <repo[/ws]> "
-echo "                                        restore <repo[/ws]> <backup_id> <pathToConfigFile> "
+echo "                                        restore [remove-exists] [<repo[/ws]>] {<backup_id>|<backup_set_path>} [<pathToConfigFile>] "
 echo "                                        list [completed] "
 echo "                                        info "
 echo "                                        drop [force-close-session] <repo[/ws]> "
@@ -49,6 +49,7 @@ echo "           <backup_dir>              :  path to folder for backup on remot
 echo "           <backup_id>               :  the identifier for backup "
 echo "           <incr>                    :  incremental job period "
 echo "           <pathToConfigFile>        :  path (local) to  repository or workspace configuration "
+echo "           remove-exists             : remove fully (db, value storage, index) exists repository/workspace "
 echo "           force-close-session       :  close opened sessions on repository or workspace "
 
 
