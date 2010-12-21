@@ -47,15 +47,19 @@ public class ValueStorageCleanHelper
     */
    public void removeWorkspaceValueStorage(WorkspaceEntry wEntry) throws RepositoryConfigurationException, IOException
    {
-       ContainerEntry containerEntry  = wEntry.getContainer();
-       
+      ContainerEntry containerEntry = wEntry.getContainer();
+
       if (containerEntry.getValueStorages() != null)
       {
          for (ValueStorageEntry valueStorageEntry : containerEntry.getValueStorages())
          {
-            String path = valueStorageEntry.getParameterValue(FileValueStorage.PATH);
+            String valueStorageDirName = valueStorageEntry.getParameterValue(FileValueStorage.PATH);
             
-            removeFolder(new File(path));
+            File valueStorageDir = new File(valueStorageDirName);
+            if (valueStorageDir.exists())
+            {
+               removeFolder(valueStorageDir);
+            }
          }
       }
    }

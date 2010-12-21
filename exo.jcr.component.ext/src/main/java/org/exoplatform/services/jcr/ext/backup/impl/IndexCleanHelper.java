@@ -47,13 +47,21 @@ public class IndexCleanHelper
     */
    public void removeWorkspaceIndex(WorkspaceEntry wsConfig, boolean isSystem) throws RepositoryConfigurationException, IOException
    {
-      String indexDir = wsConfig.getQueryHandler().getParameterValue(QueryHandlerParams.PARAM_INDEX_DIR);
+      String indexDirName = wsConfig.getQueryHandler().getParameterValue(QueryHandlerParams.PARAM_INDEX_DIR);
       
-      removeFolder(new File(indexDir));
+      File indexDir = new File(indexDirName);
+      if (indexDir.exists())
+      {
+         removeFolder(indexDir);
+      }
       
       if (isSystem)
       {
-         removeFolder(new File(indexDir + "_" + SystemSearchManager.INDEX_DIR_SUFFIX));
+         File systemIndexDir = new File(indexDirName + "_" + SystemSearchManager.INDEX_DIR_SUFFIX);
+         if (systemIndexDir.exists())
+         {
+            removeFolder(systemIndexDir);
+         }
       }
    }
    
