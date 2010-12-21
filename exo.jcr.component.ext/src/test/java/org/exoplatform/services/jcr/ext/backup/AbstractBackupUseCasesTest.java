@@ -2343,7 +2343,7 @@ public abstract class AbstractBackupUseCasesTest
          fail("There are no backup files in " + backDir.getAbsolutePath());
    }
 
-   /*public void testWorkspaceRestoreWithNullConfig() throws Exception
+   public void testWorkspaceRestoreWithNullConfig() throws Exception
    {
       // backup
       File backDir = new File("target/backup/" + getUUIndex());
@@ -2375,8 +2375,7 @@ public abstract class AbstractBackupUseCasesTest
          fail("Can't get fullBackup chain");
 
       //TODO
-      super.tearDown();
-      removeWorkspaceFully(repositoryNameToBackup, workspaceNameToBackup);
+      removeWorkspaceFullySingleDB(repositoryNameToBackup, workspaceNameToBackup);
 
       File backLog = new File(bch.getLogFilePath());
       if (backLog.exists())
@@ -2402,7 +2401,7 @@ public abstract class AbstractBackupUseCasesTest
          SessionImpl back1 = null;
          try
          {
-            back1 = (SessionImpl) getReposityToBackup().login(credentials, "ws1");
+            back1 = (SessionImpl) getReposityToBackup().login(credentials, workspaceNameToBackup);
             Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
             assertEquals("Restored content should be same", "property-5", ws1backTestRoot.getNode("node_5")
                      .getProperty("exo:data").getString());
@@ -2420,7 +2419,7 @@ public abstract class AbstractBackupUseCasesTest
       }
       else
          fail("There are no backup files in " + backDir.getAbsolutePath());
-   }*/
+   }
 
    public void testExistedWorkspaceRestoreWithConfigBackupSetDir() throws Exception
    {
@@ -2560,7 +2559,7 @@ public abstract class AbstractBackupUseCasesTest
          fail("There are no backup files in " + backDir.getAbsolutePath());
    }
 
-   /*public void testWorkspaceRestoreWithConfigBackupSetDir() throws Exception
+   public void testWorkspaceRestoreWithConfigBackupSetDir() throws Exception
    {
       // backup
       File backDir = new File((File.createTempFile("12123", "123")).getParent() + File.separator + getUUIndex());
@@ -2592,8 +2591,7 @@ public abstract class AbstractBackupUseCasesTest
          fail("Can't get fullBackup chain");
 
       //TODO
-      super.tearDown();
-      removeWorkspaceFully(repositoryNameToBackup, workspaceNameToBackup);
+      removeWorkspaceFullySingleDB(repositoryNameToBackup, workspaceNameToBackup);
 
       File backLog = new File(bch.getLogFilePath());
       if (backLog.exists())
@@ -2627,7 +2625,7 @@ public abstract class AbstractBackupUseCasesTest
       }
       else
          fail("There are no backup files in " + backDir.getAbsolutePath());
-   }*/
+   }
 
    public void testRepositoryRestoreWithConfigBackupSetDir() throws Exception
    {

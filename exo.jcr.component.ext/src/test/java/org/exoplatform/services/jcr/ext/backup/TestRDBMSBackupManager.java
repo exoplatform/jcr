@@ -54,7 +54,7 @@ public class TestRDBMSBackupManager
       return backupManagerImpl;
    }
 
-   @Override
+   //   @Override
    public void testExistedWorkspaceRestoreMultiDB() throws Exception
    {
       String repositoryNameToBackup = "db8";
