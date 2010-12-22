@@ -237,7 +237,7 @@ public abstract class AbstractBackupTestCase
       ArrayList qParams = new ArrayList();
       // qParams.add(new SimpleParameterEntry("indexDir", "target" + File.separator+ "temp" +
       // File.separator +"index" + name));
-      qParams.add(new SimpleParameterEntry(QueryHandlerParams.PARAM_INDEX_DIR, "target" + File.separator + name
+      qParams.add(new SimpleParameterEntry(QueryHandlerParams.PARAM_INDEX_DIR, "target/temp/index/" + name
          + System.currentTimeMillis()));
       QueryHandlerEntry qEntry =
                new QueryHandlerEntry("org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex", qParams);
@@ -272,7 +272,7 @@ public abstract class AbstractBackupTestCase
       ValueStorageEntry valueStorageEntry =
          new ValueStorageEntry("org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage", vsparams);
       ArrayList<SimpleParameterEntry> spe = new ArrayList<SimpleParameterEntry>();
-      spe.add(new SimpleParameterEntry("path", "target/temp/swap/" + name + "_" + System.currentTimeMillis()));
+      spe.add(new SimpleParameterEntry("path", "target/temp/values/" + name + "_" + System.currentTimeMillis()));
       valueStorageEntry.setId("draft");
       valueStorageEntry.setParameters(spe);
       valueStorageEntry.setFilters(vsparams);

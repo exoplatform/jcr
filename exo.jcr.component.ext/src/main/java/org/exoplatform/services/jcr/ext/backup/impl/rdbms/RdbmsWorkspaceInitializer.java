@@ -141,15 +141,15 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
          }
          catch (RepositoryConfigurationException e1)
          {
-            throw new RepositoryException("Can't rollback changes", e);
+            log.error("Can't rollback changes", e1);
          }
          catch (DBCleanerException e1)
          {
-            throw new RepositoryException("Can't rollback changes", e);
+            log.error("Can't rollback changes", e1);
          }
          catch (IOException e1)
          {
-            throw new RepositoryException("Can't rollback changes", e);
+            log.error("Can't rollback changes", e1);
          }
          throw new RepositoryException(e);
       }
@@ -806,6 +806,7 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
                }
             }
             insertNode.addBatch();
+
          }
 
          insertNode.executeBatch();

@@ -94,15 +94,15 @@ public class RdbmsBackupWorkspaceInitializer extends RdbmsWorkspaceInitializer
          }
          catch (RepositoryConfigurationException e1)
          {
-            throw new RepositoryException("Can't rollback changes", e);
+            log.error("Can't rollback changes", e1);
          }
          catch (DBCleanerException e1)
          {
-            throw new RepositoryException("Can't rollback changes", e);
+            log.error("Can't rollback changes", e1);
          }
          catch (IOException e1)
          {
-            throw new RepositoryException("Can't rollback changes", e);
+            log.error("Can't rollback changes", e1);
          }
          throw new RepositoryException(e);
       }

@@ -190,7 +190,7 @@
                      <property name="multi-db" value="true" />
                      <property name="update-storage" value="true" />
                      <property name="max-buffer-size" value="200k" />
-                     <property name="swap-directory" value="target/temp2/swap/ws" />
+                     <property name="swap-directory" value="target/temp/swap/db2_ws" />
                   </properties>
                </container>
                <cache enabled="true">
@@ -201,7 +201,7 @@
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
                   <properties>
-                     <property name="index-dir" value="target/temp2/index/ws" />
+                     <property name="index-dir" value="target/temp/index/db2_ws" />
                   </properties>
                </query-handler>
             </workspace>
