@@ -23,7 +23,6 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
-import org.exoplatform.services.jcr.impl.util.jdbc.cleaner.DBCleanerException;
 import org.exoplatform.services.jcr.impl.util.jdbc.cleaner.DBCleanerService;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
@@ -250,18 +249,21 @@ public class TestDBCleanerService extends JcrImplBaseTest
       Statement statement = conn.createStatement();
       ResultSet res = statement.executeQuery("select * from JCR_MITEM where ID='" + id + "'");
       assertTrue(res.next());
-      statement.close();
 
       // remove workspace data from database
+      new DBCleanerService().cleanWorkspaceData(repositoryEntry.getWorkspaceEntries().get(0));
+
+      // check - does JCR_SITEM become empty
       try
       {
-         new DBCleanerService().cleanWorkspaceData(repositoryEntry.getWorkspaceEntries().get(0));
-         fail("Exception should be thrown");
+         res = statement.executeQuery("select * from JCR_MITEM where ID='" + id + "'");
+         fail();
       }
-      catch (DBCleanerException e)
+      catch (SQLException e)
       {
-
+         //ok
       }
+      statement.close();
 
       service.removeRepository(repositoryName);
    }

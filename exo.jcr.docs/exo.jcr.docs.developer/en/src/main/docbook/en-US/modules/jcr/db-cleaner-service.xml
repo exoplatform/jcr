@@ -62,10 +62,4 @@
         </listitem>
       </itemizedlist></para>
   </section>
-
-  <section>
-    <title>Limitation</title>
-
-    <para>Clean of single workspace for multi-db is not supported.</para>
-  </section>
 </chapter>

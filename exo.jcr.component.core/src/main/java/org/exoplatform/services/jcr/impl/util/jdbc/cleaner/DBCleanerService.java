@@ -65,28 +65,6 @@ public class DBCleanerService
          security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
       }
 
-      boolean isMultiDb;
-      try
-      {
-         String multiDb = wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.MULTIDB);
-         if (multiDb == null)
-         {
-            throw new RepositoryConfigurationException("Parameter " + JDBCWorkspaceDataContainer.MULTIDB
-               + " not found in workspace configuration " + wsEntry.getName());
-         }
-
-         isMultiDb = Boolean.parseBoolean(multiDb);
-      }
-      catch (RepositoryConfigurationException e)
-      {
-         throw new DBCleanerException("Can't define " + JDBCWorkspaceDataContainer.MULTIDB + " parameter", e);
-      }
-
-      if (isMultiDb)
-      {
-         throw new DBCleanerException("Clean of single workspace for multi-db is not supported");
-      }
-
       getDBCleaner(wsEntry).clean();
    }
 
