@@ -483,11 +483,6 @@ repo.removeWorkspace(workspace);</programlisting></para>
   <section>
     <title>Restore existing workspace or repository</title>
 
-    <note>
-      <para>Restoring single workspace into existed one in case of multi-db is
-      not supported.</para>
-    </note>
-
     <para>The resore of existing workspace or repositry is available.</para>
 
     <para>For restore will be used spacial methods:</para>

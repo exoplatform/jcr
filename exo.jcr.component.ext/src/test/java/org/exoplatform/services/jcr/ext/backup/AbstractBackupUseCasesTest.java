@@ -1275,6 +1275,11 @@ public abstract class AbstractBackupUseCasesTest
    public void testExistedWorkspaceRestoreMultiDB() throws Exception
    {
       String repositoryNameToBackup = "db8";
+      SessionImpl ws1Session =
+         (SessionImpl)repositoryService.getRepository(repositoryNameToBackup).login(credentials, "ws1");
+
+      ws1Session.getRootNode().addNode("TESTNODE");
+      ws1Session.save();
 
       // backup
       File backDir = new File("target/backup/" + getUUIndex());
@@ -1326,15 +1331,26 @@ public abstract class AbstractBackupUseCasesTest
          assertNotNull(bchLog.getStartedTime());
          assertNotNull(bchLog.getFinishedTime());
 
+         backup.restoreExistingWorkspace(bchLog, repositoryNameToBackup, ws1, false);
+
+         // check
+         SessionImpl back1 = null;
          try
          {
-            backup.restoreExistingWorkspace(bchLog, repositoryNameToBackup, ws1, false);
-            fail("Exception should be thrown");
+            back1 = (SessionImpl)repositoryService.getRepository("db8").login(credentials, "ws1");
+            Node ws1backTestRoot = back1.getRootNode().getNode("TESTNODE");
          }
-         catch (WorkspaceRestoreException e)
+         catch (Exception e)
          {
-
+            e.printStackTrace();
+            fail(e.getMessage());
          }
+         finally
+         {
+            if (back1 != null)
+               back1.logout();
+         }
+
       }
       else
          fail("There are no backup files in " + backDir.getAbsolutePath());
