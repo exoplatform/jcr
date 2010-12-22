@@ -88,7 +88,7 @@
         <artifactId>maven-assembly-plugin</artifactId>
         <executions>
           <execution>
-            <id>jar-with-dependensies</id>
+            <id>jar-with-dependencies</id>
             <phase>package</phase>
             <goals>
               <goal>single</goal>

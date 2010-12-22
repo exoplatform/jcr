@@ -4,7 +4,7 @@ args=("$@")
 
 if [ "$1" != "-u" ] 
 then
-echo "           -u <user> <password> <form_of_authentication> <host:port> <command> "
+echo "           -u <user> -p <password> <form_of_authentication> <host:port> <command> "
 echo " "
 echo "           <form_of_authentication>  :  -b - is used for basic authentication "
 echo "                                        -f - is used for form authentication "
@@ -41,15 +41,15 @@ exit 1
 fi
 
 user="$2"
-pass="$3"
-host=${5#*"http://"}
-if [ "$4" = "-f" ]
+pass="$4"
+host=${6#*"http://"}
+if [ "$5" = "-f" ]
 then
-  newargs="http://$host/portal/rest form POST /portal/login?username=$user&password=$pass ${args[@]:5}"
+  newargs="http://$host/portal/rest form POST /portal/login?username=$user&password=$pass ${args[@]:6}"
 else
-  if [ "$4" = "-b" ]
+  if [ "$5" = "-b" ]
   then
-    newargs="http://$user:$pass@$host ${args[@]:5}"
+    newargs="http://$user:$pass@$host ${args[@]:6}"
   fi
 fi
 
