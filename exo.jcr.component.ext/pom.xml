@@ -176,12 +176,17 @@
               <include>**/replication/*.java</include>
               <include>**/replication/external/*.java</include>
               <include>**/replication/async/**/*.java</include>
+              <include>**/backup/*.java</include>
+              <include>**/backup/server/*.java</include>
             </includes>
             <excludes>
               <exclude>**/BaseStandaloneTest.java</exclude>
               <exclude>**/replication/*.java</exclude>
               <exclude>**/replication/external/*.java</exclude>
               <exclude>**/replication/external/BaseTestCaseChecker.java</exclude>
+              <exclude>**/backup/AbstractBackupTestCase.java</exclude>
+              <exclude>**/backup/TestBackupScheduler.java</exclude>
+              <exclude>**/backup/TestBackupRestart.java</exclude>
               <exclude>**/access/*.java</exclude>
               <exclude>**/LocalStorageMultithreadTest.java</exclude>
             </excludes>

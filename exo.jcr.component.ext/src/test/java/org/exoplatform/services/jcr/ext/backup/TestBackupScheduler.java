@@ -42,6 +42,11 @@ public class TestBackupScheduler extends AbstractBackupTestCase
 
    private static final Log log = ExoLogger.getLogger("exo.jcr.component.ext.TestBackupScheduler");
 
+   protected ExtendedBackupManager getBackupManager()
+   {
+      return (ExtendedBackupManager) container.getComponentInstanceOfType(BackupManager.class);
+   }
+
    class BackupWaiter implements BackupJobListener
    {
 

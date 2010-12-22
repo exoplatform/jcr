@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="JCR.DBCleanerService">
+  <?dbhtml filename="ch-db-cleaner-service.html"?>
+
+  <title>DBCleanerService</title>
+
+  <section>
+    <title>API</title>
+
+    <para>It is special service for removing data from database.</para>
+
+    <note>
+      <para>Code that invokes methods of DBCleanerService must have
+      JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION permission;</para>
+    </note>
+
+    <para>There are two methods of DBCleanerService:</para>
+
+    <table>
+      <title>API</title>
+
+      <tgroup cols="2">
+        <tbody>
+          <row>
+            <entry>public void cleanWorkspaceData(WorkspaceEntry
+            wsEntry)</entry>
+
+            <entry>Clean workspace data from database. Tables will be removed
+            in case of multiDB, and only records will be removed in case of
+            singleDB.</entry>
+          </row>
+
+          <row>
+            <entry>public void cleanRepositoryData(RepositoryEntry
+            repoEntry)</entry>
+
+            <entry>Cleanup repository data from database.</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </section>
+
+  <section>
+    <title>How it works</title>
+
+    <para>cleanRepositoryData takes workspaces configs from RepositoryEntry
+    and clean each workspace using cleanWorkspaceData method.</para>
+
+    <para>Lets see cleanWorkspaceData in detail:<itemizedlist>
+        <listitem>
+          <para>at first, it resolves container name (workspace name),
+          database dialect, data source and isMultiDB parameter;</para>
+        </listitem>
+
+        <listitem>
+          <para>then based on database dialect creates instanse of database
+          cleaner (implements DBCleaner interface) and invokes clean()
+          method;</para>
+        </listitem>
+      </itemizedlist></para>
+  </section>
+</chapter>

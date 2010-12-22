@@ -462,88 +462,171 @@ public class BackupClientImpl
    /**
     * {@inheritDoc}
     */
-   public String restore(String repositoryName, String workspaceName, String backupId, InputStream config)
+   public String restore(String repositoryName, String workspaceName, String backupId, InputStream config,
+            String backupSetPath, boolean removeExists)
             throws IOException, BackupExecuteException
    {
+      BackupAgentResponse response = null;
+      String sURL = null;
+
       if (workspaceName != null)
       {
-         String sURL =
-                  path + HTTPBackupAgent.Constants.BASE_URL + HTTPBackupAgent.Constants.OperationType.RESTORE + "/"
-                           + repositoryName + "/" + backupId;
+         if (config != null)
+         {
+            if (backupId != null )
+            {
+               sURL =
+                        path + HTTPBackupAgent.Constants.BASE_URL + HTTPBackupAgent.Constants.OperationType.RESTORE + "/"
+                                 + repositoryName + "/" + backupId + "/" + removeExists;
+            }
+            else if (backupSetPath != null)
+            {
+               sURL =
+                        path + HTTPBackupAgent.Constants.BASE_URL
+                                 + HTTPBackupAgent.Constants.OperationType.RESTORE_BACKUP_SET + "/"
+                                 + repositoryName + "/" + backupSetPath + "/" + removeExists;
+            }
 
-         WorkspaceEntry wEntry = null;
-         try
-         {
-            wEntry = getWorkspaceEntry(config, repositoryName, workspaceName);
-         }
-         catch (Throwable e)
-         {
-            throw new BackupExecuteException("Can not get WorkspaceEntry for workspace '" + workspaceName
-                     + "' from config.", e);
-         }
+            WorkspaceEntry wEntry = null;
+            try
+            {
+               wEntry = getWorkspaceEntry(config, repositoryName, workspaceName);
+            }
+            catch (Throwable e)
+            {
+               throw new BackupExecuteException("Can not get WorkspaceEntry for workspace '" + workspaceName
+                        + "' from config.", e);
+            }
 
-         JsonGeneratorImpl generatorImpl = new JsonGeneratorImpl();
-         JsonValue json;
+            JsonGeneratorImpl generatorImpl = new JsonGeneratorImpl();
+            JsonValue json;
 
-         try
-         {
-            json = generatorImpl.createJsonObject(wEntry);
-         }
-         catch (JsonException e)
-         {
-            throw new BackupExecuteException("Can not get json from  : " + wEntry.getClass().toString(), e);
-         }
+            try
+            {
+               json = generatorImpl.createJsonObject(wEntry);
+            }
+            catch (JsonException e)
+            {
+               throw new BackupExecuteException("Can not get json from  : " + wEntry.getClass().toString(), e);
+            }
 
-         BackupAgentResponse response = transport.executePOST(sURL, json.toString());
-
-         if (response.getStatus() == Response.Status.OK.getStatusCode())
-         {
-            return "\nSuccessful : \n" + "\tstatus code = " + response.getStatus() + "\n";
+            response = transport.executePOST(sURL, json.toString());
          }
-         else
+      }
+      else if (repositoryName != null)
+      {
+         if (config != null)
          {
-            return failureProcessing(response);
-         }
+            if (backupId != null)
+            {
+               sURL =
+                        path + HTTPBackupAgent.Constants.BASE_URL
+                                 + HTTPBackupAgent.Constants.OperationType.RESTORE_REPOSITORY + "/" + backupId + "/"
+                                 + removeExists;
+            }
+            else if (backupSetPath != null)
+            {
+               sURL =
+                        path + HTTPBackupAgent.Constants.BASE_URL
+                                 + HTTPBackupAgent.Constants.OperationType.RESTORE_REPOSITORY_BACKUP_SET + "/"
+                                 + backupSetPath + "/"
+                                 + removeExists;
+            }
+   
+            RepositoryEntry wEntry = null;
+            try
+            {
+               wEntry = getRepositoryEntry(config, repositoryName);
+            }
+            catch (Throwable e)
+            {
+               throw new BackupExecuteException("Can not get RepositoryEntry for repository '" + repositoryName
+                        + "' from config.", e);
+            }
+   
+            JsonGeneratorImpl generatorImpl = new JsonGeneratorImpl();
+            JsonValue json;
+   
+            try
+            {
+               json = generatorImpl.createJsonObject(wEntry);
+            }
+            catch (JsonException e)
+            {
+               throw new BackupExecuteException("Can not get json from  : " + wEntry.getClass().toString(), e);
+            }
+   
+            response = transport.executePOST(sURL, json.toString());
+         } 
       }
       else
       {
-         String sURL =
-                  path + HTTPBackupAgent.Constants.BASE_URL
-                           + HTTPBackupAgent.Constants.OperationType.RESTORE_REPOSITORY + "/" + backupId;
+         if (backupId != null)
+         {
 
-         RepositoryEntry wEntry = null;
-         try
-         {
-            wEntry = getRepositoryEntry(config, repositoryName);
+            //check is repository or workspace backup
+            boolean isRepository = true;
+
+            String lsURL =
+                     path + HTTPBackupAgent.Constants.BASE_URL
+                              + HTTPBackupAgent.Constants.OperationType.CURRENT_OR_COMPLETED_BACKUP_REPOSITORY_INFO
+                              + "/" + backupId;
+
+            BackupAgentResponse lResponse = transport.executeGET(lsURL);
+
+            if (lResponse.getStatus() != Response.Status.OK.getStatusCode())
+            {
+
+               sURL =
+                        path + HTTPBackupAgent.Constants.BASE_URL
+                                 + HTTPBackupAgent.Constants.OperationType.CURRENT_OR_COMPLETED_BACKUP_INFO + "/"
+                                 + backupId;
+
+               lResponse = transport.executeGET(sURL);
+
+               if (lResponse.getStatus() == Response.Status.OK.getStatusCode())
+               {
+                  isRepository = false;
+               }
+               else
+               {
+                  return failureProcessing(lResponse);
+               }
+            }
+
+            if (isRepository)
+            {
+               sURL =
+                        path + HTTPBackupAgent.Constants.BASE_URL
+                                 + HTTPBackupAgent.Constants.OperationType.RESTORE_REPOSITORY + "/" + backupId + "/"
+                                 + removeExists;
+            }
+            else
+            {
+               sURL =
+                        path + HTTPBackupAgent.Constants.BASE_URL + HTTPBackupAgent.Constants.OperationType.RESTORE
+                                 + "/" + backupId + "/" + removeExists;
+            }
+
          }
-         catch (Throwable e)
+         else if (backupSetPath != null)
          {
-            throw new BackupExecuteException("Can not get RepositoryEntry for repository '" + repositoryName
-                     + "' from config.", e);
+            sURL =
+                     path + HTTPBackupAgent.Constants.BASE_URL
+                              + HTTPBackupAgent.Constants.OperationType.RESTORE_BACKUP_SET + "/" + backupSetPath + "/"
+                              + removeExists;
          }
 
-         JsonGeneratorImpl generatorImpl = new JsonGeneratorImpl();
-         JsonValue json;
+         response = transport.executeGET(sURL);
+      }
 
-         try
-         {
-            json = generatorImpl.createJsonObject(wEntry);
-         }
-         catch (JsonException e)
-         {
-            throw new BackupExecuteException("Can not get json from  : " + wEntry.getClass().toString(), e);
-         }
-
-         BackupAgentResponse response = transport.executePOST(sURL, json.toString());
-
-         if (response.getStatus() == Response.Status.OK.getStatusCode())
-         {
-            return "\nSuccessful : \n" + "\tstatus code = " + response.getStatus() + "\n";
-         }
-         else
-         {
-            return failureProcessing(response);
-         }
+      if (response.getStatus() == Response.Status.OK.getStatusCode())
+      {
+         return "\nSuccessful : \n" + "\tstatus code = " + response.getStatus() + "\n";
+      }
+      else
+      {
+         return failureProcessing(response);
       }
    }
 

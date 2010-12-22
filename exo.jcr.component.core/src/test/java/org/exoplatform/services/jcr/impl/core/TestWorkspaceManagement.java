@@ -25,8 +25,8 @@ import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
-import org.exoplatform.services.jcr.util.ConfigurationHelper;
 import org.exoplatform.services.jcr.util.IdGenerator;
+import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 
 import java.io.File;
 import java.util.List;
@@ -43,14 +43,14 @@ public class TestWorkspaceManagement extends JcrImplBaseTest
 {
    private boolean isDefaultWsMultiDb = false;
 
-   private final ConfigurationHelper helper;
+   private final TesterConfigurationHelper helper;
 
    private WorkspaceEntry wsEntry;
 
    public TestWorkspaceManagement()
    {
       super();
-      this.helper = ConfigurationHelper.getInstence();
+      this.helper = TesterConfigurationHelper.getInstence();
    }
 
    @Override

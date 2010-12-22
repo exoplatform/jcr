@@ -16,7 +16,6 @@
  */
 package org.exoplatform.services.jcr.ext.backup;
 
-import javax.jcr.InvalidItemStateException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -26,8 +25,7 @@ import javax.jcr.InvalidItemStateException;
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a> 
  * @version $Id$
  */
-public class RepositoryRestoreExeption
-   extends BackupConfigurationException
+public class RepositoryRestoreExeption extends BackupConfigurationException
 {
 
    /**
@@ -41,5 +39,16 @@ public class RepositoryRestoreExeption
    public RepositoryRestoreExeption(String message, Throwable e)
    {
       super(message, e);
+   }
+
+   /**
+    * RepositoryRestoreExeption  constructor.
+    *
+    * @param message
+    *          String, the exception message
+    */
+   public RepositoryRestoreExeption(String message)
+   {
+      super(message);
    }
 }

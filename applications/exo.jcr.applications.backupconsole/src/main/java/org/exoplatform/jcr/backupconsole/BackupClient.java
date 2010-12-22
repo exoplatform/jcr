@@ -127,6 +127,10 @@ public interface BackupClient
     *          the backup identifier
     * @param config 
     *          InputStream contains workspace configuration
+    * @param backupSetPath
+    *          String, path to backup set directory on server side 
+    * @param removeExosts
+    *          boolean. if 'true' then will be removed(clean db, value storage, index) existed repository/workspace.  
     * @return String 
     *          result
     * @throws IOException 
@@ -134,7 +138,9 @@ public interface BackupClient
     * @throws BackupExecuteException 
     *          backup client internal exception
     */
-   String restore(String repositoryName, String workspaceName, String backupId, InputStream config) throws IOException,
+   String restore(String repositoryName, String workspaceName, String backupId, InputStream config,
+            String backupSetPath, boolean removeExosts)
+            throws IOException,
       BackupExecuteException;
 
    /**

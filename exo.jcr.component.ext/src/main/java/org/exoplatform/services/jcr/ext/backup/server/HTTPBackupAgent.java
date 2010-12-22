@@ -18,6 +18,41 @@
  */
 package org.exoplatform.services.jcr.ext.backup.server;
 
+import org.exoplatform.services.jcr.RepositoryService;
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.config.RepositoryEntry;
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
+import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
+import org.exoplatform.services.jcr.ext.backup.BackupChain;
+import org.exoplatform.services.jcr.ext.backup.BackupChainLog;
+import org.exoplatform.services.jcr.ext.backup.BackupConfig;
+import org.exoplatform.services.jcr.ext.backup.BackupConfigurationException;
+import org.exoplatform.services.jcr.ext.backup.BackupManager;
+import org.exoplatform.services.jcr.ext.backup.BackupOperationException;
+import org.exoplatform.services.jcr.ext.backup.ExtendedBackupManager;
+import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChain;
+import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChainLog;
+import org.exoplatform.services.jcr.ext.backup.RepositoryBackupConfig;
+import org.exoplatform.services.jcr.ext.backup.RestoreConfigurationException;
+import org.exoplatform.services.jcr.ext.backup.WorkspaceRestoreException;
+import org.exoplatform.services.jcr.ext.backup.impl.BackupLogsFilter;
+import org.exoplatform.services.jcr.ext.backup.impl.JobRepositoryRestore;
+import org.exoplatform.services.jcr.ext.backup.impl.JobWorkspaceRestore;
+import org.exoplatform.services.jcr.ext.backup.impl.RepositoryBackupLogsFilter;
+import org.exoplatform.services.jcr.ext.backup.server.bean.BackupConfigBean;
+import org.exoplatform.services.jcr.ext.backup.server.bean.response.BackupServiceInfoBean;
+import org.exoplatform.services.jcr.ext.backup.server.bean.response.DetailedInfo;
+import org.exoplatform.services.jcr.ext.backup.server.bean.response.DetailedInfoEx;
+import org.exoplatform.services.jcr.ext.backup.server.bean.response.ShortInfo;
+import org.exoplatform.services.jcr.ext.backup.server.bean.response.ShortInfoList;
+import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
+import org.exoplatform.services.jcr.impl.core.SessionRegistry;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+import org.exoplatform.services.rest.resource.ResourceContainer;
+
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
@@ -37,36 +72,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
-import org.exoplatform.services.jcr.RepositoryService;
-import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
-import org.exoplatform.services.jcr.config.RepositoryEntry;
-import org.exoplatform.services.jcr.config.WorkspaceEntry;
-import org.exoplatform.services.jcr.core.ManageableRepository;
-import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
-import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
-import org.exoplatform.services.jcr.ext.backup.BackupChain;
-import org.exoplatform.services.jcr.ext.backup.BackupChainLog;
-import org.exoplatform.services.jcr.ext.backup.BackupConfig;
-import org.exoplatform.services.jcr.ext.backup.BackupConfigurationException;
-import org.exoplatform.services.jcr.ext.backup.BackupManager;
-import org.exoplatform.services.jcr.ext.backup.BackupOperationException;
-import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChain;
-import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChainLog;
-import org.exoplatform.services.jcr.ext.backup.RepositoryBackupConfig;
-import org.exoplatform.services.jcr.ext.backup.impl.JobRepositoryRestore;
-import org.exoplatform.services.jcr.ext.backup.impl.JobWorkspaceRestore;
-import org.exoplatform.services.jcr.ext.backup.server.bean.BackupConfigBean;
-import org.exoplatform.services.jcr.ext.backup.server.bean.response.BackupServiceInfoBean;
-import org.exoplatform.services.jcr.ext.backup.server.bean.response.DetailedInfo;
-import org.exoplatform.services.jcr.ext.backup.server.bean.response.DetailedInfoEx;
-import org.exoplatform.services.jcr.ext.backup.server.bean.response.ShortInfo;
-import org.exoplatform.services.jcr.ext.backup.server.bean.response.ShortInfoList;
-import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
-import org.exoplatform.services.jcr.impl.core.SessionRegistry;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
-import org.exoplatform.services.rest.resource.ResourceContainer;
 
 /**
  * Created by The eXo Platform SAS.
@@ -119,9 +124,19 @@ public class HTTPBackupAgent implements ResourceContainer
          public static final String RESTORE = "/restore";
 
          /**
+          * Restore operations from backup set.
+          */
+         public static final String RESTORE_BACKUP_SET = "/restore/backup-set";
+
+         /**
           * Restore repository operations.
           */
          public static final String RESTORE_REPOSITORY = "/restore-repository";
+
+         /**
+          * Restore repository operations from backup set.
+          */
+         public static final String RESTORE_REPOSITORY_BACKUP_SET = "/restore-repository/backup-set";
 
          /**
           * Stop backup operations.
@@ -259,7 +274,7 @@ public class HTTPBackupAgent implements ResourceContainer
    /**
     * The backup manager.
     */
-   private BackupManager backupManager;
+   private ExtendedBackupManager backupManager;
 
    /**
     * Will be get session over base authenticate.
@@ -280,7 +295,7 @@ public class HTTPBackupAgent implements ResourceContainer
       ThreadLocalSessionProviderService sessionProviderService)
    {
       this.repositoryService = repoService;
-      this.backupManager = backupManager;
+      this.backupManager = (ExtendedBackupManager) backupManager;
       this.sessionProviderService = sessionProviderService;
 
       log.info("HTTPBackupAgent inited");
@@ -313,7 +328,8 @@ public class HTTPBackupAgent implements ResourceContainer
       {
          File backupDir = new File(bConfigBeen.getBackupDir());
          if (!backupDir.exists())
-            throw new BackupDirNotFoundException("The backup folder not exists :  " + backupDir.getAbsolutePath());
+            throw new BackupDirNotFoundException("The backup folder not exists :  "
+ + backupDir.getAbsolutePath());
 
          BackupConfig config = new BackupConfig();
          config.setBackupType(bConfigBeen.getBackupType());
@@ -413,7 +429,8 @@ public class HTTPBackupAgent implements ResourceContainer
          File backupDir = new File(bConfigBeen.getBackupDir());
          if (!backupDir.exists())
          {
-            throw new BackupDirNotFoundException("The backup folder not exists :  " + backupDir.getAbsolutePath());
+            throw new BackupDirNotFoundException("The backup folder not exists :  "
+               + backupDir.getAbsolutePath());
          }
 
          RepositoryBackupConfig config = new RepositoryBackupConfig();
@@ -573,7 +590,7 @@ public class HTTPBackupAgent implements ResourceContainer
          validateRepositoryName(repository);
 
          if (isWorkspaceExist(repository, wEntry.getName()))
-            throw new Exception("Workspace " + wEntry.getName() + " already exist!");
+            throw new WorkspaceRestoreException("Workspace " + wEntry.getName() + " already exist!");
 
          BackupChainLog backupChainLog = new BackupChainLog(backupLog);
 
@@ -650,6 +667,713 @@ public class HTTPBackupAgent implements ResourceContainer
          "Can not start restore the workspace '" + "/" + repository + "/" + wEntry.getName()
             + "' from backup log with id '" + backupId + "' : " + failMessage).type(MediaType.TEXT_PLAIN).cacheControl(
          noCache).build();
+   }
+
+   /**
+    * Restore the workspace.
+    * 
+    * @param wEntry
+    *          WorkspaceEntry, the configuration to restored workspace
+    * @param repository
+    *          String, the repository name
+    * @param backupId
+    *          String, the identifier of backup
+    * @param removeExisting
+    *          Boolean, if 'true' will be removed fully (db, value storage, index) existed workspace.  
+    * @return Response return the response
+    */
+   @POST
+   @Consumes(MediaType.APPLICATION_JSON)
+   @Produces(MediaType.APPLICATION_JSON)
+   @RolesAllowed("administrators")
+   @Path("/restore/{repo}/{id}/{remove-Existing}")
+   public Response restore(WorkspaceEntry wEntry, @PathParam("repo") String repository,
+            @PathParam("id") String backupId, @PathParam("remove-Existing") Boolean removeExisting)
+   {
+      String failMessage;
+      Response.Status status;
+      Throwable exception;
+
+      try
+      {
+         validateOneRestoreInstants(repository, wEntry.getName());
+
+         File backupLog = getBackupLogbyId(backupId);
+
+         // validate backup log file
+         if (backupLog == null)
+         {
+            throw new BackupLogNotFoundException("The backup log file with id " + backupId + " not exists.");
+         }
+
+         validateRepositoryName(repository);
+
+         BackupChainLog backupChainLog = new BackupChainLog(backupLog);
+
+         if (removeExisting)
+         {
+            if (!isWorkspaceExist(repository, wEntry.getName()))
+            {
+               throw new WorkspaceRestoreException("Workspace " + wEntry.getName() + " is not exist!");
+            }
+
+            backupManager.restoreExistingWorkspace(backupChainLog, repository, wEntry, true);
+         }
+         else
+         {
+            if (isWorkspaceExist(repository, wEntry.getName()))
+            {
+               throw new Exception("Workspace " + wEntry.getName() + " already exist!");
+            }
+
+            backupManager.restore(backupChainLog, repository, wEntry, true);
+         }
+
+         /*
+          * Sleeping
+          * Restore must be initialized by job thread
+          */
+
+         Thread.sleep(100);
+
+         /*
+          * search necessary restore
+          */
+
+         List<JobWorkspaceRestore> restoreJobs = backupManager.getRestores();
+         JobWorkspaceRestore restore = null;
+         for (JobWorkspaceRestore curRestore : restoreJobs)
+         {
+            if (curRestore.getRepositoryName().equals(repository)
+                     && curRestore.getWorkspaceName().equals(wEntry.getName()))
+            {
+               restore = curRestore;
+               break;
+            }
+         }
+
+         if (restore != null)
+         {
+            ShortInfo info =
+                     new ShortInfo(ShortInfo.RESTORE, restore.getBackupChainLog(), restore.getStartTime(), restore
+                              .getEndTime(), restore.getStateRestore(), restore.getRepositoryName(), restore
+                              .getWorkspaceName());
+            return Response.ok(info).cacheControl(noCache).build();
+         }
+
+         return Response.ok().cacheControl(noCache).build();
+      }
+      catch (WorkspaceRestoreExeption e)
+      {
+         exception = e;
+         status = Response.Status.FORBIDDEN;
+         failMessage = e.getMessage();
+      }
+      catch (RepositoryException e)
+      {
+         exception = e;
+         status = Response.Status.NOT_FOUND;
+         failMessage = e.getMessage();
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         exception = e;
+         status = Response.Status.NOT_FOUND;
+         failMessage = e.getMessage();
+      }
+      catch (BackupLogNotFoundException e)
+      {
+         exception = e;
+         status = Response.Status.NOT_FOUND;
+         failMessage = e.getMessage();
+      }
+      catch (Throwable e)
+      {
+         exception = e;
+         status = Response.Status.INTERNAL_SERVER_ERROR;
+         failMessage = e.getMessage();
+      }
+
+      log.error("Can not start restore the workspace '" + "/" + repository + "/" + wEntry.getName()
+               + "' from backup log with id '" + backupId + "'", exception);
+
+      return Response.status(status).entity(
+               "Can not start restore the workspace '" + "/" + repository + "/" + wEntry.getName()
+                        + "' from backup log with id '" + backupId + "' : " + failMessage).type(MediaType.TEXT_PLAIN)
+               .cacheControl(noCache).build();
+   }
+
+   /**
+    * Restore the workspace from backup set with changing configuration (WorkspaceEntry).
+    * 
+    * @param wEntry
+    *          WorkspaceEntry, the configuration to restored workspace
+    * @param repository
+    *          String, the repository name
+    * @param backupSetPath
+    *          String, the path to backup set
+    * @param removeExisting
+    *          Boolean, if 'true' will be removed fully (db, value storage, index) existed workspace.  
+    * @return Response return the response
+    */
+   @POST
+   @Consumes(MediaType.APPLICATION_JSON)
+   @Produces(MediaType.APPLICATION_JSON)
+   @RolesAllowed("administrators")
+   @Path("/restore/backup-set/{repo}/{backup-set-path:.*}/{remove-Existing}")
+   public Response restoreBackupSet(WorkspaceEntry wEntry, @PathParam("repo") String repository,
+            @PathParam("backup-set-path") String backupSetPath, @PathParam("remove-Existing") Boolean removeExisting)
+   {
+      String failMessage;
+      Response.Status status;
+      Throwable exception;
+
+      try
+      {
+         validateOneRestoreInstants(repository, wEntry.getName());
+
+         File backupSetDir = (new File(backupSetPath));
+
+         if (!backupSetDir.exists())
+         {
+            throw new RestoreConfigurationException("Backup set directory is not exists :" + backupSetPath);
+         }
+
+         if (!backupSetDir.isDirectory())
+         {
+            throw new RestoreConfigurationException("Backup set directory is not directory :" + backupSetPath);
+         }
+
+         File[] cfs = backupSetDir.listFiles(new BackupLogsFilter());
+
+         if (cfs.length == 0)
+         {
+            throw new RestoreConfigurationException("Can not found workspace backup log in directory : "
+                     + backupSetPath);
+         }
+
+         if (cfs.length > 1)
+         {
+            throw new RestoreConfigurationException(
+                     "Backup set directory should contains only one workspace backup log : " + backupSetPath);
+         }
+
+         validateRepositoryName(repository);
+
+         BackupChainLog backupChainLog = new BackupChainLog(cfs[0]);
+
+         if (removeExisting)
+         {
+            if (!isWorkspaceExist(repository, wEntry.getName()))
+            {
+               throw new WorkspaceRestoreException("Workspace " + wEntry.getName() + " is not exist!");
+            }
+
+            backupManager.restoreExistingWorkspace(backupChainLog, repository, wEntry, true);
+         }
+         else
+         {
+            if (isWorkspaceExist(repository, wEntry.getName()))
+            {
+               throw new Exception("Workspace " + wEntry.getName() + " already exist!");
+            }
+
+            backupManager.restore(backupChainLog, repository, wEntry, true);
+         }
+
+         /*
+          * Sleeping
+          * Restore must be initialized by job thread
+          */
+
+         Thread.sleep(100);
+
+         /*
+          * search necessary restore
+          */
+
+         List<JobWorkspaceRestore> restoreJobs = backupManager.getRestores();
+         JobWorkspaceRestore restore = null;
+         for (JobWorkspaceRestore curRestore : restoreJobs)
+         {
+            if (curRestore.getRepositoryName().equals(repository)
+                     && curRestore.getWorkspaceName().equals(wEntry.getName()))
+            {
+               restore = curRestore;
+               break;
+            }
+         }
+
+         if (restore != null)
+         {
+            ShortInfo info =
+                     new ShortInfo(ShortInfo.RESTORE, restore.getBackupChainLog(), restore.getStartTime(), restore
+                              .getEndTime(), restore.getStateRestore(), restore.getRepositoryName(), restore
+                              .getWorkspaceName());
+            return Response.ok(info).cacheControl(noCache).build();
+         }
+
+         return Response.ok().cacheControl(noCache).build();
+      }
+      catch (WorkspaceRestoreExeption e)
+      {
+         exception = e;
+         status = Response.Status.FORBIDDEN;
+         failMessage = e.getMessage();
+      }
+      catch (RepositoryException e)
+      {
+         exception = e;
+         status = Response.Status.NOT_FOUND;
+         failMessage = e.getMessage();
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         exception = e;
+         status = Response.Status.NOT_FOUND;
+         failMessage = e.getMessage();
+      }
+      catch (BackupLogNotFoundException e)
+      {
+         exception = e;
+         status = Response.Status.NOT_FOUND;
+         failMessage = e.getMessage();
+      }
+      catch (Throwable e)
+      {
+         exception = e;
+         status = Response.Status.INTERNAL_SERVER_ERROR;
+         failMessage = e.getMessage();
+      }
+
+      log.error("Can not start restore the workspace '" + "/" + repository + "/" + wEntry.getName()
+               + "' from backup set '" + backupSetPath + "'", exception);
+
+      return Response.status(status).entity(
+               "Can not start restore the workspace '" + "/" + repository + "/" + wEntry.getName()
+                        + "' from backup set '" + backupSetPath + "' : " + failMessage).type(MediaType.TEXT_PLAIN)
+               .cacheControl(noCache).build();
+   }
+
+   /**
+    * Restore the workspace with original configuration (this configuration was stored in backup chain log).
+    * 
+    * @param repository
+    *          String, the repository name
+    * @param backupId
+    *          String, the identifier of backup
+    * @param removeExisting
+    *          Boolean, if 'true' will be removed fully (db, value storage, index) existed workspace.  
+    * @return Response return the response
+    */
+   @GET
+   @Produces(MediaType.APPLICATION_JSON)
+   @RolesAllowed("administrators")
+   @Path("/restore/{id}/{remove-Existing}")
+   public Response restore(@PathParam("id") String backupId, @PathParam("remove-Existing") Boolean removeExisting)
+   {
+      String failMessage;
+      Response.Status status;
+      Throwable exception;
+
+      String repository = null;
+      String workspace = null;
+
+      try
+      {
+         File backupLog = getBackupLogbyId(backupId);
+
+         // validate backup log file
+         if (backupLog == null)
+         {
+            throw new BackupLogNotFoundException("The backup log file with id " + backupId + " not exists.");
+         }
+
+         BackupChainLog backupChainLog = new BackupChainLog(backupLog);
+
+         repository = backupChainLog.getBackupConfig().getRepository();
+         workspace = backupChainLog.getBackupConfig().getWorkspace();
+
+         validateOneRestoreInstants(repository, workspace);
+
+         validateRepositoryName(repository);
+
+         //workspace name and repository name should equals original names from backup set.
+         if (!repository.equals(backupChainLog.getBackupConfig().getRepository()))
+         {
+            throw new WorkspaceRestoreException("Repository name\"" + repository
+                     + "\" should equals original repository name from backup set : \""
+                     + backupChainLog.getBackupConfig().getRepository() + "\".");
+         }
+
+         if (!workspace.equals(backupChainLog.getBackupConfig().getWorkspace()))
+         {
+            throw new WorkspaceRestoreException("Workspace name\"" + workspace
+                     + "\" should equals original workspace name from backup set : \""
+                     + backupChainLog.getBackupConfig().getWorkspace() + "\".");
+         }
+
+         if (removeExisting)
+         {
+            if (!isWorkspaceExist(repository, workspace))
+            {
+               throw new WorkspaceRestoreException("Workspace " + workspace + " is not exists!");
+            }
+
+            backupManager.restoreExistingWorkspace(backupId, true);
+         }
+         else
+         {
+            if (isWorkspaceExist(repository, workspace))
+            {
+               throw new Exception("Workspace " + workspace + " already exists!");
+            }
+
+            backupManager.restoreWorkspace(backupId, true);
+         }
+
+         /*
+          * Sleeping
+          * Restore must be initialized by job thread
+          */
+
+         Thread.sleep(100);
+
+         /*
+          * search necessary restore
+          */
+
+         List<JobWorkspaceRestore> restoreJobs = backupManager.getRestores();
+         JobWorkspaceRestore restore = null;
+         for (JobWorkspaceRestore curRestore : restoreJobs)
+         {
+            if (curRestore.getRepositoryName().equals(repository)
+                     && curRestore.getWorkspaceName().equals(workspace))
+            {
+               restore = curRestore;
+               break;
+            }
+         }
+
+         if (restore != null)
+         {
+            ShortInfo info =
+                     new ShortInfo(ShortInfo.RESTORE, restore.getBackupChainLog(), restore.getStartTime(), restore
+                              .getEndTime(), restore.getStateRestore(), restore.getRepositoryName(), restore
+                              .getWorkspaceName());
+            return Response.ok(info).cacheControl(noCache).build();
+         }
+
+         return Response.ok().cacheControl(noCache).build();
+      }
+      catch (WorkspaceRestoreExeption e)
+      {
+         exception = e;
+         status = Response.Status.FORBIDDEN;
+         failMessage = e.getMessage();
+      }
+      catch (RepositoryException e)
+      {
+         exception = e;
+         status = Response.Status.NOT_FOUND;
+         failMessage = e.getMessage();
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         exception = e;
+         status = Response.Status.NOT_FOUND;
+         failMessage = e.getMessage();
+      }
+      catch (BackupLogNotFoundException e)
+      {
+         exception = e;
+         status = Response.Status.NOT_FOUND;
+         failMessage = e.getMessage();
+      }
+      catch (Throwable e)
+      {
+         exception = e;
+         status = Response.Status.INTERNAL_SERVER_ERROR;
+         failMessage = e.getMessage();
+      }
+
+      log.error("Can not start restore the workspace '" + "/" + repository + "/" + workspace
+               + "' from backup log with id '" + backupId + "'", exception);
+
+      return Response.status(status).entity(
+               "Can not start restore the workspace '" + "/" + repository + "/" + workspace
+                        + "' from backup log with id '" + backupId + "' : " + failMessage).type(MediaType.TEXT_PLAIN)
+               .cacheControl(noCache).build();
+   }
+
+   /**
+    * Restore the workspace or repository with original configuration (this configuration was stored in backup log).
+    * 
+    * @param backupId
+    *          String, the identifier of backup
+    * @param removeExisting
+    *          Boolean, if 'true' will be removed fully (db, value storage, index) existed workspace.  
+    * @return Response return the response
+    */
+   @GET
+   @Produces(MediaType.APPLICATION_JSON)
+   @RolesAllowed("administrators")
+   @Path("/restore/backup-set/{backup-set-path:.*}/{remove-Existing}")
+   public Response restoreFromBackupSet(@PathParam("backup-set-path") String backupSetPath,
+            @PathParam("remove-Existing") Boolean removeExisting)
+   {
+      String failMessage = null;
+      Response.Status status = null;
+      Throwable exception = null;
+
+      File backupSetDir = (new File(backupSetPath));
+      File backuplog = null;
+
+      boolean restoreWorkspace = true;
+
+      try
+      {
+         if (!backupSetDir.exists())
+         {
+            throw new RestoreConfigurationException("Backup set directory is not exists :" + backupSetPath);
+         }
+
+         if (!backupSetDir.isDirectory())
+         {
+            throw new RestoreConfigurationException("Backup set directory is not directory :" + backupSetPath);
+         }
+
+         File[] cfsw = backupSetDir.listFiles(new BackupLogsFilter());
+         File[] cfsr = backupSetDir.listFiles(new RepositoryBackupLogsFilter());
+
+         if (cfsw.length == 0 && cfsr.length == 0)
+         {
+            throw new RestoreConfigurationException("Can not found backup log in directory : " + backupSetPath);
+         }
+         else if ((cfsw.length == 1 && cfsr.length == 1) || (cfsw.length > 1) || (cfsr.length > 1))
+         {
+            throw new RestoreConfigurationException("Backup set directory should contains only one backup log : "
+                     + backupSetPath);
+         }
+         else if (cfsw.length != 0 && cfsr.length == 0)
+         {
+            restoreWorkspace = true;
+            backuplog = cfsw[0];
+         }
+         else if (cfsw.length == 0 && cfsr.length != 0)
+         {
+            restoreWorkspace = false;
+            backuplog = cfsr[0];
+         }
+
+      }
+      catch (RestoreConfigurationException e)
+      {
+         exception = e;
+         status = Response.Status.NOT_FOUND;
+         failMessage = e.getMessage();
+      }
+      catch (Throwable e)
+      {
+         exception = e;
+         status = Response.Status.INTERNAL_SERVER_ERROR;
+         failMessage = e.getMessage();
+      }
+      finally
+      {
+         if (exception != null)
+         {
+            log.error("Can not start restore from backup set '" + backupSetPath + "'", exception);
+
+            return Response.status(status).entity(
+                     "Can not start restore from backup set  '" + backupSetPath + "' : " + failMessage).type(
+                     MediaType.TEXT_PLAIN).cacheControl(noCache).build();
+         }
+      }
+
+      if (restoreWorkspace)
+      {
+         
+         String repository = null;
+         String workspace = null;
+
+         try
+         {
+
+            BackupChainLog backupChainLog = new BackupChainLog(backuplog);
+
+            repository = backupChainLog.getBackupConfig().getRepository();
+            workspace = backupChainLog.getBackupConfig().getWorkspace();
+
+            validateOneRestoreInstants(repository, workspace);
+
+            validateRepositoryName(repository);
+
+            if (removeExisting)
+            {
+               if (!isWorkspaceExist(repository, workspace))
+               {
+                  throw new WorkspaceRestoreException("Workspace " + workspace + " is not exists!");
+               }
+
+               backupManager.restoreExistingWorkspace(backupSetDir, true);
+            }
+            else
+            {
+               if (isWorkspaceExist(repository, workspace))
+               {
+                  throw new Exception("Workspace " + workspace + " already exists!");
+               }
+
+               backupManager.restoreWorkspace(backupSetDir, true);
+            }
+
+            /*
+             * Sleeping
+             * Restore must be initialized by job thread
+             */
+
+            Thread.sleep(100);
+
+            /*
+             * search necessary restore
+             */
+
+            List<JobWorkspaceRestore> restoreJobs = backupManager.getRestores();
+            JobWorkspaceRestore restore = null;
+            for (JobWorkspaceRestore curRestore : restoreJobs)
+            {
+               if (curRestore.getRepositoryName().equals(repository) && curRestore.getWorkspaceName().equals(workspace))
+               {
+                  restore = curRestore;
+                  break;
+               }
+            }
+
+            if (restore != null)
+            {
+               ShortInfo info =
+                        new ShortInfo(ShortInfo.RESTORE, restore.getBackupChainLog(), restore.getStartTime(), restore
+                                 .getEndTime(), restore.getStateRestore(), restore.getRepositoryName(), restore
+                                 .getWorkspaceName());
+               return Response.ok(info).cacheControl(noCache).build();
+            }
+
+            return Response.ok().cacheControl(noCache).build();
+         }
+         catch (WorkspaceRestoreExeption e)
+         {
+            exception = e;
+            status = Response.Status.FORBIDDEN;
+            failMessage = e.getMessage();
+         }
+         catch (RepositoryException e)
+         {
+            exception = e;
+            status = Response.Status.NOT_FOUND;
+            failMessage = e.getMessage();
+         }
+         catch (RepositoryConfigurationException e)
+         {
+            exception = e;
+            status = Response.Status.NOT_FOUND;
+            failMessage = e.getMessage();
+         }
+         catch (BackupLogNotFoundException e)
+         {
+            exception = e;
+            status = Response.Status.NOT_FOUND;
+            failMessage = e.getMessage();
+         }
+         catch (Throwable e)
+         {
+            exception = e;
+            status = Response.Status.INTERNAL_SERVER_ERROR;
+            failMessage = e.getMessage();
+         }
+
+         log.error("Can not start restore the workspace '" + "/" + repository + "/" + workspace
+                  + "' from backup set \"" + backupSetPath + "\"", exception);
+
+         return Response.status(status).entity(
+                  "Can not start restore the workspace '" + "/" + repository + "/" + workspace + "' from backup set \""
+                           + backupSetPath + "\" : " + failMessage).type(MediaType.TEXT_PLAIN).cacheControl(noCache)
+                  .build();
+      }
+      else
+      {
+         String repository = null;
+
+         try
+         {
+
+            RepositoryBackupChainLog backupChainLog = new RepositoryBackupChainLog(backuplog);
+            repository = backupChainLog.getBackupConfig().getRepository();
+
+            validateOneRepositoryRestoreInstants(repository);
+
+            if (removeExisting)
+            {
+               if (!isRepositoryExist(repository))
+               {
+                  throw new RepositoryRestoreExeption("Repository " + repository + " is not exists!");
+               }
+
+               backupManager.restoreExistingRepository(backupSetDir, true);
+            }
+            else
+            {
+               if (isRepositoryExist(repository))
+               {
+                  throw new RepositoryRestoreExeption("Repository " + repository + " already exists!");
+               }
+
+               backupManager.restoreRepository(backupSetDir, true);
+            }
+
+            // Sleeping. Restore should be initialized by job thread
+            Thread.sleep(100);
+
+            // search necessary restore
+            JobRepositoryRestore restore = backupManager.getLastRepositoryRestore(repository);
+            ShortInfo info =
+                     new ShortInfo(ShortInfo.RESTORE, restore.getRepositoryBackupChainLog(), restore.getStartTime(),
+                              restore.getEndTime(), restore.getStateRestore(), restore.getRepositoryName());
+
+            return Response.ok(info).cacheControl(noCache).build();
+         }
+         catch (RepositoryRestoreExeption e)
+         {
+            exception = e;
+            status = Response.Status.FORBIDDEN;
+            failMessage = e.getMessage();
+         }
+         catch (RepositoryException e)
+         {
+            exception = e;
+            status = Response.Status.NOT_FOUND;
+            failMessage = e.getMessage();
+         }
+         catch (RepositoryConfigurationException e)
+         {
+            exception = e;
+            status = Response.Status.NOT_FOUND;
+            failMessage = e.getMessage();
+         }
+         catch (Throwable e)
+         {
+            exception = e;
+            status = Response.Status.INTERNAL_SERVER_ERROR;
+            failMessage = e.getMessage();
+         }
+
+         log.error("Can not start restore the repository '" + "/" + repository + "' from backup set '" + backupSetPath
+                  + "'", exception);
+
+         return Response.status(status).entity(
+                  "Can not start restore the repository '" + "/" + repository + "' from backup set  '" + backupSetPath
+                           + "' : " + failMessage).type(MediaType.TEXT_PLAIN).cacheControl(noCache).build();
+      }
    }
 
    /**
@@ -743,6 +1467,343 @@ public class HTTPBackupAgent implements ResourceContainer
       return Response.status(status).entity(
          "Can not start restore the repository '" + "/" + rEntry.getName() + "' from backup log with id '" + backupId
             + "' : " + failMessage).type(MediaType.TEXT_PLAIN).cacheControl(noCache).build();
+   }
+
+   /**
+    * Restore the repository.
+    * 
+    * @param rEntry
+    *          RepositoryEntry, the configuration to restored repository
+    * @param repository
+    *          String, the repository name
+    * @param backupId
+    *          String, the identifier of backup
+    * @param removeExisting
+    *          Boolean, if 'true' will be removed fully (db, value storage, index) existed repository.
+    * @return Response return the response
+    */
+   @POST
+   @Consumes(MediaType.APPLICATION_JSON)
+   @Produces(MediaType.APPLICATION_JSON)
+   @RolesAllowed("administrators")
+   @Path("/restore-repository/{id}/{remove-Existing}")
+   public Response restoreRepository(RepositoryEntry rEntry, @PathParam("id") String backupId,
+            @PathParam("remove-Existing") Boolean removeExisting)
+   {
+      String failMessage;
+      Response.Status status;
+      Throwable exception;
+
+      try
+      {
+         validateOneRepositoryRestoreInstants(rEntry.getName());
+
+         File backupLog = getRepositoryBackupLogbyId(backupId);
+
+         // validate backup log file
+         if (backupLog == null)
+         {
+            throw new BackupLogNotFoundException("The repository backup log file with id " + backupId + " not exists.");
+         }
+
+         RepositoryBackupChainLog backupChainLog = new RepositoryBackupChainLog(backupLog);
+
+         if (removeExisting)
+         {
+            if (!isRepositoryExist(rEntry.getName()))
+            {
+               throw new RepositoryRestoreExeption("Repository " + rEntry.getName() + " is not exists!");
+            }
+
+            backupManager.restoreExistingRepository(backupChainLog, rEntry, true);
+         }
+         else
+         {
+            if (isRepositoryExist(rEntry.getName()))
+            {
+               throw new RepositoryRestoreExeption("Repository " + rEntry.getName() + " already exists!");
+            }
+
+            backupManager.restore(backupChainLog, rEntry, true);
+         }
+
+         // Sleeping. Restore should be initialized by job thread
+         Thread.sleep(100);
+
+         // search necessary restore
+         JobRepositoryRestore restore = backupManager.getLastRepositoryRestore(rEntry.getName());
+         ShortInfo info =
+                  new ShortInfo(ShortInfo.RESTORE, restore.getRepositoryBackupChainLog(), restore.getStartTime(),
+                           restore.getEndTime(), restore.getStateRestore(), restore.getRepositoryName());
+
+         return Response.ok(info).cacheControl(noCache).build();
+      }
+      catch (RepositoryRestoreExeption e)
+      {
+         exception = e;
+         status = Response.Status.FORBIDDEN;
+         failMessage = e.getMessage();
+      }
+      catch (RepositoryException e)
+      {
+         exception = e;
+         status = Response.Status.NOT_FOUND;
+         failMessage = e.getMessage();
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         exception = e;
+         status = Response.Status.NOT_FOUND;
+         failMessage = e.getMessage();
+      }
+      catch (BackupLogNotFoundException e)
+      {
+         exception = e;
+         status = Response.Status.NOT_FOUND;
+         failMessage = e.getMessage();
+      }
+      catch (Throwable e)
+      {
+         exception = e;
+         status = Response.Status.INTERNAL_SERVER_ERROR;
+         failMessage = e.getMessage();
+      }
+
+      log.error("Can not start restore the repository '" + "/" + rEntry.getName() + "' from backup log with id '"
+               + backupId + "'", exception);
+
+      return Response.status(status).entity(
+               "Can not start restore the repository '" + "/" + rEntry.getName() + "' from backup log with id '"
+                        + backupId + "' : " + failMessage).type(MediaType.TEXT_PLAIN).cacheControl(noCache).build();
+   }
+
+   /**
+    * Restore the repository from backup set with changing configuration (RepositoryEntry).
+    * 
+    * @param rEntry
+    *          RepositoryEntry, the configuration to restored repository
+    * @param repository
+    *          String, the repository name
+    * @param backupSetPath
+    *          String, the path to backup set
+    * @param removeExisting
+    *          Boolean, if 'true' will be removed fully (db, value storage, index) existed repository.
+    * @return Response return the response
+    */
+   @POST
+   @Consumes(MediaType.APPLICATION_JSON)
+   @Produces(MediaType.APPLICATION_JSON)
+   @RolesAllowed("administrators")
+   @Path("/restore-repository/backup-set/{backup-set-path:.*}/{remove-Existing}")
+   public Response restoreRepositoryBackupSet(RepositoryEntry rEntry,
+            @PathParam("backup-set-path") String backupSetPath,
+            @PathParam("remove-Existing") Boolean removeExisting)
+   {
+      String failMessage;
+      Response.Status status;
+      Throwable exception;
+
+      try
+      {
+         validateOneRepositoryRestoreInstants(rEntry.getName());
+
+         File backupSetDir = (new File(backupSetPath));
+
+         if (!backupSetDir.exists())
+         {
+            throw new RestoreConfigurationException("Backup set directory is not exists :" + backupSetPath);
+         }
+
+         if (!backupSetDir.isDirectory())
+         {
+            throw new RestoreConfigurationException("Backup set directory is not directory :" + backupSetPath);
+         }
+
+         File[] cfs = backupSetDir.listFiles(new RepositoryBackupLogsFilter());
+
+         if (cfs.length == 0)
+         {
+            throw new RestoreConfigurationException("Can not found repository backup log in directory : "
+                     + backupSetPath);
+         }
+
+         if (cfs.length > 1)
+         {
+            throw new RestoreConfigurationException(
+                     "Backup set directory should contains only one repository backup log : " + backupSetPath);
+         }
+
+         RepositoryBackupChainLog backupChainLog = new RepositoryBackupChainLog(cfs[0]);
+
+         if (removeExisting)
+         {
+            if (!isRepositoryExist(rEntry.getName()))
+            {
+               throw new RepositoryRestoreExeption("Repository " + rEntry.getName() + " is not exists!");
+            }
+
+            backupManager.restoreExistingRepository(backupChainLog, rEntry, true);
+         }
+         else
+         {
+            if (isRepositoryExist(rEntry.getName()))
+            {
+               throw new RepositoryRestoreExeption("Repository " + rEntry.getName() + " already exists!");
+            }
+
+            backupManager.restore(backupChainLog, rEntry, true);
+         }
+
+         // Sleeping. Restore should be initialized by job thread
+         Thread.sleep(100);
+
+         // search necessary restore
+         JobRepositoryRestore restore = backupManager.getLastRepositoryRestore(rEntry.getName());
+         ShortInfo info =
+                  new ShortInfo(ShortInfo.RESTORE, restore.getRepositoryBackupChainLog(), restore.getStartTime(),
+                           restore.getEndTime(), restore.getStateRestore(), restore.getRepositoryName());
+
+         return Response.ok(info).cacheControl(noCache).build();
+      }
+      catch (RepositoryRestoreExeption e)
+      {
+         exception = e;
+         status = Response.Status.FORBIDDEN;
+         failMessage = e.getMessage();
+      }
+      catch (RepositoryException e)
+      {
+         exception = e;
+         status = Response.Status.NOT_FOUND;
+         failMessage = e.getMessage();
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         exception = e;
+         status = Response.Status.NOT_FOUND;
+         failMessage = e.getMessage();
+      }
+      catch (Throwable e)
+      {
+         exception = e;
+         status = Response.Status.INTERNAL_SERVER_ERROR;
+         failMessage = e.getMessage();
+      }
+
+      log.error("Can not start restore the repository '" + "/" + rEntry.getName() + "' from backup set '"
+               + backupSetPath + "'", exception);
+
+      return Response.status(status).entity(
+               "Can not start restore the repository '" + "/" + rEntry.getName() + "' from backup set '"
+                        + backupSetPath + "' : " + failMessage).type(MediaType.TEXT_PLAIN).cacheControl(noCache)
+               .build();
+   }
+
+   /**
+    * Restore the repository.
+    * 
+    * @param backupId
+    *          String, the identifier of backup
+    * @param removeExisting
+    *          Boolean, if 'true' will be removed fully (db, value storage, index) existed repository.
+    * @return Response return the response
+    */
+   @GET
+   @Produces(MediaType.APPLICATION_JSON)
+   @RolesAllowed("administrators")
+   @Path("/restore-repository/{id}/{remove-Existing}")
+   public Response restoreRepository(@PathParam("id") String backupId,
+            @PathParam("remove-Existing") Boolean removeExisting)
+   {
+      String failMessage;
+      Response.Status status;
+      Throwable exception;
+
+      String repository = null;
+      
+      try
+      {
+         File backupLog = getRepositoryBackupLogbyId(backupId);
+
+         // validate backup log file
+         if (backupLog == null)
+         {
+            throw new BackupLogNotFoundException("The repository backup log file with id " + backupId + " not exists.");
+         }
+
+         RepositoryBackupChainLog backupChainLog = new RepositoryBackupChainLog(backupLog);
+         repository = backupChainLog.getBackupConfig().getRepository();
+
+         validateOneRepositoryRestoreInstants(repository);
+
+         if (removeExisting)
+         {
+            if (!isRepositoryExist(repository))
+            {
+               throw new RepositoryRestoreExeption("Repository " + repository + " is not exists!");
+            }
+
+            backupManager.restoreExistingRepository(backupId, true);
+         }
+         else
+         {
+            if (isRepositoryExist(repository))
+            {
+               throw new RepositoryRestoreExeption("Repository " + repository + " already exists!");
+            }
+
+            backupManager.restoreRepository(backupId, true);
+         }
+
+         // Sleeping. Restore should be initialized by job thread
+         Thread.sleep(100);
+
+         // search necessary restore
+         JobRepositoryRestore restore =
+                  backupManager.getLastRepositoryRestore(repository);
+         ShortInfo info =
+                  new ShortInfo(ShortInfo.RESTORE, restore.getRepositoryBackupChainLog(), restore.getStartTime(),
+                           restore.getEndTime(), restore.getStateRestore(), restore.getRepositoryName());
+
+         return Response.ok(info).cacheControl(noCache).build();
+      }
+      catch (RepositoryRestoreExeption e)
+      {
+         exception = e;
+         status = Response.Status.FORBIDDEN;
+         failMessage = e.getMessage();
+      }
+      catch (RepositoryException e)
+      {
+         exception = e;
+         status = Response.Status.NOT_FOUND;
+         failMessage = e.getMessage();
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         exception = e;
+         status = Response.Status.NOT_FOUND;
+         failMessage = e.getMessage();
+      }
+      catch (BackupLogNotFoundException e)
+      {
+         exception = e;
+         status = Response.Status.NOT_FOUND;
+         failMessage = e.getMessage();
+      }
+      catch (Throwable e)
+      {
+         exception = e;
+         status = Response.Status.INTERNAL_SERVER_ERROR;
+         failMessage = e.getMessage();
+      }
+
+      log.error("Can not start restore the repository '" + "/" + repository + "' from backup log with id '"
+               + backupId + "'", exception);
+
+      return Response.status(status).entity(
+               "Can not start restore the repository '" + "/" + repository + "' from backup log with id '"
+                        + backupId + "' : " + failMessage).type(MediaType.TEXT_PLAIN).cacheControl(noCache).build();
    }
 
    /**
@@ -876,7 +1937,8 @@ public class HTTPBackupAgent implements ResourceContainer
       {
          BackupServiceInfoBean infoBeen =
             new BackupServiceInfoBean(backupManager.getFullBackupType(), backupManager.getIncrementalBackupType(),
-               backupManager.getBackupDirectory().getAbsolutePath(), backupManager.getDefaultIncrementalJobPeriod());
+               backupManager.getBackupDirectory().getAbsolutePath(),
+               backupManager.getDefaultIncrementalJobPeriod());
 
          return Response.ok(infoBeen).cacheControl(noCache).build();
       }

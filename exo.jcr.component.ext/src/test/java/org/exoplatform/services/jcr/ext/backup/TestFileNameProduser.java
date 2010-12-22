@@ -20,7 +20,7 @@ package org.exoplatform.services.jcr.ext.backup;
 
 import junit.framework.TestCase;
 
-import org.exoplatform.services.jcr.ext.backup.impl.fs.FileNameProducer;
+import org.exoplatform.services.jcr.ext.backup.impl.FileNameProducer;
 
 import java.io.File;
 import java.util.Calendar;
@@ -31,36 +31,59 @@ import java.util.Calendar;
  */
 public class TestFileNameProduser extends TestCase
 {
-   FileNameProducer nameProducer;
+   private File tempDir;
 
-   File tempDir;
+   private String backupsetName;
 
-   String backupsetName;
+   private Calendar calendar;
 
-   public void testGetNextName() throws Exception
+   @Override
+   public void setUp() throws Exception
    {
-      tempDir = new File("target" + File.separator + "temp" + File.separator + "fileProduser");
-      tempDir.mkdirs();
-
+      super.setUp();
       backupsetName = String.valueOf(System.currentTimeMillis());
-
-      nextName(true);
-      nextName(false);
-      nextName(false);
-      nextName(false);
-      nextName(false);
-      nextName(false);
-
-      assertEquals(1, 1);
+      calendar = Calendar.getInstance();
    }
 
-   private void nextName(boolean isFullBackup) throws InterruptedException
+   public void testGetNextNameJCRBackup() throws Exception
    {
-      // nameProducer = new FileNameProducer("reposytory", "production", tempDir.getAbsolutePath(),
-      // isFullBackup);
-      Thread.sleep(100);
-      nameProducer =
-         new FileNameProducer(backupsetName, tempDir.getAbsolutePath(), Calendar.getInstance(), isFullBackup);
-      System.out.println(nameProducer.getNextFile().getName());
+      tempDir = new File("target" + File.separator + "temp" + File.separator + "fileProduser1");
+      tempDir.mkdirs();
+
+      FileNameProducer nameProducer =
+         new FileNameProducer(backupsetName, tempDir.getAbsolutePath(), calendar, true, false);
+      File file = nameProducer.getNextFile();
+
+      assertTrue(file.isFile());
+      assertTrue(file.getName().endsWith(".0"));
+
+      nameProducer = new FileNameProducer(backupsetName, tempDir.getAbsolutePath(), calendar, false, false);
+      file = nameProducer.getNextFile();
+
+      assertTrue(file.isFile());
+      assertTrue(file.getName().endsWith(".1"));
+      assertTrue(nameProducer.getNextFile().getName().endsWith(".2"));
+      assertTrue(nameProducer.getNextFile().getName().endsWith(".3"));
+   }
+
+   public void testGetNextNameRDBMSBackup() throws Exception
+   {
+      tempDir = new File("target" + File.separator + "temp" + File.separator + "fileProduser2");
+      tempDir.mkdirs();
+
+      FileNameProducer nameProducer =
+         new FileNameProducer(backupsetName, tempDir.getAbsolutePath(), calendar, true, true);
+      File file = nameProducer.getNextFile();
+
+      assertTrue(file.isDirectory());
+      assertTrue(file.getName().endsWith(".0"));
+
+      nameProducer = new FileNameProducer(backupsetName, tempDir.getAbsolutePath(), calendar, false, false);
+      file = nameProducer.getNextFile();
+
+      assertTrue(file.isFile());
+      assertTrue(file.getName().endsWith(".1"));
+      assertTrue(nameProducer.getNextFile().getName().endsWith(".2"));
+      assertTrue(nameProducer.getNextFile().getName().endsWith(".3"));
    }
 }

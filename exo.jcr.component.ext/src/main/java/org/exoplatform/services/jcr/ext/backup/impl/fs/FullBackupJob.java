@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.ext.backup.impl.fs;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.ext.backup.BackupConfig;
 import org.exoplatform.services.jcr.ext.backup.impl.AbstractFullBackupJob;
+import org.exoplatform.services.jcr.ext.backup.impl.FileNameProducer;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -44,12 +45,13 @@ public class FullBackupJob extends AbstractFullBackupJob
 
    private String pathBackupFile;
 
+   @Override
    protected URL createStorage() throws FileNotFoundException, IOException
    {
 
       FileNameProducer fnp =
-         new FileNameProducer(config.getRepository(), config.getWorkspace(), config.getBackupDir().getAbsolutePath(),
-            super.timeStamp, true);
+         new FileNameProducer(config.getRepository(), config.getWorkspace(),
+            config.getBackupDir().getAbsolutePath(), super.timeStamp, true);
 
       return new URL("file:" + fnp.getNextFile().getAbsolutePath());
    }

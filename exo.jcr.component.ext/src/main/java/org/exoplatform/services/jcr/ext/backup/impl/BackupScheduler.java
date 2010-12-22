@@ -202,18 +202,18 @@ public class BackupScheduler
             }
             else
                throw new BackupSchedulerException(
-                  "Scheduler task skipped due to the error. Backup log file not exists " + _backupLog.getAbsolutePath()
-                     + ". Task file " + taskFile.getAbsolutePath());
+                  "Scheduler task skipped due to the error. Backup log file not exists "
+                                 + _backupLog.getAbsolutePath() + ". Task file " + taskFile.getAbsolutePath());
          }
          else
             throw new BackupSchedulerException("Scheduler task skipped due to bad configured task file "
-               + taskFile.getAbsolutePath() + ". File doesn't contains configuration line.");
+                     + taskFile.getAbsolutePath() + ". File doesn't contains configuration line.");
       }
 
       @Deprecated
       File save_old(File taskFile) throws IOException
       {
-         // File taskFile = new File(backupLog.getAbsolutePath() + ".task");
+         // File taskFile = new File(PrivilegedFileHelper.getAbsolutePath(backupLog) + ".task");
          if (!taskFile.exists())
          {
             FileWriter fw = new FileWriter(taskFile);
@@ -236,11 +236,12 @@ public class BackupScheduler
 
          final XMLStreamWriter writer;
 
-         TaskConfigWriter(File logFile) throws FileNotFoundException, XMLStreamException, FactoryConfigurationError
+         TaskConfigWriter(final File logFile) throws FileNotFoundException, XMLStreamException,
+            FactoryConfigurationError
          {
             this.logFile = new FileOutputStream(logFile);
 
-            writer = XMLOutputFactory.newInstance().createXMLStreamWriter(this.logFile);
+               writer = XMLOutputFactory.newInstance().createXMLStreamWriter(new FileOutputStream(logFile));
 
             writer.writeStartDocument();
             writer.writeStartElement("backup-task-config");
@@ -671,8 +672,8 @@ public class BackupScheduler
       {
          // remove task file config
          File taskFile =
-            new File(backup.getLogsDirectory().getAbsolutePath() + File.separator + config.getRepository() + "-"
-               + config.getWorkspace() + ".task");
+                  new File(backup.getLogsDirectory().getAbsolutePath() + File.separator
+               + config.getRepository() + "-" + config.getWorkspace() + ".task");
          if (taskFile.exists())
          {
             taskFile.delete();
@@ -821,6 +822,7 @@ public class BackupScheduler
       {
          Runtime.getRuntime().addShutdownHook(new Thread()
          {
+            @Override
             public void run()
             {
                timer.cancel();
@@ -876,19 +878,23 @@ public class BackupScheduler
       }
       catch (IOException e)
       {
-         throw new BackupSchedulerException("Can't restore scheduler from task file " + taskFile.getAbsolutePath(), e);
+         throw new BackupSchedulerException("Can't restore scheduler from task file "
+            + taskFile.getAbsolutePath(), e);
       }
       catch (ParseException e)
       {
-         throw new BackupSchedulerException("Can't restore scheduler from task file " + taskFile.getAbsolutePath(), e);
+         throw new BackupSchedulerException("Can't restore scheduler from task file "
+            + taskFile.getAbsolutePath(), e);
       }
       catch (XMLStreamException e)
       {
-         throw new BackupSchedulerException("Can't restore scheduler from task file " + taskFile.getAbsolutePath(), e);
+         throw new BackupSchedulerException("Can't restore scheduler from task file "
+            + taskFile.getAbsolutePath(), e);
       }
       catch (FactoryConfigurationError e)
       {
-         throw new BackupSchedulerException("Can't restore scheduler from task file " + taskFile.getAbsolutePath(), e);
+         throw new BackupSchedulerException("Can't restore scheduler from task file "
+            + taskFile.getAbsolutePath(), e);
       }
    }
 
@@ -1019,13 +1025,16 @@ public class BackupScheduler
       TaskConfig tc = new TaskConfig(config, startTime, stopTime, chainPeriod, incrementalPeriod);
       try
       {
-         // backup.getLogsDirectory().getAbsolutePath()
+         // PrivilegedFileHelper.getAbsolutePath(backup.getLogsDirectory())
          File taskFile =
-            new File(backup.getLogsDirectory().getAbsolutePath() + File.separator + config.getRepository() + "-"
-               + config.getWorkspace() + ".task");
+                  new File(backup.getLogsDirectory().getAbsolutePath() + File.separator
+               + config.getRepository() + "-" + config.getWorkspace() + ".task");
+
          if (taskFile.exists())
+         {
             throw new BackupSchedulerException("Task for repository '" + config.getRepository() + "' workspace '"
-               + config.getWorkspace() + "' already exists. File " + taskFile.getAbsolutePath());
+                     + config.getWorkspace() + "' already exists. File " + taskFile.getAbsolutePath());
+         }
          tc.save(taskFile); // save task config
       }
       catch (IOException e)

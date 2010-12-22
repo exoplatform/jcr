@@ -24,6 +24,7 @@ import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 import org.exoplatform.services.jcr.ext.backup.BackupConfig;
 import org.exoplatform.services.jcr.ext.backup.impl.AbstractIncrementalBackupJob;
+import org.exoplatform.services.jcr.ext.backup.impl.FileNameProducer;
 import org.exoplatform.services.jcr.ext.backup.impl.PendingChangesLog;
 import org.exoplatform.services.jcr.ext.replication.FixupStream;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
@@ -94,8 +95,9 @@ public class IncrementalBackupJob extends AbstractIncrementalBackupJob
    protected URL createStorage() throws FileNotFoundException, IOException
    {
       FileNameProducer fnp =
-         new FileNameProducer(config.getRepository(), config.getWorkspace(), config.getBackupDir().getAbsolutePath(),
-            super.timeStamp, false);
+         new FileNameProducer(config.getRepository(), config.getWorkspace(),
+ config.getBackupDir()
+                        .getAbsolutePath(), super.timeStamp, false);
 
       File backupFileData = fnp.getNextFile();
 

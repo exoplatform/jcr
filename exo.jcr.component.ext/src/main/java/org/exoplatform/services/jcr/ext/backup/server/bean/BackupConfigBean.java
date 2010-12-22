@@ -131,7 +131,8 @@ public class BackupConfigBean
     */
    public BackupConfigBean(BackupConfig config)
    {
-      this(config.getBackupType(), config.getBackupDir().getAbsolutePath(), config.getIncrementalJobPeriod());
+      this(config.getBackupType(), config.getBackupDir().getAbsolutePath(), config
+         .getIncrementalJobPeriod());
       this.incrementalRepetitionNumber = config.getIncrementalJobNumber();
    }
 
@@ -143,7 +144,8 @@ public class BackupConfigBean
     */
    public BackupConfigBean(RepositoryBackupConfig config)
    {
-      this(config.getBackupType(), config.getBackupDir().getAbsolutePath(), config.getIncrementalJobPeriod());
+      this(config.getBackupType(), config.getBackupDir().getAbsolutePath(), config
+         .getIncrementalJobPeriod());
       this.incrementalRepetitionNumber = config.getIncrementalJobNumber();
    }
 
