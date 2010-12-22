@@ -101,7 +101,7 @@ public class ErrorLog
     */
    private void openFile(final File log) throws IOException
    {
-      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
          public Object run() throws Exception
          {
@@ -137,7 +137,7 @@ public class ErrorLog
    public void append(final String action, final String uuid) throws IOException
    {
       initOut();
-      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
          public Object run() throws Exception
          {
@@ -155,7 +155,7 @@ public class ErrorLog
     */
    public void flush() throws IOException
    {
-      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
          public Object run() throws Exception
          {
@@ -176,7 +176,7 @@ public class ErrorLog
     */
    public void clear() throws IOException
    {
-      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
          public Object run() throws Exception
          {
@@ -203,7 +203,7 @@ public class ErrorLog
     */
    private void initOut() throws IOException
    {
-      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
          public Object run() throws Exception
          {
@@ -225,7 +225,7 @@ public class ErrorLog
     */
    public List<String> readList() throws IOException
    {
-      return SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<List<String>>()
+      return SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<List<String>>()
       {
          public List<String> run() throws Exception
          {
@@ -317,7 +317,7 @@ public class ErrorLog
     */
    public void close()
    {
-      SecurityHelper.doPriviledgedAction(new PrivilegedAction<Object>()
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Object>()
       {
          public Object run()
          {

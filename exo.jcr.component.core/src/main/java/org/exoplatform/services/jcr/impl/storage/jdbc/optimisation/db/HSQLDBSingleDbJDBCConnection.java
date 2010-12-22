@@ -139,7 +139,7 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
             return findItemByName.executeQuery();
          }
       };
-      return SecurityHelper.doPriviledgedSQLExceptionAction(action);
+      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
    }
 
    /**
@@ -164,7 +164,7 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
             return findPropertyByName.executeQuery();
          }
       };
-      return SecurityHelper.doPriviledgedSQLExceptionAction(action);
+      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
    }
 
    /**
@@ -188,7 +188,7 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
             return findNodesByParentId.executeQuery();
          }
       };
-      return SecurityHelper.doPriviledgedSQLExceptionAction(action);
+      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
    }
 
    /**
@@ -212,7 +212,7 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
             return findNodesCountByParentId.executeQuery();
          }
       };
-      return SecurityHelper.doPriviledgedSQLExceptionAction(action);
+      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
    }
 
    /**
@@ -236,7 +236,7 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
             return findPropertiesByParentId.executeQuery();
          }
       };
-      return SecurityHelper.doPriviledgedSQLExceptionAction(action);
+      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
    }
 
    /**
@@ -261,7 +261,7 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
             return findNodesByParentIdCQ.executeQuery();
          }
       };
-      return SecurityHelper.doPriviledgedSQLExceptionAction(action);
+      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
    }
 
    /**
@@ -285,7 +285,7 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
             return findPropertiesByParentIdCQ.executeQuery();
          }
       };
-      return SecurityHelper.doPriviledgedSQLExceptionAction(action);
+      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
    }
 
    /**
@@ -301,7 +301,7 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
             return HSQLDBSingleDbJDBCConnection.super.addNodeRecord(data);
          }
       };
-      return SecurityHelper.doPriviledgedSQLExceptionAction(action);
+      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
    }
 
    /**
@@ -317,7 +317,7 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
             return HSQLDBSingleDbJDBCConnection.super.addPropertyRecord(prop);
          }
       };
-      return SecurityHelper.doPriviledgedSQLExceptionAction(action);
+      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
    }
 
    /**
@@ -333,7 +333,7 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
             return HSQLDBSingleDbJDBCConnection.super.findItemByIdentifier(identifier);
          }
       };
-      return SecurityHelper.doPriviledgedSQLExceptionAction(action);
+      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
    }
 
    /**
@@ -349,7 +349,7 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
             return HSQLDBSingleDbJDBCConnection.super.addReference(data);
          }
       };
-      return SecurityHelper.doPriviledgedSQLExceptionAction(action);
+      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
    }
 
    /**
@@ -365,7 +365,7 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
             return HSQLDBSingleDbJDBCConnection.super.renameNode(data);
          }
       };
-      return SecurityHelper.doPriviledgedSQLExceptionAction(action);
+      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
    }
 
    /**
@@ -381,7 +381,7 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
             return HSQLDBSingleDbJDBCConnection.super.deleteReference(propertyIdentifier);
          }
       };
-      return SecurityHelper.doPriviledgedSQLExceptionAction(action);
+      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
    }
 
    /**
@@ -397,7 +397,7 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
             return HSQLDBSingleDbJDBCConnection.super.findReferences(nodeIdentifier);
          }
       };
-      return SecurityHelper.doPriviledgedSQLExceptionAction(action);
+      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
    }
 
    /**
@@ -413,7 +413,7 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
             return HSQLDBSingleDbJDBCConnection.super.deleteItemByIdentifier(identifier);
          }
       };
-      return SecurityHelper.doPriviledgedSQLExceptionAction(action);
+      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
    }
 
    /**
@@ -430,7 +430,7 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
             return HSQLDBSingleDbJDBCConnection.super.updateNodeByIdentifier(version, index, orderNumb, identifier);
          }
       };
-      return SecurityHelper.doPriviledgedSQLExceptionAction(action);
+      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
    }
 
    /**
@@ -447,7 +447,7 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
             return HSQLDBSingleDbJDBCConnection.super.updatePropertyByIdentifier(version, type, identifier);
          }
       };
-      return SecurityHelper.doPriviledgedSQLExceptionAction(action);
+      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
    }
 
    // -------- values processing ------------
@@ -465,7 +465,7 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
             return HSQLDBSingleDbJDBCConnection.super.addValueData(cid, orderNumber, stream, streamLength, storageId);
          }
       };
-      return SecurityHelper.doPriviledgedSQLExceptionAction(action);
+      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
    }
 
    /**
@@ -481,7 +481,7 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
             return HSQLDBSingleDbJDBCConnection.super.deleteValueData(cid);
          }
       };
-      return SecurityHelper.doPriviledgedSQLExceptionAction(action);
+      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
    }
 
    /**
@@ -497,7 +497,7 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
             return HSQLDBSingleDbJDBCConnection.super.findValuesByPropertyId(cid);
          }
       };
-      return SecurityHelper.doPriviledgedSQLExceptionAction(action);
+      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
    }
 
    /**
@@ -513,7 +513,7 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
             return HSQLDBSingleDbJDBCConnection.super.findValuesStorageDescriptorsByPropertyId(cid);
          }
       };
-      return SecurityHelper.doPriviledgedSQLExceptionAction(action);
+      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
    }
 
    /**
@@ -529,7 +529,7 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
             return HSQLDBSingleDbJDBCConnection.super.findValueByPropertyIdOrderNumber(cid, orderNumb);
          }
       };
-      return SecurityHelper.doPriviledgedSQLExceptionAction(action);
+      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
    }
 
    /**
@@ -545,7 +545,7 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
             return HSQLDBSingleDbJDBCConnection.super.findItemQPathByIdentifierCQ(identifier);
          }
       };
-      return SecurityHelper.doPriviledgedSQLExceptionAction(action);
+      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
    }
 
    /**
@@ -561,6 +561,6 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
             return HSQLDBSingleDbJDBCConnection.super.findNodeMainPropertiesByParentIdentifierCQ(parentIdentifier);
          }
       };
-      return SecurityHelper.doPriviledgedSQLExceptionAction(action);
+      return SecurityHelper.doPrivilegedSQLExceptionAction(action);
    }
 }

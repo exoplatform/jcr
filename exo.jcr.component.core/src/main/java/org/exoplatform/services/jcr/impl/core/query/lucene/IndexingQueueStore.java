@@ -121,7 +121,7 @@ class IndexingQueueStore
     */
    public void close()
    {
-      SecurityHelper.doPriviledgedAction(new PrivilegedAction<Object>()
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Object>()
       {
          public Object run()
          {
@@ -154,7 +154,7 @@ class IndexingQueueStore
     */
    private void readStore() throws IOException
    {
-      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
          public Object run() throws Exception
          {

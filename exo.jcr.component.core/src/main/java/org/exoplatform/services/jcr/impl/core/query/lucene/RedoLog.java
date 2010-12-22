@@ -147,7 +147,7 @@ class RedoLog
     */
    void append(final MultiIndex.Action action) throws IOException
    {
-      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
          public Object run() throws Exception
          {
@@ -165,7 +165,7 @@ class RedoLog
     */
    void flush() throws IOException
    {
-      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
          public Object run() throws Exception
          {
@@ -184,7 +184,7 @@ class RedoLog
     */
    void clear() throws IOException
    {
-      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
          public Object run() throws Exception
          {
@@ -207,7 +207,7 @@ class RedoLog
     */
    private void initOut() throws IOException
    {
-      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
          {
             public Object run() throws Exception
             {
@@ -230,7 +230,7 @@ class RedoLog
     */
    private void read(final ActionCollector collector) throws IOException
    {
-      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
          {
             public Object run() throws Exception
             {

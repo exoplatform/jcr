@@ -747,7 +747,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
             // check if default node type saved
             if (!nodeTypeRepository.isStorageFilled())
             {
-               final InputStream xml = SecurityHelper.doPriviledgedAction(new PrivilegedAction<InputStream>()
+               final InputStream xml = SecurityHelper.doPrivilegedAction(new PrivilegedAction<InputStream>()
                {
                   public InputStream run()
                   {

@@ -45,7 +45,7 @@ public class DialectDetecter
    public static String detect(final DatabaseMetaData metaData) throws SQLException
    {
       final String databaseName =
-         SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<String>()
+         SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<String>()
          {
             public String run() throws Exception
             {

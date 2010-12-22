@@ -76,7 +76,7 @@ public class ExoJBossCacheFactory<K, V>
     * same multiplexer stack
     */
    private static final JChannelFactory CHANNEL_FACTORY =
-      SecurityHelper.doPriviledgedAction(new PrivilegedAction<JChannelFactory>()
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<JChannelFactory>()
       {
          public JChannelFactory run()
          {
@@ -157,7 +157,7 @@ public class ExoJBossCacheFactory<K, V>
       }
 
       // create cache
-      final CacheFactory<K, V> factory = SecurityHelper.doPriviledgedAction(new PrivilegedAction<CacheFactory<K, V>>()
+      final CacheFactory<K, V> factory = SecurityHelper.doPrivilegedAction(new PrivilegedAction<CacheFactory<K, V>>()
       {
          public CacheFactory<K, V> run()
          {

@@ -174,7 +174,7 @@ public class DBInitializer
 
    protected boolean isTableExists(final Connection conn, final String tableName) throws SQLException
    {
-      ResultSet trs = SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<ResultSet>()
+      ResultSet trs = SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<ResultSet>()
       {
          public ResultSet run() throws Exception
          {
@@ -416,7 +416,7 @@ public class DBInitializer
                }
                final Statement finalSt = st;
                final String finalSql = sql;
-               SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Object>()
+               SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Object>()
                {
                   public Object run() throws Exception
                   {

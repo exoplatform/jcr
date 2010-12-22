@@ -204,7 +204,7 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
    protected Connection openConnection() throws NamingException, SQLException
    {
       final DataSource ds = (DataSource)new InitialContext().lookup(sourceName);
-      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
+      return SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
       {
          public Connection run() throws Exception
          {
@@ -222,7 +222,7 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
    {
       try
       {
-         ResultSet trs = SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<ResultSet>()
+         ResultSet trs = SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<ResultSet>()
          {
             public ResultSet run() throws Exception
             {

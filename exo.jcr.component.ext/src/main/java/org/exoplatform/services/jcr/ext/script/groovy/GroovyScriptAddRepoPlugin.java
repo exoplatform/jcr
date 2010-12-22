@@ -69,7 +69,7 @@ public class GroovyScriptAddRepoPlugin extends BaseComponentPlugin
          final String path = p.getProperty("path");
          try
          {
-            SecurityHelper.doPriviledgedMalformedURLExceptionAction(new PrivilegedExceptionAction<Void>()
+            SecurityHelper.doPrivilegedMalformedURLExceptionAction(new PrivilegedExceptionAction<Void>()
             {
                public Void run() throws Exception
                {

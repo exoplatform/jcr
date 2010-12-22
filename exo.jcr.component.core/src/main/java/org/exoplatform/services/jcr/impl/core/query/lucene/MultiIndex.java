@@ -314,7 +314,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       }
       finally
       {
-         SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+         SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
          {
             public Object run() throws Exception
             {
@@ -353,7 +353,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          }
          finally
          {
-            SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+            SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
             {
                public Object run() throws Exception
                {
@@ -440,7 +440,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    synchronized void update(final Collection remove, final Collection add) throws IOException
    {
-      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
          public Object run() throws Exception
          {
@@ -636,7 +636,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             final ReadOnlyIndexReader reader = (ReadOnlyIndexReader)entry.getKey();
             try
             {
-               SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+               SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
                {
                   public Object run() throws Exception
                   {
@@ -768,7 +768,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       {
          // force initializing of caches
          long time = System.currentTimeMillis();
-         SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+         SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
          {
             public Object run() throws Exception
             {
@@ -872,7 +872,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    public synchronized CachingMultiIndexReader getIndexReader(final boolean initCache) throws IOException
    {
-      return SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<CachingMultiIndexReader>()
+      return SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<CachingMultiIndexReader>()
       {
          public CachingMultiIndexReader run() throws Exception
          {
@@ -1160,7 +1160,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    void releaseMultiReader() throws IOException
    {
-      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
          public Object run() throws Exception
          {
@@ -1209,7 +1209,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    private void scheduleFlushTask()
    {
-      SecurityHelper.doPriviledgedAction(new PrivilegedAction<Object>()
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Object>()
       {
          public Object run()
          {
@@ -1274,7 +1274,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    private Action executeAndLog(final Action a) throws IOException
    {
-      return SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Action>()
+      return SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Action>()
       {
          public Action run() throws Exception
          {
@@ -1435,7 +1435,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    private void removeDeletable()
    {
-      SecurityHelper.doPriviledgedAction(new PrivilegedAction<Object>()
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Object>()
       {
          public Object run()
          {

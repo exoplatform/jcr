@@ -45,7 +45,7 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
    @Override
    protected int addNodeRecord(final NodeData data) throws SQLException
    {
-      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Integer>()
+      return SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Integer>()
       {
          public Integer run() throws Exception
          {
@@ -57,7 +57,7 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
    @Override
    protected int addPropertyRecord(final PropertyData data) throws SQLException
    {
-      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Integer>()
+      return SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Integer>()
       {
          public Integer run() throws Exception
          {
@@ -69,7 +69,7 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
    @Override
    protected int addReference(final PropertyData data) throws SQLException, IOException
    {
-      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Integer>()
+      return SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Integer>()
       {
          public Integer run() throws Exception
          {
@@ -82,7 +82,7 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
    protected int addValueData(final String cid, final int orderNumber, final InputStream stream,
       final int streamLength, final String storageDesc) throws SQLException
    {
-      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Integer>()
+      return SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Integer>()
       {
          public Integer run() throws Exception
          {
@@ -95,7 +95,7 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
    @Override
    protected int deleteItemByIdentifier(final String identifier) throws SQLException
    {
-      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Integer>()
+      return SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Integer>()
       {
          public Integer run() throws Exception
          {
@@ -107,7 +107,7 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
    @Override
    protected int deleteReference(final String propertyIdentifier) throws SQLException
    {
-      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Integer>()
+      return SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Integer>()
       {
          public Integer run() throws Exception
          {
@@ -120,7 +120,7 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
    @Override
    protected int deleteValueData(final String cid) throws SQLException
    {
-      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Integer>()
+      return SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Integer>()
       {
          public Integer run() throws Exception
          {
@@ -132,7 +132,7 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
    @Override
    protected ResultSet findChildNodesByParentIdentifier(final String parentIdentifier) throws SQLException
    {
-      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<ResultSet>()
+      return SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<ResultSet>()
       {
          public ResultSet run() throws Exception
          {
@@ -144,7 +144,7 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
    @Override
    protected ResultSet findChildNodesCountByParentIdentifier(final String parentIdentifier) throws SQLException
    {
-      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<ResultSet>()
+      return SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<ResultSet>()
       {
          public ResultSet run() throws Exception
          {
@@ -156,7 +156,7 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
    @Override
    protected ResultSet findChildPropertiesByParentIdentifier(final String parentIdentifier) throws SQLException
    {
-      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<ResultSet>()
+      return SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<ResultSet>()
       {
          public ResultSet run() throws Exception
          {
@@ -168,7 +168,7 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
    @Override
    protected ResultSet findItemByIdentifier(final String identifier) throws SQLException
    {
-      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<ResultSet>()
+      return SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<ResultSet>()
       {
          public ResultSet run() throws Exception
          {
@@ -180,7 +180,7 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
    @Override
    protected ResultSet findItemByName(final String parentId, final String name, final int index) throws SQLException
    {
-      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<ResultSet>()
+      return SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<ResultSet>()
       {
          public ResultSet run() throws Exception
          {
@@ -192,7 +192,7 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
    @Override
    protected ResultSet findPropertyByName(final String parentId, final String name) throws SQLException
    {
-      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<ResultSet>()
+      return SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<ResultSet>()
       {
          public ResultSet run() throws Exception
          {
@@ -204,7 +204,7 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
    @Override
    protected ResultSet findReferences(final String nodeIdentifier) throws SQLException
    {
-      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<ResultSet>()
+      return SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<ResultSet>()
       {
          public ResultSet run() throws Exception
          {
@@ -216,7 +216,7 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
    @Override
    protected ResultSet findValueByPropertyIdOrderNumber(final String cid, final int orderNumb) throws SQLException
    {
-      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<ResultSet>()
+      return SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<ResultSet>()
       {
          public ResultSet run() throws Exception
          {
@@ -228,7 +228,7 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
    @Override
    protected ResultSet findValuesByPropertyId(final String cid) throws SQLException
    {
-      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<ResultSet>()
+      return SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<ResultSet>()
       {
          public ResultSet run() throws Exception
          {
@@ -240,7 +240,7 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
    @Override
    protected ResultSet findValuesStorageDescriptorsByPropertyId(final String cid) throws SQLException
    {
-      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<ResultSet>()
+      return SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<ResultSet>()
       {
          public ResultSet run() throws Exception
          {
@@ -253,7 +253,7 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
    @Override
    protected int renameNode(final NodeData data) throws SQLException
    {
-      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Integer>()
+      return SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Integer>()
       {
          public Integer run() throws Exception
          {
@@ -267,7 +267,7 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
    protected int updateNodeByIdentifier(final int version, final int index, final int orderNumb, final String identifier)
       throws SQLException
    {
-      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Integer>()
+      return SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Integer>()
       {
          public Integer run() throws Exception
          {
@@ -280,7 +280,7 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
    protected int updatePropertyByIdentifier(final int version, final int type, final String identifier)
       throws SQLException
    {
-      return SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Integer>()
+      return SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Integer>()
       {
          public Integer run() throws Exception
          {

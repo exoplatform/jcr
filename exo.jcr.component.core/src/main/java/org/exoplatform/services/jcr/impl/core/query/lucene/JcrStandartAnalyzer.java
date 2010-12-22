@@ -40,7 +40,7 @@ public class JcrStandartAnalyzer  extends Analyzer {
      * The default Jackrabbit analyzer if none is configured in <code><SearchIndex></code>
      * configuration.
      */
-   private Analyzer defaultAnalyzer = SecurityHelper.doPriviledgedAction(new PrivilegedAction<Analyzer>()
+   private Analyzer defaultAnalyzer = SecurityHelper.doPrivilegedAction(new PrivilegedAction<Analyzer>()
    {
       public Analyzer run()
       {

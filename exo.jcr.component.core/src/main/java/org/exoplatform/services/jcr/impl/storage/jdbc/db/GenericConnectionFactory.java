@@ -229,7 +229,7 @@ public class GenericConnectionFactory implements WorkspaceStorageConnectionFacto
       try
       {
          final Connection conn =
-            SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
+            SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
             {
                public Connection run() throws Exception
                {

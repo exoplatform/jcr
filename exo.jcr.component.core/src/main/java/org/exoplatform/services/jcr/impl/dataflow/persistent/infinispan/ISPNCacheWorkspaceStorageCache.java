@@ -1010,7 +1010,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache
          {
             try
             {
-               tx = SecurityHelper.doPriviledgedExceptionAction(new PrivilegedExceptionAction<Transaction>()
+               tx = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Transaction>()
                {
                   public Transaction run() throws Exception
                   {
@@ -1032,7 +1032,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache
             try
             {
                final Transaction privilegedTx = tx;
-               SecurityHelper.doPriviledgedExceptionAction(new PrivilegedExceptionAction<Object>()
+               SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Object>()
                {
                   public Object run() throws Exception
                   {

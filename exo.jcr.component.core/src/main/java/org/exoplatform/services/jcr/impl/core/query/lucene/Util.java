@@ -60,7 +60,7 @@ public class Util
     */
    public static void disposeDocument(final Document old)
    {
-      SecurityHelper.doPriviledgedAction(new PrivilegedAction<Object>()
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Object>()
       {
          public Object run()
          {
@@ -159,7 +159,7 @@ public class Util
     */
    public static void closeOrRelease(final IndexReader reader) throws IOException
    {
-      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
          public Object run() throws Exception
          {

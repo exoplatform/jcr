@@ -1160,7 +1160,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
    private void writeParamsToRegistryService(SessionProvider sessionProvider) throws IOException, SAXException,
       ParserConfigurationException, RepositoryException
    {
-      Document doc = SecurityHelper.doPriviledgedParserConfigurationAction(new PrivilegedExceptionAction<Document>()
+      Document doc = SecurityHelper.doPrivilegedParserConfigurationAction(new PrivilegedExceptionAction<Document>()
       {
          public Document run() throws Exception
          {

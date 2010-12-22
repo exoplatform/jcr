@@ -184,7 +184,7 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
          IBindingFactory bfact;
          try
          {
-            bfact = SecurityHelper.doPriviledgedExceptionAction(new PrivilegedExceptionAction<IBindingFactory>()
+            bfact = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<IBindingFactory>()
             {
                public IBindingFactory run() throws Exception
                {

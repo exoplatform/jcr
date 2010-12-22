@@ -149,7 +149,7 @@ public class FileBasedNamespaceMappings extends AbstractNamespaceMappings
     */
    private void load() throws IOException
    {
-      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
          public Object run() throws Exception
          {
@@ -192,7 +192,7 @@ public class FileBasedNamespaceMappings extends AbstractNamespaceMappings
     */
    private void store() throws IOException
    {
-      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
          public Object run() throws Exception
          {

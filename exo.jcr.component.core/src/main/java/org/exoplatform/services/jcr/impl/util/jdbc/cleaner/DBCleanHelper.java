@@ -111,7 +111,7 @@ public class DBCleanHelper
          selectItems.setString(2, parentID);
 
          final PreparedStatement selectStatement = selectItems;
-         result = (ResultSet)SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Object>()
+         result = (ResultSet)SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Object>()
          {
             public Object run() throws Exception
             {
@@ -134,7 +134,7 @@ public class DBCleanHelper
             removeItems.setString(2, parentID);
 
             final PreparedStatement deleteStatement = removeItems;
-            SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Object>()
+            SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Object>()
             {
                public Object run() throws Exception
                {

@@ -650,7 +650,7 @@ public class GroovyScript2RestLoader implements Startable
          LOG.debug(">>> Save init parametrs in registry service.");
       }
 
-      Document doc = SecurityHelper.doPriviledgedParserConfigurationAction(new PrivilegedExceptionAction<Document>() {
+      Document doc = SecurityHelper.doPrivilegedParserConfigurationAction(new PrivilegedExceptionAction<Document>() {
          public Document run() throws Exception
          {
             return DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
@@ -817,7 +817,7 @@ public class GroovyScript2RestLoader implements Startable
       try
       {
          final String fName = name;
-         SecurityHelper.doPriviledgedExceptionAction(new PrivilegedExceptionAction<Void>() {
+         SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Void>() {
             public Void run() throws Exception
             {
                groovyClassLoader.parseClass(script, fName);

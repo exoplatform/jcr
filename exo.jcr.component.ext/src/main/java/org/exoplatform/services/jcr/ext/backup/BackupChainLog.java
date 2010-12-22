@@ -830,7 +830,7 @@ public class BackupChainLog
 
          try
          {
-            writer = SecurityHelper.doPriviledgedExceptionAction(new PrivilegedExceptionAction<XMLStreamWriter>()
+            writer = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<XMLStreamWriter>()
             {
                public XMLStreamWriter run() throws Exception
                {
@@ -906,7 +906,7 @@ public class BackupChainLog
          IBindingFactory bfact;
          try
          {
-            bfact = SecurityHelper.doPriviledgedExceptionAction(new PrivilegedExceptionAction<IBindingFactory>()
+            bfact = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<IBindingFactory>()
             {
                public IBindingFactory run() throws Exception
                {

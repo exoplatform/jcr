@@ -114,7 +114,7 @@ public class ISPNCacheFactory<K, V>
       {
          // creating new CacheManager using SecurityHelper
 
-         manager = SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<EmbeddedCacheManager>()
+         manager = SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<EmbeddedCacheManager>()
          {
             public EmbeddedCacheManager run() throws IOException
             {

@@ -64,7 +64,7 @@ class PersistentIndex extends AbstractIndex
       this.name = name;
       if (isExisting())
       {
-         SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+         SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
          {
             public Object run() throws Exception
             {
@@ -100,7 +100,7 @@ class PersistentIndex extends AbstractIndex
     */
    void addIndexes(final IndexReader[] readers) throws IOException
    {
-      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
          public Object run() throws Exception
          {
@@ -121,7 +121,7 @@ class PersistentIndex extends AbstractIndex
     */
    void copyIndex(final AbstractIndex index) throws IOException
    {
-      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
          public Object run() throws Exception
          {

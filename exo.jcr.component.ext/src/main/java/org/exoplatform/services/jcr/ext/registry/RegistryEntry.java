@@ -73,7 +73,7 @@ public final class RegistryEntry
    public RegistryEntry(String rootName) throws IOException, SAXException, ParserConfigurationException
    {
       DocumentBuilder db =
-         SecurityHelper.doPriviledgedParserConfigurationAction(new PrivilegedExceptionAction<DocumentBuilder>()
+         SecurityHelper.doPrivilegedParserConfigurationAction(new PrivilegedExceptionAction<DocumentBuilder>()
          {
             public DocumentBuilder run() throws Exception
             {
@@ -98,7 +98,7 @@ public final class RegistryEntry
    {
       try
       {
-         return SecurityHelper.doPriviledgedExceptionAction(new PrivilegedExceptionAction<RegistryEntry>()
+         return SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<RegistryEntry>()
          {
             public RegistryEntry run() throws Exception
             {
@@ -146,7 +146,7 @@ public final class RegistryEntry
    {
       try
       {
-         return SecurityHelper.doPriviledgedExceptionAction(new PrivilegedExceptionAction<RegistryEntry>()
+         return SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<RegistryEntry>()
          {
             public RegistryEntry run() throws Exception
             {

@@ -93,7 +93,7 @@ public class RepositoryServiceConfiguration extends AbstractRepositoryServiceCon
          IBindingFactory factory;
          try
          {
-            factory = SecurityHelper.doPriviledgedExceptionAction(new PrivilegedExceptionAction<IBindingFactory>()
+            factory = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<IBindingFactory>()
             {
                public IBindingFactory run() throws Exception
                {

@@ -121,7 +121,7 @@ class ConsistencyCheck
          {
             if (error.repairable())
             {
-               SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+               SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
                {
                   public Object run() throws Exception
                   {
@@ -195,7 +195,7 @@ class ConsistencyCheck
                continue;
             }
             final int currentIndex = i;
-            Document d = SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Document>()
+            Document d = SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Document>()
             {
                public Document run() throws Exception
                {
@@ -219,7 +219,7 @@ class ConsistencyCheck
       }
       finally
       {
-         SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+         SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
          {
             public Object run() throws Exception
             {
@@ -251,7 +251,7 @@ class ConsistencyCheck
                continue;
             }
             final int currentIndex = i;
-            Document d = SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Document>()
+            Document d = SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Document>()
             {
                public Document run() throws Exception
                {
@@ -281,7 +281,7 @@ class ConsistencyCheck
       }
       finally
       {
-         SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+         SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
          {
             public Object run() throws Exception
             {

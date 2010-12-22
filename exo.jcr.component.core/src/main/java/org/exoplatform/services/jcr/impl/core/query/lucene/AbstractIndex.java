@@ -134,7 +134,7 @@ abstract class AbstractIndex
       this.cache = cache;
       this.indexingQueue = indexingQueue;
 
-      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
          public Object run() throws Exception
          {
@@ -184,7 +184,7 @@ abstract class AbstractIndex
     */
    void addDocuments(final Document[] docs) throws IOException
    {
-      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
          public Object run() throws Exception
          {
@@ -256,7 +256,7 @@ abstract class AbstractIndex
     */
    int removeDocument(final Term idTerm) throws IOException
    {
-      return SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Integer>()
+      return SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Integer>()
       {
          public Integer run() throws Exception
          {
@@ -274,7 +274,7 @@ abstract class AbstractIndex
     */
    protected synchronized CommittableIndexReader getIndexReader() throws IOException
    {
-      return SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<CommittableIndexReader>()
+      return SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<CommittableIndexReader>()
       {
          public CommittableIndexReader run() throws Exception
          {
@@ -309,7 +309,7 @@ abstract class AbstractIndex
     */
    synchronized ReadOnlyIndexReader getReadOnlyIndexReader(final boolean initCache) throws IOException
    {
-      return SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<ReadOnlyIndexReader>()
+      return SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<ReadOnlyIndexReader>()
       {
          public ReadOnlyIndexReader run() throws Exception
          {
@@ -390,7 +390,7 @@ abstract class AbstractIndex
     */
    protected synchronized IndexWriter getIndexWriter() throws IOException
    {
-      return SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<IndexWriter>()
+      return SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<IndexWriter>()
       {
          public IndexWriter run() throws Exception
          {
@@ -430,7 +430,7 @@ abstract class AbstractIndex
     */
    protected synchronized void commit(final boolean optimize) throws IOException
    {
-      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
          public Object run() throws Exception
          {
@@ -462,7 +462,7 @@ abstract class AbstractIndex
     */
    synchronized void close()
    {
-      SecurityHelper.doPriviledgedAction(new PrivilegedAction<Object>()
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Object>()
       {
          public Object run()
          {
@@ -488,7 +488,7 @@ abstract class AbstractIndex
     */
    protected void releaseWriterAndReaders()
    {
-      SecurityHelper.doPriviledgedAction(new PrivilegedAction<Object>()
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Object>()
       {
          public Object run()
          {
@@ -567,7 +567,7 @@ abstract class AbstractIndex
     */
    protected synchronized void invalidateSharedReader() throws IOException
    {
-      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
          public Object run() throws Exception
          {

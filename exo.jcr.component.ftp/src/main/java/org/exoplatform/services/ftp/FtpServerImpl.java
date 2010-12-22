@@ -76,7 +76,7 @@ public class FtpServerImpl implements FtpServer
       this.configuration = configuration;
       this.repositoryService = repositoryService;
 
-      InputStream commandStream = SecurityHelper.doPriviledgedAction(new PrivilegedAction<InputStream>()
+      InputStream commandStream = SecurityHelper.doPrivilegedAction(new PrivilegedAction<InputStream>()
       {
          public InputStream run()
          {
@@ -234,7 +234,7 @@ public class FtpServerImpl implements FtpServer
             Socket incoming = null;
             try
             {
-               incoming = SecurityHelper.doPriviledgedExceptionAction(new PrivilegedExceptionAction<Socket>()
+               incoming = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Socket>()
                {
                   public Socket run() throws Exception
                   {

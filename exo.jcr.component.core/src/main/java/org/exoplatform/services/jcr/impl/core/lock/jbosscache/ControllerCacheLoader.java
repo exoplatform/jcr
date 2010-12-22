@@ -234,7 +234,7 @@ public class ControllerCacheLoader implements CacheLoader
     */
    public void put(final List<Modification> modifications) throws Exception
    {
-      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Void>()
+      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
       {
          public Void run() throws Exception
          {
@@ -249,7 +249,7 @@ public class ControllerCacheLoader implements CacheLoader
     */
    public void put(final Fqn name, final Map<Object, Object> attributes) throws Exception
    {
-      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Void>()
+      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
       {
          public Void run() throws Exception
          {
@@ -264,7 +264,7 @@ public class ControllerCacheLoader implements CacheLoader
     */
    public Object put(final Fqn name, final Object key, final Object value) throws Exception
    {
-      return SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      return SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
          public Object run() throws Exception
          {
@@ -278,7 +278,7 @@ public class ControllerCacheLoader implements CacheLoader
     */
    public void remove(final Fqn fqn) throws Exception
    {
-      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Void>()
+      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
       {
          public Void run() throws Exception
          {
@@ -293,7 +293,7 @@ public class ControllerCacheLoader implements CacheLoader
     */
    public Object remove(final Fqn fqn, final Object key) throws Exception
    {
-      return SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      return SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
          public Object run() throws Exception
          {
@@ -307,7 +307,7 @@ public class ControllerCacheLoader implements CacheLoader
     */
    public void removeData(final Fqn fqn) throws Exception
    {
-      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Void>()
+      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
       {
          public Void run() throws Exception
          {

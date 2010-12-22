@@ -206,7 +206,7 @@ public abstract class WorkspaceDBCleaner implements DBCleaner
     */
    protected void executeQuery(final Statement statement, final String sql) throws SQLException
    {
-      SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Object>()
+      SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Object>()
       {
          public Object run() throws Exception
          {

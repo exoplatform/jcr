@@ -254,7 +254,7 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
          this.handler = handler;
          final String path = handler.getContext().getIndexDirectory() + File.separatorChar + "spellchecker";
          spellIndexDirectory = null;
-         SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+         SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
          {
             public Object run() throws Exception
             {
@@ -324,7 +324,7 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
       {
          try
          {
-            SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+            SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
             {
                public Object run() throws Exception
                {
@@ -419,7 +419,7 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
                   {
                      final int currentIndex = i;
                      String[] similar =
-                        SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<String[]>()
+                        SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<String[]>()
                         {
                            public String[] run() throws Exception
                            {
@@ -461,7 +461,7 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
          }
          finally
          {
-            SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+            SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
             {
                public Object run() throws Exception
                {
@@ -498,7 +498,7 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
 
                         try
                         {
-                           SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+                           SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
                            {
                               public Object run() throws Exception
                               {

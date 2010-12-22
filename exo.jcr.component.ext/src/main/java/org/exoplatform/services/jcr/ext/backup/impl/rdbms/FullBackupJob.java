@@ -196,7 +196,7 @@ public class FullBackupJob extends AbstractFullBackupJob
             throw new NameNotFoundException("Data source " + dsName + " not found");
          }
 
-         jdbcConn = SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
+         jdbcConn = SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
          {
             public Connection run() throws Exception
             {

@@ -194,7 +194,7 @@ public class RESTRegistryService implements ResourceContainer
          {
             Node registryNode = registryEntry.getNode();
             NodeIterator registryIterator = registryNode.getNodes();
-            Document entry = SecurityHelper.doPriviledgedExceptionAction(new PrivilegedExceptionAction<Document>()
+            Document entry = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Document>()
             {
                public Document run() throws Exception
                {

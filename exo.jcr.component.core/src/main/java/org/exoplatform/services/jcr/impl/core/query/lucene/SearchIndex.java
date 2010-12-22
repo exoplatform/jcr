@@ -565,7 +565,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       {
          // read local namespace mappings
          final File mapFile = new File(indexDirectory, NS_MAPPING_FILE);
-         boolean fileExists = SecurityHelper.doPriviledgedAction(new PrivilegedAction<Boolean>()
+         boolean fileExists = SecurityHelper.doPrivilegedAction(new PrivilegedAction<Boolean>()
          {
             public Boolean run()
             {
@@ -1417,7 +1417,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       {
          try
          {
-            spCheck = SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<SpellChecker>()
+            spCheck = SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<SpellChecker>()
             {
                public SpellChecker run() throws Exception
                {
@@ -1449,7 +1449,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          {
 
             // File config = PrivilegedFileHelper.file(indexingConfigPath);
-            SecurityHelper.doPriviledgedAction(new PrivilegedAction<Object>()
+            SecurityHelper.doPrivilegedAction(new PrivilegedAction<Object>()
             {
                public Object run()
                {
@@ -1702,7 +1702,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
             return;
          }
          long time = System.currentTimeMillis();
-         int found = SecurityHelper.doPriviledgedAction(new PrivilegedAction<Integer>()
+         int found = SecurityHelper.doPrivilegedAction(new PrivilegedAction<Integer>()
          {
             public Integer run()
             {

@@ -46,7 +46,7 @@ public class FSDirectoryManager implements DirectoryManager
     */
    public void init(final SearchIndex handler) throws IOException
    {
-      SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
          public Object run() throws Exception
          {
@@ -61,7 +61,7 @@ public class FSDirectoryManager implements DirectoryManager
     */
    public boolean hasDirectory(final String name) throws IOException
    {
-      return SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Boolean>()
+      return SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Boolean>()
       {
          public Boolean run() throws Exception
          {
@@ -76,7 +76,7 @@ public class FSDirectoryManager implements DirectoryManager
     */
    public Directory getDirectory(final String name) throws IOException
    {
-      return SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<Directory>()
+      return SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Directory>()
       {
          public Directory run() throws Exception
          {
@@ -99,7 +99,7 @@ public class FSDirectoryManager implements DirectoryManager
     */
    public String[] getDirectoryNames() throws IOException
    {
-      return SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<String[]>()
+      return SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<String[]>()
       {
          public String[] run() throws Exception
          {
@@ -132,7 +132,7 @@ public class FSDirectoryManager implements DirectoryManager
     */
    public boolean delete(final String name)
    {
-      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<Boolean>()
+      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<Boolean>()
       {
          public Boolean run()
          {
@@ -169,7 +169,7 @@ public class FSDirectoryManager implements DirectoryManager
     */
    public boolean rename(final String from, final String to)
    {
-      return SecurityHelper.doPriviledgedAction(new PrivilegedAction<Boolean>()
+      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<Boolean>()
       {
          public Boolean run()
          {

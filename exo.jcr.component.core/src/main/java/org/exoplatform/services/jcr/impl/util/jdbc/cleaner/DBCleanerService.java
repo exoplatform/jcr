@@ -146,7 +146,7 @@ public class DBCleanerService
       try
       {
          final DataSource fds = ds;
-         conn = SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
+         conn = SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
          {
             public Connection run() throws Exception
             {

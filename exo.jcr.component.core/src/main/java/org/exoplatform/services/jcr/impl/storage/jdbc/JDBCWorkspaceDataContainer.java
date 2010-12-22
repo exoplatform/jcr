@@ -331,7 +331,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
                Connection jdbcConn = null;
                try
                {
-                  jdbcConn = SecurityHelper.doPriviledgedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
+                  jdbcConn = SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
                   {
                      public Connection run() throws Exception
                      {

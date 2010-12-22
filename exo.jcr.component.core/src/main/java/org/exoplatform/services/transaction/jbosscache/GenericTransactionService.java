@@ -239,7 +239,7 @@ public class GenericTransactionService implements TransactionService
                TransactionManager tm;
                try
                {
-                  tm = SecurityHelper.doPriviledgedExceptionAction(new PrivilegedExceptionAction<TransactionManager>()
+                  tm = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<TransactionManager>()
                   {
                      public TransactionManager run() throws Exception
                      {
@@ -460,7 +460,7 @@ public class GenericTransactionService implements TransactionService
       {
          try
          {
-            return SecurityHelper.doPriviledgedExceptionAction(new PrivilegedExceptionAction<Transaction>()
+            return SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Transaction>()
             {
                public Transaction run() throws Exception
                {

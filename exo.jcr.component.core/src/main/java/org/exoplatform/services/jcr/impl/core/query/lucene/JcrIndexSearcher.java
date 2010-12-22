@@ -93,7 +93,7 @@ public class JcrIndexSearcher extends IndexSearcher implements EvaluationContext
     */
    public QueryHits evaluate(final Query query, final Sort sort, final long resultFetchHint) throws IOException
    {
-      return SecurityHelper.doPriviledgedIOExceptionAction(new PrivilegedExceptionAction<QueryHits>()
+      return SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<QueryHits>()
       {
          public QueryHits run() throws Exception
          {

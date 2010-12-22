@@ -344,7 +344,7 @@ public class RegistryService extends Registry implements Startable
                   wsName = repConfiguration.getDefaultWorkspaceName();
                }
                addRegistryLocation(repName, wsName);
-               InputStream xml = SecurityHelper.doPriviledgedAction(new PrivilegedAction<InputStream>()
+               InputStream xml = SecurityHelper.doPrivilegedAction(new PrivilegedAction<InputStream>()
                {
                   public InputStream run()
                   {
@@ -425,7 +425,7 @@ public class RegistryService extends Registry implements Startable
                final String xml = appConfigurations.get(appName);
                try
                {
-                  SecurityHelper.doPriviledgedExceptionAction(new PrivilegedExceptionAction<Void>()
+                  SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Void>()
                   {
                      public Void run() throws Exception
                      {

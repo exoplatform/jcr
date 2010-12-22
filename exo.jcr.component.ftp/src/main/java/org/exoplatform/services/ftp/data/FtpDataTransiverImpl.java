@@ -216,7 +216,7 @@ public class FtpDataTransiverImpl implements FtpDataTransiver
       {
          try
          {
-            dataSocket = SecurityHelper.doPriviledgedExceptionAction(new PrivilegedExceptionAction<Socket>()
+            dataSocket = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Socket>()
             {
                public Socket run() throws Exception
                {
