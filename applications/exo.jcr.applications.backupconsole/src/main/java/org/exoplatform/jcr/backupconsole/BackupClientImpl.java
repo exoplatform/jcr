@@ -466,10 +466,11 @@ public class BackupClientImpl
             String backupSetPath, boolean removeExists)
             throws IOException, BackupExecuteException
    {
+      BackupAgentResponse response = null;
+      String sURL = null;
+
       if (workspaceName != null)
       {
-         String sURL = null;
-         BackupAgentResponse response = null;
          if (config != null)
          {
             if (backupId != null )
@@ -511,38 +512,9 @@ public class BackupClientImpl
 
             response = transport.executePOST(sURL, json.toString());
          }
-         else
-         {
-            if (backupId != null)
-            {
-               sURL =
-                        path + HTTPBackupAgent.Constants.BASE_URL + HTTPBackupAgent.Constants.OperationType.RESTORE
-                                 + "/" + backupId + "/" + removeExists;
-            }
-            else if (backupSetPath != null)
-            {
-               sURL =
-                        path + HTTPBackupAgent.Constants.BASE_URL
-                                 + HTTPBackupAgent.Constants.OperationType.RESTORE_BACKUP_SET + "/" + repositoryName
-                                 + "/" + backupSetPath + "/" + removeExists;
-            }
-
-            response = transport.executeGET(sURL);
-         }
-
-         if (response.getStatus() == Response.Status.OK.getStatusCode())
-         {
-            return "\nSuccessful : \n" + "\tstatus code = " + response.getStatus() + "\n";
-         }
-         else
-         {
-            return failureProcessing(response);
-         }
       }
-      else
+      else if (repositoryName != null)
       {
-         String sURL = null;
-         BackupAgentResponse response = null;
          if (config != null)
          {
             if (backupId != null)
@@ -586,34 +558,75 @@ public class BackupClientImpl
    
             response = transport.executePOST(sURL, json.toString());
          } 
-         else
+      }
+      else
+      {
+         if (backupId != null)
          {
-            if (backupId != null)
+
+            //check is repository or workspace backup
+            boolean isRepository = true;
+
+            String lsURL =
+                     path + HTTPBackupAgent.Constants.BASE_URL
+                              + HTTPBackupAgent.Constants.OperationType.CURRENT_OR_COMPLETED_BACKUP_REPOSITORY_INFO
+                              + "/" + backupId;
+
+            BackupAgentResponse lResponse = transport.executeGET(lsURL);
+
+            if (lResponse.getStatus() != Response.Status.OK.getStatusCode())
+            {
+
+               sURL =
+                        path + HTTPBackupAgent.Constants.BASE_URL
+                                 + HTTPBackupAgent.Constants.OperationType.CURRENT_OR_COMPLETED_BACKUP_INFO + "/"
+                                 + backupId;
+
+               lResponse = transport.executeGET(sURL);
+
+               if (lResponse.getStatus() == Response.Status.OK.getStatusCode())
+               {
+                  isRepository = false;
+               }
+               else
+               {
+                  return failureProcessing(lResponse);
+               }
+            }
+
+            if (isRepository)
             {
                sURL =
                         path + HTTPBackupAgent.Constants.BASE_URL
                                  + HTTPBackupAgent.Constants.OperationType.RESTORE_REPOSITORY + "/" + backupId + "/"
                                  + removeExists;
             }
-            else if (backupSetPath != null)
+            else
             {
                sURL =
-                        path + HTTPBackupAgent.Constants.BASE_URL
-                                 + HTTPBackupAgent.Constants.OperationType.RESTORE_BACKUP_SET
-                                 + "/" + backupSetPath + "/" + removeExists;
+                        path + HTTPBackupAgent.Constants.BASE_URL + HTTPBackupAgent.Constants.OperationType.RESTORE
+                                 + "/" + backupId + "/" + removeExists;
             }
 
-            response = transport.executeGET(sURL);
+         }
+         else if (backupSetPath != null)
+         {
+            sURL =
+                     path + HTTPBackupAgent.Constants.BASE_URL
+                              + HTTPBackupAgent.Constants.OperationType.RESTORE_BACKUP_SET + "/" + backupSetPath + "/"
+                              + removeExists;
          }
 
-         if (response.getStatus() == Response.Status.OK.getStatusCode())
-         {
-            return "\nSuccessful : \n" + "\tstatus code = " + response.getStatus() + "\n";
-         }
-         else
-         {
-            return failureProcessing(response);
-         }
+         response = transport.executeGET(sURL);
+      }
+
+      if (response.getStatus() == Response.Status.OK.getStatusCode())
+      {
+         return "\nSuccessful : \n" + "\tstatus code = " + response.getStatus() + "\n";
+      }
+      else
+      {
+         return failureProcessing(response);
       }
    }
 
