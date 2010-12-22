@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.ext.script.groovy;
 
-import org.exoplatform.services.jcr.ext.BaseStandaloneTest;
 import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
 import org.exoplatform.services.jcr.ext.registry.RESTRegistryTest.DummyContainerResponseWriter;
@@ -56,7 +55,7 @@ import javax.ws.rs.core.SecurityContext;
  * @author <a href="mailto:andrew00x@gmail.com">Andrey Parfonov</a>
  * @version $Id: $
  */
-public class GroovyScript2RestLoaderTest extends BaseStandaloneTest
+public class GroovyScript2RestLoaderTest extends BaseGroovyTest
 {
 
    private Node testRoot;
@@ -111,17 +110,16 @@ public class GroovyScript2RestLoaderTest extends BaseStandaloneTest
       providers.addMethodInvokerFilter(new MethodAccessFilter());
 
       session.save();
-      
+
       Set<String> adminRoles = new HashSet<String>();
       adminRoles.add("administrators");
-      adminSecurityContext = new DummySecurityContext(new Principal()
-      {
+      adminSecurityContext = new DummySecurityContext(new Principal() {
          public String getName()
          {
             return "root";
          }
       }, adminRoles);
-      
+
    }
 
    public void testStartQuery() throws Exception
@@ -279,17 +277,12 @@ public class GroovyScript2RestLoaderTest extends BaseStandaloneTest
    public void testGroovyDependency() throws Exception
    {
       // Add script in dependency repository
-      Node deps = groovyRepo.addNode("dependencies", "nt:folder");
-      Node dep = deps.addNode("Dep1.groovy", "nt:file");
-      dep = dep.addNode("jcr:content", "nt:resource");
-      dep.setProperty("jcr:mimeType", "script/groovy");
-      dep.setProperty("jcr:lastModified", Calendar.getInstance());
-      dep.setProperty("jcr:data", "package dependencies; class Dep1 { String name = getClass().getName() }");
+      createScript(groovyRepo, "dependencies", "Dep1", //
+         "package dependencies\n" + //
+            "class Dep1 { String name = getClass().getName() }");
 
-      session.save();
-
-      script.setProperty("jcr:data", Thread.currentThread().getContextClassLoader().getResourceAsStream(
-         "TestDependency.groovy"));
+      script.setProperty("jcr:data",
+         Thread.currentThread().getContextClassLoader().getResourceAsStream("TestDependency.groovy"));
 
       session.save();
 

@@ -21,10 +21,10 @@ package org.exoplatform.services.jcr.ext.script.groovy;
 
 import groovy.lang.GroovyObject;
 
-import org.exoplatform.services.jcr.ext.BaseStandaloneTest;
 import org.exoplatform.services.jcr.ext.resource.UnifiedNodeReference;
-
-import java.util.Calendar;
+import org.exoplatform.services.rest.ext.groovy.ClassPathEntry;
+import org.exoplatform.services.rest.ext.groovy.GroovyClassLoaderProvider;
+import org.exoplatform.services.rest.ext.groovy.ClassPathEntry.EntryType;
 
 import javax.jcr.Node;
 
@@ -32,45 +32,93 @@ import javax.jcr.Node;
  * @author <a href="mailto:andrew00x@gmail.com">Andrey Parfonov</a>
  * @version $Id$
  */
-public class GroovyCompilerTest extends BaseStandaloneTest
+public class GroovyCompilerTest extends BaseGroovyTest
 {
+
+   private Node groovyRepo;
+
+   private Node otherGroovyRepo;
+
+   private String scriptA;
+
+   private String scriptB;
 
    public void setUp() throws Exception
    {
       super.setUp();
-      Node groovyRepo = root.addNode("groovyRepo", "nt:folder");
-      Node org = groovyRepo.addNode("org", "nt:folder");
-      Node exo = org.addNode("exoplatform", "nt:folder");
-      Node a = exo.addNode("A.groovy", "nt:file");
-      a = a.addNode("jcr:content", "nt:resource");
-      a.setProperty("jcr:mimeType", "script/groovy");
-      a.setProperty("jcr:lastModified", Calendar.getInstance());
-      a.setProperty("jcr:data", //
-         "package org.exoplatform\n" + //
-            " class A { String message = 'groovy compiler test' }");
+      groovyRepo = root.addNode("groovyRepo", "nt:folder");
+      otherGroovyRepo = root.addNode("otherGroovyRepo", "nt:folder");
 
-      Node test = exo.addNode("test", "nt:folder");
-      Node b = test.addNode("B.groovy", "nt:file");
-      b = b.addNode("jcr:content", "nt:resource");
-      b.setProperty("jcr:mimeType", "script/groovy");
-      b.setProperty("jcr:lastModified", Calendar.getInstance());
-      b.setProperty("jcr:data", //
+      // Add script in shared "dependency repository".
+      scriptA = createScript(groovyRepo, "org.exoplatform", "A", //
+         "package org.exoplatform\n" + //
+            "class A { String message = 'groovy compiler test' }");
+
+      scriptB = createScript(groovyRepo, "org.exoplatform.test", "B", //
          "package org.exoplatform.test\n" + //
-            " import org.exoplatform.A\n" + //
-            " class B extends A {}");
-      session.save();
+            "import org.exoplatform.A\n" + //
+            "class B extends A {}");
    }
 
-   public void testGroovyDependency() throws Exception
+   public void testSnaredDependencies() throws Exception
    {
-      JcrGroovyCompiler compiler = new JcrGroovyCompiler();
-      compiler.getGroovyClassLoader().setResourceLoader(
+      GroovyClassLoaderProvider classLoaderProvider = new GroovyClassLoaderProvider();
+      classLoaderProvider.getGroovyClassLoader().setResourceLoader(
          new JcrGroovyResourceLoader(new java.net.URL[]{new java.net.URL("jcr://db1/ws#/groovyRepo")}));
-      Class<?>[] classes =
-         compiler.compile(new UnifiedNodeReference("db1", "ws", "/groovyRepo/org/exoplatform/test/B.groovy"));
+      JcrGroovyCompiler compiler = new JcrGroovyCompiler(classLoaderProvider);
+
+      Class<?>[] classes = compiler.compile(new UnifiedNodeReference("db1", "ws", scriptB));
       assertEquals(1, classes.length);
       GroovyObject go = (GroovyObject)classes[0].newInstance();
       assertEquals("groovy compiler test", go.invokeMethod("getMessage", new Object[0]));
    }
 
+   public void testDependenciesBetweenCompiled() throws Exception
+   {
+      GroovyClassLoaderProvider classLoaderProvider = new GroovyClassLoaderProvider();
+      JcrGroovyCompiler compiler = new JcrGroovyCompiler(classLoaderProvider);
+      Class<?>[] classes =
+         compiler.compile(new UnifiedNodeReference("db1", "ws", scriptB),
+            new UnifiedNodeReference("db1", "ws", scriptA));
+      assertEquals(2, classes.length);
+      GroovyObject go = (GroovyObject)classes[0].newInstance();
+      assertEquals("groovy compiler test", go.invokeMethod("getMessage", new Object[0]));
+      go = (GroovyObject)classes[1].newInstance();
+      assertEquals("groovy compiler test", go.invokeMethod("getMessage", new Object[0]));
+   }
+
+   public void testAddDependenciesInRuntime() throws Exception
+   {
+      GroovyClassLoaderProvider classLoaderProvider = new GroovyClassLoaderProvider();
+      JcrGroovyCompiler compiler = new JcrGroovyCompiler(classLoaderProvider);
+      Class<?>[] classes = compiler.compile( //
+         new ClassPathEntry[]{new JcrClassPathEntry(EntryType.FILE, new UnifiedNodeReference("db1", "ws", scriptA))}, //
+         new UnifiedNodeReference("db1", "ws", scriptB));
+      assertEquals(1, classes.length);
+      GroovyObject go = (GroovyObject)classes[0].newInstance();
+      assertEquals("groovy compiler test", go.invokeMethod("getMessage", new Object[0]));
+   }
+
+   public void testCombinedDependencies() throws Exception
+   {
+      String scriptC = createScript(otherGroovyRepo, "org.exoplatform.test", "C", //
+         "package org.exoplatform.test\n" + //
+            "import org.exoplatform.*\n" + //
+            "class C extends B {}");
+
+      String scriptD = createScript(otherGroovyRepo, "org.exoplatform.test.other", "D", //
+         "package org.exoplatform.test.other\n" + //
+            "import org.exoplatform.test.C\n" + //
+            "class D extends C {}");
+      
+      GroovyClassLoaderProvider classLoaderProvider = new GroovyClassLoaderProvider();
+      classLoaderProvider.getGroovyClassLoader().setResourceLoader(
+         new JcrGroovyResourceLoader(new java.net.URL[]{new java.net.URL("jcr://db1/ws#/groovyRepo")}));
+      
+      JcrGroovyCompiler compiler = new JcrGroovyCompiler(classLoaderProvider);
+      Class<?>[] classes =
+         compiler.compile(new UnifiedNodeReference("db1", "ws", scriptD),
+            new UnifiedNodeReference("db1", "ws", scriptC));
+      assertEquals(2, classes.length);
+   }
 }

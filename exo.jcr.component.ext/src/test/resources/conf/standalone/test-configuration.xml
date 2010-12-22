@@ -40,7 +40,7 @@
             <property name="log4j.rootLogger" value="INFO, stdout, file" />
 
             <property name="log4j.appender.stdout" value="org.apache.log4j.ConsoleAppender" />
-            <property name="log4j.appender.stdout.threshold" value="INFO" />
+            <property name="log4j.appender.stdout.threshold" value="DEBUG" />
 
             <property name="log4j.appender.stdout.layout" value="org.apache.log4j.PatternLayout" />
             <property name="log4j.appender.stdout.layout.ConversionPattern" value="%d{dd.MM.yyyy HH:mm:ss} *%-5p* [%t] %c{1}: %m (%F, line %L) %n" />
@@ -54,6 +54,8 @@
             <!-- property name="log4j.category.ext.BackupScheduler" value="DEBUG"/>
             <property name="log4j.category.ext.BackupManagerImpl" value="DEBUG"/ -->
             <property name="log4j.category.jcr.ext.RestRepositoryService" value="DEBUG"/>
+
+            <!-- property name="log4j.category.org.exoplatform.services.jcr.ext.script.groovy.JcrGroovyResourceLoader" value="DEBUG" / -->
 
          </properties-param>
       </init-params>

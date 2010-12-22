@@ -19,6 +19,8 @@
 package org.exoplatform.services.jcr.ext.script.groovy;
 
 import org.exoplatform.services.jcr.ext.resource.JcrURLConnection;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 import org.exoplatform.services.rest.ext.groovy.DefaultGroovyResourceLoader;
 
 import java.io.IOException;
@@ -31,6 +33,7 @@ import java.net.URLConnection;
  */
 public class JcrGroovyResourceLoader extends DefaultGroovyResourceLoader
 {
+   private static final Log LOG = ExoLogger.getLogger(JcrGroovyResourceLoader.class);
 
    private static URL[] normalizeJcrURL(URL[] src) throws MalformedURLException
    {
@@ -58,72 +61,89 @@ public class JcrGroovyResourceLoader extends DefaultGroovyResourceLoader
       return res;
    }
 
-   public JcrGroovyResourceLoader(URL[] roots) throws MalformedURLException
+   public JcrGroovyResourceLoader(URL[] roots, URL[] files) throws MalformedURLException
    {
-      super(normalizeJcrURL(roots));
+      super(normalizeJcrURL(roots), files);
    }
 
+   public JcrGroovyResourceLoader(URL[] roots) throws MalformedURLException
+   {
+      this(roots, new URL[0]);
+   }
+
+   public JcrGroovyResourceLoader(URL root) throws MalformedURLException
+   {
+      this(new URL[]{root}, new URL[0]);
+   }
+
+   /**
+    * @see org.exoplatform.services.rest.ext.groovy.DefaultGroovyResourceLoader#getResource(java.lang.String)
+    */
    @Override
    protected URL getResource(String filename) throws MalformedURLException
    {
-      filename = filename.intern();
+      if (LOG.isDebugEnabled())
+         LOG.debug("Process file: " + filename);
+
       URL resource = null;
+      filename = filename.intern();
       synchronized (filename)
       {
          resource = resources.get(filename);
          boolean inCache = resource != null;
-         for (URL root : roots)
+         if (inCache && !checkResource(resource))
+            resource = null;
+         for (int i = 0; i < files.length && resource == null; i++)
          {
-            if (resource == null)
-            {
-               if ("jcr".equals(root.getProtocol()))
-               {
-                  // In JCR URL path represented by fragment
-                  // jcr://repository/workspace#/path
-                  String ref = root.getRef();
-                  resource = new URL(root, "#" + ref + filename);
-               }
-               else
-               {
-                  resource = new URL(root, filename);
-               }
-            }
-            URLConnection connection = null;
-            try
-            {
-               if (GroovyScript2RestLoader.LOG.isDebugEnabled())
-                  GroovyScript2RestLoader.LOG.debug("Try to load resource from URL : " + resource);
-
-               connection = resource.openConnection();
-               connection.getInputStream().close();
-
-               break;
-            }
-            catch (IOException e)
-            {
-               if (GroovyScript2RestLoader.LOG.isDebugEnabled())
-                  GroovyScript2RestLoader.LOG.debug("Can't open URL : " + resource);
-
-               resource = null;
-            }
-            finally
-            {
-               if (connection != null && resource != null && "jcr".equals(resource.getProtocol()))
-               {
-                  ((JcrURLConnection)connection).disconnect();
-               }
-            }
+            URL tmp = files[i];
+            if (tmp.toString().endsWith(filename) && checkResource(tmp))
+               resource = tmp;
+         }
+         for (int i = 0; i < roots.length && resource == null; i++)
+         {
+            // In JCR URL path represented by fragment jcr://repository/workspace#/path
+            URL tmp =
+               ("jcr".equals(roots[i].getProtocol())) ? new URL(roots[i], "#" + roots[i].getRef() + filename)
+                  : new URL(roots[i], filename);
+            if (checkResource(tmp))
+               resource = tmp;
          }
          if (resource != null)
-         {
             resources.put(filename, resource);
-         }
          else if (inCache)
-         {
-            // Remove from map if resource is unreachable
             resources.remove(filename);
-         }
       }
       return resource;
+   }
+
+   /**
+    * @see org.exoplatform.services.rest.ext.groovy.DefaultGroovyResourceLoader#checkResource(java.net.URL)
+    */
+   @Override
+   protected boolean checkResource(URL resource)
+   {
+      URLConnection connection = null;
+      try
+      {
+         if (LOG.isDebugEnabled())
+            LOG.debug("Try to load resource from URL : " + resource);
+
+         connection = resource.openConnection();
+         connection.getInputStream().close();
+
+         return true;
+      }
+      catch (IOException e)
+      {
+         if (LOG.isDebugEnabled())
+            LOG.debug("Can't open URL : " + resource);
+
+         return false;
+      }
+      finally
+      {
+         if (connection != null && resource != null && "jcr".equals(resource.getProtocol()))
+            ((JcrURLConnection)connection).disconnect();
+      }
    }
 }
