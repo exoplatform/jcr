@@ -28,10 +28,8 @@ import java.net.URL;
  */
 public class URLScriptKey extends BaseResourceId implements ScriptKey
 {
-
    public URLScriptKey(URL url)
    {
       super(url.toString());
    }
-
 }

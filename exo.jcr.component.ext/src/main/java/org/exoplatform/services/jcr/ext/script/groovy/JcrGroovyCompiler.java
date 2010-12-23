@@ -27,6 +27,7 @@ import org.exoplatform.services.jcr.ext.resource.JcrURLConnection;
 import org.exoplatform.services.jcr.ext.resource.UnifiedNodeReference;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.services.rest.ext.groovy.ClassPath;
 import org.exoplatform.services.rest.ext.groovy.ClassPathEntry;
 import org.exoplatform.services.rest.ext.groovy.ClassPathEntry.EntryType;
 import org.exoplatform.services.rest.ext.groovy.GroovyClassLoaderProvider;
@@ -76,18 +77,23 @@ public class JcrGroovyCompiler implements Startable
       ClassPathEntry[] classPath = new ClassPathEntry[sourceReferences.length];
       for (int i = 0; i < classPath.length; i++)
          classPath[i] = new JcrClassPathEntry(EntryType.FILE, sourceReferences[i]);
-      return doCompile(classLoaderProvider.getGroovyClassLoader(classPath), sourceReferences);
+      return doCompile(classLoaderProvider.getGroovyClassLoader(new ClassPath(classPath, null)), sourceReferences);
    }
 
-   public Class<?>[] compile(ClassPathEntry[] classPath, UnifiedNodeReference... sourceReferences) throws IOException
+   public Class<?>[] compile(ClassPath classPath, UnifiedNodeReference... sourceReferences) throws IOException
    {
       ClassPathEntry[] compiled = new ClassPathEntry[sourceReferences.length];
       for (int i = 0; i < compiled.length; i++)
          compiled[i] = new JcrClassPathEntry(EntryType.FILE, sourceReferences[i]);
-      ClassPathEntry[] fullClassPath = new ClassPathEntry[compiled.length + classPath.length];
+      ClassPathEntry[] classPathEntries = classPath.getEntries();
+      if (classPathEntries == null)
+         classPathEntries = new ClassPathEntry[0];
+      ClassPathEntry[] fullClassPath = new ClassPathEntry[compiled.length + classPathEntries.length];
       System.arraycopy(compiled, 0, fullClassPath, 0, compiled.length);
-      System.arraycopy(classPath, 0, fullClassPath, compiled.length, classPath.length);
-      return doCompile(classLoaderProvider.getGroovyClassLoader(fullClassPath), sourceReferences);
+      System.arraycopy(classPathEntries, 0, fullClassPath, compiled.length, classPathEntries.length);
+      return doCompile(
+         classLoaderProvider.getGroovyClassLoader(new ClassPath(fullClassPath, classPath.getExtensions())),
+         sourceReferences);
    }
 
    private Class<?>[] doCompile(final GroovyClassLoader cl, final UnifiedNodeReference... sourceReferences)

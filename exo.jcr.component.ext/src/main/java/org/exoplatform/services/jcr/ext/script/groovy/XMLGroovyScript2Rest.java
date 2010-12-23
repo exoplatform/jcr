@@ -24,22 +24,13 @@ package org.exoplatform.services.jcr.ext.script.groovy;
  */
 public class XMLGroovyScript2Rest
 {
-
-   /**
-    * Script name.
-    */
+   /** Script name. */
    private String name;
 
-   /**
-    * From this URL script will be loaded.
-    */
+   /** From this URL script will be loaded. */
    private String path;
 
-   /**
-    * If this parameter true script will be loaded automatically.
-    * 
-    * @see {@link GroovyScript2RestLoader}
-    */
+   /** If this parameter true script will be loaded automatically. */
    private boolean autoload;
 
    public XMLGroovyScript2Rest(String name, String path, boolean autoload)
@@ -112,5 +103,4 @@ public class XMLGroovyScript2Rest
          this.autoload).append("}");
       return sb.toString();
    }
-
 }

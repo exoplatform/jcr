@@ -45,7 +45,17 @@ public abstract class BaseGroovyTest extends BaseStandaloneTest
       return createScript(parent, packageName, name, new ByteArrayInputStream(text.getBytes()));
    }
 
-   protected String createScript(Node parent, String packageName, String name, InputStream text) throws RepositoryException
+   /**
+    * @param parent parent node
+    * @param packageName package name. Segment of package name must be separated
+    *           by '.'. If required folders in hierarchy does not exists they
+    *           will be created
+    * @param name name of file with extension
+    * @param text source code
+    * @return path where script was created
+    */
+   protected String createScript(Node parent, String packageName, String name, InputStream text)
+      throws RepositoryException
    {
       Node current = parent;
       if (packageName != null && packageName.length() > 0)
@@ -58,7 +68,7 @@ public abstract class BaseGroovyTest extends BaseStandaloneTest
                current = current.getNode(s);
          }
       }
-      Node script = current.addNode(name + ".groovy", "nt:file");
+      Node script = current.addNode(name, "nt:file");
       Node scriptContent = script.addNode("jcr:content", "nt:resource");
       scriptContent.setProperty("jcr:mimeType", "script/groovy");
       scriptContent.setProperty("jcr:lastModified", Calendar.getInstance());

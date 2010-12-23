@@ -29,7 +29,6 @@ import javax.jcr.RepositoryException;
  */
 public class NodeScriptKey extends BaseResourceId implements ScriptKey
 {
-
    private final String repositoryName;
 
    private final String workspaceName;
@@ -63,5 +62,4 @@ public class NodeScriptKey extends BaseResourceId implements ScriptKey
    {
       return path;
    }
-
 }

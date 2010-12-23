@@ -61,9 +61,14 @@ public class JcrGroovyResourceLoader extends DefaultGroovyResourceLoader
       return res;
    }
 
+   public JcrGroovyResourceLoader(URL[] roots, URL[] files, String[] extensions) throws MalformedURLException
+   {
+      super(normalizeJcrURL(roots), files, extensions);
+   }
+
    public JcrGroovyResourceLoader(URL[] roots, URL[] files) throws MalformedURLException
    {
-      super(normalizeJcrURL(roots), files);
+      this(roots, files, null);
    }
 
    public JcrGroovyResourceLoader(URL[] roots) throws MalformedURLException

@@ -20,9 +20,10 @@ package org.exoplatform.services.jcr.ext.script.groovy;
 
 import groovy.lang.GroovyClassLoader;
 
+import org.exoplatform.services.rest.ext.groovy.ClassPath;
 import org.exoplatform.services.rest.ext.groovy.ClassPathEntry;
-import org.exoplatform.services.rest.ext.groovy.GroovyClassLoaderProvider;
 import org.exoplatform.services.rest.ext.groovy.ClassPathEntry.EntryType;
+import org.exoplatform.services.rest.ext.groovy.GroovyClassLoaderProvider;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -33,28 +34,33 @@ import java.util.List;
 
 /**
  * @author <a href="mailto:andrey.parfonov@exoplatform.com">Andrey Parfonov</a>
- * @version $Id$
+ * @version $Id: JcrGroovyClassLoaderProvider.java 3702 2010-12-22 10:24:13Z
+ *          aparfonov $
  */
 public class JcrGroovyClassLoaderProvider extends GroovyClassLoaderProvider
 {
    /**
-    * @see org.exoplatform.services.rest.ext.groovy.GroovyClassLoaderProvider#getGroovyClassLoader(org.exoplatform.services.rest.ext.groovy.ClassPathEntry[])
+    * @see org.exoplatform.services.rest.ext.groovy.GroovyClassLoaderProvider#getGroovyClassLoader(org.exoplatform.services.rest.ext.groovy.ClassPath)
     */
    @Override
-   public GroovyClassLoader getGroovyClassLoader(ClassPathEntry[] classPath) throws MalformedURLException
+   public GroovyClassLoader getGroovyClassLoader(ClassPath classPath) throws MalformedURLException
    {
       List<URL> files = new ArrayList<URL>();
       List<URL> roots = new ArrayList<URL>();
-      for (int i = 0; i < classPath.length; i++)
+      ClassPathEntry[] classPathEntries = classPath.getEntries();
+      if (classPathEntries != null && classPathEntries.length > 0)
       {
-         ClassPathEntry classPathEntry = classPath[i];
-         if (EntryType.SRC_DIR == classPathEntry.getType())
+         for (int i = 0; i < classPathEntries.length; i++)
          {
-            roots.add(classPathEntry.getPath());
-         }
-         else
-         {
-            files.add(classPathEntry.getPath());
+            ClassPathEntry classPathEntry = classPathEntries[i];
+            if (EntryType.SRC_DIR == classPathEntry.getType())
+            {
+               roots.add(classPathEntry.getPath());
+            }
+            else
+            {
+               files.add(classPathEntry.getPath());
+            }
          }
       }
       final GroovyClassLoader parent = getGroovyClassLoader();
@@ -65,7 +71,7 @@ public class JcrGroovyClassLoaderProvider extends GroovyClassLoaderProvider
          }
       });
       classLoader.setResourceLoader(new JcrGroovyResourceLoader(roots.toArray(new URL[roots.size()]), files
-         .toArray(new URL[files.size()])));
+         .toArray(new URL[files.size()]), classPath.getExtensions()));
       return classLoader;
    }
 }

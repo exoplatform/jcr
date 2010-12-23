@@ -22,6 +22,7 @@ import org.exoplatform.services.jcr.ext.resource.UnifiedNodeReference;
 import org.exoplatform.services.rest.ext.groovy.ClassPathEntry;
 
 import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
  * @author <a href="mailto:andrey.parfonov@exoplatform.com">Andrey Parfonov</a>
@@ -29,8 +30,13 @@ import java.net.MalformedURLException;
  */
 public class JcrClassPathEntry extends ClassPathEntry
 {
+   public JcrClassPathEntry(EntryType type, URL path)
+   {
+      super(type, path);
+   }
+
    public JcrClassPathEntry(EntryType type, UnifiedNodeReference path) throws MalformedURLException
    {
-      super(type, path.getURL());
+      this(type, path.getURL());
    }
 }

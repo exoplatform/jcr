@@ -22,6 +22,7 @@ package org.exoplatform.services.jcr.ext.script.groovy;
 import groovy.lang.GroovyObject;
 
 import org.exoplatform.services.jcr.ext.resource.UnifiedNodeReference;
+import org.exoplatform.services.rest.ext.groovy.ClassPath;
 import org.exoplatform.services.rest.ext.groovy.ClassPathEntry;
 import org.exoplatform.services.rest.ext.groovy.GroovyClassLoaderProvider;
 import org.exoplatform.services.rest.ext.groovy.ClassPathEntry.EntryType;
@@ -50,11 +51,11 @@ public class GroovyCompilerTest extends BaseGroovyTest
       otherGroovyRepo = root.addNode("otherGroovyRepo", "nt:folder");
 
       // Add script in shared "dependency repository".
-      scriptA = createScript(groovyRepo, "org.exoplatform", "A", //
+      scriptA = createScript(groovyRepo, "org.exoplatform", "A.groovy", //
          "package org.exoplatform\n" + //
             "class A { String message = 'groovy compiler test' }");
 
-      scriptB = createScript(groovyRepo, "org.exoplatform.test", "B", //
+      scriptB = createScript(groovyRepo, "org.exoplatform.test", "B.groovy", //
          "package org.exoplatform.test\n" + //
             "import org.exoplatform.A\n" + //
             "class B extends A {}");
@@ -91,8 +92,10 @@ public class GroovyCompilerTest extends BaseGroovyTest
    {
       GroovyClassLoaderProvider classLoaderProvider = new GroovyClassLoaderProvider();
       JcrGroovyCompiler compiler = new JcrGroovyCompiler(classLoaderProvider);
+      ClassPathEntry[] classPathEntries =
+         new ClassPathEntry[]{new JcrClassPathEntry(EntryType.FILE, new UnifiedNodeReference("db1", "ws", scriptA))};
       Class<?>[] classes = compiler.compile( //
-         new ClassPathEntry[]{new JcrClassPathEntry(EntryType.FILE, new UnifiedNodeReference("db1", "ws", scriptA))}, //
+         new ClassPath(classPathEntries, null), //
          new UnifiedNodeReference("db1", "ws", scriptB));
       assertEquals(1, classes.length);
       GroovyObject go = (GroovyObject)classes[0].newInstance();
@@ -101,20 +104,20 @@ public class GroovyCompilerTest extends BaseGroovyTest
 
    public void testCombinedDependencies() throws Exception
    {
-      String scriptC = createScript(otherGroovyRepo, "org.exoplatform.test", "C", //
+      String scriptC = createScript(otherGroovyRepo, "org.exoplatform.test", "C.groovy", //
          "package org.exoplatform.test\n" + //
             "import org.exoplatform.*\n" + //
             "class C extends B {}");
 
-      String scriptD = createScript(otherGroovyRepo, "org.exoplatform.test.other", "D", //
+      String scriptD = createScript(otherGroovyRepo, "org.exoplatform.test.other", "D.groovy", //
          "package org.exoplatform.test.other\n" + //
             "import org.exoplatform.test.C\n" + //
             "class D extends C {}");
-      
+
       GroovyClassLoaderProvider classLoaderProvider = new GroovyClassLoaderProvider();
       classLoaderProvider.getGroovyClassLoader().setResourceLoader(
          new JcrGroovyResourceLoader(new java.net.URL[]{new java.net.URL("jcr://db1/ws#/groovyRepo")}));
-      
+
       JcrGroovyCompiler compiler = new JcrGroovyCompiler(classLoaderProvider);
       Class<?>[] classes =
          compiler.compile(new UnifiedNodeReference("db1", "ws", scriptD),

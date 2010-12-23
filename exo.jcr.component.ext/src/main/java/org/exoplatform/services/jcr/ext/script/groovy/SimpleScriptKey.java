@@ -27,10 +27,8 @@ import org.exoplatform.services.rest.ext.groovy.BaseResourceId;
  */
 public class SimpleScriptKey extends BaseResourceId implements ScriptKey
 {
-
    public SimpleScriptKey(String key)
    {
       super(key);
    }
-
 }

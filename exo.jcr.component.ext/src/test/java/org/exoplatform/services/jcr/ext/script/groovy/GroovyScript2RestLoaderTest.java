@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.ext.script.groovy;
 import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
 import org.exoplatform.services.jcr.ext.registry.RESTRegistryTest.DummyContainerResponseWriter;
+import org.exoplatform.services.jcr.ext.resource.UnifiedNodeReference;
 import org.exoplatform.services.jcr.ext.script.groovy.GroovyScript2RestLoader.ScriptMetadata;
 import org.exoplatform.services.rest.RequestHandler;
 import org.exoplatform.services.rest.ext.method.filter.MethodAccessFilter;
@@ -39,6 +40,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLEncoder;
 import java.security.Principal;
 import java.util.Calendar;
 import java.util.HashSet;
@@ -143,7 +145,7 @@ public class GroovyScript2RestLoaderTest extends BaseGroovyTest
       assertEquals(resourceNumber, binder.getSize());
    }
 
-   public void testRemoteAccessGetMetatData() throws Exception
+   public void testGetMetatData() throws Exception
    {
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
       headers.putSingle("Accept", MediaType.APPLICATION_JSON);
@@ -155,7 +157,7 @@ public class GroovyScript2RestLoaderTest extends BaseGroovyTest
       assertTrue(Boolean.valueOf(data.getLoad()));
    }
 
-   public void testRemoteAccessAutoload() throws Exception
+   public void testAutoload() throws Exception
    {
 
       ContainerResponse cres =
@@ -170,7 +172,7 @@ public class GroovyScript2RestLoaderTest extends BaseGroovyTest
       assertTrue(script.getProperty("exo:autoload").getBoolean());
    }
 
-   public void testRemoteAccessLoad() throws Exception
+   public void testLoad() throws Exception
    {
       EnvironmentContext ctx = new EnvironmentContext();
       ctx.put(SecurityContext.class, adminSecurityContext);
@@ -186,7 +188,104 @@ public class GroovyScript2RestLoaderTest extends BaseGroovyTest
       assertEquals(resourceNumber + 1, binder.getSize());
    }
 
-   public void testRemoteAccessDelete() throws Exception
+   public void testLoadNoExtClassPath() throws Exception
+   {
+      String path = createScript(testRoot, "test.load", "Test000.groovy", //
+         "import test.load.User000\n" + //
+            "@javax.ws.rs.Path('test/load') class Test000 {\n" + //
+            "def user = new User(name:'test')\n" + //
+            "@javax.ws.rs.GET def m() {user}" + //
+            "}\n");
+      EnvironmentContext ctx = new EnvironmentContext();
+      ctx.put(SecurityContext.class, adminSecurityContext);
+
+      int before = binder.getSize();
+      ContainerResponse cres = launcher.service("POST", "/script/groovy/load/db1/ws" + path, "", null, null, ctx);
+      assertEquals(400, cres.getStatus());
+      int after = binder.getSize();
+      assertEquals(before, after);
+   }
+
+   public void testLoadNoExtClassPath_File() throws Exception
+   {
+      String scriptPath = createScript(testRoot, "test.load", "Test001.groovy", //
+         "import test.load.User001\n" + //
+            "@javax.ws.rs.Path('test/load_001') class Test001 {\n" + //
+            "def user = new User001(name:'test')\n" + //
+            "@javax.ws.rs.GET def m() {user}" + //
+            "}\n");
+      String user = createScript(testRoot, "test.load", "User001.groovy",// 
+         "package test.load\n" + //
+            "class User001 {def name}");
+
+      EnvironmentContext ctx = new EnvironmentContext();
+      ctx.put(SecurityContext.class, adminSecurityContext);
+      String path =
+         "/script/groovy/load/db1/ws" + scriptPath //
+            + "?file=" //
+            + URLEncoder.encode(new UnifiedNodeReference(repository.getName(), workspace.getName(), user).getURL()
+               .toString(), "UTF-8");
+      int before = binder.getSize();
+      ContainerResponse cres = launcher.service("POST", path, "", null, null, ctx);
+      assertEquals(204, cres.getStatus());
+      int after = binder.getSize();
+      assertEquals(before + 1, after);
+   }
+
+   public void testLoadNoExtClassPath_SourceFolder() throws Exception
+   {
+      String scriptPath = createScript(testRoot, "test.load", "Test002.groovy", //
+         "import test.load.User002\n" + //
+            "@javax.ws.rs.Path('test/load_002') class Test002 {\n" + //
+            "def user = new User002(name:'test')\n" + //
+            "@javax.ws.rs.GET def m() {user}" + //
+            "}\n");
+      createScript(testRoot, "test.load", "User002.groovy",// 
+         "package test.load\n" + //
+            "class User002 {def name}");
+
+      EnvironmentContext ctx = new EnvironmentContext();
+      ctx.put(SecurityContext.class, adminSecurityContext);
+      String path =
+         "/script/groovy/load/db1/ws" + scriptPath //
+            + "?sources=" //
+            + URLEncoder.encode(new UnifiedNodeReference(repository.getName(), workspace.getName(), testRoot.getPath())
+               .getURL().toString(), "UTF-8");
+      int before = binder.getSize();
+      ContainerResponse cres = launcher.service("POST", path, "", null, null, ctx);
+      assertEquals(204, cres.getStatus());
+      int after = binder.getSize();
+      assertEquals(before + 1, after);
+   }
+
+   public void testLoadNoExtClassPath_CustomExtension() throws Exception
+   {
+      String scriptPath = createScript(testRoot, "test.load", "Test003.groovy", //
+         "import test.load.User003\n" + //
+            "@javax.ws.rs.Path('test/load_003') class Test003 {\n" + //
+            "def user = new User003(name:'test')\n" + //
+            "@javax.ws.rs.GET def m() {user}" + //
+            "}\n");
+      createScript(testRoot, "test.load", "User003.otherGroovy",// 
+         "package test.load\n" + //
+            "class User003 {def name}");
+
+      EnvironmentContext ctx = new EnvironmentContext();
+      ctx.put(SecurityContext.class, adminSecurityContext);
+      String path =
+         "/script/groovy/load/db1/ws" + scriptPath //
+            + "?sources=" //
+            + URLEncoder.encode(new UnifiedNodeReference(repository.getName(), workspace.getName(), testRoot.getPath())
+               .getURL().toString(), "UTF-8") + //
+            "&extension=.otherGroovy";
+      int before = binder.getSize();
+      ContainerResponse cres = launcher.service("POST", path, "", null, null, ctx);
+      assertEquals(204, cres.getStatus());
+      int after = binder.getSize();
+      assertEquals(before + 1, after);
+   }
+
+   public void testDelete() throws Exception
    {
       ContainerResponse cres =
          launcher.service("POST", "/script/groovy/delete/db1/ws/testRoot/script", "", null, null, null);
@@ -195,7 +294,7 @@ public class GroovyScript2RestLoaderTest extends BaseGroovyTest
       assertEquals(resourceNumber, binder.getSize());
    }
 
-   public void testRemoteAccessGetScript() throws Exception
+   public void testGetScript() throws Exception
    {
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
       headers.putSingle("Accept", "script/groovy");
@@ -206,7 +305,7 @@ public class GroovyScript2RestLoaderTest extends BaseGroovyTest
       compareStream(script.getProperty("jcr:data").getStream(), new ByteArrayInputStream(wr.getBody()));
    }
 
-   public void testRemoteAccessAddScript() throws Exception
+   public void testAddScript() throws Exception
    {
       script.getParent().remove();
       session.save();
@@ -271,13 +370,91 @@ public class GroovyScript2RestLoaderTest extends BaseGroovyTest
       script = "public class Test { def a = 0\ndef b = 1\n }\n";
       cres = launcher.service("POST", "/script/groovy/validate/", "", headers, script.getBytes(), null);
       assertEquals(200, cres.getStatus());
+   }
 
+   public void testValidateNoExtClassPath() throws Exception
+   {
+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+      headers.putSingle("Content-Type", "script/groovy");
+      String script = "import test.validate.User000\n" + //
+         "@javax.ws.rs.Path('test/validate') class Test {\n" + //
+         "def user = new User000(name:'test')\n" + //
+         "@javax.ws.rs.GET def m() {user}" + //
+         " }\n";
+      ContainerResponse cres =
+         launcher.service("POST", "/script/groovy/validate/Test", "", headers, script.getBytes(), null);
+      assertEquals(400, cres.getStatus());
+      System.out.println(cres.getEntity());
+   }
+
+   public void testValidateExtClassPath_File() throws Exception
+   {
+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+      headers.putSingle("Content-Type", "script/groovy");
+      String script = "import test.validate.User001\n" + //
+         "@javax.ws.rs.Path('test/validate') class Test {\n" + //
+         "def user = new User001(name:'test')\n" + //
+         "@javax.ws.rs.GET def m() {user}" + //
+         " }\n";
+      String user = createScript(testRoot, "test.validate", "User001.groovy",// 
+         "package test.validate\n" + //
+            "class User001 {def name}");
+      // Specify source file location.
+      String path =
+         "/script/groovy/validate/Test?file=" //
+            + URLEncoder.encode(new UnifiedNodeReference(repository.getName(), workspace.getName(), user).getURL()
+               .toString(), "UTF-8");
+      ContainerResponse cres = launcher.service("POST", path, "", headers, script.getBytes(), null);
+      assertEquals(200, cres.getStatus());
+   }
+
+   public void testValidateExtClassPath_SourceFolder() throws Exception
+   {
+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+      headers.putSingle("Content-Type", "script/groovy");
+      String script = "import test.validate.User002\n" + //
+         "@javax.ws.rs.Path('test/validate') class Test {\n" + //
+         "def user = new User002(name:'test')\n" + //
+         "@javax.ws.rs.GET def m() {user}" + //
+         " }\n";
+      createScript(testRoot, "test.validate", "User002.groovy",// 
+         "package test.validate\n" + //
+            "class User002 {def name}");
+      // Specify source folder location.
+      String path =
+         "/script/groovy/validate/Test?sources=" //
+            + URLEncoder.encode(new UnifiedNodeReference(repository.getName(), workspace.getName(), testRoot.getPath())
+               .getURL().toString(), "UTF-8");
+      ContainerResponse cres = launcher.service("POST", path, "", headers, script.getBytes(), null);
+      assertEquals(200, cres.getStatus());
+   }
+
+   public void testValidateExtClassPath_CustomExtension() throws Exception
+   {
+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+      headers.putSingle("Content-Type", "script/groovy");
+      String script = "import test.validate.User003\n" + //
+         "@javax.ws.rs.Path('test/validate') class Test {\n" + //
+         "def user = new User003(name:'test')\n" + //
+         "@javax.ws.rs.GET def m() {user}" + //
+         " }\n";
+      createScript(testRoot, "test.validate", "User003.otherGroovy",// 
+         "package test.validate\n" + //
+            "class User003 {def name}");
+      // Specify source folder location and customized extension '.otherGroovy'.
+      String path =
+         "/script/groovy/validate/Test?sources=" //
+            + URLEncoder.encode(new UnifiedNodeReference(repository.getName(), workspace.getName(), testRoot.getPath())
+               .getURL().toString(), "UTF-8") + //
+            "&extension=.otherGroovy";
+      ContainerResponse cres = launcher.service("POST", path, "", headers, script.getBytes(), null);
+      assertEquals(200, cres.getStatus());
    }
 
    public void testGroovyDependency() throws Exception
    {
       // Add script in dependency repository
-      createScript(groovyRepo, "dependencies", "Dep1", //
+      createScript(groovyRepo, "dependencies", "Dep1.groovy", //
          "package dependencies\n" + //
             "class Dep1 { String name = getClass().getName() }");
 
@@ -292,7 +469,6 @@ public class GroovyScript2RestLoaderTest extends BaseGroovyTest
       ContainerResponse cres = launcher.service("GET", "/groovy-test-dependency", "", null, null, null);
       assertEquals(200, cres.getStatus());
       assertEquals("dependencies.Dep1", cres.getEntity());
-
    }
 
    private byte[] getResourceAsBytes(String resource) throws IOException
@@ -305,9 +481,7 @@ public class GroovyScript2RestLoaderTest extends BaseGroovyTest
          byte[] buf = new byte[1024];
          int r = -1;
          while ((r = stream.read(buf)) != -1)
-         {
             bout.write(buf, 0, r);
-         }
          data = bout.toByteArray();
       }
       return data;
