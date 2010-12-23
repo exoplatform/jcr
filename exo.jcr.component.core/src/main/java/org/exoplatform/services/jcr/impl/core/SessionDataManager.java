@@ -260,6 +260,12 @@ public class SessionDataManager implements ItemDataConsumer
       ItemState state = changesLog.getItemState(parent, name, itemType);
       if (state == null)
       {
+         // 2. Check if the parent node is a new node
+         if (isNew(parent.getIdentifier()))
+         {
+            // The parent node is a new node so we know that the data doesn't exist in the database
+            return null;
+         }
          // 2. Try from txdatamanager
          if (!(skipCheckInPersistence))
          {
