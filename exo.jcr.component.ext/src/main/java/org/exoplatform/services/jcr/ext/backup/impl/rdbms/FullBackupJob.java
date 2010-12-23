@@ -53,6 +53,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Types;
 import java.util.Calendar;
 import java.util.List;
@@ -111,6 +112,26 @@ public class FullBackupJob extends AbstractFullBackupJob
    public static final int DB_DIALECT_HSQLDB = DBConstants.DB_DIALECT_HSQLDB.hashCode();
 
    /**
+    * MySQL dialect.
+    */
+   public static final int DB_DIALECT_MYSQL = DBConstants.DB_DIALECT_MYSQL.hashCode();
+
+   /**
+    * MySQL-UTF8 dialect.
+    */
+   public static final int DB_DIALECT_MYSQL_UTF8 = DBConstants.DB_DIALECT_MYSQL_UTF8.hashCode();
+
+   /**
+    * DB2 dialect.
+    */
+   public static final int DB_DIALECT_DB2 = DBConstants.DB_DIALECT_DB2.hashCode();
+
+   /**
+    * DB2V8 dialect.
+    */
+   public static final int DB_DIALECT_DB2V8 = DBConstants.DB_DIALECT_DB2V8.hashCode();
+
+   /**
     * {@inheritDoc}
     */
    @Override
@@ -157,7 +178,8 @@ public class FullBackupJob extends AbstractFullBackupJob
       notifyListeners();
 
       Connection jdbcConn = null;
-      Integer transactionIsolation = null;
+      Statement st = null;
+
       try
       {
          WorkspaceEntry workspaceEntry = null;
@@ -204,9 +226,8 @@ public class FullBackupJob extends AbstractFullBackupJob
 
             }
          });
-
-         transactionIsolation = jdbcConn.getTransactionIsolation();
-         jdbcConn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+         
+         int dialect = DialectDetecter.detect(jdbcConn.getMetaData()).hashCode();
 
          RDBMSBackupInfoWriter backupInfoWriter = new RDBMSBackupInfoWriter(getStorageURL().getFile());
 
@@ -241,6 +262,13 @@ public class FullBackupJob extends AbstractFullBackupJob
          backupInfoWriter.setItemTableName(scripts[0][0]);
          backupInfoWriter.setValueTableName(scripts[1][0]);
          backupInfoWriter.setRefTableName(scripts[2][0]);
+
+         // Lock db
+         if (dialect != DB_DIALECT_HSQLDB)
+         {
+            st = jdbcConn.createStatement();
+            st.execute("LOCK TABLES " + scripts[0][0] + " WRITE");
+         }
 
          for (String script[] : scripts)
          {
@@ -298,15 +326,33 @@ public class FullBackupJob extends AbstractFullBackupJob
       }
       finally
       {
+         if (st != null)
+         {
+            try
+            {
+               st.execute("UNLOCK TABLES");
+            }
+            catch (SQLException e)
+            {
+               log.error("Full backup failed " + getStorageURL().getPath(), e);
+               notifyError("Full backup failed", e);
+            }
+
+            try
+            {
+               st.close();
+            }
+            catch (SQLException e)
+            {
+               log.error("Full backup failed " + getStorageURL().getPath(), e);
+               notifyError("Full backup failed", e);
+            }
+         }
+
          if (jdbcConn != null)
          {
             try
             {
-               if (transactionIsolation != null)
-               {
-                  jdbcConn.setTransactionIsolation(transactionIsolation);
-               }
-
                jdbcConn.close();
             }
             catch (SQLException e)

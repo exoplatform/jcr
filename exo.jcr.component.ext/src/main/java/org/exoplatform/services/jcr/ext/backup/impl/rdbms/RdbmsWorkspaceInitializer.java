@@ -45,7 +45,6 @@ import org.exoplatform.services.jcr.impl.core.query.SystemSearchManager;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectZipReaderImpl;
-import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.storage.value.fs.FileValueStorage;
@@ -168,8 +167,8 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
    protected void fullRdbmsRestore() throws RepositoryException
    {
       Connection jdbcConn = null;
-      Integer transactionIsolation = null;
       Statement st = null;
+
       try
       {
          String dsName = workspaceEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME);
@@ -202,103 +201,23 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
             }
          });
 
-         transactionIsolation = jdbcConn.getTransactionIsolation();
-         jdbcConn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-
+         int dialect = DialectDetecter.detect(jdbcConn.getMetaData()).hashCode();
          jdbcConn.setAutoCommit(false);
 
          RDBMSBackupInfoReader backupInfo = new RDBMSBackupInfoReader(restorePath);
 
-         // restore JCR data
-         Integer[] tableTypes =
-            new Integer[]{RestoreTableHelper.ITEM_TABLE, RestoreTableHelper.VALUE_TABLE, RestoreTableHelper.REF_TABLE};
-
-         for (Integer tableType : tableTypes)
+         // Lock db
+         if (dialect != FullBackupJob.DB_DIALECT_HSQLDB)
          {
-            RestoreTableHelper helper = new RestoreTableHelper(tableType, isMultiDb, backupInfo);
+            RestoreTableHelper helper = new RestoreTableHelper(RestoreTableHelper.ITEM_TABLE, isMultiDb, backupInfo);
 
-            if (tableType == RestoreTableHelper.ITEM_TABLE)
-            {
-               // resolve constraint name depends on database
-               String constraintName;
-               String dbDialect = DialectDetecter.detect(jdbcConn.getMetaData());
-
-               if (dbDialect.equals(DBConstants.DB_DIALECT_DB2) || dbDialect.equals(DBConstants.DB_DIALECT_DB2V8))
-               {
-                  constraintName = "JCR_FK_" + (Boolean.parseBoolean(multiDb) ? "M" : "S") + "ITEM_PAREN";
-               }
-               else
-               {
-                  constraintName = "JCR_FK_" + (Boolean.parseBoolean(multiDb) ? "M" : "S") + "ITEM_PARENT";
-               }
-               String constraint =
-                  "CONSTRAINT " + constraintName + " FOREIGN KEY(PARENT_ID) REFERENCES " + helper.getTableName()
-                     + "(ID)";
-
-               // drop constraint
-               st = jdbcConn.createStatement();
-               st.execute("ALTER TABLE " + helper.getTableName() + " DROP CONSTRAINT " + constraintName);
-               jdbcConn.commit();
-
-               restoreTable(jdbcConn, helper);
-
-               // add constraint
-               st = jdbcConn.createStatement();
-               st.execute("ALTER TABLE " + helper.getTableName() + " ADD " + constraint);
-               jdbcConn.commit();
-            }
-            else
-            {
-               if (PrivilegedFileHelper.exists(helper.getContentFile()))
-               {
-                  restoreTable(jdbcConn, helper);
-               }
-               else
-               {
-                  throw new IOException("File " + PrivilegedFileHelper.getCanonicalPath(helper.getContentFile())
-                     + " not found");
-               }
-            }
+            st = jdbcConn.createStatement();
+            st.execute("LOCK TABLES " + helper.getTableName() + " WRITE");
          }
 
-         // restore Lock data
-         LockManagerEntry lockEntry = workspaceEntry.getLockManager();
-         if (lockEntry != null)
-         {
-            List<String> existedLockTablesNames = AbstractCacheableLockManager.getLockTableNames(lockEntry);
-            if (existedLockTablesNames.size() != backupInfo.getLockTableNames().size())
-            {
-               throw new RepositoryException("The amount of existed lock tables differs from backup");
-            }
+         restoreJCRTables(jdbcConn, dialect, isMultiDb, backupInfo);
+         restoreLockTables(jdbcConn, isMultiDb, backupInfo);
 
-            for (int i = 0; i < backupInfo.getLockTableNames().size(); i++)
-            {
-               RestoreTableHelper helper = new RestoreTableHelper(RestoreTableHelper.LOCK_TABLE, isMultiDb, backupInfo);
-
-               helper.setContentFile(new File(restorePath, backupInfo.getLockTableNames().get(i)
-                  + FullBackupJob.CONTENT_FILE_SUFFIX));
-               helper.setContentLenFile(new File(restorePath, backupInfo.getLockTableNames().get(i)
-                  + FullBackupJob.CONTENT_LEN_FILE_SUFFIX));
-               helper.setTableName(existedLockTablesNames.get(i));
-
-               if (PrivilegedFileHelper.exists(helper.contentFile))
-               {
-                  restoreTable(jdbcConn, helper);
-               }
-               else
-               {
-                  throw new IOException("File " + PrivilegedFileHelper.getCanonicalPath(helper.contentFile)
-                     + " not found");
-               }
-            }
-         }
-         else if (backupInfo.getLockTableNames().size() != 0)
-         {
-            throw new RepositoryException("There are no lock tables for new workspace configuration [" + workspaceName
-               + "] but backup lock data exist");
-         }
-
-         // restore value storage and index
          restoreValueStorage();
          restoreIndex();
       }
@@ -335,6 +254,15 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
          {
             try
             {
+               st.execute("UNLOCK TABLES");
+            }
+            catch (SQLException e)
+            {
+               throw new RepositoryException(e);
+            }
+
+            try
+            {
                st.close();
             }
             catch (SQLException e)
@@ -347,11 +275,6 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
          {
             try
             {
-               if (transactionIsolation != null)
-               {
-                  jdbcConn.setTransactionIsolation(transactionIsolation);
-               }
-
                jdbcConn.close();
             }
             catch (SQLException e)
@@ -359,6 +282,114 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
                throw new RepositoryException(e);
             }
          }
+      }
+   }
+
+   /**
+    * Restore JCR tables.
+    */
+   protected void restoreJCRTables(Connection jdbcConn, int dialect, boolean isMultiDb, RDBMSBackupInfoReader backupInfo)
+      throws IOException, SQLException
+   {
+      Statement st = null;
+      try
+      {
+         Integer[] tableTypes =
+            new Integer[]{RestoreTableHelper.ITEM_TABLE, RestoreTableHelper.VALUE_TABLE, RestoreTableHelper.REF_TABLE};
+
+         for (Integer tableType : tableTypes)
+         {
+            RestoreTableHelper helper = new RestoreTableHelper(tableType, isMultiDb, backupInfo);
+
+            if (!PrivilegedFileHelper.exists(helper.getContentFile()))
+            {
+               throw new IOException("File " + PrivilegedFileHelper.getCanonicalPath(helper.getContentFile())
+                  + " not found");
+            }
+
+            if (tableType == RestoreTableHelper.ITEM_TABLE && dialect != FullBackupJob.DB_DIALECT_MYSQL
+               && dialect != FullBackupJob.DB_DIALECT_MYSQL_UTF8)
+            {
+               // resolve constraint name depends on database
+               String constraintName;
+               if (dialect == FullBackupJob.DB_DIALECT_DB2 || dialect == FullBackupJob.DB_DIALECT_DB2V8)
+               {
+                  constraintName = "JCR_FK_" + (isMultiDb ? "M" : "S") + "ITEM_PAREN";
+               }
+               else
+               {
+                  constraintName = "JCR_FK_" + (isMultiDb ? "M" : "S") + "ITEM_PARENT";
+               }
+               String constraint =
+                  "CONSTRAINT " + constraintName + " FOREIGN KEY(PARENT_ID) REFERENCES " + helper.getTableName()
+                     + "(ID)";
+
+               // drop constraint
+               st = jdbcConn.createStatement();
+               st.execute("ALTER TABLE " + helper.getTableName() + " DROP CONSTRAINT " + constraintName);
+               jdbcConn.commit();
+
+               restoreTable(jdbcConn, helper);
+
+               // add constraint
+               st = jdbcConn.createStatement();
+               st.execute("ALTER TABLE " + helper.getTableName() + " ADD " + constraint);
+               jdbcConn.commit();
+            }
+            else
+            {
+               restoreTable(jdbcConn, helper);
+            }
+         }
+      }
+      finally
+      {
+         if (st != null)
+         {
+            st.close();
+         }
+      }
+   }
+
+   /**
+    * Restore JCR Lock tables.
+    */
+   protected void restoreLockTables(Connection jdbcConn, boolean isMultiDb, RDBMSBackupInfoReader backupInfo)
+      throws IOException, SQLException, RepositoryException
+   {
+      LockManagerEntry lockEntry = workspaceEntry.getLockManager();
+      if (lockEntry != null)
+      {
+         List<String> existedLockTablesNames = AbstractCacheableLockManager.getLockTableNames(lockEntry);
+         if (existedLockTablesNames.size() != backupInfo.getLockTableNames().size())
+         {
+            throw new RepositoryException("The amount of existed lock tables differs from backup");
+         }
+
+         for (int i = 0; i < backupInfo.getLockTableNames().size(); i++)
+         {
+            RestoreTableHelper helper = new RestoreTableHelper(RestoreTableHelper.LOCK_TABLE, isMultiDb, backupInfo);
+
+            helper.setContentFile(new File(restorePath, backupInfo.getLockTableNames().get(i)
+               + FullBackupJob.CONTENT_FILE_SUFFIX));
+            helper.setContentLenFile(new File(restorePath, backupInfo.getLockTableNames().get(i)
+               + FullBackupJob.CONTENT_LEN_FILE_SUFFIX));
+            helper.setTableName(existedLockTablesNames.get(i));
+
+            if (PrivilegedFileHelper.exists(helper.contentFile))
+            {
+               restoreTable(jdbcConn, helper);
+            }
+            else
+            {
+               throw new IOException("File " + PrivilegedFileHelper.getCanonicalPath(helper.contentFile) + " not found");
+            }
+         }
+      }
+      else if (backupInfo.getLockTableNames().size() != 0)
+      {
+         throw new RepositoryException("There are no lock tables for new workspace configuration [" + workspaceName
+            + "] but backup lock data exist");
       }
    }
 
@@ -579,8 +610,6 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
    protected void restoreTable(Connection jdbcConn, RestoreTableHelper helper)
       throws IOException, SQLException
    {
-      String insertNodeQuery = null;
-
       ObjectZipReaderImpl contentReader = null;
       ObjectZipReaderImpl contentLenReader = null;
 
@@ -597,7 +626,7 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
          contentLenReader = new ObjectZipReaderImpl(PrivilegedFileHelper.zipInputStream(helper.getContentLenFile()));
          contentLenReader.getNextEntry();
 
-         // get information about backup table
+         // get information about source table
          int sourceColumnCount = contentReader.readInt();
          
          List<Integer> columnType = new ArrayList<Integer>();
@@ -620,7 +649,6 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
             newColumnType.add(tableMetaData.getInt("DATA_TYPE"));
          }
 
-         // construct query
          int targetColumnCount = sourceColumnCount;
          if (helper.getDeleteColumnIndex() != null)
          {
@@ -632,23 +660,21 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
             columnType.add(helper.getNewColumnIndex(), newColumnType.get((helper.getNewColumnIndex())));
          }
 
+         // construct statement
+         String names = "";
+         String parameters = "";
          for (int i = 0; i < targetColumnCount; i++)
          {
-            if (i == 0)
+            if (helper.getSkipColumnIndex() != null && helper.getSkipColumnIndex() == i)
             {
-               insertNodeQuery = "INSERT INTO " + helper.getTableName() + " VALUES(?";
+               continue;
             }
-            else
-            {
-               insertNodeQuery += ",?";
-            }
-
-            if (i == targetColumnCount - 1)
-            {
-               insertNodeQuery += ")";
-            }
+            names += newColumnName.get(i) + (i == targetColumnCount - 1 ? "" : ",");
+            parameters += "?" + (i == targetColumnCount - 1 ? "" : ",");
          }
-         insertNode = jdbcConn.prepareStatement(insertNodeQuery);
+         insertNode =
+            jdbcConn.prepareStatement("INSERT INTO " + helper.getTableName() + " (" + names + ") VALUES(" + parameters
+               + ")");
 
          // set data
          outer : while (true)
@@ -691,6 +717,7 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
 
                if (helper.getSkipColumnIndex() != null && helper.getSkipColumnIndex() == i)
                {
+                  targetIndex--;
                   continue;
                }
                else if (helper.getDeleteColumnIndex() != null && helper.getDeleteColumnIndex() == i)
@@ -966,6 +993,7 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
             if (isMultiDb)
             {
                tableName = "JCR_MITEM";
+
                if (!backupInfo.isMultiDb())
                {
                   // CONTAINER_NAME column index
@@ -979,6 +1007,7 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
             else
             {
                tableName = "JCR_SITEM";
+
                if (backupInfo.isMultiDb())
                {
                   // CONTAINER_NAME column index
