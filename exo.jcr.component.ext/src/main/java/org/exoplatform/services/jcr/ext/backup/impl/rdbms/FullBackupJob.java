@@ -49,6 +49,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -178,8 +179,6 @@ public class FullBackupJob extends AbstractFullBackupJob
       notifyListeners();
 
       Connection jdbcConn = null;
-      Statement st = null;
-
       try
       {
          WorkspaceEntry workspaceEntry = null;
@@ -227,8 +226,6 @@ public class FullBackupJob extends AbstractFullBackupJob
             }
          });
          
-         int dialect = DialectDetecter.detect(jdbcConn.getMetaData()).hashCode();
-
          RDBMSBackupInfoWriter backupInfoWriter = new RDBMSBackupInfoWriter(getStorageURL().getFile());
 
          backupInfoWriter.setRepositoryName(repository.getConfiguration().getName());
@@ -263,11 +260,41 @@ public class FullBackupJob extends AbstractFullBackupJob
          backupInfoWriter.setValueTableName(scripts[1][0]);
          backupInfoWriter.setRefTableName(scripts[2][0]);
 
-         // Lock db
-         if (dialect != DB_DIALECT_HSQLDB)
+         // Lock tables
+         ResultSet rs = null;
+         Statement st = null;
+         try
          {
+            DatabaseMetaData metaData = jdbcConn.getMetaData();
+
+            rs = metaData.getTables(null, null, "%", new String[]{"TABLE"});
             st = jdbcConn.createStatement();
-            st.execute("LOCK TABLES " + scripts[0][0] + " WRITE");
+            int dialect = DialectDetecter.detect(metaData).hashCode();
+
+            while (rs.next())
+            {
+               String tableName = rs.getString("TABLE_NAME");
+               if (dialect == DB_DIALECT_HSQLDB)
+               {
+                  st.execute("SET TABLE " + tableName + " READONLY TRUE");
+               }
+               else
+               {
+                  st.execute("LOCK TABLES " + tableName + " WRITE");
+               }
+            }
+         }
+         finally
+         {
+            if (rs != null)
+            {
+               rs.close();
+            }
+
+            if (st != null)
+            {
+               st.close();
+            }
          }
 
          for (String script[] : scripts)
@@ -326,33 +353,46 @@ public class FullBackupJob extends AbstractFullBackupJob
       }
       finally
       {
-         if (st != null)
-         {
-            try
-            {
-               st.execute("UNLOCK TABLES");
-            }
-            catch (SQLException e)
-            {
-               log.error("Full backup failed " + getStorageURL().getPath(), e);
-               notifyError("Full backup failed", e);
-            }
-
-            try
-            {
-               st.close();
-            }
-            catch (SQLException e)
-            {
-               log.error("Full backup failed " + getStorageURL().getPath(), e);
-               notifyError("Full backup failed", e);
-            }
-         }
-
          if (jdbcConn != null)
          {
+            // unlock tables
             try
             {
+               ResultSet rs = null;
+               Statement st = null;
+               try
+               {
+                  DatabaseMetaData metaData = jdbcConn.getMetaData();
+                  st = jdbcConn.createStatement();
+                  int dialect = DialectDetecter.detect(metaData).hashCode();
+
+                  if (dialect == DB_DIALECT_HSQLDB)
+                  {
+                     rs = metaData.getTables(null, null, "%", new String[]{"TABLE"});
+                     while (rs.next())
+                     {
+                        String tableName = rs.getString("TABLE_NAME");
+                        st.execute("SET TABLE " + tableName + " READONLY FALSE");
+                     }
+                  }
+                  else
+                  {
+                     st.execute("UNLOCK TABLES");
+                  }
+               }
+               finally
+               {
+                  if (rs != null)
+                  {
+                     rs.close();
+                  }
+
+                  if (st != null)
+                  {
+                     st.close();
+                  }
+               }
+
                jdbcConn.close();
             }
             catch (SQLException e)

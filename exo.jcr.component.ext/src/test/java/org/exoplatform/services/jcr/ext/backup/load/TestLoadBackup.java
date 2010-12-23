@@ -34,6 +34,8 @@ import org.exoplatform.services.jcr.impl.core.PropertyImpl;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.sql.Connection;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -44,6 +46,8 @@ import javax.jcr.Session;
 import javax.jcr.Value;
 import javax.jcr.version.VersionException;
 import javax.jcr.version.VersionHistory;
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
 
 /**
  * Created by The eXo Platform SAS.
@@ -64,8 +68,6 @@ public class TestLoadBackup extends AbstractBackupTestCase
    protected final String FULL_BACKUP_TYPE = "org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob";
 
    protected final int BACKUP_TYPE = BackupManager.FULL_BACKUP_ONLY;
-
-   protected final boolean RESTORE_INTO_EXISTED = false;
 
    protected ManageableRepository repository;
 
@@ -99,7 +101,6 @@ public class TestLoadBackup extends AbstractBackupTestCase
          }
          catch (Exception e)
          {
-            e.printStackTrace();
          }
       }
    }
@@ -126,7 +127,7 @@ public class TestLoadBackup extends AbstractBackupTestCase
          sessions.add(writerSession);
       }
 
-      Thread.sleep(5 * 1000);
+      Thread.sleep(10 * 1000);
 
       System.out.println(" ============ BACKUP START ============");
 
@@ -159,7 +160,17 @@ public class TestLoadBackup extends AbstractBackupTestCase
 
       if (BACKUP_TYPE == BackupManager.FULL_AND_INCREMENTAL)
       {
-         Thread.sleep(30 * 1000);
+         Thread.sleep(5 * 1000);
+      }
+
+      for (Thread thread : threads)
+      {
+         thread.interrupt();
+      }
+
+      if (BACKUP_TYPE == BackupManager.FULL_AND_INCREMENTAL)
+      {
+         Thread.sleep(5 * 1000);
       }
 
       // stop backup
@@ -174,11 +185,6 @@ public class TestLoadBackup extends AbstractBackupTestCase
       Thread.sleep(5 * 1000);
 
       System.out.println(" ============ BACKUP FINISHED ============");
-
-      //      for (Thread thread : threads)
-      //      {
-      //         thread.interrupt();
-      //      }
 
       // restore
       WorkspaceEntry ws1back = makeWorkspaceEntry("ws1back", "jdbcjcr3");
@@ -217,7 +223,6 @@ public class TestLoadBackup extends AbstractBackupTestCase
       {
          Node n = root.addNode("testNode" + i);
          n.addMixin("mix:referenceable");
-         n.addMixin("mix:versionable");
          n.setProperty("long", i);
          n.setProperty("ref", n);
          n.setProperty("string", new String[]{"test" + System.currentTimeMillis()});
@@ -225,8 +230,7 @@ public class TestLoadBackup extends AbstractBackupTestCase
 
          session.save();
 
-         n.checkin();
-         n.checkout();
+         //         System.out.println("Child has been added");
 
          Thread.sleep(50);
 
@@ -300,6 +304,34 @@ public class TestLoadBackup extends AbstractBackupTestCase
             }
          }
       }
+   }
+   
+   public void _testTableLock() throws Exception
+   {
+      Session writerSession = repository.login(credentials, WORKSPACE_NAME);
+      //      TreeWriterThread writer = new TreeWriterThread(writerSession, "subnode");
+      //      writer.start();
+
+      DataSource ds = (DataSource)new InitialContext().lookup("jdbcjcr_to_repository_restore_singel_db");
+      Connection conn = ds.getConnection();
+
+      Thread.sleep(2 * 1000);
+
+      Statement st = conn.createStatement();
+      st.executeQuery("SET PROPERTY \"readonly\" TRUE");
+      System.out.println("LOCK TABLES JCR_SITEM WRITE");
+      Thread.sleep(5 * 1000);
+
+      //      st.executeQuery("SET READONLY FALSE");
+      //      System.out.println("UNLOCK TABLES");
+      //      Thread.sleep(5 * 1000);
+
+      st.close();
+      conn.close();
+      System.out.println("Con closed");
+      Thread.sleep(5 * 1000);
+
+      addChilds(writerSession, writerSession.getRootNode(), 0);
    }
 
    /**
