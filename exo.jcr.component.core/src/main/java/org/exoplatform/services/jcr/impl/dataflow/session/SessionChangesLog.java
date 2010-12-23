@@ -204,16 +204,24 @@ public final class SessionChangesLog extends PlainChangesLogImpl
 
    private void traverseChangesByIdentifier(String identifier, List<ItemState> changesList)
    {
-      for (int i = 0, length = items.size(); i < length; i++)
+      ItemState item = getItemState(identifier);
+      if (item != null)
       {
-         ItemState item = items.get(i);
-         if (item.getData().getIdentifier().equals(identifier))
+         changesList.add(item);
+         Map<String, ItemState> children = lastChildPropertyStates.get(identifier);
+         if (children != null)
          {
-            changesList.add(item);
+            // Add all the properties
+            changesList.addAll(children.values());
          }
-         else if (item.getData().getParentIdentifier().equals(identifier))
+         children = lastChildNodeStates.get(identifier);
+         if (children != null)
          {
-            traverseChangesByIdentifier(item.getData().getIdentifier(), changesList);
+            // Recursively call the method traverseChangesByIdentifier(String identifier, List<ItemState> changesList) for each sub node
+            for (ItemState child : children.values())
+            {
+               traverseChangesByIdentifier(child.getData().getIdentifier(), changesList);
+            }
          }
       }
    }
@@ -226,17 +234,27 @@ public final class SessionChangesLog extends PlainChangesLogImpl
     */
    public void eraseEventFire(String identifier)
    {
-      for (int i = 0, length = items.size(); i < length; i++)
+      ItemState item = getItemState(identifier);
+      if (item != null)
       {
-         ItemState item = items.get(i);
-         if (item.getData().getIdentifier().equals(identifier))
+         item.eraseEventFire();
+         Map<String, ItemState> children = lastChildPropertyStates.get(identifier);
+         if (children != null)
          {
-            // erase flag
-            item.eraseEventFire();
+            // Call the method ItemState.eraseEventFire() on each properties
+            for (ItemState child : children.values())
+            {
+               child.eraseEventFire();
+            }
          }
-         else if (item.getData().getParentIdentifier().equals(identifier))
+         children = lastChildNodeStates.get(identifier);
+         if (children != null)
          {
-            eraseEventFire(item.getData().getIdentifier());
+            // Recursively call the method eraseEventFire(String identifier) for each sub node
+            for (ItemState child : children.values())
+            {
+               eraseEventFire(child.getData().getIdentifier());
+            }
          }
       }
    }
