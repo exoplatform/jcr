@@ -27,6 +27,7 @@ import org.exoplatform.services.jcr.impl.core.SysViewWorkspaceInitializer;
 import org.exoplatform.services.jcr.impl.core.TesterRdbmsWorkspaceInitializer;
 import org.exoplatform.services.jcr.impl.core.query.SystemSearchManager;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 
@@ -90,7 +91,7 @@ public class TestRdbmsWorkspaceInitializer extends BaseRDBMSBackupTest
 
             TesterRdbmsWorkspaceInitializer initializer =
                new TesterRdbmsWorkspaceInitializer(newEntry, repositoryService.getRepository("db1").getConfiguration(),
-                  cacheableDataManager, null, null, null, (ValueFactoryImpl)valueFactory, null, repositoryService);
+                  cacheableDataManager, null, null, null, (ValueFactoryImpl)valueFactory, null, repositoryService, new FileCleanerHolder());
 
             initializer.restoreValueFiles();
             assertTrue(new File(newValueStoragePath).list().length > 0);
@@ -144,7 +145,8 @@ public class TestRdbmsWorkspaceInitializer extends BaseRDBMSBackupTest
 
             TesterRdbmsWorkspaceInitializer initializer =
                new TesterRdbmsWorkspaceInitializer(newEntry, repositoryService.getRepository("db1").getConfiguration(),
-                  cacheableDataManager, null, null, null, (ValueFactoryImpl)valueFactory, null, repositoryService);
+ cacheableDataManager, null, null, null,
+                              (ValueFactoryImpl) valueFactory, null, repositoryService, new FileCleanerHolder());
 
             initializer.restoreValueFiles();
             assertFalse(new File(newValueStoragePath).exists());
@@ -214,7 +216,8 @@ public class TestRdbmsWorkspaceInitializer extends BaseRDBMSBackupTest
 
             TesterRdbmsWorkspaceInitializer initializer =
                new TesterRdbmsWorkspaceInitializer(newEntry, repositoryService.getRepository("db1").getConfiguration(),
-                  cacheableDataManager, null, null, null, (ValueFactoryImpl)valueFactory, null, repositoryService);
+ cacheableDataManager, null, null, null,
+                              (ValueFactoryImpl) valueFactory, null, repositoryService, new FileCleanerHolder());
 
             // restore multi -> multi
             initializer.restoreTables(conn, 0, true, workspaceEntry.getLockManager(), url.getFile());
@@ -259,7 +262,7 @@ public class TestRdbmsWorkspaceInitializer extends BaseRDBMSBackupTest
 
             initializer =
                new TesterRdbmsWorkspaceInitializer(newEntry, repositoryService.getRepository("db1").getConfiguration(),
-                  cacheableDataManager, null, null, null, (ValueFactoryImpl)valueFactory, null, repositoryService);
+                  cacheableDataManager, null, null, null, (ValueFactoryImpl)valueFactory, null, repositoryService, new FileCleanerHolder());
 
             // restore multi -> single
             initializer.restoreTables(conn, 0, false, workspaceEntry.getLockManager(), url.getFile());
@@ -331,7 +334,7 @@ public class TestRdbmsWorkspaceInitializer extends BaseRDBMSBackupTest
 
             TesterRdbmsWorkspaceInitializer initializer =
                new TesterRdbmsWorkspaceInitializer(newEntry, repositoryService.getRepository("db3").getConfiguration(),
-                  cacheableDataManager, null, null, null, (ValueFactoryImpl)valueFactory, null, repositoryService);
+                  cacheableDataManager, null, null, null, (ValueFactoryImpl)valueFactory, null, repositoryService, new FileCleanerHolder());
 
             // restore single -> multi
             initializer.restoreTables(conn, 0, true, workspaceEntry.getLockManager(), url.getFile());
@@ -376,7 +379,7 @@ public class TestRdbmsWorkspaceInitializer extends BaseRDBMSBackupTest
 
             initializer =
                new TesterRdbmsWorkspaceInitializer(newEntry, repositoryService.getRepository("db3").getConfiguration(),
-                  cacheableDataManager, null, null, null, (ValueFactoryImpl)valueFactory, null, repositoryService);
+                  cacheableDataManager, null, null, null, (ValueFactoryImpl)valueFactory, null, repositoryService, new FileCleanerHolder());
 
             // restore single -> single
             initializer.restoreTables(conn, 0, false, workspaceEntry.getLockManager(), url.getFile());

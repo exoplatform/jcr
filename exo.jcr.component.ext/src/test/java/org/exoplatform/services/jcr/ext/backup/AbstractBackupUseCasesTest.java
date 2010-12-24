@@ -32,6 +32,7 @@ import java.util.Map;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 import javax.jcr.Value;
 import javax.jcr.lock.Lock;
 
@@ -155,6 +156,8 @@ public abstract class AbstractBackupUseCasesTest
       ws1TestRoot.getNode("node_5").remove();
       ws1TestRoot.addNode("node #3").setProperty("exo:data", "property #3");
       ws1TestRoot.addNode("node #5").setProperty("exo:extraData", "property #5");
+
+      ws1TestRoot.addNode("binary_data").setProperty("data", new FileInputStream(createBLOBTempFile(500)));
 
       ws1TestRoot.save(); // log here via listener
 
@@ -862,8 +865,14 @@ public abstract class AbstractBackupUseCasesTest
          Thread.sleep(50);
       }
 
-      // stop fullBackup
+      //will be saved in incremental backup
+      //will be saved in incremental backup
+      Session wsSession = getReposityToBackup().login(credentials, "ws");
+      wsSession.getRootNode().getNode("backupTest").addNode("binary_data").setProperty("data",
+               new FileInputStream(createBLOBTempFile(500)));
+      wsSession.save();
 
+      // stop fullBackup
       backup.stopBackup(bch);
 
       // restore
@@ -893,6 +902,12 @@ public abstract class AbstractBackupUseCasesTest
                Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
                assertEquals("Restored content should be same", "property-5", ws1backTestRoot.getNode("node_5")
                         .getProperty("exo:data").getString());
+
+               if (wsName.equals("ws"))
+               {
+                  assertNotNull(ws1backTestRoot.getNode("binary_data"));
+                  assertNotNull(ws1backTestRoot.getNode("binary_data").getProperty("data"));
+               }
             }
             catch (Exception e)
             {

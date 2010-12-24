@@ -48,6 +48,7 @@ import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectZipReaderI
 import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.storage.value.fs.FileValueStorage;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.impl.util.jdbc.cleaner.DBCleanerException;
 import org.exoplatform.services.jcr.impl.util.jdbc.cleaner.DBCleanerService;
 import org.exoplatform.services.log.ExoLogger;
@@ -106,11 +107,12 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
    public RdbmsWorkspaceInitializer(WorkspaceEntry config, RepositoryEntry repConfig,
       CacheableWorkspaceDataManager dataManager, NamespaceRegistryImpl namespaceRegistry,
       LocationFactory locationFactory, NodeTypeManagerImpl nodeTypeManager, ValueFactoryImpl valueFactory,
-      AccessManager accessManager, RepositoryService repositoryService) throws RepositoryConfigurationException,
+            AccessManager accessManager, RepositoryService repositoryService, FileCleanerHolder cleanerHolder)
+            throws RepositoryConfigurationException,
       PathNotFoundException, RepositoryException
    {
       super(config, repConfig, dataManager, namespaceRegistry, locationFactory, nodeTypeManager, valueFactory,
-         accessManager);
+               accessManager, cleanerHolder);
 
       this.repositoryService = repositoryService;
    }
