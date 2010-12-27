@@ -18,6 +18,10 @@
  */
 package org.exoplatform.services.jcr.ext.backup;
 
+import org.exoplatform.container.xml.InitParams;
+import org.exoplatform.container.xml.PropertiesParam;
+import org.exoplatform.services.jcr.ext.backup.impl.BackupManagerImpl;
+
 
 /**
  * Created by The eXo Platform SAS.
@@ -33,6 +37,20 @@ public class TestBackupManager
 
    protected ExtendedBackupManager getBackupManager()
    {
-      return (ExtendedBackupManager) container.getComponentInstanceOfType(BackupManager.class);
+      InitParams initParams = new InitParams();
+      PropertiesParam pps = new PropertiesParam();
+      pps.setProperty(BackupManagerImpl.FULL_BACKUP_TYPE,
+               "org.exoplatform.services.jcr.ext.backup.impl.fs.FullBackupJob");
+      pps.setProperty(BackupManagerImpl.INCREMENTAL_BACKUP_TYPE,
+               "org.exoplatform.services.jcr.ext.backup.impl.fs.IncrementalBackupJob");
+      pps.setProperty(BackupManagerImpl.BACKUP_DIR, "target/backup_testBackupManager");
+      pps.setProperty(BackupManagerImpl.DEFAULT_INCREMENTAL_JOB_PERIOD, "3600");
+
+      initParams.put(BackupManagerImpl.BACKUP_PROPERTIES, pps);
+
+      BackupManagerImpl backupManagerImpl = new BackupManagerImpl(initParams, repositoryService);
+      backupManagerImpl.start();
+
+      return backupManagerImpl;
    }
 }
